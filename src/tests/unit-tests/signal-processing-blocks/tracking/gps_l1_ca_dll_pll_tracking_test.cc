@@ -53,8 +53,22 @@
 #include "gnuplot_i.h"
 #include "test_flags.h"
 
-DEFINE_bool(plot_gps_l1_tracking_test, false, "Plots results of GpsL1CADllPllTrackingTest with gnuplot");
+
+// Input signal configuration
+DEFINE_bool(enable_external_signal_file, false, "Use an external signal file capture instead of the software-defined signal generator");
+DEFINE_string(signal_file, std::string("gps_l1_capture.dat"), "Path of the external signal capture file");
+DEFINE_double(CN0_dBHz_start, std::numeric_limits<double>::infinity(), "Enable noise generator and set the CN0 start sweep value [dB-Hz]");
+DEFINE_double(CN0_dBHz_stop, std::numeric_limits<double>::infinity(), "Enable noise generator and set the CN0 stop sweep value [dB-Hz]");
+DEFINE_double(CN0_dB_step, 3.0, "Noise generator CN0 sweep step value [dB]");
+
+
+//Emulated acquisition configuration
+
+//Tracking configuration
 DEFINE_int32(extend_correlation_symbols, 1, "Set the tracking coherent correlation to N symbols (up to 20 for GPS L1 C/A)");
+
+//Test output configuration
+DEFINE_bool(plot_gps_l1_tracking_test, false, "Plots results of GpsL1CADllPllTrackingTest with gnuplot");
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CADllPllTrackingTest_msg_rx;
@@ -129,17 +143,17 @@ public:
     std::string filename_rinex_obs = FLAGS_filename_rinex_obs;
     std::string filename_raw_data = FLAGS_filename_raw_data;
 
-    int configure_generator();
+    int configure_generator(double CN0_dBHz, int file_idx);
     int generate_signal();
-    void check_results_doppler(arma::vec& true_time_s,
+    std::vector<double> check_results_doppler(arma::vec& true_time_s,
         arma::vec& true_value,
         arma::vec& meas_time_s,
         arma::vec& meas_value);
-    void check_results_acc_carrier_phase(arma::vec& true_time_s,
+    std::vector<double> check_results_acc_carrier_phase(arma::vec& true_time_s,
         arma::vec& true_value,
         arma::vec& meas_time_s,
         arma::vec& meas_value);
-    void check_results_codephase(arma::vec& true_time_s,
+    std::vector<double> check_results_codephase(arma::vec& true_time_s,
         arma::vec& true_value,
         arma::vec& meas_time_s,
         arma::vec& meas_value);
@@ -166,7 +180,7 @@ public:
 };
 
 
-int GpsL1CADllPllTrackingTest::configure_generator()
+int GpsL1CADllPllTrackingTest::configure_generator(double CN0_dBHz, int file_idx)
 {
     // Configure signal generator
     generator_binary = FLAGS_generator_binary;
@@ -180,10 +194,10 @@ int GpsL1CADllPllTrackingTest::configure_generator()
         {
             p2 = std::string("-obs_pos_file=") + std::string(FLAGS_dynamic_position);
         }
-    p3 = std::string("-rinex_obs_file=") + FLAGS_filename_rinex_obs;               // RINEX 2.10 observation file output
-    p4 = std::string("-sig_out_file=") + FLAGS_filename_raw_data;                  // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
-    p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);  //Baseband sampling frequency [MSps]
-    p6 = std::string("-CN0_dBHz=") + std::to_string(FLAGS_CN0_dBHz);               // Signal generator CN0
+    p3 = std::string("-rinex_obs_file=") + FLAGS_filename_rinex_obs;                          // RINEX 2.10 observation file output
+    p4 = std::string("-sig_out_file=") + FLAGS_filename_raw_data + std::to_string(file_idx);  // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
+    p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);             //Baseband sampling frequency [MSps]
+    p6 = std::string("-CN0_dBHz=") + std::to_string(CN0_dBHz);                                // Signal generator CN0
     return 0;
 }
 
@@ -235,7 +249,7 @@ void GpsL1CADllPllTrackingTest::configure_receiver()
 }
 
 
-void GpsL1CADllPllTrackingTest::check_results_doppler(arma::vec& true_time_s,
+std::vector<double> GpsL1CADllPllTrackingTest::check_results_doppler(arma::vec& true_time_s,
     arma::vec& true_value,
     arma::vec& meas_time_s,
     arma::vec& meas_value)
@@ -255,6 +269,10 @@ void GpsL1CADllPllTrackingTest::check_results_doppler(arma::vec& true_time_s,
     arma::vec err;
 
     err = meas_value - true_value_interp;
+
+    //conversion between arma::vec and std:vector
+    std::vector<double> err_std_vector(err.colptr(0), err.colptr(0) + err.n_rows);
+
     arma::vec err2 = arma::square(err);
     double rmse = sqrt(arma::mean(err2));
 
@@ -272,10 +290,11 @@ void GpsL1CADllPllTrackingTest::check_results_doppler(arma::vec& true_time_s,
               << ", mean=" << error_mean
               << ", stdev=" << sqrt(error_var) << " (max,min)=" << max_error << "," << min_error << " [Hz]" << std::endl;
     std::cout.precision(ss);
+    return err_std_vector;
 }
 
 
-void GpsL1CADllPllTrackingTest::check_results_acc_carrier_phase(arma::vec& true_time_s,
+std::vector<double> GpsL1CADllPllTrackingTest::check_results_acc_carrier_phase(arma::vec& true_time_s,
     arma::vec& true_value,
     arma::vec& meas_time_s,
     arma::vec& meas_value)
@@ -295,6 +314,9 @@ void GpsL1CADllPllTrackingTest::check_results_acc_carrier_phase(arma::vec& true_
     arma::vec err;
     err = meas_value - true_value_interp;
     arma::vec err2 = arma::square(err);
+    //conversion between arma::vec and std:vector
+    std::vector<double> err_std_vector(err.colptr(0), err.colptr(0) + err.n_rows);
+
     double rmse = sqrt(arma::mean(err2));
 
     // 3. Mean err and variance
@@ -311,10 +333,11 @@ void GpsL1CADllPllTrackingTest::check_results_acc_carrier_phase(arma::vec& true_
               << ", mean=" << error_mean
               << ", stdev=" << sqrt(error_var) << " (max,min)=" << max_error << "," << min_error << " [Hz]" << std::endl;
     std::cout.precision(ss);
+    return err_std_vector;
 }
 
 
-void GpsL1CADllPllTrackingTest::check_results_codephase(arma::vec& true_time_s,
+std::vector<double> GpsL1CADllPllTrackingTest::check_results_codephase(arma::vec& true_time_s,
     arma::vec& true_value,
     arma::vec& meas_time_s,
     arma::vec& meas_value)
@@ -334,6 +357,9 @@ void GpsL1CADllPllTrackingTest::check_results_codephase(arma::vec& true_time_s,
     arma::vec err;
 
     err = meas_value - true_value_interp;
+    //conversion between arma::vec and std:vector
+    std::vector<double> err_std_vector(err.colptr(0), err.colptr(0) + err.n_rows);
+
     arma::vec err2 = arma::square(err);
     double rmse = sqrt(arma::mean(err2));
 
@@ -351,164 +377,259 @@ void GpsL1CADllPllTrackingTest::check_results_codephase(arma::vec& true_time_s,
               << ", mean=" << error_mean
               << ", stdev=" << sqrt(error_var) << " (max,min)=" << max_error << "," << min_error << " [Chips]" << std::endl;
     std::cout.precision(ss);
+    return err_std_vector;
 }
 
 
 TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
 {
-    // Configure the signal generator
-    configure_generator();
+    //*************************************************
+    //***** STEP 2: Prepare the parameters sweep ******
+    //*************************************************
 
-    // Generate signal raw signal samples and observations RINEX file
-    if (FLAGS_disable_generator == false)
+    std::vector<double> generator_CN0_values;
+
+    std::vector<std::vector<double>> prompt_sweep;
+    std::vector<std::vector<double>> early_sweep;
+    std::vector<std::vector<double>> late_sweep;
+    std::vector<std::vector<double>> promptI_sweep;
+    std::vector<std::vector<double>> promptQ_sweep;
+    std::vector<std::vector<double>> CN0_dBHz_sweep;
+
+    //error vectors
+    std::vector<std::vector<double>> doppler_error_sweep;
+    std::vector<std::vector<double>> code_phase_error_sweep;
+    std::vector<std::vector<double>> acc_carrier_phase_error_sweep;
+    std::vector<std::vector<double>> trk_timestamp_s_sweep;
+
+    if (FLAGS_CN0_dBHz_start == FLAGS_CN0_dBHz_stop)
         {
-            generate_signal();
+            generator_CN0_values.push_back(FLAGS_CN0_dBHz_start);
+        }
+    else
+        {
+            for (double cn0 = FLAGS_CN0_dBHz_start; cn0 > FLAGS_CN0_dBHz_stop; cn0 = cn0 - FLAGS_CN0_dB_step)
+                {
+                    generator_CN0_values.push_back(cn0);
+                }
         }
 
-    std::chrono::time_point<std::chrono::system_clock> start, end;
-
-    configure_receiver();
-
-    // open true observables log file written by the simulator
+    int test_satellite_PRN = 0;
+    double acq_delay_samples = 0.0;
+    double acq_doppler_hz = 0.0;
     tracking_true_obs_reader true_obs_data;
-    int test_satellite_PRN = FLAGS_test_satellite_PRN;
-    std::cout << "Testing satellite PRN=" << test_satellite_PRN << std::endl;
-    std::string true_obs_file = std::string("./gps_l1_ca_obs_prn");
-    true_obs_file.append(std::to_string(test_satellite_PRN));
-    true_obs_file.append(".dat");
-    ASSERT_EQ(true_obs_data.open_obs_file(true_obs_file), true) << "Failure opening true observables file";
 
-    top_block = gr::make_top_block("Tracking test");
 
-    std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking_1C", implementation, 1, 1);
-    std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);  //std::make_shared<GpsL1CaDllPllCAidTracking>(config.get(), "Tracking_1C", 1, 1);
-
-    boost::shared_ptr<GpsL1CADllPllTrackingTest_msg_rx> msg_rx = GpsL1CADllPllTrackingTest_msg_rx_make();
-
-    // load acquisition data based on the first epoch of the true observations
-    ASSERT_EQ(true_obs_data.read_binary_obs(), true)
-        << "Failure reading true tracking dump file." << std::endl
-        << "Maybe sat PRN #" + std::to_string(FLAGS_test_satellite_PRN) +
-               " is not available?";
-
-    // restart the epoch counter
-    true_obs_data.restart();
-
-    std::cout << "Initial Doppler [Hz]=" << true_obs_data.doppler_l1_hz << " Initial code delay [Chips]=" << true_obs_data.prn_delay_chips << std::endl;
-    gnss_synchro.Acq_delay_samples = (GPS_L1_CA_CODE_LENGTH_CHIPS - true_obs_data.prn_delay_chips / GPS_L1_CA_CODE_LENGTH_CHIPS) * static_cast<double>(baseband_sampling_freq) * GPS_L1_CA_CODE_PERIOD;
-    gnss_synchro.Acq_doppler_hz = true_obs_data.doppler_l1_hz;
-    gnss_synchro.Acq_samplestamp_samples = 0;
-
-    ASSERT_NO_THROW({
-        tracking->set_channel(gnss_synchro.Channel_ID);
-    }) << "Failure setting channel.";
-
-    ASSERT_NO_THROW({
-        tracking->set_gnss_synchro(&gnss_synchro);
-    }) << "Failure setting gnss_synchro.";
-
-    ASSERT_NO_THROW({
-        tracking->connect(top_block);
-    }) << "Failure connecting tracking to the top_block.";
-
-    ASSERT_NO_THROW({
-        std::string file = "./" + filename_raw_data;
-        const char* file_name = file.c_str();
-        gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(int8_t), file_name, false);
-        gr::blocks::interleaved_char_to_complex::sptr gr_interleaved_char_to_complex = gr::blocks::interleaved_char_to_complex::make();
-        gr::blocks::null_sink::sptr sink = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
-        top_block->connect(file_source, 0, gr_interleaved_char_to_complex, 0);
-        top_block->connect(gr_interleaved_char_to_complex, 0, tracking->get_left_block(), 0);
-        top_block->connect(tracking->get_right_block(), 0, sink, 0);
-        top_block->msg_connect(tracking->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    }) << "Failure connecting the blocks of tracking test.";
-
-    tracking->start_tracking();
-
-    EXPECT_NO_THROW({
-        start = std::chrono::system_clock::now();
-        top_block->run();  // Start threads and wait
-        end = std::chrono::system_clock::now();
-    }) << "Failure running the top_block.";
-
-    // check results
-    // load the true values
-    long int nepoch = true_obs_data.num_epochs();
-    std::cout << "True observation epochs=" << nepoch << std::endl;
-
-    arma::vec true_timestamp_s = arma::zeros(nepoch, 1);
-    arma::vec true_acc_carrier_phase_cycles = arma::zeros(nepoch, 1);
-    arma::vec true_Doppler_Hz = arma::zeros(nepoch, 1);
-    arma::vec true_prn_delay_chips = arma::zeros(nepoch, 1);
-    arma::vec true_tow_s = arma::zeros(nepoch, 1);
-
-    long int epoch_counter = 0;
-    while (true_obs_data.read_binary_obs())
+    //*********************************************
+    //***** STEP 3: Generate the input signal *****
+    //*********************************************
+    // use generator or use an external capture file
+    if (FLAGS_enable_external_signal_file)
         {
-            true_timestamp_s(epoch_counter) = true_obs_data.signal_timestamp_s;
-            true_acc_carrier_phase_cycles(epoch_counter) = true_obs_data.acc_carrier_phase_cycles;
-            true_Doppler_Hz(epoch_counter) = true_obs_data.doppler_l1_hz;
-            true_prn_delay_chips(epoch_counter) = true_obs_data.prn_delay_chips;
-            true_tow_s(epoch_counter) = true_obs_data.tow;
-            epoch_counter++;
+            //todo: create and configure an acquisition block and perform an acquisition to obtain the synchronization parameters
+        }
+    else
+        {
+            for (int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
+                {
+                    // Configure the signal generator
+                    configure_generator(generator_CN0_values.at(current_cn0_idx), current_cn0_idx);
+                    // Generate signal raw signal samples and observations RINEX file
+                    if (FLAGS_disable_generator == false)
+                        {
+                            generate_signal();
+                        }
+                    // open true observables log file written by the simulator
+                }
         }
 
-    //load the measured values
-    tracking_dump_reader trk_dump;
 
-    ASSERT_EQ(trk_dump.open_obs_file(std::string("./tracking_ch_0.dat")), true)
-        << "Failure opening tracking dump file";
+    //CN0 LOOP
 
-    nepoch = trk_dump.num_epochs();
-    std::cout << "Measured observation epochs=" << nepoch << std::endl;
-
-    arma::vec trk_timestamp_s = arma::zeros(nepoch, 1);
-    arma::vec trk_acc_carrier_phase_cycles = arma::zeros(nepoch, 1);
-    arma::vec trk_Doppler_Hz = arma::zeros(nepoch, 1);
-    arma::vec trk_prn_delay_chips = arma::zeros(nepoch, 1);
-
-    std::vector<double> prompt;
-    std::vector<double> early;
-    std::vector<double> late;
-    std::vector<double> promptI;
-    std::vector<double> promptQ;
-    std::vector<double> CN0_dBHz;
-
-    epoch_counter = 0;
-    while (trk_dump.read_binary_obs())
+    for (int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
         {
-            trk_timestamp_s(epoch_counter) = static_cast<double>(trk_dump.PRN_start_sample_count) / static_cast<double>(baseband_sampling_freq);
-            trk_acc_carrier_phase_cycles(epoch_counter) = trk_dump.acc_carrier_phase_rad / GPS_TWO_PI;
-            trk_Doppler_Hz(epoch_counter) = trk_dump.carrier_doppler_hz;
+            //******************************************************************************************
+            //***** Obtain the initial signal sinchronization parameters (emulating an acquisition) ****
+            //******************************************************************************************
+            if (!FLAGS_enable_external_signal_file)
+                {
+                    test_satellite_PRN = FLAGS_test_satellite_PRN;
+                    std::string true_obs_file = std::string("./gps_l1_ca_obs_prn");
+                    true_obs_file.append(std::to_string(test_satellite_PRN));
+                    true_obs_file.append(".dat");
+                    true_obs_data.close_obs_file();
+                    ASSERT_EQ(true_obs_data.open_obs_file(true_obs_file), true) << "Failure opening true observables file";
+                    // load acquisition data based on the first epoch of the true observations
+                    ASSERT_EQ(true_obs_data.read_binary_obs(), true)
+                        << "Failure reading true tracking dump file." << std::endl
+                        << "Maybe sat PRN #" + std::to_string(FLAGS_test_satellite_PRN) +
+                               " is not available?";
+                    std::cout << "Testing satellite PRN=" << test_satellite_PRN << std::endl;
+                    std::cout << "Initial Doppler [Hz]=" << true_obs_data.doppler_l1_hz << " Initial code delay [Chips]=" << true_obs_data.prn_delay_chips << std::endl;
+                    acq_doppler_hz = true_obs_data.doppler_l1_hz;
+                    acq_delay_samples = (GPS_L1_CA_CODE_LENGTH_CHIPS - true_obs_data.prn_delay_chips / GPS_L1_CA_CODE_LENGTH_CHIPS) * static_cast<double>(baseband_sampling_freq) * GPS_L1_CA_CODE_PERIOD;
+                    // restart the epoch counter
+                    true_obs_data.restart();
+                }
 
-            double delay_chips = GPS_L1_CA_CODE_LENGTH_CHIPS - GPS_L1_CA_CODE_LENGTH_CHIPS * (fmod((static_cast<double>(trk_dump.PRN_start_sample_count) + trk_dump.aux1) / static_cast<double>(baseband_sampling_freq), 1.0e-3) / 1.0e-3);
 
-            trk_prn_delay_chips(epoch_counter) = delay_chips;
-            epoch_counter++;
-            prompt.push_back(trk_dump.abs_P);
-            early.push_back(trk_dump.abs_E);
-            late.push_back(trk_dump.abs_L);
-            promptI.push_back(trk_dump.prompt_I);
-            promptQ.push_back(trk_dump.prompt_Q);
-            CN0_dBHz.push_back(trk_dump.CN0_SNV_dB_Hz);
-        }
+            //***** STEP 4: Configure the signal tracking parameters *****
+            //************************************************************
+            std::chrono::time_point<std::chrono::system_clock> start, end;
+            configure_receiver();
 
-    // Align initial measurements and cut the tracking pull-in transitory
-    double pull_in_offset_s = 1.0;
-    arma::uvec initial_meas_point = arma::find(trk_timestamp_s >= (true_timestamp_s(0) + pull_in_offset_s), 1, "first");
+            top_block = gr::make_top_block("Tracking test");
 
-    trk_timestamp_s = trk_timestamp_s.subvec(initial_meas_point(0), trk_timestamp_s.size() - 1);
-    trk_acc_carrier_phase_cycles = trk_acc_carrier_phase_cycles.subvec(initial_meas_point(0), trk_acc_carrier_phase_cycles.size() - 1);
-    trk_Doppler_Hz = trk_Doppler_Hz.subvec(initial_meas_point(0), trk_Doppler_Hz.size() - 1);
-    trk_prn_delay_chips = trk_prn_delay_chips.subvec(initial_meas_point(0), trk_prn_delay_chips.size() - 1);
+            std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking_1C", implementation, 1, 1);
+            std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
 
-    check_results_doppler(true_timestamp_s, true_Doppler_Hz, trk_timestamp_s, trk_Doppler_Hz);
-    check_results_codephase(true_timestamp_s, true_prn_delay_chips, trk_timestamp_s, trk_prn_delay_chips);
-    check_results_acc_carrier_phase(true_timestamp_s, true_acc_carrier_phase_cycles, trk_timestamp_s, trk_acc_carrier_phase_cycles);
+            boost::shared_ptr<GpsL1CADllPllTrackingTest_msg_rx> msg_rx = GpsL1CADllPllTrackingTest_msg_rx_make();
 
-    std::chrono::duration<double> elapsed_seconds = end - start;
-    std::cout << "Signal tracking completed in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+            gnss_synchro.Acq_delay_samples = acq_delay_samples;
+            gnss_synchro.Acq_doppler_hz = acq_doppler_hz;
+            gnss_synchro.Acq_samplestamp_samples = 0;
 
+            ASSERT_NO_THROW({
+                tracking->set_channel(gnss_synchro.Channel_ID);
+            }) << "Failure setting channel.";
+
+            ASSERT_NO_THROW({
+                tracking->set_gnss_synchro(&gnss_synchro);
+            }) << "Failure setting gnss_synchro.";
+
+            ASSERT_NO_THROW({
+                tracking->connect(top_block);
+            }) << "Failure connecting tracking to the top_block.";
+
+            ASSERT_NO_THROW({
+                std::string file = "./" + filename_raw_data + std::to_string(current_cn0_idx);
+                const char* file_name = file.c_str();
+                gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(int8_t), file_name, false);
+                gr::blocks::interleaved_char_to_complex::sptr gr_interleaved_char_to_complex = gr::blocks::interleaved_char_to_complex::make();
+                gr::blocks::null_sink::sptr sink = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
+                top_block->connect(file_source, 0, gr_interleaved_char_to_complex, 0);
+                top_block->connect(gr_interleaved_char_to_complex, 0, tracking->get_left_block(), 0);
+                top_block->connect(tracking->get_right_block(), 0, sink, 0);
+                top_block->msg_connect(tracking->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
+            }) << "Failure connecting the blocks of tracking test.";
+
+
+            //********************************************************************
+            //***** STEP 5: Perform the signal tracking and read the results *****
+            //********************************************************************
+            tracking->start_tracking();
+
+            EXPECT_NO_THROW({
+                start = std::chrono::system_clock::now();
+                top_block->run();  // Start threads and wait
+                end = std::chrono::system_clock::now();
+            }) << "Failure running the top_block.";
+
+            std::chrono::duration<double> elapsed_seconds = end - start;
+            std::cout << "Signal tracking completed in " << elapsed_seconds.count() << " seconds" << std::endl;
+
+            //check results
+            //load the measured values
+            tracking_dump_reader trk_dump;
+            ASSERT_EQ(trk_dump.open_obs_file(std::string("./tracking_ch_0.dat")), true)
+                << "Failure opening tracking dump file";
+
+            long int n_measured_epochs = trk_dump.num_epochs();
+            std::cout << "Measured observation epochs=" << n_measured_epochs << std::endl;
+
+            arma::vec trk_timestamp_s = arma::zeros(n_measured_epochs, 1);
+            arma::vec trk_acc_carrier_phase_cycles = arma::zeros(n_measured_epochs, 1);
+            arma::vec trk_Doppler_Hz = arma::zeros(n_measured_epochs, 1);
+            arma::vec trk_prn_delay_chips = arma::zeros(n_measured_epochs, 1);
+
+            long int epoch_counter = 0;
+
+            std::vector<double> prompt;
+            std::vector<double> early;
+            std::vector<double> late;
+            std::vector<double> promptI;
+            std::vector<double> promptQ;
+            std::vector<double> CN0_dBHz;
+            while (trk_dump.read_binary_obs())
+                {
+                    trk_timestamp_s(epoch_counter) = static_cast<double>(trk_dump.PRN_start_sample_count) / static_cast<double>(baseband_sampling_freq);
+                    trk_acc_carrier_phase_cycles(epoch_counter) = trk_dump.acc_carrier_phase_rad / GPS_TWO_PI;
+                    trk_Doppler_Hz(epoch_counter) = trk_dump.carrier_doppler_hz;
+                    double delay_chips = GPS_L1_CA_CODE_LENGTH_CHIPS - GPS_L1_CA_CODE_LENGTH_CHIPS * (fmod((static_cast<double>(trk_dump.PRN_start_sample_count) + trk_dump.aux1) / static_cast<double>(baseband_sampling_freq), 1.0e-3) / 1.0e-3);
+
+                    trk_prn_delay_chips(epoch_counter) = delay_chips;
+                    epoch_counter++;
+
+
+                    prompt.push_back(trk_dump.abs_P);
+                    early.push_back(trk_dump.abs_E);
+                    late.push_back(trk_dump.abs_L);
+                    promptI.push_back(trk_dump.prompt_I);
+                    promptQ.push_back(trk_dump.prompt_Q);
+                    CN0_dBHz.push_back(trk_dump.CN0_SNV_dB_Hz);
+                }
+
+            prompt_sweep.push_back(prompt);
+            early_sweep.push_back(early);
+            late_sweep.push_back(late);
+            promptI_sweep.push_back(promptI);
+            promptQ_sweep.push_back(promptQ);
+            CN0_dBHz_sweep.push_back(CN0_dBHz);
+
+            //***********************************************************
+            //***** STEP 6: Compare with true values (if available) *****
+            //***********************************************************
+            if (!FLAGS_enable_external_signal_file)
+                {
+                    // load the true values
+                    long int n_true_epochs = true_obs_data.num_epochs();
+                    std::cout << "True observation epochs=" << n_true_epochs << std::endl;
+
+                    arma::vec true_timestamp_s = arma::zeros(n_true_epochs, 1);
+                    arma::vec true_acc_carrier_phase_cycles = arma::zeros(n_true_epochs, 1);
+                    arma::vec true_Doppler_Hz = arma::zeros(n_true_epochs, 1);
+                    arma::vec true_prn_delay_chips = arma::zeros(n_true_epochs, 1);
+                    arma::vec true_tow_s = arma::zeros(n_true_epochs, 1);
+
+                    long int epoch_counter = 0;
+                    while (true_obs_data.read_binary_obs())
+                        {
+                            true_timestamp_s(epoch_counter) = true_obs_data.signal_timestamp_s;
+                            true_acc_carrier_phase_cycles(epoch_counter) = true_obs_data.acc_carrier_phase_cycles;
+                            true_Doppler_Hz(epoch_counter) = true_obs_data.doppler_l1_hz;
+                            true_prn_delay_chips(epoch_counter) = true_obs_data.prn_delay_chips;
+                            true_tow_s(epoch_counter) = true_obs_data.tow;
+                            epoch_counter++;
+                        }
+                    // Align initial measurements and cut the tracking pull-in transitory
+                    double pull_in_offset_s = 1.0;
+                    arma::uvec initial_meas_point = arma::find(trk_timestamp_s >= (true_timestamp_s(0) + pull_in_offset_s), 1, "first");
+
+                    trk_timestamp_s = trk_timestamp_s.subvec(initial_meas_point(0), trk_timestamp_s.size() - 1);
+                    trk_acc_carrier_phase_cycles = trk_acc_carrier_phase_cycles.subvec(initial_meas_point(0), trk_acc_carrier_phase_cycles.size() - 1);
+                    trk_Doppler_Hz = trk_Doppler_Hz.subvec(initial_meas_point(0), trk_Doppler_Hz.size() - 1);
+                    trk_prn_delay_chips = trk_prn_delay_chips.subvec(initial_meas_point(0), trk_prn_delay_chips.size() - 1);
+
+                    std::vector<double> doppler_error_hz;
+                    std::vector<double> code_phase_error_chips;
+                    std::vector<double> acc_carrier_phase_hz;
+                    doppler_error_hz = check_results_doppler(true_timestamp_s, true_Doppler_Hz, trk_timestamp_s, trk_Doppler_Hz);
+                    code_phase_error_chips = check_results_codephase(true_timestamp_s, true_prn_delay_chips, trk_timestamp_s, trk_prn_delay_chips);
+                    acc_carrier_phase_hz = check_results_acc_carrier_phase(true_timestamp_s, true_acc_carrier_phase_cycles, trk_timestamp_s, trk_acc_carrier_phase_cycles);
+                    //save tracking measurement timestamps to std::vector
+                    std::vector<double> vector_trk_timestamp_s(trk_timestamp_s.colptr(0), trk_timestamp_s.colptr(0) + trk_timestamp_s.n_rows);
+                    trk_timestamp_s_sweep.push_back(vector_trk_timestamp_s);
+
+                    doppler_error_sweep.push_back(doppler_error_hz);
+                    code_phase_error_sweep.push_back(code_phase_error_chips);
+                    acc_carrier_phase_error_sweep.push_back(acc_carrier_phase_hz);
+                }
+
+        }  //CN0 LOOP
+
+    //********************************
+    //***** STEP 7: Plot results *****
+    //********************************
     if (FLAGS_plot_gps_l1_tracking_test == true)
         {
             const std::string gnuplot_executable(FLAGS_gnuplot_executable);
@@ -526,49 +647,106 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                             boost::filesystem::path dir = p.parent_path();
                             std::string gnuplot_path = dir.native();
                             Gnuplot::set_GNUPlotPath(gnuplot_path);
-
                             std::vector<double> timevec;
-                            double t = 0.0;
-                            for (auto it = prompt.begin(); it != prompt.end(); it++)
-                                {
-                                    timevec.push_back(t);
-                                    t = t + GPS_L1_CA_CODE_PERIOD;
-                                }
-                            Gnuplot g1("linespoints");
-                            g1.set_title("GPS L1 C/A signal tracking correlators' output (satellite PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
-                            g1.set_grid();
-                            g1.set_xlabel("Time [s]");
-                            g1.set_ylabel("Correlators' output");
-                            g1.cmd("set key box opaque");
                             unsigned int decimate = static_cast<unsigned int>(FLAGS_plot_decimate);
-                            g1.plot_xy(timevec, prompt, "Prompt", decimate);
-                            g1.plot_xy(timevec, early, "Early", decimate);
-                            g1.plot_xy(timevec, late, "Late", decimate);
-                            g1.savetops("Correlators_outputs");
-                            g1.savetopdf("Correlators_outputs", 18);
-                            g1.showonscreen();  // window output
-
-                            Gnuplot g2("points");
-                            g2.set_title("Constellation diagram (satellite PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
-                            g2.set_grid();
-                            g2.set_xlabel("Inphase");
-                            g2.set_ylabel("Quadrature");
-                            g2.cmd("set size ratio -1");
-                            g2.plot_xy(promptI, promptQ);
-                            g2.savetops("Constellation");
-                            g2.savetopdf("Constellation", 18);
-                            g2.showonscreen();  // window output
-
+                            for (int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
+                                {
+                                    timevec.clear();
+                                    //todo: timevector MUST BE READED from the trk output file
+                                    double t = 0.0;
+                                    for (auto it = prompt_sweep.at(current_cn0_idx).begin(); it != prompt_sweep.at(current_cn0_idx).end(); it++)
+                                        {
+                                            timevec.push_back(t);
+                                            t = t + GPS_L1_CA_CODE_PERIOD;
+                                        }
+                                    Gnuplot g1("linespoints");
+                                    g1.set_title("[" + std::to_string(generator_CN0_values.at(current_cn0_idx)) + " dB-Hz ] GPS L1 C/A signal tracking correlators' output (satellite PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                                    g1.set_grid();
+                                    g1.set_xlabel("Time [s]");
+                                    g1.set_ylabel("Correlators' output");
+                                    g1.cmd("set key box opaque");
+                                    g1.plot_xy(timevec, prompt_sweep.at(current_cn0_idx), "Prompt", decimate);
+                                    g1.plot_xy(timevec, early_sweep.at(current_cn0_idx), "Early", decimate);
+                                    g1.plot_xy(timevec, late_sweep.at(current_cn0_idx), "Late", decimate);
+                                    g1.savetops("Correlators_outputs");
+                                    g1.savetopdf("Correlators_outputs", 18);
+                                    g1.showonscreen();  // window output
+                                    Gnuplot g2("points");
+                                    g2.set_title("[" + std::to_string(generator_CN0_values.at(current_cn0_idx)) + " dB-Hz ] Constellation diagram (satellite PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                                    g2.set_grid();
+                                    g2.set_xlabel("Inphase");
+                                    g2.set_ylabel("Quadrature");
+                                    g2.cmd("set size ratio -1");
+                                    g2.plot_xy(promptI_sweep.at(current_cn0_idx), promptQ_sweep.at(current_cn0_idx));
+                                    g2.savetops("Constellation");
+                                    g2.savetopdf("Constellation", 18);
+                                    g2.showonscreen();  // window output
+                                }
                             Gnuplot g3("linespoints");
                             g3.set_title("GPS L1 C/A tracking CN0 output (satellite PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
                             g3.set_grid();
                             g3.set_xlabel("Time [s]");
                             g3.set_ylabel("Reported CN0 [dB-Hz]");
                             g3.cmd("set key box opaque");
-                            g3.plot_xy(timevec, CN0_dBHz, "Prompt", decimate);
+                            for (int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
+                                {
+                                    g3.plot_xy(timevec, CN0_dBHz_sweep.at(current_cn0_idx),
+                                        std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))) + "[dB-Hz]", decimate);
+                                }
+                            g3.set_legend();
                             g3.savetops("CN0_output");
                             g3.savetopdf("CN0_output", 18);
                             g3.showonscreen();  // window output
+
+                            Gnuplot g4("points");
+                            g4.set_title("Doppler error (satellite PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                            g4.set_grid();
+                            g4.set_xlabel("Time [s]");
+                            g4.set_ylabel("Dopper error [Hz]");
+                            g4.cmd("set key box opaque");
+                            for (int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
+                                {
+                                    g4.plot_xy(trk_timestamp_s_sweep.at(current_cn0_idx), doppler_error_sweep.at(current_cn0_idx),
+                                        std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))) + "[dB-Hz]", decimate);
+                                }
+                            g4.set_legend();
+                            g4.savetops("Doppler_error_output");
+                            g4.savetopdf("Doppler_error_output", 18);
+                            g4.showonscreen();  // window output
+
+                            Gnuplot g5("points");
+                            g5.set_title("Code delay error (satellite PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                            g5.set_grid();
+                            g5.set_xlabel("Time [s]");
+                            g5.set_ylabel("Code delay error [Chips]");
+                            g5.cmd("set key box opaque");
+
+                            for (int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
+                                {
+                                    g5.plot_xy(trk_timestamp_s_sweep.at(current_cn0_idx), code_phase_error_sweep.at(current_cn0_idx),
+                                        std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))) + "[dB-Hz]", decimate);
+                                }
+                            g5.set_legend();
+                            g5.savetops("Code_error_output");
+                            g5.savetopdf("Code_error_output", 18);
+                            g5.showonscreen();  // window output
+
+                            Gnuplot g6("points");
+                            g6.set_title("Accumulated carrier phase error (satellite PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                            g6.set_grid();
+                            g6.set_xlabel("Time [s]");
+                            g6.set_ylabel("Accumulated carrier phase error [Cycles]");
+                            g6.cmd("set key box opaque");
+
+                            for (int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
+                                {
+                                    g6.plot_xy(trk_timestamp_s_sweep.at(current_cn0_idx), acc_carrier_phase_error_sweep.at(current_cn0_idx),
+                                        std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))) + "[dB-Hz]", decimate);
+                                }
+                            g6.set_legend();
+                            g6.savetops("Carrier_phase_error_output");
+                            g6.savetopdf("Carrier_phase_error_output", 18);
+                            g6.showonscreen();  // window output
                         }
                     catch (const GnuplotException& ge)
                         {

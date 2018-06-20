@@ -45,15 +45,15 @@
 
 using google::LogMessage;
 
-pcps_acquisition_sptr pcps_make_acquisition(pcpsconf_t conf_)
+pcps_acquisition_sptr pcps_make_acquisition(const Acq_Conf& conf_)
 {
     return pcps_acquisition_sptr(new pcps_acquisition(conf_));
 }
 
 
-pcps_acquisition::pcps_acquisition(pcpsconf_t conf_) : gr::block("pcps_acquisition",
-                                                           gr::io_signature::make(1, 1, conf_.it_size * conf_.sampled_ms * conf_.samples_per_ms * (conf_.bit_transition_flag ? 2 : 1)),
-                                                           gr::io_signature::make(0, 0, conf_.it_size * conf_.sampled_ms * conf_.samples_per_ms * (conf_.bit_transition_flag ? 2 : 1)))
+pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acquisition",
+                                                                gr::io_signature::make(1, 1, conf_.it_size * conf_.sampled_ms * conf_.samples_per_ms * (conf_.bit_transition_flag ? 2 : 1)),
+                                                                gr::io_signature::make(0, 0, conf_.it_size * conf_.sampled_ms * conf_.samples_per_ms * (conf_.bit_transition_flag ? 2 : 1)))
 {
     this->message_port_register_out(pmt::mp("events"));
 

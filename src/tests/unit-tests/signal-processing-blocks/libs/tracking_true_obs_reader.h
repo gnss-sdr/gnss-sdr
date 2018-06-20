@@ -43,6 +43,7 @@ public:
     bool restart();
     long int num_epochs();
     bool open_obs_file(std::string out_file);
+    void close_obs_file();
     bool d_dump;
 
     double signal_timestamp_s;

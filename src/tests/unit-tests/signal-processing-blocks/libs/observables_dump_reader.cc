@@ -112,6 +112,13 @@ bool observables_dump_reader::open_obs_file(std::string out_file)
         }
 }
 
+void observables_dump_reader::close_obs_file()
+{
+    if (d_dump_file.is_open() == false)
+        {
+            d_dump_file.close();
+        }
+}
 
 observables_dump_reader::observables_dump_reader(int n_channels_)
 {

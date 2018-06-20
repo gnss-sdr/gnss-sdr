@@ -93,6 +93,8 @@ private:
 
     void send_positive_acquisition();
 
+    void dump_results(unsigned int doppler_index, int effective_fft_size);
+
     Acq_Conf acq_parameters;
     bool d_active;
     bool d_worker_active;

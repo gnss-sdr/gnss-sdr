@@ -462,11 +462,11 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
 
                                             dims[0] = static_cast<size_t>(1);
                                             dims[1] = static_cast<size_t>(1);
-                                            matvar = Mat_VarCreate("doppler_max", MAT_C_SINGLE, MAT_T_UINT32, 1, dims, &acq_parameters.doppler_max, 0);
+                                            matvar = Mat_VarCreate("doppler_max", MAT_C_UINT32, MAT_T_UINT32, 1, dims, &acq_parameters.doppler_max, 0);
                                             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
                                             Mat_VarFree(matvar);
 
-                                            matvar = Mat_VarCreate("doppler_step", MAT_C_SINGLE, MAT_T_UINT32, 1, dims, &d_doppler_step, 0);
+                                            matvar = Mat_VarCreate("doppler_step", MAT_C_UINT32, MAT_T_UINT32, 1, dims, &d_doppler_step, 0);
                                             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
                                             Mat_VarFree(matvar);
 

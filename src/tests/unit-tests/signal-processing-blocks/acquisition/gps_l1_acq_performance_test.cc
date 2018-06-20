@@ -38,59 +38,60 @@
 DEFINE_string(config_file_ptest, std::string(""), "File containing the configuration parameters for the position test.");
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
-//class AcqPerfTest_msg_rx;
+class AcqPerfTest_msg_rx;
 //
-//typedef boost::shared_ptr<AcqPerfTest_msg_rx> AcqPerfTest_msg_rx_sptr;
+typedef boost::shared_ptr<AcqPerfTest_msg_rx> AcqPerfTest_msg_rx_sptr;
 //
-//AcqPerfTest_msg_rx_sptr AcqPerfTest_msg_rx_make();
+AcqPerfTest_msg_rx_sptr AcqPerfTest_msg_rx_make();
 //
-//class AcqPerfTest_msg_rx : public gr::block
-//{
-//private:
-//    friend AcqPerfTest_msg_rx_sptr AcqPerfTest_msg_rx_make();
-//    void msg_handler_events(pmt::pmt_t msg);
-//    AcqPerfTest_msg_rx();
-//
-//public:
-//    int rx_message;
-//    ~AcqPerfTest_msg_rx();  //!< Default destructor
-//};
-//
-//
-//AcqPerfTest_msg_rx_sptr AcqPerfTest_msg_rx_make()
-//{
-//    return AcqPerfTest_msg_rx_sptr(new AcqPerfTest_msg_rx());
-//}
-//
-//
-//void AcqPerfTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
-//{
-//    try
-//        {
-//            long int message = pmt::to_long(msg);
-//            rx_message = message;
-//        }
-//    catch (boost::bad_any_cast& e)
-//        {
-//            LOG(WARNING) << "msg_handler_telemetry Bad any cast!";
-//            rx_message = 0;
-//        }
-//}
-//
-//
-//AcqPerfTest_msg_rx::AcqPerfTest_msg_rx() : gr::block("AcqPerfTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
-//{
-//    this->message_port_register_in(pmt::mp("events"));
-//    this->set_msg_handler(pmt::mp("events"), boost::bind(&AcqPerfTest_msg_rx::msg_handler_events, this, _1));
-//    rx_message = 0;
-//}
-//
-//
-//AcqPerfTest_msg_rx::~AcqPerfTest_msg_rx()
-//{
-//}
-//
-//// -----------------------------------------
+class AcqPerfTest_msg_rx : public gr::block
+{
+private:
+    friend AcqPerfTest_msg_rx_sptr AcqPerfTest_msg_rx_make();
+    void msg_handler_events(pmt::pmt_t msg);
+    AcqPerfTest_msg_rx();
+
+public:
+    int rx_message;
+    ~AcqPerfTest_msg_rx();  //!< Default destructor
+};
+
+
+AcqPerfTest_msg_rx_sptr AcqPerfTest_msg_rx_make()
+{
+    return AcqPerfTest_msg_rx_sptr(new AcqPerfTest_msg_rx());
+}
+
+
+void AcqPerfTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
+{
+    try
+        {
+            long int message = pmt::to_long(msg);
+            rx_message = message;
+        }
+    catch (boost::bad_any_cast& e)
+        {
+            LOG(WARNING) << "msg_handler_telemetry Bad any cast!";
+            rx_message = 0;
+        }
+    std::cout << "Received message:" << rx_message << std::endl;
+}
+
+
+AcqPerfTest_msg_rx::AcqPerfTest_msg_rx() : gr::block("AcqPerfTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
+{
+    this->message_port_register_in(pmt::mp("events"));
+    this->set_msg_handler(pmt::mp("events"), boost::bind(&AcqPerfTest_msg_rx::msg_handler_events, this, _1));
+    rx_message = 0;
+}
+
+
+AcqPerfTest_msg_rx::~AcqPerfTest_msg_rx()
+{
+}
+
+// -----------------------------------------
 
 
 class AcquisitionPerformanceTest : public ::testing::Test
@@ -109,8 +110,8 @@ protected:
     {
     }
 
-    std::vector<double> cn0_ = {41.0, 42.0, 43.0};
-    int N_iterations = 2;
+    std::vector<double> cn0_ = {38.0, 40.0, 43.0};
+    int N_iterations = 1;
     void init();
     //void plot_grid();
 
@@ -118,6 +119,7 @@ protected:
     int generate_signal();
     int configure_receiver(double cn0, unsigned int iter);
     int run_receiver();
+    int run_receiver2();
     void check_results();
     gr::top_block_sptr top_block;
     Gnss_Synchro gnss_synchro;
@@ -125,6 +127,7 @@ protected:
     unsigned int doppler_max;
     unsigned int doppler_step;
     std::string implementation = "GPS_L1_CA_PCPS_Acquisition";
+    boost::shared_ptr<GpsL1CaPcpsAcquisition> acquisition;
     std::shared_ptr<InMemoryConfiguration> config;
     std::shared_ptr<FileConfiguration> config_f;
 
@@ -325,7 +328,7 @@ int AcquisitionPerformanceTest::configure_receiver(double cn0, unsigned int iter
 
             config->set_property("Acquisition_1C.max_dwells", std::to_string(1));
 
-            config->set_property("Acquisition_1C.repeat_satellite", "false");
+            config->set_property("Acquisition_1C.repeat_satellite", "true");
 
             config->set_property("Acquisition_1C.blocking", "true");
             config->set_property("Acquisition_1C.make_two_steps", "false");
@@ -355,6 +358,9 @@ int AcquisitionPerformanceTest::configure_receiver(double cn0, unsigned int iter
             config->set_property("Tracking_1C.pll_bw_narrow_hz", std::to_string(pll_bw_narrow_hz));
             config->set_property("Tracking_1C.dll_bw_narrow_hz", std::to_string(dll_bw_narrow_hz));
             config->set_property("Tracking_1C.extend_correlation_symbols", std::to_string(extend_correlation_ms));
+            config->set_property("Tracking_1C.cn0_min", std::to_string(50));
+            config->set_property("Tracking_1C.max_lock_fail", std::to_string(1));
+            config->set_property("Tracking_1C.cn0_samples", std::to_string(1));
 
             // Set Telemetry
             config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
@@ -395,6 +401,58 @@ int AcquisitionPerformanceTest::configure_receiver(double cn0, unsigned int iter
 
 
 int AcquisitionPerformanceTest::run_receiver()
+{
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds(0);
+    std::string file = "./" + filename_raw_data;  //+ std::to_string(current_cn0_idx);
+    const char* file_name = file.c_str();
+    gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(int8_t), file_name, false);
+
+    for (unsigned k = 0; k < 2; k++)
+        {
+            gr::top_block_sptr top_block_ = gr::make_top_block("Acquisition test");
+            boost::shared_ptr<AcqPerfTest_msg_rx> msg_rx = AcqPerfTest_msg_rx_make();
+
+            gnss_synchro = Gnss_Synchro();
+            init();
+            auto acquisition_ = boost::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition_1C", 1, 0);
+
+            //acquisition->connect(top_block);
+            acquisition_->set_gnss_synchro(&gnss_synchro);
+
+            acquisition_->connect(top_block_);
+            acquisition_->set_local_code();
+            acquisition_->set_state(1);  // Ensure that acquisition starts at the first sample
+            acquisition_->init();
+            //file_source->seek(static_cast<long>(100 * k), SEEK_SET);
+
+            if (not file_source->seek(static_cast<long>(100 * k), SEEK_SET))
+                {
+                    std::cout << "Error skipping " << k << std::endl;
+                }
+            gr::blocks::interleaved_char_to_complex::sptr gr_interleaved_char_to_complex = gr::blocks::interleaved_char_to_complex::make();
+            top_block_->connect(file_source, 0, gr_interleaved_char_to_complex, 0);
+            top_block_->connect(gr_interleaved_char_to_complex, 0, acquisition_->get_left_block(), 0);
+            top_block_->msg_connect(acquisition_->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
+
+
+            start = std::chrono::system_clock::now();
+            top_block_->run();  // Start threads and wait
+            end = std::chrono::system_clock::now();
+            //file_source->close();
+            elapsed_seconds = end - start;
+            std::cout << "Acq_delay_samples: " << gnss_synchro.Acq_delay_samples << std::endl;
+            std::cout << "Acq_doppler_hz: " << gnss_synchro.Acq_doppler_hz << std::endl;
+            std::cout << "Acq_samplestamp_samples: " << gnss_synchro.Acq_samplestamp_samples << std::endl
+                      << std::endl;
+        }
+
+    //std::cout << "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
+
+    return 0;
+}
+
+int AcquisitionPerformanceTest::run_receiver2()
 {
     std::shared_ptr<ControlThread> control_thread;
     if (FLAGS_config_file_ptest.empty())
@@ -442,7 +500,7 @@ TEST_F(AcquisitionPerformanceTest, PdvsCn0)
                     configure_receiver(*it, iter);
 
                     // Run it
-                    run_receiver();
+                    run_receiver2();
 
                     // Read and store reference data and results
                 }

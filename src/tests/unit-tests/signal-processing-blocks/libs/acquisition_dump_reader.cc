@@ -73,6 +73,7 @@ bool acquisition_dump_reader::read_binary_acq()
             Mat_Close(matfile);
             return false;
         }
+
     std::vector<std::vector<float> >::iterator it1;
     std::vector<float>::iterator it2;
     float* aux = static_cast<float*>(var_->data);
@@ -93,7 +94,13 @@ bool acquisition_dump_reader::read_binary_acq()
 }
 
 
-acquisition_dump_reader::acquisition_dump_reader(const std::string& basename, unsigned int sat, unsigned int doppler_max, unsigned int doppler_step, unsigned int samples_per_code)
+acquisition_dump_reader::acquisition_dump_reader(const std::string& basename,
+    unsigned int sat,
+    unsigned int doppler_max,
+    unsigned int doppler_step,
+    unsigned int samples_per_code,
+    int channel,
+    int execution)
 {
     d_basename = basename;
     d_sat = sat;
@@ -103,7 +110,7 @@ acquisition_dump_reader::acquisition_dump_reader(const std::string& basename, un
     d_num_doppler_bins = static_cast<unsigned int>(ceil(static_cast<double>(static_cast<int>(d_doppler_max) - static_cast<int>(-d_doppler_max)) / static_cast<double>(d_doppler_step)));
     std::vector<std::vector<float> > mag_aux(d_num_doppler_bins, std::vector<float>(d_samples_per_code));
     mag = mag_aux;
-    d_dump_filename = d_basename + "_sat_" + std::to_string(d_sat) + ".mat";
+    d_dump_filename = d_basename + "_ch_" + std::to_string(channel) + "_" + std::to_string(execution) + "_sat_" + std::to_string(d_sat) + ".mat";
     for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             doppler.push_back(-static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index);

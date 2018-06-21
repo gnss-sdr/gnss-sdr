@@ -121,6 +121,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
         }
     grid_ = arma::fmat();
     d_step_two = false;
+    d_dump_number = 0;
 }
 
 
@@ -335,6 +336,51 @@ void pcps_acquisition::send_negative_acquisition()
 }
 
 
+void pcps_acquisition::dump_results(int effective_fft_size)
+{
+    d_dump_number++;
+    std::string filename = acq_parameters.dump_filename;
+    filename.append("_");
+    filename.append(1, d_gnss_synchro->System);
+    filename.append("_");
+    filename.append(1, d_gnss_synchro->Signal[0]);
+    filename.append(1, d_gnss_synchro->Signal[1]);
+    filename.append("_ch_");
+    filename.append(std::to_string(d_channel));
+    filename.append("_");
+    filename.append(std::to_string(d_dump_number));
+    filename.append("_sat_");
+    filename.append(std::to_string(d_gnss_synchro->PRN));
+    filename.append(".mat");
+
+    mat_t* matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
+    if (matfp == NULL)
+        {
+            std::cout << "Unable to create or open Acquisition dump file" << std::endl;
+            acq_parameters.dump = false;
+        }
+    else
+        {
+            size_t dims[2] = {static_cast<size_t>(effective_fft_size), static_cast<size_t>(d_num_doppler_bins)};
+            matvar_t* matvar = Mat_VarCreate("grid", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, grid_.memptr(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            dims[0] = static_cast<size_t>(1);
+            dims[1] = static_cast<size_t>(1);
+            matvar = Mat_VarCreate("doppler_max", MAT_C_UINT32, MAT_T_UINT32, 1, dims, &acq_parameters.doppler_max, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("doppler_step", MAT_C_UINT32, MAT_T_UINT32, 1, dims, &d_doppler_step, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            Mat_Close(matfp);
+        }
+}
+
+
 void pcps_acquisition::acquisition_core(unsigned long int samp_count)
 {
     gr::thread::scoped_lock lk(d_setlock);
@@ -342,7 +388,7 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
     // initialize acquisition algorithm
     uint32_t indext = 0;
     float magt = 0.0;
-    const gr_complex* in = d_data_buffer;  //Get the input samples pointer
+    const gr_complex* in = d_data_buffer;  // Get the input samples pointer
     int effective_fft_size = (acq_parameters.bit_transition_flag ? d_fft_size / 2 : d_fft_size);
     if (d_cshort)
         {
@@ -436,43 +482,6 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
                     if (acq_parameters.dump)
                         {
                             memcpy(grid_.colptr(doppler_index), d_magnitude, sizeof(float) * effective_fft_size);
-                            if (doppler_index == (d_num_doppler_bins - 1))
-                                {
-                                    std::string filename = acq_parameters.dump_filename;
-                                    filename.append("_");
-                                    filename.append(1, d_gnss_synchro->System);
-                                    filename.append("_");
-                                    filename.append(1, d_gnss_synchro->Signal[0]);
-                                    filename.append(1, d_gnss_synchro->Signal[1]);
-                                    filename.append("_sat_");
-                                    filename.append(std::to_string(d_gnss_synchro->PRN));
-                                    filename.append(".mat");
-                                    mat_t* matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
-                                    if (matfp == NULL)
-                                        {
-                                            std::cout << "Unable to create or open Acquisition dump file" << std::endl;
-                                            acq_parameters.dump = false;
-                                        }
-                                    else
-                                        {
-                                            size_t dims[2] = {static_cast<size_t>(effective_fft_size), static_cast<size_t>(d_num_doppler_bins)};
-                                            matvar_t* matvar = Mat_VarCreate("grid", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, grid_.memptr(), 0);
-                                            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
-                                            Mat_VarFree(matvar);
-
-                                            dims[0] = static_cast<size_t>(1);
-                                            dims[1] = static_cast<size_t>(1);
-                                            matvar = Mat_VarCreate("doppler_max", MAT_C_SINGLE, MAT_T_UINT32, 1, dims, &acq_parameters.doppler_max, 0);
-                                            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
-                                            Mat_VarFree(matvar);
-
-                                            matvar = Mat_VarCreate("doppler_step", MAT_C_SINGLE, MAT_T_UINT32, 1, dims, &d_doppler_step, 0);
-                                            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
-                                            Mat_VarFree(matvar);
-
-                                            Mat_Close(matfp);
-                                        }
-                                }
                         }
                 }
         }
@@ -538,7 +547,17 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
                                     d_test_statistics = d_mag / d_input_power;
                                 }
                         }
+                    // Record results to file if required
+                    if (acq_parameters.dump)
+                        {
+                            memcpy(grid_.colptr(doppler_index), d_magnitude, sizeof(float) * effective_fft_size);
+                        }
                 }
+        }
+    // Record results to file if required
+    if (acq_parameters.dump)
+        {
+            pcps_acquisition::dump_results(effective_fft_size);
         }
     lk.lock();
     if (!acq_parameters.bit_transition_flag)

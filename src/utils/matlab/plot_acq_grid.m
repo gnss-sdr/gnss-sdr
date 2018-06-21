@@ -33,6 +33,8 @@ file = 'acq';
 
 sat = 7;
 
+channel = 0;
+execution = 1;
 % Signal:
 %     1 GPS  L1
 %     2 GPS  L2M
@@ -77,7 +79,7 @@ switch(signal_type)
         system = 'R';
         signal = '1G';
 end
-filename = [path file '_' system '_' signal '_sat_' num2str(sat) '.mat'];
+filename = [path file '_' system '_' signal '_ch_' num2str(channel) '_' num2str(execution) '_sat_' num2str(sat) '.mat'];
 load(filename);
 [n_fft n_dop_bins] = size(grid);
 [d_max f_max] = find(grid == max(max(grid)));

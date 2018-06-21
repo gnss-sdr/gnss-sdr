@@ -38,13 +38,26 @@
 class acquisition_dump_reader
 {
 public:
-    acquisition_dump_reader(const std::string& basename, unsigned int sat, unsigned int doppler_max, unsigned int doppler_step, unsigned int samples_per_code);
+    acquisition_dump_reader(const std::string& basename,
+        unsigned int sat,
+        unsigned int doppler_max,
+        unsigned int doppler_step,
+        unsigned int samples_per_code,
+        int channel = 0,
+        int execution = 1);
     ~acquisition_dump_reader();
     bool read_binary_acq();
 
     std::vector<int> doppler;
     std::vector<unsigned int> samples;
     std::vector<std::vector<float> > mag;
+    float acq_doppler_hz;
+    float acq_delay_samples;
+    float test_statistic;
+    float input_power;
+    float threshold;
+    int positive_acq;
+    long unsigned int sample_counter;
 
 private:
     std::string d_basename;

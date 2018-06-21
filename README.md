@@ -6,20 +6,20 @@
 
 This program is a software-defined receiver which is able to process (that is, to perform detection, synchronization, demodulation and decoding of the navigation message, computation of observables and, finally, computation of position fixes) the following Global Navigation Satellite System's signals:
 
-In the L1 band (centered at 1575.42 MHz):
- - &#128752; GPS L1 C/A :white_check_mark:
- - &#128752; Galileo E1b/c :white_check_mark:
- - &#128752; GLONASS L1 C/A :white_check_mark:
+In the L1 band:
+ - &#128752; GPS L1 C/A  (centered at 1575.42 MHz) :white_check_mark:
+ - &#128752; Galileo E1b/c  (centered at 1575.42 MHz) :white_check_mark:
+ - &#128752; GLONASS L1 C/A (centered at 1601.72 MHz) :white_check_mark:
 
-In the L2 band (centered at 1227.60 MHz):
- - &#128752; GPS L2C :white_check_mark:
- - &#128752; GLONASS L2 C/A :white_check_mark:
+In the L2 band:
+ - &#128752; GPS L2C (centered at 1227.60 MHz) :white_check_mark:
+ - &#128752; GLONASS L2 C/A (centered at 1246 MHz) :white_check_mark:
 
-In the L5 band (centered at 1176.45 MHz):
- - &#128752; GPS L5 :white_check_mark:
- - &#128752; Galileo E5a :white_check_mark:
+In the L5 band:
+ - &#128752; GPS L5 (centered at 1176.45 MHz) :white_check_mark:
+ - &#128752; Galileo E5a (centered at 1176.45 MHz) :white_check_mark:
 
-GNSS-SDR provides interfaces for a wide range of radio frequency front-ends, generates processing outputs in standard formats, allows for the full inspection of the whole signal processing chain, and offers a framework for the development of new features. Please visit [https://gnss-sdr.org](https://gnss-sdr.org "GNSS-SDR website") for more information about this open source software-defined GNSS receiver.
+GNSS-SDR provides interfaces for a wide range of radio frequency front-ends and raw sample file formats, generates processing outputs in standard formats, allows for the full inspection of the whole signal processing chain, and offers a framework for the development of new features. Please visit [https://gnss-sdr.org](https://gnss-sdr.org "GNSS-SDR website") for more information about this open source software-defined GNSS receiver.
 
 
 

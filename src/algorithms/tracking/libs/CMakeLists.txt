@@ -43,6 +43,7 @@ set(TRACKING_LIB_SOURCES
      tracking_discriminators.cc
      tracking_FLL_PLL_filter.cc
      tracking_loop_filter.cc
+     dll_pll_conf.cc
 )
 
 if(ENABLE_FPGA)

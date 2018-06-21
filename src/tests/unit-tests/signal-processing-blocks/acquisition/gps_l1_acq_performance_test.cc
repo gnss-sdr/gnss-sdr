@@ -483,6 +483,7 @@ int AcquisitionPerformanceTest::run_receiver2()
 
 TEST_F(AcquisitionPerformanceTest, PdvsCn0)
 {
+    init();
     for (std::vector<double>::const_iterator it = cn0_.cbegin(); it != cn0_.cend(); ++it)
         {
             // Set parameter to sweep
@@ -503,6 +504,37 @@ TEST_F(AcquisitionPerformanceTest, PdvsCn0)
                     run_receiver2();
 
                     // Read and store reference data and results
+                    std::string basename = std::string("./acquisition_") + std::to_string(*it) + "_" + std::to_string(iter) + "_" + gnss_synchro.System + "_1C";
+                    std::cout << basename << std::endl;
+                    //count executions
+                    FILE* fp;
+                    std::string argum2 = std::string("/bin/ls ") + basename + "* | wc -l";
+                    char buffer[1024];
+                    fp = popen(&argum2[0], "r");
+                    int num_executions = 1;
+                    if (fp == NULL)
+                        {
+                            std::cout << "Failed to run command: " << argum2 << std::endl;
+                            //return -1;
+                        }
+                    while (fgets(buffer, sizeof(buffer), fp) != NULL)
+                        {
+                            std::string aux = std::string(buffer);
+                            EXPECT_EQ(aux.empty(), false);
+                            num_executions = std::stoi(aux);
+                        }
+                    pclose(fp);
+
+                    for (int ch = 0; ch < config->property("Channels_1C.count", 0); ch++)
+                        {
+                            for (int execution = 1; execution <= num_executions; execution++)
+                                {
+                                    acquisition_dump_reader acq_dump(basename, 1, config->property("Acquisition_1C.doppler_max", 0), config->property("Acquisition_1C.doppler_step", 0), config->property("GNSS-SDR.internal_fs_sps", 0) * 0.001, ch, execution);
+                                    acq_dump.read_binary_acq();
+                                    std::cout << "Doppler: " << acq_dump.acq_doppler_hz << std::endl;
+                                    std::cout << "Execution: " << execution << std::endl;
+                                }
+                        }
                 }
         }
 

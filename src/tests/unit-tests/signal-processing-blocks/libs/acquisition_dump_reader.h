@@ -38,7 +38,13 @@
 class acquisition_dump_reader
 {
 public:
-    acquisition_dump_reader(const std::string& basename, unsigned int sat, unsigned int doppler_max, unsigned int doppler_step, unsigned int samples_per_code);
+    acquisition_dump_reader(const std::string& basename,
+        unsigned int sat,
+        unsigned int doppler_max,
+        unsigned int doppler_step,
+        unsigned int samples_per_code,
+        int channel = 0,
+        int execution = 1);
     ~acquisition_dump_reader();
     bool read_binary_acq();
 

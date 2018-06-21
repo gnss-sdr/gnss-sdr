@@ -93,7 +93,7 @@ private:
 
     void send_positive_acquisition();
 
-    void dump_results(unsigned int doppler_index, int effective_fft_size);
+    void dump_results(int effective_fft_size);
 
     Acq_Conf acq_parameters;
     bool d_active;
@@ -123,6 +123,7 @@ private:
     gr::fft::fft_complex* d_ifft;
     Gnss_Synchro* d_gnss_synchro;
     arma::fmat grid_;
+    long int d_dump_number;
 
 public:
     ~pcps_acquisition();

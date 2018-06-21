@@ -100,6 +100,7 @@ private:
     bool d_worker_active;
     bool d_cshort;
     bool d_step_two;
+    int d_positive_acq;
     float d_threshold;
     float d_mag;
     float d_input_power;

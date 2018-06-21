@@ -73,17 +73,27 @@ bool acquisition_dump_reader::read_binary_acq()
             Mat_Close(matfile);
             return false;
         }
+    matvar_t* var2_ = Mat_VarRead(matfile, "doppler_max");
+    d_doppler_max = *static_cast<unsigned int*>(var2_->data);
+    Mat_VarFree(var2_);
+
+    var2_ = Mat_VarRead(matfile, "doppler_step");
+    d_doppler_step = *static_cast<unsigned int*>(var2_->data);
+    Mat_VarFree(var2_);
+
+    var2_ = Mat_VarRead(matfile, "input_power");
+    float normalization_factor = *static_cast<float*>(var2_->data);
+    Mat_VarFree(var2_);
 
     std::vector<std::vector<float> >::iterator it1;
     std::vector<float>::iterator it2;
     float* aux = static_cast<float*>(var_->data);
     int k = 0;
-    float normalization_factor = std::pow(d_samples_per_code, 2);
     for (it1 = mag.begin(); it1 != mag.end(); it1++)
         {
             for (it2 = it1->begin(); it2 != it1->end(); it2++)
                 {
-                    *it2 = static_cast<float>(std::sqrt(aux[k])) / normalization_factor;
+                    *it2 = static_cast<float>(aux[k]) / normalization_factor;
                     k++;
                 }
         }

@@ -51,6 +51,13 @@ public:
     std::vector<int> doppler;
     std::vector<unsigned int> samples;
     std::vector<std::vector<float> > mag;
+    float acq_doppler_hz;
+    float acq_delay_samples;
+    float test_statistic;
+    float input_power;
+    float threshold;
+    int positive_acq;
+    long unsigned int sample_counter;
 
 private:
     std::string d_basename;

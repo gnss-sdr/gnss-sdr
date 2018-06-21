@@ -60,6 +60,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
     acq_parameters = conf_;
     d_sample_counter = 0;  // SAMPLE COUNTER
     d_active = false;
+    d_positive_acq = 0;
     d_state = 0;
     d_old_freq = 0;
     d_well_count = 0;
@@ -376,6 +377,36 @@ void pcps_acquisition::dump_results(int effective_fft_size)
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
+            matvar = Mat_VarCreate("d_positive_acq", MAT_C_INT32, MAT_T_INT32, 1, dims, &d_positive_acq, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            float aux = static_cast<float>(d_gnss_synchro->Acq_doppler_hz);
+            matvar = Mat_VarCreate("acq_doppler_hz", MAT_C_SINGLE, MAT_T_SINGLE, 1, dims, &aux, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            aux = static_cast<float>(d_gnss_synchro->Acq_delay_samples);
+            matvar = Mat_VarCreate("acq_delay_samples", MAT_C_SINGLE, MAT_T_SINGLE, 1, dims, &aux, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("test_statistic", MAT_C_SINGLE, MAT_T_SINGLE, 1, dims, &d_test_statistics, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("threshold", MAT_C_SINGLE, MAT_T_SINGLE, 1, dims, &d_threshold, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("input_power", MAT_C_SINGLE, MAT_T_SINGLE, 1, dims, &d_input_power, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("sample_counter", MAT_C_UINT64, MAT_T_UINT64, 1, dims, &d_sample_counter, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
             Mat_Close(matfp);
         }
 }
@@ -554,11 +585,6 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
                         }
                 }
         }
-    // Record results to file if required
-    if (acq_parameters.dump)
-        {
-            pcps_acquisition::dump_results(effective_fft_size);
-        }
     lk.lock();
     if (!acq_parameters.bit_transition_flag)
         {
@@ -572,6 +598,7 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
                                     send_positive_acquisition();
                                     d_step_two = false;
                                     d_state = 0;  // Positive acquisition
+                                    d_positive_acq = 1;
                                 }
                             else
                                 {
@@ -583,6 +610,7 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
                         {
                             send_positive_acquisition();
                             d_state = 0;  // Positive acquisition
+                            d_positive_acq = 1;
                         }
                 }
             else if (d_well_count == acq_parameters.max_dwells)
@@ -605,6 +633,7 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
                                     send_positive_acquisition();
                                     d_step_two = false;
                                     d_state = 0;  // Positive acquisition
+                                    d_positive_acq = 1;
                                 }
                             else
                                 {
@@ -616,6 +645,7 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
                         {
                             send_positive_acquisition();
                             d_state = 0;  // Positive acquisition
+                            d_positive_acq = 1;
                         }
                 }
             else
@@ -626,6 +656,11 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
                 }
         }
     d_worker_active = false;
+    // Record results to file if required
+    if (acq_parameters.dump)
+        {
+            pcps_acquisition::dump_results(effective_fft_size);
+        }
 }
 
 

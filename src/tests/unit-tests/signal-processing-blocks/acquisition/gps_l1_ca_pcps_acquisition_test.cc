@@ -175,7 +175,7 @@ void GpsL1CaPcpsAcquisitionTest::plot_grid()
     unsigned int sat = static_cast<unsigned int>(gnss_synchro.PRN);
 
     unsigned int samples_per_code = static_cast<unsigned int>(round(4000000 / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));  // !!
-    acquisition_dump_reader acq_dump(basename, sat, doppler_max, doppler_step, samples_per_code);
+    acquisition_dump_reader acq_dump(basename, sat, doppler_max, doppler_step, samples_per_code, 1);
 
     if (!acq_dump.read_binary_acq()) std::cout << "Error reading files" << std::endl;
 

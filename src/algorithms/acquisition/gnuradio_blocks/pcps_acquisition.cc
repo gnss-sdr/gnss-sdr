@@ -314,7 +314,7 @@ void pcps_acquisition::send_positive_acquisition()
                << ", doppler " << d_gnss_synchro->Acq_doppler_hz
                << ", magnitude " << d_mag
                << ", input signal power " << d_input_power;
-
+    d_positive_acq = 1;
     this->message_port_pub(pmt::mp("events"), pmt::from_long(1));
 }
 
@@ -332,7 +332,7 @@ void pcps_acquisition::send_negative_acquisition()
                << ", doppler " << d_gnss_synchro->Acq_doppler_hz
                << ", magnitude " << d_mag
                << ", input signal power " << d_input_power;
-
+    d_positive_acq = 0;
     this->message_port_pub(pmt::mp("events"), pmt::from_long(2));
 }
 
@@ -598,7 +598,6 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
                                     send_positive_acquisition();
                                     d_step_two = false;
                                     d_state = 0;  // Positive acquisition
-                                    d_positive_acq = 1;
                                 }
                             else
                                 {
@@ -610,7 +609,6 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
                         {
                             send_positive_acquisition();
                             d_state = 0;  // Positive acquisition
-                            d_positive_acq = 1;
                         }
                 }
             else if (d_well_count == acq_parameters.max_dwells)
@@ -633,7 +631,6 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
                                     send_positive_acquisition();
                                     d_step_two = false;
                                     d_state = 0;  // Positive acquisition
-                                    d_positive_acq = 1;
                                 }
                             else
                                 {
@@ -645,7 +642,6 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
                         {
                             send_positive_acquisition();
                             d_state = 0;  // Positive acquisition
-                            d_positive_acq = 1;
                         }
                 }
             else

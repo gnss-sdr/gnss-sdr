@@ -93,7 +93,6 @@ bool tracking_true_obs_reader::open_obs_file(std::string out_file)
                     d_dump_filename = out_file;
                     d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
                     d_dump_file.open(d_dump_filename.c_str(), std::ios::in | std::ios::binary);
-                    std::cout << "Tracking Log file: " << d_dump_filename.c_str() << " open ok " << std::endl;
                     return true;
                 }
             catch (const std::ifstream::failure &e)

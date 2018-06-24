@@ -53,6 +53,7 @@ public:
     bool blocking;
     bool make_2_steps;
     std::string dump_filename;
+    unsigned int dump_channel;
     size_t it_size;
 
     Acq_Conf();

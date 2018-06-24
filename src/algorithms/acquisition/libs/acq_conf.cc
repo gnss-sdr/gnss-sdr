@@ -48,5 +48,6 @@ Acq_Conf::Acq_Conf()
     blocking = false;
     make_2_steps = false;
     dump_filename = "";
+    dump_channel = 0;
     it_size = sizeof(char);
 }

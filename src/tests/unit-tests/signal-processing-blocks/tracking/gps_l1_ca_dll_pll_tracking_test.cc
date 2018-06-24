@@ -1,6 +1,6 @@
 /*!
  * \file gps_l1_ca_dll_pll_tracking_test.cc
- * \brief  This class implements a tracking test for Galileo_E5a_DLL_PLL_Tracking
+ * \brief  This class implements a tracking test for GPS_L1_CA_DLL_PLL_Tracking
  *  implementation based on some input parameters.
  * \author Javier Arribas, 2017. jarribas(at)cttc.es
  *
@@ -52,35 +52,8 @@
 #include "signal_generator_flags.h"
 #include "gnuplot_i.h"
 #include "test_flags.h"
+#include "tracking_tests_flags.h"
 
-
-// Input signal configuration
-DEFINE_bool(enable_external_signal_file, false, "Use an external signal file capture instead of the software-defined signal generator");
-DEFINE_string(signal_file, std::string("gps_l1_capture.dat"), "Path of the external signal capture file");
-DEFINE_double(CN0_dBHz_start, std::numeric_limits<double>::infinity(), "Enable noise generator and set the CN0 start sweep value [dB-Hz]");
-DEFINE_double(CN0_dBHz_stop, std::numeric_limits<double>::infinity(), "Enable noise generator and set the CN0 stop sweep value [dB-Hz]");
-DEFINE_double(CN0_dB_step, 3.0, "Noise generator CN0 sweep step value [dB]");
-
-DEFINE_double(PLL_bw_hz_start, 40.0, "PLL Wide configuration start sweep value [Hz]");
-DEFINE_double(PLL_bw_hz_stop, 40.0, "PLL Wide configuration stop sweep value [Hz]");
-DEFINE_double(PLL_bw_hz_step, 5.0, "PLL Wide configuration sweep step value [Hz]");
-
-DEFINE_double(DLL_bw_hz_start, 1.5, "DLL Wide configuration start sweep value [Hz]");
-DEFINE_double(DLL_bw_hz_stop, 1.5, "DLL Wide configuration stop sweep value [Hz]");
-DEFINE_double(DLL_bw_hz_step, 0.25, "DLL Wide configuration sweep step value [Hz]");
-
-DEFINE_double(PLL_narrow_bw_hz, 5.0, "PLL Narrow configuration value [Hz]");
-DEFINE_double(DLL_narrow_bw_hz, 0.75, "DLL Narrow configuration value [Hz]");
-
-DEFINE_int32(plot_detail_level, 0, "Specify the desired plot detail (0,1,2): 0 - Minimum plots (default) 2 - Plot all tracking parameters");
-
-//Emulated acquisition configuration
-
-//Tracking configuration
-DEFINE_int32(extend_correlation_symbols, 1, "Set the tracking coherent correlation to N symbols (up to 20 for GPS L1 C/A)");
-
-//Test output configuration
-DEFINE_bool(plot_gps_l1_tracking_test, false, "Plots results of GpsL1CADllPllTrackingTest with gnuplot");
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CADllPllTrackingTest_msg_rx;

@@ -60,6 +60,7 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     acq_parameters.fs_in = fs_in_;
     dump_ = configuration_->property(role + ".dump", false);
     acq_parameters.dump = dump_;
+    acq_parameters.dump_channel = configuration_->property(role + ".dump_channel", 0);
     blocking_ = configuration_->property(role + ".blocking", true);
     acq_parameters.blocking = blocking_;
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);

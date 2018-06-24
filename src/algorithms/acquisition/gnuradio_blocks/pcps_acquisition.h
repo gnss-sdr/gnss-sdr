@@ -125,6 +125,7 @@ private:
     Gnss_Synchro* d_gnss_synchro;
     arma::fmat grid_;
     long int d_dump_number;
+    unsigned int d_dump_channel;
 
 public:
     ~pcps_acquisition();

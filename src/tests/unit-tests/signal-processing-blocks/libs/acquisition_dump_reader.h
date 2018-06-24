@@ -45,7 +45,13 @@ public:
         unsigned int samples_per_code,
         int channel = 0,
         int execution = 1);
+
+    acquisition_dump_reader(const std::string& basename,
+        int channel = 0,
+        int execution = 1);
+
     ~acquisition_dump_reader();
+
     bool read_binary_acq();
 
     std::vector<int> doppler;
@@ -57,6 +63,7 @@ public:
     float input_power;
     float threshold;
     int positive_acq;
+    unsigned int PRN;
     long unsigned int sample_counter;
 
 private:

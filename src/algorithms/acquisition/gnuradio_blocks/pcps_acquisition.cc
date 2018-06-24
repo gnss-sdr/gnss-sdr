@@ -123,6 +123,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
     grid_ = arma::fmat();
     d_step_two = false;
     d_dump_number = 0;
+    d_dump_channel = acq_parameters.dump_channel;
 }
 
 
@@ -363,7 +364,7 @@ void pcps_acquisition::dump_results(int effective_fft_size)
     else
         {
             size_t dims[2] = {static_cast<size_t>(effective_fft_size), static_cast<size_t>(d_num_doppler_bins)};
-            matvar_t* matvar = Mat_VarCreate("grid", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, grid_.memptr(), 0);
+            matvar_t* matvar = Mat_VarCreate("acq_grid", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, grid_.memptr(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
@@ -404,6 +405,10 @@ void pcps_acquisition::dump_results(int effective_fft_size)
             Mat_VarFree(matvar);
 
             matvar = Mat_VarCreate("sample_counter", MAT_C_UINT64, MAT_T_UINT64, 1, dims, &d_sample_counter, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("PRN", MAT_C_UINT32, MAT_T_UINT32, 1, dims, &d_gnss_synchro->PRN, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
@@ -510,7 +515,7 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
                                 }
                         }
                     // Record results to file if required
-                    if (acq_parameters.dump)
+                    if (acq_parameters.dump and d_channel == d_dump_channel)
                         {
                             memcpy(grid_.colptr(doppler_index), d_magnitude, sizeof(float) * effective_fft_size);
                         }
@@ -579,7 +584,7 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
                                 }
                         }
                     // Record results to file if required
-                    if (acq_parameters.dump)
+                    if (acq_parameters.dump and d_channel == d_dump_channel)
                         {
                             memcpy(grid_.colptr(doppler_index), d_magnitude, sizeof(float) * effective_fft_size);
                         }
@@ -653,7 +658,7 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
         }
     d_worker_active = false;
     // Record results to file if required
-    if (acq_parameters.dump)
+    if (acq_parameters.dump and d_channel == d_dump_channel)
         {
             pcps_acquisition::dump_results(effective_fft_size);
         }

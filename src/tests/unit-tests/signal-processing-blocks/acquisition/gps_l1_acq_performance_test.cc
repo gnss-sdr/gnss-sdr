@@ -34,6 +34,9 @@
 #include "tracking_true_obs_reader.h"
 #include "true_observables_reader.h"
 #include "display.h"
+#include <boost/filesystem/operations.hpp>  // for create_directories, exists
+//#include <boost/filesystem/path.hpp>         // for path, operator<<
+#include <boost/filesystem/path_traits.hpp>  // for filesystem
 #include <gnuradio/top_block.h>
 #include <glog/logging.h>
 #include <gtest/gtest.h>
@@ -118,20 +121,24 @@ protected:
         stop = false;
         acquisition = 0;
         init();
+        Pd.resize(cn0_.size());
+        for (int i = 0; i < cn0_.size(); i++) Pd[i].reserve(num_thresholds);
+        Pfa.resize(cn0_.size());
+        for (int i = 0; i < cn0_.size(); i++) Pfa[i].reserve(num_thresholds);
     }
 
     ~AcquisitionPerformanceTest()
     {
     }
 
-    std::vector<double> cn0_ = {38.0, 40.0, 43.0};
+    std::vector<double> cn0_ = {35.0, 38.0, 43.0};
     int N_iterations = 1;
     void init();
     //void plot_grid();
 
     int configure_generator(double cn0);
     int generate_signal();
-    int configure_receiver(double cn0, unsigned int iter);
+    int configure_receiver(double cn0, float pfa, unsigned int iter);
     void start_queue();
     void wait_message();
     void process_message();
@@ -173,6 +180,16 @@ protected:
     unsigned int realization_counter;
 
     unsigned int observed_satellite = FLAGS_acq_test_PRN;
+    std::string path_str = "./acq-perf-test";
+
+    //std::vector<std::vector<double>> meas_Pd;
+    //std::vector<std::vector<float>> meas_Pd_correct;
+    //std::vector<std::vector<float>> meas_Pfa;
+
+    int num_thresholds = 1;
+    std::vector<std::vector<float>> Pd;
+    std::vector<std::vector<float>> Pfa;
+
 
 private:
     std::string generator_binary;
@@ -293,7 +310,7 @@ int AcquisitionPerformanceTest::generate_signal()
 }
 
 
-int AcquisitionPerformanceTest::configure_receiver(double cn0, unsigned int iter)
+int AcquisitionPerformanceTest::configure_receiver(double cn0, float pfa, unsigned int iter)
 {
     if (FLAGS_config_file_ptest.empty())
         {
@@ -392,7 +409,7 @@ int AcquisitionPerformanceTest::configure_receiver(double cn0, unsigned int iter
             config->set_property("Acquisition_1C.doppler_step", std::to_string(doppler_step));
 
             config->set_property("Acquisition_1C.threshold", std::to_string(threshold));
-            if (FLAGS_acq_test_pfa > 0.0) config->set_property("Acquisition_1C.pfa", std::to_string(FLAGS_acq_test_pfa));
+            if (FLAGS_acq_test_pfa > 0.0) config->force_set_property("Acquisition_1C.pfa", std::to_string(pfa));
 
             config->set_property("Acquisition_1C.use_CFAR_algorithm", "true");
 
@@ -416,7 +433,7 @@ int AcquisitionPerformanceTest::configure_receiver(double cn0, unsigned int iter
             config->set_property("Acquisition_1C.second_doppler_step", std::to_string(125));
 
             config->set_property("Acquisition_1C.dump", "true");
-            std::string dump_file = std::string("./acquisition_") + std::to_string(cn0) + "_" + std::to_string(iter);
+            std::string dump_file = path_str + std::string("/acquisition_") + std::to_string(cn0) + "_" + std::to_string(iter) + "_" + std::to_string(pfa);
             config->set_property("Acquisition_1C.dump_filename", dump_file);
             config->set_property("Acquisition_1C.dump_channel", std::to_string(dump_channel));
 
@@ -477,8 +494,6 @@ int AcquisitionPerformanceTest::configure_receiver(double cn0, unsigned int iter
 
 int AcquisitionPerformanceTest::run_receiver()
 {
-    std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds(0);
     std::string file = "./" + filename_raw_data;
     const char* file_name = file.c_str();
     gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(int8_t), file_name, false);
@@ -514,10 +529,7 @@ int AcquisitionPerformanceTest::run_receiver()
 
     start_queue();
 
-    start = std::chrono::system_clock::now();
     top_block->run();  // Start threads and wait
-    end = std::chrono::system_clock::now();
-    elapsed_seconds = end - start;
 
 #ifdef OLD_BOOST
     ch_thread.timed_join(boost::posix_time::seconds(1));
@@ -525,8 +537,6 @@ int AcquisitionPerformanceTest::run_receiver()
 #ifndef OLD_BOOST
     ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
 #endif
-
-    //std::cout << "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 
     return 0;
 }
@@ -587,180 +597,229 @@ int AcquisitionPerformanceTest::count_executions(const std::string& basename, un
 TEST_F(AcquisitionPerformanceTest, PdvsCn0)
 {
     tracking_true_obs_reader true_trk_data;
+
+    if (boost::filesystem::exists(path_str))
+        {
+            boost::filesystem::remove_all(path_str);
+        }
+    boost::system::error_code ec;
+    if (!boost::filesystem::create_directory(path_str, ec))
+        {
+            std::cout << "Could not create the " << path_str << " folder." << std::endl;
+            // error
+        }
+    unsigned int cn0_index = 0;
     for (std::vector<double>::const_iterator it = cn0_.cbegin(); it != cn0_.cend(); ++it)
         {
             // Do N_iterations of the experiment
+            std::vector<float> pfa_local = {0.01};  //{FLAGS_acq_test_pfa};  //{0.001, 0.01, 0.1, 1};
+            std::vector<double> meas_Pd_;
+            std::vector<double> meas_Pd_correct_;
+            std::vector<double> meas_Pfa_;
             for (unsigned iter = 0; iter < N_iterations; iter++)
                 {
-                    std::string basename = std::string("./acquisition_") + std::to_string(*it) + "_" + std::to_string(iter) + "_" + gnss_synchro.System + "_1C";
+                    // Set parameter to sweep
 
-                    // Configure the signal generator
-                    configure_generator(*it);
 
-                    // Generate signal raw signal samples and observations RINEX file
-                    generate_signal();
-
-                    std::cout << "Execution for CN0 = " << *it << " dB-Hz" << std::endl;
-                    for (unsigned k = 0; k < 2; k++)
+                    for (int pfa_iter = 0; pfa_iter < pfa_local.size(); pfa_iter++)
                         {
-                            if (k == 0)
+                            std::string basename = path_str + std::string("/acquisition_") + std::to_string(*it) + "_" + std::to_string(iter) + "_" + std::to_string(pfa_local[pfa_iter]) + "_" + gnss_synchro.System + "_1C";
+
+                            // Configure the signal generator
+                            configure_generator(*it);
+
+                            // Generate signal raw signal samples and observations RINEX file
+                            generate_signal();
+
+                            std::cout << "Execution for CN0 = " << *it << " dB-Hz" << std::endl;
+                            for (unsigned k = 0; k < 2; k++)
                                 {
-                                    observed_satellite = FLAGS_acq_test_PRN;
-                                }
-                            else
-                                {
-                                    observed_satellite = FLAGS_acq_test_fake_PRN;
-                                }
-                            init();
-
-                            // Configure the receiver
-                            configure_receiver(*it, iter);
-
-                            // Run it
-                            run_receiver();
-
-                            // count executions
-                            int num_executions = count_executions(basename, observed_satellite);
-
-                            // Read measured data
-                            int ch = config->property("Acquisition_1C.dump_channel", 0);
-                            arma::vec meas_timestamp_s = arma::zeros(num_executions, 1);
-                            arma::vec meas_doppler = arma::zeros(num_executions, 1);
-                            arma::vec positive_acq = arma::zeros(num_executions, 1);
-                            arma::vec meas_acq_delay_chips = arma::zeros(num_executions, 1);
-
-                            double coh_time_ms = config->property("Acquisition_1C.coherent_integration_time_ms", 1);
-
-                            std::cout << "Num executions: " << num_executions << std::endl;
-                            for (int execution = 1; execution <= num_executions; execution++)
-                                {
-                                    acquisition_dump_reader acq_dump(basename, observed_satellite, config->property("Acquisition_1C.doppler_max", 0), config->property("Acquisition_1C.doppler_step", 0), config->property("GNSS-SDR.internal_fs_sps", 0) * GPS_L1_CA_CODE_PERIOD * static_cast<double>(coh_time_ms), ch, execution);
-                                    acq_dump.read_binary_acq();
-                                    if (acq_dump.positive_acq)
+                                    if (k == 0)
                                         {
-                                            //std::cout << "Meas acq_delay_samples: " << acq_dump.acq_delay_samples << " chips: " << acq_dump.acq_delay_samples / (baseband_sampling_freq * GPS_L1_CA_CODE_PERIOD / GPS_L1_CA_CODE_LENGTH_CHIPS) << std::endl;
-                                            meas_timestamp_s(execution - 1) = acq_dump.sample_counter / baseband_sampling_freq;
-                                            meas_doppler(execution - 1) = acq_dump.acq_doppler_hz;
-                                            meas_acq_delay_chips(execution - 1) = acq_dump.acq_delay_samples / (baseband_sampling_freq * GPS_L1_CA_CODE_PERIOD / GPS_L1_CA_CODE_LENGTH_CHIPS);
-                                            positive_acq(execution - 1) = acq_dump.positive_acq;
+                                            observed_satellite = FLAGS_acq_test_PRN;
                                         }
                                     else
                                         {
-                                            //std::cout << "Failed acquisition." << std::endl;
-                                            meas_timestamp_s(execution - 1) = arma::datum::inf;
-                                            meas_doppler(execution - 1) = arma::datum::inf;
-                                            meas_acq_delay_chips(execution - 1) = arma::datum::inf;
-                                            positive_acq(execution - 1) = acq_dump.positive_acq;
+                                            observed_satellite = FLAGS_acq_test_fake_PRN;
                                         }
-                                }
+                                    init();
 
-                            // Read reference data
-                            std::string true_trk_file = std::string("./gps_l1_ca_obs_prn");
-                            true_trk_file.append(std::to_string(observed_satellite));
-                            true_trk_file.append(".dat");
-                            true_trk_data.close_obs_file();
-                            true_trk_data.open_obs_file(true_trk_file);
+                                    // Configure the receiver
+                                    configure_receiver(*it, pfa_local[pfa_iter], iter);
 
-                            // load the true values
-                            long int n_true_epochs = true_trk_data.num_epochs();
-                            arma::vec true_timestamp_s = arma::zeros(n_true_epochs, 1);
-                            arma::vec true_acc_carrier_phase_cycles = arma::zeros(n_true_epochs, 1);
-                            arma::vec true_Doppler_Hz = arma::zeros(n_true_epochs, 1);
-                            arma::vec true_prn_delay_chips = arma::zeros(n_true_epochs, 1);
-                            arma::vec true_tow_s = arma::zeros(n_true_epochs, 1);
+                                    // Run it
+                                    run_receiver();
 
-                            long int epoch_counter = 0;
-                            int num_clean_executions = 0;
-                            while (true_trk_data.read_binary_obs())
-                                {
-                                    true_timestamp_s(epoch_counter) = true_trk_data.signal_timestamp_s;
-                                    true_acc_carrier_phase_cycles(epoch_counter) = true_trk_data.acc_carrier_phase_cycles;
-                                    true_Doppler_Hz(epoch_counter) = true_trk_data.doppler_l1_hz;
-                                    true_prn_delay_chips(epoch_counter) = GPS_L1_CA_CODE_LENGTH_CHIPS - true_trk_data.prn_delay_chips;
-                                    true_tow_s(epoch_counter) = true_trk_data.tow;
-                                    epoch_counter++;
-                                    //std::cout << "True PRN_Delay chips = " << GPS_L1_CA_CODE_LENGTH_CHIPS - true_trk_data.prn_delay_chips << " at " << true_trk_data.signal_timestamp_s << std::endl;
-                                }
+                                    // count executions
+                                    int num_executions = count_executions(basename, observed_satellite);
 
-                            // Process results
-                            arma::vec clean_doppler_estimation_error;
-                            arma::vec clean_delay_estimation_error;
-                            if (epoch_counter > 2)
-                                {
-                                    arma::vec true_interpolated_doppler = arma::zeros(num_executions, 1);
-                                    arma::vec true_interpolated_prn_delay_chips = arma::zeros(num_executions, 1);
-                                    interp1(true_timestamp_s, true_Doppler_Hz, meas_timestamp_s, true_interpolated_doppler);
-                                    interp1(true_timestamp_s, true_prn_delay_chips, meas_timestamp_s, true_interpolated_prn_delay_chips);
+                                    // Read measured data
+                                    int ch = config->property("Acquisition_1C.dump_channel", 0);
+                                    arma::vec meas_timestamp_s = arma::zeros(num_executions, 1);
+                                    arma::vec meas_doppler = arma::zeros(num_executions, 1);
+                                    arma::vec positive_acq = arma::zeros(num_executions, 1);
+                                    arma::vec meas_acq_delay_chips = arma::zeros(num_executions, 1);
 
-                                    arma::vec doppler_estimation_error = true_interpolated_doppler - meas_doppler;
-                                    arma::vec delay_estimation_error = true_interpolated_prn_delay_chips - (meas_acq_delay_chips - ((1.0 / baseband_sampling_freq) / GPS_L1_CA_CHIP_PERIOD));  // compensate 1 sample delay
+                                    double coh_time_ms = config->property("Acquisition_1C.coherent_integration_time_ms", 1);
 
-                                    // Cut measurements without reference
-                                    for (unsigned int i = 0; i < num_executions; i++)
+                                    std::cout << "Num executions: " << num_executions << std::endl;
+                                    for (int execution = 1; execution <= num_executions; execution++)
                                         {
-                                            if (!std::isnan(doppler_estimation_error(i)) and !std::isnan(delay_estimation_error(i)))
+                                            acquisition_dump_reader acq_dump(basename, observed_satellite, config->property("Acquisition_1C.doppler_max", 0), config->property("Acquisition_1C.doppler_step", 0), config->property("GNSS-SDR.internal_fs_sps", 0) * GPS_L1_CA_CODE_PERIOD * static_cast<double>(coh_time_ms), ch, execution);
+                                            acq_dump.read_binary_acq();
+                                            if (acq_dump.positive_acq)
                                                 {
-                                                    num_clean_executions++;
+                                                    //std::cout << "Meas acq_delay_samples: " << acq_dump.acq_delay_samples << " chips: " << acq_dump.acq_delay_samples / (baseband_sampling_freq * GPS_L1_CA_CODE_PERIOD / GPS_L1_CA_CODE_LENGTH_CHIPS) << std::endl;
+                                                    meas_timestamp_s(execution - 1) = acq_dump.sample_counter / baseband_sampling_freq;
+                                                    meas_doppler(execution - 1) = acq_dump.acq_doppler_hz;
+                                                    meas_acq_delay_chips(execution - 1) = acq_dump.acq_delay_samples / (baseband_sampling_freq * GPS_L1_CA_CODE_PERIOD / GPS_L1_CA_CODE_LENGTH_CHIPS);
+                                                    positive_acq(execution - 1) = acq_dump.positive_acq;
                                                 }
-                                        }
-                                    clean_doppler_estimation_error = arma::zeros(num_clean_executions, 1);
-                                    clean_delay_estimation_error = arma::zeros(num_clean_executions, 1);
-                                    num_clean_executions = 0;
-                                    for (unsigned int i = 0; i < num_executions; i++)
-                                        {
-                                            if (!std::isnan(doppler_estimation_error(i)) and !std::isnan(delay_estimation_error(i)))
+                                            else
                                                 {
-                                                    clean_doppler_estimation_error(num_clean_executions) = doppler_estimation_error(i);
-                                                    clean_delay_estimation_error(num_clean_executions) = delay_estimation_error(i);
-                                                    num_clean_executions++;
+                                                    //std::cout << "Failed acquisition." << std::endl;
+                                                    meas_timestamp_s(execution - 1) = arma::datum::inf;
+                                                    meas_doppler(execution - 1) = arma::datum::inf;
+                                                    meas_acq_delay_chips(execution - 1) = arma::datum::inf;
+                                                    positive_acq(execution - 1) = acq_dump.positive_acq;
                                                 }
                                         }
 
-                                    std::cout << "Doppler estimation error [Hz]: ";
-                                    for (int i = 0; i < num_executions - 1; i++)
+                                    // Read reference data
+                                    std::string true_trk_file = std::string("./gps_l1_ca_obs_prn");
+                                    true_trk_file.append(std::to_string(observed_satellite));
+                                    true_trk_file.append(".dat");
+                                    true_trk_data.close_obs_file();
+                                    true_trk_data.open_obs_file(true_trk_file);
+
+                                    // load the true values
+                                    long int n_true_epochs = true_trk_data.num_epochs();
+                                    arma::vec true_timestamp_s = arma::zeros(n_true_epochs, 1);
+                                    arma::vec true_acc_carrier_phase_cycles = arma::zeros(n_true_epochs, 1);
+                                    arma::vec true_Doppler_Hz = arma::zeros(n_true_epochs, 1);
+                                    arma::vec true_prn_delay_chips = arma::zeros(n_true_epochs, 1);
+                                    arma::vec true_tow_s = arma::zeros(n_true_epochs, 1);
+
+                                    long int epoch_counter = 0;
+                                    int num_clean_executions = 0;
+                                    while (true_trk_data.read_binary_obs())
                                         {
-                                            std::cout << doppler_estimation_error(i) << " ";
+                                            true_timestamp_s(epoch_counter) = true_trk_data.signal_timestamp_s;
+                                            true_acc_carrier_phase_cycles(epoch_counter) = true_trk_data.acc_carrier_phase_cycles;
+                                            true_Doppler_Hz(epoch_counter) = true_trk_data.doppler_l1_hz;
+                                            true_prn_delay_chips(epoch_counter) = GPS_L1_CA_CODE_LENGTH_CHIPS - true_trk_data.prn_delay_chips;
+                                            true_tow_s(epoch_counter) = true_trk_data.tow;
+                                            epoch_counter++;
+                                            //std::cout << "True PRN_Delay chips = " << GPS_L1_CA_CODE_LENGTH_CHIPS - true_trk_data.prn_delay_chips << " at " << true_trk_data.signal_timestamp_s << std::endl;
                                         }
-                                    std::cout << std::endl;
 
-                                    std::cout << "Delay estimation error [chips]: ";
-                                    for (int i = 0; i < num_executions - 1; i++)
+                                    // Process results
+                                    arma::vec clean_doppler_estimation_error;
+                                    arma::vec clean_delay_estimation_error;
+                                    std::vector<double> meas_Pd_;
+                                    std::vector<double> meas_Pd_correct_;
+                                    if (epoch_counter > 2)
                                         {
-                                            std::cout << delay_estimation_error(i) << " ";
-                                        }
-                                    std::cout << std::endl;
+                                            arma::vec true_interpolated_doppler = arma::zeros(num_executions, 1);
+                                            arma::vec true_interpolated_prn_delay_chips = arma::zeros(num_executions, 1);
+                                            interp1(true_timestamp_s, true_Doppler_Hz, meas_timestamp_s, true_interpolated_doppler);
+                                            interp1(true_timestamp_s, true_prn_delay_chips, meas_timestamp_s, true_interpolated_prn_delay_chips);
 
-                                    double detected = arma::accu(positive_acq);
-                                    std::cout << TEXT_BOLD_BLACK << "Probability of detection for channel=" << ch << ", CN0=" << *it << " dBHz"
-                                              << ": " << (num_executions > 0 ? (detected / num_executions) : 0.0) << TEXT_RESET << std::endl;
-                                }
-                            if (num_clean_executions > 0)
-                                {
-                                    arma::vec correct_acq = arma::zeros(num_executions, 1);
-                                    double correctly_detected = 0.0;
-                                    for (int i = 0; i < num_clean_executions - 1; i++)
+                                            arma::vec doppler_estimation_error = true_interpolated_doppler - meas_doppler;
+                                            arma::vec delay_estimation_error = true_interpolated_prn_delay_chips - (meas_acq_delay_chips - ((1.0 / baseband_sampling_freq) / GPS_L1_CA_CHIP_PERIOD));  // compensate 1 sample delay
 
-                                        {
-                                            if (abs(clean_delay_estimation_error(i)) < 0.5 and abs(clean_doppler_estimation_error(i)) < static_cast<float>(config->property("Acquisition_1C.doppler_step", 1)) / 2.0)
+                                            // Cut measurements without reference
+                                            for (unsigned int i = 0; i < num_executions; i++)
                                                 {
-                                                    correctly_detected = correctly_detected + 1.0;
+                                                    if (!std::isnan(doppler_estimation_error(i)) and !std::isnan(delay_estimation_error(i)))
+                                                        {
+                                                            num_clean_executions++;
+                                                        }
+                                                }
+                                            clean_doppler_estimation_error = arma::zeros(num_clean_executions, 1);
+                                            clean_delay_estimation_error = arma::zeros(num_clean_executions, 1);
+                                            num_clean_executions = 0;
+                                            for (unsigned int i = 0; i < num_executions; i++)
+                                                {
+                                                    if (!std::isnan(doppler_estimation_error(i)) and !std::isnan(delay_estimation_error(i)))
+                                                        {
+                                                            clean_doppler_estimation_error(num_clean_executions) = doppler_estimation_error(i);
+                                                            clean_delay_estimation_error(num_clean_executions) = delay_estimation_error(i);
+                                                            num_clean_executions++;
+                                                        }
+                                                }
+
+                                            std::cout << "Doppler estimation error [Hz]: ";
+                                            for (int i = 0; i < num_executions - 1; i++)
+                                                {
+                                                    std::cout << doppler_estimation_error(i) << " ";
+                                                }
+                                            std::cout << std::endl;
+
+                                            std::cout << "Delay estimation error [chips]: ";
+                                            for (int i = 0; i < num_executions - 1; i++)
+                                                {
+                                                    std::cout << delay_estimation_error(i) << " ";
+                                                }
+                                            std::cout << std::endl;
+                                        }
+                                    if (k == 0)
+                                        {
+                                            double detected = arma::accu(positive_acq);
+                                            if (num_executions > 0) meas_Pd_.push_back(static_cast<double>(detected / num_executions));
+                                            std::cout << TEXT_BOLD_BLACK << "Probability of detection for channel=" << ch << ", CN0=" << *it << " dBHz"
+                                                      << ": " << (num_executions > 0 ? (detected / num_executions) : 0.0) << TEXT_RESET << std::endl;
+                                        }
+                                    if (num_clean_executions > 0)
+                                        {
+                                            arma::vec correct_acq = arma::zeros(num_executions, 1);
+                                            double correctly_detected = 0.0;
+                                            for (int i = 0; i < num_clean_executions - 1; i++)
+
+                                                {
+                                                    if (abs(clean_delay_estimation_error(i)) < 0.5 and abs(clean_doppler_estimation_error(i)) < static_cast<float>(config->property("Acquisition_1C.doppler_step", 1)) / 2.0)
+                                                        {
+                                                            correctly_detected = correctly_detected + 1.0;
+                                                        }
+                                                }
+                                            std::cout << TEXT_BOLD_BLACK << "Probability of correct detection for channel=" << ch << ", CN0=" << *it << " dBHz"
+                                                      << ": " << (num_clean_executions > 0 ? (correctly_detected / num_clean_executions) : 0.0) << TEXT_RESET << std::endl;
+                                        }
+                                    else
+                                        {
+                                            // std::cout << "No reference data has been found. Maybe a non-present satellite?" << std::endl;
+                                            if (k == 1)
+                                                {
+                                                    double wrongly_detected = arma::accu(positive_acq);
+                                                    if (num_executions > 0) meas_Pfa_.push_back(static_cast<double>(wrongly_detected / num_executions));
+                                                    std::cout
+                                                        << TEXT_BOLD_BLACK << "Probability of false alarm for channel=" << ch << ", CN0=" << *it << " dBHz"
+                                                        << ": " << (num_executions > 0 ? (wrongly_detected / num_executions) : 0.0) << TEXT_RESET << std::endl;
                                                 }
                                         }
-                                    std::cout << TEXT_BOLD_BLACK << "Probability of correct detection for channel=" << ch << ", CN0=" << *it << " dBHz"
-                                              << ": " << (num_clean_executions > 0 ? (correctly_detected / num_clean_executions) : 0.0) << TEXT_RESET << std::endl;
+                                    true_trk_data.restart();
                                 }
-                            else
-                                {
-                                    std::cout << "No reference data has been found. Maybe a non-present satellite?" << std::endl;
 
-                                    double wrongly_detected = arma::accu(positive_acq);
-                                    std::cout << TEXT_BOLD_BLACK << "Probability of false alarm for channel=" << ch << ", CN0=" << *it << " dBHz"
-                                              << ": " << (num_executions > 0 ? (wrongly_detected / num_executions) : 0.0) << TEXT_RESET << std::endl;
-                                }
-                            true_trk_data.restart();
+                            float sum_ = static_cast<float>(std::accumulate(meas_Pd_.begin(), meas_Pd_.end(), 0.0));
+                            Pd[cn0_index][pfa_iter] = sum_ / static_cast<float>(meas_Pd_.size());
+                            sum_ = static_cast<float>(std::accumulate(meas_Pfa_.begin(), meas_Pfa_.end(), 0.0));
+                            Pfa[cn0_index][pfa_iter] = sum_ / static_cast<float>(meas_Pfa_.size());
+                            cn0_index++;
                         }
                 }
             true_trk_data.close_obs_file();
             // Compute results
+        }
+    unsigned int aux_index = 0;
+    for (std::vector<double>::const_iterator it = cn0_.cbegin(); it != cn0_.cend(); ++it)
+        {
+            std::cout << "Results for CN0 = " << *it << " dBHz:" << std::endl;
+            std::cout << "Pd = ";
+            for (int pfa_iter = 0; pfa_iter < 1; pfa_iter++)
+                {
+                    std::cout << Pd[aux_index][pfa_iter] << " ";
+                }
+            std::cout << std::endl;
+            aux_index++;
         }
 }

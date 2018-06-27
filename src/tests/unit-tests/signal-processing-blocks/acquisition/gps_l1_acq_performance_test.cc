@@ -49,6 +49,7 @@ DEFINE_int32(acq_test_PRN, 1, "PRN number");
 DEFINE_int32(acq_test_fake_PRN, 33, "Fake PRN number");
 DEFINE_int32(acq_test_signal_duration_s, 2, "Generated signal duration");
 DEFINE_bool(acq_test_bit_transition_flag, false, "Bit transition flag");
+DEFINE_int32(acq_test_iterations, 1, "Number of iterations");
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class AcqPerfTest_msg_rx;
@@ -122,9 +123,11 @@ protected:
         acquisition = 0;
         init();
         Pd.resize(cn0_.size());
-        for (int i = 0; i < cn0_.size(); i++) Pd[i].reserve(num_thresholds);
+        for (int i = 0; i < static_cast<int>(cn0_.size()); i++) Pd[i].reserve(num_thresholds);
         Pfa.resize(cn0_.size());
-        for (int i = 0; i < cn0_.size(); i++) Pfa[i].reserve(num_thresholds);
+        for (int i = 0; i < static_cast<int>(cn0_.size()); i++) Pfa[i].reserve(num_thresholds);
+        Pd_correct.resize(cn0_.size());
+        for (int i = 0; i < static_cast<int>(cn0_.size()); i++) Pd_correct[i].reserve(num_thresholds);
     }
 
     ~AcquisitionPerformanceTest()
@@ -132,7 +135,8 @@ protected:
     }
 
     std::vector<double> cn0_ = {35.0, 38.0, 43.0};
-    int N_iterations = 1;
+    std::vector<float> pfa_local = {0.01, 0.1};  //{FLAGS_acq_test_pfa};  //{0.001, 0.01, 0.1, 1};
+    int N_iterations = FLAGS_acq_test_iterations;
     void init();
     //void plot_grid();
 
@@ -144,7 +148,6 @@ protected:
     void process_message();
     void stop_queue();
     int run_receiver();
-    int run_receiver2();
     int count_executions(const std::string& basename, unsigned int sat);
     void check_results();
 
@@ -182,13 +185,11 @@ protected:
     unsigned int observed_satellite = FLAGS_acq_test_PRN;
     std::string path_str = "./acq-perf-test";
 
-    //std::vector<std::vector<double>> meas_Pd;
-    //std::vector<std::vector<float>> meas_Pd_correct;
-    //std::vector<std::vector<float>> meas_Pfa;
+    int num_thresholds = pfa_local.size();
 
-    int num_thresholds = 1;
     std::vector<std::vector<float>> Pd;
     std::vector<std::vector<float>> Pfa;
+    std::vector<std::vector<float>> Pd_correct;
 
 
 private:
@@ -317,90 +318,7 @@ int AcquisitionPerformanceTest::configure_receiver(double cn0, float pfa, unsign
             config = std::make_shared<InMemoryConfiguration>();
             const int sampling_rate_internal = baseband_sampling_freq;
 
-            const int number_of_taps = 11;
-            const int number_of_bands = 2;
-            const float band1_begin = 0.0;
-            const float band1_end = 0.48;
-            const float band2_begin = 0.52;
-            const float band2_end = 1.0;
-            const float ampl1_begin = 1.0;
-            const float ampl1_end = 1.0;
-            const float ampl2_begin = 0.0;
-            const float ampl2_end = 0.0;
-            const float band1_error = 1.0;
-            const float band2_error = 1.0;
-            const int grid_density = 16;
-
-            const float zero = 0.0;
-
-
-            const float pll_bw_hz = 30.0;
-            const float dll_bw_hz = 4.0;
-            const float early_late_space_chips = 0.5;
-            const float pll_bw_narrow_hz = 20.0;
-            const float dll_bw_narrow_hz = 2.0;
-            const int extend_correlation_ms = 1;
-
-            const int display_rate_ms = 500;
-            const int output_rate_ms = 100;
-
             config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(sampling_rate_internal));
-
-            // Set the assistance system parameters
-            config->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
-            config->set_property("GNSS-SDR.SUPL_gps_enabled", "false");
-            config->set_property("GNSS-SDR.SUPL_gps_ephemeris_server", "supl.google.com");
-            config->set_property("GNSS-SDR.SUPL_gps_ephemeris_port", std::to_string(7275));
-            config->set_property("GNSS-SDR.SUPL_gps_acquisition_server", "supl.google.com");
-            config->set_property("GNSS-SDR.SUPL_gps_acquisition_port", std::to_string(7275));
-            config->set_property("GNSS-SDR.SUPL_MCC", std::to_string(244));
-            config->set_property("GNSS-SDR.SUPL_MNS", std::to_string(5));
-            config->set_property("GNSS-SDR.SUPL_LAC", "0x59e2");
-            config->set_property("GNSS-SDR.SUPL_CI", "0x31b0");
-
-            // Set the Signal Source
-            config->set_property("SignalSource.implementation", "File_Signal_Source");
-            config->set_property("SignalSource.filename", "./" + filename_raw_data);
-            config->set_property("SignalSource.sampling_frequency", std::to_string(sampling_rate_internal));
-            config->set_property("SignalSource.item_type", "ibyte");
-            config->set_property("SignalSource.samples", std::to_string(zero));
-
-            // Set the Signal Conditioner
-            config->set_property("SignalConditioner.implementation", "Signal_Conditioner");
-            config->set_property("DataTypeAdapter.implementation", "Ibyte_To_Complex");
-            //config->set_property("InputFilter.implementation", "Fir_Filter");
-            config->set_property("InputFilter.implementation", "Pass_Through");
-            config->set_property("InputFilter.dump", "false");
-            config->set_property("InputFilter.input_item_type", "gr_complex");
-            config->set_property("InputFilter.output_item_type", "gr_complex");
-            config->set_property("InputFilter.taps_item_type", "float");
-            config->set_property("InputFilter.number_of_taps", std::to_string(number_of_taps));
-            config->set_property("InputFilter.number_of_bands", std::to_string(number_of_bands));
-            config->set_property("InputFilter.band1_begin", std::to_string(band1_begin));
-            config->set_property("InputFilter.band1_end", std::to_string(band1_end));
-            config->set_property("InputFilter.band2_begin", std::to_string(band2_begin));
-            config->set_property("InputFilter.band2_end", std::to_string(band2_end));
-            config->set_property("InputFilter.ampl1_begin", std::to_string(ampl1_begin));
-            config->set_property("InputFilter.ampl1_end", std::to_string(ampl1_end));
-            config->set_property("InputFilter.ampl2_begin", std::to_string(ampl2_begin));
-            config->set_property("InputFilter.ampl2_end", std::to_string(ampl2_end));
-            config->set_property("InputFilter.band1_error", std::to_string(band1_error));
-            config->set_property("InputFilter.band2_error", std::to_string(band2_error));
-            config->set_property("InputFilter.filter_type", "bandpass");
-            config->set_property("InputFilter.grid_density", std::to_string(grid_density));
-            config->set_property("InputFilter.sampling_frequency", std::to_string(sampling_rate_internal));
-            config->set_property("InputFilter.IF", std::to_string(zero));
-            config->set_property("Resampler.implementation", "Pass_Through");
-            config->set_property("Resampler.dump", "false");
-            config->set_property("Resampler.item_type", "gr_complex");
-            config->set_property("Resampler.sample_freq_in", std::to_string(sampling_rate_internal));
-            config->set_property("Resampler.sample_freq_out", std::to_string(sampling_rate_internal));
-
-            // Set the number of Channels
-            config->set_property("Channels_1C.count", std::to_string(number_of_channels));
-            config->set_property("Channels.in_acquisition", std::to_string(in_acquisition));
-            config->set_property("Channel.signal", "1C");
-            //config->set_property("Channel1.satellite", std::to_string(FLAGS_acq_test_PRN));
 
             // Set Acquisition
             config->set_property("Acquisition_1C.implementation", implementation);
@@ -409,7 +327,7 @@ int AcquisitionPerformanceTest::configure_receiver(double cn0, float pfa, unsign
             config->set_property("Acquisition_1C.doppler_step", std::to_string(doppler_step));
 
             config->set_property("Acquisition_1C.threshold", std::to_string(threshold));
-            if (FLAGS_acq_test_pfa > 0.0) config->force_set_property("Acquisition_1C.pfa", std::to_string(pfa));
+            if (FLAGS_acq_test_pfa > 0.0) config->supersede_property("Acquisition_1C.pfa", std::to_string(pfa));
 
             config->set_property("Acquisition_1C.use_CFAR_algorithm", "true");
 
@@ -436,50 +354,6 @@ int AcquisitionPerformanceTest::configure_receiver(double cn0, float pfa, unsign
             std::string dump_file = path_str + std::string("/acquisition_") + std::to_string(cn0) + "_" + std::to_string(iter) + "_" + std::to_string(pfa);
             config->set_property("Acquisition_1C.dump_filename", dump_file);
             config->set_property("Acquisition_1C.dump_channel", std::to_string(dump_channel));
-
-            // Set Tracking
-            config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
-            //config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_C_Aid_Tracking");
-            config->set_property("Tracking_1C.item_type", "gr_complex");
-            config->set_property("Tracking_1C.dump", "false");
-            config->set_property("Tracking_1C.dump_filename", "./tracking_ch_");
-            config->set_property("Tracking_1C.pll_bw_hz", std::to_string(pll_bw_hz));
-            config->set_property("Tracking_1C.dll_bw_hz", std::to_string(dll_bw_hz));
-            config->set_property("Tracking_1C.early_late_space_chips", std::to_string(early_late_space_chips));
-
-            config->set_property("Tracking_1C.pll_bw_narrow_hz", std::to_string(pll_bw_narrow_hz));
-            config->set_property("Tracking_1C.dll_bw_narrow_hz", std::to_string(dll_bw_narrow_hz));
-            config->set_property("Tracking_1C.extend_correlation_symbols", std::to_string(extend_correlation_ms));
-            config->set_property("Tracking_1C.cn0_min", std::to_string(50));
-            config->set_property("Tracking_1C.max_lock_fail", std::to_string(1));
-            config->set_property("Tracking_1C.cn0_samples", std::to_string(1));
-
-            // Set Telemetry
-            config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
-            config->set_property("TelemetryDecoder_1C.dump", "false");
-
-            // Set Observables
-            config->set_property("Observables.implementation", "Hybrid_Observables");
-            config->set_property("Observables.dump", "false");
-            config->set_property("Observables.dump_filename", "./observables.dat");
-
-            // Set PVT
-            config->set_property("PVT.implementation", "RTKLIB_PVT");
-            config->set_property("PVT.positioning_mode", "PPP_Static");
-            config->set_property("PVT.output_rate_ms", std::to_string(output_rate_ms));
-            config->set_property("PVT.display_rate_ms", std::to_string(display_rate_ms));
-            config->set_property("PVT.dump_filename", "./PVT");
-            config->set_property("PVT.nmea_dump_filename", "./gnss_sdr_pvt.nmea");
-            config->set_property("PVT.flag_nmea_tty_port", "false");
-            config->set_property("PVT.nmea_dump_devname", "/dev/pts/4");
-            config->set_property("PVT.flag_rtcm_server", "false");
-            config->set_property("PVT.flag_rtcm_tty_port", "false");
-            config->set_property("PVT.rtcm_dump_devname", "/dev/pts/1");
-            config->set_property("PVT.dump", "false");
-            config->set_property("PVT.rinex_version", std::to_string(2));
-            config->set_property("PVT.iono_model", "OFF");
-            config->set_property("PVT.trop_model", "OFF");
-            config->set_property("PVT.AR_GPS", "PPP-AR");
 
             config_f = 0;
         }
@@ -542,35 +416,6 @@ int AcquisitionPerformanceTest::run_receiver()
 }
 
 
-int AcquisitionPerformanceTest::run_receiver2()
-{
-    std::shared_ptr<ControlThread> control_thread;
-    if (FLAGS_config_file_ptest.empty())
-        {
-            control_thread = std::make_shared<ControlThread>(config);
-        }
-    else
-        {
-            control_thread = std::make_shared<ControlThread>(config_f);
-        }
-
-    // start receiver
-    try
-        {
-            control_thread->run();
-        }
-    catch (const boost::exception& e)
-        {
-            std::cout << "Boost exception: " << boost::diagnostic_information(e);
-        }
-    catch (const std::exception& ex)
-        {
-            std::cout << "STD exception: " << ex.what();
-        }
-    return 0;
-}
-
-
 int AcquisitionPerformanceTest::count_executions(const std::string& basename, unsigned int sat)
 {
     FILE* fp;
@@ -603,35 +448,34 @@ TEST_F(AcquisitionPerformanceTest, PdvsCn0)
             boost::filesystem::remove_all(path_str);
         }
     boost::system::error_code ec;
-    if (!boost::filesystem::create_directory(path_str, ec))
-        {
-            std::cout << "Could not create the " << path_str << " folder." << std::endl;
-            // error
-        }
+    ASSERT_TRUE(boost::filesystem::create_directory(path_str, ec)) << "Could not create the " << path_str << " folder.";
+
     unsigned int cn0_index = 0;
+    //for (unsigned iter = 0; iter < N_iterations; iter++)
+    //unsigned iter = 0;
+    //{
     for (std::vector<double>::const_iterator it = cn0_.cbegin(); it != cn0_.cend(); ++it)
         {
             // Do N_iterations of the experiment
-            std::vector<float> pfa_local = {0.01};  //{FLAGS_acq_test_pfa};  //{0.001, 0.01, 0.1, 1};
+
             std::vector<double> meas_Pd_;
             std::vector<double> meas_Pd_correct_;
             std::vector<double> meas_Pfa_;
-            for (unsigned iter = 0; iter < N_iterations; iter++)
+
+            // Set parameter to sweep
+            std::cout << "Execution for CN0 = " << *it << " dB-Hz" << std::endl;
+            for (int pfa_iter = 0; pfa_iter < static_cast<int>(pfa_local.size()); pfa_iter++)
                 {
-                    // Set parameter to sweep
-
-
-                    for (int pfa_iter = 0; pfa_iter < pfa_local.size(); pfa_iter++)
+                    for (int iter = 0; iter < N_iterations; iter++)
                         {
                             std::string basename = path_str + std::string("/acquisition_") + std::to_string(*it) + "_" + std::to_string(iter) + "_" + std::to_string(pfa_local[pfa_iter]) + "_" + gnss_synchro.System + "_1C";
-
                             // Configure the signal generator
                             configure_generator(*it);
 
                             // Generate signal raw signal samples and observations RINEX file
                             generate_signal();
 
-                            std::cout << "Execution for CN0 = " << *it << " dB-Hz" << std::endl;
+                            //std::cout << "Execution for CN0 = " << *it << " dB-Hz" << std::endl;
                             for (unsigned k = 0; k < 2; k++)
                                 {
                                     if (k == 0)
@@ -716,8 +560,7 @@ TEST_F(AcquisitionPerformanceTest, PdvsCn0)
                                     // Process results
                                     arma::vec clean_doppler_estimation_error;
                                     arma::vec clean_delay_estimation_error;
-                                    std::vector<double> meas_Pd_;
-                                    std::vector<double> meas_Pd_correct_;
+
                                     if (epoch_counter > 2)
                                         {
                                             arma::vec true_interpolated_doppler = arma::zeros(num_executions, 1);
@@ -729,7 +572,7 @@ TEST_F(AcquisitionPerformanceTest, PdvsCn0)
                                             arma::vec delay_estimation_error = true_interpolated_prn_delay_chips - (meas_acq_delay_chips - ((1.0 / baseband_sampling_freq) / GPS_L1_CA_CHIP_PERIOD));  // compensate 1 sample delay
 
                                             // Cut measurements without reference
-                                            for (unsigned int i = 0; i < num_executions; i++)
+                                            for (int i = 0; i < num_executions; i++)
                                                 {
                                                     if (!std::isnan(doppler_estimation_error(i)) and !std::isnan(delay_estimation_error(i)))
                                                         {
@@ -739,7 +582,7 @@ TEST_F(AcquisitionPerformanceTest, PdvsCn0)
                                             clean_doppler_estimation_error = arma::zeros(num_clean_executions, 1);
                                             clean_delay_estimation_error = arma::zeros(num_clean_executions, 1);
                                             num_clean_executions = 0;
-                                            for (unsigned int i = 0; i < num_executions; i++)
+                                            for (int i = 0; i < num_executions; i++)
                                                 {
                                                     if (!std::isnan(doppler_estimation_error(i)) and !std::isnan(delay_estimation_error(i)))
                                                         {
@@ -766,9 +609,17 @@ TEST_F(AcquisitionPerformanceTest, PdvsCn0)
                                     if (k == 0)
                                         {
                                             double detected = arma::accu(positive_acq);
-                                            if (num_executions > 0) meas_Pd_.push_back(static_cast<double>(detected / num_executions));
+                                            double computed_Pd = detected / static_cast<double>(num_executions);
+                                            if (num_executions > 0)
+                                                {
+                                                    meas_Pd_.push_back(computed_Pd);
+                                                }
+                                            else
+                                                {
+                                                    meas_Pd_.push_back(0.0);
+                                                }
                                             std::cout << TEXT_BOLD_BLACK << "Probability of detection for channel=" << ch << ", CN0=" << *it << " dBHz"
-                                                      << ": " << (num_executions > 0 ? (detected / num_executions) : 0.0) << TEXT_RESET << std::endl;
+                                                      << ": " << (num_executions > 0 ? computed_Pd : 0.0) << TEXT_RESET << std::endl;
                                         }
                                     if (num_clean_executions > 0)
                                         {
@@ -782,8 +633,10 @@ TEST_F(AcquisitionPerformanceTest, PdvsCn0)
                                                             correctly_detected = correctly_detected + 1.0;
                                                         }
                                                 }
+                                            double computed_Pd_correct = correctly_detected / static_cast<double>(num_clean_executions);
+                                            meas_Pd_correct_.push_back(computed_Pd_correct);
                                             std::cout << TEXT_BOLD_BLACK << "Probability of correct detection for channel=" << ch << ", CN0=" << *it << " dBHz"
-                                                      << ": " << (num_clean_executions > 0 ? (correctly_detected / num_clean_executions) : 0.0) << TEXT_RESET << std::endl;
+                                                      << ": " << computed_Pd_correct << TEXT_RESET << std::endl;
                                         }
                                     else
                                         {
@@ -791,35 +644,86 @@ TEST_F(AcquisitionPerformanceTest, PdvsCn0)
                                             if (k == 1)
                                                 {
                                                     double wrongly_detected = arma::accu(positive_acq);
-                                                    if (num_executions > 0) meas_Pfa_.push_back(static_cast<double>(wrongly_detected / num_executions));
-                                                    std::cout
-                                                        << TEXT_BOLD_BLACK << "Probability of false alarm for channel=" << ch << ", CN0=" << *it << " dBHz"
-                                                        << ": " << (num_executions > 0 ? (wrongly_detected / num_executions) : 0.0) << TEXT_RESET << std::endl;
+                                                    double computed_Pfa = wrongly_detected / static_cast<double>(num_executions);
+                                                    if (num_executions > 0)
+                                                        {
+                                                            meas_Pfa_.push_back(computed_Pfa);
+                                                        }
+                                                    else
+                                                        {
+                                                            meas_Pfa_.push_back(0.0);
+                                                        }
+                                                    std::cout << TEXT_BOLD_BLACK << "Probability of false alarm for channel=" << ch << ", CN0=" << *it << " dBHz"
+                                                              << ": " << (num_executions > 0 ? computed_Pfa : 0.0) << TEXT_RESET << std::endl;
                                                 }
                                         }
                                     true_trk_data.restart();
                                 }
-
-                            float sum_ = static_cast<float>(std::accumulate(meas_Pd_.begin(), meas_Pd_.end(), 0.0));
-                            Pd[cn0_index][pfa_iter] = sum_ / static_cast<float>(meas_Pd_.size());
-                            sum_ = static_cast<float>(std::accumulate(meas_Pfa_.begin(), meas_Pfa_.end(), 0.0));
-                            Pfa[cn0_index][pfa_iter] = sum_ / static_cast<float>(meas_Pfa_.size());
-                            cn0_index++;
+                        }
+                    true_trk_data.close_obs_file();
+                    float sum_pd = static_cast<float>(std::accumulate(meas_Pd_.begin(), meas_Pd_.end(), 0.0));
+                    float sum_pd_correct = static_cast<float>(std::accumulate(meas_Pd_correct_.begin(), meas_Pd_correct_.end(), 0.0));
+                    float sum_pfa = static_cast<float>(std::accumulate(meas_Pfa_.begin(), meas_Pfa_.end(), 0.0));
+                    if (meas_Pd_.size() > 0 and meas_Pfa_.size() > 0)
+                        {
+                            Pd[cn0_index][pfa_iter] = sum_pd / static_cast<float>(meas_Pd_.size());
+                            Pfa[cn0_index][pfa_iter] = sum_pfa / static_cast<float>(meas_Pfa_.size());
+                        }
+                    else
+                        {
+                            if (meas_Pd_.size() > 0)
+                                {
+                                    Pd[cn0_index][pfa_iter] = sum_pd / static_cast<float>(meas_Pd_.size());
+                                }
+                            else
+                                {
+                                    Pd[cn0_index][pfa_iter] = 0.0;
+                                }
+                            if (meas_Pfa_.size() > 0)
+                                {
+                                    Pfa[cn0_index][pfa_iter] = sum_pfa / static_cast<float>(meas_Pfa_.size());
+                                }
+                            else
+                                {
+                                    Pfa[cn0_index][pfa_iter] = 0.0;
+                                }
+                        }
+                    if (meas_Pd_correct_.size() > 0)
+                        {
+                            Pd_correct[cn0_index][pfa_iter] = sum_pd_correct / static_cast<float>(meas_Pd_correct_.size());
+                        }
+                    else
+                        {
+                            Pd_correct[cn0_index][pfa_iter] = 0.0;
                         }
                 }
-            true_trk_data.close_obs_file();
-            // Compute results
+            cn0_index++;
         }
+
+    // Compute results
     unsigned int aux_index = 0;
     for (std::vector<double>::const_iterator it = cn0_.cbegin(); it != cn0_.cend(); ++it)
         {
             std::cout << "Results for CN0 = " << *it << " dBHz:" << std::endl;
             std::cout << "Pd = ";
-            for (int pfa_iter = 0; pfa_iter < 1; pfa_iter++)
+            for (int pfa_iter = 0; pfa_iter < num_thresholds; pfa_iter++)
                 {
                     std::cout << Pd[aux_index][pfa_iter] << " ";
                 }
             std::cout << std::endl;
+            std::cout << "Pd_correct = ";
+            for (int pfa_iter = 0; pfa_iter < num_thresholds; pfa_iter++)
+                {
+                    std::cout << Pd_correct[aux_index][pfa_iter] << " ";
+                }
+            std::cout << std::endl;
+            std::cout << "Pfa = ";
+            for (int pfa_iter = 0; pfa_iter < num_thresholds; pfa_iter++)
+                {
+                    std::cout << Pfa[aux_index][pfa_iter] << " ";
+                }
+            std::cout << std::endl;
+
             aux_index++;
         }
 }

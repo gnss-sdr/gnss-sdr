@@ -1,6 +1,6 @@
 /*!
  * \file gps_l1_ca_dll_pll_tracking_test.cc
- * \brief  This class implements a tracking test for Galileo_E5a_DLL_PLL_Tracking
+ * \brief  This class implements a tracking test for GPS_L1_CA_DLL_PLL_Tracking
  *  implementation based on some input parameters.
  * \author Javier Arribas, 2017. jarribas(at)cttc.es
  *
@@ -52,32 +52,8 @@
 #include "signal_generator_flags.h"
 #include "gnuplot_i.h"
 #include "test_flags.h"
+#include "tracking_tests_flags.h"
 
-
-// Input signal configuration
-DEFINE_bool(enable_external_signal_file, false, "Use an external signal file capture instead of the software-defined signal generator");
-DEFINE_string(signal_file, std::string("gps_l1_capture.dat"), "Path of the external signal capture file");
-DEFINE_double(CN0_dBHz_start, std::numeric_limits<double>::infinity(), "Enable noise generator and set the CN0 start sweep value [dB-Hz]");
-DEFINE_double(CN0_dBHz_stop, std::numeric_limits<double>::infinity(), "Enable noise generator and set the CN0 stop sweep value [dB-Hz]");
-DEFINE_double(CN0_dB_step, 3.0, "Noise generator CN0 sweep step value [dB]");
-
-DEFINE_double(PLL_bw_hz_start, 40.0, "PLL Wide configuration start sweep value [Hz]");
-DEFINE_double(PLL_bw_hz_stop, 40.0, "PLL Wide configuration stop sweep value [Hz]");
-DEFINE_double(PLL_bw_hz_step, 5.0, "PLL Wide configuration sweep step value [Hz]");
-
-DEFINE_double(DLL_bw_hz_start, 1.5, "DLL Wide configuration start sweep value [Hz]");
-DEFINE_double(DLL_bw_hz_stop, 1.5, "DLL Wide configuration stop sweep value [Hz]");
-DEFINE_double(DLL_bw_hz_step, 0.25, "DLL Wide configuration sweep step value [Hz]");
-
-DEFINE_bool(plot_extra, false, "Enable or disable plots of the correlators output and constellation diagrams");
-
-//Emulated acquisition configuration
-
-//Tracking configuration
-DEFINE_int32(extend_correlation_symbols, 1, "Set the tracking coherent correlation to N symbols (up to 20 for GPS L1 C/A)");
-
-//Test output configuration
-DEFINE_bool(plot_gps_l1_tracking_test, false, "Plots results of GpsL1CADllPllTrackingTest with gnuplot");
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CADllPllTrackingTest_msg_rx;
@@ -110,7 +86,8 @@ void GpsL1CADllPllTrackingTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
     try
         {
             long int message = pmt::to_long(msg);
-            rx_message = message;
+            rx_message = message;  //3 -> loss of lock
+            //std::cout << "Received trk message: " << rx_message << std::endl;
         }
     catch (boost::bad_any_cast& e)
         {
@@ -451,18 +428,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
     std::vector<std::vector<double>> std_dev_carrier_phase_error_sweep;  //swep config param and cn0 sweep
 
     std::vector<std::vector<double>> trk_valid_timestamp_s_sweep;
-
-    if (FLAGS_CN0_dBHz_start == FLAGS_CN0_dBHz_stop)
-        {
-            generator_CN0_values.push_back(FLAGS_CN0_dBHz_start);
-        }
-    else
-        {
-            for (double cn0 = FLAGS_CN0_dBHz_start; cn0 > FLAGS_CN0_dBHz_stop; cn0 = cn0 - FLAGS_CN0_dB_step)
-                {
-                    generator_CN0_values.push_back(cn0);
-                }
-        }
+    std::vector<std::vector<double>> generator_CN0_values_sweep_copy;
 
     int test_satellite_PRN = 0;
     double acq_delay_samples = 0.0;
@@ -470,34 +436,14 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
     tracking_true_obs_reader true_obs_data;
 
 
-    //*********************************************
-    //***** STEP 3: Generate the input signal *****
-    //*********************************************
-    // use generator or use an external capture file
-    if (FLAGS_enable_external_signal_file)
-        {
-            //todo: create and configure an acquisition block and perform an acquisition to obtain the synchronization parameters
-        }
-    else
-        {
-            for (int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
-                {
-                    // Configure the signal generator
-                    configure_generator(generator_CN0_values.at(current_cn0_idx), current_cn0_idx);
-                    // Generate signal raw signal samples and observations RINEX file
-                    if (FLAGS_disable_generator == false)
-                        {
-                            generate_signal();
-                        }
-                    // open true observables log file written by the simulator
-                }
-        }
-
-
     // CONFIG PARAM SWEEP LOOP
     std::vector<double> PLL_wide_bw_values;
     std::vector<double> DLL_wide_bw_values;
 
+
+    //***********************************************************
+    //***** STEP 2: Tracking configuration parameters sweep *****
+    //***********************************************************
 
     if (FLAGS_PLL_bw_hz_start == FLAGS_PLL_bw_hz_stop)
         {
@@ -510,7 +456,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
             else
                 {
                     //DLL BW Sweep
-                    for (double dll_bw = FLAGS_DLL_bw_hz_start; dll_bw > FLAGS_DLL_bw_hz_stop; dll_bw = dll_bw - FLAGS_DLL_bw_hz_step)
+                    for (double dll_bw = FLAGS_DLL_bw_hz_start; dll_bw >= FLAGS_DLL_bw_hz_stop; dll_bw = dll_bw - FLAGS_DLL_bw_hz_step)
                         {
                             PLL_wide_bw_values.push_back(FLAGS_PLL_bw_hz_start);
                             DLL_wide_bw_values.push_back(dll_bw);
@@ -520,14 +466,55 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
     else
         {
             //PLL BW Sweep
-            for (double pll_bw = FLAGS_PLL_bw_hz_start; pll_bw > FLAGS_PLL_bw_hz_stop; pll_bw = pll_bw - FLAGS_PLL_bw_hz_step)
+            for (double pll_bw = FLAGS_PLL_bw_hz_start; pll_bw >= FLAGS_PLL_bw_hz_stop; pll_bw = pll_bw - FLAGS_PLL_bw_hz_step)
                 {
                     PLL_wide_bw_values.push_back(pll_bw);
                     DLL_wide_bw_values.push_back(FLAGS_DLL_bw_hz_start);
                 }
         }
 
-    for (int config_idx = 0; config_idx < PLL_wide_bw_values.size(); config_idx++)
+    //*********************************************
+    //***** STEP 3: Generate the input signal *****
+    //*********************************************
+
+
+    std::vector<double> cno_vector;
+    if (FLAGS_CN0_dBHz_start == FLAGS_CN0_dBHz_stop)
+        {
+            generator_CN0_values.push_back(FLAGS_CN0_dBHz_start);
+        }
+    else
+        {
+            for (double cn0 = FLAGS_CN0_dBHz_start; cn0 > FLAGS_CN0_dBHz_stop; cn0 = cn0 - FLAGS_CN0_dB_step)
+                {
+                    generator_CN0_values.push_back(cn0);
+                }
+        }
+
+    // use generator or use an external capture file
+    if (FLAGS_enable_external_signal_file)
+        {
+            //todo: create and configure an acquisition block and perform an acquisition to obtain the synchronization parameters
+        }
+    else
+        {
+            for (unsigned int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
+                {
+                    // Configure the signal generator
+                    configure_generator(generator_CN0_values.at(current_cn0_idx), current_cn0_idx);
+                    // Generate signal raw signal samples and observations RINEX file
+                    if (FLAGS_disable_generator == false)
+                        {
+                            generate_signal();
+                        }
+                    // open true observables log file written by the simulator
+                }
+        }
+
+    //************************************************************
+    //***** STEP 4: Configure the signal tracking parameters *****
+    //************************************************************
+    for (unsigned int config_idx = 0; config_idx < PLL_wide_bw_values.size(); config_idx++)
         {
             //CN0 LOOP
             // data containers for CN0 sweep
@@ -549,13 +536,14 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
             std::vector<double> std_dev_code_phase_error;
             std::vector<double> mean_carrier_phase_error;
             std::vector<double> std_dev_carrier_phase_error;
+            std::vector<double> valid_CN0_values;
 
             configure_receiver(PLL_wide_bw_values.at(config_idx),
                 DLL_wide_bw_values.at(config_idx),
-                2.0,
-                1.0,
+                FLAGS_PLL_narrow_bw_hz,
+                FLAGS_DLL_narrow_bw_hz,
                 FLAGS_extend_correlation_symbols);
-            for (int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
+            for (unsigned int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
                 {
                     //******************************************************************************************
                     //***** Obtain the initial signal sinchronization parameters (emulating an acquisition) ****
@@ -582,8 +570,6 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                         }
 
 
-                    //***** STEP 4: Configure the signal tracking parameters *****
-                    //************************************************************
                     std::chrono::time_point<std::chrono::system_clock> start, end;
 
                     top_block = gr::make_top_block("Tracking test");
@@ -625,6 +611,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                     //********************************************************************
                     //***** STEP 5: Perform the signal tracking and read the results *****
                     //********************************************************************
+                    std::cout << "------------ START TRACKING -------------" << std::endl;
                     tracking->start_tracking();
 
                     EXPECT_NO_THROW({
@@ -636,6 +623,8 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                     std::chrono::duration<double> elapsed_seconds = end - start;
                     std::cout << "Signal tracking completed in " << elapsed_seconds.count() << " seconds" << std::endl;
 
+                    int tracking_last_msg = msg_rx->rx_message;  //save last aasynchronous tracking message in order to detect a loss of lock
+
                     //check results
                     //load the measured values
                     tracking_dump_reader trk_dump;
@@ -643,7 +632,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                         << "Failure opening tracking dump file";
 
                     long int n_measured_epochs = trk_dump.num_epochs();
-                    std::cout << "Measured observation epochs=" << n_measured_epochs << std::endl;
+                    //std::cout << "Measured observation epochs=" << n_measured_epochs << std::endl;
 
                     arma::vec trk_timestamp_s = arma::zeros(n_measured_epochs, 1);
                     arma::vec trk_acc_carrier_phase_cycles = arma::zeros(n_measured_epochs, 1);
@@ -694,11 +683,12 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                             std::vector<double> doppler_error_hz;
                             std::vector<double> code_phase_error_chips;
                             std::vector<double> acc_carrier_phase_hz;
+
                             try
                                 {
                                     // load the true values
                                     long int n_true_epochs = true_obs_data.num_epochs();
-                                    std::cout << "True observation epochs=" << n_true_epochs << std::endl;
+                                    //std::cout << "True observation epochs=" << n_true_epochs << std::endl;
 
                                     arma::vec true_timestamp_s = arma::zeros(n_true_epochs, 1);
                                     arma::vec true_acc_carrier_phase_cycles = arma::zeros(n_true_epochs, 1);
@@ -720,45 +710,47 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                     double pull_in_offset_s = 1.0;
 
                                     arma::uvec initial_meas_point = arma::find(trk_timestamp_s >= (true_timestamp_s(0) + pull_in_offset_s), 1, "first");
+                                    if (initial_meas_point.size() > 0 and tracking_last_msg != 3)
+                                        {
+                                            trk_timestamp_s = trk_timestamp_s.subvec(initial_meas_point(0), trk_timestamp_s.size() - 1);
+                                            trk_acc_carrier_phase_cycles = trk_acc_carrier_phase_cycles.subvec(initial_meas_point(0), trk_acc_carrier_phase_cycles.size() - 1);
+                                            trk_Doppler_Hz = trk_Doppler_Hz.subvec(initial_meas_point(0), trk_Doppler_Hz.size() - 1);
+                                            trk_prn_delay_chips = trk_prn_delay_chips.subvec(initial_meas_point(0), trk_prn_delay_chips.size() - 1);
 
-                                    trk_timestamp_s = trk_timestamp_s.subvec(initial_meas_point(0), trk_timestamp_s.size() - 1);
-                                    trk_acc_carrier_phase_cycles = trk_acc_carrier_phase_cycles.subvec(initial_meas_point(0), trk_acc_carrier_phase_cycles.size() - 1);
-                                    trk_Doppler_Hz = trk_Doppler_Hz.subvec(initial_meas_point(0), trk_Doppler_Hz.size() - 1);
-                                    trk_prn_delay_chips = trk_prn_delay_chips.subvec(initial_meas_point(0), trk_prn_delay_chips.size() - 1);
 
+                                            double mean_error;
+                                            double std_dev_error;
 
-                                    double mean_error;
-                                    double std_dev_error;
+                                            valid_CN0_values.push_back(generator_CN0_values.at(current_cn0_idx));  //save the current cn0 value (valid tracking)
 
-                                    doppler_error_hz = check_results_doppler(true_timestamp_s, true_Doppler_Hz, trk_timestamp_s, trk_Doppler_Hz, mean_error, std_dev_error);
-                                    mean_doppler_error.push_back(mean_error);
-                                    std_dev_doppler_error.push_back(std_dev_error);
+                                            doppler_error_hz = check_results_doppler(true_timestamp_s, true_Doppler_Hz, trk_timestamp_s, trk_Doppler_Hz, mean_error, std_dev_error);
+                                            mean_doppler_error.push_back(mean_error);
+                                            std_dev_doppler_error.push_back(std_dev_error);
 
-                                    code_phase_error_chips = check_results_codephase(true_timestamp_s, true_prn_delay_chips, trk_timestamp_s, trk_prn_delay_chips, mean_error, std_dev_error);
-                                    mean_code_phase_error.push_back(mean_error);
-                                    std_dev_code_phase_error.push_back(std_dev_error);
+                                            code_phase_error_chips = check_results_codephase(true_timestamp_s, true_prn_delay_chips, trk_timestamp_s, trk_prn_delay_chips, mean_error, std_dev_error);
+                                            mean_code_phase_error.push_back(mean_error);
+                                            std_dev_code_phase_error.push_back(std_dev_error);
 
-                                    acc_carrier_phase_hz = check_results_acc_carrier_phase(true_timestamp_s, true_acc_carrier_phase_cycles, trk_timestamp_s, trk_acc_carrier_phase_cycles, mean_error, std_dev_error);
-                                    mean_carrier_phase_error.push_back(mean_error);
-                                    std_dev_carrier_phase_error.push_back(std_dev_error);
+                                            acc_carrier_phase_hz = check_results_acc_carrier_phase(true_timestamp_s, true_acc_carrier_phase_cycles, trk_timestamp_s, trk_acc_carrier_phase_cycles, mean_error, std_dev_error);
+                                            mean_carrier_phase_error.push_back(mean_error);
+                                            std_dev_carrier_phase_error.push_back(std_dev_error);
 
-                                    //save tracking measurement timestamps to std::vector
-                                    std::vector<double> vector_trk_timestamp_s(trk_timestamp_s.colptr(0), trk_timestamp_s.colptr(0) + trk_timestamp_s.n_rows);
-                                    trk_valid_timestamp_s_sweep.push_back(vector_trk_timestamp_s);
+                                            //save tracking measurement timestamps to std::vector
+                                            std::vector<double> vector_trk_timestamp_s(trk_timestamp_s.colptr(0), trk_timestamp_s.colptr(0) + trk_timestamp_s.n_rows);
+                                            trk_valid_timestamp_s_sweep.push_back(vector_trk_timestamp_s);
 
-                                    doppler_error_sweep.push_back(doppler_error_hz);
-                                    code_phase_error_sweep.push_back(code_phase_error_chips);
-                                    acc_carrier_phase_error_sweep.push_back(acc_carrier_phase_hz);
+                                            doppler_error_sweep.push_back(doppler_error_hz);
+                                            code_phase_error_sweep.push_back(code_phase_error_chips);
+                                            acc_carrier_phase_error_sweep.push_back(acc_carrier_phase_hz);
+                                        }
+                                    else
+                                        {
+                                            std::cout << "Tracking output could not be used, possible loss of lock " << std::endl;
+                                        }
                                 }
                             catch (const std::exception& ex)
                                 {
                                     std::cout << "Tracking output could not be used, possible loss of lock " << ex.what() << std::endl;
-
-                                    std::vector<double> vector_trk_timestamp_s;
-                                    trk_valid_timestamp_s_sweep.push_back(vector_trk_timestamp_s);
-                                    doppler_error_sweep.push_back(doppler_error_hz);
-                                    code_phase_error_sweep.push_back(code_phase_error_chips);
-                                    acc_carrier_phase_error_sweep.push_back(acc_carrier_phase_hz);
                                 }
                         }
 
@@ -772,9 +764,10 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                     std_dev_code_phase_error_sweep.push_back(std_dev_code_phase_error);
                     mean_carrier_phase_error_sweep.push_back(mean_carrier_phase_error);
                     std_dev_carrier_phase_error_sweep.push_back(std_dev_carrier_phase_error);
+                    //make a copy of the CN0 vector for each configuration parameter in order to filter the loss of lock events
+                    generator_CN0_values_sweep_copy.push_back(valid_CN0_values);
                 }
 
-            std::cout << "A\n\n\n";
             //********************************
             //***** STEP 7: Plot results *****
             //********************************
@@ -797,9 +790,9 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                     Gnuplot::set_GNUPlotPath(gnuplot_path);
                                     unsigned int decimate = static_cast<unsigned int>(FLAGS_plot_decimate);
 
-                                    if (FLAGS_plot_extra)
+                                    if (FLAGS_plot_detail_level >= 2)
                                         {
-                                            for (int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
+                                            for (unsigned int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
                                                 {
                                                     Gnuplot g1("linespoints");
                                                     g1.showonscreen();  // window output
@@ -819,7 +812,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                             g2.showonscreen();  // window output
                                             g2.set_multiplot(ceil(static_cast<float>(generator_CN0_values.size()) / 2.0),
                                                 ceil(static_cast<float>(generator_CN0_values.size()) / 2));
-                                            for (int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
+                                            for (unsigned int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
                                                 {
                                                     g2.reset_plot();
                                                     g2.set_title(std::to_string(generator_CN0_values.at(current_cn0_idx)) + " dB-Hz Constellation " + "PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz" + "GPS L1 C/A (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
@@ -839,7 +832,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                             g3.set_xlabel("Time [s]");
                                             g3.set_ylabel("Reported CN0 [dB-Hz]");
                                             g3.cmd("set key box opaque");
-                                            for (int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
+                                            for (unsigned int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
                                                 {
                                                     g3.plot_xy(trk_timestamp_s_sweep.at(current_cn0_idx), CN0_dBHz_sweep.at(current_cn0_idx),
                                                         std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))) + "[dB-Hz]", decimate);
@@ -850,63 +843,85 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                             g3.showonscreen();  // window output
                                         }
 
-                                    std::cout << "B\n\n\n";
                                     //PLOT ERROR FIGURES (only if it is used the signal generator)
                                     if (!FLAGS_enable_external_signal_file)
                                         {
-                                            Gnuplot g4("points");
-                                            g4.showonscreen();  // window output
-                                            g4.set_multiplot(ceil(static_cast<float>(generator_CN0_values.size()) / 2.0),
-                                                ceil(static_cast<float>(generator_CN0_values.size()) / 2));
-                                            for (int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
+                                            if (FLAGS_plot_detail_level >= 1)
                                                 {
-                                                    g4.reset_plot();
-                                                    g4.set_title(std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))) + "[dB-Hz] Doppler error " + "PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
-                                                    g4.set_grid();
-                                                    //g4.cmd("set key box opaque");
-                                                    g4.set_xlabel("Time [s]");
-                                                    g4.set_ylabel("Dopper error [Hz]");
-                                                    g4.plot_xy(trk_valid_timestamp_s_sweep.at(current_cn0_idx), doppler_error_sweep.at(current_cn0_idx),
-                                                        std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))) + "[dB-Hz]", decimate);
-                                                    //g4.set_legend();
+                                                    Gnuplot g5("points");
+                                                    g5.showonscreen();  // window output
+                                                    g5.set_title("Code delay error, PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                                                    g5.set_grid();
+                                                    g5.set_xlabel("Time [s]");
+                                                    g5.set_ylabel("Code delay error [Chips]");
+
+
+                                                    for (unsigned int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values_sweep_copy.at(config_idx).size(); current_cn0_idx++)
+                                                        {
+                                                            try
+                                                                {
+                                                                    g5.plot_xy(trk_valid_timestamp_s_sweep.at(current_cn0_idx), code_phase_error_sweep.at(current_cn0_idx),
+                                                                        std::to_string(static_cast<int>(round(generator_CN0_values_sweep_copy.at(config_idx).at(current_cn0_idx)))) + "[dB-Hz]", decimate);
+                                                                }
+                                                            catch (const GnuplotException& ge)
+                                                                {
+                                                                }
+                                                        }
+                                                    g5.set_legend();
+                                                    g5.set_legend();
+                                                    g5.savetops("Code_error_output");
+                                                    g5.savetopdf("Code_error_output", 18);
+
+
+                                                    Gnuplot g6("points");
+                                                    g6.showonscreen();  // window output
+                                                    g6.set_title("Accumulated carrier phase error, PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                                                    g6.set_grid();
+                                                    g6.set_xlabel("Time [s]");
+                                                    g6.set_ylabel("Accumulated carrier phase error [Cycles]");
+
+
+                                                    for (unsigned int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values_sweep_copy.at(config_idx).size(); current_cn0_idx++)
+                                                        {
+                                                            try
+                                                                {
+                                                                    g6.plot_xy(trk_valid_timestamp_s_sweep.at(current_cn0_idx), acc_carrier_phase_error_sweep.at(current_cn0_idx),
+                                                                        std::to_string(static_cast<int>(round(generator_CN0_values_sweep_copy.at(config_idx).at(current_cn0_idx)))) + "[dB-Hz]", decimate);
+                                                                }
+                                                            catch (const GnuplotException& ge)
+                                                                {
+                                                                }
+                                                        }
+                                                    g6.set_legend();
+                                                    g6.set_legend();
+                                                    g6.savetops("Carrier_phase_error_output");
+                                                    g6.savetopdf("Carrier_phase_error_output", 18);
+
+                                                    Gnuplot g4("points");
+                                                    g4.showonscreen();  // window output
+                                                    g4.set_multiplot(ceil(static_cast<float>(generator_CN0_values.size()) / 2.0),
+                                                        ceil(static_cast<float>(generator_CN0_values.size()) / 2));
+                                                    for (unsigned int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values_sweep_copy.at(config_idx).size(); current_cn0_idx++)
+                                                        {
+                                                            g4.reset_plot();
+                                                            g4.set_title(std::to_string(static_cast<int>(round(generator_CN0_values_sweep_copy.at(config_idx).at(current_cn0_idx)))) + "[dB-Hz], PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                                                            g4.set_grid();
+                                                            //g4.cmd("set key box opaque");
+                                                            g4.set_xlabel("Time [s]");
+                                                            g4.set_ylabel("Dopper error [Hz]");
+                                                            try
+                                                                {
+                                                                    g4.plot_xy(trk_valid_timestamp_s_sweep.at(current_cn0_idx), doppler_error_sweep.at(current_cn0_idx),
+                                                                        std::to_string(static_cast<int>(round(generator_CN0_values_sweep_copy.at(config_idx).at(current_cn0_idx)))) + "[dB-Hz]", decimate);
+                                                                }
+                                                            catch (const GnuplotException& ge)
+                                                                {
+                                                                }
+                                                        }
+                                                    g4.unset_multiplot();
+                                                    g4.savetops("Doppler_error_output");
+                                                    g4.savetopdf("Doppler_error_output", 18);
                                                 }
-                                            g4.unset_multiplot();
-                                            g4.savetops("Doppler_error_output");
-                                            g4.savetopdf("Doppler_error_output", 18);
-
-                                            Gnuplot g5("points");
-                                            g5.set_title("Code delay error, PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
-                                            g5.set_grid();
-                                            g5.set_xlabel("Time [s]");
-                                            g5.set_ylabel("Code delay error [Chips]");
-                                            g5.cmd("set key box opaque");
-
-                                            for (int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
-                                                {
-                                                    g5.plot_xy(trk_valid_timestamp_s_sweep.at(current_cn0_idx), code_phase_error_sweep.at(current_cn0_idx),
-                                                        std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))) + "[dB-Hz]", decimate);
-                                                }
-                                            g5.set_legend();
-                                            g5.savetops("Code_error_output");
-                                            g5.savetopdf("Code_error_output", 18);
-                                            g5.showonscreen();  // window output
-
-                                            Gnuplot g6("points");
-                                            g6.set_title("Accumulated carrier phase error, PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
-                                            g6.set_grid();
-                                            g6.set_xlabel("Time [s]");
-                                            g6.set_ylabel("Accumulated carrier phase error [Cycles]");
-                                            g6.cmd("set key box opaque");
-
-                                            for (int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
-                                                {
-                                                    g6.plot_xy(trk_valid_timestamp_s_sweep.at(current_cn0_idx), acc_carrier_phase_error_sweep.at(current_cn0_idx),
-                                                        std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))) + "[dB-Hz]", decimate);
-                                                }
-                                            g6.set_legend();
-                                            g6.savetops("Carrier_phase_error_output");
-                                            g6.savetopdf("Carrier_phase_error_output", 18);
-                                            g6.showonscreen();  // window output
                                         }
                                 }
                             catch (const GnuplotException& ge)
@@ -917,86 +932,77 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                 }
         }
 
-
     if (FLAGS_plot_gps_l1_tracking_test == true)
         {
-            const std::string gnuplot_executable(FLAGS_gnuplot_executable);
-            if (gnuplot_executable.empty())
+            std::cout << "Ploting performance metrics..." << std::endl;
+            try
                 {
-                    std::cout << "WARNING: Although the flag plot_gps_l1_tracking_test has been set to TRUE," << std::endl;
-                    std::cout << "gnuplot has not been found in your system." << std::endl;
-                    std::cout << "Test results will not be plotted." << std::endl;
-                }
-            else
-                {
-                    try
+                    if (generator_CN0_values.size() > 1)
                         {
-                            if (generator_CN0_values.size() > 1)
+                            //plot metrics
+
+                            Gnuplot g7("linespoints");
+                            g7.showonscreen();  // window output
+                            g7.set_title("Doppler error metrics (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                            g7.set_grid();
+                            g7.set_xlabel("CN0 [dB-Hz]");
+                            g7.set_ylabel("Doppler error [Hz]");
+                            g7.set_pointsize(2);
+                            g7.cmd("set termoption lw 2");
+                            g7.cmd("set key box opaque");
+                            for (unsigned int config_sweep_idx = 0; config_sweep_idx < mean_doppler_error_sweep.size(); config_sweep_idx++)
                                 {
-                                    //plot metrics
-
-                                    Gnuplot g7("linespoints");
-                                    g7.set_title("Doppler error metrics (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
-                                    g7.set_grid();
-                                    g7.set_xlabel("CN0 [dB-Hz]");
-                                    g7.set_ylabel("Doppler error [Hz]");
-                                    g7.set_pointsize(2);
-                                    g7.cmd("set termoption lw 2");
-                                    g7.cmd("set key box opaque");
-                                    for (int config_sweep_idx = 0; config_sweep_idx < mean_doppler_error_sweep.size(); config_sweep_idx++)
-                                        {
-                                            g7.plot_xy_err(generator_CN0_values,
-                                                mean_doppler_error_sweep.at(config_sweep_idx),
-                                                std_dev_doppler_error_sweep.at(config_sweep_idx),
-                                                "PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_sweep_idx)) +
-                                                    +"," + std::to_string(DLL_wide_bw_values.at(config_sweep_idx)) + " Hz");
-                                        }
-                                    g7.savetops("Doppler_error_metrics");
-                                    g7.savetopdf("Doppler_error_metrics", 18);
-
-                                    Gnuplot g8("linespoints");
-                                    g8.set_title("Accumulated carrier phase error metrics (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
-                                    g8.set_grid();
-                                    g8.set_xlabel("CN0 [dB-Hz]");
-                                    g8.set_ylabel("Accumulated Carrier Phase error [Cycles]");
-                                    g8.cmd("set key box opaque");
-                                    g8.cmd("set termoption lw 2");
-                                    g8.set_pointsize(2);
-                                    for (int config_sweep_idx = 0; config_sweep_idx < mean_doppler_error_sweep.size(); config_sweep_idx++)
-                                        {
-                                            g8.plot_xy_err(generator_CN0_values,
-                                                mean_carrier_phase_error_sweep.at(config_sweep_idx),
-                                                std_dev_carrier_phase_error_sweep.at(config_sweep_idx),
-                                                "PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_sweep_idx)) +
-                                                    +"," + std::to_string(DLL_wide_bw_values.at(config_sweep_idx)) + " Hz");
-                                        }
-                                    g8.savetops("Carrier_error_metrics");
-                                    g8.savetopdf("Carrier_error_metrics", 18);
-
-                                    Gnuplot g9("linespoints");
-                                    g9.set_title("Code Phase error metrics (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
-                                    g9.set_grid();
-                                    g9.set_xlabel("CN0 [dB-Hz]");
-                                    g9.set_ylabel("Code Phase error [Chips]");
-                                    g9.cmd("set key box opaque");
-                                    g9.cmd("set termoption lw 2");
-                                    g9.set_pointsize(2);
-                                    for (int config_sweep_idx = 0; config_sweep_idx < mean_doppler_error_sweep.size(); config_sweep_idx++)
-                                        {
-                                            g9.plot_xy_err(generator_CN0_values,
-                                                mean_code_phase_error_sweep.at(config_sweep_idx),
-                                                std_dev_code_phase_error_sweep.at(config_sweep_idx),
-                                                "PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_sweep_idx)) +
-                                                    +"," + std::to_string(DLL_wide_bw_values.at(config_sweep_idx)) + " Hz");
-                                        }
-                                    g9.savetops("Code_error_metrics");
-                                    g9.savetopdf("Code_error_metrics", 18);
+                                    g7.plot_xy_err(generator_CN0_values_sweep_copy.at(config_sweep_idx),
+                                        mean_doppler_error_sweep.at(config_sweep_idx),
+                                        std_dev_doppler_error_sweep.at(config_sweep_idx),
+                                        "PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_sweep_idx)) +
+                                            +"," + std::to_string(DLL_wide_bw_values.at(config_sweep_idx)) + " Hz");
                                 }
+                            g7.savetops("Doppler_error_metrics");
+                            g7.savetopdf("Doppler_error_metrics", 18);
+
+                            Gnuplot g8("linespoints");
+                            g8.set_title("Accumulated carrier phase error metrics (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                            g8.set_grid();
+                            g8.set_xlabel("CN0 [dB-Hz]");
+                            g8.set_ylabel("Accumulated Carrier Phase error [Cycles]");
+                            g8.cmd("set key box opaque");
+                            g8.cmd("set termoption lw 2");
+                            g8.set_pointsize(2);
+                            for (unsigned int config_sweep_idx = 0; config_sweep_idx < mean_doppler_error_sweep.size(); config_sweep_idx++)
+                                {
+                                    g8.plot_xy_err(generator_CN0_values_sweep_copy.at(config_sweep_idx),
+                                        mean_carrier_phase_error_sweep.at(config_sweep_idx),
+                                        std_dev_carrier_phase_error_sweep.at(config_sweep_idx),
+                                        "PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_sweep_idx)) +
+                                            +"," + std::to_string(DLL_wide_bw_values.at(config_sweep_idx)) + " Hz");
+                                }
+                            g8.savetops("Carrier_error_metrics");
+                            g8.savetopdf("Carrier_error_metrics", 18);
+
+                            Gnuplot g9("linespoints");
+                            g9.set_title("Code Phase error metrics (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                            g9.set_grid();
+                            g9.set_xlabel("CN0 [dB-Hz]");
+                            g9.set_ylabel("Code Phase error [Chips]");
+                            g9.cmd("set key box opaque");
+                            g9.cmd("set termoption lw 2");
+                            g9.set_pointsize(2);
+                            for (unsigned int config_sweep_idx = 0; config_sweep_idx < mean_doppler_error_sweep.size(); config_sweep_idx++)
+                                {
+                                    g9.plot_xy_err(generator_CN0_values_sweep_copy.at(config_sweep_idx),
+                                        mean_code_phase_error_sweep.at(config_sweep_idx),
+                                        std_dev_code_phase_error_sweep.at(config_sweep_idx),
+                                        "PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_sweep_idx)) +
+                                            +"," + std::to_string(DLL_wide_bw_values.at(config_sweep_idx)) + " Hz");
+                                }
+                            g9.savetops("Code_error_metrics");
+                            g9.savetopdf("Code_error_metrics", 18);
                         }
-                    catch (const GnuplotException& ge)
-                        {
-                            std::cout << ge.what() << std::endl;
-                        }
+                }
+            catch (const GnuplotException& ge)
+                {
+                    std::cout << ge.what() << std::endl;
                 }
         }
 }

@@ -34,8 +34,7 @@
 #include "tracking_true_obs_reader.h"
 #include "true_observables_reader.h"
 #include "display.h"
-#include <boost/filesystem/operations.hpp>  // for create_directories, exists
-//#include <boost/filesystem/path.hpp>         // for path, operator<<
+#include <boost/filesystem/operations.hpp>   // for create_directories, exists
 #include <boost/filesystem/path_traits.hpp>  // for filesystem
 #include <gnuradio/top_block.h>
 #include <glog/logging.h>
@@ -49,7 +48,7 @@ DEFINE_int32(acq_test_PRN, 1, "PRN number");
 DEFINE_int32(acq_test_fake_PRN, 33, "Fake PRN number");
 DEFINE_int32(acq_test_signal_duration_s, 2, "Generated signal duration");
 DEFINE_bool(acq_test_bit_transition_flag, false, "Bit transition flag");
-DEFINE_int32(acq_test_iterations, 1, "Number of iterations");
+DEFINE_int32(acq_test_iterations, 2, "Number of iterations");
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class AcqPerfTest_msg_rx;
@@ -120,7 +119,7 @@ protected:
         doppler_max = 5000;
         doppler_step = 125;
         stop = false;
-        acquisition = 0;
+        //acquisition_ = 0;
         init();
         Pd.resize(cn0_.size());
         for (int i = 0; i < static_cast<int>(cn0_.size()); i++) Pd[i].reserve(num_thresholds);
@@ -134,8 +133,8 @@ protected:
     {
     }
 
-    std::vector<double> cn0_ = {35.0, 38.0, 43.0};
-    std::vector<float> pfa_local = {0.01, 0.1};  //{FLAGS_acq_test_pfa};  //{0.001, 0.01, 0.1, 1};
+    std::vector<double> cn0_ = {35.0};
+    std::vector<float> pfa_local = {0.0001, 0.001, 0.01, 0.1, 1};  //{FLAGS_acq_test_pfa};  //{0.001, 0.01, 0.1, 1};
     int N_iterations = FLAGS_acq_test_iterations;
     void init();
     //void plot_grid();
@@ -327,8 +326,8 @@ int AcquisitionPerformanceTest::configure_receiver(double cn0, float pfa, unsign
             config->set_property("Acquisition_1C.doppler_step", std::to_string(doppler_step));
 
             config->set_property("Acquisition_1C.threshold", std::to_string(threshold));
-            if (FLAGS_acq_test_pfa > 0.0) config->supersede_property("Acquisition_1C.pfa", std::to_string(pfa));
-
+            //if (FLAGS_acq_test_pfa > 0.0) config->supersede_property("Acquisition_1C.pfa", std::to_string(pfa));
+            config->supersede_property("Acquisition_1C.pfa", std::to_string(pfa));
             config->set_property("Acquisition_1C.use_CFAR_algorithm", "true");
 
             config->set_property("Acquisition_1C.coherent_integration_time_ms", std::to_string(coherent_integration_time_ms));
@@ -451,9 +450,6 @@ TEST_F(AcquisitionPerformanceTest, PdvsCn0)
     ASSERT_TRUE(boost::filesystem::create_directory(path_str, ec)) << "Could not create the " << path_str << " folder.";
 
     unsigned int cn0_index = 0;
-    //for (unsigned iter = 0; iter < N_iterations; iter++)
-    //unsigned iter = 0;
-    //{
     for (std::vector<double>::const_iterator it = cn0_.cbegin(); it != cn0_.cend(); ++it)
         {
             // Do N_iterations of the experiment
@@ -640,11 +636,12 @@ TEST_F(AcquisitionPerformanceTest, PdvsCn0)
                                         }
                                     else
                                         {
-                                            // std::cout << "No reference data has been found. Maybe a non-present satellite?" << std::endl;
+                                            //std::cout << "No reference data has been found. Maybe a non-present satellite?" << num_executions << std::endl;
                                             if (k == 1)
                                                 {
                                                     double wrongly_detected = arma::accu(positive_acq);
                                                     double computed_Pfa = wrongly_detected / static_cast<double>(num_executions);
+                                                    std::cout << computed_Pfa << std::endl;
                                                     if (num_executions > 0)
                                                         {
                                                             meas_Pfa_.push_back(computed_Pfa);
@@ -696,6 +693,9 @@ TEST_F(AcquisitionPerformanceTest, PdvsCn0)
                         {
                             Pd_correct[cn0_index][pfa_iter] = 0.0;
                         }
+                    meas_Pd_.clear();
+                    meas_Pfa_.clear();
+                    meas_Pd_correct_.clear();
                 }
             cn0_index++;
         }

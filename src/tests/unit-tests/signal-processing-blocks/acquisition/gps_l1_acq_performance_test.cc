@@ -34,8 +34,8 @@
 #include "tracking_true_obs_reader.h"
 #include "true_observables_reader.h"
 #include "display.h"
-#include <boost/filesystem/operations.hpp>   // for create_directories, exists
-#include <boost/filesystem/path_traits.hpp>  // for filesystem
+#include "gnuplot_i.h"
+#include <boost/filesystem.hpp>
 #include <gnuradio/top_block.h>
 #include <glog/logging.h>
 #include <gtest/gtest.h>
@@ -49,6 +49,7 @@ DEFINE_int32(acq_test_fake_PRN, 33, "Fake PRN number");
 DEFINE_int32(acq_test_signal_duration_s, 2, "Generated signal duration");
 DEFINE_bool(acq_test_bit_transition_flag, false, "Bit transition flag");
 DEFINE_int32(acq_test_iterations, 2, "Number of iterations");
+DEFINE_bool(plot_acq_test, false, "Plots results of AcquisitionPerformanceTest with gnuplot");
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class AcqPerfTest_msg_rx;
@@ -133,8 +134,8 @@ protected:
     {
     }
 
-    std::vector<double> cn0_ = {35.0};
-    std::vector<float> pfa_local = {0.0001, 0.001, 0.01, 0.1, 1};  //{FLAGS_acq_test_pfa};  //{0.001, 0.01, 0.1, 1};
+    std::vector<double> cn0_ = {35.0, 38.0};
+    std::vector<float> pfa_local = {0.001, 0.01, 1};  //{0.0001, 0.001, 0.01, 0.1, 1};  //{FLAGS_acq_test_pfa};  //{0.001, 0.01, 0.1, 1};
     int N_iterations = FLAGS_acq_test_iterations;
     void init();
     //void plot_grid();
@@ -149,6 +150,7 @@ protected:
     int run_receiver();
     int count_executions(const std::string& basename, unsigned int sat);
     void check_results();
+    void plot_results();
 
     concurrent_queue<int> channel_internal_queue;
 
@@ -438,7 +440,86 @@ int AcquisitionPerformanceTest::count_executions(const std::string& basename, un
 }
 
 
-TEST_F(AcquisitionPerformanceTest, PdvsCn0)
+void AcquisitionPerformanceTest::plot_results()
+{
+    if (FLAGS_plot_acq_test == true)
+        {
+            const std::string gnuplot_executable(FLAGS_gnuplot_executable);
+            if (gnuplot_executable.empty())
+                {
+                    std::cout << "WARNING: Although the flag plot_gps_l1_tracking_test has been set to TRUE," << std::endl;
+                    std::cout << "gnuplot has not been found in your system." << std::endl;
+                    std::cout << "Test results will not be plotted." << std::endl;
+                }
+            else
+                {
+                    try
+                        {
+                            boost::filesystem::path p(gnuplot_executable);
+                            boost::filesystem::path dir = p.parent_path();
+                            std::string gnuplot_path = dir.native();
+                            Gnuplot::set_GNUPlotPath(gnuplot_path);
+
+                            Gnuplot g1("linespoints");
+                            g1.set_title("Receiver Operating Characteristic for GPS L1 C/A acquisition");
+                            g1.cmd("set logscale x");
+                            g1.cmd("set yrange [0:1]");
+                            g1.cmd("set grid xtics 0.001 0.01 0.1 1");
+                            g1.cmd("set grid ytics");
+                            g1.set_grid();
+                            g1.set_xlabel("Pfa");
+                            g1.set_ylabel("Pd");
+                            for (int i = 0; i < static_cast<int>(cn0_.size()); i++)
+                                {
+                                    std::vector<float> Pd_i;
+                                    std::vector<float> Pfa_i;
+                                    for (int k = 0; k < num_thresholds; k++)
+                                        {
+                                            Pd_i.push_back(Pd[i][k]);
+                                            Pfa_i.push_back(Pd[i][k]);
+                                        }
+                                    g1.plot_xy(Pfa_i, Pd_i, "CN0 = " + std::to_string(static_cast<int>(cn0_[i])) + " dBHz");
+                                }
+                            g1.set_legend();
+                            g1.savetops("ROC");
+                            g1.savetopdf("ROC", 18);
+                            g1.showonscreen();  // window output
+
+                            if (Pd_correct[0].size() > 0)
+                                {
+                                    Gnuplot g2("linespoints");
+                                    g2.set_title("Receiver Operating Characteristic for GPS L1 C/A correct acquisition");
+                                    g2.cmd("set logscale x");
+                                    g2.set_xlabel("Pfa");
+                                    g2.set_xlabel("Pd");
+                                    g2.set_grid();
+                                    for (int i = 0; i < static_cast<int>(cn0_.size()); i++)
+                                        {
+                                            std::vector<float> Pd_i_correct;
+                                            std::vector<float> Pfa_i;
+                                            for (int k = 0; k < num_thresholds; k++)
+                                                {
+                                                    Pd_i_correct.push_back(Pd_correct[i][k]);
+                                                    Pfa_i.push_back(Pd[i][k]);
+                                                }
+                                            g2.plot_xy(Pfa_i, Pd_i_correct, "CN0 = " + std::to_string(static_cast<int>(cn0_[i])) + " dBHz");
+                                        }
+                                    g2.set_legend();
+                                    g2.savetops("ROC-correct");
+                                    g2.savetopdf("ROC-correct", 18);
+                                    g2.showonscreen();  // window output
+                                }
+                        }
+                    catch (const GnuplotException& ge)
+                        {
+                            std::cout << ge.what() << std::endl;
+                        }
+                }
+        }
+}
+
+
+TEST_F(AcquisitionPerformanceTest, ROC)
 {
     tracking_true_obs_reader true_trk_data;
 
@@ -726,4 +807,6 @@ TEST_F(AcquisitionPerformanceTest, PdvsCn0)
 
             aux_index++;
         }
+
+    plot_results();
 }

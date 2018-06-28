@@ -683,8 +683,11 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
     gr::thread::scoped_lock lk(d_setlock);
     if (!d_active or d_worker_active)
         {
-            d_sample_counter += d_fft_size * ninput_items[0];
-            consume_each(ninput_items[0]);
+            if (!acq_parameters.blocking_on_stanby)
+                {
+                    d_sample_counter += d_fft_size * ninput_items[0];
+                    consume_each(ninput_items[0]);
+                }
             if (d_step_two)
                 {
                     d_doppler_center_step_two = static_cast<float>(d_gnss_synchro->Acq_doppler_hz);
@@ -708,8 +711,11 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                 d_input_power = 0.0;
                 d_test_statistics = 0.0;
                 d_state = 1;
-                d_sample_counter += d_fft_size * ninput_items[0];  // sample counter
-                consume_each(ninput_items[0]);
+                if (!acq_parameters.blocking_on_stanby)
+                    {
+                        d_sample_counter += d_fft_size * ninput_items[0];  // sample counter
+                        consume_each(ninput_items[0]);
+                    }
                 break;
             }
 

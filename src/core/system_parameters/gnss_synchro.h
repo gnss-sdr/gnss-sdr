@@ -73,6 +73,40 @@ public:
     double RX_time;               //!< Set by Observables processing block
     bool Flag_valid_pseudorange;  //!< Set by Observables processing block
     double interp_TOW_ms;         //!< Set by Observables processing block
+
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version)
+    {
+        // Simply list all the fields to be serialized/deserialized.
+        // Satellite and signal info
+        ar& System;
+        ar& Signal;
+        ar& PRN;
+        ar& Channel_ID;
+        ar& Acq_delay_samples;
+        ar& Acq_doppler_hz;
+        ar& Acq_samplestamp_samples;
+        ar& Flag_valid_acquisition;
+        //Tracking
+        ar& fs;
+        ar& Prompt_I;
+        ar& Prompt_Q;
+        ar& CN0_dB_hz;
+        ar& Carrier_Doppler_hz;
+        ar& Carrier_phase_rads;
+        ar& Code_phase_samples;
+        ar& Tracking_sample_counter;
+        ar& Flag_valid_symbol_output;
+        ar& correlation_length_ms;
+        //Telemetry Decoder
+        ar& Flag_valid_word;
+        ar& TOW_at_current_symbol_ms;
+        // Observables
+        ar& Pseudorange_m;
+        ar& RX_time;
+        ar& Flag_valid_pseudorange;
+        ar& interp_TOW_ms;
+    }
 };
 
 #endif

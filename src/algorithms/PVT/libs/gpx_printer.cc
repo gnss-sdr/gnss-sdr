@@ -1,6 +1,6 @@
 /*!
  * \file gpx_printer.cc
- * \brief Interface of a class that prints PVT information to a gpx file
+ * \brief Implementation of a class that prints PVT information to a gpx file
  * \author Álvaro Cebrián Juan, 2018. acebrianjuan(at)gmail.com
  *
  *

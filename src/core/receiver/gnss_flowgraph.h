@@ -39,6 +39,7 @@
 #include "GPS_L1_CA.h"
 #include "gnss_signal.h"
 #include "gnss_sdr_sample_counter.h"
+#include "gnss_synchro_monitor.h"
 #include <gnuradio/top_block.h>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/null_source.h>
@@ -185,6 +186,9 @@ private:
 
     std::vector<unsigned int> channels_state_;
     std::mutex signal_list_mutex;
+
+    bool enable_monitor_;
+    gr::basic_block_sptr GnssSynchroMonitor_;
 };
 
 #endif /*GNSS_SDR_GNSS_FLOWGRAPH_H_*/

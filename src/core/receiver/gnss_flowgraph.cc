@@ -496,6 +496,24 @@ void GNSSFlowgraph::connect()
             return;
         }
 
+    // GNSS SYNCHRO MONITOR
+    if (enable_monitor_)
+        {
+            try
+                {
+                    for (unsigned int i = 0; i < channels_count_; i++)
+                        {
+                            top_block_->connect(observables_->get_right_block(), i, GnssSynchroMonitor_, i);
+                        }
+                }
+            catch (const std::exception& e)
+                {
+                    LOG(WARNING) << "Can't connect observables to Monitor block";
+                    LOG(ERROR) << e.what();
+                    top_block_->disconnect_all();
+                    return;
+                }
+        }
     // Activate acquisition in enabled channels
     for (unsigned int i = 0; i < channels_count_; i++)
         {
@@ -1091,6 +1109,25 @@ void GNSSFlowgraph::init()
     set_channels_state();
     applied_actions_ = 0;
     DLOG(INFO) << "Blocks instantiated. " << channels_count_ << " channels.";
+
+    /*
+	 * Instantiate the receiver monitor block, if required
+	 */
+    enable_monitor_ = configuration_->property("Monitor.enable_monitor", false);
+
+    std::vector<std::string> udp_addr_vec;
+
+    std::string address_string = configuration_->property("Monitor.output_rate_ms", std::string("127.0.0.1"));
+    //todo: split the string in substrings using the separator and fill the address vector.
+
+    if (enable_monitor_)
+        {
+            GnssSynchroMonitor_ = gr::basic_block_sptr(new gnss_synchro_monitor(channels_count_,
+                configuration_->property("Monitor.output_rate_ms", 1),
+                0,
+                configuration_->property("Monitor.udp_port", 1234),
+                udp_addr_vec));
+        }
 }
 
 

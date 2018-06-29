@@ -67,7 +67,6 @@ DEFINE_int32(acq_test_fake_PRN, 33, "PRN number of a non-present satellite");
 
 DEFINE_int32(acq_test_iterations, 1, "Number of iterations (same signal, different noise realization)");
 DEFINE_bool(plot_acq_test, false, "Plots results with gnuplot, if available");
-DEFINE_bool(show_plots, true, "Show plots on screen. Disable for non-interactive testing.");
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class AcqPerfTest_msg_rx;

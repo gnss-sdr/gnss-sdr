@@ -482,7 +482,7 @@ TEST_F(GpsL1CADllPllTrackingPullInTest, ValidationOfResults)
                                                     if (FLAGS_plot_detail_level >= 2)
                                                         {
                                                             Gnuplot g1("linespoints");
-                                                            g1.showonscreen();  // window output
+                                                            if (FLAGS_show_plots) g1.showonscreen();  // window output
                                                             g1.set_title(std::to_string(generator_CN0_values.at(current_cn0_idx)) + " dB-Hz, " + "PLL/DLL BW: " + std::to_string(FLAGS_PLL_bw_hz_start) + "," + std::to_string(FLAGS_DLL_bw_hz_start) + " Hz" + "GPS L1 C/A (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
                                                             g1.set_grid();
                                                             g1.set_xlabel("Time [s]");
@@ -496,7 +496,7 @@ TEST_F(GpsL1CADllPllTrackingPullInTest, ValidationOfResults)
                                                             //g1.savetopdf("Correlators_outputs" + std::to_string(generator_CN0_values.at(current_cn0_idx)), 18);
 
                                                             Gnuplot g2("points");
-                                                            g2.showonscreen();  // window output
+                                                            if (FLAGS_show_plots) g2.showonscreen();  // window output
                                                             g2.set_title(std::to_string(generator_CN0_values.at(current_cn0_idx)) + " dB-Hz Constellation " + "PLL/DLL BW: " + std::to_string(FLAGS_PLL_bw_hz_start) + "," + std::to_string(FLAGS_DLL_bw_hz_start) + " Hz" + "GPS L1 C/A (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
                                                             g2.set_grid();
                                                             g2.set_xlabel("Inphase");
@@ -519,7 +519,7 @@ TEST_F(GpsL1CADllPllTrackingPullInTest, ValidationOfResults)
                                                             g3.set_legend();
                                                             //g3.savetops("CN0_output");
                                                             //g3.savetopdf("CN0_output", 18);
-                                                            g3.showonscreen();  // window output
+                                                            if (FLAGS_show_plots) g3.showonscreen();  // window output
                                                         }
                                                 }
                                             catch (const GnuplotException& ge)
@@ -568,6 +568,6 @@ TEST_F(GpsL1CADllPllTrackingPullInTest, ValidationOfResults)
             g4.set_legend();
             g4.savetops("trk_pull_in_grid_" + std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))));
             g4.savetopdf("trk_pull_in_grid_" + std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))), 12);
-            g4.showonscreen();  // window output
+            if (FLAGS_show_plots) g4.showonscreen();  // window output
         }
 }

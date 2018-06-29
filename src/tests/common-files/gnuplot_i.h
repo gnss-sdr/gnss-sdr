@@ -47,7 +47,7 @@
 #ifndef GNSS_SDR_GNUPLOT_I_H_
 #define GNSS_SDR_GNUPLOT_I_H_
 
-
+#include <gflags/gflags.h>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -61,6 +61,7 @@
 #include <list>  // for std::list
 #include <sys/stat.h>
 
+DEFINE_bool(show_plots, true, "Show plots on screen. Disable for non-interactive testing.");
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
 //defined for 32 and 64-bit environments
@@ -2089,19 +2090,19 @@ std::string Gnuplot::create_tmpfile(std::ofstream &tmp)
             throw GnuplotException(except.str());
         }
 
-// int mkstemp(char *name);
-// shall replace the contents of the string pointed to by "name" by a unique
-// filename, and return a file descriptor for the file open for reading and
-// writing.  Otherwise, -1 shall be returned if no suitable file could be
-// created.  The string in template should look like a filename with six
-// trailing 'X' s; mkstemp() replaces each 'X' with a character from the
-// portable filename character set.  The characters are chosen such that the
-// resulting name does not duplicate the name of an existing file at the
-// time of a call to mkstemp()
+        // int mkstemp(char *name);
+        // shall replace the contents of the string pointed to by "name" by a unique
+        // filename, and return a file descriptor for the file open for reading and
+        // writing.  Otherwise, -1 shall be returned if no suitable file could be
+        // created.  The string in template should look like a filename with six
+        // trailing 'X' s; mkstemp() replaces each 'X' with a character from the
+        // portable filename character set.  The characters are chosen such that the
+        // resulting name does not duplicate the name of an existing file at the
+        // time of a call to mkstemp()
 
-//
-// open temporary files for output
-//
+        //
+        // open temporary files for output
+        //
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
     if (_mktemp(name) == NULL)

@@ -210,7 +210,7 @@ void GpsL1CaPcpsAcquisitionTest::plot_grid()
 
                     g1.savetops("GPS_L1_acq_grid");
                     g1.savetopdf("GPS_L1_acq_grid");
-                    g1.showonscreen();
+                    if (FLAGS_show_plots) g1.showonscreen();
                 }
             catch (const GnuplotException &ge)
                 {

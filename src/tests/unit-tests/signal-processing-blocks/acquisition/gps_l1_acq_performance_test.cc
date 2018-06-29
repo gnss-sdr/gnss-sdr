@@ -57,7 +57,7 @@ DEFINE_double(acq_test_cn0_final, 45.0, "Final CN0, in dBHz.");
 DEFINE_double(acq_test_cn0_step, 3.0, "CN0 step, in dB.");
 
 DEFINE_double(acq_test_threshold_init, 11.0, "Initial acquisition threshold");
-DEFINE_double(acq_test_threshold_final, 16.0, "Initial acquisition threshold");
+DEFINE_double(acq_test_threshold_final, 16.0, "Final acquisition threshold");
 DEFINE_double(acq_test_threshold_step, 1.0, "Acquisition threshold step");
 
 DEFINE_double(acq_test_pfa_init, 1e-5, "Set initial threshold via probability of false alarm. Disable with -1.0");

@@ -33,6 +33,8 @@ file = 'acq';
 
 sat = 7;
 
+channel = 0;
+execution = 1;
 % Signal:
 %     1 GPS  L1
 %     2 GPS  L2M
@@ -77,7 +79,7 @@ switch(signal_type)
         system = 'R';
         signal = '1G';
 end
-filename = [path file '_' system '_' signal '_sat_' num2str(sat) '.mat'];
+filename = [path file '_' system '_' signal '_ch_' num2str(channel) '_' num2str(execution) '_sat_' num2str(sat) '.mat'];
 load(filename);
 [n_fft n_dop_bins] = size(grid);
 [d_max f_max] = find(grid == max(max(grid)));
@@ -105,7 +107,8 @@ xlabel('Doppler shift / Hz')
 ylabel('Test statistics')
 title(['Fixed code delay to ' num2str((d_max - 1) / n_fft * n_chips) ' chips'])
 subplot(2,1,2)
-plot(delay, grid(:, f_max))
+normalization = (d_samples_per_code^4) * input_power;
+plot(delay, acq_grid(:, f_max)./normalization)
 xlim([min(delay) max(delay)])
 xlabel('Code delay / chips')
 ylabel('Test statistics')

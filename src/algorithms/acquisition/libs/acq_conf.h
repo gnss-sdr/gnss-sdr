@@ -1,7 +1,8 @@
 /*!
- * \file tracking_true_obs_reader.h
- * \brief Helper file for unit testing
- * \author Javier Arribas, 2017. jarribas(at)cttc.es
+ * \file acq_conf.cc
+ * \brief Class that contains all the configuration parameters for generic
+ * acquisition block based on the PCPS algoritm.
+ * \author Carles Fernandez, 2018. cfernandez(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
@@ -28,33 +29,35 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_TRACKING_TRUE_OBS_READER_H
-#define GNSS_SDR_TRACKING_TRUE_OBS_READER_H
+#ifndef GNSS_SDR_ACQ_CONF_H_
+#define GNSS_SDR_ACQ_CONF_H_
 
-#include <fstream>
+#include <cstddef>
 #include <string>
-#include <vector>
 
-class tracking_true_obs_reader
+class Acq_Conf
 {
 public:
-    ~tracking_true_obs_reader();
-    bool read_binary_obs();
-    bool restart();
-    long int num_epochs();
-    bool open_obs_file(std::string out_file);
-    void close_obs_file();
-    bool d_dump;
+    /* PCPS Acquisition configuration */
+    unsigned int sampled_ms;
+    unsigned int max_dwells;
+    unsigned int doppler_max;
+    unsigned int num_doppler_bins_step2;
+    float doppler_step2;
+    long fs_in;
+    int samples_per_ms;
+    int samples_per_code;
+    bool bit_transition_flag;
+    bool use_CFAR_algorithm_flag;
+    bool dump;
+    bool blocking;
+    bool blocking_on_standby;  // enable it only for unit testing to avoid sample consume on idle status
+    bool make_2_steps;
+    std::string dump_filename;
+    unsigned int dump_channel;
+    size_t it_size;
 
-    double signal_timestamp_s;
-    double acc_carrier_phase_cycles;
-    double doppler_l1_hz;
-    double prn_delay_chips;
-    double tow;
-
-private:
-    std::string d_dump_filename;
-    std::ifstream d_dump_file;
+    Acq_Conf();
 };
 
-#endif  //GNSS_SDR_RACKING_TRUE_OBS_READER_H
+#endif

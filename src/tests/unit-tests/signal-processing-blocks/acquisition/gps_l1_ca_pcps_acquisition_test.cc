@@ -160,6 +160,7 @@ void GpsL1CaPcpsAcquisitionTest::init()
             config->set_property("Acquisition_1C.dump", "false");
         }
     config->set_property("Acquisition_1C.dump_filename", "./tmp-acq-gps1/acquisition");
+    config->set_property("Acquisition_1C.dump_channel", "1");
     config->set_property("Acquisition_1C.threshold", "0.00001");
     config->set_property("Acquisition_1C.doppler_max", std::to_string(doppler_max));
     config->set_property("Acquisition_1C.doppler_step", std::to_string(doppler_step));
@@ -175,7 +176,7 @@ void GpsL1CaPcpsAcquisitionTest::plot_grid()
     unsigned int sat = static_cast<unsigned int>(gnss_synchro.PRN);
 
     unsigned int samples_per_code = static_cast<unsigned int>(round(4000000 / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));  // !!
-    acquisition_dump_reader acq_dump(basename, sat, doppler_max, doppler_step, samples_per_code);
+    acquisition_dump_reader acq_dump(basename, sat, doppler_max, doppler_step, samples_per_code, 1);
 
     if (!acq_dump.read_binary_acq()) std::cout << "Error reading files" << std::endl;
 
@@ -209,7 +210,7 @@ void GpsL1CaPcpsAcquisitionTest::plot_grid()
 
                     g1.savetops("GPS_L1_acq_grid");
                     g1.savetopdf("GPS_L1_acq_grid");
-                    g1.showonscreen();
+                    if (FLAGS_show_plots) g1.showonscreen();
                 }
             catch (const GnuplotException &ge)
                 {

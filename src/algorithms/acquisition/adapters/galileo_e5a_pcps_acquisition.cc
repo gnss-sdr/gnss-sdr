@@ -33,6 +33,7 @@
 #include "galileo_e5_signal_processing.h"
 #include "Galileo_E5a.h"
 #include "gnss_sdr_flags.h"
+#include "acq_conf.h"
 #include <boost/lexical_cast.hpp>
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
@@ -44,7 +45,7 @@ using google::LogMessage;
 GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* configuration,
     std::string role, unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
-    pcpsconf_t acq_parameters;
+    Acq_Conf acq_parameters = Acq_Conf();
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
     std::string default_dump_filename = "../data/acquisition.dat";
@@ -64,6 +65,7 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
         }
     dump_ = configuration_->property(role + ".dump", false);
     acq_parameters.dump = dump_;
+    acq_parameters.dump_channel = configuration_->property(role + ".dump_channel", 0);
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
     if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
     acq_parameters.doppler_max = doppler_max_;
@@ -104,6 +106,7 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
     acq_parameters.num_doppler_bins_step2 = configuration_->property(role + ".second_nbins", 4);
     acq_parameters.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
     acq_parameters.make_2_steps = configuration_->property(role + ".make_two_steps", false);
+    acq_parameters.blocking_on_standby = configuration_->property(role + ".blocking_on_standby", false);
     acquisition_ = pcps_make_acquisition(acq_parameters);
 
     stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);

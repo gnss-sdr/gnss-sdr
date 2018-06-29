@@ -1,7 +1,8 @@
 /*!
- * \file tracking_true_obs_reader.h
- * \brief Helper file for unit testing
- * \author Javier Arribas, 2017. jarribas(at)cttc.es
+ * \file dll_pll_conf.cc
+ * \brief Class that contains all the configuration parameters for generic
+ * tracking block based on a DLL and a PLL.
+ * \author Javier Arribas, 2018. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
@@ -28,33 +29,33 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_TRACKING_TRUE_OBS_READER_H
-#define GNSS_SDR_TRACKING_TRUE_OBS_READER_H
 
-#include <fstream>
-#include <string>
-#include <vector>
+#include "dll_pll_conf.h"
+#include <cstring>
 
-class tracking_true_obs_reader
+Dll_Pll_Conf::Dll_Pll_Conf()
 {
-public:
-    ~tracking_true_obs_reader();
-    bool read_binary_obs();
-    bool restart();
-    long int num_epochs();
-    bool open_obs_file(std::string out_file);
-    void close_obs_file();
-    bool d_dump;
-
-    double signal_timestamp_s;
-    double acc_carrier_phase_cycles;
-    double doppler_l1_hz;
-    double prn_delay_chips;
-    double tow;
-
-private:
-    std::string d_dump_filename;
-    std::ifstream d_dump_file;
-};
-
-#endif  //GNSS_SDR_RACKING_TRUE_OBS_READER_H
+    /* DLL/PLL tracking configuration */
+    fs_in = 0.0;
+    vector_length = 0;
+    dump = false;
+    dump_filename = "./dll_pll_dump.dat";
+    pll_bw_hz = 40.0;
+    dll_bw_hz = 2.0;
+    pll_bw_narrow_hz = 5.0;
+    dll_bw_narrow_hz = 0.75;
+    early_late_space_chips = 0.5;
+    very_early_late_space_chips = 0.5;
+    early_late_space_narrow_chips = 0.1;
+    very_early_late_space_narrow_chips = 0.1;
+    extend_correlation_symbols = 5;
+    cn0_samples = 20;
+    carrier_lock_det_mav_samples = 20;
+    cn0_min = 25;
+    max_lock_fail = 50;
+    carrier_lock_th = 0.85;
+    track_pilot = false;
+    system = 'G';
+    char sig_[3] = "1C";
+    std::memcpy(signal, sig_, 3);
+}

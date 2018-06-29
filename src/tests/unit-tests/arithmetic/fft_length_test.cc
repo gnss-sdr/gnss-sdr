@@ -124,7 +124,7 @@ TEST(FFTLengthTest, MeasureExecutionTime)
                             g1.set_style("points").plot_xy(powers_of_two, execution_times_powers_of_two, "Power of 2");
                             g1.savetops("FFT_execution_times_extended");
                             g1.savetopdf("FFT_execution_times_extended", 18);
-                            g1.showonscreen();  // window output
+                            if (FLAGS_show_plots) g1.showonscreen();  // window output
 
                             Gnuplot g2("linespoints");
                             g2.set_title("FFT execution times for different lengths (up to 2^{14}=16384)");
@@ -136,7 +136,7 @@ TEST(FFTLengthTest, MeasureExecutionTime)
                             g2.set_style("points").plot_xy(powers_of_two, execution_times_powers_of_two, "Power of 2");
                             g2.savetops("FFT_execution_times");
                             g2.savetopdf("FFT_execution_times", 18);
-                            g2.showonscreen();  // window output
+                            if (FLAGS_show_plots) g2.showonscreen();  // window output
                         }
                     catch (const GnuplotException& ge)
                         {

@@ -40,17 +40,34 @@
 #include <glog/logging.h>
 #include <gtest/gtest.h>
 
-DEFINE_string(config_file_ptest, std::string(""), "File containing alternative configuration parameters for the position test.");
-//DEFINE_double(acq_test_threshold, 0.001, "Acquisition threshold");
-DEFINE_double(acq_test_pfa_init, 1e-5, "Set initial threshold via probability of false alarm");
+DEFINE_string(config_file_ptest, std::string(""), "File containing alternative configuration parameters for the acquisition performance test.");
+DEFINE_string(acq_test_input_file, std::string(""), "File containing raw signal data, must be in int8_t format. The signal generator will not be used.");
+
+DEFINE_int32(acq_test_doppler_max, 5000, "Maximum Doppler, in Hz");
+DEFINE_int32(acq_test_doppler_step, 125, "Doppler step, in Hz.");
 DEFINE_int32(acq_test_coherent_time_ms, 1, "Acquisition coherent time, in ms");
+DEFINE_int32(acq_test_max_dwells, 1, "Number of non-coherent integrations");
+DEFINE_bool(acq_test_use_CFAR_algorithm, true, "Use CFAR algorithm");
+DEFINE_bool(acq_test_bit_transition_flag, false, "Bit transition flag");
+
+DEFINE_int32(acq_test_signal_duration_s, 2, "Generated signal duration, in s");
+DEFINE_int32(acq_test_num_meas, 0, "Number of measurements per run. 0 means the complete file.");
+DEFINE_double(acq_test_cn0_init, 33.0, "Initial CN0, in dBHz.");
+DEFINE_double(acq_test_cn0_final, 45.0, "Final CN0, in dBHz.");
+DEFINE_double(acq_test_cn0_step, 3.0, "CN0 step, in dB.");
+
+DEFINE_double(acq_test_threshold_init, 11.0, "Initial acquisition threshold");
+DEFINE_double(acq_test_threshold_final, 16.0, "Initial acquisition threshold");
+DEFINE_double(acq_test_threshold_step, 1.0, "Acquisition threshold step");
+
+DEFINE_double(acq_test_pfa_init, 1e-5, "Set initial threshold via probability of false alarm. Disable with -1.0");
+
 DEFINE_int32(acq_test_PRN, 1, "PRN number of a present satellite");
 DEFINE_int32(acq_test_fake_PRN, 33, "PRN number of a non-present satellite");
-DEFINE_int32(acq_test_signal_duration_s, 1, "Generated signal duration, in s");
-DEFINE_bool(acq_test_bit_transition_flag, false, "Bit transition flag");
-DEFINE_int32(acq_test_iterations, 1, "Number of iterations (same signal, diferent noise realization)");
+
+DEFINE_int32(acq_test_iterations, 1, "Number of iterations (same signal, different noise realization)");
 DEFINE_bool(plot_acq_test, false, "Plots results with gnuplot, if available");
-DEFINE_bool(acq_test_use_CFAR_algorithm, true, "Use CFAR algorithm");
+DEFINE_bool(show_plots, true, "Show plots on screen. Disable for non-interactive testing.");
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class AcqPerfTest_msg_rx;
@@ -118,19 +135,60 @@ protected:
         config = std::make_shared<InMemoryConfiguration>();
         item_size = sizeof(gr_complex);
         gnss_synchro = Gnss_Synchro();
-        doppler_max = 5000;
-        doppler_step = 125;
+        doppler_max = static_cast<unsigned int>(FLAGS_acq_test_doppler_max);
+        doppler_step = static_cast<unsigned int>(FLAGS_acq_test_doppler_step);
         stop = false;
-        init();
-        pfa_vector.push_back(FLAGS_acq_test_pfa_init);
-        float aux = 1.0;
-        while ((FLAGS_acq_test_pfa_init * std::pow(10, aux)) < 1)
+        if (FLAGS_acq_test_input_file.empty())
             {
-                pfa_vector.push_back(FLAGS_acq_test_pfa_init * std::pow(10, aux));
-                aux = aux + 1.0;
+                cn0_vector.push_back(FLAGS_acq_test_cn0_init);
+                double aux = FLAGS_acq_test_cn0_init + FLAGS_acq_test_cn0_step;
+                while (aux <= FLAGS_acq_test_cn0_final)
+                    {
+                        cn0_vector.push_back(aux);
+                        aux = aux + FLAGS_acq_test_cn0_step;
+                    }
             }
-        pfa_vector.push_back(1.0);
+        else
+            {
+                cn0_vector = {0.0};
+            }
+        init();
+
+        if (FLAGS_acq_test_pfa_init > 0.0)
+            {
+                pfa_vector.push_back(FLAGS_acq_test_pfa_init);
+                float aux = 1.0;
+                while ((FLAGS_acq_test_pfa_init * std::pow(10, aux)) < 1)
+                    {
+                        pfa_vector.push_back(FLAGS_acq_test_pfa_init * std::pow(10, aux));
+                        aux = aux + 1.0;
+                    }
+                pfa_vector.push_back(1.0);
+            }
+        else
+            {
+                float aux = static_cast<float>(FLAGS_acq_test_threshold_init);
+                pfa_vector.push_back(aux);
+                aux = aux + static_cast<float>(FLAGS_acq_test_threshold_step);
+                while (aux <= static_cast<float>(FLAGS_acq_test_threshold_final))
+                    {
+                        pfa_vector.push_back(aux);
+                        aux = aux + static_cast<float>(FLAGS_acq_test_threshold_step);
+                    }
+            }
+
         num_thresholds = pfa_vector.size();
+
+        int aux2 = ((generated_signal_duration_s * 1000 - FLAGS_acq_test_coherent_time_ms) / FLAGS_acq_test_coherent_time_ms);
+        if ((FLAGS_acq_test_num_meas > 0) and (FLAGS_acq_test_num_meas < aux2))
+            {
+                num_of_measurements = static_cast<unsigned int>(FLAGS_acq_test_num_meas);
+            }
+        else
+            {
+                num_of_measurements = static_cast<unsigned int>(aux2);
+            }
+
         Pd.resize(cn0_vector.size());
         for (int i = 0; i < static_cast<int>(cn0_vector.size()); i++) Pd[i].reserve(num_thresholds);
         Pfa.resize(cn0_vector.size());
@@ -143,7 +201,8 @@ protected:
     {
     }
 
-    std::vector<double> cn0_vector = {35.0, 38.0};
+
+    std::vector<double> cn0_vector;
     std::vector<float> pfa_vector;
 
     int N_iterations = FLAGS_acq_test_iterations;
@@ -181,16 +240,12 @@ protected:
 
     const double baseband_sampling_freq = static_cast<double>(FLAGS_fs_gen_sps);
     const int coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
-    const int number_of_channels = 2;
     const int in_acquisition = 1;
-    const float threshold = 0.001;  // FLAGS_acq_test_threshold;
-    const int max_dwells = 1;
     const int dump_channel = 0;
 
     int generated_signal_duration_s = FLAGS_acq_test_signal_duration_s;
-
-    unsigned int num_of_realizations = ((generated_signal_duration_s * 1000 - FLAGS_acq_test_coherent_time_ms) / FLAGS_acq_test_coherent_time_ms);
-    unsigned int realization_counter = 0;
+    unsigned int num_of_measurements;
+    unsigned int measurement_counter = 0;
 
     unsigned int observed_satellite = FLAGS_acq_test_PRN;
     std::string path_str = "./acq-perf-test";
@@ -226,7 +281,7 @@ void AcquisitionPerformanceTest::init()
     signal.copy(gnss_synchro.Signal, 2, 0);
     gnss_synchro.PRN = observed_satellite;
     message = 0;
-    realization_counter = 0;
+    measurement_counter = 0;
 }
 
 
@@ -249,11 +304,11 @@ void AcquisitionPerformanceTest::wait_message()
 
 void AcquisitionPerformanceTest::process_message()
 {
-    realization_counter++;
+    measurement_counter++;
     acquisition->reset();
     acquisition->set_state(1);
-    std::cout << "Progress: " << round(static_cast<float>(realization_counter) / static_cast<float>(num_of_realizations) * 100.0) << "% \r" << std::flush;
-    if (realization_counter == num_of_realizations)
+    std::cout << "Progress: " << round(static_cast<float>(measurement_counter) / static_cast<float>(num_of_measurements) * 100.0) << "% \r" << std::flush;
+    if (measurement_counter == num_of_measurements)
         {
             stop_queue();
             top_block->stop();
@@ -327,9 +382,12 @@ int AcquisitionPerformanceTest::configure_receiver(double cn0, float pfa, unsign
             config->set_property("Acquisition_1C.doppler_max", std::to_string(doppler_max));
             config->set_property("Acquisition_1C.doppler_step", std::to_string(doppler_step));
 
-            config->set_property("Acquisition_1C.threshold", std::to_string(threshold));
+            config->set_property("Acquisition_1C.threshold", std::to_string(pfa));
             //if (FLAGS_acq_test_pfa_init > 0.0) config->supersede_property("Acquisition_1C.pfa", std::to_string(pfa));
-            config->supersede_property("Acquisition_1C.pfa", std::to_string(pfa));
+            if (FLAGS_acq_test_pfa_init > 0.0)
+                {
+                    config->supersede_property("Acquisition_1C.pfa", std::to_string(pfa));
+                }
             if (FLAGS_acq_test_use_CFAR_algorithm)
                 {
                     config->set_property("Acquisition_1C.use_CFAR_algorithm", "true");
@@ -349,7 +407,7 @@ int AcquisitionPerformanceTest::configure_receiver(double cn0, float pfa, unsign
                     config->set_property("Acquisition_1C.bit_transition_flag", "false");
                 }
 
-            config->set_property("Acquisition_1C.max_dwells", std::to_string(1));
+            config->set_property("Acquisition_1C.max_dwells", std::to_string(FLAGS_acq_test_max_dwells));
 
             config->set_property("Acquisition_1C.repeat_satellite", "true");
 
@@ -377,7 +435,15 @@ int AcquisitionPerformanceTest::configure_receiver(double cn0, float pfa, unsign
 
 int AcquisitionPerformanceTest::run_receiver()
 {
-    std::string file = "./" + filename_raw_data;
+    std::string file;
+    if (FLAGS_acq_test_input_file.empty())
+        {
+            file = "./" + filename_raw_data;
+        }
+    else
+        {
+            file = FLAGS_acq_test_input_file;
+        }
     const char* file_name = file.c_str();
     gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(int8_t), file_name, false);
 
@@ -469,13 +535,16 @@ void AcquisitionPerformanceTest::plot_results()
                             Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                             Gnuplot g1("linespoints");
-                            g1.set_title("Receiver Operating Characteristic for GPS L1 C/A acquisition, coherent integration time: " + std::to_string(config->property("Acquisition_1C.coherent_integration_time_ms", 1)) + " ms.");
+                            g1.cmd("set font \"Times,18\"");
+                            g1.set_title("Receiver Operating Characteristic for GPS L1 C/A acquisition");
+                            g1.cmd("set label 1 \"" + std::string("Coherent integration time: ") + std::to_string(config->property("Acquisition_1C.coherent_integration_time_ms", 1)) + " ms, Non-coherent integrations: " + std::to_string(config->property("Acquisition_1C.max_dwells", 1)) + " \" at screen 0.12, 0.83 font \"Times,16\"");
                             g1.cmd("set logscale x");
                             g1.cmd("set yrange [0:1]");
+                            g1.cmd("set xrange[0.0001:1]");
+                            g1.cmd("set grid mxtics");
+                            g1.cmd("set grid ytics");
                             g1.set_xlabel("Pfa");
                             g1.set_ylabel("Pd");
-                            g1.cmd("set grid xtics");
-                            g1.cmd("set grid mytics");
                             g1.set_grid();
                             g1.cmd("show grid");
                             for (int i = 0; i < static_cast<int>(cn0_vector.size()); i++)
@@ -485,21 +554,24 @@ void AcquisitionPerformanceTest::plot_results()
                                     for (int k = 0; k < num_thresholds; k++)
                                         {
                                             Pd_i.push_back(Pd[i][k]);
-                                            Pfa_i.push_back(Pd[i][k]);
+                                            Pfa_i.push_back(Pfa[i][k]);
                                         }
                                     g1.plot_xy(Pfa_i, Pd_i, "CN0 = " + std::to_string(static_cast<int>(cn0_vector[i])) + " dBHz");
                                 }
                             g1.set_legend();
                             g1.savetops("ROC");
                             g1.savetopdf("ROC", 18);
-                            g1.showonscreen();  // window output
+                            if (FLAGS_show_plots) g1.showonscreen();  // window output
 
                             Gnuplot g2("linespoints");
-                            g2.set_title("Receiver Operating Characteristic for GPS L1 C/A valid acquisition, coherent integration time: " + std::to_string(config->property("Acquisition_1C.coherent_integration_time_ms", 1)) + " ms.");
+                            g2.cmd("set font \"Times,18\"");
+                            g2.set_title("Receiver Operating Characteristic for GPS L1 C/A valid acquisition");
+                            g2.cmd("set label 1 \"" + std::string("Coherent integration time: ") + std::to_string(config->property("Acquisition_1C.coherent_integration_time_ms", 1)) + " ms, Non-coherent integrations: " + std::to_string(config->property("Acquisition_1C.max_dwells", 1)) + " \" at screen  0.12, 0.83 font \"Times,16\"");
                             g2.cmd("set logscale x");
                             g2.cmd("set yrange [0:1]");
-                            g1.cmd("set grid xtics");
-                            g1.cmd("set grid mytics");
+                            g2.cmd("set xrange[0.0001:1]");
+                            g2.cmd("set grid mxtics");
+                            g2.cmd("set grid ytics");
                             g2.set_xlabel("Pfa");
                             g2.set_ylabel("Valid Pd");
                             g2.set_grid();
@@ -511,14 +583,14 @@ void AcquisitionPerformanceTest::plot_results()
                                     for (int k = 0; k < num_thresholds; k++)
                                         {
                                             Pd_i_correct.push_back(Pd_correct[i][k]);
-                                            Pfa_i.push_back(Pd[i][k]);
+                                            Pfa_i.push_back(Pfa[i][k]);
                                         }
                                     g2.plot_xy(Pfa_i, Pd_i_correct, "CN0 = " + std::to_string(static_cast<int>(cn0_vector[i])) + " dBHz");
                                 }
                             g2.set_legend();
                             g2.savetops("ROC-valid-detection");
                             g2.savetopdf("ROC-valid-detection", 18);
-                            g2.showonscreen();  // window output
+                            if (FLAGS_show_plots) g2.showonscreen();  // window output
                         }
                     catch (const GnuplotException& ge)
                         {
@@ -547,18 +619,27 @@ TEST_F(AcquisitionPerformanceTest, ROC)
             std::vector<double> meas_Pd_correct_;
             std::vector<double> meas_Pfa_;
 
-            std::cout << "Execution for CN0 = " << *it << " dB-Hz" << std::endl;
+            if (FLAGS_acq_test_input_file.empty()) std::cout << "Execution for CN0 = " << *it << " dB-Hz" << std::endl;
 
             // Do N_iterations of the experiment
             for (int pfa_iter = 0; pfa_iter < static_cast<int>(pfa_vector.size()); pfa_iter++)
                 {
-                    std::cout << "Setting threshold for Pfa = " << pfa_vector[pfa_iter] << std::endl;
+                    if (FLAGS_acq_test_pfa_init > 0.0)
+                        {
+                            std::cout << "Setting threshold for Pfa = " << pfa_vector[pfa_iter] << std::endl;
+                        }
+                    else
+                        {
+                            std::cout << "Setting threshold to " << pfa_vector[pfa_iter] << std::endl;
+                        }
+
                     // Configure the signal generator
-                    configure_generator(*it);
+                    if (FLAGS_acq_test_input_file.empty()) configure_generator(*it);
+
                     for (int iter = 0; iter < N_iterations; iter++)
                         {
                             // Generate signal raw signal samples and observations RINEX file
-                            generate_signal();
+                            if (FLAGS_acq_test_input_file.empty()) generate_signal();
 
                             for (unsigned k = 0; k < 2; k++)
                                 {

@@ -51,7 +51,7 @@ public:
     bool use_CFAR_algorithm_flag;
     bool dump;
     bool blocking;
-    bool blocking_on_stanby;  //enable it only for unit testing to avoid sample consume on idle status
+    bool blocking_on_standby;  // enable it only for unit testing to avoid sample consume on idle status
     bool make_2_steps;
     std::string dump_filename;
     unsigned int dump_channel;

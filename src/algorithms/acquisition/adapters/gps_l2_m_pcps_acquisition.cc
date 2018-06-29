@@ -103,6 +103,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     acq_parameters.num_doppler_bins_step2 = configuration_->property(role + ".second_nbins", 4);
     acq_parameters.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
     acq_parameters.make_2_steps = configuration_->property(role + ".make_two_steps", true);
+    acq_parameters.blocking_on_standby = configuration_->property(role + ".blocking_on_standby", false);
     acquisition_ = pcps_make_acquisition(acq_parameters);
     DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
 

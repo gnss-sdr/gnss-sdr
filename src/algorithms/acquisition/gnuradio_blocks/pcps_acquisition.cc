@@ -683,7 +683,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
     gr::thread::scoped_lock lk(d_setlock);
     if (!d_active or d_worker_active)
         {
-            if (!acq_parameters.blocking_on_stanby)
+            if (!acq_parameters.blocking_on_standby)
                 {
                     d_sample_counter += d_fft_size * ninput_items[0];
                     consume_each(ninput_items[0]);
@@ -711,7 +711,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                 d_input_power = 0.0;
                 d_test_statistics = 0.0;
                 d_state = 1;
-                if (!acq_parameters.blocking_on_stanby)
+                if (!acq_parameters.blocking_on_standby)
                     {
                         d_sample_counter += d_fft_size * ninput_items[0];  // sample counter
                         consume_each(ninput_items[0]);

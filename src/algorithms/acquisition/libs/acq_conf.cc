@@ -50,5 +50,5 @@ Acq_Conf::Acq_Conf()
     dump_filename = "";
     dump_channel = 0;
     it_size = sizeof(char);
-    blocking_on_stanby = false;
+    blocking_on_standby = false;
 }

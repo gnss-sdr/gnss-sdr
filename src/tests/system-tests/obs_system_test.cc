@@ -620,7 +620,7 @@ void ObsSystemTest::compute_pseudorange_error(
                                 }
                             g1.savetops("Pseudorange_error_" + signal_name);
                             g1.savetopdf("Pseudorange_error_" + signal_name, 18);
-                            g1.showonscreen();  // window output
+                            if (FLAGS_show_plots) g1.showonscreen();  // window output
                         }
                     catch (const GnuplotException& ge)
                         {
@@ -711,7 +711,7 @@ void ObsSystemTest::compute_carrierphase_error(
                                 }
                             g1.savetops("Carrier_phase_error_" + signal_name);
                             g1.savetopdf("Carrier_phase_error_" + signal_name, 18);
-                            g1.showonscreen();  // window output
+                            if (FLAGS_show_plots) g1.showonscreen();  // window output
                         }
                     catch (const GnuplotException& ge)
                         {
@@ -802,7 +802,7 @@ void ObsSystemTest::compute_doppler_error(
                                 }
                             g1.savetops("Doppler_error_" + signal_name);
                             g1.savetopdf("Doppler_error_" + signal_name, 18);
-                            g1.showonscreen();  // window output
+                            if (FLAGS_show_plots) g1.showonscreen();  // window output
                         }
                     catch (const GnuplotException& ge)
                         {

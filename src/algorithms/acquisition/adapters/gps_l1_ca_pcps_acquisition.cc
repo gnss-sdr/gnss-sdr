@@ -104,6 +104,7 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     acq_parameters.samples_per_ms = code_length_;
     acq_parameters.samples_per_code = code_length_;
     acq_parameters.it_size = item_size_;
+    acq_parameters.blocking_on_standby = configuration_->property(role + ".blocking_on_standby", false);
     acquisition_ = pcps_make_acquisition(acq_parameters);
     DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
 

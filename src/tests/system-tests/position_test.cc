@@ -336,7 +336,7 @@ int StaticPositionSystemTest::configure_receiver()
             config->set_property("Channel.signal", "1C");
 
             // Set Acquisition
-            config->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Tong_Acquisition");
+            config->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Acquisition");
             config->set_property("Acquisition_1C.item_type", "gr_complex");
             config->set_property("Acquisition_1C.coherent_integration_time_ms", std::to_string(coherent_integration_time_ms));
             config->set_property("Acquisition_1C.threshold", std::to_string(threshold));
@@ -347,6 +347,9 @@ int StaticPositionSystemTest::configure_receiver()
             config->set_property("Acquisition_1C.tong_init_val", std::to_string(tong_init_val));
             config->set_property("Acquisition_1C.tong_max_val", std::to_string(tong_max_val));
             config->set_property("Acquisition_1C.tong_max_dwells", std::to_string(tong_max_dwells));
+            config->set_property("Acquisition_1C.dump", "false");
+            config->set_property("Acquisition_1C.dump_filename", "./acquisition");
+            config->set_property("Acquisition_1C.dump_channel", "1");
 
             // Set Tracking
             config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
@@ -632,7 +635,7 @@ void StaticPositionSystemTest::print_results(const std::vector<double>& east,
 
                     g1.savetops("Position_test_2D");
                     g1.savetopdf("Position_test_2D", 18);
-                    g1.showonscreen();  // window output
+                    if (FLAGS_show_plots) g1.showonscreen();  // window output
 
                     Gnuplot g2("points");
                     g2.set_title("3D precision");
@@ -653,7 +656,7 @@ void StaticPositionSystemTest::print_results(const std::vector<double>& east,
 
                     g2.savetops("Position_test_3D");
                     g2.savetopdf("Position_test_3D");
-                    g2.showonscreen();  // window output
+                    if (FLAGS_show_plots) g2.showonscreen();  // window output
                 }
             catch (const GnuplotException& ge)
                 {

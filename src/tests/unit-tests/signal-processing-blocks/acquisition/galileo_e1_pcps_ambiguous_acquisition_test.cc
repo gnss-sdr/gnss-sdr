@@ -209,7 +209,7 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::plot_grid()
 
                     g1.savetops("Galileo_E1_acq_grid");
                     g1.savetopdf("Galileo_E1_acq_grid");
-                    g1.showonscreen();
+                    if (FLAGS_show_plots) g1.showonscreen();
                 }
             catch (const GnuplotException& ge)
                 {

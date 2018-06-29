@@ -347,7 +347,7 @@ int StaticPositionSystemTest::configure_receiver()
             config->set_property("Acquisition_1C.tong_init_val", std::to_string(tong_init_val));
             config->set_property("Acquisition_1C.tong_max_val", std::to_string(tong_max_val));
             config->set_property("Acquisition_1C.tong_max_dwells", std::to_string(tong_max_dwells));
-            config->set_property("Acquisition_1C.dump", "false);
+            config->set_property("Acquisition_1C.dump", "false");
             config->set_property("Acquisition_1C.dump_filename", "./acquisition");
             config->set_property("Acquisition_1C.dump_channel", "1");
 

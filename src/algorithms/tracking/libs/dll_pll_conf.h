@@ -1,9 +1,9 @@
 /*!
- * \file kml_printer.h
- * \brief Interface of a class that prints PVT information to a kml file
- * for GPSTK data structures
- * \author Javier Arribas, 2012. jarribas(at)cttc.es
+ * \file dll_pll_conf.h
+ * \brief Class that contains all the configuration parameters for generic tracking block based on a DLL and a PLL.
+ * \author Javier Arribas, 2018. jarribas(at)cttc.es
  *
+ * Class that contains all the configuration parameters for generic tracking block based on a DLL and a PLL.
  *
  * -------------------------------------------------------------------------
  *
@@ -30,31 +30,39 @@
  * -------------------------------------------------------------------------
  */
 
+#ifndef GNSS_SDR_DLL_PLL_CONF_H_
+#define GNSS_SDR_DLL_PLL_CONF_H_
 
-#ifndef GNSS_SDR_KML_PRINTER_H_
-#define GNSS_SDR_KML_PRINTER_H_
+#include <string>
 
-#include <iostream>
-#include <fstream>
-#include "gpstk/Position.hpp"
-
-
-/*!
- * \brief Prints PVT information to OGC KML format file (can be viewed with Google Earth)
- *
- * See http://www.opengeospatial.org/standards/kml
- */
-class Kml_Printer_gpstk
+class Dll_Pll_Conf
 {
 private:
-    std::ofstream kml_file;
-
 public:
-    bool set_headers(std::string filename);
-    bool print_position(gpstk::Position position);
-    bool close_file();
-    Kml_Printer_gpstk();
-    ~Kml_Printer_gpstk();
+    /* DLL/PLL tracking configuration */
+    double fs_in;
+    unsigned int vector_length;
+    bool dump;
+    std::string dump_filename;
+    float pll_bw_hz;
+    float dll_bw_hz;
+    float pll_bw_narrow_hz;
+    float dll_bw_narrow_hz;
+    float early_late_space_chips;
+    float very_early_late_space_chips;
+    float early_late_space_narrow_chips;
+    float very_early_late_space_narrow_chips;
+    int extend_correlation_symbols;
+    int cn0_samples;
+    int carrier_lock_det_mav_samples;
+    int cn0_min;
+    int max_lock_fail;
+    double carrier_lock_th;
+    bool track_pilot;
+    char system;
+    char signal[3];
+
+    Dll_Pll_Conf();
 };
 
 #endif

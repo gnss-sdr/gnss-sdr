@@ -109,6 +109,14 @@ Pass_Through::Pass_Through(ConfigurationInterface* configuration, std::string ro
 
     kludge_copy_ = gr::blocks::copy::make(item_size_);
     DLOG(INFO) << "kludge_copy(" << kludge_copy_->unique_id() << ")";
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 

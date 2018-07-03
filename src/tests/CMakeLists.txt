@@ -298,7 +298,7 @@ else(ENABLE_INSTALL_TESTS)
    add_definitions(-DTEST_PATH="${CMAKE_SOURCE_DIR}/thirdparty/")
 endif(ENABLE_INSTALL_TESTS)
 
-include_directories(
+set(LIST_INCLUDE_DIRS
      ${GTEST_INCLUDE_DIRECTORIES}
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
@@ -307,6 +307,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
+     ${CMAKE_SOURCE_DIR}/src/core/monitor
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib
      ${CMAKE_SOURCE_DIR}/src/algorithms/data_type_adapter/adapters
@@ -346,7 +347,7 @@ include_directories(
      ${GNSS_SDR_TEST_OPTIONAL_HEADERS}
 )
 
-
+include_directories(${LIST_INCLUDE_DIRS})
 
 ################################################################################
 # Unit testing
@@ -423,6 +424,38 @@ endif(ENABLE_FPGA)
 ################################################################################
 # System testing
 ################################################################################
+function(add_system_test executable)
+    ## Please call this function with variables OPT_INCLUDES_ and OPT_LIBS_
+    ## already defined.
+    set(SYSTEM_TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/${executable}.cc)
+    # Ensure that executable is rebuilt if it was previously built and then removed
+    if(NOT EXISTS ${CMAKE_SOURCE_DIR}/install/${executable})
+        execute_process(COMMAND ${CMAKE_COMMAND} -E touch ${SYSTEM_TEST_SOURCES})
+    endif(NOT EXISTS ${CMAKE_SOURCE_DIR}/install/${executable})
+    add_executable(${executable} ${SYSTEM_TEST_SOURCES})
+
+    if(NOT ${GTEST_DIR_LOCAL})
+        add_dependencies(${executable} gtest-${GNSSSDR_GTEST_LOCAL_VERSION} )
+    else(NOT ${GTEST_DIR_LOCAL})
+        add_dependencies(${executable} gtest)
+    endif(NOT ${GTEST_DIR_LOCAL})
+
+    include_directories(${OPT_INCLUDES_})
+    target_link_libraries(${executable} ${OPT_LIBS_} )
+
+    if(ENABLE_INSTALL_TESTS)
+        if(EXISTS ${CMAKE_SOURCE_DIR}/install/${executable})
+            file(REMOVE ${CMAKE_SOURCE_DIR}/install/${executable})
+        endif(EXISTS ${CMAKE_SOURCE_DIR}/install/${executable})
+        install(TARGETS ${executable} RUNTIME DESTINATION bin COMPONENT "${executable}_test")
+    else(ENABLE_INSTALL_TESTS)
+        add_custom_command(TARGET ${executable} POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${executable}>
+                           ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:${executable}> )
+    endif(ENABLE_INSTALL_TESTS)
+endfunction(add_system_test)
+
+
 if(ENABLE_SYSTEM_TESTING)
     set(HOST_SYSTEM "Unknown")
     if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -433,140 +466,33 @@ if(ENABLE_SYSTEM_TESTING)
         set(HOST_SYSTEM "MacOS")
     endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     add_definitions(-DHOST_SYSTEM="${HOST_SYSTEM}")
-    set(TTFF_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/ttff_gps_l1.cc)
 
-    # Ensure that ttff is rebuilt if it was previously built and then removed
-    if(NOT EXISTS ${CMAKE_SOURCE_DIR}/install/ttff)
-        execute_process(COMMAND ${CMAKE_COMMAND} -E touch ${TTFF_SOURCES})
-    endif(NOT EXISTS ${CMAKE_SOURCE_DIR}/install/ttff)
+    #### TTFF
+    set(OPT_LIBS_ ${Boost_LIBRARIES} ${GFlags_LIBS} ${GLOG_LIBRARIES}
+                  ${GNURADIO_RUNTIME_LIBRARIES} ${GTEST_LIBRARIES}
+                  ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES}
+                  ${GNURADIO_ANALOG_LIBRARIES} gnss_sp_libs
+                  gnss_rx gnss_system_parameters )
 
-    add_executable(ttff ${TTFF_SOURCES} )
-    if(NOT ${GTEST_DIR_LOCAL})
-        add_dependencies(ttff gtest-${GNSSSDR_GTEST_LOCAL_VERSION})
-    else(NOT ${GTEST_DIR_LOCAL})
-        add_dependencies(ttff gtest)
-    endif(NOT ${GTEST_DIR_LOCAL})
-
-    target_link_libraries(ttff
-        ${Boost_LIBRARIES}
-        ${GFlags_LIBS}
-        ${GLOG_LIBRARIES}
-        ${GTEST_LIBRARIES}
-        ${GNURADIO_RUNTIME_LIBRARIES}
-        ${GNURADIO_BLOCKS_LIBRARIES}
-        ${GNURADIO_FILTER_LIBRARIES}
-        ${GNURADIO_ANALOG_LIBRARIES}
-        ${VOLK_GNSSSDR_LIBRARIES}
-        gnss_sp_libs
-        gnss_rx
-        gnss_system_parameters
-    )
-
-    if(ENABLE_INSTALL_TESTS)
-        if(EXISTS ${CMAKE_SOURCE_DIR}/install/ttff)
-            file(REMOVE ${CMAKE_SOURCE_DIR}/install/ttff)
-        endif(EXISTS ${CMAKE_SOURCE_DIR}/install/ttff)
-        install(TARGETS ttff RUNTIME DESTINATION bin COMPONENT "ttff")
-    else(ENABLE_INSTALL_TESTS)
-        add_custom_command(TARGET ttff POST_BUILD
-                           COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:ttff>
-                           ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:ttff> )
-    endif(ENABLE_INSTALL_TESTS)
+    add_system_test(ttff)
 
     if(ENABLE_SYSTEM_TESTING_EXTRA)
-        set(POSITION_TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/position_test.cc)
-        # Ensure that position_test is rebuilt if it was previously built and then removed
-        if(NOT EXISTS ${CMAKE_SOURCE_DIR}/install/position_test)
-            execute_process(COMMAND ${CMAKE_COMMAND} -E touch ${POSITION_TEST_SOURCES})
-        endif(NOT EXISTS ${CMAKE_SOURCE_DIR}/install/position_test)
-        add_executable(position_test ${POSITION_TEST_SOURCES})
-        if(NOT ${GTEST_DIR_LOCAL})
-             add_dependencies(position_test gtest-${GNSSSDR_GTEST_LOCAL_VERSION})
-        else(NOT ${GTEST_DIR_LOCAL})
-             add_dependencies(position_test gtest)
-        endif(NOT ${GTEST_DIR_LOCAL})
-        target_link_libraries(position_test
-             ${Boost_LIBRARIES}
-             ${GFlags_LIBS}
-             ${GLOG_LIBRARIES}
-             ${GTEST_LIBRARIES}
-             ${GNURADIO_RUNTIME_LIBRARIES}
-             ${GNURADIO_BLOCKS_LIBRARIES}
-             ${GNURADIO_FILTER_LIBRARIES}
-             ${GNURADIO_ANALOG_LIBRARIES}
-             ${VOLK_GNSSSDR_LIBRARIES}
-             gnss_sp_libs
-             gnss_rx
-             gnss_system_parameters
-        )
+        #### POSITION_TEST
+        set(OPT_LIBS_ ${Boost_LIBRARIES} ${GFlags_LIBS} ${GLOG_LIBRARIES}
+                      ${GTEST_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES}
+                      ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES}
+                      ${GNURADIO_ANALOG_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES}
+                      gnss_sp_libs gnss_rx gnss_system_parameters )
 
-        if(ENABLE_INSTALL_TESTS)
-             if(EXISTS ${CMAKE_SOURCE_DIR}/install/position_test)
-                  file(REMOVE ${CMAKE_SOURCE_DIR}/install/position_test)
-             endif(EXISTS ${CMAKE_SOURCE_DIR}/install/position_test)
-             install(TARGETS position_test RUNTIME DESTINATION bin COMPONENT "position_test")
-        else(ENABLE_INSTALL_TESTS)
-             add_custom_command(TARGET position_test POST_BUILD
-                                COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:position_test>
-                                ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:position_test> )
-        endif(ENABLE_INSTALL_TESTS)
+        add_system_test(position_test)
 
         if(GPSTK_FOUND OR OWN_GPSTK)
-            set(OBS_GPS_L1_TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/obs_gps_l1_system_test.cc)
-            # Ensure that obs_gps_l1_system_test is rebuilt if it was previously built and then removed
-            if(NOT EXISTS ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
-                execute_process(COMMAND ${CMAKE_COMMAND} -E touch ${OBS_GPS_L1_TEST_SOURCES})
-            endif(NOT EXISTS ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
-            add_executable(obs_gps_l1_system_test ${OBS_GPS_L1_TEST_SOURCES})
-
-            set(OBS_SYSTEM_TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/system-tests/obs_system_test.cc)
-            # Ensure that obs_system_test is rebuilt if it was previously built and then removed
-            if(NOT EXISTS ${CMAKE_SOURCE_DIR}/install/obs_system_test)
-                execute_process(COMMAND ${CMAKE_COMMAND} -E touch ${OBS_SYSTEM_TEST_SOURCES})
-            endif(NOT EXISTS ${CMAKE_SOURCE_DIR}/install/obs_system_test)
-            add_executable(obs_system_test ${OBS_SYSTEM_TEST_SOURCES})
-
-            if(NOT ${GTEST_DIR_LOCAL})
-                add_dependencies(obs_gps_l1_system_test gtest-${GNSSSDR_GTEST_LOCAL_VERSION} )
-                add_dependencies(obs_system_test gtest-${GNSSSDR_GTEST_LOCAL_VERSION} )
-            else(NOT ${GTEST_DIR_LOCAL})
-                add_dependencies(obs_gps_l1_system_test gtest)
-                add_dependencies(obs_system_test gtest)
-            endif(NOT ${GTEST_DIR_LOCAL})
-            include_directories(${GPSTK_INCLUDE_DIRS} ${GPSTK_INCLUDE_DIRS}/gpstk)
-            target_link_libraries(obs_gps_l1_system_test ${GFlags_LIBS}
-                                                         ${GLOG_LIBRARIES}
-                                                         ${GTEST_LIBRARIES}
-                                                         gnss_sp_libs
-                                                         gnss_rx
-                                                         ${gpstk_libs})
-
-            target_link_libraries(obs_system_test ${GFlags_LIBS}
-                                                  ${GLOG_LIBRARIES}
-                                                  ${GTEST_LIBRARIES}
-                                                  gnss_sp_libs
-                                                  gnss_rx
-                                                  ${gpstk_libs})
-
-            if(ENABLE_INSTALL_TESTS)
-                if(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
-                    file(REMOVE ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
-                endif(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
-                install(TARGETS obs_gps_l1_system_test RUNTIME DESTINATION bin COMPONENT "obs_gps_l1_system_test")
-
-                if(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_system_test)
-                    file(REMOVE ${CMAKE_SOURCE_DIR}/install/obs_system_test)
-                endif(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_system_test)
-                install(TARGETS obs_system_test RUNTIME DESTINATION bin COMPONENT "obs_system_test")
-            else(ENABLE_INSTALL_TESTS)
-                add_custom_command(TARGET obs_gps_l1_system_test POST_BUILD
-                                   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:obs_gps_l1_system_test>
-                                   ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:obs_gps_l1_system_test> )
-                add_custom_command(TARGET obs_system_test POST_BUILD
-                                   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:obs_system_test>
-                                   ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:obs_system_test> )
-
-            endif(ENABLE_INSTALL_TESTS)
+            ## OBS_SYSTEM_TEST and OBS_GPS_L1_SYSTEM_TEST
+            set(OPT_LIBS_ ${GFlags_LIBS} ${GLOG_LIBRARIES} ${GTEST_LIBRARIES}
+                          gnss_sp_libs gnss_rx ${gpstk_libs} )
+            set(OPT_INCLUDES_ ${GPSTK_INCLUDE_DIRS} ${GPSTK_INCLUDE_DIRS}/gpstk)
+            add_system_test(obs_gps_l1_system_test)
+            add_system_test(obs_system_test)
         endif(GPSTK_FOUND OR OWN_GPSTK)
     else(ENABLE_SYSTEM_TESTING_EXTRA)
         # Avoid working with old executables if they were switched ON and then OFF

@@ -54,7 +54,7 @@ class Galileo_E1_Tcp_Connector_Tracking_cc;
 typedef boost::shared_ptr<Galileo_E1_Tcp_Connector_Tracking_cc> galileo_e1_tcp_connector_tracking_cc_sptr;
 
 galileo_e1_tcp_connector_tracking_cc_sptr
-galileo_e1_tcp_connector_make_tracking_cc(long if_freq,
+galileo_e1_tcp_connector_make_tracking_cc(
     long fs_in, unsigned int vector_length,
     bool dump,
     std::string dump_filename,
@@ -84,7 +84,7 @@ public:
 
 private:
     friend galileo_e1_tcp_connector_tracking_cc_sptr
-    galileo_e1_tcp_connector_make_tracking_cc(long if_freq,
+    galileo_e1_tcp_connector_make_tracking_cc(
         long fs_in, unsigned int vector_length,
         bool dump,
         std::string dump_filename,
@@ -94,7 +94,7 @@ private:
         float very_early_late_space_chips,
         size_t port_ch0);
 
-    Galileo_E1_Tcp_Connector_Tracking_cc(long if_freq,
+    Galileo_E1_Tcp_Connector_Tracking_cc(
         long fs_in, unsigned int vector_length,
         bool dump,
         std::string dump_filename,
@@ -115,7 +115,6 @@ private:
     Gnss_Synchro *d_acquisition_gnss_synchro;
     unsigned int d_channel;
 
-    long d_if_freq;
     long d_fs_in;
 
     int d_correlation_length_samples;

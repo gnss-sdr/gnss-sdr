@@ -64,7 +64,6 @@ private:
     uint32_t d_phase;
     uint32_t d_lphase;
     uint32_t d_phase_step;
-    unsigned int d_history;
     direct_resampler_conditioner_cc(double sample_freq_in,
         double sample_freq_out);
 

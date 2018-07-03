@@ -293,7 +293,7 @@ void GpsL1CATelemetryDecoderTest::check_results(arma::vec& true_time_s,
 
     //2. RMSE
     //arma::vec err = meas_value - true_value_interp + 0.001;
-    arma::vec err = meas_value - true_value_interp - 0.001;
+    arma::vec err = meas_value - true_value_interp;  // - 0.001;
 
     arma::vec err2 = arma::square(err);
     double rmse = sqrt(arma::mean(err2));

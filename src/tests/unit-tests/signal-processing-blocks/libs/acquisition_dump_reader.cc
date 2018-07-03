@@ -43,7 +43,7 @@ bool acquisition_dump_reader::read_binary_acq()
             std::cout << "¡¡¡Unreachable Acquisition dump file!!!" << std::endl;
             return false;
         }
-    matvar_t* var_ = Mat_VarRead(matfile, "grid");
+    matvar_t* var_ = Mat_VarRead(matfile, "acq_grid");
     if (var_ == NULL)
         {
             std::cout << "¡¡¡Unreachable grid variable into Acquisition dump file!!!" << std::endl;
@@ -73,16 +73,56 @@ bool acquisition_dump_reader::read_binary_acq()
             Mat_Close(matfile);
             return false;
         }
+    matvar_t* var2_ = Mat_VarRead(matfile, "doppler_max");
+    d_doppler_max = *static_cast<unsigned int*>(var2_->data);
+    Mat_VarFree(var2_);
+
+    var2_ = Mat_VarRead(matfile, "doppler_step");
+    d_doppler_step = *static_cast<unsigned int*>(var2_->data);
+    Mat_VarFree(var2_);
+
+    var2_ = Mat_VarRead(matfile, "input_power");
+    input_power = *static_cast<float*>(var2_->data);
+    Mat_VarFree(var2_);
+
+    var2_ = Mat_VarRead(matfile, "acq_doppler_hz");
+    acq_doppler_hz = *static_cast<float*>(var2_->data);
+    Mat_VarFree(var2_);
+
+    var2_ = Mat_VarRead(matfile, "acq_delay_samples");
+    acq_delay_samples = *static_cast<float*>(var2_->data);
+    Mat_VarFree(var2_);
+
+    var2_ = Mat_VarRead(matfile, "test_statistic");
+    test_statistic = *static_cast<float*>(var2_->data);
+    Mat_VarFree(var2_);
+
+    var2_ = Mat_VarRead(matfile, "threshold");
+    threshold = *static_cast<float*>(var2_->data);
+    Mat_VarFree(var2_);
+
+    var2_ = Mat_VarRead(matfile, "sample_counter");
+    sample_counter = *static_cast<long unsigned int*>(var2_->data);
+    Mat_VarFree(var2_);
+
+    var2_ = Mat_VarRead(matfile, "d_positive_acq");
+    positive_acq = *static_cast<int*>(var2_->data);
+    Mat_VarFree(var2_);
+
+    var2_ = Mat_VarRead(matfile, "PRN");
+    PRN = *static_cast<int*>(var2_->data);
+    Mat_VarFree(var2_);
+
     std::vector<std::vector<float> >::iterator it1;
     std::vector<float>::iterator it2;
     float* aux = static_cast<float*>(var_->data);
     int k = 0;
-    float normalization_factor = std::pow(d_samples_per_code, 2);
+    float normalization_factor = std::pow(d_samples_per_code, 4) * input_power;
     for (it1 = mag.begin(); it1 != mag.end(); it1++)
         {
             for (it2 = it1->begin(); it2 != it1->end(); it2++)
                 {
-                    *it2 = static_cast<float>(std::sqrt(aux[k])) / normalization_factor;
+                    *it2 = static_cast<float>(aux[k]) / normalization_factor;
                     k++;
                 }
         }
@@ -93,17 +133,74 @@ bool acquisition_dump_reader::read_binary_acq()
 }
 
 
-acquisition_dump_reader::acquisition_dump_reader(const std::string& basename, unsigned int sat, unsigned int doppler_max, unsigned int doppler_step, unsigned int samples_per_code)
+acquisition_dump_reader::acquisition_dump_reader(const std::string& basename,
+    int channel,
+    int execution)
+{
+    unsigned int sat_ = 0;
+    unsigned int doppler_max_ = 0;
+    unsigned int doppler_step_ = 0;
+    unsigned int samples_per_code_ = 0;
+
+    mat_t* matfile = Mat_Open(d_dump_filename.c_str(), MAT_ACC_RDONLY);
+    if (matfile != NULL)
+        {
+            matvar_t* var_ = Mat_VarRead(matfile, "doppler_max");
+            doppler_max_ = *static_cast<unsigned int*>(var_->data);
+            Mat_VarFree(var_);
+
+            var_ = Mat_VarRead(matfile, "doppler_step");
+            doppler_step_ = *static_cast<unsigned int*>(var_->data);
+            Mat_VarFree(var_);
+
+            var_ = Mat_VarRead(matfile, "PRN");
+            sat_ = *static_cast<int*>(var_->data);
+            Mat_VarFree(var_);
+
+            var_ = Mat_VarRead(matfile, "grid");
+            samples_per_code_ = var_->dims[0];
+            Mat_VarFree(var_);
+
+            Mat_Close(matfile);
+        }
+    else
+        {
+            std::cout << "¡¡¡Unreachable Acquisition dump file!!!" << std::endl;
+        }
+    acquisition_dump_reader(basename,
+        sat_,
+        doppler_max_,
+        doppler_step_,
+        samples_per_code_,
+        channel,
+        execution);
+}
+
+acquisition_dump_reader::acquisition_dump_reader(const std::string& basename,
+    unsigned int sat,
+    unsigned int doppler_max,
+    unsigned int doppler_step,
+    unsigned int samples_per_code,
+    int channel,
+    int execution)
 {
     d_basename = basename;
     d_sat = sat;
     d_doppler_max = doppler_max;
     d_doppler_step = doppler_step;
     d_samples_per_code = samples_per_code;
+    acq_doppler_hz = 0.0;
+    acq_delay_samples = 0.0;
+    test_statistic = 0.0;
+    input_power = 0.0;
+    threshold = 0.0;
+    positive_acq = 0;
+    sample_counter = 0;
+    PRN = 0;
     d_num_doppler_bins = static_cast<unsigned int>(ceil(static_cast<double>(static_cast<int>(d_doppler_max) - static_cast<int>(-d_doppler_max)) / static_cast<double>(d_doppler_step)));
     std::vector<std::vector<float> > mag_aux(d_num_doppler_bins, std::vector<float>(d_samples_per_code));
     mag = mag_aux;
-    d_dump_filename = d_basename + "_sat_" + std::to_string(d_sat) + ".mat";
+    d_dump_filename = d_basename + "_ch_" + std::to_string(channel) + "_" + std::to_string(execution) + "_sat_" + std::to_string(d_sat) + ".mat";
     for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             doppler.push_back(-static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index);

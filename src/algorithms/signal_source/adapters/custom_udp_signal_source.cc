@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -50,8 +50,7 @@ CustomUDPSignalSource::CustomUDPSignalSource(ConfigurationInterface* configurati
     std::string default_dump_file = "./data/signal_source.dat";
     std::string default_item_type = "gr_complex";
     dump_ = configuration->property(role + ".dump", false);
-    dump_filename_ = configuration->property(role + ".dump_filename",
-        default_dump_file);
+    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
     // network PARAMETERS
     std::string default_capture_device = "eth0";
@@ -62,7 +61,6 @@ CustomUDPSignalSource::CustomUDPSignalSource(ConfigurationInterface* configurati
     int port = configuration->property(role + ".port", default_port);
     int payload_bytes = configuration->property(role + ".payload_bytes", 1024);
 
-
     RF_channels_ = configuration->property(role + ".RF_channels", 1);
     channels_in_udp_ = configuration->property(role + ".channels_in_udp", 1);
     IQ_swap_ = configuration->property(role + ".IQ_swap", false);
@@ -70,7 +68,7 @@ CustomUDPSignalSource::CustomUDPSignalSource(ConfigurationInterface* configurati
     std::string default_sample_type = "cbyte";
     std::string sample_type = configuration->property(role + ".sample_type", default_sample_type);
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-    //output item size is always gr_complex
+    // output item size is always gr_complex
     item_size_ = sizeof(gr_complex);
 
     udp_gnss_rx_source_ = gr_complex_ip_packet_source::make(capture_device,
@@ -95,7 +93,6 @@ CustomUDPSignalSource::CustomUDPSignalSource(ConfigurationInterface* configurati
             exit(0);
         }
 
-
     if (dump_)
         {
             for (int n = 0; n < channels_in_udp_; n++)
@@ -103,6 +100,14 @@ CustomUDPSignalSource::CustomUDPSignalSource(ConfigurationInterface* configurati
                     DLOG(INFO) << "Dumping output into file " << (dump_filename_ + "c_h" + std::to_string(n) + ".bin");
                     file_sink_.push_back(gr::blocks::file_sink::make(item_size_, (dump_filename_ + "_ch" + std::to_string(n) + ".bin").c_str()));
                 }
+        }
+    if (in_stream_ > 0)
+        {
+            LOG(ERROR) << "A signal source does not have an input stream";
+        }
+    if (out_stream_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
 
@@ -114,7 +119,7 @@ CustomUDPSignalSource::~CustomUDPSignalSource()
 
 void CustomUDPSignalSource::connect(gr::top_block_sptr top_block)
 {
-    //connect null sinks to unused streams
+    // connect null sinks to unused streams
     for (int n = 0; n < channels_in_udp_; n++)
         {
             top_block->connect(udp_gnss_rx_source_, n, null_sinks_.at(n), 0);
@@ -134,7 +139,7 @@ void CustomUDPSignalSource::connect(gr::top_block_sptr top_block)
 
 void CustomUDPSignalSource::disconnect(gr::top_block_sptr top_block)
 {
-    //disconnect null sinks to unused streams
+    // disconnect null sinks to unused streams
     for (int n = 0; n < channels_in_udp_; n++)
         {
             top_block->disconnect(udp_gnss_rx_source_, n, null_sinks_.at(n), 0);
@@ -162,6 +167,7 @@ gr::basic_block_sptr CustomUDPSignalSource::get_right_block()
 {
     return udp_gnss_rx_source_;
 }
+
 
 gr::basic_block_sptr CustomUDPSignalSource::get_right_block(__attribute__((unused)) int RF_channel)
 {

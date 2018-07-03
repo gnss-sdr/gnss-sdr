@@ -117,6 +117,13 @@ void InMemoryConfiguration::set_property(std::string property_name, std::string 
 }
 
 
+void InMemoryConfiguration::supersede_property(std::string property_name, std::string value)
+{
+    properties_.erase(property_name);
+    properties_.insert(std::make_pair(property_name, value));
+}
+
+
 bool InMemoryConfiguration::is_present(std::string property_name)
 {
     return (properties_.find(property_name) != properties_.end());

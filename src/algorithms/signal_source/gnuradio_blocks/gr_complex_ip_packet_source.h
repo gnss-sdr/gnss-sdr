@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -40,6 +40,7 @@
 #include <net/if.h>
 #include <net/ethernet.h>
 #include <netinet/if_ether.h>
+#include <string>
 #include <sys/ioctl.h>
 
 class gr_complex_ip_packet_source : virtual public gr::sync_block
@@ -77,11 +78,8 @@ private:
 
     void demux_samples(gr_vector_void_star output_items, int num_samples_readed);
     void my_pcap_loop_thread(pcap_t *pcap_handle);
-
     void pcap_callback(u_char *args, const struct pcap_pkthdr *pkthdr, const u_char *packet);
-
     static void static_pcap_callback(u_char *args, const struct pcap_pkthdr *pkthdr, const u_char *packet);
-
 
 public:
     typedef boost::shared_ptr<gr_complex_ip_packet_source> sptr;
@@ -108,9 +106,9 @@ public:
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items);
 
-    //Called by gnuradio to enable drivers, etc for i/o devices.
+    // Called by gnuradio to enable drivers, etc for i/o devices.
     bool start();
-    //Called by gnuradio to disable drivers, etc for i/o devices.
+    // Called by gnuradio to disable drivers, etc for i/o devices.
     bool stop();
 };
 

@@ -67,14 +67,14 @@ using google::LogMessage;
 
 pcps_opencl_acquisition_cc_sptr pcps_make_opencl_acquisition_cc(
     unsigned int sampled_ms, unsigned int max_dwells,
-    unsigned int doppler_max, long freq, long fs_in,
+    unsigned int doppler_max, long fs_in,
     int samples_per_ms, int samples_per_code,
     bool bit_transition_flag,
     bool dump,
     std::string dump_filename)
 {
     return pcps_opencl_acquisition_cc_sptr(
-        new pcps_opencl_acquisition_cc(sampled_ms, max_dwells, doppler_max, freq, fs_in, samples_per_ms,
+        new pcps_opencl_acquisition_cc(sampled_ms, max_dwells, doppler_max, fs_in, samples_per_ms,
             samples_per_code, bit_transition_flag, dump, dump_filename));
 }
 
@@ -83,7 +83,6 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(
     unsigned int sampled_ms,
     unsigned int max_dwells,
     unsigned int doppler_max,
-    long freq,
     long fs_in,
     int samples_per_ms,
     int samples_per_code,
@@ -98,7 +97,6 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(
     d_active = false;
     d_state = 0;
     d_core_working = false;
-    d_freq = freq;
     d_fs_in = fs_in;
     d_samples_per_ms = samples_per_ms;
     d_samples_per_code = samples_per_code;
@@ -320,7 +318,7 @@ void pcps_opencl_acquisition_cc::init()
             d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
             int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
-            float phase_step_rad = static_cast<float>(GPS_TWO_PI) * (d_freq + doppler) / static_cast<float>(d_fs_in);
+            float phase_step_rad = static_cast<float>(GPS_TWO_PI) * doppler / static_cast<float>(d_fs_in);
             float _phase[1];
             _phase[0] = 0;
             volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index], -phase_step_rad, _phase, d_fft_size);

@@ -1,4 +1,3 @@
-
 ###################################################################
 #
 #  Copyright (c) 2006 Frederic Heem, <frederic.heem@telsey.it>
@@ -112,7 +111,7 @@ CHECK_FUNCTION_EXISTS("pcap_set_datalink" HAVE_PCAP_SET_DATALINK)
 
 #Is pcap found ?
 IF(PCAP_INCLUDE_DIRS AND PCAP_LIBRARIES)
-  SET( PCAP_FOUND "YES" )
+  SET( PCAP_FOUND true )
 ENDIF(PCAP_INCLUDE_DIRS AND PCAP_LIBRARIES)
 
 

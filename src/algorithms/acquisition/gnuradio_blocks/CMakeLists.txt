@@ -26,12 +26,12 @@ set(ACQ_GR_BLOCKS_SOURCES
     pcps_quicksync_acquisition_cc.cc
     galileo_pcps_8ms_acquisition_cc.cc
     galileo_e5a_noncoherent_iq_acquisition_caf_cc.cc
-) 
+)
 
 if(ENABLE_FPGA)
     set(ACQ_GR_BLOCKS_SOURCES ${ACQ_GR_BLOCKS_SOURCES} pcps_acquisition_fpga.cc)
 endif(ENABLE_FPGA)
-    
+
 if(OPENCL_FOUND)
     set(ACQ_GR_BLOCKS_SOURCES ${ACQ_GR_BLOCKS_SOURCES} pcps_opencl_acquisition_cc.cc)
 endif(OPENCL_FOUND)
@@ -64,7 +64,7 @@ endif(OPENCL_FOUND)
 file(GLOB ACQ_GR_BLOCKS_HEADERS "*.h")
 list(SORT ACQ_GR_BLOCKS_HEADERS)
 add_library(acq_gr_blocks ${ACQ_GR_BLOCKS_SOURCES} ${ACQ_GR_BLOCKS_HEADERS})
-source_group(Headers FILES ${ACQ_GR_BLOCKS_HEADERS}) 
+source_group(Headers FILES ${ACQ_GR_BLOCKS_HEADERS})
 
 if(ENABLE_FPGA)
 	target_link_libraries(acq_gr_blocks acquisition_lib gnss_sp_libs gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${VOLK_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${OPT_LIBRARIES} ${OPT_ACQUISITION_LIBRARIES})

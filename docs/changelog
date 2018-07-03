@@ -4,7 +4,7 @@ Next release will have several improvements in different dimensions, addition of
 
 ### Improvements in Accuracy:
 
-- Part of the RTKLIB core libraries has been integrated into GNSS-SDR. There is now a single PVT block implementation which makes use of RTKLIB to deliver PVT solutions, including Single and PPP navigation modes.
+- Part of the RTKLIB core library has been integrated into GNSS-SDR. There is now a single PVT block implementation which makes use of RTKLIB to deliver PVT solutions, including Single and PPP navigation modes.
 - Fixed CN0 estimation for other correlation times than 1 ms.
 - Improved computation of tracking parameters and GNSS observables.
 - Other minor bug fixes.
@@ -14,15 +14,17 @@ Next release will have several improvements in different dimensions, addition of
 
 - Internal Finite State Machines rewritten for improved continuity in delivering position fixes. This fixes a bug that was stalling the receiver after about six hours of continuous operation.
 - Redesign of the time counter for enhanced continuity.
-- Improved acquisition and tracking sensibility.
+- Improved flow graph in multisystem configurations: the receiver does not get stalled anymore if no signal is found from the first system.
+- Improved acquisition and tracking sensitivity.
 - Other minor bug fixes.
 
 
 ### Improvements in Efficiency:
 
 - Added the possibility of non-blocking acquisition, which works well when using real-time data from an RF front-end.
+- Improved flow graph in multiband configurations: satellites acquired in one band are immediately searched in others.
 - Complex local codes have been replaced by real codes, alleviating the computational burden.
-- New kernels: volk_gnsssdr_16i_xn_resampler_16i_xn.h, volk_gnsssdr_16ic_16i_rotator_dot_prod_16ic_xn.h, volk_gnsssdr_32f_xn_resampler_32f_xn.h, volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn.h
+- New volk_gnsssdr kernels: volk_gnsssdr_16i_xn_resampler_16i_xn.h, volk_gnsssdr_16ic_16i_rotator_dot_prod_16ic_xn.h, volk_gnsssdr_32f_xn_resampler_32f_xn.h, volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn.h
 - Some AVX2 implementations added to the volk_gnsssdr library.
 - Improvement in C++ usage: Use of const container calls when result is immediately converted to a const iterator. Using these members removes an implicit conversion from iterator to const_iterator.
 - A number of code optimizations here and there.
@@ -43,7 +45,7 @@ Next release will have several improvements in different dimensions, addition of
 - Added the GLONASS L2 SP receiver chain.
 - Improvements in the Galileo E5a and GPS L2C receiver chains.
 - Updated list of available GNSS satellites.
-- Added four more signal sources: "Fmcomms2_Signal_Source", "Plutosdr_Signal Source", "Spir_GSS6450_File_Signal_Source" and "Labsat_Signal_Source". Documented in https://gnss-sdr.org/docs/sp-blocks/signal-source/
+- Added five more signal sources: "Fmcomms2_Signal_Source" (requires gr-iio), "Plutosdr_Signal Source" (requires gr-iio), "Spir_GSS6450_File_Signal_Source", "Labsat_Signal_Source" and "Custom_UDP_Signal_Source" (requires libpcap). Documented in https://gnss-sdr.org/docs/sp-blocks/signal-source/
 - Improved support for BladeRF, HackRF and RTL-SDR front-ends.
 - Added tools for the interaction with front-ends based on the AD9361 chipset.
 - Intermediate results are now saved in .mat binary format, readable from Matlab/Octave and from Python via h5py.
@@ -124,7 +126,7 @@ Next release will have several improvements in different dimensions, addition of
 - Updated and improved documentation of processing blocks at https://gnss-sdr.org/docs/sp-blocks/
 - Improved documentation of required dependency packages in several GNU/Linux distributions.
 - Parameter names with the same role have been harmonized within different block implementations.
-- Added a chnagelog, a code of conduct, a contributing guide and a pull-request template in the source tree.
+- Added a changelog, a code of conduct, a contributing guide and a pull-request template in the source tree.
 - Added colors to the commandline user interface.
 - Updated manfiles.
 

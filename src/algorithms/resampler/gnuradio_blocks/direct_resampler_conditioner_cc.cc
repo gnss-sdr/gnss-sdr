@@ -54,8 +54,7 @@ direct_resampler_conditioner_cc::direct_resampler_conditioner_cc(
                               d_sample_freq_in(sample_freq_in),
                               d_sample_freq_out(sample_freq_out),
                               d_phase(0),
-                              d_lphase(0),
-                              d_history(1)
+                              d_lphase(0)
 {
     // Computes the phase step multiplying the resampling ratio by 2^32 = 4294967296
     const double two_32 = 4294967296.0;

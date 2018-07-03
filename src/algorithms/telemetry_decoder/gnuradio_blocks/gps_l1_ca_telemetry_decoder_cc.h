@@ -97,10 +97,6 @@ private:
     bool d_flag_new_tow_available;
     int d_word_number;
 
-    // output averaging and decimation
-    int d_average_count;
-    int d_decimation_output_factor;
-
     // navigation message vars
     Gps_Navigation_Message d_nav;
     GpsL1CaSubframeFsm d_GPS_FSM;
@@ -111,8 +107,7 @@ private:
 
     unsigned long int d_preamble_time_samples;
 
-    double d_TOW_at_Preamble;
-    double d_TOW_at_current_symbol;
+    unsigned int d_TOW_at_Preamble_ms;
     unsigned int d_TOW_at_current_symbol_ms;
 
     bool flag_TOW_set;

@@ -54,6 +54,8 @@
 //#include <cstdio>
 #include <dirent.h>
 #include <iostream>
+#include <string>
+#include <sstream>
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -253,11 +255,12 @@ const unsigned int tbl_CRC24Q[] = {
     0x42FA2F, 0xC4B6D4, 0xC82F22, 0x4E63D9, 0xD11CCE, 0x575035, 0x5BC9C3, 0xDD8538};
 
 
-extern "C" {
-void dgemm_(char *, char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
-extern void dgetrf_(int *, int *, double *, int *, int *, int *);
-extern void dgetri_(int *, double *, int *, int *, double *, int *, int *);
-extern void dgetrs_(char *, int *, int *, double *, int *, int *, double *, int *, int *);
+extern "C"
+{
+    void dgemm_(char *, char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
+    extern void dgetrf_(int *, int *, double *, int *, int *, int *);
+    extern void dgetri_(int *, double *, int *, int *, double *, int *, int *);
+    extern void dgetrs_(char *, int *, int *, double *, int *, int *, double *, int *, int *);
 }
 
 
@@ -2562,7 +2565,8 @@ void readpos(const char *file, const char *rcv, double *pos)
             if (buff[0] == '%' || buff[0] == '#') continue;
             if (sscanf(buff, "%lf %lf %lf %s", &poss[np][0], &poss[np][1], &poss[np][2],
                     str) < 4) continue;
-            strncpy(stas[np], str, 15);
+            // strncpy(stas[np], str, 15); This line triggers a warning. Replaced by:
+            memcpy(stas[np], str, 15 * sizeof(stas[np][0]));
             stas[np++][15] = '\0';
         }
     fclose(fp);
@@ -4264,7 +4268,17 @@ int rtk_uncompress(const char *file, char *uncfile)
                     dir = fname;
                     fname = p + 1;
                 }
-            sprintf(cmd, "tar -C \"%s\" -xf \"%s\"", dir, tmpfile);
+            // sprintf(cmd, "tar -C \"%s\" -xf \"%s\"", dir, tmpfile);
+            // NOTE: This sprintf triggers a format overflow warning. Replaced by:
+            std::ostringstream temp;
+            std::string s_aux1(dir);
+            std::string s_aux2(tmpfile);
+            temp << "tar -C " << s_aux1 << " -xf " << s_aux2;
+            std::string s_aux = temp.str();
+            int n = s_aux.length();
+            if (n < 2048)
+                for (int i = 0; i < n; i++) cmd[i] = s_aux[i];
+
             if (execcmd(cmd))
                 {
                     if (stat)

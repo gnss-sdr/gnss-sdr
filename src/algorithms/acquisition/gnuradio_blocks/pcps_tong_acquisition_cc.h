@@ -65,7 +65,7 @@ typedef boost::shared_ptr<pcps_tong_acquisition_cc> pcps_tong_acquisition_cc_spt
 
 pcps_tong_acquisition_cc_sptr
 pcps_tong_make_acquisition_cc(unsigned int sampled_ms, unsigned int doppler_max,
-    long freq, long fs_in, int samples_per_ms,
+    long fs_in, int samples_per_ms,
     int samples_per_code, unsigned int tong_init_val,
     unsigned int tong_max_val, unsigned int tong_max_dwells,
     bool dump, std::string dump_filename);
@@ -79,13 +79,13 @@ class pcps_tong_acquisition_cc : public gr::block
 private:
     friend pcps_tong_acquisition_cc_sptr
     pcps_tong_make_acquisition_cc(unsigned int sampled_ms, unsigned int doppler_max,
-        long freq, long fs_in, int samples_per_ms,
+        long fs_in, int samples_per_ms,
         int samples_per_code, unsigned int tong_init_val,
         unsigned int tong_max_val, unsigned int tong_max_dwells,
         bool dump, std::string dump_filename);
 
     pcps_tong_acquisition_cc(unsigned int sampled_ms, unsigned int doppler_max,
-        long freq, long fs_in, int samples_per_ms,
+        long fs_in, int samples_per_ms,
         int samples_per_code, unsigned int tong_init_val,
         unsigned int tong_max_val, unsigned int tong_max_dwells,
         bool dump, std::string dump_filename);
@@ -94,7 +94,6 @@ private:
         int doppler_offset);
 
     long d_fs_in;
-    long d_freq;
     int d_samples_per_ms;
     int d_samples_per_code;
     unsigned int d_doppler_resolution;

@@ -303,11 +303,11 @@ int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute
     Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);            // Get the output buffer pointer
     const Gnss_Synchro **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);  // Get the input buffer pointer
 
-    Gnss_Synchro current_symbol;  //structure to save the synchronization information and send the output object to the next block
-    //1. Copy the current tracking output
+    Gnss_Synchro current_symbol;  // structure to save the synchronization information and send the output object to the next block
+    // 1. Copy the current tracking output
     current_symbol = in[0][0];
-    d_symbol_history.push_back(current_symbol);  //add new symbol to the symbol queue
-    d_sample_counter++;                          //count for the processed samples
+    d_symbol_history.push_back(current_symbol);  // add new symbol to the symbol queue
+    d_sample_counter++;                          // count for the processed samples
     consume_each(1);
 
     d_flag_preamble = false;
@@ -316,7 +316,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute
     if (d_symbol_history.size() > required_symbols)
         {
             // TODO Optimize me!
-            //******* preamble correlation ********
+            // ******* preamble correlation ********
             for (int i = 0; i < d_symbols_per_preamble; i++)
                 {
                     if (d_symbol_history.at(i).Prompt_I < 0)  // symbols clipping
@@ -330,12 +330,12 @@ int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute
                 }
         }
 
-    //******* frame sync ******************
-    if (d_stat == 0)  //no preamble information
+    // ******* frame sync ******************
+    if (d_stat == 0)  // no preamble information
         {
             if (abs(corr_value) >= d_symbols_per_preamble)
                 {
-                    d_preamble_index = d_sample_counter;  //record the preamble sample stamp
+                    d_preamble_index = d_sample_counter;  // record the preamble sample stamp
                     LOG(INFO) << "Preamble detection for Galileo satellite " << this->d_satellite;
                     d_stat = 1;  // enter into frame pre-detection status
                 }
@@ -344,13 +344,13 @@ int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute
         {
             if (abs(corr_value) >= d_symbols_per_preamble)
                 {
-                    //check preamble separation
+                    // check preamble separation
                     preamble_diff = d_sample_counter - d_preamble_index;
                     if (abs(preamble_diff - GALILEO_INAV_PREAMBLE_PERIOD_SYMBOLS) == 0)
                         {
-                            //try to decode frame
+                            // try to decode frame
                             LOG(INFO) << "Starting page decoder for Galileo satellite " << this->d_satellite;
-                            d_preamble_index = d_sample_counter;  //record the preamble sample stamp
+                            d_preamble_index = d_sample_counter;  // record the preamble sample stamp
                             d_stat = 2;
                         }
                     else
@@ -383,13 +383,13 @@ int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute
                                 }
                         }
 
-                    //call the decoder
+                    // call the decoder
                     decode_word(page_part_symbols, frame_length);
                     if (d_nav.flag_CRC_test == true)
                         {
                             d_CRC_error_counter = 0;
-                            d_flag_preamble = true;               //valid preamble indicator (initialized to false every work())
-                            d_preamble_index = d_sample_counter;  //record the preamble sample stamp (t_P)
+                            d_flag_preamble = true;               // valid preamble indicator (initialized to false every work())
+                            d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
                             if (!d_flag_frame_sync)
                                 {
                                     d_flag_frame_sync = true;
@@ -400,7 +400,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute
                     else
                         {
                             d_CRC_error_counter++;
-                            d_preamble_index = d_sample_counter;  //record the preamble sample stamp
+                            d_preamble_index = d_sample_counter;  // record the preamble sample stamp
                             if (d_CRC_error_counter > CRC_ERROR_LIMIT)
                                 {
                                     LOG(INFO) << "Lost of frame sync SAT " << this->d_satellite;
@@ -412,37 +412,37 @@ int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute
         }
 
     // UPDATE GNSS SYNCHRO DATA
-    //2. Add the telemetry decoder information
+    // 2. Add the telemetry decoder information
     if (this->d_flag_preamble == true and d_nav.flag_TOW_set == true)
-        //update TOW at the preamble instant
+        // update TOW at the preamble instant
         {
-            if (d_nav.flag_TOW_5 == true)  //page 5 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
+            if (d_nav.flag_TOW_5 == true)  // page 5 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
                 {
-                    //TOW_5 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
-                    d_TOW_at_current_symbol = d_nav.TOW_5 + static_cast<double>(GALILEO_INAV_PAGE_PART_SECONDS) + static_cast<double>(required_symbols - 1) * GALILEO_E1_CODE_PERIOD;  //-GALILEO_E1_CODE_PERIOD;//+ (double)GALILEO_INAV_PREAMBLE_LENGTH_BITS/(double)GALILEO_TELEMETRY_RATE_BITS_SECOND;
+                    // TOW_5 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
+                    d_TOW_at_current_symbol = d_nav.TOW_5 + static_cast<double>(GALILEO_INAV_PAGE_PART_SECONDS) + static_cast<double>(required_symbols + 1) * GALILEO_E1_CODE_PERIOD;
                     d_nav.flag_TOW_5 = false;
                 }
 
-            else if (d_nav.flag_TOW_6 == true)  //page 6 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
+            else if (d_nav.flag_TOW_6 == true)  // page 6 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
                 {
-                    //TOW_6 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
-                    d_TOW_at_current_symbol = d_nav.TOW_6 + static_cast<double>(GALILEO_INAV_PAGE_PART_SECONDS) + static_cast<double>(required_symbols - 1) * GALILEO_E1_CODE_PERIOD;  //-GALILEO_E1_CODE_PERIOD;//+ (double)GALILEO_INAV_PREAMBLE_LENGTH_BITS/(double)GALILEO_TELEMETRY_RATE_BITS_SECOND;
+                    // TOW_6 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
+                    d_TOW_at_current_symbol = d_nav.TOW_6 + static_cast<double>(GALILEO_INAV_PAGE_PART_SECONDS) + static_cast<double>(required_symbols + 1) * GALILEO_E1_CODE_PERIOD;
                     d_nav.flag_TOW_6 = false;
                 }
             else
                 {
-                    //this page has no timing information
+                    // this page has no timing information
                     d_TOW_at_current_symbol += GALILEO_E1_CODE_PERIOD;  // + GALILEO_INAV_PAGE_PART_SYMBOLS*GALILEO_E1_CODE_PERIOD;
                 }
         }
-    else  //if there is not a new preamble, we define the TOW of the current symbol
+    else  // if there is not a new preamble, we define the TOW of the current symbol
         {
             d_TOW_at_current_symbol += GALILEO_E1_CODE_PERIOD;
         }
 
-    //if (d_flag_frame_sync == true and d_nav.flag_TOW_set==true and d_nav.flag_CRC_test == true)
+    // if (d_flag_frame_sync == true and d_nav.flag_TOW_set==true and d_nav.flag_CRC_test == true)
 
-    if (d_nav.flag_GGTO_1 == true and d_nav.flag_GGTO_2 == true and d_nav.flag_GGTO_3 == true and d_nav.flag_GGTO_4 == true)  //all GGTO parameters arrived
+    if (d_nav.flag_GGTO_1 == true and d_nav.flag_GGTO_2 == true and d_nav.flag_GGTO_3 == true and d_nav.flag_GGTO_4 == true)  // all GGTO parameters arrived
         {
             delta_t = d_nav.A_0G_10 + d_nav.A_1G_10 * (d_TOW_at_current_symbol - d_nav.t_0G_10 + 604800.0 * (fmod((d_nav.WN_0 - d_nav.WN_0G_10), 64.0)));
         }
@@ -456,8 +456,9 @@ int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute
             current_symbol.Flag_valid_word = false;
         }
 
-    current_symbol.TOW_at_current_symbol_s = floor(d_TOW_at_current_symbol * 1000.0) / 1000.0;
-    current_symbol.TOW_at_current_symbol_s -= delta_t;  //Galileo to GPS TOW
+    current_symbol.TOW_at_current_symbol_ms = round(d_TOW_at_current_symbol * 1000.0);
+    // todo: Galileo to GPS time conversion should be moved to observable block.
+    // current_symbol.TOW_at_current_symbol_ms -= delta_t;  //Galileo to GPS TOW
 
     if (d_dump == true)
         {
@@ -484,8 +485,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute
         {
             d_symbol_history.pop_front();
         }
-    //3. Make the output (copy the object contents to the GNURadio reserved memory)
+    // 3. Make the output (copy the object contents to the GNURadio reserved memory)
     *out[0] = current_symbol;
-    //std::cout<<"GPS L1 TLM output on CH="<<this->d_channel << " SAMPLE STAMP="<<d_sample_counter/d_decimation_output_factor<<std::endl;
     return 1;
 }

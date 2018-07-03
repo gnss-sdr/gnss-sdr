@@ -59,6 +59,7 @@ using google::LogMessage;
 
 gps_l1_ca_kf_tracking_cc_sptr
 gps_l1_ca_kf_make_tracking_cc(
+    unsigned int order,
     long if_freq,
     long fs_in,
     unsigned int vector_length,
@@ -67,7 +68,7 @@ gps_l1_ca_kf_make_tracking_cc(
     float dll_bw_hz,
     float early_late_space_chips)
 {
-    return gps_l1_ca_kf_tracking_cc_sptr(new Gps_L1_Ca_Kf_Tracking_cc(if_freq,
+    return gps_l1_ca_kf_tracking_cc_sptr(new Gps_L1_Ca_Kf_Tracking_cc(order, if_freq,
         fs_in, vector_length, dump, dump_filename, dll_bw_hz, early_late_space_chips));
 }
 
@@ -83,6 +84,7 @@ void Gps_L1_Ca_Kf_Tracking_cc::forecast(int noutput_items,
 
 
 Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
+    unsigned int order,
     long if_freq,
     long fs_in,
     unsigned int vector_length,
@@ -97,6 +99,7 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
     this->message_port_register_out(pmt::mp("events"));
 
     // initialize internal vars
+    d_order = order;
     d_dump = dump;
     d_if_freq = if_freq;
     d_fs_in = fs_in;
@@ -182,7 +185,8 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
 
     //covariances (static)
     double sigma2_carrier_phase = GPS_TWO_PI / 4;
-    double sigma2_doppler = 450;
+    double sigma2_doppler       = 450;
+    double sigma2_doppler_rate  = 1.0 / 24.0;
 
     kf_P_x_ini = arma::zeros(2, 2);
     kf_P_x_ini(0, 0) = sigma2_carrier_phase;
@@ -192,8 +196,8 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
     kf_R(0, 0) = sigma2_phase_detector_cycles2;
 
     kf_Q = arma::zeros(2, 2);
-    kf_Q(0, 0) = 1e-14;
-    kf_Q(1, 1) = 1e-2;
+    kf_Q(0, 0) = pow(4, GPS_L1_CA_CODE_PERIOD);
+    kf_Q(1, 1) = GPS_L1_CA_CODE_PERIOD;
 
     kf_F = arma::zeros(2, 2);
     kf_F(0, 0) = 1.0;
@@ -206,6 +210,31 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
 
     kf_x = arma::zeros(2, 1);
     kf_y = arma::zeros(1, 1);
+
+    // order three
+    if (d_order == 3)
+        {
+            kf_P_x_ini = arma::resize(kf_P_x_ini, 3, 3);
+            kf_P_x_ini(2, 2) = sigma2_doppler_rate;
+
+            kf_Q = arma::zeros(3, 3);
+            kf_Q(0, 0) = pow(6, GPS_L1_CA_CODE_PERIOD);
+            kf_Q(1, 1) = pow(4, GPS_L1_CA_CODE_PERIOD);
+            kf_Q(2, 2) = pow(2, GPS_L1_CA_CODE_PERIOD);
+
+            kf_F = arma::resize(kf_F, 3, 3);
+            kf_F(0, 2) = 0.25 * GPS_TWO_PI * pow(2, GPS_L1_CA_CODE_PERIOD);
+            kf_F(1, 2) = GPS_L1_CA_CODE_PERIOD;
+            kf_F(2, 0) = 0.0;
+            kf_F(2, 1) = 0.0;
+            kf_F(2, 2) = 1.0;
+
+            kf_H = arma::resize(kf_H, 1, 3);
+            kf_H(0, 2) = 0.0;
+
+            kf_x = arma::resize(kf_x, 3, 1);
+            kf_x(2, 0) = -0.25;
+        }
 }
 
 
@@ -674,7 +703,7 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
             kf_y(0) = carr_phase_error_rad;  // measurement vector
             kf_x = kf_x_pre + kf_K * kf_y;   // updated state estimation
 
-            kf_P_x = (arma::eye(2, 2) - kf_K * kf_H) * kf_P_x_pre;  // update state estimation error covariance matrix
+            kf_P_x = (arma::eye(size(kf_P_x_pre)) - kf_K * kf_H) * kf_P_x_pre;  // update state estimation error covariance matrix
 
             d_rem_carr_phase_rad = kf_x(0);  // set a new carrier Phase estimation to the NCO
             d_carrier_doppler_hz = kf_x(1);  // set a new carrier Doppler estimation to the NCO

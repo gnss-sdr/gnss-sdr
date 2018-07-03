@@ -56,7 +56,8 @@ typedef boost::shared_ptr<Gps_L1_Ca_Kf_Tracking_cc>
     gps_l1_ca_kf_tracking_cc_sptr;
 
 gps_l1_ca_kf_tracking_cc_sptr
-gps_l1_ca_kf_make_tracking_cc(long if_freq,
+gps_l1_ca_kf_make_tracking_cc(unsigned int order,
+    long if_freq,
     long fs_in, unsigned int vector_length,
     bool dump,
     std::string dump_filename,
@@ -83,14 +84,16 @@ public:
 
 private:
     friend gps_l1_ca_kf_tracking_cc_sptr
-    gps_l1_ca_kf_make_tracking_cc(long if_freq,
+    gps_l1_ca_kf_make_tracking_cc(unsigned int order,
+        long if_freq,
         long fs_in, unsigned int vector_length,
         bool dump,
         std::string dump_filename,
         float dll_bw_hz,
         float early_late_space_chips);
 
-    Gps_L1_Ca_Kf_Tracking_cc(long if_freq,
+    Gps_L1_Ca_Kf_Tracking_cc(unsigned int order,
+        long if_freq,
         long fs_in, unsigned int vector_length,
         bool dump,
         std::string dump_filename,
@@ -98,6 +101,7 @@ private:
         float early_late_space_chips);
 
     // tracking configuration vars
+    unsigned int d_order;
     unsigned int d_vector_length;
     bool d_dump;
 

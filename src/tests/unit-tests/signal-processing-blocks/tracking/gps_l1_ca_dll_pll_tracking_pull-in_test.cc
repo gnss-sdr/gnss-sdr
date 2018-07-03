@@ -177,7 +177,7 @@ public:
     const int baseband_sampling_freq = FLAGS_fs_gen_sps;
 
     std::string filename_rinex_obs = FLAGS_filename_rinex_obs;
-    std::string filename_raw_data = FLAGS_filename_raw_data;
+    std::string filename_raw_data = FLAGS_signal_file;
 
     std::map<int, double> doppler_measurements_map;
     std::map<int, double> code_delay_measurements_map;
@@ -245,10 +245,10 @@ int GpsL1CADllPllTrackingPullInTest::configure_generator(double CN0_dBHz, int fi
         {
             p2 = std::string("-obs_pos_file=") + std::string(FLAGS_dynamic_position);
         }
-    p3 = std::string("-rinex_obs_file=") + FLAGS_filename_rinex_obs;                          // RINEX 2.10 observation file output
-    p4 = std::string("-sig_out_file=") + FLAGS_filename_raw_data + std::to_string(file_idx);  // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
-    p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);             //Baseband sampling frequency [MSps]
-    p6 = std::string("-CN0_dBHz=") + std::to_string(CN0_dBHz);                                // Signal generator CN0
+    p3 = std::string("-rinex_obs_file=") + FLAGS_filename_rinex_obs;                    // RINEX 2.10 observation file output
+    p4 = std::string("-sig_out_file=") + FLAGS_signal_file + std::to_string(file_idx);  // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
+    p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);       //Baseband sampling frequency [MSps]
+    p6 = std::string("-CN0_dBHz=") + std::to_string(CN0_dBHz);                          // Signal generator CN0
     return 0;
 }
 
@@ -340,7 +340,7 @@ bool GpsL1CADllPllTrackingPullInTest::acquire_GPS_L1CA_signal(int SV_ID)
 
     acquisition->set_channel(1);
     acquisition->set_gnss_synchro(&tmp_gnss_synchro);
-    acquisition->set_threshold(config->property("Acquisition.threshold", 0.05));
+    acquisition->set_threshold(config->property("Acquisition.threshold", 0.005));
     acquisition->set_doppler_max(config->property("Acquisition.doppler_max", 10000));
     acquisition->set_doppler_step(config->property("Acquisition.doppler_step", 250));
 
@@ -356,7 +356,7 @@ bool GpsL1CADllPllTrackingPullInTest::acquire_GPS_L1CA_signal(int SV_ID)
         }
 
     gr::blocks::file_source::sptr file_source;
-    std::string file = FLAGS_filename_raw_data;
+    std::string file = FLAGS_signal_file;
     const char* file_name = file.c_str();
     file_source = gr::blocks::file_source::make(sizeof(int8_t), file_name, false);
     gr::blocks::interleaved_char_to_complex::sptr gr_interleaved_char_to_complex = gr::blocks::interleaved_char_to_complex::make();
@@ -389,7 +389,7 @@ bool GpsL1CADllPllTrackingPullInTest::acquire_GPS_L1CA_signal(int SV_ID)
             top_block->run();
             if (start_msg == true)
                 {
-                    std::cout << "Reading external signal file: " << FLAGS_filename_raw_data << std::endl;
+                    std::cout << "Reading external signal file: " << FLAGS_signal_file << std::endl;
                     std::cout << "Searching for GPS Satellites in L1 band..." << std::endl;
                     std::cout << "[";
                     start_msg = false;
@@ -433,12 +433,12 @@ TEST_F(GpsL1CADllPllTrackingPullInTest, ValidationOfResults)
         acq_doppler_error_hz_values;
     std::vector<std::vector<double>> acq_delay_error_chips_values;  //vector of vector
 
-    for (double doppler_hz = FLAGS_Acq_Doppler_error_hz_start; doppler_hz >= FLAGS_Acq_Doppler_error_hz_stop; doppler_hz = doppler_hz + FLAGS_Acq_Doppler_error_hz_step)
+    for (double doppler_hz = FLAGS_acq_Doppler_error_hz_start; doppler_hz >= FLAGS_acq_Doppler_error_hz_stop; doppler_hz = doppler_hz + FLAGS_acq_Doppler_error_hz_step)
         {
             acq_doppler_error_hz_values.push_back(doppler_hz);
             std::vector<double> tmp_vector;
             //Code Delay Sweep
-            for (double code_delay_chips = FLAGS_Acq_Delay_error_chips_start; code_delay_chips >= FLAGS_Acq_Delay_error_chips_stop; code_delay_chips = code_delay_chips + FLAGS_Acq_Delay_error_chips_step)
+            for (double code_delay_chips = FLAGS_acq_Delay_error_chips_start; code_delay_chips >= FLAGS_acq_Delay_error_chips_stop; code_delay_chips = code_delay_chips + FLAGS_acq_Delay_error_chips_step)
                 {
                     tmp_vector.push_back(code_delay_chips);
                 }
@@ -452,6 +452,10 @@ TEST_F(GpsL1CADllPllTrackingPullInTest, ValidationOfResults)
     std::vector<double> generator_CN0_values;
     if (FLAGS_enable_external_signal_file)
         {
+            generator_CN0_values.push_back(999);  // an external input signal capture is selected, no CN0 information available
+        }
+    else
+        {
             if (FLAGS_CN0_dBHz_start == FLAGS_CN0_dBHz_stop)
                 {
                     generator_CN0_values.push_back(FLAGS_CN0_dBHz_start);
@@ -464,18 +468,15 @@ TEST_F(GpsL1CADllPllTrackingPullInTest, ValidationOfResults)
                         }
                 }
         }
-    else
-        {
-            generator_CN0_values.push_back(999);  // an external input signal capture is selected, no CN0 information available
-        }
 
     // use generator or use an external capture file
     if (FLAGS_enable_external_signal_file)
         {
             //create and configure an acquisition block and perform an acquisition to obtain the synchronization parameters
             ASSERT_EQ(acquire_GPS_L1CA_signal(FLAGS_test_satellite_PRN), true);
-            EXPECT_TRUE(doppler_measurements_map.find(FLAGS_test_satellite_PRN) != doppler_measurements_map.end())
-                << "Error: satellite SV: " << FLAGS_test_satellite_PRN << " is not acquired";
+            bool found_satellite = doppler_measurements_map.find(FLAGS_test_satellite_PRN) != doppler_measurements_map.end();
+            EXPECT_TRUE(found_satellite) << "Error: satellite SV: " << FLAGS_test_satellite_PRN << " is not acquired";
+            if (!found_satellite) return;
         }
     else
         {
@@ -576,7 +577,7 @@ TEST_F(GpsL1CADllPllTrackingPullInTest, ValidationOfResults)
                                     }
                                 else
                                     {
-                                        file = FLAGS_filename_raw_data;
+                                        file = FLAGS_signal_file;
                                     }
                                 const char* file_name = file.c_str();
                                 gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(int8_t), file_name, false);
@@ -612,7 +613,7 @@ TEST_F(GpsL1CADllPllTrackingPullInTest, ValidationOfResults)
                             //********************************
                             //***** STEP 7: Plot results *****
                             //********************************
-                            if (FLAGS_plot_gps_l1_tracking_test == true)
+                            if (FLAGS_plot_detail_level >= 2 and FLAGS_show_plots)
                                 {
                                     //load the measured values
                                     tracking_dump_reader trk_dump;
@@ -657,7 +658,7 @@ TEST_F(GpsL1CADllPllTrackingPullInTest, ValidationOfResults)
                                     const std::string gnuplot_executable(FLAGS_gnuplot_executable);
                                     if (gnuplot_executable.empty())
                                         {
-                                            std::cout << "WARNING: Although the flag plot_gps_l1_tracking_test has been set to TRUE," << std::endl;
+                                            std::cout << "WARNING: Although the flag show_plots has been set to TRUE," << std::endl;
                                             std::cout << "gnuplot has not been found in your system." << std::endl;
                                             std::cout << "Test results will not be plotted." << std::endl;
                                         }
@@ -805,8 +806,8 @@ TEST_F(GpsL1CADllPllTrackingPullInTest, ValidationOfResults)
                 }
             else
                 {
-                    g4.savetops("trk_pull_in_grid_" + FLAGS_filename_raw_data);
-                    g4.savetopdf("trk_pull_in_grid_" + FLAGS_filename_raw_data, 12);
+                    g4.savetops("trk_pull_in_grid_external_file");
+                    g4.savetopdf("trk_pull_in_grid_external_file", 12);
                 }
         }
 }

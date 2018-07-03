@@ -222,6 +222,7 @@ void pcps_acquisition::init()
     d_gnss_synchro->Flag_valid_pseudorange = false;
     d_gnss_synchro->Flag_valid_word = false;
 
+    d_gnss_synchro->Acq_doppler_step = d_doppler_step;
     d_gnss_synchro->Acq_delay_samples = 0.0;
     d_gnss_synchro->Acq_doppler_hz = 0.0;
     d_gnss_synchro->Acq_samplestamp_samples = 0;
@@ -282,6 +283,7 @@ void pcps_acquisition::set_state(int state)
         {
             d_gnss_synchro->Acq_delay_samples = 0.0;
             d_gnss_synchro->Acq_doppler_hz = 0.0;
+            d_gnss_synchro->Acq_doppler_step = 0;
             d_gnss_synchro->Acq_samplestamp_samples = 0;
             d_well_count = 0;
             d_mag = 0.0;

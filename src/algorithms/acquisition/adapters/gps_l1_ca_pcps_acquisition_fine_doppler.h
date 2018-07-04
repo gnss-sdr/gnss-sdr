@@ -131,7 +131,6 @@ private:
     float threshold_;
     int doppler_max_;
     unsigned int doppler_step_;
-    int doppler_min_;
     unsigned int sampled_ms_;
     int max_dwells_;
     long fs_in_;

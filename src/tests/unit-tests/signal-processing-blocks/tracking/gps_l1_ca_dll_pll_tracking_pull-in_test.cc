@@ -334,15 +334,17 @@ bool GpsL1CADllPllTrackingPullInTest::acquire_GPS_L1CA_signal(int SV_ID)
     config = std::make_shared<InMemoryConfiguration>();
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(baseband_sampling_freq));
 
+    config->set_property("Acquisition.max_dwells", "10");
+    config->set_property("Acquisition.dump", "true");
     GNSSBlockFactory block_factory;
     GpsL1CaPcpsAcquisitionFineDoppler* acquisition;
     acquisition = new GpsL1CaPcpsAcquisitionFineDoppler(config.get(), "Acquisition", 1, 1);
 
     acquisition->set_channel(1);
     acquisition->set_gnss_synchro(&tmp_gnss_synchro);
-    acquisition->set_threshold(config->property("Acquisition.threshold", 0.005));
+    acquisition->set_threshold(config->property("Acquisition.threshold", FLAGS_external_signal_acquisition_threshold));
     acquisition->set_doppler_max(config->property("Acquisition.doppler_max", 10000));
-    acquisition->set_doppler_step(config->property("Acquisition.doppler_step", 250));
+    acquisition->set_doppler_step(config->property("Acquisition.doppler_step", 500));
 
     boost::shared_ptr<Acquisition_msg_rx> msg_rx;
     try
@@ -522,7 +524,7 @@ TEST_F(GpsL1CADllPllTrackingPullInTest, ValidationOfResults)
                 << "Maybe sat PRN #" + std::to_string(FLAGS_test_satellite_PRN) +
                        " is not available?";
             std::cout << "Testing satellite PRN=" << test_satellite_PRN << std::endl;
-            std::cout << "True Initial Doppler " << true_obs_data.doppler_l1_hz << "[Hz], true Initial code delay [Chips]=" << true_obs_data.prn_delay_chips << "[Chips]" << std::endl;
+            std::cout << "True Initial Doppler " << true_obs_data.doppler_l1_hz << " [Hz], true Initial code delay [Chips]=" << true_obs_data.prn_delay_chips << "[Chips]" << std::endl;
             true_acq_doppler_hz = true_obs_data.doppler_l1_hz;
             true_acq_delay_samples = (GPS_L1_CA_CODE_LENGTH_CHIPS - true_obs_data.prn_delay_chips / GPS_L1_CA_CODE_LENGTH_CHIPS) * static_cast<double>(baseband_sampling_freq) * GPS_L1_CA_CODE_PERIOD;
             acq_samplestamp_samples = 0;
@@ -531,8 +533,10 @@ TEST_F(GpsL1CADllPllTrackingPullInTest, ValidationOfResults)
         {
             true_acq_doppler_hz = doppler_measurements_map.find(FLAGS_test_satellite_PRN)->second;
             true_acq_delay_samples = code_delay_measurements_map.find(FLAGS_test_satellite_PRN)->second;
-            acq_samplestamp_samples = 0;  //acq_samplestamp_map.find(FLAGS_test_satellite_PRN)->second;
-            std::cout << "Estimated Initial Doppler " << true_acq_doppler_hz << "[Hz], estimated Initial code delay " << true_acq_delay_samples << " [Samples]" << std::endl;
+            acq_samplestamp_samples = 0;
+            std::cout << "Estimated Initial Doppler " << true_acq_doppler_hz
+                      << " [Hz], estimated Initial code delay " << true_acq_delay_samples << " [Samples]"
+                      << " Acquisition SampleStamp is " << acq_samplestamp_map.find(FLAGS_test_satellite_PRN)->second << std::endl;
         }
     //CN0 LOOP
     std::vector<std::vector<double>> pull_in_results_v_v;

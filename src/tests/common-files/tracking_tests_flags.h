@@ -36,6 +36,7 @@
 
 // Input signal configuration
 DEFINE_bool(enable_external_signal_file, false, "Use an external signal file capture instead of the software-defined signal generator");
+DEFINE_int32(external_signal_acquisition_threshold, 2.0, "Threshold for satellite acquisition when external file is used");
 DEFINE_string(signal_file, std::string("signal_out.bin"), "Path of the external signal capture file");
 DEFINE_double(CN0_dBHz_start, std::numeric_limits<double>::infinity(), "Enable noise generator and set the CN0 start sweep value [dB-Hz]");
 DEFINE_double(CN0_dBHz_stop, std::numeric_limits<double>::infinity(), "Enable noise generator and set the CN0 stop sweep value [dB-Hz]");

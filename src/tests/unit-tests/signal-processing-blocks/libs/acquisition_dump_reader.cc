@@ -167,6 +167,20 @@ acquisition_dump_reader::acquisition_dump_reader(const std::string& basename,
         {
             std::cout << "¡¡¡Unreachable Acquisition dump file!!!" << std::endl;
         }
+    acq_doppler_hz = 0.0;
+    acq_delay_samples = 0.0;
+    test_statistic = 0.0;
+    input_power = 0.0;
+    threshold = 0.0;
+    positive_acq = 0;
+    sample_counter = 0;
+    PRN = 0;
+    d_sat = 0;
+    d_doppler_max = doppler_max_;
+    d_doppler_step = doppler_step_;
+    d_samples_per_code = samples_per_code_;
+    d_num_doppler_bins = 0;
+
     acquisition_dump_reader(basename,
         sat_,
         doppler_max_,
@@ -175,6 +189,7 @@ acquisition_dump_reader::acquisition_dump_reader(const std::string& basename,
         channel,
         execution);
 }
+
 
 acquisition_dump_reader::acquisition_dump_reader(const std::string& basename,
     unsigned int sat,
@@ -197,6 +212,7 @@ acquisition_dump_reader::acquisition_dump_reader(const std::string& basename,
     positive_acq = 0;
     sample_counter = 0;
     PRN = 0;
+    if (d_doppler_step == 0) d_doppler_step = 1;
     d_num_doppler_bins = static_cast<unsigned int>(ceil(static_cast<double>(static_cast<int>(d_doppler_max) - static_cast<int>(-d_doppler_max)) / static_cast<double>(d_doppler_step)));
     std::vector<std::vector<float> > mag_aux(d_num_doppler_bins, std::vector<float>(d_samples_per_code));
     mag = mag_aux;

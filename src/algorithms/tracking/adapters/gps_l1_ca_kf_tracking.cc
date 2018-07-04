@@ -53,6 +53,7 @@ GpsL1CaKfTracking::GpsL1CaKfTracking(
 {
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
+    int order;
     int fs_in;
     int vector_length;
     int f_if;
@@ -63,7 +64,9 @@ GpsL1CaKfTracking::GpsL1CaKfTracking(
     float pll_bw_hz;
     float dll_bw_hz;
     float early_late_space_chips;
+
     item_type = configuration->property(role + ".item_type", default_item_type);
+    order = configuration->property(role + ".order", 2);
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     f_if = configuration->property(role + ".if", 0);
@@ -80,6 +83,7 @@ GpsL1CaKfTracking::GpsL1CaKfTracking(
         {
             item_size_ = sizeof(gr_complex);
             tracking_ = gps_l1_ca_kf_make_tracking_cc(
+                order,
                 f_if,
                 fs_in,
                 vector_length,

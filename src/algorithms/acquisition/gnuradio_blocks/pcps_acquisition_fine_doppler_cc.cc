@@ -455,7 +455,6 @@ void pcps_acquisition_fine_doppler_cc::set_state(int state)
             d_gnss_synchro->Acq_doppler_hz = 0.0;
             d_gnss_synchro->Acq_samplestamp_samples = 0;
             d_well_count = 0;
-            d_input_power = 0.0;
             d_test_statistics = 0.0;
             d_active = true;
         }

@@ -4,6 +4,7 @@
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *         Carles Fernandez-Prades, 2014. cfernandez(at)cttc.es
+ *         Álvaro Cebrián Juan, 2018. acebrianjuan(at)gmail.com
  *
  * -------------------------------------------------------------------------
  *
@@ -422,11 +423,59 @@ void GNSSFlowgraph::connect()
             else
                 {
                     std::string gnss_system;
-                    if ((gnss_signal.compare("1C") == 0) or (gnss_signal.compare("2S") == 0) or (gnss_signal.compare("L5") == 0)) gnss_system = "GPS";
-                    if ((gnss_signal.compare("1B") == 0) or (gnss_signal.compare("5X") == 0)) gnss_system = "Galileo";
-                    if ((gnss_signal.compare("1G") == 0) or (gnss_signal.compare("2G") == 0)) gnss_system = "Glonass";
-                    Gnss_Signal signal_value = Gnss_Signal(Gnss_Satellite(gnss_system, sat), gnss_signal);
-                    available_GNSS_signals_.remove(signal_value);
+                    Gnss_Signal signal_value;
+                    switch (mapStringValues_[gnss_signal])
+                        {
+                        case evGPS_1C:
+                            gnss_system = "GPS";
+                            signal_value = Gnss_Signal(Gnss_Satellite(gnss_system, sat), gnss_signal);
+                            available_GPS_1C_signals_.remove(signal_value);
+                            break;
+
+                        case evGPS_2S:
+                            gnss_system = "GPS";
+                            signal_value = Gnss_Signal(Gnss_Satellite(gnss_system, sat), gnss_signal);
+                            available_GPS_2S_signals_.remove(signal_value);
+                            break;
+
+                        case evGPS_L5:
+                            gnss_system = "GPS";
+                            signal_value = Gnss_Signal(Gnss_Satellite(gnss_system, sat), gnss_signal);
+                            available_GPS_L5_signals_.remove(signal_value);
+                            break;
+
+                        case evGAL_1B:
+                            gnss_system = "Galileo";
+                            signal_value = Gnss_Signal(Gnss_Satellite(gnss_system, sat), gnss_signal);
+                            available_GAL_1B_signals_.remove(signal_value);
+                            break;
+
+                        case evGAL_5X:
+                            gnss_system = "Galileo";
+                            signal_value = Gnss_Signal(Gnss_Satellite(gnss_system, sat), gnss_signal);
+                            available_GAL_5X_signals_.remove(signal_value);
+                            break;
+
+                        case evGLO_1G:
+                            gnss_system = "Glonass";
+                            signal_value = Gnss_Signal(Gnss_Satellite(gnss_system, sat), gnss_signal);
+                            available_GLO_1G_signals_.remove(signal_value);
+                            break;
+
+                        case evGLO_2G:
+                            gnss_system = "Glonass";
+                            signal_value = Gnss_Signal(Gnss_Satellite(gnss_system, sat), gnss_signal);
+                            available_GLO_2G_signals_.remove(signal_value);
+                            break;
+
+                        default:
+                            LOG(ERROR) << "This should not happen :-(";
+                            gnss_system = "GPS";
+                            signal_value = Gnss_Signal(Gnss_Satellite(gnss_system, sat), gnss_signal);
+                            available_GPS_1C_signals_.remove(signal_value);
+                            break;
+                        }
+
                     channels_.at(i)->set_signal(signal_value);
                 }
         }
@@ -446,6 +495,25 @@ void GNSSFlowgraph::connect()
             LOG(ERROR) << e.what();
             top_block_->disconnect_all();
             return;
+        }
+
+    // GNSS SYNCHRO MONITOR
+    if (enable_monitor_)
+        {
+            try
+                {
+                    for (unsigned int i = 0; i < channels_count_; i++)
+                        {
+                            top_block_->connect(observables_->get_right_block(), i, GnssSynchroMonitor_, i);
+                        }
+                }
+            catch (const std::exception& e)
+                {
+                    LOG(WARNING) << "Can't connect observables to Monitor block";
+                    LOG(ERROR) << e.what();
+                    top_block_->disconnect_all();
+                    return;
+                }
         }
 
     // Activate acquisition in enabled channels
@@ -755,18 +823,75 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
         {
             LOG(WARNING) << e.what();
         }
+    std::lock_guard<std::mutex> lock(signal_list_mutex);
     switch (what)
         {
         case 0:
             DLOG(INFO) << "Channel " << who << " ACQ FAILED satellite " << channels_[who]->get_signal().get_satellite() << ", Signal " << channels_[who]->get_signal().get_signal_str();
             if (sat == 0)
                 {
-                    std::lock_guard<std::mutex> lock(signal_list_mutex);
-                    available_GNSS_signals_.push_back(channels_[who]->get_signal());
-                    channels_[who]->set_signal(search_next_signal(channels_[who]->get_signal().get_signal_str(), true));
+                    switch (mapStringValues_[channels_[who]->get_signal().get_signal_str()])
+                        {
+                        case evGPS_1C:
+                            available_GPS_1C_signals_.push_back(channels_[who]->get_signal());
+                            break;
+
+                        case evGPS_2S:
+                            available_GPS_2S_signals_.push_back(channels_[who]->get_signal());
+                            break;
+
+                        case evGPS_L5:
+                            available_GPS_L5_signals_.push_back(channels_[who]->get_signal());
+                            break;
+
+                        case evGAL_1B:
+                            available_GAL_1B_signals_.push_back(channels_[who]->get_signal());
+                            break;
+
+                        case evGAL_5X:
+                            available_GAL_5X_signals_.push_back(channels_[who]->get_signal());
+                            break;
+
+                        case evGLO_1G:
+                            available_GLO_1G_signals_.push_back(channels_[who]->get_signal());
+                            break;
+
+                        case evGLO_2G:
+                            available_GLO_2G_signals_.push_back(channels_[who]->get_signal());
+                            break;
+
+                        default:
+                            LOG(ERROR) << "This should not happen :-(";
+                            break;
+                        }
                 }
-            DLOG(INFO) << "Channel " << who << " Starting acquisition " << channels_[who]->get_signal().get_satellite() << ", Signal " << channels_[who]->get_signal().get_signal_str();
-            channels_[who]->start_acquisition();
+            channels_state_[who] = 0;
+            acq_channels_count_--;
+            for (unsigned int i = 0; i < channels_count_; i++)
+                {
+                    unsigned int ch_index = (who + i + 1) % channels_count_;
+                    unsigned int sat_ = 0;
+                    try
+                        {
+                            sat_ = configuration_->property("Channel" + std::to_string(ch_index) + ".satellite", 0);
+                        }
+                    catch (const std::exception& e)
+                        {
+                            LOG(WARNING) << e.what();
+                        }
+                    if ((acq_channels_count_ < max_acq_channels_) && (channels_state_[ch_index] == 0))
+                        {
+                            channels_state_[ch_index] = 1;
+                            if (sat_ == 0)
+                                {
+                                    channels_[ch_index]->set_signal(search_next_signal(channels_[ch_index]->get_signal().get_signal_str(), true));
+                                }
+                            acq_channels_count_++;
+                            DLOG(INFO) << "Channel " << ch_index << " Starting acquisition " << channels_[ch_index]->get_signal().get_satellite() << ", Signal " << channels_[ch_index]->get_signal().get_signal_str();
+                            channels_[ch_index]->start_acquisition();
+                        }
+                    DLOG(INFO) << "Channel " << ch_index << " in state " << channels_state_[ch_index];
+                }
             break;
 
         case 1:
@@ -784,13 +909,12 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                         {
                             LOG(WARNING) << e.what();
                         }
-                    if (!available_GNSS_signals_.empty() && (acq_channels_count_ < max_acq_channels_) && (channels_state_[i] == 0))
+                    if ((acq_channels_count_ < max_acq_channels_) && (channels_state_[i] == 0))
                         {
                             channels_state_[i] = 1;
                             if (sat_ == 0)
                                 {
-                                    std::lock_guard<std::mutex> lock(signal_list_mutex);
-                                    channels_[i]->set_signal(search_next_signal(channels_[i]->get_signal().get_signal_str(), true));
+                                    channels_[i]->set_signal(search_next_signal(channels_[i]->get_signal().get_signal_str(), true, true));
                                 }
                             acq_channels_count_++;
                             DLOG(INFO) << "Channel " << i << " Starting acquisition " << channels_[i]->get_signal().get_satellite() << ", Signal " << channels_[i]->get_signal().get_signal_str();
@@ -817,8 +941,40 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                     LOG(INFO) << "Channel " << who << " Idle state";
                     if (sat == 0)
                         {
-                            std::lock_guard<std::mutex> lock(signal_list_mutex);
-                            available_GNSS_signals_.push_back(channels_[who]->get_signal());
+                            switch (mapStringValues_[channels_[who]->get_signal().get_signal_str()])
+                                {
+                                case evGPS_1C:
+                                    available_GPS_1C_signals_.push_back(channels_[who]->get_signal());
+                                    break;
+
+                                case evGPS_2S:
+                                    available_GPS_2S_signals_.push_back(channels_[who]->get_signal());
+                                    break;
+
+                                case evGPS_L5:
+                                    available_GPS_L5_signals_.push_back(channels_[who]->get_signal());
+                                    break;
+
+                                case evGAL_1B:
+                                    available_GAL_1B_signals_.push_back(channels_[who]->get_signal());
+                                    break;
+
+                                case evGAL_5X:
+                                    available_GAL_5X_signals_.push_back(channels_[who]->get_signal());
+                                    break;
+
+                                case evGLO_1G:
+                                    available_GLO_1G_signals_.push_back(channels_[who]->get_signal());
+                                    break;
+
+                                case evGLO_2G:
+                                    available_GLO_2G_signals_.push_back(channels_[who]->get_signal());
+                                    break;
+
+                                default:
+                                    LOG(ERROR) << "This should not happen :-(";
+                                    break;
+                                }
                         }
                 }
             break;
@@ -826,7 +982,6 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
         default:
             break;
         }
-    DLOG(INFO) << "Number of available signals: " << available_GNSS_signals_.size();
     applied_actions_++;
 }
 
@@ -943,11 +1098,38 @@ void GNSSFlowgraph::init()
 
     top_block_ = gr::make_top_block("GNSSFlowgraph");
 
-    // fill the available_GNSS_signals_ queue with the satellites ID's to be searched by the acquisition
+    mapStringValues_["1C"] = evGPS_1C;
+    mapStringValues_["2S"] = evGPS_2S;
+    mapStringValues_["L5"] = evGPS_L5;
+    mapStringValues_["1B"] = evGAL_1B;
+    mapStringValues_["5X"] = evGAL_5X;
+    mapStringValues_["1G"] = evGLO_1G;
+    mapStringValues_["2G"] = evGLO_2G;
+
+    // fill the signals queue with the satellites ID's to be searched by the acquisition
     set_signals_list();
     set_channels_state();
     applied_actions_ = 0;
     DLOG(INFO) << "Blocks instantiated. " << channels_count_ << " channels.";
+
+    /*
+	 * Instantiate the receiver monitor block, if required
+	 */
+    enable_monitor_ = configuration_->property("Monitor.enable_monitor", false);
+
+    std::vector<std::string> udp_addr_vec;
+
+    std::string address_string = configuration_->property("Monitor.client_addresses", std::string("127.0.0.1"));
+    //todo: split the string in substrings using the separator and fill the address vector.
+    udp_addr_vec.push_back(address_string);
+
+    if (enable_monitor_)
+        {
+            GnssSynchroMonitor_ = gr::basic_block_sptr(new gnss_synchro_monitor(channels_count_,
+                configuration_->property("Monitor.output_rate_ms", 1),
+                configuration_->property("Monitor.udp_port", 1234),
+                udp_addr_vec));
+        }
 }
 
 
@@ -1036,14 +1218,12 @@ void GNSSFlowgraph::set_signals_list()
 
     if (configuration_->property("Channels_1C.count", 0) > 0)
         {
-            /*
-             * Loop to create GPS L1 C/A signals
-             */
+            // Loop to create GPS L1 C/A signals
             for (available_gnss_prn_iter = available_gps_prn.cbegin();
                  available_gnss_prn_iter != available_gps_prn.cend();
                  available_gnss_prn_iter++)
                 {
-                    available_GNSS_signals_.push_back(Gnss_Signal(
+                    available_GPS_1C_signals_.push_back(Gnss_Signal(
                         Gnss_Satellite(std::string("GPS"), *available_gnss_prn_iter),
                         std::string("1C")));
                 }
@@ -1051,14 +1231,12 @@ void GNSSFlowgraph::set_signals_list()
 
     if (configuration_->property("Channels_2S.count", 0) > 0)
         {
-            /*
-             * Loop to create GPS L2C M signals
-             */
+            // Loop to create GPS L2C M signals
             for (available_gnss_prn_iter = available_gps_prn.cbegin();
                  available_gnss_prn_iter != available_gps_prn.cend();
                  available_gnss_prn_iter++)
                 {
-                    available_GNSS_signals_.push_back(Gnss_Signal(
+                    available_GPS_2S_signals_.push_back(Gnss_Signal(
                         Gnss_Satellite(std::string("GPS"), *available_gnss_prn_iter),
                         std::string("2S")));
                 }
@@ -1066,14 +1244,12 @@ void GNSSFlowgraph::set_signals_list()
 
     if (configuration_->property("Channels_L5.count", 0) > 0)
         {
-            /*
-             * Loop to create GPS L5 signals
-             */
+            // Loop to create GPS L5 signals
             for (available_gnss_prn_iter = available_gps_prn.cbegin();
                  available_gnss_prn_iter != available_gps_prn.cend();
                  available_gnss_prn_iter++)
                 {
-                    available_GNSS_signals_.push_back(Gnss_Signal(
+                    available_GPS_L5_signals_.push_back(Gnss_Signal(
                         Gnss_Satellite(std::string("GPS"), *available_gnss_prn_iter),
                         std::string("L5")));
                 }
@@ -1081,14 +1257,12 @@ void GNSSFlowgraph::set_signals_list()
 
     if (configuration_->property("Channels_SBAS.count", 0) > 0)
         {
-            /*
-             * Loop to create SBAS L1 C/A signals
-             */
+            // Loop to create SBAS L1 C/A signals
             for (available_gnss_prn_iter = available_sbas_prn.cbegin();
                  available_gnss_prn_iter != available_sbas_prn.cend();
                  available_gnss_prn_iter++)
                 {
-                    available_GNSS_signals_.push_back(Gnss_Signal(
+                    available_SBAS_1C_signals_.push_back(Gnss_Signal(
                         Gnss_Satellite(std::string("SBAS"), *available_gnss_prn_iter),
                         std::string("1C")));
                 }
@@ -1096,14 +1270,12 @@ void GNSSFlowgraph::set_signals_list()
 
     if (configuration_->property("Channels_1B.count", 0) > 0)
         {
-            /*
-             * Loop to create the list of Galileo E1B signals
-             */
+            // Loop to create the list of Galileo E1B signals
             for (available_gnss_prn_iter = available_galileo_prn.cbegin();
                  available_gnss_prn_iter != available_galileo_prn.cend();
                  available_gnss_prn_iter++)
                 {
-                    available_GNSS_signals_.push_back(Gnss_Signal(
+                    available_GAL_1B_signals_.push_back(Gnss_Signal(
                         Gnss_Satellite(std::string("Galileo"), *available_gnss_prn_iter),
                         std::string("1B")));
                 }
@@ -1111,14 +1283,12 @@ void GNSSFlowgraph::set_signals_list()
 
     if (configuration_->property("Channels_5X.count", 0) > 0)
         {
-            /*
-             * Loop to create the list of Galileo E5a signals
-             */
+            // Loop to create the list of Galileo E5a signals
             for (available_gnss_prn_iter = available_galileo_prn.cbegin();
                  available_gnss_prn_iter != available_galileo_prn.cend();
                  available_gnss_prn_iter++)
                 {
-                    available_GNSS_signals_.push_back(Gnss_Signal(
+                    available_GAL_5X_signals_.push_back(Gnss_Signal(
                         Gnss_Satellite(std::string("Galileo"), *available_gnss_prn_iter),
                         std::string("5X")));
                 }
@@ -1126,14 +1296,12 @@ void GNSSFlowgraph::set_signals_list()
 
     if (configuration_->property("Channels_1G.count", 0) > 0)
         {
-            /*
-             * Loop to create the list of GLONASS L1 C/A signals
-             */
+            // Loop to create the list of GLONASS L1 C/A signals
             for (available_gnss_prn_iter = available_glonass_prn.begin();
                  available_gnss_prn_iter != available_glonass_prn.end();
                  available_gnss_prn_iter++)
                 {
-                    available_GNSS_signals_.push_back(Gnss_Signal(
+                    available_GLO_1G_signals_.push_back(Gnss_Signal(
                         Gnss_Satellite(std::string("Glonass"), *available_gnss_prn_iter),
                         std::string("1G")));
                 }
@@ -1141,14 +1309,12 @@ void GNSSFlowgraph::set_signals_list()
 
     if (configuration_->property("Channels_2G.count", 0) > 0)
         {
-            /*
-             * Loop to create the list of GLONASS L2 C/A signals
-             */
+            // Loop to create the list of GLONASS L2 C/A signals
             for (available_gnss_prn_iter = available_glonass_prn.begin();
                  available_gnss_prn_iter != available_glonass_prn.end();
                  available_gnss_prn_iter++)
                 {
-                    available_GNSS_signals_.push_back(Gnss_Signal(
+                    available_GLO_2G_signals_.push_back(Gnss_Signal(
                         Gnss_Satellite(std::string("Glonass"), *available_gnss_prn_iter),
                         std::string("2G")));
                 }
@@ -1177,22 +1343,212 @@ void GNSSFlowgraph::set_channels_state()
                 }
             DLOG(INFO) << "Channel " << i << " in state " << channels_state_[i];
         }
+    std::lock_guard<std::mutex> lock(signal_list_mutex);
     acq_channels_count_ = max_acq_channels_;
     DLOG(INFO) << acq_channels_count_ << " channels in acquisition state";
 }
 
 
-Gnss_Signal GNSSFlowgraph::search_next_signal(std::string searched_signal, bool pop)
+Gnss_Signal GNSSFlowgraph::search_next_signal(std::string searched_signal, bool pop, bool tracked)
 {
-    while (searched_signal.compare(available_GNSS_signals_.front().get_signal_str()) != 0)
+    Gnss_Signal result;
+    bool untracked_satellite = true;
+    switch (mapStringValues_[searched_signal])
         {
-            available_GNSS_signals_.push_back(available_GNSS_signals_.front());
-            available_GNSS_signals_.pop_front();
-        }
-    Gnss_Signal result = available_GNSS_signals_.front();
-    if (pop)
-        {
-            available_GNSS_signals_.pop_front();
+        case evGPS_1C:
+            result = available_GPS_1C_signals_.front();
+            if (pop)
+                {
+                    available_GPS_1C_signals_.pop_front();
+                }
+            if (tracked)
+                {
+                    if ((configuration_->property("Channels_2S.count", 0) > 0) or (configuration_->property("Channels_L5.count", 0) > 0))
+                        {
+                            for (unsigned int ch = 0; ch < channels_count_; ch++)
+                                {
+                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str().compare("1C") != 0)) untracked_satellite = false;
+                                }
+                            if (untracked_satellite and configuration_->property("Channels_2S.count", 0) > 0)
+                                {
+                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "2S");
+                                    available_GPS_2S_signals_.remove(gs);
+                                    available_GPS_2S_signals_.push_front(gs);
+                                }
+                            if (untracked_satellite and configuration_->property("Channels_L5.count", 0) > 0)
+                                {
+                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "L5");
+                                    available_GPS_L5_signals_.remove(gs);
+                                    available_GPS_L5_signals_.push_front(gs);
+                                }
+                        }
+                }
+            break;
+
+        case evGPS_2S:
+            result = available_GPS_2S_signals_.front();
+            if (pop)
+                {
+                    available_GPS_2S_signals_.pop_front();
+                }
+            if (tracked)
+                {
+                    if ((configuration_->property("Channels_1C.count", 0) > 0) or (configuration_->property("Channels_L5.count", 0) > 0))
+                        {
+                            for (unsigned int ch = 0; ch < channels_count_; ch++)
+                                {
+                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str().compare("2S") != 0)) untracked_satellite = false;
+                                }
+                            if (untracked_satellite and configuration_->property("Channels_1C.count", 0) > 0)
+                                {
+                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "1C");
+                                    available_GPS_1C_signals_.remove(gs);
+                                    available_GPS_1C_signals_.push_front(gs);
+                                }
+                            if (untracked_satellite and configuration_->property("Channels_L5.count", 0) > 0)
+                                {
+                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "L5");
+                                    available_GPS_L5_signals_.remove(gs);
+                                    available_GPS_L5_signals_.push_front(gs);
+                                }
+                        }
+                }
+            break;
+
+        case evGPS_L5:
+            result = available_GPS_L5_signals_.front();
+            if (pop)
+                {
+                    available_GPS_L5_signals_.pop_front();
+                }
+            if (tracked)
+                {
+                    if ((configuration_->property("Channels_1C.count", 0) > 0) or (configuration_->property("Channels_2S.count", 0) > 0))
+                        {
+                            for (unsigned int ch = 0; ch < channels_count_; ch++)
+                                {
+                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str().compare("L5") != 0)) untracked_satellite = false;
+                                }
+                            if (untracked_satellite and configuration_->property("Channels_1C.count", 0) > 0)
+                                {
+                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "1C");
+                                    available_GPS_1C_signals_.remove(gs);
+                                    available_GPS_1C_signals_.push_front(gs);
+                                }
+                            if (untracked_satellite and configuration_->property("Channels_2S.count", 0) > 0)
+                                {
+                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "2S");
+                                    available_GPS_2S_signals_.remove(gs);
+                                    available_GPS_2S_signals_.push_front(gs);
+                                }
+                        }
+                }
+            break;
+
+        case evGAL_1B:
+            result = available_GAL_1B_signals_.front();
+            if (pop)
+                {
+                    available_GAL_1B_signals_.pop_front();
+                }
+            if (tracked)
+                {
+                    if (configuration_->property("Channels_5X.count", 0) > 0)
+                        {
+                            for (unsigned int ch = 0; ch < channels_count_; ch++)
+                                {
+                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str().compare("1B") != 0)) untracked_satellite = false;
+                                }
+                            if (untracked_satellite)
+                                {
+                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "5X");
+                                    available_GAL_5X_signals_.remove(gs);
+                                    available_GAL_5X_signals_.push_front(gs);
+                                }
+                        }
+                }
+            break;
+
+        case evGAL_5X:
+            result = available_GAL_5X_signals_.front();
+            if (pop)
+                {
+                    available_GAL_5X_signals_.pop_front();
+                }
+            if (tracked)
+                {
+                    if (configuration_->property("Channels_1B.count", 0) > 0)
+                        {
+                            for (unsigned int ch = 0; ch < channels_count_; ch++)
+                                {
+                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str().compare("5X") != 0)) untracked_satellite = false;
+                                }
+                            if (untracked_satellite)
+                                {
+                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "1B");
+                                    available_GAL_1B_signals_.remove(gs);
+                                    available_GAL_1B_signals_.push_front(gs);
+                                }
+                        }
+                }
+            break;
+
+        case evGLO_1G:
+            result = available_GLO_1G_signals_.front();
+            if (pop)
+                {
+                    available_GLO_1G_signals_.pop_front();
+                }
+            if (tracked)
+                {
+                    if (configuration_->property("Channels_2G.count", 0) > 0)
+                        {
+                            for (unsigned int ch = 0; ch < channels_count_; ch++)
+                                {
+                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str().compare("1G") != 0)) untracked_satellite = false;
+                                }
+                            if (untracked_satellite)
+                                {
+                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "2G");
+                                    available_GLO_2G_signals_.remove(gs);
+                                    available_GLO_2G_signals_.push_front(gs);
+                                }
+                        }
+                }
+            break;
+
+        case evGLO_2G:
+            result = available_GLO_2G_signals_.front();
+            if (pop)
+                {
+                    available_GLO_2G_signals_.pop_front();
+                }
+            if (tracked)
+                {
+                    if (configuration_->property("Channels_1G.count", 0) > 0)
+                        {
+                            for (unsigned int ch = 0; ch < channels_count_; ch++)
+                                {
+                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str().compare("2G") != 0)) untracked_satellite = false;
+                                }
+                            if (untracked_satellite)
+                                {
+                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "1G");
+                                    available_GLO_1G_signals_.remove(gs);
+                                    available_GLO_1G_signals_.push_front(gs);
+                                }
+                        }
+                }
+            break;
+
+        default:
+            LOG(ERROR) << "This should not happen :-(";
+            result = available_GPS_1C_signals_.front();
+            if (pop)
+                {
+                    available_GPS_1C_signals_.pop_front();
+                }
+            break;
         }
     return result;
 }

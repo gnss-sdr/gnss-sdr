@@ -146,8 +146,6 @@ FrontEndCal_msg_rx::FrontEndCal_msg_rx() : gr::block("FrontEndCal_msg_rx", gr::i
 FrontEndCal_msg_rx::~FrontEndCal_msg_rx() {}
 
 
-// ###########################################################
-
 void wait_message()
 {
     while (!stop)
@@ -234,8 +232,6 @@ bool front_end_capture(std::shared_ptr<ConfigurationInterface> configuration)
             return false;
         }
 
-    //delete conditioner;
-    //delete source;
     return true;
 }
 
@@ -275,7 +271,6 @@ int main(int argc, char** argv)
     if (FLAGS_log_dir.empty())
         {
             std::cout << "Logging will be done at "
-
                       << "/tmp"
                       << std::endl
                       << "Use front-end-cal --log_dir=/path/to/log to change that."
@@ -296,23 +291,26 @@ int main(int argc, char** argv)
                       << FLAGS_log_dir << std::endl;
         }
 
-
     // 0. Instantiate the FrontEnd Calibration class
     FrontEndCal front_end_cal;
 
     // 1. Load configuration parameters from config file
-
     std::shared_ptr<ConfigurationInterface> configuration = std::make_shared<FileConfiguration>(FLAGS_config_file);
-
     front_end_cal.set_configuration(configuration);
 
-
     // 2. Get SUPL information from server: Ephemeris record, assistance info and TOW
-    if (front_end_cal.get_ephemeris() == true)
+    try
         {
-            std::cout << "SUPL data received OK!" << std::endl;
+            if (front_end_cal.get_ephemeris() == true)
+                {
+                    std::cout << "SUPL data received OK!" << std::endl;
+                }
+            else
+                {
+                    std::cout << "Failure connecting to SUPL server" << std::endl;
+                }
         }
-    else
+    catch (const boost::exception& e)
         {
             std::cout << "Failure connecting to SUPL server" << std::endl;
         }
@@ -377,11 +375,6 @@ int main(int argc, char** argv)
             std::cout << "Failure connecting the message port system: " << e.what() << std::endl;
             exit(0);
         }
-
-    //gr_basic_block_sptr head = gr_make_head(sizeof(gr_complex), nsamples);
-    //gr_head_sptr head_sptr = boost::dynamic_pointer_cast<gr_head>(head);
-    //head_sptr->set_length(nsamples);
-    //head_sptr->reset();
 
     try
         {
@@ -449,7 +442,14 @@ int main(int argc, char** argv)
                 {
                     std::cout << " . ";
                 }
-            channel_internal_queue.push(3);
+            try
+                {
+                    channel_internal_queue.push(3);
+                }
+            catch (const boost::exception& e)
+                {
+                    LOG(INFO) << "Exception caught while pushing to he internal queue.";
+                }
             try
                 {
                     ch_thread.join();
@@ -471,26 +471,37 @@ int main(int argc, char** argv)
               << elapsed_seconds.count()
               << " [seconds]" << std::endl;
 
-    //6. find TOW from SUPL assistance
-
+    // 6. find TOW from SUPL assistance
     double current_TOW = 0;
-    if (global_gps_ephemeris_map.size() > 0)
+    try
         {
-            std::map<int, Gps_Ephemeris> Eph_map;
-            Eph_map = global_gps_ephemeris_map.get_map_copy();
-            current_TOW = Eph_map.begin()->second.d_TOW;
+            if (global_gps_ephemeris_map.size() > 0)
+                {
+                    std::map<int, Gps_Ephemeris> Eph_map;
+                    Eph_map = global_gps_ephemeris_map.get_map_copy();
+                    current_TOW = Eph_map.begin()->second.d_TOW;
 
-            time_t t = utc_time(Eph_map.begin()->second.i_GPS_week, (long int)current_TOW);
+                    time_t t = utc_time(Eph_map.begin()->second.i_GPS_week, (long int)current_TOW);
 
-            fprintf(stdout, "Reference Time:\n");
-            fprintf(stdout, "  GPS Week: %d\n", Eph_map.begin()->second.i_GPS_week);
-            fprintf(stdout, "  GPS TOW:  %ld %lf\n", (long int)current_TOW, (long int)current_TOW * 0.08);
-            fprintf(stdout, "  ~ UTC:    %s", ctime(&t));
-            std::cout << "Current TOW obtained from SUPL assistance = " << current_TOW << std::endl;
+                    fprintf(stdout, "Reference Time:\n");
+                    fprintf(stdout, "  GPS Week: %d\n", Eph_map.begin()->second.i_GPS_week);
+                    fprintf(stdout, "  GPS TOW:  %ld %lf\n", (long int)current_TOW, (long int)current_TOW * 0.08);
+                    fprintf(stdout, "  ~ UTC:    %s", ctime(&t));
+                    std::cout << "Current TOW obtained from SUPL assistance = " << current_TOW << std::endl;
+                }
+            else
+                {
+                    std::cout << "Unable to get Ephemeris SUPL assistance. TOW is unknown!" << std::endl;
+                    delete acquisition;
+                    delete gnss_synchro;
+                    google::ShutDownCommandLineFlags();
+                    std::cout << "GNSS-SDR Front-end calibration program ended." << std::endl;
+                    return 0;
+                }
         }
-    else
+    catch (const boost::exception& e)
         {
-            std::cout << "Unable to get Ephemeris SUPL assistance. TOW is unknown!" << std::endl;
+            std::cout << "Exception in getting Global ephemeris map" << std::endl;
             delete acquisition;
             delete gnss_synchro;
             google::ShutDownCommandLineFlags();
@@ -498,15 +509,15 @@ int main(int argc, char** argv)
             return 0;
         }
 
-    //Get user position from config file (or from SUPL using GSM Cell ID)
+    // Get user position from config file (or from SUPL using GSM Cell ID)
     double lat_deg = configuration->property("GNSS-SDR.init_latitude_deg", 41.0);
     double lon_deg = configuration->property("GNSS-SDR.init_longitude_deg", 2.0);
     double altitude_m = configuration->property("GNSS-SDR.init_altitude_m", 100);
 
     std::cout << "Reference location (defined in config file):" << std::endl;
 
-    std::cout << "Latitude=" << lat_deg << " [�]" << std::endl;
-    std::cout << "Longitude=" << lon_deg << " [�]" << std::endl;
+    std::cout << "Latitude=" << lat_deg << " [º]" << std::endl;
+    std::cout << "Longitude=" << lon_deg << " [º]" << std::endl;
     std::cout << "Altitude=" << altitude_m << " [m]" << std::endl;
 
     if (doppler_measurements_map.size() == 0)

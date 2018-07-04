@@ -97,7 +97,6 @@ bool observables_dump_reader::open_obs_file(std::string out_file)
                     d_dump_filename = out_file;
                     d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
                     d_dump_file.open(d_dump_filename.c_str(), std::ios::in | std::ios::binary);
-                    std::cout << "Observables sum file opened, Log file: " << d_dump_filename.c_str() << std::endl;
                     return true;
                 }
             catch (const std::ifstream::failure &e)
@@ -112,6 +111,13 @@ bool observables_dump_reader::open_obs_file(std::string out_file)
         }
 }
 
+void observables_dump_reader::close_obs_file()
+{
+    if (d_dump_file.is_open() == false)
+        {
+            d_dump_file.close();
+        }
+}
 
 observables_dump_reader::observables_dump_reader(int n_channels_)
 {

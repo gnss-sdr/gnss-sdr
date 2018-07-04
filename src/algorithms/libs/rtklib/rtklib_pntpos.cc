@@ -130,11 +130,11 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     double P1_P2 = 0.0;
     double P1_C1 = 0.0;
     double P2_C2 = 0.0;
-    //Intersignal corrections (m). See GPS IS-200 CNAV message
-    double ISCl1 = 0.0;
+    // Intersignal corrections (m). See GPS IS-200 CNAV message
+    //double ISCl1 = 0.0;
     double ISCl2 = 0.0;
     double ISCl5i = 0.0;
-    double ISCl5q = 0.0;
+    //double ISCl5q = 0.0;
     double gamma_ = 0.0;
     int i = 0;
     int j = 1;
@@ -209,10 +209,10 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
 
     if (sys == SYS_GPS)
         {
-            ISCl1 = getiscl1(obs->sat, nav);
+            // ISCl1 = getiscl1(obs->sat, nav);
             ISCl2 = getiscl2(obs->sat, nav);
             ISCl5i = getiscl5i(obs->sat, nav);
-            ISCl5q = getiscl5q(obs->sat, nav);
+            // ISCl5q = getiscl5q(obs->sat, nav);
         }
 
     //CHECK IF IT IS STILL NEEDED

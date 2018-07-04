@@ -51,7 +51,8 @@ option(ENABLE_ARRAY "Enable the use of CTTC's antenna array front-end as signal 
 option(ENABLE_GN3S "Enable the use of the GN3S dongle as signal source (experimental)" OFF)
 option(ENABLE_PLUTOSDR "Enable the use of ADALM-PLUTO Evaluation Boards (Analog Devices Inc.), requires gr-iio" OFF)
 option(ENABLE_FMCOMMS2 "Enable the use of FMCOMMS4-EBZ + ZedBoard hardware, requires gr-iio" OFF)
-option(ENABLE_AD9361 "Enable the use of AD9361 directo to FPGA hardware, requires gr-iio" OFF)
+option(ENABLE_AD9361 "Enable the use of AD9361 directo to FPGA hardware, requires libiio" OFF)
+option(ENABLE_RAW_UDP "Enable the use of high-optimized custom UDP packet sample source, requires libpcap" OFF)
 
 # Performance analysis tools
 option(ENABLE_GPERFTOOLS "Enable linking to Gperftools libraries (tcmalloc and profiler)" OFF)
@@ -825,9 +826,9 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
      # Ensure that aclocal and libtool are present
      if(OS_IS_LINUX)
          if(EXISTS "/usr/bin/libtoolize")
-             if(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
+             if(EXISTS "/usr/bin/aclocal" OR EXISTS "/usr/bin/aclocal-1.16" OR EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
                  # Everything ok, we can move on
-             else(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
+             else(EXISTS "/usr/bin/aclocal" OR EXISTS "/usr/bin/aclocal-1.16" OR EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
                  message(" aclocal has not been found.")
                  message(" You can try to install it by typing:")
                  if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
@@ -838,7 +839,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
                       message(" sudo apt-get install automake")
                  endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
                  message(FATAL_ERROR "aclocal is required to build glog from source")
-             endif(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
+             endif(EXISTS "/usr/bin/aclocal" OR EXISTS "/usr/bin/aclocal-1.16" OR EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
          else(EXISTS "/usr/bin/libtoolize")
              message(" libtool has not been found.")
              message(" You can try to install it by typing:")
@@ -989,7 +990,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
       ExternalProject_Add(
          armadillo-${armadillo_RELEASE}
          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
-         GIT_REPOSITORY https://github.com/conradsnicta/armadillo-code.git
+         GIT_REPOSITORY https://gitlab.com/conradsnicta/armadillo-code.git
          GIT_TAG ${armadillo_BRANCH}
          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}
          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
@@ -1002,7 +1003,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
       ExternalProject_Add(
          armadillo-${armadillo_RELEASE}
          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
-         GIT_REPOSITORY https://github.com/conradsnicta/armadillo-code.git
+         GIT_REPOSITORY https://gitlab.com/conradsnicta/armadillo-code.git
          GIT_TAG ${armadillo_BRANCH}
          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}
          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
@@ -1119,9 +1120,9 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
                 endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
                 message(FATAL_ERROR "libtool is required to build matio from source")
             endif(NOT EXISTS "/usr/bin/libtoolize")
-            if(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
+            if(EXISTS "/usr/bin/aclocal" OR EXISTS "/usr/bin/aclocal-1.16" OR EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
                 message(STATUS "Automake found.")
-            else(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
+            else(EXISTS "/usr/bin/aclocal" OR EXISTS "/usr/bin/aclocal-1.16" OR EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
                 message(" aclocal has not been found.")
                 message(" You can try to install it by typing:")
                 if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
@@ -1132,7 +1133,7 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
                     message(" sudo apt-get install automake")
                 endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
                 message(FATAL_ERROR "aclocal is required to build matio from source")
-             endif(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
+             endif(EXISTS "/usr/bin/aclocal" OR EXISTS "/usr/bin/aclocal-1.16" OR EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
         endif(OS_IS_LINUX)
         find_package(HDF5)
         if(HDF5_FOUND)
@@ -1321,6 +1322,16 @@ else(ENABLE_CUDA)
     message(STATUS "Enable it with 'cmake -DENABLE_CUDA=ON ../' to add support for GPU-based acceleration using CUDA." )
 endif(ENABLE_CUDA)
 
+###############################################################################
+# CUSTOM UDP PACKET SOURCE (OPTIONAL)
+###############################################################################
+if(ENABLE_RAW_UDP)
+    message(STATUS "High-optimized custom UDP ip packet source will be enabled." )
+    message(STATUS "You can disable it with 'cmake -DENABLE_RAW_UDP=OFF ../'" )
+else(ENABLE_RAW_UDP)
+    message(STATUS "High-optimized custom UDP ip packet source will be enabled." )
+    message(STATUS "You can disable it with 'cmake -DENABLE_RAW_UDP=OFF ../'" )
+endif(ENABLE_RAW_UDP)
 
 
 ###############################################################################
@@ -1453,7 +1464,6 @@ if(ENABLE_GPROF)
         set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pg")
     #endif(CMAKE_COMPILER_IS_GNUCXX)
 endif(ENABLE_GPROF)
-
 
 
 ########################################################################

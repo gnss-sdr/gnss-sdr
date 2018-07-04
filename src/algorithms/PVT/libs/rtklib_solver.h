@@ -85,12 +85,12 @@ public:
     rtklib_solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, rtk_t& rtk);
     ~rtklib_solver();
 
-    bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, double Rx_time, bool flag_averaging);
+    bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, bool flag_averaging);
     double get_hdop() const;
     double get_vdop() const;
     double get_pdop() const;
     double get_gdop() const;
-    
+
     std::map<int, Galileo_Ephemeris> galileo_ephemeris_map;            //!< Map storing new Galileo_Ephemeris
     std::map<int, Gps_Ephemeris> gps_ephemeris_map;                    //!< Map storing new GPS_Ephemeris
     std::map<int, Gps_CNAV_Ephemeris> gps_cnav_ephemeris_map;          //!< Map storing new GPS_CNAV_Ephemeris

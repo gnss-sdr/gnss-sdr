@@ -54,7 +54,6 @@ GlonassL1CaDllPllCAidTracking::GlonassL1CaDllPllCAidTracking(
     //################# CONFIGURATION PARAMETERS ########################
     int fs_in;
     int vector_length;
-    int f_if;
     bool dump;
     std::string dump_filename;
     std::string default_item_type = "gr_complex";
@@ -67,7 +66,6 @@ GlonassL1CaDllPllCAidTracking::GlonassL1CaDllPllCAidTracking(
     //vector_length = configuration->property(role + ".vector_length", 2048);
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
     if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
@@ -88,7 +86,6 @@ GlonassL1CaDllPllCAidTracking::GlonassL1CaDllPllCAidTracking(
         {
             item_size_ = sizeof(gr_complex);
             tracking_cc = glonass_l1_ca_dll_pll_c_aid_make_tracking_cc(
-                f_if,
                 fs_in,
                 vector_length,
                 dump,
@@ -105,7 +102,6 @@ GlonassL1CaDllPllCAidTracking::GlonassL1CaDllPllCAidTracking(
         {
             item_size_ = sizeof(lv_16sc_t);
             tracking_sc = glonass_l1_ca_dll_pll_c_aid_make_tracking_sc(
-                f_if,
                 fs_in,
                 vector_length,
                 dump,
@@ -124,6 +120,14 @@ GlonassL1CaDllPllCAidTracking::GlonassL1CaDllPllCAidTracking(
             LOG(WARNING) << item_type_ << " unknown tracking item type.";
         }
     channel_ = 0;
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 

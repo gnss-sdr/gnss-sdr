@@ -44,7 +44,7 @@ using google::LogMessage;
 pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(
     unsigned int folding_factor,
     unsigned int sampled_ms, unsigned int max_dwells,
-    unsigned int doppler_max, long freq, long fs_in,
+    unsigned int doppler_max, long fs_in,
     int samples_per_ms, int samples_per_code,
     bool bit_transition_flag,
     bool dump,
@@ -54,7 +54,7 @@ pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(
         new pcps_quicksync_acquisition_cc(
             folding_factor,
             sampled_ms, max_dwells, doppler_max,
-            freq, fs_in, samples_per_ms,
+            fs_in, samples_per_ms,
             samples_per_code,
             bit_transition_flag,
             dump, dump_filename));
@@ -64,7 +64,7 @@ pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(
 pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
     unsigned int folding_factor,
     unsigned int sampled_ms, unsigned int max_dwells,
-    unsigned int doppler_max, long freq, long fs_in,
+    unsigned int doppler_max, long fs_in,
     int samples_per_ms, int samples_per_code,
     bool bit_transition_flag,
     bool dump,
@@ -76,7 +76,6 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
     d_sample_counter = 0;  // SAMPLE COUNTER
     d_active = false;
     d_state = 0;
-    d_freq = freq;
     d_fs_in = fs_in;
     d_samples_per_ms = samples_per_ms;
     d_samples_per_code = samples_per_code;
@@ -221,7 +220,7 @@ void pcps_quicksync_acquisition_cc::init()
         {
             d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_samples_per_code * d_folding_factor * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
             int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
-            float phase_step_rad = GPS_TWO_PI * (d_freq + doppler) / static_cast<float>(d_fs_in);
+            float phase_step_rad = GPS_TWO_PI * doppler / static_cast<float>(d_fs_in);
             float _phase[1];
             _phase[0] = 0;
             volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index], -phase_step_rad, _phase, d_samples_per_code * d_folding_factor);

@@ -9,4 +9,4 @@ Before submitting your pull request, please make sure the following is done:
  6. You have forked the [gnss-sdr upstream repository](https://github.com/gnss-sdr/gnss-sdr) and have created your branch from `next` (or any other currently living branch in the upstream repository).
  7. Please include a description of your changes here.
 
-**Please feel free to delete this line and the above text once you have read it and in case you want to go on with your pull request.**
+**Please feel free to delete this line and the above text once you have read it and in case you want to go on with your pull request, and explain your intend below.**

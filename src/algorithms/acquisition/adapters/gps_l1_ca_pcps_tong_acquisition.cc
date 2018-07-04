@@ -54,7 +54,6 @@ GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
 
     long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    if_ = configuration_->property(role + ".if", 0);
     dump_ = configuration_->property(role + ".dump", false);
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
     if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
@@ -76,7 +75,7 @@ GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
     if (item_type_.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
-            acquisition_cc_ = pcps_tong_make_acquisition_cc(sampled_ms_, doppler_max_, if_, fs_in_,
+            acquisition_cc_ = pcps_tong_make_acquisition_cc(sampled_ms_, doppler_max_, fs_in_,
                 code_length_, code_length_, tong_init_val_, tong_max_val_, tong_max_dwells_,
                 dump_, dump_filename_);
 
@@ -95,6 +94,14 @@ GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
     threshold_ = 0.0;
     doppler_step_ = 0;
     gnss_synchro_ = 0;
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 0)
+        {
+            LOG(ERROR) << "This implementation does not provide an output stream";
+        }
 }
 
 

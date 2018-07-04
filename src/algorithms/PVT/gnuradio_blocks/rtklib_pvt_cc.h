@@ -62,6 +62,8 @@ rtklib_pvt_cc_sptr rtklib_make_pvt_cc(unsigned int n_channels,
     std::string nmea_dump_filename,
     std::string nmea_dump_devname,
     int rinex_version,
+    int rinexobs_rate_ms,
+    int rinexnav_rate_ms,
     bool flag_rtcm_server,
     bool flag_rtcm_tty_port,
     unsigned short rtcm_tcp_port,
@@ -86,6 +88,8 @@ private:
         std::string nmea_dump_filename,
         std::string nmea_dump_devname,
         int rinex_version,
+        int rinexobs_rate_ms,
+        int rinexnav_rate_ms,
         bool flag_rtcm_server,
         bool flag_rtcm_tty_port,
         unsigned short rtcm_tcp_port,
@@ -101,6 +105,9 @@ private:
     bool b_rinex_header_written;
     bool b_rinex_header_updated;
     double d_rinex_version;
+    int d_rinexobs_rate_ms;
+    int d_rinexnav_rate_ms;
+
     bool b_rtcm_writing_started;
     int d_rtcm_MT1045_rate_ms;  //!< Galileo Broadcast Ephemeris
     int d_rtcm_MT1019_rate_ms;  //!< GPS Broadcast Ephemeris (orbits)
@@ -126,16 +133,7 @@ private:
     std::shared_ptr<GeoJSON_Printer> d_geojson_printer;
     std::shared_ptr<Rtcm_Printer> d_rtcm_printer;
     double d_rx_time;
-    double last_pvt_display_T_rx_s;
-    double last_RTCM_1019_output_time;
-    double last_RTCM_1020_output_time;
-    double last_RTCM_1045_output_time;
-    double last_RTCM_1077_output_time;
-    double last_RTCM_1087_output_time;
-    double last_RTCM_1097_output_time;
-    double last_RTCM_MSM_output_time;
-    double last_RINEX_obs_output_time;
-    double last_RINEX_nav_output_time;
+
     std::shared_ptr<rtklib_solver> d_ls_pvt;
 
     std::map<int, Gnss_Synchro> gnss_observables_map;
@@ -163,6 +161,8 @@ public:
         std::string nmea_dump_filename,
         std::string nmea_dump_devname,
         int rinex_version,
+        int rinexobs_rate_ms,
+        int rinexnav_rate_ms,
         bool flag_rtcm_server,
         bool flag_rtcm_tty_port,
         unsigned short rtcm_tcp_port,

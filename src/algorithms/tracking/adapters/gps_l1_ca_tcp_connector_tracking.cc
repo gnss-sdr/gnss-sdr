@@ -51,7 +51,6 @@ GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(
     //################# CONFIGURATION PARAMETERS ########################
     int fs_in;
     int vector_length;
-    int f_if;
     bool dump;
     std::string dump_filename;
     std::string item_type;
@@ -62,7 +61,6 @@ GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(
     //vector_length = configuration->property(role + ".vector_length", 2048);
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     port_ch0 = configuration->property(role + ".port_ch0", 2060);
@@ -75,7 +73,6 @@ GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(
         {
             item_size_ = sizeof(gr_complex);
             tracking_ = gps_l1_ca_tcp_connector_make_tracking_cc(
-                f_if,
                 fs_in,
                 vector_length,
                 dump,
@@ -91,6 +88,14 @@ GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(
 
     channel_ = 0;
     DLOG(INFO) << "tracking(" << tracking_->unique_id() << ")";
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 

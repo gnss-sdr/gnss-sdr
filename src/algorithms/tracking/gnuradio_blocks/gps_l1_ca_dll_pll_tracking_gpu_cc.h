@@ -52,7 +52,7 @@ typedef boost::shared_ptr<Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc>
     gps_l1_ca_dll_pll_tracking_gpu_cc_sptr;
 
 gps_l1_ca_dll_pll_tracking_gpu_cc_sptr
-gps_l1_ca_dll_pll_make_tracking_gpu_cc(long if_freq,
+gps_l1_ca_dll_pll_make_tracking_gpu_cc(
     long fs_in,
     unsigned int vector_length,
     bool dump,
@@ -81,7 +81,7 @@ public:
 
 private:
     friend gps_l1_ca_dll_pll_tracking_gpu_cc_sptr
-    gps_l1_ca_dll_pll_make_tracking_gpu_cc(long if_freq,
+    gps_l1_ca_dll_pll_make_tracking_gpu_cc(
         long fs_in,
         unsigned int vector_length,
         bool dump,
@@ -90,7 +90,7 @@ private:
         float dll_bw_hz,
         float early_late_space_chips);
 
-    Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(long if_freq,
+    Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
         long fs_in,
         unsigned int vector_length,
         bool dump,

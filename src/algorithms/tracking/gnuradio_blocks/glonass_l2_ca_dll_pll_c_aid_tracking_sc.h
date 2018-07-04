@@ -56,7 +56,7 @@ typedef boost::shared_ptr<glonass_l2_ca_dll_pll_c_aid_tracking_sc>
     glonass_l2_ca_dll_pll_c_aid_tracking_sc_sptr;
 
 glonass_l2_ca_dll_pll_c_aid_tracking_sc_sptr
-glonass_l2_ca_dll_pll_c_aid_make_tracking_sc(long if_freq,
+glonass_l2_ca_dll_pll_c_aid_make_tracking_sc(
     long fs_in, unsigned int vector_length,
     bool dump,
     std::string dump_filename,
@@ -87,7 +87,7 @@ public:
 
 private:
     friend glonass_l2_ca_dll_pll_c_aid_tracking_sc_sptr
-    glonass_l2_ca_dll_pll_c_aid_make_tracking_sc(long if_freq,
+    glonass_l2_ca_dll_pll_c_aid_make_tracking_sc(
         long fs_in, unsigned int vector_length,
         bool dump,
         std::string dump_filename,
@@ -98,7 +98,7 @@ private:
         int extend_correlation_ms,
         float early_late_space_chips);
 
-    glonass_l2_ca_dll_pll_c_aid_tracking_sc(long if_freq,
+    glonass_l2_ca_dll_pll_c_aid_tracking_sc(
         long fs_in, unsigned int vector_length,
         bool dump,
         std::string dump_filename,
@@ -116,7 +116,6 @@ private:
     Gnss_Synchro* d_acquisition_gnss_synchro;
     unsigned int d_channel;
 
-    long d_if_freq;
     long d_fs_in;
     long d_glonass_freq_ch;
 

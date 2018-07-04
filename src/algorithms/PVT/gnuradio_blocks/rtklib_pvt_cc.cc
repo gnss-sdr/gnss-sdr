@@ -57,6 +57,8 @@ rtklib_pvt_cc_sptr rtklib_make_pvt_cc(unsigned int nchannels,
     std::string nmea_dump_filename,
     std::string nmea_dump_devname,
     int rinex_version,
+    int rinexobs_rate_ms,
+    int rinexnav_rate_ms,
     bool flag_rtcm_server,
     bool flag_rtcm_tty_port,
     unsigned short rtcm_tcp_port,
@@ -75,6 +77,8 @@ rtklib_pvt_cc_sptr rtklib_make_pvt_cc(unsigned int nchannels,
         nmea_dump_filename,
         nmea_dump_devname,
         rinex_version,
+        rinexobs_rate_ms,
+        rinexnav_rate_ms,
         flag_rtcm_server,
         flag_rtcm_tty_port,
         rtcm_tcp_port,
@@ -90,7 +94,7 @@ void rtklib_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
 {
     try
         {
-            //************* GPS telemetry *****************
+            // ************* GPS telemetry *****************
             if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Ephemeris>))
                 {
                     // ### GPS EPHEMERIS ###
@@ -146,7 +150,7 @@ void rtklib_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                     DLOG(INFO) << "New CNAV UTC record has arrived ";
                 }
 
-            //**************** Galileo telemetry ********************
+            // **************** Galileo telemetry ********************
             else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Ephemeris>))
                 {
                     // ### Galileo EPHEMERIS ###
@@ -185,7 +189,7 @@ void rtklib_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                     DLOG(INFO) << "New Galileo Almanac has arrived ";
                 }
 
-            //**************** GLONASS GNAV Telemetry **************************
+            // **************** GLONASS GNAV Telemetry **************************
             else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Glonass_Gnav_Ephemeris>))
                 {
                     // ### GLONASS GNAV EPHEMERIS ###
@@ -235,13 +239,27 @@ std::map<int, Gps_Ephemeris> rtklib_pvt_cc::get_GPS_L1_ephemeris_map()
 }
 
 
-rtklib_pvt_cc::rtklib_pvt_cc(unsigned int nchannels, bool dump, std::string dump_filename,
-    int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port,
-    std::string nmea_dump_filename, std::string nmea_dump_devname, int rinex_version,
-    bool flag_rtcm_server, bool flag_rtcm_tty_port, unsigned short rtcm_tcp_port,
-    unsigned short rtcm_station_id, std::map<int, int> rtcm_msg_rate_ms, std::string rtcm_dump_devname, const unsigned int type_of_receiver, rtk_t& rtk) : gr::sync_block("rtklib_pvt_cc",
-                                                                                                                                                               gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
-                                                                                                                                                               gr::io_signature::make(0, 0, 0))
+rtklib_pvt_cc::rtklib_pvt_cc(unsigned int nchannels,
+    bool dump,
+    std::string dump_filename,
+    int output_rate_ms,
+    int display_rate_ms,
+    bool flag_nmea_tty_port,
+    std::string nmea_dump_filename,
+    std::string nmea_dump_devname,
+    int rinex_version,
+    int rinexobs_rate_ms,
+    int rinexnav_rate_ms,
+    bool flag_rtcm_server,
+    bool flag_rtcm_tty_port,
+    unsigned short rtcm_tcp_port,
+    unsigned short rtcm_station_id,
+    std::map<int, int> rtcm_msg_rate_ms,
+    std::string rtcm_dump_devname,
+    const unsigned int type_of_receiver,
+    rtk_t& rtk) : gr::sync_block("rtklib_pvt_cc",
+                      gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
+                      gr::io_signature::make(0, 0, 0))
 {
     d_output_rate_ms = output_rate_ms;
     d_display_rate_ms = display_rate_ms;
@@ -255,28 +273,28 @@ rtklib_pvt_cc::rtklib_pvt_cc(unsigned int nchannels, bool dump, std::string dump
     this->message_port_register_in(pmt::mp("telemetry"));
     this->set_msg_handler(pmt::mp("telemetry"), boost::bind(&rtklib_pvt_cc::msg_handler_telemetry, this, _1));
 
-    //initialize kml_printer
+    // initialize kml_printer
     std::string kml_dump_filename;
     kml_dump_filename = d_dump_filename;
     d_kml_dump = std::make_shared<Kml_Printer>();
     d_kml_dump->set_headers(kml_dump_filename);
 
-    //initialize gpx_printer
+    // initialize gpx_printer
     std::string gpx_dump_filename;
     gpx_dump_filename = d_dump_filename;
     d_gpx_dump = std::make_shared<Gpx_Printer>();
     d_gpx_dump->set_headers(gpx_dump_filename);
 
-    //initialize geojson_printer
+    // initialize geojson_printer
     std::string geojson_dump_filename;
     geojson_dump_filename = d_dump_filename;
     d_geojson_printer = std::make_shared<GeoJSON_Printer>();
     d_geojson_printer->set_headers(geojson_dump_filename);
 
-    //initialize nmea_printer
+    // initialize nmea_printer
     d_nmea_printer = std::make_shared<Nmea_Printer>(nmea_dump_filename, flag_nmea_tty_port, nmea_dump_devname);
 
-    //initialize rtcm_printer
+    // initialize rtcm_printer
     std::string rtcm_dump_filename;
     rtcm_dump_filename = d_dump_filename;
     d_rtcm_printer = std::make_shared<Rtcm_Printer>(rtcm_dump_filename, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_dump_devname);
@@ -332,6 +350,14 @@ rtklib_pvt_cc::rtklib_pvt_cc(unsigned int nchannels, bool dump, std::string dump
         }
     b_rtcm_writing_started = false;
 
+    // initialize RINEX printer
+    b_rinex_header_written = false;
+    b_rinex_header_updated = false;
+    d_rinex_version = rinex_version;
+    rp = std::make_shared<Rinex_Printer>(d_rinex_version);
+    d_rinexobs_rate_ms = rinexobs_rate_ms;
+    d_rinexnav_rate_ms = rinexnav_rate_ms;
+
     d_dump_filename.append("_raw.dat");
     dump_ls_pvt_filename.append("_ls_pvt.dat");
 
@@ -339,21 +365,6 @@ rtklib_pvt_cc::rtklib_pvt_cc(unsigned int nchannels, bool dump, std::string dump
     d_ls_pvt->set_averaging_depth(1);
 
     d_rx_time = 0.0;
-    last_pvt_display_T_rx_s = 0.0;
-    last_RTCM_1019_output_time = 0.0;
-    last_RTCM_1020_output_time = 0.0;
-    last_RTCM_1045_output_time = 0.0;
-    last_RTCM_1077_output_time = 0.0;
-    last_RTCM_1087_output_time = 0.0;
-    last_RTCM_1097_output_time = 0.0;
-    last_RTCM_MSM_output_time = 0.0;
-    last_RINEX_obs_output_time = 0.0;
-    last_RINEX_nav_output_time = 0.0;
-
-    b_rinex_header_written = false;
-    b_rinex_header_updated = false;
-    d_rinex_version = rinex_version;
-    rp = std::make_shared<Rinex_Printer>(d_rinex_version);
 
     d_last_status_print_seg = 0;
 
@@ -392,7 +403,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
 {
     msgctl(sysv_msqid, IPC_RMID, NULL);
 
-    //save GPS L2CM ephemeris to XML file
+    // save GPS L2CM ephemeris to XML file
     std::string file_name = "eph_GPS_CNAV.xml";
 
     if (d_ls_pvt->gps_cnav_ephemeris_map.size() > 0)
@@ -415,7 +426,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
             LOG(WARNING) << "Failed to save GPS L2CM or L5 Ephemeris, map is empty";
         }
 
-    //save GPS L1 CA ephemeris to XML file
+    // save GPS L1 CA ephemeris to XML file
     file_name = "eph_GPS_L1CA.xml";
 
     if (d_ls_pvt->gps_ephemeris_map.size() > 0)
@@ -438,7 +449,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
             LOG(WARNING) << "Failed to save GPS L1 CA Ephemeris, map is empty";
         }
 
-    //save Galileo E1 ephemeris to XML file
+    // save Galileo E1 ephemeris to XML file
     file_name = "eph_Galileo_E1.xml";
 
     if (d_ls_pvt->galileo_ephemeris_map.size() > 0)
@@ -461,7 +472,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
             LOG(WARNING) << "Failed to save Galileo E1 Ephemeris, map is empty";
         }
 
-    //save GLONASS GNAV ephemeris to XML file
+    // save GLONASS GNAV ephemeris to XML file
     file_name = "eph_GLONASS_GNAV.xml";
 
     if (d_ls_pvt->glonass_gnav_ephemeris_map.size() > 0)
@@ -483,6 +494,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
         {
             LOG(WARNING) << "Failed to save GLONASS GNAV Ephemeris, map is empty";
         }
+
     if (d_dump_file.is_open() == true)
         {
             try
@@ -505,15 +517,15 @@ bool rtklib_pvt_cc::observables_pairCompare_min(const std::pair<int, Gnss_Synchr
 
 bool rtklib_pvt_cc::send_sys_v_ttff_msg(ttff_msgbuf ttff)
 {
-    /* Fill Sys V message structures */
+    // Fill Sys V message structures
     int msgsend_size;
     ttff_msgbuf msg;
     msg.ttff = ttff.ttff;
     msgsend_size = sizeof(msg.ttff);
-    msg.mtype = 1; /* default message ID */
+    msg.mtype = 1;  //  default message ID
 
-    /* SEND SOLUTION OVER A MESSAGE QUEUE */
-    /* non-blocking Sys V message send */
+    // SEND SOLUTION OVER A MESSAGE QUEUE
+    // non-blocking Sys V message send
     msgsnd(sysv_msqid, &msg, msgsend_size, IPC_NOWAIT);
     return true;
 }
@@ -601,75 +613,73 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
             if (gnss_observables_map.size() > 0)
                 {
                     double current_RX_time = gnss_observables_map.begin()->second.RX_time;
-
-                    if (std::fabs(current_RX_time - d_rx_time) * 1000.0 >= static_cast<double>(d_output_rate_ms))
+                    unsigned int current_RX_time_ms = static_cast<unsigned int>(current_RX_time * 1000.0);
+                    if (current_RX_time_ms % d_output_rate_ms == 0)
                         {
                             flag_compute_pvt_output = true;
                             d_rx_time = current_RX_time;
+                            // std::cout.precision(17);
+                            // std::cout << "current_RX_time: " << current_RX_time << " map time: " << gnss_observables_map.begin()->second.RX_time << std::endl;
                         }
 
                     // compute on the fly PVT solution
                     if (flag_compute_pvt_output == true)
                         {
-                            if (d_ls_pvt->get_PVT(gnss_observables_map, d_rx_time, false))
+                            // receiver clock correction is disabled to be coherent with the RINEX and RTCM standard
+                            // std::cout << TEXT_RED << "(internal) accumulated RX clock offset: " << d_ls_pvt->get_time_offset_s() << "[s]" << TEXT_RESET << std::endl;
+                            // for (std::map<int, Gnss_Synchro>::iterator it = gnss_observables_map.begin(); it != gnss_observables_map.end(); ++it)
+                            //    {
+                            // todo: check if it has effect to correct the receiver time for the internal pvt solution
+                            // take into account that the RINEX obs with the RX time (integer ms) CAN NOT be corrected to keep the coherence in obs time
+                            //        it->second.Pseudorange_m = it->second.Pseudorange_m - d_ls_pvt->get_time_offset_s() * GPS_C_m_s;
+                            //    }
+
+                            if (d_ls_pvt->get_PVT(gnss_observables_map, false))
                                 {
-                                    if (std::fabs(current_RX_time - last_pvt_display_T_rx_s) * 1000.0 >= static_cast<double>(d_display_rate_ms))
+                                    if (current_RX_time_ms % d_display_rate_ms == 0)
                                         {
                                             flag_display_pvt = true;
-                                            last_pvt_display_T_rx_s = current_RX_time;
                                         }
-                                    if ((std::fabs(current_RX_time - last_RTCM_1019_output_time) * 1000.0 >= static_cast<double>(d_rtcm_MT1019_rate_ms)) and (d_rtcm_MT1019_rate_ms != 0))  // allows deactivating messages by setting rate = 0
+                                    if (current_RX_time_ms % d_rtcm_MT1019_rate_ms == 0 and d_rtcm_MT1019_rate_ms != 0)  // allows deactivating messages by setting rate = 0
                                         {
                                             flag_write_RTCM_1019_output = true;
-                                            last_RTCM_1019_output_time = current_RX_time;
                                         }
-                                    if ((std::fabs(current_RX_time - last_RTCM_1020_output_time) * 1000.0 >= static_cast<double>(d_rtcm_MT1020_rate_ms)) and (d_rtcm_MT1020_rate_ms != 0))  // allows deactivating messages by setting rate = 0
+                                    if (current_RX_time_ms % d_rtcm_MT1020_rate_ms == 0 and d_rtcm_MT1020_rate_ms != 0)  // allows deactivating messages by setting rate = 0
                                         {
                                             flag_write_RTCM_1020_output = true;
-                                            last_RTCM_1020_output_time = current_RX_time;
                                         }
-                                    if ((std::fabs(current_RX_time - last_RTCM_1045_output_time) * 1000.0 >= static_cast<double>(d_rtcm_MT1045_rate_ms)) and (d_rtcm_MT1045_rate_ms != 0))
+                                    if (current_RX_time_ms % d_rtcm_MT1045_rate_ms == 0 and d_rtcm_MT1045_rate_ms != 0)
                                         {
                                             flag_write_RTCM_1045_output = true;
-                                            last_RTCM_1045_output_time = current_RX_time;
                                         }
+                                    // TODO: RTCM 1077, 1087 and 1097 are not used, so, disable the output rates
+                                    // if (current_RX_time_ms % d_rtcm_MT1077_rate_ms==0 and d_rtcm_MT1077_rate_ms != 0)
+                                    //     {
+                                    //         last_RTCM_1077_output_time = current_RX_time;
+                                    //     }
+                                    // if (current_RX_time_ms % d_rtcm_MT1087_rate_ms==0 and d_rtcm_MT1087_rate_ms != 0)
+                                    //     {
+                                    //         last_RTCM_1087_output_time = current_RX_time;
+                                    //     }
+                                    // if (current_RX_time_ms % d_rtcm_MT1097_rate_ms==0 and d_rtcm_MT1097_rate_ms != 0)
+                                    //     {
+                                    //         last_RTCM_1097_output_time = current_RX_time;
+                                    //     }
 
-                                    if ((std::fabs(current_RX_time - last_RTCM_1077_output_time) * 1000.0 >= static_cast<double>(d_rtcm_MT1077_rate_ms)) and (d_rtcm_MT1077_rate_ms != 0))
-                                        {
-                                            last_RTCM_1077_output_time = current_RX_time;
-                                        }
-                                    if ((std::fabs(current_RX_time - last_RTCM_1087_output_time) * 1000.0 >= static_cast<double>(d_rtcm_MT1087_rate_ms)) and (d_rtcm_MT1087_rate_ms != 0))
-                                        {
-                                            last_RTCM_1087_output_time = current_RX_time;
-                                        }
-                                    if ((std::fabs(current_RX_time - last_RTCM_1097_output_time) * 1000.0 >= static_cast<double>(d_rtcm_MT1097_rate_ms)) and (d_rtcm_MT1097_rate_ms != 0))
-                                        {
-                                            last_RTCM_1097_output_time = current_RX_time;
-                                        }
-
-                                    if ((std::fabs(current_RX_time - last_RTCM_MSM_output_time) * 1000.0 >= static_cast<double>(d_rtcm_MSM_rate_ms)) and (d_rtcm_MSM_rate_ms != 0))
+                                    if (current_RX_time_ms % d_rtcm_MSM_rate_ms == 0 and d_rtcm_MSM_rate_ms != 0)
                                         {
                                             flag_write_RTCM_MSM_output = true;
-                                            last_RTCM_MSM_output_time = current_RX_time;
                                         }
-                                    if ((std::fabs(current_RX_time - last_RINEX_obs_output_time) >= 1.0))  // TODO: Make it configurable
+                                    if (current_RX_time_ms % static_cast<unsigned int>(d_rinexobs_rate_ms) == 0)
                                         {
                                             flag_write_RINEX_obs_output = true;
-                                            last_RINEX_obs_output_time = current_RX_time;
                                         }
 
-                                    if ((std::fabs(current_RX_time - last_RINEX_nav_output_time) >= 6.0))  // TODO: Make it configurable
+                                    if (current_RX_time_ms % static_cast<unsigned int>(d_rinexnav_rate_ms) == 0)
                                         {
                                             flag_write_RINEX_nav_output = true;
-                                            last_RINEX_nav_output_time = current_RX_time;
                                         }
 
-                                    // correct the observable to account for the receiver clock offset
-
-                                    for (std::map<int, Gnss_Synchro>::iterator it = gnss_observables_map.begin(); it != gnss_observables_map.end(); ++it)
-                                        {
-                                            it->second.Pseudorange_m = it->second.Pseudorange_m - d_ls_pvt->get_time_offset_s() * GPS_C_m_s;
-                                        }
                                     if (first_fix == true)
                                         {
                                             std::cout << "First position fix at " << boost::posix_time::to_simple_string(d_ls_pvt->get_position_UTC_time())
@@ -1523,8 +1533,8 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 }
                                                             if (flag_write_RTCM_MSM_output == true)
                                                                 {
-                                                                    //gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.end();
-                                                                    //galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.end();
+                                                                    // gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.end();
+                                                                    // galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.end();
                                                                     unsigned int i = 0;
                                                                     for (gnss_observables_iter = gnss_observables_map.cbegin(); gnss_observables_iter != gnss_observables_map.cend(); gnss_observables_iter++)
                                                                         {
@@ -1588,8 +1598,8 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 }
                                                             if (flag_write_RTCM_MSM_output == true)
                                                                 {
-                                                                    //gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.end();
-                                                                    //galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.end();
+                                                                    // gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.end();
+                                                                    // galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.end();
                                                                     unsigned int i = 0;
                                                                     for (gnss_observables_iter = gnss_observables_map.begin(); gnss_observables_iter != gnss_observables_map.end(); gnss_observables_iter++)
                                                                         {
@@ -1653,8 +1663,8 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 }
                                                             if (flag_write_RTCM_MSM_output == true)
                                                                 {
-                                                                    //gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.end();
-                                                                    //galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.end();
+                                                                    // gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.end();
+                                                                    // galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.end();
                                                                     unsigned int i = 0;
                                                                     for (gnss_observables_iter = gnss_observables_map.cbegin(); gnss_observables_iter != gnss_observables_map.cend(); gnss_observables_iter++)
                                                                         {
@@ -1840,8 +1850,8 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                         }
                                                                 }
 
-                                                            //gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.end();
-                                                            //galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.end();
+                                                            // gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.end();
+                                                            // galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.end();
                                                             unsigned int i = 0;
                                                             for (gnss_observables_iter = gnss_observables_map.cbegin(); gnss_observables_iter != gnss_observables_map.cend(); gnss_observables_iter++)
                                                                 {
@@ -1955,8 +1965,8 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                         }
                                                                 }
 
-                                                            //gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.end();
-                                                            //galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.end();
+                                                            // gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.end();
+                                                            // galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.end();
                                                             unsigned int i = 0;
                                                             for (gnss_observables_iter = gnss_observables_map.cbegin(); gnss_observables_iter != gnss_observables_map.cend(); gnss_observables_iter++)
                                                                 {
@@ -2072,18 +2082,36 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                     // DEBUG MESSAGE: Display position in console output
                     if (d_ls_pvt->is_valid_position() and flag_display_pvt)
                         {
-                            std::cout << TEXT_BOLD_GREEN << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->get_position_UTC_time())
-                                      << " UTC using " << d_ls_pvt->get_num_valid_observations() << " observations is Lat = " << d_ls_pvt->get_latitude() << " [deg], Long = " << d_ls_pvt->get_longitude()
-                                      << " [deg], Height= " << d_ls_pvt->get_height() << " [m]" << TEXT_RESET << std::endl;
+                            std::streamsize ss = std::cout.precision();  // save current precision
+                            std::cout.setf(std::ios::fixed, std::ios::floatfield);
+
+                            auto facet = new boost::posix_time::time_facet("%Y-%b-%d %H:%M:%S.%f %z");
+                            std::cout.imbue(std::locale(std::cout.getloc(), facet));
+
+                            std::cout << TEXT_BOLD_GREEN
+                                      << "Position at " << d_ls_pvt->get_position_UTC_time()
+                                      << " UTC using " << d_ls_pvt->get_num_valid_observations()
+                                      << std::fixed << std::setprecision(9)
+                                      << " observations is Lat = " << d_ls_pvt->get_latitude() << " [deg], Long = " << d_ls_pvt->get_longitude()
+                                      << std::fixed << std::setprecision(3)
+                                      << " [deg], Height = " << d_ls_pvt->get_height() << " [m]" << TEXT_RESET << std::endl;
+                            std::cout << std::setprecision(ss);
+                            LOG(INFO) << "RX clock offset: " << d_ls_pvt->get_time_offset_s() << "[s]";
+
+                            // boost::posix_time::ptime p_time;
+                            // gtime_t rtklib_utc_time = gpst2time(adjgpsweek(d_ls_pvt->gps_ephemeris_map.cbegin()->second.i_GPS_week), d_rx_time);
+                            // p_time = boost::posix_time::from_time_t(rtklib_utc_time.time);
+                            // p_time += boost::posix_time::microseconds(round(rtklib_utc_time.sec * 1e6));
+                            // std::cout << TEXT_MAGENTA << "Observable RX time (GPST) " << boost::posix_time::to_simple_string(p_time) << TEXT_RESET << std::endl;
 
                             LOG(INFO) << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->get_position_UTC_time())
                                       << " UTC using " << d_ls_pvt->get_num_valid_observations() << " observations is Lat = " << d_ls_pvt->get_latitude() << " [deg], Long = " << d_ls_pvt->get_longitude()
-                                      << " [deg], Height= " << d_ls_pvt->get_height() << " [m]";
+                                      << " [deg], Height = " << d_ls_pvt->get_height() << " [m]";
 
                             /* std::cout << "Dilution of Precision at " << boost::posix_time::to_simple_string(d_ls_pvt->get_position_UTC_time())
-                                         << " UTC using "<< d_ls_pvt->get_num_valid_observations()<<" observations is HDOP = " << d_ls_pvt->get_HDOP() << " VDOP = "
-                                         << d_ls_pvt->get_VDOP() <<" TDOP = " << d_ls_pvt->get_TDOP()
-                                         << " GDOP = " << d_ls_pvt->get_GDOP() << std::endl; */
+                                         << " UTC using "<< d_ls_pvt->get_num_valid_observations() <<" observations is HDOP = " << d_ls_pvt->get_hdop() << " VDOP = "
+                                         << d_ls_pvt->get_vdop()
+                                         << " GDOP = " << d_ls_pvt->get_gdop() << std::endl; */
                         }
 
                     // MULTIPLEXED FILE RECORDING - Record results to file

@@ -35,6 +35,7 @@
 
 
 #include "gnss_block_factory.h"
+
 #include "configuration_interface.h"
 #include "in_memory_configuration.h"
 #include "gnss_block_interface.h"
@@ -104,6 +105,10 @@
 #include "rtklib_pvt.h"
 #include "gps_l1_ca_kf_tracking.h"
 
+#if RAW_UDP
+#include "custom_udp_signal_source.h"
+#endif
+
 #if ENABLE_FPGA
 #include "gps_l1_ca_pcps_acquisition_fpga.h"
 #include "gps_l1_ca_dll_pll_tracking_fpga.h"
@@ -159,11 +164,7 @@ using google::LogMessage;
 
 
 GNSSBlockFactory::GNSSBlockFactory() {}
-
-
 GNSSBlockFactory::~GNSSBlockFactory() {}
-
-
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalSource(
     std::shared_ptr<ConfigurationInterface> configuration, gr::msg_queue::sptr queue, int ID)
 {
@@ -236,9 +237,9 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
         {
             //instantiate the array version
             std::unique_ptr<GNSSBlockInterface> conditioner_(new ArraySignalConditioner(configuration.get(),
-                std::move(GetBlock(configuration, role_datatypeadapter, data_type_adapter, 1, 1)),
-                std::move(GetBlock(configuration, role_inputfilter, input_filter, 1, 1)),
-                std::move(GetBlock(configuration, role_resampler, resampler, 1, 1)),
+                GetBlock(configuration, role_datatypeadapter, data_type_adapter, 1, 1),
+                GetBlock(configuration, role_inputfilter, input_filter, 1, 1),
+                GetBlock(configuration, role_resampler, resampler, 1, 1),
                 role_conditioner, "Signal_Conditioner"));
             return conditioner_;
         }
@@ -246,9 +247,9 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
         {
             //single-antenna version
             std::unique_ptr<GNSSBlockInterface> conditioner_(new SignalConditioner(configuration.get(),
-                std::move(GetBlock(configuration, role_datatypeadapter, data_type_adapter, 1, 1)),
-                std::move(GetBlock(configuration, role_inputfilter, input_filter, 1, 1)),
-                std::move(GetBlock(configuration, role_resampler, resampler, 1, 1)),
+                GetBlock(configuration, role_datatypeadapter, data_type_adapter, 1, 1),
+                GetBlock(configuration, role_inputfilter, input_filter, 1, 1),
+                GetBlock(configuration, role_resampler, resampler, 1, 1),
                 role_conditioner, "Signal_Conditioner"));
             return conditioner_;
         }
@@ -819,12 +820,12 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                         telemetry_decoder_implementation);
 
                     // Push back the channel to the vector of channels
-                    channels->at(channel_absolute_id) = std::move(GetChannel_1C(configuration,
+                    channels->at(channel_absolute_id) = GetChannel_1C(configuration,
                         acquisition_implementation_specific,
                         tracking_implementation_specific,
                         telemetry_decoder_implementation_specific,
                         channel_absolute_id,
-                        queue));
+                        queue);
                     channel_absolute_id++;
                 }
 
@@ -848,12 +849,12 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                         telemetry_decoder_implementation);
 
                     // Push back the channel to the vector of channels
-                    channels->at(channel_absolute_id) = std::move(GetChannel_2S(configuration,
+                    channels->at(channel_absolute_id) = GetChannel_2S(configuration,
                         acquisition_implementation_specific,
                         tracking_implementation_specific,
                         telemetry_decoder_implementation_specific,
                         channel_absolute_id,
-                        queue));
+                        queue);
                     channel_absolute_id++;
                 }
 
@@ -877,12 +878,12 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                         telemetry_decoder_implementation);
 
                     // Push back the channel to the vector of channels
-                    channels->at(channel_absolute_id) = std::move(GetChannel_L5(configuration,
+                    channels->at(channel_absolute_id) = GetChannel_L5(configuration,
                         acquisition_implementation_specific,
                         tracking_implementation_specific,
                         telemetry_decoder_implementation_specific,
                         channel_absolute_id,
-                        queue));
+                        queue);
                     channel_absolute_id++;
                 }
 
@@ -906,12 +907,12 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                         telemetry_decoder_implementation);
 
                     // Push back the channel to the vector of channels
-                    channels->at(channel_absolute_id) = std::move(GetChannel_1B(configuration,
+                    channels->at(channel_absolute_id) = GetChannel_1B(configuration,
                         acquisition_implementation_specific,
                         tracking_implementation_specific,
                         telemetry_decoder_implementation_specific,
                         channel_absolute_id,
-                        queue));
+                        queue);
                     channel_absolute_id++;
                 }
 
@@ -935,12 +936,12 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                         telemetry_decoder_implementation);
 
                     // Push back the channel to the vector of channels
-                    channels->at(channel_absolute_id) = std::move(GetChannel_5X(configuration,
+                    channels->at(channel_absolute_id) = GetChannel_5X(configuration,
                         acquisition_implementation_specific,
                         tracking_implementation_specific,
                         telemetry_decoder_implementation_specific,
                         channel_absolute_id,
-                        queue));
+                        queue);
                     channel_absolute_id++;
                 }
 
@@ -965,12 +966,12 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                         telemetry_decoder_implementation);
 
                     // Push back the channel to the vector of channels
-                    channels->at(channel_absolute_id) = std::move(GetChannel_1G(configuration,
+                    channels->at(channel_absolute_id) = GetChannel_1G(configuration,
                         acquisition_implementation_specific,
                         tracking_implementation_specific,
                         telemetry_decoder_implementation_specific,
                         channel_absolute_id,
-                        queue));
+                        queue);
                     channel_absolute_id++;
                 }
 
@@ -995,12 +996,12 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                         telemetry_decoder_implementation);
 
                     // Push back the channel to the vector of channels
-                    channels->at(channel_absolute_id) = std::move(GetChannel_2G(configuration,
+                    channels->at(channel_absolute_id) = GetChannel_2G(configuration,
                         acquisition_implementation_specific,
                         tracking_implementation_specific,
                         telemetry_decoder_implementation_specific,
                         channel_absolute_id,
-                        queue));
+                        queue);
                     channel_absolute_id++;
                 }
         }
@@ -1053,6 +1054,23 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     exit(1);
                 }
         }
+#if RAW_UDP
+    else if (implementation.compare("Custom_UDP_Signal_Source") == 0)
+        {
+            try
+                {
+                    std::unique_ptr<GNSSBlockInterface> block_(new CustomUDPSignalSource(configuration.get(), role, in_streams,
+                        out_streams, queue));
+                    block = std::move(block_);
+                }
+
+            catch (const std::exception &e)
+                {
+                    std::cout << "GNSS-SDR program ended." << std::endl;
+                    exit(1);
+                }
+        }
+#endif
     else if (implementation.compare("Nsr_File_Signal_Source") == 0)
         {
             try
@@ -1597,7 +1615,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
             // Log fatal. This causes execution to stop.
             LOG(ERROR) << role << "." << implementation << ": Undefined implementation for block";
         }
-    return std::move(block);
+    return block;
 }
 
 
@@ -1737,7 +1755,7 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
             // Log fatal. This causes execution to stop.
             LOG(ERROR) << role << "." << implementation << ": Undefined implementation for block";
         }
-    return std::move(block);
+    return block;
 }
 
 
@@ -1849,7 +1867,7 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
             // Log fatal. This causes execution to stop.
             LOG(ERROR) << role << "." << implementation << ": Undefined implementation for block";
         }
-    return std::move(block);
+    return block;
 }
 
 
@@ -1915,5 +1933,5 @@ std::unique_ptr<TelemetryDecoderInterface> GNSSBlockFactory::GetTlmBlock(
             // Log fatal. This causes execution to stop.
             LOG(ERROR) << role << "." << implementation << ": Undefined implementation for block";
         }
-    return std::move(block);
+    return block;
 }

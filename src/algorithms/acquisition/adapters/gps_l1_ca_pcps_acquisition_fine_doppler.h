@@ -135,7 +135,6 @@ private:
     unsigned int sampled_ms_;
     int max_dwells_;
     long fs_in_;
-    long if_;
     bool dump_;
     std::string dump_filename_;
     std::complex<float>* code_;

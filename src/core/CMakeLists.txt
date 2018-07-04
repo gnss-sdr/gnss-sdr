@@ -19,4 +19,4 @@
 add_subdirectory(system_parameters)
 add_subdirectory(libs)
 add_subdirectory(receiver)
-
+add_subdirectory(monitor)

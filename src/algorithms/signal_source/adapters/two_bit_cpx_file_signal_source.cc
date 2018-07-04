@@ -166,6 +166,14 @@ TwoBitCpxFileSignalSource::TwoBitCpxFileSignalSource(ConfigurationInterface* con
     DLOG(INFO) << "Repeat " << repeat_;
     DLOG(INFO) << "Dump " << dump_;
     DLOG(INFO) << "Dump filename " << dump_filename_;
+    if (in_streams_ > 0)
+        {
+            LOG(ERROR) << "A signal source does not have an input stream";
+        }
+    if (out_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 

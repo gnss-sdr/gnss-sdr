@@ -419,7 +419,7 @@ void GpsL1CaPcpsTongAcquisitionGSoC2013Test::stop_queue()
 TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, Instantiate)
 {
     config_1();
-    acquisition = std::make_shared<GpsL1CaPcpsTongAcquisition>(config.get(), "Acquisition_1C", 1, 1);
+    acquisition = std::make_shared<GpsL1CaPcpsTongAcquisition>(config.get(), "Acquisition_1C", 1, 0);
 }
 
 
@@ -432,7 +432,7 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ConnectAndRun)
     queue = gr::msg_queue::make(0);
 
     config_1();
-    acquisition = std::make_shared<GpsL1CaPcpsTongAcquisition>(config.get(), "Acquisition_1C", 1, 1);
+    acquisition = std::make_shared<GpsL1CaPcpsTongAcquisition>(config.get(), "Acquisition_1C", 1, 0);
     boost::shared_ptr<GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx> msg_rx = GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
@@ -461,7 +461,7 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResults)
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);
 
-    acquisition = std::make_shared<GpsL1CaPcpsTongAcquisition>(config.get(), "Acquisition_1C", 1, 1);
+    acquisition = std::make_shared<GpsL1CaPcpsTongAcquisition>(config.get(), "Acquisition_1C", 1, 0);
     boost::shared_ptr<GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx> msg_rx = GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
@@ -549,7 +549,7 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
     config_2();
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);
-    acquisition = std::make_shared<GpsL1CaPcpsTongAcquisition>(config.get(), "Acquisition_1C", 1, 1);
+    acquisition = std::make_shared<GpsL1CaPcpsTongAcquisition>(config.get(), "Acquisition_1C", 1, 0);
     boost::shared_ptr<GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx> msg_rx = GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({

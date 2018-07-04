@@ -40,6 +40,9 @@ if(ENABLE_FPGA)
      add_definitions(-DENABLE_FPGA=1)
 endif(ENABLE_FPGA)
 
+if(ENABLE_RAW_UDP)
+    add_definitions(-DRAW_UDP=1)
+endif(ENABLE_RAW_UDP)
 
 if(Boost_VERSION LESS 105000)
      add_definitions(-DOLD_BOOST=1)
@@ -108,6 +111,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
+     ${CMAKE_SOURCE_DIR}/src/core/monitor
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/adapters
@@ -175,4 +179,5 @@ target_link_libraries(gnss_rx ${Boost_LIBRARIES}
                               pvt_adapters
                               pvt_lib
                               rx_core_lib
+                              core_monitor_lib
 )

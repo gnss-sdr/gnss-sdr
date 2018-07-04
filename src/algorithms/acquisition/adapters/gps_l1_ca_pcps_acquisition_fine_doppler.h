@@ -34,11 +34,10 @@
 #ifndef GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FINE_DOPPLER_H_
 #define GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FINE_DOPPLER_H_
 
-#include <string>
 #include "gnss_synchro.h"
 #include "acquisition_interface.h"
 #include "pcps_acquisition_fine_doppler_cc.h"
-
+#include <string>
 
 class ConfigurationInterface;
 
@@ -121,6 +120,11 @@ public:
      * \brief Restart acquisition algorithm
      */
     void reset() override;
+
+    /*!
+     * \brief If state = 1, it forces the block to start acquiring from the first sample
+     */
+    void set_state(int state) override;
 
 private:
     pcps_acquisition_fine_doppler_cc_sptr acquisition_cc_;

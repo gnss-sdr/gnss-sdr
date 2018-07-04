@@ -32,12 +32,11 @@
 #ifndef GNSS_SDR_GPS_L1_CA_PCPS_OPENCL_ACQUISITION_H_
 #define GNSS_SDR_GPS_L1_CA_PCPS_OPENCL_ACQUISITION_H_
 
-#include <string>
-#include <gnuradio/blocks/stream_to_vector.h>
 #include "gnss_synchro.h"
 #include "acquisition_interface.h"
 #include "pcps_opencl_acquisition_cc.h"
-
+#include <gnuradio/blocks/stream_to_vector.h>
+#include <string>
 
 class ConfigurationInterface;
 
@@ -123,6 +122,7 @@ public:
      * \brief Restart acquisition algorithm
      */
     void reset() override;
+    void set_state(int state) override{};
 
 private:
     ConfigurationInterface* configuration_;

@@ -34,11 +34,10 @@
 #ifndef GNSS_SDR_GPS_L1_CA_PCPS_ASSISTED_ACQUISITION_H_
 #define GNSS_SDR_GPS_L1_CA_PCPS_ASSISTED_ACQUISITION_H_
 
-#include <string>
 #include "gnss_synchro.h"
 #include "acquisition_interface.h"
 #include "pcps_assisted_acquisition_cc.h"
-
+#include <string>
 
 class ConfigurationInterface;
 
@@ -121,6 +120,7 @@ public:
      * \brief Restart acquisition algorithm
      */
     void reset() override;
+    void set_state(int state) override{};
 
 private:
     pcps_assisted_acquisition_cc_sptr acquisition_cc_;

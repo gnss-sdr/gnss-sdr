@@ -424,6 +424,30 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star
 }
 
 
+void pcps_acquisition_fine_doppler_cc::set_state(int state)
+{
+    gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
+    d_state = state;
+    if (d_state == 1)
+        {
+            d_gnss_synchro->Acq_delay_samples = 0.0;
+            d_gnss_synchro->Acq_doppler_hz = 0.0;
+            d_gnss_synchro->Acq_samplestamp_samples = 0;
+            d_well_count = 0;
+            d_input_power = 0.0;
+            d_test_statistics = 0.0;
+            d_active = true;
+        }
+    else if (d_state == 0)
+        {
+        }
+    else
+        {
+            LOG(ERROR) << "State can only be set to 0 or 1";
+        }
+}
+
+
 int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
     gr_vector_int &ninput_items __attribute__((unused)), gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items __attribute__((unused)))

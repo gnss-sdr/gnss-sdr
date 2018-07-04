@@ -33,6 +33,8 @@
 #include "signal_generator_flags.h"
 #include "tracking_true_obs_reader.h"
 #include "true_observables_reader.h"
+#include "gps_l1_ca_pcps_acquisition.h"
+#include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
 #include "display.h"
 #include "gnuplot_i.h"
 #include <boost/filesystem.hpp>
@@ -42,6 +44,7 @@
 
 DEFINE_string(config_file_ptest, std::string(""), "File containing alternative configuration parameters for the acquisition performance test.");
 DEFINE_string(acq_test_input_file, std::string(""), "File containing raw signal data, must be in int8_t format. The signal generator will not be used.");
+DEFINE_string(acq_test_implementation, std::string("GPS_L1_CA_PCPS_Acquisition"), "Acquisition block implementation under test");
 
 DEFINE_int32(acq_test_doppler_max, 5000, "Maximum Doppler, in Hz");
 DEFINE_int32(acq_test_doppler_step, 125, "Doppler step, in Hz.");
@@ -200,7 +203,6 @@ protected:
     {
     }
 
-
     std::vector<double> cn0_vector;
     std::vector<float> pfa_vector;
 
@@ -223,7 +225,7 @@ protected:
 
     gr::msg_queue::sptr queue;
     gr::top_block_sptr top_block;
-    std::shared_ptr<GpsL1CaPcpsAcquisition> acquisition;
+    std::shared_ptr<AcquisitionInterface> acquisition;
     std::shared_ptr<InMemoryConfiguration> config;
     std::shared_ptr<FileConfiguration> config_f;
     Gnss_Synchro gnss_synchro;
@@ -235,7 +237,7 @@ protected:
     int message;
     boost::thread ch_thread;
 
-    std::string implementation = "GPS_L1_CA_PCPS_Acquisition";
+    std::string implementation = FLAGS_acq_test_implementation;
 
     const double baseband_sampling_freq = static_cast<double>(FLAGS_fs_gen_sps);
     const int coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
@@ -457,8 +459,23 @@ int AcquisitionPerformanceTest::run_receiver()
 
     int nsamples = floor(config->property("GNSS-SDR.internal_fs_sps", 2000000) * generated_signal_duration_s);
     boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+    if (FLAGS_acq_test_implementation.compare("GPS_L1_CA_PCPS_Acquisition") == 0)
+        {
+            acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition_1C", 1, 0);
+        }
+    else
+        {
+            if (FLAGS_acq_test_implementation.compare("GPS_L1_CA_PCPS_Acquisition_Fine_Doppler") == 0)
+                {
+                    acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFineDoppler>(config.get(), "Acquisition_1C", 1, 0);
+                }
+            else
+                {
+                    bool aux = false;
+                    EXPECT_EQ(true, aux);
+                }
+        }
 
-    acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition_1C", 1, 0);
     acquisition->set_gnss_synchro(&gnss_synchro);
     acquisition->set_channel(0);
     acquisition->set_local_code();

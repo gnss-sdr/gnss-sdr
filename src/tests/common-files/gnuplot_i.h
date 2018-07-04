@@ -218,6 +218,7 @@ public:
         const std::string &labely = "y",
         const std::string &labelz = "z");
 
+
     /// destructor: needed to delete temporary files
     ~Gnuplot();
 
@@ -245,6 +246,9 @@ public:
 
     /// sets terminal type to terminal_std
     Gnuplot &showonscreen();  // window output is set by default (win/x11/aqua)
+
+    /// sets terminal type to unknown (disable the screen output)
+    Gnuplot &disablescreen();
 
     /// saves a gnuplot session to a postscript file, filename without extension
     Gnuplot &savetops(const std::string &filename = "gnuplot_output");
@@ -1197,6 +1201,17 @@ Gnuplot &Gnuplot::set_smooth(const std::string &stylestr)
 
 //------------------------------------------------------------------------------
 //
+// Disable screen output
+//
+Gnuplot &Gnuplot::disablescreen()
+{
+    cmd("set output");
+    cmd("set terminal unknown");
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+//
 // sets terminal type to windows / x11
 //
 Gnuplot &Gnuplot::showonscreen()
@@ -2090,19 +2105,19 @@ std::string Gnuplot::create_tmpfile(std::ofstream &tmp)
             throw GnuplotException(except.str());
         }
 
-        // int mkstemp(char *name);
-        // shall replace the contents of the string pointed to by "name" by a unique
-        // filename, and return a file descriptor for the file open for reading and
-        // writing.  Otherwise, -1 shall be returned if no suitable file could be
-        // created.  The string in template should look like a filename with six
-        // trailing 'X' s; mkstemp() replaces each 'X' with a character from the
-        // portable filename character set.  The characters are chosen such that the
-        // resulting name does not duplicate the name of an existing file at the
-        // time of a call to mkstemp()
+// int mkstemp(char *name);
+// shall replace the contents of the string pointed to by "name" by a unique
+// filename, and return a file descriptor for the file open for reading and
+// writing.  Otherwise, -1 shall be returned if no suitable file could be
+// created.  The string in template should look like a filename with six
+// trailing 'X' s; mkstemp() replaces each 'X' with a character from the
+// portable filename character set.  The characters are chosen such that the
+// resulting name does not duplicate the name of an existing file at the
+// time of a call to mkstemp()
 
-        //
-        // open temporary files for output
-        //
+//
+// open temporary files for output
+//
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
     if (_mktemp(name) == NULL)

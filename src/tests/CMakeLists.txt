@@ -307,6 +307,7 @@ set(LIST_INCLUDE_DIRS
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
+     ${CMAKE_SOURCE_DIR}/src/core/monitor
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib
      ${CMAKE_SOURCE_DIR}/src/algorithms/data_type_adapter/adapters

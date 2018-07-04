@@ -36,7 +36,8 @@
 
 // Input signal configuration
 DEFINE_bool(enable_external_signal_file, false, "Use an external signal file capture instead of the software-defined signal generator");
-DEFINE_string(signal_file, std::string("gps_l1_capture.dat"), "Path of the external signal capture file");
+DEFINE_int32(external_signal_acquisition_threshold, 2.0, "Threshold for satellite acquisition when external file is used");
+DEFINE_string(signal_file, std::string("signal_out.bin"), "Path of the external signal capture file");
 DEFINE_double(CN0_dBHz_start, std::numeric_limits<double>::infinity(), "Enable noise generator and set the CN0 start sweep value [dB-Hz]");
 DEFINE_double(CN0_dBHz_stop, std::numeric_limits<double>::infinity(), "Enable noise generator and set the CN0 stop sweep value [dB-Hz]");
 DEFINE_double(CN0_dB_step, 3.0, "Noise generator CN0 sweep step value [dB]");
@@ -52,13 +53,13 @@ DEFINE_double(DLL_bw_hz_step, 0.25, "DLL Wide configuration sweep step value [Hz
 DEFINE_double(PLL_narrow_bw_hz, 5.0, "PLL Narrow configuration value [Hz]");
 DEFINE_double(DLL_narrow_bw_hz, 0.75, "DLL Narrow configuration value [Hz]");
 
-DEFINE_double(Acq_Doppler_error_hz_start, 500.0, "Acquisition Doppler error start sweep value [Hz]");
-DEFINE_double(Acq_Doppler_error_hz_stop, -500.0, "Acquisition Doppler error stop sweep value [Hz]");
-DEFINE_double(Acq_Doppler_error_hz_step, -50.0, "Acquisition Doppler error sweep step value [Hz]");
+DEFINE_double(acq_Doppler_error_hz_start, 1000.0, "Acquisition Doppler error start sweep value [Hz]");
+DEFINE_double(acq_Doppler_error_hz_stop, -1000.0, "Acquisition Doppler error stop sweep value [Hz]");
+DEFINE_double(acq_Doppler_error_hz_step, -50.0, "Acquisition Doppler error sweep step value [Hz]");
 
-DEFINE_double(Acq_Delay_error_chips_start, 2.0, "Acquisition Code Delay error start sweep value [Hz]");
-DEFINE_double(Acq_Delay_error_chips_stop, -2.0, "Acquisition Code Delay error stop sweep value [Hz]");
-DEFINE_double(Acq_Delay_error_chips_step, -0.1, "Acquisition Code Delay error sweep step value [Hz]");
+DEFINE_double(acq_Delay_error_chips_start, 2.0, "Acquisition Code Delay error start sweep value [Chips]");
+DEFINE_double(acq_Delay_error_chips_stop, -2.0, "Acquisition Code Delay error stop sweep value [Chips]");
+DEFINE_double(acq_Delay_error_chips_step, -0.1, "Acquisition Code Delay error sweep step value [Chips]");
 
 
 DEFINE_int32(plot_detail_level, 0, "Specify the desired plot detail (0,1,2): 0 - Minimum plots (default) 2 - Plot all tracking parameters");

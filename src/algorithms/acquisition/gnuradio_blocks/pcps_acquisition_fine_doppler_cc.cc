@@ -447,8 +447,9 @@ bool pcps_acquisition_fine_doppler_cc::start()
 
 void pcps_acquisition_fine_doppler_cc::set_state(int state)
 {
-    gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
+    //gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
     d_state = state;
+
     if (d_state == 1)
         {
             d_gnss_synchro->Acq_delay_samples = 0.0;
@@ -457,6 +458,7 @@ void pcps_acquisition_fine_doppler_cc::set_state(int state)
             d_well_count = 0;
             d_test_statistics = 0.0;
             d_active = true;
+            reset_grid();
         }
     else if (d_state == 0)
         {
@@ -490,6 +492,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
     switch (d_state)
         {
         case 0:  // S0. StandBy
+            std::cout << "S0.";
             if (d_active == true)
                 {
                     reset_grid();
@@ -502,6 +505,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
                 }
             break;
         case 1:  // S1. ComputeGrid
+            std::cout << "S1.";
             compute_and_accumulate_grid(input_items);
             d_well_count++;
             if (d_well_count >= d_max_dwells)
@@ -523,10 +527,10 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
                 }
             d_n_samples_in_buffer = 0;
             // Record results to file if required
-            if (d_dump and d_channel == d_dump_channel)
-                {
-                    dump_results(d_fft_size);
-                }
+            //if (d_dump and d_channel == d_dump_channel)
+            //    {
+            //        dump_results(d_fft_size);
+            //    }
             d_sample_counter += d_fft_size;  // sample counter
             consume_each(d_fft_size);
             break;

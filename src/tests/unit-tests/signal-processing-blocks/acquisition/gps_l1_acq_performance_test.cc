@@ -225,7 +225,7 @@ protected:
 
     gr::msg_queue::sptr queue;
     gr::top_block_sptr top_block;
-    std::shared_ptr<AcquisitionInterface> acquisition;
+    std::shared_ptr<GpsL1CaPcpsAcquisitionFineDoppler> acquisition;
     std::shared_ptr<InMemoryConfiguration> config;
     std::shared_ptr<FileConfiguration> config_f;
     Gnss_Synchro gnss_synchro;
@@ -298,6 +298,7 @@ void AcquisitionPerformanceTest::wait_message()
     while (!stop)
         {
             channel_internal_queue.wait_and_pop(message);
+            std::cout << "messahe received" << std::endl;
             process_message();
         }
 }
@@ -307,7 +308,7 @@ void AcquisitionPerformanceTest::process_message()
 {
     measurement_counter++;
     acquisition->reset();
-    acquisition->set_state(1);
+    //acquisition->set_state(1);
     std::cout << "Progress: " << round(static_cast<float>(measurement_counter) / static_cast<float>(num_of_measurements) * 100.0) << "% \r" << std::flush;
     if (measurement_counter == num_of_measurements)
         {
@@ -381,6 +382,7 @@ int AcquisitionPerformanceTest::configure_receiver(double cn0, float pfa, unsign
             config->set_property("Acquisition_1C.implementation", implementation);
             config->set_property("Acquisition_1C.item_type", "gr_complex");
             config->set_property("Acquisition_1C.doppler_max", std::to_string(doppler_max));
+            config->set_property("Acquisition_1C.doppler_min", std::to_string(-doppler_max));
             config->set_property("Acquisition_1C.doppler_step", std::to_string(doppler_step));
 
             config->set_property("Acquisition_1C.threshold", std::to_string(pfa));
@@ -459,13 +461,13 @@ int AcquisitionPerformanceTest::run_receiver()
 
     int nsamples = floor(config->property("GNSS-SDR.internal_fs_sps", 2000000) * generated_signal_duration_s);
     boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
-    if (FLAGS_acq_test_implementation.compare("GPS_L1_CA_PCPS_Acquisition") == 0)
+    if (implementation.compare("GPS_L1_CA_PCPS_Acquisition") == 0)
         {
-            acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition_1C", 1, 0);
+            //acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition_1C", 1, 0);
         }
     else
         {
-            if (FLAGS_acq_test_implementation.compare("GPS_L1_CA_PCPS_Acquisition_Fine_Doppler") == 0)
+            if (implementation.compare("GPS_L1_CA_PCPS_Acquisition_Fine_Doppler") == 0)
                 {
                     acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFineDoppler>(config.get(), "Acquisition_1C", 1, 0);
                 }
@@ -477,20 +479,21 @@ int AcquisitionPerformanceTest::run_receiver()
         }
 
     acquisition->set_gnss_synchro(&gnss_synchro);
+
+    acquisition->init();
     acquisition->set_channel(0);
     acquisition->set_local_code();
     acquisition->set_doppler_max(config->property("Acquisition_1C.doppler_max", 10000));
     acquisition->set_doppler_step(config->property("Acquisition_1C.doppler_step", 500));
     acquisition->set_threshold(config->property("Acquisition_1C.threshold", 0.0));
-    acquisition->set_state(1);  // Ensure that acquisition starts at the first sample
+    //acquisition->set_state(1);  // Ensure that acquisition starts at the first sample
     acquisition->connect(top_block);
-    top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
 
-    acquisition->init();
-
+    acquisition->reset();
     top_block->connect(file_source, 0, gr_interleaved_char_to_complex, 0);
     top_block->connect(gr_interleaved_char_to_complex, 0, valve, 0);
     top_block->connect(valve, 0, acquisition->get_left_block(), 0);
+    top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
 
     start_queue();
 

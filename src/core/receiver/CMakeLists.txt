@@ -111,6 +111,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
+     ${CMAKE_SOURCE_DIR}/src/core/monitor
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/adapters
@@ -178,4 +179,5 @@ target_link_libraries(gnss_rx ${Boost_LIBRARIES}
                               pvt_adapters
                               pvt_lib
                               rx_core_lib
+                              core_monitor_lib
 )

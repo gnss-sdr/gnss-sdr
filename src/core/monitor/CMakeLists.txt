@@ -16,7 +16,23 @@
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
-add_subdirectory(system_parameters)
-add_subdirectory(libs)
-add_subdirectory(receiver)
-add_subdirectory(monitor)
+
+set(CORE_MONITOR_LIBS_SOURCES 
+	gnss_synchro_monitor.cc
+	gnss_synchro_udp_sink.cc
+)
+	
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+    ${GLOG_INCLUDE_DIRS}
+    ${GFlags_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
+)
+
+file(GLOB CORE_MONITOR_LIBS_HEADERS "*.h")
+list(SORT CORE_MONITOR_LIBS_HEADERS)
+add_library(core_monitor_lib ${CORE_MONITOR_LIBS_SOURCES} ${CORE_MONITOR_LIBS_HEADERS})
+source_group(Headers FILES ${CORE_MONITOR_LIBS_HEADERS})
+target_link_libraries(core_monitor_lib ${Boost_LIBRARIES}) 
+add_dependencies(core_monitor_lib glog-${glog_RELEASE})

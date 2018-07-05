@@ -133,6 +133,12 @@ void pcps_acquisition_fine_doppler_cc::set_doppler_step(unsigned int doppler_ste
         {
             d_grid_data[i] = static_cast<float *>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
         }
+
+    if (d_dump)
+        {
+            grid_ = arma::fmat(d_fft_size, d_num_doppler_points, arma::fill::zeros);
+        }
+
     update_carrier_wipeoff();
 }
 
@@ -181,11 +187,6 @@ void pcps_acquisition_fine_doppler_cc::init()
     d_gnss_synchro->Acq_doppler_hz = 0.0;
     d_gnss_synchro->Acq_samplestamp_samples = 0;
     d_state = 0;
-
-    if (d_dump)
-        {
-            grid_ = arma::fmat(d_fft_size, d_num_doppler_points, arma::fill::zeros);
-        }
 }
 
 
@@ -260,7 +261,6 @@ double pcps_acquisition_fine_doppler_cc::compute_CAF()
                     memcpy(grid_.colptr(i), d_grid_data[i], sizeof(float) * d_fft_size);
                 }
         }
-
 
     // -- - Find 1 chip wide code phase exclude range around the peak
     uint32_t samplesPerChip = ceil(GPS_L1_CA_CHIP_PERIOD * static_cast<float>(this->d_fs_in));
@@ -364,7 +364,6 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler()
     //int fft_size_extended = nextPowerOf2(signal_samples * zero_padding_factor);
     int fft_size_extended = signal_samples * zero_padding_factor;
     gr::fft::fft_complex *fft_operator = new gr::fft::fft_complex(fft_size_extended, true);
-
     //zero padding the entire vector
     std::fill_n(fft_operator->get_inbuf(), fft_size_extended, gr_complex(0.0, 0.0));
 
@@ -386,7 +385,6 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler()
             memcpy(&code_replica[(n + 1) * d_fft_size], code_replica, d_fft_size * sizeof(gr_complex));
         }
     //2. Perform code wipe-off
-
     volk_32fc_x2_multiply_32fc(fft_operator->get_inbuf(), d_10_ms_buffer, code_replica, signal_samples);
 
     // 3. Perform the FFT (zero padded!)
@@ -402,8 +400,8 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler()
 
     //case even
     int counter = 0;
+    float* fftFreqBins= new float[fft_size_extended];
 
-    float fftFreqBins[fft_size_extended];
     std::fill_n(fftFreqBins, fft_size_extended, 0.0);
 
     for (int k = 0; k < (fft_size_extended / 2); k++)
@@ -414,8 +412,9 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler()
 
     for (int k = fft_size_extended / 2; k > 0; k--)
         {
-            fftFreqBins[counter] = ((-static_cast<float>(d_fs_in) / 2) * static_cast<float>(k)) / (static_cast<float>(fft_size_extended) / 2.0);
+            fftFreqBins[counter] = ((-static_cast<float>(d_fs_in) / 2.0) * static_cast<float>(k)) / (static_cast<float>(fft_size_extended) / 2.0);
             counter++;
+
         }
 
     // 5. Update the Doppler estimation in Hz
@@ -434,8 +433,10 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler()
     delete fft_operator;
     volk_gnsssdr_free(code_replica);
     volk_gnsssdr_free(p_tmp_vector);
+    delete[] fftFreqBins;
     return d_fft_size;
 }
+
 
 // Called by gnuradio to enable drivers, etc for i/o devices.
 bool pcps_acquisition_fine_doppler_cc::start()
@@ -443,6 +444,32 @@ bool pcps_acquisition_fine_doppler_cc::start()
     d_sample_counter = 0;
     return true;
 }
+
+
+void pcps_acquisition_fine_doppler_cc::set_state(int state)
+{
+    //gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
+    d_state = state;
+
+    if (d_state == 1)
+        {
+            d_gnss_synchro->Acq_delay_samples = 0.0;
+            d_gnss_synchro->Acq_doppler_hz = 0.0;
+            d_gnss_synchro->Acq_samplestamp_samples = 0;
+            d_well_count = 0;
+            d_test_statistics = 0.0;
+            d_active = true;
+            reset_grid();
+        }
+    else if (d_state == 0)
+        {
+        }
+    else
+        {
+            LOG(ERROR) << "State can only be set to 0 or 1";
+        }
+}
+
 
 int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
     gr_vector_int &ninput_items __attribute__((unused)), gr_vector_const_void_star &input_items,
@@ -466,6 +493,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
     switch (d_state)
         {
         case 0:  // S0. StandBy
+            std::cout << "S0.";
             if (d_active == true)
                 {
                     reset_grid();
@@ -478,6 +506,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
                 }
             break;
         case 1:  // S1. ComputeGrid
+            std::cout << "S1.";
             compute_and_accumulate_grid(input_items);
             d_well_count++;
             if (d_well_count >= d_max_dwells)
@@ -499,10 +528,10 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
                 }
             d_n_samples_in_buffer = 0;
             // Record results to file if required
-            if (d_dump and d_channel == d_dump_channel)
-                {
-                    dump_results(d_fft_size);
-                }
+            //if (d_dump and d_channel == d_dump_channel)
+            //    {
+            //        dump_results(d_fft_size);
+            //    }
             d_sample_counter += d_fft_size;  // sample counter
             consume_each(d_fft_size);
             break;

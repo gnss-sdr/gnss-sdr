@@ -4,6 +4,7 @@
  * \author
  *  Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *  Javier Arribas, 2012. jarribas(at)cttc.es
+ *  Álvaro Cebrián Juan, 2018. acebrianjuan(at)gmail.com
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
@@ -73,6 +74,47 @@ public:
     double RX_time;               //!< Set by Observables processing block
     bool Flag_valid_pseudorange;  //!< Set by Observables processing block
     double interp_TOW_ms;         //!< Set by Observables processing block
+
+
+    /*!
+     * \brief This member function is necessary to serialize and restore
+     * Gnss_Synchro objects from a byte stream.
+     */
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version)
+    {
+        if (version)
+            {
+            };
+        // Satellite and signal info
+        ar& System;
+        ar& Signal;
+        ar& PRN;
+        ar& Channel_ID;
+        ar& Acq_delay_samples;
+        ar& Acq_doppler_hz;
+        ar& Acq_samplestamp_samples;
+        ar& Flag_valid_acquisition;
+        //Tracking
+        ar& fs;
+        ar& Prompt_I;
+        ar& Prompt_Q;
+        ar& CN0_dB_hz;
+        ar& Carrier_Doppler_hz;
+        ar& Carrier_phase_rads;
+        ar& Code_phase_samples;
+        ar& Tracking_sample_counter;
+        ar& Flag_valid_symbol_output;
+        ar& correlation_length_ms;
+        //Telemetry Decoder
+        ar& Flag_valid_word;
+        ar& TOW_at_current_symbol_ms;
+        // Observables
+        ar& Pseudorange_m;
+        ar& RX_time;
+        ar& Flag_valid_pseudorange;
+        ar& interp_TOW_ms;
+    }
 };
 
 #endif

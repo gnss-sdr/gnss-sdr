@@ -4,6 +4,7 @@
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Luis Esteve, 2011. luis(at)epsilon-formacion.com
  *         Carles Fernandez-Prades, 2014. cfernandez(at)cttc.es
+ *         Álvaro Cebrián Juan, 2018. acebrianjuan(at)gmail.com
  *
  * It contains a signal source,
  * a signal conditioner, a set of channels, an observables block and a pvt.
@@ -39,6 +40,7 @@
 #include "GPS_L1_CA.h"
 #include "gnss_signal.h"
 #include "gnss_sdr_sample_counter.h"
+#include "gnss_synchro_monitor.h"
 #include <gnuradio/top_block.h>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/null_source.h>
@@ -185,6 +187,9 @@ private:
 
     std::vector<unsigned int> channels_state_;
     std::mutex signal_list_mutex;
+
+    bool enable_monitor_;
+    gr::basic_block_sptr GnssSynchroMonitor_;
 };
 
 #endif /*GNSS_SDR_GNSS_FLOWGRAPH_H_*/

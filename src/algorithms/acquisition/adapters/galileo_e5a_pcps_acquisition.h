@@ -121,7 +121,7 @@ public:
      * first available sample.
      * \param state - int=1 forces start of acquisition
      */
-    void set_state(int state);
+    void set_state(int state) override;
 
 private:
     float calculate_threshold(float pfa);

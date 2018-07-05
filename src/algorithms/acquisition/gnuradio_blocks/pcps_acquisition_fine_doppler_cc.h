@@ -1,8 +1,9 @@
 /*!
  * \file pcps_acquisition_fine_doppler_acquisition_cc.h
  * \brief This class implements a Parallel Code Phase Search Acquisition with multi-dwells and fine Doppler estimation
+ * for GPS L1 C/A signal
  *
- *  Acquisition strategy (Kay Borre book + CFAR threshold).
+ *  Acquisition strategy (Kay Borre book).
  *  <ol>
  *  <li> Compute the input signal power estimation
  *  <li> Doppler serial search loop
@@ -49,6 +50,8 @@
 #define GNSS_SDR_PCPS_ACQUISITION_FINE_DOPPLER_CC_H_
 
 #include "gnss_synchro.h"
+#include "acq_conf.h"
+#include <armadillo>
 #include <gnuradio/block.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/fft/fft.h>
@@ -61,46 +64,32 @@ typedef boost::shared_ptr<pcps_acquisition_fine_doppler_cc>
     pcps_acquisition_fine_doppler_cc_sptr;
 
 pcps_acquisition_fine_doppler_cc_sptr
-pcps_make_acquisition_fine_doppler_cc(int max_dwells, unsigned int sampled_ms,
-    int doppler_max, int doppler_min, long fs_in, int samples_per_ms,
-    bool dump, std::string dump_filename);
+pcps_make_acquisition_fine_doppler_cc(const Acq_Conf& conf_);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition.
  *
- * Check \ref Navitec2012 "An Open Source Galileo E1 Software Receiver",
- * Algorithm 1, for a pseudocode description of this implementation.
  */
-
 class pcps_acquisition_fine_doppler_cc : public gr::block
 {
 private:
     friend pcps_acquisition_fine_doppler_cc_sptr
-    pcps_make_acquisition_fine_doppler_cc(int max_dwells, unsigned int sampled_ms,
-        int doppler_max, int doppler_min, long fs_in,
-        int samples_per_ms, bool dump,
-        std::string dump_filename);
-
-    pcps_acquisition_fine_doppler_cc(int max_dwells, unsigned int sampled_ms,
-        int doppler_max, int doppler_min, long fs_in,
-        int samples_per_ms, bool dump,
-        std::string dump_filename);
-
-    void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
-        int doppler_offset);
+    pcps_make_acquisition_fine_doppler_cc(const Acq_Conf& conf_);
+    pcps_acquisition_fine_doppler_cc(const Acq_Conf& conf_);
 
     int compute_and_accumulate_grid(gr_vector_const_void_star& input_items);
-    int estimate_Doppler(gr_vector_const_void_star& input_items);
+    int estimate_Doppler();
     float estimate_input_power(gr_vector_const_void_star& input_items);
-    double search_maximum();
+    double compute_CAF();
     void reset_grid();
     void update_carrier_wipeoff();
     void free_grid_memory();
+    bool start();
 
+    Acq_Conf acq_parameters;
     long d_fs_in;
     int d_samples_per_ms;
     int d_max_dwells;
-    unsigned int d_doppler_resolution;
     int d_gnuradio_forecast_samples;
     float d_threshold;
     std::string d_satellite_str;
@@ -114,6 +103,7 @@ private:
     unsigned long int d_sample_counter;
     gr_complex* d_carrier;
     gr_complex* d_fft_codes;
+    gr_complex* d_10_ms_buffer;
     float* d_magnitude;
 
     float** d_grid_data;
@@ -124,16 +114,21 @@ private:
     Gnss_Synchro* d_gnss_synchro;
     unsigned int d_code_phase;
     float d_doppler_freq;
-    float d_input_power;
     float d_test_statistics;
-    std::ofstream d_dump_file;
+    int d_positive_acq;
+
     int d_state;
     bool d_active;
     int d_well_count;
+    int d_n_samples_in_buffer;
     bool d_dump;
     unsigned int d_channel;
 
     std::string d_dump_filename;
+
+    arma::fmat grid_;
+    long int d_dump_number;
+    unsigned int d_dump_channel;
 
 public:
     /*!
@@ -187,6 +182,7 @@ public:
     inline void set_channel(unsigned int channel)
     {
         d_channel = channel;
+        d_dump_channel = d_channel;
     }
 
     /*!
@@ -215,6 +211,13 @@ public:
     void set_doppler_step(unsigned int doppler_step);
 
     /*!
+      * \brief If set to 1, ensures that acquisition starts at the
+      * first available sample.
+      * \param state - int=1 forces start of acquisition
+      */
+    void set_state(int state);
+
+    /*!
      * \brief Parallel Code Phase Search Acquisition signal processing.
      */
     int general_work(int noutput_items, gr_vector_int& ninput_items,
@@ -222,6 +225,14 @@ public:
         gr_vector_void_star& output_items);
 
     void forecast(int noutput_items, gr_vector_int& ninput_items_required);
+
+    /*!
+     * \brief Obtains the next power of 2 greater or equal to the input parameter
+     * \param n - Integer value to obtain the next power of 2.
+     */
+    unsigned int nextPowerOf2(unsigned int n);
+
+    void dump_results(int effective_fft_size);
 };
 
 #endif /* pcps_acquisition_fine_doppler_cc*/

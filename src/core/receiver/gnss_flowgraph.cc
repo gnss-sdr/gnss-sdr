@@ -4,6 +4,7 @@
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *         Carles Fernandez-Prades, 2014. cfernandez(at)cttc.es
+ *         Álvaro Cebrián Juan, 2018. acebrianjuan(at)gmail.com
  *
  * -------------------------------------------------------------------------
  *
@@ -494,6 +495,25 @@ void GNSSFlowgraph::connect()
             LOG(ERROR) << e.what();
             top_block_->disconnect_all();
             return;
+        }
+
+    // GNSS SYNCHRO MONITOR
+    if (enable_monitor_)
+        {
+            try
+                {
+                    for (unsigned int i = 0; i < channels_count_; i++)
+                        {
+                            top_block_->connect(observables_->get_right_block(), i, GnssSynchroMonitor_, i);
+                        }
+                }
+            catch (const std::exception& e)
+                {
+                    LOG(WARNING) << "Can't connect observables to Monitor block";
+                    LOG(ERROR) << e.what();
+                    top_block_->disconnect_all();
+                    return;
+                }
         }
 
     // Activate acquisition in enabled channels
@@ -1091,6 +1111,25 @@ void GNSSFlowgraph::init()
     set_channels_state();
     applied_actions_ = 0;
     DLOG(INFO) << "Blocks instantiated. " << channels_count_ << " channels.";
+
+    /*
+	 * Instantiate the receiver monitor block, if required
+	 */
+    enable_monitor_ = configuration_->property("Monitor.enable_monitor", false);
+
+    std::vector<std::string> udp_addr_vec;
+
+    std::string address_string = configuration_->property("Monitor.client_addresses", std::string("127.0.0.1"));
+    //todo: split the string in substrings using the separator and fill the address vector.
+    udp_addr_vec.push_back(address_string);
+
+    if (enable_monitor_)
+        {
+            GnssSynchroMonitor_ = gr::basic_block_sptr(new gnss_synchro_monitor(channels_count_,
+                configuration_->property("Monitor.output_rate_ms", 1),
+                configuration_->property("Monitor.udp_port", 1234),
+                udp_addr_vec));
+        }
 }
 
 

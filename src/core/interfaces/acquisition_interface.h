@@ -61,6 +61,7 @@ public:
     virtual void set_doppler_step(unsigned int doppler_step) = 0;
     virtual void init() = 0;
     virtual void set_local_code() = 0;
+    virtual void set_state(int state) = 0;
     virtual signed int mag() = 0;
     virtual void reset() = 0;
 };

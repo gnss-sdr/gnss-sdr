@@ -493,7 +493,6 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
     switch (d_state)
         {
         case 0:  // S0. StandBy
-            std::cout << "S0.";
             if (d_active == true)
                 {
                     reset_grid();
@@ -506,7 +505,6 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
                 }
             break;
         case 1:  // S1. ComputeGrid
-            std::cout << "S1.";
             compute_and_accumulate_grid(input_items);
             d_well_count++;
             if (d_well_count >= d_max_dwells)
@@ -528,10 +526,10 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
                 }
             d_n_samples_in_buffer = 0;
             // Record results to file if required
-            //if (d_dump and d_channel == d_dump_channel)
-            //    {
-            //        dump_results(d_fft_size);
-            //    }
+            if (d_dump and d_channel == d_dump_channel)
+                {
+                    dump_results(d_fft_size);
+                }
             d_sample_counter += d_fft_size;  // sample counter
             consume_each(d_fft_size);
             break;

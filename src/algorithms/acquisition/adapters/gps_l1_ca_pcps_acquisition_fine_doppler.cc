@@ -33,12 +33,12 @@
  */
 
 #include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
-#include <glog/logging.h>
 #include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
 #include "acq_conf.h"
+#include <glog/logging.h>
 
 using google::LogMessage;
 
@@ -165,6 +165,12 @@ void GpsL1CaPcpsAcquisitionFineDoppler::set_local_code()
 void GpsL1CaPcpsAcquisitionFineDoppler::reset()
 {
     acquisition_cc_->set_active(true);
+}
+
+
+void GpsL1CaPcpsAcquisitionFineDoppler::set_state(int state)
+{
+    acquisition_cc_->set_state(state);
 }
 
 

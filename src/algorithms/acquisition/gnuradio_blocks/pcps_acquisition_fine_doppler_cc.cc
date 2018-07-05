@@ -400,7 +400,7 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler()
 
     //case even
     int counter = 0;
-    float* fftFreqBins= new float[fft_size_extended];
+    float *fftFreqBins = new float[fft_size_extended];
 
     std::fill_n(fftFreqBins, fft_size_extended, 0.0);
 
@@ -414,7 +414,6 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler()
         {
             fftFreqBins[counter] = ((-static_cast<float>(d_fs_in) / 2.0) * static_cast<float>(k)) / (static_cast<float>(fft_size_extended) / 2.0);
             counter++;
-
         }
 
     // 5. Update the Doppler estimation in Hz
@@ -525,11 +524,6 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
                     d_state = 5;  //negative acquisition
                 }
             d_n_samples_in_buffer = 0;
-            // Record results to file if required
-            if (d_dump and d_channel == d_dump_channel)
-                {
-                    dump_results(d_fft_size);
-                }
             d_sample_counter += d_fft_size;  // sample counter
             consume_each(d_fft_size);
             break;
@@ -562,6 +556,11 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
             DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
             d_positive_acq = 1;
             d_active = false;
+            // Record results to file if required
+            if (d_dump and d_channel == d_dump_channel)
+                {
+                    dump_results(d_fft_size);
+                }
             // Send message to channel port //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
             this->message_port_pub(pmt::mp("events"), pmt::from_long(1));
             d_state = 0;
@@ -581,6 +580,11 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
             DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
             d_positive_acq = 0;
             d_active = false;
+            // Record results to file if required
+            if (d_dump and d_channel == d_dump_channel)
+                {
+                    dump_results(d_fft_size);
+                }
             // Send message to channel port //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
             this->message_port_pub(pmt::mp("events"), pmt::from_long(2));
             d_state = 0;

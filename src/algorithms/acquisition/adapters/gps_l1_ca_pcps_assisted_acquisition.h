@@ -120,7 +120,7 @@ public:
      * \brief Restart acquisition algorithm
      */
     void reset() override;
-    void set_state(int state) override{};
+    void set_state(int state __attribute__((unused))) override{};
 
 private:
     pcps_assisted_acquisition_cc_sptr acquisition_cc_;

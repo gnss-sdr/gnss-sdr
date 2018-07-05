@@ -51,12 +51,12 @@
 
 #include "gnss_synchro.h"
 #include "acq_conf.h"
+#include <armadillo>
 #include <gnuradio/block.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/fft/fft.h>
 #include <fstream>
 #include <string>
-#include <armadillo>
 
 class pcps_acquisition_fine_doppler_cc;
 
@@ -70,7 +70,6 @@ pcps_make_acquisition_fine_doppler_cc(const Acq_Conf& conf_);
  * \brief This class implements a Parallel Code Phase Search Acquisition.
  *
  */
-
 class pcps_acquisition_fine_doppler_cc : public gr::block
 {
 private:
@@ -130,7 +129,6 @@ private:
     arma::fmat grid_;
     long int d_dump_number;
     unsigned int d_dump_channel;
-
 
 public:
     /*!
@@ -211,6 +209,13 @@ public:
      * \param doppler_step - Frequency bin of the search grid [Hz].
      */
     void set_doppler_step(unsigned int doppler_step);
+
+    /*!
+      * \brief If set to 1, ensures that acquisition starts at the
+      * first available sample.
+      * \param state - int=1 forces start of acquisition
+      */
+    void set_state(int state);
 
     /*!
      * \brief Parallel Code Phase Search Acquisition signal processing.

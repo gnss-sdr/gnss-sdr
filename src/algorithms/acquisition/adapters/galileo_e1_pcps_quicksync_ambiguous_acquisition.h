@@ -32,11 +32,11 @@
 #ifndef GNSS_SDR_GALILEO_E1_PCPS_QUICKSYNC_AMBIGUOUS_ACQUISITION_H_
 #define GNSS_SDR_GALILEO_E1_PCPS_QUICKSYNC_AMBIGUOUS_ACQUISITION_H_
 
-#include <string>
-#include <gnuradio/blocks/stream_to_vector.h>
 #include "gnss_synchro.h"
 #include "acquisition_interface.h"
 #include "pcps_quicksync_acquisition_cc.h"
+#include <gnuradio/blocks/stream_to_vector.h>
+#include <string>
 
 
 class ConfigurationInterface;
@@ -127,7 +127,7 @@ public:
     /*!
      * \brief If state = 1, it forces the block to start acquiring from the first sample
      */
-    void set_state(int state);
+    void set_state(int state) override;
 
 private:
     ConfigurationInterface* configuration_;

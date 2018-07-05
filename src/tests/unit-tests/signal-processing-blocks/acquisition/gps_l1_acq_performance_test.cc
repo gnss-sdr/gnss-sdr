@@ -33,6 +33,8 @@
 #include "signal_generator_flags.h"
 #include "tracking_true_obs_reader.h"
 #include "true_observables_reader.h"
+#include "gps_l1_ca_pcps_acquisition.h"
+#include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
 #include "display.h"
 #include "gnuplot_i.h"
 #include <boost/filesystem.hpp>
@@ -42,6 +44,7 @@
 
 DEFINE_string(config_file_ptest, std::string(""), "File containing alternative configuration parameters for the acquisition performance test.");
 DEFINE_string(acq_test_input_file, std::string(""), "File containing raw signal data, must be in int8_t format. The signal generator will not be used.");
+DEFINE_string(acq_test_implementation, std::string("GPS_L1_CA_PCPS_Acquisition"), "Acquisition block implementation under test. Alternative: GPS_L1_CA_PCPS_Acquisition_Fine_Doppler");
 
 DEFINE_int32(acq_test_doppler_max, 5000, "Maximum Doppler, in Hz");
 DEFINE_int32(acq_test_doppler_step, 125, "Doppler step, in Hz.");
@@ -200,7 +203,6 @@ protected:
     {
     }
 
-
     std::vector<double> cn0_vector;
     std::vector<float> pfa_vector;
 
@@ -223,7 +225,7 @@ protected:
 
     gr::msg_queue::sptr queue;
     gr::top_block_sptr top_block;
-    std::shared_ptr<GpsL1CaPcpsAcquisition> acquisition;
+    std::shared_ptr<AcquisitionInterface> acquisition;
     std::shared_ptr<InMemoryConfiguration> config;
     std::shared_ptr<FileConfiguration> config_f;
     Gnss_Synchro gnss_synchro;
@@ -235,7 +237,7 @@ protected:
     int message;
     boost::thread ch_thread;
 
-    std::string implementation = "GPS_L1_CA_PCPS_Acquisition";
+    std::string implementation = FLAGS_acq_test_implementation;
 
     const double baseband_sampling_freq = static_cast<double>(FLAGS_fs_gen_sps);
     const int coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
@@ -379,6 +381,7 @@ int AcquisitionPerformanceTest::configure_receiver(double cn0, float pfa, unsign
             config->set_property("Acquisition_1C.implementation", implementation);
             config->set_property("Acquisition_1C.item_type", "gr_complex");
             config->set_property("Acquisition_1C.doppler_max", std::to_string(doppler_max));
+            config->set_property("Acquisition_1C.doppler_min", std::to_string(-doppler_max));
             config->set_property("Acquisition_1C.doppler_step", std::to_string(doppler_step));
 
             config->set_property("Acquisition_1C.threshold", std::to_string(pfa));
@@ -457,23 +460,39 @@ int AcquisitionPerformanceTest::run_receiver()
 
     int nsamples = floor(config->property("GNSS-SDR.internal_fs_sps", 2000000) * generated_signal_duration_s);
     boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+    if (implementation.compare("GPS_L1_CA_PCPS_Acquisition") == 0)
+        {
+            acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition_1C", 1, 0);
+        }
+    else
+        {
+            if (implementation.compare("GPS_L1_CA_PCPS_Acquisition_Fine_Doppler") == 0)
+                {
+                    acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFineDoppler>(config.get(), "Acquisition_1C", 1, 0);
+                }
+            else
+                {
+                    bool aux = false;
+                    EXPECT_EQ(true, aux);
+                }
+        }
 
-    acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition_1C", 1, 0);
     acquisition->set_gnss_synchro(&gnss_synchro);
     acquisition->set_channel(0);
-    acquisition->set_local_code();
     acquisition->set_doppler_max(config->property("Acquisition_1C.doppler_max", 10000));
     acquisition->set_doppler_step(config->property("Acquisition_1C.doppler_step", 500));
     acquisition->set_threshold(config->property("Acquisition_1C.threshold", 0.0));
+    acquisition->init();
+    acquisition->set_local_code();
+
     acquisition->set_state(1);  // Ensure that acquisition starts at the first sample
     acquisition->connect(top_block);
-    top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
 
-    acquisition->init();
-
+    acquisition->reset();
     top_block->connect(file_source, 0, gr_interleaved_char_to_complex, 0);
     top_block->connect(gr_interleaved_char_to_complex, 0, valve, 0);
     top_block->connect(valve, 0, acquisition->get_left_block(), 0);
+    top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
 
     start_queue();
 
@@ -534,6 +553,14 @@ void AcquisitionPerformanceTest::plot_results()
                             Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                             Gnuplot g1("linespoints");
+                            if (FLAGS_show_plots)
+                                {
+                                    g1.showonscreen();  // window output
+                                }
+                            else
+                                {
+                                    g1.disablescreen();
+                                }
                             g1.cmd("set font \"Times,18\"");
                             g1.set_title("Receiver Operating Characteristic for GPS L1 C/A acquisition");
                             g1.cmd("set label 1 \"" + std::string("Coherent integration time: ") + std::to_string(config->property("Acquisition_1C.coherent_integration_time_ms", 1)) + " ms, Non-coherent integrations: " + std::to_string(config->property("Acquisition_1C.max_dwells", 1)) + " \" at screen 0.12, 0.83 font \"Times,16\"");
@@ -560,9 +587,16 @@ void AcquisitionPerformanceTest::plot_results()
                             g1.set_legend();
                             g1.savetops("ROC");
                             g1.savetopdf("ROC", 18);
-                            if (FLAGS_show_plots) g1.showonscreen();  // window output
 
                             Gnuplot g2("linespoints");
+                            if (FLAGS_show_plots)
+                                {
+                                    g2.showonscreen();  // window output
+                                }
+                            else
+                                {
+                                    g2.disablescreen();
+                                }
                             g2.cmd("set font \"Times,18\"");
                             g2.set_title("Receiver Operating Characteristic for GPS L1 C/A valid acquisition");
                             g2.cmd("set label 1 \"" + std::string("Coherent integration time: ") + std::to_string(config->property("Acquisition_1C.coherent_integration_time_ms", 1)) + " ms, Non-coherent integrations: " + std::to_string(config->property("Acquisition_1C.max_dwells", 1)) + " \" at screen  0.12, 0.83 font \"Times,16\"");
@@ -589,7 +623,6 @@ void AcquisitionPerformanceTest::plot_results()
                             g2.set_legend();
                             g2.savetops("ROC-valid-detection");
                             g2.savetopdf("ROC-valid-detection", 18);
-                            if (FLAGS_show_plots) g2.showonscreen();  // window output
                         }
                     catch (const GnuplotException& ge)
                         {

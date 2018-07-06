@@ -27,6 +27,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
     ${GLOG_INCLUDE_DIRS}
     ${GFlags_INCLUDE_DIRS}
+    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
 )
 

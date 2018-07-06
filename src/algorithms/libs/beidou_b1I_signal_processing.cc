@@ -71,7 +71,7 @@ std::cout << "MY SATELLITE " << _prn << "!" << std::endl;
     for (lcv = 0; lcv < _code_length; lcv++)
         {
             G1[lcv] = G1_register[0];
-            G2[lcv] = G2_register[-(phase1[prn_idx] - 11) ] ^ G2_register[-(phase2[prn_idx]) - 11];
+            G2[lcv] = G2_register[-(phase1[prn_idx] - 11) ] ^ G2_register[-(phase2[prn_idx] - 11) ];
 
             feedback1 = (G1_register[0] + G1_register[1] + G1_register[2] + G1_register[3] + G1_register[4] + G1_register[10]) & 0x1;
             feedback2 = (G2_register[0] + G2_register[2] + G2_register[3] + G2_register[6] + G2_register[7] + G2_register[8] + G2_register[9] + G2_register[10]) & 0x1;
@@ -103,6 +103,7 @@ std::cout << "MY SATELLITE " << _prn << "!" << std::endl;
                 {
                     _dest[lcv] = -1;
                 }
+
             delay++;
             delay %= _code_length;
         }

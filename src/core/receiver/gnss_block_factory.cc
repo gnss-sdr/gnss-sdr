@@ -1143,7 +1143,6 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
     if (implementation.compare("Pass_Through") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new Pass_Through(configuration.get(), role, in_streams, out_streams));
-                    std::cout << "Input streams: " <<in_streams<< "Output streams: " <<out_streams <<"GNSS-SDR program ended." << std::endl;
 
             block = std::move(block_);
         }

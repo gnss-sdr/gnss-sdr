@@ -53,15 +53,9 @@ std::cout << "MY SATELLITE " << _prn << "!" << std::endl;
         705};
     const signed int phase1[37] = {1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 8, 8, 8, 9, 9, 10};
     const signed int phase2[37] = {3, 4, 5, 6, 8, 9, 10, 11, 7, 4, 5, 6, 8, 9, 10, 11, 5, 6, 8, 9, 10, 11, 6, 8, 9, 10, 11, 8, 9, 10, 11, 9, 10, 11, 10, 11, 11};
+
     // compute delay array index for given PRN number
-//    if (120 <= _prn && _prn <= 138)
-//       {
-//            prn_idx = _prn - 88;  // SBAS PRNs are at array indices 31 to 50 (offset: -120+33-1 =-88)
-//        }
-//    else
-//        {
-            prn_idx = _prn - 1;
-//        }
+    prn_idx = _prn - 1;
 
     /* A simple error check */
     if ((prn_idx < 0) || (prn_idx > 51))
@@ -77,7 +71,7 @@ std::cout << "MY SATELLITE " << _prn << "!" << std::endl;
     for (lcv = 0; lcv < _code_length; lcv++)
         {
             G1[lcv] = G1_register[0];
-            G2[lcv] = G2_register[0];//G2_register[phase1[prn_idx]] ^ G2_register[phase2[prn_idx]];
+            G2[lcv] = G2_register[-(phase1[prn_idx] - 11) ] ^ G2_register[-(phase2[prn_idx]) - 11];
 
             feedback1 = (G1_register[0] + G1_register[1] + G1_register[2] + G1_register[3] + G1_register[4] + G1_register[10]) & 0x1;
             feedback2 = (G2_register[0] + G2_register[2] + G2_register[3] + G2_register[6] + G2_register[7] + G2_register[8] + G2_register[9] + G2_register[10]) & 0x1;

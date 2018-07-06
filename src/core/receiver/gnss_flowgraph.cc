@@ -972,7 +972,8 @@ void GNSSFlowgraph::set_signals_list()
     std::set<unsigned int> available_glonass_prn = {1, 2, 3, 4, 9, 10, 11, 12, 18, 19, 20, 21, 24};
 
     std::set<unsigned int> available_beidou_prn = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-        11, 12, 13, 17, 31, 32, 33, 34, 35};
+        11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+	30, 31, 32, 33, 34, 35};
 
     std::string sv_list = configuration_->property("Galileo.prns", std::string(""));
 
@@ -992,7 +993,7 @@ void GNSSFlowgraph::set_signals_list()
 
     sv_list = configuration_->property("GPS.prns", std::string(""));
 
-    if (sv_list.length() > 0)
+if (sv_list.length() > 0)
         {
             // Reset the available prns:
             std::set<unsigned int> tmp_set;
@@ -1038,6 +1039,7 @@ void GNSSFlowgraph::set_signals_list()
                 }
         }
     sv_list = configuration_->property("Beidou.prns", std::string(""));
+ 
 
     if (sv_list.length() > 0)
         {
@@ -1186,6 +1188,7 @@ void GNSSFlowgraph::set_signals_list()
                     available_GNSS_signals_.push_back(Gnss_Signal(
                         Gnss_Satellite(std::string("Beidou"), *available_gnss_prn_iter),
                         std::string("B1")));
+
                 }
         }
 

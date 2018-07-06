@@ -34,6 +34,7 @@
 #define BEIDOU_B1I_SDR_SIGNAL_PROCESSING_H_
 
 #include <complex>
+#include <iostream>
 
 //!Generates int GPS L1 C/A code for the desired SV ID and code shift
 void beidou_b1i_code_gen_int(int* _dest, signed int _prn, unsigned int _chip_shift);

@@ -46,23 +46,22 @@ void beidou_b1i_code_gen_int(int* _dest, signed int _prn, unsigned int _chip_shi
     unsigned int lcv, lcv2;
     unsigned int delay;
     signed int prn_idx;
-
+std::cout << "MY SATELLITE " << _prn << "!" << std::endl;
     /* G2 Delays as defined in GPS-ISD-200D */
-    const signed int delays[51] = {5 /*PRN1*/, 6, 7, 8, 17, 18, 139, 140, 141, 251, 252, 254, 255, 256, 257, 258, 469, 470, 471, 472,
-        473, 474, 509, 512, 513, 514, 515, 516, 859, 860, 861, 862 /*PRN32*/,
-        145 /*PRN120*/, 175, 52, 21, 237, 235, 886, 657, 634, 762,
-        355, 1012, 176, 603, 130, 359, 595, 68, 386 /*PRN138*/};
+    const signed int delays[33] = {712 /*PRN1*/, 1581, 1414, 1550, 581, 771, 1311, 1043, 1549, 359, 710, 1579, 1548, 1103, 579, 769, 358, 709, 1411, 1547,
+        1102, 578, 357, 1577, 1410, 1546, 1101, 707, 1576, 1409, 1545, 354 /*PRN32*/,
+        705};
     const signed int phase1[37] = {1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 8, 8, 8, 9, 9, 10};
     const signed int phase2[37] = {3, 4, 5, 6, 8, 9, 10, 11, 7, 4, 5, 6, 8, 9, 10, 11, 5, 6, 8, 9, 10, 11, 6, 8, 9, 10, 11, 8, 9, 10, 11, 9, 10, 11, 10, 11, 11};
     // compute delay array index for given PRN number
-    if (120 <= _prn && _prn <= 138)
-        {
-            prn_idx = _prn - 88;  // SBAS PRNs are at array indices 31 to 50 (offset: -120+33-1 =-88)
-        }
-    else
-        {
+//    if (120 <= _prn && _prn <= 138)
+//       {
+//            prn_idx = _prn - 88;  // SBAS PRNs are at array indices 31 to 50 (offset: -120+33-1 =-88)
+//        }
+//    else
+//        {
             prn_idx = _prn - 1;
-        }
+//        }
 
     /* A simple error check */
     if ((prn_idx < 0) || (prn_idx > 51))
@@ -78,7 +77,7 @@ void beidou_b1i_code_gen_int(int* _dest, signed int _prn, unsigned int _chip_shi
     for (lcv = 0; lcv < _code_length; lcv++)
         {
             G1[lcv] = G1_register[0];
-            G2[lcv] = G2_register[phase1[prn_idx]] ^ G2_register[phase2[prn_idx]];
+            G2[lcv] = G2_register[0];//G2_register[phase1[prn_idx]] ^ G2_register[phase2[prn_idx]];
 
             feedback1 = (G1_register[0] + G1_register[1] + G1_register[2] + G1_register[3] + G1_register[4] + G1_register[10]) & 0x1;
             feedback2 = (G2_register[0] + G2_register[2] + G2_register[3] + G2_register[6] + G2_register[7] + G2_register[8] + G2_register[9] + G2_register[10]) & 0x1;
@@ -94,7 +93,7 @@ void beidou_b1i_code_gen_int(int* _dest, signed int _prn, unsigned int _chip_shi
         }
 
     /* Set the delay */
-    delay = _code_length /*- delays[prn_idx]*/;
+    delay = _code_length - delays[prn_idx];
     delay += _chip_shift;
     delay %= _code_length;
 

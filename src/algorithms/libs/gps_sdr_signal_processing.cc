@@ -31,7 +31,6 @@
  */
 
 #include "gps_sdr_signal_processing.h"
-
 auto auxCeil = [](float x) { return static_cast<int>(static_cast<long>((x) + 1)); };
 
 void gps_l1_ca_code_gen_int(int* _dest, signed int _prn, unsigned int _chip_shift)

@@ -624,7 +624,6 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
      * 5. Compute the test statistics and compare to the threshold
      * 6. Declare positive or negative acquisition using a message port
      */
-
     gr::thread::scoped_lock lk(d_setlock);
     if (!d_active or d_worker_active)
         {

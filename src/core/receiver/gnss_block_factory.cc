@@ -94,6 +94,7 @@
 #include "glonass_l2_ca_dll_pll_tracking.h"
 #include "glonass_l2_ca_dll_pll_c_aid_tracking.h"
 #include "gps_l5_dll_pll_tracking.h"
+#include "beidou_b1i_dll_pll_tracking.h"
 #include "gps_l1_ca_telemetry_decoder.h"
 #include "gps_l2c_telemetry_decoder.h"
 #include "gps_l5_telemetry_decoder.h"
@@ -101,6 +102,7 @@
 #include "galileo_e5a_telemetry_decoder.h"
 #include "glonass_l1_ca_telemetry_decoder.h"
 #include "glonass_l2_ca_telemetry_decoder.h"
+#include "beidou_b1i_telemetry_decoder.h"
 #include "sbas_l1_telemetry_decoder.h"
 #include "hybrid_observables.h"
 #include "rtklib_pvt.h"
@@ -826,10 +828,13 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_B1(
             LOG(ERROR) << "Acquisition and Tracking blocks must have the same input data type!";
         }
     config->set_property("Channel.item_type", acq_item_type);
-
+    std::cout << "Now Channel pass Through" << std::endl;
     std::unique_ptr<GNSSBlockInterface> pass_through_ = GetBlock(configuration, "Channel", "Pass_Through", 1, 1, queue);
+    std::cout << "Now Acquisition" << std::endl;
     std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_B1" + appendix1, acq, 1, 0);
+    std::cout << "Now Tracking" << std::endl;
     std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_B1" + appendix2, trk, 1, 1);
+    std::cout << "Now Telemetry Decoder" << std::endl;
     std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_B1" + appendix3, tlm, 1, 1);
 
     std::unique_ptr<GNSSBlockInterface> channel_(new Channel(configuration.get(), channel, std::move(pass_through_),
@@ -1138,6 +1143,8 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
     if (implementation.compare("Pass_Through") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new Pass_Through(configuration.get(), role, in_streams, out_streams));
+                    std::cout << "Input streams: " <<in_streams<< "Output streams: " <<out_streams <<"GNSS-SDR program ended." << std::endl;
+
             block = std::move(block_);
         }
 
@@ -1649,6 +1656,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                 out_streams));
             block = std::move(block_);
         }
+    else if (implementation.compare("BEIDOU_B1I_DLL_PLL_Tracking") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new GpsL1CaDllPllTracking(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
     // TELEMETRY DECODERS ----------------------------------------------------------
     else if (implementation.compare("GPS_L1_CA_Telemetry_Decoder") == 0)
         {
@@ -1698,6 +1711,13 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                 out_streams));
             block = std::move(block_);
         }
+    else if (implementation.compare("BEIDOU_B1I_Telemetry_Decoder") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new GpsL1CaTelemetryDecoder(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
+
     // OBSERVABLES -----------------------------------------------------------------
     else if ((implementation.compare("Hybrid_Observables") == 0) || (implementation.compare("GPS_L1_CA_Observables") == 0) || (implementation.compare("GPS_L2C_Observables") == 0) ||
              (implementation.compare("Galileo_E5A_Observables") == 0))
@@ -1854,6 +1874,13 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
                 out_streams));
             block = std::move(block_);
         }
+    else if (implementation.compare("BEIDOU_B1I_PCPS_Acquisition") == 0)
+        {
+            std::unique_ptr<AcquisitionInterface> block_(new BeidouB1iPcpsAcquisition(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
+
     else
         {
             // Log fatal. This causes execution to stop.
@@ -1960,6 +1987,13 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
                 out_streams));
             block = std::move(block_);
         }
+    else if (implementation.compare("BEIDOU_B1I_DLL_PLL_Tracking") == 0)
+        {
+            std::unique_ptr<TrackingInterface> block_(new GpsL1CaDllPllTracking(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
+
     else
         {
             // Log fatal. This causes execution to stop.
@@ -2026,6 +2060,14 @@ std::unique_ptr<TelemetryDecoderInterface> GNSSBlockFactory::GetTlmBlock(
                 out_streams));
             block = std::move(block_);
         }
+    else if (implementation.compare("BEIDOU_B1I_Telemetry_Decoder") == 0)
+        {
+            std::unique_ptr<TelemetryDecoderInterface> block_(new GpsL1CaTelemetryDecoder(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
+
+
     else
         {
             // Log fatal. This causes execution to stop.

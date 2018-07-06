@@ -112,10 +112,12 @@ Pass_Through::Pass_Through(ConfigurationInterface* configuration, std::string ro
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
+            LOG(ERROR) << in_streams_;
         }
     if (out_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one output stream";
+            LOG(ERROR) << out_streams_;
         }
 }
 

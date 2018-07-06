@@ -795,7 +795,14 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                             for (unsigned int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
                                                 {
                                                     Gnuplot g1("linespoints");
-                                                    if (FLAGS_show_plots) g1.showonscreen();  // window output
+                                                    if (FLAGS_show_plots)
+                                                        {
+                                                            g1.showonscreen();  // window output
+                                                        }
+                                                    else
+                                                        {
+                                                            g1.disablescreen();
+                                                        }
                                                     g1.set_title(std::to_string(generator_CN0_values.at(current_cn0_idx)) + " dB-Hz, " + "PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz" + "GPS L1 C/A (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
                                                     g1.set_grid();
                                                     g1.set_xlabel("Time [s]");
@@ -809,7 +816,14 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                                     g1.savetopdf("Correlators_outputs" + std::to_string(generator_CN0_values.at(current_cn0_idx)), 18);
                                                 }
                                             Gnuplot g2("points");
-                                            if (FLAGS_show_plots) g2.showonscreen();  // window output
+                                            if (FLAGS_show_plots)
+                                                {
+                                                    g2.showonscreen();  // window output
+                                                }
+                                            else
+                                                {
+                                                    g2.disablescreen();
+                                                }
                                             g2.set_multiplot(ceil(static_cast<float>(generator_CN0_values.size()) / 2.0),
                                                 ceil(static_cast<float>(generator_CN0_values.size()) / 2));
                                             for (unsigned int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
@@ -840,7 +854,14 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                             g3.set_legend();
                                             g3.savetops("CN0_output");
                                             g3.savetopdf("CN0_output", 18);
-                                            if (FLAGS_show_plots) g3.showonscreen();  // window output
+                                            if (FLAGS_show_plots)
+                                                {
+                                                    g3.showonscreen();  // window output
+                                                }
+                                            else
+                                                {
+                                                    g3.disablescreen();
+                                                }
                                         }
 
                                     //PLOT ERROR FIGURES (only if it is used the signal generator)
@@ -849,7 +870,14 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                             if (FLAGS_plot_detail_level >= 1)
                                                 {
                                                     Gnuplot g5("points");
-                                                    if (FLAGS_show_plots) g5.showonscreen();  // window output
+                                                    if (FLAGS_show_plots)
+                                                        {
+                                                            g5.showonscreen();  // window output
+                                                        }
+                                                    else
+                                                        {
+                                                            g5.disablescreen();
+                                                        }
                                                     g5.set_title("Code delay error, PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
                                                     g5.set_grid();
                                                     g5.set_xlabel("Time [s]");
@@ -874,7 +902,14 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
 
 
                                                     Gnuplot g6("points");
-                                                    if (FLAGS_show_plots) g6.showonscreen();  // window output
+                                                    if (FLAGS_show_plots)
+                                                        {
+                                                            g6.showonscreen();  // window output
+                                                        }
+                                                    else
+                                                        {
+                                                            g6.disablescreen();
+                                                        }
                                                     g6.set_title("Accumulated carrier phase error, PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
                                                     g6.set_grid();
                                                     g6.set_xlabel("Time [s]");
@@ -898,7 +933,14 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                                     g6.savetopdf("Carrier_phase_error_output", 18);
 
                                                     Gnuplot g4("points");
-                                                    if (FLAGS_show_plots) g4.showonscreen();  // window output
+                                                    if (FLAGS_show_plots)
+                                                        {
+                                                            g4.showonscreen();  // window output
+                                                        }
+                                                    else
+                                                        {
+                                                            g4.disablescreen();
+                                                        }
                                                     g4.set_multiplot(ceil(static_cast<float>(generator_CN0_values.size()) / 2.0),
                                                         ceil(static_cast<float>(generator_CN0_values.size()) / 2));
                                                     for (unsigned int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values_sweep_copy.at(config_idx).size(); current_cn0_idx++)
@@ -942,7 +984,14 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                             //plot metrics
 
                             Gnuplot g7("linespoints");
-                            if (FLAGS_show_plots) g7.showonscreen();  // window output
+                            if (FLAGS_show_plots)
+                                {
+                                    g7.showonscreen();  // window output
+                                }
+                            else
+                                {
+                                    g7.disablescreen();
+                                }
                             g7.set_title("Doppler error metrics (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
                             g7.set_grid();
                             g7.set_xlabel("CN0 [dB-Hz]");

@@ -87,7 +87,7 @@ std::cout << "MY SATELLITE " << _prn << "!" << std::endl;
         }
 
     /* Set the delay */
-    delay = _code_length - delays[prn_idx];
+    delay = _code_length - delays[prn_idx]*0; //**********************************
     delay += _chip_shift;
     delay %= _code_length;
 
@@ -105,6 +105,7 @@ std::cout << "MY SATELLITE " << _prn << "!" << std::endl;
                 }
 
             delay++;
+//std::cout  << _dest[lcv] << " ";
             delay %= _code_length;
         }
 }

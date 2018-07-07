@@ -94,11 +94,9 @@ private:
     float d_threshold;
     std::string d_satellite_str;
     int d_config_doppler_max;
-    int d_config_doppler_min;
 
     int d_num_doppler_points;
     int d_doppler_step;
-    unsigned int d_sampled_ms;
     unsigned int d_fft_size;
     unsigned long int d_sample_counter;
     gr_complex* d_carrier;

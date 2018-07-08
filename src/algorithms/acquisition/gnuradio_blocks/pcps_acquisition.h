@@ -106,12 +106,14 @@ private:
     float d_input_power;
     float d_test_statistics;
     float* d_magnitude;
+    float** d_magnitude_grid;
+    float* d_tmp_buffer;
     long d_old_freq;
     int d_state;
     unsigned int d_channel;
     unsigned int d_doppler_step;
     float d_doppler_center_step_two;
-    unsigned int d_well_count;
+    unsigned int d_num_noncoherent_integrations_counter;
     unsigned int d_fft_size;
     unsigned int d_num_doppler_bins;
     unsigned long int d_sample_counter;
@@ -150,7 +152,7 @@ public:
     }
 
     /*!
-      * \brief Initializes acquisition algorithm.
+      * \brief Initializes acquisition algorithm and reserves memory.
       */
     void init();
 

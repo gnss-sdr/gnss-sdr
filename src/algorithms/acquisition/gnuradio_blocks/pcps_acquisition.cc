@@ -63,7 +63,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
     d_positive_acq = 0;
     d_state = 0;
     d_old_freq = 0;
-    d_well_count = 0;
+    d_num_noncoherent_integrations_counter = 0;
     d_fft_size = acq_parameters.sampled_ms * acq_parameters.samples_per_ms;
     d_mag = 0;
     d_input_power = 0.0;
@@ -81,6 +81,8 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
         {
             d_cshort = true;
         }
+
+    d_tmp_buffer = static_cast<float*>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
 
     // COD:
     // Experimenting with the overlap/save technique for handling bit trannsitions
@@ -110,6 +112,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
     d_gnss_synchro = 0;
     d_grid_doppler_wipeoffs = nullptr;
     d_grid_doppler_wipeoffs_step_two = nullptr;
+    d_magnitude_grid = nullptr;
     d_worker_active = false;
     d_data_buffer = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     if (d_cshort)
@@ -134,8 +137,10 @@ pcps_acquisition::~pcps_acquisition()
             for (unsigned int i = 0; i < d_num_doppler_bins; i++)
                 {
                     volk_gnsssdr_free(d_grid_doppler_wipeoffs[i]);
+                    volk_gnsssdr_free(d_magnitude_grid[i]);
                 }
             delete[] d_grid_doppler_wipeoffs;
+            delete[] d_magnitude_grid;
         }
     if (acq_parameters.make_2_steps)
         {
@@ -147,6 +152,7 @@ pcps_acquisition::~pcps_acquisition()
         }
     volk_gnsssdr_free(d_fft_codes);
     volk_gnsssdr_free(d_magnitude);
+    volk_gnsssdr_free(d_tmp_buffer);
     delete d_ifft;
     delete d_fft_if;
     volk_gnsssdr_free(d_data_buffer);
@@ -243,9 +249,12 @@ void pcps_acquisition::init()
                     d_grid_doppler_wipeoffs_step_two[doppler_index] = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
                 }
         }
+
+    d_magnitude_grid = new float*[d_num_doppler_bins];
     for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+            d_magnitude_grid[doppler_index] = static_cast<float*>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
             int doppler = -static_cast<int>(acq_parameters.doppler_max) + d_doppler_step * doppler_index;
             update_local_carrier(d_grid_doppler_wipeoffs[doppler_index], d_fft_size, d_old_freq + doppler);
         }
@@ -268,6 +277,7 @@ void pcps_acquisition::update_grid_doppler_wipeoffs()
         }
 }
 
+
 void pcps_acquisition::update_grid_doppler_wipeoffs_step2()
 {
     for (unsigned int doppler_index = 0; doppler_index < acq_parameters.num_doppler_bins_step2; doppler_index++)
@@ -276,6 +286,7 @@ void pcps_acquisition::update_grid_doppler_wipeoffs_step2()
             update_local_carrier(d_grid_doppler_wipeoffs_step_two[doppler_index], d_fft_size, d_doppler_center_step_two + doppler);
         }
 }
+
 
 void pcps_acquisition::set_state(int state)
 {
@@ -286,7 +297,6 @@ void pcps_acquisition::set_state(int state)
             d_gnss_synchro->Acq_delay_samples = 0.0;
             d_gnss_synchro->Acq_doppler_hz = 0.0;
             d_gnss_synchro->Acq_samplestamp_samples = 0;
-            d_well_count = 0;
             d_mag = 0.0;
             d_input_power = 0.0;
             d_test_statistics = 0.0;
@@ -434,7 +444,7 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
 
     d_input_power = 0.0;
     d_mag = 0.0;
-    d_well_count++;
+    d_num_noncoherent_integrations_counter++;
 
     DLOG(INFO) << "Channel: " << d_channel
                << " , doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
@@ -474,14 +484,22 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
 
                     // Search maximum
                     size_t offset = (acq_parameters.bit_transition_flag ? effective_fft_size : 0);
-                    volk_32fc_magnitude_squared_32f(d_magnitude, d_ifft->get_outbuf() + offset, effective_fft_size);
-                    volk_gnsssdr_32f_index_max_32u(&indext, d_magnitude, effective_fft_size);
-                    magt = d_magnitude[indext];
+                    if (d_num_noncoherent_integrations_counter == 1)
+                        {
+                            volk_32fc_magnitude_squared_32f(d_magnitude_grid[doppler_index], d_ifft->get_outbuf() + offset, effective_fft_size);
+                        }
+                    else
+                        {
+                            volk_32fc_magnitude_squared_32f(d_tmp_buffer, d_ifft->get_outbuf() + offset, effective_fft_size);
+                            volk_32f_x2_add_32f(d_magnitude_grid[doppler_index], d_magnitude_grid[doppler_index], d_tmp_buffer, effective_fft_size);
+                        }
+                    volk_gnsssdr_32f_index_max_32u(&indext, d_magnitude_grid[doppler_index], effective_fft_size);
+                    magt = d_magnitude_grid[doppler_index][indext];
 
                     if (acq_parameters.use_CFAR_algorithm_flag)
                         {
                             // Normalize the maximum value to correct the scale factor introduced by FFTW
-                            magt = d_magnitude[indext] / (fft_normalization_factor * fft_normalization_factor);
+                            magt = magt / (fft_normalization_factor * fft_normalization_factor);
                         }
                     // 4- record the maximum peak and the associated synchronization parameters
                     if (d_mag < magt)
@@ -491,7 +509,7 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
                             if (!acq_parameters.use_CFAR_algorithm_flag)
                                 {
                                     // Search grid noise floor approximation for this doppler line
-                                    volk_32f_accumulator_s32f(&d_input_power, d_magnitude, effective_fft_size);
+                                    volk_32f_accumulator_s32f(&d_input_power, d_magnitude_grid[doppler_index], effective_fft_size);
                                     d_input_power = (d_input_power - d_mag) / (effective_fft_size - 1);
                                 }
 
@@ -517,7 +535,7 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
                     // Record results to file if required
                     if (acq_parameters.dump and d_channel == d_dump_channel)
                         {
-                            memcpy(grid_.colptr(doppler_index), d_magnitude, sizeof(float) * effective_fft_size);
+                            memcpy(grid_.colptr(doppler_index), d_magnitude_grid[doppler_index], sizeof(float) * effective_fft_size);
                         }
                 }
         }
@@ -616,12 +634,13 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
                             d_state = 0;  // Positive acquisition
                         }
                 }
-            else if (d_well_count == acq_parameters.max_dwells)
+
+            if (d_num_noncoherent_integrations_counter == acq_parameters.max_dwells)
                 {
+                    if (d_state != 0) send_negative_acquisition();
                     d_state = 0;
                     d_active = false;
                     d_step_two = false;
-                    send_negative_acquisition();
                 }
         }
     else
@@ -657,10 +676,16 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
                 }
         }
     d_worker_active = false;
-    // Record results to file if required
-    if (acq_parameters.dump and d_channel == d_dump_channel)
+
+    if ((d_num_noncoherent_integrations_counter == acq_parameters.max_dwells) or (d_positive_acq == 1))
         {
-            pcps_acquisition::dump_results(effective_fft_size);
+            // Record results to file if required
+            if (acq_parameters.dump and d_channel == d_dump_channel)
+                {
+                    pcps_acquisition::dump_results(effective_fft_size);
+                }
+            d_num_noncoherent_integrations_counter = 0;
+            d_positive_acq = 0;
         }
 }
 
@@ -706,7 +731,6 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                 d_gnss_synchro->Acq_delay_samples = 0.0;
                 d_gnss_synchro->Acq_doppler_hz = 0.0;
                 d_gnss_synchro->Acq_samplestamp_samples = 0;
-                d_well_count = 0;
                 d_mag = 0.0;
                 d_input_power = 0.0;
                 d_test_statistics = 0.0;

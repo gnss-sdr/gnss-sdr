@@ -418,7 +418,7 @@ void GNSSFlowgraph::connect()
                 }
             if (sat == 0)
                 {
-                    channels_.at(i)->set_signal(search_next_signal(gnss_signal, true));
+                    channels_.at(i)->set_signal(search_next_signal(gnss_signal, false));
                 }
             else
                 {
@@ -1357,9 +1357,10 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(std::string searched_signal, bool 
         {
         case evGPS_1C:
             result = available_GPS_1C_signals_.front();
-            if (pop)
+            available_GPS_1C_signals_.pop_front();
+            if (!pop)
                 {
-                    available_GPS_1C_signals_.pop_front();
+                    available_GPS_1C_signals_.push_back(result);
                 }
             if (tracked)
                 {
@@ -1387,9 +1388,10 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(std::string searched_signal, bool 
 
         case evGPS_2S:
             result = available_GPS_2S_signals_.front();
-            if (pop)
+            available_GPS_2S_signals_.pop_front();
+            if (!pop)
                 {
-                    available_GPS_2S_signals_.pop_front();
+                    available_GPS_2S_signals_.push_back(result);
                 }
             if (tracked)
                 {
@@ -1417,9 +1419,10 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(std::string searched_signal, bool 
 
         case evGPS_L5:
             result = available_GPS_L5_signals_.front();
-            if (pop)
+            available_GPS_L5_signals_.pop_front();
+            if (!pop)
                 {
-                    available_GPS_L5_signals_.pop_front();
+                    available_GPS_L5_signals_.push_back(result);
                 }
             if (tracked)
                 {
@@ -1447,9 +1450,10 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(std::string searched_signal, bool 
 
         case evGAL_1B:
             result = available_GAL_1B_signals_.front();
-            if (pop)
+            available_GAL_1B_signals_.pop_front();
+            if (!pop)
                 {
-                    available_GAL_1B_signals_.pop_front();
+                    available_GAL_1B_signals_.push_back(result);
                 }
             if (tracked)
                 {
@@ -1471,9 +1475,10 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(std::string searched_signal, bool 
 
         case evGAL_5X:
             result = available_GAL_5X_signals_.front();
-            if (pop)
+            available_GAL_5X_signals_.pop_front();
+            if (!pop)
                 {
-                    available_GAL_5X_signals_.pop_front();
+                    available_GAL_5X_signals_.push_back(result);
                 }
             if (tracked)
                 {
@@ -1495,9 +1500,10 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(std::string searched_signal, bool 
 
         case evGLO_1G:
             result = available_GLO_1G_signals_.front();
-            if (pop)
+            available_GLO_1G_signals_.pop_front();
+            if (!pop)
                 {
-                    available_GLO_1G_signals_.pop_front();
+                    available_GLO_1G_signals_.push_back(result);
                 }
             if (tracked)
                 {
@@ -1519,9 +1525,10 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(std::string searched_signal, bool 
 
         case evGLO_2G:
             result = available_GLO_2G_signals_.front();
-            if (pop)
+            available_GLO_2G_signals_.pop_front();
+            if (!pop)
                 {
-                    available_GLO_2G_signals_.pop_front();
+                    available_GLO_2G_signals_.push_back(result);
                 }
             if (tracked)
                 {

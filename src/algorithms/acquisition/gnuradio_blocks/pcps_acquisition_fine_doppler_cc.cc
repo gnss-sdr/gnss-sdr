@@ -63,10 +63,8 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Con
     d_active = false;
     d_fs_in = conf_.fs_in;
     d_samples_per_ms = conf_.samples_per_ms;
-    d_sampled_ms = conf_.sampled_ms;
     d_config_doppler_max = conf_.doppler_max;
-    d_config_doppler_min = -conf_.doppler_max;
-    d_fft_size = d_sampled_ms * d_samples_per_ms;
+    d_fft_size = d_samples_per_ms;
     // HS Acquisition
     d_max_dwells = conf_.max_dwells;
     d_gnuradio_forecast_samples = d_fft_size;
@@ -75,7 +73,7 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Con
     d_fft_codes = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     d_magnitude = static_cast<float *>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
 
-    d_10_ms_buffer = static_cast<gr_complex *>(volk_gnsssdr_malloc(10 * d_samples_per_ms * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_10_ms_buffer = static_cast<gr_complex *>(volk_gnsssdr_malloc(50 * d_samples_per_ms * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
     // Direct FFT
     d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
@@ -126,7 +124,7 @@ void pcps_acquisition_fine_doppler_cc::set_doppler_step(unsigned int doppler_ste
     d_doppler_step = doppler_step;
     // Create the search grid array
 
-    d_num_doppler_points = floor(std::abs(d_config_doppler_max - d_config_doppler_min) / d_doppler_step);
+    d_num_doppler_points = floor(std::abs(2 * d_config_doppler_max) / d_doppler_step);
 
     d_grid_data = new float *[d_num_doppler_points];
     for (int i = 0; i < d_num_doppler_points; i++)
@@ -222,7 +220,7 @@ void pcps_acquisition_fine_doppler_cc::update_carrier_wipeoff()
     d_grid_doppler_wipeoffs = new gr_complex *[d_num_doppler_points];
     for (int doppler_index = 0; doppler_index < d_num_doppler_points; doppler_index++)
         {
-            doppler_hz = d_config_doppler_min + d_doppler_step * doppler_index;
+            doppler_hz = d_doppler_step * doppler_index - d_config_doppler_max;
             // doppler search steps
             // compute the carrier doppler wipe-off signal and store it
             phase_step_rad = static_cast<float>(GPS_TWO_PI) * doppler_hz / static_cast<float>(d_fs_in);
@@ -295,7 +293,7 @@ double pcps_acquisition_fine_doppler_cc::compute_CAF()
 
     // 4- record the maximum peak and the associated synchronization parameters
     d_gnss_synchro->Acq_delay_samples = static_cast<double>(index_time);
-    d_gnss_synchro->Acq_doppler_hz = static_cast<double>(index_doppler * d_doppler_step + d_config_doppler_min);
+    d_gnss_synchro->Acq_doppler_hz = static_cast<double>(index_doppler * d_doppler_step - d_config_doppler_max);
     d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
 
     return d_test_statistics;
@@ -333,6 +331,7 @@ int pcps_acquisition_fine_doppler_cc::compute_and_accumulate_grid(gr_vector_cons
             // doppler search steps
             // Perform the carrier wipe-off
             volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in, d_grid_doppler_wipeoffs[doppler_index], d_fft_size);
+
             // 3- Perform the FFT-based convolution  (parallel time search)
             // Compute the FFT of the carrier wiped--off incoming signal
             d_fft_if->execute();
@@ -352,6 +351,14 @@ int pcps_acquisition_fine_doppler_cc::compute_and_accumulate_grid(gr_vector_cons
 
     volk_gnsssdr_free(p_tmp_vector);
     return d_fft_size;
+    //debug
+    //            std::cout << "iff=[";
+    //            for (int n = 0; n < d_fft_size; n++)
+    //                {
+    //                    std::cout << std::real(d_ifft->get_outbuf()[n]) << "+" << std::imag(d_ifft->get_outbuf()[n]) << "i,";
+    //                }
+    //            std::cout << "]\n";
+    //            getchar();
 }
 
 
@@ -495,6 +502,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
             if (d_active == true)
                 {
                     reset_grid();
+                    d_n_samples_in_buffer = 0;
                     d_state = 1;
                 }
             if (!acq_parameters.blocking_on_standby)
@@ -505,6 +513,8 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
             break;
         case 1:  // S1. ComputeGrid
             compute_and_accumulate_grid(input_items);
+            memcpy(&d_10_ms_buffer[d_n_samples_in_buffer], reinterpret_cast<const gr_complex *>(input_items[0]), d_fft_size * sizeof(gr_complex));
+            d_n_samples_in_buffer += d_fft_size;
             d_well_count++;
             if (d_well_count >= d_max_dwells)
                 {
@@ -522,10 +532,9 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
             else
                 {
                     d_state = 5;  //negative acquisition
+                    d_n_samples_in_buffer = 0;
                 }
-            d_n_samples_in_buffer = 0;
-            d_sample_counter += d_fft_size;  // sample counter
-            consume_each(d_fft_size);
+
             break;
         case 3:  // Fine doppler estimation
             samples_remaining = 10 * d_samples_per_ms - d_n_samples_in_buffer;
@@ -539,10 +548,14 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
                 }
             else
                 {
-                    memcpy(&d_10_ms_buffer[d_n_samples_in_buffer], reinterpret_cast<const gr_complex *>(input_items[0]), samples_remaining * sizeof(gr_complex));
-                    estimate_Doppler();                     //disabled in repo
-                    d_sample_counter += samples_remaining;  // sample counter
-                    consume_each(samples_remaining);
+                    if (samples_remaining > 0)
+                        {
+                            memcpy(&d_10_ms_buffer[d_n_samples_in_buffer], reinterpret_cast<const gr_complex *>(input_items[0]), samples_remaining * sizeof(gr_complex));
+                            d_sample_counter += samples_remaining;  // sample counter
+                            consume_each(samples_remaining);
+                        }
+                    estimate_Doppler();  //disabled in repo
+                    d_n_samples_in_buffer = 0;
                     d_state = 4;
                 }
             break;

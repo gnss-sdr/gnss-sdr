@@ -44,6 +44,7 @@ set(TRACKING_LIB_SOURCES
      tracking_FLL_PLL_filter.cc
      tracking_loop_filter.cc
      dll_pll_conf.cc
+     bayesian_estimation.cc
 )
 
 if(ENABLE_FPGA)

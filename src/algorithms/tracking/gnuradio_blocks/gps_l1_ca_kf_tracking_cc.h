@@ -49,6 +49,7 @@
 #include "tracking_2nd_PLL_filter.h"
 #include <armadillo>
 #include "cpu_multicorrelator_real_codes.h"
+#include "bayesian_estimation.h"
 
 class Gps_L1_Ca_Kf_Tracking_cc;
 
@@ -132,6 +133,9 @@ private:
     arma::colvec kf_y;      //measurement vector
     arma::colvec kf_y_pre;  //measurement vector
     arma::mat kf_K;         //Kalman gain matrix
+
+    // Bayesian estimator
+    Bayesian_estimator cov_est;
 
 
     // PLL and DLL filter library

@@ -95,6 +95,8 @@ private:
 
     void dump_results(int effective_fft_size);
 
+    float first_vs_second_peak_statistics(uint32_t& indext, int& doppler);
+
     Acq_Conf acq_parameters;
     bool d_active;
     bool d_worker_active;
@@ -108,6 +110,7 @@ private:
     float* d_magnitude;
     float** d_magnitude_grid;
     float* d_tmp_buffer;
+    uint32_t samplesPerChip;
     long d_old_freq;
     int d_state;
     unsigned int d_channel;

@@ -95,13 +95,15 @@ private:
 
     void dump_results(int effective_fft_size);
 
-    float first_vs_second_peak_statistics(uint32_t& indext, int& doppler);
+    float first_vs_second_peak_statistic(uint32_t& indext, int& doppler);
+    float max_to_input_power_statistic(uint32_t& indext, int& doppler, float input_power);
 
     Acq_Conf acq_parameters;
     bool d_active;
     bool d_worker_active;
     bool d_cshort;
     bool d_step_two;
+    bool d_use_CFAR_algorithm_flag;
     int d_positive_acq;
     float d_threshold;
     float d_mag;

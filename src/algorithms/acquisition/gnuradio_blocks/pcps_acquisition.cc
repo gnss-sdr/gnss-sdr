@@ -445,10 +445,7 @@ float pcps_acquisition::max_to_input_power_statistic(uint32_t& indext, int& dopp
     uint32_t index_time = 0;
     float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
 
-    // Look for correlation peaks in the results ==============================
-    // Find the highest peak and compare it to the second highest peak
-    // The second peak is chosen not closer than 1 chip to the highest peak
-    //--- Find the correlation peak and the carrier frequency --------------
+    // Find the correlation peak and the carrier frequency
     for (int i = 0; i < d_num_doppler_bins; i++)
         {
             volk_gnsssdr_32f_index_max_32u(&tmp_intex_t, d_magnitude_grid[i], d_fft_size);

@@ -64,7 +64,16 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
     d_state = 0;
     d_old_freq = 0;
     d_num_noncoherent_integrations_counter = 0;
-    d_fft_size = acq_parameters.sampled_ms * acq_parameters.samples_per_ms;
+    d_consumed_samples = acq_parameters.sampled_ms * acq_parameters.samples_per_ms * (acq_parameters.bit_transition_flag ? 2 : 1);
+    if (acq_parameters.sampled_ms == 1)
+        {
+            d_fft_size = d_consumed_samples;
+        }
+    else
+        {
+            d_fft_size = d_consumed_samples * 2;
+        }
+    //d_fft_size = next power of two?  ////
     d_mag = 0;
     d_input_power = 0.0;
     d_num_doppler_bins = 0;
@@ -82,8 +91,6 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
             d_cshort = true;
         }
 
-    d_tmp_buffer = static_cast<float*>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
-
     // COD:
     // Experimenting with the overlap/save technique for handling bit trannsitions
     // The problem: Circular correlation is asynchronous with the received code.
@@ -96,12 +103,14 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
     // size of the input buffer and padding the code with zeros.
     if (acq_parameters.bit_transition_flag)
         {
-            d_fft_size *= 2;
+            d_fft_size = d_consumed_samples * 2;
             acq_parameters.max_dwells = 1;  // Activation of acq_parameters.bit_transition_flag invalidates the value of acq_parameters.max_dwells
         }
 
+    d_tmp_buffer = static_cast<float*>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
     d_fft_codes = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     d_magnitude = static_cast<float*>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
+    d_input_signal = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
     // Direct FFT
     d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
@@ -114,10 +123,10 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
     d_grid_doppler_wipeoffs_step_two = nullptr;
     d_magnitude_grid = nullptr;
     d_worker_active = false;
-    d_data_buffer = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_data_buffer = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_consumed_samples * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     if (d_cshort)
         {
-            d_data_buffer_sc = static_cast<lv_16sc_t*>(volk_gnsssdr_malloc(d_fft_size * sizeof(lv_16sc_t), volk_gnsssdr_get_alignment()));
+            d_data_buffer_sc = static_cast<lv_16sc_t*>(volk_gnsssdr_malloc(d_consumed_samples * sizeof(lv_16sc_t), volk_gnsssdr_get_alignment()));
         }
     else
         {
@@ -163,6 +172,7 @@ pcps_acquisition::~pcps_acquisition()
     volk_gnsssdr_free(d_fft_codes);
     volk_gnsssdr_free(d_magnitude);
     volk_gnsssdr_free(d_tmp_buffer);
+    volk_gnsssdr_free(d_input_signal);
     delete d_ifft;
     delete d_fft_if;
     volk_gnsssdr_free(d_data_buffer);
@@ -195,7 +205,15 @@ void pcps_acquisition::set_local_code(std::complex<float>* code)
         }
     else
         {
-            memcpy(d_fft_if->get_inbuf(), code, sizeof(gr_complex) * d_fft_size);
+            if (acq_parameters.sampled_ms == 1)
+                {
+                    memcpy(d_fft_if->get_inbuf(), code, sizeof(gr_complex) * d_consumed_samples);
+                }
+            else
+                {
+                    std::fill_n(d_fft_if->get_inbuf(), d_fft_size - d_consumed_samples, gr_complex(0.0, 0.0));
+                    memcpy(d_fft_if->get_inbuf() + d_consumed_samples, code, sizeof(gr_complex) * d_consumed_samples);
+                }
         }
 
     d_fft_if->execute();  // We need the FFT of local code
@@ -530,12 +548,20 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
     float magt = 0.0;
     int doppler = 0;
     uint32_t indext = 0;
-    const gr_complex* in = d_data_buffer;  // Get the input samples pointer
     int effective_fft_size = (acq_parameters.bit_transition_flag ? d_fft_size / 2 : d_fft_size);
     if (d_cshort)
         {
-            volk_gnsssdr_16ic_convert_32fc(d_data_buffer, d_data_buffer_sc, d_fft_size);
+            volk_gnsssdr_16ic_convert_32fc(d_data_buffer, d_data_buffer_sc, d_consumed_samples);
         }
+    memcpy(d_input_signal, d_data_buffer, d_consumed_samples * sizeof(gr_complex));
+    if (d_fft_size > d_consumed_samples)
+        {
+            for (unsigned int i = d_consumed_samples; i < d_fft_size; i++)
+                {
+                    d_input_signal[i] = gr_complex(0.0, 0.0);
+                }
+        }
+    const gr_complex* in = d_input_signal;  // Get the input samples pointer
     float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
 
     d_input_power = 0.0;
@@ -551,7 +577,7 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
 
     lk.unlock();
 
-    if (d_use_CFAR_algorithm_flag)
+    if (d_use_CFAR_algorithm_flag or acq_parameters.bit_transition_flag)
         {
             // Compute the input signal power estimation
             volk_32fc_magnitude_squared_32f(d_tmp_buffer, in, d_fft_size);
@@ -780,7 +806,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
         {
             if (!acq_parameters.blocking_on_standby)
                 {
-                    d_sample_counter += d_fft_size * ninput_items[0];
+                    d_sample_counter += d_consumed_samples * ninput_items[0];
                     consume_each(ninput_items[0]);
                 }
             if (d_step_two)
@@ -807,7 +833,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                 d_state = 1;
                 if (!acq_parameters.blocking_on_standby)
                     {
-                        d_sample_counter += d_fft_size * ninput_items[0];  // sample counter
+                        d_sample_counter += d_consumed_samples * ninput_items[0];  // sample counter
                         consume_each(ninput_items[0]);
                     }
                 break;
@@ -818,11 +844,11 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                 // Copy the data to the core and let it know that new data is available
                 if (d_cshort)
                     {
-                        memcpy(d_data_buffer_sc, input_items[0], d_fft_size * sizeof(lv_16sc_t));
+                        memcpy(d_data_buffer_sc, input_items[0], d_consumed_samples * sizeof(lv_16sc_t));
                     }
                 else
                     {
-                        memcpy(d_data_buffer, input_items[0], d_fft_size * sizeof(gr_complex));
+                        memcpy(d_data_buffer, input_items[0], d_consumed_samples * sizeof(gr_complex));
                     }
                 if (acq_parameters.blocking)
                     {
@@ -834,7 +860,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                         gr::thread::thread d_worker(&pcps_acquisition::acquisition_core, this, d_sample_counter);
                         d_worker_active = true;
                     }
-                d_sample_counter += d_fft_size;
+                d_sample_counter += d_consumed_samples;
                 consume_each(1);
                 break;
             }

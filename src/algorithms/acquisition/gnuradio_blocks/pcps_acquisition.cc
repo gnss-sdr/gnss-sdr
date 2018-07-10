@@ -136,7 +136,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
     d_step_two = false;
     d_dump_number = 0;
     d_dump_channel = acq_parameters.dump_channel;
-    samplesPerChip = acq_parameters.samples_per_chip;
+    d_samplesPerChip = acq_parameters.samples_per_chip;
     // todo: CFAR statistic not available for non-coherent integration
     if (acq_parameters.max_dwells == 1)
         {
@@ -458,13 +458,13 @@ void pcps_acquisition::dump_results(int effective_fft_size)
 float pcps_acquisition::max_to_input_power_statistic(uint32_t& indext, int& doppler, float input_power)
 {
     float grid_maximum = 0.0;
-    int index_doppler = 0;
+    unsigned int index_doppler = 0;
     uint32_t tmp_intex_t = 0;
     uint32_t index_time = 0;
     float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
 
     // Find the correlation peak and the carrier frequency
-    for (int i = 0; i < d_num_doppler_bins; i++)
+    for (unsigned int i = 0; i < d_num_doppler_bins; i++)
         {
             volk_gnsssdr_32f_index_max_32u(&tmp_intex_t, d_magnitude_grid[i], d_fft_size);
             if (d_magnitude_grid[i][tmp_intex_t] > grid_maximum)
@@ -475,7 +475,7 @@ float pcps_acquisition::max_to_input_power_statistic(uint32_t& indext, int& dopp
                 }
         }
     indext = index_time;
-    doppler = -static_cast<int>(acq_parameters.doppler_max) + d_doppler_step * index_doppler;
+    doppler = -static_cast<int>(acq_parameters.doppler_max) + d_doppler_step * static_cast<int>(index_doppler);
 
     float magt = grid_maximum / (fft_normalization_factor * fft_normalization_factor);
     return magt / input_power;
@@ -489,12 +489,12 @@ float pcps_acquisition::first_vs_second_peak_statistic(uint32_t& indext, int& do
     // The second peak is chosen not closer than 1 chip to the highest peak
 
     float firstPeak = 0.0;
-    int index_doppler = 0;
+    unsigned int index_doppler = 0;
     uint32_t tmp_intex_t = 0;
     uint32_t index_time = 0;
 
     // Find the correlation peak and the carrier frequency
-    for (int i = 0; i < d_num_doppler_bins; i++)
+    for (unsigned int i = 0; i < d_num_doppler_bins; i++)
         {
             volk_gnsssdr_32f_index_max_32u(&tmp_intex_t, d_magnitude_grid[i], d_fft_size);
             if (d_magnitude_grid[i][tmp_intex_t] > firstPeak)
@@ -505,11 +505,11 @@ float pcps_acquisition::first_vs_second_peak_statistic(uint32_t& indext, int& do
                 }
         }
     indext = index_time;
-    doppler = -static_cast<int>(acq_parameters.doppler_max) + d_doppler_step * index_doppler;
+    doppler = -static_cast<int>(acq_parameters.doppler_max) + d_doppler_step * static_cast<int>(index_doppler);
 
     // Find 1 chip wide code phase exclude range around the peak
-    int32_t excludeRangeIndex1 = index_time - samplesPerChip;
-    int32_t excludeRangeIndex2 = index_time + samplesPerChip;
+    int32_t excludeRangeIndex1 = index_time - d_samplesPerChip;
+    int32_t excludeRangeIndex2 = index_time + d_samplesPerChip;
 
     // Correct code phase exclude range if the range includes array boundaries
     if (excludeRangeIndex1 < 0)

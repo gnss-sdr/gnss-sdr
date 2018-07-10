@@ -113,7 +113,7 @@ private:
     float** d_magnitude_grid;
     float* d_tmp_buffer;
     gr_complex* d_input_signal;
-    uint32_t samplesPerChip;
+    uint32_t d_samplesPerChip;
     long d_old_freq;
     int d_state;
     unsigned int d_channel;

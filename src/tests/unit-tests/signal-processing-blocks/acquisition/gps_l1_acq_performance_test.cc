@@ -181,7 +181,7 @@ protected:
 
         num_thresholds = pfa_vector.size();
 
-        int aux2 = ((generated_signal_duration_s * 1000 - FLAGS_acq_test_coherent_time_ms) / FLAGS_acq_test_coherent_time_ms);
+        int aux2 = ((generated_signal_duration_s * 1000 - (FLAGS_acq_test_coherent_time_ms * FLAGS_acq_test_max_dwells)) / (FLAGS_acq_test_coherent_time_ms * FLAGS_acq_test_max_dwells));
         if ((FLAGS_acq_test_num_meas > 0) and (FLAGS_acq_test_num_meas < aux2))
             {
                 num_of_measurements = static_cast<unsigned int>(FLAGS_acq_test_num_meas);

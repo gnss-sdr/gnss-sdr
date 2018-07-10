@@ -1,5 +1,5 @@
 /*!
- * \file gps_l5i pcps_acquisition.cc
+ * \file gps_l5i_pcps_acquisition.cc
  * \brief Adapts a PCPS acquisition block to an Acquisition Interface for
  *  GPS L5i signals
  * \authors <ul>

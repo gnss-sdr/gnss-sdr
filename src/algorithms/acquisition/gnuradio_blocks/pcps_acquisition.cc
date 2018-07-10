@@ -554,8 +554,8 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
     if (d_use_CFAR_algorithm_flag)
         {
             // Compute the input signal power estimation
-            volk_32fc_magnitude_squared_32f(d_magnitude, in, d_fft_size);
-            volk_32f_accumulator_s32f(&d_input_power, d_magnitude, d_fft_size);
+            volk_32fc_magnitude_squared_32f(d_tmp_buffer, in, d_fft_size);
+            volk_32f_accumulator_s32f(&d_input_power, d_tmp_buffer, d_fft_size);
             d_input_power /= static_cast<float>(d_fft_size);
         }
 

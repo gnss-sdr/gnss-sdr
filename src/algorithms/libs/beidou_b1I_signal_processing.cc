@@ -46,7 +46,6 @@ void beidou_b1i_code_gen_int(int* _dest, signed int _prn, unsigned int _chip_shi
     unsigned int lcv, lcv2;
     unsigned int delay;
     signed int prn_idx;
-std::cout << "MY SATELLITE " << _prn << "!" << std::endl;
     /* G2 Delays as defined in GPS-ISD-200D */
     const signed int delays[33] = {712 /*PRN1*/, 1581, 1414, 1550, 581, 771, 1311, 1043, 1549, 359, 710, 1579, 1548, 1103, 579, 769, 358, 709, 1411, 1547,
         1102, 578, 357, 1577, 1410, 1546, 1101, 707, 1576, 1409, 1545, 354 /*PRN32*/,

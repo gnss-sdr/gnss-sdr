@@ -48,6 +48,8 @@
 #include "gps_l2c_signal.h"
 #include "GPS_L5.h"
 #include "gps_l5_signal.h"
+#include "beidou_b1I.h"
+#include "beidou_b1I_signal_processing.h"
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
@@ -101,6 +103,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(dllpllconf_t conf_) : gr::block("dl
     map_signal_pretty_name["2G"] = "L2 C/A";
     map_signal_pretty_name["5X"] = "E5a";
     map_signal_pretty_name["L5"] = "L5";
+    map_signal_pretty_name["B1"] = "B1I";
 
     signal_pretty_name = map_signal_pretty_name[signal_type];
 
@@ -239,6 +242,37 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(dllpllconf_t conf_) : gr::block("dl
                     d_symbols_per_bit = 0;
                 }
         }
+    else if (trk_parameters.system == 'C')
+        {
+            systemName = "Beidou";
+            if (signal_type.compare("B1") == 0)
+                {
+                    d_signal_carrier_freq = BEIDOU_B1I_FREQ_HZ;
+                    d_code_period = BEIDOU_B1I_CODE_PERIOD;
+                    d_code_chip_rate = BEIDOU_B1I_CODE_RATE_HZ;
+                    d_code_length_chips = static_cast<unsigned int>(BEIDOU_B1I_CODE_LENGTH_CHIPS);
+                    d_symbols_per_bit = BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT;
+                    d_correlation_length_ms = 1;
+                    d_code_samples_per_chip = 1;
+                    d_secondary = false;
+                    trk_parameters.track_pilot = false;
+                    interchange_iq = false;
+                }
+            else
+                {
+                    LOG(WARNING) << "Invalid Signal argument when instantiating tracking blocks";
+                    std::cout << "Invalid Signal argument when instantiating tracking blocks" << std::endl;
+                    d_correlation_length_ms = 1;
+                    d_secondary = false;
+                    interchange_iq = false;
+                    d_signal_carrier_freq = 0.0;
+                    d_code_period = 0.0;
+                    d_code_length_chips = 0;
+                    d_code_samples_per_chip = 0;
+                    d_symbols_per_bit = 0;
+                }
+        }
+
     else
         {
             LOG(WARNING) << "Invalid System argument when instantiating tracking blocks";
@@ -481,6 +515,10 @@ void dll_pll_veml_tracking::start_tracking()
                         }
                 }
             volk_gnsssdr_free(aux_code);
+        }
+    else if (systemName.compare("Beidou") == 0 and signal_type.compare("B1") == 0)
+        {
+            beidou_b1i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
         }
 
     multicorrelator_cpu.set_local_code_and_taps(d_code_samples_per_chip * d_code_length_chips, d_tracking_code, d_local_code_shift_chips);

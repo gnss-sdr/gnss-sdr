@@ -35,8 +35,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_H_
-#define GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_H_
+#ifndef GNSS_SDR_BEIDOU_B1I_DLL_PLL_TRACKING_H_
+#define GNSS_SDR_BEIDOU_B1I_DLL_PLL_TRACKING_H_
 
 #include "tracking_interface.h"
 #include "dll_pll_veml_tracking.h"
@@ -47,22 +47,21 @@ class ConfigurationInterface;
 /*!
  * \brief This class implements a code DLL + carrier PLL tracking loop
  */
-class GpsL1CaDllPllTracking : public TrackingInterface
+class BeidouB1iDllPllTracking : public TrackingInterface
 {
 public:
-    GpsL1CaDllPllTracking(ConfigurationInterface* configuration,
+    BeidouB1iDllPllTracking(ConfigurationInterface* configuration,
         std::string role,
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GpsL1CaDllPllTracking();
+    virtual ~BeidouB1iDllPllTracking();
 
     inline std::string role() override
     {
         return role_;
     }
 
-    //! Returns "GPS_L1_CA_DLL_PLL_Tracking"
     inline std::string implementation() override
     {
         return "BEIDOU_B1I_DLL_PLL_Tracking";
@@ -100,4 +99,4 @@ private:
     unsigned int out_streams_;
 };
 
-#endif  // GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_H_
+#endif  // GNSS_SDR_BEIDOU_B1I_DLL_PLL_TRACKING_H_

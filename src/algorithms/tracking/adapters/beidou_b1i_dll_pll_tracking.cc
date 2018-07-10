@@ -1,9 +1,10 @@
 /*!
- * \file gps_l1_ca_dll_pll_tracking.cc
+ * \file beidou_b1i_dll_pll_tracking.cc
  * \brief Implementation of an adapter of a DLL+PLL tracking loop block
  * for GPS L1 C/A to a TrackingInterface
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Javier Arribas, 2011. jarribas(at)cttc.es
+*          Sergi Segura, 2018. sergi.segura.munoz@gmail.com
  *
  * Code DLL + carrier PLL according to the algorithms described in:
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
@@ -36,16 +37,16 @@
  */
 
 
-#include "gps_l1_ca_dll_pll_tracking.h"
+#include "beidou_b1i_dll_pll_tracking.h"
 #include "configuration_interface.h"
-#include "GPS_L1_CA.h"
+#include "beidou_b1I.h"
 #include "gnss_sdr_flags.h"
 #include "display.h"
 #include <glog/logging.h>
 
 using google::LogMessage;
 
-GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
+BeidouB1iDllPllTracking::BeidouB1iDllPllTracking(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
@@ -76,34 +77,34 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     std::string default_dump_filename = "./track_ch";
     std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
     trk_param.dump_filename = dump_filename;
-    int vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
+    int vector_length = std::round(fs_in / (BEIDOU_B1I_CODE_RATE_HZ / BEIDOU_B1I_CODE_LENGTH_CHIPS));
     trk_param.vector_length = vector_length;
     int symbols_extended_correlator = configuration->property(role + ".extend_correlation_symbols", 1);
     if (symbols_extended_correlator < 1)
         {
             symbols_extended_correlator = 1;
-            std::cout << TEXT_RED << "WARNING: GPS L1 C/A. extend_correlation_symbols must be bigger than 1. Coherent integration has been set to 1 symbol (1 ms)" << TEXT_RESET << std::endl;
+            std::cout << TEXT_RED << "WARNING: BEIDOU B1I. extend_correlation_symbols must be bigger than 1. Coherent integration has been set to 1 symbol (1 ms)" << TEXT_RESET << std::endl;
         }
     else if (symbols_extended_correlator > 20)
         {
             symbols_extended_correlator = 20;
-            std::cout << TEXT_RED << "WARNING: GPS L1 C/A. extend_correlation_symbols must be lower than 21. Coherent integration has been set to 20 symbols (20 ms)" << TEXT_RESET << std::endl;
+            std::cout << TEXT_RED << "WARNING: BEIDOU B1I. extend_correlation_symbols must be lower than 21. Coherent integration has been set to 20 symbols (20 ms)" << TEXT_RESET << std::endl;
         }
     trk_param.extend_correlation_symbols = symbols_extended_correlator;
     bool track_pilot = configuration->property(role + ".track_pilot", false);
     if (track_pilot)
         {
-            std::cout << TEXT_RED << "WARNING: GPS L1 C/A does not have pilot signal. Data tracking has been enabled" << TEXT_RESET << std::endl;
+            std::cout << TEXT_RED << "WARNING: BEIDOU B1I does not have pilot signal. Data tracking has been enabled" << TEXT_RESET << std::endl;
         }
     if ((symbols_extended_correlator > 1) and (pll_bw_narrow_hz > pll_bw_hz or dll_bw_narrow_hz > dll_bw_hz))
         {
-            std::cout << TEXT_RED << "WARNING: GPS L1 C/A. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << std::endl;
+            std::cout << TEXT_RED << "WARNING: BEIDOU B1I. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << std::endl;
         }
     trk_param.very_early_late_space_chips = 0.0;
     trk_param.very_early_late_space_narrow_chips = 0.0;
     trk_param.track_pilot = false;
-    trk_param.system = 'G';
-    char sig_[3] = "1C";
+    trk_param.system = 'C';
+    char sig_[3] = "B1";
     std::memcpy(trk_param.signal, sig_, 3);
     int cn0_samples = configuration->property(role + ".cn0_samples", 20);
     if (FLAGS_cn0_samples != 20) cn0_samples = FLAGS_cn0_samples;
@@ -142,12 +143,12 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
 }
 
 
-GpsL1CaDllPllTracking::~GpsL1CaDllPllTracking()
+BeidouB1iDllPllTracking::~BeidouB1iDllPllTracking()
 {
 }
 
 
-void GpsL1CaDllPllTracking::start_tracking()
+void BeidouB1iDllPllTracking::start_tracking()
 {
     tracking_->start_tracking();
 }
@@ -156,20 +157,20 @@ void GpsL1CaDllPllTracking::start_tracking()
 /*
  * Set tracking channel unique ID
  */
-void GpsL1CaDllPllTracking::set_channel(unsigned int channel)
+void BeidouB1iDllPllTracking::set_channel(unsigned int channel)
 {
     channel_ = channel;
     tracking_->set_channel(channel);
 }
 
 
-void GpsL1CaDllPllTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
+void BeidouB1iDllPllTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
     tracking_->set_gnss_synchro(p_gnss_synchro);
 }
 
 
-void GpsL1CaDllPllTracking::connect(gr::top_block_sptr top_block)
+void BeidouB1iDllPllTracking::connect(gr::top_block_sptr top_block)
 {
     if (top_block)
         { /* top_block is not null */
@@ -178,7 +179,7 @@ void GpsL1CaDllPllTracking::connect(gr::top_block_sptr top_block)
 }
 
 
-void GpsL1CaDllPllTracking::disconnect(gr::top_block_sptr top_block)
+void BeidouB1iDllPllTracking::disconnect(gr::top_block_sptr top_block)
 {
     if (top_block)
         { /* top_block is not null */
@@ -187,13 +188,13 @@ void GpsL1CaDllPllTracking::disconnect(gr::top_block_sptr top_block)
 }
 
 
-gr::basic_block_sptr GpsL1CaDllPllTracking::get_left_block()
+gr::basic_block_sptr BeidouB1iDllPllTracking::get_left_block()
 {
     return tracking_;
 }
 
 
-gr::basic_block_sptr GpsL1CaDllPllTracking::get_right_block()
+gr::basic_block_sptr BeidouB1iDllPllTracking::get_right_block()
 {
     return tracking_;
 }

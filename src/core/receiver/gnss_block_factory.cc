@@ -1657,7 +1657,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
         }
     else if (implementation.compare("BEIDOU_B1I_DLL_PLL_Tracking") == 0)
         {
-            std::unique_ptr<GNSSBlockInterface> block_(new GpsL1CaDllPllTracking(configuration.get(), role, in_streams,
+            std::unique_ptr<GNSSBlockInterface> block_(new BeidouB1iDllPllTracking(configuration.get(), role, in_streams,
                 out_streams));
             block = std::move(block_);
         }
@@ -1988,7 +1988,7 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
         }
     else if (implementation.compare("BEIDOU_B1I_DLL_PLL_Tracking") == 0)
         {
-            std::unique_ptr<TrackingInterface> block_(new GpsL1CaDllPllTracking(configuration.get(), role, in_streams,
+            std::unique_ptr<TrackingInterface> block_(new BeidouB1iDllPllTracking(configuration.get(), role, in_streams,
                 out_streams));
             block = std::move(block_);
         }

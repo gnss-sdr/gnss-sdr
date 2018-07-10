@@ -112,6 +112,7 @@ private:
     float* d_magnitude;
     float** d_magnitude_grid;
     float* d_tmp_buffer;
+    gr_complex* d_input_signal;
     uint32_t samplesPerChip;
     long d_old_freq;
     int d_state;
@@ -120,6 +121,7 @@ private:
     float d_doppler_center_step_two;
     unsigned int d_num_noncoherent_integrations_counter;
     unsigned int d_fft_size;
+    unsigned int d_consumed_samples;
     unsigned int d_num_doppler_bins;
     unsigned long int d_sample_counter;
     gr_complex** d_grid_doppler_wipeoffs;

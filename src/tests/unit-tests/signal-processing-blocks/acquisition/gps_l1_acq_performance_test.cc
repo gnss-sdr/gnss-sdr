@@ -707,7 +707,7 @@ TEST_F(AcquisitionPerformanceTest, ROC)
                                     std::cout << "Num executions: " << num_executions << std::endl;
                                     for (int execution = 1; execution <= num_executions; execution++)
                                         {
-                                            acquisition_dump_reader acq_dump(basename, observed_satellite, config->property("Acquisition_1C.doppler_max", 0), config->property("Acquisition_1C.doppler_step", 0), config->property("GNSS-SDR.internal_fs_sps", 0) * GPS_L1_CA_CODE_PERIOD * static_cast<double>(coh_time_ms), ch, execution);
+                                            acquisition_dump_reader acq_dump(basename, observed_satellite, config->property("Acquisition_1C.doppler_max", 0), config->property("Acquisition_1C.doppler_step", 0), config->property("GNSS-SDR.internal_fs_sps", 0) * GPS_L1_CA_CODE_PERIOD * static_cast<double>(coh_time_ms) * (config->property("Acquisition_1C.bit_transition_flag", false) ? 2 : 1), ch, execution);
                                             acq_dump.read_binary_acq();
                                             if (acq_dump.positive_acq)
                                                 {

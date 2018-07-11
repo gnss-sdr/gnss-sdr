@@ -164,46 +164,69 @@ protected:
             {
                 signal_id = "1C";
                 system_id = 'G';
+                coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
             }
         else if (implementation.compare("GPS_L1_CA_PCPS_Acquisition_Fine_Doppler") == 0)
             {
                 signal_id = "1C";
                 system_id = 'G';
+                coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
             }
         else if (implementation.compare("Galileo_E1_PCPS_Ambiguous_Acquisition") == 0)
             {
                 signal_id = "1B";
                 system_id = 'E';
+                if (FLAGS_acq_test_coherent_time_ms == 1)
+                    {
+                        coherent_integration_time_ms = 4;
+                    }
+                else
+                    {
+                        coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
+                    }
             }
         else if (implementation.compare("GLONASS_L1_CA_PCPS_Acquisition") == 0)
             {
                 signal_id = "1G";
                 system_id = 'R';
+                coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
             }
         else if (implementation.compare("GLONASS_L2_CA_PCPS_Acquisition") == 0)
             {
                 signal_id = "2G";
                 system_id = 'R';
+                coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
             }
         else if (implementation.compare("GPS_L2_M_PCPS_Acquisition") == 0)
             {
                 signal_id = "2S";
                 system_id = 'G';
+                if (FLAGS_acq_test_coherent_time_ms == 1)
+                    {
+                        coherent_integration_time_ms = 20;
+                    }
+                else
+                    {
+                        coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
+                    }
             }
         else if (implementation.compare("Galileo_E5a_Pcps_Acquisition") == 0)
             {
                 signal_id = "5X";
                 system_id = 'E';
+                coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
             }
         else if (implementation.compare("GPS_L5i_PCPS_Acquisition") == 0)
             {
                 signal_id = "L5";
                 system_id = 'G';
+                coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
             }
         else
             {
                 signal_id = "1C";
                 system_id = 'G';
+                coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
             }
 
         init();
@@ -292,7 +315,7 @@ protected:
     std::string implementation = FLAGS_acq_test_implementation;
 
     const double baseband_sampling_freq = static_cast<double>(FLAGS_fs_gen_sps);
-    const int coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
+    int coherent_integration_time_ms;
     const int in_acquisition = 1;
     const int dump_channel = 0;
 

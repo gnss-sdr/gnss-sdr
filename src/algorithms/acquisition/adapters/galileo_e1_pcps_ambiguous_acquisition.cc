@@ -59,24 +59,23 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in_;
     acq_parameters.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / Galileo_E1_CODE_CHIP_RATE_HZ) * static_cast<float>(acq_parameters.fs_in)));
-    dump_ = configuration_->property(role + ".dump", false);
-    acq_parameters.dump = dump_;
-    acq_parameters.dump_channel = configuration_->property(role + ".dump_channel", 0);
-    blocking_ = configuration_->property(role + ".blocking", true);
-    acq_parameters.blocking = blocking_;
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
     if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
     acq_parameters.doppler_max = doppler_max_;
-    sampled_ms_ = 4;
+    sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 4);
     acq_parameters.sampled_ms = sampled_ms_;
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
     acq_parameters.bit_transition_flag = bit_transition_flag_;
     use_CFAR_algorithm_flag_ = configuration_->property(role + ".use_CFAR_algorithm", true);  //will be false in future versions
     acq_parameters.use_CFAR_algorithm_flag = use_CFAR_algorithm_flag_;
     acquire_pilot_ = configuration_->property(role + ".acquire_pilot", false);  //will be true in future versions
-
     max_dwells_ = configuration_->property(role + ".max_dwells", 1);
     acq_parameters.max_dwells = max_dwells_;
+    dump_ = configuration_->property(role + ".dump", false);
+    acq_parameters.dump = dump_;
+    acq_parameters.dump_channel = configuration_->property(role + ".dump_channel", 0);
+    blocking_ = configuration_->property(role + ".blocking", true);
+    acq_parameters.blocking = blocking_;
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
     acq_parameters.dump_filename = dump_filename_;
     //--- Find number of samples per spreading code (4 ms)  -----------------

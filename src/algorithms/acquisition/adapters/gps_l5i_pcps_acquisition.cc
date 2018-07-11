@@ -1,5 +1,5 @@
 /*!
- * \file gps_l5i pcps_acquisition.cc
+ * \file gps_l5i_pcps_acquisition.cc
  * \brief Adapts a PCPS acquisition block to an Acquisition Interface for
  *  GPS L5i signals
  * \authors <ul>
@@ -59,6 +59,7 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
     long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in_;
+    acq_parameters.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / GPS_L5i_CODE_RATE_HZ) * static_cast<float>(acq_parameters.fs_in)));
     dump_ = configuration_->property(role + ".dump", false);
     acq_parameters.dump = dump_;
     acq_parameters.dump_channel = configuration_->property(role + ".dump_channel", 0);

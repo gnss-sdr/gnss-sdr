@@ -61,6 +61,7 @@ DEFINE_double(acq_Delay_error_chips_start, 2.0, "Acquisition Code Delay error st
 DEFINE_double(acq_Delay_error_chips_stop, -2.0, "Acquisition Code Delay error stop sweep value [Chips]");
 DEFINE_double(acq_Delay_error_chips_step, -0.1, "Acquisition Code Delay error sweep step value [Chips]");
 
+DEFINE_int64(skip_samples, 0, "Skip an initial transitory in the processed signal file capture [samples]");
 
 DEFINE_int32(plot_detail_level, 0, "Specify the desired plot detail (0,1,2): 0 - Minimum plots (default) 2 - Plot all tracking parameters");
 

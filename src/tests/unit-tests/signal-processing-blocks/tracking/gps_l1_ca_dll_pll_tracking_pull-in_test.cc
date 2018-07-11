@@ -40,10 +40,12 @@
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/skiphead.h>
+#include <gnuradio/blocks/head.h>
 #include <gtest/gtest.h>
 #include "GPS_L1_CA.h"
 #include "gnss_block_factory.h"
 #include "tracking_interface.h"
+#include "gps_l1_ca_pcps_acquisition.h"
 #include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
 #include "in_memory_configuration.h"
 #include "tracking_true_obs_reader.h"
@@ -71,6 +73,7 @@ private:
 
 public:
     int rx_message;
+    gr::top_block_sptr top_block;
     ~Acquisition_msg_rx();  //!< Default destructor
 };
 
@@ -87,6 +90,7 @@ void Acquisition_msg_rx::msg_handler_events(pmt::pmt_t msg)
         {
             long int message = pmt::to_long(msg);
             rx_message = message;
+            top_block->stop();  //stop the flowgraph
         }
     catch (boost::bad_any_cast& e)
         {
@@ -335,16 +339,36 @@ bool GpsL1CADllPllTrackingPullInTest::acquire_GPS_L1CA_signal(int SV_ID)
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(baseband_sampling_freq));
 
     config->set_property("Acquisition.max_dwells", "10");
+    config->set_property("Acquisition.blocking_on_standby", "true");
     config->set_property("Acquisition.dump", "true");
-    GNSSBlockFactory block_factory;
+    config->set_property("Acquisition.dump_filename", "./data/acquisition.dat");
+
+    config->set_property("Acquisition.use_CFAR_algorithm", "false");
     GpsL1CaPcpsAcquisitionFineDoppler* acquisition;
-    acquisition = new GpsL1CaPcpsAcquisitionFineDoppler(config.get(), "Acquisition", 1, 1);
+    acquisition = new GpsL1CaPcpsAcquisitionFineDoppler(config.get(), "Acquisition", 1, 0);
+
+    //GpsL1CaPcpsAcquisition* acquisition;
+    //acquisition = new GpsL1CaPcpsAcquisition(config.get(), "Acquisition", 1, 0);
 
     acquisition->set_channel(1);
     acquisition->set_gnss_synchro(&tmp_gnss_synchro);
     acquisition->set_threshold(config->property("Acquisition.threshold", FLAGS_external_signal_acquisition_threshold));
-    acquisition->set_doppler_max(config->property("Acquisition.doppler_max", 10000));
+    acquisition->set_doppler_max(config->property("Acquisition.doppler_max", 25000));
     acquisition->set_doppler_step(config->property("Acquisition.doppler_step", 500));
+    acquisition->connect(top_block);
+
+
+    gr::blocks::file_source::sptr file_source;
+    std::string file = FLAGS_signal_file;
+    const char* file_name = file.c_str();
+    file_source = gr::blocks::file_source::make(sizeof(int8_t), file_name, false);
+    file_source->seek(2 * FLAGS_skip_samples, 0);  //skip head. ibyte, two bytes per complex sample
+    gr::blocks::interleaved_char_to_complex::sptr gr_interleaved_char_to_complex = gr::blocks::interleaved_char_to_complex::make();
+    gr::blocks::head::sptr head_samples = gr::blocks::head::make(sizeof(gr_complex), baseband_sampling_freq * FLAGS_duration);
+
+    top_block->connect(file_source, 0, gr_interleaved_char_to_complex, 0);
+    top_block->connect(gr_interleaved_char_to_complex, 0, head_samples, 0);
+    top_block->connect(head_samples, 0, acquisition->get_left_block(), 0);
 
     boost::shared_ptr<Acquisition_msg_rx> msg_rx;
     try
@@ -357,15 +381,8 @@ bool GpsL1CADllPllTrackingPullInTest::acquire_GPS_L1CA_signal(int SV_ID)
             exit(0);
         }
 
-    gr::blocks::file_source::sptr file_source;
-    std::string file = FLAGS_signal_file;
-    const char* file_name = file.c_str();
-    file_source = gr::blocks::file_source::make(sizeof(int8_t), file_name, false);
-    gr::blocks::interleaved_char_to_complex::sptr gr_interleaved_char_to_complex = gr::blocks::interleaved_char_to_complex::make();
-    gr::blocks::null_sink::sptr sink = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
-    top_block->connect(file_source, 0, gr_interleaved_char_to_complex, 0);
-    top_block->connect(gr_interleaved_char_to_complex, 0, acquisition->get_left_block(), 0);
-    top_block->msg_connect(acquisition->get_left_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
+    msg_rx->top_block = top_block;
+    top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
 
     // 5. Run the flowgraph
     // Get visible GPS satellites (positive acquisitions with Doppler measurements)
@@ -380,6 +397,7 @@ bool GpsL1CADllPllTrackingPullInTest::acquire_GPS_L1CA_signal(int SV_ID)
     code_delay_measurements_map.clear();
     acq_samplestamp_map.clear();
 
+
     for (unsigned int PRN = 1; PRN < 33; PRN++)
         {
             tmp_gnss_synchro.PRN = PRN;
@@ -387,6 +405,7 @@ bool GpsL1CADllPllTrackingPullInTest::acquire_GPS_L1CA_signal(int SV_ID)
             acquisition->init();
             acquisition->set_local_code();
             acquisition->reset();
+            acquisition->set_state(1);
             msg_rx->rx_message = 0;
             top_block->run();
             if (start_msg == true)
@@ -412,10 +431,17 @@ bool GpsL1CADllPllTrackingPullInTest::acquire_GPS_L1CA_signal(int SV_ID)
                     std::cout << " . ";
                 }
             top_block->stop();
-            file_source->seek(0, 0);
+            file_source->seek(2 * FLAGS_skip_samples, 0);  //skip head. ibyte, two bytes per complex sample
+            head_samples.reset();
             std::cout.flush();
         }
     std::cout << "]" << std::endl;
+    std::cout << "-------------------------------------------\n";
+
+    for (auto& x : doppler_measurements_map)
+        {
+            std::cout << "DETECTED PRN: " << x.first << " with Doppler: " << x.second << " [Hz], code phase: " << code_delay_measurements_map.at(x.first) << " [samples] at signal SampleStamp " << acq_samplestamp_map.at(x.first) << "\n";
+        }
 
     // report the elapsed time
     end = std::chrono::system_clock::now();
@@ -587,19 +613,20 @@ TEST_F(GpsL1CADllPllTrackingPullInTest, ValidationOfResults)
                                 gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(int8_t), file_name, false);
                                 gr::blocks::interleaved_char_to_complex::sptr gr_interleaved_char_to_complex = gr::blocks::interleaved_char_to_complex::make();
                                 gr::blocks::null_sink::sptr sink = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
+                                gr::blocks::head::sptr head_samples = gr::blocks::head::make(sizeof(gr_complex), baseband_sampling_freq * FLAGS_duration);
                                 top_block->connect(file_source, 0, gr_interleaved_char_to_complex, 0);
-                                top_block->connect(gr_interleaved_char_to_complex, 0, tracking->get_left_block(), 0);
+                                top_block->connect(gr_interleaved_char_to_complex, 0, head_samples, 0);
+                                top_block->connect(head_samples, 0, tracking->get_left_block(), 0);
                                 top_block->connect(tracking->get_right_block(), 0, sink, 0);
                                 top_block->msg_connect(tracking->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-
-                                file_source->seek(acq_samplestamp_samples, 0);
+                                file_source->seek(2 * FLAGS_skip_samples + acq_samplestamp_samples, 0);  //skip head. ibyte, two bytes per complex sample
                             }) << "Failure connecting the blocks of tracking test.";
 
 
                             //********************************************************************
                             //***** STEP 5: Perform the signal tracking and read the results *****
                             //********************************************************************
-                            std::cout << "------------ START TRACKING -------------" << std::endl;
+                            std::cout << "--- START TRACKING WITH PULL-IN ERROR: " << acq_doppler_error_hz_values.at(current_acq_doppler_error_idx) << " [Hz] and " << acq_delay_error_chips_values.at(current_acq_doppler_error_idx).at(current_acq_code_error_idx) << " [Chips] ---" << std::endl;
                             tracking->start_tracking();
                             std::chrono::time_point<std::chrono::system_clock> start, end;
                             EXPECT_NO_THROW({

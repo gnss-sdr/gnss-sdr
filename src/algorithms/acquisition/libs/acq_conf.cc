@@ -36,6 +36,7 @@ Acq_Conf::Acq_Conf()
     /* PCPS acquisition configuration */
     sampled_ms = 0;
     max_dwells = 0;
+    samples_per_chip = 0;
     doppler_max = 0;
     num_doppler_bins_step2 = 0;
     doppler_step2 = 0.0;

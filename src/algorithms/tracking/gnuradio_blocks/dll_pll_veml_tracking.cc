@@ -399,7 +399,8 @@ void dll_pll_veml_tracking::start_tracking()
     double T_prn_mod_seconds = T_chip_mod_seconds * static_cast<double>(d_code_length_chips);
     double T_prn_mod_samples = T_prn_mod_seconds * trk_parameters.fs_in;
 
-    d_current_prn_length_samples = std::round(T_prn_mod_samples);
+    //d_current_prn_length_samples = std::round(T_prn_mod_samples);
+    d_current_prn_length_samples = std::floor(T_prn_mod_samples);
 
     double T_prn_true_seconds = static_cast<double>(d_code_length_chips) / d_code_chip_rate;
     double T_prn_true_samples = T_prn_true_seconds * trk_parameters.fs_in;
@@ -753,7 +754,8 @@ void dll_pll_veml_tracking::update_tracking_vars()
     // Compute the next buffer length based in the new period of the PRN sequence and the code phase error estimation
     T_prn_samples = T_prn_seconds * trk_parameters.fs_in;
     K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_secs * trk_parameters.fs_in;
-    d_current_prn_length_samples = static_cast<int>(round(K_blk_samples));  // round to a discrete number of samples
+    //d_current_prn_length_samples = static_cast<int>(round(K_blk_samples));  // round to a discrete number of samples
+    d_current_prn_length_samples = static_cast<int>(std::floor(K_blk_samples));  // round to a discrete number of samples
 
     //################### PLL COMMANDS #################################################
     // carrier phase step (NCO phase increment per sample) [rads/sample]
@@ -834,6 +836,7 @@ void dll_pll_veml_tracking::log_data(bool integrating)
             float tmp_VE, tmp_E, tmp_P, tmp_L, tmp_VL;
             float tmp_float;
             double tmp_double;
+            unsigned long int tmp_long_int;
             if (trk_parameters.track_pilot)
                 {
                     if (interchange_iq)
@@ -900,7 +903,8 @@ void dll_pll_veml_tracking::log_data(bool integrating)
                     d_dump_file.write(reinterpret_cast<char *>(&prompt_I), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char *>(&prompt_Q), sizeof(float));
                     // PRN start sample stamp
-                    d_dump_file.write(reinterpret_cast<char *>(&d_sample_counter), sizeof(unsigned long int));
+                    tmp_long_int = d_sample_counter + d_current_prn_length_samples;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_long_int), sizeof(unsigned long int));
                     // accumulated carrier phase
                     tmp_float = d_acc_carrier_phase_rad;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));

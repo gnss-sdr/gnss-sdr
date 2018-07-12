@@ -32,7 +32,7 @@
 #define GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_CC_H
 
 #include "GPS_L1_CA.h"
-#include "gps_l1_ca_subframe_fsm.h"
+#include "gps_navigation_message.h"
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
 #include <gnuradio/block.h>
@@ -84,17 +84,11 @@ private:
     boost::circular_buffer<Gnss_Synchro> d_symbol_history;
     float d_subframe_symbols[GPS_SUBFRAME_MS];  //symbols per subframe
     int d_current_subframe_symbol;
-    //double d_symbol_accumulator;
-    //short int d_symbol_accumulator_counter;
 
     //bits and frame
-    //unsigned short int d_frame_bit_index;
-    //unsigned int d_GPS_frame_4bytes;
     unsigned int d_prev_GPS_frame_4bytes;
-    //bool d_flag_parity;
     bool d_flag_preamble;
     bool d_flag_new_tow_available;
-    //int d_word_number;
 
     // navigation message vars
     Gps_Navigation_Message d_nav;

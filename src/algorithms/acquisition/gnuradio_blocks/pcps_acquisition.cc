@@ -283,9 +283,14 @@ void pcps_acquisition::init()
         {
             d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
             d_magnitude_grid[doppler_index] = static_cast<float*>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
+            for (unsigned k = 0; k < d_fft_size; k++)
+                {
+                    d_magnitude_grid[doppler_index][k] = 0.0;
+                }
             int doppler = -static_cast<int>(acq_parameters.doppler_max) + d_doppler_step * doppler_index;
             update_local_carrier(d_grid_doppler_wipeoffs[doppler_index], d_fft_size, d_old_freq + doppler);
         }
+
     d_worker_active = false;
 
     if (acq_parameters.dump)
@@ -782,6 +787,14 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
                 }
             d_num_noncoherent_integrations_counter = 0;
             d_positive_acq = 0;
+            // Reset grid
+            for (unsigned int i = 0; i < d_num_doppler_bins; i++)
+                {
+                    for (unsigned k = 0; k < d_fft_size; k++)
+                        {
+                            d_magnitude_grid[i][k] = 0.0;
+                        }
+                }
         }
 }
 

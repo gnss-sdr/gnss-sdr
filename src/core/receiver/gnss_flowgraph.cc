@@ -416,11 +416,7 @@ void GNSSFlowgraph::connect()
                 {
                     LOG(WARNING) << e.what();
                 }
-            if (sat == 0)
-                {
-                    //channels_.at(i)->set_signal(search_next_signal(gnss_signal, false));
-                }
-            else
+            if (sat != 0)
                 {
                     std::string gnss_system;
                     Gnss_Signal signal_value;

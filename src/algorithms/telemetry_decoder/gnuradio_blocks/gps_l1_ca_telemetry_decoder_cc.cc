@@ -238,7 +238,6 @@ bool gps_l1_ca_telemetry_decoder_cc::decode_subframe()
                                 {
                                     //std::cout << "word invalid sat " << this->d_satellite << std::endl;
                                     CRC_ok = false;
-                                    //break;
                                 }
                             //add word to subframe
                             // insert the word in the correct position of the subframe

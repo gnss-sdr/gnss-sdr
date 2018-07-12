@@ -65,6 +65,8 @@ DEFINE_int64(skip_samples, 0, "Skip an initial transitory in the processed signa
 
 DEFINE_int32(plot_detail_level, 0, "Specify the desired plot detail (0,1,2): 0 - Minimum plots (default) 2 - Plot all tracking parameters");
 
+DEFINE_double(skip_trk_transitory_s, 1.0, "Skip the initial tracking output signal to avoid transitory results [s]");
+
 //Emulated acquisition configuration
 
 //Tracking configuration

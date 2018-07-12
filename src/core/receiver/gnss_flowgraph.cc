@@ -418,7 +418,7 @@ void GNSSFlowgraph::connect()
                 }
             if (sat == 0)
                 {
-                    channels_.at(i)->set_signal(search_next_signal(gnss_signal, false));
+                    //channels_.at(i)->set_signal(search_next_signal(gnss_signal, false));
                 }
             else
                 {

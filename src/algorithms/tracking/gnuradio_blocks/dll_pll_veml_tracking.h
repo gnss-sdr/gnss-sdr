@@ -41,6 +41,7 @@
 #include <string>
 #include <map>
 #include <queue>
+#include <boost/circular_buffer.hpp>
 
 class dll_pll_veml_tracking;
 
@@ -69,6 +70,7 @@ private:
     friend dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_);
 
     dll_pll_veml_tracking(const Dll_Pll_Conf &conf_);
+    void msg_handler_preamble_index(pmt::pmt_t msg);
 
     bool cn0_and_tracking_lock_status(double coh_integration_time_s);
     bool acquire_secondary();
@@ -102,9 +104,12 @@ private:
     std::string *d_secondary_code_string;
     std::string signal_pretty_name;
 
+    uint64_t d_preamble_sample_counter;
+    int *d_gps_l1ca_preambles_symbols;
+    boost::circular_buffer<float> d_symbol_history;
+
     //tracking state machine
     int d_state;
-    bool d_synchonizing;
     //Integration period in samples
     int d_correlation_length_ms;
     int d_n_correlator_taps;

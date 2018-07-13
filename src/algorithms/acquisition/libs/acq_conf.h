@@ -46,8 +46,8 @@ public:
     unsigned int num_doppler_bins_step2;
     float doppler_step2;
     long fs_in;
-    int samples_per_ms;
-    int samples_per_code;
+    float samples_per_ms;
+    float samples_per_code;
     bool bit_transition_flag;
     bool use_CFAR_algorithm_flag;
     bool dump;

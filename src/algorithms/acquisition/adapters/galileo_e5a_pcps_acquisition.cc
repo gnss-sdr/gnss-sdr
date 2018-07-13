@@ -101,9 +101,9 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
     acq_parameters.it_size = item_size_;
-    acq_parameters.samples_per_code = code_length_;
-    acq_parameters.samples_per_ms = code_length_;
+    acq_parameters.samples_per_ms = static_cast<float>(fs_in_) * 0.001;
     acq_parameters.sampled_ms = sampled_ms_;
+    acq_parameters.samples_per_code = acq_parameters.samples_per_ms * static_cast<float>(GALILEO_E5a_CODE_PERIOD_MS);
     acq_parameters.num_doppler_bins_step2 = configuration_->property(role + ".second_nbins", 4);
     acq_parameters.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
     acq_parameters.make_2_steps = configuration_->property(role + ".make_two_steps", false);

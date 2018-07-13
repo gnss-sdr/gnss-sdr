@@ -95,8 +95,8 @@ private:
 
     void dump_results(int effective_fft_size);
 
-    float first_vs_second_peak_statistic(uint32_t& indext, int& doppler);
-    float max_to_input_power_statistic(uint32_t& indext, int& doppler, float input_power);
+    float first_vs_second_peak_statistic(uint32_t& indext, int& doppler, unsigned int num_doppler_bins, int doppler_max, int doppler_step);
+    float max_to_input_power_statistic(uint32_t& indext, int& doppler, float input_power, unsigned int num_doppler_bins, int doppler_max, int doppler_step);
 
     Acq_Conf acq_parameters;
     bool d_active;

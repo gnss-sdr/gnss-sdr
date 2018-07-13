@@ -41,8 +41,8 @@ Acq_Conf::Acq_Conf()
     num_doppler_bins_step2 = 0;
     doppler_step2 = 0.0;
     fs_in = 0;
-    samples_per_ms = 0;
-    samples_per_code = 0;
+    samples_per_ms = 0.0;
+    samples_per_code = 0.0;
     bit_transition_flag = false;
     use_CFAR_algorithm_flag = false;
     dump = false;

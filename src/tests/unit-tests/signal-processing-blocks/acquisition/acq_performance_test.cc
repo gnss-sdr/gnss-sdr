@@ -54,9 +54,12 @@ DEFINE_string(acq_test_implementation, std::string("GPS_L1_CA_PCPS_Acquisition")
 DEFINE_int32(acq_test_doppler_max, 5000, "Maximum Doppler, in Hz");
 DEFINE_int32(acq_test_doppler_step, 125, "Doppler step, in Hz.");
 DEFINE_int32(acq_test_coherent_time_ms, 1, "Acquisition coherent time, in ms");
-DEFINE_int32(acq_test_max_dwells, 1, "Number of non-coherent integrations");
-DEFINE_bool(acq_test_use_CFAR_algorithm, true, "Use CFAR algorithm");
-DEFINE_bool(acq_test_bit_transition_flag, false, "Bit transition flag");
+DEFINE_int32(acq_test_max_dwells, 1, "Number of non-coherent integrations.");
+DEFINE_bool(acq_test_use_CFAR_algorithm, true, "Use CFAR algorithm.");
+DEFINE_bool(acq_test_bit_transition_flag, false, "Bit transition flag.");
+DEFINE_bool(acq_test_make_two_steps, false, "Perform second step in a thinner grid.");
+DEFINE_int32(acq_test_second_nbins, 4, "If --acq_test_make_two_steps is set to true, this parameter sets the number of bins done in the acquisition refinement stage.");
+DEFINE_int32(acq_test_second_doppler_step, 10, "If --acq_test_make_two_steps is set to true, this parameter sets the Doppler step applied in the acquisition refinement stage, in Hz.");
 
 DEFINE_int32(acq_test_signal_duration_s, 2, "Generated signal duration, in s");
 DEFINE_int32(acq_test_num_meas, 0, "Number of measurements per run. 0 means the complete file.");
@@ -64,9 +67,9 @@ DEFINE_double(acq_test_cn0_init, 33.0, "Initial CN0, in dBHz.");
 DEFINE_double(acq_test_cn0_final, 45.0, "Final CN0, in dBHz.");
 DEFINE_double(acq_test_cn0_step, 3.0, "CN0 step, in dB.");
 
-DEFINE_double(acq_test_threshold_init, 11.0, "Initial acquisition threshold");
-DEFINE_double(acq_test_threshold_final, 16.0, "Final acquisition threshold");
-DEFINE_double(acq_test_threshold_step, 1.0, "Acquisition threshold step");
+DEFINE_double(acq_test_threshold_init, 3.0, "Initial acquisition threshold");
+DEFINE_double(acq_test_threshold_final, 4.0, "Final acquisition threshold");
+DEFINE_double(acq_test_threshold_step, 0.5, "Acquisition threshold step");
 
 DEFINE_double(acq_test_pfa_init, 1e-5, "Set initial threshold via probability of false alarm. Disable with -1.0");
 
@@ -165,17 +168,20 @@ protected:
                 signal_id = "1C";
                 system_id = 'G';
                 coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
+                min_integration_ms = 1;
             }
         else if (implementation.compare("GPS_L1_CA_PCPS_Acquisition_Fine_Doppler") == 0)
             {
                 signal_id = "1C";
                 system_id = 'G';
                 coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
+                min_integration_ms = 1;
             }
         else if (implementation.compare("Galileo_E1_PCPS_Ambiguous_Acquisition") == 0)
             {
                 signal_id = "1B";
                 system_id = 'E';
+                min_integration_ms = 4;
                 if (FLAGS_acq_test_coherent_time_ms == 1)
                     {
                         coherent_integration_time_ms = 4;
@@ -190,12 +196,14 @@ protected:
                 signal_id = "1G";
                 system_id = 'R';
                 coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
+                min_integration_ms = 1;
             }
         else if (implementation.compare("GLONASS_L2_CA_PCPS_Acquisition") == 0)
             {
                 signal_id = "2G";
                 system_id = 'R';
                 coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
+                min_integration_ms = 1;
             }
         else if (implementation.compare("GPS_L2_M_PCPS_Acquisition") == 0)
             {
@@ -209,12 +217,14 @@ protected:
                     {
                         coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
                     }
+                min_integration_ms = 20;
             }
         else if (implementation.compare("Galileo_E5a_Pcps_Acquisition") == 0)
             {
                 signal_id = "5X";
                 system_id = 'E';
                 coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
+                min_integration_ms = 1;
             }
         else if (implementation.compare("GPS_L5i_PCPS_Acquisition") == 0)
             {
@@ -227,6 +237,7 @@ protected:
                 signal_id = "1C";
                 system_id = 'G';
                 coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
+                min_integration_ms = 1;
             }
 
         init();
@@ -327,6 +338,7 @@ protected:
     std::string path_str = "./acq-perf-test";
 
     int num_thresholds;
+    unsigned int min_integration_ms;
 
     std::vector<std::vector<float>> Pd;
     std::vector<std::vector<float>> Pfa;
@@ -492,9 +504,17 @@ int AcquisitionPerformanceTest::configure_receiver(double cn0, float pfa, unsign
             config->set_property("Acquisition.repeat_satellite", "true");
 
             config->set_property("Acquisition.blocking", "true");
-            config->set_property("Acquisition.make_two_steps", "false");
-            config->set_property("Acquisition.second_nbins", std::to_string(4));
-            config->set_property("Acquisition.second_doppler_step", std::to_string(125));
+            if (FLAGS_acq_test_make_two_steps)
+                {
+                    config->set_property("Acquisition.make_two_steps", "true");
+                    config->set_property("Acquisition.second_nbins", std::to_string(FLAGS_acq_test_second_nbins));
+                    config->set_property("Acquisition.second_doppler_step", std::to_string(FLAGS_acq_test_second_doppler_step));
+                }
+            else
+                {
+                    config->set_property("Acquisition.make_two_steps", "false");
+                }
+
 
             config->set_property("Acquisition.dump", "true");
             std::string dump_file = path_str + std::string("/acquisition_") + std::to_string(cn0) + "_" + std::to_string(iter) + "_" + std::to_string(pfa);
@@ -804,9 +824,27 @@ TEST_F(AcquisitionPerformanceTest, ROC)
                                     double coh_time_ms = config->property("Acquisition.coherent_integration_time_ms", 1);
 
                                     std::cout << "Num executions: " << num_executions << std::endl;
+
+                                    unsigned int fft_size = 0;
+                                    unsigned int d_consumed_samples = coh_time_ms * config->property("GNSS-SDR.internal_fs_sps", 0) * 0.001;  // * (config->property("Acquisition.bit_transition_flag", false) ? 2 : 1);
+                                    if (coh_time_ms == min_integration_ms)
+                                        {
+                                            fft_size = d_consumed_samples;
+                                        }
+                                    else
+                                        {
+                                            fft_size = d_consumed_samples * 2;
+                                        }
+
                                     for (int execution = 1; execution <= num_executions; execution++)
                                         {
-                                            acquisition_dump_reader acq_dump(basename, observed_satellite, config->property("Acquisition.doppler_max", 0), config->property("Acquisition.doppler_step", 0), config->property("GNSS-SDR.internal_fs_sps", 0) * GPS_L1_CA_CODE_PERIOD * static_cast<double>(coh_time_ms) * (config->property("Acquisition.bit_transition_flag", false) ? 2 : 1), ch, execution);
+                                            acquisition_dump_reader acq_dump(basename,
+                                                observed_satellite,
+                                                config->property("Acquisition.doppler_max", 0),
+                                                config->property("Acquisition.doppler_step", 0),
+                                                fft_size,
+                                                ch,
+                                                execution);
                                             acq_dump.read_binary_acq();
                                             if (acq_dump.positive_acq)
                                                 {

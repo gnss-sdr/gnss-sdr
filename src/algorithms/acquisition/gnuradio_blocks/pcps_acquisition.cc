@@ -460,7 +460,7 @@ void pcps_acquisition::dump_results(int effective_fft_size)
 }
 
 
-float pcps_acquisition::max_to_input_power_statistic(uint32_t& indext, int& doppler, float input_power)
+float pcps_acquisition::max_to_input_power_statistic(uint32_t& indext, int& doppler, float input_power, unsigned int num_doppler_bins, int doppler_max, int doppler_step)
 {
     float grid_maximum = 0.0;
     unsigned int index_doppler = 0;
@@ -469,7 +469,7 @@ float pcps_acquisition::max_to_input_power_statistic(uint32_t& indext, int& dopp
     float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
 
     // Find the correlation peak and the carrier frequency
-    for (unsigned int i = 0; i < d_num_doppler_bins; i++)
+    for (unsigned int i = 0; i < num_doppler_bins; i++)
         {
             volk_gnsssdr_32f_index_max_32u(&tmp_intex_t, d_magnitude_grid[i], d_fft_size);
             if (d_magnitude_grid[i][tmp_intex_t] > grid_maximum)
@@ -480,14 +480,21 @@ float pcps_acquisition::max_to_input_power_statistic(uint32_t& indext, int& dopp
                 }
         }
     indext = index_time;
-    doppler = -static_cast<int>(acq_parameters.doppler_max) + d_doppler_step * static_cast<int>(index_doppler);
+    if (!d_step_two)
+        {
+            doppler = -static_cast<int>(doppler_max) + doppler_step * static_cast<int>(index_doppler);
+        }
+    else
+        {
+            doppler = static_cast<int>(d_doppler_center_step_two + (index_doppler - (acq_parameters.num_doppler_bins_step2 / 2.0) * acq_parameters.doppler_step2));
+        }
 
     float magt = grid_maximum / (fft_normalization_factor * fft_normalization_factor);
     return magt / input_power;
 }
 
 
-float pcps_acquisition::first_vs_second_peak_statistic(uint32_t& indext, int& doppler)
+float pcps_acquisition::first_vs_second_peak_statistic(uint32_t& indext, int& doppler, unsigned int num_doppler_bins, int doppler_max, int doppler_step)
 {
     // Look for correlation peaks in the results
     // Find the highest peak and compare it to the second highest peak
@@ -499,7 +506,7 @@ float pcps_acquisition::first_vs_second_peak_statistic(uint32_t& indext, int& do
     uint32_t index_time = 0;
 
     // Find the correlation peak and the carrier frequency
-    for (unsigned int i = 0; i < d_num_doppler_bins; i++)
+    for (unsigned int i = 0; i < num_doppler_bins; i++)
         {
             volk_gnsssdr_32f_index_max_32u(&tmp_intex_t, d_magnitude_grid[i], d_fft_size);
             if (d_magnitude_grid[i][tmp_intex_t] > firstPeak)
@@ -510,7 +517,15 @@ float pcps_acquisition::first_vs_second_peak_statistic(uint32_t& indext, int& do
                 }
         }
     indext = index_time;
-    doppler = -static_cast<int>(acq_parameters.doppler_max) + d_doppler_step * static_cast<int>(index_doppler);
+
+    if (!d_step_two)
+        {
+            doppler = -static_cast<int>(doppler_max) + doppler_step * static_cast<int>(index_doppler);
+        }
+    else
+        {
+            doppler = static_cast<int>(d_doppler_center_step_two + (index_doppler - (acq_parameters.num_doppler_bins_step2 / 2.0) * acq_parameters.doppler_step2));
+        }
 
     // Find 1 chip wide code phase exclude range around the peak
     int32_t excludeRangeIndex1 = index_time - d_samplesPerChip;
@@ -629,11 +644,11 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
             // Compute the test statistic
             if (d_use_CFAR_algorithm_flag)
                 {
-                    d_test_statistics = max_to_input_power_statistic(indext, doppler, d_input_power);
+                    d_test_statistics = max_to_input_power_statistic(indext, doppler, d_input_power, d_num_doppler_bins, acq_parameters.doppler_max, d_doppler_step);
                 }
             else
                 {
-                    d_test_statistics = first_vs_second_peak_statistic(indext, doppler);
+                    d_test_statistics = first_vs_second_peak_statistic(indext, doppler, d_num_doppler_bins, acq_parameters.doppler_max, d_doppler_step);
                 }
             d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % acq_parameters.samples_per_code);
             d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
@@ -643,9 +658,6 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
         {
             for (unsigned int doppler_index = 0; doppler_index < acq_parameters.num_doppler_bins_step2; doppler_index++)
                 {
-                    // doppler search steps
-                    float doppler = d_doppler_center_step_two + (static_cast<float>(doppler_index) - static_cast<float>(acq_parameters.num_doppler_bins_step2) / 2.0) * acq_parameters.doppler_step2;
-
                     volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in, d_grid_doppler_wipeoffs_step_two[doppler_index], d_fft_size);
 
                     // 3- Perform the FFT-based convolution  (parallel time search)
@@ -659,54 +671,29 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
                     // compute the inverse FFT
                     d_ifft->execute();
 
-                    // Search maximum
                     size_t offset = (acq_parameters.bit_transition_flag ? effective_fft_size : 0);
-                    volk_32fc_magnitude_squared_32f(d_magnitude, d_ifft->get_outbuf() + offset, effective_fft_size);
-                    volk_gnsssdr_32f_index_max_32u(&indext, d_magnitude, effective_fft_size);
-                    magt = d_magnitude[indext];
-
-                    if (d_use_CFAR_algorithm_flag)
+                    if (d_num_noncoherent_integrations_counter == 1)
                         {
-                            // Normalize the maximum value to correct the scale factor introduced by FFTW
-                            magt = d_magnitude[indext] / (fft_normalization_factor * fft_normalization_factor);
+                            volk_32fc_magnitude_squared_32f(d_magnitude_grid[doppler_index], d_ifft->get_outbuf() + offset, effective_fft_size);
                         }
-                    // 4- record the maximum peak and the associated synchronization parameters
-                    if (d_mag < magt)
+                    else
                         {
-                            d_mag = magt;
-
-                            if (!d_use_CFAR_algorithm_flag)
-                                {
-                                    // Search grid noise floor approximation for this doppler line
-                                    volk_32f_accumulator_s32f(&d_input_power, d_magnitude, effective_fft_size);
-                                    d_input_power = (d_input_power - d_mag) / (effective_fft_size - 1);
-                                }
-
-                            // In case that acq_parameters.bit_transition_flag = true, we compare the potentially
-                            // new maximum test statistics (d_mag/d_input_power) with the value in
-                            // d_test_statistics. When the second dwell is being processed, the value
-                            // of d_mag/d_input_power could be lower than d_test_statistics (i.e,
-                            // the maximum test statistics in the previous dwell is greater than
-                            // current d_mag/d_input_power). Note that d_test_statistics is not
-                            // restarted between consecutive dwells in multidwell operation.
-
-                            if (d_test_statistics < (d_mag / d_input_power) or !acq_parameters.bit_transition_flag)
-                                {
-                                    d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % acq_parameters.samples_per_code);
-                                    d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
-                                    d_gnss_synchro->Acq_samplestamp_samples = samp_count;
-
-                                    // 5- Compute the test statistics and compare to the threshold
-                                    //d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
-                                    d_test_statistics = d_mag / d_input_power;
-                                }
-                        }
-                    // Record results to file if required
-                    if (acq_parameters.dump and d_channel == d_dump_channel)
-                        {
-                            memcpy(grid_.colptr(doppler_index), d_magnitude, sizeof(float) * effective_fft_size);
+                            volk_32fc_magnitude_squared_32f(d_tmp_buffer, d_ifft->get_outbuf() + offset, effective_fft_size);
+                            volk_32f_x2_add_32f(d_magnitude_grid[doppler_index], d_magnitude_grid[doppler_index], d_tmp_buffer, effective_fft_size);
                         }
                 }
+            // Compute the test statistic
+            if (d_use_CFAR_algorithm_flag)
+                {
+                    d_test_statistics = max_to_input_power_statistic(indext, doppler, d_input_power, acq_parameters.num_doppler_bins_step2, static_cast<int>(d_doppler_center_step_two - (static_cast<float>(acq_parameters.num_doppler_bins_step2) / 2.0) * acq_parameters.doppler_step2), acq_parameters.doppler_step2);
+                }
+            else
+                {
+                    d_test_statistics = first_vs_second_peak_statistic(indext, doppler, acq_parameters.num_doppler_bins_step2, static_cast<int>(d_doppler_center_step_two - (static_cast<float>(acq_parameters.num_doppler_bins_step2) / 2.0) * acq_parameters.doppler_step2), acq_parameters.doppler_step2);
+                }
+            d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % acq_parameters.samples_per_code);
+            d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
+            d_gnss_synchro->Acq_samplestamp_samples = samp_count;
         }
 
     lk.lock();

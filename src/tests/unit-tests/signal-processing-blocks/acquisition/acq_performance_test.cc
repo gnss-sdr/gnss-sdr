@@ -54,9 +54,12 @@ DEFINE_string(acq_test_implementation, std::string("GPS_L1_CA_PCPS_Acquisition")
 DEFINE_int32(acq_test_doppler_max, 5000, "Maximum Doppler, in Hz");
 DEFINE_int32(acq_test_doppler_step, 125, "Doppler step, in Hz.");
 DEFINE_int32(acq_test_coherent_time_ms, 1, "Acquisition coherent time, in ms");
-DEFINE_int32(acq_test_max_dwells, 1, "Number of non-coherent integrations");
-DEFINE_bool(acq_test_use_CFAR_algorithm, true, "Use CFAR algorithm");
-DEFINE_bool(acq_test_bit_transition_flag, false, "Bit transition flag");
+DEFINE_int32(acq_test_max_dwells, 1, "Number of non-coherent integrations.");
+DEFINE_bool(acq_test_use_CFAR_algorithm, true, "Use CFAR algorithm.");
+DEFINE_bool(acq_test_bit_transition_flag, false, "Bit transition flag.");
+DEFINE_bool(acq_test_make_two_steps, false, "Perform second step in a thinner grid.");
+DEFINE_int32(acq_test_second_nbins, 4, "If --acq_test_make_two_steps is set to true, this parameter sets the number of bins done in the acquisition refinement stage.");
+DEFINE_int32(acq_test_second_doppler_step, 10, "If --acq_test_make_two_steps is set to true, this parameter sets the Doppler step applied in the acquisition refinement stage, in Hz.");
 
 DEFINE_int32(acq_test_signal_duration_s, 2, "Generated signal duration, in s");
 DEFINE_int32(acq_test_num_meas, 0, "Number of measurements per run. 0 means the complete file.");
@@ -501,9 +504,17 @@ int AcquisitionPerformanceTest::configure_receiver(double cn0, float pfa, unsign
             config->set_property("Acquisition.repeat_satellite", "true");
 
             config->set_property("Acquisition.blocking", "true");
-            config->set_property("Acquisition.make_two_steps", "false");
-            config->set_property("Acquisition.second_nbins", std::to_string(4));
-            config->set_property("Acquisition.second_doppler_step", std::to_string(125));
+            if (FLAGS_acq_test_make_two_steps)
+                {
+                    config->set_property("Acquisition.make_two_steps", "true");
+                    config->set_property("Acquisition.second_nbins", std::to_string(FLAGS_acq_test_second_nbins));
+                    config->set_property("Acquisition.second_doppler_step", std::to_string(FLAGS_acq_test_second_doppler_step));
+                }
+            else
+                {
+                    config->set_property("Acquisition.make_two_steps", "false");
+                }
+
 
             config->set_property("Acquisition.dump", "true");
             std::string dump_file = path_str + std::string("/acquisition_") + std::to_string(cn0) + "_" + std::to_string(iter) + "_" + std::to_string(pfa);

@@ -2,6 +2,7 @@
  * \file dll_pll_veml_tracking.cc
  * \brief Implementation of a code DLL + carrier PLL tracking block.
  * \author Antonio Ramos, 2018 antonio.ramosdet(at)gmail.com
+ * 		   Javier Arribas, 2018. jarribas(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:
  * [1] K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
@@ -84,10 +85,12 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     this->message_port_register_out(pmt::mp("events"));
     this->set_relative_rate(1.0 / static_cast<double>(trk_parameters.vector_length));
 
+    // Telemetry bit synchronization message port input (mainly for GPS L1 CA)
+    this->message_port_register_in(pmt::mp("preamble_samplestamp"));
+
     // initialize internal vars
     d_veml = false;
     d_cloop = true;
-    d_synchonizing = false;
     d_code_chip_rate = 0.0;
     d_secondary_code_length = 0;
     d_secondary_code_string = nullptr;
@@ -120,6 +123,30 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                     d_secondary = false;
                     trk_parameters.track_pilot = false;
                     interchange_iq = false;
+
+                    // set the preamble
+                    unsigned short int preambles_bits[GPS_CA_PREAMBLE_LENGTH_BITS] = GPS_PREAMBLE;
+
+                    // preamble bits to sampled symbols
+                    d_gps_l1ca_preambles_symbols = static_cast<int *>(volk_gnsssdr_malloc(GPS_CA_PREAMBLE_LENGTH_SYMBOLS * sizeof(int), volk_gnsssdr_get_alignment()));
+                    int n = 0;
+                    for (int i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
+                        {
+                            for (unsigned int j = 0; j < GPS_CA_TELEMETRY_SYMBOLS_PER_BIT; j++)
+                                {
+                                    if (preambles_bits[i] == 1)
+                                        {
+                                            d_gps_l1ca_preambles_symbols[n] = 1;
+                                        }
+                                    else
+                                        {
+                                            d_gps_l1ca_preambles_symbols[n] = -1;
+                                        }
+                                    n++;
+                                }
+                        }
+                    d_symbol_history.resize(GPS_CA_PREAMBLE_LENGTH_SYMBOLS);  // Change fixed buffer size
+                    d_symbol_history.clear();                                 // Clear all the elements in the buffer
                 }
             else if (signal_type.compare("2S") == 0)
                 {
@@ -521,7 +548,6 @@ void dll_pll_veml_tracking::start_tracking()
 
     // enable tracking pull-in
     d_state = 1;
-    d_synchonizing = false;
     d_cloop = true;
     d_Prompt_buffer_deque.clear();
     d_last_prompt = gr_complex(0.0, 0.0);
@@ -533,6 +559,11 @@ void dll_pll_veml_tracking::start_tracking()
 
 dll_pll_veml_tracking::~dll_pll_veml_tracking()
 {
+    if (signal_type.compare("1C") == 0)
+        {
+            volk_gnsssdr_free(d_gps_l1ca_preambles_symbols);
+        }
+
     if (d_dump_file.is_open())
         {
             try
@@ -1281,39 +1312,82 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                             }
                         else if (d_symbols_per_bit > 1)  //Signal does not have secondary code. Search a bit transition by sign change
                             {
-                                if (d_synchonizing)
+                                float current_tracking_time_s = static_cast<float>(d_sample_counter - d_acq_sample_stamp) / trk_parameters.fs_in;
+                                if (current_tracking_time_s > 10)
                                     {
-                                        if (d_Prompt->real() * d_last_prompt.real() > 0.0)
+                                        d_symbol_history.push_back(d_Prompt->real());
+                                        //******* preamble correlation ********
+                                        int corr_value = 0;
+                                        if ((d_symbol_history.size() == GPS_CA_PREAMBLE_LENGTH_SYMBOLS))  // and (d_make_correlation or !d_flag_frame_sync))
                                             {
-                                                d_current_symbol++;
+                                                for (unsigned int i = 0; i < GPS_CA_PREAMBLE_LENGTH_SYMBOLS; i++)
+                                                    {
+                                                        if (d_symbol_history.at(i) < 0)  // symbols clipping
+                                                            {
+                                                                corr_value -= d_gps_l1ca_preambles_symbols[i];
+                                                            }
+                                                        else
+                                                            {
+                                                                corr_value += d_gps_l1ca_preambles_symbols[i];
+                                                            }
+                                                    }
                                             }
-                                        else if (d_current_symbol > d_symbols_per_bit)
+                                        if (corr_value == GPS_CA_PREAMBLE_LENGTH_SYMBOLS)
                                             {
-                                                d_synchonizing = false;
-                                                d_current_symbol = 1;
+                                                //std::cout << "Preamble detected at tracking!" << std::endl;
+                                                next_state = true;
                                             }
                                         else
                                             {
-                                                d_current_symbol = 1;
-                                                d_last_prompt = *d_Prompt;
+                                                next_state = false;
                                             }
-                                    }
-                                else if (d_last_prompt.real() != 0.0)
-                                    {
-                                        d_current_symbol++;
-                                        if (d_current_symbol == d_symbols_per_bit) next_state = true;
                                     }
                                 else
                                     {
-                                        d_last_prompt = *d_Prompt;
-                                        d_synchonizing = true;
-                                        d_current_symbol = 1;
+                                        next_state = false;
                                     }
                             }
                         else
                             {
                                 next_state = true;
                             }
+
+                        // ########### Output the tracking results to Telemetry block ##########
+                        if (interchange_iq)
+                            {
+                                if (trk_parameters.track_pilot)
+                                    {
+                                        // Note that data and pilot components are in quadrature. I and Q are interchanged
+                                        current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt_Data).imag());
+                                        current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt_Data).real());
+                                    }
+                                else
+                                    {
+                                        current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt).imag());
+                                        current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt).real());
+                                    }
+                            }
+                        else
+                            {
+                                if (trk_parameters.track_pilot)
+                                    {
+                                        // Note that data and pilot components are in quadrature. I and Q are interchanged
+                                        current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt_Data).real());
+                                        current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt_Data).imag());
+                                    }
+                                else
+                                    {
+                                        current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt).real());
+                                        current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt).imag());
+                                    }
+                            }
+                        current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
+                        current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
+                        current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
+                        current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
+                        current_synchro_data.Flag_valid_symbol_output = true;
+                        current_synchro_data.correlation_length_ms = d_correlation_length_ms;
+
                         if (next_state)
                             {  // reset extended correlator
                                 d_VE_accu = gr_complex(0.0, 0.0);
@@ -1324,7 +1398,6 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                 d_last_prompt = gr_complex(0.0, 0.0);
                                 d_Prompt_buffer_deque.clear();
                                 d_current_symbol = 0;
-                                d_synchonizing = false;
 
                                 if (d_enable_extended_integration)
                                     {

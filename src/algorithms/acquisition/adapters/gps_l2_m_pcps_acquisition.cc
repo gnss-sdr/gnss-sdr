@@ -78,8 +78,11 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
     acq_parameters.dump_filename = dump_filename_;
     //--- Find number of samples per spreading code -------------------------
-    code_length_ = std::round(static_cast<double>(fs_in_) / (GPS_L2_M_CODE_RATE_HZ / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS)));
+    //code_length_ = std::round(static_cast<double>(fs_in_) / (GPS_L2_M_CODE_RATE_HZ / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS)));
+    acq_parameters.samples_per_ms = static_cast<int>(std::round(static_cast<double>(fs_in_) * 0.001));
+    acq_parameters.sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 20);
 
+    code_length_ = acq_parameters.sampled_ms * acq_parameters.samples_per_ms * (acq_parameters.bit_transition_flag ? 2 : 1);
     vector_length_ = code_length_;
 
     if (bit_transition_flag_)
@@ -97,10 +100,10 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
         {
             item_size_ = sizeof(gr_complex);
         }
-    acq_parameters.samples_per_ms = static_cast<int>(std::round(static_cast<double>(fs_in_) * 0.001));
+
     acq_parameters.samples_per_code = code_length_;
     acq_parameters.it_size = item_size_;
-    acq_parameters.sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 20);
+
     acq_parameters.num_doppler_bins_step2 = configuration_->property(role + ".second_nbins", 4);
     acq_parameters.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
     acq_parameters.make_2_steps = configuration_->property(role + ".make_two_steps", false);

@@ -96,10 +96,10 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
         {
             item_size_ = sizeof(gr_complex);
         }
-    acq_parameters.samples_per_code = code_length_;
-    acq_parameters.samples_per_ms = code_length_;
+    acq_parameters.samples_per_ms = static_cast<float>(fs_in_) * 0.001;
+    acq_parameters.samples_per_code = acq_parameters.samples_per_ms * static_cast<float>(GPS_L5i_PERIOD * 1000.0);
     acq_parameters.it_size = item_size_;
-    acq_parameters.sampled_ms = 1;
+    acq_parameters.sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 1);
     acq_parameters.num_doppler_bins_step2 = configuration_->property(role + ".second_nbins", 4);
     acq_parameters.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
     acq_parameters.make_2_steps = configuration_->property(role + ".make_two_steps", false);

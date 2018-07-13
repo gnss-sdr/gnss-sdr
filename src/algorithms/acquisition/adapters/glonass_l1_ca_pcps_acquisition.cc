@@ -100,8 +100,8 @@ GlonassL1CaPcpsAcquisition::GlonassL1CaPcpsAcquisition(
         }
     acq_parameters.it_size = item_size_;
     acq_parameters.sampled_ms = sampled_ms_;
-    acq_parameters.samples_per_ms = code_length_;
-    acq_parameters.samples_per_code = code_length_;
+    acq_parameters.samples_per_ms = static_cast<float>(fs_in_) * 0.001;
+    acq_parameters.samples_per_code = acq_parameters.samples_per_ms * static_cast<float>(GLONASS_L1_CA_CODE_PERIOD);
     acq_parameters.num_doppler_bins_step2 = configuration_->property(role + ".second_nbins", 4);
     acq_parameters.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
     acq_parameters.make_2_steps = configuration_->property(role + ".make_two_steps", false);

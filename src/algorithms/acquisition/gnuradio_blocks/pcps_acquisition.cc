@@ -565,7 +565,6 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
     gr::thread::scoped_lock lk(d_setlock);
 
     // initialize acquisition algorithm
-    float magt = 0.0;
     int doppler = 0;
     uint32_t indext = 0;
     int effective_fft_size = (acq_parameters.bit_transition_flag ? d_fft_size / 2 : d_fft_size);
@@ -582,7 +581,6 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
                 }
         }
     const gr_complex* in = d_input_signal;  // Get the input samples pointer
-    float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
 
     d_input_power = 0.0;
     d_mag = 0.0;
@@ -650,7 +648,7 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
                 {
                     d_test_statistics = first_vs_second_peak_statistic(indext, doppler, d_num_doppler_bins, acq_parameters.doppler_max, d_doppler_step);
                 }
-            d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % acq_parameters.samples_per_code);
+            d_gnss_synchro->Acq_delay_samples = static_cast<double>(std::fmod(static_cast<float>(indext), acq_parameters.samples_per_code));
             d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
             d_gnss_synchro->Acq_samplestamp_samples = samp_count;
         }
@@ -691,7 +689,7 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
                 {
                     d_test_statistics = first_vs_second_peak_statistic(indext, doppler, acq_parameters.num_doppler_bins_step2, static_cast<int>(d_doppler_center_step_two - (static_cast<float>(acq_parameters.num_doppler_bins_step2) / 2.0) * acq_parameters.doppler_step2), acq_parameters.doppler_step2);
                 }
-            d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % acq_parameters.samples_per_code);
+            d_gnss_synchro->Acq_delay_samples = static_cast<double>(std::fmod(static_cast<float>(indext), acq_parameters.samples_per_code));
             d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
             d_gnss_synchro->Acq_samplestamp_samples = samp_count;
         }

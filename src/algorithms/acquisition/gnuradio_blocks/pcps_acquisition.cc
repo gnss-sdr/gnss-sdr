@@ -65,7 +65,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
     d_old_freq = 0;
     d_num_noncoherent_integrations_counter = 0;
     d_consumed_samples = acq_parameters.sampled_ms * acq_parameters.samples_per_ms * (acq_parameters.bit_transition_flag ? 2 : 1);
-    if (acq_parameters.sampled_ms == (acq_parameters.samples_per_code / acq_parameters.samples_per_ms))  //
+    if (acq_parameters.sampled_ms == acq_parameters.ms_per_code)
         {
             d_fft_size = d_consumed_samples;
         }
@@ -205,7 +205,7 @@ void pcps_acquisition::set_local_code(std::complex<float>* code)
         }
     else
         {
-            if (acq_parameters.sampled_ms == (acq_parameters.samples_per_code / acq_parameters.samples_per_ms))
+            if (acq_parameters.sampled_ms == acq_parameters.ms_per_code)
                 {
                     memcpy(d_fft_if->get_inbuf(), code, sizeof(gr_complex) * d_consumed_samples);
                 }

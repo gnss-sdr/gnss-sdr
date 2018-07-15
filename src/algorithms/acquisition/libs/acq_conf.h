@@ -40,6 +40,7 @@ class Acq_Conf
 public:
     /* PCPS Acquisition configuration */
     unsigned int sampled_ms;
+    unsigned int ms_per_code;
     unsigned int samples_per_chip;
     unsigned int max_dwells;
     unsigned int doppler_max;

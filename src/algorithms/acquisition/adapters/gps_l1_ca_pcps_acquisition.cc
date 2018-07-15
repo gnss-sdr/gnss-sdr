@@ -71,6 +71,7 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     acq_parameters.doppler_max = doppler_max_;
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);
     acq_parameters.sampled_ms = sampled_ms_;
+    acq_parameters.ms_per_code = 1;
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
     acq_parameters.bit_transition_flag = bit_transition_flag_;
     use_CFAR_algorithm_flag_ = configuration_->property(role + ".use_CFAR_algorithm", true);  //will be false in future versions

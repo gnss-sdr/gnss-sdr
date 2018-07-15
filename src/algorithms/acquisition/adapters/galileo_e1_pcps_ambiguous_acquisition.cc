@@ -62,12 +62,13 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
     if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
     acq_parameters.doppler_max = doppler_max_;
-    sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 4);
+    acq_parameters.ms_per_code = 4;
+    sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", acq_parameters.ms_per_code);
     acq_parameters.sampled_ms = sampled_ms_;
-    if ((acq_parameters.sampled_ms % 4) != 0)
+    if ((acq_parameters.sampled_ms % acq_parameters.ms_per_code) != 0)
         {
             LOG(WARNING) << "Parameter coherent_integration_time_ms should be a multiple of 4. Setting it to 4";
-            acq_parameters.sampled_ms = 4;
+            acq_parameters.sampled_ms = acq_parameters.ms_per_code;
         }
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
     acq_parameters.bit_transition_flag = bit_transition_flag_;

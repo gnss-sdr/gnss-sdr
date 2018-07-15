@@ -79,21 +79,17 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     acq_parameters.dump_filename = dump_filename_;
     //--- Find number of samples per spreading code -------------------------
     acq_parameters.samples_per_ms = static_cast<float>(fs_in_) * 0.001;
-    acq_parameters.sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 20);
-    if ((acq_parameters.sampled_ms % 20) != 0)
+    acq_parameters.ms_per_code = 20;
+    acq_parameters.sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", acq_parameters.ms_per_code);
+    if ((acq_parameters.sampled_ms % acq_parameters.ms_per_code) != 0)
         {
             LOG(WARNING) << "Parameter coherent_integration_time_ms should be a multiple of 20. Setting it to 20";
-            acq_parameters.sampled_ms = 20;
+            acq_parameters.sampled_ms = acq_parameters.ms_per_code;
         }
 
-    code_length_ = acq_parameters.sampled_ms * acq_parameters.samples_per_ms * (acq_parameters.bit_transition_flag ? 2 : 1);
+    code_length_ = acq_parameters.ms_per_code * acq_parameters.samples_per_ms;
 
-    vector_length_ = code_length_;
-
-    if (bit_transition_flag_)
-        {
-            vector_length_ *= 2;
-        }
+    vector_length_ = acq_parameters.sampled_ms * acq_parameters.samples_per_ms * (acq_parameters.bit_transition_flag ? 2 : 1);
 
     code_ = new gr_complex[vector_length_];
 
@@ -129,6 +125,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     threshold_ = 0.0;
     doppler_step_ = 0;
     gnss_synchro_ = 0;
+    num_codes_ = acq_parameters.sampled_ms / acq_parameters.ms_per_code;
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
@@ -217,9 +214,18 @@ void GpsL2MPcpsAcquisition::init()
 
 void GpsL2MPcpsAcquisition::set_local_code()
 {
-    gps_l2c_m_code_gen_complex_sampled(code_, gnss_synchro_->PRN, fs_in_);
+    std::complex<float>* code = new std::complex<float>[code_length_];
+
+    gps_l2c_m_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_);
+
+    for (unsigned int i = 0; i < num_codes_; i++)
+        {
+            memcpy(&(code_[i * code_length_]), code,
+                sizeof(gr_complex) * code_length_);
+        }
 
     acquisition_->set_local_code(code_);
+    delete[] code;
 }
 
 

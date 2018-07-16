@@ -1040,7 +1040,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                             for (unsigned int config_sweep_idx = 0; config_sweep_idx < mean_doppler_error_sweep.size(); config_sweep_idx++)
                                 {
                                     g7.plot_xy_err(generator_CN0_values_sweep_copy.at(config_sweep_idx),
-                                        generator_CN0_values_sweep_copy.at(config_sweep_idx),
+                                        mean_doppler_error_sweep.at(config_sweep_idx),
                                         std_dev_doppler_error_sweep.at(config_sweep_idx),
                                         "PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_sweep_idx)) +
                                             +"," + std::to_string(DLL_wide_bw_values.at(config_sweep_idx)) + " Hz");

@@ -339,7 +339,8 @@ std::vector<double> GpsL1CADllPllTrackingTest::check_results_acc_carrier_phase(a
 
     // 2. RMSE
     arma::vec err;
-    err = meas_value - true_value_interp;
+    //it is required to remove the initial offset in the accumulated carrier phase error
+    err = (meas_value - meas_value(0)) - (true_value_interp - true_value_interp(0));
     arma::vec err2 = arma::square(err);
     //conversion between arma::vec and std:vector
     std::vector<double> err_std_vector(err.colptr(0), err.colptr(0) + err.n_rows);

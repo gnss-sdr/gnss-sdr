@@ -45,6 +45,7 @@
 #include "true_observables_reader.h"
 #include <boost/filesystem.hpp>
 #include <gnuradio/top_block.h>
+#include <gnuradio/blocks/skiphead.h>
 
 
 DEFINE_string(config_file_ptest, std::string(""), "File containing alternative configuration parameters for the acquisition performance test.");
@@ -78,6 +79,7 @@ DEFINE_int32(acq_test_fake_PRN, 33, "PRN number of a non-present satellite");
 
 DEFINE_int32(acq_test_iterations, 1, "Number of iterations (same signal, different noise realization)");
 DEFINE_bool(plot_acq_test, false, "Plots results with gnuplot, if available");
+DEFINE_int32(acq_test_skiphead, 0, "Number of samples to skip in the input file");
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class AcqPerfTest_msg_rx;
@@ -551,6 +553,7 @@ int AcquisitionPerformanceTest::run_receiver()
 
     top_block = gr::make_top_block("Acquisition test");
     boost::shared_ptr<AcqPerfTest_msg_rx> msg_rx = AcqPerfTest_msg_rx_make(channel_internal_queue);
+    gr::blocks::skiphead::sptr skiphead = gr::blocks::skiphead::make(sizeof(gr_complex), FLAGS_acq_test_skiphead);
 
     queue = gr::msg_queue::make(0);
     gnss_synchro = Gnss_Synchro();
@@ -609,7 +612,8 @@ int AcquisitionPerformanceTest::run_receiver()
 
     acquisition->reset();
     top_block->connect(file_source, 0, gr_interleaved_char_to_complex, 0);
-    top_block->connect(gr_interleaved_char_to_complex, 0, valve, 0);
+    top_block->connect(gr_interleaved_char_to_complex, 0, skiphead, 0);
+    top_block->connect(skiphead, 0, valve, 0);
     top_block->connect(valve, 0, acquisition->get_left_block(), 0);
     top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
 

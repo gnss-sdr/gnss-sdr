@@ -52,8 +52,8 @@ pcps_acquisition_sptr pcps_make_acquisition(const Acq_Conf& conf_)
 
 
 pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acquisition",
-                                                                gr::io_signature::make(1, 1, conf_.it_size * conf_.sampled_ms * conf_.samples_per_ms * (conf_.bit_transition_flag ? 2 : 1)),
-                                                                gr::io_signature::make(0, 0, conf_.it_size * conf_.sampled_ms * conf_.samples_per_ms * (conf_.bit_transition_flag ? 2 : 1)))
+                                                                gr::io_signature::make(1, 1, conf_.it_size * std::floor(conf_.sampled_ms * conf_.samples_per_ms) * (conf_.bit_transition_flag ? 2 : 1)),
+                                                                gr::io_signature::make(0, 0, conf_.it_size))
 {
     this->message_port_register_out(pmt::mp("events"));
 
@@ -798,7 +798,6 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
      * 5. Compute the test statistics and compare to the threshold
      * 6. Declare positive or negative acquisition using a message port
      */
-
     gr::thread::scoped_lock lk(d_setlock);
     if (!d_active or d_worker_active)
         {

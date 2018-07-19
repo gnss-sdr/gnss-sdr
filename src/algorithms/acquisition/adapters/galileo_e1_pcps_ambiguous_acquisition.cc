@@ -85,7 +85,7 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
     acq_parameters.dump_filename = dump_filename_;
     //--- Find number of samples per spreading code (4 ms)  -----------------
-    code_length_ = static_cast<unsigned int>(std::round(static_cast<double>(fs_in_) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
+    code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(fs_in_) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
 
     float samples_per_ms = static_cast<float>(fs_in_) * 0.001;
     acq_parameters.samples_per_ms = samples_per_ms;

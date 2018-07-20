@@ -201,6 +201,14 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::plot_grid()
                     Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                     Gnuplot g1("lines");
+                    if (FLAGS_show_plots)
+                        {
+                            g1.showonscreen();  // window output
+                        }
+                    else
+                        {
+                            g1.disablescreen();
+                        }
                     g1.set_title("Galileo E1b/c signal acquisition for satellite PRN #" + std::to_string(gnss_synchro.PRN));
                     g1.set_xlabel("Doppler [Hz]");
                     g1.set_ylabel("Sample");
@@ -209,7 +217,6 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::plot_grid()
 
                     g1.savetops("Galileo_E1_acq_grid");
                     g1.savetopdf("Galileo_E1_acq_grid");
-                    if (FLAGS_show_plots) g1.showonscreen();
                 }
             catch (const GnuplotException& ge)
                 {

@@ -144,8 +144,6 @@ FrontEndCal_msg_rx::FrontEndCal_msg_rx() : gr::block("FrontEndCal_msg_rx", gr::i
 
 
 FrontEndCal_msg_rx::~FrontEndCal_msg_rx() {}
-
-
 void wait_message()
 {
     while (!stop)
@@ -353,13 +351,14 @@ int main(int argc, char** argv)
     gnss_synchro->PRN = 1;
 
     long fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", 2048000);
+    configuration->set_property("Acquisition.max_dwells", "10");
 
     GNSSBlockFactory block_factory;
     acquisition = new GpsL1CaPcpsAcquisitionFineDoppler(configuration.get(), "Acquisition", 1, 1);
 
     acquisition->set_channel(1);
     acquisition->set_gnss_synchro(gnss_synchro);
-    acquisition->set_threshold(configuration->property("Acquisition.threshold", 0.0));
+    acquisition->set_threshold(configuration->property("Acquisition.threshold", 2.0));
     acquisition->set_doppler_max(configuration->property("Acquisition.doppler_max", 10000));
     acquisition->set_doppler_step(configuration->property("Acquisition.doppler_step", 250));
 

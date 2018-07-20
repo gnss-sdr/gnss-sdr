@@ -1,5 +1,5 @@
 /*!
- * \file GPS_L5i_PCPS_Acquisition.h
+ * \file gps_l5i_pcps_acquisition.h
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
  *  GPS L5i signals
  * \authors <ul>
@@ -132,7 +132,7 @@ public:
     /*!
      * \brief If state = 1, it forces the block to start acquiring from the first sample
      */
-    void set_state(int state);
+    void set_state(int state) override;
 
 private:
     ConfigurationInterface* configuration_;
@@ -158,6 +158,7 @@ private:
     std::complex<float>* code_;
     Gnss_Synchro* gnss_synchro_;
     std::string role_;
+    unsigned int num_codes_;
     unsigned int in_streams_;
     unsigned int out_streams_;
 

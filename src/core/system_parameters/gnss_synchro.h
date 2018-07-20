@@ -84,6 +84,9 @@ public:
     template <class Archive>
     void serialize(Archive& ar, const unsigned int version)
     {
+        if (version)
+            {
+            };
         // Satellite and signal info
         ar& System;
         ar& Signal;

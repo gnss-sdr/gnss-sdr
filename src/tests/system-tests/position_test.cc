@@ -619,6 +619,14 @@ void StaticPositionSystemTest::print_results(const std::vector<double>& east,
                     Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                     Gnuplot g1("points");
+                    if (FLAGS_show_plots)
+                        {
+                            g1.showonscreen();  // window output
+                        }
+                    else
+                        {
+                            g1.disablescreen();
+                        }
                     g1.set_title("2D precision");
                     g1.set_xlabel("East [m]");
                     g1.set_ylabel("North [m]");
@@ -635,9 +643,16 @@ void StaticPositionSystemTest::print_results(const std::vector<double>& east,
 
                     g1.savetops("Position_test_2D");
                     g1.savetopdf("Position_test_2D", 18);
-                    if (FLAGS_show_plots) g1.showonscreen();  // window output
 
                     Gnuplot g2("points");
+                    if (FLAGS_show_plots)
+                        {
+                            g2.showonscreen();  // window output
+                        }
+                    else
+                        {
+                            g2.disablescreen();
+                        }
                     g2.set_title("3D precision");
                     g2.set_xlabel("East [m]");
                     g2.set_ylabel("North [m]");
@@ -656,7 +671,6 @@ void StaticPositionSystemTest::print_results(const std::vector<double>& east,
 
                     g2.savetops("Position_test_3D");
                     g2.savetopdf("Position_test_3D");
-                    if (FLAGS_show_plots) g2.showonscreen();  // window output
                 }
             catch (const GnuplotException& ge)
                 {

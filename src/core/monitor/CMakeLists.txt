@@ -27,6 +27,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
     ${GLOG_INCLUDE_DIRS}
     ${GFlags_INCLUDE_DIRS}
+    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
 )
 
@@ -35,3 +36,4 @@ list(SORT CORE_MONITOR_LIBS_HEADERS)
 add_library(core_monitor_lib ${CORE_MONITOR_LIBS_SOURCES} ${CORE_MONITOR_LIBS_HEADERS})
 source_group(Headers FILES ${CORE_MONITOR_LIBS_HEADERS})
 target_link_libraries(core_monitor_lib ${Boost_LIBRARIES}) 
+add_dependencies(core_monitor_lib glog-${glog_RELEASE})

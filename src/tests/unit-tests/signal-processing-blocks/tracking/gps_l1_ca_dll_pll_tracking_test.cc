@@ -34,6 +34,7 @@
 #include <unistd.h>
 #include <vector>
 #include <armadillo>
+#include <matio.h>
 #include <boost/filesystem.hpp>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
@@ -136,20 +137,24 @@ public:
         arma::vec& meas_time_s,
         arma::vec& meas_value,
         double& mean_error,
-        double& std_dev_error);
+        double& std_dev_error,
+        double& rmse);
     std::vector<double> check_results_acc_carrier_phase(arma::vec& true_time_s,
         arma::vec& true_value,
         arma::vec& meas_time_s,
         arma::vec& meas_value,
         double& mean_error,
-        double& std_dev_error);
+        double& std_dev_error,
+        double& rmse);
     std::vector<double> check_results_codephase(arma::vec& true_time_s,
         arma::vec& true_value,
         arma::vec& meas_time_s,
         arma::vec& meas_value,
         double& mean_error,
-        double& std_dev_error);
+        double& std_dev_error,
+        double& rmse);
 
+    bool save_mat_xy(std::vector<double>& x, std::vector<double>& y, std::string filename);
     GpsL1CADllPllTrackingTest()
     {
         factory = std::make_shared<GNSSBlockFactory>();
@@ -267,7 +272,8 @@ std::vector<double> GpsL1CADllPllTrackingTest::check_results_doppler(arma::vec& 
     arma::vec& meas_time_s,
     arma::vec& meas_value,
     double& mean_error,
-    double& std_dev_error)
+    double& std_dev_error,
+    double& rmse)
 {
     // 1. True value interpolation to match the measurement times
     arma::vec true_value_interp;
@@ -289,7 +295,7 @@ std::vector<double> GpsL1CADllPllTrackingTest::check_results_doppler(arma::vec& 
     std::vector<double> err_std_vector(err.colptr(0), err.colptr(0) + err.n_rows);
 
     arma::vec err2 = arma::square(err);
-    double rmse = sqrt(arma::mean(err2));
+    rmse = sqrt(arma::mean(err2));
 
     // 3. Mean err and variance
     double error_mean = arma::mean(err);
@@ -317,7 +323,8 @@ std::vector<double> GpsL1CADllPllTrackingTest::check_results_acc_carrier_phase(a
     arma::vec& meas_time_s,
     arma::vec& meas_value,
     double& mean_error,
-    double& std_dev_error)
+    double& std_dev_error,
+    double& rmse)
 {
     // 1. True value interpolation to match the measurement times
     arma::vec true_value_interp;
@@ -332,12 +339,13 @@ std::vector<double> GpsL1CADllPllTrackingTest::check_results_acc_carrier_phase(a
 
     // 2. RMSE
     arma::vec err;
-    err = meas_value - true_value_interp;
+    //it is required to remove the initial offset in the accumulated carrier phase error
+    err = (meas_value - meas_value(0)) - (true_value_interp - true_value_interp(0));
     arma::vec err2 = arma::square(err);
     //conversion between arma::vec and std:vector
     std::vector<double> err_std_vector(err.colptr(0), err.colptr(0) + err.n_rows);
 
-    double rmse = sqrt(arma::mean(err2));
+    rmse = sqrt(arma::mean(err2));
 
     // 3. Mean err and variance
     double error_mean = arma::mean(err);
@@ -364,7 +372,8 @@ std::vector<double> GpsL1CADllPllTrackingTest::check_results_codephase(arma::vec
     arma::vec& meas_time_s,
     arma::vec& meas_value,
     double& mean_error,
-    double& std_dev_error)
+    double& std_dev_error,
+    double& rmse)
 {
     // 1. True value interpolation to match the measurement times
     arma::vec true_value_interp;
@@ -385,7 +394,7 @@ std::vector<double> GpsL1CADllPllTrackingTest::check_results_codephase(arma::vec
     std::vector<double> err_std_vector(err.colptr(0), err.colptr(0) + err.n_rows);
 
     arma::vec err2 = arma::square(err);
-    double rmse = sqrt(arma::mean(err2));
+    rmse = sqrt(arma::mean(err2));
 
     // 3. Mean err and variance
     double error_mean = arma::mean(err);
@@ -420,12 +429,15 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
     //data containers for config param sweep
     std::vector<std::vector<double>> mean_doppler_error_sweep;     //swep config param and cn0 sweep
     std::vector<std::vector<double>> std_dev_doppler_error_sweep;  //swep config param and cn0 sweep
+    std::vector<std::vector<double>> rmse_doppler_sweep;           //swep config param and cn0 sweep
 
     std::vector<std::vector<double>> mean_code_phase_error_sweep;     //swep config param and cn0 sweep
     std::vector<std::vector<double>> std_dev_code_phase_error_sweep;  //swep config param and cn0 sweep
+    std::vector<std::vector<double>> rmse_code_phase_sweep;           //swep config param and cn0 sweep
 
     std::vector<std::vector<double>> mean_carrier_phase_error_sweep;     //swep config param and cn0 sweep
     std::vector<std::vector<double>> std_dev_carrier_phase_error_sweep;  //swep config param and cn0 sweep
+    std::vector<std::vector<double>> rmse_carrier_phase_sweep;           //swep config param and cn0 sweep
 
     std::vector<std::vector<double>> trk_valid_timestamp_s_sweep;
     std::vector<std::vector<double>> generator_CN0_values_sweep_copy;
@@ -528,14 +540,18 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
 
             std::vector<std::vector<double>> doppler_error_sweep;
             std::vector<std::vector<double>> code_phase_error_sweep;
+            std::vector<std::vector<double>> code_phase_error_meters_sweep;
             std::vector<std::vector<double>> acc_carrier_phase_error_sweep;
 
             std::vector<double> mean_doppler_error;
             std::vector<double> std_dev_doppler_error;
+            std::vector<double> rmse_doppler;
             std::vector<double> mean_code_phase_error;
             std::vector<double> std_dev_code_phase_error;
+            std::vector<double> rmse_code_phase;
             std::vector<double> mean_carrier_phase_error;
             std::vector<double> std_dev_carrier_phase_error;
+            std::vector<double> rmse_carrier_phase;
             std::vector<double> valid_CN0_values;
 
             configure_receiver(PLL_wide_bw_values.at(config_idx),
@@ -682,6 +698,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                         {
                             std::vector<double> doppler_error_hz;
                             std::vector<double> code_phase_error_chips;
+                            std::vector<double> code_phase_error_meters;
                             std::vector<double> acc_carrier_phase_hz;
 
                             try
@@ -707,7 +724,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                             epoch_counter++;
                                         }
                                     // Align initial measurements and cut the tracking pull-in transitory
-                                    double pull_in_offset_s = 1.0;
+                                    double pull_in_offset_s = FLAGS_skip_trk_transitory_s;
 
                                     arma::uvec initial_meas_point = arma::find(trk_timestamp_s >= (true_timestamp_s(0) + pull_in_offset_s), 1, "first");
                                     if (initial_meas_point.size() > 0 and tracking_last_msg != 3)
@@ -720,20 +737,28 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
 
                                             double mean_error;
                                             double std_dev_error;
+                                            double rmse;
 
                                             valid_CN0_values.push_back(generator_CN0_values.at(current_cn0_idx));  //save the current cn0 value (valid tracking)
 
-                                            doppler_error_hz = check_results_doppler(true_timestamp_s, true_Doppler_Hz, trk_timestamp_s, trk_Doppler_Hz, mean_error, std_dev_error);
+                                            doppler_error_hz = check_results_doppler(true_timestamp_s, true_Doppler_Hz, trk_timestamp_s, trk_Doppler_Hz, mean_error, std_dev_error, rmse);
                                             mean_doppler_error.push_back(mean_error);
                                             std_dev_doppler_error.push_back(std_dev_error);
+                                            rmse_doppler.push_back(rmse);
 
-                                            code_phase_error_chips = check_results_codephase(true_timestamp_s, true_prn_delay_chips, trk_timestamp_s, trk_prn_delay_chips, mean_error, std_dev_error);
+                                            code_phase_error_chips = check_results_codephase(true_timestamp_s, true_prn_delay_chips, trk_timestamp_s, trk_prn_delay_chips, mean_error, std_dev_error, rmse);
+                                            for (unsigned int ii = 0; ii < code_phase_error_chips.size(); ii++)
+                                                {
+                                                    code_phase_error_meters.push_back(GPS_L1_CA_CHIP_PERIOD * code_phase_error_chips.at(ii) * GPS_C_m_s);
+                                                }
                                             mean_code_phase_error.push_back(mean_error);
                                             std_dev_code_phase_error.push_back(std_dev_error);
+                                            rmse_code_phase.push_back(rmse);
 
-                                            acc_carrier_phase_hz = check_results_acc_carrier_phase(true_timestamp_s, true_acc_carrier_phase_cycles, trk_timestamp_s, trk_acc_carrier_phase_cycles, mean_error, std_dev_error);
+                                            acc_carrier_phase_hz = check_results_acc_carrier_phase(true_timestamp_s, true_acc_carrier_phase_cycles, trk_timestamp_s, trk_acc_carrier_phase_cycles, mean_error, std_dev_error, rmse);
                                             mean_carrier_phase_error.push_back(mean_error);
                                             std_dev_carrier_phase_error.push_back(std_dev_error);
+                                            rmse_carrier_phase.push_back(rmse);
 
                                             //save tracking measurement timestamps to std::vector
                                             std::vector<double> vector_trk_timestamp_s(trk_timestamp_s.colptr(0), trk_timestamp_s.colptr(0) + trk_timestamp_s.n_rows);
@@ -741,6 +766,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
 
                                             doppler_error_sweep.push_back(doppler_error_hz);
                                             code_phase_error_sweep.push_back(code_phase_error_chips);
+                                            code_phase_error_meters_sweep.push_back(code_phase_error_meters);
                                             acc_carrier_phase_error_sweep.push_back(acc_carrier_phase_hz);
                                         }
                                     else
@@ -760,10 +786,16 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                 {
                     mean_doppler_error_sweep.push_back(mean_doppler_error);
                     std_dev_doppler_error_sweep.push_back(std_dev_doppler_error);
+                    rmse_doppler_sweep.push_back(rmse_doppler);
+
                     mean_code_phase_error_sweep.push_back(mean_code_phase_error);
                     std_dev_code_phase_error_sweep.push_back(std_dev_code_phase_error);
+                    rmse_code_phase_sweep.push_back(rmse_code_phase);
+
                     mean_carrier_phase_error_sweep.push_back(mean_carrier_phase_error);
                     std_dev_carrier_phase_error_sweep.push_back(std_dev_carrier_phase_error);
+                    rmse_carrier_phase_sweep.push_back(rmse_carrier_phase);
+
                     //make a copy of the CN0 vector for each configuration parameter in order to filter the loss of lock events
                     generator_CN0_values_sweep_copy.push_back(valid_CN0_values);
                 }
@@ -795,7 +827,14 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                             for (unsigned int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
                                                 {
                                                     Gnuplot g1("linespoints");
-                                                    if (FLAGS_show_plots) g1.showonscreen();  // window output
+                                                    if (FLAGS_show_plots)
+                                                        {
+                                                            g1.showonscreen();  // window output
+                                                        }
+                                                    else
+                                                        {
+                                                            g1.disablescreen();
+                                                        }
                                                     g1.set_title(std::to_string(generator_CN0_values.at(current_cn0_idx)) + " dB-Hz, " + "PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz" + "GPS L1 C/A (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
                                                     g1.set_grid();
                                                     g1.set_xlabel("Time [s]");
@@ -809,7 +848,14 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                                     g1.savetopdf("Correlators_outputs" + std::to_string(generator_CN0_values.at(current_cn0_idx)), 18);
                                                 }
                                             Gnuplot g2("points");
-                                            if (FLAGS_show_plots) g2.showonscreen();  // window output
+                                            if (FLAGS_show_plots)
+                                                {
+                                                    g2.showonscreen();  // window output
+                                                }
+                                            else
+                                                {
+                                                    g2.disablescreen();
+                                                }
                                             g2.set_multiplot(ceil(static_cast<float>(generator_CN0_values.size()) / 2.0),
                                                 ceil(static_cast<float>(generator_CN0_values.size()) / 2));
                                             for (unsigned int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
@@ -840,7 +886,14 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                             g3.set_legend();
                                             g3.savetops("CN0_output");
                                             g3.savetopdf("CN0_output", 18);
-                                            if (FLAGS_show_plots) g3.showonscreen();  // window output
+                                            if (FLAGS_show_plots)
+                                                {
+                                                    g3.showonscreen();  // window output
+                                                }
+                                            else
+                                                {
+                                                    g3.disablescreen();
+                                                }
                                         }
 
                                     //PLOT ERROR FIGURES (only if it is used the signal generator)
@@ -849,7 +902,14 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                             if (FLAGS_plot_detail_level >= 1)
                                                 {
                                                     Gnuplot g5("points");
-                                                    if (FLAGS_show_plots) g5.showonscreen();  // window output
+                                                    if (FLAGS_show_plots)
+                                                        {
+                                                            g5.showonscreen();  // window output
+                                                        }
+                                                    else
+                                                        {
+                                                            g5.disablescreen();
+                                                        }
                                                     g5.set_title("Code delay error, PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
                                                     g5.set_grid();
                                                     g5.set_xlabel("Time [s]");
@@ -866,15 +926,61 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                                             catch (const GnuplotException& ge)
                                                                 {
                                                                 }
+                                                            save_mat_xy(trk_valid_timestamp_s_sweep.at(current_cn0_idx),
+                                                                code_phase_error_sweep.at(current_cn0_idx),
+                                                                "Code_error_chips" + std::to_string(generator_CN0_values_sweep_copy.at(config_idx).at(current_cn0_idx)) +
+                                                                    std::to_string(PLL_wide_bw_values.at(config_idx)) + "_" + std::to_string(DLL_wide_bw_values.at(config_idx)));
                                                         }
                                                     g5.set_legend();
                                                     g5.set_legend();
-                                                    g5.savetops("Code_error_output");
-                                                    g5.savetopdf("Code_error_output", 18);
+                                                    g5.savetops("Code_error_chips");
+                                                    g5.savetopdf("Code_error_chips", 18);
+
+                                                    Gnuplot g5b("points");
+                                                    if (FLAGS_show_plots)
+                                                        {
+                                                            g5b.showonscreen();  // window output
+                                                        }
+                                                    else
+                                                        {
+                                                            g5b.disablescreen();
+                                                        }
+                                                    g5b.set_title("Code delay error, PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                                                    g5b.set_grid();
+                                                    g5b.set_xlabel("Time [s]");
+                                                    g5b.set_ylabel("Code delay error [meters]");
+
+
+                                                    for (unsigned int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values_sweep_copy.at(config_idx).size(); current_cn0_idx++)
+                                                        {
+                                                            try
+                                                                {
+                                                                    g5b.plot_xy(trk_valid_timestamp_s_sweep.at(current_cn0_idx), code_phase_error_meters_sweep.at(current_cn0_idx),
+                                                                        std::to_string(static_cast<int>(round(generator_CN0_values_sweep_copy.at(config_idx).at(current_cn0_idx)))) + "[dB-Hz]", decimate);
+                                                                }
+                                                            catch (const GnuplotException& ge)
+                                                                {
+                                                                }
+                                                            save_mat_xy(trk_valid_timestamp_s_sweep.at(current_cn0_idx),
+                                                                code_phase_error_sweep.at(current_cn0_idx),
+                                                                "Code_error_meters" + std::to_string(generator_CN0_values_sweep_copy.at(config_idx).at(current_cn0_idx)) +
+                                                                    std::to_string(PLL_wide_bw_values.at(config_idx)) + "_" + std::to_string(DLL_wide_bw_values.at(config_idx)));
+                                                        }
+                                                    g5b.set_legend();
+                                                    g5b.set_legend();
+                                                    g5b.savetops("Code_error_meters");
+                                                    g5b.savetopdf("Code_error_meters", 18);
 
 
                                                     Gnuplot g6("points");
-                                                    if (FLAGS_show_plots) g6.showonscreen();  // window output
+                                                    if (FLAGS_show_plots)
+                                                        {
+                                                            g6.showonscreen();  // window output
+                                                        }
+                                                    else
+                                                        {
+                                                            g6.disablescreen();
+                                                        }
                                                     g6.set_title("Accumulated carrier phase error, PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
                                                     g6.set_grid();
                                                     g6.set_xlabel("Time [s]");
@@ -891,20 +997,31 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                                             catch (const GnuplotException& ge)
                                                                 {
                                                                 }
+                                                            save_mat_xy(trk_valid_timestamp_s_sweep.at(current_cn0_idx),
+                                                                acc_carrier_phase_error_sweep.at(current_cn0_idx),
+                                                                "Carrier_phase_error" + std::to_string(generator_CN0_values_sweep_copy.at(config_idx).at(current_cn0_idx)) +
+                                                                    std::to_string(PLL_wide_bw_values.at(config_idx)) + "_" + std::to_string(DLL_wide_bw_values.at(config_idx)));
                                                         }
                                                     g6.set_legend();
                                                     g6.set_legend();
-                                                    g6.savetops("Carrier_phase_error_output");
-                                                    g6.savetopdf("Carrier_phase_error_output", 18);
+                                                    g6.savetops("Acc_carrier_phase_error_cycles");
+                                                    g6.savetopdf("Acc_carrier_phase_error_cycles", 18);
 
                                                     Gnuplot g4("points");
-                                                    if (FLAGS_show_plots) g4.showonscreen();  // window output
+                                                    if (FLAGS_show_plots)
+                                                        {
+                                                            g4.showonscreen();  // window output
+                                                        }
+                                                    else
+                                                        {
+                                                            g4.disablescreen();
+                                                        }
                                                     g4.set_multiplot(ceil(static_cast<float>(generator_CN0_values.size()) / 2.0),
                                                         ceil(static_cast<float>(generator_CN0_values.size()) / 2));
                                                     for (unsigned int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values_sweep_copy.at(config_idx).size(); current_cn0_idx++)
                                                         {
                                                             g4.reset_plot();
-                                                            g4.set_title(std::to_string(static_cast<int>(round(generator_CN0_values_sweep_copy.at(config_idx).at(current_cn0_idx)))) + "[dB-Hz], PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                                                            g4.set_title("Dopper error" + std::to_string(static_cast<int>(round(generator_CN0_values_sweep_copy.at(config_idx).at(current_cn0_idx)))) + "[dB-Hz], PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
                                                             g4.set_grid();
                                                             //g4.cmd("set key box opaque");
                                                             g4.set_xlabel("Time [s]");
@@ -917,10 +1034,15 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                                             catch (const GnuplotException& ge)
                                                                 {
                                                                 }
+
+                                                            save_mat_xy(trk_valid_timestamp_s_sweep.at(current_cn0_idx),
+                                                                doppler_error_sweep.at(current_cn0_idx),
+                                                                "Doppler_error" + std::to_string(generator_CN0_values_sweep_copy.at(config_idx).at(current_cn0_idx)) +
+                                                                    std::to_string(PLL_wide_bw_values.at(config_idx)) + "_" + std::to_string(DLL_wide_bw_values.at(config_idx)));
                                                         }
                                                     g4.unset_multiplot();
-                                                    g4.savetops("Doppler_error_output");
-                                                    g4.savetopdf("Doppler_error_output", 18);
+                                                    g4.savetops("Doppler_error_hz");
+                                                    g4.savetopdf("Doppler_error_hz", 18);
                                                 }
                                         }
                                 }
@@ -942,7 +1064,14 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                             //plot metrics
 
                             Gnuplot g7("linespoints");
-                            if (FLAGS_show_plots) g7.showonscreen();  // window output
+                            if (FLAGS_show_plots)
+                                {
+                                    g7.showonscreen();  // window output
+                                }
+                            else
+                                {
+                                    g7.disablescreen();
+                                }
                             g7.set_title("Doppler error metrics (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
                             g7.set_grid();
                             g7.set_xlabel("CN0 [dB-Hz]");
@@ -957,9 +1086,16 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                         std_dev_doppler_error_sweep.at(config_sweep_idx),
                                         "PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_sweep_idx)) +
                                             +"," + std::to_string(DLL_wide_bw_values.at(config_sweep_idx)) + " Hz");
+
+                                    //matlab save
+                                    save_mat_xy(generator_CN0_values_sweep_copy.at(config_sweep_idx),
+                                        rmse_doppler_sweep.at(config_sweep_idx),
+                                        "RMSE_Doppler_CN0_Sweep_PLL_DLL" + std::to_string(PLL_wide_bw_values.at(config_sweep_idx)) +
+                                            +"_" + std::to_string(DLL_wide_bw_values.at(config_sweep_idx)));
                                 }
                             g7.savetops("Doppler_error_metrics");
                             g7.savetopdf("Doppler_error_metrics", 18);
+
 
                             Gnuplot g8("linespoints");
                             g8.set_title("Accumulated carrier phase error metrics (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
@@ -976,6 +1112,11 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                         std_dev_carrier_phase_error_sweep.at(config_sweep_idx),
                                         "PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_sweep_idx)) +
                                             +"," + std::to_string(DLL_wide_bw_values.at(config_sweep_idx)) + " Hz");
+                                    //matlab save
+                                    save_mat_xy(generator_CN0_values_sweep_copy.at(config_sweep_idx),
+                                        rmse_carrier_phase_sweep.at(config_sweep_idx),
+                                        "RMSE_Carrier_Phase_CN0_Sweep_PLL_DLL" + std::to_string(PLL_wide_bw_values.at(config_sweep_idx)) +
+                                            +"_" + std::to_string(DLL_wide_bw_values.at(config_sweep_idx)));
                                 }
                             g8.savetops("Carrier_error_metrics");
                             g8.savetopdf("Carrier_error_metrics", 18);
@@ -995,6 +1136,11 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                         std_dev_code_phase_error_sweep.at(config_sweep_idx),
                                         "PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_sweep_idx)) +
                                             +"," + std::to_string(DLL_wide_bw_values.at(config_sweep_idx)) + " Hz");
+                                    //matlab save
+                                    save_mat_xy(generator_CN0_values_sweep_copy.at(config_sweep_idx),
+                                        rmse_code_phase_sweep.at(config_sweep_idx),
+                                        "RMSE_Code_Phase_CN0_Sweep_PLL_DLL" + std::to_string(PLL_wide_bw_values.at(config_sweep_idx)) +
+                                            +"_" + std::to_string(DLL_wide_bw_values.at(config_sweep_idx)));
                                 }
                             g9.savetops("Code_error_metrics");
                             g9.savetopdf("Code_error_metrics", 18);
@@ -1004,5 +1150,35 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                 {
                     std::cout << ge.what() << std::endl;
                 }
+        }
+}
+
+bool GpsL1CADllPllTrackingTest::save_mat_xy(std::vector<double>& x, std::vector<double>& y, std::string filename)
+{
+    try
+        {
+            // WRITE MAT FILE
+            mat_t* matfp;
+            matvar_t* matvar;
+            filename.erase(filename.length() - 4, 4);
+            filename.append(".mat");
+            matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
+            if (reinterpret_cast<long*>(matfp) != NULL)
+                {
+                    size_t dims[2] = {1, x.size()};
+                    matvar = Mat_VarCreate("x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, &x[0], 0);
+                    Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+                    Mat_VarFree(matvar);
+
+                    matvar = Mat_VarCreate("y", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, &y[0], 0);
+                    Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+                    Mat_VarFree(matvar);
+                }
+            Mat_Close(matfp);
+            return true;
+        }
+    catch (const std::exception& ex)
+        {
+            return false;
         }
 }

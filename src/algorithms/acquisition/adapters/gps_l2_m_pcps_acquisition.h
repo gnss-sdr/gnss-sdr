@@ -132,7 +132,7 @@ public:
     /*!
      * \brief If state = 1, it forces the block to start acquiring from the first sample
      */
-    void set_state(int state);
+    void set_state(int state) override;
 
 private:
     ConfigurationInterface* configuration_;
@@ -160,6 +160,7 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
+    unsigned int num_codes_;
 
     float calculate_threshold(float pfa);
 };

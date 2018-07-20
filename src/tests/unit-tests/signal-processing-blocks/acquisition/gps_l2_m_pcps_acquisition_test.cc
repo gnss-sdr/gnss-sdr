@@ -205,6 +205,14 @@ void GpsL2MPcpsAcquisitionTest::plot_grid()
                     Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                     Gnuplot g1("impulses");
+                    if (FLAGS_show_plots)
+                        {
+                            g1.showonscreen();  // window output
+                        }
+                    else
+                        {
+                            g1.disablescreen();
+                        }
                     g1.set_title("GPS L2CM signal acquisition for satellite PRN #" + std::to_string(gnss_synchro.PRN));
                     g1.set_xlabel("Doppler [Hz]");
                     g1.set_ylabel("Sample");
@@ -213,7 +221,6 @@ void GpsL2MPcpsAcquisitionTest::plot_grid()
 
                     g1.savetops("GPS_L2CM_acq_grid");
                     g1.savetopdf("GPS_L2CM_acq_grid");
-                    if (FLAGS_show_plots) g1.showonscreen();
                 }
             catch (const GnuplotException &ge)
                 {

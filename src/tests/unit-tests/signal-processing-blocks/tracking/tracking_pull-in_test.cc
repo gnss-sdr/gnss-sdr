@@ -394,7 +394,7 @@ bool TrackingPullInTest::acquire_GPS_L1CA_signal(int SV_ID)
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(baseband_sampling_freq));
     config->set_property("Acquisition.blocking_on_standby", "true");
     config->set_property("Acquisition.blocking", "true");
-    config->set_property("Acquisition.dump", "true");
+    config->set_property("Acquisition.dump", "false");
     config->set_property("Acquisition.dump_filename", "./data/acquisition.dat");
     config->set_property("Acquisition.use_CFAR_algorithm", "false");
 
@@ -785,6 +785,8 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                     std::vector<double> prompt;
                                     std::vector<double> early;
                                     std::vector<double> late;
+                                    std::vector<double> v_early;
+                                    std::vector<double> v_late;
                                     std::vector<double> promptI;
                                     std::vector<double> promptQ;
                                     std::vector<double> CN0_dBHz;
@@ -802,6 +804,8 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                             prompt.push_back(trk_dump.abs_P);
                                             early.push_back(trk_dump.abs_E);
                                             late.push_back(trk_dump.abs_L);
+                                            v_early.push_back(trk_dump.abs_VE);
+                                            v_late.push_back(trk_dump.abs_VL);
                                             promptI.push_back(trk_dump.prompt_I);
                                             promptQ.push_back(trk_dump.prompt_Q);
                                             CN0_dBHz.push_back(trk_dump.CN0_SNV_dB_Hz);
@@ -847,6 +851,11 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                                             g1.plot_xy(trk_timestamp_s, prompt, "Prompt", decimate);
                                                             g1.plot_xy(trk_timestamp_s, early, "Early", decimate);
                                                             g1.plot_xy(trk_timestamp_s, late, "Late", decimate);
+                                                            if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking") == 0)
+                                                                {
+                                                                    g1.plot_xy(trk_timestamp_s, v_early, "Very Early", decimate);
+                                                                    g1.plot_xy(trk_timestamp_s, v_late, "Very Late", decimate);
+                                                                }
                                                             g1.set_legend();
                                                             //g1.savetops("Correlators_outputs" + std::to_string(generator_CN0_values.at(current_cn0_idx)));
                                                             //g1.savetopdf("Correlators_outputs" + std::to_string(generator_CN0_values.at(current_cn0_idx)), 18);

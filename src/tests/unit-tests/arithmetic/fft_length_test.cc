@@ -116,6 +116,14 @@ TEST(FFTLengthTest, MeasureExecutionTime)
                             Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                             Gnuplot g1("linespoints");
+                            if (FLAGS_show_plots)
+                                {
+                                    g1.showonscreen();  // window output
+                                }
+                            else
+                                {
+                                    g1.disablescreen();
+                                }
                             g1.set_title("FFT execution times for different lengths");
                             g1.set_grid();
                             g1.set_xlabel("FFT length");
@@ -124,9 +132,16 @@ TEST(FFTLengthTest, MeasureExecutionTime)
                             g1.set_style("points").plot_xy(powers_of_two, execution_times_powers_of_two, "Power of 2");
                             g1.savetops("FFT_execution_times_extended");
                             g1.savetopdf("FFT_execution_times_extended", 18);
-                            if (FLAGS_show_plots) g1.showonscreen();  // window output
 
                             Gnuplot g2("linespoints");
+                            if (FLAGS_show_plots)
+                                {
+                                    g2.showonscreen();  // window output
+                                }
+                            else
+                                {
+                                    g2.disablescreen();
+                                }
                             g2.set_title("FFT execution times for different lengths (up to 2^{14}=16384)");
                             g2.set_grid();
                             g2.set_xlabel("FFT length");

@@ -58,6 +58,8 @@
 #include "signal_generator_flags.h"
 #include "gnss_sdr_sample_counter.h"
 #include <matio.h>
+#include "test_flags.h"
+#include "gnuplot_i.h"
 
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER FOR TRACKING MESSAGES #########
@@ -183,6 +185,7 @@ public:
 
     int configure_generator();
     int generate_signal();
+    bool save_mat_xy(std::vector<double>& x, std::vector<double>& y, std::string filename);
     void check_results_carrier_phase(
         arma::mat& true_ch0,
         arma::mat& true_ch1,
@@ -283,10 +286,12 @@ void HybridObservablesTest::configure_receiver()
     config->set_property("Tracking_1C.item_type", "gr_complex");
     config->set_property("Tracking_1C.dump", "true");
     config->set_property("Tracking_1C.dump_filename", "./tracking_ch_");
-    config->set_property("Tracking_1C.pll_bw_hz", "35.0");
-    config->set_property("Tracking_1C.dll_bw_hz", "0.5");
+    config->set_property("Tracking_1C.pll_bw_hz", "5.0");
+    config->set_property("Tracking_1C.dll_bw_hz", "0.20");
+    config->set_property("Tracking_1C.pll_bw_narrow_hz", "1.0");
+    config->set_property("Tracking_1C.dll_bw_narrow_hz", "0.1");
+    config->set_property("Tracking_1C.extend_correlation_symbols", "20");
     config->set_property("Tracking_1C.early_late_space_chips", "0.5");
-    config->set_property("Tracking_1C.unified", "true");
 
     config->set_property("TelemetryDecoder_1C.dump", "true");
     config->set_property("Observables.dump", "true");
@@ -384,6 +389,41 @@ void HybridObservablesTest::check_results_carrier_phase(
 }
 
 
+bool HybridObservablesTest::save_mat_xy(std::vector<double>& x, std::vector<double>& y, std::string filename)
+{
+    try
+        {
+            // WRITE MAT FILE
+            mat_t* matfp;
+            matvar_t* matvar;
+            filename.append(".mat");
+            std::cout << "save_mat_xy write " << filename << std::endl;
+            matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT5);
+            if (reinterpret_cast<long*>(matfp) != NULL)
+                {
+                    size_t dims[2] = {1, x.size()};
+                    matvar = Mat_VarCreate("x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, &x[0], 0);
+                    Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+                    Mat_VarFree(matvar);
+
+                    matvar = Mat_VarCreate("y", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, &y[0], 0);
+                    Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+                    Mat_VarFree(matvar);
+                }
+            else
+                {
+                    std::cout << "save_mat_xy: error creating file" << std::endl;
+                }
+            Mat_Close(matfp);
+            return true;
+        }
+    catch (const std::exception& ex)
+        {
+            std::cout << "save_mat_xy: " << ex.what() << std::endl;
+            return false;
+        }
+}
+
 void HybridObservablesTest::check_results_code_psudorange(
     arma::mat& true_ch0,
     arma::mat& true_ch1,
@@ -397,7 +437,12 @@ void HybridObservablesTest::check_results_code_psudorange(
     int size1 = measured_ch0.col(0).n_rows;
     int size2 = measured_ch1.col(0).n_rows;
     double t1 = std::min(measured_ch0(size1 - 1, 0), measured_ch1(size2 - 1, 0));
+
     arma::vec t = arma::linspace<arma::vec>(t0, t1, floor((t1 - t0) * 1e3));
+    //conversion between arma::vec and std:vector
+    arma::vec t_from_start = arma::linspace<arma::vec>(0, t1 - t0, floor((t1 - t0) * 1e3));
+    std::vector<double> time_vector(t_from_start.colptr(0), t_from_start.colptr(0) + t_from_start.n_rows);
+
 
     arma::vec true_ch0_dist_interp;
     arma::vec true_ch1_dist_interp;
@@ -438,6 +483,31 @@ void HybridObservablesTest::check_results_code_psudorange(
               << " [meters]" << std::endl;
     std::cout.precision(ss);
 
+    //plots
+
+    Gnuplot g3("linespoints");
+    g3.set_title("Delta Pseudorange error [m]");
+    g3.set_grid();
+    g3.set_xlabel("Time [s]");
+    g3.set_ylabel("Pseudorange error [m]");
+    //conversion between arma::vec and std:vector
+    std::vector<double> range_error_m(err.colptr(0), err.colptr(0) + err.n_rows);
+    g3.cmd("set key box opaque");
+    g3.plot_xy(time_vector, range_error_m,
+        "Delta pseudorrange error");
+    g3.set_legend();
+    g3.savetops("Delta_pseudorrange_error");
+    g3.savetopdf("Delta_pseudorrange_error", 18);
+    if (FLAGS_show_plots)
+        {
+            g3.showonscreen();  // window output
+        }
+    else
+        {
+            g3.disablescreen();
+        }
+
+    //check results against the test tolerance
     ASSERT_LT(rmse, 0.5);
     ASSERT_LT(error_mean, 0.5);
     ASSERT_GT(error_mean, -0.5);
@@ -468,7 +538,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
     tracking_true_obs_reader true_obs_data_ch1;
     int test_satellite_PRN = FLAGS_test_satellite_PRN;
     int test_satellite_PRN2 = FLAGS_test_satellite_PRN2;
-    std::cout << "Testing satellite PRNs " << test_satellite_PRN << "," << test_satellite_PRN << std::endl;
+    std::cout << "Testing satellite PRNs " << test_satellite_PRN << "," << test_satellite_PRN2 << std::endl;
     std::string true_obs_file = std::string("./gps_l1_ca_obs_prn");
     true_obs_file.append(std::to_string(test_satellite_PRN));
     true_obs_file.append(".dat");
@@ -700,6 +770,21 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
         }
 
     //Cut measurement initial transitory of the measurements
+
+    double initial_transitory_s = 30.0;
+
+    index = arma::find(measured_ch0.col(0) >= (measured_ch0(0, 0) + initial_transitory_s), 1, "first");
+    if ((index.size() > 0) and (index(0) > 0))
+        {
+            measured_ch0.shed_rows(0, index(0));
+        }
+    index = arma::find(measured_ch1.col(0) >= (measured_ch1(0, 0) + initial_transitory_s), 1, "first");
+    if ((index.size() > 0) and (index(0) > 0))
+        {
+            measured_ch1.shed_rows(0, index(0));
+        }
+
+
     index = arma::find(measured_ch0.col(0) >= true_ch0(0, 0), 1, "first");
     if ((index.size() > 0) and (index(0) > 0))
         {

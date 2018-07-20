@@ -600,6 +600,14 @@ void ObsSystemTest::compute_pseudorange_error(
                             Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                             Gnuplot g1("linespoints");
+                            if (FLAGS_show_plots)
+                                {
+                                    g1.showonscreen();  // window output
+                                }
+                            else
+                                {
+                                    g1.disablescreen();
+                                }
                             g1.set_title(signal_name + " Pseudorange error");
                             g1.set_grid();
                             g1.set_xlabel("PRN");
@@ -620,7 +628,6 @@ void ObsSystemTest::compute_pseudorange_error(
                                 }
                             g1.savetops("Pseudorange_error_" + signal_name);
                             g1.savetopdf("Pseudorange_error_" + signal_name, 18);
-                            if (FLAGS_show_plots) g1.showonscreen();  // window output
                         }
                     catch (const GnuplotException& ge)
                         {
@@ -691,6 +698,14 @@ void ObsSystemTest::compute_carrierphase_error(
                             Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                             Gnuplot g1("linespoints");
+                            if (FLAGS_show_plots)
+                                {
+                                    g1.showonscreen();  // window output
+                                }
+                            else
+                                {
+                                    g1.disablescreen();
+                                }
                             g1.set_title(signal_name + " Carrier phase error");
                             g1.set_grid();
                             g1.set_xlabel("PRN");
@@ -711,7 +726,6 @@ void ObsSystemTest::compute_carrierphase_error(
                                 }
                             g1.savetops("Carrier_phase_error_" + signal_name);
                             g1.savetopdf("Carrier_phase_error_" + signal_name, 18);
-                            if (FLAGS_show_plots) g1.showonscreen();  // window output
                         }
                     catch (const GnuplotException& ge)
                         {
@@ -782,6 +796,14 @@ void ObsSystemTest::compute_doppler_error(
                             Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                             Gnuplot g1("linespoints");
+                            if (FLAGS_show_plots)
+                                {
+                                    g1.showonscreen();  // window output
+                                }
+                            else
+                                {
+                                    g1.disablescreen();
+                                }
                             g1.set_title(signal_name + " Doppler error");
                             g1.set_grid();
                             g1.set_xlabel("PRN");
@@ -802,7 +824,6 @@ void ObsSystemTest::compute_doppler_error(
                                 }
                             g1.savetops("Doppler_error_" + signal_name);
                             g1.savetopdf("Doppler_error_" + signal_name, 18);
-                            if (FLAGS_show_plots) g1.showonscreen();  // window output
                         }
                     catch (const GnuplotException& ge)
                         {

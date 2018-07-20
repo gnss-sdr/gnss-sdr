@@ -40,13 +40,15 @@ class Acq_Conf
 public:
     /* PCPS Acquisition configuration */
     unsigned int sampled_ms;
+    unsigned int ms_per_code;
+    unsigned int samples_per_chip;
     unsigned int max_dwells;
     unsigned int doppler_max;
     unsigned int num_doppler_bins_step2;
     float doppler_step2;
     long fs_in;
-    int samples_per_ms;
-    int samples_per_code;
+    float samples_per_ms;
+    float samples_per_code;
     bool bit_transition_flag;
     bool use_CFAR_algorithm_flag;
     bool dump;

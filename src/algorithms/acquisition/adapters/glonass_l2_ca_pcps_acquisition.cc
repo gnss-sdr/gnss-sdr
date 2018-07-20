@@ -58,6 +58,7 @@ GlonassL2CaPcpsAcquisition::GlonassL2CaPcpsAcquisition(
     long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in_;
+    acq_parameters.samples_per_chip = static_cast<unsigned int>(ceil(GLONASS_L2_CA_CHIP_PERIOD * static_cast<float>(acq_parameters.fs_in)));
     dump_ = configuration_->property(role + ".dump", false);
     acq_parameters.dump = dump_;
     acq_parameters.dump_channel = configuration_->property(role + ".dump_channel", 0);
@@ -98,8 +99,9 @@ GlonassL2CaPcpsAcquisition::GlonassL2CaPcpsAcquisition(
         }
     acq_parameters.it_size = item_size_;
     acq_parameters.sampled_ms = sampled_ms_;
-    acq_parameters.samples_per_ms = code_length_;
-    acq_parameters.samples_per_code = code_length_;
+    acq_parameters.samples_per_ms = static_cast<float>(fs_in_) * 0.001;
+    acq_parameters.ms_per_code = 1;
+    acq_parameters.samples_per_code = acq_parameters.samples_per_ms * static_cast<float>(GLONASS_L2_CA_CODE_PERIOD * 1000.0);
     acq_parameters.num_doppler_bins_step2 = configuration_->property(role + ".second_nbins", 4);
     acq_parameters.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
     acq_parameters.make_2_steps = configuration_->property(role + ".make_two_steps", false);

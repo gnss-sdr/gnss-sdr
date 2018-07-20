@@ -32,12 +32,11 @@
 #ifndef GNSS_SDR_GALILEO_E1_PCPS_8MS_AMBIGUOUS_ACQUISITION_H_
 #define GNSS_SDR_GALILEO_E1_PCPS_8MS_AMBIGUOUS_ACQUISITION_H_
 
-#include <string>
-#include <gnuradio/blocks/stream_to_vector.h>
 #include "gnss_synchro.h"
 #include "acquisition_interface.h"
 #include "galileo_pcps_8ms_acquisition_cc.h"
-
+#include <gnuradio/blocks/stream_to_vector.h>
+#include <string>
 
 class ConfigurationInterface;
 
@@ -123,6 +122,7 @@ public:
      * \brief Restart acquisition algorithm
      */
     void reset() override;
+    void set_state(int state __attribute__((unused))) override{};
 
 private:
     ConfigurationInterface* configuration_;

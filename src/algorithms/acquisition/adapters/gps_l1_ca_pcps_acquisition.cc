@@ -60,6 +60,7 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in_;
+    acq_parameters.samples_per_chip = static_cast<unsigned int>(ceil(GPS_L1_CA_CHIP_PERIOD * static_cast<float>(acq_parameters.fs_in)));
     dump_ = configuration_->property(role + ".dump", false);
     acq_parameters.dump = dump_;
     acq_parameters.dump_channel = configuration_->property(role + ".dump_channel", 0);
@@ -70,6 +71,7 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     acq_parameters.doppler_max = doppler_max_;
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);
     acq_parameters.sampled_ms = sampled_ms_;
+    acq_parameters.ms_per_code = 1;
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
     acq_parameters.bit_transition_flag = bit_transition_flag_;
     use_CFAR_algorithm_flag_ = configuration_->property(role + ".use_CFAR_algorithm", true);  //will be false in future versions
@@ -82,15 +84,11 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     acq_parameters.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
     acq_parameters.make_2_steps = configuration_->property(role + ".make_two_steps", false);
     //--- Find number of samples per spreading code -------------------------
-    code_length_ = static_cast<unsigned int>(std::round(static_cast<double>(fs_in_) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
+    code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(fs_in_) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
+    acq_parameters.samples_per_ms = static_cast<float>(fs_in_) * 0.001;
+    acq_parameters.samples_per_code = acq_parameters.samples_per_ms * static_cast<float>(GPS_L1_CA_CODE_PERIOD * 1000.0);
 
-    vector_length_ = code_length_ * sampled_ms_;
-
-    if (bit_transition_flag_)
-        {
-            vector_length_ *= 2;
-        }
-
+    vector_length_ = std::floor(acq_parameters.sampled_ms * acq_parameters.samples_per_ms) * (acq_parameters.bit_transition_flag ? 2 : 1);
     code_ = new gr_complex[vector_length_];
 
     if (item_type_.compare("cshort") == 0)
@@ -101,8 +99,7 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
         {
             item_size_ = sizeof(gr_complex);
         }
-    acq_parameters.samples_per_ms = code_length_;
-    acq_parameters.samples_per_code = code_length_;
+
     acq_parameters.it_size = item_size_;
     acq_parameters.blocking_on_standby = configuration_->property(role + ".blocking_on_standby", false);
     acquisition_ = pcps_make_acquisition(acq_parameters);

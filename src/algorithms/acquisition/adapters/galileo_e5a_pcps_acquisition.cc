@@ -57,6 +57,7 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
     long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 32000000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in_;
+    acq_parameters.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / Galileo_E5a_CODE_CHIP_RATE_HZ) * static_cast<float>(acq_parameters.fs_in)));
     acq_pilot_ = configuration_->property(role + ".acquire_pilot", false);
     acq_iq_ = configuration_->property(role + ".acquire_iq", false);
     if (acq_iq_)
@@ -100,9 +101,10 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
     acq_parameters.it_size = item_size_;
-    acq_parameters.samples_per_code = code_length_;
-    acq_parameters.samples_per_ms = code_length_;
+    acq_parameters.samples_per_ms = static_cast<float>(fs_in_) * 0.001;
     acq_parameters.sampled_ms = sampled_ms_;
+    acq_parameters.ms_per_code = 1;
+    acq_parameters.samples_per_code = acq_parameters.samples_per_ms * static_cast<float>(GALILEO_E5a_CODE_PERIOD_MS);
     acq_parameters.num_doppler_bins_step2 = configuration_->property(role + ".second_nbins", 4);
     acq_parameters.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
     acq_parameters.make_2_steps = configuration_->property(role + ".make_two_steps", false);

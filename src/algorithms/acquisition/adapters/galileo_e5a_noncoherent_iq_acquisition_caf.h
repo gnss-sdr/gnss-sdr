@@ -38,10 +38,10 @@
 #ifndef GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_H_
 #define GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_H_
 
-#include <string>
 #include "gnss_synchro.h"
 #include "acquisition_interface.h"
 #include "galileo_e5a_noncoherent_iq_acquisition_caf_cc.h"
+#include <string>
 
 class ConfigurationInterface;
 
@@ -129,7 +129,7 @@ public:
      * first available sample.
      * \param state - int=1 forces start of acquisition
      */
-    void set_state(int state);
+    void set_state(int state) override;
 
 private:
     ConfigurationInterface* configuration_;

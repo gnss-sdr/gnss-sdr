@@ -1,5 +1,5 @@
 /*!
- * \file gps_l5i pcps_acquisition.cc
+ * \file gps_l5i_pcps_acquisition.cc
  * \brief Adapts a PCPS acquisition block to an Acquisition Interface for
  *  GPS L5i signals
  * \authors <ul>
@@ -59,6 +59,7 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
     long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in_;
+    acq_parameters.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / GPS_L5i_CODE_RATE_HZ) * static_cast<float>(acq_parameters.fs_in)));
     dump_ = configuration_->property(role + ".dump", false);
     acq_parameters.dump = dump_;
     acq_parameters.dump_channel = configuration_->property(role + ".dump_channel", 0);
@@ -95,10 +96,12 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
         {
             item_size_ = sizeof(gr_complex);
         }
-    acq_parameters.samples_per_code = code_length_;
-    acq_parameters.samples_per_ms = code_length_;
+    acq_parameters.samples_per_ms = static_cast<float>(fs_in_) * 0.001;
+    acq_parameters.samples_per_code = acq_parameters.samples_per_ms * static_cast<float>(GPS_L5i_PERIOD * 1000.0);
+    acq_parameters.ms_per_code = 1;
     acq_parameters.it_size = item_size_;
-    acq_parameters.sampled_ms = 1;
+    acq_parameters.sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 1);
+    num_codes_ = acq_parameters.sampled_ms;
     acq_parameters.num_doppler_bins_step2 = configuration_->property(role + ".second_nbins", 4);
     acq_parameters.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
     acq_parameters.make_2_steps = configuration_->property(role + ".make_two_steps", false);
@@ -205,9 +208,18 @@ void GpsL5iPcpsAcquisition::init()
 
 void GpsL5iPcpsAcquisition::set_local_code()
 {
-    gps_l5i_code_gen_complex_sampled(code_, gnss_synchro_->PRN, fs_in_);
+    std::complex<float>* code = new std::complex<float>[code_length_];
+
+    gps_l5i_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_);
+
+    for (unsigned int i = 0; i < num_codes_; i++)
+        {
+            memcpy(&(code_[i * code_length_]), code,
+                sizeof(gr_complex) * code_length_);
+        }
 
     acquisition_->set_local_code(code_);
+    delete[] code;
 }
 
 

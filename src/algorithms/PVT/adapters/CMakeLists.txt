@@ -16,6 +16,11 @@
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
+
+if(Boost_VERSION LESS 105800)
+     add_definitions(-DOLD_BOOST=1)
+endif(Boost_VERSION LESS 105800)
+
 set(PVT_ADAPTER_SOURCES
 	rtklib_pvt.cc
 )

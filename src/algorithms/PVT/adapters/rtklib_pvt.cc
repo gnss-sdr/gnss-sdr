@@ -34,7 +34,13 @@
 #include "gnss_sdr_flags.h"
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
+#if OLD_BOOST
 #include <boost/math/common_factor_rt.hpp>
+namespace bc = boost::math;
+#else
+#include <boost/integer/common_factor_rt.hpp>
+namespace bc = boost::integer;
+#endif
 #include <boost/serialization/map.hpp>
 #include <glog/logging.h>
 
@@ -94,8 +100,8 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
         {
             rinex_version = 2;
         }
-    int rinexobs_rate_ms = boost::math::lcm(configuration->property(role + ".rinexobs_rate_ms", 1000), output_rate_ms);
-    int rinexnav_rate_ms = boost::math::lcm(configuration->property(role + ".rinexnav_rate_ms", 6000), output_rate_ms);
+    int rinexobs_rate_ms = bc::lcm(configuration->property(role + ".rinexobs_rate_ms", 1000), output_rate_ms);
+    int rinexnav_rate_ms = bc::lcm(configuration->property(role + ".rinexnav_rate_ms", 6000), output_rate_ms);
 
     // RTCM Printer settings
     bool flag_rtcm_tty_port = configuration->property(role + ".flag_rtcm_tty_port", false);
@@ -104,13 +110,13 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     unsigned short rtcm_tcp_port = configuration->property(role + ".rtcm_tcp_port", 2101);
     unsigned short rtcm_station_id = configuration->property(role + ".rtcm_station_id", 1234);
     // RTCM message rates: least common multiple with output_rate_ms
-    int rtcm_MT1019_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1019_rate_ms", 5000), output_rate_ms);
-    int rtcm_MT1020_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1020_rate_ms", 5000), output_rate_ms);
-    int rtcm_MT1045_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1045_rate_ms", 5000), output_rate_ms);
-    int rtcm_MSM_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MSM_rate_ms", 1000), output_rate_ms);
-    int rtcm_MT1077_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1077_rate_ms", rtcm_MSM_rate_ms), output_rate_ms);
-    int rtcm_MT1087_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1087_rate_ms", rtcm_MSM_rate_ms), output_rate_ms);
-    int rtcm_MT1097_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1097_rate_ms", rtcm_MSM_rate_ms), output_rate_ms);
+    int rtcm_MT1019_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1019_rate_ms", 5000), output_rate_ms);
+    int rtcm_MT1020_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1020_rate_ms", 5000), output_rate_ms);
+    int rtcm_MT1045_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1045_rate_ms", 5000), output_rate_ms);
+    int rtcm_MSM_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MSM_rate_ms", 1000), output_rate_ms);
+    int rtcm_MT1077_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1077_rate_ms", rtcm_MSM_rate_ms), output_rate_ms);
+    int rtcm_MT1087_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1087_rate_ms", rtcm_MSM_rate_ms), output_rate_ms);
+    int rtcm_MT1097_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1097_rate_ms", rtcm_MSM_rate_ms), output_rate_ms);
     std::map<int, int> rtcm_msg_rate_ms;
     rtcm_msg_rate_ms[1019] = rtcm_MT1019_rate_ms;
     rtcm_msg_rate_ms[1020] = rtcm_MT1020_rate_ms;

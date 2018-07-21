@@ -62,12 +62,13 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
     if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
     acq_parameters.doppler_max = doppler_max_;
-    sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 4);
+    acq_parameters.ms_per_code = 4;
+    sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", acq_parameters.ms_per_code);
     acq_parameters.sampled_ms = sampled_ms_;
-    if ((acq_parameters.sampled_ms % 4) != 0)
+    if ((acq_parameters.sampled_ms % acq_parameters.ms_per_code) != 0)
         {
             LOG(WARNING) << "Parameter coherent_integration_time_ms should be a multiple of 4. Setting it to 4";
-            acq_parameters.sampled_ms = 4;
+            acq_parameters.sampled_ms = acq_parameters.ms_per_code;
         }
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
     acq_parameters.bit_transition_flag = bit_transition_flag_;
@@ -84,7 +85,7 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
     acq_parameters.dump_filename = dump_filename_;
     //--- Find number of samples per spreading code (4 ms)  -----------------
-    code_length_ = static_cast<unsigned int>(std::round(static_cast<double>(fs_in_) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
+    code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(fs_in_) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
 
     float samples_per_ms = static_cast<float>(fs_in_) * 0.001;
     acq_parameters.samples_per_ms = samples_per_ms;

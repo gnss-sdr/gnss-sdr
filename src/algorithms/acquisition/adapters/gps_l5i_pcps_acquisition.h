@@ -158,6 +158,7 @@ private:
     std::complex<float>* code_;
     Gnss_Synchro* gnss_synchro_;
     std::string role_;
+    unsigned int num_codes_;
     unsigned int in_streams_;
     unsigned int out_streams_;
 

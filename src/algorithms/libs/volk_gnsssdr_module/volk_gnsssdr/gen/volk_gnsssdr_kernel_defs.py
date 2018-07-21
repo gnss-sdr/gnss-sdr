@@ -118,7 +118,7 @@ def flatten_section_text(sections):
 ########################################################################
 # Extract kernel info from section, represent as an implementation
 ########################################################################
-class impl_class:
+class impl_class(object):
     def __init__(self, kern_name, header, body):
         #extract LV_HAVE_*
         self.deps = set(res.lower() for res in re.findall('LV_HAVE_(\w+)', header))
@@ -160,7 +160,7 @@ def extract_lv_haves(code):
 ########################################################################
 # Represent a processing kernel, parse from file
 ########################################################################
-class kernel_class:
+class kernel_class(object):
     def __init__(self, kernel_file):
         self.name = os.path.splitext(os.path.basename(kernel_file))[0]
         self.pname = self.name.replace('volk_gnsssdr_', 'p_')

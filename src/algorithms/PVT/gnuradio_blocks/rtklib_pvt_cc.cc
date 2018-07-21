@@ -29,10 +29,19 @@
  */
 
 #include "rtklib_pvt_cc.h"
+#include "display.h"
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/exception/all.hpp>
+#include <boost/serialization/map.hpp>
+#include <glog/logging.h>
+#include <gnuradio/gr_complex.h>
+#include <gnuradio/io_signature.h>
+#include <algorithm>
+#include <iostream>
+#include <map>
+#include <exception>
 #if OLD_BOOST
 #include <boost/math/common_factor_rt.hpp>
 namespace bc = boost::math;
@@ -40,15 +49,6 @@ namespace bc = boost::math;
 #include <boost/integer/common_factor_rt.hpp>
 namespace bc = boost::integer;
 #endif
-#include <boost/serialization/map.hpp>
-#include <glog/logging.h>
-#include <gnuradio/gr_complex.h>
-#include <gnuradio/io_signature.h>
-#include "display.h"
-#include <algorithm>
-#include <iostream>
-#include <map>
-#include <exception>
 
 
 using google::LogMessage;

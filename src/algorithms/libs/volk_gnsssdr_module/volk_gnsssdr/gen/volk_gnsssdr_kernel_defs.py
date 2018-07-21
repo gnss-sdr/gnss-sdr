@@ -121,7 +121,7 @@ def flatten_section_text(sections):
 class impl_class:
     def __init__(self, kern_name, header, body):
         #extract LV_HAVE_*
-        self.deps = set(map(str.lower, re.findall('LV_HAVE_(\w+)', header)))
+        self.deps = set(res.lower() for res in re.findall('LV_HAVE_(\w+)', header))
         #extract function suffix and args
         body = flatten_section_text(body)
         try:
@@ -153,7 +153,7 @@ def extract_lv_haves(code):
     haves = list()
     for line in code.splitlines():
         if not line.strip().startswith('#'): continue
-        have_set = set(map(str.lower, re.findall('LV_HAVE_(\w+)', line)))
+        have_set = set(res.lower() for res in  re.findall('LV_HAVE_(\w+)', line))
         if have_set: haves.append(have_set)
     return haves
 
@@ -164,7 +164,7 @@ class kernel_class:
     def __init__(self, kernel_file):
         self.name = os.path.splitext(os.path.basename(kernel_file))[0]
         self.pname = self.name.replace('volk_gnsssdr_', 'p_')
-        code = open(kernel_file, 'r').read()
+        code = open(kernel_file, 'rb').read().decode("utf-8")
         code = comment_remover(code)
         sections = split_into_nested_ifdef_sections(code)
         self._impls = list()

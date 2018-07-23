@@ -34,6 +34,8 @@
 #include "gnss_sdr_flags.h"
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
+#include <boost/serialization/map.hpp>
+#include <glog/logging.h>
 #if OLD_BOOST
 #include <boost/math/common_factor_rt.hpp>
 namespace bc = boost::math;
@@ -41,8 +43,6 @@ namespace bc = boost::math;
 #include <boost/integer/common_factor_rt.hpp>
 namespace bc = boost::integer;
 #endif
-#include <boost/serialization/map.hpp>
-#include <glog/logging.h>
 
 
 using google::LogMessage;

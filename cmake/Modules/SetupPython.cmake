@@ -15,32 +15,27 @@
 # You should have received a copy of the GNU General Public License
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 
+
 ########################################################################
 # Setup the python interpreter:
 # This allows the user to specify a specific interpreter,
 # or finds the interpreter via the built-in cmake module.
 ########################################################################
-#this allows the user to override PYTHON_EXECUTABLE
-if(PYTHON_EXECUTABLE)
 
-    set(PYTHONINTERP_FOUND TRUE)
+if (PYTHON_EXECUTABLE)
+    message(STATUS "User set python executable ${PYTHON_EXECUTABLE}")
+    find_package(PythonInterp ${GNSSSDR_PYTHON_MIN_VERSION} REQUIRED)
+else (PYTHON_EXECUTABLE)
+    message(STATUS "PYTHON_EXECUTABLE not set - using default python3")
+    message(STATUS "Use -DPYTHON_EXECUTABLE=/path/to/python2 to build for python2.")
+    find_package(PythonInterp ${GNSSSDR_PYTHON3_MIN_VERSION} REQUIRED)
+endif (PYTHON_EXECUTABLE)
 
-#otherwise if not set, try to automatically find it
-else(PYTHON_EXECUTABLE)
+if (${PYTHON_VERSION_MAJOR} VERSION_EQUAL 3)
+    set(PYTHON3 TRUE)
+endif ()
 
-    #use the built-in find script
-    set(Python_ADDITIONAL_VERSIONS 3.4 3.5 3.6)
-    find_package(PythonInterp 2)
-
-    #and if that fails use the find program routine
-    if(NOT PYTHONINTERP_FOUND)
-        find_program(PYTHON_EXECUTABLE NAMES python python2 python2.7 python3)
-        if(PYTHON_EXECUTABLE)
-            set(PYTHONINTERP_FOUND TRUE)
-        endif(PYTHON_EXECUTABLE)
-    endif(NOT PYTHONINTERP_FOUND)
-
-endif(PYTHON_EXECUTABLE)
+find_package(PythonLibs ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR} EXACT)
 
 if (CMAKE_CROSSCOMPILING)
     set(QA_PYTHON_EXECUTABLE "/usr/bin/python")
@@ -52,18 +47,6 @@ endif(CMAKE_CROSSCOMPILING)
 set(PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE FILEPATH "python interpreter")
 set(QA_PYTHON_EXECUTABLE ${QA_PYTHON_EXECUTABLE} CACHE FILEPATH "python interpreter for QA tests")
 
-#make sure we can use -B with python (introduced in 2.6)
-if(PYTHON_EXECUTABLE)
-    execute_process(
-        COMMAND ${PYTHON_EXECUTABLE} -B -c ""
-        OUTPUT_QUIET ERROR_QUIET
-        RESULT_VARIABLE PYTHON_HAS_DASH_B_RESULT
-    )
-    if(PYTHON_HAS_DASH_B_RESULT EQUAL 0)
-        set(PYTHON_DASH_B "-B")
-    endif()
-endif(PYTHON_EXECUTABLE)
-
 ########################################################################
 # Check for the existence of a python module:
 # - desc a string description of the check
@@ -71,25 +54,30 @@ endif(PYTHON_EXECUTABLE)
 # - cmd an additional command to run
 # - have the result variable to set
 ########################################################################
-macro(GNSSSDR_PYTHON_CHECK_MODULE desc mod cmd have)
-    message(STATUS "Python checking for ${desc}")
+macro(GNSSSDR_PYTHON_CHECK_MODULE_RAW desc python_code have)
     execute_process(
-        COMMAND ${PYTHON_EXECUTABLE} -c "
-#########################################
-try: import ${mod}
-except:
-    try: ${mod}
-    except: exit(-1)
-try: assert ${cmd}
-except: exit(-1)
-#########################################"
-        RESULT_VARIABLE ${have}
+        COMMAND ${PYTHON_EXECUTABLE} -c "${python_code}"
+        OUTPUT_QUIET ERROR_QUIET
+        RESULT_VARIABLE return_code
     )
-    if(${have} EQUAL 0)
+    if(return_code EQUAL 0)
         message(STATUS "Python checking for ${desc} - found")
         set(${have} TRUE)
-    else(${have} EQUAL 0)
+    else()
         message(STATUS "Python checking for ${desc} - not found")
         set(${have} FALSE)
-    endif(${have} EQUAL 0)
+    endif()
+endmacro(GNSSSDR_PYTHON_CHECK_MODULE_RAW)
+
+macro(GNSSSDR_PYTHON_CHECK_MODULE desc mod cmd have)
+    GNSSSDR_PYTHON_CHECK_MODULE_RAW(
+        "${desc}" "
+#########################################
+try:
+    import ${mod}
+    assert ${cmd}
+except (ImportError, AssertionError): exit(-1)
+except: pass
+#########################################"
+    "${have}")
 endmacro(GNSSSDR_PYTHON_CHECK_MODULE)

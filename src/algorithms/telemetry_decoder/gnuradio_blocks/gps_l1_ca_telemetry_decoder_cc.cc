@@ -259,41 +259,48 @@ bool gps_l1_ca_telemetry_decoder_cc::decode_subframe()
     if (CRC_ok)
         {
             int subframe_ID = d_nav.subframe_decoder(subframe);  //decode the subframe
-            std::cout << "New GPS NAV message received in channel " << this->d_channel << ": "
-                      << "subframe "
-                      << subframe_ID << " from satellite "
-                      << Gnss_Satellite(std::string("GPS"), d_nav.i_satellite_PRN) << std::endl;
-
-            switch (subframe_ID)
+            if (subframe_ID > 0 and subframe_ID < 6)
                 {
-                case 3:  //we have a new set of ephemeris data for the current SV
-                    if (d_nav.satellite_validation() == true)
+                    std::cout << "New GPS NAV message received in channel " << this->d_channel << ": "
+                              << "subframe "
+                              << subframe_ID << " from satellite "
+                              << Gnss_Satellite(std::string("GPS"), d_nav.i_satellite_PRN) << std::endl;
+
+                    switch (subframe_ID)
                         {
-                            // get ephemeris object for this SV (mandatory)
-                            std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(d_nav.get_ephemeris());
-                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                        case 3:  //we have a new set of ephemeris data for the current SV
+                            if (d_nav.satellite_validation() == true)
+                                {
+                                    // get ephemeris object for this SV (mandatory)
+                                    std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(d_nav.get_ephemeris());
+                                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                }
+                            break;
+                        case 4:  // Possible IONOSPHERE and UTC model update (page 18)
+                            if (d_nav.flag_iono_valid == true)
+                                {
+                                    std::shared_ptr<Gps_Iono> tmp_obj = std::make_shared<Gps_Iono>(d_nav.get_iono());
+                                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                }
+                            if (d_nav.flag_utc_model_valid == true)
+                                {
+                                    std::shared_ptr<Gps_Utc_Model> tmp_obj = std::make_shared<Gps_Utc_Model>(d_nav.get_utc_model());
+                                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                }
+                            break;
+                        case 5:
+                            // get almanac (if available)
+                            //TODO: implement almanac reader in navigation_message
+                            break;
+                        default:
+                            break;
                         }
-                    break;
-                case 4:  // Possible IONOSPHERE and UTC model update (page 18)
-                    if (d_nav.flag_iono_valid == true)
-                        {
-                            std::shared_ptr<Gps_Iono> tmp_obj = std::make_shared<Gps_Iono>(d_nav.get_iono());
-                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-                        }
-                    if (d_nav.flag_utc_model_valid == true)
-                        {
-                            std::shared_ptr<Gps_Utc_Model> tmp_obj = std::make_shared<Gps_Utc_Model>(d_nav.get_utc_model());
-                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-                        }
-                    break;
-                case 5:
-                    // get almanac (if available)
-                    //TODO: implement almanac reader in navigation_message
-                    break;
-                default:
-                    break;
+                    d_flag_new_tow_available = true;
                 }
-            d_flag_new_tow_available = true;
+            else
+                {
+                    return false;
+                }
         }
 
     return subframe_synchro_confirmation;
@@ -419,7 +426,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
     //2. Add the telemetry decoder information
     if (this->d_flag_preamble == true and d_flag_new_tow_available == true)
         {
-            d_TOW_at_current_symbol_ms = static_cast<unsigned int>(d_nav.d_TOW) * 1000 + GPS_L1_CA_CODE_PERIOD_MS + GPS_CA_PREAMBLE_DURATION_MS;
+            d_TOW_at_current_symbol_ms = static_cast<unsigned int>(d_nav.d_TOW) * 1000 + GPS_CA_PREAMBLE_DURATION_MS;
             d_TOW_at_Preamble_ms = d_TOW_at_current_symbol_ms;
             flag_TOW_set = true;
             d_flag_new_tow_available = false;

@@ -39,10 +39,12 @@
 gnss_sdr_sample_counter::gnss_sdr_sample_counter(double _fs, size_t _size) : gr::sync_decimator("sample_counter",
                                                                                  gr::io_signature::make(1, 1, _size),
                                                                                  gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
-                                                                                 static_cast<unsigned int>(std::floor(_fs * 0.001)))
+                                                                                 static_cast<unsigned int>(std::round(_fs * 0.001)))
 {
     message_port_register_out(pmt::mp("sample_counter"));
     set_max_noutput_items(1);
+    samples_per_output = std::round(_fs * 0.001);
+    sample_counter = 0;
     current_T_rx_ms = 0;
     current_s = 0;
     current_m = 0;
@@ -69,6 +71,9 @@ int gnss_sdr_sample_counter::work(int noutput_items __attribute__((unused)),
 {
     Gnss_Synchro *out = reinterpret_cast<Gnss_Synchro *>(output_items[0]);
     out[0] = Gnss_Synchro();
+    out[0].Flag_valid_symbol_output = false;
+    out[0].Flag_valid_word = false;
+    out[0].Channel_ID = -1;
     if ((current_T_rx_ms % report_interval_ms) == 0)
         {
             current_s++;
@@ -127,6 +132,8 @@ int gnss_sdr_sample_counter::work(int noutput_items __attribute__((unused)),
                     message_port_pub(pmt::mp("receiver_time"), pmt::from_double(static_cast<double>(current_T_rx_ms) / 1000.0));
                 }
         }
+    sample_counter += samples_per_output;
+    out[0].Tracking_sample_counter = sample_counter;
     current_T_rx_ms++;
     return 1;
 }

@@ -568,9 +568,6 @@ if(NOT VOLK_GNSSSDR_FOUND)
     # Find Python required modules
     ###############################
     include(SetupPython) # sets PYTHON_EXECUTABLE and search for required modules
-    GNSSSDR_PYTHON_CHECK_MODULE("python >= ${GNSSSDR_PYTHON_MIN_VERSION}" sys "sys.version.split()[0] >= '${GNSSSDR_PYTHON_MIN_VERSION}'" PYTHON_MIN_VER_FOUND)
-    GNSSSDR_PYTHON_CHECK_MODULE("mako >= ${GNSSSDR_MAKO_MIN_VERSION}" mako "mako.__version__ >= '${GNSSSDR_MAKO_MIN_VERSION}'" MAKO_FOUND)
-    GNSSSDR_PYTHON_CHECK_MODULE("six - python 2 and 3 compatibility library" six "True" SIX_FOUND)
 
     if(NOT PYTHON_MIN_VER_FOUND)
         message(FATAL_ERROR "Python ${GNSSSDR_PYTHON_MIN_VERSION} or greater required to build VOLK_GNSSSDR")

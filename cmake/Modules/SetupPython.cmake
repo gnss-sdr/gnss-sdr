@@ -17,46 +17,6 @@
 
 
 ########################################################################
-# Setup the python interpreter:
-# This allows the user to specify a specific interpreter,
-# or finds the interpreter via the built-in cmake module.
-########################################################################
-
-if (PYTHON_EXECUTABLE)
-    message(STATUS "User set python executable ${PYTHON_EXECUTABLE}")
-    string(FIND "${PYTHON_EXECUTABLE}" "python3" IS_PYTHON3)
-    if(IS_PYTHON3 EQUAL -1)
-        find_package(PythonInterp ${GNSSSDR_PYTHON_MIN_VERSION} REQUIRED)
-    else(IS_PYTHON3 EQUAL -1)
-        find_package(PythonInterp ${GNSSSDR_PYTHON3_MIN_VERSION} REQUIRED)
-    endif(IS_PYTHON3 EQUAL -1)
-else (PYTHON_EXECUTABLE)
-    message(STATUS "PYTHON_EXECUTABLE not set - using default python2")
-    message(STATUS "Use -DPYTHON_EXECUTABLE=/path/to/python3 to build for python3.")
-    find_package(PythonInterp ${GNSSSDR_PYTHON_MIN_VERSION})
-    if(NOT PYTHONINTERP_FOUND)
-        message(STATUS "python2 not found - trying with python3")
-        find_package(PythonInterp ${GNSSSDR_PYTHON3_MIN_VERSION} REQUIRED)
-     endif(NOT PYTHONINTERP_FOUND)
-endif (PYTHON_EXECUTABLE)
-
-if (${PYTHON_VERSION_MAJOR} VERSION_EQUAL 3)
-    set(PYTHON3 TRUE)
-endif ()
-
-find_package(PythonLibs ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR} EXACT)
-
-if (CMAKE_CROSSCOMPILING)
-    set(QA_PYTHON_EXECUTABLE "/usr/bin/python")
-else (CMAKE_CROSSCOMPILING)
-    set(QA_PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE})
-endif(CMAKE_CROSSCOMPILING)
-
-#make the path to the executable appear in the cmake gui
-set(PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE FILEPATH "python interpreter")
-set(QA_PYTHON_EXECUTABLE ${QA_PYTHON_EXECUTABLE} CACHE FILEPATH "python interpreter for QA tests")
-
-########################################################################
 # Check for the existence of a python module:
 # - desc a string description of the check
 # - mod the name of the module to import
@@ -90,3 +50,72 @@ except: pass
 #########################################"
     "${have}")
 endmacro(GNSSSDR_PYTHON_CHECK_MODULE)
+
+
+########################################################################
+# Setup the python interpreter:
+# This allows the user to specify a specific interpreter,
+# or finds the interpreter via the built-in cmake module.
+########################################################################
+
+if(CMAKE_VERSION VERSION_LESS 3.12)
+    if(PYTHON_EXECUTABLE)
+        message(STATUS "User set python executable ${PYTHON_EXECUTABLE}")
+        string(FIND "${PYTHON_EXECUTABLE}" "python3" IS_PYTHON3)
+        if(IS_PYTHON3 EQUAL -1)
+            find_package(PythonInterp ${GNSSSDR_PYTHON_MIN_VERSION} REQUIRED)
+        else(IS_PYTHON3 EQUAL -1)
+            find_package(PythonInterp ${GNSSSDR_PYTHON3_MIN_VERSION} REQUIRED)
+        endif(IS_PYTHON3 EQUAL -1)
+        GNSSSDR_PYTHON_CHECK_MODULE("python >= ${GNSSSDR_PYTHON_MIN_VERSION}" sys "sys.version.split()[0] >= '${GNSSSDR_PYTHON_MIN_VERSION}'" PYTHON_MIN_VER_FOUND)
+        GNSSSDR_PYTHON_CHECK_MODULE("mako >= ${GNSSSDR_MAKO_MIN_VERSION}" mako "mako.__version__ >= '${GNSSSDR_MAKO_MIN_VERSION}'" MAKO_FOUND)
+        GNSSSDR_PYTHON_CHECK_MODULE("six - python 2 and 3 compatibility library" six "True" SIX_FOUND)
+    else(PYTHON_EXECUTABLE)
+        message(STATUS "PYTHON_EXECUTABLE not set - trying by default python2")
+        message(STATUS "Use -DPYTHON_EXECUTABLE=/path/to/python3 to build for python3.")
+        find_package(PythonInterp ${GNSSSDR_PYTHON_MIN_VERSION})
+        if(NOT PYTHONINTERP_FOUND)
+            message(STATUS "python2 not found - trying with python3")
+            find_package(PythonInterp ${GNSSSDR_PYTHON3_MIN_VERSION} REQUIRED)
+        endif(NOT PYTHONINTERP_FOUND)
+        GNSSSDR_PYTHON_CHECK_MODULE("python >= ${GNSSSDR_PYTHON_MIN_VERSION}" sys "sys.version.split()[0] >= '${GNSSSDR_PYTHON_MIN_VERSION}'" PYTHON_MIN_VER_FOUND)
+        GNSSSDR_PYTHON_CHECK_MODULE("mako >= ${GNSSSDR_MAKO_MIN_VERSION}" mako "mako.__version__ >= '${GNSSSDR_MAKO_MIN_VERSION}'" MAKO_FOUND)
+        GNSSSDR_PYTHON_CHECK_MODULE("six - python 2 and 3 compatibility library" six "True" SIX_FOUND)
+    endif(PYTHON_EXECUTABLE)
+    find_package(PythonLibs ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR} EXACT)
+else(CMAKE_VERSION VERSION_LESS 3.12)
+    find_package (Python3 COMPONENTS Interpreter Development)
+    if(Python3_FOUND)
+        set(PYTHON_EXECUTABLE ${Python3_EXECUTABLE})
+        set(PYTHON_VERSION_MAJOR ${Python3_VERSION_MAJOR})
+        GNSSSDR_PYTHON_CHECK_MODULE("python >= ${GNSSSDR_PYTHON_MIN_VERSION}" sys "sys.version.split()[0] >= '${GNSSSDR_PYTHON_MIN_VERSION}'" PYTHON_MIN_VER_FOUND)
+        GNSSSDR_PYTHON_CHECK_MODULE("mako >= ${GNSSSDR_MAKO_MIN_VERSION}" mako "mako.__version__ >= '${GNSSSDR_MAKO_MIN_VERSION}'" MAKO_FOUND)
+        GNSSSDR_PYTHON_CHECK_MODULE("six - python 2 and 3 compatibility library" six "True" SIX_FOUND)
+    endif(Python3_FOUND)
+    if(NOT Python3_FOUND OR NOT MAKO_FOUND OR NOT SIX_FOUND)
+        find_package(Python2 COMPONENTS Interpreter Development)
+        if(Python2_FOUND)
+            set(PYTHON_EXECUTABLE ${Python2_EXECUTABLE})
+            set(PYTHON_VERSION_MAJOR ${Python2_VERSION_MAJOR})
+            GNSSSDR_PYTHON_CHECK_MODULE("python >= ${GNSSSDR_PYTHON_MIN_VERSION}" sys "sys.version.split()[0] >= '${GNSSSDR_PYTHON_MIN_VERSION}'" PYTHON_MIN_VER_FOUND)
+            GNSSSDR_PYTHON_CHECK_MODULE("mako >= ${GNSSSDR_MAKO_MIN_VERSION}" mako "mako.__version__ >= '${GNSSSDR_MAKO_MIN_VERSION}'" MAKO_FOUND)
+            GNSSSDR_PYTHON_CHECK_MODULE("six - python 2 and 3 compatibility library" six "True" SIX_FOUND)
+        endif(Python2_FOUND)
+    endif(NOT Python3_FOUND OR NOT MAKO_FOUND OR NOT SIX_FOUND)
+endif(CMAKE_VERSION VERSION_LESS 3.12)
+
+if(${PYTHON_VERSION_MAJOR} VERSION_EQUAL 3)
+    set(PYTHON3 TRUE)
+endif(${PYTHON_VERSION_MAJOR} VERSION_EQUAL 3)
+
+
+if(CMAKE_CROSSCOMPILING)
+    set(QA_PYTHON_EXECUTABLE "/usr/bin/python")
+else(CMAKE_CROSSCOMPILING)
+    set(QA_PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE})
+endif(CMAKE_CROSSCOMPILING)
+
+
+#make the path to the executable appear in the cmake gui
+set(PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE FILEPATH "python interpreter")
+set(QA_PYTHON_EXECUTABLE ${QA_PYTHON_EXECUTABLE} CACHE FILEPATH "python interpreter for QA tests")

@@ -90,8 +90,10 @@ int unpack_spir_gss6450_samples::work(int noutput_items,
                     i_data[k] = bs[i_shift + k];
                     q_data[k] = bs[q_shift + k];
                 }
-            out[i] = gr_complex(static_cast<float>(compute_two_complement(i_data.to_ulong())) + 0.5,
-                static_cast<float>(compute_two_complement(q_data.to_ulong())) + 0.5);
+            //out[i] = gr_complex(static_cast<float>(compute_two_complement(i_data.to_ulong())) + 0.5,
+            //    static_cast<float>(compute_two_complement(q_data.to_ulong())) + 0.5);
+            out[i] = gr_complex(static_cast<float>(compute_two_complement(q_data.to_ulong())) + 0.5,
+                static_cast<float>(compute_two_complement(i_data.to_ulong())) + 0.5);
             n_sample++;
             if (n_sample == samples_per_int)
                 {

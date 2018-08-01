@@ -528,8 +528,21 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
     code_delay_measurements_map.clear();
     acq_samplestamp_map.clear();
 
+    unsigned int MAX_PRN_IDX = 0;
 
-    for (unsigned int PRN = 1; PRN < 37; PRN++)
+    switch (tmp_gnss_synchro.System)
+        {
+        case 'G':
+            MAX_PRN_IDX = 33;
+            break;
+        case 'E':
+            MAX_PRN_IDX = 37;
+            break;
+        default:
+            MAX_PRN_IDX = 33;
+        }
+
+    for (unsigned int PRN = 1; PRN < MAX_PRN_IDX; PRN++)
         {
             tmp_gnss_synchro.PRN = PRN;
             acquisition->set_gnss_synchro(&tmp_gnss_synchro);

@@ -49,7 +49,7 @@ class fpga_multicorrelator_8sc
 {
 public:
     fpga_multicorrelator_8sc(int n_correlators, std::string device_name,
-            unsigned int device_base, int *ca_codes, int *data_codes, unsigned int code_length, bool track_pilot);
+            unsigned int device_base, int *ca_codes, int *data_codes, unsigned int code_length_chips, bool track_pilot, unsigned int multicorr_type, unsigned int code_samples_per_chip);
     ~fpga_multicorrelator_8sc();
 	//bool set_output_vectors(gr_complex* corr_out);
 	void set_output_vectors(gr_complex* corr_out, gr_complex* Prompt_Data);
@@ -58,8 +58,8 @@ public:
 //            float *shifts_chips, int PRN);
     //bool set_local_code_and_taps(
     void set_local_code_and_taps(
-            int code_length_chips, 
-            float *shifts_chips, int PRN);            
+//            int code_length_chips,
+            float *shifts_chips, float *prompt_data_shift, int PRN);
     //bool set_output_vectors(lv_16sc_t* corr_out);
     void update_local_code(float rem_code_phase_chips);
     //bool Carrier_wipeoff_multicorrelator_resampler(
@@ -72,7 +72,7 @@ public:
     int read_sample_counter();
     void lock_channel(void);
     void unlock_channel(void);
-    void read_sample_counters(int *sample_counter, int *secondary_sample_counter, int *counter_corr_0_in, int *counter_corr_0_out); // debug
+    //void read_sample_counters(int *sample_counter, int *secondary_sample_counter, int *counter_corr_0_in, int *counter_corr_0_out); // debug
 	
 	
 private:
@@ -80,6 +80,7 @@ private:
     gr_complex * d_corr_out;
     gr_complex * d_Prompt_Data;
     float *d_shifts_chips;
+    float *d_prompt_data_shift;
     int d_code_length_chips;
     int d_n_correlators;
 
@@ -110,10 +111,36 @@ private:
 
 
     int* d_ca_codes;
+    int* d_data_codes;
 
-    unsigned int d_code_length; // nominal number of chips
+    //unsigned int d_code_length; // nominal number of chips
 
+    unsigned int d_code_samples_per_chip;
     bool d_track_pilot;
+
+    unsigned int d_multicorr_type;
+
+    // register addresses
+    // write-only regs
+    unsigned int d_CODE_PHASE_STEP_CHIPS_NUM_REG_ADDR;
+    unsigned int d_INITIAL_INDEX_REG_BASE_ADDR;
+    unsigned int d_INITIAL_INTERP_COUNTER_REG_BASE_ADDR;
+    unsigned int d_NSAMPLES_MINUS_1_REG_ADDR;
+    unsigned int d_CODE_LENGTH_MINUS_1_REG_ADDR;
+    unsigned int d_REM_CARR_PHASE_RAD_REG_ADDR;
+    unsigned int d_PHASE_STEP_RAD_REG_ADDR;
+    unsigned int d_PROG_MEMS_ADDR;
+    unsigned int d_DROP_SAMPLES_REG_ADDR;
+    unsigned int d_INITIAL_COUNTER_VALUE_REG_ADDR;
+    unsigned int d_START_FLAG_ADDR;
+    // read-write regs
+    unsigned int d_TEST_REG_ADDR;
+    // read-only regs
+    unsigned int  d_RESULT_REG_REAL_BASE_ADDR;
+    unsigned int  d_RESULT_REG_IMAG_BASE_ADDR;
+    unsigned int d_RESULT_REG_DATA_REAL_BASE_ADDR;
+    unsigned int d_RESULT_REG_DATA_IMAG_BASE_ADDR;
+    unsigned int d_SAMPLE_COUNTER_REG_ADDR;
 
     // private functions
     unsigned fpga_acquisition_test_register(unsigned writeval);
@@ -124,8 +151,16 @@ private:
     void fpga_configure_signal_parameters_in_fpga(void);
     void fpga_launch_multicorrelator_fpga(void);
     void read_tracking_gps_results(void);
-	void reset_multicorrelator(void);
+	//void reset_multicorrelator(void);
 	void close_device(void);
+
+	unsigned int d_result_SAT_value;
+
+	int debug_max_readval_real[5] = {0, 0, 0, 0, 0};
+	int debug_max_readval_imag[5] = {0, 0, 0, 0, 0};;
+    int debug_max_readval_real_after_check[5] = {0, 0, 0, 0, 0};
+    int debug_max_readval_imag_after_check[5] = {0, 0, 0, 0, 0};
+    int printcounter = 0;
 
 };
 

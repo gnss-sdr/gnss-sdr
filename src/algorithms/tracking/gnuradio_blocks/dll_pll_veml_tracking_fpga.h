@@ -74,7 +74,9 @@ typedef struct
     char signal[3];
     std::string device_name;
     unsigned int device_base;
-    unsigned int code_length;
+    unsigned int multicorr_type;
+    unsigned int code_length_chips;
+    unsigned int code_samples_per_chip;
     int* ca_codes;
     int* data_codes;
 } dllpllconf_fpga_t;
@@ -223,6 +225,7 @@ private:
     unsigned long int d_sample_counter_next;
     unsigned int d_pull_in = 0;
     
+
 };
 
 #endif //GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H

@@ -56,10 +56,12 @@ public:
     bool set_local_code(
         unsigned int PRN);
     bool free();
+    void set_doppler_sweep(unsigned int num_sweeps);
+    void set_doppler_sweep_debug(unsigned int num_sweeps, unsigned int doppler_index);
     void run_acquisition(void);
     void set_phase_step(unsigned int doppler_index);
     void read_acquisition_results(uint32_t *max_index, float *max_magnitude,
-        unsigned *initial_sample, float *power_sum);
+        unsigned *initial_sample, float *power_sum, unsigned *doppler_index);
     void block_samples();
     void unblock_samples();
 
@@ -102,6 +104,7 @@ private:
     void configure_acquisition();
     void reset_acquisition(void);
     void close_device();
+
 };
 
 #endif /* GNSS_SDR_FPGA_ACQUISITION_H_ */

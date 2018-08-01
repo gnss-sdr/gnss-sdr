@@ -42,7 +42,7 @@
 #include "display.h"
 #include <glog/logging.h>
 
-#define NUM_PRNs_GALILEO_E1 50
+//#define NUM_PRNs_GALILEO_E1 50
 
 using google::LogMessage;
 
@@ -50,7 +50,6 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
-    printf("galileo e1 fpga constructor called\n");
     //dllpllconf_t trk_param;
     dllpllconf_fpga_t trk_param_fpga;
     DLOG(INFO) << "role " << role;
@@ -97,6 +96,7 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
             std::cout << TEXT_RED << "WARNING: Galileo E1. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << std::endl;
         }
     trk_param_fpga.track_pilot = track_pilot;
+    d_track_pilot = track_pilot;
     trk_param_fpga.extend_correlation_symbols = extend_correlation_symbols;
     std::string default_dump_filename = "./track_ch";
     std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
@@ -125,49 +125,75 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     trk_param_fpga.device_name = device_name;
     unsigned int device_base = configuration->property(role + ".device_base", 1);
     trk_param_fpga.device_base = device_base;
+    //unsigned int multicorr_type = configuration->property(role + ".multicorr_type", 1);
+    trk_param_fpga.multicorr_type = 1; // 0 -> 3 correlators, 1 -> 5 correlators
 
     //################# PRE-COMPUTE ALL THE CODES #################
+    unsigned int code_samples_per_chip = 2;
+    d_ca_codes = static_cast<int*>(volk_gnsssdr_malloc(static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS)* code_samples_per_chip * Galileo_E1_NUMBER_OF_CODES * sizeof(int), volk_gnsssdr_get_alignment()));
+    float * ca_codes_f;
+    float * data_codes_f;
 
-    d_ca_codes = static_cast<int*>(volk_gnsssdr_malloc(static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS)* 2 * NUM_PRNs_GALILEO_E1 * sizeof(int), volk_gnsssdr_get_alignment()));
-    d_data_codes = static_cast<int *>(volk_gnsssdr_malloc((static_cast<unsigned int>(Galileo_E1_B_CODE_LENGTH_CHIPS)) * 2 * NUM_PRNs_GALILEO_E1 * sizeof(int), volk_gnsssdr_get_alignment()));
+    if (trk_param_fpga.track_pilot)
+        {
+            d_data_codes = static_cast<int *>(volk_gnsssdr_malloc((static_cast<unsigned int>(Galileo_E1_B_CODE_LENGTH_CHIPS)) * code_samples_per_chip * Galileo_E1_NUMBER_OF_CODES * sizeof(int), volk_gnsssdr_get_alignment()));
+        }
+    ca_codes_f = static_cast<float*>(volk_gnsssdr_malloc(static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS)* code_samples_per_chip * sizeof(float), volk_gnsssdr_get_alignment()));
 
-    float* ca_codes_f = static_cast<float*>(volk_gnsssdr_malloc(static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS)* 2 * sizeof(float), volk_gnsssdr_get_alignment()));
-    float* data_codes_f = static_cast<float *>(volk_gnsssdr_malloc((static_cast<unsigned int>(Galileo_E1_B_CODE_LENGTH_CHIPS)) * 2 * sizeof(float), volk_gnsssdr_get_alignment()));
+    if (trk_param_fpga.track_pilot)
+        {
+            data_codes_f = static_cast<float *>(volk_gnsssdr_malloc((static_cast<unsigned int>(Galileo_E1_B_CODE_LENGTH_CHIPS)) * code_samples_per_chip * sizeof(float), volk_gnsssdr_get_alignment()));
+        }
 
-    for (unsigned int PRN = 1; PRN <= NUM_PRNs_GALILEO_E1; PRN++)
+    //printf("pppppppp trk_param_fpga.track_pilot = %d\n", trk_param_fpga.track_pilot);
+
+    //int kk;
+
+    for (unsigned int PRN = 1; PRN <= Galileo_E1_NUMBER_OF_CODES; PRN++)
         {
             char data_signal[3] = "1B";
             if (trk_param_fpga.track_pilot)
                 {
+                    //printf("yes tracking pilot !!!!!!!!!!!!!!!\n");
                     char pilot_signal[3] = "1C";
                     galileo_e1_code_gen_sinboc11_float(ca_codes_f, pilot_signal, PRN);
                     galileo_e1_code_gen_sinboc11_float(data_codes_f, data_signal, PRN);
 
-                    for (unsigned int s = 0; s < Galileo_E1_B_CODE_LENGTH_CHIPS; s++)
+                    for (unsigned int s = 0; s < 2*Galileo_E1_B_CODE_LENGTH_CHIPS; s++)
                         {
                             d_ca_codes[static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS)* 2 * (PRN - 1) + s] = static_cast<int>(ca_codes_f[s]);
-                            d_data_codes[static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS)* 2 * (PRN - 1) + s] = static_cast<int>(d_data_codes[s]);
+                            d_data_codes[static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS)* 2 * (PRN - 1) + s] = static_cast<int>(data_codes_f[s]);
+                            //printf("%f %d | ", data_codes_f[s], d_data_codes[static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS)* 2 * (PRN - 1) + s]);
+
                         }
+                    //printf("\n next \n");
+                    //scanf ("%d",&kk);
                 }
             else
                 {
+                    //printf("no tracking pilot\n");
                     galileo_e1_code_gen_sinboc11_float(ca_codes_f, data_signal, PRN);
 
-                    for (unsigned int s = 0; s < Galileo_E1_B_CODE_LENGTH_CHIPS; s++)
+                    for (unsigned int s = 0; s < 2*Galileo_E1_B_CODE_LENGTH_CHIPS; s++)
                         {
                             d_ca_codes[static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS)* 2 * (PRN - 1) + s] = static_cast<int>(ca_codes_f[s]);
+                            //printf("%f %d | ", ca_codes_f[s], d_ca_codes[static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS)* 2 * (PRN - 1) + s]);
                         }
+                    //printf("\n next \n");
+                    //scanf ("%d",&kk);
                 }
 
         }
 
     delete[] ca_codes_f;
-    delete[] data_codes_f;
-
+    if (trk_param_fpga.track_pilot)
+        {
+            delete[] data_codes_f;
+        }
     trk_param_fpga.ca_codes = d_ca_codes;
     trk_param_fpga.data_codes = d_data_codes;
-    trk_param_fpga.code_length = Galileo_E1_B_CODE_LENGTH_CHIPS;
-
+    trk_param_fpga.code_length_chips = Galileo_E1_B_CODE_LENGTH_CHIPS;
+    trk_param_fpga.code_samples_per_chip = code_samples_per_chip; // 2 sample per chip
     //################# MAKE TRACKING GNURadio object ###################
     tracking_fpga_sc = dll_pll_veml_make_tracking_fpga(trk_param_fpga);
     channel_ = 0;
@@ -178,9 +204,12 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
 GalileoE1DllPllVemlTrackingFpga::~GalileoE1DllPllVemlTrackingFpga()
 {
     delete[] d_ca_codes;
-    delete[] d_data_codes;
-}
+    if (d_track_pilot)
+        {
+            delete[] d_data_codes;
 
+        }
+}
 
 void GalileoE1DllPllVemlTrackingFpga::start_tracking()
 {

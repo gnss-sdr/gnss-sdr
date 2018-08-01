@@ -60,6 +60,8 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
 
     long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     long fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+    //fs_in = fs_in/2.0; // downampling filter
+    //printf("####### DEBUG Acq: fs_in = %d\n", fs_in);
     acq_parameters.fs_in = fs_in;
     long ifreq = configuration_->property(role + ".if", 0);
     acq_parameters.freq = ifreq;
@@ -69,7 +71,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     unsigned int sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 1);
     acq_parameters.sampled_ms = sampled_ms;
     unsigned int code_length = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
-
+    acq_parameters.code_length = code_length;
     // The FPGA can only use FFT lengths that are a power of two.
     float nbits = ceilf(log2f((float)code_length));
     unsigned int nsamples_total = pow(2, nbits);
@@ -96,12 +98,29 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
             // fill in zero padding
             for (int s = code_length; s < nsamples_total; s++)
                 {
-                    code[s] = 0;
+                    code[s] = std::complex<float>(static_cast<float>(0,0));
+                    //code[s] = 0;
                 }
             int offset = 0;
             memcpy(fft_if->get_inbuf() + offset, code, sizeof(gr_complex) * nsamples_total);   // copy to FFT buffer
             fft_if->execute();                                                                 // Run the FFT of local code
             volk_32fc_conjugate_32fc(fft_codes_padded, fft_if->get_outbuf(), nsamples_total);  // conjugate values
+
+
+//            // debug
+//            char filename[25];
+//            FILE *fid;
+//            sprintf(filename,"fft_gps_prn%d.txt", PRN);
+//            fid = fopen(filename, "w");
+//            for (unsigned int kk=0;kk< nsamples_total; kk++)
+//                {
+//                    fprintf(fid, "%f\n", fft_codes_padded[kk].real());
+//                    fprintf(fid, "%f\n", fft_codes_padded[kk].imag());
+//                }
+//            fclose(fid);
+
+
+
             max = 0;                                                                           // initialize maximum value
             for (unsigned int i = 0; i < nsamples_total; i++)                                  // search for maxima
                 {
@@ -116,9 +135,30 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
                 }
             for (unsigned int i = 0; i < nsamples_total; i++)  // map the FFT to the dynamic range of the fixed point values an copy to buffer containing all FFTs
                 {
-                    d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 7) - 1) / max)),
-                        static_cast<int>(floor(fft_codes_padded[i].imag() * (pow(2, 7) - 1) / max)));
+                    //d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int>(floor(256*fft_codes_padded[i].real() * (pow(2, 7) - 1) / max)),
+                    //    static_cast<int>(floor(256*fft_codes_padded[i].imag() * (pow(2, 7) - 1) / max)));
+                    //d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int>(16*floor(fft_codes_padded[i].real() * (pow(2, 11) - 1) / max)),
+                    //    static_cast<int>(16*floor(fft_codes_padded[i].imag() * (pow(2, 11) - 1) / max)));
+                    //d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 15) - 1) / max)),
+                    //    static_cast<int>(floor(fft_codes_padded[i].imag() * (pow(2, 15) - 1) / max)));
+                    d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 15) - 1) / max)),
+                        static_cast<int>(floor(fft_codes_padded[i].imag() * (pow(2, 15) - 1) / max)));
                 }
+
+
+////            // debug
+//            char filename2[25];
+//            FILE *fid2;
+//            sprintf(filename2,"fft_gps_prn%d_norm_new.txt", PRN);
+//            fid2 = fopen(filename2, "w");
+//            for (unsigned int kk=0;kk< nsamples_total; kk++)
+//                {
+//                    fprintf(fid2, "%d\n", d_all_fft_codes_[kk + nsamples_total * (PRN - 1)].real());
+//                    fprintf(fid2, "%d\n", d_all_fft_codes_[kk + nsamples_total * (PRN - 1)].imag());
+//                }
+//            fclose(fid2);
+
+
         }
 
     //acq_parameters

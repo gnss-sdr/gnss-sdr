@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2012-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -25,7 +25,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -137,11 +137,10 @@ void GlonassL1CaDllPllCAidTrackingTest::init()
     gnss_synchro.PRN = 11;
 
     config->set_property("GNSS-SDR.internal_fs_sps", "6625000");
+    config->set_property("Tracking_1G.implementation", "GLONASS_L1_CA_DLL_PLL_C_Aid_Tracking");
     config->set_property("Tracking_1G.item_type", "gr_complex");
     config->set_property("Tracking_1G.dump", "false");
-    config->set_property("Tracking_1G.if", "0.0");
     config->set_property("Tracking_1G.dump_filename", "./tracking_ch_");
-    config->set_property("Tracking_1G.implementation", "GLONASS_L1_CA_DLL_PLL_C_Aid_Tracking");
     config->set_property("Tracking_1G.early_late_space_chips", "0.5");
     config->set_property("Tracking_1G.order", "2");
     config->set_property("Tracking_1G.pll_bw_hz", "2");

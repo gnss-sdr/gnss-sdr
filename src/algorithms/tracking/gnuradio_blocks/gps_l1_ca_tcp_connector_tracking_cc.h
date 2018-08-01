@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -29,7 +29,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -51,7 +51,7 @@ class Gps_L1_Ca_Tcp_Connector_Tracking_cc;
 typedef boost::shared_ptr<Gps_L1_Ca_Tcp_Connector_Tracking_cc> gps_l1_ca_tcp_connector_tracking_cc_sptr;
 
 gps_l1_ca_tcp_connector_tracking_cc_sptr
-gps_l1_ca_tcp_connector_make_tracking_cc(long if_freq,
+gps_l1_ca_tcp_connector_make_tracking_cc(
     long fs_in, unsigned int vector_length,
     bool dump,
     std::string dump_filename,
@@ -83,14 +83,14 @@ public:
 
 private:
     friend gps_l1_ca_tcp_connector_tracking_cc_sptr
-    gps_l1_ca_tcp_connector_make_tracking_cc(long if_freq,
+    gps_l1_ca_tcp_connector_make_tracking_cc(
         long fs_in, unsigned int vector_length,
         bool dump,
         std::string dump_filename,
         float early_late_space_chips,
         size_t port_ch0);
 
-    Gps_L1_Ca_Tcp_Connector_Tracking_cc(long if_freq,
+    Gps_L1_Ca_Tcp_Connector_Tracking_cc(
         long fs_in, unsigned int vector_length,
         bool dump,
         std::string dump_filename,
@@ -104,7 +104,6 @@ private:
     Gnss_Synchro *d_acquisition_gnss_synchro;
     unsigned int d_channel;
 
-    long d_if_freq;
     long d_fs_in;
     int d_correlation_length_samples;
     int d_n_correlator_taps;

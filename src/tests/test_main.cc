@@ -6,7 +6,7 @@
 *
 * -------------------------------------------------------------------------
 *
-* Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
+* Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
 *
 * GNSS-SDR is a software defined Global Navigation
 * Satellite Systems receiver
@@ -24,7 +24,7 @@
 * GNU General Public License for more details.
 *
 * You should have received a copy of the GNU General Public License
-* along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+* along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 *
 * -------------------------------------------------------------------------
 */
@@ -145,8 +145,10 @@ DECLARE_string(log_dir);
 #if EXTRA_TESTS
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l2_m_pcps_acquisition_test.cc"
 #include "unit-tests/signal-processing-blocks/acquisition/glonass_l1_ca_pcps_acquisition_test.cc"
+#include "unit-tests/signal-processing-blocks/acquisition/acq_performance_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/gps_l2_m_dll_pll_tracking_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/gps_l1_ca_dll_pll_tracking_test.cc"
+#include "unit-tests/signal-processing-blocks/tracking/tracking_pull-in_test.cc"
 #include "unit-tests/signal-processing-blocks/telemetry_decoder/gps_l1_ca_telemetry_decoder_test.cc"
 #include "unit-tests/signal-processing-blocks/observables/hybrid_observables_test.cc"
 #endif

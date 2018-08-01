@@ -23,7 +23,7 @@
 % GNU General Public License for more details.
 %
 % You should have received a copy of the GNU General Public License
-% along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+% along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 %
 % -------------------------------------------------------------------------
 %
@@ -79,7 +79,7 @@ else
     %         {
     %             tmp_double = current_gnss_synchro[i].RX_time;
     %             d_dump_file.write((char*)&tmp_double, sizeof(double));
-    %             tmp_double = current_gnss_synchro[i].TOW_at_current_symbol_s;
+    %             tmp_double = current_gnss_synchro[i].TOW_at_current_symbol_ms;
     %             d_dump_file.write((char*)&tmp_double, sizeof(double));
     %             tmp_double = current_gnss_synchro[i].Carrier_Doppler_hz;
     %             d_dump_file.write((char*)&tmp_double, sizeof(double));

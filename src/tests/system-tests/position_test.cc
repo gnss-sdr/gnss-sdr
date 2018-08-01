@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -255,10 +255,9 @@ int StaticPositionSystemTest::configure_receiver()
             const float band1_error = 1.0;
             const float band2_error = 1.0;
             const int grid_density = 16;
-            const int decimation_factor = 1;
 
             const float zero = 0.0;
-            const int number_of_channels = 8;
+            const int number_of_channels = 12;
             const int in_acquisition = 1;
 
             const float threshold = 0.01;
@@ -278,7 +277,7 @@ int StaticPositionSystemTest::configure_receiver()
             const int extend_correlation_ms = 1;
 
             const int display_rate_ms = 500;
-            const int output_rate_ms = 500;
+            const int output_rate_ms = 100;
 
             config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(sampling_rate_internal));
 
@@ -337,7 +336,7 @@ int StaticPositionSystemTest::configure_receiver()
             config->set_property("Channel.signal", "1C");
 
             // Set Acquisition
-            config->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Tong_Acquisition");
+            config->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Acquisition");
             config->set_property("Acquisition_1C.item_type", "gr_complex");
             config->set_property("Acquisition_1C.coherent_integration_time_ms", std::to_string(coherent_integration_time_ms));
             config->set_property("Acquisition_1C.threshold", std::to_string(threshold));
@@ -348,6 +347,9 @@ int StaticPositionSystemTest::configure_receiver()
             config->set_property("Acquisition_1C.tong_init_val", std::to_string(tong_init_val));
             config->set_property("Acquisition_1C.tong_max_val", std::to_string(tong_max_val));
             config->set_property("Acquisition_1C.tong_max_dwells", std::to_string(tong_max_dwells));
+            config->set_property("Acquisition_1C.dump", "false");
+            config->set_property("Acquisition_1C.dump_filename", "./acquisition");
+            config->set_property("Acquisition_1C.dump_channel", "1");
 
             // Set Tracking
             config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
@@ -374,6 +376,7 @@ int StaticPositionSystemTest::configure_receiver()
 
             // Set PVT
             config->set_property("PVT.implementation", "RTKLIB_PVT");
+            config->set_property("PVT.positioning_mode", "Single");
             config->set_property("PVT.output_rate_ms", std::to_string(output_rate_ms));
             config->set_property("PVT.display_rate_ms", std::to_string(display_rate_ms));
             config->set_property("PVT.dump_filename", "./PVT");
@@ -385,10 +388,10 @@ int StaticPositionSystemTest::configure_receiver()
             config->set_property("PVT.rtcm_dump_devname", "/dev/pts/1");
             config->set_property("PVT.dump", "false");
             config->set_property("PVT.rinex_version", std::to_string(2));
-            config->set_property("PVT.positioning_mode", "PPP_Static");
             config->set_property("PVT.iono_model", "OFF");
             config->set_property("PVT.trop_model", "OFF");
             config->set_property("PVT.AR_GPS", "PPP-AR");
+            //config->set_property("PVT.elevation_mask", std::to_string(25));
 
             config_f = 0;
         }
@@ -617,6 +620,14 @@ void StaticPositionSystemTest::print_results(const std::vector<double>& east,
                     Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                     Gnuplot g1("points");
+                    if (FLAGS_show_plots)
+                        {
+                            g1.showonscreen();  // window output
+                        }
+                    else
+                        {
+                            g1.disablescreen();
+                        }
                     g1.set_title("2D precision");
                     g1.set_xlabel("East [m]");
                     g1.set_ylabel("North [m]");
@@ -633,9 +644,16 @@ void StaticPositionSystemTest::print_results(const std::vector<double>& east,
 
                     g1.savetops("Position_test_2D");
                     g1.savetopdf("Position_test_2D", 18);
-                    g1.showonscreen();  // window output
 
                     Gnuplot g2("points");
+                    if (FLAGS_show_plots)
+                        {
+                            g2.showonscreen();  // window output
+                        }
+                    else
+                        {
+                            g2.disablescreen();
+                        }
                     g2.set_title("3D precision");
                     g2.set_xlabel("East [m]");
                     g2.set_ylabel("North [m]");
@@ -654,7 +672,6 @@ void StaticPositionSystemTest::print_results(const std::vector<double>& east,
 
                     g2.savetops("Position_test_3D");
                     g2.savetopdf("Position_test_3D");
-                    g2.showonscreen();  // window output
                 }
             catch (const GnuplotException& ge)
                 {

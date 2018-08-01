@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -25,7 +25,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -46,18 +46,18 @@ extern concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 using google::LogMessage;
 
 pcps_assisted_acquisition_cc_sptr pcps_make_assisted_acquisition_cc(
-    int max_dwells, unsigned int sampled_ms, int doppler_max, int doppler_min, long freq,
+    int max_dwells, unsigned int sampled_ms, int doppler_max, int doppler_min,
     long fs_in, int samples_per_ms, bool dump,
     std::string dump_filename)
 {
     return pcps_assisted_acquisition_cc_sptr(
-        new pcps_assisted_acquisition_cc(max_dwells, sampled_ms, doppler_max, doppler_min, freq,
+        new pcps_assisted_acquisition_cc(max_dwells, sampled_ms, doppler_max, doppler_min,
             fs_in, samples_per_ms, dump, dump_filename));
 }
 
 
 pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(
-    int max_dwells, unsigned int sampled_ms, int doppler_max, int doppler_min, long freq,
+    int max_dwells, unsigned int sampled_ms, int doppler_max, int doppler_min,
     long fs_in, int samples_per_ms, bool dump,
     std::string dump_filename) : gr::block("pcps_assisted_acquisition_cc",
                                      gr::io_signature::make(1, 1, sizeof(gr_complex)),
@@ -66,7 +66,6 @@ pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(
     this->message_port_register_out(pmt::mp("events"));
     d_sample_counter = 0;  // SAMPLE COUNTER
     d_active = false;
-    d_freq = freq;
     d_fs_in = fs_in;
     d_samples_per_ms = samples_per_ms;
     d_sampled_ms = sampled_ms;

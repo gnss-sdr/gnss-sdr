@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -50,7 +50,7 @@ TEST(FileSignalSource, Instantiate)
     config->set_property("Test.item_type", "gr_complex");
     config->set_property("Test.repeat", "false");
 
-    std::unique_ptr<FileSignalSource> signal_source(new FileSignalSource(config.get(), "Test", 1, 1, queue));
+    std::unique_ptr<FileSignalSource> signal_source(new FileSignalSource(config.get(), "Test", 0, 1, queue));
 
     EXPECT_STREQ("gr_complex", signal_source->item_type().c_str());
     EXPECT_TRUE(signal_source->repeat() == false);
@@ -67,5 +67,5 @@ TEST(FileSignalSource, InstantiateFileNotExists)
     config->set_property("Test.item_type", "gr_complex");
     config->set_property("Test.repeat", "false");
 
-    EXPECT_THROW({ auto uptr = std::make_shared<FileSignalSource>(config.get(), "Test", 1, 1, queue); }, std::exception);
+    EXPECT_THROW({ auto uptr = std::make_shared<FileSignalSource>(config.get(), "Test", 0, 1, queue); }, std::exception);
 }

@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -121,7 +121,7 @@ public:
      * first available sample.
      * \param state - int=1 forces start of acquisition
      */
-    void set_state(int state);
+    void set_state(int state) override;
 
 private:
     float calculate_threshold(float pfa);

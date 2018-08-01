@@ -1,13 +1,11 @@
 /*!
- * \file kml_printer.h
- * \brief Interface of a class that prints PVT information to a kml file
- * for GPSTK data structures
- * \author Javier Arribas, 2012. jarribas(at)cttc.es
- *
+ * \file tracking_tests_flags.h
+ * \brief Helper file for unit testing
+ * \author Javier Arribas, 2018. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -25,36 +23,18 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
+#ifndef GNSS_SDR_OBSERVABLE_TESTS_FLAGS_H_
+#define GNSS_SDR_OBSERVABLE_TESTS_FLAGS_H_
 
-#ifndef GNSS_SDR_KML_PRINTER_H_
-#define GNSS_SDR_KML_PRINTER_H_
+#include <gflags/gflags.h>
+#include <limits>
 
-#include <iostream>
-#include <fstream>
-#include "gpstk/Position.hpp"
+DEFINE_double(skip_obs_transitory_s, 30.0, "Skip the initial observable outputs to avoid transitory results [s]");
 
-
-/*!
- * \brief Prints PVT information to OGC KML format file (can be viewed with Google Earth)
- *
- * See http://www.opengeospatial.org/standards/kml
- */
-class Kml_Printer_gpstk
-{
-private:
-    std::ofstream kml_file;
-
-public:
-    bool set_headers(std::string filename);
-    bool print_position(gpstk::Position position);
-    bool close_file();
-    Kml_Printer_gpstk();
-    ~Kml_Printer_gpstk();
-};
 
 #endif

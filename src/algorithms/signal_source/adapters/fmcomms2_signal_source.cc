@@ -1,12 +1,12 @@
 /*!
- * \filei fmcomms2_signal_source.cc
- * \brief signal source for sdr hardware from analog devices based on 
+ * \file fmcomms2_signal_source.cc
+ * \brief Signal source for SDR hardware from Analog Devices based on
  * fmcomms2 evaluation board. 
  * \author Rodrigo Muñoz, 2017, rmunozl(at)inacap.cl
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -36,6 +36,7 @@
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
 #include <glog/logging.h>
+#include <exception>
 #include <iostream>
 
 
@@ -70,7 +71,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
-    //AD9361 Local Oscillator generation for dual band operation
+    // AD9361 Local Oscillator generation for dual band operation
     enable_dds_lo_ = configuration->property(role + ".enable_dds_lo", false);
     freq_rf_tx_hz_ = configuration->property(role + ".freq_rf_tx_hz", GPS_L1_FREQ_HZ - GPS_L2_FREQ_HZ - 1000);
     freq_dds_tx_hz_ = configuration->property(role + ".freq_dds_tx_hz", 1000);
@@ -104,7 +105,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
                                 rf_port_select_.c_str(), filter_file_.c_str(),
                                 filter_auto_);
 
-                            //configure LO
+                            // configure LO
                             if (enable_dds_lo_ == true)
                                 {
                                     std::cout << "Enabling Local Oscillator generator in FMCOMMS2\n";
@@ -135,7 +136,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
                                 gain_mode_rx2_.c_str(), rf_gain_rx2_,
                                 rf_port_select_.c_str(), filter_file_.c_str(),
                                 filter_auto_);
-                            //configure LO
+                            // configure LO
                             if (enable_dds_lo_ == true)
                                 {
                                     std::cout << "Enabling Local Oscillator generator in FMCOMMS2\n";
@@ -179,7 +180,14 @@ Fmcomms2SignalSource::~Fmcomms2SignalSource()
 {
     if (enable_dds_lo_ == true)
         {
-            ad9361_disable_lo_remote(uri_);
+            try
+                {
+                    ad9361_disable_lo_remote(uri_);
+                }
+            catch (const std::exception& e)
+                {
+                    LOG(WARNING) << "Exception thrown in Fmcomms2SignalSource destructor: " << e.what();
+                }
         }
 }
 

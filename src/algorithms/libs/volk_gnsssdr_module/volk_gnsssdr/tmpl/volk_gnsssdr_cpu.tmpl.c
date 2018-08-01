@@ -1,4 +1,4 @@
-/* Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
+/* Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
  *
  * This file is part of GNSS-SDR.
  *
@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  */
 
 #include <volk_gnsssdr/volk_gnsssdr_cpu.h>
@@ -118,6 +118,15 @@ static inline unsigned int get_avx2_enabled(void)
 {
 #if defined(VOLK_CPU_x86)
     return __xgetbv() & 0x6;
+#else
+    return 0;
+#endif
+}
+
+static inline unsigned int get_avx512_enabled(void)
+{
+#if defined(VOLK_CPU_x86)
+    return __xgetbv() & 0xE6;  //check for zmm, xmm and ymm regs
 #else
     return 0;
 #endif

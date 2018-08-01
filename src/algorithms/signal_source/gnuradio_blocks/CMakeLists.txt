@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -13,18 +13,31 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
+
+if(ENABLE_RAW_UDP)
+    find_package(PCAP)
+    if(NOT PCAP_FOUND)
+        message(FATAL_ERROR "PCAP required to compile custom UDP packet sample source (ENABLE_RAW_UDP)")
+    endif(NOT PCAP_FOUND)
+    get_filename_component(PCAP_LIBRARY_DIRS ${PCAP_LIBRARY} DIRECTORY CACHE)
+    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${PCAP_LIBRARIES})
+    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${PCAP_INCLUDE_DIRS})
+    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} gr_complex_ip_packet_source.cc)
+endif(ENABLE_RAW_UDP)
 
 set(SIGNAL_SOURCE_GR_BLOCKS_SOURCES
      unpack_byte_2bit_samples.cc
      unpack_byte_2bit_cpx_samples.cc
+     unpack_byte_4bit_samples.cc
      unpack_intspir_1bit_samples.cc
      rtl_tcp_signal_source_c.cc
      unpack_2bit_samples.cc
      unpack_spir_gss6450_samples.cc
      labsat23_source.cc
+     ${OPT_DRIVER_SOURCES}
 )
 
 include_directories(
@@ -34,11 +47,17 @@ include_directories(
      ${GFlags_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
      ${Boost_INCLUDE_DIRS}
+     ${OPT_DRIVER_INCLUDE_DIRS}
 )
 
 file(GLOB SIGNAL_SOURCE_GR_BLOCKS_HEADERS "*.h")
 list(SORT SIGNAL_SOURCE_GR_BLOCKS_HEADERS)
 add_library(signal_source_gr_blocks ${SIGNAL_SOURCE_GR_BLOCKS_SOURCES} ${SIGNAL_SOURCE_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${SIGNAL_SOURCE_GR_BLOCKS_HEADERS})
-target_link_libraries(signal_source_gr_blocks signal_source_lib ${GNURADIO_RUNTIME_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(signal_source_gr_blocks 
+    signal_source_lib 
+    ${GNURADIO_RUNTIME_LIBRARIES} 
+    ${Boost_LIBRARIES}
+    ${OPT_LIBRARIES}
+)
 add_dependencies(signal_source_gr_blocks glog-${glog_RELEASE})

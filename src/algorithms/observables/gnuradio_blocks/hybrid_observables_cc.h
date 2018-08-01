@@ -25,7 +25,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -76,7 +76,10 @@ private:
     Gnss_circular_deque<Gnss_Synchro>* d_gnss_synchro_history;
     boost::dynamic_bitset<> valid_channels;
     double T_rx_s;
-    double T_rx_step_s;
+    unsigned int T_rx_step_ms;
+    //rx time follow GPST
+    bool T_rx_TOW_set;
+    unsigned int T_rx_TOW_ms;
     double max_delta;
     double d_latency;
     bool d_dump;

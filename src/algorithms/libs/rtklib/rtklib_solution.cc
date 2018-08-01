@@ -63,7 +63,6 @@
 #define SQRT_SOL(x) ((x) < 0.0 ? 0.0 : sqrt(x))
 
 const int MAXFIELD = 64; /* max number of fields in a record */
-const int MAXNMEA = 256; /* max length of nmea sentence */
 
 const double KNOT2M = 0.514444444; /* m/knot */
 

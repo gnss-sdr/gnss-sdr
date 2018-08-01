@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -546,8 +546,14 @@ std::string Gnss_Satellite::what_block(const std::string& system_, unsigned int 
                 case 12:
                     block_ = std::string("IOV-FM2");  // Galileo In-Orbit Validation (IOV) satellite FM2 (Flight Model 2) also known as GSAT0102, from French Guiana at 10:30 GMT on October 21, 2011.
                     break;
+                case 13:
+                    block_ = std::string("FOC-FM20");  // Galileo Full Operational Capability (FOC) satellite FM20 / GSAT0220, launched on Jul. 25, 2018. UNDER COMMISSIONING.
+                    break;
                 case 14:
                     block_ = std::string("FOC-FM2*");  // Galileo Full Operational Capability (FOC) satellite FM2 / GSAT0202, launched into incorrect orbit on August 22, 2014. Moved to usable orbit in March, 2015. UNDER TESTING.
+                    break;
+                case 15:
+                    block_ = std::string("FOC-FM21");  // Galileo Full Operational Capability (FOC) satellite FM21 / GSAT0221, launched on Jul. 25, 2018. UNDER COMMISSIONING.
                     break;
                 case 18:
                     block_ = std::string("FOC-FM1*");  // Galileo Full Operational Capability (FOC) satellite FM1 / GSAT0201, launched into incorrect orbit on August 22, 2014. Moved to usable orbit in December, 2014. UNDER TESTING.
@@ -581,6 +587,12 @@ std::string Gnss_Satellite::what_block(const std::string& system_, unsigned int 
                     break;
                 case 31:
                     block_ = std::string("FOC-FM18");  // Galileo Full Operational Capability (FOC) satellite FM18 / GSAT0218, launched on Dec. 12, 2017. UNDER COMMISSIONING.
+                    break;
+                case 33:
+                    block_ = std::string("FOC-FM22");  // Galileo Full Operational Capability (FOC) satellite FM22 / GSAT0222, launched on Jul. 25, 2018. UNDER COMMISSIONING.
+                    break;
+                case 36:
+                    block_ = std::string("FOC-FM19");  // Galileo Full Operational Capability (FOC) satellite FM19 / GSAT0219, launched on Jul. 25, 2018. UNDER COMMISSIONING.
                     break;
                 default:
                     block_ = std::string("Unknown(Simulated)");

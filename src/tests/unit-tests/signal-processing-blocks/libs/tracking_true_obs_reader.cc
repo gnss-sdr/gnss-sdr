@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -89,15 +89,15 @@ bool tracking_true_obs_reader::open_obs_file(std::string out_file)
         {
             try
                 {
+                    d_dump_file.clear();
                     d_dump_filename = out_file;
                     d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
                     d_dump_file.open(d_dump_filename.c_str(), std::ios::in | std::ios::binary);
-                    std::cout << "Observables dump enabled, Log file: " << d_dump_filename.c_str() << std::endl;
                     return true;
                 }
             catch (const std::ifstream::failure &e)
                 {
-                    std::cout << "Problem opening Observables dump Log file: " << d_dump_filename.c_str() << std::endl;
+                    std::cout << "Problem opening Tracking dump Log file: " << d_dump_filename.c_str() << " Error: " << e.what() << std::endl;
                     return false;
                 }
         }
@@ -107,6 +107,13 @@ bool tracking_true_obs_reader::open_obs_file(std::string out_file)
         }
 }
 
+void tracking_true_obs_reader::close_obs_file()
+{
+    if (d_dump_file.is_open() == true)
+        {
+            d_dump_file.close();
+        }
+}
 
 tracking_true_obs_reader::~tracking_true_obs_reader()
 {

@@ -5,7 +5,7 @@
  * \author Carles Fernandez Prades, 2011. cfernandez(at)cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -415,7 +415,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Glonass_Gnav_Utc_M
 
     // -------- Line COMMENT
     line.clear();
-    line += Rinex_Printer::leftJustify("See http://gnss-sdr.org", 60);
+    line += Rinex_Printer::leftJustify("See https://gnss-sdr.org", 60);
     line += Rinex_Printer::leftJustify("COMMENT", 20);
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
@@ -524,7 +524,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono
 
     // -------- Line COMMENT
     line.clear();
-    line += Rinex_Printer::leftJustify("See http://gnss-sdr.org", 60);
+    line += Rinex_Printer::leftJustify("See https://gnss-sdr.org", 60);
     line += Rinex_Printer::leftJustify("COMMENT", 20);
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
@@ -648,7 +648,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_CNAV_Iono& gps
 
     // -------- Line COMMENT
     line.clear();
-    line += Rinex_Printer::leftJustify("See http://gnss-sdr.org", 60);
+    line += Rinex_Printer::leftJustify("See https://gnss-sdr.org", 60);
     line += Rinex_Printer::leftJustify("COMMENT", 20);
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
@@ -774,7 +774,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Galileo_Iono& gali
 
     // -------- Line COMMENT
     line.clear();
-    line += Rinex_Printer::leftJustify("See http://gnss-sdr.org", 60);
+    line += Rinex_Printer::leftJustify("See https://gnss-sdr.org", 60);
     line += Rinex_Printer::leftJustify("COMMENT", 20);
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
@@ -881,7 +881,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Galileo_Iono& iono
 
     // -------- Line COMMENT
     line.clear();
-    line += Rinex_Printer::leftJustify("See http://gnss-sdr.org", 60);
+    line += Rinex_Printer::leftJustify("See https://gnss-sdr.org", 60);
     line += Rinex_Printer::leftJustify("COMMENT", 20);
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
@@ -987,7 +987,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_CNAV_Iono& ion
 
     // -------- Line COMMENT
     line.clear();
-    line += Rinex_Printer::leftJustify("See http://gnss-sdr.org", 60);
+    line += Rinex_Printer::leftJustify("See https://gnss-sdr.org", 60);
     line += Rinex_Printer::leftJustify("COMMENT", 20);
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
@@ -1116,7 +1116,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& iono, co
 
     // -------- Line COMMENT
     line.clear();
-    line += Rinex_Printer::leftJustify("See http://gnss-sdr.org", 60);
+    line += Rinex_Printer::leftJustify("See https://gnss-sdr.org", 60);
     line += Rinex_Printer::leftJustify("COMMENT", 20);
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
@@ -1280,7 +1280,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono
 
     // -------- Line COMMENT
     line.clear();
-    line += Rinex_Printer::leftJustify("See http://gnss-sdr.org", 60);
+    line += Rinex_Printer::leftJustify("See https://gnss-sdr.org", 60);
     line += Rinex_Printer::leftJustify("COMMENT", 20);
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
@@ -1463,7 +1463,7 @@ void Rinex_Printer::rinex_sbs_header(std::fstream& out)
 
     // -------- Line COMMENT 2
     line.clear();
-    line += Rinex_Printer::leftJustify("See http://gnss-sdr.org", 60);
+    line += Rinex_Printer::leftJustify("See https://gnss-sdr.org", 60);
     line += Rinex_Printer::leftJustify("COMMENT", 20);
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
@@ -3277,7 +3277,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
 
     // -------- Line COMMENT
     line.clear();
-    line += Rinex_Printer::leftJustify("See http://gnss-sdr.org", 60);
+    line += Rinex_Printer::leftJustify("See https://gnss-sdr.org", 60);
     line += Rinex_Printer::leftJustify("COMMENT", 20);
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
@@ -3599,7 +3599,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
 
     // -------- Line COMMENT
     line.clear();
-    line += Rinex_Printer::leftJustify("See http://gnss-sdr.org", 60);
+    line += Rinex_Printer::leftJustify("See https://gnss-sdr.org", 60);
     line += Rinex_Printer::leftJustify("COMMENT", 20);
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
@@ -3952,7 +3952,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
 
     // -------- Line COMMENT
     line.clear();
-    line += Rinex_Printer::leftJustify("See http://gnss-sdr.org", 60);
+    line += Rinex_Printer::leftJustify("See https://gnss-sdr.org", 60);
     line += Rinex_Printer::leftJustify("COMMENT", 20);
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
@@ -4270,7 +4270,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
 
     // -------- Line COMMENT
     line.clear();
-    line += Rinex_Printer::leftJustify("See http://gnss-sdr.org", 60);
+    line += Rinex_Printer::leftJustify("See https://gnss-sdr.org", 60);
     line += Rinex_Printer::leftJustify("COMMENT", 20);
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
@@ -4590,7 +4590,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
 
     // -------- Line COMMENT
     line.clear();
-    line += Rinex_Printer::leftJustify("See http://gnss-sdr.org", 60);
+    line += Rinex_Printer::leftJustify("See https://gnss-sdr.org", 60);
     line += Rinex_Printer::leftJustify("COMMENT", 20);
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
@@ -4844,7 +4844,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
 
     // -------- Line COMMENT
     line.clear();
-    line += Rinex_Printer::leftJustify("See http://gnss-sdr.org", 60);
+    line += Rinex_Printer::leftJustify("See https://gnss-sdr.org", 60);
     line += Rinex_Printer::leftJustify("COMMENT", 20);
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
@@ -5056,7 +5056,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
 
     // -------- Line COMMENT
     line.clear();
-    line += Rinex_Printer::leftJustify("See http://gnss-sdr.org", 60);
+    line += Rinex_Printer::leftJustify("See https://gnss-sdr.org", 60);
     line += Rinex_Printer::leftJustify("COMMENT", 20);
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
@@ -5282,7 +5282,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
 
     // -------- Line COMMENT
     line.clear();
-    line += Rinex_Printer::leftJustify("See http://gnss-sdr.org", 60);
+    line += Rinex_Printer::leftJustify("See https://gnss-sdr.org", 60);
     line += Rinex_Printer::leftJustify("COMMENT", 20);
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
@@ -5546,7 +5546,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
 
     // -------- Line COMMENT
     line.clear();
-    line += Rinex_Printer::leftJustify("See http://gnss-sdr.org", 60);
+    line += Rinex_Printer::leftJustify("See https://gnss-sdr.org", 60);
     line += Rinex_Printer::leftJustify("COMMENT", 20);
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
@@ -8247,7 +8247,7 @@ boost::posix_time::ptime Rinex_Printer::compute_UTC_time(const Gps_Navigation_Me
     // if we are processing a file -> wait to leap second to resolve the ambiguity else take the week from the local system time
     //: idea resolve the ambiguity with the leap second  http://www.colorado.edu/geography/gcraft/notes/gps/gpseow.htm
     const double utc_t = nav_msg.utc_time(nav_msg.d_TOW);
-    boost::posix_time::time_duration t = boost::posix_time::millisec((utc_t + 604800 * static_cast<double>(nav_msg.i_GPS_week)) * 1000);
+    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>((utc_t + 604800 * static_cast<double>(nav_msg.i_GPS_week)) * 1000));
     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
     return p_time;
 }
@@ -8260,7 +8260,7 @@ boost::posix_time::ptime Rinex_Printer::compute_GPS_time(const Gps_Ephemeris& ep
     // (see Pag. 17 in http://igscb.jpl.nasa.gov/igscb/data/format/rinex300.pdf)
     // --??? No time correction here, since it will be done in the RINEX processor
     const double gps_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::millisec((gps_t + 604800 * static_cast<double>(eph.i_GPS_week % 1024)) * 1000);
+    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>((gps_t + 604800 * static_cast<double>(eph.i_GPS_week % 1024)) * 1000));
     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
     return p_time;
 }
@@ -8273,7 +8273,7 @@ boost::posix_time::ptime Rinex_Printer::compute_GPS_time(const Gps_CNAV_Ephemeri
     // (see Pag. 17 in http://igscb.jpl.nasa.gov/igscb/data/format/rinex300.pdf)
     // --??? No time correction here, since it will be done in the RINEX processor
     const double gps_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::millisec((gps_t + 604800 * static_cast<double>(eph.i_GPS_week % 1024)) * 1000);
+    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>((gps_t + 604800 * static_cast<double>(eph.i_GPS_week % 1024)) * 1000));
     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
     return p_time;
 }
@@ -8285,7 +8285,7 @@ boost::posix_time::ptime Rinex_Printer::compute_Galileo_time(const Galileo_Ephem
     // (see Pag. 17 in http://igscb.jpl.nasa.gov/igscb/data/format/rinex301.pdf)
     // --??? No time correction here, since it will be done in the RINEX processor
     double galileo_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::millisec((galileo_t + 604800 * static_cast<double>(eph.WN_5)) * 1000);  //
+    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>((galileo_t + 604800 * static_cast<double>(eph.WN_5)) * 1000));  //
     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
     return p_time;
 }

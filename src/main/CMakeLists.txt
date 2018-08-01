@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -13,16 +13,14 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
-
 
 set(GNSS_SDR_OPTIONAL_LIBS "")
 set(GNSS_SDR_OPTIONAL_HEADERS "")
 
 if(ENABLE_GPERFTOOLS)
     if(GPERFTOOLS_FOUND)
-        #set(GNSS_SDR_OPTIONAL_LIBS "${GNSS_SDR_OPTIONAL_LIBS};${GPERFTOOLS_LIBRARIES}")
         set(GNSS_SDR_OPTIONAL_LIBS "${GNSS_SDR_OPTIONAL_LIBS};${GPERFTOOLS_PROFILER};${GPERFTOOLS_TCMALLOC}")
         set(GNSS_SDR_OPTIONAL_HEADERS "${GNSS_SDR_OPTIONAL_HEADERS};${GPERFTOOLS_INCLUDE_DIR}")
     endif(GPERFTOOLS_FOUND)
@@ -47,7 +45,6 @@ if(ORC_FOUND)
     set(GNSS_SDR_OPTIONAL_LIBS ${GNSS_SDR_OPTIONAL_LIBS} ${ORC_LIBRARIES})
     set(GNSS_SDR_OPTIONAL_HEADERS ${GNSS_SDR_OPTIONAL_HEADERS} ${ORC_INCLUDE_DIRS})
 endif(ORC_FOUND)
-
 
 include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
@@ -76,13 +73,11 @@ if(OS_IS_MACOSX)
      endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif(OS_IS_MACOSX)
 
-
 add_executable(gnss-sdr ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
 
 add_custom_command(TARGET gnss-sdr POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:gnss-sdr>
-                                   ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:gnss-sdr>
-                  )
+                           ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:gnss-sdr> )
 
 target_link_libraries(gnss-sdr ${MAC_LIBRARIES}
                                ${Boost_LIBRARIES}
@@ -97,18 +92,14 @@ target_link_libraries(gnss-sdr ${MAC_LIBRARIES}
                                ${GNSS_SDR_OPTIONAL_LIBS}
                                gnss_sp_libs
                                gnss_sdr_flags
-                               gnss_rx
-                               )
-
+                               gnss_rx )
 
 install(TARGETS gnss-sdr
         RUNTIME DESTINATION bin
-        COMPONENT "gnss-sdr"
-        )
+        COMPONENT "gnss-sdr" )
 
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/conf DESTINATION share/gnss-sdr
-        FILES_MATCHING PATTERN "*.conf"
-        )
+        FILES_MATCHING PATTERN "*.conf" )
 
 install(FILES ${CMAKE_SOURCE_DIR}/conf/gnss-sdr.conf DESTINATION share/gnss-sdr/conf
         RENAME default.conf)
@@ -118,7 +109,6 @@ if(NOT VOLK_GNSSSDR_FOUND)
     install(PROGRAMS ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/build/apps/volk_gnsssdr-config-info DESTINATION bin COMPONENT "volk_gnsssdr")
 endif(NOT VOLK_GNSSSDR_FOUND)
 
-
 find_program(GZIP
     gzip
     /bin
@@ -127,6 +117,7 @@ find_program(GZIP
     /opt/local/bin
     /sbin
 )
+
 if(NOT GZIP_NOTFOUND)
     execute_process(COMMAND gzip -9 -c ${CMAKE_SOURCE_DIR}/docs/manpage/gnss-sdr-manpage
                     WORKING_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_FILE "${CMAKE_BINARY_DIR}/gnss-sdr.1.gz")

@@ -33,7 +33,7 @@ This program prints configuration information for the Vector-Optimized Library o
 .BR volk_gnsssdr_profile (1)
 .BR gnss-sdr (1)
 \.TP
-Check http://gnss-sdr.org for more information.
+Check https://gnss\-sdr.org for more information.
 .SH BUGS
 No known bugs.
 .SH AUTHOR

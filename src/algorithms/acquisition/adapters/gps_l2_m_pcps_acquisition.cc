@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -26,7 +26,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -36,6 +36,7 @@
 #include "gps_l2c_signal.h"
 #include "GPS_L2C.h"
 #include "gnss_sdr_flags.h"
+#include "acq_conf.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
 
@@ -46,7 +47,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
-    pcpsconf_t acq_parameters;
+    Acq_Conf acq_parameters = Acq_Conf();
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
     std::string default_dump_filename = "./data/acquisition.dat";
@@ -59,10 +60,10 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in_;
-    if_ = configuration_->property(role + ".if", 0);
-    acq_parameters.freq = if_;
+    acq_parameters.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / GPS_L2_M_CODE_RATE_HZ) * static_cast<float>(acq_parameters.fs_in)));
     dump_ = configuration_->property(role + ".dump", false);
     acq_parameters.dump = dump_;
+    acq_parameters.dump_channel = configuration_->property(role + ".dump_channel", 0);
     blocking_ = configuration_->property(role + ".blocking", true);
     acq_parameters.blocking = blocking_;
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
@@ -77,14 +78,18 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
     acq_parameters.dump_filename = dump_filename_;
     //--- Find number of samples per spreading code -------------------------
-    code_length_ = std::round(static_cast<double>(fs_in_) / (GPS_L2_M_CODE_RATE_HZ / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS)));
-
-    vector_length_ = code_length_;
-
-    if (bit_transition_flag_)
+    acq_parameters.samples_per_ms = static_cast<float>(fs_in_) * 0.001;
+    acq_parameters.ms_per_code = 20;
+    acq_parameters.sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", acq_parameters.ms_per_code);
+    if ((acq_parameters.sampled_ms % acq_parameters.ms_per_code) != 0)
         {
-            vector_length_ *= 2;
+            LOG(WARNING) << "Parameter coherent_integration_time_ms should be a multiple of 20. Setting it to 20";
+            acq_parameters.sampled_ms = acq_parameters.ms_per_code;
         }
+
+    code_length_ = acq_parameters.ms_per_code * acq_parameters.samples_per_ms;
+
+    vector_length_ = acq_parameters.sampled_ms * acq_parameters.samples_per_ms * (acq_parameters.bit_transition_flag ? 2 : 1);
 
     code_ = new gr_complex[vector_length_];
 
@@ -96,13 +101,14 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
         {
             item_size_ = sizeof(gr_complex);
         }
-    acq_parameters.samples_per_ms = static_cast<int>(std::round(static_cast<double>(fs_in_) * 0.001));
-    acq_parameters.samples_per_code = code_length_;
+
+    acq_parameters.samples_per_code = acq_parameters.samples_per_ms * static_cast<float>(GPS_L2_M_PERIOD * 1000.0);
     acq_parameters.it_size = item_size_;
-    acq_parameters.sampled_ms = 20;
+
     acq_parameters.num_doppler_bins_step2 = configuration_->property(role + ".second_nbins", 4);
     acq_parameters.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
-    acq_parameters.make_2_steps = configuration_->property(role + ".make_two_steps", true);
+    acq_parameters.make_2_steps = configuration_->property(role + ".make_two_steps", false);
+    acq_parameters.blocking_on_standby = configuration_->property(role + ".blocking_on_standby", false);
     acquisition_ = pcps_make_acquisition(acq_parameters);
     DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
 
@@ -119,6 +125,15 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     threshold_ = 0.0;
     doppler_step_ = 0;
     gnss_synchro_ = 0;
+    num_codes_ = acq_parameters.sampled_ms / acq_parameters.ms_per_code;
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 0)
+        {
+            LOG(ERROR) << "This implementation does not provide an output stream";
+        }
 }
 
 
@@ -199,9 +214,18 @@ void GpsL2MPcpsAcquisition::init()
 
 void GpsL2MPcpsAcquisition::set_local_code()
 {
-    gps_l2c_m_code_gen_complex_sampled(code_, gnss_synchro_->PRN, fs_in_);
+    std::complex<float>* code = new std::complex<float>[code_length_];
+
+    gps_l2c_m_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_);
+
+    for (unsigned int i = 0; i < num_codes_; i++)
+        {
+            memcpy(&(code_[i * code_length_]), code,
+                sizeof(gr_complex) * code_length_);
+        }
 
     acquisition_->set_local_code(code_);
+    delete[] code;
 }
 
 

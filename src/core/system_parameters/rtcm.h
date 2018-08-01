@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -677,10 +677,10 @@ private:
                                 {
                                     if (first == true)
                                         {
-                                            std::cout << "Client from " << socket_.remote_endpoint().address() << " says ";
+                                            LOG(INFO) << "Client says:";
                                             first = false;
                                         }
-                                    std::cout << client_says.substr(0, 80) << std::endl;
+                                    LOG(INFO) << client_says;
                                     client_says = client_says.substr(80, client_says.length() - 80);
                                 }
                             do_read_message_header();
@@ -749,21 +749,21 @@ private:
         : public std::enable_shared_from_this<Tcp_Internal_Client>
     {
     public:
-        Tcp_Internal_Client(boost::asio::io_service& io_service,
+        Tcp_Internal_Client(boost::asio::io_service& io_context,
             boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
-            : io_service_(io_service), socket_(io_service)
+            : io_context_(io_context), socket_(io_context)
         {
             do_connect(endpoint_iterator);
         }
 
         inline void close()
         {
-            io_service_.post([this]() { socket_.close(); });
+            io_context_.post([this]() { socket_.close(); });
         }
 
         inline void write(const Rtcm_Message& msg)
         {
-            io_service_.post(
+            io_context_.post(
                 [this, msg]() {
                     bool write_in_progress = !write_msgs_.empty();
                     write_msgs_.push_back(msg);
@@ -827,7 +827,7 @@ private:
                 });
         }
 
-        boost::asio::io_service& io_service_;
+        boost::asio::io_service& io_context_;
         boost::asio::ip::tcp::socket socket_;
         Rtcm_Message read_msg_;
         std::deque<Rtcm_Message> write_msgs_;
@@ -837,13 +837,13 @@ private:
     class Queue_Reader
     {
     public:
-        Queue_Reader(boost::asio::io_service& io_service, std::shared_ptr<concurrent_queue<std::string> >& queue, int port) : queue_(queue)
+        Queue_Reader(boost::asio::io_service& io_context, std::shared_ptr<concurrent_queue<std::string> >& queue, int port) : queue_(queue)
         {
-            boost::asio::ip::tcp::resolver resolver(io_service);
+            boost::asio::ip::tcp::resolver resolver(io_context);
             std::string host("localhost");
             std::string port_str = std::to_string(port);
             auto queue_endpoint_iterator = resolver.resolve({host.c_str(), port_str.c_str()});
-            c = std::make_shared<Tcp_Internal_Client>(io_service, queue_endpoint_iterator);
+            c = std::make_shared<Tcp_Internal_Client>(io_context, queue_endpoint_iterator);
         }
 
         inline void do_read_queue()
@@ -871,8 +871,8 @@ private:
     class Tcp_Server
     {
     public:
-        Tcp_Server(boost::asio::io_service& io_service, const boost::asio::ip::tcp::endpoint& endpoint)
-            : io_service_(io_service), acceptor_(io_service), socket_(io_service)
+        Tcp_Server(boost::asio::io_service& io_context, const boost::asio::ip::tcp::endpoint& endpoint)
+            : acceptor_(io_context), socket_(io_context)
         {
             acceptor_.open(endpoint.protocol());
             acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
@@ -895,33 +895,47 @@ private:
                     {
                         if (first_client)
                             {
-                                std::cout << "The TCP Server is up and running. Accepting connections ..." << std::endl;
+                                std::cout << "The TCP/IP server of RTCM messages is up and running. Accepting connections ..." << std::endl;
                                 first_client = false;
                             }
                         else
                             {
-                                std::cout << "Starting RTCM TCP server session..." << std::endl;
-                                std::cout << "Serving client from " << socket_.remote_endpoint().address() << std::endl;
-                                LOG(INFO) << "Serving client from " << socket_.remote_endpoint().address();
+                                std::cout << "Starting RTCM TCP/IP server session..." << std::endl;
+                                boost::system::error_code ec2;
+                                boost::asio::ip::tcp::endpoint endpoint = socket_.remote_endpoint(ec2);
+                                if (ec2)
+                                    {
+                                        // Error creating remote_endpoint
+                                        std::cout << "Error getting remote IP address, closing session." << std::endl;
+                                        LOG(INFO) << "Error getting remote IP address";
+                                        start_session = false;
+                                    }
+                                else
+                                    {
+                                        std::string remote_addr = endpoint.address().to_string();
+                                        std::cout << "Serving client from " << remote_addr << std::endl;
+                                        LOG(INFO) << "Serving client from " << remote_addr;
+                                    }
                             }
-                        std::make_shared<Rtcm_Session>(std::move(socket_), room_)->start();
+                        if (start_session) std::make_shared<Rtcm_Session>(std::move(socket_), room_)->start();
                     }
                 else
                     {
                         std::cout << "Error when invoking a RTCM session. " << ec << std::endl;
                     }
+                start_session = true;
                 do_accept();
             });
         }
 
-        boost::asio::io_service& io_service_;
         boost::asio::ip::tcp::acceptor acceptor_;
         boost::asio::ip::tcp::socket socket_;
         Rtcm_Listener_Room room_;
         bool first_client = true;
+        bool start_session = true;
     };
 
-    boost::asio::io_service io_service;
+    boost::asio::io_service io_context;
     std::shared_ptr<concurrent_queue<std::string> > rtcm_message_queue;
     std::thread t;
     std::thread tq;

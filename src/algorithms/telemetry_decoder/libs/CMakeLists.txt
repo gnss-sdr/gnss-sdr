@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -13,13 +13,12 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
 add_subdirectory(libswiftcnav)
 
-set(TELEMETRY_DECODER_LIB_SOURCES 
-     gps_l1_ca_subframe_fsm.cc 
+set(TELEMETRY_DECODER_LIB_SOURCES
      viterbi_decoder.cc
 )
 

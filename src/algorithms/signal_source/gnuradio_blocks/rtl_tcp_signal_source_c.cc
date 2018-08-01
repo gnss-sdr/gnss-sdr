@@ -7,7 +7,7 @@
  * <http://git.osmocom.org/gr-osmosdr>
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -25,7 +25,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -154,7 +154,10 @@ rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
 
 rtl_tcp_signal_source_c::~rtl_tcp_signal_source_c()
 {
+    mutex_.unlock();
     io_service_.stop();
+    not_empty_.notify_one();
+    not_full_.notify_one();
 }
 
 

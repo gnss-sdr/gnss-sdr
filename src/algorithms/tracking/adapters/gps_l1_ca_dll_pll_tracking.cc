@@ -12,7 +12,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,12 +30,12 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
-
+#include "dll_pll_conf.h"
 #include "gps_l1_ca_dll_pll_tracking.h"
 #include "configuration_interface.h"
 #include "GPS_L1_CA.h"
@@ -49,7 +49,7 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
-    dllpllconf_t trk_param;
+    Dll_Pll_Conf trk_param = Dll_Pll_Conf();
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
     std::string default_item_type = "gr_complex";
@@ -108,13 +108,13 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     int cn0_samples = configuration->property(role + ".cn0_samples", 20);
     if (FLAGS_cn0_samples != 20) cn0_samples = FLAGS_cn0_samples;
     trk_param.cn0_samples = cn0_samples;
-    int cn0_min = configuration->property(role + ".cn0_min", 25);
+    int cn0_min = configuration->property(role + ".cn0_min", 30);
     if (FLAGS_cn0_min != 25) cn0_min = FLAGS_cn0_min;
     trk_param.cn0_min = cn0_min;
     int max_lock_fail = configuration->property(role + ".max_lock_fail", 50);
     if (FLAGS_max_lock_fail != 50) max_lock_fail = FLAGS_max_lock_fail;
     trk_param.max_lock_fail = max_lock_fail;
-    double carrier_lock_th = configuration->property(role + ".carrier_lock_th", 0.85);
+    double carrier_lock_th = configuration->property(role + ".carrier_lock_th", 0.80);
     if (FLAGS_carrier_lock_th != 0.85) carrier_lock_th = FLAGS_carrier_lock_th;
     trk_param.carrier_lock_th = carrier_lock_th;
 
@@ -131,6 +131,14 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
         }
     channel_ = 0;
     DLOG(INFO) << "tracking(" << tracking_->unique_id() << ")";
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 

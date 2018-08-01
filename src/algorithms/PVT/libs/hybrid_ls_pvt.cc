@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -33,6 +33,7 @@
 #include "Galileo_E1.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
 
 
@@ -338,7 +339,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
                         }
 
                     // get time string Gregorian calendar
-                    boost::posix_time::time_duration t = boost::posix_time::seconds(utc);
+                    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>(utc * 1000.0));
                     // 22 August 1999 00:00 last Galileo start GST epoch (ICD sec 5.1.2)
                     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
                     this->set_position_UTC_time(p_time);
@@ -349,9 +350,6 @@ bool hybrid_ls_pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
                                << " is Lat = " << this->get_latitude() << " [deg], Long = " << this->get_longitude()
                                << " [deg], Height= " << this->get_height() << " [m]"
                                << " RX time offset= " << this->get_time_offset_s() << " [s]";
-
-                    // ###### Compute DOPs ########
-                    hybrid_ls_pvt::compute_DOP();
 
                     // ######## LOG FILE #########
                     if (d_flag_dump_enabled == true)

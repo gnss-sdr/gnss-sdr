@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -13,8 +13,13 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
+
+
+if(Boost_VERSION LESS 105800)
+     add_definitions(-DOLD_BOOST=1)
+endif(Boost_VERSION LESS 105800)
 
 set(PVT_ADAPTER_SOURCES
 	rtklib_pvt.cc

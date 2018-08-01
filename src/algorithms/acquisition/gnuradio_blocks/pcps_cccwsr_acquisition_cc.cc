@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -29,7 +29,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -48,18 +48,18 @@ using google::LogMessage;
 
 pcps_cccwsr_acquisition_cc_sptr pcps_cccwsr_make_acquisition_cc(
     unsigned int sampled_ms, unsigned int max_dwells,
-    unsigned int doppler_max, long freq, long fs_in,
+    unsigned int doppler_max, long fs_in,
     int samples_per_ms, int samples_per_code,
     bool dump, std::string dump_filename)
 {
     return pcps_cccwsr_acquisition_cc_sptr(
-        new pcps_cccwsr_acquisition_cc(sampled_ms, max_dwells, doppler_max, freq, fs_in,
+        new pcps_cccwsr_acquisition_cc(sampled_ms, max_dwells, doppler_max, fs_in,
             samples_per_ms, samples_per_code, dump, dump_filename));
 }
 
 pcps_cccwsr_acquisition_cc::pcps_cccwsr_acquisition_cc(
     unsigned int sampled_ms, unsigned int max_dwells,
-    unsigned int doppler_max, long freq, long fs_in,
+    unsigned int doppler_max, long fs_in,
     int samples_per_ms, int samples_per_code,
     bool dump,
     std::string dump_filename) : gr::block("pcps_cccwsr_acquisition_cc",
@@ -70,7 +70,6 @@ pcps_cccwsr_acquisition_cc::pcps_cccwsr_acquisition_cc(
     d_sample_counter = 0;  // SAMPLE COUNTER
     d_active = false;
     d_state = 0;
-    d_freq = freq;
     d_fs_in = fs_in;
     d_samples_per_ms = samples_per_ms;
     d_samples_per_code = samples_per_code;
@@ -189,7 +188,7 @@ void pcps_cccwsr_acquisition_cc::init()
             d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
             int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
-            float phase_step_rad = GPS_TWO_PI * (d_freq + doppler) / static_cast<float>(d_fs_in);
+            float phase_step_rad = GPS_TWO_PI * doppler / static_cast<float>(d_fs_in);
             float _phase[1];
             _phase[0] = 0;
             volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index], -phase_step_rad, _phase, d_fft_size);

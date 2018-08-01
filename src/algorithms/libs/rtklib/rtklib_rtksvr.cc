@@ -375,7 +375,7 @@ void decodefile(rtksvr_t *svr, int index)
 
     nav_t nav = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         {0, 0, (erpd_t *){0}}, {0.0}, {0.0}, {0.0}, {0.0}, {0.0}, {0.0}, {0.0}, {0.0},
-        {0.0}, {0.0}, {0.0}, {0.0}, 0, {{0.0}, {0.0}}, {{0.0}, {0.0}}, {{0.0}, {0.0}, {0.0}},
+        {0.0}, {0.0}, {0.0}, {0.0}, 0, {{0.0}, {0.0}}, {{0.0}, {0.0}}, {{{0.0}}, {{0.0}}, {{0.0}}},
         {0.0}, {0.0}, {*glo_fcn}, {*pcvt0}, sbssat0, {*sbsion0}, {*dgps0}, {*ssr0}, {*lexeph0},
         {{0, 0.0}, 0.0, {0.0}, {{0.0}, {0.0}}}, pppcorr0};
 
@@ -471,7 +471,7 @@ void *rtksvrthread(void *arg)
                     q = svr->buff[i] + svr->buffsize;
 
                     /* read receiver raw/rtcm data from input stream */
-                    if ((n = strread(svr->stream + i, p, q - p)) <= 0)
+                    if ((n = strread(svr->stream + i, p, static_cast<int>(q[0]) - static_cast<int>(p[0]))) <= 0)
                         {
                             continue;
                         }

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -14,7 +14,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
 
@@ -649,9 +649,7 @@ if(ENABLE_TESTING)
     foreach(kernel ${h_files})
       get_filename_component(kernel ${kernel} NAME)
       string(REPLACE ".h" "" kernel ${kernel})
-      if(NOT ${kernel} MATCHES puppet*)
-         VOLK_ADD_TEST(${kernel} "volk_gnsssdr_test_all")
-      endif(NOT ${kernel} MATCHES puppet*)
+      VOLK_ADD_TEST(${kernel} "volk_gnsssdr_test_all")
     endforeach()
 
 endif(ENABLE_TESTING)

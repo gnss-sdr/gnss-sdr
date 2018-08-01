@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -32,6 +32,7 @@
 #define GNSS_SDR_SIGNAL_GENERATOR_FLAGS_H_
 
 #include <gflags/gflags.h>
+#include <limits>
 
 DEFINE_bool(disable_generator, false, "Disable the signal generator (a external signal file must be available for the test)");
 DEFINE_string(generator_binary, std::string(SW_GENERATOR_BIN), "Path of software-defined signal generator binary");
@@ -44,5 +45,7 @@ DEFINE_string(filename_raw_data, "signal_out.bin", "Filename of output raw data 
 DEFINE_int32(fs_gen_sps, 2600000, "Sampling frequency [sps]");
 DEFINE_int32(test_satellite_PRN, 1, "PRN of the satellite under test (must be visible during the observation time)");
 DEFINE_int32(test_satellite_PRN2, 2, "PRN of the satellite under test (must be visible during the observation time)");
+DEFINE_string(test_satellite_PRN_list, "1,2,3,6,9,10,12,17,20,23,28", "List of PRN of the satellites under test (must be visible during the observation time)");
+DEFINE_double(CN0_dBHz, std::numeric_limits<double>::infinity(), "Enable noise generator and set the CN0 [dB-Hz]");
 
 #endif

@@ -13,7 +13,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,7 +31,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -60,7 +60,6 @@
 using google::LogMessage;
 
 galileo_e1_tcp_connector_tracking_cc_sptr galileo_e1_tcp_connector_make_tracking_cc(
-    long if_freq,
     long fs_in,
     unsigned int vector_length,
     bool dump,
@@ -71,7 +70,7 @@ galileo_e1_tcp_connector_tracking_cc_sptr galileo_e1_tcp_connector_make_tracking
     float very_early_late_space_chips,
     size_t port_ch0)
 {
-    return galileo_e1_tcp_connector_tracking_cc_sptr(new Galileo_E1_Tcp_Connector_Tracking_cc(if_freq,
+    return galileo_e1_tcp_connector_tracking_cc_sptr(new Galileo_E1_Tcp_Connector_Tracking_cc(
         fs_in, vector_length, dump, dump_filename, pll_bw_hz, dll_bw_hz, early_late_space_chips, very_early_late_space_chips, port_ch0));
 }
 
@@ -87,7 +86,6 @@ void Galileo_E1_Tcp_Connector_Tracking_cc::forecast(int noutput_items,
 
 
 Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
-    long if_freq,
     long fs_in,
     unsigned int vector_length,
     bool dump,
@@ -103,7 +101,6 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
     this->set_relative_rate(1.0 / vector_length);
     // initialize internal vars
     d_dump = dump;
-    d_if_freq = if_freq;
     d_fs_in = fs_in;
     d_vector_length = vector_length;
     d_dump_filename = dump_filename;

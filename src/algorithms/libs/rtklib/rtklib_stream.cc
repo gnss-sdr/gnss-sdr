@@ -64,6 +64,7 @@
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <string>
 
 
 /* global options ------------------------------------------------------------*/
@@ -115,7 +116,12 @@ serial_t *openserial(const char *path, int mode, char *msg)
         }
     parity = (char)toupper((int)parity);
 
-    sprintf(dev, "/dev/%s", port);
+    // sprintf(dev, "/dev/%s", port); This line triggers a warning. Replaced by:
+    std::string s_aux = "/dev/" + std::string(port);
+    s_aux.resize(128, '\0');
+    int n = s_aux.length();
+    for (int i = 0; i < n; i++) dev[i] = s_aux[i];
+    if (n == 0) dev[0] = '\0';
 
     if ((mode & STR_MODE_R) && (mode & STR_MODE_W))
         rw = O_RDWR;
@@ -779,7 +785,7 @@ tcpsvr_t *opentcpsvr(const char *path, char *msg)
 {
     tcpsvr_t *tcpsvr, tcpsvr0;  // = {{0}};
     char port[256] = "";
-    tcpsvr0 = {{0, {0}, 0, {0, 0, 0, {0}}, 0, 0, 0, 0}, {0, {0}, 0, {0, 0, 0, {0}}, 0, 0, 0, 0}};
+    tcpsvr0 = {{0, {0}, 0, {0, 0, 0, {0}}, 0, 0, 0, 0}, {{0, {0}, 0, {0, 0, 0, {0}}, 0, 0, 0, 0}}};
     tracet(3, "opentcpsvr: path=%s\n", path);
 
     if (!(tcpsvr = (tcpsvr_t *)malloc(sizeof(tcpsvr_t)))) return NULL;
@@ -1224,7 +1230,11 @@ int rspntrip_s(ntrip_t *ntrip, char *msg)
     else if ((p = strstr((char *)ntrip->buff, NTRIP_RSP_ERROR)))
         { /* error */
             nb = ntrip->nb < MAXSTATMSG ? ntrip->nb : MAXSTATMSG;
-            strncpy(msg, (char *)ntrip->buff, nb);
+            // strncpy(msg, (char *)ntrip->buff, nb); This line triggers a warning. Replaced by;
+            std::string s_aux((char *)ntrip->buff);
+            s_aux.resize(nb, '\0');
+            for (int i = 0; i < nb; i++) msg[i] = s_aux[i];
+
             msg[nb] = 0;
             tracet(1, "rspntrip_s: %s nb=%d\n", msg, ntrip->nb);
             ntrip->nb = 0;
@@ -1380,7 +1390,11 @@ ntrip_t *openntrip(const char *path, int type, char *msg)
     /* ntrip access via proxy server */
     if (*proxyaddr)
         {
-            sprintf(ntrip->url, "http://%s", tpath);
+            // sprintf(ntrip->url, "http://%s", tpath); This line triggers a warning. Replaced by:
+            std::string s_aux = "http://" + std::string(tpath);
+            int n = s_aux.length();
+            if (n < 256)
+                for (int k = 0; k < n; k++) ntrip->url[k] = s_aux[k];
             strcpy(tpath, proxyaddr);
         }
     /* open tcp client stream */
@@ -1479,7 +1493,6 @@ void decodeftppath(const char *path, char *addr, char *file, char *user,
                     *q = '\0';
                     if (passwd) strcpy(passwd, q + 1);
                 }
-            *q = '\0';
             if (user) strcpy(user, buff);
         }
     else
@@ -1545,8 +1558,17 @@ void *ftpthread(void *arg)
         p++;
     else
         p = remote;
-    sprintf(local, "%s%c%s", localdir, FILEPATHSEP, p);
-    sprintf(errfile, "%s.err", local);
+    // sprintf(local, "%s%c%s", localdir, FILEPATHSEP, p);  This line triggers a warning. Replaced by:
+    std::string s_aux = std::string(localdir) + std::to_string(FILEPATHSEP) + std::string(p);
+    int n = s_aux.length();
+    if (n < 1024)
+        for (int i = 0; i < n; i++) local[i] = s_aux[i];
+
+    // sprintf(errfile, "%s.err", local);  This line triggers a warning. Replaced by:
+    std::string s_aux2 = std::string(local) + ".err";
+    n = s_aux2.length();
+    if (n < 1024)
+        for (int i = 0; i < n; i++) errfile[i] = s_aux2[i];
 
     /* if local file exist, skip download */
     strcpy(tmpfile, local);
@@ -1574,16 +1596,35 @@ void *ftpthread(void *arg)
     /* download command (ref [2]) */
     if (ftp->proto == 0)
         { /* ftp */
-            sprintf(opt, "--ftp-user=%s --ftp-password=%s --glob=off --passive-ftp %s-t 1 -T %d -O \"%s\"",
-                ftp->user, ftp->passwd, proxyopt, FTP_TIMEOUT, local);
-            sprintf(cmd, "%s%s %s \"ftp://%s/%s\" 2> \"%s\"\n", env, FTP_CMD, opt, ftp->addr,
-                remote, errfile);
+            // sprintf(opt, "--ftp-user=%s --ftp-password=%s --glob=off --passive-ftp %s-t 1 -T %d -O \"%s\"",
+            //    ftp->user, ftp->passwd, proxyopt, FTP_TIMEOUT, local); This line triggers a warning. Replaced by:
+            std::string s_aux = "--ftp-user=" + std::string(ftp->user) + " --ftp-password=" + std::string(ftp->passwd) +
+                                " --glob=off --passive-ftp " + std::string(proxyopt) + "s-t 1 -T " + std::to_string(FTP_TIMEOUT) +
+                                " -O \"" + std::string(local) + "\"";
+            int k = s_aux.length();
+            if (k < 1024)
+                for (int i = 0; i < k; i++) opt[i] = s_aux[i];
+
+            // sprintf(cmd, "%s%s %s \"ftp://%s/%s\" 2> \"%s\"\n", env, FTP_CMD, opt, ftp->addr,
+            //    remote, errfile); This line triggers a warning. Replaced by:
+            std::string s_aux2 = std::string(env) + std::string(FTP_CMD) + " " + std::string(opt) + " " +
+                                 "\"ftp://" + std::string(ftp->addr) + "/" + std::string(remote) + "\" 2> \"" + std::string(errfile) + "\"\n";
+            k = s_aux2.length();
+            for (int i = 0; (i < k) && (i < 1024); i++) cmd[i] = s_aux2[i];
         }
     else
         { /* http */
-            sprintf(opt, "%s-t 1 -T %d -O \"%s\"", proxyopt, FTP_TIMEOUT, local);
-            sprintf(cmd, "%s%s %s \"http://%s/%s\" 2> \"%s\"\n", env, FTP_CMD, opt, ftp->addr,
-                remote, errfile);
+            // sprintf(opt, "%s-t 1 -T %d -O \"%s\"", proxyopt, FTP_TIMEOUT, local); This line triggers a warning. Replaced by:
+            std::string s_aux = std::string(proxyopt) + " -t 1 -T " + std::to_string(FTP_TIMEOUT) + " -O \"" + std::string(local) + "\"";
+            int l = s_aux.length();
+            for (int i = 0; (i < l) && (i < 1024); i++) opt[i] = s_aux[i];
+
+            // sprintf(cmd, "%s%s %s \"http://%s/%s\" 2> \"%s\"\n", env, FTP_CMD, opt, ftp->addr,
+            //    remote, errfile); This line triggers a warning. Replaced by:
+            std::string s_aux2 = std::string(env) + std::string(FTP_CMD) + " " + std::string(opt) + " " +
+                                 "\"http://" + std::string(ftp->addr) + "/" + std::string(remote) + "\" 2> \"" + std::string(errfile) + "\"\n";
+            l = s_aux2.length();
+            for (int i = 0; (i < l) && (i < 1024); i++) cmd[i] = s_aux2[i];
         }
     /* execute download command */
     if ((ret = execcmd(cmd)))
@@ -2049,7 +2090,10 @@ int strstat(stream_t *stream, char *msg)
     strlock(stream);
     if (msg)
         {
-            strncpy(msg, stream->msg, MAXSTRMSG - 1);
+            // strncpy(msg, stream->msg, MAXSTRMSG - 1); This line triggers a warning. Replaced by:
+            std::string aux_s(stream->msg);
+            aux_s.resize(MAXSTRMSG - 1, '0');
+            for (int i = 0; i < MAXSTRMSG - 1; i++) msg[i] = aux_s[i];
             msg[MAXSTRMSG - 1] = '\0';
         }
     if (!stream->port)

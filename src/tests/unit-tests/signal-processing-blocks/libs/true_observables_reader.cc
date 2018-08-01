@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -38,7 +38,7 @@ bool true_observables_reader::read_binary_obs()
             for (int i = 0; i < 12; i++)
                 {
                     d_dump_file.read(reinterpret_cast<char *>(&gps_time_sec[i]), sizeof(double));
-                    d_dump_file.read(reinterpret_cast<char *>(&doppler_l1_hz), sizeof(double));
+                    d_dump_file.read(reinterpret_cast<char *>(&doppler_l1_hz[i]), sizeof(double));
                     d_dump_file.read(reinterpret_cast<char *>(&acc_carrier_phase_l1_cycles[i]), sizeof(double));
                     d_dump_file.read(reinterpret_cast<char *>(&dist_m[i]), sizeof(double));
                     d_dump_file.read(reinterpret_cast<char *>(&true_dist_m[i]), sizeof(double));

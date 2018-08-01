@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -31,6 +31,7 @@
 #ifndef GNSS_SDR_DLL_PLL_VEML_TRACKING_H
 #define GNSS_SDR_DLL_PLL_VEML_TRACKING_H
 
+#include "dll_pll_conf.h"
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
@@ -39,37 +40,14 @@
 #include <fstream>
 #include <string>
 #include <map>
-
-typedef struct
-{
-    /* DLL/PLL tracking configuration */
-    double fs_in;
-    unsigned int vector_length;
-    bool dump;
-    std::string dump_filename;
-    float pll_bw_hz;
-    float dll_bw_hz;
-    float pll_bw_narrow_hz;
-    float dll_bw_narrow_hz;
-    float early_late_space_chips;
-    float very_early_late_space_chips;
-    float early_late_space_narrow_chips;
-    float very_early_late_space_narrow_chips;
-    int extend_correlation_symbols;
-    int cn0_samples;
-    int cn0_min;
-    int max_lock_fail;
-    double carrier_lock_th;
-    bool track_pilot;
-    char system;
-    char signal[3];
-} dllpllconf_t;
+#include <queue>
+#include <boost/circular_buffer.hpp>
 
 class dll_pll_veml_tracking;
 
 typedef boost::shared_ptr<dll_pll_veml_tracking> dll_pll_veml_tracking_sptr;
 
-dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(dllpllconf_t conf_);
+dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_);
 
 /*!
  * \brief This class implements a code DLL + carrier PLL tracking block.
@@ -89,9 +67,10 @@ public:
     void forecast(int noutput_items, gr_vector_int &ninput_items_required);
 
 private:
-    friend dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(dllpllconf_t conf_);
+    friend dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_);
 
-    dll_pll_veml_tracking(dllpllconf_t conf_);
+    dll_pll_veml_tracking(const Dll_Pll_Conf &conf_);
+    void msg_handler_preamble_index(pmt::pmt_t msg);
 
     bool cn0_and_tracking_lock_status(double coh_integration_time_s);
     bool acquire_secondary();
@@ -104,7 +83,7 @@ private:
     int save_matfile();
 
     // tracking configuration vars
-    dllpllconf_t trk_parameters;
+    Dll_Pll_Conf trk_parameters;
     bool d_veml;
     bool d_cloop;
     unsigned int d_channel;
@@ -125,9 +104,12 @@ private:
     std::string *d_secondary_code_string;
     std::string signal_pretty_name;
 
+    uint64_t d_preamble_sample_counter;
+    int *d_gps_l1ca_preambles_symbols;
+    boost::circular_buffer<float> d_symbol_history;
+
     //tracking state machine
     int d_state;
-    bool d_synchonizing;
     //Integration period in samples
     int d_correlation_length_ms;
     int d_n_correlator_taps;
@@ -201,6 +183,7 @@ private:
     // CN0 estimation and lock detector
     int d_cn0_estimation_counter;
     int d_carrier_lock_fail_counter;
+    std::deque<float> d_carrier_lock_detector_queue;
     double d_carrier_lock_test;
     double d_CN0_SNV_dB_Hz;
     double d_carrier_lock_threshold;

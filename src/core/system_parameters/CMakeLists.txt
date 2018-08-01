@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -13,36 +13,36 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
 set(SYSTEM_PARAMETERS_SOURCES
      gnss_satellite.cc
      gnss_signal.cc
      gps_navigation_message.cc
-	 gps_ephemeris.cc
-	 gps_iono.cc
-	 gps_almanac.cc
-	 gps_utc_model.cc
-	 gps_acq_assist.cc
-	 gps_ref_time.cc
-	 gps_ref_location.cc
-	 galileo_utc_model.cc
-	 galileo_ephemeris.cc
-	 galileo_almanac.cc
-	 galileo_iono.cc
-	 galileo_navigation_message.cc
-	 sbas_ephemeris.cc
-	 galileo_fnav_message.cc
-	 gps_cnav_ephemeris.cc
-	 gps_cnav_navigation_message.cc
-	 gps_cnav_iono.cc
-	 gps_cnav_utc_model.cc
-	 rtcm.cc
-   glonass_gnav_ephemeris.cc
-   glonass_gnav_almanac.cc
-   glonass_gnav_utc_model.cc
-   glonass_gnav_navigation_message.cc
+     gps_ephemeris.cc
+     gps_iono.cc
+     gps_almanac.cc
+     gps_utc_model.cc
+     gps_acq_assist.cc
+     gps_ref_time.cc
+     gps_ref_location.cc
+     galileo_utc_model.cc
+     galileo_ephemeris.cc
+     galileo_almanac.cc
+     galileo_iono.cc
+     galileo_navigation_message.cc
+     sbas_ephemeris.cc
+     galileo_fnav_message.cc
+     gps_cnav_ephemeris.cc
+     gps_cnav_navigation_message.cc
+     gps_cnav_iono.cc
+     gps_cnav_utc_model.cc
+     rtcm.cc
+     glonass_gnav_ephemeris.cc
+     glonass_gnav_almanac.cc
+     glonass_gnav_utc_model.cc
+     glonass_gnav_navigation_message.cc
 )
 
 

@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -45,6 +45,8 @@ class gnss_sdr_sample_counter : public gr::sync_decimator
 {
 private:
     gnss_sdr_sample_counter(double _fs, size_t _size);
+    unsigned int samples_per_output;
+    unsigned long int sample_counter;
     long long int current_T_rx_ms;  // Receiver time in ms since the beginning of the run
     unsigned int current_s;         // Receiver time in seconds, modulo 60
     bool flag_m;                    // True if the receiver has been running for at least 1 minute

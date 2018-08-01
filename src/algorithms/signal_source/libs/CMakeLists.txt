@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -13,11 +13,11 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
 if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
-     find_package(iio REQUIRED)
+     find_package(Griio REQUIRED)
           if(NOT IIO_FOUND)
                message(STATUS "gnuradio-iio not found, its installation is required.")
                message(STATUS "Please build and install the following projects:")

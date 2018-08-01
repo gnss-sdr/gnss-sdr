@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -26,7 +26,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -34,11 +34,10 @@
 #ifndef GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FINE_DOPPLER_H_
 #define GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FINE_DOPPLER_H_
 
-#include <string>
 #include "gnss_synchro.h"
 #include "acquisition_interface.h"
 #include "pcps_acquisition_fine_doppler_cc.h"
-
+#include <string>
 
 class ConfigurationInterface;
 
@@ -122,6 +121,11 @@ public:
      */
     void reset() override;
 
+    /*!
+     * \brief If state = 1, it forces the block to start acquiring from the first sample
+     */
+    void set_state(int state) override;
+
 private:
     pcps_acquisition_fine_doppler_cc_sptr acquisition_cc_;
     size_t item_size_;
@@ -131,11 +135,9 @@ private:
     float threshold_;
     int doppler_max_;
     unsigned int doppler_step_;
-    int doppler_min_;
     unsigned int sampled_ms_;
     int max_dwells_;
     long fs_in_;
-    long if_;
     bool dump_;
     std::string dump_filename_;
     std::complex<float>* code_;

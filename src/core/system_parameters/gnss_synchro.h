@@ -4,9 +4,10 @@
  * \author
  *  Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *  Javier Arribas, 2012. jarribas(at)cttc.es
+ *  Álvaro Cebrián Juan, 2018. acebrianjuan(at)gmail.com
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +25,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -65,13 +66,55 @@ public:
     int correlation_length_ms;      //!< Set by Tracking processing block
 
     //Telemetry Decoder
-    bool Flag_valid_word;            //!< Set by Telemetry Decoder processing block
-    double TOW_at_current_symbol_s;  //!< Set by Telemetry Decoder processing block
+    bool Flag_valid_word;                   //!< Set by Telemetry Decoder processing block
+    unsigned int TOW_at_current_symbol_ms;  //!< Set by Telemetry Decoder processing block
 
     // Observables
     double Pseudorange_m;         //!< Set by Observables processing block
     double RX_time;               //!< Set by Observables processing block
     bool Flag_valid_pseudorange;  //!< Set by Observables processing block
+    double interp_TOW_ms;         //!< Set by Observables processing block
+
+
+    /*!
+     * \brief This member function is necessary to serialize and restore
+     * Gnss_Synchro objects from a byte stream.
+     */
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version)
+    {
+        if (version)
+            {
+            };
+        // Satellite and signal info
+        ar& System;
+        ar& Signal;
+        ar& PRN;
+        ar& Channel_ID;
+        ar& Acq_delay_samples;
+        ar& Acq_doppler_hz;
+        ar& Acq_samplestamp_samples;
+        ar& Flag_valid_acquisition;
+        //Tracking
+        ar& fs;
+        ar& Prompt_I;
+        ar& Prompt_Q;
+        ar& CN0_dB_hz;
+        ar& Carrier_Doppler_hz;
+        ar& Carrier_phase_rads;
+        ar& Code_phase_samples;
+        ar& Tracking_sample_counter;
+        ar& Flag_valid_symbol_output;
+        ar& correlation_length_ms;
+        //Telemetry Decoder
+        ar& Flag_valid_word;
+        ar& TOW_at_current_symbol_ms;
+        // Observables
+        ar& Pseudorange_m;
+        ar& RX_time;
+        ar& Flag_valid_pseudorange;
+        ar& interp_TOW_ms;
+    }
 };
 
 #endif

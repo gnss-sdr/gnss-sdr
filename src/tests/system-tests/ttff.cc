@@ -1,5 +1,5 @@
 /*!
- * \file ttff_gps_l1.cc
+ * \file ttff.cc
  * \brief  This class implements a test for measuring
  * the Time-To-First-Fix
  * \author Carles Fernandez-Prades, 2016. cfernandez(at)cttc.es
@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2016  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -25,7 +25,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -66,7 +66,6 @@ concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
 std::vector<double> TTFF_v;
-const int decimation_factor = 1;
 
 typedef struct
 {
@@ -75,7 +74,7 @@ typedef struct
 } ttff_msgbuf;
 
 
-class TfttGpsL1CATest : public ::testing::Test
+class TtffTest : public ::testing::Test
 {
 public:
     void config_1();
@@ -124,7 +123,7 @@ public:
 };
 
 
-void TfttGpsL1CATest::config_1()
+void TtffTest::config_1()
 {
     config = std::make_shared<InMemoryConfiguration>();
 
@@ -189,7 +188,6 @@ void TfttGpsL1CATest::config_1()
     // Set Acquisition
     config->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Tong_Acquisition");
     config->set_property("Acquisition_1C.item_type", "gr_complex");
-    config->set_property("Acquisition_1C.if", std::to_string(zero));
     config->set_property("Acquisition_1C.coherent_integration_time_ms", std::to_string(coherent_integration_time_ms));
     config->set_property("Acquisition_1C.threshold", std::to_string(threshold));
     config->set_property("Acquisition_1C.doppler_max", std::to_string(doppler_max));
@@ -203,7 +201,6 @@ void TfttGpsL1CATest::config_1()
     // Set Tracking
     config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
     config->set_property("Tracking_1C.item_type", "gr_complex");
-    config->set_property("Tracking_1C.if", std::to_string(zero));
     config->set_property("Tracking_1C.dump", "false");
     config->set_property("Tracking_1C.dump_filename", "./tracking_ch_");
     config->set_property("Tracking_1C.pll_bw_hz", std::to_string(pll_bw_hz));
@@ -213,7 +210,6 @@ void TfttGpsL1CATest::config_1()
     // Set Telemetry
     config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
     config->set_property("TelemetryDecoder_1C.dump", "false");
-    config->set_property("TelemetryDecoder_1C.decimation_factor", std::to_string(decimation_factor));
 
     // Set Observables
     config->set_property("Observables.implementation", "Hybrid_Observables");
@@ -222,6 +218,7 @@ void TfttGpsL1CATest::config_1()
 
     // Set PVT
     config->set_property("PVT.implementation", "RTKLIB_PVT");
+    config->set_property("PVT.positioning_mode", "Single");
     config->set_property("PVT.output_rate_ms", std::to_string(output_rate_ms));
     config->set_property("PVT.display_rate_ms", std::to_string(display_rate_ms));
     config->set_property("PVT.dump_filename", "./PVT");
@@ -235,7 +232,7 @@ void TfttGpsL1CATest::config_1()
 }
 
 
-void TfttGpsL1CATest::config_2()
+void TtffTest::config_2()
 {
     if (FLAGS_config_file_ttff.empty())
         {
@@ -300,7 +297,7 @@ void receive_msg()
 }
 
 
-void TfttGpsL1CATest::print_TTFF_report(const std::vector<double> &ttff_v, std::shared_ptr<ConfigurationInterface> config_)
+void TtffTest::print_TTFF_report(const std::vector<double> &ttff_v, std::shared_ptr<ConfigurationInterface> config_)
 {
     std::ofstream ttff_report_file;
     std::string filename = "ttff_report";
@@ -420,7 +417,7 @@ void TfttGpsL1CATest::print_TTFF_report(const std::vector<double> &ttff_v, std::
 }
 
 
-TEST_F(TfttGpsL1CATest, ColdStart)
+TEST_F(TtffTest, ColdStart)
 {
     unsigned int num_measurements = 0;
 
@@ -503,7 +500,7 @@ TEST_F(TfttGpsL1CATest, ColdStart)
 }
 
 
-TEST_F(TfttGpsL1CATest, HotStart)
+TEST_F(TtffTest, HotStart)
 {
     unsigned int num_measurements = 0;
     TTFF_v.clear();

@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -32,12 +32,11 @@
 #ifndef GNSS_SDR_GALILEO_E1_PCPS_8MS_AMBIGUOUS_ACQUISITION_H_
 #define GNSS_SDR_GALILEO_E1_PCPS_8MS_AMBIGUOUS_ACQUISITION_H_
 
-#include <string>
-#include <gnuradio/blocks/stream_to_vector.h>
 #include "gnss_synchro.h"
 #include "acquisition_interface.h"
 #include "galileo_pcps_8ms_acquisition_cc.h"
-
+#include <gnuradio/blocks/stream_to_vector.h>
+#include <string>
 
 class ConfigurationInterface;
 
@@ -123,6 +122,7 @@ public:
      * \brief Restart acquisition algorithm
      */
     void reset() override;
+    void set_state(int state __attribute__((unused))) override{};
 
 private:
     ConfigurationInterface* configuration_;
@@ -139,7 +139,6 @@ private:
     unsigned int sampled_ms_;
     unsigned int max_dwells_;
     long fs_in_;
-    long if_;
     bool dump_;
     std::string dump_filename_;
     std::complex<float>* code_;

@@ -25,7 +25,7 @@
 *
 * -------------------------------------------------------------------------
 *
-* Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+* Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
 *
 * GNSS-SDR is a software defined Global Navigation
 *          Satellite Systems receiver
@@ -43,7 +43,7 @@
 * GNU General Public License for more details.
 *
 * You should have received a copy of the GNU General Public License
-* along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+* along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 *
 * -------------------------------------------------------------------------
 */
@@ -69,7 +69,7 @@ typedef boost::shared_ptr<pcps_quicksync_acquisition_cc>
 pcps_quicksync_acquisition_cc_sptr
 pcps_quicksync_make_acquisition_cc(unsigned int folding_factor,
     unsigned int sampled_ms, unsigned int max_dwells,
-    unsigned int doppler_max, long freq, long fs_in,
+    unsigned int doppler_max, long fs_in,
     int samples_per_ms, int samples_per_code,
     bool bit_transition_flag,
     bool dump,
@@ -88,7 +88,7 @@ private:
     friend pcps_quicksync_acquisition_cc_sptr
     pcps_quicksync_make_acquisition_cc(unsigned int folding_factor,
         unsigned int sampled_ms, unsigned int max_dwells,
-        unsigned int doppler_max, long freq, long fs_in,
+        unsigned int doppler_max, long fs_in,
         int samples_per_ms, int samples_per_code,
         bool bit_transition_flag,
         bool dump,
@@ -96,7 +96,7 @@ private:
 
     pcps_quicksync_acquisition_cc(unsigned int folding_factor,
         unsigned int sampled_ms, unsigned int max_dwells,
-        unsigned int doppler_max, long freq, long fs_in,
+        unsigned int doppler_max, long fs_in,
         int samples_per_ms, int samples_per_code,
         bool bit_transition_flag,
         bool dump,
@@ -116,7 +116,6 @@ private:
     float d_noise_floor_power;
 
     long d_fs_in;
-    long d_freq;
     int d_samples_per_ms;
     int d_samples_per_code;
     unsigned int d_doppler_resolution;

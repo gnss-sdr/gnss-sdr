@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -201,7 +201,7 @@ int gps_l2c_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
                     d_flag_valid_word = false;
                 }
         }
-    current_synchro_data.TOW_at_current_symbol_s = d_TOW_at_current_symbol;
+    current_synchro_data.TOW_at_current_symbol_ms = round(d_TOW_at_current_symbol * 1000.0);
     current_synchro_data.Flag_valid_word = d_flag_valid_word;
 
     if (d_dump == true)

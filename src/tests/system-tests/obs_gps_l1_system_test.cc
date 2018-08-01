@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2016  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -181,7 +181,6 @@ int ObsGpsL1SystemTest::configure_receiver()
     const float band1_error = 1.0;
     const float band2_error = 1.0;
     const int grid_density = 16;
-    const int decimation_factor = 1;
 
     const float zero = 0.0;
     const int number_of_channels = 8;
@@ -204,7 +203,7 @@ int ObsGpsL1SystemTest::configure_receiver()
     const int extend_correlation_ms = 1;
 
     const int display_rate_ms = 500;
-    const int output_rate_ms = 100;
+    const int output_rate_ms = 10;
 
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(sampling_rate_internal));
 
@@ -265,7 +264,6 @@ int ObsGpsL1SystemTest::configure_receiver()
     // Set Acquisition
     config->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Tong_Acquisition");
     config->set_property("Acquisition_1C.item_type", "gr_complex");
-    config->set_property("Acquisition_1C.if", std::to_string(zero));
     config->set_property("Acquisition_1C.coherent_integration_time_ms", std::to_string(coherent_integration_time_ms));
     config->set_property("Acquisition_1C.threshold", std::to_string(threshold));
     config->set_property("Acquisition_1C.doppler_max", std::to_string(doppler_max));
@@ -280,7 +278,6 @@ int ObsGpsL1SystemTest::configure_receiver()
     config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
     //config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_C_Aid_Tracking");
     config->set_property("Tracking_1C.item_type", "gr_complex");
-    config->set_property("Tracking_1C.if", std::to_string(zero));
     config->set_property("Tracking_1C.dump", "false");
     config->set_property("Tracking_1C.dump_filename", "./tracking_ch_");
     config->set_property("Tracking_1C.pll_bw_hz", std::to_string(pll_bw_hz));
@@ -294,7 +291,6 @@ int ObsGpsL1SystemTest::configure_receiver()
     // Set Telemetry
     config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
     config->set_property("TelemetryDecoder_1C.dump", "false");
-    config->set_property("TelemetryDecoder_1C.decimation_factor", std::to_string(decimation_factor));
 
     // Set Observables
     config->set_property("Observables.implementation", "Hybrid_Observables");
@@ -304,6 +300,7 @@ int ObsGpsL1SystemTest::configure_receiver()
 
     // Set PVT
     config->set_property("PVT.implementation", "RTKLIB_PVT");
+    config->set_property("PVT.positioning_mode", "Single");
     config->set_property("PVT.output_rate_ms", std::to_string(output_rate_ms));
     config->set_property("PVT.display_rate_ms", std::to_string(display_rate_ms));
     config->set_property("PVT.dump_filename", "./PVT");

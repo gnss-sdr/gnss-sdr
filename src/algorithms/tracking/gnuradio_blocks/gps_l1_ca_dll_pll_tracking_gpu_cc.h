@@ -10,7 +10,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -28,7 +28,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -52,7 +52,7 @@ typedef boost::shared_ptr<Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc>
     gps_l1_ca_dll_pll_tracking_gpu_cc_sptr;
 
 gps_l1_ca_dll_pll_tracking_gpu_cc_sptr
-gps_l1_ca_dll_pll_make_tracking_gpu_cc(long if_freq,
+gps_l1_ca_dll_pll_make_tracking_gpu_cc(
     long fs_in,
     unsigned int vector_length,
     bool dump,
@@ -81,7 +81,7 @@ public:
 
 private:
     friend gps_l1_ca_dll_pll_tracking_gpu_cc_sptr
-    gps_l1_ca_dll_pll_make_tracking_gpu_cc(long if_freq,
+    gps_l1_ca_dll_pll_make_tracking_gpu_cc(
         long fs_in,
         unsigned int vector_length,
         bool dump,
@@ -90,7 +90,7 @@ private:
         float dll_bw_hz,
         float early_late_space_chips);
 
-    Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(long if_freq,
+    Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
         long fs_in,
         unsigned int vector_length,
         bool dump,

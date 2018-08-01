@@ -5,7 +5,7 @@
  * \author Antonio Ramos,  antonio(at)cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -90,8 +90,10 @@ int unpack_spir_gss6450_samples::work(int noutput_items,
                     i_data[k] = bs[i_shift + k];
                     q_data[k] = bs[q_shift + k];
                 }
-            out[i] = gr_complex(static_cast<float>(compute_two_complement(i_data.to_ulong())) + 0.5,
-                static_cast<float>(compute_two_complement(q_data.to_ulong())) + 0.5);
+            //out[i] = gr_complex(static_cast<float>(compute_two_complement(i_data.to_ulong())) + 0.5,
+            //    static_cast<float>(compute_two_complement(q_data.to_ulong())) + 0.5);
+            out[i] = gr_complex(static_cast<float>(compute_two_complement(q_data.to_ulong())) + 0.5,
+                static_cast<float>(compute_two_complement(i_data.to_ulong())) + 0.5);
             n_sample++;
             if (n_sample == samples_per_int)
                 {

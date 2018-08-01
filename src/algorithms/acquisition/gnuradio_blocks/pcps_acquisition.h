@@ -26,7 +26,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -44,7 +44,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -53,39 +53,20 @@
 #define GNSS_SDR_PCPS_ACQUISITION_H_
 
 #include "gnss_synchro.h"
+#include "acq_conf.h"
 #include <armadillo>
 #include <gnuradio/block.h>
 #include <gnuradio/fft/fft.h>
 #include <volk/volk.h>
 #include <string>
 
-typedef struct
-{
-    /* pcps acquisition configuration */
-    unsigned int sampled_ms;
-    unsigned int max_dwells;
-    unsigned int doppler_max;
-    unsigned int num_doppler_bins_step2;
-    float doppler_step2;
-    long freq;
-    long fs_in;
-    int samples_per_ms;
-    int samples_per_code;
-    bool bit_transition_flag;
-    bool use_CFAR_algorithm_flag;
-    bool dump;
-    bool blocking;
-    bool make_2_steps;
-    std::string dump_filename;
-    size_t it_size;
-} pcpsconf_t;
 
 class pcps_acquisition;
 
 typedef boost::shared_ptr<pcps_acquisition> pcps_acquisition_sptr;
 
 pcps_acquisition_sptr
-pcps_make_acquisition(pcpsconf_t conf_);
+pcps_make_acquisition(const Acq_Conf& conf_);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition.
@@ -97,9 +78,9 @@ class pcps_acquisition : public gr::block
 {
 private:
     friend pcps_acquisition_sptr
-    pcps_make_acquisition(pcpsconf_t conf_);
+    pcps_make_acquisition(const Acq_Conf& conf_);
 
-    pcps_acquisition(pcpsconf_t conf_);
+    pcps_acquisition(const Acq_Conf& conf_);
 
     void update_local_carrier(gr_complex* carrier_vector, int correlator_length_samples, float freq);
     void update_grid_doppler_wipeoffs();
@@ -112,23 +93,35 @@ private:
 
     void send_positive_acquisition();
 
-    pcpsconf_t acq_parameters;
+    void dump_results(int effective_fft_size);
+
+    float first_vs_second_peak_statistic(uint32_t& indext, int& doppler, unsigned int num_doppler_bins, int doppler_max, int doppler_step);
+    float max_to_input_power_statistic(uint32_t& indext, int& doppler, float input_power, unsigned int num_doppler_bins, int doppler_max, int doppler_step);
+
+    Acq_Conf acq_parameters;
     bool d_active;
     bool d_worker_active;
     bool d_cshort;
     bool d_step_two;
+    bool d_use_CFAR_algorithm_flag;
+    int d_positive_acq;
     float d_threshold;
     float d_mag;
     float d_input_power;
     float d_test_statistics;
     float* d_magnitude;
+    float** d_magnitude_grid;
+    float* d_tmp_buffer;
+    gr_complex* d_input_signal;
+    uint32_t d_samplesPerChip;
     long d_old_freq;
     int d_state;
     unsigned int d_channel;
     unsigned int d_doppler_step;
     float d_doppler_center_step_two;
-    unsigned int d_well_count;
+    unsigned int d_num_noncoherent_integrations_counter;
     unsigned int d_fft_size;
+    unsigned int d_consumed_samples;
     unsigned int d_num_doppler_bins;
     unsigned long int d_sample_counter;
     gr_complex** d_grid_doppler_wipeoffs;
@@ -140,6 +133,8 @@ private:
     gr::fft::fft_complex* d_ifft;
     Gnss_Synchro* d_gnss_synchro;
     arma::fmat grid_;
+    long int d_dump_number;
+    unsigned int d_dump_channel;
 
 public:
     ~pcps_acquisition();
@@ -164,7 +159,7 @@ public:
     }
 
     /*!
-      * \brief Initializes acquisition algorithm.
+      * \brief Initializes acquisition algorithm and reserves memory.
       */
     void init();
 

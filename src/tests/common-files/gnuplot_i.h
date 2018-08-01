@@ -20,7 +20,7 @@
  *     by C. Fernandez (22/10/17)
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2013-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2013-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -38,7 +38,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -47,7 +47,7 @@
 #ifndef GNSS_SDR_GNUPLOT_I_H_
 #define GNSS_SDR_GNUPLOT_I_H_
 
-
+#include <gflags/gflags.h>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -56,9 +56,12 @@
 #include <stdexcept>
 #include <cstdio>
 #include <cstdlib>  // for getenv()
+#include <cstring>  // for strncpy
 #include <cmath>
 #include <list>  // for std::list
+#include <sys/stat.h>
 
+DEFINE_bool(show_plots, true, "Show plots on screen. Disable for non-interactive testing.");
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
 //defined for 32 and 64-bit environments
@@ -67,7 +70,7 @@
 #elif defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
 //all UNIX-like OSs (Linux, *BSD, MacOSX, Solaris, ...)
 #include <unistd.h>  // for access(), mkstemp()
-#define GP_MAX_TMP_FILES 64
+#define GP_MAX_TMP_FILES 1024
 #else
 #error unsupported or unknown operating system
 #endif
@@ -215,6 +218,7 @@ public:
         const std::string &labely = "y",
         const std::string &labelz = "z");
 
+
     /// destructor: needed to delete temporary files
     ~Gnuplot();
 
@@ -242,6 +246,9 @@ public:
 
     /// sets terminal type to terminal_std
     Gnuplot &showonscreen();  // window output is set by default (win/x11/aqua)
+
+    /// sets terminal type to unknown (disable the screen output)
+    Gnuplot &disablescreen();
 
     /// saves a gnuplot session to a postscript file, filename without extension
     Gnuplot &savetops(const std::string &filename = "gnuplot_output");
@@ -300,9 +307,9 @@ public:
     ///
     /// \return <-- reference to the gnuplot object
     // -----------------------------------------------
-    inline Gnuplot &set_multiplot()
+    inline Gnuplot &set_multiplot(int rows, int cols)
     {
-        cmd("set multiplot");
+        cmd("set multiplot layout " + std::to_string(rows) + "," + std::to_string(cols));  //+ " rowfirst");
         return *this;
     };
 
@@ -1194,6 +1201,17 @@ Gnuplot &Gnuplot::set_smooth(const std::string &stylestr)
 
 //------------------------------------------------------------------------------
 //
+// Disable screen output
+//
+Gnuplot &Gnuplot::disablescreen()
+{
+    cmd("set output");
+    cmd("set terminal unknown");
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+//
 // sets terminal type to windows / x11
 //
 Gnuplot &Gnuplot::showonscreen()
@@ -1904,11 +1922,11 @@ void Gnuplot::init()
     std::string tmp = Gnuplot::m_sGNUPlotPath + "/" +
                       Gnuplot::m_sGNUPlotFileName;
 
-    // FILE *popen(const char *command, const char *mode);
-    // The popen() function shall execute the command specified by the string
-    // command, create a pipe between the calling program and the executed
-    // command, and return a pointer to a stream that can be used to either read
-    // from or write to the pipe.
+// FILE *popen(const char *command, const char *mode);
+// The popen() function shall execute the command specified by the string
+// command, create a pipe between the calling program and the executed
+// command, and return a pointer to a stream that can be used to either read
+// from or write to the pipe.
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
     gnucmd = _popen(tmp.c_str(), "w");
 #elif defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
@@ -1959,47 +1977,46 @@ bool Gnuplot::get_program_path()
     //
     // second look in PATH for Gnuplot
     //
-    char *path;
+    const char *path;
     // Retrieves a C string containing the value of environment variable PATH
     path = std::getenv("PATH");
-
-    if (path == NULL || std::char_traits<char>::length(path) > 4096 * sizeof(char))
+    std::stringstream s;
+    s << path;
+    if (s.fail())
         {
             throw GnuplotException("Path is not set");
         }
-    else
+    std::string path_str = s.str();
+
+    std::list<std::string> ls;
+
+//split path (one long string) into list ls of strings
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
+    stringtok(ls, path_str, ";");
+#elif defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
+    stringtok(ls, path_str, ":");
+#endif
+
+    // scan list for Gnuplot program files
+    for (std::list<std::string>::const_iterator i = ls.begin();
+         i != ls.end(); ++i)
         {
-            std::list<std::string> ls;
-            std::string path_str(path);
-
-            //split path (one long string) into list ls of strings
+            tmp = (*i) + "/" + Gnuplot::m_sGNUPlotFileName;
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
-            stringtok(ls, path_str, ";");
+            if (Gnuplot::file_exists(tmp, 0))  // check existence
 #elif defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
-            stringtok(ls, path_str, ":");
+            if (Gnuplot::file_exists(tmp, 1))  // check existence and execution permission
 #endif
-
-            // scan list for Gnuplot program files
-            for (std::list<std::string>::const_iterator i = ls.begin();
-                 i != ls.end(); ++i)
                 {
-                    tmp = (*i) + "/" + Gnuplot::m_sGNUPlotFileName;
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
-                    if (Gnuplot::file_exists(tmp, 0))  // check existence
-#elif defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
-                    if (Gnuplot::file_exists(tmp, 1))  // check existence and execution permission
-#endif
-                        {
-                            Gnuplot::m_sGNUPlotPath = *i;  // set m_sGNUPlotPath
-                            return true;
-                        }
+                    Gnuplot::m_sGNUPlotPath = *i;  // set m_sGNUPlotPath
+                    return true;
                 }
-
-            tmp = "Can't find gnuplot neither in PATH nor in \"" +
-                  Gnuplot::m_sGNUPlotPath + "\"";
-            Gnuplot::m_sGNUPlotPath = "";
-            throw GnuplotException(tmp);
         }
+
+    tmp = "Can't find gnuplot neither in PATH nor in \"" +
+          Gnuplot::m_sGNUPlotPath + "\"";
+    Gnuplot::m_sGNUPlotPath = "";
+    throw GnuplotException(tmp);
 }
 
 
@@ -2017,16 +2034,16 @@ bool Gnuplot::file_exists(const std::string &filename, int mode)
             return false;
         }
 
-        // int _access(const char *path, int mode);
-        //  returns 0 if the file has the given mode,
-        //  it returns -1 if the named file does not exist or is not accessible in
-        //  the given mode
-        // mode = 0 (F_OK) (default): checks file for existence only
-        // mode = 1 (X_OK): execution permission
-        // mode = 2 (W_OK): write permission
-        // mode = 4 (R_OK): read permission
-        // mode = 6       : read and write permission
-        // mode = 7       : read, write and execution permission
+// int _access(const char *path, int mode);
+//  returns 0 if the file has the given mode,
+//  it returns -1 if the named file does not exist or is not accessible in
+//  the given mode
+// mode = 0 (F_OK) (default): checks file for existence only
+// mode = 1 (X_OK): execution permission
+// mode = 2 (W_OK): write permission
+// mode = 4 (R_OK): read permission
+// mode = 6       : read and write permission
+// mode = 7       : read, write and execution permission
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
     if (_access(filename.c_str(), mode) == 0)
 #elif defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
@@ -2088,30 +2105,37 @@ std::string Gnuplot::create_tmpfile(std::ofstream &tmp)
             throw GnuplotException(except.str());
         }
 
-        // int mkstemp(char *name);
-        // shall replace the contents of the string pointed to by "name" by a unique
-        // filename, and return a file descriptor for the file open for reading and
-        // writing.  Otherwise, -1 shall be returned if no suitable file could be
-        // created.  The string in template should look like a filename with six
-        // trailing 'X' s; mkstemp() replaces each 'X' with a character from the
-        // portable filename character set.  The characters are chosen such that the
-        // resulting name does not duplicate the name of an existing file at the
-        // time of a call to mkstemp()
+// int mkstemp(char *name);
+// shall replace the contents of the string pointed to by "name" by a unique
+// filename, and return a file descriptor for the file open for reading and
+// writing.  Otherwise, -1 shall be returned if no suitable file could be
+// created.  The string in template should look like a filename with six
+// trailing 'X' s; mkstemp() replaces each 'X' with a character from the
+// portable filename character set.  The characters are chosen such that the
+// resulting name does not duplicate the name of an existing file at the
+// time of a call to mkstemp()
 
-        //
-        // open temporary files for output
-        //
+//
+// open temporary files for output
+//
+
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
     if (_mktemp(name) == NULL)
 #elif defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
+    mode_t mask = umask(S_IXUSR | S_IRWXG | S_IRWXO);
     if (mkstemp(name) == -1)
 #endif
         {
             std::ostringstream except;
             except << "Cannot create temporary file \"" << name << "\"";
+#if defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
+            umask(mask);
+#endif
             throw GnuplotException(except.str());
         }
-
+#if defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
+    umask(mask);
+#endif
     tmp.open(name);
     if (tmp.bad())
         {

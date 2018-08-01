@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -227,7 +227,7 @@ TEST_F(FirFilterTest, ConnectAndRunGrcomplex)
     ASSERT_NO_THROW({
         filter->connect(top_block);
 
-        boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 1, 1, queue));
+        boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 0, 1, queue));
         source->connect(top_block);
 
         boost::shared_ptr<gr::block> null_sink = gr::blocks::null_sink::make(item_size);
@@ -268,7 +268,7 @@ TEST_F(FirFilterTest, ConnectAndRunCshorts)
     ASSERT_NO_THROW({
         filter->connect(top_block);
 
-        boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 1, 1, queue));
+        boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 0, 1, queue));
         source->connect(top_block);
 
         interleaved_short_to_complex_short_sptr ishort_to_cshort_ = make_interleaved_short_to_complex_short();
@@ -312,7 +312,7 @@ TEST_F(FirFilterTest, ConnectAndRunCbytes)
     ASSERT_NO_THROW({
         filter->connect(top_block);
 
-        boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 1, 1, queue));
+        boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 0, 1, queue));
         source->connect(top_block);
 
         interleaved_byte_to_complex_byte_sptr ibyte_to_cbyte_ = make_interleaved_byte_to_complex_byte();
@@ -356,7 +356,7 @@ TEST_F(FirFilterTest, ConnectAndRunCbyteGrcomplex)
     ASSERT_NO_THROW({
         filter->connect(top_block);
 
-        boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 1, 1, queue));
+        boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 0, 1, queue));
         source->connect(top_block);
 
         interleaved_byte_to_complex_byte_sptr ibyte_to_cbyte_ = make_interleaved_byte_to_complex_byte();

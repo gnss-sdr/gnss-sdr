@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2016  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -116,6 +116,14 @@ TEST(FFTLengthTest, MeasureExecutionTime)
                             Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                             Gnuplot g1("linespoints");
+                            if (FLAGS_show_plots)
+                                {
+                                    g1.showonscreen();  // window output
+                                }
+                            else
+                                {
+                                    g1.disablescreen();
+                                }
                             g1.set_title("FFT execution times for different lengths");
                             g1.set_grid();
                             g1.set_xlabel("FFT length");
@@ -124,9 +132,16 @@ TEST(FFTLengthTest, MeasureExecutionTime)
                             g1.set_style("points").plot_xy(powers_of_two, execution_times_powers_of_two, "Power of 2");
                             g1.savetops("FFT_execution_times_extended");
                             g1.savetopdf("FFT_execution_times_extended", 18);
-                            g1.showonscreen();  // window output
 
                             Gnuplot g2("linespoints");
+                            if (FLAGS_show_plots)
+                                {
+                                    g2.showonscreen();  // window output
+                                }
+                            else
+                                {
+                                    g2.disablescreen();
+                                }
                             g2.set_title("FFT execution times for different lengths (up to 2^{14}=16384)");
                             g2.set_grid();
                             g2.set_xlabel("FFT length");
@@ -136,7 +151,7 @@ TEST(FFTLengthTest, MeasureExecutionTime)
                             g2.set_style("points").plot_xy(powers_of_two, execution_times_powers_of_two, "Power of 2");
                             g2.savetops("FFT_execution_times");
                             g2.savetopdf("FFT_execution_times", 18);
-                            g2.showonscreen();  // window output
+                            if (FLAGS_show_plots) g2.showonscreen();  // window output
                         }
                     catch (const GnuplotException& ge)
                         {

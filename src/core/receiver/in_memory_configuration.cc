@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -113,6 +113,13 @@ double InMemoryConfiguration::property(std::string property_name, double default
 
 void InMemoryConfiguration::set_property(std::string property_name, std::string value)
 {
+    properties_.insert(std::make_pair(property_name, value));
+}
+
+
+void InMemoryConfiguration::supersede_property(std::string property_name, std::string value)
+{
+    properties_.erase(property_name);
     properties_.insert(std::make_pair(property_name, value));
 }
 

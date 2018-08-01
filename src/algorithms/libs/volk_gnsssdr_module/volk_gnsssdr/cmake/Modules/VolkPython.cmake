@@ -13,7 +13,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 
 if(DEFINED __INCLUDED_VOLK_PYTHON_CMAKE)
     return()
@@ -25,42 +25,39 @@ set(__INCLUDED_VOLK_PYTHON_CMAKE TRUE)
 # This allows the user to specify a specific interpreter,
 # or finds the interpreter via the built-in cmake module.
 ########################################################################
-#this allows the user to override PYTHON_EXECUTABLE
-if(PYTHON_EXECUTABLE)
+set(VOLK_PYTHON_MIN_VERSION "2.7")
+set(VOLK_PYTHON3_MIN_VERSION "3.4")
 
-    set(PYTHONINTERP_FOUND TRUE)
+if(CMAKE_VERSION VERSION_LESS 3.12)
+    if(PYTHON_EXECUTABLE)
+        message(STATUS "User set python executable ${PYTHON_EXECUTABLE}")
+        find_package(PythonInterp ${VOLK_PYTHON_MIN_VERSION} REQUIRED)
+    else(PYTHON_EXECUTABLE)
+        message(STATUS "PYTHON_EXECUTABLE not set - using default python2")
+        message(STATUS "Use -DPYTHON_EXECUTABLE=/path/to/python3 to build for python3.")
+        find_package(PythonInterp ${VOLK_PYTHON_MIN_VERSION})
+        if(NOT PYTHONINTERP_FOUND)
+            message(STATUS "python2 not found - using python3")
+            find_package(PythonInterp ${VOLK_PYTHON3_MIN_VERSION} REQUIRED)
+         endif(NOT PYTHONINTERP_FOUND)
+    endif(PYTHON_EXECUTABLE)
+    find_package(PythonLibs ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR} EXACT)
+else(CMAKE_VERSION VERSION_LESS 3.12)
+    if(PYTHON_EXECUTABLE)
+        message(STATUS "User set python executable ${PYTHON_EXECUTABLE}")
+        find_package(PythonInterp ${VOLK_PYTHON_MIN_VERSION} REQUIRED)
+    else(PYTHON_EXECUTABLE)
+        find_package (Python COMPONENTS Interpreter)
+        set(PYTHON_VERSION_MAJOR ${Python_VERSION_MAJOR})
+        set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
+    endif(PYTHON_EXECUTABLE)
+endif(CMAKE_VERSION VERSION_LESS 3.12)
 
-#otherwise if not set, try to automatically find it
-else(PYTHON_EXECUTABLE)
+if (${PYTHON_VERSION_MAJOR} VERSION_EQUAL 3)
+    set(PYTHON3 TRUE)
+endif ()
 
-    #use the built-in find script
-    set(Python_ADDITIONAL_VERSIONS 3.4 3.5 3.6)
-    find_package(PythonInterp 2)
 
-    #and if that fails use the find program routine
-    if(NOT PYTHONINTERP_FOUND)
-        find_program(PYTHON_EXECUTABLE NAMES python python2 python2.7 python3)
-        if(PYTHON_EXECUTABLE)
-            set(PYTHONINTERP_FOUND TRUE)
-        endif(PYTHON_EXECUTABLE)
-    endif(NOT PYTHONINTERP_FOUND)
-
-endif(PYTHON_EXECUTABLE)
-
-#make the path to the executable appear in the cmake gui
-set(PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE FILEPATH "python interpreter")
-
-#make sure we can use -B with python (introduced in 2.6)
-if(PYTHON_EXECUTABLE)
-    execute_process(
-        COMMAND ${PYTHON_EXECUTABLE} -B -c ""
-        OUTPUT_QUIET ERROR_QUIET
-        RESULT_VARIABLE PYTHON_HAS_DASH_B_RESULT
-    )
-    if(PYTHON_HAS_DASH_B_RESULT EQUAL 0)
-        set(PYTHON_DASH_B "-B")
-    endif()
-endif(PYTHON_EXECUTABLE)
 
 ########################################################################
 # Check for the existence of a python module:
@@ -69,28 +66,32 @@ endif(PYTHON_EXECUTABLE)
 # - cmd an additional command to run
 # - have the result variable to set
 ########################################################################
-macro(VOLK_PYTHON_CHECK_MODULE desc mod cmd have)
-    message(STATUS "")
-    message(STATUS "Python checking for ${desc}")
+macro(VOLK_PYTHON_CHECK_MODULE_RAW desc python_code have)
     execute_process(
-        COMMAND ${PYTHON_EXECUTABLE} -c "
-#########################################
-try: import ${mod}
-except:
-    try: ${mod}
-    except: exit(-1)
-try: assert ${cmd}
-except: exit(-1)
-#########################################"
-        RESULT_VARIABLE ${have}
+        COMMAND ${PYTHON_EXECUTABLE} -c "${python_code}"
+        OUTPUT_QUIET ERROR_QUIET
+        RESULT_VARIABLE return_code
     )
-    if(${have} EQUAL 0)
+    if(return_code EQUAL 0)
         message(STATUS "Python checking for ${desc} - found")
         set(${have} TRUE)
-    else(${have} EQUAL 0)
+    else()
         message(STATUS "Python checking for ${desc} - not found")
         set(${have} FALSE)
-    endif(${have} EQUAL 0)
+    endif()
+endmacro(VOLK_PYTHON_CHECK_MODULE_RAW)
+
+macro(VOLK_PYTHON_CHECK_MODULE desc mod cmd have)
+    VOLK_PYTHON_CHECK_MODULE_RAW(
+        "${desc}" "
+#########################################
+try:
+    import ${mod}
+    assert ${cmd}
+except (ImportError, AssertionError): exit(-1)
+except: pass
+#########################################"
+    "${have}")
 endmacro(VOLK_PYTHON_CHECK_MODULE)
 
 ########################################################################
@@ -98,8 +99,12 @@ endmacro(VOLK_PYTHON_CHECK_MODULE)
 ########################################################################
 if(NOT DEFINED VOLK_PYTHON_DIR)
 execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "
-from distutils import sysconfig
-print(sysconfig.get_python_lib(plat_specific=True, prefix=''))
+import os
+import sys
+if os.name == 'posix':
+    print(os.path.join('lib', 'python' + sys.version[:3], 'dist-packages'))
+if os.name == 'nt':
+    print(os.path.join('Lib', 'site-packages'))
 " OUTPUT_VARIABLE VOLK_PYTHON_DIR OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 endif()
@@ -200,7 +205,7 @@ function(VOLK_PYTHON_INSTALL)
             add_custom_command(
                 OUTPUT ${pyexefile} DEPENDS ${pyfile}
                 COMMAND ${PYTHON_EXECUTABLE} -c
-                "open('${pyexefile}','w').write('\#!${pyexe_native}\\n'+open('${pyfile}').read())"
+                "open('${pyexefile}','w').write(r'\#!${pyexe_native}'+'\\n'+open('${pyfile}').read())"
                 COMMENT "Shebangin ${pyfile_name}"
                 VERBATIM
             )

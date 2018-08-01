@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -51,7 +51,6 @@ using google::LogMessage;
 
 gps_l1_ca_dll_pll_c_aid_tracking_cc_sptr
 gps_l1_ca_dll_pll_c_aid_make_tracking_cc(
-    long if_freq,
     long fs_in,
     unsigned int vector_length,
     bool dump,
@@ -63,7 +62,7 @@ gps_l1_ca_dll_pll_c_aid_make_tracking_cc(
     int extend_correlation_ms,
     float early_late_space_chips)
 {
-    return gps_l1_ca_dll_pll_c_aid_tracking_cc_sptr(new gps_l1_ca_dll_pll_c_aid_tracking_cc(if_freq,
+    return gps_l1_ca_dll_pll_c_aid_tracking_cc_sptr(new gps_l1_ca_dll_pll_c_aid_tracking_cc(
         fs_in, vector_length, dump, dump_filename, pll_bw_hz, dll_bw_hz, pll_bw_narrow_hz, dll_bw_narrow_hz, extend_correlation_ms, early_late_space_chips));
 }
 
@@ -92,7 +91,6 @@ void gps_l1_ca_dll_pll_c_aid_tracking_cc::msg_handler_preamble_index(pmt::pmt_t 
 
 
 gps_l1_ca_dll_pll_c_aid_tracking_cc::gps_l1_ca_dll_pll_c_aid_tracking_cc(
-    long if_freq,
     long fs_in,
     unsigned int vector_length,
     bool dump,
@@ -114,7 +112,6 @@ gps_l1_ca_dll_pll_c_aid_tracking_cc::gps_l1_ca_dll_pll_c_aid_tracking_cc(
     this->message_port_register_out(pmt::mp("events"));
     // initialize internal vars
     d_dump = dump;
-    d_if_freq = if_freq;
     d_fs_in = fs_in;
     d_vector_length = vector_length;
     d_dump_filename = dump_filename;

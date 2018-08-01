@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -34,9 +34,15 @@
 #include "gnss_sdr_flags.h"
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
-#include <boost/math/common_factor_rt.hpp>
 #include <boost/serialization/map.hpp>
 #include <glog/logging.h>
+#if OLD_BOOST
+#include <boost/math/common_factor_rt.hpp>
+namespace bc = boost::math;
+#else
+#include <boost/integer/common_factor_rt.hpp>
+namespace bc = boost::integer;
+#endif
 
 
 using google::LogMessage;
@@ -94,6 +100,8 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
         {
             rinex_version = 2;
         }
+    int rinexobs_rate_ms = bc::lcm(configuration->property(role + ".rinexobs_rate_ms", 1000), output_rate_ms);
+    int rinexnav_rate_ms = bc::lcm(configuration->property(role + ".rinexnav_rate_ms", 6000), output_rate_ms);
 
     // RTCM Printer settings
     bool flag_rtcm_tty_port = configuration->property(role + ".flag_rtcm_tty_port", false);
@@ -102,13 +110,13 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     unsigned short rtcm_tcp_port = configuration->property(role + ".rtcm_tcp_port", 2101);
     unsigned short rtcm_station_id = configuration->property(role + ".rtcm_station_id", 1234);
     // RTCM message rates: least common multiple with output_rate_ms
-    int rtcm_MT1019_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1019_rate_ms", 5000), output_rate_ms);
-    int rtcm_MT1020_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1020_rate_ms", 5000), output_rate_ms);
-    int rtcm_MT1045_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1045_rate_ms", 5000), output_rate_ms);
-    int rtcm_MSM_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MSM_rate_ms", 1000), output_rate_ms);
-    int rtcm_MT1077_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1077_rate_ms", rtcm_MSM_rate_ms), output_rate_ms);
-    int rtcm_MT1087_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1087_rate_ms", rtcm_MSM_rate_ms), output_rate_ms);
-    int rtcm_MT1097_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1097_rate_ms", rtcm_MSM_rate_ms), output_rate_ms);
+    int rtcm_MT1019_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1019_rate_ms", 5000), output_rate_ms);
+    int rtcm_MT1020_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1020_rate_ms", 5000), output_rate_ms);
+    int rtcm_MT1045_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1045_rate_ms", 5000), output_rate_ms);
+    int rtcm_MSM_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MSM_rate_ms", 1000), output_rate_ms);
+    int rtcm_MT1077_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1077_rate_ms", rtcm_MSM_rate_ms), output_rate_ms);
+    int rtcm_MT1087_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1087_rate_ms", rtcm_MSM_rate_ms), output_rate_ms);
+    int rtcm_MT1097_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1097_rate_ms", rtcm_MSM_rate_ms), output_rate_ms);
     std::map<int, int> rtcm_msg_rate_ms;
     rtcm_msg_rate_ms[1019] = rtcm_MT1019_rate_ms;
     rtcm_msg_rate_ms[1020] = rtcm_MT1020_rate_ms;
@@ -208,8 +216,8 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     if ((gps_1C_count != 0) && (gps_2S_count != 0) && (gps_L5_count == 0) && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) type_of_receiver = 21;
     //if( (gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count = 0)) type_of_receiver = 22;
     if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count != 0)) type_of_receiver = 23;
-    if( (gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count != 0)) type_of_receiver = 24;
-    if( (gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count != 0) && (glo_2G_count != 0)) type_of_receiver = 25;
+    if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count != 0)) type_of_receiver = 24;
+    if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count != 0) && (glo_2G_count != 0)) type_of_receiver = 25;
     if ((gps_1C_count != 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count != 0) && (glo_2G_count == 0)) type_of_receiver = 26;
     if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count != 0) && (glo_2G_count == 0)) type_of_receiver = 27;
     if ((gps_1C_count == 0) && (gps_2S_count != 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count != 0) && (glo_2G_count == 0)) type_of_receiver = 28;
@@ -471,10 +479,10 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
         0,                                                                                 /* initialize by restart */
         1,                                                                                 /* output single by dgps/float/fix/ppp outage */
         {"", ""},                                                                          /* char rnxopt[2][256]   rinex options {rover,base} */
-        {sat_PCV, rec_PCV, phwindup, reject_GPS_IIA, raim_fde},                            /*  posopt[6] positioning options [0]: satellite and receiver antenna PCV model; [1]: interpolate antenna parameters; [2]: apply phase wind-up correction for PPP modes; [3]: exclude measurements of GPS Block IIA satellites satellite [4]: RAIM FDE (fault detection and exclusion) [5]: handle day-boundary clock jump */
+        {sat_PCV, rec_PCV, phwindup, reject_GPS_IIA, raim_fde},                            /* posopt[6] positioning options [0]: satellite and receiver antenna PCV model; [1]: interpolate antenna parameters; [2]: apply phase wind-up correction for PPP modes; [3]: exclude measurements of GPS Block IIA satellites satellite [4]: RAIM FDE (fault detection and exclusion) [5]: handle day-boundary clock jump */
         0,                                                                                 /* solution sync mode (0:off,1:on) */
-        {{}, {}},                                                                          /*  odisp[2][6*11] ocean tide loading parameters {rov,base} */
-        {{}, {{}, {}}, {{}, {}}, {}, {}},                                                  /*  exterr_t exterr   extended receiver error model */
+        {{}, {}},                                                                          /* odisp[2][6*11] ocean tide loading parameters {rov,base} */
+        {{}, {{}, {}}, {{}, {}}, {}, {}},                                                  /* exterr_t exterr   extended receiver error model */
         0,                                                                                 /* disable L2-AR */
         {}                                                                                 /* char pppopt[256]   ppp option   "-GAP_RESION="  default gap to reset iono parameters (ep) */
     };
@@ -482,8 +490,12 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     rtkinit(&rtk, &rtklib_configuration_options);
 
     // make PVT object
-    pvt_ = rtklib_make_pvt_cc(in_streams_, dump_, dump_filename_, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, rinex_version, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_msg_rate_ms, rtcm_dump_devname, type_of_receiver, rtk);
+    pvt_ = rtklib_make_pvt_cc(in_streams_, dump_, dump_filename_, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, rinex_version, rinexobs_rate_ms, rinexnav_rate_ms, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_msg_rate_ms, rtcm_dump_devname, type_of_receiver, rtk);
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
+    if (out_streams_ > 0)
+        {
+            LOG(ERROR) << "The PVT block does not have an output stream";
+        }
 }
 
 

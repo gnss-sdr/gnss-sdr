@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -13,15 +13,12 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
-  
-set(ACQUISITION_LIB_SOURCES   
-	fpga_acquisition.cc
-)
-
-include_directories(
+if(ENABLE_FPGA)
+   set(ACQUISITION_LIB_SOURCES fpga_acquisition.cc )
+   include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
@@ -31,10 +28,16 @@ include_directories(
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${VOLK_GNSSSDR_INCLUDE_DIRS}
-)
+   )
 
-file(GLOB ACQUISITION_LIB_HEADERS "*.h")
+   file(GLOB ACQUISITION_LIB_HEADERS "*.h")
+endif(ENABLE_FPGA)
+
+set(ACQUISITION_LIB_HEADERS ${ACQUISITION_LIB_HEADERS} acq_conf.h)
 list(SORT ACQUISITION_LIB_HEADERS)
+
+set(ACQUISITION_LIB_SOURCES ${ACQUISITION_LIB_SOURCES} acq_conf.cc)
+
 add_library(acquisition_lib ${ACQUISITION_LIB_SOURCES} ${ACQUISITION_LIB_HEADERS})
 source_group(Headers FILES ${ACQUISITION_LIB_HEADERS})
 target_link_libraries(acquisition_lib ${VOLK_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES})
@@ -43,4 +46,3 @@ if(VOLK_GNSSSDR_FOUND)
 else(VOLK_GNSSSDR_FOUND)
     add_dependencies(acquisition_lib glog-${glog_RELEASE} volk_gnsssdr_module)
 endif()
-

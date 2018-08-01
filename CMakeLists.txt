@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2017 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -13,7 +13,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
 ########################################################################
@@ -51,7 +51,8 @@ option(ENABLE_ARRAY "Enable the use of CTTC's antenna array front-end as signal 
 option(ENABLE_GN3S "Enable the use of the GN3S dongle as signal source (experimental)" OFF)
 option(ENABLE_PLUTOSDR "Enable the use of ADALM-PLUTO Evaluation Boards (Analog Devices Inc.), requires gr-iio" OFF)
 option(ENABLE_FMCOMMS2 "Enable the use of FMCOMMS4-EBZ + ZedBoard hardware, requires gr-iio" OFF)
-option(ENABLE_AD9361 "Enable the use of AD9361 directo to FPGA hardware, requires gr-iio" OFF)
+option(ENABLE_AD9361 "Enable the use of AD9361 directo to FPGA hardware, requires libiio" OFF)
+option(ENABLE_RAW_UDP "Enable the use of high-optimized custom UDP packet sample source, requires libpcap" OFF)
 
 # Performance analysis tools
 option(ENABLE_GPERFTOOLS "Enable linking to Gperftools libraries (tcmalloc and profiler)" OFF)
@@ -317,6 +318,7 @@ set(GNSSSDR_APPLECLANG_MIN_VERSION "500")
 set(GNSSSDR_GNURADIO_MIN_VERSION "3.7.3")
 set(GNSSSDR_BOOST_MIN_VERSION "1.45")
 set(GNSSSDR_PYTHON_MIN_VERSION "2.7")
+set(GNSSSDR_PYTHON3_MIN_VERSION "3.4")
 set(GNSSSDR_MAKO_MIN_VERSION "0.4.2")
 set(GNSSSDR_ARMADILLO_MIN_VERSION "5.300.0")
 set(GNSSSDR_MATIO_MIN_VERSION "1.5.3")
@@ -354,7 +356,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
           message(STATUS "Your GCC version is too old and does not support some C++ features required by GNSS-SDR. GCC version must be at least ${GNSSSDR_GCC_MIN_VERSION}")
           if(${LINUX_DISTRIBUTION} MATCHES "Ubuntu")
               if(${LINUX_VER} MATCHES "12.04")
-                  message(STATUS "For instructions on how to upgrade GCC, check http://askubuntu.com/a/271561")
+                  message(STATUS "For instructions on how to upgrade GCC, check https://askubuntu.com/a/271561")
               endif(${LINUX_VER} MATCHES "12.04")
           endif(${LINUX_DISTRIBUTION} MATCHES "Ubuntu")
           message(FATAL_ERROR "Fatal error: GCC >= ${GNSSSDR_GCC_MIN_VERSION} required.")
@@ -466,7 +468,7 @@ endif(ENABLE_UNIT_TESTING OR ENABLE_SYSTEM_TESTING)
 
 
 ################################################################################
-# Boost - http://www.boost.org
+# Boost - https://www.boost.org
 ################################################################################
 if(UNIX AND EXISTS "/usr/lib64")
     list(APPEND BOOST_LIBRARYDIR "/usr/lib64") # Fedora 64-bit fix
@@ -490,7 +492,7 @@ endif(NOT Boost_FOUND)
 
 
 ################################################################################
-# GNU Radio - http://gnuradio.org
+# GNU Radio - https://gnuradio.org
 ################################################################################
 set(GR_REQUIRED_COMPONENTS RUNTIME ANALOG BLOCKS FFT FILTER PMT)
 find_package(Gnuradio)
@@ -565,25 +567,28 @@ if(NOT VOLK_GNSSSDR_FOUND)
     ###############################
     # Find Python required modules
     ###############################
-    include(SetupPython) #sets PYTHON_EXECUTABLE and PYTHON_DASH_B
-    GNSSSDR_PYTHON_CHECK_MODULE("python >= ${GNSSSDR_PYTHON_MIN_VERSION}" sys "sys.version.split()[0] >= '${GNSSSDR_PYTHON_MIN_VERSION}'" PYTHON_MIN_VER_FOUND)
-    GNSSSDR_PYTHON_CHECK_MODULE("mako >= ${GNSSSDR_MAKO_MIN_VERSION}" mako "mako.__version__ >= '${GNSSSDR_MAKO_MIN_VERSION}'" MAKO_FOUND)
-    GNSSSDR_PYTHON_CHECK_MODULE("six - python 2 and 3 compatibility library" six "True" SIX_FOUND)
+    include(SetupPython) # sets PYTHON_EXECUTABLE and search for required modules
 
     if(NOT PYTHON_MIN_VER_FOUND)
         message(FATAL_ERROR "Python ${GNSSSDR_PYTHON_MIN_VERSION} or greater required to build VOLK_GNSSSDR")
-    endif()
+    endif(NOT PYTHON_MIN_VER_FOUND)
+
+    if(${PYTHON3})
+        set(PYTHON_NAME "python3")
+    else(${PYTHON3})
+        set(PYTHON_NAME "python")
+    endif(${PYTHON3})
 
     #  Mako
     if(NOT MAKO_FOUND)
-        message(STATUS "Mako templates not found. See http://www.makotemplates.org/ ")
+        message(STATUS "Mako template library not found. See http://www.makotemplates.org/ ")
         message(STATUS " You can try to install it by typing:")
         if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(STATUS " sudo yum install python-mako")
+            message(STATUS " sudo yum install ${PYTHON_NAME}-mako")
         elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
-            message(STATUS " sudo zypper install python-Mako")
+            message(STATUS " sudo zypper install ${PYTHON_NAME}-Mako")
         else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(STATUS " sudo apt-get install python-mako")
+            message(STATUS " sudo apt-get install ${PYTHON_NAME}-mako")
         endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
         message(FATAL_ERROR "Mako templates required to build VOLK_GNSSSDR")
     endif(NOT MAKO_FOUND)
@@ -593,11 +598,11 @@ if(NOT VOLK_GNSSSDR_FOUND)
         message(STATUS "python-six not found. See https://pythonhosted.org/six/ ")
         message(STATUS " You can try to install it by typing:")
         if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(STATUS " sudo yum install python-six")
+            message(STATUS " sudo yum install ${PYTHON_NAME}-six")
         elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
-            message(STATUS " sudo zypper install python-six")
+            message(STATUS " sudo zypper install ${PYTHON_NAME}-six")
         else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(STATUS " sudo apt-get install python-six")
+            message(STATUS " sudo apt-get install ${PYTHON_NAME}-six")
         endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
         message(FATAL_ERROR "six - python 2 and 3 compatibility library required to build VOLK_GNSSSDR")
     endif(NOT SIX_FOUND)
@@ -825,9 +830,9 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
      # Ensure that aclocal and libtool are present
      if(OS_IS_LINUX)
          if(EXISTS "/usr/bin/libtoolize")
-             if(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
+             if(EXISTS "/usr/bin/aclocal" OR EXISTS "/usr/bin/aclocal-1.16" OR EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
                  # Everything ok, we can move on
-             else(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
+             else(EXISTS "/usr/bin/aclocal" OR EXISTS "/usr/bin/aclocal-1.16" OR EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
                  message(" aclocal has not been found.")
                  message(" You can try to install it by typing:")
                  if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
@@ -838,7 +843,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
                       message(" sudo apt-get install automake")
                  endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
                  message(FATAL_ERROR "aclocal is required to build glog from source")
-             endif(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
+             endif(EXISTS "/usr/bin/aclocal" OR EXISTS "/usr/bin/aclocal-1.16" OR EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
          else(EXISTS "/usr/bin/libtoolize")
              message(" libtool has not been found.")
              message(" You can try to install it by typing:")
@@ -989,7 +994,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
       ExternalProject_Add(
          armadillo-${armadillo_RELEASE}
          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
-         GIT_REPOSITORY https://github.com/conradsnicta/armadillo-code.git
+         GIT_REPOSITORY https://gitlab.com/conradsnicta/armadillo-code.git
          GIT_TAG ${armadillo_BRANCH}
          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}
          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
@@ -1002,7 +1007,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
       ExternalProject_Add(
          armadillo-${armadillo_RELEASE}
          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
-         GIT_REPOSITORY https://github.com/conradsnicta/armadillo-code.git
+         GIT_REPOSITORY https://gitlab.com/conradsnicta/armadillo-code.git
          GIT_TAG ${armadillo_BRANCH}
          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}
          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
@@ -1032,7 +1037,7 @@ endif(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
 
 
 ################################################################################
-# GnuTLS - http://www.gnutls.org/
+# GnuTLS - https://www.gnutls.org/
 ################################################################################
 find_package(GnuTLS)
 find_library(GNUTLS_OPENSSL_LIBRARY NAMES gnutls-openssl libgnutls-openssl.so.27
@@ -1119,9 +1124,9 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
                 endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
                 message(FATAL_ERROR "libtool is required to build matio from source")
             endif(NOT EXISTS "/usr/bin/libtoolize")
-            if(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
+            if(EXISTS "/usr/bin/aclocal" OR EXISTS "/usr/bin/aclocal-1.16" OR EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
                 message(STATUS "Automake found.")
-            else(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
+            else(EXISTS "/usr/bin/aclocal" OR EXISTS "/usr/bin/aclocal-1.16" OR EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
                 message(" aclocal has not been found.")
                 message(" You can try to install it by typing:")
                 if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
@@ -1132,7 +1137,7 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
                     message(" sudo apt-get install automake")
                 endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
                 message(FATAL_ERROR "aclocal is required to build matio from source")
-             endif(EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
+             endif(EXISTS "/usr/bin/aclocal" OR EXISTS "/usr/bin/aclocal-1.16" OR EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
         endif(OS_IS_LINUX)
         find_package(HDF5)
         if(HDF5_FOUND)
@@ -1203,7 +1208,7 @@ if(ENABLE_UHD)
         set(ENABLE_UHD OFF)
         message(STATUS " The USRP Hardware Driver (UHD) signal source will not be built,")
         message(STATUS " so all USRP-based front-ends will not be usable.")
-        message(STATUS " Please check http://files.ettus.com/manual/")
+        message(STATUS " Please check https://files.ettus.com/manual/")
     else(NOT UHD_FOUND)
         set(GR_REQUIRED_COMPONENTS UHD)
         find_package(Gnuradio)
@@ -1321,6 +1326,16 @@ else(ENABLE_CUDA)
     message(STATUS "Enable it with 'cmake -DENABLE_CUDA=ON ../' to add support for GPU-based acceleration using CUDA." )
 endif(ENABLE_CUDA)
 
+###############################################################################
+# CUSTOM UDP PACKET SOURCE (OPTIONAL)
+###############################################################################
+if(ENABLE_RAW_UDP)
+    message(STATUS "High-optimized custom UDP ip packet source will be enabled." )
+    message(STATUS "You can disable it with 'cmake -DENABLE_RAW_UDP=OFF ../'" )
+else(ENABLE_RAW_UDP)
+    message(STATUS "High-optimized custom UDP ip packet source will be enabled." )
+    message(STATUS "You can disable it with 'cmake -DENABLE_RAW_UDP=OFF ../'" )
+endif(ENABLE_RAW_UDP)
 
 
 ###############################################################################
@@ -1430,7 +1445,7 @@ if(ENABLE_GPERFTOOLS)
 endif(ENABLE_GPERFTOOLS)
 if(ENABLE_GPERFTOOLS)
     # Set GPerftools related flags if it is available
-    # See http://gperftools.googlecode.com/svn/trunk/README
+    # See https://github.com/gperftools/gperftools/blob/master/README
     if(GPERFTOOLS_FOUND)
         if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
             set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free")
@@ -1455,7 +1470,6 @@ if(ENABLE_GPROF)
 endif(ENABLE_GPROF)
 
 
-
 ########################################################################
 # Set compiler flags
 ########################################################################
@@ -1472,7 +1486,7 @@ if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
             # set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++17")
         # endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
     endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
-    set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wall -Wextra")  #Add warning flags: For "-Wall" see http://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
+    set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wall -Wextra")  #Add warning flags: For "-Wall" see https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
 endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
 
 # Support of C++17 is still not possible due to pm_remez.h (solved in GNU Radio 3.8)
@@ -1515,7 +1529,7 @@ if(NOT (CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32) AND NOT (CMAKE_CXX_COMPILER_ID M
 endif(NOT (CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32) AND NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
 
 # Processor-architecture related flags
-# See http://gcc.gnu.org/onlinedocs/gcc/i386-and-x86_002d64-Options.html#i386-and-x86_002d64-Options
+# See https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
 if (NOT ARCH_COMPILER_FLAGS)
     if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
         if(OS_IS_MACOSX)
@@ -1543,7 +1557,7 @@ set(MY_CXX_FLAGS "${MY_CXX_FLAGS} ${ARCH_COMPILER_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MY_CXX_FLAGS}")
 
 if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
-    #http://gcc.gnu.org/wiki/Visibility
+    # https://gcc.gnu.org/wiki/Visibility
     add_definitions(-fvisibility=hidden)
 endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
 

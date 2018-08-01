@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -245,7 +245,6 @@ void GlonassL2CaPcpsAcquisitionTest::config_1()
     config->set_property("InputFilter.grid_density", "16");
 
     config->set_property("Acquisition_2G.item_type", "gr_complex");
-    config->set_property("Acquisition_2G.if", "4000000");
     config->set_property("Acquisition_2G.coherent_integration_time_ms",
         std::to_string(integration_time_ms));
     config->set_property("Acquisition_2G.max_dwells", "1");
@@ -333,7 +332,6 @@ void GlonassL2CaPcpsAcquisitionTest::config_2()
     config->set_property("InputFilter.grid_density", "16");
 
     config->set_property("Acquisition_2G.item_type", "gr_complex");
-    config->set_property("Acquisition_2G.if", "4000000");
     config->set_property("Acquisition_2G.coherent_integration_time_ms",
         std::to_string(integration_time_ms));
     config->set_property("Acquisition_2G.max_dwells", "1");
@@ -428,7 +426,7 @@ void GlonassL2CaPcpsAcquisitionTest::stop_queue()
 TEST_F(GlonassL2CaPcpsAcquisitionTest, Instantiate)
 {
     config_1();
-    acquisition = new GlonassL2CaPcpsAcquisition(config.get(), "Acquisition", 1, 1);
+    acquisition = new GlonassL2CaPcpsAcquisition(config.get(), "Acquisition", 1, 0);
     delete acquisition;
 }
 
@@ -442,7 +440,7 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ConnectAndRun)
     top_block = gr::make_top_block("Acquisition test");
 
     config_1();
-    acquisition = new GlonassL2CaPcpsAcquisition(config.get(), "Acquisition_2G", 1, 1);
+    acquisition = new GlonassL2CaPcpsAcquisition(config.get(), "Acquisition_2G", 1, 0);
     boost::shared_ptr<GlonassL2CaPcpsAcquisitionTest_msg_rx> msg_rx = GlonassL2CaPcpsAcquisitionTest_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
@@ -473,7 +471,7 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResults)
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Acquisition test");
 
-    acquisition = new GlonassL2CaPcpsAcquisition(config.get(), "Acquisition_2G", 1, 1);
+    acquisition = new GlonassL2CaPcpsAcquisition(config.get(), "Acquisition_2G", 1, 0);
     boost::shared_ptr<GlonassL2CaPcpsAcquisitionTest_msg_rx> msg_rx = GlonassL2CaPcpsAcquisitionTest_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
@@ -568,7 +566,7 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResultsProbabilities)
     config_2();
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Acquisition test");
-    acquisition = new GlonassL2CaPcpsAcquisition(config.get(), "Acquisition_2G", 1, 1);
+    acquisition = new GlonassL2CaPcpsAcquisition(config.get(), "Acquisition_2G", 1, 0);
     boost::shared_ptr<GlonassL2CaPcpsAcquisitionTest_msg_rx> msg_rx = GlonassL2CaPcpsAcquisitionTest_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({

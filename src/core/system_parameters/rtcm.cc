@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -53,7 +53,7 @@ Rtcm::Rtcm(unsigned short port)
     reserved_field = std::bitset<6>("000000");
     rtcm_message_queue = std::make_shared<concurrent_queue<std::string> >();
     boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), RTCM_port);
-    servers.emplace_back(io_service, endpoint);
+    servers.emplace_back(io_context, endpoint);
     server_is_running = false;
 }
 
@@ -85,13 +85,13 @@ Rtcm::~Rtcm()
 // *****************************************************************************************************
 void Rtcm::run_server()
 {
-    std::cout << "Starting a TCP Server on port " << RTCM_port << std::endl;
+    std::cout << "Starting a TCP/IP server of RTCM messages on port " << RTCM_port << std::endl;
     try
         {
-            std::thread tq([&] { std::make_shared<Queue_Reader>(io_service, rtcm_message_queue, RTCM_port)->do_read_queue(); });
+            std::thread tq([&] { std::make_shared<Queue_Reader>(io_context, rtcm_message_queue, RTCM_port)->do_read_queue(); });
             tq.detach();
 
-            std::thread t([&] { io_service.run(); });
+            std::thread t([&] { io_context.run(); });
             server_is_running = true;
             t.detach();
         }
@@ -104,13 +104,13 @@ void Rtcm::run_server()
 
 void Rtcm::stop_service()
 {
-    io_service.stop();
+    io_context.stop();
 }
 
 
 void Rtcm::stop_server()
 {
-    std::cout << "Stopping TCP Server on port " << RTCM_port << std::endl;
+    std::cout << "Stopping TCP/IP server on port " << RTCM_port << std::endl;
     rtcm_message_queue->push("Goodbye");  // this terminates tq
     Rtcm::stop_service();
     servers.front().close_server();
@@ -3313,7 +3313,7 @@ std::map<std::string, int> Rtcm::galileo_signal_map = [] {
 boost::posix_time::ptime Rtcm::compute_GPS_time(const Gps_Ephemeris& eph, double obs_time) const
 {
     const double gps_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::millisec((gps_t + 604800 * static_cast<double>(eph.i_GPS_week % 1024)) * 1000);
+    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>((gps_t + 604800 * static_cast<double>(eph.i_GPS_week % 1024)) * 1000));
     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
     return p_time;
 }
@@ -3322,7 +3322,7 @@ boost::posix_time::ptime Rtcm::compute_GPS_time(const Gps_Ephemeris& eph, double
 boost::posix_time::ptime Rtcm::compute_GPS_time(const Gps_CNAV_Ephemeris& eph, double obs_time) const
 {
     const double gps_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::millisec((gps_t + 604800 * static_cast<double>(eph.i_GPS_week % 1024)) * 1000);
+    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>((gps_t + 604800 * static_cast<double>(eph.i_GPS_week % 1024)) * 1000));
     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
     return p_time;
 }
@@ -3331,7 +3331,7 @@ boost::posix_time::ptime Rtcm::compute_GPS_time(const Gps_CNAV_Ephemeris& eph, d
 boost::posix_time::ptime Rtcm::compute_Galileo_time(const Galileo_Ephemeris& eph, double obs_time) const
 {
     double galileo_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::millisec((galileo_t + 604800 * static_cast<double>(eph.WN_5)) * 1000);
+    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>((galileo_t + 604800 * static_cast<double>(eph.WN_5)) * 1000));
     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
     return p_time;
 }
@@ -4058,7 +4058,7 @@ int Rtcm::set_DF050(const Gnss_Synchro& gnss_synchro)
 int Rtcm::set_DF051(const Gps_Ephemeris& gps_eph, double obs_time)
 {
     const double gps_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::millisec((gps_t + 604800 * static_cast<double>(gps_eph.i_GPS_week % 1024)) * 1000);
+    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>((gps_t + 604800 * static_cast<double>(gps_eph.i_GPS_week % 1024)) * 1000));
     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
     std::string now_ptime = to_iso_string(p_time);
     std::string today_ptime = now_ptime.substr(0, 8);
@@ -4072,7 +4072,7 @@ int Rtcm::set_DF051(const Gps_Ephemeris& gps_eph, double obs_time)
 int Rtcm::set_DF052(const Gps_Ephemeris& gps_eph, double obs_time)
 {
     const double gps_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::millisec((gps_t + 604800 * static_cast<double>(gps_eph.i_GPS_week % 1024)) * 1000);
+    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>((gps_t + 604800 * static_cast<double>(gps_eph.i_GPS_week % 1024)) * 1000));
     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
     std::string now_ptime = to_iso_string(p_time);
     std::string hours = now_ptime.substr(9, 2);

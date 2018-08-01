@@ -230,7 +230,7 @@ public:
         double DLL_narrow_bw_hz,
         int extend_correlation_symbols);
 
-    bool acquire_GPS_L1CA_signal(int SV_ID);
+    bool acquire_signal(int SV_ID);
     gr::top_block_sptr top_block;
     std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
@@ -381,7 +381,7 @@ void TrackingPullInTest::configure_receiver(
 }
 
 
-bool TrackingPullInTest::acquire_GPS_L1CA_signal(int SV_ID)
+bool TrackingPullInTest::acquire_signal(int SV_ID)
 {
     // 1. Setup GNU Radio flowgraph (file_source -> Acquisition_10m)
     gr::top_block_sptr top_block;
@@ -406,7 +406,8 @@ bool TrackingPullInTest::acquire_GPS_L1CA_signal(int SV_ID)
         {
             tmp_gnss_synchro.System = 'G';
             std::string signal = "1C";
-            signal.copy(tmp_gnss_synchro.Signal, 2, 0);
+            const char* str = signal.c_str();                                  // get a C style null terminated string
+            std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "GPS L1 CA";
             config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
@@ -416,7 +417,8 @@ bool TrackingPullInTest::acquire_GPS_L1CA_signal(int SV_ID)
         {
             tmp_gnss_synchro.System = 'E';
             std::string signal = "1B";
-            signal.copy(tmp_gnss_synchro.Signal, 2, 0);
+            const char* str = signal.c_str();                                  // get a C style null terminated string
+            std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "Galileo E1B";
             config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
@@ -426,7 +428,8 @@ bool TrackingPullInTest::acquire_GPS_L1CA_signal(int SV_ID)
         {
             tmp_gnss_synchro.System = 'G';
             std::string signal = "2S";
-            signal.copy(tmp_gnss_synchro.Signal, 2, 0);
+            const char* str = signal.c_str();                                  // get a C style null terminated string
+            std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "GPS L2CM";
             config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
@@ -436,7 +439,8 @@ bool TrackingPullInTest::acquire_GPS_L1CA_signal(int SV_ID)
         {
             tmp_gnss_synchro.System = 'E';
             std::string signal = "5X";
-            signal.copy(tmp_gnss_synchro.Signal, 2, 0);
+            const char* str = signal.c_str();                                  // get a C style null terminated string
+            std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "Galileo E5a";
             config->set_property("Acquisition_5X.coherent_integration_time_ms", "1");
@@ -451,7 +455,8 @@ bool TrackingPullInTest::acquire_GPS_L1CA_signal(int SV_ID)
         {
             tmp_gnss_synchro.System = 'E';
             std::string signal = "5X";
-            signal.copy(tmp_gnss_synchro.Signal, 2, 0);
+            const char* str = signal.c_str();                                  // get a C style null terminated string
+            std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "Galileo E5a";
             config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
@@ -461,7 +466,8 @@ bool TrackingPullInTest::acquire_GPS_L1CA_signal(int SV_ID)
         {
             tmp_gnss_synchro.System = 'G';
             std::string signal = "L5";
-            signal.copy(tmp_gnss_synchro.Signal, 2, 0);
+            const char* str = signal.c_str();                                  // get a C style null terminated string
+            std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "GPS L5I";
             config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
@@ -523,7 +529,7 @@ bool TrackingPullInTest::acquire_GPS_L1CA_signal(int SV_ID)
     acq_samplestamp_map.clear();
 
 
-    for (unsigned int PRN = 1; PRN < 33; PRN++)
+    for (unsigned int PRN = 1; PRN < 37; PRN++)
         {
             tmp_gnss_synchro.PRN = PRN;
             acquisition->set_gnss_synchro(&tmp_gnss_synchro);
@@ -625,7 +631,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
     if (FLAGS_enable_external_signal_file)
         {
             //create and configure an acquisition block and perform an acquisition to obtain the synchronization parameters
-            ASSERT_EQ(acquire_GPS_L1CA_signal(FLAGS_test_satellite_PRN), true);
+            ASSERT_EQ(acquire_signal(FLAGS_test_satellite_PRN), true);
             bool found_satellite = doppler_measurements_map.find(FLAGS_test_satellite_PRN) != doppler_measurements_map.end();
             EXPECT_TRUE(found_satellite) << "Error: satellite SV: " << FLAGS_test_satellite_PRN << " is not acquired";
             if (!found_satellite) return;
@@ -743,7 +749,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                 top_block->connect(head_samples, 0, tracking->get_left_block(), 0);
                                 top_block->connect(tracking->get_right_block(), 0, sink, 0);
                                 top_block->msg_connect(tracking->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-                                file_source->seek(2 * FLAGS_skip_samples + acq_samplestamp_samples, 0);  //skip head. ibyte, two bytes per complex sample
+                                file_source->seek(2 * FLAGS_skip_samples, 0);  //skip head. ibyte, two bytes per complex sample
                             }) << "Failure connecting the blocks of tracking test.";
 
 
@@ -841,7 +847,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                                                 }
                                                             else
                                                                 {
-                                                                    g1.set_title("D_e=" + std::to_string(acq_doppler_error_hz_values.at(current_acq_doppler_error_idx)) + " [Hz] " + "T_e= " + std::to_string(acq_delay_error_chips_values.at(current_acq_doppler_error_idx).at(current_acq_code_error_idx)) + " [Chips], PLL/DLL BW: " + std::to_string(FLAGS_PLL_bw_hz_start) + "," + std::to_string(FLAGS_DLL_bw_hz_start) + " [Hz], GPS L1 C/A (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                                                                    g1.set_title("D_e=" + std::to_string(acq_doppler_error_hz_values.at(current_acq_doppler_error_idx)) + " [Hz] " + "T_e= " + std::to_string(acq_delay_error_chips_values.at(current_acq_doppler_error_idx).at(current_acq_code_error_idx)) + " [Chips], PLL/DLL BW: " + std::to_string(FLAGS_PLL_bw_hz_start) + "," + std::to_string(FLAGS_DLL_bw_hz_start) + " [Hz], (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
                                                                 }
 
                                                             g1.set_grid();
@@ -857,18 +863,17 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                                                     g1.plot_xy(trk_timestamp_s, v_late, "Very Late", decimate);
                                                                 }
                                                             g1.set_legend();
-                                                            //g1.savetops("Correlators_outputs" + std::to_string(generator_CN0_values.at(current_cn0_idx)));
-                                                            //g1.savetopdf("Correlators_outputs" + std::to_string(generator_CN0_values.at(current_cn0_idx)), 18);
+                                                            g1.savetops("Correlators_outputs");
 
                                                             Gnuplot g2("points");
                                                             g2.showonscreen();  // window output
                                                             if (!FLAGS_enable_external_signal_file)
                                                                 {
-                                                                    g2.set_title(std::to_string(generator_CN0_values.at(current_cn0_idx)) + " dB-Hz Constellation " + "PLL/DLL BW: " + std::to_string(FLAGS_PLL_bw_hz_start) + "," + std::to_string(FLAGS_DLL_bw_hz_start) + " [Hz], GPS L1 C/A (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                                                                    g2.set_title(std::to_string(generator_CN0_values.at(current_cn0_idx)) + " dB-Hz Constellation " + "PLL/DLL BW: " + std::to_string(FLAGS_PLL_bw_hz_start) + "," + std::to_string(FLAGS_DLL_bw_hz_start) + " [Hz], (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
                                                                 }
                                                             else
                                                                 {
-                                                                    g2.set_title("D_e=" + std::to_string(acq_doppler_error_hz_values.at(current_acq_doppler_error_idx)) + " [Hz] " + "T_e= " + std::to_string(acq_delay_error_chips_values.at(current_acq_doppler_error_idx).at(current_acq_code_error_idx)) + " [Chips], PLL/DLL BW: " + std::to_string(FLAGS_PLL_bw_hz_start) + "," + std::to_string(FLAGS_DLL_bw_hz_start) + " [Hz], GPS L1 C/A (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                                                                    g2.set_title("D_e=" + std::to_string(acq_doppler_error_hz_values.at(current_acq_doppler_error_idx)) + " [Hz] " + "T_e= " + std::to_string(acq_delay_error_chips_values.at(current_acq_doppler_error_idx).at(current_acq_code_error_idx)) + " [Chips], PLL/DLL BW: " + std::to_string(FLAGS_PLL_bw_hz_start) + "," + std::to_string(FLAGS_DLL_bw_hz_start) + " [Hz], (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
                                                                 }
 
                                                             g2.set_grid();
@@ -876,8 +881,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                                             g2.set_ylabel("Quadrature");
                                                             //g2.cmd("set size ratio -1");
                                                             g2.plot_xy(promptI, promptQ);
-                                                            //g2.savetops("Constellation");
-                                                            //g2.savetopdf("Constellation", 18);
+                                                            g2.savetops("Constellation");
 
                                                             Gnuplot g3("linespoints");
                                                             if (!FLAGS_enable_external_signal_file)
@@ -886,7 +890,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                                                 }
                                                             else
                                                                 {
-                                                                    g3.set_title("D_e=" + std::to_string(acq_doppler_error_hz_values.at(current_acq_doppler_error_idx)) + " [Hz] " + "T_e= " + std::to_string(acq_delay_error_chips_values.at(current_acq_doppler_error_idx).at(current_acq_code_error_idx)) + " [Chips] PLL/DLL BW: " + std::to_string(FLAGS_PLL_bw_hz_start) + "," + std::to_string(FLAGS_DLL_bw_hz_start) + " [Hz], GPS L1 C/A (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                                                                    g3.set_title("D_e=" + std::to_string(acq_doppler_error_hz_values.at(current_acq_doppler_error_idx)) + " [Hz] " + "T_e= " + std::to_string(acq_delay_error_chips_values.at(current_acq_doppler_error_idx).at(current_acq_code_error_idx)) + " [Chips] PLL/DLL BW: " + std::to_string(FLAGS_PLL_bw_hz_start) + "," + std::to_string(FLAGS_DLL_bw_hz_start) + " [Hz], (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
                                                                 }
                                                             g3.set_grid();
                                                             g3.set_xlabel("Time [s]");
@@ -897,8 +901,8 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                                                 std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))) + "[dB-Hz]", decimate);
 
                                                             g3.set_legend();
-                                                            //g3.savetops("CN0_output");
-                                                            //g3.savetopdf("CN0_output", 18);
+                                                            g3.savetops("CN0_output");
+
                                                             g3.showonscreen();  // window output
                                                         }
                                                 }

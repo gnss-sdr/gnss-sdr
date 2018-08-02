@@ -52,7 +52,7 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     //dllpllconf_t trk_param;
-    dllpllconf_fpga_t trk_param_fpga;
+	Dll_Pll_Conf_Fpga trk_param_fpga = Dll_Pll_Conf_Fpga();
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
     //std::string default_item_type = "gr_complex";

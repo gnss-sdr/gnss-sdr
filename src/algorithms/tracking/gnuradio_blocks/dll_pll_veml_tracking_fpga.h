@@ -39,6 +39,7 @@
 #ifndef GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H
 #define GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H
 
+#include "dll_pll_conf_fpga.h"
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
@@ -47,46 +48,49 @@
 #include <fstream>
 #include <string>
 #include <map>
+#include <queue>
+#include <boost/circular_buffer.hpp>
 #include "fpga_multicorrelator.h"
 
-typedef struct
-{
-    /* DLL/PLL tracking configuration */
-    double fs_in;
-    unsigned int vector_length;
-    bool dump;
-    std::string dump_filename;
-    float pll_bw_hz;
-    float dll_bw_hz;
-    float pll_bw_narrow_hz;
-    float dll_bw_narrow_hz;
-    float early_late_space_chips;
-    float very_early_late_space_chips;
-    float early_late_space_narrow_chips;
-    float very_early_late_space_narrow_chips;
-    int extend_correlation_symbols;
-    int cn0_samples;
-    int cn0_min;
-    int max_lock_fail;
-    double carrier_lock_th;
-    bool track_pilot;
-    char system;
-    char signal[3];
-    std::string device_name;
-    unsigned int device_base;
-    unsigned int multicorr_type;
-    unsigned int code_length_chips;
-    unsigned int code_samples_per_chip;
-    int* ca_codes;
-    int* data_codes;
-} dllpllconf_fpga_t;
+//typedef struct
+//{
+//    /* DLL/PLL tracking configuration */
+//    double fs_in;
+//    unsigned int vector_length;
+//    bool dump;
+//    std::string dump_filename;
+//    float pll_bw_hz;
+//    float dll_bw_hz;
+//    float pll_bw_narrow_hz;
+//    float dll_bw_narrow_hz;
+//    float early_late_space_chips;
+//    float very_early_late_space_chips;
+//    float early_late_space_narrow_chips;
+//    float very_early_late_space_narrow_chips;
+//    int extend_correlation_symbols;
+//    int cn0_samples;
+//    int cn0_min;
+//    int max_lock_fail;
+//    double carrier_lock_th;
+//    bool track_pilot;
+//    char system;
+//    char signal[3];
+//    std::string device_name;
+//    unsigned int device_base;
+//    unsigned int multicorr_type;
+//    unsigned int code_length_chips;
+//    unsigned int code_samples_per_chip;
+//    int* ca_codes;
+//    int* data_codes;
+//} dllpllconf_fpga_t;
 
 class dll_pll_veml_tracking_fpga;
 
 typedef boost::shared_ptr<dll_pll_veml_tracking_fpga>
 dll_pll_veml_tracking_fpga_sptr;
 
-dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(dllpllconf_fpga_t conf_);
+//dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(const dllpllconf_fpga_t &conf_);
+dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(const Dll_Pll_Conf_Fpga &conf_);
 
 
 /*!
@@ -107,9 +111,10 @@ public:
     void reset(void);
 
 private:
-    friend dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(dllpllconf_fpga_t conf_);
+    friend dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(const Dll_Pll_Conf_Fpga &conf_);
 
-    dll_pll_veml_tracking_fpga(dllpllconf_fpga_t conf_);
+    dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &conf_);
+    void msg_handler_preamble_index(pmt::pmt_t msg);
 
     bool cn0_and_tracking_lock_status(double coh_integration_time_s);
     bool acquire_secondary();
@@ -121,7 +126,8 @@ private:
     int save_matfile();
 
     // tracking configuration vars
-    dllpllconf_fpga_t trk_parameters;
+    Dll_Pll_Conf_Fpga trk_parameters;
+    //dllpllconf_fpga_t trk_parameters;
     bool d_veml;
     bool d_cloop;
     unsigned int d_channel;
@@ -141,6 +147,9 @@ private:
     std::string signal_type;
     std::string *d_secondary_code_string;
     std::string signal_pretty_name;
+
+    int *d_gps_l1ca_preambles_symbols;
+    boost::circular_buffer<float> d_symbol_history;
 
     //tracking state machine
     int d_state;
@@ -206,6 +215,7 @@ private:
     // processing samples counters
     unsigned long int d_sample_counter;
     unsigned long int d_acq_sample_stamp;
+    unsigned long int d_absolute_samples_offset;
 
     // CN0 estimation and lock detector
     int d_cn0_estimation_counter;

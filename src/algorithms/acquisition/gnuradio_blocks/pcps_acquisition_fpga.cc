@@ -327,7 +327,7 @@ void pcps_acquisition_fpga::set_active(bool active)
             printf("##### d_test_statistics = %f\n", d_test_statistics);
             printf("##### debug_d_max_absolute =%f\n",debug_d_max_absolute);
             printf("##### debug_d_input_power_absolute =%f\n",debug_d_input_power_absolute);
-            printf("##### debug_indext = %d\n",debug_indext);
+            printf("##### initial_sample = %d\n",initial_sample);
             printf("##### debug_doppler_index = %d\n",debug_doppler_index);
             send_positive_acquisition();
             d_state = 0;  // Positive acquisition

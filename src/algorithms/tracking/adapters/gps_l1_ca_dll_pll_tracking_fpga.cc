@@ -53,7 +53,7 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
         unsigned int in_streams, unsigned int out_streams) :
                 role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
-    dllpllconf_fpga_t trk_param_fpga;
+	Dll_Pll_Conf_Fpga trk_param_fpga = Dll_Pll_Conf_Fpga();
     DLOG(INFO) << "role " << role;
     
     //################# CONFIGURATION PARAMETERS ########################

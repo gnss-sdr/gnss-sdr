@@ -46,6 +46,7 @@ class cpu_multicorrelator_real_codes
 {
 public:
     cpu_multicorrelator_real_codes();
+    void set_fast_resampler(bool use_fast_resampler);
     ~cpu_multicorrelator_real_codes();
     bool init(int max_signal_length_samples, int n_correlators);
     bool set_local_code_and_taps(int code_length_chips, const float *local_code_in, float *shifts_chips);
@@ -61,6 +62,7 @@ private:
     const float *d_local_code_in;
     std::complex<float> *d_corr_out;
     float *d_shifts_chips;
+    bool d_use_fast_resampler;
     int d_code_length_chips;
     int d_n_correlators;
 };

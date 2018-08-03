@@ -363,6 +363,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
         }
 
     // --- Initializations ---
+    multicorrelator_cpu.set_fast_resampler(trk_parameters.use_fast_resampler);
     // Initial code frequency basis of NCO
     d_code_freq_chips = d_code_chip_rate;
     // Residual code phase (in chips)
@@ -742,8 +743,7 @@ void dll_pll_veml_tracking::run_dll_pll()
     d_carr_error_filt_hz = d_carrier_loop_filter.get_carrier_nco(d_carr_error_hz);
     // New carrier Doppler frequency estimation
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz + d_carr_error_filt_hz;
-    // New code Doppler frequency estimation
-    d_code_freq_chips = (1.0 + (d_carrier_doppler_hz / d_signal_carrier_freq)) * d_code_chip_rate;
+
 
     // ################## DLL ##########################################################
     // DLL discriminator
@@ -757,6 +757,9 @@ void dll_pll_veml_tracking::run_dll_pll()
         }
     // Code discriminator filter
     d_code_error_filt_chips = d_code_loop_filter.get_code_nco(d_code_error_chips);  // [chips/second]
+
+    // New code Doppler frequency estimation
+    d_code_freq_chips = (1.0 + (d_carrier_doppler_hz / d_signal_carrier_freq)) * d_code_chip_rate - d_code_error_filt_chips;
 }
 
 
@@ -778,13 +781,12 @@ void dll_pll_veml_tracking::update_tracking_vars()
 {
     T_chip_seconds = 1.0 / d_code_freq_chips;
     T_prn_seconds = T_chip_seconds * static_cast<double>(d_code_length_chips);
-    double code_error_filt_secs = T_prn_seconds * d_code_error_filt_chips * T_chip_seconds;  //[seconds]
 
     // ################## CARRIER AND CODE NCO BUFFER ALIGNMENT #######################
     // keep alignment parameters for the next input buffer
     // Compute the next buffer length based in the new period of the PRN sequence and the code phase error estimation
     T_prn_samples = T_prn_seconds * trk_parameters.fs_in;
-    K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_secs * trk_parameters.fs_in;
+    K_blk_samples = T_prn_samples + d_rem_code_phase_samples;
     //d_current_prn_length_samples = static_cast<int>(round(K_blk_samples));  // round to a discrete number of samples
     d_current_prn_length_samples = static_cast<int>(std::floor(K_blk_samples));  // round to a discrete number of samples
 

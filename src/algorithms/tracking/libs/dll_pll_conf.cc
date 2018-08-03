@@ -36,6 +36,7 @@
 Dll_Pll_Conf::Dll_Pll_Conf()
 {
     /* DLL/PLL tracking configuration */
+    use_fast_resampler = true;
     fs_in = 0.0;
     vector_length = 0;
     dump = false;

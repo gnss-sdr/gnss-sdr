@@ -404,12 +404,6 @@ int Beidou_Navigation_Message_D1::subframe_decoder(char *subframe)
     int subframe_ID = 0;
     std::cout << "Beidou_Navigation_Message_D1::subframe_decoder" << std::endl;
     std::bitset<BEIDOU_SUBFRAME_BITS> mysubframe_bits;
-    mysubframe_bits = std::bitset<(BEIDOU_SUBFRAME_BITS) > (subframe);
-    for (int i = 0; i < BEIDOU_SUBFRAME_BITS; i++)
-        {
-            std::cout << mysubframe_bits[i] ;
-        }
-std::cout << std::endl;
 
 //double tmp_SOW;
 

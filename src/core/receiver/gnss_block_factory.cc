@@ -1712,7 +1712,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
         }
     else if (implementation.compare("BEIDOU_B1I_Telemetry_Decoder") == 0)
         {
-            std::unique_ptr<GNSSBlockInterface> block_(new GpsL1CaTelemetryDecoder(configuration.get(), role, in_streams,
+            std::unique_ptr<GNSSBlockInterface> block_(new BeidouB1iTelemetryDecoder(configuration.get(), role, in_streams,
                 out_streams));
             block = std::move(block_);
         }
@@ -2061,7 +2061,7 @@ std::unique_ptr<TelemetryDecoderInterface> GNSSBlockFactory::GetTlmBlock(
         }
     else if (implementation.compare("BEIDOU_B1I_Telemetry_Decoder") == 0)
         {
-            std::unique_ptr<TelemetryDecoderInterface> block_(new GpsL1CaTelemetryDecoder(configuration.get(), role, in_streams,
+            std::unique_ptr<TelemetryDecoderInterface> block_(new BeidouB1iTelemetryDecoder(configuration.get(), role, in_streams,
                 out_streams));
             block = std::move(block_);
         }

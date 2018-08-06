@@ -35,15 +35,15 @@ m * \file beidou_navigation_message.cc
 #include <gnss_satellite.h>
 
 
-void Beidou_Navigation_Message::reset()
+void Beidou_Navigation_Message_D1::reset()
 {
     b_valid_ephemeris_set_flag = false;
-    d_TOW = 0;
-    d_TOW_SF1 = 0;
-    d_TOW_SF2 = 0;
-    d_TOW_SF3 = 0;
-    d_TOW_SF4 = 0;
-    d_TOW_SF5 = 0;
+    d_SOW = 0;
+    d_SOW_SF1 = 0;
+    d_SOW_SF2 = 0;
+    d_SOW_SF3 = 0;
+    d_SOW_SF4 = 0;
+    d_SOW_SF5 = 0;
     d_AODE = 0;
     d_Crs = 0;
     d_Delta_n = 0;
@@ -65,7 +65,8 @@ void Beidou_Navigation_Message::reset()
     i_BEIDOU_week = 0;
     i_SV_accuracy = 0;
     i_SV_health = 0;
-    d_TGD = 0;
+    d_TGD1 = 0;
+    d_TGD2 = 0;
     d_AODC = -1;
 //    i_AODO = 0;
 
@@ -111,8 +112,8 @@ void Beidou_Navigation_Message::reset()
     d_beta1 = 0;
     d_beta2 = 0;
     d_beta3 = 0;
-    d_A1 = 0;
-    d_A0 = 0;
+    d_A1UTC = 0;
+    d_A0UTC = 0;
     d_t_OT = 0;
     i_WN_T = 0;
     d_DeltaT_LS = 0;
@@ -132,6 +133,28 @@ void Beidou_Navigation_Message::reset()
     d_satvel_X = 0;
     d_satvel_Y = 0;
     d_satvel_Z = 0;
+    d_A1GPS = 0;
+    d_A0GPS = 0;
+    d_A1GAL = 0;
+    d_A0GAL = 0;
+    d_A1GLO = 0;
+    d_A0GLO = 0;
+    d_AODE_SF1 = 0;
+    d_SQRT_A_ALMANAC = 0;
+    d_A1_ALMANAC = 0;
+    d_A0_ALMANAC = 0;
+    d_OMEGA0_ALMANAC = 0;
+    d_E_ALMANAC = 0;
+    d_DELTA_I = 0;
+    d_TOA = 0;
+    d_OMEGA_DOT_ALMANAC = 0;
+    d_OMEGA_ALMANAC = 0;
+    d_M0_ALMANAC = 0;
+    almanac_WN = 0;
+    d_toa2 = 0;
+    d_A0 = 0;
+    d_A1 = 0;
+    d_A2 = 0;
 
     auto gnss_sat = Gnss_Satellite();
     std::string _system ("Beidou");
@@ -143,14 +166,14 @@ void Beidou_Navigation_Message::reset()
 
 
 
-Beidou_Navigation_Message::Gps_Navigation_Message()
+Beidou_Navigation_Message_D1::Beidou_Navigation_Message_D1()
 {
     reset();
 }
 
 
 
-void Beidou_Navigation_Message::print_beidou_word_bytes(unsigned int BEIDOU_word)
+void Beidou_Navigation_Message_D1::print_beidou_word_bytes(unsigned int BEIDOU_word)
 {
     std::cout << " Word =";
     std::cout << std::bitset<32>(BEIDOU_word);
@@ -159,7 +182,7 @@ void Beidou_Navigation_Message::print_beidou_word_bytes(unsigned int BEIDOU_word
 
 
 
-bool Beidou_Navigation_Message::read_navigation_bool(std::bitset<BEIDOU_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter)
+bool Beidou_Navigation_Message_D1::read_navigation_bool(std::bitset<BEIDOU_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter)
 {
     bool value;
 
@@ -175,7 +198,7 @@ bool Beidou_Navigation_Message::read_navigation_bool(std::bitset<BEIDOU_SUBFRAME
 }
 
 
-unsigned long int Beidou_Navigation_Message::read_navigation_unsigned(std::bitset<BEIDOU_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter)
+unsigned long int Beidou_Navigation_Message_D1::read_navigation_unsigned(std::bitset<BEIDOU_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter)
 {
     unsigned long int value = 0;
     int num_of_slices = parameter.size();
@@ -193,7 +216,7 @@ unsigned long int Beidou_Navigation_Message::read_navigation_unsigned(std::bitse
     return value;
 }
 
-signed long int Beidou_Navigation_Message::read_navigation_signed(std::bitset<BEIDOU_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter)
+signed long int Beidou_Navigation_Message_D1::read_navigation_signed(std::bitset<BEIDOU_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter)
 {
     signed long int value = 0;
     int num_of_slices = parameter.size();
@@ -252,7 +275,7 @@ signed long int Beidou_Navigation_Message::read_navigation_signed(std::bitset<BE
     return value;
 }
 
-double Beidou_Navigation_Message::check_t(double time)
+double Beidou_Navigation_Message_D1::check_t(double time)
 {
     double corrTime;
     double half_week = 302400;     // seconds
@@ -269,7 +292,7 @@ double Beidou_Navigation_Message::check_t(double time)
 }
 
 // User Algorithm for SV Clock Correction.
-double Beidou_Navigation_Message::sv_clock_correction(double transmitTime)
+double Beidou_Navigation_Message_D1::sv_clock_correction(double transmitTime)
 {
     double dt;
     dt = check_t(transmitTime - d_Toc);
@@ -278,7 +301,7 @@ double Beidou_Navigation_Message::sv_clock_correction(double transmitTime)
     return correctedTime;
 }
 
-void Beidou_Navigation_Message::satellitePosition(double transmitTime)
+void Beidou_Navigation_Message_D1::satellitePosition(double transmitTime)
 {
     double tk;
     double a;
@@ -376,11 +399,19 @@ void Beidou_Navigation_Message::satellitePosition(double transmitTime)
 
 
 
-int Beidou_Navigation_Message::subframe_decoder(char *subframe)
+int Beidou_Navigation_Message_D1::subframe_decoder(char *subframe)
 {
     int subframe_ID = 0;
+    std::cout << "Beidou_Navigation_Message_D1::subframe_decoder" << std::endl;
+    std::bitset<BEIDOU_SUBFRAME_BITS> mysubframe_bits;
+    mysubframe_bits = std::bitset<(BEIDOU_SUBFRAME_BITS) > (subframe);
+    for (int i = 0; i < BEIDOU_SUBFRAME_BITS; i++)
+        {
+            std::cout << mysubframe_bits[i] ;
+        }
+std::cout << std::endl;
 
-    //double tmp_TOW;
+//double tmp_SOW;
 
     unsigned int beidou_word;
 
@@ -394,10 +425,17 @@ int Beidou_Navigation_Message::subframe_decoder(char *subframe)
             for (int j = 0; j < BEIDOU_WORD_BITS; j++)
                 {
                     subframe_bits[BEIDOU_WORD_BITS * (9 - i) + j] = word_bits[j];
+            std::cout << word_bits[j];
                 }
+std::cout << std::endl;
+        }
+    for (int i = 0; i < BEIDOU_SUBFRAME_BITS; i++)
+        {
+            std::cout << subframe_bits[i] ;
         }
 
-    subframe_ID = static_cast<int>(read_navigation_unsigned(subframe_bits, SUBFRAME_ID));
+            std::cout << std::endl;
+    subframe_ID = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_FRAID));
 
     // Decode all 5 sub-frames
     switch (subframe_ID)
@@ -405,100 +443,203 @@ int Beidou_Navigation_Message::subframe_decoder(char *subframe)
     //--- Decode the sub-frame id ------------------------------------------
     case 1:
         //--- It is subframe 1 -------------------------------------
-        // Compute the time of week (TOW) of the first sub-frames in the array ====
-        // The transmitted TOW is actual TOW of the next subframe
+        // Compute the time of week (SOW) of the first sub-frames in the array ====
+        // The transmitted SOW is actual SOW of the next subframe
         // (the variable subframe at this point contains bits of the last subframe).
-        //TOW = bin2dec(subframe(31:47)) * 6;
-        d_TOW_SF1 = static_cast<double>(read_navigation_unsigned(subframe_bits, TOW));
-        //we are in the first subframe (the transmitted TOW is the start time of the next subframe) !
-        d_TOW_SF1 = d_TOW_SF1 * 6;
-        d_TOW = d_TOW_SF1; // Set transmission time
-        b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
-        b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
-        b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
-        i_GPS_week = static_cast<int>(read_navigation_unsigned(subframe_bits, GPS_WEEK));
-        i_SV_accuracy = static_cast<int>(read_navigation_unsigned(subframe_bits, SV_ACCURACY));  // (20.3.3.3.1.3)
-        i_SV_health = static_cast<int>(read_navigation_unsigned(subframe_bits, SV_HEALTH));
-        b_L2_P_data_flag = read_navigation_bool(subframe_bits, L2_P_DATA_FLAG); //
-        i_code_on_L2 = static_cast<int>(read_navigation_unsigned(subframe_bits, CA_OR_P_ON_L2));
-        d_TGD = static_cast<double>(read_navigation_signed(subframe_bits, T_GD));
-        d_TGD = d_TGD * T_GD_LSB;
-        d_IODC = static_cast<double>(read_navigation_unsigned(subframe_bits, IODC));
-        d_Toc = static_cast<double>(read_navigation_unsigned(subframe_bits, T_OC));
-        d_Toc = d_Toc * T_OC_LSB;
-        d_A_f0 = static_cast<double>(read_navigation_signed(subframe_bits, A_F0));
-        d_A_f0 = d_A_f0 * A_F0_LSB;
-        d_A_f1 = static_cast<double>(read_navigation_signed(subframe_bits, A_F1));
-        d_A_f1 = d_A_f1 * A_F1_LSB;
-        d_A_f2 = static_cast<double>(read_navigation_signed(subframe_bits, A_F2));
-        d_A_f2 = d_A_f2 * A_F2_LSB;
+        //SOW = bin2dec(subframe(31:47)) * 6;
+        //we are in the first subframe (the transmitted SOW is the start time of the next subframe) !
+        //d_SOW_SF1 = d_SOW_SF1 * 6;
+        //b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
+        //b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
+        //b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
+        //i_SV_accuracy = static_cast<int>(read_navigation_unsigned(subframe_bits, SV_ACCURACY));  // (20.3.3.3.1.3)
+       // b_L2_P_data_flag = read_navigation_bool(subframe_bits, L2_P_DATA_FLAG); //
+        //i_code_on_L2 = static_cast<int>(read_navigation_unsigned(subframe_bits, CA_OR_P_ON_L2));
+
+
+        d_SOW_SF1 = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_SOW));
+        d_SOW = d_SOW_SF1; // Set transmission time
+
+std::cout << "I decoded subframe 1" << std::endl;
+std::cout << "TOW: " << d_SOW_SF1  << std::endl;
+
+        i_SV_health = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_SAT_H1));
+
+        d_AODC = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_AODC));
+        i_SV_accuracy = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_URAI));  // (20.3.3.3.1.3)
+
+        i_BEIDOU_week = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_WN));
+
+        d_Toc = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_TOC));
+        d_Toc = d_Toc * D1_TOC_LSB;
+
+        d_TGD1 = static_cast<double>(read_navigation_signed(subframe_bits, D1_TGD1));
+        d_TGD1 = d_TGD1 * D1_TGD1_LSB;
+
+        d_TGD2 = static_cast<double>(read_navigation_signed(subframe_bits, D1_TGD2));
+        d_TGD2 = d_TGD2 * D1_TGD2_LSB;
+
+        d_alpha0 = static_cast<double>(read_navigation_signed(subframe_bits, D1_ALPHA0));
+        d_alpha0 = d_alpha0 * D1_ALPHA0_LSB;
+
+	d_alpha1 = static_cast<double>(read_navigation_signed(subframe_bits, D1_ALPHA1));
+        d_alpha1 = d_alpha1 * D1_ALPHA1_LSB;
+        d_alpha2 = static_cast<double>(read_navigation_signed(subframe_bits, D1_ALPHA2));
+        d_alpha2 = d_alpha2 * D1_ALPHA2_LSB;
+        d_alpha3 = static_cast<double>(read_navigation_signed(subframe_bits, D1_ALPHA3));
+        d_alpha3 = d_alpha3 * D1_ALPHA3_LSB;
+        d_beta0 = static_cast<double>(read_navigation_signed(subframe_bits, D1_BETA0));
+        d_beta0 = d_beta0 * D1_BETA0_LSB;
+        d_beta1 = static_cast<double>(read_navigation_signed(subframe_bits, D1_BETA1));
+        d_beta1 = d_beta1 * D1_BETA1_LSB;
+        d_beta2 = static_cast<double>(read_navigation_signed(subframe_bits, D1_BETA2));
+        d_beta2 = d_beta2 * D1_BETA2_LSB;
+        d_beta3 = static_cast<double>(read_navigation_signed(subframe_bits, D1_BETA3));
+        d_beta3 = d_beta3 * D1_BETA3_LSB;
+
+        d_A2 = static_cast<double>(read_navigation_signed(subframe_bits, D1_A2));
+        d_A2 = d_A2 * D1_A2_LSB;
+
+        d_A0 = static_cast<double>(read_navigation_signed(subframe_bits, D1_A0));
+        d_A0 = d_A0 * D1_A0_LSB;
+
+        d_A1 = static_cast<double>(read_navigation_signed(subframe_bits, D1_A1));
+        d_A1 = d_A1 * D1_A1_LSB;
+
+        d_AODE_SF1 = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_AODE));
+
+        //d_A_f0 = static_cast<double>(read_navigation_signed(subframe_bits, A_F0));
+        //d_A_f0 = d_A_f0 * A_F0_LSB;
+        //d_A_f1 = static_cast<double>(read_navigation_signed(subframe_bits, A_F1));
+        //d_A_f1 = d_A_f1 * A_F1_LSB;
+        //d_A_f2 = static_cast<double>(read_navigation_signed(subframe_bits, A_F2));
+        //d_A_f2 = d_A_f2 * A_F2_LSB;
 
         break;
 
     case 2:  //--- It is subframe 2 -------------------
-        d_TOW_SF2 = static_cast<double>(read_navigation_unsigned(subframe_bits, TOW));
-        d_TOW_SF2 = d_TOW_SF2 * 6;
-        d_TOW = d_TOW_SF2; // Set transmission time
-        b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
-        b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
-        b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
-        d_IODE_SF2 = static_cast<double>(read_navigation_unsigned(subframe_bits, IODE_SF2));
-        d_Crs = static_cast<double>(read_navigation_signed(subframe_bits, C_RS));
-        d_Crs = d_Crs * C_RS_LSB;
-        d_Delta_n = static_cast<double>(read_navigation_signed(subframe_bits, DELTA_N));
-        d_Delta_n = d_Delta_n * DELTA_N_LSB;
-        d_M_0 = static_cast<double>(read_navigation_signed(subframe_bits, M_0));
-        d_M_0 = d_M_0 * M_0_LSB;
-        d_Cuc = static_cast<double>(read_navigation_signed(subframe_bits, C_UC));
-        d_Cuc = d_Cuc * C_UC_LSB;
-        d_e_eccentricity = static_cast<double>(read_navigation_unsigned(subframe_bits, E));
-        d_e_eccentricity = d_e_eccentricity * E_LSB;
-        d_Cus = static_cast<double>(read_navigation_signed(subframe_bits, C_US));
-        d_Cus = d_Cus * C_US_LSB;
-        d_sqrt_A = static_cast<double>(read_navigation_unsigned(subframe_bits, SQRT_A));
-        d_sqrt_A = d_sqrt_A * SQRT_A_LSB;
-        d_Toe = static_cast<double>(read_navigation_unsigned(subframe_bits, T_OE));
-        d_Toe = d_Toe * T_OE_LSB;
-        b_fit_interval_flag = read_navigation_bool(subframe_bits, FIT_INTERVAL_FLAG);
-        i_AODO = static_cast<int>(read_navigation_unsigned(subframe_bits, AODO));
-        i_AODO = i_AODO * AODO_LSB;
+
+
+        d_SOW_SF2 = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_SOW));
+        d_SOW = d_SOW_SF2; // Set transmission time
+
+std::cout << "I decoded subframe 2" << std::endl;
+std::cout << "TOW: " << d_SOW_SF2  << std::endl;
+
+        d_Cuc = static_cast<double>(read_navigation_signed(subframe_bits, D1_CUC));
+        d_Cuc = d_Cuc * D1_CUC_LSB;
+
+        d_M_0 = static_cast<double>(read_navigation_signed(subframe_bits, D1_M0));
+        d_M_0 = d_M_0 * D1_M0_LSB;
+
+        d_e_eccentricity = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_E));
+        d_e_eccentricity = d_e_eccentricity * D1_E_LSB;
+
+        d_Cus = static_cast<double>(read_navigation_signed(subframe_bits, D1_CUS));
+        d_Cus = d_Cus * D1_CUS_LSB;
+
+        d_Crc = static_cast<double>(read_navigation_signed(subframe_bits, D1_CRC));
+        d_Crc = d_Crc * D1_CRC_LSB;
+
+        d_Crs = static_cast<double>(read_navigation_signed(subframe_bits, D1_CRS));
+        d_Crs = d_Crs * D1_CRS_LSB;
+
+        d_sqrt_A = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_SQRT_A));
+        d_sqrt_A = d_sqrt_A * D1_SQRT_A_LSB;
+
+        d_Toe = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_TOE));
+        d_Toe = d_Toe * D1_TOE_LSB;
+
+//        d_SOW = d_SOW_SF2; // Set transmission time
+//        b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
+//        b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
+//        b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
+//        b_fit_interval_flag = read_navigation_bool(subframe_bits, FIT_INTERVAL_FLAG);
+//        i_AODO = static_cast<int>(read_navigation_unsigned(subframe_bits, AODO));
+//        i_AODO = i_AODO * AODO_LSB;
 
         break;
 
     case 3: // --- It is subframe 3 -------------------------------------
-        d_TOW_SF3 = static_cast<double>(read_navigation_unsigned(subframe_bits, TOW));
-        d_TOW_SF3 = d_TOW_SF3 * 6;
-        d_TOW = d_TOW_SF3; // Set transmission time
-        b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
-        b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
-        b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
-        d_Cic = static_cast<double>(read_navigation_signed(subframe_bits, C_IC));
-        d_Cic = d_Cic * C_IC_LSB;
-        d_OMEGA0 = static_cast<double>(read_navigation_signed(subframe_bits, OMEGA_0));
-        d_OMEGA0 = d_OMEGA0 * OMEGA_0_LSB;
-        d_Cis = static_cast<double>(read_navigation_signed(subframe_bits, C_IS));
-        d_Cis = d_Cis * C_IS_LSB;
-        d_i_0 = static_cast<double>(read_navigation_signed(subframe_bits, I_0));
-        d_i_0 = d_i_0 * I_0_LSB;
-        d_Crc = static_cast<double>(read_navigation_signed(subframe_bits, C_RC));
-        d_Crc = d_Crc * C_RC_LSB;
-        d_OMEGA = static_cast<double>(read_navigation_signed(subframe_bits, OMEGA));
-        d_OMEGA = d_OMEGA * OMEGA_LSB;
-        d_OMEGA_DOT = static_cast<double>(read_navigation_signed(subframe_bits, OMEGA_DOT));
-        d_OMEGA_DOT = d_OMEGA_DOT * OMEGA_DOT_LSB;
-        d_IODE_SF3 = static_cast<double>(read_navigation_unsigned(subframe_bits, IODE_SF3));
-        d_IDOT = static_cast<double>(read_navigation_signed(subframe_bits, I_DOT));
-        d_IDOT = d_IDOT * I_DOT_LSB;
+        
+        d_SOW_SF3 = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_SOW));
+        d_SOW = d_SOW_SF3; // Set transmission time
+
+std::cout << "I decoded subframe 3" << std::endl;
+std::cout << "TOW: " << d_SOW_SF3  << std::endl;
+
+        d_Toe = d_Toe * D1_TOE_LSB;
+
+        d_i_0 = static_cast<double>(read_navigation_signed(subframe_bits, D1_I0));
+        d_i_0 = d_i_0 * D1_I0_LSB;
+
+        d_Cic = static_cast<double>(read_navigation_signed(subframe_bits, D1_CIC));
+        d_Cic = d_Cic * D1_CIC_LSB;
+
+        d_OMEGA_DOT = static_cast<double>(read_navigation_signed(subframe_bits, D1_OMEGA_DOT));
+        d_OMEGA_DOT = d_OMEGA_DOT * D1_OMEGA_DOT_LSB;
+
+        d_Cis = static_cast<double>(read_navigation_signed(subframe_bits, D1_CIS));
+        d_Cis = d_Cis * D1_CIS_LSB;
+
+        d_IDOT = static_cast<double>(read_navigation_signed(subframe_bits, D1_IDOT));
+        d_IDOT = d_IDOT * D1_IDOT_LSB;
+
+        d_OMEGA0 = static_cast<double>(read_navigation_signed(subframe_bits, D1_OMEGA0));
+        d_OMEGA0 = d_OMEGA0 * D1_OMEGA0_LSB;
+
+        d_OMEGA = static_cast<double>(read_navigation_signed(subframe_bits, D1_OMEGA));
+        d_OMEGA = d_OMEGA * D1_OMEGA_LSB;
+
+        //d_SOW_SF3 = static_cast<double>(read_navigation_unsigned(subframe_bits, SOW));
+
+        //d_SOW_SF3 = d_SOW_SF3 * 6;
+        //d_SOW = d_SOW_SF3; // Set transmission time
+        //b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
+        //b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
+        //b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
+        //d_AODE_SF3 = static_cast<double>(read_navigation_unsigned(subframe_bits, AODE_SF3));
 
         break;
 
     case 4: // --- It is subframe 4 ---------- Almanac, ionospheric model, UTC parameters, SV health (PRN: 25-32)
-        int SV_data_ID;
-        int SV_page;
-        d_TOW_SF4 = static_cast<double>(read_navigation_unsigned(subframe_bits, TOW));
-        d_TOW_SF4 = d_TOW_SF4 * 6;
-        d_TOW = d_TOW_SF4; // Set transmission time
-        b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
+        d_SOW_SF4 = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_SOW));
+        d_SOW = d_SOW_SF4; // Set transmission time
+
+std::cout << "I decoded subframe 4" << std::endl;
+std::cout << "TOW: " << d_SOW_SF4  << std::endl;
+
+        d_SQRT_A_ALMANAC = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_SQRT_A_ALMANAC));
+        d_SQRT_A_ALMANAC = d_SQRT_A_ALMANAC * D1_SQRT_A_ALMANAC_LSB;
+
+        d_A1_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_A1_ALMANAC));
+        d_A1_ALMANAC = d_A1_ALMANAC * D1_A1_ALMANAC_LSB;
+
+        d_A0_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_A0_ALMANAC));
+        d_A0_ALMANAC = d_A0_ALMANAC * D1_A0_ALMANAC_LSB;
+
+        d_OMEGA0_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_OMEGA0_ALMANAC));
+        d_OMEGA0_ALMANAC = d_OMEGA0_ALMANAC * D1_OMEGA0_ALMANAC_LSB;
+
+        d_E_ALMANAC = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_E));
+        d_E_ALMANAC = d_E_ALMANAC * D1_E_ALMANAC_LSB;
+
+        d_DELTA_I = static_cast<double>(read_navigation_signed(subframe_bits, D1_DELTA_I));
+        d_DELTA_I = D1_DELTA_I_LSB;
+
+        d_TOA = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_TOA));
+        d_TOA = d_TOA * D1_TOA_LSB;
+
+        d_OMEGA_DOT_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_OMEGA_DOT_ALMANAC));
+        d_OMEGA_DOT_ALMANAC = D1_OMEGA_DOT_ALMANAC_LSB;
+
+        d_OMEGA_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_OMEGA_ALMANAC));
+        d_OMEGA_ALMANAC = d_OMEGA_ALMANAC * D1_OMEGA_ALMANAC_LSB;
+
+        d_M0_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_M0));
+        d_M0_ALMANAC = d_M0_ALMANAC * D1_M0_ALMANAC_LSB;
+
+/*        b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
         b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
         b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
         SV_data_ID = static_cast<int>(read_navigation_unsigned(subframe_bits, SV_DATA_ID));
@@ -517,26 +658,6 @@ int Beidou_Navigation_Message::subframe_decoder(char *subframe)
         if (SV_page == 56)  // Page 18 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200H, page 110)
             {
                 // Page 18 - Ionospheric and UTC data
-                d_alpha0 = static_cast<double>(read_navigation_signed(subframe_bits, ALPHA_0));
-                d_alpha0 = d_alpha0 * ALPHA_0_LSB;
-                d_alpha1 = static_cast<double>(read_navigation_signed(subframe_bits, ALPHA_1));
-                d_alpha1 = d_alpha1 * ALPHA_1_LSB;
-                d_alpha2 = static_cast<double>(read_navigation_signed(subframe_bits, ALPHA_2));
-                d_alpha2 = d_alpha2 * ALPHA_2_LSB;
-                d_alpha3 = static_cast<double>(read_navigation_signed(subframe_bits, ALPHA_3));
-                d_alpha3 = d_alpha3 * ALPHA_3_LSB;
-                d_beta0 = static_cast<double>(read_navigation_signed(subframe_bits, BETA_0));
-                d_beta0 = d_beta0 * BETA_0_LSB;
-                d_beta1 = static_cast<double>(read_navigation_signed(subframe_bits, BETA_1));
-                d_beta1 = d_beta1 * BETA_1_LSB;
-                d_beta2 = static_cast<double>(read_navigation_signed(subframe_bits, BETA_2));
-                d_beta2 = d_beta2 * BETA_2_LSB;
-                d_beta3 = static_cast<double>(read_navigation_signed(subframe_bits, BETA_3));
-                d_beta3 = d_beta3 * BETA_3_LSB;
-                d_A1 = static_cast<double>(read_navigation_signed(subframe_bits, A_1));
-                d_A1 = d_A1 * A_1_LSB;
-                d_A0 = static_cast<double>(read_navigation_signed(subframe_bits, A_0));
-                d_A0 = d_A0 * A_0_LSB;
                 d_t_OT = static_cast<double>(read_navigation_unsigned(subframe_bits, T_OT));
                 d_t_OT = d_t_OT * T_OT_LSB;
                 i_WN_T = static_cast<int>(read_navigation_unsigned(subframe_bits, WN_T));
@@ -556,64 +677,133 @@ int Beidou_Navigation_Message::subframe_decoder(char *subframe)
             {
                 // Page 25 Anti-Spoofing, SV config and almanac health (PRN: 25-32)
                 //! \TODO Read Anti-Spoofing, SV config
-                almanacHealth[25] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV25));
-                almanacHealth[26] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV26));
-                almanacHealth[27] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV27));
-                almanacHealth[28] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV28));
-                almanacHealth[29] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV29));
-                almanacHealth[30] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV30));
-                almanacHealth[31] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV31));
-                almanacHealth[32] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV32));
+                almanacHealth[25] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA25));
+                almanacHealth[26] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA26));
+                almanacHealth[27] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA27));
+                almanacHealth[28] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA28));
+                almanacHealth[29] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA29));
+                almanacHealth[30] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA30));
+                almanacHealth[31] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA31));
+                almanacHealth[32] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA32));
             }
 
         break;
-
+*/
     case 5://--- It is subframe 5 -----------------almanac health (PRN: 1-24) and Almanac reference week number and time.
-        int SV_data_ID_5;
         int SV_page_5;
-        d_TOW_SF5 = static_cast<double>(read_navigation_unsigned(subframe_bits, TOW));
-        d_TOW_SF5 = d_TOW_SF5 * 6;
-        d_TOW = d_TOW_SF5; // Set transmission time
-        b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
-        b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
-        b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
-        SV_data_ID_5 = static_cast<int>(read_navigation_unsigned(subframe_bits, SV_DATA_ID));
-        SV_page_5 = static_cast<int>(read_navigation_unsigned(subframe_bits, SV_PAGE));
-        if (SV_page_5 < 25)
+        d_SOW_SF5 = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_SOW));
+        d_SOW = d_SOW_SF5; // Set transmission time
+
+std::cout << "I decoded subframe 5" << std::endl;
+std::cout << "TOW: " << d_SOW_SF5  << std::endl;
+
+
+        SV_page_5 = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_PNUM));
+
+        if (SV_page_5 < 7) 
+            {
+		d_SOW_SF4 = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_SOW));
+		d_SQRT_A_ALMANAC = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_SQRT_A_ALMANAC));
+		d_SQRT_A_ALMANAC = d_SQRT_A_ALMANAC * D1_SQRT_A_ALMANAC_LSB;
+
+		d_A1UTC = static_cast<double>(read_navigation_signed(subframe_bits, D1_A1_ALMANAC));
+		d_A1UTC = d_A1UTC * D1_A1_ALMANAC_LSB;
+
+		d_A0_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_A0_ALMANAC));
+		d_A0_ALMANAC = d_A0_ALMANAC * D1_A0_ALMANAC_LSB;
+
+		d_OMEGA0_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_OMEGA0_ALMANAC));
+		d_OMEGA0_ALMANAC = d_OMEGA0_ALMANAC * D1_OMEGA0_ALMANAC_LSB;
+
+		d_E_ALMANAC = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_E));
+		d_E_ALMANAC = d_E_ALMANAC * D1_E_ALMANAC_LSB;
+
+		d_DELTA_I = static_cast<double>(read_navigation_signed(subframe_bits, D1_DELTA_I));
+		d_DELTA_I = D1_DELTA_I_LSB;
+
+		d_TOA = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_TOA));
+		d_TOA = d_TOA * D1_TOA_LSB;
+
+		d_OMEGA_DOT_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_OMEGA_DOT_ALMANAC));
+		d_OMEGA_DOT_ALMANAC = D1_OMEGA_DOT_ALMANAC_LSB;
+
+		d_OMEGA_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_OMEGA_ALMANAC));
+		d_OMEGA_ALMANAC = d_OMEGA_ALMANAC * D1_OMEGA_ALMANAC_LSB;
+
+		d_M0_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_M0));
+		d_M0_ALMANAC = d_M0_ALMANAC * D1_M0_ALMANAC_LSB;
+
+            }
+
+        if (SV_page_5 == 7)
             {
                 //! \TODO read almanac
-                if(SV_data_ID_5){}
+                almanacHealth[1] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA1));
+                almanacHealth[2] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA2));
+                almanacHealth[3] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA3));
+                almanacHealth[4] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA4));
+                almanacHealth[5] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA5));
+                almanacHealth[6] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA6));
+                almanacHealth[7] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA7));
+                almanacHealth[8] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA8));
+                almanacHealth[9] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA9));
+                almanacHealth[10] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA10));
+                almanacHealth[11] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA11));
+                almanacHealth[12] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA12));
+                almanacHealth[13] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA13));
+                almanacHealth[14] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA14));
+                almanacHealth[15] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA15));
+                almanacHealth[16] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA16));
+                almanacHealth[17] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA17));
+                almanacHealth[18] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA18));
+                almanacHealth[19] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA19));
             }
-        if (SV_page_5 == 51) // Page 25 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200H, page 110)
+        if (SV_page_5 == 8) // Page 25 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200H, page 110)
             {
-                d_Toa = static_cast<double>(read_navigation_unsigned(subframe_bits, T_OA));
-                d_Toa = d_Toa * T_OA_LSB;
-                i_WN_A = static_cast<int>(read_navigation_unsigned(subframe_bits, WN_A));
-                almanacHealth[1] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV1));
-                almanacHealth[2] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV2));
-                almanacHealth[3] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV3));
-                almanacHealth[4] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV4));
-                almanacHealth[5] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV5));
-                almanacHealth[6] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV6));
-                almanacHealth[7] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV7));
-                almanacHealth[8] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV8));
-                almanacHealth[9] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV9));
-                almanacHealth[10] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV10));
-                almanacHealth[11] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV11));
-                almanacHealth[12] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV12));
-                almanacHealth[13] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV13));
-                almanacHealth[14] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV14));
-                almanacHealth[15] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV15));
-                almanacHealth[16] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV16));
-                almanacHealth[17] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV17));
-                almanacHealth[18] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV18));
-                almanacHealth[19] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV19));
-                almanacHealth[20] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV20));
-                almanacHealth[21] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV21));
-                almanacHealth[22] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV22));
-                almanacHealth[23] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV23));
-                almanacHealth[24] = static_cast<int>(read_navigation_unsigned(subframe_bits, HEALTH_SV24));
+                almanacHealth[20] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA20));
+                almanacHealth[21] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA21));
+                almanacHealth[22] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA22));
+                almanacHealth[23] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA23));
+                almanacHealth[24] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA24));
+                almanacHealth[25] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA25));
+                almanacHealth[26] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA26));
+                almanacHealth[27] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA27));
+                almanacHealth[28] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA28));
+                almanacHealth[29] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA29));
+                almanacHealth[30] = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_HEA30));
+                almanac_WN = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_WNA));
+                d_toa2  = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_TOA2));
+
             }
+
+        if (SV_page_5 == 9) // Page 25 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200H, page 110)
+            {
+                d_A0GPS = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_A0GPS));
+                d_A0GPS = d_A0GPS * D1_A0GPS_LSB;
+
+                d_A1GPS = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_A1GPS));
+                d_A1GPS = d_A1GPS * D1_A1GPS_LSB;
+
+                d_A0GAL = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_A0GAL));
+                d_A0GAL = d_A0GAL * D1_A0GAL_LSB;
+
+                d_A1GAL = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_A1GAL));
+                d_A1GAL = d_A1GAL* D1_A1GAL_LSB;
+
+                d_A0GLO = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_A0GLO));
+                d_A0GLO = d_A0GLO * D1_A0GLO_LSB;
+
+                d_A1GLO = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_A1GLO));
+                d_A1GLO = d_A1GLO* D1_A1GLO_LSB;
+            }
+        if (SV_page_5 == 10)
+            {
+                d_DeltaT_LS = static_cast<double>(read_navigation_signed(subframe_bits, D1_DELTA_T_LS));
+
+            }
+
+
+
         break;
 
     default:
@@ -626,14 +816,14 @@ int Beidou_Navigation_Message::subframe_decoder(char *subframe)
 
 
 
-double Beidou_Navigation_Message::utc_time(const double gpstime_corrected) const
+double Beidou_Navigation_Message_D1::utc_time(const double beidoutime_corrected) const
 {
     double t_utc;
     double t_utc_daytime;
-    double Delta_t_UTC =  d_DeltaT_LS + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 * static_cast<double>((i_GPS_week - i_WN_T)));
+    double Delta_t_UTC =  d_DeltaT_LS + d_A0 + d_A1UTC * (beidoutime_corrected);
 
     // Determine if the effectivity time of the leap second event is in the past
-    int  weeksToLeapSecondEvent = i_WN_LSF - i_GPS_week;
+    int  weeksToLeapSecondEvent = i_WN_LSF - i_BEIDOU_week;
 
     if ((weeksToLeapSecondEvent) >= 0) // is not in the past
         {
@@ -641,63 +831,45 @@ double Beidou_Navigation_Message::utc_time(const double gpstime_corrected) const
             int secondOfLeapSecondEvent = i_DN * 24 * 60 * 60;
             if (weeksToLeapSecondEvent > 0)
                 {
-                    t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
+                    t_utc_daytime = fmod(beidoutime_corrected - Delta_t_UTC, 86400);
                 }
             else //we are in the same week than the leap second event
                 {
-                    if  (std::abs(gpstime_corrected - secondOfLeapSecondEvent) > 21600)
+                    if  ((beidoutime_corrected - secondOfLeapSecondEvent) < (2/3) * 24 * 60 * 60)
                         {
-                            /* 20.3.3.5.2.4a
-                             * Whenever the effectivity time indicated by the WN_LSF and the DN values
-                             * is not in the past (relative to the user's present time), and the user's
-                             * present time does not fall in the time span which starts at six hours prior
-                             * to the effectivity time and ends at six hours after the effectivity time,
-                             * the UTC/GPS-time relationship is given by
-                             */
-                            t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
+                            t_utc_daytime = fmod(beidoutime_corrected - Delta_t_UTC, 86400);
                         }
                     else
                         {
-                            /* 20.3.3.5.2.4b
-                             * Whenever the user's current time falls within the time span of six hours
-                             * prior to the effectivity time to six hours after the effectivity time,
-                             * proper accommodation of the leap second event with a possible week number
-                             * transition is provided by the following expression for UTC:
-                             */
-                            int W = fmod(gpstime_corrected - Delta_t_UTC - 43200, 86400) + 43200;
-                            t_utc_daytime = fmod(W, 86400 + d_DeltaT_LSF - d_DeltaT_LS);
-                            //implement something to handle a leap second event!
-                        }
-                    if ( (gpstime_corrected - secondOfLeapSecondEvent) > 21600)
-                        {
-                            Delta_t_UTC = d_DeltaT_LSF + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 * static_cast<double>((i_GPS_week - i_WN_T)));
-                            t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
+                            if  ((beidoutime_corrected - secondOfLeapSecondEvent) < (5/4) * 24 * 60 * 60)
+                                {
+                                    int W = fmod(beidoutime_corrected - Delta_t_UTC - 43200, 86400) + 43200;
+                                    t_utc_daytime = fmod(W, 86400 + d_DeltaT_LSF - d_DeltaT_LS);
+	                        }
+                            else
+                                {
+                                    t_utc_daytime = fmod(beidoutime_corrected - Delta_t_UTC, 86400);
+                                }
                         }
                 }
         }
     else // the effectivity time is in the past
         {
-            /* 20.3.3.5.2.4c
-             * Whenever the effectivity time of the leap second event, as indicated by the
-             * WNLSF and DN values, is in the "past" (relative to the user's current time),
-             * and the user�s current time does not fall in the time span as given above
-             * in 20.3.3.5.2.4b,*/
-            Delta_t_UTC = d_DeltaT_LSF + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 * static_cast<double>((i_GPS_week - i_WN_T)));
-            t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
+            t_utc_daytime = fmod(beidoutime_corrected - Delta_t_UTC, 86400);
         }
 
-    double secondsOfWeekBeforeToday = 43200 * floor(gpstime_corrected / 43200);
+    double secondsOfWeekBeforeToday = 43200 * floor(beidoutime_corrected / 43200);
     t_utc = secondsOfWeekBeforeToday + t_utc_daytime;
     return t_utc;
 }
 
 
 
-Gps_Ephemeris Beidou_Navigation_Message::get_ephemeris()
+Beidou_Ephemeris Beidou_Navigation_Message_D1::get_ephemeris()
 {
-    Gps_Ephemeris ephemeris;
+    Beidou_Ephemeris ephemeris;
     ephemeris.i_satellite_PRN = i_satellite_PRN;
-    ephemeris.d_TOW = d_TOW;
+    ephemeris.d_TOW = d_SOW;
     ephemeris.d_Crs = d_Crs;
     ephemeris.d_Delta_n = d_Delta_n;
     ephemeris.d_M_0 = d_M_0;
@@ -705,7 +877,7 @@ Gps_Ephemeris Beidou_Navigation_Message::get_ephemeris()
     ephemeris.d_e_eccentricity = d_e_eccentricity;
     ephemeris.d_Cus = d_Cus;
     ephemeris.d_sqrt_A = d_sqrt_A;
-    ephemeris.d_Toe = d_Toe;
+    ephemeris.d_Toe =static_cast<float>( (static_cast<int>(d_Toe) <<  15) | static_cast<int>(d_Toe2)) ;
     ephemeris.d_Toc = d_Toc;
     ephemeris.d_Cic = d_Cic;
     ephemeris.d_OMEGA0 = d_OMEGA0;
@@ -715,16 +887,14 @@ Gps_Ephemeris Beidou_Navigation_Message::get_ephemeris()
     ephemeris.d_OMEGA = d_OMEGA;
     ephemeris.d_OMEGA_DOT = d_OMEGA_DOT;
     ephemeris.d_IDOT = d_IDOT;
-    ephemeris.i_code_on_L2 = i_code_on_L2;
-    ephemeris.i_GPS_week = i_GPS_week;
-    ephemeris.b_L2_P_data_flag = b_L2_P_data_flag;
+    ephemeris.i_BEIDOU_week = i_BEIDOU_week;
     ephemeris.i_SV_accuracy = i_SV_accuracy;
     ephemeris.i_SV_health = i_SV_health;
-    ephemeris.d_TGD = d_TGD;
-    ephemeris.d_IODC = d_IODC;
-    ephemeris.d_IODE_SF2 = d_IODE_SF2;
-    ephemeris.d_IODE_SF3 = d_IODE_SF3;
-    ephemeris.i_AODO = i_AODO;
+    ephemeris.d_TGD1 = d_TGD1;
+    ephemeris.d_AODC = d_AODC;
+    //ephemeris.d_AODE_SF2 = d_AODE_SF2;
+    //ephemeris.d_AODE_SF3 = d_AODE_SF3;
+    //ephemeris.i_AODO = i_AODO;
     ephemeris.b_fit_interval_flag = b_fit_interval_flag;
     ephemeris.d_spare1 = d_spare1;
     ephemeris.d_spare2 = d_spare2;
@@ -747,9 +917,9 @@ Gps_Ephemeris Beidou_Navigation_Message::get_ephemeris()
 }
 
 
-Gps_Iono Beidou_Navigation_Message::get_iono()
+Beidou_Iono Beidou_Navigation_Message_D1::get_iono()
 {
-    Gps_Iono iono;
+    Beidou_Iono iono;
     iono.d_alpha0 = d_alpha0;
     iono.d_alpha1 = d_alpha1;
     iono.d_alpha2 = d_alpha2;
@@ -765,12 +935,12 @@ Gps_Iono Beidou_Navigation_Message::get_iono()
 }
 
 
-Gps_Utc_Model Beidou_Navigation_Message::get_utc_model()
+Beidou_Utc_Model Beidou_Navigation_Message_D1::get_utc_model()
 {
-    Gps_Utc_Model utc_model;
+    Beidou_Utc_Model utc_model;
     utc_model.valid = flag_utc_model_valid;
     // UTC parameters
-    utc_model.d_A1 = d_A1;
+    utc_model.d_A1 = d_A1UTC;
     utc_model.d_A0 = d_A0;
     utc_model.d_t_OT = d_t_OT;
     utc_model.i_WN_T = i_WN_T;
@@ -784,17 +954,17 @@ Gps_Utc_Model Beidou_Navigation_Message::get_utc_model()
 }
 
 
-bool Beidou_Navigation_Message::satellite_validation()
+bool Beidou_Navigation_Message_D1::satellite_validation()
 {
     bool flag_data_valid = false;
     b_valid_ephemeris_set_flag = false;
 
     // First Step:
-    // check Issue Of Ephemeris Data (IODE IODC..) to find a possible interrupted reception
+    // check Issue Of Ephemeris Data (AODE AODC..) to find a possible interrupted reception
     // and check if the data have been filled (!=0)
-    if (d_TOW_SF1 != 0 and d_TOW_SF2 != 0 and d_TOW_SF3 != 0)
+    if (d_SOW_SF1 != 0 and d_SOW_SF2 != 0 and d_SOW_SF3 != 0)
         {
-            if (d_IODE_SF2 == d_IODE_SF3 and d_IODC == d_IODE_SF2 and d_IODC!= -1)
+            if (d_AODC!= -1)
                 {
                     flag_data_valid = true;
                     b_valid_ephemeris_set_flag = true;

@@ -155,10 +155,10 @@ public:
         archive & make_nvp("d_OMEGA", d_OMEGA);      //!< Argument of Perigee [semi-cicles]
         archive & make_nvp("d_OMEGA_DOT", d_OMEGA_DOT); //!< Rate of Right Ascension [semi-circles/s]
         archive & make_nvp("d_IDOT", d_IDOT);        //!< Rate of Inclination Angle [semi-circles/s]
-        archive & make_nvp("i_BEIDOU_week", i_GPS_week);      //!< GPS week number, aka WN [week]
+        archive & make_nvp("i_BEIDOU_week", i_BEIDOU_week);      //!< GPS week number, aka WN [week]
         archive & make_nvp("i_SV_accuracy", i_SV_accuracy);       //!< User Range Accuracy (URA) index of the SV (reference paragraph 6.2.1) for the standard positioning service user (Ref 20.3.3.3.1.3 IS-GPS-200E)
         archive & make_nvp("i_SV_health", i_SV_health);
-        archive & make_nvp("d_IODC", d_IODC);         //!< Issue of Data, Clock
+        archive & make_nvp("d_AODC", d_AODC);         //!< Issue of Data, Clock
         archive & make_nvp("d_TGD1", d_TGD1);           //!< Estimated Group Delay Differential: L1-L2 correction term only for the benefit of "L1 P(Y)" or "L2 P(Y)" s users [s]
         archive & make_nvp("d_TGD2", d_TGD2);           //!< Estimated Group Delay Differential: L1-L2 correction term only for the benefit of "L1 P(Y)" or "L2 P(Y)" s users [s]
         archive & make_nvp("i_AODO", i_AODO);         //!< Age of Data Offset (AODO) term for the navigation message correction table (NMCT) contained in subframe 4 (reference paragraph 20.3.3.5.1.9) [s]
@@ -199,7 +199,7 @@ public:
     /*!
      * Default constructor
      */
-    Gps_Ephemeris();
+    Beidou_Ephemeris();
 };
 
 #endif

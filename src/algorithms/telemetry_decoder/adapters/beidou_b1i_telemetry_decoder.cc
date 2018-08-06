@@ -30,19 +30,19 @@
  */
 
 
-#include "gps_l1_ca_telemetry_decoder.h"
+#include "beidou_b1i_telemetry_decoder.h"
 #include "configuration_interface.h"
-#include "gps_ephemeris.h"
-#include "gps_almanac.h"
-#include "gps_iono.h"
-#include "gps_utc_model.h"
+#include "beidou_ephemeris.h"
+#include "beidou_almanac.h"
+#include "beidou_iono.h"
+#include "beidou_utc_model.h"
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
 
 
 using google::LogMessage;
 
-GpsL1CaTelemetryDecoder::GpsL1CaTelemetryDecoder(ConfigurationInterface* configuration,
+BeidouB1iTelemetryDecoder::BeidouB1iTelemetryDecoder(ConfigurationInterface* configuration,
     std::string role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
@@ -54,7 +54,7 @@ GpsL1CaTelemetryDecoder::GpsL1CaTelemetryDecoder(ConfigurationInterface* configu
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     // make telemetry decoder object
-    telemetry_decoder_ = gps_l1_ca_make_telemetry_decoder_cc(satellite_, dump_);  // TODO fix me
+    telemetry_decoder_ = beidou_b1i_make_telemetry_decoder_cc(satellite_, dump_);  // TODO fix me
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
     channel_ = 0;
     if (in_streams_ > 1)
@@ -68,12 +68,12 @@ GpsL1CaTelemetryDecoder::GpsL1CaTelemetryDecoder(ConfigurationInterface* configu
 }
 
 
-GpsL1CaTelemetryDecoder::~GpsL1CaTelemetryDecoder()
+BeidouB1iTelemetryDecoder::~BeidouB1iTelemetryDecoder()
 {
 }
 
 
-void GpsL1CaTelemetryDecoder::set_satellite(const Gnss_Satellite& satellite)
+void BeidouB1iTelemetryDecoder::set_satellite(const Gnss_Satellite& satellite)
 {
     satellite_ = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     telemetry_decoder_->set_satellite(satellite_);
@@ -81,7 +81,7 @@ void GpsL1CaTelemetryDecoder::set_satellite(const Gnss_Satellite& satellite)
 }
 
 
-void GpsL1CaTelemetryDecoder::connect(gr::top_block_sptr top_block)
+void BeidouB1iTelemetryDecoder::connect(gr::top_block_sptr top_block)
 {
     if (top_block)
         { /* top_block is not null */
@@ -91,7 +91,7 @@ void GpsL1CaTelemetryDecoder::connect(gr::top_block_sptr top_block)
 }
 
 
-void GpsL1CaTelemetryDecoder::disconnect(gr::top_block_sptr top_block)
+void BeidouB1iTelemetryDecoder::disconnect(gr::top_block_sptr top_block)
 {
     if (top_block)
         { /* top_block is not null */
@@ -100,13 +100,13 @@ void GpsL1CaTelemetryDecoder::disconnect(gr::top_block_sptr top_block)
 }
 
 
-gr::basic_block_sptr GpsL1CaTelemetryDecoder::get_left_block()
+gr::basic_block_sptr BeidouB1iTelemetryDecoder::get_left_block()
 {
     return telemetry_decoder_;
 }
 
 
-gr::basic_block_sptr GpsL1CaTelemetryDecoder::get_right_block()
+gr::basic_block_sptr BeidouB1iTelemetryDecoder::get_right_block()
 {
     return telemetry_decoder_;
 }

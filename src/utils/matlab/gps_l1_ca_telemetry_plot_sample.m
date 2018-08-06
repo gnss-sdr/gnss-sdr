@@ -30,7 +30,7 @@
 %clear all;
 samplingFreq       = 64e6/16;     %[Hz]
 channels=4;
-path='/home/javier/workspace/gnss-sdr-ref/trunk/install/';
+path='/home/sergi/gnss/gnss-sdr/install/';
 clear PRN_absolute_sample_start;
 for N=1:1:channels
     telemetry_log_path=[path 'telemetry' num2str(N-1) '.dat'];

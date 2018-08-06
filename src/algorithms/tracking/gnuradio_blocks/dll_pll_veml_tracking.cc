@@ -254,9 +254,12 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(dllpllconf_t conf_) : gr::block("dl
                     d_symbols_per_bit = BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT;
                     d_correlation_length_ms = 1;
                     d_code_samples_per_chip = 1;
-                    d_secondary = false;
+                    d_secondary = true;
                     trk_parameters.track_pilot = false;
                     interchange_iq = false;
+                    d_secondary_code_length = static_cast<unsigned int>(BEIDOU_B1I_NH_CODE_LENGTH);
+                    d_secondary_code_string = const_cast<std::string *>(&BEIDOU_B1I_NH_CODE_STR);
+
                 }
             else
                 {

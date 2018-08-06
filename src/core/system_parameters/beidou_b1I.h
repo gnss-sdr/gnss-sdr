@@ -51,6 +51,7 @@ const double BEIDOU_B1I_FREQ_HZ              = 1.561098e9; //!< b1I [Hz]
 const double BEIDOU_B1I_CODE_RATE_HZ         = 2.046e6;   //!< beidou b1I code rate [chips/s]
 const double BEIDOU_B1I_CODE_LENGTH_CHIPS    = 2046.0;    //!< beidou b1I code length [chips]
 const double BEIDOU_B1I_CODE_PERIOD          = 0.001;     //!< beidou b1I code period [seconds]
+const unsigned int BEIDOU_B1I_CODE_PERIOD_MS = 1;    //!< GPS L1 C/A code period [ms]
 const double BEIDOU_B1I_CHIP_PERIOD          = 4.8875e-07;     //!< beidou b1I chip period [seconds]
 
 /*!
@@ -74,7 +75,9 @@ const int BEIDOU_B1I_HISTORY_DEEP = 100; // ****************
 
 #define BEIDOU_PREAMBLE {1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0}
 const int BEIDOU_B1I_PREAMBLE_LENGTH_BITS = 11;
-const int BEIDOU_B1I_PREAMBLE_LENGTH_SYMBOLS = 160;   // **************
+const int BEIDOU_B1I_PREAMBLE_LENGTH_SYMBOLS = 220;   // **************
+const double BEIDOU_B1I_PREAMBLE_DURATION_S = 0.220;
+const int BEIDOU_B1I_PREAMBLE_DURATION_MS = 220;
 const int BEIDOU_B1I_TELEMETRY_RATE_BITS_SECOND = 50;   //!< D1 NAV message bit rate [bits/s]
 const int BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT = 20;  // *************
 const int BEIDOU_B1I_TELEMETRY_RATE_SYMBOLS_SECOND = BEIDOU_B1I_TELEMETRY_RATE_BITS_SECOND*BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT;   //************!< NAV message bit rate [symbols/s]
@@ -84,6 +87,9 @@ const int BEIDOU_SUBFRAME_BITS = 300;                  //!< Number of bits per s
 const int BEIDOU_SUBFRAME_SECONDS = 6;                 //!< Subframe duration [seconds]
 const int BEIDOU_SUBFRAME_MS = 6000;                 //!< Subframe duration [miliseconds]
 const int BEIDOU_WORD_BITS = 30;                       //!< Number of bits per word in the NAV message [bits]
+const int BEIDOU_B1I_NH_CODE_LENGTH = 20;
+const int BEIDOU_B1I_NH_CODE[20] = {0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0};
+const std::string BEIDOU_B1I_NH_CODE_STR = "00000100110101001110";
 
 
 // BEIDOU D1 NAVIGATION MESSAGE STRUCTURE
@@ -91,6 +97,8 @@ const int BEIDOU_WORD_BITS = 30;                       //!< Number of bits per w
 const std::vector<std::pair<int,int> > D1_PRE( { {1,11} } );
 const std::vector<std::pair<int,int> > D1_FRAID( { {16,3} } );
 const std::vector<std::pair<int,int> > D1_SOW( { {19,8},{31,12} } );
+const std::vector<std::pair<int,int> > D1_PNUM( { {44,7} } );
+
 // SUBFRAME 1
 const std::vector<std::pair<int,int> > D1_SAT_H1( { {43,1} } );
 const std::vector<std::pair<int,int> > D1_AODC( { {44,5} } );

@@ -30,10 +30,10 @@
  */
 
 
-#ifndef GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_H_
-#define GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_H_
+#ifndef GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_H_
+#define GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_H_
 
-#include "gps_l1_ca_telemetry_decoder_cc.h"
+#include "beidou_b1i_telemetry_decoder_cc.h"
 #include "telemetry_decoder_interface.h"
 #include <string>
 
@@ -42,15 +42,15 @@ class ConfigurationInterface;
 /*!
  * \brief This class implements a NAV data decoder for GPS L1 C/A
  */
-class GpsL1CaTelemetryDecoder : public TelemetryDecoderInterface
+class BeidouB1iTelemetryDecoder : public TelemetryDecoderInterface
 {
 public:
-    GpsL1CaTelemetryDecoder(ConfigurationInterface* configuration,
+    BeidouB1iTelemetryDecoder(ConfigurationInterface* configuration,
         std::string role,
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GpsL1CaTelemetryDecoder();
+    virtual ~BeidouB1iTelemetryDecoder();
 
     inline std::string role() override
     {
@@ -82,7 +82,7 @@ public:
     }
 
 private:
-    gps_l1_ca_telemetry_decoder_cc_sptr telemetry_decoder_;
+    beidou_b1i_telemetry_decoder_cc_sptr telemetry_decoder_;
     Gnss_Satellite satellite_;
     int channel_;
     bool dump_;

@@ -32,6 +32,11 @@ set(SYSTEM_PARAMETERS_SOURCES
      galileo_almanac.cc
      galileo_iono.cc
      galileo_navigation_message.cc
+     beidou_navigation_message.cc
+     beidou_ephemeris.cc
+     beidou_iono.cc
+     beidou_almanac.cc
+     beidou_utc_model.cc
      sbas_ephemeris.cc
      galileo_fnav_message.cc
      gps_cnav_ephemeris.cc

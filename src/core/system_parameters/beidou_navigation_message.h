@@ -70,12 +70,12 @@ private:
 public:
     bool b_valid_ephemeris_set_flag; // flag indicating that this ephemeris set have passed the validation check
     //broadcast orbit 1
-    double d_TOW; //!< Time of BeiDou Week of the ephemeris set (taken from subframes TOW) [s]
-    double d_TOW_SF1;            //!< Time of BeiDou Week from HOW word of Subframe 1 [s]
-    double d_TOW_SF2;            //!< Time of BeiDou Week from HOW word of Subframe 2 [s]
-    double d_TOW_SF3;            //!< Time of BeiDou Week from HOW word of Subframe 3 [s]
-    double d_TOW_SF4;            //!< Time of BeiDou Week from HOW word of Subframe 4 [s]
-    double d_TOW_SF5;            //!< Time of BeiDou Week from HOW word of Subframe 5 [s]
+    double d_SOW; //!< Time of BeiDou Week of the ephemeris set (taken from subframes SOW) [s]
+    double d_SOW_SF1;            //!< Time of BeiDou Week from HOW word of Subframe 1 [s]
+    double d_SOW_SF2;            //!< Time of BeiDou Week from HOW word of Subframe 2 [s]
+    double d_SOW_SF3;            //!< Time of BeiDou Week from HOW word of Subframe 3 [s]
+    double d_SOW_SF4;            //!< Time of BeiDou Week from HOW word of Subframe 4 [s]
+    double d_SOW_SF5;            //!< Time of BeiDou Week from HOW word of Subframe 5 [s]
 
     double d_AODE;
     double d_Crs;            //!< Amplitude of the Sine Harmonic Correction Term to the Orbit Radius [m]
@@ -88,6 +88,7 @@ public:
     double d_sqrt_A;         //!< Square Root of the Semi-Major Axis [sqrt(m)]
     //broadcast orbit 3
     double d_Toe;            //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
+    double d_Toe2;
     double d_Toc;            //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200E) [s]
     double d_Cic;            //!< Amplitude of the Cosine Harmonic Correction Term to the Angle of Inclination [rad]
     double d_OMEGA0;         //!< Longitude of Ascending Node of Orbit Plane at Weekly Epoch [semi-circles]
@@ -117,6 +118,9 @@ public:
     double d_A_f1;          //!< Coefficient 1 of code phase offset model [s/s]
     double d_A_f2;          //!< Coefficient 2 of code phase offset model [s/s^2]
 
+    double d_A0;
+    double d_A1;
+    double d_A2;
 
     // Almanac
     double d_Toa;           //!< Almanac reference time [s]
@@ -172,19 +176,47 @@ public:
 
     // UTC parameters
     bool flag_utc_model_valid; //!< If set, it indicates that the UTC model parameters are filled
-    double d_A1;          //!< 1st order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s/s]
-    double d_A0;          //!< Constant of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s]
+    double d_A2UTC; 
+    double d_A1UTC;          //!< 1st order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s/s]
+    double d_A0UTC;          //!< Constant of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s]
     double d_t_OT;        //!< Reference time for UTC data (reference 20.3.4.5 and 20.3.3.5.2.4 IS-GPS-200E) [s]
     int i_WN_T;           //!< UTC reference week number [weeks]
     double d_DeltaT_LS;   //!< delta time due to leap seconds [s]. Number of leap seconds since 6-Jan-1980 as transmitted by the GPS almanac.
     int i_WN_LSF;         //!< Week number at the end of which the leap second becomes effective [weeks]
     int i_DN;             //!< Day number (DN) at the end of which the leap second becomes effective [days]
     double d_DeltaT_LSF;  //!< Scheduled future or recent past (relative to NAV message upload) value of the delta time due to leap seconds [s]
+    double d_A1GPS;
+    double d_A0GPS;
+    double d_A1GAL;
+    double d_A0GAL;
+    double d_A1GLO;
+    double d_A0GLO;
+
+    double d_AODE_SF1;
+    double d_SQRT_A_ALMANAC;
+    double d_A1_ALMANAC;
+    double d_A0_ALMANAC;
+    double d_OMEGA0_ALMANAC;
+    double d_E_ALMANAC;
+    double d_DELTA_I;
+    double d_TOA;
+    double d_OMEGA_DOT_ALMANAC;
+    double d_OMEGA_ALMANAC;
+    double d_M0_ALMANAC;
+    int    almanac_WN;
+    double d_toa2;
+
+
+
+
+
+
 
     // Satellite velocity
     double d_satvel_X;    //!< Earth-fixed velocity coordinate x of the satellite [m]
     double d_satvel_Y;    //!< Earth-fixed velocity coordinate y of the satellite [m]
     double d_satvel_Z;    //!< Earth-fixed velocity coordinate z of the satellite [m]
+
 
     // public functions
     void reset();
@@ -192,17 +224,17 @@ public:
     /*!
      * \brief Obtain a GPS SV Ephemeris class filled with current SV data
      */
-    Gps_Ephemeris get_ephemeris();
+    Beidou_Ephemeris get_ephemeris();
 
     /*!
      * \brief Obtain a GPS ionospheric correction parameters class filled with current SV data
      */
-    Gps_Iono get_iono();
+    Beidou_Iono get_iono();
 
     /*!
      * \brief Obtain a GPS UTC model parameters class filled with current SV data
      */
-    Gps_Utc_Model get_utc_model();
+    Beidou_Utc_Model get_utc_model();
 
 
     /*!

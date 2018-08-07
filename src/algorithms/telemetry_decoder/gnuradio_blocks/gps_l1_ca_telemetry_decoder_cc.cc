@@ -419,6 +419,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
                             flag_TOW_set = false;
                             d_current_subframe_symbol = 0;
                             d_crc_error_synchronization_counter = 0;
+                            d_TOW_at_current_symbol_ms = 0;
                         }
                 }
         }
@@ -426,47 +427,57 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
     //2. Add the telemetry decoder information
     if (this->d_flag_preamble == true and d_flag_new_tow_available == true)
         {
-            d_TOW_at_current_symbol_ms = static_cast<unsigned int>(d_nav.d_TOW) * 1000 + GPS_CA_PREAMBLE_DURATION_MS;
-            d_TOW_at_Preamble_ms = d_TOW_at_current_symbol_ms;
+            d_TOW_at_current_symbol_ms = static_cast<unsigned int>(d_nav.d_TOW * 1000.0) + GPS_CA_PREAMBLE_DURATION_MS;
+            d_TOW_at_Preamble_ms = static_cast<unsigned int>(d_nav.d_TOW * 1000.0);
             flag_TOW_set = true;
             d_flag_new_tow_available = false;
         }
     else
         {
-            d_TOW_at_current_symbol_ms += GPS_L1_CA_CODE_PERIOD_MS;
-        }
-
-    current_symbol.TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
-    current_symbol.Flag_valid_word = flag_TOW_set;
-
-    if (flag_PLL_180_deg_phase_locked == true)
-        {
-            //correct the accumulated phase for the Costas loop phase shift, if required
-            current_symbol.Carrier_phase_rads += GPS_PI;
-        }
-
-    if (d_dump == true)
-        {
-            // MULTIPLEXED FILE RECORDING - Record results to file
-            try
+            if (flag_TOW_set == true)
                 {
-                    double tmp_double;
-                    unsigned long int tmp_ulong_int;
-                    tmp_double = static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                    tmp_ulong_int = current_symbol.Tracking_sample_counter;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(unsigned long int));
-                    tmp_double = static_cast<double>(d_TOW_at_Preamble_ms) * 1000.0;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                }
-            catch (const std::ifstream::failure &e)
-                {
-                    LOG(WARNING) << "Exception writing observables dump file " << e.what();
+                    d_TOW_at_current_symbol_ms += GPS_L1_CA_CODE_PERIOD_MS;
                 }
         }
 
-    //3. Make the output (copy the object contents to the GNURadio reserved memory)
-    *out[0] = current_symbol;
+    if (flag_TOW_set == true)
+        {
+            current_symbol.TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
+            current_symbol.Flag_valid_word = flag_TOW_set;
 
-    return 1;
+            if (flag_PLL_180_deg_phase_locked == true)
+                {
+                    //correct the accumulated phase for the Costas loop phase shift, if required
+                    current_symbol.Carrier_phase_rads += GPS_PI;
+                }
+
+            if (d_dump == true)
+                {
+                    // MULTIPLEXED FILE RECORDING - Record results to file
+                    try
+                        {
+                            double tmp_double;
+                            unsigned long int tmp_ulong_int;
+                            tmp_double = static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0;
+                            d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                            tmp_ulong_int = current_symbol.Tracking_sample_counter;
+                            d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(unsigned long int));
+                            tmp_double = static_cast<double>(d_TOW_at_Preamble_ms) / 1000.0;
+                            d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                        }
+                    catch (const std::ifstream::failure &e)
+                        {
+                            LOG(WARNING) << "Exception writing observables dump file " << e.what();
+                        }
+                }
+
+            //3. Make the output (copy the object contents to the GNURadio reserved memory)
+            *out[0] = current_symbol;
+
+            return 1;
+        }
+    else
+        {
+            return 0;
+        }
 }

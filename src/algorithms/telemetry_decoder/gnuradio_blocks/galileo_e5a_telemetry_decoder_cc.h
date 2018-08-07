@@ -104,7 +104,8 @@ private:
     bool new_symbol;
     double d_prompt_acum;
     double page_symbols[GALILEO_FNAV_SYMBOLS_PER_PAGE - GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
-    double d_TOW_at_current_symbol;
+    unsigned int d_TOW_at_Preamble_ms;
+    unsigned int d_TOW_at_current_symbol_ms;
     double delta_t;  //GPS-GALILEO time offset
     std::string d_dump_filename;
     std::ofstream d_dump_file;

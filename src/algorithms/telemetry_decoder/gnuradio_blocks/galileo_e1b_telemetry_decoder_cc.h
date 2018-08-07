@@ -105,7 +105,8 @@ private:
     Gnss_Satellite d_satellite;
     int d_channel;
 
-    double d_TOW_at_current_symbol;
+    unsigned int d_TOW_at_Preamble_ms;
+    unsigned int d_TOW_at_current_symbol_ms;
 
     bool flag_TOW_set;
     double delta_t;  //GPS-GALILEO time offset

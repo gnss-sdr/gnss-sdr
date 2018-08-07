@@ -80,6 +80,7 @@ const int GALILEO_INAV_PREAMBLE_PERIOD_SYMBOLS = 250;
 const int GALILEO_INAV_PAGE_PART_SYMBOLS = 250;  //!< Each Galileo INAV pages are composed of two parts (even and odd) each of 250 symbols, including preamble. See Galileo ICD 4.3.2
 const int GALILEO_INAV_PAGE_SYMBOLS = 500;       //!< The complete Galileo INAV page length
 const int GALILEO_INAV_PAGE_PART_SECONDS = 1;    // a page part last 1 sec
+const int GALILEO_INAV_PAGE_PART_MS = 1000;      // a page part last 1 sec
 const int GALILEO_INAV_PAGE_SECONDS = 2;         // a full page last 2 sec
 const int GALILEO_INAV_INTERLEAVER_ROWS = 8;
 const int GALILEO_INAV_INTERLEAVER_COLS = 30;
@@ -89,6 +90,7 @@ const int GALILEO_DATA_JK_BITS = 128;
 const int GALILEO_DATA_FRAME_BITS = 196;
 const int GALILEO_DATA_FRAME_BYTES = 25;
 const double GALILEO_E1_CODE_PERIOD = 0.004;
+const int GALILEO_E1_CODE_PERIOD_MS = 4;
 
 const std::vector<std::pair<int, int>> type({{1, 6}});
 const std::vector<std::pair<int, int>> PAGE_TYPE_bit({{1, 6}});

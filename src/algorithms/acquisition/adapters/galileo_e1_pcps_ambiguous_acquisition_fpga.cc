@@ -59,8 +59,8 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
     long fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in;
-    if_ = configuration_->property(role + ".if", 0);
-    acq_parameters.freq = if_;
+    //if_ = configuration_->property(role + ".if", 0);
+    //acq_parameters.freq = if_;
 
   //  dump_ = configuration_->property(role + ".dump", false);
   //  acq_parameters.dump = dump_;
@@ -69,8 +69,11 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
     if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
     acq_parameters.doppler_max = doppler_max_;
-    unsigned int sampled_ms = 4;
+    //unsigned int sampled_ms = 4;
+    //acq_parameters.sampled_ms = sampled_ms;
+    unsigned int sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 4);
     acq_parameters.sampled_ms = sampled_ms;
+
  //   bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
  //   acq_parameters.bit_transition_flag = bit_transition_flag_;
  //   use_CFAR_algorithm_flag_ = configuration_->property(role + ".use_CFAR_algorithm", true);  //will be false in future versions

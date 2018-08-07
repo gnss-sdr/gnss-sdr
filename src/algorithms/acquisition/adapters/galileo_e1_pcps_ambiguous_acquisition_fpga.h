@@ -157,7 +157,7 @@ private:
     //unsigned int sampled_ms_;
     unsigned int max_dwells_;
     //long fs_in_;
-    long if_;
+    //long if_;
     bool dump_;
     bool blocking_;
     std::string dump_filename_;

@@ -63,8 +63,8 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     //fs_in = fs_in/2.0; // downampling filter
     //printf("####### DEBUG Acq: fs_in = %d\n", fs_in);
     acq_parameters.fs_in = fs_in;
-    long ifreq = configuration_->property(role + ".if", 0);
-    acq_parameters.freq = ifreq;
+    //long ifreq = configuration_->property(role + ".if", 0);
+    //acq_parameters.freq = ifreq;
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
     if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
     acq_parameters.doppler_max = doppler_max_;

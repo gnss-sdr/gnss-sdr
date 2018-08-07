@@ -155,6 +155,8 @@ fpga_multicorrelator_8sc::fpga_multicorrelator_8sc(int n_correlators,
         std::string device_name, unsigned int device_base, int *ca_codes, int *data_codes, unsigned int code_length_chips, bool track_pilot,
         unsigned int multicorr_type, unsigned int code_samples_per_chip)
 {
+
+	//printf("tracking fpga class created\n");
     d_n_correlators = n_correlators;
     d_device_name = device_name;
     d_device_base = device_base;
@@ -203,21 +205,21 @@ fpga_multicorrelator_8sc::fpga_multicorrelator_8sc(int n_correlators,
     // write-only registers
     d_CODE_PHASE_STEP_CHIPS_NUM_REG_ADDR = 0;
     d_INITIAL_INDEX_REG_BASE_ADDR = 1;
-    if (d_multicorr_type == 0)
-        {
-            // multicorrelator with 3 correlators (16 registers only)
-            d_INITIAL_INTERP_COUNTER_REG_BASE_ADDR = 4;
-            d_NSAMPLES_MINUS_1_REG_ADDR = 7;
-            d_CODE_LENGTH_MINUS_1_REG_ADDR = 8;
-            d_REM_CARR_PHASE_RAD_REG_ADDR = 9;
-            d_PHASE_STEP_RAD_REG_ADDR = 10;
-            d_PROG_MEMS_ADDR = 11;
-            d_DROP_SAMPLES_REG_ADDR = 12;
-            d_INITIAL_COUNTER_VALUE_REG_ADDR = 13;
-            d_START_FLAG_ADDR = 14;
-        }
-    else
-        {
+//    if (d_multicorr_type == 0)
+//        {
+//            // multicorrelator with 3 correlators (16 registers only)
+//            d_INITIAL_INTERP_COUNTER_REG_BASE_ADDR = 4;
+//            d_NSAMPLES_MINUS_1_REG_ADDR = 7;
+//            d_CODE_LENGTH_MINUS_1_REG_ADDR = 8;
+//            d_REM_CARR_PHASE_RAD_REG_ADDR = 9;
+//            d_PHASE_STEP_RAD_REG_ADDR = 10;
+//            d_PROG_MEMS_ADDR = 11;
+//            d_DROP_SAMPLES_REG_ADDR = 12;
+//            d_INITIAL_COUNTER_VALUE_REG_ADDR = 13;
+//            d_START_FLAG_ADDR = 14;
+//        }
+//    else
+//        {
             // other types of multicorrelators (32 registers)
             d_INITIAL_INTERP_COUNTER_REG_BASE_ADDR = 7;
             d_NSAMPLES_MINUS_1_REG_ADDR = 13;
@@ -228,19 +230,21 @@ fpga_multicorrelator_8sc::fpga_multicorrelator_8sc(int n_correlators,
             d_DROP_SAMPLES_REG_ADDR = 18;
             d_INITIAL_COUNTER_VALUE_REG_ADDR = 19;
             d_START_FLAG_ADDR = 30;
-        }
+//        }
 
+    //printf("d_n_correlators = %d\n", d_n_correlators);
+    //printf("d_multicorr_type = %d\n", d_multicorr_type);
     // read-write registers
-    if (d_multicorr_type == 0)
-        {
-            // multicorrelator with 3 correlators (16 registers only)
-            d_TEST_REG_ADDR = 15;
-        }
-    else
-        {
+//    if (d_multicorr_type == 0)
+//        {
+//            // multicorrelator with 3 correlators (16 registers only)
+//            d_TEST_REG_ADDR = 15;
+//        }
+//    else
+//        {
             // other types of multicorrelators (32 registers)
             d_TEST_REG_ADDR = 31;
-        }
+ //       }
 
     // result 2's complement saturation value
     if (d_multicorr_type == 0)
@@ -256,24 +260,24 @@ fpga_multicorrelator_8sc::fpga_multicorrelator_8sc(int n_correlators,
 
     // read only registers
     d_RESULT_REG_REAL_BASE_ADDR = 1;
-    if (d_multicorr_type == 0)
-        {
-            // multicorrelator with 3 correlators (16 registers only)
-            d_RESULT_REG_IMAG_BASE_ADDR = 4;
-            d_RESULT_REG_DATA_REAL_BASE_ADDR = 0; // no pilot tracking
-            d_RESULT_REG_DATA_IMAG_BASE_ADDR = 0;
-            d_SAMPLE_COUNTER_REG_ADDR = 7;
-
-        }
-    else
-        {
+//    if (d_multicorr_type == 0)
+//        {
+//            // multicorrelator with 3 correlators (16 registers only)
+//            d_RESULT_REG_IMAG_BASE_ADDR = 4;
+//            d_RESULT_REG_DATA_REAL_BASE_ADDR = 0; // no pilot tracking
+//            d_RESULT_REG_DATA_IMAG_BASE_ADDR = 0;
+//            d_SAMPLE_COUNTER_REG_ADDR = 7;
+//
+//        }
+//    else
+//        {
             // other types of multicorrelators (32 registers)
             d_RESULT_REG_IMAG_BASE_ADDR = 7;
             d_RESULT_REG_DATA_REAL_BASE_ADDR = 6; // no pilot tracking
             d_RESULT_REG_DATA_IMAG_BASE_ADDR = 12;
             d_SAMPLE_COUNTER_REG_ADDR = 13;
 
-        }
+//        }
 
     //printf("d_SAMPLE_COUNTER_REG_ADDR = %d\n", d_SAMPLE_COUNTER_REG_ADDR);
     //printf("mmmmmmmmmmmmm d_n_correlators = %d\n", d_n_correlators);
@@ -313,6 +317,7 @@ bool fpga_multicorrelator_8sc::free()
 
 void fpga_multicorrelator_8sc::set_channel(unsigned int channel)
 {
+	//printf("www trk set channel\n");
     char device_io_name[MAX_LENGTH_DEVICEIO_NAME]; // driver io name
     d_channel = channel;
 
@@ -354,7 +359,7 @@ void fpga_multicorrelator_8sc::set_channel(unsigned int channel)
 //        }
 //    else
 //        {
-//            printf("mapping registers succes\n"); // this is for debug -- remove !
+//            printf("trk mapping registers succes\n"); // this is for debug -- remove !
 //        }
 
     // sanity check : check test register
@@ -364,7 +369,7 @@ void fpga_multicorrelator_8sc::set_channel(unsigned int channel)
     if (writeval != readval)
         {
             LOG(WARNING) << "Test register sanity check failed";
-           // printf("tracking test register sanity check failed\n");
+            printf("tracking test register sanity check failed\n");
 
             //printf("lslslls test sanity check reg failure\n");
         }
@@ -458,7 +463,7 @@ void fpga_multicorrelator_8sc::fpga_configure_tracking_gps_local_code(int PRN)
                             | code_chip | select_pilot_corelator;
                 }
         }
-    printf("\n");
+    //printf("\n");
 }
 
 
@@ -628,39 +633,39 @@ void fpga_multicorrelator_8sc::read_tracking_gps_results(void)
     int readval_imag;
     int k;
 
-
+    //printf("www reading trk results\n");
     for (k = 0; k < d_n_correlators; k++)
         {
             readval_real = d_map_base[d_RESULT_REG_REAL_BASE_ADDR + k];
             //printf("read real before checking d map base %d = %d\n", d_RESULT_REG_BASE_ADDR + k, readval_real);
-//            if (readval_real > debug_max_readval_real[k])
+////            if (readval_real > debug_max_readval_real[k])
+////                {
+////                    debug_max_readval_real[k] = readval_real;
+////                }
+//            if (readval_real >= d_result_SAT_value) // 0x100000 (21 bits two's complement)
 //                {
-//                    debug_max_readval_real[k] = readval_real;
+//                    readval_real = -2*d_result_SAT_value + readval_real;
 //                }
-            if (readval_real >= d_result_SAT_value) // 0x100000 (21 bits two's complement)
-                {
-                    readval_real = -2*d_result_SAT_value + readval_real;
-                }
-//            if (readval_real > debug_max_readval_real_after_check[k])
-//                {
-//                    debug_max_readval_real_after_check[k] = readval_real;
-//                }
+////            if (readval_real > debug_max_readval_real_after_check[k])
+////                {
+////                    debug_max_readval_real_after_check[k] = readval_real;
+////                }
             //printf("read real d map base %d = %d\n", d_RESULT_REG_BASE_ADDR + k, readval_real);
             readval_imag = d_map_base[d_RESULT_REG_IMAG_BASE_ADDR + k];
             //printf("read imag before checking d map base %d = %d\n", d_RESULT_REG_BASE_ADDR + k, readval_imag);
-//            if (readval_imag > debug_max_readval_imag[k])
+////            if (readval_imag > debug_max_readval_imag[k])
+////                {
+////                    debug_max_readval_imag[k] = readval_imag;
+////                }
+//
+//            if (readval_imag >= d_result_SAT_value) // 0x100000 (21 bits two's complement)
 //                {
-//                    debug_max_readval_imag[k] = readval_imag;
+//                    readval_imag = -2*d_result_SAT_value + readval_imag;
 //                }
-
-            if (readval_imag >= d_result_SAT_value) // 0x100000 (21 bits two's complement)
-                {
-                    readval_imag = -2*d_result_SAT_value + readval_imag;
-                }
-//            if (readval_imag > debug_max_readval_imag_after_check[k])
-//                {
-//                    debug_max_readval_imag_after_check[k] = readval_real;
-//                }
+////            if (readval_imag > debug_max_readval_imag_after_check[k])
+////                {
+////                    debug_max_readval_imag_after_check[k] = readval_real;
+////                }
             //printf("read imag d map base %d = %d\n", d_RESULT_REG_BASE_ADDR + k, readval_imag);
             d_corr_out[k] = gr_complex(readval_real,readval_imag);
 
@@ -687,16 +692,16 @@ void fpga_multicorrelator_8sc::read_tracking_gps_results(void)
         {
             //printf("reading pilot !!!\n");
             readval_real = d_map_base[d_RESULT_REG_DATA_REAL_BASE_ADDR];
-            if (readval_real >= d_result_SAT_value) // 0x100000 (21 bits two's complement)
-                {
-                    readval_real = -2*d_result_SAT_value + readval_real;
-                }
+//            if (readval_real >= d_result_SAT_value) // 0x100000 (21 bits two's complement)
+//                {
+//                    readval_real = -2*d_result_SAT_value + readval_real;
+//                }
 
             readval_imag = d_map_base[d_RESULT_REG_DATA_IMAG_BASE_ADDR];
-            if (readval_imag >= d_result_SAT_value) // 0x100000 (21 bits two's complement)
-                {
-                    readval_imag = -2*d_result_SAT_value + readval_imag;
-                }
+//            if (readval_imag >= d_result_SAT_value) // 0x100000 (21 bits two's complement)
+//                {
+//                    readval_imag = -2*d_result_SAT_value + readval_imag;
+//                }
             d_Prompt_Data[0] = gr_complex(readval_real,readval_imag);
         }
 

@@ -47,6 +47,7 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
+	//printf("L5 ACQ CLASS CREATED\n");
 	pcpsconf_fpga_t acq_parameters;
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
@@ -59,8 +60,8 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     long fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in;
-    if_ = configuration_->property(role + ".if", 0);
-    acq_parameters.freq = if_;
+    //if_ = configuration_->property(role + ".if", 0);
+    //acq_parameters.freq = if_;
     //dump_ = configuration_->property(role + ".dump", false);
     //acq_parameters.dump = dump_;
     //blocking_ = configuration_->property(role + ".blocking", true);
@@ -68,7 +69,12 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
     if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
     acq_parameters.doppler_max = doppler_max_;
-    acq_parameters.sampled_ms = 1;
+    //acq_parameters.sampled_ms = 1;
+    unsigned int sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 1);
+    acq_parameters.sampled_ms = sampled_ms;
+
+    //printf("L5 ACQ CLASS MID 0\n");
+
     //bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
     //acq_parameters.bit_transition_flag = bit_transition_flag_;
     //use_CFAR_algorithm_flag_ = configuration_->property(role + ".use_CFAR_algorithm", true);  //will be false in future versions
@@ -78,32 +84,38 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     //dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
     //acq_parameters.dump_filename = dump_filename_;
     //--- Find number of samples per spreading code -------------------------
-    unsigned int code_length = static_cast<unsigned int>(std::round(static_cast<double>(fs_in_) / (GPS_L5i_CODE_RATE_HZ / static_cast<double>(GPS_L5i_CODE_LENGTH_CHIPS))));
+    unsigned int code_length = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / (GPS_L5i_CODE_RATE_HZ / static_cast<double>(GPS_L5i_CODE_LENGTH_CHIPS))));
     acq_parameters.code_length = code_length;
     // The FPGA can only use FFT lengths that are a power of two.
     float nbits = ceilf(log2f((float)code_length));
     unsigned int nsamples_total = pow(2, nbits);
     unsigned int vector_length = nsamples_total;
-    unsigned int select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga", 0);
+    unsigned int select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga", 1);
     acq_parameters.select_queue_Fpga = select_queue_Fpga;
     std::string default_device_name = "/dev/uio0";
     std::string device_name = configuration_->property(role + ".devicename", default_device_name);
     acq_parameters.device_name = device_name;
     acq_parameters.samples_per_ms = nsamples_total;
     acq_parameters.samples_per_code = nsamples_total;
-
+    //printf("L5 ACQ CLASS MID 01\n");
     // compute all the GPS L5 PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
     gr::fft::fft_complex* fft_if = new gr::fft::fft_complex(vector_length, true);  // Direct FFT
-    std::complex<float>* code = new gr_complex[vector_length_];
+    //printf("L5 ACQ CLASS MID 02\n");
+    std::complex<float>* code = new gr_complex[vector_length];
+    //printf("L5 ACQ CLASS MID 03\n");
     gr_complex* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    //printf("L5 ACQ CLASS MID 04\n");
     d_all_fft_codes_ = new lv_16sc_t[nsamples_total * NUM_PRNs];  // memory containing all the possible fft codes for PRN 0 to 32
+
+    //printf("L5 ACQ CLASS MID 1 vector_length = %d\n", vector_length);
 
     float max;                                                    // temporary maxima search
     for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
     {
-
+    	//printf("L5 ACQ CLASS processing PRN = %d\n", PRN);
     	gps_l5i_code_gen_complex_sampled(code, PRN, fs_in);
+    	//printf("L5 ACQ CLASS processing PRN = %d (cont) \n", PRN);
     	// fill in zero padding
         for (int s = code_length; s < nsamples_total; s++)
             {
@@ -140,6 +152,9 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
 
 
     }
+
+
+    //printf("L5 ACQ CLASS MID 2\n");
 
     //acq_parameters
     acq_parameters.all_fft_codes = d_all_fft_codes_;
@@ -191,6 +206,7 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
 //    threshold_ = 0.0;
     doppler_step_ = 0;
     gnss_synchro_ = 0;
+    //printf("L5 ACQ CLASS FINISHED\n");
 }
 
 

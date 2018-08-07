@@ -92,7 +92,7 @@ bool fpga_acquisition::set_local_code(unsigned int PRN)
 fpga_acquisition::fpga_acquisition(std::string device_name,
     unsigned int nsamples,
     unsigned int doppler_max,
-    unsigned int nsamples_total, long fs_in, long freq,
+    unsigned int nsamples_total, long fs_in,
     unsigned int sampled_ms, unsigned select_queue,
     lv_16sc_t *all_fft_codes)
 {
@@ -103,7 +103,7 @@ fpga_acquisition::fpga_acquisition(std::string device_name,
     //printf("AAA- vector_length = %d\n ", vector_length);
     // initial values
     d_device_name = device_name;
-    d_freq = freq;
+    //d_freq = freq;
     d_fs_in = fs_in;
     d_vector_length = vector_length;
     d_nsamples = nsamples;  // number of samples not including padding
@@ -237,7 +237,8 @@ void fpga_acquisition::set_doppler_sweep(unsigned int num_sweeps)
     int32_t phase_step_rad_int;
     //int doppler = static_cast<int>(-d_doppler_max) + d_doppler_step * doppler_index;
     int doppler = static_cast<int>(-d_doppler_max);
-    float phase_step_rad = GPS_TWO_PI * (d_freq + doppler) / static_cast<float>(d_fs_in);
+    //float phase_step_rad = GPS_TWO_PI * (d_freq + doppler) / static_cast<float>(d_fs_in);
+    float phase_step_rad = GPS_TWO_PI * (doppler) / static_cast<float>(d_fs_in);
     // The doppler step can never be outside the range -pi to +pi, otherwise there would be aliasing
     // The FPGA expects phase_step_rad between -1 (-pi) to +1 (+pi)
     // The FPGA also expects the phase to be negative since it produces cos(x) -j*sin(x)
@@ -282,7 +283,8 @@ void fpga_acquisition::set_doppler_sweep_debug(unsigned int num_sweeps, unsigned
     int32_t phase_step_rad_int;
     int doppler = static_cast<int>(-d_doppler_max) + d_doppler_step * doppler_index;
     //int doppler = static_cast<int>(-d_doppler_max);
-    float phase_step_rad = GPS_TWO_PI * (d_freq + doppler) / static_cast<float>(d_fs_in);
+    //float phase_step_rad = GPS_TWO_PI * (d_freq + doppler) / static_cast<float>(d_fs_in);
+    float phase_step_rad = GPS_TWO_PI * (doppler) / static_cast<float>(d_fs_in);
     // The doppler step can never be outside the range -pi to +pi, otherwise there would be aliasing
     // The FPGA expects phase_step_rad between -1 (-pi) to +1 (+pi)
     // The FPGA also expects the phase to be negative since it produces cos(x) -j*sin(x)
@@ -325,6 +327,7 @@ void fpga_acquisition::set_doppler_sweep_debug(unsigned int num_sweeps, unsigned
 
 void fpga_acquisition::configure_acquisition()
 {
+	//printf("AAA d_select_queue = %d\n", d_select_queue);
     d_map_base[0] = d_select_queue;
     //printf("AAA writing d_vector_length = %d to d map base 1\n ", d_vector_length);
     d_map_base[1] = d_vector_length;
@@ -343,7 +346,8 @@ void fpga_acquisition::set_phase_step(unsigned int doppler_index)
     float phase_step_rad_int_temp;
     int32_t phase_step_rad_int;
     int doppler = static_cast<int>(-d_doppler_max) + d_doppler_step * doppler_index;
-    float phase_step_rad = GPS_TWO_PI * (d_freq + doppler) / static_cast<float>(d_fs_in);
+    //float phase_step_rad = GPS_TWO_PI * (d_freq + doppler) / static_cast<float>(d_fs_in);
+    float phase_step_rad = GPS_TWO_PI * (doppler) / static_cast<float>(d_fs_in);
     // The doppler step can never be outside the range -pi to +pi, otherwise there would be aliasing
     // The FPGA expects phase_step_rad between -1 (-pi) to +1 (+pi)
     // The FPGA also expects the phase to be negative since it produces cos(x) -j*sin(x)

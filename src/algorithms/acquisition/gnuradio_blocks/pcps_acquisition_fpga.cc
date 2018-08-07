@@ -88,7 +88,7 @@ pcps_acquisition_fpga::pcps_acquisition_fpga(pcpsconf_fpga_t conf_) : gr::block(
     // this one is the one it should be but it doesn't work
     acquisition_fpga = std::make_shared <fpga_acquisition>
           (acq_parameters.device_name, acq_parameters.code_length, acq_parameters.doppler_max, d_fft_size,
-                  acq_parameters.fs_in, acq_parameters.freq, acq_parameters.sampled_ms, acq_parameters.select_queue_Fpga, acq_parameters.all_fft_codes);
+                  acq_parameters.fs_in, acq_parameters.sampled_ms, acq_parameters.select_queue_Fpga, acq_parameters.all_fft_codes);
 
 //    acquisition_fpga = std::make_shared <fpga_acquisition>
 //          (acq_parameters.device_name, acq_parameters.samples_per_code, acq_parameters.doppler_max, acq_parameters.samples_per_code,
@@ -269,11 +269,12 @@ void pcps_acquisition_fpga::set_active(bool active)
     //acquisition_fpga->block_samples();
 
     // run loop in hw
+    //printf("LAUNCH ACQ\n");
     acquisition_fpga->set_doppler_sweep(d_num_doppler_bins);
     acquisition_fpga->run_acquisition();
     acquisition_fpga->read_acquisition_results(&indext, &magt,
             &initial_sample, &d_input_power, &d_doppler_index);
-
+    //printf("READ ACQ RESULTS\n");
 
     // debug
     //acquisition_fpga->unblock_samples();

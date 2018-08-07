@@ -47,6 +47,7 @@ using google::LogMessage;
 GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterface* configuration,
     std::string role, unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
+	//printf("creating the E5A acquisition");
     pcpsconf_fpga_t acq_parameters;
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
@@ -59,7 +60,7 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 32000000);
     long fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in;
-    acq_parameters.freq = 0;
+    //acq_parameters.freq = 0;
 
 
     //dump_ = configuration_->property(role + ".dump", false);
@@ -94,6 +95,7 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     unsigned int nsamples_total = pow(2, nbits);
     unsigned int vector_length = nsamples_total;
     unsigned int select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga", 1);
+    //printf("select_queue_Fpga = %d\n", select_queue_Fpga);
     acq_parameters.select_queue_Fpga = select_queue_Fpga;
     std::string default_device_name = "/dev/uio0";
     std::string device_name = configuration_->property(role + ".devicename", default_device_name);
@@ -111,6 +113,8 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     d_all_fft_codes_ = new lv_16sc_t[nsamples_total * Galileo_E5a_NUMBER_OF_CODES];  // memory containing all the possible fft codes for PRN 0 to 32
     float max;                                                        // temporary maxima search
 
+    //printf("creating the E5A acquisition CONT");
+    //printf("nsamples_total = %d\n", nsamples_total);
 
     for (unsigned int PRN = 1; PRN <= Galileo_E5a_NUMBER_OF_CODES; PRN++)
         {
@@ -130,7 +134,8 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
                     strcpy(signal_, "5I");
                 }
 
-            galileo_e5_a_code_gen_complex_sampled(code, signal_, gnss_synchro_->PRN, fs_in_, 0);
+
+            galileo_e5_a_code_gen_complex_sampled(code, signal_, PRN, fs_in, 0);
 
             // fill in zero padding
             for (int s = code_length; s < nsamples_total; s++)
@@ -205,6 +210,7 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     //threshold_ = 0.0;
     doppler_step_ = 0;
     gnss_synchro_ = 0;
+    //printf("creating the E5A acquisition end");
 }
 
 

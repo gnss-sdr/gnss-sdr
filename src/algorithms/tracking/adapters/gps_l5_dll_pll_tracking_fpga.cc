@@ -51,6 +51,7 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
+	//printf("L5 TRK CLASS CREATED\n");
     //dllpllconf_t trk_param;
 	Dll_Pll_Conf_Fpga trk_param_fpga = Dll_Pll_Conf_Fpga();
     DLOG(INFO) << "role " << role;
@@ -130,6 +131,7 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
     //################# PRE-COMPUTE ALL THE CODES #################
     unsigned int code_samples_per_chip = 1;
     unsigned int code_length_chips = static_cast<unsigned int>(GPS_L5i_CODE_LENGTH_CHIPS);
+    //printf("TRK code_length_chips = %d\n", code_length_chips);
 
     float *tracking_code;
     float *data_code;
@@ -148,27 +150,30 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
             d_data_codes = static_cast<int *>(volk_gnsssdr_malloc((static_cast<unsigned int>(code_length_chips)) * NUM_PRNs * sizeof(int), volk_gnsssdr_get_alignment()));
         }
 
+    //printf("start \n");
     for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
     {
+
 		if (track_pilot)
 			{
+
 				gps_l5q_code_gen_float(tracking_code, PRN);
 				gps_l5i_code_gen_float(data_code, PRN);
 
 
-			for (unsigned int s = 0; s < 2*code_length_chips; s++)
-				{
-					d_ca_codes[static_cast<int>(code_length_chips)* (PRN - 1) + s] = static_cast<int>(tracking_code[s]);
-					d_data_codes[static_cast<int>(code_length_chips)* (PRN - 1) + s] = static_cast<int>(data_code[s]);
-					//printf("%f %d | ", data_codes_f[s], d_data_codes[static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS)* 2 * (PRN - 1) + s]);
+				for (unsigned int s = 0; s < code_length_chips; s++)
+					{
+						d_ca_codes[static_cast<int>(code_length_chips)* (PRN - 1) + s] = static_cast<int>(tracking_code[s]);
+						d_data_codes[static_cast<int>(code_length_chips)* (PRN - 1) + s] = static_cast<int>(data_code[s]);
+						//printf("%f %d | ", data_codes_f[s], d_data_codes[static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS)* 2 * (PRN - 1) + s]);
 
-				}
+					}
 			}
 
 		else
 			{
-				gps_l5i_code_gen_float(tracking_code, PRN);
 
+				gps_l5i_code_gen_float(tracking_code, PRN);
                 for (unsigned int s = 0; s < code_length_chips; s++)
                     {
                         d_ca_codes[static_cast<int>(code_length_chips) * (PRN - 1) + s] = static_cast<int>(data_code[s]);
@@ -176,6 +181,7 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
                     }
 			}
     }
+    //printf("end \n");
 
 
     delete[] tracking_code;
@@ -198,7 +204,9 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
 //            item_size_ = sizeof(gr_complex);
 //            LOG(WARNING) << item_type << " unknown tracking item type.";
 //        }
+    //printf("call \n");
     tracking_fpga_sc = dll_pll_veml_make_tracking_fpga(trk_param_fpga);
+    //printf("end2 \n");
     channel_ = 0;
     DLOG(INFO) << "tracking(" << tracking_fpga_sc->unique_id() << ")";
 }

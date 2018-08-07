@@ -66,7 +66,7 @@ typedef struct
     /* pcps acquisition configuration */
     unsigned int sampled_ms;
     unsigned int doppler_max;
-    long freq;
+    //long freq;
     long fs_in;
     int samples_per_ms;
     int samples_per_code;

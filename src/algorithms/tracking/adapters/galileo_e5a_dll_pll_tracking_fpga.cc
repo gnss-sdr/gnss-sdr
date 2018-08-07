@@ -50,6 +50,9 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
+	//printf("creating the E5A tracking");
+
+
 	Dll_Pll_Conf_Fpga trk_param_fpga = Dll_Pll_Conf_Fpga();
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
@@ -123,7 +126,7 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     unsigned int device_base = configuration->property(role + ".device_base", 1);
     trk_param_fpga.device_base = device_base;
     //unsigned int multicorr_type = configuration->property(role + ".multicorr_type", 1);
-    trk_param_fpga.multicorr_type = 1; // 0 -> 3 correlators, 1 -> 5 correlators
+    trk_param_fpga.multicorr_type = 1; // 0 -> 3 correlators, 1 -> up to 5+1 correlators
 
     //################# PRE-COMPUTE ALL THE CODES #################
     unsigned int code_samples_per_chip = 1;
@@ -201,6 +204,7 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     trk_param_fpga.code_length_chips = code_length_chips;
     trk_param_fpga.code_samples_per_chip = code_samples_per_chip; // 2 sample per chip
     //################# MAKE TRACKING GNURadio object ###################
+    tracking_fpga_sc = dll_pll_veml_make_tracking_fpga(trk_param_fpga);
 //    if (item_type.compare("gr_complex") == 0)
 //        {
 //            item_size_ = sizeof(gr_complex);
@@ -212,8 +216,11 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
 //            LOG(WARNING) << item_type << " unknown tracking item type.";
 //        }
     channel_ = 0;
+
     //DLOG(INFO) << "tracking(" << tracking_->unique_id() << ")";
     DLOG(INFO) << "tracking(" << tracking_fpga_sc->unique_id() << ")";
+
+
 }
 
 
@@ -240,6 +247,7 @@ void GalileoE5aDllPllTrackingFpga::start_tracking()
  */
 void GalileoE5aDllPllTrackingFpga::set_channel(unsigned int channel)
 {
+	//printf("blabla channel = %d\n", channel);
     channel_ = channel;
     //tracking_->set_channel(channel);
     tracking_fpga_sc->set_channel(channel);

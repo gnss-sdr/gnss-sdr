@@ -44,6 +44,8 @@ public:
     unsigned int vector_length;
     bool dump;
     std::string dump_filename;
+    float pll_pull_in_bw_hz;
+    float dll_pull_in_bw_hz;
     float pll_bw_hz;
     float dll_bw_hz;
     float pll_bw_narrow_hz;

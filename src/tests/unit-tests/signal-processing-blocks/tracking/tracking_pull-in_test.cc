@@ -411,7 +411,8 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "GPS L1 CA";
             config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
-            acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFineDoppler>(config.get(), "Acquisition", 1, 0);
+            //acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFineDoppler>(config.get(), "Acquisition", 1, 0);
+            acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
         }
     else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking") == 0)
         {
@@ -809,6 +810,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                     std::vector<double> promptI;
                                     std::vector<double> promptQ;
                                     std::vector<double> CN0_dBHz;
+                                    std::vector<double> Doppler;
                                     long int epoch_counter = 0;
                                     while (trk_dump.read_binary_obs())
                                         {
@@ -828,7 +830,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                             promptI.push_back(trk_dump.prompt_I);
                                             promptQ.push_back(trk_dump.prompt_Q);
                                             CN0_dBHz.push_back(trk_dump.CN0_SNV_dB_Hz);
-
+                                            Doppler.push_back(trk_dump.carrier_doppler_hz);
                                             epoch_counter++;
                                         }
 
@@ -917,6 +919,28 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                                             g3.savetops("CN0_output");
 
                                                             g3.showonscreen();  // window output
+
+                                                            Gnuplot g4("linespoints");
+                                                            if (!FLAGS_enable_external_signal_file)
+                                                                {
+                                                                    g4.set_title(std::to_string(generator_CN0_values.at(current_cn0_idx)) + " dB-Hz, GPS L1 C/A tracking CN0 output (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                                                                }
+                                                            else
+                                                                {
+                                                                    g4.set_title("D_e=" + std::to_string(acq_doppler_error_hz_values.at(current_acq_doppler_error_idx)) + " [Hz] " + "T_e= " + std::to_string(acq_delay_error_chips_values.at(current_acq_doppler_error_idx).at(current_acq_code_error_idx)) + " [Chips] PLL/DLL BW: " + std::to_string(FLAGS_PLL_bw_hz_start) + "," + std::to_string(FLAGS_DLL_bw_hz_start) + " [Hz], (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                                                                }
+                                                            g4.set_grid();
+                                                            g4.set_xlabel("Time [s]");
+                                                            g4.set_ylabel("Estimated Doppler [Hz]");
+                                                            g4.cmd("set key box opaque");
+
+                                                            g4.plot_xy(trk_timestamp_s, Doppler,
+                                                                std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))) + "[dB-Hz]", decimate);
+
+                                                            g4.set_legend();
+                                                            g4.savetops("Doppler");
+
+                                                            g4.showonscreen();  // window output
                                                         }
                                                 }
                                             catch (const GnuplotException& ge)

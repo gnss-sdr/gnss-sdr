@@ -154,7 +154,6 @@ galileo_e5a_telemetry_decoder_cc::galileo_e5a_telemetry_decoder_cc(
     // initialize internal vars
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    LOG(INFO) << "GALILEO E5A TELEMETRY PROCESSING: satellite " << d_satellite;
 
     // set the preamble
     for (int i = 0; i < GALILEO_FNAV_PREAMBLE_LENGTH_BITS; i++)
@@ -182,7 +181,8 @@ galileo_e5a_telemetry_decoder_cc::galileo_e5a_telemetry_decoder_cc(
     d_flag_preamble = false;
     d_preamble_index = 0;
     d_flag_frame_sync = false;
-    d_TOW_at_current_symbol = 0.0;
+    d_TOW_at_current_symbol_ms = 0;
+    d_TOW_at_Preamble_ms = 0;
     flag_TOW_set = false;
     d_CRC_error_counter = 0;
     d_channel = 0;
@@ -345,7 +345,7 @@ int galileo_e5a_telemetry_decoder_cc::general_work(int noutput_items __attribute
     // ****************** Frame sync ******************
     if ((d_stat == 0) && new_symbol)  // no preamble information
         {
-            if (abs(corr_value) >= GALILEO_FNAV_PREAMBLE_LENGTH_BITS)
+            if (abs(corr_value) == GALILEO_FNAV_PREAMBLE_LENGTH_BITS)
                 {
                     d_preamble_index = d_sample_counter;  // record the preamble sample stamp
                     LOG(INFO) << "Preamble detection for Galileo E5a satellite " << d_satellite;
@@ -354,7 +354,7 @@ int galileo_e5a_telemetry_decoder_cc::general_work(int noutput_items __attribute
         }
     else if ((d_stat == 1) && new_symbol)  // possible preamble lock
         {
-            if (abs(corr_value) >= GALILEO_FNAV_PREAMBLE_LENGTH_BITS)
+            if (abs(corr_value) == GALILEO_FNAV_PREAMBLE_LENGTH_BITS)
                 {
                     // check preamble separation
                     preamble_diff = d_sample_counter - d_preamble_index;
@@ -418,6 +418,9 @@ int galileo_e5a_telemetry_decoder_cc::general_work(int noutput_items __attribute
                                     d_flag_frame_sync = false;
                                     d_stat = 0;
                                     flag_bit_start = false;
+                                    d_nav.flag_TOW_set = false;
+                                    d_TOW_at_current_symbol_ms = 0;
+                                    d_TOW_at_Preamble_ms = 0;
                                 }
                         }
                 }
@@ -432,73 +435,72 @@ int galileo_e5a_telemetry_decoder_cc::general_work(int noutput_items __attribute
         {
             if (d_nav.flag_TOW_1 == true)
                 {
-                    d_TOW_at_current_symbol = d_nav.FNAV_TOW_1 + (static_cast<double>(GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD);
+                    d_TOW_at_Preamble_ms = static_cast<unsigned int>(d_nav.FNAV_TOW_1 * 1000.0);
+                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + (GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS;
                     d_nav.flag_TOW_1 = false;
                 }
             else if (d_nav.flag_TOW_2 == true)
                 {
-                    d_TOW_at_current_symbol = d_nav.FNAV_TOW_2 + (static_cast<double>(GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD);
+                    d_TOW_at_Preamble_ms = static_cast<unsigned int>(d_nav.FNAV_TOW_2 * 1000.0);
+                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + (GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS;
                     d_nav.flag_TOW_2 = false;
                 }
             else if (d_nav.flag_TOW_3 == true)
                 {
-                    d_TOW_at_current_symbol = d_nav.FNAV_TOW_3 + (static_cast<double>(GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD);
+                    d_TOW_at_Preamble_ms = static_cast<unsigned int>(d_nav.FNAV_TOW_3 * 1000.0);
+                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + (GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS;
                     d_nav.flag_TOW_3 = false;
                 }
             else if (d_nav.flag_TOW_4 == true)
                 {
-                    d_TOW_at_current_symbol = d_nav.FNAV_TOW_4 + (static_cast<double>(GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD);
+                    d_TOW_at_Preamble_ms = static_cast<unsigned int>(d_nav.FNAV_TOW_4 * 1000.0);
+                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + (GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS;
                     d_nav.flag_TOW_4 = false;
                 }
             else
                 {
-                    d_TOW_at_current_symbol += GALILEO_E5a_CODE_PERIOD;
+                    d_TOW_at_current_symbol_ms += GALILEO_E5a_CODE_PERIOD_MS;
                 }
         }
     else  // if there is not a new preamble, we define the TOW of the current symbol
         {
-            d_TOW_at_current_symbol += GALILEO_E5a_CODE_PERIOD;
-        }
-
-    //if (d_flag_frame_sync == true and d_nav.flag_TOW_set==true and d_nav.flag_CRC_test == true)
-    if (d_flag_frame_sync and d_nav.flag_TOW_set)
-        {
-            current_sample.Flag_valid_word = true;
-        }
-    else
-        {
-            current_sample.Flag_valid_word = false;
-        }
-
-    current_sample.TOW_at_current_symbol_ms = round(d_TOW_at_current_symbol * 1000.0);
-
-    if (d_dump)
-        {
-            // MULTIPLEXED FILE RECORDING - Record results to file
-            try
+            if (d_nav.flag_TOW_set == true)
                 {
-                    double tmp_double;
-                    unsigned long int tmp_ulong_int;
-                    tmp_double = d_TOW_at_current_symbol;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                    tmp_ulong_int = current_sample.Tracking_sample_counter;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(unsigned long int));
-                    tmp_double = 0.0;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                }
-            catch (const std::ifstream::failure &e)
-                {
-                    LOG(WARNING) << "Exception writing Galileo E5a Telemetry Decoder dump file " << e.what();
+                    d_TOW_at_current_symbol_ms += GALILEO_E5a_CODE_PERIOD_MS;
                 }
         }
+
     // remove used symbols from history
+    // todo: Use circular buffer here
     while (d_symbol_history.size() > required_symbols)
         {
             d_symbol_history.pop_front();
         }
-    // 3. Make the output
-    if (current_sample.Flag_valid_word)
+
+    if (d_nav.flag_TOW_set)
         {
+            current_sample.Flag_valid_word = true;
+            current_sample.TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
+            if (d_dump)
+                {
+                    // MULTIPLEXED FILE RECORDING - Record results to file
+                    try
+                        {
+                            double tmp_double;
+                            unsigned long int tmp_ulong_int;
+                            tmp_double = static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0;
+                            d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                            tmp_ulong_int = current_sample.Tracking_sample_counter;
+                            d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(unsigned long int));
+                            tmp_double = static_cast<double>(d_TOW_at_Preamble_ms) / 1000.0;
+                            d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                        }
+                    catch (const std::ifstream::failure &e)
+                        {
+                            LOG(WARNING) << "Exception writing Galileo E5a Telemetry Decoder dump file " << e.what();
+                        }
+                }
+            // 3. Make the output
             out[0] = current_sample;
             return 1;
         }

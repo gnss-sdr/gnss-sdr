@@ -76,16 +76,13 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
     acq_parameters.max_dwells = max_dwells_;
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
     acq_parameters.dump_filename = dump_filename_;
+    acq_parameters.sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 1);
     //--- Find number of samples per spreading code -------------------------
-    code_length_ = static_cast<unsigned int>(std::round(static_cast<double>(fs_in_) / (GPS_L5i_CODE_RATE_HZ / static_cast<double>(GPS_L5i_CODE_LENGTH_CHIPS))));
+    code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(fs_in_) / (GPS_L5i_CODE_RATE_HZ / GPS_L5i_CODE_LENGTH_CHIPS)));
+    acq_parameters.samples_per_ms = static_cast<float>(fs_in_) * 0.001;
+    acq_parameters.samples_per_code = acq_parameters.samples_per_ms * static_cast<float>(GPS_L5i_PERIOD * 1000.0);
 
-    vector_length_ = code_length_;
-
-    if (bit_transition_flag_)
-        {
-            vector_length_ *= 2;
-        }
-
+    vector_length_ = std::floor(acq_parameters.sampled_ms * acq_parameters.samples_per_ms) * (acq_parameters.bit_transition_flag ? 2 : 1);
     code_ = new gr_complex[vector_length_];
 
     if (item_type_.compare("cshort") == 0)
@@ -96,11 +93,9 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
         {
             item_size_ = sizeof(gr_complex);
         }
-    acq_parameters.samples_per_ms = static_cast<float>(fs_in_) * 0.001;
-    acq_parameters.samples_per_code = acq_parameters.samples_per_ms * static_cast<float>(GPS_L5i_PERIOD * 1000.0);
+
     acq_parameters.ms_per_code = 1;
     acq_parameters.it_size = item_size_;
-    acq_parameters.sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 1);
     num_codes_ = acq_parameters.sampled_ms;
     acq_parameters.num_doppler_bins_step2 = configuration_->property(role + ".second_nbins", 4);
     acq_parameters.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
@@ -108,7 +103,6 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
     acq_parameters.blocking_on_standby = configuration_->property(role + ".blocking_on_standby", false);
     acquisition_ = pcps_make_acquisition(acq_parameters);
     DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
-
     stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
     DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id() << ")";
 
@@ -117,7 +111,6 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
             cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
             float_to_complex_ = gr::blocks::float_to_complex::make();
         }
-
     channel_ = 0;
     threshold_ = 0.0;
     doppler_step_ = 0;

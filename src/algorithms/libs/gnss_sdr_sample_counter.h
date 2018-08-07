@@ -39,14 +39,16 @@ class gnss_sdr_sample_counter;
 
 typedef boost::shared_ptr<gnss_sdr_sample_counter> gnss_sdr_sample_counter_sptr;
 
-gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter(double _fs, size_t _size);
+gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter(double _fs, int _interval_ms, size_t _size);
 
 class gnss_sdr_sample_counter : public gr::sync_decimator
 {
 private:
-    gnss_sdr_sample_counter(double _fs, size_t _size);
+    gnss_sdr_sample_counter(double _fs, int _interval_ms, size_t _size);
     unsigned int samples_per_output;
-    unsigned long int sample_counter;
+    double fs;
+    unsigned long long int sample_counter;
+    int interval_ms;
     long long int current_T_rx_ms;  // Receiver time in ms since the beginning of the run
     unsigned int current_s;         // Receiver time in seconds, modulo 60
     bool flag_m;                    // True if the receiver has been running for at least 1 minute
@@ -59,7 +61,7 @@ private:
     bool flag_enable_send_msg;
 
 public:
-    friend gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter(double _fs, size_t _size);
+    friend gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter(double _fs, int _interval_ms, size_t _size);
     int work(int noutput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items);

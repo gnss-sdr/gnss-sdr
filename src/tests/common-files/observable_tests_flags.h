@@ -35,6 +35,7 @@
 #include <limits>
 
 DEFINE_double(skip_obs_transitory_s, 30.0, "Skip the initial observable outputs to avoid transitory results [s]");
+DEFINE_bool(compute_single_diffs, false, "Compute also the signel difference errors for Accumulated Carrier Phase and Carrier Doppler (requires LO synchronization between receivers)");
 
 
 #endif

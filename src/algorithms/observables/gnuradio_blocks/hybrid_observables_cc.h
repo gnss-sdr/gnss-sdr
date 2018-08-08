@@ -65,26 +65,25 @@ private:
     friend hybrid_observables_cc_sptr
     hybrid_make_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename);
     hybrid_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename);
-    void clean_history(unsigned int pos);
-    double compute_T_rx_s(const Gnss_Synchro& a);
     bool interpolate_data(Gnss_Synchro& out, const unsigned int& ch, const double& ti);
-    void find_interp_elements(const unsigned int& ch, const double& ti);
-    void correct_TOW_and_compute_prange(std::vector<Gnss_Synchro>& data);
+    bool interp_trk_obs(Gnss_Synchro& interpolated_obs, const unsigned int& ch, const unsigned long int& rx_clock);
+    double compute_T_rx_s(const Gnss_Synchro& a);
+    void compute_pranges(std::vector<Gnss_Synchro>& data);
+    void update_TOW(std::vector<Gnss_Synchro>& data);
     int save_matfile();
 
+    //time history
+    boost::circular_buffer<unsigned long int> d_Rx_clock_buffer;
     //Tracking observable history
     Gnss_circular_deque<Gnss_Synchro>* d_gnss_synchro_history;
-    boost::dynamic_bitset<> valid_channels;
-    double T_rx_s;
-    unsigned int T_rx_step_ms;
+    unsigned int T_rx_clock_step_samples;
     //rx time follow GPST
     bool T_rx_TOW_set;
     unsigned int T_rx_TOW_ms;
-    double max_delta;
-    double d_latency;
+    unsigned int T_rx_TOW_offset_ms;
     bool d_dump;
-    unsigned int d_nchannels;
-    unsigned int d_num_valid_channels;
+    unsigned int d_nchannels_in;
+    unsigned int d_nchannels_out;
     std::string d_dump_filename;
     std::ofstream d_dump_file;
 };

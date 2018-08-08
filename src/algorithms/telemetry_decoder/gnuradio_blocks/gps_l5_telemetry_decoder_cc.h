@@ -41,8 +41,7 @@
 #include <utility>
 #include <vector>
 
-extern "C"
-{
+extern "C" {
 #include "cnav_msg.h"
 #include "edc.h"
 #include "bits.h"
@@ -85,8 +84,8 @@ private:
 
     cnav_msg_decoder_t d_cnav_decoder;
 
-    double d_TOW_at_current_symbol;
-    double d_TOW_at_Preamble;
+    unsigned int d_TOW_at_current_symbol_ms;
+    unsigned int d_TOW_at_Preamble_ms;
     bool d_flag_valid_word;
 
     Gps_CNAV_Navigation_Message d_CNAV_Message;

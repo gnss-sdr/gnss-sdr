@@ -64,8 +64,8 @@ gps_l5_telemetry_decoder_cc::gps_l5_telemetry_decoder_cc(
     DLOG(INFO) << "GPS L5 TELEMETRY PROCESSING: satellite " << d_satellite;
     d_channel = 0;
     d_flag_valid_word = false;
-    d_TOW_at_current_symbol = 0.0;
-    d_TOW_at_Preamble = 0.0;
+    d_TOW_at_current_symbol_ms = 0;
+    d_TOW_at_Preamble_ms = 0;
     //initialize the CNAV frame decoder (libswiftcnav)
     cnav_msg_decoder_init(&d_cnav_decoder);
     for (int aux = 0; aux < GPS_L5i_NH_CODE_LENGTH; aux++)
@@ -236,47 +236,56 @@ int gps_l5_telemetry_decoder_cc::general_work(int noutput_items __attribute__((u
                 }
 
             //update TOW at the preamble instant
-            d_TOW_at_Preamble = static_cast<double>(msg.tow) * 6.0;
+            d_TOW_at_Preamble_ms = msg.tow * 6000;
             //* The time of the last input symbol can be computed from the message ToW and
             //* delay by the formulae:
             //* \code
             //* symbolTime_ms = msg->tow * 6000 + *pdelay * 10 + (12 * 10); 12 symbols of the encoder's transitory
-            d_TOW_at_current_symbol = (static_cast<double>(msg.tow) * 6.0) + (static_cast<double>(delay) + 12.0) * GPS_L5i_SYMBOL_PERIOD;
-            d_TOW_at_current_symbol = floor(d_TOW_at_current_symbol * 1000.0) / 1000.0;
+            //d_TOW_at_current_symbol_ms = msg.tow * 6000 + (delay + 12) * GPS_L5i_SYMBOL_PERIOD_MS;
+
+            d_TOW_at_current_symbol_ms = msg.tow * 6000 + (delay + 12) * GPS_L5i_SYMBOL_PERIOD_MS;
             d_flag_valid_word = true;
         }
     else
         {
-            d_TOW_at_current_symbol += GPS_L5i_PERIOD;
+            d_TOW_at_current_symbol_ms += GPS_L5i_PERIOD_MS;
             if (current_synchro_data.Flag_valid_symbol_output == false)
                 {
                     d_flag_valid_word = false;
                 }
         }
-    current_synchro_data.TOW_at_current_symbol_ms = round(d_TOW_at_current_symbol * 1000.0);
-    current_synchro_data.Flag_valid_word = d_flag_valid_word;
 
-    if (d_dump == true)
+    if (d_flag_valid_word == true)
         {
-            // MULTIPLEXED FILE RECORDING - Record results to file
-            try
-                {
-                    double tmp_double;
-                    unsigned long int tmp_ulong_int;
-                    tmp_double = d_TOW_at_current_symbol;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                    tmp_ulong_int = current_synchro_data.Tracking_sample_counter;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(unsigned long int));
-                    tmp_double = d_TOW_at_Preamble;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                }
-            catch (const std::ifstream::failure &e)
-                {
-                    LOG(WARNING) << "Exception writing Telemetry GPS L5 dump file " << e.what();
-                }
-        }
+            current_synchro_data.TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
+            current_synchro_data.Flag_valid_word = d_flag_valid_word;
 
-    //3. Make the output (copy the object contents to the GNURadio reserved memory)
-    out[0] = current_synchro_data;
-    return 1;
+            if (d_dump == true)
+                {
+                    // MULTIPLEXED FILE RECORDING - Record results to file
+                    try
+                        {
+                            double tmp_double;
+                            unsigned long int tmp_ulong_int;
+                            tmp_double = static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0;
+                            d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                            tmp_ulong_int = current_synchro_data.Tracking_sample_counter;
+                            d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(unsigned long int));
+                            tmp_double = static_cast<double>(d_TOW_at_Preamble_ms) / 1000.0;
+                            d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                        }
+                    catch (const std::ifstream::failure &e)
+                        {
+                            LOG(WARNING) << "Exception writing Telemetry GPS L5 dump file " << e.what();
+                        }
+                }
+
+            //3. Make the output (copy the object contents to the GNURadio reserved memory)
+            out[0] = current_synchro_data;
+            return 1;
+        }
+    else
+        {
+            return 0;
+        }
 }

@@ -44,6 +44,8 @@ public:
     unsigned int vector_length;
     bool dump;
     std::string dump_filename;
+    float pll_pull_in_bw_hz;
+    float dll_pull_in_bw_hz;
     float pll_bw_hz;
     float dll_bw_hz;
     float pll_bw_narrow_hz;
@@ -53,6 +55,7 @@ public:
     float early_late_space_narrow_chips;
     float very_early_late_space_narrow_chips;
     int extend_correlation_symbols;
+    bool use_fast_resampler;
     int cn0_samples;
     int carrier_lock_det_mav_samples;
     int cn0_min;

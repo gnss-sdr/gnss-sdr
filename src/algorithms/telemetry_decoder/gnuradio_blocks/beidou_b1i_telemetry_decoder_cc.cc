@@ -99,7 +99,7 @@ beidou_b1i_telemetry_decoder_cc::beidou_b1i_telemetry_decoder_cc(
     d_preamble_time_samples = 0;
     d_TOW_at_current_symbol_ms = 0;
     d_symbol_history.resize(BEIDOU_B1I_PREAMBLE_LENGTH_BITS);  // Change fixed buffer size
-    d_symbol_nh_history.resize(BEIDOU_B1I_NH_CODE_LENGTH + 1);  // Change fixed buffer size
+    d_symbol_nh_history.resize(BEIDOU_B1I_NH_CODE_LENGTH);  // Change fixed buffer size
     d_bit_buffer.resize(30);  // Change fixed buffer size
     d_symbol_history.clear();                                     // Clear all the elements in the buffer
     d_symbol_nh_history.clear();
@@ -203,90 +203,84 @@ void beidou_b1i_telemetry_decoder_cc::set_channel(int channel)
         }
 }
 
+void beidou_b1i_telemetry_decoder_cc::decodebch_bi1(int *bits, int *decbits)
+{
+    int bit, err, reg[4] = {1, 1, 1, 1};
+    int errind[15] = {14, 13, 10, 12, 6, 9, 4, 11, 0, 5, 7, 8, 1, 3, 2};
+    uint8_t bin;
+
+    for (unsigned int i = 0; i < 15; i++)
+        {
+            decbits[i] = bits[i];
+        }
+
+    for (unsigned int i = 0; i < 15; i++)
+        {
+            bit = reg[3];
+            reg[3] = reg[2];
+            reg[2] = reg[1];
+            reg[1] = reg[0];
+            reg[0] = bits[i] * bit;
+            reg[1] *= bit;
+        }
+
+    err = errind[reg[0] + reg[1]*2 + reg[2]*4 + reg[3]*8];
+    
+    if (err > 0) 
+        {
+            decbits[err - 1] *= -1;
+        }
+}
 
 void beidou_b1i_telemetry_decoder_cc::decode_word(int word_counter, boost::circular_buffer<signed int> *d_bit_buffer, unsigned int& d_BEIDOU_frame_4bytes)
 {
-//std::cout << word_counter << std::endl;
-signed int firstBranch[15];
-signed int secondBranch[15];
+    d_BEIDOU_frame_4bytes = 0;
+    int bits[30], bitsdec[30], bitsbch[30], first_branch[15], second_branch[15];
 
-d_BEIDOU_frame_4bytes = 0;
-    if (word_counter == 1)
+    if (word_counter == 1) 
         {
-            for (unsigned int i = 0; i < 15 ; i++)
+            for (unsigned int j = 0; j < 30; j++) 
+	        {
+                    bitsdec[j] = d_bit_buffer->at(j);
+	        }
+         } 
+    else 
+         {
+	    for (unsigned int r = 0; r < 2; r++)
                 {
-                    if (d_bit_buffer->at(i) == 1)
+	  	    for (unsigned int c = 0; c < 15; c++) 
                         {
-                            d_BEIDOU_frame_4bytes++;
-                        }
-                    d_BEIDOU_frame_4bytes <<= 1;
-                }
-            for (unsigned int i = 15; i < 30 ; i++)
-                {
-                    if (d_bit_buffer->at(i) == 1)
-                        {
-                            d_BEIDOU_frame_4bytes++;
-                        }
-                    d_BEIDOU_frame_4bytes <<= 1;  
-                }
+		            bitsbch[r*15 + c] = d_bit_buffer->at(c*2 + r);
+		        }
+	        }
 
-                    d_BEIDOU_frame_4bytes >>= 1;
-            
-        }
-    else
+            decodebch_bi1(&bitsbch[0], first_branch);
+	    decodebch_bi1(&bitsbch[15], second_branch);
+
+	    for (unsigned int j = 0; j < 11; j++) 
+                {
+		    bitsdec[j] = first_branch[j];
+		    bitsdec[j + 11] = second_branch[j];
+		}
+
+	    for (unsigned int j = 0; j < 4; j++) 
+                {
+   	            bitsdec[j + 22] = first_branch[11 + j];
+		    bitsdec[j + 26] = second_branch[11 + j];
+		}
+         }
+
+    for (unsigned int k = 0; k < 30 ; k++)
         {
+    	    if (bitsdec[k] == 1)
+	        {
+		    d_BEIDOU_frame_4bytes++;
+	        }
 
-            for (unsigned int i = 0; i < 30 ; i = i + 2)
-                {
-                    firstBranch[i/2] = d_bit_buffer->at(i);
-                    secondBranch[i/2] = d_bit_buffer->at(i + 1);
-                }
-            for (unsigned int i = 0; i < 11 ; i++)
-                {
-                    if (firstBranch[i] == 1)
-                        {   
-                            d_BEIDOU_frame_4bytes++;
-                        }
-                    d_BEIDOU_frame_4bytes <<= 1;;
-                }
-            for (unsigned int i = 0; i < 11 ; i++)
-                {
-                    if (secondBranch[i] == 1)
-                        {
-                            d_BEIDOU_frame_4bytes++;
-                        }
-                    d_BEIDOU_frame_4bytes <<= 1;;
-                }
-            for (unsigned int i = 11; i < 15 ; i++)
-                {
-                    if (firstBranch[i] == 1)
-                        {
-                            d_BEIDOU_frame_4bytes++;
-                        }
-                    d_BEIDOU_frame_4bytes <<= 1;;
-                }
-            for (unsigned int i = 11; i < 15 ; i++)
-                {
-                    if (secondBranch[i] == 1)
-                        {
-                            d_BEIDOU_frame_4bytes++;
-                        }
-                    d_BEIDOU_frame_4bytes <<= 1;;
-                }
-
-                    d_BEIDOU_frame_4bytes >>= 1;
-
+	    d_BEIDOU_frame_4bytes <<= 1;
         }
 
-            for (unsigned int i = 0; i < d_bit_buffer->size() ; i++)
-                {
-                                std::cout << d_bit_buffer->at(i);
-                }
-
-                                std::cout << std::endl;
-
-//        std::cout << d_BEIDOU_frame_4bytes << std::endl;
-
+    d_BEIDOU_frame_4bytes >>= 1;
 }
 
 
@@ -334,7 +328,7 @@ int beidou_b1i_telemetry_decoder_cc::general_work(int noutput_items __attribute_
                         {
                             symbol_value = -1;
                         }
-//                   std::cout << "SUCCESSFUL NH  CORRELATION" << std::endl;
+//std::cout << symbol_value << std::endl;
 
                     d_symbol_history.push_back(symbol_value);
                     new_sym = true;
@@ -440,7 +434,7 @@ int beidou_b1i_telemetry_decoder_cc::general_work(int noutput_items __attribute_
                                                << static_cast<double>(d_preamble_time_samples) / static_cast<double>(current_samples_fs) << " [s]";
                                 }
                         }
-                     d_frame_bit_index = 11;
+                     d_frame_bit_index = 10;
                     d_symbol_history.clear();
    		    for (int i = 0; i < BEIDOU_B1I_PREAMBLE_LENGTH_BITS; i++)
        		        {

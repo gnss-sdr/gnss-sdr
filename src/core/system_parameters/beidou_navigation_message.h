@@ -118,9 +118,9 @@ public:
     double d_A_f1;          //!< Coefficient 1 of code phase offset model [s/s]
     double d_A_f2;          //!< Coefficient 2 of code phase offset model [s/s^2]
 
-    double d_A0;
-    double d_A1;
-    double d_A2;
+    double d_a0;
+    double d_a1;
+    double d_a2;
 
     // Almanac
     double d_Toa;           //!< Almanac reference time [s]

@@ -152,9 +152,9 @@ void Beidou_Navigation_Message_D1::reset()
     d_M0_ALMANAC = 0;
     almanac_WN = 0;
     d_toa2 = 0;
-    d_A0 = 0;
-    d_A1 = 0;
-    d_A2 = 0;
+    d_a0 = 0;
+    d_a1 = 0;
+    d_a2 = 0;
 
     auto gnss_sat = Gnss_Satellite();
     std::string _system ("Beidou");
@@ -402,14 +402,10 @@ void Beidou_Navigation_Message_D1::satellitePosition(double transmitTime)
 int Beidou_Navigation_Message_D1::subframe_decoder(char *subframe)
 {
     int subframe_ID = 0;
-    std::cout << "Beidou_Navigation_Message_D1::subframe_decoder" << std::endl;
     std::bitset<BEIDOU_SUBFRAME_BITS> mysubframe_bits;
-
-//double tmp_SOW;
 
     unsigned int beidou_word;
 
-    // UNPACK BYTES TO BITS AND REMOVE THE CRC REDUNDANCE
     std::bitset<BEIDOU_SUBFRAME_BITS> subframe_bits;
     std::bitset<BEIDOU_WORD_BITS + 2> word_bits;
     for (int i = 0; i < 10; i++)
@@ -419,16 +415,10 @@ int Beidou_Navigation_Message_D1::subframe_decoder(char *subframe)
             for (int j = 0; j < BEIDOU_WORD_BITS; j++)
                 {
                     subframe_bits[BEIDOU_WORD_BITS * (9 - i) + j] = word_bits[j];
-            std::cout << word_bits[j];
                 }
-std::cout << std::endl;
-        }
-    for (int i = 0; i < BEIDOU_SUBFRAME_BITS; i++)
-        {
-            std::cout << subframe_bits[i] ;
+
         }
 
-            std::cout << std::endl;
     subframe_ID = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_FRAID));
 
     // Decode all 5 sub-frames
@@ -491,17 +481,17 @@ std::cout << "TOW: " << d_SOW_SF1  << std::endl;
         d_beta3 = static_cast<double>(read_navigation_signed(subframe_bits, D1_BETA3));
         d_beta3 = d_beta3 * D1_BETA3_LSB;
 
-        d_A2 = static_cast<double>(read_navigation_signed(subframe_bits, D1_A2));
-        d_A2 = d_A2 * D1_A2_LSB;
+        d_a2 = static_cast<double>(read_navigation_signed(subframe_bits, D1_A2));
+        d_a2 = d_a2 * D1_A2_LSB;
 
-        d_A0 = static_cast<double>(read_navigation_signed(subframe_bits, D1_A0));
-        d_A0 = d_A0 * D1_A0_LSB;
+        d_a0 = static_cast<double>(read_navigation_signed(subframe_bits, D1_A0));
+        d_a0 = d_a0 * D1_A0_LSB;
 
-        d_A1 = static_cast<double>(read_navigation_signed(subframe_bits, D1_A1));
-        d_A1 = d_A1 * D1_A1_LSB;
+        d_a1 = static_cast<double>(read_navigation_signed(subframe_bits, D1_A1));
+        d_a1 = d_a1 * D1_A1_LSB;
 
         d_AODE_SF1 = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_AODE));
-
+        flag_iono_valid = true;
         //d_A_f0 = static_cast<double>(read_navigation_signed(subframe_bits, A_F0));
         //d_A_f0 = d_A_f0 * A_F0_LSB;
         //d_A_f1 = static_cast<double>(read_navigation_signed(subframe_bits, A_F1));
@@ -660,7 +650,6 @@ std::cout << "TOW: " << d_SOW_SF4  << std::endl;
                 i_DN = static_cast<int>(read_navigation_unsigned(subframe_bits, DN));  // Right-justified ?
                 d_DeltaT_LSF = static_cast<double>(read_navigation_signed(subframe_bits, DELTAT_LSF));
                 flag_iono_valid = true;
-                flag_utc_model_valid = true;
             }
         if (SV_page == 57)
             {
@@ -700,8 +689,8 @@ std::cout << "TOW: " << d_SOW_SF5  << std::endl;
 		d_SQRT_A_ALMANAC = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_SQRT_A_ALMANAC));
 		d_SQRT_A_ALMANAC = d_SQRT_A_ALMANAC * D1_SQRT_A_ALMANAC_LSB;
 
-		d_A1UTC = static_cast<double>(read_navigation_signed(subframe_bits, D1_A1_ALMANAC));
-		d_A1UTC = d_A1UTC * D1_A1_ALMANAC_LSB;
+		d_A1_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_A1_ALMANAC));
+		d_A1_ALMANAC = d_A1_ALMANAC * D1_A1_ALMANAC_LSB;
 
 		d_A0_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_A0_ALMANAC));
 		d_A0_ALMANAC = d_A0_ALMANAC * D1_A0_ALMANAC_LSB;
@@ -772,28 +761,33 @@ std::cout << "TOW: " << d_SOW_SF5  << std::endl;
 
         if (SV_page_5 == 9) // Page 25 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200H, page 110)
             {
-                d_A0GPS = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_A0GPS));
+                d_A0GPS = static_cast<double>(read_navigation_signed(subframe_bits, D1_A0GPS));
                 d_A0GPS = d_A0GPS * D1_A0GPS_LSB;
 
-                d_A1GPS = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_A1GPS));
+                d_A1GPS = static_cast<double>(read_navigation_signed(subframe_bits, D1_A1GPS));
                 d_A1GPS = d_A1GPS * D1_A1GPS_LSB;
 
-                d_A0GAL = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_A0GAL));
+                d_A0GAL = static_cast<double>(read_navigation_signed(subframe_bits, D1_A0GAL));
                 d_A0GAL = d_A0GAL * D1_A0GAL_LSB;
 
-                d_A1GAL = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_A1GAL));
+                d_A1GAL = static_cast<double>(read_navigation_signed(subframe_bits, D1_A1GAL));
                 d_A1GAL = d_A1GAL* D1_A1GAL_LSB;
 
-                d_A0GLO = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_A0GLO));
+                d_A0GLO = static_cast<double>(read_navigation_signed(subframe_bits, D1_A0GLO));
                 d_A0GLO = d_A0GLO * D1_A0GLO_LSB;
 
-                d_A1GLO = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_A1GLO));
+                d_A1GLO = static_cast<double>(read_navigation_signed(subframe_bits, D1_A1GLO));
                 d_A1GLO = d_A1GLO* D1_A1GLO_LSB;
             }
         if (SV_page_5 == 10)
             {
                 d_DeltaT_LS = static_cast<double>(read_navigation_signed(subframe_bits, D1_DELTA_T_LS));
-
+                d_DeltaT_LSF = static_cast<double>(read_navigation_signed(subframe_bits, D1_DELTA_T_LSF));
+                i_WN_LSF = static_cast<double>(read_navigation_signed(subframe_bits, D1_WN_LSF));
+                d_A0UTC = static_cast<double>(read_navigation_signed(subframe_bits, D1_A0UTC));
+                d_A0UTC = d_A0GPS * D1_A0GPS_LSB;
+                d_A1UTC = static_cast<double>(read_navigation_signed(subframe_bits, D1_A1UTC));
+                d_A1UTC = d_A1UTC * D1_A1UTC_LSB;
             }
 
 
@@ -814,7 +808,7 @@ double Beidou_Navigation_Message_D1::utc_time(const double beidoutime_corrected)
 {
     double t_utc;
     double t_utc_daytime;
-    double Delta_t_UTC =  d_DeltaT_LS + d_A0 + d_A1UTC * (beidoutime_corrected);
+    double Delta_t_UTC =  d_DeltaT_LS + d_A0UTC + d_A1UTC * (beidoutime_corrected);
 
     // Determine if the effectivity time of the leap second event is in the past
     int  weeksToLeapSecondEvent = i_WN_LSF - i_BEIDOU_week;
@@ -935,7 +929,7 @@ Beidou_Utc_Model Beidou_Navigation_Message_D1::get_utc_model()
     utc_model.valid = flag_utc_model_valid;
     // UTC parameters
     utc_model.d_A1 = d_A1UTC;
-    utc_model.d_A0 = d_A0;
+    utc_model.d_A0 = d_A0UTC;
     utc_model.d_t_OT = d_t_OT;
     utc_model.i_WN_T = i_WN_T;
     utc_model.d_DeltaT_LS = d_DeltaT_LS;

@@ -58,7 +58,9 @@ public:
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
     void set_channel(int channel);                        
     void decode_word(int word_counter, boost::circular_buffer<signed int> *d_bit_buffer, unsigned int& d_BEIDOU_frame_4bytes);
-
+    void decodebch_bi1(int *bits, int *decbits);
+    unsigned int getbitu(const unsigned char *buff, int pos, int len);
+    void bits2byte(int *bits, int nbits, int nbin, int right, uint8_t *bin);
 
     /*!
      * \brief This is where all signal processing takes place

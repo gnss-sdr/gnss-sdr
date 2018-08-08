@@ -110,9 +110,6 @@ GlonassL1CaPcpsAcquisition::GlonassL1CaPcpsAcquisition(
     acquisition_ = pcps_make_acquisition(acq_parameters);
     DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
 
-    stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
-    DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id() << ")";
-
     if (item_type_.compare("cbyte") == 0)
         {
             cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
@@ -262,18 +259,17 @@ void GlonassL1CaPcpsAcquisition::connect(gr::top_block_sptr top_block)
 {
     if (item_type_.compare("gr_complex") == 0)
         {
-            top_block->connect(stream_to_vector_, 0, acquisition_, 0);
+            // nothing to connect
         }
     else if (item_type_.compare("cshort") == 0)
         {
-            top_block->connect(stream_to_vector_, 0, acquisition_, 0);
+            // nothing to connect
         }
     else if (item_type_.compare("cbyte") == 0)
         {
             top_block->connect(cbyte_to_float_x2_, 0, float_to_complex_, 0);
             top_block->connect(cbyte_to_float_x2_, 1, float_to_complex_, 1);
-            top_block->connect(float_to_complex_, 0, stream_to_vector_, 0);
-            top_block->connect(stream_to_vector_, 0, acquisition_, 0);
+            top_block->connect(float_to_complex_, 0, acquisition_, 0);
         }
     else
         {
@@ -286,11 +282,11 @@ void GlonassL1CaPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 {
     if (item_type_.compare("gr_complex") == 0)
         {
-            top_block->disconnect(stream_to_vector_, 0, acquisition_, 0);
+            // nothing to disconnect
         }
     else if (item_type_.compare("cshort") == 0)
         {
-            top_block->disconnect(stream_to_vector_, 0, acquisition_, 0);
+            // nothing to disconnect
         }
     else if (item_type_.compare("cbyte") == 0)
         {
@@ -298,8 +294,7 @@ void GlonassL1CaPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
             // we just convert cshorts to gr_complex
             top_block->disconnect(cbyte_to_float_x2_, 0, float_to_complex_, 0);
             top_block->disconnect(cbyte_to_float_x2_, 1, float_to_complex_, 1);
-            top_block->disconnect(float_to_complex_, 0, stream_to_vector_, 0);
-            top_block->disconnect(stream_to_vector_, 0, acquisition_, 0);
+            top_block->disconnect(float_to_complex_, 0, acquisition_, 0);
         }
     else
         {
@@ -312,11 +307,11 @@ gr::basic_block_sptr GlonassL1CaPcpsAcquisition::get_left_block()
 {
     if (item_type_.compare("gr_complex") == 0)
         {
-            return stream_to_vector_;
+            return acquisition_;
         }
     else if (item_type_.compare("cshort") == 0)
         {
-            return stream_to_vector_;
+            return acquisition_;
         }
     else if (item_type_.compare("cbyte") == 0)
         {

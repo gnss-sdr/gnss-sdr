@@ -98,7 +98,7 @@ bool cpu_multicorrelator_real_codes::set_input_output_vectors(std::complex<float
 }
 
 
-void cpu_multicorrelator_real_codes::update_local_code(int correlator_length_samples, float rem_code_phase_chips, float code_phase_step_chips)
+void cpu_multicorrelator_real_codes::update_local_code(int correlator_length_samples, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips)
 {
     if (d_use_fast_resampler)
         {
@@ -106,6 +106,7 @@ void cpu_multicorrelator_real_codes::update_local_code(int correlator_length_sam
                 d_local_code_in,
                 rem_code_phase_chips,
                 code_phase_step_chips,
+                code_phase_rate_step_chips,
                 d_shifts_chips,
                 d_code_length_chips,
                 d_n_correlators,

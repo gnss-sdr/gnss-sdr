@@ -52,7 +52,7 @@ pcps_acquisition_sptr pcps_make_acquisition(const Acq_Conf& conf_)
 
 
 pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acquisition",
-                                                                gr::io_signature::make(1, 1, conf_.it_size * std::floor(conf_.sampled_ms * conf_.samples_per_ms) * (conf_.bit_transition_flag ? 2 : 1)),
+                                                                gr::io_signature::make(1, 1, conf_.it_size),
                                                                 gr::io_signature::make(0, 0, conf_.it_size))
 {
     this->message_port_register_out(pmt::mp("events"));
@@ -73,7 +73,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
         {
             d_fft_size = d_consumed_samples * 2;
         }
-    //d_fft_size = next power of two?  ////
+    // d_fft_size = next power of two?  ////
     d_mag = 0;
     d_input_power = 0.0;
     d_num_doppler_bins = 0;
@@ -137,6 +137,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
     d_dump_number = 0;
     d_dump_channel = acq_parameters.dump_channel;
     d_samplesPerChip = acq_parameters.samples_per_chip;
+    d_buffer_count = 0;
     // todo: CFAR statistic not available for non-coherent integration
     if (acq_parameters.max_dwells == 1)
         {
@@ -347,8 +348,8 @@ void pcps_acquisition::set_state(int state)
 
 void pcps_acquisition::send_positive_acquisition()
 {
-    // 6.1- Declare positive acquisition using a message port
-    //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
+    // Declare positive acquisition using a message port
+    // 0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
     DLOG(INFO) << "positive acquisition"
                << ", satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
                << ", sample_stamp " << d_sample_counter
@@ -365,8 +366,8 @@ void pcps_acquisition::send_positive_acquisition()
 
 void pcps_acquisition::send_negative_acquisition()
 {
-    // 6.2- Declare negative acquisition using a message port
-    //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
+    // Declare negative acquisition using a message port
+    // 0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
     DLOG(INFO) << "negative acquisition"
                << ", satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
                << ", sample_stamp " << d_sample_counter
@@ -564,7 +565,7 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
 {
     gr::thread::scoped_lock lk(d_setlock);
 
-    // initialize acquisition algorithm
+    // Initialize acquisition algorithm
     int doppler = 0;
     uint32_t indext = 0;
     int effective_fft_size = (acq_parameters.bit_transition_flag ? d_fft_size / 2 : d_fft_size);
@@ -658,7 +659,7 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
                 {
                     volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in, d_grid_doppler_wipeoffs_step_two[doppler_index], d_fft_size);
 
-                    // 3- Perform the FFT-based convolution  (parallel time search)
+                    // Perform the FFT-based convolution  (parallel time search)
                     // Compute the FFT of the carrier wiped--off incoming signal
                     d_fft_if->execute();
 
@@ -803,7 +804,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
         {
             if (!acq_parameters.blocking_on_standby)
                 {
-                    d_sample_counter += d_consumed_samples * ninput_items[0];
+                    d_sample_counter += ninput_items[0];
                     consume_each(ninput_items[0]);
                 }
             if (d_step_two)
@@ -820,7 +821,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
         {
         case 0:
             {
-                //restart acquisition variables
+                // Restart acquisition variables
                 d_gnss_synchro->Acq_delay_samples = 0.0;
                 d_gnss_synchro->Acq_doppler_hz = 0.0;
                 d_gnss_synchro->Acq_samplestamp_samples = 0;
@@ -828,25 +829,58 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                 d_input_power = 0.0;
                 d_test_statistics = 0.0;
                 d_state = 1;
+                d_buffer_count = 0;
                 if (!acq_parameters.blocking_on_standby)
                     {
-                        d_sample_counter += d_consumed_samples * ninput_items[0];  // sample counter
+                        d_sample_counter += ninput_items[0];  // sample counter
                         consume_each(ninput_items[0]);
                     }
                 break;
             }
-
         case 1:
             {
-                // Copy the data to the core and let it know that new data is available
+                unsigned int buff_increment;
                 if (d_cshort)
                     {
-                        memcpy(d_data_buffer_sc, input_items[0], d_consumed_samples * sizeof(lv_16sc_t));
+                        const lv_16sc_t* in = reinterpret_cast<const lv_16sc_t*>(input_items[0]);  // Get the input samples pointer
+                        if ((ninput_items[0] + d_buffer_count) <= d_consumed_samples)
+                            {
+                                buff_increment = ninput_items[0];
+                            }
+                        else
+                            {
+                                buff_increment = d_consumed_samples - d_buffer_count;
+                            }
+                        memcpy(&d_data_buffer_sc[d_buffer_count], in, sizeof(lv_16sc_t) * buff_increment);
                     }
                 else
                     {
-                        memcpy(d_data_buffer, input_items[0], d_consumed_samples * sizeof(gr_complex));
+                        const gr_complex* in = reinterpret_cast<const gr_complex*>(input_items[0]);  // Get the input samples pointer
+                        if ((ninput_items[0] + d_buffer_count) <= d_consumed_samples)
+                            {
+                                buff_increment = ninput_items[0];
+                            }
+                        else
+                            {
+                                buff_increment = d_consumed_samples - d_buffer_count;
+                            }
+                        memcpy(&d_data_buffer[d_buffer_count], in, sizeof(gr_complex) * buff_increment);
                     }
+
+                // If buffer will be full in next iteration
+                if (d_buffer_count >= d_consumed_samples)
+                    {
+                        d_state = 2;
+                    }
+                d_buffer_count += buff_increment;
+                d_sample_counter += buff_increment;
+                consume_each(buff_increment);
+                break;
+            }
+
+        case 2:
+            {
+                // Copy the data to the core and let it know that new data is available
                 if (acq_parameters.blocking)
                     {
                         lk.unlock();
@@ -857,8 +891,8 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                         gr::thread::thread d_worker(&pcps_acquisition::acquisition_core, this, d_sample_counter);
                         d_worker_active = true;
                     }
-                d_sample_counter += d_consumed_samples;
-                consume_each(1);
+                consume_each(0);
+                d_buffer_count = 0;
                 break;
             }
         }

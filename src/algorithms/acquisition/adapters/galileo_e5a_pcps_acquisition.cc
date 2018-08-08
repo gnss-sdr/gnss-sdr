@@ -258,7 +258,7 @@ void GalileoE5aPcpsAcquisition::set_state(int state)
 }
 
 
-void GalileoE5aPcpsAcquisition::connect(gr::top_block_sptr top_block)
+void GalileoE5aPcpsAcquisition::connect(gr::top_block_sptr top_block __attribute__((unused)))
 {
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -275,7 +275,7 @@ void GalileoE5aPcpsAcquisition::connect(gr::top_block_sptr top_block)
 }
 
 
-void GalileoE5aPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
+void GalileoE5aPcpsAcquisition::disconnect(gr::top_block_sptr top_block __attribute__((unused)))
 {
     if (item_type_.compare("gr_complex") == 0)
         {

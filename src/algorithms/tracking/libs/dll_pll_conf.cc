@@ -41,7 +41,9 @@ Dll_Pll_Conf::Dll_Pll_Conf()
     vector_length = 0;
     dump = false;
     dump_filename = "./dll_pll_dump.dat";
-    pll_bw_hz = 40.0;
+    pll_pull_in_bw_hz = 50.0;
+    dll_pull_in_bw_hz = 3.0;
+    pll_bw_hz = 35.0;
     dll_bw_hz = 2.0;
     pll_bw_narrow_hz = 5.0;
     dll_bw_narrow_hz = 0.75;

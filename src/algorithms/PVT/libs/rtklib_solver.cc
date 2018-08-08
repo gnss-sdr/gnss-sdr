@@ -176,6 +176,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
                                 band2 = true;
                             }
                     }
+                    break;
                 default:
                     {
                     }

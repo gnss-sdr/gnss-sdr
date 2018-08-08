@@ -277,7 +277,8 @@ void GNSSFlowgraph::connect()
                             std::cout << "Set GNSS-SDR.internal_fs_sps in configuration file" << std::endl;
                             throw(std::invalid_argument("Set GNSS-SDR.internal_fs_sps in configuration"));
                         }
-                    ch_out_sample_counter = gnss_sdr_make_sample_counter(fs, sig_conditioner_.at(0)->get_right_block()->output_signature()->sizeof_stream_item(0));
+                    int observable_interval_ms = static_cast<double>(configuration_->property("GNSS-SDR.observable_interval_ms", 20));
+                    ch_out_sample_counter = gnss_sdr_make_sample_counter(fs, observable_interval_ms, sig_conditioner_.at(0)->get_right_block()->output_signature()->sizeof_stream_item(0));
                     top_block_->connect(sig_conditioner_.at(0)->get_right_block(), 0, ch_out_sample_counter, 0);
                     top_block_->connect(ch_out_sample_counter, 0, observables_->get_left_block(), channels_count_);  //extra port for the sample counter pulse
                 }
@@ -296,8 +297,9 @@ void GNSSFlowgraph::connect()
                 {
                     //null source
                     null_source_ = gr::blocks::null_source::make(sizeof(Gnss_Synchro));
-                    //throttle 1kHz
-                    throttle_ = gr::blocks::throttle::make(sizeof(Gnss_Synchro), 1000);  // 1000 samples per second (1kHz)
+                    //throttle to observable interval
+                    int observable_interval_ms = static_cast<double>(configuration_->property("GNSS-SDR.observable_interval_ms", 20));
+                    throttle_ = gr::blocks::throttle::make(sizeof(Gnss_Synchro), std::round(1.0 / static_cast<double>(observable_interval_ms)));  // 1000 samples per second (1kHz)
                     time_counter_ = gnss_sdr_make_time_counter();
                     top_block_->connect(null_source_, 0, throttle_, 0);
                     top_block_->connect(throttle_, 0, time_counter_, 0);
@@ -323,7 +325,9 @@ void GNSSFlowgraph::connect()
                     std::cout << "Set GNSS-SDR.internal_fs_sps in configuration file" << std::endl;
                     throw(std::invalid_argument("Set GNSS-SDR.internal_fs_sps in configuration"));
                 }
-            ch_out_sample_counter = gnss_sdr_make_sample_counter(fs, sig_conditioner_.at(0)->get_right_block()->output_signature()->sizeof_stream_item(0));
+
+            int observable_interval_ms = static_cast<double>(configuration_->property("GNSS-SDR.observable_interval_ms", 20));
+            ch_out_sample_counter = gnss_sdr_make_sample_counter(fs, observable_interval_ms, sig_conditioner_.at(0)->get_right_block()->output_signature()->sizeof_stream_item(0));
             top_block_->connect(sig_conditioner_.at(0)->get_right_block(), 0, ch_out_sample_counter, 0);
             top_block_->connect(ch_out_sample_counter, 0, observables_->get_left_block(), channels_count_);  //extra port for the sample counter pulse
         }

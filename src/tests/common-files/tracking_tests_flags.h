@@ -48,12 +48,12 @@ DEFINE_double(CN0_dBHz_start, std::numeric_limits<double>::infinity(), "Enable n
 DEFINE_double(CN0_dBHz_stop, std::numeric_limits<double>::infinity(), "Enable noise generator and set the CN0 stop sweep value [dB-Hz]");
 DEFINE_double(CN0_dB_step, 3.0, "Noise generator CN0 sweep step value [dB]");
 
-DEFINE_double(PLL_bw_hz_start, 40.0, "PLL Wide configuration start sweep value [Hz]");
-DEFINE_double(PLL_bw_hz_stop, 40.0, "PLL Wide configuration stop sweep value [Hz]");
+DEFINE_double(PLL_bw_hz_start, 20.0, "PLL Wide configuration start sweep value [Hz]");
+DEFINE_double(PLL_bw_hz_stop, 20.0, "PLL Wide configuration stop sweep value [Hz]");
 DEFINE_double(PLL_bw_hz_step, 5.0, "PLL Wide configuration sweep step value [Hz]");
 
-DEFINE_double(DLL_bw_hz_start, 1.5, "DLL Wide configuration start sweep value [Hz]");
-DEFINE_double(DLL_bw_hz_stop, 1.5, "DLL Wide configuration stop sweep value [Hz]");
+DEFINE_double(DLL_bw_hz_start, 1.0, "DLL Wide configuration start sweep value [Hz]");
+DEFINE_double(DLL_bw_hz_stop, 1.0, "DLL Wide configuration stop sweep value [Hz]");
 DEFINE_double(DLL_bw_hz_step, 0.25, "DLL Wide configuration sweep step value [Hz]");
 
 DEFINE_double(PLL_narrow_bw_hz, 5.0, "PLL Narrow configuration value [Hz]");

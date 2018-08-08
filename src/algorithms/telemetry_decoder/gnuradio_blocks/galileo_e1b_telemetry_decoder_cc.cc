@@ -117,7 +117,8 @@ galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
     d_flag_frame_sync = false;
 
     d_flag_parity = false;
-    d_TOW_at_current_symbol = 0;
+    d_TOW_at_current_symbol_ms = 0;
+    d_TOW_at_Preamble_ms = 0;
     delta_t = 0;
     d_CRC_error_counter = 0;
     flag_even_word_arrived = 0;
@@ -251,9 +252,9 @@ void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols, in
             DLOG(INFO) << "T0G=" << tmp_obj->t_0G_10;
             DLOG(INFO) << "WN_0G_10=" << tmp_obj->WN_0G_10;
             DLOG(INFO) << "Current parameters:";
-            DLOG(INFO) << "d_TOW_at_current_symbol=" << d_TOW_at_current_symbol;
+            DLOG(INFO) << "d_TOW_at_current_symbol_ms=" << d_TOW_at_current_symbol_ms;
             DLOG(INFO) << "d_nav.WN_0=" << d_nav.WN_0;
-            delta_t = tmp_obj->A_0G_10 + tmp_obj->A_1G_10 * (d_TOW_at_current_symbol - tmp_obj->t_0G_10 + 604800 * (fmod((d_nav.WN_0 - tmp_obj->WN_0G_10), 64)));
+            delta_t = tmp_obj->A_0G_10 + tmp_obj->A_1G_10 * (static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0 - tmp_obj->t_0G_10 + 604800 * (fmod((d_nav.WN_0 - tmp_obj->WN_0G_10), 64)));
             DLOG(INFO) << "delta_t=" << delta_t << "[s]";
         }
 }
@@ -406,6 +407,9 @@ int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute
                                     LOG(INFO) << "Lost of frame sync SAT " << this->d_satellite;
                                     d_flag_frame_sync = false;
                                     d_stat = 0;
+                                    d_TOW_at_current_symbol_ms = 0;
+                                    d_TOW_at_Preamble_ms = 0;
+                                    d_nav.flag_TOW_set = false;
                                 }
                         }
                 }
@@ -419,73 +423,76 @@ int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute
             if (d_nav.flag_TOW_5 == true)  // page 5 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
                 {
                     // TOW_5 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
-                    d_TOW_at_current_symbol = d_nav.TOW_5 + static_cast<double>(GALILEO_INAV_PAGE_PART_SECONDS) + static_cast<double>(required_symbols + 1) * GALILEO_E1_CODE_PERIOD;
+                    d_TOW_at_Preamble_ms = static_cast<unsigned int>(d_nav.TOW_5 * 1000.0);
+                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + GALILEO_INAV_PAGE_PART_MS + (required_symbols + 1) * GALILEO_E1_CODE_PERIOD_MS;
                     d_nav.flag_TOW_5 = false;
                 }
 
             else if (d_nav.flag_TOW_6 == true)  // page 6 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
                 {
                     // TOW_6 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
-                    d_TOW_at_current_symbol = d_nav.TOW_6 + static_cast<double>(GALILEO_INAV_PAGE_PART_SECONDS) + static_cast<double>(required_symbols + 1) * GALILEO_E1_CODE_PERIOD;
+                    d_TOW_at_Preamble_ms = static_cast<unsigned int>(d_nav.TOW_6 * 1000.0);
+                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + GALILEO_INAV_PAGE_PART_MS + (required_symbols + 1) * GALILEO_E1_CODE_PERIOD_MS;
                     d_nav.flag_TOW_6 = false;
                 }
             else
                 {
                     // this page has no timing information
-                    d_TOW_at_current_symbol += GALILEO_E1_CODE_PERIOD;  // + GALILEO_INAV_PAGE_PART_SYMBOLS*GALILEO_E1_CODE_PERIOD;
+                    d_TOW_at_current_symbol_ms += GALILEO_E1_CODE_PERIOD_MS;  // + GALILEO_INAV_PAGE_PART_SYMBOLS*GALILEO_E1_CODE_PERIOD;
                 }
         }
     else  // if there is not a new preamble, we define the TOW of the current symbol
         {
-            d_TOW_at_current_symbol += GALILEO_E1_CODE_PERIOD;
-        }
-
-    // if (d_flag_frame_sync == true and d_nav.flag_TOW_set==true and d_nav.flag_CRC_test == true)
-
-    if (d_nav.flag_GGTO_1 == true and d_nav.flag_GGTO_2 == true and d_nav.flag_GGTO_3 == true and d_nav.flag_GGTO_4 == true)  // all GGTO parameters arrived
-        {
-            delta_t = d_nav.A_0G_10 + d_nav.A_1G_10 * (d_TOW_at_current_symbol - d_nav.t_0G_10 + 604800.0 * (fmod((d_nav.WN_0 - d_nav.WN_0G_10), 64.0)));
-        }
-
-    if (d_flag_frame_sync == true and d_nav.flag_TOW_set == true)
-        {
-            current_symbol.Flag_valid_word = true;
-        }
-    else
-        {
-            current_symbol.Flag_valid_word = false;
-        }
-
-    current_symbol.TOW_at_current_symbol_ms = round(d_TOW_at_current_symbol * 1000.0);
-    // todo: Galileo to GPS time conversion should be moved to observable block.
-    // current_symbol.TOW_at_current_symbol_ms -= delta_t;  //Galileo to GPS TOW
-
-    if (d_dump == true)
-        {
-            // MULTIPLEXED FILE RECORDING - Record results to file
-            try
+            if (d_nav.flag_TOW_set == true)
                 {
-                    double tmp_double;
-                    unsigned long int tmp_ulong_int;
-                    tmp_double = d_TOW_at_current_symbol;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                    tmp_ulong_int = current_symbol.Tracking_sample_counter;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(unsigned long int));
-                    tmp_double = 0;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                }
-            catch (const std::ifstream::failure &e)
-                {
-                    LOG(WARNING) << "Exception writing observables dump file " << e.what();
+                    d_TOW_at_current_symbol_ms += GALILEO_E1_CODE_PERIOD_MS;
                 }
         }
 
     // remove used symbols from history
+    // todo: Use circular buffer here
     if (d_symbol_history.size() > required_symbols)
         {
             d_symbol_history.pop_front();
         }
-    // 3. Make the output (copy the object contents to the GNURadio reserved memory)
-    *out[0] = current_symbol;
-    return 1;
+
+    if (d_nav.flag_TOW_set)
+        {
+            if (d_nav.flag_GGTO_1 == true and d_nav.flag_GGTO_2 == true and d_nav.flag_GGTO_3 == true and d_nav.flag_GGTO_4 == true)  // all GGTO parameters arrived
+                {
+                    delta_t = d_nav.A_0G_10 + d_nav.A_1G_10 * (static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0 - d_nav.t_0G_10 + 604800.0 * (fmod((d_nav.WN_0 - d_nav.WN_0G_10), 64.0)));
+                }
+
+            current_symbol.Flag_valid_word = d_nav.flag_TOW_set;
+            current_symbol.TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
+            // todo: Galileo to GPS time conversion should be moved to observable block.
+            // current_symbol.TOW_at_current_symbol_ms -= delta_t;  //Galileo to GPS TOW
+
+            if (d_dump == true)
+                {
+                    // MULTIPLEXED FILE RECORDING - Record results to file
+                    try
+                        {
+                            double tmp_double;
+                            unsigned long int tmp_ulong_int;
+                            tmp_double = static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0;
+                            d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                            tmp_ulong_int = current_symbol.Tracking_sample_counter;
+                            d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(unsigned long int));
+                            tmp_double = static_cast<double>(d_TOW_at_Preamble_ms) / 1000.0;
+                            d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                        }
+                    catch (const std::ifstream::failure &e)
+                        {
+                            LOG(WARNING) << "Exception writing observables dump file " << e.what();
+                        }
+                }
+            // 3. Make the output (copy the object contents to the GNURadio reserved memory)
+            *out[0] = current_symbol;
+            return 1;
+        }
+    else
+        {
+            return 0;
+        }
 }

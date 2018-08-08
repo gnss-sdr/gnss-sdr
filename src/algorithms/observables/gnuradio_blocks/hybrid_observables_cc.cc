@@ -315,7 +315,7 @@ bool hybrid_observables_cc::interp_trk_obs(Gnss_Synchro &interpolated_obs, const
     long int old_abs_diff = std::numeric_limits<long int>::max();
     for (unsigned int i = 0; i < d_gnss_synchro_history->size(ch); i++)
         {
-            abs_diff = labs(rx_clock - d_gnss_synchro_history->at(ch, i).Tracking_sample_counter);
+            abs_diff = labs(static_cast<long int>(rx_clock) - static_cast<long int>(d_gnss_synchro_history->at(ch, i).Tracking_sample_counter));
             if (old_abs_diff > abs_diff)
                 {
                     old_abs_diff = abs_diff;
@@ -397,7 +397,7 @@ bool hybrid_observables_cc::interp_trk_obs(Gnss_Synchro &interpolated_obs, const
 }
 void hybrid_observables_cc::forecast(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items_required)
 {
-    for (int n = 0; n < static_cast<int>(int)(d_nchannels_in) - 1; n++)
+    for (int n = 0; n < static_cast<int>(d_nchannels_in) - 1; n++)
         {
             ninput_items_required[n] = 0;
         }

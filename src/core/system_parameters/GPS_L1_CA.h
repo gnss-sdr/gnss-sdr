@@ -68,7 +68,7 @@ const double MAX_TOA_DELAY_MS = 20;
 
 //#define NAVIGATION_SOLUTION_RATE_MS 1000 // this cannot go here
 //const double GPS_STARTOFFSET_ms = 68.802;  //[ms] Initial sign. travel time (this cannot go here)
-const double GPS_STARTOFFSET_ms = 69.0;
+const double GPS_STARTOFFSET_ms = 60.0;
 
 // OBSERVABLE HISTORY DEEP FOR INTERPOLATION
 const int GPS_L1_CA_HISTORY_DEEP = 100;

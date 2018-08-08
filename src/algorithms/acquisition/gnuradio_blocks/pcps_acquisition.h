@@ -135,6 +135,7 @@ private:
     arma::fmat grid_;
     long int d_dump_number;
     unsigned int d_dump_channel;
+    unsigned int d_buffer_count;
 
 public:
     ~pcps_acquisition();

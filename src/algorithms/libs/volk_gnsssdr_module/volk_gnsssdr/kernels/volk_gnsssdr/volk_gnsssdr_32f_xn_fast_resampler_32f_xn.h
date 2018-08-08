@@ -129,8 +129,8 @@ static inline void volk_gnsssdr_32f_xn_fast_resampler_32f_xn_a_sse3(float** resu
     const __m128i zeros = _mm_setzero_si128();
     const __m128 code_length_chips_reg_f = _mm_set_ps1((float)code_length_chips);
     const __m128i code_length_chips_reg_i = _mm_set1_epi32((int)code_length_chips);
-    __m128i local_code_chip_index_reg, aux_i, negatives;
-    __m128 aux, aux2, aux3, indexnn, shifts_chips_reg, i, fi, igx, j, c, cTrunc, base;
+    __m128i local_code_chip_index_reg, aux_i, negatives, i;
+    __m128 aux, aux2, aux3, indexnn, shifts_chips_reg, fi, igx, j, c, cTrunc, base;
     __m128 indexn = _mm_set_ps(3.0f, 2.0f, 1.0f, 0.0f);
 
     shifts_chips_reg = _mm_set_ps1((float)shifts_chips[0]);
@@ -214,8 +214,8 @@ static inline void volk_gnsssdr_32f_xn_fast_resampler_32f_xn_u_sse3(float** resu
     const __m128i zeros = _mm_setzero_si128();
     const __m128 code_length_chips_reg_f = _mm_set_ps1((float)code_length_chips);
     const __m128i code_length_chips_reg_i = _mm_set1_epi32((int)code_length_chips);
-    __m128i local_code_chip_index_reg, aux_i, negatives;
-    __m128 aux, aux2, aux3, indexnn, shifts_chips_reg, i, fi, igx, j, c, cTrunc, base;
+    __m128i local_code_chip_index_reg, aux_i, negatives, i;
+    __m128 aux, aux2, aux3, indexnn, shifts_chips_reg, fi, igx, j, c, cTrunc, base;
     __m128 indexn = _mm_set_ps(3.0f, 2.0f, 1.0f, 0.0f);
 
     shifts_chips_reg = _mm_set_ps1((float)shifts_chips[0]);

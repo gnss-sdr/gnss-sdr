@@ -184,6 +184,7 @@ acquisition_dump_reader::acquisition_dump_reader(const std::string& basename,
     d_doppler_step = doppler_step_;
     d_samples_per_code = samples_per_code_;
     d_num_doppler_bins = 0;
+    num_dwells = 0;
 
     acquisition_dump_reader(basename,
         sat_,

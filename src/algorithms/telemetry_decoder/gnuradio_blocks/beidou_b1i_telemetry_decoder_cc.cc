@@ -139,33 +139,6 @@ beidou_b1i_telemetry_decoder_cc::~beidou_b1i_telemetry_decoder_cc()
         }
 }
 
-
-bool beidou_b1i_telemetry_decoder_cc::beidou_word_parityCheck(unsigned int beidouword)
-{
-
-    unsigned int d1, d2, d3, d4, d5, d6, d7, t, parity;
-    /* XOR as many bits in parallel as possible.  The magic constants pick
-       up bits which are to be XOR'ed together to implement the GPS parity
-       check algorithm described in IS-GPS-200E.  This avoids lengthy shift-
-       and-xor loops. */
-    d1 = beidouword & 0xFBFFBF00;
-    d2 = _rotl(beidouword, 1) & 0x07FFBF01;
-    d3 = _rotl(beidouword, 2) & 0xFC0F8100;
-    d4 = _rotl(beidouword, 3) & 0xF81FFE02;
-    d5 = _rotl(beidouword, 4) & 0xFC00000E;
-    d6 = _rotl(beidouword, 5) & 0x07F00001;
-    d7 = _rotl(beidouword, 6) & 0x00003000;
-    t = d1 ^ d2 ^ d3 ^ d4 ^ d5 ^ d6 ^ d7;
-    // Now XOR the 5 6-bit fields together to produce the 6-bit final result.
-    parity = t ^ _rotl(t, 6) ^ _rotl(t, 12) ^ _rotl(t, 18) ^ _rotl(t, 24);
-    parity = parity & 0x3F;
-    if (parity == (beidouword & 0x3F))
-        return (true);
-    else
-        return (false);
-}
-
-
 void beidou_b1i_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satellite)
 {
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
@@ -491,28 +464,34 @@ int beidou_b1i_telemetry_decoder_cc::general_work(int noutput_items __attribute_
                             // send TLM data to PVT using asynchronous message queues
                             if (d_BEIDOU_FSM.d_flag_new_subframe == true)
                                 {
-                                    switch (d_BEIDOU_FSM.d_subframe_ID)
+/*                                    switch (d_BEIDOU_FSM.d_subframe_ID)
                                         {
                                         case 3:  //we have a new set of ephemeris data for the current SV
-                                            if (d_BEIDOU_FSM.d_nav.satellite_validation() == true)
+*/                                            if (d_BEIDOU_FSM.d_nav.satellite_validation() == true)
                                                 {
+std::cout << " we have a new set of ephemeris data for the current SV "<< std::endl;
+
                                                     // get ephemeris object for this SV (mandatory)
                                                     std::shared_ptr<Beidou_Ephemeris> tmp_obj = std::make_shared<Beidou_Ephemeris>(d_BEIDOU_FSM.d_nav.get_ephemeris());
                                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                                                 }
-                                            break;
+/*                                            break;
                                         case 4:  // Possible IONOSPHERE and UTC model update (page 18)
-                                            if (d_BEIDOU_FSM.d_nav.flag_iono_valid == true)
+ */                                           if (d_BEIDOU_FSM.d_nav.flag_iono_valid == true)
                                                 {
+std::cout << " we have a new set of iono data for the current SV "<< std::endl;
+
                                                     std::shared_ptr<Beidou_Iono> tmp_obj = std::make_shared<Beidou_Iono>(d_BEIDOU_FSM.d_nav.get_iono());
                                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                                                 }
                                             if (d_BEIDOU_FSM.d_nav.flag_utc_model_valid == true)
                                                 {
+std::cout << " we have a new set of utc data for the current SV "<< std::endl;
+
                                                     std::shared_ptr<Beidou_Utc_Model> tmp_obj = std::make_shared<Beidou_Utc_Model>(d_BEIDOU_FSM.d_nav.get_utc_model());
                                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                                                 }
-                                            break;
+/*                                            break;
                                         case 5:
                                             // get almanac (if available)
                                             //TODO: implement almanac reader in navigation_message
@@ -520,7 +499,7 @@ int beidou_b1i_telemetry_decoder_cc::general_work(int noutput_items __attribute_
                                         default:
                                             break;
                                         }
-                                    d_BEIDOU_FSM.clear_flag_new_subframe();
+*/                                    d_BEIDOU_FSM.clear_flag_new_subframe();
                                     d_flag_new_tow_available = true;
                                 }
                 }

@@ -56,6 +56,7 @@
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
 #include "GLONASS_L1_L2_CA.h"
+#include "beidou_b1I.h"
 #include <glog/logging.h>
 
 
@@ -140,6 +141,8 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
     std::map<int, Gps_Ephemeris>::const_iterator gps_ephemeris_iter;
     std::map<int, Gps_CNAV_Ephemeris>::const_iterator gps_cnav_ephemeris_iter;
     std::map<int, Glonass_Gnav_Ephemeris>::const_iterator glonass_gnav_ephemeris_iter;
+    std::map<int, Beidou_Ephemeris>::const_iterator beidou_ephemeris_iter;
+
     const Glonass_Gnav_Utc_Model gnav_utc = this->glonass_gnav_utc_model;
 
     this->set_averaging_flag(flag_averaging);

@@ -133,6 +133,8 @@ private:
     gr::fft::fft_complex* d_ifft;
     Gnss_Synchro* d_gnss_synchro;
     arma::fmat grid_;
+    arma::fmat narrow_grid_;
+    unsigned int d_num_doppler_bins_step2;
     long int d_dump_number;
     unsigned int d_dump_channel;
     unsigned int d_buffer_count;

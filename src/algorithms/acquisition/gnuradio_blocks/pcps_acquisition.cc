@@ -133,7 +133,9 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
             d_data_buffer_sc = nullptr;
         }
     grid_ = arma::fmat();
+    narrow_grid_ = arma::fmat();
     d_step_two = false;
+    d_num_doppler_bins_step2 = acq_parameters.num_doppler_bins_step2;
     d_dump_number = 0;
     d_dump_channel = acq_parameters.dump_channel;
     d_samplesPerChip = acq_parameters.samples_per_chip;
@@ -164,7 +166,7 @@ pcps_acquisition::~pcps_acquisition()
         }
     if (acq_parameters.make_2_steps)
         {
-            for (unsigned int i = 0; i < acq_parameters.num_doppler_bins_step2; i++)
+            for (unsigned int i = 0; i < d_num_doppler_bins_step2; i++)
                 {
                     volk_gnsssdr_free(d_grid_doppler_wipeoffs_step_two[i]);
                 }
@@ -272,8 +274,8 @@ void pcps_acquisition::init()
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
     if (acq_parameters.make_2_steps)
         {
-            d_grid_doppler_wipeoffs_step_two = new gr_complex*[acq_parameters.num_doppler_bins_step2];
-            for (unsigned int doppler_index = 0; doppler_index < acq_parameters.num_doppler_bins_step2; doppler_index++)
+            d_grid_doppler_wipeoffs_step_two = new gr_complex*[d_num_doppler_bins_step2];
+            for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins_step2; doppler_index++)
                 {
                     d_grid_doppler_wipeoffs_step_two[doppler_index] = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
                 }
@@ -298,6 +300,7 @@ void pcps_acquisition::init()
         {
             unsigned int effective_fft_size = (acq_parameters.bit_transition_flag ? (d_fft_size / 2) : d_fft_size);
             grid_ = arma::fmat(effective_fft_size, d_num_doppler_bins, arma::fill::zeros);
+            narrow_grid_ = arma::fmat(effective_fft_size, d_num_doppler_bins_step2, arma::fill::zeros);
         }
 }
 
@@ -314,9 +317,9 @@ void pcps_acquisition::update_grid_doppler_wipeoffs()
 
 void pcps_acquisition::update_grid_doppler_wipeoffs_step2()
 {
-    for (unsigned int doppler_index = 0; doppler_index < acq_parameters.num_doppler_bins_step2; doppler_index++)
+    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins_step2; doppler_index++)
         {
-            float doppler = (static_cast<float>(doppler_index) - static_cast<float>(acq_parameters.num_doppler_bins_step2) / 2.0) * acq_parameters.doppler_step2;
+            float doppler = (static_cast<float>(doppler_index) - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0))) * acq_parameters.doppler_step2;
             update_local_carrier(d_grid_doppler_wipeoffs_step_two[doppler_index], d_fft_size, d_doppler_center_step_two + doppler);
         }
 }
@@ -456,6 +459,30 @@ void pcps_acquisition::dump_results(int effective_fft_size)
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
+            matvar = Mat_VarCreate("num_dwells", MAT_C_UINT32, MAT_T_UINT32, 1, dims, &d_num_noncoherent_integrations_counter, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            if (acq_parameters.make_2_steps)
+                {
+                    dims[0] = static_cast<size_t>(effective_fft_size);
+                    dims[1] = static_cast<size_t>(d_num_doppler_bins_step2);
+                    matvar = Mat_VarCreate("acq_grid_narrow", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, narrow_grid_.memptr(), 0);
+                    Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+                    Mat_VarFree(matvar);
+
+                    dims[0] = static_cast<size_t>(1);
+                    dims[1] = static_cast<size_t>(1);
+                    matvar = Mat_VarCreate("doppler_step_narrow", MAT_C_SINGLE, MAT_T_SINGLE, 1, dims, &acq_parameters.doppler_step2, 0);
+                    Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+                    Mat_VarFree(matvar);
+
+                    aux = d_doppler_center_step_two - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0)) * acq_parameters.doppler_step2;
+                    matvar = Mat_VarCreate("doppler_grid_narrow_min", MAT_C_SINGLE, MAT_T_SINGLE, 1, dims, &aux, 0);
+                    Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+                    Mat_VarFree(matvar);
+                }
+
             Mat_Close(matfp);
         }
 }
@@ -487,7 +514,7 @@ float pcps_acquisition::max_to_input_power_statistic(uint32_t& indext, int& dopp
         }
     else
         {
-            doppler = static_cast<int>(d_doppler_center_step_two + (index_doppler - (acq_parameters.num_doppler_bins_step2 / 2.0) * acq_parameters.doppler_step2));
+            doppler = static_cast<int>(d_doppler_center_step_two + (static_cast<float>(index_doppler) - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0))) * acq_parameters.doppler_step2);
         }
 
     float magt = grid_maximum / (fft_normalization_factor * fft_normalization_factor);
@@ -525,7 +552,7 @@ float pcps_acquisition::first_vs_second_peak_statistic(uint32_t& indext, int& do
         }
     else
         {
-            doppler = static_cast<int>(d_doppler_center_step_two + (index_doppler - (acq_parameters.num_doppler_bins_step2 / 2.0) * acq_parameters.doppler_step2));
+            doppler = static_cast<int>(d_doppler_center_step_two + (static_cast<float>(index_doppler) - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0))) * acq_parameters.doppler_step2);
         }
 
     // Find 1 chip wide code phase exclude range around the peak
@@ -655,7 +682,7 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
         }
     else
         {
-            for (unsigned int doppler_index = 0; doppler_index < acq_parameters.num_doppler_bins_step2; doppler_index++)
+            for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins_step2; doppler_index++)
                 {
                     volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in, d_grid_doppler_wipeoffs_step_two[doppler_index], d_fft_size);
 
@@ -680,15 +707,20 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
                             volk_32fc_magnitude_squared_32f(d_tmp_buffer, d_ifft->get_outbuf() + offset, effective_fft_size);
                             volk_32f_x2_add_32f(d_magnitude_grid[doppler_index], d_magnitude_grid[doppler_index], d_tmp_buffer, effective_fft_size);
                         }
+                    // Record results to file if required
+                    if (acq_parameters.dump and d_channel == d_dump_channel)
+                        {
+                            memcpy(narrow_grid_.colptr(doppler_index), d_magnitude_grid[doppler_index], sizeof(float) * effective_fft_size);
+                        }
                 }
             // Compute the test statistic
             if (d_use_CFAR_algorithm_flag)
                 {
-                    d_test_statistics = max_to_input_power_statistic(indext, doppler, d_input_power, acq_parameters.num_doppler_bins_step2, static_cast<int>(d_doppler_center_step_two - (static_cast<float>(acq_parameters.num_doppler_bins_step2) / 2.0) * acq_parameters.doppler_step2), acq_parameters.doppler_step2);
+                    d_test_statistics = max_to_input_power_statistic(indext, doppler, d_input_power, d_num_doppler_bins_step2, static_cast<int>(d_doppler_center_step_two - (static_cast<float>(d_num_doppler_bins_step2) / 2.0) * acq_parameters.doppler_step2), acq_parameters.doppler_step2);
                 }
             else
                 {
-                    d_test_statistics = first_vs_second_peak_statistic(indext, doppler, acq_parameters.num_doppler_bins_step2, static_cast<int>(d_doppler_center_step_two - (static_cast<float>(acq_parameters.num_doppler_bins_step2) / 2.0) * acq_parameters.doppler_step2), acq_parameters.doppler_step2);
+                    d_test_statistics = first_vs_second_peak_statistic(indext, doppler, d_num_doppler_bins_step2, static_cast<int>(d_doppler_center_step_two - (static_cast<float>(d_num_doppler_bins_step2) / 2.0) * acq_parameters.doppler_step2), acq_parameters.doppler_step2);
                 }
             d_gnss_synchro->Acq_delay_samples = static_cast<double>(std::fmod(static_cast<float>(indext), acq_parameters.samples_per_code));
             d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
@@ -712,6 +744,8 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
                             else
                                 {
                                     d_step_two = true;  // Clear input buffer and make small grid acquisition
+                                    d_num_noncoherent_integrations_counter = 0;
+                                    d_positive_acq = 0;
                                     d_state = 0;
                                 }
                         }
@@ -720,6 +754,11 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
                             send_positive_acquisition();
                             d_state = 0;  // Positive acquisition
                         }
+                }
+            else
+                {
+                    d_buffer_count = 0;
+                    d_state = 1;
                 }
 
             if (d_num_noncoherent_integrations_counter == acq_parameters.max_dwells)
@@ -746,6 +785,7 @@ void pcps_acquisition::acquisition_core(unsigned long int samp_count)
                             else
                                 {
                                     d_step_two = true;  // Clear input buffer and make small grid acquisition
+                                    d_num_noncoherent_integrations_counter = 0;
                                     d_state = 0;
                                 }
                         }
@@ -877,7 +917,6 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                 consume_each(buff_increment);
                 break;
             }
-
         case 2:
             {
                 // Copy the data to the core and let it know that new data is available

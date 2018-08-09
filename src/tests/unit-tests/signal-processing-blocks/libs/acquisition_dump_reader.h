@@ -64,6 +64,7 @@ public:
     float threshold;
     int positive_acq;
     unsigned int PRN;
+    unsigned int num_dwells;
     long unsigned int sample_counter;
 
 private:

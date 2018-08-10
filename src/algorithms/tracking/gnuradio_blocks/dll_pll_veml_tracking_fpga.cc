@@ -842,7 +842,7 @@ void dll_pll_veml_tracking_fpga::log_data(bool integrating)
                     d_dump_file.write(reinterpret_cast<char *>(&prompt_I), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char *>(&prompt_Q), sizeof(float));
                     // PRN start sample stamp
-                    d_dump_file.write(reinterpret_cast<char *>(&d_sample_counter), sizeof(unsigned long int));
+                    d_dump_file.write(reinterpret_cast<char *>(&d_sample_counter), sizeof(uint64_t));
                     // accumulated carrier phase
                     tmp_float = d_acc_carrier_phase_rad;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
@@ -889,7 +889,7 @@ int dll_pll_veml_tracking_fpga::save_matfile()
     std::ifstream::pos_type size;
     int number_of_double_vars = 1;
     int number_of_float_vars = 17;
-    int epoch_size_bytes = sizeof(unsigned long int) + sizeof(double) * number_of_double_vars +
+    int epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
                            sizeof(float) * number_of_float_vars + sizeof(unsigned int);
     std::ifstream dump_file;
     dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
@@ -903,11 +903,11 @@ int dll_pll_veml_tracking_fpga::save_matfile()
             return 1;
         }
     // count number of epochs and rewind
-    long int num_epoch = 0;
+    int64_t num_epoch = 0;
     if (dump_file.is_open())
         {
             size = dump_file.tellg();
-            num_epoch = static_cast<long int>(size) / static_cast<long int>(epoch_size_bytes);
+            num_epoch = static_cast<int64_t>(size) / static_cast<int64_t>(epoch_size_bytes);
             dump_file.seekg(0, std::ios::beg);
         }
     else
@@ -921,7 +921,7 @@ int dll_pll_veml_tracking_fpga::save_matfile()
     float *abs_VL = new float[num_epoch];
     float *Prompt_I = new float[num_epoch];
     float *Prompt_Q = new float[num_epoch];
-    unsigned long int *PRN_start_sample_count = new unsigned long int[num_epoch];
+    uint64_t *PRN_start_sample_count = new uint64_t[num_epoch];
     float *acc_carrier_phase_rad = new float[num_epoch];
     float *carrier_doppler_hz = new float[num_epoch];
     float *code_freq_chips = new float[num_epoch];
@@ -939,7 +939,7 @@ int dll_pll_veml_tracking_fpga::save_matfile()
         {
             if (dump_file.is_open())
                 {
-                    for (long int i = 0; i < num_epoch; i++)
+                    for (int64_t i = 0; i < num_epoch; i++)
                         {
                             dump_file.read(reinterpret_cast<char *>(&abs_VE[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&abs_E[i]), sizeof(float));
@@ -948,7 +948,7 @@ int dll_pll_veml_tracking_fpga::save_matfile()
                             dump_file.read(reinterpret_cast<char *>(&abs_VL[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&Prompt_I[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&Prompt_Q[i]), sizeof(float));
-                            dump_file.read(reinterpret_cast<char *>(&PRN_start_sample_count[i]), sizeof(unsigned long int));
+                            dump_file.read(reinterpret_cast<char *>(&PRN_start_sample_count[i]), sizeof(uint64_t));
                             dump_file.read(reinterpret_cast<char *>(&acc_carrier_phase_rad[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&carrier_doppler_hz[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&code_freq_chips[i]), sizeof(float));
@@ -998,7 +998,7 @@ int dll_pll_veml_tracking_fpga::save_matfile()
     filename.erase(filename.length() - 4, 4);
     filename.append(".mat");
     matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
-    if (reinterpret_cast<long *>(matfp) != NULL)
+    if (reinterpret_cast<int64_t *>(matfp) != NULL)
         {
             size_t dims[2] = {1, static_cast<size_t>(num_epoch)};
             matvar = Mat_VarCreate("abs_VE", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, abs_VE, 0);
@@ -1464,7 +1464,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
         }
     if (current_synchro_data.Flag_valid_symbol_output)
         {
-            current_synchro_data.fs = static_cast<long int>(trk_parameters.fs_in);
+            current_synchro_data.fs = static_cast<int64_t>(trk_parameters.fs_in);
             current_synchro_data.Tracking_sample_counter = d_sample_counter + d_current_prn_length_samples;
             *out[0] = current_synchro_data;
             return 1;

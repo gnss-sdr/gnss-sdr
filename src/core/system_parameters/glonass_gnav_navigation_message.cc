@@ -228,9 +228,9 @@ bool Glonass_Gnav_Navigation_Message::read_navigation_bool(std::bitset<GLONASS_G
 }
 
 
-unsigned long int Glonass_Gnav_Navigation_Message::read_navigation_unsigned(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int, int>> parameter)
+uint64_t Glonass_Gnav_Navigation_Message::read_navigation_unsigned(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int, int>> parameter)
 {
-    unsigned long int value = 0;
+    uint64_t value = 0;
     int num_of_slices = parameter.size();
     for (int i = 0; i < num_of_slices; i++)
         {
@@ -247,10 +247,10 @@ unsigned long int Glonass_Gnav_Navigation_Message::read_navigation_unsigned(std:
 }
 
 
-signed long int Glonass_Gnav_Navigation_Message::read_navigation_signed(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int, int>> parameter)
+int64_t Glonass_Gnav_Navigation_Message::read_navigation_signed(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int, int>> parameter)
 {
-    signed long int value = 0;
-    signed long int sign = 0;
+    int64_t value = 0;
+    int64_t sign = 0;
     int num_of_slices = parameter.size();
     // read the MSB and perform the sign extension
     if (bits[GLONASS_GNAV_STRING_BITS - parameter[0].first] == 1)

@@ -38,6 +38,7 @@
 #include "gps_cnav_iono.h"
 #include "gps_cnav_utc_model.h"
 #include <bitset>
+#include <cstdint>
 #include <map>
 #include <string>
 #include <vector>
@@ -55,8 +56,8 @@
 class Gps_CNAV_Navigation_Message
 {
 private:
-    unsigned long int read_navigation_unsigned(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int, int>> parameter);
-    signed long int read_navigation_signed(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int, int>> parameter);
+    uint64_t read_navigation_unsigned(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int, int>> parameter);
+    int64_t read_navigation_signed(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int, int>> parameter);
     bool read_navigation_bool(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int, int>> parameter);
 
     Gps_CNAV_Ephemeris ephemeris_record;

@@ -457,11 +457,11 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
                     try
                         {
                             double tmp_double;
-                            unsigned long int tmp_ulong_int;
+                            uint64_t tmp_ulong_int;
                             tmp_double = static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0;
                             d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                             tmp_ulong_int = current_symbol.Tracking_sample_counter;
-                            d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(unsigned long int));
+                            d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(uint64_t));
                             tmp_double = static_cast<double>(d_TOW_at_Preamble_ms) / 1000.0;
                             d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                         }

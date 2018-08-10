@@ -195,7 +195,7 @@ std::string Rtcm::bin_to_binary_data(const std::string& s) const
         {
             s_aux.assign(s, 0, remainder);
             boost::dynamic_bitset<> rembits(s_aux);
-            unsigned long int n = rembits.to_ulong();
+            uint64_t n = rembits.to_ulong();
             c[0] = static_cast<unsigned char>(n);
             k++;
         }
@@ -270,7 +270,7 @@ std::string Rtcm::hex_to_bin(const std::string& s) const
     std::string s_lower = boost::to_upper_copy(ss.str());
     for (unsigned int i = 0; i < s.length(); i++)
         {
-            unsigned long int n;
+            uint64_t n;
             std::istringstream(s_lower.substr(i, 1)) >> std::hex >> n;
             std::bitset<4> bs(n);
             s_aux += bs.to_string();
@@ -279,26 +279,26 @@ std::string Rtcm::hex_to_bin(const std::string& s) const
 }
 
 
-unsigned long int Rtcm::bin_to_uint(const std::string& s) const
+uint64_t Rtcm::bin_to_uint(const std::string& s) const
 {
     if (s.length() > 32)
         {
-            LOG(WARNING) << "Cannot convert to a unsigned long int";
+            LOG(WARNING) << "Cannot convert to a uint64_t";
             return 0;
         }
-    unsigned long int reading = strtoul(s.c_str(), NULL, 2);
+    uint64_t reading = strtoul(s.c_str(), NULL, 2);
     return reading;
 }
 
 
-long int Rtcm::bin_to_int(const std::string& s) const
+int64_t Rtcm::bin_to_int(const std::string& s) const
 {
     if (s.length() > 32)
         {
-            LOG(WARNING) << "Cannot convert to a long int";
+            LOG(WARNING) << "Cannot convert to a int64_t";
             return 0;
         }
-    long int reading;
+    int64_t reading;
 
     // Handle negative numbers
     if (s.substr(0, 1).compare("0"))
@@ -316,15 +316,15 @@ long int Rtcm::bin_to_int(const std::string& s) const
 }
 
 
-long int Rtcm::bin_to_sint(const std::string& s) const
+int64_t Rtcm::bin_to_sint(const std::string& s) const
 {
     if (s.length() > 32)
         {
-            LOG(WARNING) << "Cannot convert to a long int";
+            LOG(WARNING) << "Cannot convert to a int64_t";
             return 0;
         }
-    long int reading;
-    long int sign;
+    int64_t reading;
+    int64_t sign;
 
     // Check for sign bit as defined RTCM doc
     if (s.substr(0, 1).compare("0") == 0)
@@ -343,7 +343,7 @@ long int Rtcm::bin_to_sint(const std::string& s) const
 }
 
 // Find the sign for glonass data fields (neg = 1, pos = 0)
-static inline unsigned long glo_sgn(double val)
+static inline uint64_t glo_sgn(double val)
 {
     if (val < 0) return 1;   // If value is negative return 1
     if (val == 0) return 0;  // Positive or equal to zero return 0
@@ -360,7 +360,7 @@ double Rtcm::bin_to_double(const std::string& s) const
             return 0;
         }
 
-    long long int reading_int;
+    int64_t reading_int;
 
     // Handle negative numbers
     if (s.substr(0, 1).compare("0"))
@@ -382,26 +382,26 @@ double Rtcm::bin_to_double(const std::string& s) const
 }
 
 
-unsigned long int Rtcm::hex_to_uint(const std::string& s) const
+uint64_t Rtcm::hex_to_uint(const std::string& s) const
 {
     if (s.length() > 32)
         {
-            LOG(WARNING) << "Cannot convert to a unsigned long int";
+            LOG(WARNING) << "Cannot convert to a uint64_t";
             return 0;
         }
-    unsigned long int reading = strtoul(s.c_str(), NULL, 16);
+    uint64_t reading = strtoul(s.c_str(), NULL, 16);
     return reading;
 }
 
 
-long int Rtcm::hex_to_int(const std::string& s) const
+int64_t Rtcm::hex_to_int(const std::string& s) const
 {
     if (s.length() > 32)
         {
-            LOG(WARNING) << "Cannot convert to a long int";
+            LOG(WARNING) << "Cannot convert to a int64_t";
             return 0;
         }
-    long int reading = strtol(s.c_str(), NULL, 16);
+    int64_t reading = strtol(s.c_str(), NULL, 16);
     return reading;
 }
 
@@ -3560,7 +3560,7 @@ int Rtcm::set_DF003(unsigned int ref_station_ID)
 int Rtcm::set_DF004(double obs_time)
 {
     // TOW in milliseconds from the beginning of the GPS week, measured in GPS time
-    unsigned long int tow = static_cast<unsigned long int>(std::round(obs_time * 1000));
+    uint64_t tow = static_cast<uint64_t>(std::round(obs_time * 1000));
     if (tow > 604799999)
         {
             LOG(WARNING) << "To large TOW! Set to the last millisecond of the week";
@@ -3651,7 +3651,7 @@ int Rtcm::set_DF010(bool code_indicator)
 int Rtcm::set_DF011(const Gnss_Synchro& gnss_synchro)
 {
     double ambiguity = std::floor(gnss_synchro.Pseudorange_m / 299792.458);
-    unsigned long int gps_L1_pseudorange = static_cast<unsigned long int>(std::round((gnss_synchro.Pseudorange_m - ambiguity * 299792.458) / 0.02));
+    uint64_t gps_L1_pseudorange = static_cast<uint64_t>(std::round((gnss_synchro.Pseudorange_m - ambiguity * 299792.458) / 0.02));
     DF011 = std::bitset<24>(gps_L1_pseudorange);
     return 0;
 }
@@ -3665,7 +3665,7 @@ int Rtcm::set_DF012(const Gnss_Synchro& gnss_synchro)
     double gps_L1_pseudorange_c = gps_L1_pseudorange * 0.02 + ambiguity * 299792.458;
     double L1_phaserange_c = gnss_synchro.Carrier_phase_rads / GPS_TWO_PI;
     double L1_phaserange_c_r = std::fmod(L1_phaserange_c - gps_L1_pseudorange_c / lambda + 1500.0, 3000.0) - 1500.0;
-    long int gps_L1_phaserange_minus_L1_pseudorange = static_cast<long int>(std::round(L1_phaserange_c_r * lambda / 0.0005));
+    int64_t gps_L1_phaserange_minus_L1_pseudorange = static_cast<int64_t>(std::round(L1_phaserange_c_r * lambda / 0.0005));
     DF012 = std::bitset<20>(gps_L1_phaserange_minus_L1_pseudorange);
     return 0;
 }
@@ -3792,7 +3792,7 @@ int Rtcm::set_DF024(bool galileo_indicator)
 
 int Rtcm::set_DF025(double antenna_ECEF_X_m)
 {
-    long long int ant_ref_x = static_cast<long long int>(std::round(antenna_ECEF_X_m * 10000));
+    int64_t ant_ref_x = static_cast<int64_t>(std::round(antenna_ECEF_X_m * 10000));
     DF025 = std::bitset<38>(ant_ref_x);
     return 0;
 }
@@ -3800,7 +3800,7 @@ int Rtcm::set_DF025(double antenna_ECEF_X_m)
 
 int Rtcm::set_DF026(double antenna_ECEF_Y_m)
 {
-    long long int ant_ref_y = static_cast<long long int>(std::round(antenna_ECEF_Y_m * 10000));
+    int64_t ant_ref_y = static_cast<int64_t>(std::round(antenna_ECEF_Y_m * 10000));
     DF026 = std::bitset<38>(ant_ref_y);
     return 0;
 }
@@ -3808,7 +3808,7 @@ int Rtcm::set_DF026(double antenna_ECEF_Y_m)
 
 int Rtcm::set_DF027(double antenna_ECEF_Z_m)
 {
-    long long int ant_ref_z = static_cast<long long int>(std::round(antenna_ECEF_Z_m * 10000));
+    int64_t ant_ref_z = static_cast<int64_t>(std::round(antenna_ECEF_Z_m * 10000));
     DF027 = std::bitset<38>(ant_ref_z);
     return 0;
 }
@@ -3832,7 +3832,7 @@ int Rtcm::set_DF031(unsigned int antenna_setup_id)
 int Rtcm::set_DF034(double obs_time)
 {
     // TOW in milliseconds from the beginning of the GLONASS day, measured in GLONASS time
-    unsigned long int tk = static_cast<unsigned long int>(std::round(obs_time * 1000));
+    uint64_t tk = static_cast<uint64_t>(std::round(obs_time * 1000));
     if (tk > 86400999)
         {
             LOG(WARNING) << "To large GLONASS Epoch Time (tk)! Set to the last millisecond of the day";
@@ -3943,7 +3943,7 @@ int Rtcm::set_DF040(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 int Rtcm::set_DF041(const Gnss_Synchro& gnss_synchro)
 {
     double ambiguity = std::floor(gnss_synchro.Pseudorange_m / 599584.92);
-    unsigned long int glonass_L1_pseudorange = static_cast<unsigned long int>(std::round((gnss_synchro.Pseudorange_m - ambiguity * 599584.92) / 0.02));
+    uint64_t glonass_L1_pseudorange = static_cast<uint64_t>(std::round((gnss_synchro.Pseudorange_m - ambiguity * 599584.92) / 0.02));
     DF041 = std::bitset<25>(glonass_L1_pseudorange);
     return 0;
 }
@@ -3957,7 +3957,7 @@ int Rtcm::set_DF042(const Gnss_Synchro& gnss_synchro)
     double glonass_L1_pseudorange_c = glonass_L1_pseudorange * 0.02 + ambiguity * 299792.458;
     double L1_phaserange_c = gnss_synchro.Carrier_phase_rads / GLONASS_TWO_PI;
     double L1_phaserange_c_r = std::fmod(L1_phaserange_c - glonass_L1_pseudorange_c / lambda + 1500.0, 3000.0) - 1500.0;
-    long int glonass_L1_phaserange_minus_L1_pseudorange = static_cast<long int>(std::round(L1_phaserange_c_r * lambda / 0.0005));
+    int64_t glonass_L1_phaserange_minus_L1_pseudorange = static_cast<int64_t>(std::round(L1_phaserange_c_r * lambda / 0.0005));
     DF042 = std::bitset<20>(glonass_L1_phaserange_minus_L1_pseudorange);
     return 0;
 }
@@ -4058,7 +4058,7 @@ int Rtcm::set_DF050(const Gnss_Synchro& gnss_synchro)
 int Rtcm::set_DF051(const Gps_Ephemeris& gps_eph, double obs_time)
 {
     const double gps_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>((gps_t + 604800 * static_cast<double>(gps_eph.i_GPS_week % 1024)) * 1000));
+    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((gps_t + 604800 * static_cast<double>(gps_eph.i_GPS_week % 1024)) * 1000));
     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
     std::string now_ptime = to_iso_string(p_time);
     std::string today_ptime = now_ptime.substr(0, 8);
@@ -4072,14 +4072,14 @@ int Rtcm::set_DF051(const Gps_Ephemeris& gps_eph, double obs_time)
 int Rtcm::set_DF052(const Gps_Ephemeris& gps_eph, double obs_time)
 {
     const double gps_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>((gps_t + 604800 * static_cast<double>(gps_eph.i_GPS_week % 1024)) * 1000));
+    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((gps_t + 604800 * static_cast<double>(gps_eph.i_GPS_week % 1024)) * 1000));
     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
     std::string now_ptime = to_iso_string(p_time);
     std::string hours = now_ptime.substr(9, 2);
     std::string minutes = now_ptime.substr(11, 2);
     std::string seconds = now_ptime.substr(13, 8);
     //boost::gregorian::date d(boost::gregorian::from_undelimited_string(today_ptime));
-    long unsigned int seconds_of_day = boost::lexical_cast<unsigned int>(hours) * 60 * 60 + boost::lexical_cast<unsigned int>(minutes) * 60 + boost::lexical_cast<unsigned int>(seconds);
+    uint64_t seconds_of_day = boost::lexical_cast<unsigned int>(hours) * 60 * 60 + boost::lexical_cast<unsigned int>(minutes) * 60 + boost::lexical_cast<unsigned int>(seconds);
     DF052 = std::bitset<17>(seconds_of_day);
     return 0;
 }
@@ -4159,7 +4159,7 @@ int Rtcm::set_DF083(const Gps_Ephemeris& gps_eph)
 
 int Rtcm::set_DF084(const Gps_Ephemeris& gps_eph)
 {
-    long int af0 = static_cast<long int>(std::round(gps_eph.d_A_f0 / A_F0_LSB));
+    int64_t af0 = static_cast<int64_t>(std::round(gps_eph.d_A_f0 / A_F0_LSB));
     DF084 = std::bitset<22>(af0);
     return 0;
 }
@@ -4191,7 +4191,7 @@ int Rtcm::set_DF087(const Gps_Ephemeris& gps_eph)
 
 int Rtcm::set_DF088(const Gps_Ephemeris& gps_eph)
 {
-    long int m0 = static_cast<long int>(std::round(gps_eph.d_M_0 / M_0_LSB));
+    int64_t m0 = static_cast<int64_t>(std::round(gps_eph.d_M_0 / M_0_LSB));
     DF088 = std::bitset<32>(m0);
     return 0;
 }
@@ -4206,7 +4206,7 @@ int Rtcm::set_DF089(const Gps_Ephemeris& gps_eph)
 
 int Rtcm::set_DF090(const Gps_Ephemeris& gps_eph)
 {
-    unsigned long int ecc = static_cast<unsigned long int>(std::round(gps_eph.d_e_eccentricity / E_LSB));
+    uint64_t ecc = static_cast<uint64_t>(std::round(gps_eph.d_e_eccentricity / E_LSB));
     DF090 = std::bitset<32>(ecc);
     return 0;
 }
@@ -4222,7 +4222,7 @@ int Rtcm::set_DF091(const Gps_Ephemeris& gps_eph)
 
 int Rtcm::set_DF092(const Gps_Ephemeris& gps_eph)
 {
-    unsigned long int sqr_a = static_cast<unsigned long int>(std::round(gps_eph.d_sqrt_A / SQRT_A_LSB));
+    uint64_t sqr_a = static_cast<uint64_t>(std::round(gps_eph.d_sqrt_A / SQRT_A_LSB));
     DF092 = std::bitset<32>(sqr_a);
     return 0;
 }
@@ -4246,7 +4246,7 @@ int Rtcm::set_DF094(const Gps_Ephemeris& gps_eph)
 
 int Rtcm::set_DF095(const Gps_Ephemeris& gps_eph)
 {
-    long int Omega0 = static_cast<long int>(std::round(gps_eph.d_OMEGA0 / OMEGA_0_LSB));
+    int64_t Omega0 = static_cast<int64_t>(std::round(gps_eph.d_OMEGA0 / OMEGA_0_LSB));
     DF095 = std::bitset<32>(Omega0);
     return 0;
 }
@@ -4262,7 +4262,7 @@ int Rtcm::set_DF096(const Gps_Ephemeris& gps_eph)
 
 int Rtcm::set_DF097(const Gps_Ephemeris& gps_eph)
 {
-    long int i0 = static_cast<long int>(std::round(gps_eph.d_i_0 / I_0_LSB));
+    int64_t i0 = static_cast<int64_t>(std::round(gps_eph.d_i_0 / I_0_LSB));
     DF097 = std::bitset<32>(i0);
     return 0;
 }
@@ -4278,7 +4278,7 @@ int Rtcm::set_DF098(const Gps_Ephemeris& gps_eph)
 
 int Rtcm::set_DF099(const Gps_Ephemeris& gps_eph)
 {
-    long int omega = static_cast<long int>(std::round(gps_eph.d_OMEGA / OMEGA_LSB));
+    int64_t omega = static_cast<int64_t>(std::round(gps_eph.d_OMEGA / OMEGA_LSB));
     DF099 = std::bitset<32>(omega);
     return 0;
 }
@@ -4286,7 +4286,7 @@ int Rtcm::set_DF099(const Gps_Ephemeris& gps_eph)
 
 int Rtcm::set_DF100(const Gps_Ephemeris& gps_eph)
 {
-    long int omegadot = static_cast<long int>(std::round(gps_eph.d_OMEGA_DOT / OMEGA_DOT_LSB));
+    int64_t omegadot = static_cast<int64_t>(std::round(gps_eph.d_OMEGA_DOT / OMEGA_DOT_LSB));
     DF100 = std::bitset<24>(omegadot);
     return 0;
 }
@@ -4636,7 +4636,7 @@ int Rtcm::set_DF137(const Gps_Ephemeris& gps_eph)
 int Rtcm::set_DF248(double obs_time)
 {
     // TOW in milliseconds from the beginning of the Galileo week, measured in Galileo time
-    unsigned long int tow = static_cast<unsigned long int>(std::round(obs_time * 1000));
+    uint64_t tow = static_cast<uint64_t>(std::round(obs_time * 1000));
     if (tow > 604799999)
         {
             LOG(WARNING) << "To large TOW! Set to the last millisecond of the week";
@@ -4722,7 +4722,7 @@ int Rtcm::set_DF294(const Galileo_Ephemeris& gal_eph)
 
 int Rtcm::set_DF295(const Galileo_Ephemeris& gal_eph)
 {
-    long int af1 = static_cast<long int>(std::round(gal_eph.af1_4 / FNAV_af1_1_LSB));
+    int64_t af1 = static_cast<int64_t>(std::round(gal_eph.af1_4 / FNAV_af1_1_LSB));
     DF295 = std::bitset<21>(af1);
     return 0;
 }
@@ -4730,7 +4730,7 @@ int Rtcm::set_DF295(const Galileo_Ephemeris& gal_eph)
 
 int Rtcm::set_DF296(const Galileo_Ephemeris& gal_eph)
 {
-    long int af0 = static_cast<unsigned int>(std::round(gal_eph.af0_4 / FNAV_af0_1_LSB));
+    int64_t af0 = static_cast<unsigned int>(std::round(gal_eph.af0_4 / FNAV_af0_1_LSB));
     DF296 = std::bitset<31>(af0);
     return 0;
 }
@@ -4754,7 +4754,7 @@ int Rtcm::set_DF298(const Galileo_Ephemeris& gal_eph)
 
 int Rtcm::set_DF299(const Galileo_Ephemeris& gal_eph)
 {
-    long int m0 = static_cast<long int>(std::round(gal_eph.M0_1 / FNAV_M0_2_LSB));
+    int64_t m0 = static_cast<int64_t>(std::round(gal_eph.M0_1 / FNAV_M0_2_LSB));
     DF299 = std::bitset<32>(m0);
     return 0;
 }
@@ -4770,7 +4770,7 @@ int Rtcm::set_DF300(const Galileo_Ephemeris& gal_eph)
 
 int Rtcm::set_DF301(const Galileo_Ephemeris& gal_eph)
 {
-    unsigned long int ecc = static_cast<unsigned long int>(std::round(gal_eph.e_1 / FNAV_e_2_LSB));
+    uint64_t ecc = static_cast<uint64_t>(std::round(gal_eph.e_1 / FNAV_e_2_LSB));
     DF301 = std::bitset<32>(ecc);
     return 0;
 }
@@ -4786,7 +4786,7 @@ int Rtcm::set_DF302(const Galileo_Ephemeris& gal_eph)
 
 int Rtcm::set_DF303(const Galileo_Ephemeris& gal_eph)
 {
-    unsigned long int sqr_a = static_cast<unsigned long int>(std::round(gal_eph.A_1 / FNAV_a12_2_LSB));
+    uint64_t sqr_a = static_cast<uint64_t>(std::round(gal_eph.A_1 / FNAV_a12_2_LSB));
     DF303 = std::bitset<32>(sqr_a);
     return 0;
 }
@@ -4810,7 +4810,7 @@ int Rtcm::set_DF305(const Galileo_Ephemeris& gal_eph)
 
 int Rtcm::set_DF306(const Galileo_Ephemeris& gal_eph)
 {
-    long int Omega0 = static_cast<long int>(std::round(gal_eph.OMEGA_0_2 / FNAV_omega0_2_LSB));
+    int64_t Omega0 = static_cast<int64_t>(std::round(gal_eph.OMEGA_0_2 / FNAV_omega0_2_LSB));
     DF306 = std::bitset<32>(Omega0);
     return 0;
 }
@@ -4826,7 +4826,7 @@ int Rtcm::set_DF307(const Galileo_Ephemeris& gal_eph)
 
 int Rtcm::set_DF308(const Galileo_Ephemeris& gal_eph)
 {
-    long int i0 = static_cast<long int>(std::round(gal_eph.i_0_2 / FNAV_i0_3_LSB));
+    int64_t i0 = static_cast<int64_t>(std::round(gal_eph.i_0_2 / FNAV_i0_3_LSB));
     DF308 = std::bitset<32>(i0);
     return 0;
 }
@@ -4850,7 +4850,7 @@ int Rtcm::set_DF310(const Galileo_Ephemeris& gal_eph)
 
 int Rtcm::set_DF311(const Galileo_Ephemeris& gal_eph)
 {
-    long int Omegadot = static_cast<long int>(std::round(gal_eph.OMEGA_dot_3 / FNAV_omegadot_2_LSB));
+    int64_t Omegadot = static_cast<int64_t>(std::round(gal_eph.OMEGA_dot_3 / FNAV_omegadot_2_LSB));
     DF311 = std::bitset<24>(Omegadot);
     return 0;
 }
@@ -5226,7 +5226,7 @@ int Rtcm::set_DF401(const Gnss_Synchro& gnss_synchro)
     double meters_to_miliseconds = GPS_C_m_s * 0.001;
     double rough_range_m = std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10;
     double phrng_m;
-    long int fine_phaserange;
+    int64_t fine_phaserange;
 
     double lambda = 0.0;
     std::string sig_(gnss_synchro.Signal);
@@ -5284,7 +5284,7 @@ int Rtcm::set_DF401(const Gnss_Synchro& gnss_synchro)
         }
     else
         {
-            fine_phaserange = static_cast<long int>(std::round(phrng_m / meters_to_miliseconds / TWO_N29));
+            fine_phaserange = static_cast<int64_t>(std::round(phrng_m / meters_to_miliseconds / TWO_N29));
         }
 
     DF401 = std::bitset<22>(fine_phaserange);
@@ -5397,7 +5397,7 @@ int Rtcm::set_DF405(const Gnss_Synchro& gnss_synchro)
     double meters_to_miliseconds = GPS_C_m_s * 0.001;
     double rough_range_m = std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10;
     double psrng_s;
-    long int fine_pseudorange;
+    int64_t fine_pseudorange;
 
     psrng_s = gnss_synchro.Pseudorange_m - rough_range_m;
 
@@ -5411,7 +5411,7 @@ int Rtcm::set_DF405(const Gnss_Synchro& gnss_synchro)
         }
     else
         {
-            fine_pseudorange = static_cast<long int>(std::round(psrng_s / meters_to_miliseconds / TWO_N29));
+            fine_pseudorange = static_cast<int64_t>(std::round(psrng_s / meters_to_miliseconds / TWO_N29));
         }
     DF405 = std::bitset<20>(fine_pseudorange);
     return 0;
@@ -5420,7 +5420,7 @@ int Rtcm::set_DF405(const Gnss_Synchro& gnss_synchro)
 
 int Rtcm::set_DF406(const Gnss_Synchro& gnss_synchro)
 {
-    long int fine_phaserange_ex;
+    int64_t fine_phaserange_ex;
     double meters_to_miliseconds = GPS_C_m_s * 0.001;
     double rough_range_m = std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10;
     double phrng_m;
@@ -5479,7 +5479,7 @@ int Rtcm::set_DF406(const Gnss_Synchro& gnss_synchro)
         }
     else
         {
-            fine_phaserange_ex = static_cast<long int>(std::round(phrng_m / meters_to_miliseconds / TWO_N31));
+            fine_phaserange_ex = static_cast<int64_t>(std::round(phrng_m / meters_to_miliseconds / TWO_N31));
         }
 
     DF406 = std::bitset<24>(fine_phaserange_ex);

@@ -49,7 +49,7 @@ using google::LogMessage;
 
 gps_l1_ca_dll_pll_tracking_gpu_cc_sptr
 gps_l1_ca_dll_pll_make_tracking_gpu_cc(
-    long fs_in,
+    int64_t fs_in,
     unsigned int vector_length,
     bool dump,
     std::string dump_filename,
@@ -73,7 +73,7 @@ void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::forecast(int noutput_items,
 
 
 Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
-    long fs_in,
+    int64_t fs_in,
     unsigned int vector_length,
     bool dump,
     std::string dump_filename,
@@ -163,7 +163,7 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
     d_rem_code_phase_chips = 0.0;
     d_code_phase_step_chips = 0.0;
     d_carrier_phase_step_rad = 0.0;
-    //set_min_output_buffer((long int)300);
+    //set_min_output_buffer((int64_t)300);
 }
 
 
@@ -176,9 +176,9 @@ void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::start_tracking()
     d_acq_carrier_doppler_hz = d_acquisition_gnss_synchro->Acq_doppler_hz;
     d_acq_sample_stamp = d_acquisition_gnss_synchro->Acq_samplestamp_samples;
 
-    long int acq_trk_diff_samples;
+    int64_t acq_trk_diff_samples;
     double acq_trk_diff_seconds;
-    acq_trk_diff_samples = static_cast<long int>(d_sample_counter) - static_cast<long int>(d_acq_sample_stamp);  //-d_vector_length;
+    acq_trk_diff_samples = static_cast<int64_t>(d_sample_counter) - static_cast<int64_t>(d_acq_sample_stamp);  //-d_vector_length;
     DLOG(INFO) << "Number of samples between Acquisition and Tracking =" << acq_trk_diff_samples;
     acq_trk_diff_seconds = static_cast<double>(acq_trk_diff_samples) / static_cast<double>(d_fs_in);
     //doppler effect
@@ -516,7 +516,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
                     d_dump_file.write(reinterpret_cast<char *>(&prompt_I), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char *>(&prompt_Q), sizeof(float));
                     // PRN start sample stamp
-                    d_dump_file.write(reinterpret_cast<char *>(&d_sample_counter), sizeof(unsigned long int));
+                    d_dump_file.write(reinterpret_cast<char *>(&d_sample_counter), sizeof(uint64_t));
                     // accumulated carrier phase
                     tmp_float = d_acc_carrier_phase_cycles * GPS_TWO_PI;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));

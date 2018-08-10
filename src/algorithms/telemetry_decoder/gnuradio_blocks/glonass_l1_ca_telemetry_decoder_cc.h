@@ -91,15 +91,15 @@ private:
     std::deque<Gnss_Synchro> d_symbol_history;
 
     //!< Variables for internal functionality
-    long unsigned int d_sample_counter;  //!< Sample counter as an index (1,2,3,..etc) indicating number of samples processed
-    long unsigned int d_preamble_index;  //!< Index of sample number where preamble was found
-    unsigned int d_stat;                 //!< Status of decoder
-    bool d_flag_frame_sync;              //!< Indicate when a frame sync is achieved
-    bool d_flag_parity;                  //!< Flag indicating when parity check was achieved (crc check)
-    bool d_flag_preamble;                //!< Flag indicating when preamble was found
-    int d_CRC_error_counter;             //!< Number of failed CRC operations
-    bool flag_TOW_set;                   //!< Indicates when time of week is set
-    double delta_t;                      //!< GPS-GLONASS time offset
+    uint64_t d_sample_counter;  //!< Sample counter as an index (1,2,3,..etc) indicating number of samples processed
+    uint64_t d_preamble_index;  //!< Index of sample number where preamble was found
+    unsigned int d_stat;        //!< Status of decoder
+    bool d_flag_frame_sync;     //!< Indicate when a frame sync is achieved
+    bool d_flag_parity;         //!< Flag indicating when parity check was achieved (crc check)
+    bool d_flag_preamble;       //!< Flag indicating when preamble was found
+    int d_CRC_error_counter;    //!< Number of failed CRC operations
+    bool flag_TOW_set;          //!< Indicates when time of week is set
+    double delta_t;             //!< GPS-GLONASS time offset
 
     //!< Navigation Message variable
     Glonass_Gnav_Navigation_Message d_nav;

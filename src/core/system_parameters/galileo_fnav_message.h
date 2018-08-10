@@ -45,6 +45,7 @@
 #include "Galileo_E5a.h"
 #include <boost/cstdint.hpp>  // for boost::uint16_t
 #include <bitset>
+#include <cstdint>
 #include <string>
 #include <vector>
 #include <utility>
@@ -213,8 +214,8 @@ public:
 private:
     bool _CRC_test(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, boost::uint32_t checksum);
     void decode_page(std::string data);
-    unsigned long int read_navigation_unsigned(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int, int>> parameter);
-    signed long int read_navigation_signed(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int, int>> parameter);
+    uint64_t read_navigation_unsigned(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int, int>> parameter);
+    int64_t read_navigation_signed(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int, int>> parameter);
 
     std::string omega0_1;
     //std::string omega0_2;

@@ -387,7 +387,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_volk()
     float magt = 0.0;
     float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
     gr_complex *in = d_in_buffer[d_well_count];
-    unsigned long int samplestamp = d_sample_counter_buffer[d_well_count];
+    uint64_t samplestamp = d_sample_counter_buffer[d_well_count];
 
     d_input_power = 0.0;
     d_mag = 0.0;
@@ -510,7 +510,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
     float magt = 0.0;
     float fft_normalization_factor = (static_cast<float>(d_fft_size_pow2) * static_cast<float>(d_fft_size));  //This works, but I am not sure why.
     gr_complex *in = d_in_buffer[d_well_count];
-    unsigned long int samplestamp = d_sample_counter_buffer[d_well_count];
+    uint64_t samplestamp = d_sample_counter_buffer[d_well_count];
 
     d_input_power = 0.0;
     d_mag = 0.0;

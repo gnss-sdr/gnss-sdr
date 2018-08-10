@@ -134,11 +134,11 @@ int hybrid_observables_cc::save_matfile()
             return 1;
         }
     // count number of epochs and rewind
-    long int num_epoch = 0;
+    int64_t num_epoch = 0;
     if (dump_file.is_open())
         {
             size = dump_file.tellg();
-            num_epoch = static_cast<long int>(size) / static_cast<long int>(epoch_size_bytes);
+            num_epoch = static_cast<int64_t>(size) / static_cast<int64_t>(epoch_size_bytes);
             dump_file.seekg(0, std::ios::beg);
         }
     else
@@ -168,7 +168,7 @@ int hybrid_observables_cc::save_matfile()
         {
             if (dump_file.is_open())
                 {
-                    for (long int i = 0; i < num_epoch; i++)
+                    for (int64_t i = 0; i < num_epoch; i++)
                         {
                             for (unsigned int chan = 0; chan < d_nchannels_out; chan++)
                                 {
@@ -216,7 +216,7 @@ int hybrid_observables_cc::save_matfile()
     double *PRN_aux = new double[d_nchannels_out * num_epoch];
     double *Flag_valid_pseudorange_aux = new double[d_nchannels_out * num_epoch];
     unsigned int k = 0;
-    for (long int j = 0; j < num_epoch; j++)
+    for (int64_t j = 0; j < num_epoch; j++)
         {
             for (unsigned int i = 0; i < d_nchannels_out; i++)
                 {
@@ -241,7 +241,7 @@ int hybrid_observables_cc::save_matfile()
         }
     filename.append(".mat");
     matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
-    if (reinterpret_cast<long *>(matfp) != NULL)
+    if (reinterpret_cast<int64_t *>(matfp) != NULL)
         {
             size_t dims[2] = {static_cast<size_t>(d_nchannels_out), static_cast<size_t>(num_epoch)};
             matvar = Mat_VarCreate("RX_time", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, RX_time_aux, MAT_F_DONT_COPY_DATA);
@@ -308,14 +308,14 @@ double hybrid_observables_cc::compute_T_rx_s(const Gnss_Synchro &a)
     return ((static_cast<double>(a.Tracking_sample_counter) + a.Code_phase_samples) / static_cast<double>(a.fs));
 }
 
-bool hybrid_observables_cc::interp_trk_obs(Gnss_Synchro &interpolated_obs, const unsigned int &ch, const unsigned long int &rx_clock)
+bool hybrid_observables_cc::interp_trk_obs(Gnss_Synchro &interpolated_obs, const unsigned int &ch, const uint64_t &rx_clock)
 {
     int nearest_element = -1;
-    long int abs_diff;
-    long int old_abs_diff = std::numeric_limits<long int>::max();
+    int64_t abs_diff;
+    int64_t old_abs_diff = std::numeric_limits<int64_t>::max();
     for (unsigned int i = 0; i < d_gnss_synchro_history->size(ch); i++)
         {
-            abs_diff = labs(static_cast<long int>(rx_clock) - static_cast<long int>(d_gnss_synchro_history->at(ch, i).Tracking_sample_counter));
+            abs_diff = labs(static_cast<int64_t>(rx_clock) - static_cast<int64_t>(d_gnss_synchro_history->at(ch, i).Tracking_sample_counter));
             if (old_abs_diff > abs_diff)
                 {
                     old_abs_diff = abs_diff;

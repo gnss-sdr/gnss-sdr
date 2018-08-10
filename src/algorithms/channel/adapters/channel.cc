@@ -34,7 +34,7 @@
 #include "gnss_sdr_flags.h"
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
-
+#include <cstdint>
 
 using google::LogMessage;
 
@@ -66,7 +66,7 @@ Channel::Channel(ConfigurationInterface* configuration, unsigned int channel,
     // Provide a warning to the user about the change of parameter name
     if (channel_ == 0)
         {
-            long int deprecation_warning = configuration->property("GNSS-SDR.internal_fs_hz", 0);
+            int64_t deprecation_warning = configuration->property("GNSS-SDR.internal_fs_hz", 0);
             if (deprecation_warning != 0)
                 {
                     std::cout << "WARNING: The global parameter name GNSS-SDR.internal_fs_hz has been DEPRECATED." << std::endl;

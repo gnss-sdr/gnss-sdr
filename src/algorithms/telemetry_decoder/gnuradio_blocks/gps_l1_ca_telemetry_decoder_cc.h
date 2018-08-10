@@ -97,7 +97,7 @@ private:
     Gnss_Satellite d_satellite;
     int d_channel;
 
-    unsigned long int d_preamble_time_samples;
+    uint64_t d_preamble_time_samples;
 
     unsigned int d_TOW_at_Preamble_ms;
     unsigned int d_TOW_at_current_symbol_ms;

@@ -1,7 +1,7 @@
 /*!
- * \file gnss_sdr_time_counter.h
+ * \file gnss_sdr_fpga_sample_counter.h
  * \brief Simple block to report the current receiver time based on the output of the tracking or telemetry blocks
- * \author Antonio Ramos 2018. antonio.ramosdet(at)gmail.com
+ * \author Javier Arribas 2018. jarribas(at)cttc.es
  *
  *
  * -------------------------------------------------------------------------
@@ -28,23 +28,29 @@
  *
  * -------------------------------------------------------------------------
  */
-#ifndef GNSS_SDR_TIME_COUNTER_H_
-#define GNSS_SDR_TIME_COUNTER_H_
+#ifndef GNSS_SDR_FPGA_sample_counter_H_
+#define GNSS_SDR_FPGA_sample_counter_H_
 
 #include <gnuradio/block.h>
 #include <boost/shared_ptr.hpp>
 #include <cstdint>
 
-class gnss_sdr_time_counter;
+class gnss_sdr_fpga_sample_counter;
 
-typedef boost::shared_ptr<gnss_sdr_time_counter> gnss_sdr_time_counter_sptr;
+typedef boost::shared_ptr<gnss_sdr_fpga_sample_counter> gnss_sdr_fpga_sample_counter_sptr;
 
-gnss_sdr_time_counter_sptr gnss_sdr_make_time_counter();
+gnss_sdr_fpga_sample_counter_sptr gnss_sdr_make_fpga_sample_counter(double _fs, int32_t _interval_ms);
 
-class gnss_sdr_time_counter : public gr::block
+class gnss_sdr_fpga_sample_counter : public gr::block
 {
 private:
-    gnss_sdr_time_counter();
+    gnss_sdr_fpga_sample_counter(double _fs, int32_t _interval_ms);
+    bool start();
+    bool stop();
+    uint32_t samples_per_output;
+    double fs;
+    uint64_t sample_counter;
+    int32_t interval_ms;
     int64_t current_T_rx_ms;  // Receiver time in ms since the beginning of the run
     uint32_t current_s;       // Receiver time in seconds, modulo 60
     bool flag_m;              // True if the receiver has been running for at least 1 minute
@@ -54,11 +60,14 @@ private:
     bool flag_days;           // True if the receiver has been running for at least 1 day
     uint32_t current_days;    // Receiver time in days since the beginning of the run
     int32_t report_interval_ms;
+    bool flag_enable_send_msg;
 
 public:
-    friend gnss_sdr_time_counter_sptr gnss_sdr_make_time_counter();
-    int general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
-        gr_vector_const_void_star &input_items __attribute__((unused)), gr_vector_void_star &output_items);
+    friend gnss_sdr_fpga_sample_counter_sptr gnss_sdr_make_fpga_sample_counter(double _fs, int32_t _interval_ms);
+    int general_work(int noutput_items,
+        gr_vector_int &ninput_items,
+        gr_vector_const_void_star &input_items,
+        gr_vector_void_star &output_items);
 };
 
-#endif /*GNSS_SDR_SAMPLE_COUNTER_H_*/
+#endif /*GNSS_SDR_FPGA_sample_counter_H_*/

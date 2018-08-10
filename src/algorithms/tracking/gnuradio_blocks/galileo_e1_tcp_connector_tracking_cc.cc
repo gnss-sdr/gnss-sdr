@@ -60,7 +60,7 @@
 using google::LogMessage;
 
 galileo_e1_tcp_connector_tracking_cc_sptr galileo_e1_tcp_connector_make_tracking_cc(
-    long fs_in,
+    int64_t fs_in,
     unsigned int vector_length,
     bool dump,
     std::string dump_filename,
@@ -86,7 +86,7 @@ void Galileo_E1_Tcp_Connector_Tracking_cc::forecast(int noutput_items,
 
 
 Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
-    long fs_in,
+    int64_t fs_in,
     unsigned int vector_length,
     bool dump,
     std::string dump_filename,
@@ -498,7 +498,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
                     d_dump_file.write(reinterpret_cast<char *>(&prompt_I), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char *>(&prompt_Q), sizeof(float));
                     // PRN start sample stamp
-                    d_dump_file.write(reinterpret_cast<char *>(&d_sample_counter), sizeof(unsigned long int));
+                    d_dump_file.write(reinterpret_cast<char *>(&d_sample_counter), sizeof(uint64_t));
                     // accumulated carrier phase
                     tmp_float = d_acc_carrier_phase_rad;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));

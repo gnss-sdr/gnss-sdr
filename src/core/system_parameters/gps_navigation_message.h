@@ -39,6 +39,7 @@
 #include "gps_almanac.h"
 #include "gps_utc_model.h"
 #include <bitset>
+#include <cstdint>
 #include <map>
 #include <string>
 #include <utility>
@@ -53,8 +54,8 @@
 class Gps_Navigation_Message
 {
 private:
-    unsigned long int read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int, int>> parameter);
-    signed long int read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int, int>> parameter);
+    uint64_t read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int, int>> parameter);
+    int64_t read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int, int>> parameter);
     bool read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int, int>> parameter);
     void print_gps_word_bytes(unsigned int GPS_word);
 

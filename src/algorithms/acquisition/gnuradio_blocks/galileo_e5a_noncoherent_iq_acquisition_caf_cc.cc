@@ -48,7 +48,7 @@ using google::LogMessage;
 galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(
     unsigned int sampled_ms,
     unsigned int max_dwells,
-    unsigned int doppler_max, long fs_in,
+    unsigned int doppler_max, int64_t fs_in,
     int samples_per_ms, int samples_per_code,
     bool bit_transition_flag,
     bool dump,
@@ -67,7 +67,7 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
     unsigned int sampled_ms,
     unsigned int max_dwells,
     unsigned int doppler_max,
-    long fs_in,
+    int64_t fs_in,
     int samples_per_ms,
     int samples_per_code,
     bool bit_transition_flag,

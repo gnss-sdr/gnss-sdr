@@ -59,7 +59,7 @@ using google::LogMessage;
 
 glonass_l2_ca_dll_pll_c_aid_tracking_cc_sptr
 glonass_l2_ca_dll_pll_c_aid_make_tracking_cc(
-    long fs_in,
+    int64_t fs_in,
     unsigned int vector_length,
     bool dump,
     std::string dump_filename,
@@ -99,7 +99,7 @@ void glonass_l2_ca_dll_pll_c_aid_tracking_cc::msg_handler_preamble_index(pmt::pm
 
 
 glonass_l2_ca_dll_pll_c_aid_tracking_cc::glonass_l2_ca_dll_pll_c_aid_tracking_cc(
-    long fs_in,
+    int64_t fs_in,
     unsigned int vector_length,
     bool dump,
     std::string dump_filename,
@@ -208,7 +208,7 @@ glonass_l2_ca_dll_pll_c_aid_tracking_cc::glonass_l2_ca_dll_pll_c_aid_tracking_cc
 
     d_glonass_freq_ch = 0;
 
-    //set_min_output_buffer((long int)300);
+    //set_min_output_buffer((int64_t)300);
 }
 
 
@@ -221,9 +221,9 @@ void glonass_l2_ca_dll_pll_c_aid_tracking_cc::start_tracking()
     d_acq_carrier_doppler_hz = d_acquisition_gnss_synchro->Acq_doppler_hz;
     d_acq_sample_stamp = d_acquisition_gnss_synchro->Acq_samplestamp_samples;
 
-    long int acq_trk_diff_samples;
+    int64_t acq_trk_diff_samples;
     double acq_trk_diff_seconds;
-    acq_trk_diff_samples = static_cast<long int>(d_sample_counter) - static_cast<long int>(d_acq_sample_stamp);  //-d_vector_length;
+    acq_trk_diff_samples = static_cast<int64_t>(d_sample_counter) - static_cast<int64_t>(d_acq_sample_stamp);  //-d_vector_length;
     DLOG(INFO) << "Number of samples between Acquisition and Tracking =" << acq_trk_diff_samples;
     acq_trk_diff_seconds = static_cast<double>(acq_trk_diff_samples) / static_cast<double>(d_fs_in);
     // Doppler effect
@@ -351,7 +351,7 @@ int glonass_l2_ca_dll_pll_c_aid_tracking_cc::save_matfile()
     std::ifstream::pos_type size;
     int number_of_double_vars = 11;
     int number_of_float_vars = 5;
-    int epoch_size_bytes = sizeof(unsigned long int) + sizeof(double) * number_of_double_vars +
+    int epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
                            sizeof(float) * number_of_float_vars + sizeof(unsigned int);
     std::ifstream dump_file;
     dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
@@ -365,11 +365,11 @@ int glonass_l2_ca_dll_pll_c_aid_tracking_cc::save_matfile()
             return 1;
         }
     // count number of epochs and rewind
-    long int num_epoch = 0;
+    int64_t num_epoch = 0;
     if (dump_file.is_open())
         {
             size = dump_file.tellg();
-            num_epoch = static_cast<long int>(size) / static_cast<long int>(epoch_size_bytes);
+            num_epoch = static_cast<int64_t>(size) / static_cast<int64_t>(epoch_size_bytes);
             dump_file.seekg(0, std::ios::beg);
         }
     else
@@ -381,7 +381,7 @@ int glonass_l2_ca_dll_pll_c_aid_tracking_cc::save_matfile()
     float *abs_L = new float[num_epoch];
     float *Prompt_I = new float[num_epoch];
     float *Prompt_Q = new float[num_epoch];
-    unsigned long int *PRN_start_sample_count = new unsigned long int[num_epoch];
+    uint64_t *PRN_start_sample_count = new uint64_t[num_epoch];
     double *acc_carrier_phase_rad = new double[num_epoch];
     double *carrier_doppler_hz = new double[num_epoch];
     double *code_freq_chips = new double[num_epoch];
@@ -399,14 +399,14 @@ int glonass_l2_ca_dll_pll_c_aid_tracking_cc::save_matfile()
         {
             if (dump_file.is_open())
                 {
-                    for (long int i = 0; i < num_epoch; i++)
+                    for (int64_t i = 0; i < num_epoch; i++)
                         {
                             dump_file.read(reinterpret_cast<char *>(&abs_E[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&abs_P[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&abs_L[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&Prompt_I[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&Prompt_Q[i]), sizeof(float));
-                            dump_file.read(reinterpret_cast<char *>(&PRN_start_sample_count[i]), sizeof(unsigned long int));
+                            dump_file.read(reinterpret_cast<char *>(&PRN_start_sample_count[i]), sizeof(uint64_t));
                             dump_file.read(reinterpret_cast<char *>(&acc_carrier_phase_rad[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&carrier_doppler_hz[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&code_freq_chips[i]), sizeof(double));
@@ -454,7 +454,7 @@ int glonass_l2_ca_dll_pll_c_aid_tracking_cc::save_matfile()
     filename.erase(filename.length() - 4, 4);
     filename.append(".mat");
     matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
-    if (reinterpret_cast<long *>(matfp) != NULL)
+    if (reinterpret_cast<int64_t *>(matfp) != NULL)
         {
             size_t dims[2] = {1, static_cast<size_t>(num_epoch)};
             matvar = Mat_VarCreate("abs_E", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, abs_E, 0);
@@ -649,7 +649,7 @@ int glonass_l2_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
             bool enable_dll_pll;
             if (d_enable_extended_integration == true)
                 {
-                    long int symbol_diff = round(1000.0 * ((static_cast<double>(d_sample_counter) + d_rem_code_phase_samples) / static_cast<double>(d_fs_in) - d_preamble_timestamp_s));
+                    int64_t symbol_diff = round(1000.0 * ((static_cast<double>(d_sample_counter) + d_rem_code_phase_samples) / static_cast<double>(d_fs_in) - d_preamble_timestamp_s));
                     if (symbol_diff > 0 and symbol_diff % d_extend_correlation_ms == 0)
                         {
                             // compute coherent integration and enable tracking loop
@@ -877,7 +877,7 @@ int glonass_l2_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
                     d_dump_file.write(reinterpret_cast<char *>(&prompt_I), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char *>(&prompt_Q), sizeof(float));
                     // PRN start sample stamp
-                    d_dump_file.write(reinterpret_cast<char *>(&d_sample_counter), sizeof(unsigned long int));
+                    d_dump_file.write(reinterpret_cast<char *>(&d_sample_counter), sizeof(uint64_t));
                     // accumulated carrier phase
                     tmp_float = d_acc_carrier_phase_cycles * GLONASS_TWO_PI;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));

@@ -177,8 +177,8 @@ private:
     // PRN period in samples
     int d_current_prn_length_samples;
     // processing samples counters
-    unsigned long int d_sample_counter;
-    unsigned long int d_acq_sample_stamp;
+    uint64_t d_sample_counter;
+    uint64_t d_acq_sample_stamp;
 
     // CN0 estimation and lock detector
     int d_cn0_estimation_counter;

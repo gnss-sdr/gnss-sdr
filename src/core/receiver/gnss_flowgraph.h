@@ -43,8 +43,6 @@
 #include "gnss_synchro_monitor.h"
 #include <gnuradio/top_block.h>
 #include <gnuradio/msg_queue.h>
-#include <gnuradio/blocks/null_source.h>
-#include <gnuradio/blocks/throttle.h>
 #include <list>
 #include <map>
 #include <memory>
@@ -54,7 +52,7 @@
 #include <vector>
 
 #if ENABLE_FPGA
-#include "gnss_sdr_time_counter.h"
+#include "gnss_sdr_fpga_sample_counter.h"
 #endif
 
 class GNSSBlockInterface;
@@ -157,10 +155,8 @@ private:
     std::vector<std::shared_ptr<ChannelInterface>> channels_;
     gnss_sdr_sample_counter_sptr ch_out_sample_counter;
 #if ENABLE_FPGA
-    gnss_sdr_time_counter_sptr time_counter_;
+    gnss_sdr_fpga_sample_counter_sptr ch_out_fpga_sample_counter;
 #endif
-    gr::blocks::null_source::sptr null_source_;
-    gr::blocks::throttle::sptr throttle_;
     gr::top_block_sptr top_block_;
     gr::msg_queue::sptr queue_;
 

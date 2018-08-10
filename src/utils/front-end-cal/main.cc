@@ -485,7 +485,7 @@ int main(int argc, char** argv)
 
                     fprintf(stdout, "Reference Time:\n");
                     fprintf(stdout, "  GPS Week: %d\n", Eph_map.begin()->second.i_GPS_week);
-                    fprintf(stdout, "  GPS TOW:  %ld %lf\n", (int64_t)current_TOW, (int64_t)current_TOW * 0.08);
+                    fprintf(stdout, "  GPS TOW:  %lld %lf\n", (int64_t)current_TOW, (int64_t)current_TOW * 0.08);
                     fprintf(stdout, "  ~ UTC:    %s", ctime(&t));
                     std::cout << "Current TOW obtained from SUPL assistance = " << current_TOW << std::endl;
                 }

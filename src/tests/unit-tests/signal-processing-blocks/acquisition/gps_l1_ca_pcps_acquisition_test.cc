@@ -84,7 +84,7 @@ void GpsL1CaPcpsAcquisitionTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            long int message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(msg);
             rx_message = message;
         }
     catch (boost::bad_any_cast &e)
@@ -340,7 +340,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
         elapsed_seconds = end - start;
     }) << "Failure running the top_block.";
 
-    unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
+    uint64_t nsamples = gnss_synchro.Acq_samplestamp_samples;
     std::cout << "Acquired " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
     ASSERT_EQ(1, msg_rx->rx_message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 

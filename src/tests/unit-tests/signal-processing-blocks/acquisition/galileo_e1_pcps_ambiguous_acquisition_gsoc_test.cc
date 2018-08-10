@@ -89,7 +89,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoCTest_msg_rx::msg_handler_events(pmt::p
 {
     try
         {
-            long int message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(msg);
             rx_message = message;
             channel_internal_queue.push(rx_message);
         }
@@ -306,7 +306,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
 
     stop_queue();
 
-    unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
+    uint64_t nsamples = gnss_synchro.Acq_samplestamp_samples;
     std::cout << "Acquired " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 
     EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 0=ACQ STOP.";

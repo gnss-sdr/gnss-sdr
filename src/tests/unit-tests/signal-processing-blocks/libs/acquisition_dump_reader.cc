@@ -102,7 +102,7 @@ bool acquisition_dump_reader::read_binary_acq()
     Mat_VarFree(var2_);
 
     var2_ = Mat_VarRead(matfile, "sample_counter");
-    sample_counter = *static_cast<long unsigned int*>(var2_->data);
+    sample_counter = *static_cast<uint64_t*>(var2_->data);
     Mat_VarFree(var2_);
 
     var2_ = Mat_VarRead(matfile, "d_positive_acq");

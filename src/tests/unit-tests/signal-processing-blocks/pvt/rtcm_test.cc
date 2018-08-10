@@ -103,8 +103,8 @@ TEST(RtcmTest, HexToInt)
     auto rtcm = std::make_shared<Rtcm>();
 
     std::string test1 = "2A";
-    long int test1_int = rtcm->hex_to_int(test1);
-    long int expected1 = 42;
+    int64_t test1_int = rtcm->hex_to_int(test1);
+    int64_t expected1 = 42;
     EXPECT_EQ(expected1, test1_int);
 }
 
@@ -112,7 +112,7 @@ TEST(RtcmTest, HexToInt)
 TEST(RtcmTest, HexToUint)
 {
     auto rtcm = std::make_shared<Rtcm>();
-    long unsigned int expected1 = 42;
+    uint64_t expected1 = 42;
     EXPECT_EQ(expected1, rtcm->hex_to_uint(rtcm->bin_to_hex("00101010")));
 }
 
@@ -122,8 +122,8 @@ TEST(RtcmTest, BinToDouble)
     auto rtcm = std::make_shared<Rtcm>();
 
     std::bitset<4> test1(5);
-    long int test1_int = static_cast<long int>(rtcm->bin_to_double(test1.to_string()));
-    long int expected1 = 5;
+    int64_t test1_int = static_cast<int64_t>(rtcm->bin_to_double(test1.to_string()));
+    int64_t expected1 = 5;
     EXPECT_EQ(expected1, test1_int);
 
     std::bitset<4> test2(-5);
@@ -137,9 +137,9 @@ TEST(RtcmTest, BinToDouble)
 TEST(RtcmTest, BinToUint)
 {
     auto rtcm = std::make_shared<Rtcm>();
-    long unsigned int expected1 = 42;
+    uint64_t expected1 = 42;
     EXPECT_EQ(expected1, rtcm->bin_to_uint("00101010"));
-    long unsigned int expected2 = 214;
+    uint64_t expected2 = 214;
     EXPECT_EQ(expected2, rtcm->bin_to_uint("11010110"));
 }
 
@@ -147,9 +147,9 @@ TEST(RtcmTest, BinToUint)
 TEST(RtcmTest, BinToInt)
 {
     auto rtcm = std::make_shared<Rtcm>();
-    long int expected1 = 42;
+    int64_t expected1 = 42;
     EXPECT_EQ(expected1, rtcm->bin_to_int("00101010"));
-    long int expected2 = -42;
+    int64_t expected2 = -42;
     EXPECT_EQ(expected2, rtcm->bin_to_int("11010110"));
 }
 
@@ -620,7 +620,7 @@ TEST(RtcmTest, InstantiateServer)
     std::string test6 = "0011";
     std::string test6_hex = rtcm->bin_to_hex(test6);
     EXPECT_EQ(0, test6_hex.compare("3"));
-    long unsigned int expected1 = 42;
+    uint64_t expected1 = 42;
     EXPECT_EQ(expected1, rtcm->bin_to_uint("00101010"));
     rtcm->run_server();
     std::string test4_bin = rtcm->hex_to_bin(test3);

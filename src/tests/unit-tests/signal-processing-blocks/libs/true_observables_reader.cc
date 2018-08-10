@@ -69,7 +69,7 @@ bool true_observables_reader::restart()
 }
 
 
-long int true_observables_reader::num_epochs()
+int64_t true_observables_reader::num_epochs()
 {
     std::ifstream::pos_type size;
     int number_of_vars_in_epoch = 6 * 12;
@@ -78,7 +78,7 @@ long int true_observables_reader::num_epochs()
     if (tmpfile.is_open())
         {
             size = tmpfile.tellg();
-            long int nepoch = size / epoch_size_bytes;
+            int64_t nepoch = size / epoch_size_bytes;
             return nepoch;
         }
     else

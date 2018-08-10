@@ -369,13 +369,20 @@ void fpga_acquisition::set_phase_step(unsigned int doppler_index)
 
 
 void fpga_acquisition::read_acquisition_results(uint32_t *max_index,
-    float *max_magnitude, unsigned *initial_sample, float *power_sum, unsigned *doppler_index)
+    float *max_magnitude, unsigned long int *initial_sample, float *power_sum, unsigned *doppler_index)
 {
+	unsigned long int initial_sample_tmp;
+
     unsigned readval = 0;
+    unsigned long int readval_long = 0;
     readval = d_map_base[1];
-    *initial_sample = readval;
+    initial_sample_tmp = readval;
+    //*initial_sample = readval;
     //printf("read initial sample dmap 1 = %d\n", readval);
-    readval = d_map_base[2];
+    readval_long = d_map_base[2];
+    initial_sample_tmp = initial_sample_tmp + (readval_long * (2^32));
+    *initial_sample = initial_sample_tmp;
+    readval = d_map_base[6];
     *max_magnitude = static_cast<float>(readval);
     //printf("read max_magnitude dmap 2 = %d\n", readval);
     readval = d_map_base[4];

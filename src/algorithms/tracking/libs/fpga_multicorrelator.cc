@@ -84,16 +84,22 @@
 #define LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY 0x0C000000
 #define TEST_REGISTER_TRACK_WRITEVAL 0x55AA
 
-int fpga_multicorrelator_8sc::read_sample_counter()
+unsigned long int fpga_multicorrelator_8sc::read_sample_counter()
 {
-	return d_map_base[d_SAMPLE_COUNTER_REG_ADDR];
+	unsigned long int sample_counter_tmp, sample_counter_msw_tmp;
+	sample_counter_tmp = d_map_base[d_SAMPLE_COUNTER_REG_ADDR_LSW];
+	sample_counter_msw_tmp = d_map_base[d_SAMPLE_COUNTER_REG_ADDR_MSW];
+	sample_counter_tmp = sample_counter_tmp + (sample_counter_msw_tmp * (2^32));
+	//return d_map_base[d_SAMPLE_COUNTER_REG_ADDR];
+	return sample_counter_tmp;
 }
 
-void fpga_multicorrelator_8sc::set_initial_sample(int samples_offset)
+void fpga_multicorrelator_8sc::set_initial_sample(unsigned long int samples_offset)
 {
     d_initial_sample_counter = samples_offset;
     //printf("www writing d map base %d = d_initial_sample_counter = %d\n", d_INITIAL_COUNTER_VALUE_REG_ADDR, d_initial_sample_counter);
-    d_map_base[d_INITIAL_COUNTER_VALUE_REG_ADDR] = d_initial_sample_counter;
+    d_map_base[d_INITIAL_COUNTER_VALUE_REG_ADDR_LSW] = (d_initial_sample_counter & 0xFFFFFFFF);
+    d_map_base[d_INITIAL_COUNTER_VALUE_REG_ADDR_MSW] = (d_initial_sample_counter >> 32) & 0xFFFFFFFF;
 }
        
 //void fpga_multicorrelator_8sc::set_local_code_and_taps(int code_length_chips,
@@ -228,7 +234,8 @@ fpga_multicorrelator_8sc::fpga_multicorrelator_8sc(int n_correlators,
             d_PHASE_STEP_RAD_REG_ADDR = 16;
             d_PROG_MEMS_ADDR = 17;
             d_DROP_SAMPLES_REG_ADDR = 18;
-            d_INITIAL_COUNTER_VALUE_REG_ADDR = 19;
+            d_INITIAL_COUNTER_VALUE_REG_ADDR_LSW = 19;
+            d_INITIAL_COUNTER_VALUE_REG_ADDR_MSW = 20;
             d_START_FLAG_ADDR = 30;
 //        }
 
@@ -247,16 +254,16 @@ fpga_multicorrelator_8sc::fpga_multicorrelator_8sc(int n_correlators,
  //       }
 
     // result 2's complement saturation value
-    if (d_multicorr_type == 0)
-        {
-            // multicorrelator with 3 correlators (16 registers only)
-            d_result_SAT_value = 1048576; // 21 bits 2's complement -> 2^20
-        }
-    else
-        {
-            // other types of multicorrelators (32 registers)
-            d_result_SAT_value = 4194304; // 23 bits 2's complement -> 2^22
-        }
+//    if (d_multicorr_type == 0)
+//        {
+//            // multicorrelator with 3 correlators (16 registers only)
+//            d_result_SAT_value = 1048576; // 21 bits 2's complement -> 2^20
+//        }
+//    else
+//        {
+//            // other types of multicorrelators (32 registers)
+//            d_result_SAT_value = 4194304; // 23 bits 2's complement -> 2^22
+//        }
 
     // read only registers
     d_RESULT_REG_REAL_BASE_ADDR = 1;
@@ -275,7 +282,8 @@ fpga_multicorrelator_8sc::fpga_multicorrelator_8sc(int n_correlators,
             d_RESULT_REG_IMAG_BASE_ADDR = 7;
             d_RESULT_REG_DATA_REAL_BASE_ADDR = 6; // no pilot tracking
             d_RESULT_REG_DATA_IMAG_BASE_ADDR = 12;
-            d_SAMPLE_COUNTER_REG_ADDR = 13;
+            d_SAMPLE_COUNTER_REG_ADDR_LSW = 13;
+            d_SAMPLE_COUNTER_REG_ADDR_MSW = 14;
 
 //        }
 

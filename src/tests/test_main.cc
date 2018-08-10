@@ -149,6 +149,9 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/tracking/gps_l2_m_dll_pll_tracking_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/gps_l1_ca_dll_pll_tracking_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/tracking_pull-in_test.cc"
+#if ENABLE_FPGA
+#include "unit-tests/signal-processing-blocks/tracking/tracking_pull-in_test_fpga.cc"
+#endif
 #include "unit-tests/signal-processing-blocks/telemetry_decoder/gps_l1_ca_telemetry_decoder_test.cc"
 #include "unit-tests/signal-processing-blocks/observables/hybrid_observables_test.cc"
 #endif

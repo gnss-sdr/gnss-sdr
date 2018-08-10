@@ -61,7 +61,7 @@ public:
     void run_acquisition(void);
     void set_phase_step(unsigned int doppler_index);
     void read_acquisition_results(uint32_t *max_index, float *max_magnitude,
-        unsigned *initial_sample, float *power_sum, unsigned *doppler_index);
+    		unsigned long int *initial_sample, float *power_sum, unsigned *doppler_index);
     void block_samples();
     void unblock_samples();
 

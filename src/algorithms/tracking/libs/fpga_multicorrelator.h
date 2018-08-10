@@ -68,8 +68,8 @@ public:
             float rem_code_phase_chips, float code_phase_step_chips,
             int signal_length_samples);bool free();
     void set_channel(unsigned int channel);
-    void set_initial_sample(int samples_offset);
-    int read_sample_counter();
+    void set_initial_sample(unsigned long int samples_offset);
+    unsigned long int read_sample_counter();
     void lock_channel(void);
     void unlock_channel(void);
     //void read_sample_counters(int *sample_counter, int *secondary_sample_counter, int *counter_corr_0_in, int *counter_corr_0_out); // debug
@@ -103,7 +103,7 @@ private:
     unsigned d_code_phase_step_chips_num;
     int d_rem_carr_phase_rad_int;
     int d_phase_step_rad_int;
-    unsigned d_initial_sample_counter;
+    unsigned long int d_initial_sample_counter;
 
     // driver
     std::string d_device_name;
@@ -131,7 +131,8 @@ private:
     unsigned int d_PHASE_STEP_RAD_REG_ADDR;
     unsigned int d_PROG_MEMS_ADDR;
     unsigned int d_DROP_SAMPLES_REG_ADDR;
-    unsigned int d_INITIAL_COUNTER_VALUE_REG_ADDR;
+    unsigned int d_INITIAL_COUNTER_VALUE_REG_ADDR_LSW;
+    unsigned int d_INITIAL_COUNTER_VALUE_REG_ADDR_MSW;
     unsigned int d_START_FLAG_ADDR;
     // read-write regs
     unsigned int d_TEST_REG_ADDR;
@@ -140,7 +141,8 @@ private:
     unsigned int  d_RESULT_REG_IMAG_BASE_ADDR;
     unsigned int d_RESULT_REG_DATA_REAL_BASE_ADDR;
     unsigned int d_RESULT_REG_DATA_IMAG_BASE_ADDR;
-    unsigned int d_SAMPLE_COUNTER_REG_ADDR;
+    unsigned int d_SAMPLE_COUNTER_REG_ADDR_LSW;
+    unsigned int d_SAMPLE_COUNTER_REG_ADDR_MSW;
 
     // private functions
     unsigned fpga_acquisition_test_register(unsigned writeval);

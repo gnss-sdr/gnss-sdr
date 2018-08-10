@@ -223,7 +223,7 @@ void pcps_acquisition_fpga::set_active(bool active)
                // no CFAR algorithm in the FPGA
                << ", use_CFAR_algorithm_flag: false";
 
-    unsigned long int initial_sample;
+    unsigned long long int initial_sample;
     float input_power_all = 0.0;
     float input_power_computed = 0.0;
 
@@ -325,11 +325,11 @@ void pcps_acquisition_fpga::set_active(bool active)
     if (d_test_statistics > d_threshold)
         {
             d_active = false;
-            printf("##### d_test_statistics = %f\n", d_test_statistics);
-            printf("##### debug_d_max_absolute =%f\n",debug_d_max_absolute);
-            printf("##### debug_d_input_power_absolute =%f\n",debug_d_input_power_absolute);
-            printf("##### initial_sample = %lu\n",initial_sample);
-            printf("##### debug_doppler_index = %d\n",debug_doppler_index);
+//            printf("##### d_test_statistics = %f\n", d_test_statistics);
+//            printf("##### debug_d_max_absolute =%f\n",debug_d_max_absolute);
+//            printf("##### debug_d_input_power_absolute =%f\n",debug_d_input_power_absolute);
+//            printf("##### initial_sample = %llu\n",initial_sample);
+//            printf("##### debug_doppler_index = %d\n",debug_doppler_index);
             send_positive_acquisition();
             d_state = 0;  // Positive acquisition
         }

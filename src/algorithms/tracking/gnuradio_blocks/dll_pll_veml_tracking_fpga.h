@@ -213,9 +213,9 @@ private:
     // PRN period in samples
     int d_current_prn_length_samples;
     // processing samples counters
-    unsigned long int d_sample_counter;
-    unsigned long int d_acq_sample_stamp;
-    unsigned long int d_absolute_samples_offset;
+    unsigned long long int d_sample_counter;
+    unsigned long long int d_acq_sample_stamp;
+    unsigned long long int d_absolute_samples_offset;
 
     // CN0 estimation and lock detector
     int d_cn0_estimation_counter;
@@ -232,7 +232,7 @@ private:
     // extra
     int d_correlation_length_samples;
     int d_next_prn_length_samples;
-    unsigned long int d_sample_counter_next;
+    unsigned long long int d_sample_counter_next;
     unsigned int d_pull_in = 0;
     
 

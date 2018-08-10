@@ -68,8 +68,8 @@ public:
             float rem_code_phase_chips, float code_phase_step_chips,
             int signal_length_samples);bool free();
     void set_channel(unsigned int channel);
-    void set_initial_sample(unsigned long int samples_offset);
-    unsigned long int read_sample_counter();
+    void set_initial_sample(unsigned long long int samples_offset);
+    unsigned long long int read_sample_counter();
     void lock_channel(void);
     void unlock_channel(void);
     //void read_sample_counters(int *sample_counter, int *secondary_sample_counter, int *counter_corr_0_in, int *counter_corr_0_out); // debug
@@ -103,7 +103,7 @@ private:
     unsigned d_code_phase_step_chips_num;
     int d_rem_carr_phase_rad_int;
     int d_phase_step_rad_int;
-    unsigned long int d_initial_sample_counter;
+    unsigned long long int d_initial_sample_counter;
 
     // driver
     std::string d_device_name;

@@ -84,17 +84,18 @@
 #define LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY 0x0C000000
 #define TEST_REGISTER_TRACK_WRITEVAL 0x55AA
 
-unsigned long int fpga_multicorrelator_8sc::read_sample_counter()
+unsigned long long int fpga_multicorrelator_8sc::read_sample_counter()
 {
-	unsigned long int sample_counter_tmp, sample_counter_msw_tmp;
+	unsigned long long int sample_counter_tmp, sample_counter_msw_tmp;
 	sample_counter_tmp = d_map_base[d_SAMPLE_COUNTER_REG_ADDR_LSW];
 	sample_counter_msw_tmp = d_map_base[d_SAMPLE_COUNTER_REG_ADDR_MSW];
-	sample_counter_tmp = sample_counter_tmp + (sample_counter_msw_tmp * (2^32));
+	sample_counter_msw_tmp = sample_counter_msw_tmp << 32;
+	sample_counter_tmp = sample_counter_tmp + sample_counter_msw_tmp; // 2^32
 	//return d_map_base[d_SAMPLE_COUNTER_REG_ADDR];
 	return sample_counter_tmp;
 }
 
-void fpga_multicorrelator_8sc::set_initial_sample(unsigned long int samples_offset)
+void fpga_multicorrelator_8sc::set_initial_sample(unsigned long long int samples_offset)
 {
     d_initial_sample_counter = samples_offset;
     //printf("www writing d map base %d = d_initial_sample_counter = %d\n", d_INITIAL_COUNTER_VALUE_REG_ADDR, d_initial_sample_counter);

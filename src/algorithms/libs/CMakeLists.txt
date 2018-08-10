@@ -40,6 +40,7 @@ if(ENABLE_FPGA)
         conjugate_cc.cc
         conjugate_sc.cc
         conjugate_ic.cc
+        gnss_sdr_fpga_sample_counter.cc
 	)
 else(ENABLE_FPGA)
     set(GNSS_SPLIBS_SOURCES

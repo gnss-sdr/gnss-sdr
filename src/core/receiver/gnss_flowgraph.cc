@@ -292,22 +292,23 @@ void GNSSFlowgraph::connect()
         }
     else
         {
-            //create a software-defined 1kHz gnss_synchro pulse for the observables block
+            //create a hardware-defined gnss_synchro pulse for the observables block
             try
                 {
-                    //null source
-                    null_source_ = gr::blocks::null_source::make(sizeof(Gnss_Synchro));
-                    //throttle to observable interval
+                    double fs = static_cast<double>(configuration_->property("GNSS-SDR.internal_fs_sps", 0));
+                    if (fs == 0.0)
+                        {
+                            LOG(WARNING) << "Set GNSS-SDR.internal_fs_sps in configuration file";
+                            std::cout << "Set GNSS-SDR.internal_fs_sps in configuration file" << std::endl;
+                            throw(std::invalid_argument("Set GNSS-SDR.internal_fs_sps in configuration"));
+                        }
                     int observable_interval_ms = static_cast<double>(configuration_->property("GNSS-SDR.observable_interval_ms", 20));
-                    throttle_ = gr::blocks::throttle::make(sizeof(Gnss_Synchro), std::round(1.0 / static_cast<double>(observable_interval_ms)));  // 1000 samples per second (1kHz)
-                    time_counter_ = gnss_sdr_make_time_counter();
-                    top_block_->connect(null_source_, 0, throttle_, 0);
-                    top_block_->connect(throttle_, 0, time_counter_, 0);
-                    top_block_->connect(time_counter_, 0, observables_->get_left_block(), channels_count_);
+                    ch_out_fpga_sample_counter = gnss_sdr_make_fpga_sample_counter(fs, observable_interval_ms);
+                    top_block_->connect(ch_out_fpga_sample_counter, 0, observables_->get_left_block(), channels_count_);  //extra port for the sample counter pulse
                 }
             catch (const std::exception& e)
                 {
-                    LOG(WARNING) << "Can't connect sample counter";
+                    LOG(WARNING) << "Can't connect FPGA sample counter";
                     LOG(ERROR) << e.what();
                     top_block_->disconnect_all();
                     return;
@@ -633,13 +634,11 @@ void GNSSFlowgraph::disconnect()
         {
             try
                 {
-                    top_block_->disconnect(null_source_, 0, throttle_, 0);
-                    top_block_->disconnect(throttle_, 0, time_counter_, 0);
-                    top_block_->disconnect(time_counter_, 0, observables_->get_left_block(), channels_count_);
+                    top_block_->disconnect(ch_out_fpga_sample_counter, 0, observables_->get_left_block(), channels_count_);
                 }
             catch (const std::exception& e)
                 {
-                    LOG(WARNING) << "Can't connect sample counter";
+                    LOG(WARNING) << "Can't connect FPGA sample counter";
                     LOG(ERROR) << e.what();
                     top_block_->disconnect_all();
                     return;

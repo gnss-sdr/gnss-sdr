@@ -68,6 +68,7 @@
 #include <gnuradio/blocks/file_sink.h>
 #include <stdlib.h>
 #include <chrono>
+#include <cstdint>
 #include <ctime>  // for ctime
 #include <exception>
 #include <memory>
@@ -123,7 +124,7 @@ void FrontEndCal_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            long int message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(msg);
             rx_message = message;
             channel_internal_queue.push(rx_message);
         }
@@ -204,7 +205,7 @@ bool front_end_capture(std::shared_ptr<ConfigurationInterface> configuration)
     sink = gr::blocks::file_sink::make(sizeof(gr_complex), "tmp_capture.dat");
 
     //--- Find number of samples per spreading code ---
-    long fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", 2048000);
+    int64_t fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", 2048000);
     int samples_per_code = round(fs_in_ / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
     int nsamples = samples_per_code * 50;
 
@@ -234,7 +235,7 @@ bool front_end_capture(std::shared_ptr<ConfigurationInterface> configuration)
 }
 
 
-static time_t utc_time(int week, long tow)
+static time_t utc_time(int week, int64_t tow)
 {
     time_t t;
 
@@ -350,7 +351,7 @@ int main(int argc, char** argv)
     signal.copy(gnss_synchro->Signal, 2, 0);
     gnss_synchro->PRN = 1;
 
-    long fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", 2048000);
+    int64_t fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", 2048000);
     configuration->set_property("Acquisition.max_dwells", "10");
 
     GNSSBlockFactory block_factory;
@@ -480,11 +481,11 @@ int main(int argc, char** argv)
                     Eph_map = global_gps_ephemeris_map.get_map_copy();
                     current_TOW = Eph_map.begin()->second.d_TOW;
 
-                    time_t t = utc_time(Eph_map.begin()->second.i_GPS_week, (long int)current_TOW);
+                    time_t t = utc_time(Eph_map.begin()->second.i_GPS_week, (int64_t)current_TOW);
 
                     fprintf(stdout, "Reference Time:\n");
                     fprintf(stdout, "  GPS Week: %d\n", Eph_map.begin()->second.i_GPS_week);
-                    fprintf(stdout, "  GPS TOW:  %ld %lf\n", (long int)current_TOW, (long int)current_TOW * 0.08);
+                    fprintf(stdout, "  GPS TOW:  %ld %lf\n", (int64_t)current_TOW, (int64_t)current_TOW * 0.08);
                     fprintf(stdout, "  ~ UTC:    %s", ctime(&t));
                     std::cout << "Current TOW obtained from SUPL assistance = " << current_TOW << std::endl;
                 }

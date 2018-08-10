@@ -58,7 +58,7 @@ using google::LogMessage;
 
 gps_l1_ca_tcp_connector_tracking_cc_sptr
 gps_l1_ca_tcp_connector_make_tracking_cc(
-    long fs_in,
+    int64_t fs_in,
     unsigned int vector_length,
     bool dump,
     std::string dump_filename,
@@ -81,7 +81,7 @@ void Gps_L1_Ca_Tcp_Connector_Tracking_cc::forecast(int noutput_items,
 
 
 Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
-    long fs_in,
+    int64_t fs_in,
     unsigned int vector_length,
     bool dump,
     std::string dump_filename,
@@ -186,9 +186,9 @@ void Gps_L1_Ca_Tcp_Connector_Tracking_cc::start_tracking()
     d_acq_carrier_doppler_hz = d_acquisition_gnss_synchro->Acq_doppler_hz;
     d_acq_sample_stamp = d_acquisition_gnss_synchro->Acq_samplestamp_samples;
 
-    long int acq_trk_diff_samples;
+    int64_t acq_trk_diff_samples;
     float acq_trk_diff_seconds;
-    acq_trk_diff_samples = static_cast<long int>(d_sample_counter) - static_cast<long int>(d_acq_sample_stamp);
+    acq_trk_diff_samples = static_cast<int64_t>(d_sample_counter) - static_cast<int64_t>(d_acq_sample_stamp);
     std::cout << "acq_trk_diff_samples=" << acq_trk_diff_samples << std::endl;
     acq_trk_diff_seconds = static_cast<float>(acq_trk_diff_samples) / static_cast<float>(d_fs_in);
     //doppler effect
@@ -535,7 +535,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
                     d_dump_file.write(reinterpret_cast<char *>(&prompt_I), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char *>(&prompt_Q), sizeof(float));
                     // PRN start sample stamp
-                    d_dump_file.write(reinterpret_cast<char *>(&d_sample_counter), sizeof(unsigned long int));
+                    d_dump_file.write(reinterpret_cast<char *>(&d_sample_counter), sizeof(uint64_t));
                     // accumulated carrier phase
                     tmp_float = d_acc_carrier_phase_rad;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));

@@ -40,6 +40,7 @@
 #include "glonass_gnav_utc_model.h"
 #include "GLONASS_L1_L2_CA.h"
 #include <bitset>
+#include <cstdint>
 
 
 /*!
@@ -50,8 +51,8 @@
 class Glonass_Gnav_Navigation_Message
 {
 private:
-    unsigned long int read_navigation_unsigned(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int, int>> parameter);
-    signed long int read_navigation_signed(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int, int>> parameter);
+    uint64_t read_navigation_unsigned(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int, int>> parameter);
+    int64_t read_navigation_signed(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int, int>> parameter);
     bool read_navigation_bool(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int, int>> parameter);
 
 public:

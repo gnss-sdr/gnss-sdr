@@ -89,8 +89,8 @@ private:
 
     std::deque<Gnss_Synchro> d_symbol_history;
 
-    long unsigned int d_sample_counter;
-    long unsigned int d_preamble_index;
+    uint64_t d_sample_counter;
+    uint64_t d_preamble_index;
     unsigned int d_stat;
     bool d_flag_frame_sync;
 

@@ -55,7 +55,7 @@ typedef boost::shared_ptr<Glonass_L1_Ca_Dll_Pll_Tracking_cc>
 
 glonass_l1_ca_dll_pll_tracking_cc_sptr
 glonass_l1_ca_dll_pll_make_tracking_cc(
-    long fs_in, unsigned int vector_length,
+    int64_t fs_in, unsigned int vector_length,
     bool dump,
     std::string dump_filename,
     float pll_bw_hz,
@@ -83,7 +83,7 @@ public:
 private:
     friend glonass_l1_ca_dll_pll_tracking_cc_sptr
     glonass_l1_ca_dll_pll_make_tracking_cc(
-        long fs_in, unsigned int vector_length,
+        int64_t fs_in, unsigned int vector_length,
         bool dump,
         std::string dump_filename,
         float pll_bw_hz,
@@ -91,7 +91,7 @@ private:
         float early_late_space_chips);
 
     Glonass_L1_Ca_Dll_Pll_Tracking_cc(
-        long fs_in, unsigned int vector_length,
+        int64_t fs_in, unsigned int vector_length,
         bool dump,
         std::string dump_filename,
         float pll_bw_hz,
@@ -105,8 +105,8 @@ private:
     Gnss_Synchro* d_acquisition_gnss_synchro;
     unsigned int d_channel;
 
-    long d_fs_in;
-    long d_glonass_freq_ch;
+    int64_t d_fs_in;
+    int64_t d_glonass_freq_ch;
 
     double d_early_late_spc_chips;
 
@@ -144,8 +144,8 @@ private:
     int d_current_prn_length_samples;
 
     //processing samples counters
-    unsigned long int d_sample_counter;
-    unsigned long int d_acq_sample_stamp;
+    uint64_t d_sample_counter;
+    uint64_t d_acq_sample_stamp;
 
     // CN0 estimation and lock detector
     int d_cn0_estimation_counter;

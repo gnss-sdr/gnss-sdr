@@ -98,7 +98,7 @@ private:
     int d_num_doppler_points;
     int d_doppler_step;
     unsigned int d_fft_size;
-    unsigned long int d_sample_counter;
+    uint64_t d_sample_counter;
     gr_complex* d_carrier;
     gr_complex* d_fft_codes;
     gr_complex* d_10_ms_buffer;
@@ -124,8 +124,8 @@ private:
 
     std::string d_dump_filename;
 
-    arma::fmat grid_;
-    long int d_dump_number;
+    arma ::fmat grid_;
+    int64_t d_dump_number;
     unsigned int d_dump_channel;
 
 public:

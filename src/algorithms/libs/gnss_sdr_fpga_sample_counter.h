@@ -33,37 +33,37 @@
 
 #include <gnuradio/block.h>
 #include <boost/shared_ptr.hpp>
-
+#include <cstdint>
 
 class gnss_sdr_fpga_sample_counter;
 
 typedef boost::shared_ptr<gnss_sdr_fpga_sample_counter> gnss_sdr_fpga_sample_counter_sptr;
 
-gnss_sdr_fpga_sample_counter_sptr gnss_sdr_make_fpga_sample_counter(double _fs, int _interval_ms);
+gnss_sdr_fpga_sample_counter_sptr gnss_sdr_make_fpga_sample_counter(double _fs, int32_t _interval_ms);
 
 class gnss_sdr_fpga_sample_counter : public gr::block
 {
 private:
-    gnss_sdr_fpga_sample_counter(double _fs, int _interval_ms);
+    gnss_sdr_fpga_sample_counter(double _fs, int32_t _interval_ms);
     bool start();
     bool stop();
-    unsigned int samples_per_output;
+    uint32_t samples_per_output;
     double fs;
-    unsigned long long int sample_counter;
-    int interval_ms;
-    long long int current_T_rx_ms;  // Receiver time in ms since the beginning of the run
-    unsigned int current_s;         // Receiver time in seconds, modulo 60
-    bool flag_m;                    // True if the receiver has been running for at least 1 minute
-    unsigned int current_m;         // Receiver time in minutes, modulo 60
-    bool flag_h;                    // True if the receiver has been running for at least 1 hour
-    unsigned int current_h;         // Receiver time in hours, modulo 24
-    bool flag_days;                 // True if the receiver has been running for at least 1 day
-    unsigned int current_days;      // Receiver time in days since the beginning of the run
-    int report_interval_ms;
+    uint64_t sample_counter;
+    int32_t interval_ms;
+    int64_t current_T_rx_ms;  // Receiver time in ms since the beginning of the run
+    uint32_t current_s;       // Receiver time in seconds, modulo 60
+    bool flag_m;              // True if the receiver has been running for at least 1 minute
+    uint32_t current_m;       // Receiver time in minutes, modulo 60
+    bool flag_h;              // True if the receiver has been running for at least 1 hour
+    uint32_t current_h;       // Receiver time in hours, modulo 24
+    bool flag_days;           // True if the receiver has been running for at least 1 day
+    uint32_t current_days;    // Receiver time in days since the beginning of the run
+    int32_t report_interval_ms;
     bool flag_enable_send_msg;
 
 public:
-    friend gnss_sdr_fpga_sample_counter_sptr gnss_sdr_make_fpga_sample_counter(double _fs, int _interval_ms);
+    friend gnss_sdr_fpga_sample_counter_sptr gnss_sdr_make_fpga_sample_counter(double _fs, int32_t _interval_ms);
     int general_work(int noutput_items,
         gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items,

@@ -42,6 +42,7 @@
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <bitset>
+#include <cstdint>
 #include <deque>
 #include <map>
 #include <memory>
@@ -347,8 +348,8 @@ public:
     std::string bin_to_binary_data(const std::string& s) const;  //<! Returns a string of binary data from a string of binary symbols
     std::string binary_data_to_bin(const std::string& s) const;  //<! Returns a string of binary symbols from a string of binary data
 
-    unsigned long int bin_to_uint(const std::string& s) const;  //<! Returns an unsigned long int from a string of binary symbols
-    long int bin_to_int(const std::string& s) const;
+    uint64_t bin_to_uint(const std::string& s) const;  //<! Returns an uint64_t from a string of binary symbols
+    int64_t bin_to_int(const std::string& s) const;
     double bin_to_double(const std::string& s) const;  //<! Returns double from a string of binary symbols
     /*!
      * \brief Locks time period in which GLONASS signals have been continually tracked.
@@ -356,11 +357,11 @@ public:
      * \param eph GLONASS GNAV Broadcast Ephemeris
      * \param obs_time Time of observation at the moment of printing
      * \param observables Set of observables as defined by the platform
-     * \return //<! Returns a long int from a string of binary symbols
+     * \return //<! Returns a int64_t from a string of binary symbols
      */
-    long int bin_to_sint(const std::string& s) const;
-    unsigned long int hex_to_uint(const std::string& s) const;  //<! Returns an unsigned long int from a string of hexadecimal symbols
-    long int hex_to_int(const std::string& s) const;            //<! Returns a long int from a string of hexadecimal symbols
+    int64_t bin_to_sint(const std::string& s) const;
+    uint64_t hex_to_uint(const std::string& s) const;  //<! Returns an uint64_t from a string of hexadecimal symbols
+    int64_t hex_to_int(const std::string& s) const;    //<! Returns a int64_t from a string of hexadecimal symbols
 
     bool check_CRC(const std::string& message) const;  //<! Checks that the CRC of a RTCM package is correct
 

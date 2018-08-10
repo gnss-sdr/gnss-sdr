@@ -94,8 +94,8 @@ private:
     int d_symbol_counter;
     int corr_value;
     unsigned int required_symbols;
-    long unsigned int d_sample_counter;
-    long unsigned int d_preamble_index;
+    uint64_t d_sample_counter;
+    uint64_t d_preamble_index;
     bool d_flag_frame_sync;
     bool d_flag_preamble;
     bool d_dump;

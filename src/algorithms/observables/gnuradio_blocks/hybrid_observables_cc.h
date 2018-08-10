@@ -66,14 +66,14 @@ private:
     hybrid_make_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename);
     hybrid_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename);
     bool interpolate_data(Gnss_Synchro& out, const unsigned int& ch, const double& ti);
-    bool interp_trk_obs(Gnss_Synchro& interpolated_obs, const unsigned int& ch, const unsigned long int& rx_clock);
+    bool interp_trk_obs(Gnss_Synchro& interpolated_obs, const unsigned int& ch, const uint64_t& rx_clock);
     double compute_T_rx_s(const Gnss_Synchro& a);
     void compute_pranges(std::vector<Gnss_Synchro>& data);
     void update_TOW(std::vector<Gnss_Synchro>& data);
     int save_matfile();
 
     //time history
-    boost::circular_buffer<unsigned long int> d_Rx_clock_buffer;
+    boost::circular_buffer<uint64_t> d_Rx_clock_buffer;
     //Tracking observable history
     Gnss_circular_deque<Gnss_Synchro>* d_gnss_synchro_history;
     unsigned int T_rx_clock_step_samples;

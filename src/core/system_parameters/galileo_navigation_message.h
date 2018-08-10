@@ -38,8 +38,9 @@
 #include "galileo_almanac.h"
 #include "galileo_utc_model.h"
 #include "Galileo_E1.h"
-#include <boost/cstdint.hpp>  // for boost::uint32_t
+//#include <boost/cstdint.hpp>  // for boost::uint32_t
 #include <bitset>
+#include <cstdint>
 #include <map>
 #include <string>
 #include <utility>
@@ -54,12 +55,12 @@
 class Galileo_Navigation_Message
 {
 private:
-    bool CRC_test(std::bitset<GALILEO_DATA_FRAME_BITS> bits, boost::uint32_t checksum);
+    bool CRC_test(std::bitset<GALILEO_DATA_FRAME_BITS> bits, uint32_t checksum);
     bool read_navigation_bool(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int, int> > parameter);
     //void print_galileo_word_bytes(unsigned int GPS_word);
-    unsigned long int read_navigation_unsigned(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int, int> > parameter);
-    unsigned long int read_page_type_unsigned(std::bitset<GALILEO_PAGE_TYPE_BITS> bits, const std::vector<std::pair<int, int> > parameter);
-    signed long int read_navigation_signed(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int, int> > parameter);
+    uint64_t read_navigation_unsigned(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int, int> > parameter);
+    uint64_t read_page_type_unsigned(std::bitset<GALILEO_PAGE_TYPE_BITS> bits, const std::vector<std::pair<int, int> > parameter);
+    int64_t read_navigation_signed(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int, int> > parameter);
 
 public:
     int Page_type_time_stamp;

@@ -450,9 +450,9 @@ void Galileo_Fnav_Message::decode_page(std::string data)
 }
 
 
-unsigned long int Galileo_Fnav_Message::read_navigation_unsigned(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int, int>> parameter)
+uint64_t Galileo_Fnav_Message::read_navigation_unsigned(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int, int>> parameter)
 {
-    unsigned long int value = 0;
+    uint64_t value = 0;
     int num_of_slices = parameter.size();
     for (int i = 0; i < num_of_slices; i++)
         {
@@ -469,12 +469,12 @@ unsigned long int Galileo_Fnav_Message::read_navigation_unsigned(std::bitset<GAL
 }
 
 
-signed long int Galileo_Fnav_Message::read_navigation_signed(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int, int>> parameter)
+int64_t Galileo_Fnav_Message::read_navigation_signed(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int, int>> parameter)
 {
-    signed long int value = 0;
+    int64_t value = 0;
     int num_of_slices = parameter.size();
     // Discriminate between 64 bits and 32 bits compiler
-    int long_int_size_bytes = sizeof(signed long int);
+    int long_int_size_bytes = sizeof(int64_t);
     if (long_int_size_bytes == 8)  // if a long int takes 8 bytes, we are in a 64 bits system
         {
             // read the MSB and perform the sign extension

@@ -52,7 +52,7 @@ typedef boost::shared_ptr<Gps_L1_Ca_Tcp_Connector_Tracking_cc> gps_l1_ca_tcp_con
 
 gps_l1_ca_tcp_connector_tracking_cc_sptr
 gps_l1_ca_tcp_connector_make_tracking_cc(
-    long fs_in, unsigned int vector_length,
+    int64_t fs_in, unsigned int vector_length,
     bool dump,
     std::string dump_filename,
     float early_late_space_chips,
@@ -84,14 +84,14 @@ public:
 private:
     friend gps_l1_ca_tcp_connector_tracking_cc_sptr
     gps_l1_ca_tcp_connector_make_tracking_cc(
-        long fs_in, unsigned int vector_length,
+        int64_t fs_in, unsigned int vector_length,
         bool dump,
         std::string dump_filename,
         float early_late_space_chips,
         size_t port_ch0);
 
     Gps_L1_Ca_Tcp_Connector_Tracking_cc(
-        long fs_in, unsigned int vector_length,
+        int64_t fs_in, unsigned int vector_length,
         bool dump,
         std::string dump_filename,
         float early_late_space_chips,
@@ -104,7 +104,7 @@ private:
     Gnss_Synchro *d_acquisition_gnss_synchro;
     unsigned int d_channel;
 
-    long d_fs_in;
+    int64_t d_fs_in;
     int d_correlation_length_samples;
     int d_n_correlator_taps;
     double d_early_late_spc_chips;
@@ -147,8 +147,8 @@ private:
     double d_sample_counter_seconds;
 
     //processing samples counters
-    unsigned long int d_sample_counter;
-    unsigned long int d_acq_sample_stamp;
+    uint64_t d_sample_counter;
+    uint64_t d_acq_sample_stamp;
 
     // CN0 estimation and lock detector
     int d_cn0_estimation_counter;

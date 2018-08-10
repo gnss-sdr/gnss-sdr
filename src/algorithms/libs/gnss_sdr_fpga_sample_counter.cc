@@ -36,9 +36,9 @@
 #include <iostream>
 #include <string>
 
-gnss_sdr_fpga_sample_counter::gnss_sdr_fpga_sample_counter(double _fs, int _interval_ms) : gr::block("fpga_fpga_sample_counter",
-                                                                                               gr::io_signature::make(0, 0, 0),
-                                                                                               gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
+gnss_sdr_fpga_sample_counter::gnss_sdr_fpga_sample_counter(double _fs, int32_t _interval_ms) : gr::block("fpga_fpga_sample_counter",
+                                                                                                   gr::io_signature::make(0, 0, 0),
+                                                                                                   gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
     message_port_register_out(pmt::mp("fpga_sample_counter"));
     set_max_noutput_items(1);
@@ -64,7 +64,7 @@ gnss_sdr_fpga_sample_counter::gnss_sdr_fpga_sample_counter(double _fs, int _inte
 }
 
 
-gnss_sdr_fpga_sample_counter_sptr gnss_sdr_make_fpga_sample_counter(double _fs, int _interval_ms)
+gnss_sdr_fpga_sample_counter_sptr gnss_sdr_make_fpga_sample_counter(double _fs, int32_t _interval_ms)
 {
     gnss_sdr_fpga_sample_counter_sptr fpga_sample_counter_(new gnss_sdr_fpga_sample_counter(_fs, _interval_ms));
     return fpga_sample_counter_;
@@ -78,6 +78,7 @@ bool gnss_sdr_fpga_sample_counter::start()
     // return true if everything is ok.
     return true;
 }
+
 
 // Called by GNURadio to disable drivers, etc for i/o devices.
 bool gnss_sdr_fpga_sample_counter::stop()
@@ -99,7 +100,6 @@ int gnss_sdr_fpga_sample_counter::general_work(int noutput_items __attribute__((
     // store the sample count in class member sample_counter
     // Possible problem: what happen if the PS is overloaded and gnuradio does not call this function
     // with the sufficient rate to catch all the interrupts in the counter. To be evaluated later.
-
 
     Gnss_Synchro *out = reinterpret_cast<Gnss_Synchro *>(output_items[0]);
     out[0] = Gnss_Synchro();

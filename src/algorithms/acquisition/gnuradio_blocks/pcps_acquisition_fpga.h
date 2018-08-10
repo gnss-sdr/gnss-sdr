@@ -113,7 +113,7 @@ private:
     unsigned int d_doppler_step;
     unsigned int d_fft_size;
     unsigned int d_num_doppler_bins;
-    unsigned long int d_sample_counter;
+    uint64_t d_sample_counter;
     Gnss_Synchro* d_gnss_synchro;
     std::shared_ptr<fpga_acquisition> acquisition_fpga;
 

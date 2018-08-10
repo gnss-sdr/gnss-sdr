@@ -414,7 +414,7 @@ void dll_pll_veml_tracking::start_tracking()
     d_acq_carrier_doppler_hz = d_acquisition_gnss_synchro->Acq_doppler_hz;
     d_acq_sample_stamp = d_acquisition_gnss_synchro->Acq_samplestamp_samples;
 
-    long int acq_trk_diff_samples = static_cast<long int>(d_sample_counter) - static_cast<long int>(d_acq_sample_stamp);
+    int64_t acq_trk_diff_samples = static_cast<int64_t>(d_sample_counter) - static_cast<int64_t>(d_acq_sample_stamp);
     double acq_trk_diff_seconds = static_cast<double>(acq_trk_diff_samples) / trk_parameters.fs_in;
     DLOG(INFO) << "Number of samples between Acquisition and Tracking = " << acq_trk_diff_samples;
     DLOG(INFO) << "Number of seconds between Acquisition and Tracking = " << acq_trk_diff_seconds;
@@ -869,7 +869,7 @@ void dll_pll_veml_tracking::log_data(bool integrating)
             float tmp_VE, tmp_E, tmp_P, tmp_L, tmp_VL;
             float tmp_float;
             double tmp_double;
-            unsigned long int tmp_long_int;
+            uint64_t tmp_long_int;
             if (trk_parameters.track_pilot)
                 {
                     if (interchange_iq)
@@ -937,7 +937,7 @@ void dll_pll_veml_tracking::log_data(bool integrating)
                     d_dump_file.write(reinterpret_cast<char *>(&prompt_Q), sizeof(float));
                     // PRN start sample stamp
                     tmp_long_int = d_sample_counter + d_current_prn_length_samples;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_long_int), sizeof(unsigned long int));
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_long_int), sizeof(uint64_t));
                     // accumulated carrier phase
                     tmp_float = d_acc_carrier_phase_rad;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
@@ -984,7 +984,7 @@ int dll_pll_veml_tracking::save_matfile()
     std::ifstream::pos_type size;
     int number_of_double_vars = 1;
     int number_of_float_vars = 17;
-    int epoch_size_bytes = sizeof(unsigned long int) + sizeof(double) * number_of_double_vars +
+    int epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
                            sizeof(float) * number_of_float_vars + sizeof(unsigned int);
     std::ifstream dump_file;
     dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
@@ -998,11 +998,11 @@ int dll_pll_veml_tracking::save_matfile()
             return 1;
         }
     // count number of epochs and rewind
-    long int num_epoch = 0;
+    int64_t num_epoch = 0;
     if (dump_file.is_open())
         {
             size = dump_file.tellg();
-            num_epoch = static_cast<long int>(size) / static_cast<long int>(epoch_size_bytes);
+            num_epoch = static_cast<int64_t>(size) / static_cast<int64_t>(epoch_size_bytes);
             dump_file.seekg(0, std::ios::beg);
         }
     else
@@ -1016,7 +1016,7 @@ int dll_pll_veml_tracking::save_matfile()
     float *abs_VL = new float[num_epoch];
     float *Prompt_I = new float[num_epoch];
     float *Prompt_Q = new float[num_epoch];
-    unsigned long int *PRN_start_sample_count = new unsigned long int[num_epoch];
+    uint64_t *PRN_start_sample_count = new uint64_t[num_epoch];
     float *acc_carrier_phase_rad = new float[num_epoch];
     float *carrier_doppler_hz = new float[num_epoch];
     float *code_freq_chips = new float[num_epoch];
@@ -1034,7 +1034,7 @@ int dll_pll_veml_tracking::save_matfile()
         {
             if (dump_file.is_open())
                 {
-                    for (long int i = 0; i < num_epoch; i++)
+                    for (int64_t i = 0; i < num_epoch; i++)
                         {
                             dump_file.read(reinterpret_cast<char *>(&abs_VE[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&abs_E[i]), sizeof(float));
@@ -1043,7 +1043,7 @@ int dll_pll_veml_tracking::save_matfile()
                             dump_file.read(reinterpret_cast<char *>(&abs_VL[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&Prompt_I[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&Prompt_Q[i]), sizeof(float));
-                            dump_file.read(reinterpret_cast<char *>(&PRN_start_sample_count[i]), sizeof(unsigned long int));
+                            dump_file.read(reinterpret_cast<char *>(&PRN_start_sample_count[i]), sizeof(uint64_t));
                             dump_file.read(reinterpret_cast<char *>(&acc_carrier_phase_rad[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&carrier_doppler_hz[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&code_freq_chips[i]), sizeof(float));
@@ -1093,7 +1093,7 @@ int dll_pll_veml_tracking::save_matfile()
     filename.erase(filename.length() - 4, 4);
     filename.append(".mat");
     matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
-    if (reinterpret_cast<long *>(matfp) != NULL)
+    if (reinterpret_cast<int64_t *>(matfp) != NULL)
         {
             size_t dims[2] = {1, static_cast<size_t>(num_epoch)};
             matvar = Mat_VarCreate("abs_VE", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, abs_VE, 0);
@@ -1255,7 +1255,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
         case 1:  // Pull-in
             {
                 // Signal alignment (skip samples until the incoming signal is aligned with local replica)
-                unsigned long int acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
+                uint64_t acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
                 double acq_trk_shif_correction_samples = static_cast<double>(d_current_prn_length_samples) - std::fmod(static_cast<double>(acq_to_trk_delay_samples), static_cast<double>(d_current_prn_length_samples));
                 int samples_offset = std::round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
                 if (samples_offset < 0)
@@ -1566,7 +1566,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
     d_sample_counter += d_current_prn_length_samples;
     if (current_synchro_data.Flag_valid_symbol_output)
         {
-            current_synchro_data.fs = static_cast<long int>(trk_parameters.fs_in);
+            current_synchro_data.fs = static_cast<int64_t>(trk_parameters.fs_in);
             current_synchro_data.Tracking_sample_counter = d_sample_counter;
             *out[0] = current_synchro_data;
             return 1;

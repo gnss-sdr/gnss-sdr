@@ -44,6 +44,7 @@
 #include <gpstk/Rinex3ObsData.hpp>
 #include <gpstk/Rinex3ObsHeader.hpp>
 #include <gpstk/Rinex3ObsStream.hpp>
+#include <matio.h>
 #include "GPS_L1_CA.h"
 #include "gnss_satellite.h"
 #include "gnss_block_factory.h"
@@ -62,7 +63,6 @@
 #include "hybrid_observables.h"
 #include "signal_generator_flags.h"
 #include "gnss_sdr_sample_counter.h"
-#include <matio.h>
 #include "test_flags.h"
 #include "tracking_tests_flags.h"
 #include "observable_tests_flags.h"
@@ -97,7 +97,7 @@ void HybridObservablesTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            long int message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(msg);
             rx_message = message;
         }
     catch (boost::bad_any_cast& e)
@@ -150,7 +150,7 @@ void HybridObservablesTest_tlm_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            long int message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(msg);
             rx_message = message;
         }
     catch (boost::bad_any_cast& e)
@@ -983,7 +983,7 @@ bool HybridObservablesTest::save_mat_xy(std::vector<double>& x, std::vector<doub
             filename.append(".mat");
             std::cout << "save_mat_xy write " << filename << std::endl;
             matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT5);
-            if (reinterpret_cast<long*>(matfp) != NULL)
+            if (reinterpret_cast<int64_t*>(matfp) != NULL)
                 {
                     size_t dims[2] = {1, x.size()};
                     matvar = Mat_VarCreate("x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, &x[0], 0);
@@ -1363,8 +1363,6 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                     default:
                         tlm_ch_vec.back()->set_satellite(Gnss_Satellite(std::string("GPS"), gnss_synchro_vec.at(n).PRN));
                     }
-
-
             }) << "Failure setting gnss_synchro.";
 
             ASSERT_NO_THROW({
@@ -1454,7 +1452,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
             std::cout << "True observation epochs = " << nepoch << std::endl;
 
             true_observables.restart();
-            long int epoch_counter = 0;
+            int64_t epoch_counter = 0;
             for (unsigned int n = 0; n < tracking_ch_vec.size(); n++)
                 {
                     true_obs_vec.push_back(arma::zeros<arma::mat>(nepoch, 4));
@@ -1499,7 +1497,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
 
     // Matrices for storing columnwise measured RX_time, TOW, Doppler, Carrier phase and Pseudorange
     std::vector<arma::mat> measured_obs_vec;
-    std::vector<long int> epoch_counters_vec;
+    std::vector<int64_t> epoch_counters_vec;
     for (unsigned int n = 0; n < tracking_ch_vec.size(); n++)
         {
             measured_obs_vec.push_back(arma::zeros<arma::mat>(nepoch, 5));

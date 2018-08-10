@@ -64,7 +64,7 @@ bool tracking_true_obs_reader::restart()
 }
 
 
-long int tracking_true_obs_reader::num_epochs()
+int64_t tracking_true_obs_reader::num_epochs()
 {
     std::ifstream::pos_type size;
     int number_of_vars_in_epoch = 5;
@@ -73,7 +73,7 @@ long int tracking_true_obs_reader::num_epochs()
     if (tmpfile.is_open())
         {
             size = tmpfile.tellg();
-            long int nepoch = size / epoch_size_bytes;
+            int64_t nepoch = size / epoch_size_bytes;
             return nepoch;
         }
     else

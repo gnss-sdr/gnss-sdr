@@ -79,7 +79,7 @@ void GpsL2MDllPllTrackingTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            long int message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(msg);
             rx_message = message;
         }
     catch (boost::bad_any_cast& e)

@@ -112,7 +112,7 @@ void AcqPerfTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            long int message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(msg);
             rx_message = message;
             channel_internal_queue.push(rx_message);
         }
@@ -876,14 +876,14 @@ TEST_F(AcquisitionPerformanceTest, ROC)
                                     true_trk_data.open_obs_file(true_trk_file);
 
                                     // load the true values
-                                    long int n_true_epochs = true_trk_data.num_epochs();
+                                    int64_t n_true_epochs = true_trk_data.num_epochs();
                                     arma::vec true_timestamp_s = arma::zeros(n_true_epochs, 1);
                                     arma::vec true_acc_carrier_phase_cycles = arma::zeros(n_true_epochs, 1);
                                     arma::vec true_Doppler_Hz = arma::zeros(n_true_epochs, 1);
                                     arma::vec true_prn_delay_chips = arma::zeros(n_true_epochs, 1);
                                     arma::vec true_tow_s = arma::zeros(n_true_epochs, 1);
 
-                                    long int epoch_counter = 0;
+                                    int64_t epoch_counter = 0;
                                     int num_clean_executions = 0;
                                     while (true_trk_data.read_binary_obs())
                                         {

@@ -31,6 +31,7 @@
 #ifndef GNSS_SDR_TRACKING_DUMP_READER_H
 #define GNSS_SDR_TRACKING_DUMP_READER_H
 
+#include <cstdint>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -41,7 +42,7 @@ public:
     ~tracking_dump_reader();
     bool read_binary_obs();
     bool restart();
-    long int num_epochs();
+    int64_t num_epochs();
     bool open_obs_file(std::string out_file);
 
     //tracking dump variables
@@ -55,7 +56,7 @@ public:
     float prompt_I;
     float prompt_Q;
     // PRN start sample stamp
-    unsigned long int PRN_start_sample_count;
+    uint64_t PRN_start_sample_count;
 
     // accumulated carrier phase
     float acc_carrier_phase_rad;

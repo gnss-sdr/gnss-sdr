@@ -54,24 +54,24 @@ namespace bc = boost::integer;
 using google::LogMessage;
 
 
-rtklib_pvt_cc_sptr rtklib_make_pvt_cc(unsigned int nchannels,
+rtklib_pvt_cc_sptr rtklib_make_pvt_cc(uint32_t nchannels,
     bool dump,
     std::string dump_filename,
-    int output_rate_ms,
-    int display_rate_ms,
+    int32_t output_rate_ms,
+    int32_t display_rate_ms,
     bool flag_nmea_tty_port,
     std::string nmea_dump_filename,
     std::string nmea_dump_devname,
-    int rinex_version,
-    int rinexobs_rate_ms,
-    int rinexnav_rate_ms,
+    int32_t rinex_version,
+    int32_t rinexobs_rate_ms,
+    int32_t rinexnav_rate_ms,
     bool flag_rtcm_server,
     bool flag_rtcm_tty_port,
-    unsigned short rtcm_tcp_port,
-    unsigned short rtcm_station_id,
+    uint16_t rtcm_tcp_port,
+    uint16_t rtcm_station_id,
     std::map<int, int> rtcm_msg_rate_ms,
     std::string rtcm_dump_devname,
-    const unsigned int type_of_receiver,
+    const uint32_t type_of_receiver,
     rtk_t& rtk)
 {
     return rtklib_pvt_cc_sptr(new rtklib_pvt_cc(nchannels,
@@ -245,24 +245,24 @@ std::map<int, Gps_Ephemeris> rtklib_pvt_cc::get_GPS_L1_ephemeris_map()
 }
 
 
-rtklib_pvt_cc::rtklib_pvt_cc(unsigned int nchannels,
+rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
     bool dump,
     std::string dump_filename,
-    int output_rate_ms,
-    int display_rate_ms,
+    int32_t output_rate_ms,
+    int32_t display_rate_ms,
     bool flag_nmea_tty_port,
     std::string nmea_dump_filename,
     std::string nmea_dump_devname,
-    int rinex_version,
-    int rinexobs_rate_ms,
-    int rinexnav_rate_ms,
+    int32_t rinex_version,
+    int32_t rinexobs_rate_ms,
+    int32_t rinexnav_rate_ms,
     bool flag_rtcm_server,
     bool flag_rtcm_tty_port,
-    unsigned short rtcm_tcp_port,
-    unsigned short rtcm_station_id,
+    uint16_t rtcm_tcp_port,
+    uint16_t rtcm_station_id,
     std::map<int, int> rtcm_msg_rate_ms,
     std::string rtcm_dump_devname,
-    const unsigned int type_of_receiver,
+    const uint32_t type_of_receiver,
     rtk_t& rtk) : gr::sync_block("rtklib_pvt_cc",
                       gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
                       gr::io_signature::make(0, 0, 0))
@@ -367,7 +367,7 @@ rtklib_pvt_cc::rtklib_pvt_cc(unsigned int nchannels,
     d_dump_filename.append("_raw.dat");
     dump_ls_pvt_filename.append("_ls_pvt.dat");
 
-    d_ls_pvt = std::make_shared<rtklib_solver>(static_cast<int>(nchannels), dump_ls_pvt_filename, d_dump, rtk);
+    d_ls_pvt = std::make_shared<rtklib_solver>(static_cast<int32_t>(nchannels), dump_ls_pvt_filename, d_dump, rtk);
     d_ls_pvt->set_averaging_depth(1);
 
     d_rx_time = 0.0;
@@ -540,7 +540,7 @@ bool rtklib_pvt_cc::send_sys_v_ttff_msg(ttff_msgbuf ttff)
 int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items __attribute__((unused)))
 {
-    for (int epoch = 0; epoch < noutput_items; epoch++)
+    for (int32_t epoch = 0; epoch < noutput_items; epoch++)
         {
             bool flag_display_pvt = false;
             bool flag_compute_pvt_output = false;
@@ -550,15 +550,15 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
             bool flag_write_RTCM_MSM_output = false;
             bool flag_write_RINEX_obs_output = false;
             bool flag_write_RINEX_nav_output = false;
-            unsigned int gps_channel = 0;
-            unsigned int gal_channel = 0;
-            unsigned int glo_channel = 0;
+            uint32_t gps_channel = 0;
+            uint32_t gal_channel = 0;
+            uint32_t glo_channel = 0;
 
             gnss_observables_map.clear();
             const Gnss_Synchro** in = reinterpret_cast<const Gnss_Synchro**>(&input_items[0]);  // Get the input buffer pointer
 
             // ############ 1. READ PSEUDORANGES ####
-            for (unsigned int i = 0; i < d_nchannels; i++)
+            for (uint32_t i = 0; i < d_nchannels; i++)
                 {
                     if (in[i][epoch].Flag_valid_pseudorange)
                         {
@@ -619,7 +619,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
             if (gnss_observables_map.size() > 0)
                 {
                     double current_RX_time = gnss_observables_map.begin()->second.RX_time;
-                    unsigned int current_RX_time_ms = static_cast<unsigned int>(current_RX_time * 1000.0);
+                    uint32_t current_RX_time_ms = static_cast<uint32_t>(current_RX_time * 1000.0);
                     if (current_RX_time_ms % d_output_rate_ms == 0)
                         {
                             flag_compute_pvt_output = true;
@@ -676,12 +676,12 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                         {
                                             flag_write_RTCM_MSM_output = true;
                                         }
-                                    if (current_RX_time_ms % static_cast<unsigned int>(d_rinexobs_rate_ms) == 0)
+                                    if (current_RX_time_ms % static_cast<uint32_t>(d_rinexobs_rate_ms) == 0)
                                         {
                                             flag_write_RINEX_obs_output = true;
                                         }
 
-                                    if (current_RX_time_ms % static_cast<unsigned int>(d_rinexnav_rate_ms) == 0)
+                                    if (current_RX_time_ms % static_cast<uint32_t>(d_rinexnav_rate_ms) == 0)
                                         {
                                             flag_write_RINEX_nav_output = true;
                                         }
@@ -1393,7 +1393,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 {
                                                                     //gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.end();
                                                                     //galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.end();
-                                                                    unsigned int i = 0;
+                                                                    uint32_t i = 0;
                                                                     for (gnss_observables_iter = gnss_observables_map.cbegin(); gnss_observables_iter != gnss_observables_map.cend(); gnss_observables_iter++)
                                                                         {
                                                                             std::string system(&gnss_observables_iter->second.System, 1);
@@ -1476,7 +1476,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 {
                                                                     //gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.end();
                                                                     //galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.end();
-                                                                    unsigned int i = 0;
+                                                                    uint32_t i = 0;
                                                                     for (gnss_observables_iter = gnss_observables_map.begin(); gnss_observables_iter != gnss_observables_map.end(); gnss_observables_iter++)
                                                                         {
                                                                             std::string system(&gnss_observables_iter->second.System, 1);
@@ -1541,7 +1541,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 {
                                                                     // gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.end();
                                                                     // galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.end();
-                                                                    unsigned int i = 0;
+                                                                    uint32_t i = 0;
                                                                     for (gnss_observables_iter = gnss_observables_map.cbegin(); gnss_observables_iter != gnss_observables_map.cend(); gnss_observables_iter++)
                                                                         {
                                                                             std::string system(&gnss_observables_iter->second.System, 1);
@@ -1606,7 +1606,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 {
                                                                     // gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.end();
                                                                     // galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.end();
-                                                                    unsigned int i = 0;
+                                                                    uint32_t i = 0;
                                                                     for (gnss_observables_iter = gnss_observables_map.begin(); gnss_observables_iter != gnss_observables_map.end(); gnss_observables_iter++)
                                                                         {
                                                                             std::string system(&gnss_observables_iter->second.System, 1);
@@ -1671,7 +1671,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 {
                                                                     // gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.end();
                                                                     // galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.end();
-                                                                    unsigned int i = 0;
+                                                                    uint32_t i = 0;
                                                                     for (gnss_observables_iter = gnss_observables_map.cbegin(); gnss_observables_iter != gnss_observables_map.cend(); gnss_observables_iter++)
                                                                         {
                                                                             std::string system(&gnss_observables_iter->second.System, 1);
@@ -1783,7 +1783,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                         }
                                                                 }
 
-                                                            unsigned int i = 0;
+                                                            uint32_t i = 0;
                                                             for (gnss_observables_iter = gnss_observables_map.cbegin(); gnss_observables_iter != gnss_observables_map.cend(); gnss_observables_iter++)
                                                                 {
                                                                     std::string system(&gnss_observables_iter->second.System, 1);
@@ -1858,7 +1858,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
 
                                                             // gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.end();
                                                             // galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.end();
-                                                            unsigned int i = 0;
+                                                            uint32_t i = 0;
                                                             for (gnss_observables_iter = gnss_observables_map.cbegin(); gnss_observables_iter != gnss_observables_map.cend(); gnss_observables_iter++)
                                                                 {
                                                                     std::string system(&gnss_observables_iter->second.System, 1);
@@ -1916,7 +1916,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                         }
                                                                 }
 
-                                                            unsigned int i = 0;
+                                                            uint32_t i = 0;
                                                             for (gnss_observables_iter = gnss_observables_map.cbegin(); gnss_observables_iter != gnss_observables_map.cend(); gnss_observables_iter++)
                                                                 {
                                                                     std::string system(&gnss_observables_iter->second.System, 1);
@@ -1973,7 +1973,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
 
                                                             // gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.end();
                                                             // galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.end();
-                                                            unsigned int i = 0;
+                                                            uint32_t i = 0;
                                                             for (gnss_observables_iter = gnss_observables_map.cbegin(); gnss_observables_iter != gnss_observables_map.cend(); gnss_observables_iter++)
                                                                 {
                                                                     std::string system(&gnss_observables_iter->second.System, 1);
@@ -2031,7 +2031,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                         }
                                                                 }
 
-                                                            unsigned int i = 0;
+                                                            uint32_t i = 0;
                                                             for (gnss_observables_iter = gnss_observables_map.cbegin(); gnss_observables_iter != gnss_observables_map.cend(); gnss_observables_iter++)
                                                                 {
                                                                     std::string system(&gnss_observables_iter->second.System, 1);
@@ -2126,7 +2126,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                             try
                                 {
                                     double tmp_double;
-                                    for (unsigned int i = 0; i < d_nchannels; i++)
+                                    for (uint32_t i = 0; i < d_nchannels; i++)
                                         {
                                             tmp_double = in[i][epoch].Pseudorange_m;
                                             d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));

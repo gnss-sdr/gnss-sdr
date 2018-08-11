@@ -63,27 +63,27 @@ public:
 
 private:
     friend hybrid_observables_cc_sptr
-    hybrid_make_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename);
-    hybrid_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename);
-    bool interpolate_data(Gnss_Synchro& out, const unsigned int& ch, const double& ti);
-    bool interp_trk_obs(Gnss_Synchro& interpolated_obs, const unsigned int& ch, const uint64_t& rx_clock);
+    hybrid_make_observables_cc(uint32_t nchannels_in, uint32_t nchannels_out, bool dump, std::string dump_filename);
+    hybrid_observables_cc(uint32_t nchannels_in, uint32_t nchannels_out, bool dump, std::string dump_filename);
+    bool interpolate_data(Gnss_Synchro& out, const uint32_t& ch, const double& ti);
+    bool interp_trk_obs(Gnss_Synchro& interpolated_obs, const uint32_t& ch, const uint64_t& rx_clock);
     double compute_T_rx_s(const Gnss_Synchro& a);
     void compute_pranges(std::vector<Gnss_Synchro>& data);
     void update_TOW(std::vector<Gnss_Synchro>& data);
-    int save_matfile();
+    int32_t save_matfile();
 
     //time history
     boost::circular_buffer<uint64_t> d_Rx_clock_buffer;
     //Tracking observable history
     Gnss_circular_deque<Gnss_Synchro>* d_gnss_synchro_history;
-    unsigned int T_rx_clock_step_samples;
+    uint32_t T_rx_clock_step_samples;
     //rx time follow GPST
     bool T_rx_TOW_set;
-    unsigned int T_rx_TOW_ms;
-    unsigned int T_rx_TOW_offset_ms;
+    uint32_t T_rx_TOW_ms;
+    uint32_t T_rx_TOW_offset_ms;
     bool d_dump;
-    unsigned int d_nchannels_in;
-    unsigned int d_nchannels_out;
+    uint32_t d_nchannels_in;
+    uint32_t d_nchannels_out;
     std::string d_dump_filename;
     std::ofstream d_dump_file;
 };

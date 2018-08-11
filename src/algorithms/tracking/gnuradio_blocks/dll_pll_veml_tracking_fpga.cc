@@ -1249,7 +1249,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                 //printf("333333 current_synchro_data.Acq_samplestamp_samples = %d\n", current_synchro_data.Acq_samplestamp_samples);
                 //printf("333333 current_synchro_data.Acq_delay_samples = %f\n", current_synchro_data.Acq_delay_samples);
                 //printf("333333 d_correlation_length_samples = %d\n", d_correlation_length_samples);
-                unsigned num_frames = ceil((counter_value - current_synchro_data.Acq_samplestamp_samples - current_synchro_data.Acq_delay_samples) / d_correlation_length_samples);
+                uint32_t num_frames = ceil((counter_value - current_synchro_data.Acq_samplestamp_samples - current_synchro_data.Acq_delay_samples) / d_correlation_length_samples);
                 //printf("333333 num_frames = %d\n", num_frames);
                 uint64_t absolute_samples_offset = current_synchro_data.Acq_delay_samples + current_synchro_data.Acq_samplestamp_samples + num_frames * d_correlation_length_samples;
                 //printf("333333 absolute_samples_offset = %llu\n", absolute_samples_offset);
@@ -1480,7 +1480,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
         case 3:
             {
                 d_sample_counter = d_sample_counter_next;
-                d_sample_counter_next = d_sample_counter + d_current_prn_length_samples;
+                d_sample_counter_next = d_sample_counter + static_cast<uint64_t>(d_current_prn_length_samples);
 
                 // Fill the acquisition data
                 current_synchro_data = *d_acquisition_gnss_synchro;

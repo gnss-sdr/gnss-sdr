@@ -279,26 +279,26 @@ std::string Rtcm::hex_to_bin(const std::string& s) const
 }
 
 
-uint64_t Rtcm::bin_to_uint(const std::string& s) const
+uint32_t Rtcm::bin_to_uint(const std::string& s) const
 {
     if (s.length() > 32)
         {
-            LOG(WARNING) << "Cannot convert to a uint64_t";
+            LOG(WARNING) << "Cannot convert to a uint32_t";
             return 0;
         }
-    uint64_t reading = strtoul(s.c_str(), NULL, 2);
+    uint32_t reading = strtoul(s.c_str(), NULL, 2);
     return reading;
 }
 
 
-int64_t Rtcm::bin_to_int(const std::string& s) const
+int32_t Rtcm::bin_to_int(const std::string& s) const
 {
     if (s.length() > 32)
         {
-            LOG(WARNING) << "Cannot convert to a int64_t";
+            LOG(WARNING) << "Cannot convert to a int32_t";
             return 0;
         }
-    int64_t reading;
+    int32_t reading;
 
     // Handle negative numbers
     if (s.substr(0, 1).compare("0"))
@@ -316,15 +316,15 @@ int64_t Rtcm::bin_to_int(const std::string& s) const
 }
 
 
-int64_t Rtcm::bin_to_sint(const std::string& s) const
+int32_t Rtcm::bin_to_sint(const std::string& s) const
 {
     if (s.length() > 32)
         {
-            LOG(WARNING) << "Cannot convert to a int64_t";
+            LOG(WARNING) << "Cannot convert to a int32_t";
             return 0;
         }
-    int64_t reading;
-    int64_t sign;
+    int32_t reading;
+    int32_t sign;
 
     // Check for sign bit as defined RTCM doc
     if (s.substr(0, 1).compare("0") == 0)
@@ -4079,7 +4079,7 @@ int Rtcm::set_DF052(const Gps_Ephemeris& gps_eph, double obs_time)
     std::string minutes = now_ptime.substr(11, 2);
     std::string seconds = now_ptime.substr(13, 8);
     //boost::gregorian::date d(boost::gregorian::from_undelimited_string(today_ptime));
-    uint64_t seconds_of_day = boost::lexical_cast<unsigned int>(hours) * 60 * 60 + boost::lexical_cast<unsigned int>(minutes) * 60 + boost::lexical_cast<unsigned int>(seconds);
+    uint32_t seconds_of_day = boost::lexical_cast<unsigned int>(hours) * 60 * 60 + boost::lexical_cast<unsigned int>(minutes) * 60 + boost::lexical_cast<unsigned int>(seconds);
     DF052 = std::bitset<17>(seconds_of_day);
     return 0;
 }

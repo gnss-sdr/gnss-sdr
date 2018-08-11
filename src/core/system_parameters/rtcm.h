@@ -348,8 +348,8 @@ public:
     std::string bin_to_binary_data(const std::string& s) const;  //<! Returns a string of binary data from a string of binary symbols
     std::string binary_data_to_bin(const std::string& s) const;  //<! Returns a string of binary symbols from a string of binary data
 
-    uint64_t bin_to_uint(const std::string& s) const;  //<! Returns an uint64_t from a string of binary symbols
-    int64_t bin_to_int(const std::string& s) const;
+    uint32_t bin_to_uint(const std::string& s) const;  //<! Returns an uint32_t from a string of binary symbols
+    int32_t bin_to_int(const std::string& s) const;
     double bin_to_double(const std::string& s) const;  //<! Returns double from a string of binary symbols
     /*!
      * \brief Locks time period in which GLONASS signals have been continually tracked.
@@ -359,7 +359,7 @@ public:
      * \param observables Set of observables as defined by the platform
      * \return //<! Returns a int64_t from a string of binary symbols
      */
-    int64_t bin_to_sint(const std::string& s) const;
+    int32_t bin_to_sint(const std::string& s) const;
     uint64_t hex_to_uint(const std::string& s) const;  //<! Returns an uint64_t from a string of hexadecimal symbols
     int64_t hex_to_int(const std::string& s) const;    //<! Returns a int64_t from a string of hexadecimal symbols
 

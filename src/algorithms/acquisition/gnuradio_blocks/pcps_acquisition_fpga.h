@@ -64,13 +64,13 @@
 typedef struct
 {
     /* pcps acquisition configuration */
-    unsigned int sampled_ms;
-    unsigned int doppler_max;
-    long freq;
-    long fs_in;
-    int samples_per_ms;
-    int samples_per_code;
-    unsigned int select_queue_Fpga;
+    uint32_t sampled_ms;
+    uint32_t doppler_max;
+    int64_t freq;
+    int64_t fs_in;
+    int32_tsamples_per_ms;
+    int32_tsamples_per_code;
+    uint32_t select_queue_Fpga;
     std::string device_name;
     lv_16sc_t* all_fft_codes;  // memory that contains all the code ffts
 
@@ -108,11 +108,11 @@ private:
     float d_mag;
     float d_input_power;
     float d_test_statistics;
-    int d_state;
-    unsigned int d_channel;
-    unsigned int d_doppler_step;
-    unsigned int d_fft_size;
-    unsigned int d_num_doppler_bins;
+    int32_td_state;
+    uint32_t d_channel;
+    uint32_t d_doppler_step;
+    uint32_t d_fft_size;
+    uint32_t d_num_doppler_bins;
     uint64_t d_sample_counter;
     Gnss_Synchro* d_gnss_synchro;
     std::shared_ptr<fpga_acquisition> acquisition_fpga;
@@ -133,7 +133,7 @@ public:
     /*!
      * \brief Returns the maximum peak of grid search.
      */
-    inline unsigned int mag() const
+    inline uint32_t mag() const
     {
         return d_mag;
     }
@@ -154,7 +154,7 @@ public:
       * first available sample.
       * \param state - int=1 forces start of acquisition
       */
-    void set_state(int state);
+    void set_state(int32_tstate);
 
     /*!
       * \brief Starts acquisition algorithm, turning from standby mode to
@@ -167,7 +167,7 @@ public:
       * \brief Set acquisition channel unique ID
       * \param channel - receiver channel.
       */
-    inline void set_channel(unsigned int channel)
+    inline void set_channel(uint32_t channel)
     {
         d_channel = channel;
     }
@@ -186,7 +186,7 @@ public:
       * \brief Set maximum Doppler grid search
       * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
       */
-    inline void set_doppler_max(unsigned int doppler_max)
+    inline void set_doppler_max(uint32_t doppler_max)
     {
         acq_parameters.doppler_max = doppler_max;
         acquisition_fpga->set_doppler_max(doppler_max);
@@ -196,7 +196,7 @@ public:
       * \brief Set Doppler steps for the grid search
       * \param doppler_step - Frequency bin of the search grid [Hz].
       */
-    inline void set_doppler_step(unsigned int doppler_step)
+    inline void set_doppler_step(uint32_t doppler_step)
     {
         d_doppler_step = doppler_step;
         acquisition_fpga->set_doppler_step(doppler_step);

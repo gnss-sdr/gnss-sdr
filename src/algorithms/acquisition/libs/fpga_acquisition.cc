@@ -64,7 +64,7 @@ bool fpga_acquisition::init()
 }
 
 
-bool fpga_acquisition::set_local_code(unsigned int PRN)
+bool fpga_acquisition::set_local_code(uint32_t PRN)
 {
     // select the code with the chosen PRN
     fpga_acquisition::fpga_configure_acquisition_local_code(
@@ -74,13 +74,13 @@ bool fpga_acquisition::set_local_code(unsigned int PRN)
 
 
 fpga_acquisition::fpga_acquisition(std::string device_name,
-    unsigned int nsamples,
-    unsigned int doppler_max,
-    unsigned int nsamples_total, long fs_in,
-    unsigned int sampled_ms, unsigned select_queue,
+    uint32_t nsamples,
+    uint32_t doppler_max,
+    uint32_t nsamples_total, int64_t fs_in,
+    uint32_t sampled_ms, uint32_t select_queue,
     lv_16sc_t *all_fft_codes)
 {
-    unsigned int vector_length = nsamples_total * sampled_ms;
+    uint32_t vector_length = nsamples_total * sampled_ms;
     // initial values
     d_device_name = device_name;
     d_fs_in = fs_in;
@@ -99,7 +99,7 @@ fpga_acquisition::fpga_acquisition(std::string device_name,
         {
             LOG(WARNING) << "Cannot open deviceio" << d_device_name;
         }
-    d_map_base = reinterpret_cast<volatile unsigned *>(mmap(NULL, PAGE_SIZE,
+    d_map_base = reinterpret_cast<volatile uint32_t *>(mmap(NULL, PAGE_SIZE,
         PROT_READ | PROT_WRITE, MAP_SHARED, d_fd, 0));
 
     if (d_map_base == reinterpret_cast<void *>(-1))
@@ -108,8 +108,8 @@ fpga_acquisition::fpga_acquisition(std::string device_name,
         }
 
     // sanity check : check test register
-    unsigned writeval = TEST_REG_SANITY_CHECK;
-    unsigned readval;
+    uint32_t writeval = TEST_REG_SANITY_CHECK;
+    uint32_t readval;
     readval = fpga_acquisition::fpga_acquisition_test_register(writeval);
     if (writeval != readval)
         {
@@ -136,9 +136,9 @@ bool fpga_acquisition::free()
 }
 
 
-unsigned fpga_acquisition::fpga_acquisition_test_register(unsigned writeval)
+uint32_t fpga_acquisition::fpga_acquisition_test_register(uint32_t writeval)
 {
-    unsigned readval;
+    uint32_t readval;
     // write value to test register
     d_map_base[15] = writeval;
     // read value from test register
@@ -150,9 +150,9 @@ unsigned fpga_acquisition::fpga_acquisition_test_register(unsigned writeval)
 
 void fpga_acquisition::fpga_configure_acquisition_local_code(lv_16sc_t fft_local_code[])
 {
-    unsigned short local_code;
-    unsigned int k, tmp, tmp2;
-    unsigned int fft_data;
+    uint16_t local_code;
+    uint32_t k, tmp, tmp2;
+    uint32_t fft_data;
     // clear memory address counter
     d_map_base[4] = LOCAL_CODE_CLEAR_MEM;
     // write local code
@@ -170,12 +170,12 @@ void fpga_acquisition::fpga_configure_acquisition_local_code(lv_16sc_t fft_local
 void fpga_acquisition::run_acquisition(void)
 {
     // enable interrupts
-    int reenable = 1;
-    write(d_fd, reinterpret_cast<void *>(&reenable), sizeof(int));
+    int32_t reenable = 1;
+    write(d_fd, reinterpret_cast<void *>(&reenable), sizeof(int32_t));
     // launch the acquisition process
     d_map_base[6] = LAUNCH_ACQUISITION;  // writing anything to reg 6 launches the acquisition process
 
-    int irq_count;
+    int32_t irq_count;
     ssize_t nb;
     // wait for interrupt
     nb = read(d_fd, &irq_count, sizeof(irq_count));
@@ -192,16 +192,16 @@ void fpga_acquisition::configure_acquisition()
     d_map_base[0] = d_select_queue;
     d_map_base[1] = d_vector_length;
     d_map_base[2] = d_nsamples;
-    d_map_base[5] = (int)log2((float)d_vector_length);  // log2 FFTlength
+    d_map_base[5] = static_cast<int32_t>(log2(static_cast<float>(d_vector_length)));  // log2 FFTlength
 }
 
 
-void fpga_acquisition::set_phase_step(unsigned int doppler_index)
+void fpga_acquisition::set_phase_step(uint32_t doppler_index)
 {
     float phase_step_rad_real;
     float phase_step_rad_int_temp;
     int32_t phase_step_rad_int;
-    int doppler = static_cast<int>(-d_doppler_max) + d_doppler_step * doppler_index;
+    int32_t doppler = static_cast<int>(-d_doppler_max) + d_doppler_step * doppler_index;
     float phase_step_rad = GPS_TWO_PI * doppler / static_cast<float>(d_fs_in);
     // The doppler step can never be outside the range -pi to +pi, otherwise there would be aliasing
     // The FPGA expects phase_step_rad between -1 (-pi) to +1 (+pi)
@@ -221,9 +221,9 @@ void fpga_acquisition::set_phase_step(unsigned int doppler_index)
 
 
 void fpga_acquisition::read_acquisition_results(uint32_t *max_index,
-    float *max_magnitude, unsigned *initial_sample, float *power_sum)
+    float *max_magnitude, uint32_t *initial_sample, float *power_sum)
 {
-    unsigned readval = 0;
+    uint32_t readval = 0;
     readval = d_map_base[1];
     *initial_sample = readval;
     readval = d_map_base[2];
@@ -249,7 +249,7 @@ void fpga_acquisition::unblock_samples()
 
 void fpga_acquisition::close_device()
 {
-    unsigned *aux = const_cast<unsigned *>(d_map_base);
+    uint32_t *aux = const_cast<uint32_t *>(d_map_base);
     if (munmap(static_cast<void *>(aux), PAGE_SIZE) == -1)
         {
             printf("Failed to unmap memory uio\n");

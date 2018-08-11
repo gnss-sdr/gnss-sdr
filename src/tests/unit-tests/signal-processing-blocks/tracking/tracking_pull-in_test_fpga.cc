@@ -92,7 +92,7 @@ void Acquisition_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            long int message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(msg);
             rx_message = message;
             top_block->stop();  //stop the flowgraph
         }
@@ -143,7 +143,7 @@ void TrackingPullInTestFpga_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            long int message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(msg);
             rx_message = message;  //3 -> loss of lock
             //std::cout << "Received trk message: " << rx_message << std::endl;
         }
@@ -189,7 +189,7 @@ public:
 
     std::map<int, double> doppler_measurements_map;
     std::map<int, double> code_delay_measurements_map;
-    std::map<int, unsigned long int> acq_samplestamp_map;
+    std::map<int, uint64_t> acq_samplestamp_map;
 
     int configure_generator(double CN0_dBHz, int file_idx);
     int generate_signal();
@@ -677,7 +677,7 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
     int test_satellite_PRN = 0;
     double true_acq_doppler_hz = 0.0;
     double true_acq_delay_samples = 0.0;
-    unsigned long int acq_samplestamp_samples = 0;
+    uint64_t acq_samplestamp_samples = 0;
 
     tracking_true_obs_reader true_obs_data;
     if (!FLAGS_enable_external_signal_file)
@@ -795,7 +795,7 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                                     ASSERT_EQ(trk_dump.open_obs_file(std::string("./tracking_ch_0.dat")), true)
                                         << "Failure opening tracking dump file";
 
-                                    long int n_measured_epochs = trk_dump.num_epochs();
+                                    int64_t n_measured_epochs = trk_dump.num_epochs();
                                     //todo: use vectors instead
                                     arma::vec trk_timestamp_s = arma::zeros(n_measured_epochs, 1);
                                     arma::vec trk_acc_carrier_phase_cycles = arma::zeros(n_measured_epochs, 1);
@@ -811,7 +811,7 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                                     std::vector<double> promptQ;
                                     std::vector<double> CN0_dBHz;
                                     std::vector<double> Doppler;
-                                    long int epoch_counter = 0;
+                                    int64_t epoch_counter = 0;
                                     while (trk_dump.read_binary_obs())
                                         {
                                             trk_timestamp_s(epoch_counter) = static_cast<double>(trk_dump.PRN_start_sample_count) / static_cast<double>(baseband_sampling_freq);

@@ -119,12 +119,12 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
 
 
                     // set the preamble
-                    unsigned short int preambles_bits[GPS_CA_PREAMBLE_LENGTH_BITS] = GPS_PREAMBLE;
+                    uint16_t preambles_bits[GPS_CA_PREAMBLE_LENGTH_BITS] = GPS_PREAMBLE;
 
                     // preamble bits to sampled symbols
-                    d_gps_l1ca_preambles_symbols = static_cast<int *>(volk_gnsssdr_malloc(GPS_CA_PREAMBLE_LENGTH_SYMBOLS * sizeof(int), volk_gnsssdr_get_alignment()));
-                    int n = 0;
-                    for (int i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
+                    d_gps_l1ca_preambles_symbols = static_cast<int32_t *>(volk_gnsssdr_malloc(GPS_CA_PREAMBLE_LENGTH_SYMBOLS * sizeof(int32_t), volk_gnsssdr_get_alignment()));
+                    int32_t n = 0;
+                    for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
                         {
                             for (uint32_t j = 0; j < GPS_CA_TELEMETRY_SYMBOLS_PER_BIT; j++)
                                 {
@@ -376,9 +376,9 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     d_acq_sample_stamp = 0;
     d_absolute_samples_offset = 0;
 
-    d_current_prn_length_samples = static_cast<int>(trk_parameters.vector_length);
+    d_current_prn_length_samples = static_cast<int32_t>(trk_parameters.vector_length);
     d_next_prn_length_samples = d_current_prn_length_samples;
-    d_correlation_length_samples = static_cast<int>(trk_parameters.vector_length);  // this one is only for initialisation and does not change its value (MM)
+    d_correlation_length_samples = static_cast<int32_t>(trk_parameters.vector_length);  // this one is only for initialisation and does not change its value (MM)
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
@@ -413,8 +413,8 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     // create multicorrelator class
     std::string device_name = trk_parameters.device_name;
     uint32_t device_base = trk_parameters.device_base;
-    int *ca_codes = trk_parameters.ca_codes;
-    int *data_codes = trk_parameters.data_codes;
+    int32_t *ca_codes = trk_parameters.ca_codes;
+    int32_t *data_codes = trk_parameters.data_codes;
     //uint32_t  code_length = trk_parameters.code_length_chips;
     d_code_length_chips = trk_parameters.code_length_chips;
     uint32_t multicorr_type = trk_parameters.multicorr_type;
@@ -617,7 +617,7 @@ dll_pll_veml_tracking_fpga::~dll_pll_veml_tracking_fpga()
 bool dll_pll_veml_tracking_fpga::acquire_secondary()
 {
     // ******* preamble correlation ********
-    int corr_value = 0;
+    int32_t corr_value = 0;
     for (uint32_t i = 0; i < d_secondary_code_length; i++)
         {
             if (d_Prompt_buffer_deque.at(i).real() < 0.0)  // symbols clipping
@@ -645,7 +645,7 @@ bool dll_pll_veml_tracking_fpga::acquire_secondary()
         }
 
     //    if (abs(corr_value) == d_secondary_code_length)
-    if (abs(corr_value) == static_cast<int>(d_secondary_code_length))
+    if (abs(corr_value) == static_cast<int32_t>(d_secondary_code_length))
 
         {
             return true;
@@ -766,7 +766,7 @@ void dll_pll_veml_tracking_fpga::update_tracking_vars()
     T_prn_samples = T_prn_seconds * trk_parameters.fs_in;
     K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_secs * trk_parameters.fs_in;
     //d_next_prn_length_samples = round(K_blk_samples);
-    d_next_prn_length_samples = static_cast<int>(std::floor(K_blk_samples));  // round to a discrete number of samples
+    d_next_prn_length_samples = static_cast<int32_t>(std::floor(K_blk_samples));  // round to a discrete number of samples
 
     //################### PLL COMMANDS #################################################
     // carrier phase step (NCO phase increment per sample) [rads/sample]
@@ -851,7 +851,7 @@ void dll_pll_veml_tracking_fpga::log_data(bool integrating)
             float tmp_VE, tmp_E, tmp_P, tmp_L, tmp_VL;
             float tmp_float;
             double tmp_double;
-            unsigned long int tmp_long_int;
+            int64_t tmp_long_int;
             if (trk_parameters.track_pilot)
                 {
                     if (interchange_iq)
@@ -960,14 +960,14 @@ void dll_pll_veml_tracking_fpga::log_data(bool integrating)
 }
 
 
-int dll_pll_veml_tracking_fpga::save_matfile()
+int32_t dll_pll_veml_tracking_fpga::save_matfile()
 {
     // READ DUMP FILE
     std::ifstream::pos_type size;
-    int number_of_double_vars = 1;
-    int number_of_float_vars = 17;
-    int epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
-                           sizeof(float) * number_of_float_vars + sizeof(uint32_t);
+    int32_t number_of_double_vars = 1;
+    int32_t number_of_float_vars = 17;
+    int32_t epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
+                               sizeof(float) * number_of_float_vars + sizeof(uint32_t);
     std::ifstream dump_file;
     dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try
@@ -1230,7 +1230,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
         {
         case 0:  // Standby - Consume samples at full throttle, do nothing
             {
-                for (int n = 0; n < d_n_correlator_taps; n++)
+                for (int32_t n = 0; n < d_n_correlator_taps; n++)
                     {
                         d_correlator_outs[n] = gr_complex(0, 0);
                     }
@@ -1244,14 +1244,14 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
             {
                 d_pull_in = 0;
                 multicorrelator_fpga->lock_channel();
-                unsigned long long int counter_value = multicorrelator_fpga->read_sample_counter();
+                uint64_t counter_value = multicorrelator_fpga->read_sample_counter();
                 //printf("333333 counter_value = %llu\n", counter_value);
                 //printf("333333 current_synchro_data.Acq_samplestamp_samples = %d\n", current_synchro_data.Acq_samplestamp_samples);
                 //printf("333333 current_synchro_data.Acq_delay_samples = %f\n", current_synchro_data.Acq_delay_samples);
                 //printf("333333 d_correlation_length_samples = %d\n", d_correlation_length_samples);
                 unsigned num_frames = ceil((counter_value - current_synchro_data.Acq_samplestamp_samples - current_synchro_data.Acq_delay_samples) / d_correlation_length_samples);
                 //printf("333333 num_frames = %d\n", num_frames);
-                unsigned long long int absolute_samples_offset = current_synchro_data.Acq_delay_samples + current_synchro_data.Acq_samplestamp_samples + num_frames * d_correlation_length_samples;
+                uint64_t absolute_samples_offset = current_synchro_data.Acq_delay_samples + current_synchro_data.Acq_samplestamp_samples + num_frames * d_correlation_length_samples;
                 //printf("333333 absolute_samples_offset = %llu\n", absolute_samples_offset);
                 multicorrelator_fpga->set_initial_sample(absolute_samples_offset);
                 d_absolute_samples_offset = absolute_samples_offset;
@@ -1353,7 +1353,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                                     {
                                         d_symbol_history.push_back(d_Prompt->real());
                                         //******* preamble correlation ********
-                                        int corr_value = 0;
+                                        int32_t corr_value = 0;
                                         if ((d_symbol_history.size() == GPS_CA_PREAMBLE_LENGTH_SYMBOLS))  // and (d_make_correlation or !d_flag_frame_sync))
                                             {
                                                 for (uint32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_SYMBOLS; i++)
@@ -1445,10 +1445,10 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                                         d_carrier_loop_filter.set_pdi(new_correlation_time);
                                         d_code_loop_filter.set_pdi(new_correlation_time);
                                         d_state = 3;  // next state is the extended correlator integrator
-                                        LOG(INFO) << "Enabled " << trk_parameters.extend_correlation_symbols * static_cast<int>(d_code_period * 1000.0) << " ms extended correlator in channel "
+                                        LOG(INFO) << "Enabled " << trk_parameters.extend_correlation_symbols * static_cast<int32_t>(d_code_period * 1000.0) << " ms extended correlator in channel "
                                                   << d_channel
                                                   << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN);
-                                        std::cout << "Enabled " << trk_parameters.extend_correlation_symbols * static_cast<int>(d_code_period * 1000.0) << " ms extended correlator in channel "
+                                        std::cout << "Enabled " << trk_parameters.extend_correlation_symbols * static_cast<int32_t>(d_code_period * 1000.0) << " ms extended correlator in channel "
                                                   << d_channel
                                                   << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
                                         // Set narrow taps delay values [chips]

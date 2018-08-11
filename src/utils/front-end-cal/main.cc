@@ -448,7 +448,7 @@ int main(int argc, char** argv)
                 }
             catch (const boost::exception& e)
                 {
-                    LOG(INFO) << "Exception caught while pushing to he internal queue.";
+                    LOG(INFO) << "Exception caught while pushing to the internal queue.";
                 }
             try
                 {

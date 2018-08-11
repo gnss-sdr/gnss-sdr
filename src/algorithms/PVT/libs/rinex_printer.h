@@ -60,6 +60,7 @@
 #include "GLONASS_L1_L2_CA.h"
 #include "gnss_synchro.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <cstdint>
 #include <string>
 #include <fstream>
 #include <sstream>  // for stringstream
@@ -221,87 +222,87 @@ public:
     /*!
      *  \brief Writes data from the GPS L1 C/A navigation message into the RINEX file
      */
-    void log_rinex_nav(std::fstream& out, const std::map<int, Gps_Ephemeris>& eph_map);
+    void log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps_Ephemeris>& eph_map);
 
     /*!
      *  \brief Writes data from the GPS L2 navigation message into the RINEX file
      */
-    void log_rinex_nav(std::fstream& out, const std::map<int, Gps_CNAV_Ephemeris>& eph_map);
+    void log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps_CNAV_Ephemeris>& eph_map);
 
     /*!
      *  \brief Writes data from the Galileo navigation message into the RINEX file
      */
-    void log_rinex_nav(std::fstream& out, const std::map<int, Galileo_Ephemeris>& eph_map);
+    void log_rinex_nav(std::fstream& out, const std::map<int32_t, Galileo_Ephemeris>& eph_map);
 
     /*!
      *  \brief Writes data from the Mixed (GPS/Galileo) navigation message into the RINEX file
      */
-    void log_rinex_nav(std::fstream& out, const std::map<int, Gps_Ephemeris>& gps_eph_map, const std::map<int, Galileo_Ephemeris>& galileo_eph_map);
+    void log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps_Ephemeris>& gps_eph_map, const std::map<int32_t, Galileo_Ephemeris>& galileo_eph_map);
 
     /*!
      *  \brief Writes data from the GLONASS GNAV navigation message into the RINEX file
      */
-    void log_rinex_nav(std::fstream& out, const std::map<int, Glonass_Gnav_Ephemeris>& eph_map);
+    void log_rinex_nav(std::fstream& out, const std::map<int32_t, Glonass_Gnav_Ephemeris>& eph_map);
 
     /*!
      *  \brief Writes data from the Mixed (GPS/GLONASS GNAV) navigation message into the RINEX file
      */
-    void log_rinex_nav(std::fstream& out, const std::map<int, Gps_Ephemeris>& gps_eph_map, const std::map<int, Glonass_Gnav_Ephemeris>& glonass_gnav_eph_map);
+    void log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps_Ephemeris>& gps_eph_map, const std::map<int32_t, Glonass_Gnav_Ephemeris>& glonass_gnav_eph_map);
 
     /*!
      *  \brief Writes data from the Mixed (GPS/GLONASS GNAV) navigation message into the RINEX file
      */
-    void log_rinex_nav(std::fstream& out, const std::map<int, Gps_CNAV_Ephemeris>& gps_cnav_eph_map, const std::map<int, Glonass_Gnav_Ephemeris>& glonass_gnav_eph_map);
+    void log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps_CNAV_Ephemeris>& gps_cnav_eph_map, const std::map<int32_t, Glonass_Gnav_Ephemeris>& glonass_gnav_eph_map);
 
     /*!
      *  \brief Writes data from the Mixed (Galileo/ GLONASS GNAV) navigation message into the RINEX file
      */
-    void log_rinex_nav(std::fstream& out, const std::map<int, Galileo_Ephemeris>& galileo_eph_map, const std::map<int, Glonass_Gnav_Ephemeris>& glonass_gnav_eph_map);
+    void log_rinex_nav(std::fstream& out, const std::map<int32_t, Galileo_Ephemeris>& galileo_eph_map, const std::map<int32_t, Glonass_Gnav_Ephemeris>& glonass_gnav_eph_map);
 
     /*!
      *  \brief Writes GPS L1 observables into the RINEX file
      */
-    void log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, double obs_time, const std::map<int, Gnss_Synchro>& observables);
+    void log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
 
     /*!
      *  \brief Writes GPS L2 observables into the RINEX file
      */
-    void log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& eph, double obs_time, const std::map<int, Gnss_Synchro>& observables);
+    void log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
 
     /*!
      *  \brief Writes dual frequency GPS L1 and L2 observables into the RINEX file
      */
-    void log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, const Gps_CNAV_Ephemeris& eph_cnav, double obs_time, const std::map<int, Gnss_Synchro>& observables);
+    void log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, const Gps_CNAV_Ephemeris& eph_cnav, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
 
     /*!
      *  \brief Writes Galileo observables into the RINEX file. Example: galileo_bands("1B"), galileo_bands("1B 5X"), galileo_bands("5X"), ... Default: "1B".
      */
-    void log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& eph, double obs_time, const std::map<int, Gnss_Synchro>& observables, const std::string galileo_bands = "1B");
+    void log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, const std::string galileo_bands = "1B");
 
     /*!
      *  \brief Writes Mixed GPS / Galileo observables into the RINEX file
      */
-    void log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_eph, const Galileo_Ephemeris& galileo_eph, const double gps_obs_time, const std::map<int, Gnss_Synchro>& observables);
+    void log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_eph, const Galileo_Ephemeris& galileo_eph, const double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
 
     /*!
      *  \brief Writes GLONASS GNAV observables into the RINEX file. Example: glonass_bands("1C"), galileo_bands("1B 5X"), galileo_bands("5X"), ... Default: "1B".
      */
-    void log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeris& eph, double obs_time, const std::map<int, Gnss_Synchro>& observables, const std::string glonass_bands = "1C");
+    void log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeris& eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, const std::string glonass_bands = "1C");
 
     /*!
      *  \brief Writes Mixed GPS L1 C/A - GLONASS observables into the RINEX file
      */
-    void log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const double gps_obs_time, const std::map<int, Gnss_Synchro>& observables);
+    void log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
 
     /*!
      *  \brief Writes Mixed GPS L2C - GLONASS observables into the RINEX file
      */
-    void log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& gps_cnav_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const double gps_obs_time, const std::map<int, Gnss_Synchro>& observables);
+    void log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& gps_cnav_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
 
     /*!
      *  \brief Writes Mixed Galileo/GLONASS observables into the RINEX file
      */
-    void log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& galileo_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const double gps_obs_time, const std::map<int, Gnss_Synchro>& observables);
+    void log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& galileo_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
 
     /*!
      * \brief Represents GPS time in the date time format. Leap years are considered, but leap seconds are not.
@@ -523,9 +524,9 @@ private:
     /*
      * Convert a string to an integer.
      * @param s string containing a number.
-     * @return long integer representation of string.
+     * @return int64_t  integer representation of string.
      */
-    inline long asInt(const std::string& s)
+    inline int64_t asInt(const std::string& s)
     {
         return strtol(s.c_str(), 0, 10);
     }
@@ -658,7 +659,7 @@ inline std::string& Rinex_Printer::sci2for(std::string& aStr,
     std::string::size_type idx = aStr.find('.', startPos);
     int expAdd = 0;
     std::string exp;
-    long iexp;
+    int64_t iexp;
     //If checkSwitch is false, always redo the exponential. Otherwise,
     //set it to false.
     bool redoexp = !checkSwitch;
@@ -761,7 +762,7 @@ inline std::string Rinex_Printer::asFixWidthString(const int x, const int width,
 }
 
 
-inline long asInt(const std::string& s)
+inline int64_t asInt(const std::string& s)
 {
     return strtol(s.c_str(), 0, 10);
 }

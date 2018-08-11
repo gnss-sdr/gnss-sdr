@@ -99,13 +99,13 @@ void pcps_acquisition_fpga::init()
     d_gnss_synchro->Acq_samplestamp_samples = 0;
     d_mag = 0.0;
     d_input_power = 0.0;
-    d_num_doppler_bins = static_cast<unsigned int>(std::ceil(static_cast<double>(static_cast<int>(acq_parameters.doppler_max) - static_cast<int>(-acq_parameters.doppler_max)) / static_cast<double>(d_doppler_step)));
+    d_num_doppler_bins = static_cast<uint32_t>(std::ceil(static_cast<double>(static_cast<int32_t>(acq_parameters.doppler_max) - static_cast<int32_t>(-acq_parameters.doppler_max)) / static_cast<double>(d_doppler_step)));
 
     acquisition_fpga->init();
 }
 
 
-void pcps_acquisition_fpga::set_state(int state)
+void pcps_acquisition_fpga::set_state(int32_tstate)
 {
     d_state = state;
     if (d_state == 1)
@@ -184,19 +184,19 @@ void pcps_acquisition_fpga::set_active(bool active)
                // no CFAR algorithm in the FPGA
                << ", use_CFAR_algorithm_flag: false";
 
-    unsigned int initial_sample;
+    uint32_t initial_sample;
     float input_power_all = 0.0;
     float input_power_computed = 0.0;
-    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+    for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             // doppler search steps
-            int doppler = -static_cast<int>(acq_parameters.doppler_max) + d_doppler_step * doppler_index;
+            int32_tdoppler = -static_cast<int32_t>(acq_parameters.doppler_max) + d_doppler_step * doppler_index;
 
             acquisition_fpga->set_phase_step(doppler_index);
             acquisition_fpga->run_acquisition();  // runs acquisition and waits until it is finished
             acquisition_fpga->read_acquisition_results(&indext, &magt,
                 &initial_sample, &d_input_power);
-            d_sample_counter = initial_sample;
+            d_sample_counter = static_cast<uint64_t>(initial_sample);
 
             if (d_mag < magt)
                 {

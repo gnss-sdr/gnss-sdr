@@ -41,6 +41,7 @@
 #include <gnuradio/blocks/throttle.h>
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/msg_queue.h>
+#include <cstdint>
 #include <string>
 
 class ConfigurationInterface;
@@ -107,7 +108,7 @@ public:
     }
 
 private:
-    unsigned long long samples_;
+    uint64_t samples_;
     long sampling_frequency_;
     std::string filename_;
     std::string item_type_;
@@ -115,8 +116,8 @@ private:
     bool dump_;
     std::string dump_filename_;
     std::string role_;
-    unsigned int in_streams_;
-    unsigned int out_streams_;
+    uint32_t in_streams_;
+    uint32_t out_streams_;
     gr::blocks::file_source::sptr file_source_;
     boost::shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr sink_;

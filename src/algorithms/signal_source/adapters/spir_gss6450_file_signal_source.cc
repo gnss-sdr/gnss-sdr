@@ -42,7 +42,7 @@ using google::LogMessage;
 
 
 SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_streams, unsigned int out_streams, gr::msg_queue::sptr queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
+    std::string role, uint32_t in_streams, uint32_t out_streams, gr::msg_queue::sptr queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
 {
     std::string default_filename = "../data/my_capture.dat";
     std::string default_dump_filename = "../data/my_capture_dump.dat";
@@ -60,7 +60,7 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface*
     n_channels_ = configuration->property(role + ".total_channels", 1);
     sel_ch_ = configuration->property(role + ".sel_ch", 1);
     item_size_ = sizeof(int);
-    long bytes_seek = configuration->property(role + ".bytes_to_skip", 65536);
+    int64_t bytes_seek = configuration->property(role + ".bytes_to_skip", 65536);
     double sample_size_byte = static_cast<double>(adc_bits_) / 4.0;
 
     if (sel_ch_ > n_channels_)
@@ -69,7 +69,7 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface*
         }
     if (n_channels_ > 1)
         {
-            for (unsigned int i = 0; i < (n_channels_ - 1); i++)
+            for (uint32_t i = 0; i < (n_channels_ - 1); i++)
                 {
                     null_sinks_.push_back(gr::blocks::null_sink::make(item_size_));
                 }
@@ -133,8 +133,8 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface*
 
             if (size > 0)
                 {
-                    samples_ = static_cast<unsigned long long>(floor(static_cast<double>(static_cast<long>(size) - static_cast<long>(bytes_seek)) / (sample_size_byte * static_cast<double>(n_channels_))));
-                    samples_ = samples_ - static_cast<unsigned long long>(ceil(0.002 * sampling_frequency_));  //process all the samples available in the file excluding the last 2 ms
+                    samples_ = static_cast<uint64_t>(floor(static_cast<double>(static_cast<int64_t>(size) - static_cast<int64_t>(bytes_seek)) / (sample_size_byte * static_cast<double>(n_channels_))));
+                    samples_ = samples_ - static_cast<uint64_t>(ceil(0.002 * sampling_frequency_));  //process all the samples available in the file excluding the last 2 ms
                 }
         }
 
@@ -199,8 +199,8 @@ void SpirGSS6450FileSignalSource::connect(gr::top_block_sptr top_block)
                 }
             if (n_channels_ > 1)
                 {
-                    unsigned int aux = 0;
-                    for (unsigned int i = 0; i < n_channels_; i++)
+                    uint32_t aux = 0;
+                    for (uint32_t i = 0; i < n_channels_; i++)
                         {
                             if (i != (sel_ch_ - 1))
                                 {
@@ -246,8 +246,8 @@ void SpirGSS6450FileSignalSource::disconnect(gr::top_block_sptr top_block)
                 }
             if (n_channels_ > 1)
                 {
-                    unsigned int aux = 0;
-                    for (unsigned int i = 0; i < n_channels_; i++)
+                    uint32_t aux = 0;
+                    for (uint32_t i = 0; i < n_channels_; i++)
                         {
                             if (i != (sel_ch_ - 1))
                                 {

@@ -59,10 +59,12 @@ public:
     bool init();
     bool set_local_code(uint32_t PRN);
     bool free();
+    void set_doppler_sweep(uint32_t num_sweeps);
+    void set_doppler_sweep_debug(uint32_t num_sweeps, uint32_t doppler_index);
     void run_acquisition(void);
     void set_phase_step(uint32_t doppler_index);
     void read_acquisition_results(uint32_t *max_index, float *max_magnitude,
-        uint32_t *initial_sample, float *power_sum);
+        uint64_t *initial_sample, float *power_sum, uint32_t *doppler_index);
     void block_samples();
     void unblock_samples();
 

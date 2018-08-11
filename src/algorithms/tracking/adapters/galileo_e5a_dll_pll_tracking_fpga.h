@@ -1,15 +1,15 @@
 /*!
- * \file gps_l1_ca_dll_pll_tracking_fpga.h
- * \brief  Interface of an adapter of a DLL+PLL tracking loop block
- * for GPS L1 C/A to a TrackingInterface that uses the FPGA
- * \author Marc Majoral, 2018. mmajoral(at)cttc.es
- *         Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
- *         Javier Arribas, 2011. jarribas(at)cttc.es
- *
- * Code DLL + carrier PLL according to the algorithms described in:
- * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
- * A Software-Defined GPS and Galileo Receiver. A Single-Frequency
- * Approach, Birkhauser, 2007
+ * \file galileo_e5a_dll_pll_tracking.h
+ * \brief Adapts a code DLL + carrier PLL
+ *  tracking block to a TrackingInterface for Galileo E5a signals
+ * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
+ *  Galileo E5a data and pilot Signals
+ * \author Marc Sales, 2014. marcsales92(at)gmail.com
+ * \based on work from:
+ *          <ul>
+ *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
+ *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ *          </ul>
  *
  * -------------------------------------------------------------------------
  *
@@ -36,38 +36,37 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_
-#define GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_
+#ifndef GNSS_SDR_GALILEO_E5A_DLL_PLL_TRACKING_FPGA_H_
+#define GNSS_SDR_GALILEO_E5A_DLL_PLL_TRACKING_FPGA_H_
 
-#include <string>
 #include "tracking_interface.h"
 #include "dll_pll_veml_tracking_fpga.h"
-
+#include <string>
 
 class ConfigurationInterface;
 
 /*!
  * \brief This class implements a code DLL + carrier PLL tracking loop
  */
-class GpsL1CaDllPllTrackingFpga : public TrackingInterface
+class GalileoE5aDllPllTrackingFpga : public TrackingInterface
 {
 public:
-    GpsL1CaDllPllTrackingFpga(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_streams,
-            unsigned int out_streams);
+    GalileoE5aDllPllTrackingFpga(ConfigurationInterface* configuration,
+        std::string role,
+        unsigned int in_streams,
+        unsigned int out_streams);
 
-    virtual ~GpsL1CaDllPllTrackingFpga();
+    virtual ~GalileoE5aDllPllTrackingFpga();
 
     inline std::string role() override
     {
         return role_;
     }
 
-    //! Returns "GPS_L1_CA_DLL_PLL_Tracking_Fpga"
+    //! Returns "Galileo_E5a_DLL_PLL_Tracking"
     inline std::string implementation() override
     {
-        return "GPS_L1_CA_DLL_PLL_Tracking_Fpga";
+        return "Galileo_E5a_DLL_PLL_Tracking";
     }
 
     inline size_t item_size() override
@@ -93,16 +92,19 @@ public:
 
     void start_tracking() override;
 
-	//void reset(void);
-	
 private:
-	dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
+    dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
     size_t item_size_;
     unsigned int channel_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
+
+
     int* d_ca_codes;
+    int* d_data_codes;
+    bool d_track_pilot;
+
 };
 
-#endif // GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_
+#endif /* GNSS_SDR_GALILEO_E5A_DLL_PLL_TRACKING_FPGA_H_ */

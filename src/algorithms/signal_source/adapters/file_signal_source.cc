@@ -70,7 +70,7 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
 
     double seconds_to_skip = configuration->property(role + ".seconds_to_skip", default_seconds_to_skip);
     header_size = configuration->property(role + ".header_size", 0);
-    long samples_to_skip = 0;
+    int64_t samples_to_skip = 0;
 
     bool is_complex = false;
 
@@ -112,7 +112,7 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
 
             if (seconds_to_skip > 0)
                 {
-                    samples_to_skip = static_cast<long>(seconds_to_skip * sampling_frequency_);
+                    samples_to_skip = static_cast<int64_t>(seconds_to_skip * sampling_frequency_);
 
                     if (is_complex)
                         {
@@ -200,8 +200,8 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
 
             if (size > 0)
                 {
-                    long bytes_to_skip = samples_to_skip * item_size_;
-                    long bytes_to_process = static_cast<long>(size) - bytes_to_skip;
+                    int64_t bytes_to_skip = samples_to_skip * item_size_;
+                    int64_t bytes_to_process = static_cast<int64_t>(size) - bytes_to_skip;
                     samples_ = floor(static_cast<double>(bytes_to_process) / static_cast<double>(item_size()) - ceil(0.002 * static_cast<double>(sampling_frequency_)));  //process all the samples available in the file excluding at least the last 1 ms
                 }
         }

@@ -137,9 +137,9 @@ TEST(RtcmTest, BinToDouble)
 TEST(RtcmTest, BinToUint)
 {
     auto rtcm = std::make_shared<Rtcm>();
-    uint64_t expected1 = 42;
+    uint32_t expected1 = 42;
     EXPECT_EQ(expected1, rtcm->bin_to_uint("00101010"));
-    uint64_t expected2 = 214;
+    uint32_t expected2 = 214;
     EXPECT_EQ(expected2, rtcm->bin_to_uint("11010110"));
 }
 
@@ -147,9 +147,9 @@ TEST(RtcmTest, BinToUint)
 TEST(RtcmTest, BinToInt)
 {
     auto rtcm = std::make_shared<Rtcm>();
-    int64_t expected1 = 42;
+    int32_t expected1 = 42;
     EXPECT_EQ(expected1, rtcm->bin_to_int("00101010"));
-    int64_t expected2 = -42;
+    int32_t expected2 = -42;
     EXPECT_EQ(expected2, rtcm->bin_to_int("11010110"));
 }
 

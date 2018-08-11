@@ -43,6 +43,7 @@
 #include <gnuradio/blocks/endian_swap.h>
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/msg_queue.h>
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -57,7 +58,7 @@ class SpirGSS6450FileSignalSource : public GNSSBlockInterface
 {
 public:
     SpirGSS6450FileSignalSource(ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams, gr::msg_queue::sptr queue);
+        uint32_t in_streams, uint32_t out_streams, gr::msg_queue::sptr queue);
 
     virtual ~SpirGSS6450FileSignalSource();
     inline std::string role() override
@@ -106,7 +107,7 @@ public:
     }
 
 private:
-    unsigned long long samples_;
+    uint64_t samples_;
     double sampling_frequency_;
     std::string filename_;
     bool repeat_;
@@ -116,11 +117,11 @@ private:
     std::string dump_filename_;
     std::string role_;
     std::string item_type_;
-    unsigned int in_streams_;
-    unsigned int out_streams_;
-    unsigned int adc_bits_;
-    unsigned int n_channels_;
-    unsigned int sel_ch_;
+    uint32_t in_streams_;
+    uint32_t out_streams_;
+    uint32_t adc_bits_;
+    uint32_t n_channels_;
+    uint32_t sel_ch_;
     gr::blocks::file_source::sptr file_source_;
     gr::blocks::deinterleave::sptr deint_;
     gr::blocks::endian_swap::sptr endian_;

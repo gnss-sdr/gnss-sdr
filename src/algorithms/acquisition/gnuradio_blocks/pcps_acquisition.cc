@@ -268,7 +268,7 @@ void pcps_acquisition::init()
     d_mag = 0.0;
     d_input_power = 0.0;
 
-    d_num_doppler_bins = static_cast<uint32_t>(std::ceil(static_cast<double>(static_cast<int>(acq_parameters.doppler_max) - static_cast<int>(-acq_parameters.doppler_max)) / static_cast<double>(d_doppler_step)));
+    d_num_doppler_bins = static_cast<uint32_t>(std::ceil(static_cast<double>(static_cast<int32_t>(acq_parameters.doppler_max) - static_cast<int32_t>(-acq_parameters.doppler_max)) / static_cast<double>(d_doppler_step)));
 
     // Create the carrier Doppler wipeoff signals
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
@@ -290,7 +290,7 @@ void pcps_acquisition::init()
                 {
                     d_magnitude_grid[doppler_index][k] = 0.0;
                 }
-            int32_t doppler = -static_cast<int>(acq_parameters.doppler_max) + d_doppler_step * doppler_index;
+            int32_t doppler = -static_cast<int32_t>(acq_parameters.doppler_max) + d_doppler_step * doppler_index;
             update_local_carrier(d_grid_doppler_wipeoffs[doppler_index], d_fft_size, d_old_freq + doppler);
         }
 
@@ -309,7 +309,7 @@ void pcps_acquisition::update_grid_doppler_wipeoffs()
 {
     for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
-            int32_t doppler = -static_cast<int>(acq_parameters.doppler_max) + d_doppler_step * doppler_index;
+            int32_t doppler = -static_cast<int32_t>(acq_parameters.doppler_max) + d_doppler_step * doppler_index;
             update_local_carrier(d_grid_doppler_wipeoffs[doppler_index], d_fft_size, d_old_freq + doppler);
         }
 }
@@ -510,11 +510,11 @@ float pcps_acquisition::max_to_input_power_statistic(uint32_t& indext, int32_t& 
     indext = index_time;
     if (!d_step_two)
         {
-            doppler = -static_cast<int>(doppler_max) + doppler_step * static_cast<int>(index_doppler);
+            doppler = -static_cast<int32_t>(doppler_max) + doppler_step * static_cast<int32_t>(index_doppler);
         }
     else
         {
-            doppler = static_cast<int>(d_doppler_center_step_two + (static_cast<float>(index_doppler) - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0))) * acq_parameters.doppler_step2);
+            doppler = static_cast<int32_t>(d_doppler_center_step_two + (static_cast<float>(index_doppler) - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0))) * acq_parameters.doppler_step2);
         }
 
     float magt = grid_maximum / (fft_normalization_factor * fft_normalization_factor);
@@ -548,11 +548,11 @@ float pcps_acquisition::first_vs_second_peak_statistic(uint32_t& indext, int32_t
 
     if (!d_step_two)
         {
-            doppler = -static_cast<int>(doppler_max) + doppler_step * static_cast<int>(index_doppler);
+            doppler = -static_cast<int32_t>(doppler_max) + doppler_step * static_cast<int32_t>(index_doppler);
         }
     else
         {
-            doppler = static_cast<int>(d_doppler_center_step_two + (static_cast<float>(index_doppler) - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0))) * acq_parameters.doppler_step2);
+            doppler = static_cast<int32_t>(d_doppler_center_step_two + (static_cast<float>(index_doppler) - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0))) * acq_parameters.doppler_step2);
         }
 
     // Find 1 chip wide code phase exclude range around the peak
@@ -564,7 +564,7 @@ float pcps_acquisition::first_vs_second_peak_statistic(uint32_t& indext, int32_t
         {
             excludeRangeIndex1 = d_fft_size + excludeRangeIndex1;
         }
-    else if (excludeRangeIndex2 >= static_cast<int>(d_fft_size))
+    else if (excludeRangeIndex2 >= static_cast<int32_t>(d_fft_size))
         {
             excludeRangeIndex2 = excludeRangeIndex2 - d_fft_size;
         }
@@ -575,7 +575,7 @@ float pcps_acquisition::first_vs_second_peak_statistic(uint32_t& indext, int32_t
         {
             d_tmp_buffer[idx] = 0.0;
             idx++;
-            if (idx == static_cast<int>(d_fft_size)) idx = 0;
+            if (idx == static_cast<int32_t>(d_fft_size)) idx = 0;
         }
     while (idx != excludeRangeIndex2);
 
@@ -716,11 +716,11 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
             // Compute the test statistic
             if (d_use_CFAR_algorithm_flag)
                 {
-                    d_test_statistics = max_to_input_power_statistic(indext, doppler, d_input_power, d_num_doppler_bins_step2, static_cast<int>(d_doppler_center_step_two - (static_cast<float>(d_num_doppler_bins_step2) / 2.0) * acq_parameters.doppler_step2), acq_parameters.doppler_step2);
+                    d_test_statistics = max_to_input_power_statistic(indext, doppler, d_input_power, d_num_doppler_bins_step2, static_cast<int32_t>(d_doppler_center_step_two - (static_cast<float>(d_num_doppler_bins_step2) / 2.0) * acq_parameters.doppler_step2), acq_parameters.doppler_step2);
                 }
             else
                 {
-                    d_test_statistics = first_vs_second_peak_statistic(indext, doppler, d_num_doppler_bins_step2, static_cast<int>(d_doppler_center_step_two - (static_cast<float>(d_num_doppler_bins_step2) / 2.0) * acq_parameters.doppler_step2), acq_parameters.doppler_step2);
+                    d_test_statistics = first_vs_second_peak_statistic(indext, doppler, d_num_doppler_bins_step2, static_cast<int32_t>(d_doppler_center_step_two - (static_cast<float>(d_num_doppler_bins_step2) / 2.0) * acq_parameters.doppler_step2), acq_parameters.doppler_step2);
                 }
             d_gnss_synchro->Acq_delay_samples = static_cast<double>(std::fmod(static_cast<float>(indext), acq_parameters.samples_per_code));
             d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
@@ -844,7 +844,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
         {
             if (!acq_parameters.blocking_on_standby)
                 {
-                    d_sample_counter += ninput_items[0];
+                    d_sample_counter += static_cast<uint64_t>(ninput_items[0]);
                     consume_each(ninput_items[0]);
                 }
             if (d_step_two)
@@ -872,7 +872,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                 d_buffer_count = 0;
                 if (!acq_parameters.blocking_on_standby)
                     {
-                        d_sample_counter += ninput_items[0];  // sample counter
+                        d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
                         consume_each(ninput_items[0]);
                     }
                 break;
@@ -913,7 +913,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                         d_state = 2;
                     }
                 d_buffer_count += buff_increment;
-                d_sample_counter += buff_increment;
+                d_sample_counter += static_cast<uint64_t>(buff_increment);
                 consume_each(buff_increment);
                 break;
             }

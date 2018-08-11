@@ -36,6 +36,7 @@
 #include "nmea_printer.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
+#include <cstdint>
 #include <fcntl.h>
 #include <termios.h>
 
@@ -86,11 +87,11 @@ int Nmea_Printer::init_serial(std::string serial_device)
      */
     int fd = 0;
     struct termios options;
-    long BAUD;
-    long DATABITS;
-    long STOPBITS;
-    long PARITYON;
-    long PARITY;
+    int64_t BAUD;
+    int64_t DATABITS;
+    int64_t STOPBITS;
+    int64_t PARITYON;
+    int64_t PARITY;
 
     fd = open(serial_device.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
     if (fd == -1) return fd;  //failed to open TTY port

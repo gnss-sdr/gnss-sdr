@@ -36,6 +36,7 @@
 #include "fpga_switch.h"
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/msg_queue.h>
+#include <cstdint>
 #include <string>
 
 class ConfigurationInterface;
@@ -76,11 +77,11 @@ private:
     std::string role_;
 
     // Front-end settings
-    std::string uri_;     // device direction
-    unsigned long freq_;  // frequency of local oscillator
-    unsigned long sample_rate_;
-    unsigned long bandwidth_;
-    unsigned long buffer_size_;  // reception buffer
+    std::string uri_;  // device direction
+    uint64_t freq_;    // frequency of local oscillator
+    uint64_t sample_rate_;
+    uint64_t bandwidth_;
+    uint64_t buffer_size_;  // reception buffer
     bool rx1_en_;
     bool rx2_en_;
     bool quadrature_;
@@ -96,14 +97,14 @@ private:
 
     // DDS configuration for LO generation for external mixer
     bool enable_dds_lo_;
-    unsigned long freq_rf_tx_hz_;
-    unsigned long freq_dds_tx_hz_;
+    uint64_t freq_rf_tx_hz_;
+    uint64_t freq_dds_tx_hz_;
     double scale_dds_dbfs_;
     double phase_dds_deg_;
     double tx_attenuation_db_;
 
-    unsigned int in_stream_;
-    unsigned int out_stream_;
+    uint32_t in_stream_;
+    uint32_t out_stream_;
 
     std::string item_type_;
     size_t item_size_;

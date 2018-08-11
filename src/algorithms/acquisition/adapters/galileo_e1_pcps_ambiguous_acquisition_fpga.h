@@ -1,17 +1,12 @@
 /*!
- * \file gps_l1_ca_pcps_acquisition_fpga.h
- * \brief Adapts a PCPS acquisition block that uses the FPGA to
- *  an AcquisitionInterface for GPS L1 C/A signals
- * \authors <ul>
- *          <li> Marc Majoral, 2018. mmajoral(at)cttc.es
- *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
- *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
- *          <li> Marc Molina, 2013. marc.molina.pena(at)gmail.com
- *          </ul>
+ * \file galileo_e1_pcps_ambiguous_acquisition.h
+ * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
+ *  Galileo E1 Signals
+ * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -29,50 +24,57 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FPGA_H_
-#define GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FPGA_H_
+#ifndef GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_FPGA_H_
+#define GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_FPGA_H_
 
 #include "acquisition_interface.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition_fpga.h"
+#include "complex_byte_to_float_x2.h"
+#include <gnuradio/blocks/stream_to_vector.h>
+#include <gnuradio/blocks/float_to_complex.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <string>
+
 
 class ConfigurationInterface;
 
 /*!
- * \brief This class adapts a PCPS acquisition block to an AcquisitionInterface
- *  for GPS L1 C/A signals
+ * \brief This class adapts a PCPS acquisition block to an
+ *  AcquisitionInterface for Galileo E1 Signals
  */
-class GpsL1CaPcpsAcquisitionFpga : public AcquisitionInterface
+class GalileoE1PcpsAmbiguousAcquisitionFpga : public AcquisitionInterface
 {
 public:
-    GpsL1CaPcpsAcquisitionFpga(ConfigurationInterface* configuration,
+    GalileoE1PcpsAmbiguousAcquisitionFpga(ConfigurationInterface* configuration,
         std::string role, unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GpsL1CaPcpsAcquisitionFpga();
+    virtual ~GalileoE1PcpsAmbiguousAcquisitionFpga();
 
     inline std::string role() override
     {
+        //   printf("top acq role\n");
         return role_;
     }
 
     /*!
-     * \brief Returns "GPS_L1_CA_PCPS_Acquisition"
+     * \brief Returns "Galileo_E1_PCPS_Ambiguous_Acquisition"
      */
     inline std::string implementation() override
     {
-        return "GPS_L1_CA_PCPS_Acquisition_Fpga";
+        //  printf("top acq implementation\n");
+        return "Galileo_E1_PCPS_Ambiguous_Acquisition_Fpga";
     }
 
-    inline size_t item_size() override
+    size_t item_size() override
     {
+        //   printf("top acq item size\n");
         size_t item_size = sizeof(lv_16sc_t);
         return item_size;
     }
@@ -115,7 +117,7 @@ public:
     void init() override;
 
     /*!
-     * \brief Sets local code for GPS L1/CA PCPS acquisition algorithm.
+     * \brief Sets local code for Galileo E1 PCPS acquisition algorithm.
      */
     void set_local_code() override;
 
@@ -136,15 +138,38 @@ public:
 
 private:
     ConfigurationInterface* configuration_;
+    //pcps_acquisition_sptr acquisition_;
     pcps_acquisition_fpga_sptr acquisition_fpga_;
+    gr::blocks::stream_to_vector::sptr stream_to_vector_;
+    gr::blocks::float_to_complex::sptr float_to_complex_;
+    complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
+    // size_t item_size_;
+    // std::string item_type_;
+    //unsigned int vector_length_;
+    //unsigned int code_length_;
+    bool bit_transition_flag_;
+    bool use_CFAR_algorithm_flag_;
+    bool acquire_pilot_;
     unsigned int channel_;
+    //float threshold_;
     unsigned int doppler_max_;
     unsigned int doppler_step_;
+    //unsigned int sampled_ms_;
+    unsigned int max_dwells_;
+    //long fs_in_;
+    //long if_;
+    bool dump_;
+    bool blocking_;
+    std::string dump_filename_;
+    //std::complex<float>* code_;
     Gnss_Synchro* gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
+    //float calculate_threshold(float pfa);
+
+    // extra for the FPGA
     lv_16sc_t* d_all_fft_codes_;  // memory that contains all the code ffts
 };
 
-#endif /* GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FPGA_H_ */
+#endif /* GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_FPGA_H_ */

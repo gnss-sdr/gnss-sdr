@@ -33,20 +33,21 @@
 #define GNSS_SDR_ACQ_CONF_H_
 
 #include <cstddef>
+#include <cstdint>
 #include <string>
 
 class Acq_Conf
 {
 public:
     /* PCPS Acquisition configuration */
-    unsigned int sampled_ms;
-    unsigned int ms_per_code;
-    unsigned int samples_per_chip;
-    unsigned int max_dwells;
-    unsigned int doppler_max;
-    unsigned int num_doppler_bins_step2;
+    uint32_t sampled_ms;
+    uint32_t ms_per_code;
+    uint32_t samples_per_chip;
+    uint32_t max_dwells;
+    uint32_t doppler_max;
+    uint32_t num_doppler_bins_step2;
     float doppler_step2;
-    long fs_in;
+    int64_t fs_in;
     float samples_per_ms;
     float samples_per_code;
     bool bit_transition_flag;
@@ -56,7 +57,7 @@ public:
     bool blocking_on_standby;  // enable it only for unit testing to avoid sample consume on idle status
     bool make_2_steps;
     std::string dump_filename;
-    unsigned int dump_channel;
+    uint32_t dump_channel;
     size_t it_size;
 
     Acq_Conf();

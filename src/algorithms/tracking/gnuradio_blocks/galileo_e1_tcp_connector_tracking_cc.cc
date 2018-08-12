@@ -61,7 +61,7 @@ using google::LogMessage;
 
 galileo_e1_tcp_connector_tracking_cc_sptr galileo_e1_tcp_connector_make_tracking_cc(
     int64_t fs_in,
-    unsigned int vector_length,
+    uint32_t vector_length,
     bool dump,
     std::string dump_filename,
     float pll_bw_hz,
@@ -80,14 +80,14 @@ void Galileo_E1_Tcp_Connector_Tracking_cc::forecast(int noutput_items,
 {
     if (noutput_items != 0)
         {
-            ninput_items_required[0] = static_cast<int>(d_vector_length) * 2;  // set the required available samples in each call
+            ninput_items_required[0] = static_cast<int32_t>(d_vector_length) * 2;  // set the required available samples in each call
         }
 }
 
 
 Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
     int64_t fs_in,
-    unsigned int vector_length,
+    uint32_t vector_length,
     bool dump,
     std::string dump_filename,
     float pll_bw_hz __attribute__((unused)),
@@ -123,7 +123,7 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
     // correlator outputs (scalar)
     d_n_correlator_taps = 5;  // Very-Early, Early, Prompt, Late, Very-Late
     d_correlator_outs = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_n_correlator_taps * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-    for (int n = 0; n < d_n_correlator_taps; n++)
+    for (int32_t n = 0; n < d_n_correlator_taps; n++)
         {
             d_correlator_outs[n] = gr_complex(0, 0);
         }
@@ -155,13 +155,13 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
     d_rem_carr_phase_rad = 0.0;
 
     // sample synchronization
-    d_sample_counter = 0;
+    d_sample_counter = 0ULL;
     d_acq_sample_stamp = 0;
 
     d_enable_tracking = false;
     d_pull_in = false;
 
-    d_current_prn_length_samples = static_cast<int>(d_vector_length);
+    d_current_prn_length_samples = static_cast<int32_t>(d_vector_length);
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
@@ -199,8 +199,8 @@ void Galileo_E1_Tcp_Connector_Tracking_cc::start_tracking()
         2 * Galileo_E1_CODE_CHIP_RATE_HZ,
         0);
 
-    multicorrelator_cpu.set_local_code_and_taps(static_cast<int>(2 * Galileo_E1_B_CODE_LENGTH_CHIPS), d_ca_code, d_local_code_shift_chips);
-    for (int n = 0; n < d_n_correlator_taps; n++)
+    multicorrelator_cpu.set_local_code_and_taps(static_cast<int32_t>(2 * Galileo_E1_B_CODE_LENGTH_CHIPS), d_ca_code, d_local_code_shift_chips);
+    for (int32_t n = 0; n < d_n_correlator_taps; n++)
         {
             d_correlator_outs[n] = gr_complex(0, 0);
         }
@@ -258,7 +258,7 @@ Galileo_E1_Tcp_Connector_Tracking_cc::~Galileo_E1_Tcp_Connector_Tracking_cc()
 }
 
 
-void Galileo_E1_Tcp_Connector_Tracking_cc::set_channel(unsigned int channel)
+void Galileo_E1_Tcp_Connector_Tracking_cc::set_channel(uint32_t channel)
 {
     d_channel = channel;
     LOG(INFO) << "Tracking Channel set to " << d_channel;
@@ -319,16 +319,16 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
                     /*
                      * Signal alignment (skip samples until the incoming signal is aligned with local replica)
                      */
-                    int samples_offset;
+                    int32_t samples_offset;
                     float acq_trk_shif_correction_samples;
-                    int acq_to_trk_delay_samples;
+                    int32_t acq_to_trk_delay_samples;
                     acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
                     acq_trk_shif_correction_samples = d_current_prn_length_samples - fmod(static_cast<float>(acq_to_trk_delay_samples), static_cast<float>(d_current_prn_length_samples));
                     samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
-                    current_synchro_data.Tracking_sample_counter = d_sample_counter + samples_offset;
+                    current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(samples_offset);
                     current_synchro_data.fs = d_fs_in;
                     *out[0] = current_synchro_data;
-                    d_sample_counter = d_sample_counter + samples_offset;  //count for the processed samples
+                    d_sample_counter = d_sample_counter + static_cast<uint64_t>(samples_offset);  //count for the processed samples
                     d_pull_in = false;
                     consume_each(samples_offset);  //shift input to perform alignment with local replica
                     return 1;
@@ -444,7 +444,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
             current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt).real());
             current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt).imag());
             // Tracking_timestamp_secs is aligned with the PRN start sample
-            current_synchro_data.Tracking_sample_counter = d_sample_counter + d_current_prn_length_samples;
+            current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(d_current_prn_length_samples);
             current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
             d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples;  //rounding error < 1 sample
             current_synchro_data.Carrier_phase_rads = static_cast<double>(d_acc_carrier_phase_rad);
@@ -458,7 +458,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
             *d_Early = gr_complex(0, 0);
             *d_Prompt = gr_complex(0, 0);
             *d_Late = gr_complex(0, 0);
-            current_synchro_data.Tracking_sample_counter = d_sample_counter + d_current_prn_length_samples;
+            current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(d_current_prn_length_samples);
             //! When tracking is disabled an array of 1's is sent to maintain the TCP connection
             boost::array<float, NUM_TX_VARIABLES_GALILEO_E1> tx_variables_array = {{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0}};
             d_tcp_com.send_receive_tcp_packet_galileo_e1(tx_variables_array, &tcp_data);
@@ -528,8 +528,8 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
                     double tmp_double = static_cast<double>(d_sample_counter + d_correlation_length_samples);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                     // PRN
-                    unsigned int prn_ = d_acquisition_gnss_synchro->PRN;
-                    d_dump_file.write(reinterpret_cast<char *>(&prn_), sizeof(unsigned int));
+                    uint32_t prn_ = d_acquisition_gnss_synchro->PRN;
+                    d_dump_file.write(reinterpret_cast<char *>(&prn_), sizeof(uint32_t));
                 }
             catch (const std::ifstream::failure &e)
                 {

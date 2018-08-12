@@ -50,7 +50,7 @@ using google::LogMessage;
 gps_l1_ca_dll_pll_tracking_gpu_cc_sptr
 gps_l1_ca_dll_pll_make_tracking_gpu_cc(
     int64_t fs_in,
-    unsigned int vector_length,
+    uint32_t vector_length,
     bool dump,
     std::string dump_filename,
     float pll_bw_hz,
@@ -67,14 +67,14 @@ void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::forecast(int noutput_items,
 {
     if (noutput_items != 0)
         {
-            ninput_items_required[0] = static_cast<int>(d_vector_length) * 2;  //set the required available samples in each call
+            ninput_items_required[0] = static_cast<int32_t>(d_vector_length) * 2;  //set the required available samples in each call
         }
 }
 
 
 Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
     int64_t fs_in,
-    unsigned int vector_length,
+    uint32_t vector_length,
     bool dump,
     std::string dump_filename,
     float pll_bw_hz,
@@ -90,7 +90,7 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
     d_fs_in = fs_in;
     d_vector_length = vector_length;
     d_dump_filename = dump_filename;
-    d_correlation_length_samples = static_cast<int>(d_vector_length);
+    d_correlation_length_samples = static_cast<int32_t>(d_vector_length);
 
     // Initialize tracking  ==========================================
     d_code_loop_filter.set_DLL_BW(dll_bw_hz);
@@ -105,7 +105,7 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
     //pinned memory mode - use special function to get OS-pinned memory
     d_n_correlator_taps = 3;  // Early, Prompt, and Late
     // Get space for a vector with the C/A code replica sampled 1x/chip
-    cudaHostAlloc((void **)&d_ca_code, (static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex)), cudaHostAllocMapped || cudaHostAllocWriteCombined);
+    cudaHostAlloc((void **)&d_ca_code, (static_cast<int32_t>(GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex)), cudaHostAllocMapped || cudaHostAllocWriteCombined);
     // Get space for the resampled early / prompt / late local replicas
     cudaHostAlloc((void **)&d_local_code_shift_chips, d_n_correlator_taps * sizeof(float), cudaHostAllocMapped || cudaHostAllocWriteCombined);
     cudaHostAlloc((void **)&in_gpu, 2 * d_vector_length * sizeof(gr_complex), cudaHostAllocMapped || cudaHostAllocWriteCombined);
@@ -131,7 +131,7 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
     d_rem_carrier_phase_rad = 0.0;
 
     // sample synchronization
-    d_sample_counter = 0;
+    d_sample_counter = 0ULL;
     //d_sample_counter_seconds = 0;
     d_acq_sample_stamp = 0;
 
@@ -221,9 +221,9 @@ void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::start_tracking()
     // generate local reference ALWAYS starting at chip 1 (1 sample per chip)
     gps_l1_ca_code_gen_complex(d_ca_code, d_acquisition_gnss_synchro->PRN, 0);
 
-    multicorrelator_gpu->set_local_code_and_taps(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS), d_ca_code, d_local_code_shift_chips, d_n_correlator_taps);
+    multicorrelator_gpu->set_local_code_and_taps(static_cast<int32_t>(GPS_L1_CA_CODE_LENGTH_CHIPS), d_ca_code, d_local_code_shift_chips, d_n_correlator_taps);
 
-    for (int n = 0; n < d_n_correlator_taps; n++)
+    for (int32_t n = 0; n < d_n_correlator_taps; n++)
         {
             d_correlator_outs[n] = gr_complex(0, 0);
         }
@@ -283,7 +283,7 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::~Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc()
 }
 
 
-void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::set_channel(unsigned int channel)
+void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::set_channel(uint32_t channel)
 {
     d_channel = channel;
     LOG(INFO) << "Tracking Channel set to " << d_channel;
@@ -341,17 +341,17 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
             // Receiver signal alignment
             if (d_pull_in == true)
                 {
-                    int samples_offset;
+                    int32_t samples_offset;
                     double acq_trk_shif_correction_samples;
-                    int acq_to_trk_delay_samples;
+                    int32_t acq_to_trk_delay_samples;
                     acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
                     acq_trk_shif_correction_samples = d_correlation_length_samples - fmod(static_cast<double>(acq_to_trk_delay_samples), static_cast<double>(d_correlation_length_samples));
                     samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
-                    current_synchro_data.Tracking_sample_counter = d_sample_counter + samples_offset;
+                    current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(samples_offset);
                     current_synchro_data.fs = d_fs_in;
                     current_synchro_data.correlation_length_ms = 1;
                     *out[0] = current_synchro_data;
-                    d_sample_counter += samples_offset;  //count for the processed samples
+                    d_sample_counter += static_cast<uint64_t>(samples_offset);  //count for the processed samples
                     d_pull_in = false;
                     consume_each(samples_offset);  //shift input to perform alignment with local replica
                     return 1;
@@ -466,7 +466,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
             // ########### Output the tracking data to navigation and PVT ##########
             current_synchro_data.Prompt_I = static_cast<double>((d_correlator_outs[1]).real());
             current_synchro_data.Prompt_Q = static_cast<double>((d_correlator_outs[1]).imag());
-            current_synchro_data.Tracking_sample_counter = d_sample_counter + d_correlation_length_samples;
+            current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(d_correlation_length_samples);
             current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
             current_synchro_data.Carrier_phase_rads = GPS_TWO_PI * d_acc_carrier_phase_cycles;
             current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
@@ -476,14 +476,14 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
         }
     else
         {
-            for (int n = 0; n < d_n_correlator_taps; n++)
+            for (int32_t n = 0; n < d_n_correlator_taps; n++)
                 {
                     d_correlator_outs[n] = gr_complex(0, 0);
                 }
 
             current_synchro_data.System = {'G'};
             current_synchro_data.correlation_length_ms = 1;
-            current_synchro_data.Tracking_sample_counter = d_sample_counter + d_correlation_length_samples;
+            current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(d_correlation_length_samples);
         }
 
     //assign the GNURadio block output data
@@ -546,8 +546,8 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
                     double tmp_double = static_cast<double>(d_sample_counter + d_correlation_length_samples);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                     // PRN
-                    unsigned int prn_ = d_acquisition_gnss_synchro->PRN;
-                    d_dump_file.write(reinterpret_cast<char *>(&prn_), sizeof(unsigned int));
+                    uint32_t prn_ = d_acquisition_gnss_synchro->PRN;
+                    d_dump_file.write(reinterpret_cast<char *>(&prn_), sizeof(uint32_t));
                 }
             catch (const std::ifstream::failure *e)
                 {

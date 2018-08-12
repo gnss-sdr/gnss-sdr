@@ -57,14 +57,14 @@ typedef boost::shared_ptr<gps_l1_ca_dll_pll_c_aid_tracking_sc>
 
 gps_l1_ca_dll_pll_c_aid_tracking_sc_sptr
 gps_l1_ca_dll_pll_c_aid_make_tracking_sc(
-    int64_t fs_in, unsigned int vector_length,
+    int64_t fs_in, uint32_t vector_length,
     bool dump,
     std::string dump_filename,
     float pll_bw_hz,
     float dll_bw_hz,
     float pll_bw_narrow_hz,
     float dll_bw_narrow_hz,
-    int extend_correlation_ms,
+    int32_t extend_correlation_ms,
     float early_late_space_chips);
 
 
@@ -76,7 +76,7 @@ class gps_l1_ca_dll_pll_c_aid_tracking_sc : public gr::block
 public:
     ~gps_l1_ca_dll_pll_c_aid_tracking_sc();
 
-    void set_channel(unsigned int channel);
+    void set_channel(uint32_t channel);
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
     void start_tracking();
 
@@ -88,38 +88,38 @@ public:
 private:
     friend gps_l1_ca_dll_pll_c_aid_tracking_sc_sptr
     gps_l1_ca_dll_pll_c_aid_make_tracking_sc(
-        int64_t fs_in, unsigned int vector_length,
+        int64_t fs_in, uint32_t vector_length,
         bool dump,
         std::string dump_filename,
         float pll_bw_hz,
         float dll_bw_hz,
         float pll_bw_narrow_hz,
         float dll_bw_narrow_hz,
-        int extend_correlation_ms,
+        int32_t extend_correlation_ms,
         float early_late_space_chips);
 
     gps_l1_ca_dll_pll_c_aid_tracking_sc(
-        int64_t fs_in, unsigned int vector_length,
+        int64_t fs_in, uint32_t vector_length,
         bool dump,
         std::string dump_filename,
         float pll_bw_hz,
         float dll_bw_hz,
         float pll_bw_narrow_hz,
         float dll_bw_narrow_hz,
-        int extend_correlation_ms,
+        int32_t extend_correlation_ms,
         float early_late_space_chips);
 
     // tracking configuration vars
-    unsigned int d_vector_length;
+    uint32_t d_vector_length;
     bool d_dump;
 
     Gnss_Synchro* d_acquisition_gnss_synchro;
-    unsigned int d_channel;
+    uint32_t d_channel;
 
     int64_t d_fs_in;
 
     double d_early_late_spc_chips;
-    int d_n_correlator_taps;
+    int32_t d_n_correlator_taps;
 
     gr_complex* d_ca_code;
     lv_16sc_t* d_ca_code_16sc;
@@ -133,7 +133,7 @@ private:
     double d_rem_code_phase_samples;
     double d_rem_code_phase_chips;
     double d_rem_carrier_phase_rad;
-    int d_rem_code_phase_integer_samples;
+    int32_t d_rem_code_phase_integer_samples;
 
     // PLL and DLL filter library
     Tracking_2nd_DLL_filter d_code_loop_filter;
@@ -158,7 +158,7 @@ private:
     double d_carr_phase_error_secs_Ti;
     double d_code_error_chips_Ti;
     double d_preamble_timestamp_s;
-    int d_extend_correlation_ms;
+    int32_t d_extend_correlation_ms;
     bool d_enable_extended_integration;
     bool d_preamble_synchronized;
     double d_code_error_filt_chips_s;
@@ -171,19 +171,19 @@ private:
     std::deque<lv_16sc_t> d_L_history;
 
     //Integration period in samples
-    int d_correlation_length_samples;
+    int32_t d_correlation_length_samples;
 
     //processing samples counters
     uint64_t d_sample_counter;
     uint64_t d_acq_sample_stamp;
 
     // CN0 estimation and lock detector
-    int d_cn0_estimation_counter;
+    int32_t d_cn0_estimation_counter;
     gr_complex* d_Prompt_buffer;
     double d_carrier_lock_test;
     double d_CN0_SNV_dB_Hz;
     double d_carrier_lock_threshold;
-    int d_carrier_lock_fail_counter;
+    int32_t d_carrier_lock_fail_counter;
 
     // control vars
     bool d_enable_tracking;
@@ -196,7 +196,7 @@ private:
     std::map<std::string, std::string> systemName;
     std::string sys;
 
-    int save_matfile();
+    int32_t save_matfile();
 };
 
 #endif  //GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_SC_H

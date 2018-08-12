@@ -55,7 +55,7 @@ typedef boost::shared_ptr<Galileo_E1_Tcp_Connector_Tracking_cc> galileo_e1_tcp_c
 
 galileo_e1_tcp_connector_tracking_cc_sptr
 galileo_e1_tcp_connector_make_tracking_cc(
-    int64_t fs_in, unsigned int vector_length,
+    int64_t fs_in, uint32_t vector_length,
     bool dump,
     std::string dump_filename,
     float pll_bw_hz,
@@ -73,7 +73,7 @@ class Galileo_E1_Tcp_Connector_Tracking_cc : public gr::block
 public:
     ~Galileo_E1_Tcp_Connector_Tracking_cc();
 
-    void set_channel(unsigned int channel);
+    void set_channel(uint32_t channel);
     void set_gnss_synchro(Gnss_Synchro *p_gnss_synchro);
     void start_tracking();
 
@@ -85,7 +85,7 @@ public:
 private:
     friend galileo_e1_tcp_connector_tracking_cc_sptr
     galileo_e1_tcp_connector_make_tracking_cc(
-        int64_t fs_in, unsigned int vector_length,
+        int64_t fs_in, uint32_t vector_length,
         bool dump,
         std::string dump_filename,
         float pll_bw_hz,
@@ -95,7 +95,7 @@ private:
         size_t port_ch0);
 
     Galileo_E1_Tcp_Connector_Tracking_cc(
-        int64_t fs_in, unsigned int vector_length,
+        int64_t fs_in, uint32_t vector_length,
         bool dump,
         std::string dump_filename,
         float pll_bw_hz,
@@ -109,16 +109,16 @@ private:
     void update_local_carrier();
 
     // tracking configuration vars
-    unsigned int d_vector_length;
+    uint32_t d_vector_length;
     bool d_dump;
 
     Gnss_Synchro *d_acquisition_gnss_synchro;
-    unsigned int d_channel;
+    uint32_t d_channel;
 
     int64_t d_fs_in;
 
-    int d_correlation_length_samples;
-    int d_n_correlator_taps;
+    int32_t d_correlation_length_samples;
+    int32_t d_n_correlator_taps;
     float d_early_late_spc_chips;
     float d_very_early_late_spc_chips;
 
@@ -152,25 +152,25 @@ private:
     float d_code_phase_samples;
     size_t d_port_ch0;
     size_t d_port;
-    int d_listen_connection;
+    int32_t d_listen_connection;
     float d_control_id;
     tcp_communication d_tcp_com;
 
     //PRN period in samples
-    int d_current_prn_length_samples;
-    int d_next_prn_length_samples;
+    int32_t d_current_prn_length_samples;
+    int32_t d_next_prn_length_samples;
 
     //processing samples counters
     uint64_t d_sample_counter;
     uint64_t d_acq_sample_stamp;
 
     // CN0 estimation and lock detector
-    int d_cn0_estimation_counter;
+    int32_t d_cn0_estimation_counter;
     gr_complex *d_Prompt_buffer;
     float d_carrier_lock_test;
     float d_CN0_SNV_dB_Hz;
     float d_carrier_lock_threshold;
-    int d_carrier_lock_fail_counter;
+    int32_t d_carrier_lock_fail_counter;
 
     // control vars
     bool d_enable_tracking;

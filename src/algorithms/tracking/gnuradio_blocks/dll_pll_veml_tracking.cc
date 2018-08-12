@@ -72,7 +72,7 @@ void dll_pll_veml_tracking::forecast(int noutput_items,
 {
     if (noutput_items != 0)
         {
-            ninput_items_required[0] = static_cast<int>(trk_parameters.vector_length) * 2;
+            ninput_items_required[0] = static_cast<int32_t>(trk_parameters.vector_length) * 2;
         }
 }
 
@@ -92,7 +92,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     d_veml = false;
     d_cloop = true;
     d_code_chip_rate = 0.0;
-    d_secondary_code_length = 0;
+    d_secondary_code_length = 0U;
     d_secondary_code_string = nullptr;
     d_gps_l1ca_preambles_symbols = nullptr;
     signal_type = std::string(trk_parameters.signal);
@@ -197,8 +197,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                     interchange_iq = false;
                     d_signal_carrier_freq = 0.0;
                     d_code_period = 0.0;
-                    d_code_length_chips = 0;
-                    d_code_samples_per_chip = 0;
+                    d_code_length_chips = 0U;
+                    d_code_samples_per_chip = 0U;
                     d_symbols_per_bit = 0;
                 }
         }
@@ -262,8 +262,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                     interchange_iq = false;
                     d_signal_carrier_freq = 0.0;
                     d_code_period = 0.0;
-                    d_code_length_chips = 0;
-                    d_code_samples_per_chip = 0;
+                    d_code_length_chips = 0U;
+                    d_code_samples_per_chip = 0U;
                     d_symbols_per_bit = 0;
                 }
         }
@@ -276,8 +276,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
             interchange_iq = false;
             d_signal_carrier_freq = 0.0;
             d_code_period = 0.0;
-            d_code_length_chips = 0;
-            d_code_samples_per_chip = 0;
+            d_code_length_chips = 0U;
+            d_code_samples_per_chip = 0U;
             d_symbols_per_bit = 0;
         }
     T_chip_seconds = 0.0;
@@ -286,7 +286,6 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     K_blk_samples = 0.0;
 
     // Initialize tracking  ==========================================
-
     d_code_loop_filter.set_DLL_BW(trk_parameters.dll_bw_hz);
     d_carrier_loop_filter.set_PLL_BW(trk_parameters.pll_bw_hz);
     d_code_loop_filter = Tracking_2nd_DLL_filter(static_cast<float>(d_code_period));
@@ -309,7 +308,6 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
 
     d_correlator_outs = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_n_correlator_taps * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     d_local_code_shift_chips = static_cast<float *>(volk_gnsssdr_malloc(d_n_correlator_taps * sizeof(float), volk_gnsssdr_get_alignment()));
-
 
     // map memory pointers of correlator outputs
     if (d_veml)
@@ -373,10 +371,10 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     d_rem_carr_phase_rad = 0.0;
 
     // sample synchronization
-    d_sample_counter = 0;
-    d_acq_sample_stamp = 0;
+    d_sample_counter = 0ULL;
+    d_acq_sample_stamp = 0ULL;
 
-    d_current_prn_length_samples = static_cast<int>(trk_parameters.vector_length);
+    d_current_prn_length_samples = static_cast<int32_t>(trk_parameters.vector_length);
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
@@ -640,7 +638,7 @@ bool dll_pll_veml_tracking::acquire_secondary()
                 }
         }
 
-    if (abs(corr_value) == static_cast<int>(d_secondary_code_length))
+    if (abs(corr_value) == static_cast<int32_t>(d_secondary_code_length))
         {
             return true;
         }
@@ -788,8 +786,8 @@ void dll_pll_veml_tracking::update_tracking_vars()
     // Compute the next buffer length based in the new period of the PRN sequence and the code phase error estimation
     T_prn_samples = T_prn_seconds * trk_parameters.fs_in;
     K_blk_samples = T_prn_samples + d_rem_code_phase_samples;
-    //d_current_prn_length_samples = static_cast<int>(round(K_blk_samples));  // round to a discrete number of samples
-    d_current_prn_length_samples = static_cast<int>(std::floor(K_blk_samples));  // round to a discrete number of samples
+    //d_current_prn_length_samples = static_cast<int32_t>(round(K_blk_samples));  // round to a discrete number of samples
+    d_current_prn_length_samples = static_cast<int32_t>(std::floor(K_blk_samples));  // round to a discrete number of samples
 
     //################### PLL COMMANDS #################################################
     // carrier phase step (NCO phase increment per sample) [rads/sample]
@@ -937,7 +935,7 @@ void dll_pll_veml_tracking::log_data(bool integrating)
                     d_dump_file.write(reinterpret_cast<char *>(&prompt_I), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char *>(&prompt_Q), sizeof(float));
                     // PRN start sample stamp
-                    tmp_long_int = d_sample_counter + d_current_prn_length_samples;
+                    tmp_long_int = d_sample_counter + static_cast<uint64_t>(d_current_prn_length_samples);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_long_int), sizeof(uint64_t));
                     // accumulated carrier phase
                     tmp_float = d_acc_carrier_phase_rad;
@@ -1248,7 +1246,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
         {
         case 0:  // Standby - Consume samples at full throttle, do nothing
             {
-                d_sample_counter += ninput_items[0];
+                d_sample_counter += static_cast<uint64_t>(ninput_items[0]);
                 consume_each(ninput_items[0]);
                 return 0;
                 break;
@@ -1256,7 +1254,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
         case 1:  // Pull-in
             {
                 // Signal alignment (skip samples until the incoming signal is aligned with local replica)
-                uint64_t acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
+                uint64_t acq_to_trk_delay_samples = static_cast<uint64_t>(d_sample_counter - d_acq_sample_stamp);
                 double acq_trk_shif_correction_samples = static_cast<double>(d_current_prn_length_samples) - std::fmod(static_cast<double>(acq_to_trk_delay_samples), static_cast<double>(d_current_prn_length_samples));
                 int32_t samples_offset = std::round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
                 if (samples_offset < 0)
@@ -1265,8 +1263,8 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                     }
                 d_acc_carrier_phase_rad -= d_carrier_phase_step_rad * d_acq_code_phase_samples;
                 d_state = 2;
-                d_sample_counter += samples_offset;  // count for the processed samples
-                consume_each(samples_offset);        // shift input to perform alignment with local replica
+                d_sample_counter += static_cast<uint64_t>(samples_offset);  // count for the processed samples
+                consume_each(samples_offset);                               // shift input to perform alignment with local replica
                 return 0;
             }
         case 2:  // Wide tracking and symbol synchronization
@@ -1410,10 +1408,10 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                         d_carrier_loop_filter.set_pdi(new_correlation_time);
                                         d_code_loop_filter.set_pdi(new_correlation_time);
                                         d_state = 3;  // next state is the extended correlator integrator
-                                        LOG(INFO) << "Enabled " << trk_parameters.extend_correlation_symbols * static_cast<int>(d_code_period * 1000.0) << " ms extended correlator in channel "
+                                        LOG(INFO) << "Enabled " << trk_parameters.extend_correlation_symbols * static_cast<int32_t>(d_code_period * 1000.0) << " ms extended correlator in channel "
                                                   << d_channel
                                                   << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN);
-                                        std::cout << "Enabled " << trk_parameters.extend_correlation_symbols * static_cast<int>(d_code_period * 1000.0) << " ms extended correlator in channel "
+                                        std::cout << "Enabled " << trk_parameters.extend_correlation_symbols * static_cast<int32_t>(d_code_period * 1000.0) << " ms extended correlator in channel "
                                                   << d_channel
                                                   << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
                                         // Set narrow taps delay values [chips]

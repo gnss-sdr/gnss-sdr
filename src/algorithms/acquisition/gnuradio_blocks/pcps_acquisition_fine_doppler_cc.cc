@@ -59,7 +59,7 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Con
 {
     this->message_port_register_out(pmt::mp("events"));
     acq_parameters = conf_;
-    d_sample_counter = 0;  // SAMPLE COUNTER
+    d_sample_counter = 0ULL;  // SAMPLE COUNTER
     d_active = false;
     d_fs_in = conf_.fs_in;
     d_samples_per_ms = conf_.samples_per_ms;
@@ -447,7 +447,7 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler()
 // Called by gnuradio to enable drivers, etc for i/o devices.
 bool pcps_acquisition_fine_doppler_cc::start()
 {
-    d_sample_counter = 0;
+    d_sample_counter = 0ULL;
     return true;
 }
 
@@ -507,7 +507,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
                 }
             if (!acq_parameters.blocking_on_standby)
                 {
-                    d_sample_counter += d_fft_size;  // sample counter
+                    d_sample_counter += static_cast<uint64_t>(d_fft_size);  // sample counter
                     consume_each(d_fft_size);
                 }
             break;
@@ -520,7 +520,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
                 {
                     d_state = 2;
                 }
-            d_sample_counter += d_fft_size;  // sample counter
+            d_sample_counter += static_cast<uint64_t>(d_fft_size);  // sample counter
             consume_each(d_fft_size);
             break;
         case 2:  // Compute test statistics and decide
@@ -543,7 +543,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
                 {
                     memcpy(&d_10_ms_buffer[d_n_samples_in_buffer], reinterpret_cast<const gr_complex *>(input_items[0]), noutput_items * sizeof(gr_complex));
                     d_n_samples_in_buffer += noutput_items;
-                    d_sample_counter += noutput_items;  // sample counter
+                    d_sample_counter += static_cast<uint64_t>(noutput_items);  // sample counter
                     consume_each(noutput_items);
                 }
             else
@@ -551,7 +551,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
                     if (samples_remaining > 0)
                         {
                             memcpy(&d_10_ms_buffer[d_n_samples_in_buffer], reinterpret_cast<const gr_complex *>(input_items[0]), samples_remaining * sizeof(gr_complex));
-                            d_sample_counter += samples_remaining;  // sample counter
+                            d_sample_counter += static_cast<uint64_t>(samples_remaining);  // sample counter
                             consume_each(samples_remaining);
                         }
                     estimate_Doppler();  //disabled in repo
@@ -579,7 +579,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
             d_state = 0;
             if (!acq_parameters.blocking_on_standby)
                 {
-                    d_sample_counter += noutput_items;  // sample counter
+                    d_sample_counter += static_cast<uint64_t>(noutput_items);  // sample counter
                     consume_each(noutput_items);
                 }
             break;
@@ -603,7 +603,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
             d_state = 0;
             if (!acq_parameters.blocking_on_standby)
                 {
-                    d_sample_counter += noutput_items;  // sample counter
+                    d_sample_counter += static_cast<uint64_t>(noutput_items);  // sample counter
                     consume_each(noutput_items);
                 }
             break;
@@ -611,7 +611,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
             d_state = 0;
             if (!acq_parameters.blocking_on_standby)
                 {
-                    d_sample_counter += noutput_items;  // sample counter
+                    d_sample_counter += static_cast<uint64_t>(noutput_items);  // sample counter
                     consume_each(noutput_items);
                 }
             break;

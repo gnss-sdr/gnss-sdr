@@ -93,7 +93,7 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(
                                      gr::io_signature::make(0, 0, sizeof(gr_complex) * sampled_ms * samples_per_ms))
 {
     this->message_port_register_out(pmt::mp("events"));
-    d_sample_counter = 0;  // SAMPLE COUNTER
+    d_sample_counter = 0ULL;  // SAMPLE COUNTER
     d_active = false;
     d_state = 0;
     d_core_working = false;
@@ -719,7 +719,7 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
                         d_state = 1;
                     }
 
-                d_sample_counter += d_fft_size * ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_fft_size * ninput_items[0]);  // sample counter
 
                 break;
             }
@@ -736,20 +736,20 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
                             {
                                 memcpy(d_in_buffer[d_in_dwell_count++], static_cast<const gr_complex *>(input_items[i]),
                                     sizeof(gr_complex) * d_fft_size);
-                                d_sample_counter += d_fft_size;
+                                d_sample_counter += static_cast<uint64_t>(d_fft_size);
                                 d_sample_counter_buffer.push_back(d_sample_counter);
                             }
 
                         if (ninput_items[0] > static_cast<int>(num_dwells))
                             {
-                                d_sample_counter += d_fft_size * (ninput_items[0] - num_dwells);
+                                d_sample_counter += static_cast<uint64_t>(d_fft_size * (ninput_items[0] - num_dwells));
                             }
                     }
                 else
                     {
                         // We already have d_max_dwells consecutive blocks in the internal buffer,
                         // just skip input blocks.
-                        d_sample_counter += d_fft_size * ninput_items[0];
+                        d_sample_counter += static_cast<uint64_t>(d_fft_size * ninput_items[0]);
                     }
 
                 // We create a new thread to process next block if the following
@@ -793,7 +793,7 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
                 d_active = false;
                 d_state = 0;
 
-                d_sample_counter += d_fft_size * ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_fft_size * ninput_items[0]);  // sample counter
 
                 acquisition_message = 1;
                 this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
@@ -817,7 +817,7 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
                 d_active = false;
                 d_state = 0;
 
-                d_sample_counter += d_fft_size * ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_fft_size * ninput_items[0]);  // sample counter
 
                 acquisition_message = 2;
                 this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));

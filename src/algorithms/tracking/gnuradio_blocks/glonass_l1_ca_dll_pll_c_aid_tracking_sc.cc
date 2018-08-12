@@ -61,14 +61,14 @@ using google::LogMessage;
 glonass_l1_ca_dll_pll_c_aid_tracking_sc_sptr
 glonass_l1_ca_dll_pll_c_aid_make_tracking_sc(
     int64_t fs_in,
-    unsigned int vector_length,
+    uint32_t vector_length,
     bool dump,
     std::string dump_filename,
     float pll_bw_hz,
     float dll_bw_hz,
     float pll_bw_narrow_hz,
     float dll_bw_narrow_hz,
-    int extend_correlation_ms,
+    int32_t extend_correlation_ms,
     float early_late_space_chips)
 {
     return glonass_l1_ca_dll_pll_c_aid_tracking_sc_sptr(new glonass_l1_ca_dll_pll_c_aid_tracking_sc(
@@ -81,7 +81,7 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_sc::forecast(int noutput_items,
 {
     if (noutput_items != 0)
         {
-            ninput_items_required[0] = static_cast<int>(d_vector_length) * 2;  //set the required available samples in each call
+            ninput_items_required[0] = static_cast<int32_t>(d_vector_length) * 2;  //set the required available samples in each call
         }
 }
 
@@ -100,14 +100,14 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_sc::msg_handler_preamble_index(pmt::pm
 
 glonass_l1_ca_dll_pll_c_aid_tracking_sc::glonass_l1_ca_dll_pll_c_aid_tracking_sc(
     int64_t fs_in,
-    unsigned int vector_length,
+    uint32_t vector_length,
     bool dump,
     std::string dump_filename,
     float pll_bw_hz,
     float dll_bw_hz,
     float pll_bw_narrow_hz,
     float dll_bw_narrow_hz,
-    int extend_correlation_ms,
+    int32_t extend_correlation_ms,
     float early_late_space_chips) : gr::block("glonass_l1_ca_dll_pll_c_aid_tracking_sc", gr::io_signature::make(1, 1, sizeof(lv_16sc_t)),
                                         gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
@@ -121,7 +121,7 @@ glonass_l1_ca_dll_pll_c_aid_tracking_sc::glonass_l1_ca_dll_pll_c_aid_tracking_sc
     d_fs_in = fs_in;
     d_vector_length = vector_length;
     d_dump_filename = dump_filename;
-    d_correlation_length_samples = static_cast<int>(d_vector_length);
+    d_correlation_length_samples = static_cast<int32_t>(d_vector_length);
 
     // Initialize tracking  ==========================================
     d_pll_bw_hz = pll_bw_hz;
@@ -137,14 +137,14 @@ glonass_l1_ca_dll_pll_c_aid_tracking_sc::glonass_l1_ca_dll_pll_c_aid_tracking_sc
 
     // Initialization of local code replica
     // Get space for a vector with the C/A code replica sampled 1x/chip
-    d_ca_code = static_cast<gr_complex *>(volk_gnsssdr_malloc(static_cast<int>(GLONASS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-    d_ca_code_16sc = static_cast<lv_16sc_t *>(volk_gnsssdr_malloc(static_cast<int>(GLONASS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(lv_16sc_t), volk_gnsssdr_get_alignment()));
+    d_ca_code = static_cast<gr_complex *>(volk_gnsssdr_malloc(static_cast<int32_t>(GLONASS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_ca_code_16sc = static_cast<lv_16sc_t *>(volk_gnsssdr_malloc(static_cast<int32_t>(GLONASS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(lv_16sc_t), volk_gnsssdr_get_alignment()));
 
     // correlator outputs (scalar)
     d_n_correlator_taps = 3;  // Early, Prompt, and Late
 
     d_correlator_outs_16sc = static_cast<lv_16sc_t *>(volk_gnsssdr_malloc(d_n_correlator_taps * sizeof(lv_16sc_t), volk_gnsssdr_get_alignment()));
-    for (int n = 0; n < d_n_correlator_taps; n++)
+    for (int32_t n = 0; n < d_n_correlator_taps; n++)
         {
             d_correlator_outs_16sc[n] = lv_cmake(0, 0);
         }
@@ -166,7 +166,7 @@ glonass_l1_ca_dll_pll_c_aid_tracking_sc::glonass_l1_ca_dll_pll_c_aid_tracking_sc
     d_rem_carrier_phase_rad = 0.0;
 
     // sample synchronization
-    d_sample_counter = 0;  //(from trk to tlm)
+    d_sample_counter = 0ULL;  //(from trk to tlm)
     d_acq_sample_stamp = 0;
     d_enable_tracking = false;
     d_pull_in = false;
@@ -267,10 +267,10 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_sc::start_tracking()
 
     // generate local reference ALWAYS starting at chip 1 (1 sample per chip)
     glonass_l1_ca_code_gen_complex(d_ca_code, 0);
-    volk_gnsssdr_32fc_convert_16ic(d_ca_code_16sc, d_ca_code, static_cast<int>(GLONASS_L1_CA_CODE_LENGTH_CHIPS));
+    volk_gnsssdr_32fc_convert_16ic(d_ca_code_16sc, d_ca_code, static_cast<int32_t>(GLONASS_L1_CA_CODE_LENGTH_CHIPS));
 
-    multicorrelator_cpu_16sc.set_local_code_and_taps(static_cast<int>(GLONASS_L1_CA_CODE_LENGTH_CHIPS), d_ca_code_16sc, d_local_code_shift_chips);
-    for (int n = 0; n < d_n_correlator_taps; n++)
+    multicorrelator_cpu_16sc.set_local_code_and_taps(static_cast<int32_t>(GLONASS_L1_CA_CODE_LENGTH_CHIPS), d_ca_code_16sc, d_local_code_shift_chips);
+    for (int32_t n = 0; n < d_n_correlator_taps; n++)
         {
             d_correlator_outs_16sc[n] = lv_16sc_t(0, 0);
         }
@@ -302,14 +302,14 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_sc::start_tracking()
 }
 
 
-int glonass_l1_ca_dll_pll_c_aid_tracking_sc::save_matfile()
+int32_t glonass_l1_ca_dll_pll_c_aid_tracking_sc::save_matfile()
 {
     // READ DUMP FILE
     std::ifstream::pos_type size;
-    int number_of_double_vars = 11;
-    int number_of_float_vars = 5;
-    int epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
-                           sizeof(float) * number_of_float_vars + sizeof(unsigned int);
+    int32_t number_of_double_vars = 11;
+    int32_t number_of_float_vars = 5;
+    int32_t epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
+                               sizeof(float) * number_of_float_vars + sizeof(uint32_t);
     std::ifstream dump_file;
     dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try
@@ -350,7 +350,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_sc::save_matfile()
     double *carrier_lock_test = new double[num_epoch];
     double *aux1 = new double[num_epoch];
     double *aux2 = new double[num_epoch];
-    unsigned int *PRN = new unsigned int[num_epoch];
+    uint32_t *PRN = new uint32_t[num_epoch];
 
     try
         {
@@ -375,7 +375,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_sc::save_matfile()
                             dump_file.read(reinterpret_cast<char *>(&carrier_lock_test[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&aux1[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&aux2[i]), sizeof(double));
-                            dump_file.read(reinterpret_cast<char *>(&PRN[i]), sizeof(unsigned int));
+                            dump_file.read(reinterpret_cast<char *>(&PRN[i]), sizeof(uint32_t));
                         }
                 }
             dump_file.close();
@@ -546,7 +546,7 @@ glonass_l1_ca_dll_pll_c_aid_tracking_sc::~glonass_l1_ca_dll_pll_c_aid_tracking_s
 }
 
 
-void glonass_l1_ca_dll_pll_c_aid_tracking_sc::set_channel(unsigned int channel)
+void glonass_l1_ca_dll_pll_c_aid_tracking_sc::set_channel(uint32_t channel)
 {
     d_channel = channel;
     LOG(INFO) << "Tracking Channel set to " << d_channel;
@@ -600,14 +600,14 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
             // Receiver signal alignment
             if (d_pull_in == true)
                 {
-                    int samples_offset;
+                    int32_t samples_offset;
                     double acq_trk_shif_correction_samples;
-                    int acq_to_trk_delay_samples;
+                    int32_t acq_to_trk_delay_samples;
                     acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
                     acq_trk_shif_correction_samples = d_correlation_length_samples - fmod(static_cast<double>(acq_to_trk_delay_samples), static_cast<double>(d_correlation_length_samples));
                     samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
-                    current_synchro_data.Tracking_sample_counter = d_sample_counter + samples_offset;
-                    d_sample_counter += samples_offset;  // count for the processed samples
+                    current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(samples_offset);
+                    d_sample_counter += static_cast<uint64_t>(samples_offset);  // count for the processed samples
                     d_pull_in = false;
                     d_acc_carrier_phase_cycles -= d_carrier_phase_step_rad * samples_offset / GLONASS_TWO_PI;
                     current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_cycles * GLONASS_TWO_PI;
@@ -633,7 +633,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
             d_P_history.push_back(d_correlator_outs_16sc[1]);  // save prompt output
             d_L_history.push_back(d_correlator_outs_16sc[2]);  // save late output
 
-            if (static_cast<int>(d_P_history.size()) > d_extend_correlation_ms)
+            if (static_cast<int32_t>(d_P_history.size()) > d_extend_correlation_ms)
                 {
                     d_E_history.pop_front();
                     d_P_history.pop_front();
@@ -652,7 +652,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
                             d_correlator_outs_16sc[0] = lv_cmake(0, 0);
                             d_correlator_outs_16sc[1] = lv_cmake(0, 0);
                             d_correlator_outs_16sc[2] = lv_cmake(0, 0);
-                            for (int n = 0; n < d_extend_correlation_ms; n++)
+                            for (int32_t n = 0; n < d_extend_correlation_ms; n++)
                                 {
                                     d_correlator_outs_16sc[0] += d_E_history.at(n);
                                     d_correlator_outs_16sc[1] += d_P_history.at(n);
@@ -681,7 +681,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
                                     double T_chip_seconds = 1.0 / d_code_freq_chips;
                                     double T_prn_seconds = T_chip_seconds * GLONASS_L1_CA_CODE_LENGTH_CHIPS;
                                     double T_prn_samples = T_prn_seconds * static_cast<double>(d_fs_in);
-                                    int K_prn_samples = round(T_prn_samples);
+                                    int32_t K_prn_samples = round(T_prn_samples);
                                     double K_T_prn_error_samples = K_prn_samples - T_prn_samples;
 
                                     d_rem_code_phase_samples = d_rem_code_phase_samples - K_T_prn_error_samples;
@@ -805,7 +805,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
                     current_synchro_data.Prompt_I = static_cast<double>((d_correlator_outs_16sc[1]).real());
                     current_synchro_data.Prompt_Q = static_cast<double>((d_correlator_outs_16sc[1]).imag());
                     // Tracking_timestamp_secs is aligned with the CURRENT PRN start sample (Hybridization OK!)
-                    current_synchro_data.Tracking_sample_counter = d_sample_counter + d_correlation_length_samples;
+                    current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(d_correlation_length_samples);
                     current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
                     current_synchro_data.Carrier_phase_rads = GLONASS_TWO_PI * d_acc_carrier_phase_cycles;
                     current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
@@ -824,7 +824,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
                 {
                     current_synchro_data.Prompt_I = static_cast<double>((d_correlator_outs_16sc[1]).real());
                     current_synchro_data.Prompt_Q = static_cast<double>((d_correlator_outs_16sc[1]).imag());
-                    current_synchro_data.Tracking_sample_counter = d_sample_counter + d_correlation_length_samples;
+                    current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(d_correlation_length_samples);
                     current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
                     current_synchro_data.Carrier_phase_rads = GLONASS_TWO_PI * d_acc_carrier_phase_cycles;
                     current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;  // todo: project the carrier doppler
@@ -833,13 +833,13 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
         }
     else
         {
-            for (int n = 0; n < d_n_correlator_taps; n++)
+            for (int32_t n = 0; n < d_n_correlator_taps; n++)
                 {
                     d_correlator_outs_16sc[n] = lv_cmake(0, 0);
                 }
 
             current_synchro_data.System = {'R'};
-            current_synchro_data.Tracking_sample_counter = d_sample_counter + d_correlation_length_samples;
+            current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(d_correlation_length_samples);
         }
     current_synchro_data.fs = d_fs_in;
     *out[0] = current_synchro_data;
@@ -899,8 +899,8 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
                     double tmp_double = static_cast<double>(d_sample_counter + d_correlation_length_samples);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                     // PRN
-                    unsigned int prn_ = d_acquisition_gnss_synchro->PRN;
-                    d_dump_file.write(reinterpret_cast<char *>(&prn_), sizeof(unsigned int));
+                    uint32_t prn_ = d_acquisition_gnss_synchro->PRN;
+                    d_dump_file.write(reinterpret_cast<char *>(&prn_), sizeof(uint32_t));
                 }
             catch (const std::ifstream::failure *e)
                 {

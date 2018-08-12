@@ -29,6 +29,7 @@
  *
  * -------------------------------------------------------------------------
  */
+
 #ifndef GNSS_SDR_GNSS_SYNCHRO_H_
 #define GNSS_SDR_GNSS_SYNCHRO_H_
 
@@ -47,12 +48,14 @@ public:
     char Signal[3];      //!< Set by Channel::set_signal(Gnss_Signal gnss_signal)
     uint32_t PRN;        //!< Set by Channel::set_signal(Gnss_Signal gnss_signal)
     int32_t Channel_ID;  //!< Set by Channel constructor
+
     // Acquisition
     double Acq_delay_samples;          //!< Set by Acquisition processing block
     double Acq_doppler_hz;             //!< Set by Acquisition processing block
     uint64_t Acq_samplestamp_samples;  //!< Set by Acquisition processing block
     bool Flag_valid_acquisition;       //!< Set by Acquisition processing block
-    //Tracking
+
+    // Tracking
     int64_t fs;                        //!< Set by Tracking processing block
     double Prompt_I;                   //!< Set by Tracking processing block
     double Prompt_Q;                   //!< Set by Tracking processing block
@@ -61,11 +64,10 @@ public:
     double Carrier_phase_rads;         //!< Set by Tracking processing block
     double Code_phase_samples;         //!< Set by Tracking processing block
     uint64_t Tracking_sample_counter;  //!< Set by Tracking processing block
+    bool Flag_valid_symbol_output;     //!< Set by Tracking processing block
+    int32_t correlation_length_ms;     //!< Set by Tracking processing block
 
-    bool Flag_valid_symbol_output;  //!< Set by Tracking processing block
-    int32_t correlation_length_ms;  //!< Set by Tracking processing block
-
-    //Telemetry Decoder
+    // Telemetry Decoder
     bool Flag_valid_word;               //!< Set by Telemetry Decoder processing block
     uint32_t TOW_at_current_symbol_ms;  //!< Set by Telemetry Decoder processing block
 
@@ -75,9 +77,8 @@ public:
     bool Flag_valid_pseudorange;  //!< Set by Observables processing block
     double interp_TOW_ms;         //!< Set by Observables processing block
 
-
     /*!
-     * \brief This member function is necessary to serialize and restore
+     * \brief This member function serializes and restores
      * Gnss_Synchro objects from a byte stream.
      */
     template <class Archive>
@@ -91,11 +92,12 @@ public:
         ar& Signal;
         ar& PRN;
         ar& Channel_ID;
+        // Acquisition
         ar& Acq_delay_samples;
         ar& Acq_doppler_hz;
         ar& Acq_samplestamp_samples;
         ar& Flag_valid_acquisition;
-        //Tracking
+        // Tracking
         ar& fs;
         ar& Prompt_I;
         ar& Prompt_Q;
@@ -106,7 +108,7 @@ public:
         ar& Tracking_sample_counter;
         ar& Flag_valid_symbol_output;
         ar& correlation_length_ms;
-        //Telemetry Decoder
+        // Telemetry Decoder
         ar& Flag_valid_word;
         ar& TOW_at_current_symbol_ms;
         // Observables

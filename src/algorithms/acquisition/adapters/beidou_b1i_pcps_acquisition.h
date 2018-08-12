@@ -1,11 +1,9 @@
 /*!
- * \file gps_l1_ca_pcps_acquisition.h
+ * \file beidou_bi1_pcps_acquisition.h
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
- *  GPS L1 C/A signals
+ *  Beidou B1I signals
  * \authors <ul>
- *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
- *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
- *          <li> Marc Molina, 2013. marc.molina.pena(at)gmail.com
+ *          <li> Sergi Segura, 2018. sergi.segura.munoz(at)gmail.com
  *          </ul>
  *
  * -------------------------------------------------------------------------

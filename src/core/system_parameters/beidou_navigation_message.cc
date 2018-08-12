@@ -444,9 +444,6 @@ int Beidou_Navigation_Message_D1::subframe_decoder(char *subframe)
         d_SOW_SF1 = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_SOW));
         d_SOW = d_SOW_SF1; // Set transmission time
 
-std::cout << "I decoded subframe 1" << std::endl;
-std::cout << "TOW: " << d_SOW_SF1  << std::endl;
-
         i_SV_health = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_SAT_H1));
 
         d_AODC = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_AODC));
@@ -507,9 +504,6 @@ std::cout << "TOW: " << d_SOW_SF1  << std::endl;
         d_SOW_SF2 = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_SOW));
         d_SOW = d_SOW_SF2; // Set transmission time
 
-std::cout << "I decoded subframe 2" << std::endl;
-std::cout << "TOW: " << d_SOW_SF2  << std::endl;
-
         d_Cuc = static_cast<double>(read_navigation_signed(subframe_bits, D1_CUC));
         d_Cuc = d_Cuc * D1_CUC_LSB;
 
@@ -549,9 +543,6 @@ std::cout << "TOW: " << d_SOW_SF2  << std::endl;
         d_SOW_SF3 = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_SOW));
         d_SOW = d_SOW_SF3; // Set transmission time
 
-std::cout << "I decoded subframe 3" << std::endl;
-std::cout << "TOW: " << d_SOW_SF3  << std::endl;
-
         d_Toe = d_Toe * D1_TOE_LSB;
 
         d_i_0 = static_cast<double>(read_navigation_signed(subframe_bits, D1_I0));
@@ -589,9 +580,6 @@ std::cout << "TOW: " << d_SOW_SF3  << std::endl;
     case 4: // --- It is subframe 4 ---------- Almanac, ionospheric model, UTC parameters, SV health (PRN: 25-32)
         d_SOW_SF4 = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_SOW));
         d_SOW = d_SOW_SF4; // Set transmission time
-
-std::cout << "I decoded subframe 4" << std::endl;
-std::cout << "TOW: " << d_SOW_SF4  << std::endl;
 
         d_SQRT_A_ALMANAC = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_SQRT_A_ALMANAC));
         d_SQRT_A_ALMANAC = d_SQRT_A_ALMANAC * D1_SQRT_A_ALMANAC_LSB;
@@ -676,10 +664,6 @@ std::cout << "TOW: " << d_SOW_SF4  << std::endl;
         int SV_page_5;
         d_SOW_SF5 = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_SOW));
         d_SOW = d_SOW_SF5; // Set transmission time
-
-std::cout << "I decoded subframe 5" << std::endl;
-std::cout << "TOW: " << d_SOW_SF5  << std::endl;
-
 
         SV_page_5 = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_PNUM));
 

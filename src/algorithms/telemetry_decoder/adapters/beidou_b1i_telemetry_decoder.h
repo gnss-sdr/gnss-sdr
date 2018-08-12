@@ -1,8 +1,8 @@
 /*!
- * \file gps_l1_ca_telemetry_decoder.h
- * \brief Interface of an adapter of a GPS L1 C/A NAV data decoder block
+ * \file beidou_b1i_telemetry_decoder.h
+ * \brief Interface of an adapter of a Beidou B1I NAV data decoder block
  * to a TelemetryDecoderInterface
- * \author Javier Arribas, 2011. jarribas(at)cttc.es
+ * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.com
  *
  * -------------------------------------------------------------------------
  *

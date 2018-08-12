@@ -1,9 +1,8 @@
 /*!
- * \file gps_l1_ca_dll_pll_tracking.h
+ * \file beidou_b1i_dll_pll_tracking.h
  * \brief  Interface of an adapter of a DLL+PLL tracking loop block
- * for GPS L1 C/A to a TrackingInterface
- * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
- *         Javier Arribas, 2011. jarribas(at)cttc.es
+ * for Beidou B1I to a TrackingInterface
+ * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.com
  *
  * Code DLL + carrier PLL according to the algorithms described in:
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,

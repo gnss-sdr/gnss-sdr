@@ -36,11 +36,6 @@
 #include <gnuradio/io_signature.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 
-
-#ifndef _rotl
-#define _rotl(X, N) ((X << N) ^ (X >> (32 - N)))  // Used in the parity check algorithm
-#endif
-
 using google::LogMessage;
 
 beidou_b1i_telemetry_decoder_cc_sptr
@@ -180,7 +175,6 @@ void beidou_b1i_telemetry_decoder_cc::decodebch_bi1(int *bits, int *decbits)
 {
     int bit, err, reg[4] = {1, 1, 1, 1};
     int errind[15] = {14, 13, 10, 12, 6, 9, 4, 11, 0, 5, 7, 8, 1, 3, 2};
-    uint8_t bin;
 
     for (unsigned int i = 0; i < 15; i++)
         {
@@ -208,7 +202,7 @@ void beidou_b1i_telemetry_decoder_cc::decodebch_bi1(int *bits, int *decbits)
 void beidou_b1i_telemetry_decoder_cc::decode_word(int word_counter, boost::circular_buffer<signed int> *d_bit_buffer, unsigned int& d_BEIDOU_frame_4bytes)
 {
     d_BEIDOU_frame_4bytes = 0;
-    int bits[30], bitsdec[30], bitsbch[30], first_branch[15], second_branch[15];
+    int bitsdec[30], bitsbch[30], first_branch[15], second_branch[15];
 
     if (word_counter == 1) 
         {
@@ -273,7 +267,6 @@ int beidou_b1i_telemetry_decoder_cc::general_work(int noutput_items __attribute_
     double current_time_samples = current_symbol.Tracking_sample_counter;
     double current_samples_fs = current_symbol.fs;
     int symbol_value = 0;
-    bool Flag_valid_symbol_output = false;
     d_symbol_nh_history.push_back(current_symbol.Prompt_I);  //add new symbol to the symbol queue
     consume_each(1);
 
@@ -353,7 +346,6 @@ int beidou_b1i_telemetry_decoder_cc::general_work(int noutput_items __attribute_
             new_sym = false;
         }*/
 
-    unsigned int required_symbols = BEIDOU_B1I_PREAMBLE_LENGTH_SYMBOLS;
     d_flag_preamble = false;
 
 
@@ -469,7 +461,6 @@ int beidou_b1i_telemetry_decoder_cc::general_work(int noutput_items __attribute_
                                         case 3:  //we have a new set of ephemeris data for the current SV
 */                                            if (d_BEIDOU_FSM.d_nav.satellite_validation() == true)
                                                 {
-std::cout << " we have a new set of ephemeris data for the current SV "<< std::endl;
 
                                                     // get ephemeris object for this SV (mandatory)
                                                     std::shared_ptr<Beidou_Ephemeris> tmp_obj = std::make_shared<Beidou_Ephemeris>(d_BEIDOU_FSM.d_nav.get_ephemeris());
@@ -479,7 +470,6 @@ std::cout << " we have a new set of ephemeris data for the current SV "<< std::e
                                         case 4:  // Possible IONOSPHERE and UTC model update (page 18)
  */                                           if (d_BEIDOU_FSM.d_nav.flag_iono_valid == true)
                                                 {
-std::cout << " we have a new set of iono data for the current SV "<< std::endl;
 
                                                     std::shared_ptr<Beidou_Iono> tmp_obj = std::make_shared<Beidou_Iono>(d_BEIDOU_FSM.d_nav.get_iono());
                                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
@@ -507,7 +497,7 @@ std::cout << " we have a new set of utc data for the current SV "<< std::endl;
     //2. Add the telemetry decoder information
     if (this->d_flag_preamble == true and d_flag_new_tow_available == true)
         {
-            d_TOW_at_current_symbol_ms = static_cast<unsigned int>(d_BEIDOU_FSM.d_nav.d_SOW) * 1000 + BEIDOU_B1I_CODE_PERIOD_MS + BEIDOU_B1I_PREAMBLE_DURATION_MS;
+            d_TOW_at_current_symbol_ms = static_cast<unsigned int>(d_BEIDOU_FSM.d_nav.d_SOW) * 1000 + 599;
             d_TOW_at_Preamble_ms = d_TOW_at_current_symbol_ms;
             flag_TOW_set = true;
             d_flag_new_tow_available = false;

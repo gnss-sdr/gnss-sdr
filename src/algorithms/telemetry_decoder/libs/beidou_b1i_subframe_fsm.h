@@ -1,5 +1,5 @@
 /*!
- * \file gps_l1_ca_subframe_fsm.h
+ * \file beidou_b1i_subframe_fsm.h
  * \brief  Interface of a BEIDOU NAV message word-to-subframe decoder state machine
  * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.com
  *

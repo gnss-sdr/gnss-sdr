@@ -828,13 +828,9 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_B1(
             LOG(ERROR) << "Acquisition and Tracking blocks must have the same input data type!";
         }
     config->set_property("Channel.item_type", acq_item_type);
-    std::cout << "Now Channel pass Through" << std::endl;
     std::unique_ptr<GNSSBlockInterface> pass_through_ = GetBlock(configuration, "Channel", "Pass_Through", 1, 1, queue);
-    std::cout << "Now Acquisition" << std::endl;
     std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_B1" + appendix1, acq, 1, 0);
-    std::cout << "Now Tracking" << std::endl;
     std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_B1" + appendix2, trk, 1, 1);
-    std::cout << "Now Telemetry Decoder" << std::endl;
     std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_B1" + appendix3, tlm, 1, 1);
 
     std::unique_ptr<GNSSBlockInterface> channel_(new Channel(configuration.get(), channel, std::move(pass_through_),

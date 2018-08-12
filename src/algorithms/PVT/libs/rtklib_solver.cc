@@ -451,6 +451,34 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
                             }
                         break;
                     }
+                case 'C':
+                    {
+                        // BEIDOU B1I
+                        //  - find the ephemeris for the current BEIDOU SV observation. The SV PRN ID is the map key
+                        std::string sig_(gnss_observables_iter->second.Signal);
+                        if (sig_.compare("B1") == 0)
+                            {
+                                beidou_ephemeris_iter = beidou_ephemeris_map.find(gnss_observables_iter->second.PRN);
+                                if (beidou_ephemeris_iter != beidou_ephemeris_map.cend())
+                                    {
+                                        // convert ephemeris from GNSS-SDR class to RTKLIB structure
+                                        eph_data[valid_obs] = eph_to_rtklib(beidou_ephemeris_iter->second);
+                                        // convert observation from GNSS-SDR class to RTKLIB structure
+                                        obsd_t newobs = {{0, 0}, '0', '0', {}, {}, {}, {}, {}, {}};
+                                        obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
+                                            gnss_observables_iter->second,
+                                            beidou_ephemeris_iter->second.i_BEIDOU_week,
+                                            0);
+                                        valid_obs++;
+                                    }
+                                else  // the ephemeris are not available for this SV
+                                    {
+                                        DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->first;
+                                    }
+                            }
+                        break;
+                     }
+
                 default:
                     DLOG(INFO) << "Hybrid observables: Unknown GNSS";
                     break;

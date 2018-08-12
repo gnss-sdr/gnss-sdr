@@ -38,7 +38,7 @@ Dll_Pll_Conf::Dll_Pll_Conf()
     /* DLL/PLL tracking configuration */
     use_fast_resampler = true;
     fs_in = 0.0;
-    vector_length = 0;
+    vector_length = 0U;
     dump = false;
     dump_filename = "./dll_pll_dump.dat";
     pll_pull_in_bw_hz = 50.0;

@@ -61,7 +61,7 @@ Dll_Pll_Conf_Fpga::Dll_Pll_Conf_Fpga()
 
     /* DLL/PLL tracking configuration */
     fs_in = 0.0;
-    vector_length = 0;
+    vector_length = 0U;
     dump = false;
     dump_filename = "./dll_pll_dump.dat";
     pll_bw_hz = 40.0;
@@ -82,10 +82,10 @@ Dll_Pll_Conf_Fpga::Dll_Pll_Conf_Fpga()
     char sig_[3] = "1C";
     std::memcpy(signal, sig_, 3);
     device_name = "/dev/uio";
-    device_base = 1;
-    multicorr_type = 0;
-    code_length_chips = 0;
-    code_samples_per_chip = 0;
+    device_base = 1U;
+    multicorr_type = 0U;
+    code_length_chips = 0U;
+    code_samples_per_chip = 0U;
     //int32_t* ca_codes;
     //int32_t* data_codes;
 }

@@ -62,7 +62,7 @@ hybrid_observables_cc::hybrid_observables_cc(uint32_t nchannels_in,
     d_nchannels_out = nchannels_out;
     d_nchannels_in = nchannels_in;
     d_dump_filename = dump_filename;
-    T_rx_clock_step_samples = 0;
+    T_rx_clock_step_samples = 0U;
     d_gnss_synchro_history = new Gnss_circular_deque<Gnss_Synchro>(500, d_nchannels_out);
 
     // ############# ENABLE DATA FILE LOG #################
@@ -83,8 +83,8 @@ hybrid_observables_cc::hybrid_observables_cc(uint32_t nchannels_in,
                         }
                 }
         }
-    T_rx_TOW_ms = 0;
-    T_rx_TOW_offset_ms = 0;
+    T_rx_TOW_ms = 0U;
+    T_rx_TOW_offset_ms = 0U;
     T_rx_TOW_set = false;
 
     // rework
@@ -134,7 +134,7 @@ int32_t hybrid_observables_cc::save_matfile()
             return 1;
         }
     // count number of epochs and rewind
-    int64_t num_epoch = 0;
+    int64_t num_epoch = 0LL;
     if (dump_file.is_open())
         {
             size = dump_file.tellg();
@@ -215,7 +215,7 @@ int32_t hybrid_observables_cc::save_matfile()
     double *Pseudorange_m_aux = new double[d_nchannels_out * num_epoch];
     double *PRN_aux = new double[d_nchannels_out * num_epoch];
     double *Flag_valid_pseudorange_aux = new double[d_nchannels_out * num_epoch];
-    uint32_t k = 0;
+    uint32_t k = 0U;
     for (int64_t j = 0; j < num_epoch; j++)
         {
             for (uint32_t i = 0; i < d_nchannels_out; i++)
@@ -316,11 +316,11 @@ bool hybrid_observables_cc::interp_trk_obs(Gnss_Synchro &interpolated_obs, const
     int64_t old_abs_diff = std::numeric_limits<int64_t>::max();
     for (uint32_t i = 0; i < d_gnss_synchro_history->size(ch); i++)
         {
-            abs_diff = labs(static_cast<int64_t>(rx_clock) - static_cast<int64_t>(d_gnss_synchro_history->at(ch, i).Tracking_sample_counter));
+            abs_diff = llabs(static_cast<int64_t>(rx_clock) - static_cast<int64_t>(d_gnss_synchro_history->at(ch, i).Tracking_sample_counter));
             if (old_abs_diff > abs_diff)
                 {
                     old_abs_diff = abs_diff;
-                    nearest_element = i;
+                    nearest_element = static_cast<int32_t>(i);
                 }
         }
 
@@ -419,7 +419,7 @@ void hybrid_observables_cc::update_TOW(std::vector<Gnss_Synchro> &data)
     //    if (!T_rx_TOW_set)
     //        {
     //uint32_t TOW_ref = std::numeric_limits<uint32_t>::max();
-    uint32_t TOW_ref = 0;
+    uint32_t TOW_ref = 0U;
     for (it = data.begin(); it != data.end(); it++)
         {
             if (it->Flag_valid_word)

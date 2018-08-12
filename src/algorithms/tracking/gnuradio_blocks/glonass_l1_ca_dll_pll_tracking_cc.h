@@ -55,7 +55,7 @@ typedef boost::shared_ptr<Glonass_L1_Ca_Dll_Pll_Tracking_cc>
 
 glonass_l1_ca_dll_pll_tracking_cc_sptr
 glonass_l1_ca_dll_pll_make_tracking_cc(
-    int64_t fs_in, unsigned int vector_length,
+    int64_t fs_in, uint32_t vector_length,
     bool dump,
     std::string dump_filename,
     float pll_bw_hz,
@@ -71,7 +71,7 @@ class Glonass_L1_Ca_Dll_Pll_Tracking_cc : public gr::block
 public:
     ~Glonass_L1_Ca_Dll_Pll_Tracking_cc();
 
-    void set_channel(unsigned int channel);
+    void set_channel(uint32_t channel);
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
     void start_tracking();
 
@@ -83,7 +83,7 @@ public:
 private:
     friend glonass_l1_ca_dll_pll_tracking_cc_sptr
     glonass_l1_ca_dll_pll_make_tracking_cc(
-        int64_t fs_in, unsigned int vector_length,
+        int64_t fs_in, uint32_t vector_length,
         bool dump,
         std::string dump_filename,
         float pll_bw_hz,
@@ -91,7 +91,7 @@ private:
         float early_late_space_chips);
 
     Glonass_L1_Ca_Dll_Pll_Tracking_cc(
-        int64_t fs_in, unsigned int vector_length,
+        int64_t fs_in, uint32_t vector_length,
         bool dump,
         std::string dump_filename,
         float pll_bw_hz,
@@ -99,11 +99,11 @@ private:
         float early_late_space_chips);
 
     // tracking configuration vars
-    unsigned int d_vector_length;
+    uint32_t d_vector_length;
     bool d_dump;
 
     Gnss_Synchro* d_acquisition_gnss_synchro;
-    unsigned int d_channel;
+    uint32_t d_channel;
 
     int64_t d_fs_in;
     int64_t d_glonass_freq_ch;
@@ -123,7 +123,7 @@ private:
     double d_acq_code_phase_samples;
     double d_acq_carrier_doppler_hz;
     // correlator
-    int d_n_correlator_taps;
+    int32_t d_n_correlator_taps;
     gr_complex* d_ca_code;
     float* d_local_code_shift_chips;
     gr_complex* d_correlator_outs;
@@ -141,19 +141,19 @@ private:
     double d_code_phase_samples;
 
     //PRN period in samples
-    int d_current_prn_length_samples;
+    int32_t d_current_prn_length_samples;
 
     //processing samples counters
     uint64_t d_sample_counter;
     uint64_t d_acq_sample_stamp;
 
     // CN0 estimation and lock detector
-    int d_cn0_estimation_counter;
+    int32_t d_cn0_estimation_counter;
     gr_complex* d_Prompt_buffer;
     double d_carrier_lock_test;
     double d_CN0_SNV_dB_Hz;
     double d_carrier_lock_threshold;
-    int d_carrier_lock_fail_counter;
+    int32_t d_carrier_lock_fail_counter;
 
     // control vars
     bool d_enable_tracking;
@@ -166,7 +166,7 @@ private:
     std::map<std::string, std::string> systemName;
     std::string sys;
 
-    int save_matfile();
+    int32_t save_matfile();
 };
 
 #endif  //GNSS_SDR_GLONASS_L1_CA_DLL_PLL_TRACKING_CC_H

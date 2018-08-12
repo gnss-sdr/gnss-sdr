@@ -60,7 +60,7 @@ galileo_pcps_8ms_acquisition_cc::galileo_pcps_8ms_acquisition_cc(
                                      gr::io_signature::make(0, 0, sizeof(gr_complex) * sampled_ms * samples_per_ms))
 {
     this->message_port_register_out(pmt::mp("events"));
-    d_sample_counter = 0;  // SAMPLE COUNTER
+    d_sample_counter = 0ULL;  // SAMPLE COUNTER
     d_active = false;
     d_state = 0;
     d_fs_in = fs_in;
@@ -228,7 +228,7 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
                         d_state = 1;
                     }
 
-                d_sample_counter += d_fft_size * ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_fft_size * ninput_items[0]);  // sample counter
                 consume_each(ninput_items[0]);
 
                 break;
@@ -249,7 +249,7 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
                 d_input_power = 0.0;
                 d_mag = 0.0;
 
-                d_sample_counter += d_fft_size;  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_fft_size);  // sample counter
 
                 d_well_count++;
 
@@ -404,7 +404,7 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
                 d_active = false;
                 d_state = 0;
 
-                d_sample_counter += d_fft_size * ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_fft_size * ninput_items[0]);  // sample counter
                 consume_each(ninput_items[0]);
 
                 acquisition_message = 2;

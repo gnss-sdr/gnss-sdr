@@ -67,7 +67,7 @@ pcps_cccwsr_acquisition_cc::pcps_cccwsr_acquisition_cc(
                                      gr::io_signature::make(0, 0, sizeof(gr_complex) * sampled_ms * samples_per_ms))
 {
     this->message_port_register_out(pmt::mp("events"));
-    d_sample_counter = 0;  // SAMPLE COUNTER
+    d_sample_counter = 0ULL;  // SAMPLE COUNTER
     d_active = false;
     d_state = 0;
     d_fs_in = fs_in;
@@ -243,7 +243,7 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
                         d_state = 1;
                     }
 
-                d_sample_counter += d_fft_size * ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_fft_size * ninput_items[0]);  // sample counter
                 consume_each(ninput_items[0]);
 
                 break;
@@ -262,7 +262,7 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
                 const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
                 float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
 
-                d_sample_counter += d_fft_size;  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_fft_size);  // sample counter
 
                 d_well_count++;
 
@@ -406,7 +406,7 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
                 d_active = false;
                 d_state = 0;
 
-                d_sample_counter += d_fft_size * ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_fft_size * ninput_items[0]);  // sample counter
                 consume_each(ninput_items[0]);
 
                 acquisition_message = 1;
@@ -431,7 +431,7 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
                 d_active = false;
                 d_state = 0;
 
-                d_sample_counter += d_fft_size * ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_fft_size * ninput_items[0]);  // sample counter
                 consume_each(ninput_items[0]);
 
                 acquisition_message = 2;

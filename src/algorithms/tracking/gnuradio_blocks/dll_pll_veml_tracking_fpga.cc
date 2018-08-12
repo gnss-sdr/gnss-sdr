@@ -97,7 +97,6 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
 
     signal_pretty_name = map_signal_pretty_name[signal_type];
 
-
     d_prompt_data_shift = nullptr;
 
     if (trk_parameters.system == 'G')
@@ -281,7 +280,6 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     K_blk_samples = 0.0;
 
     // Initialize tracking  ==========================================
-
     d_code_loop_filter = Tracking_2nd_DLL_filter(static_cast<float>(d_code_period));
     d_carrier_loop_filter = Tracking_2nd_PLL_filter(static_cast<float>(d_code_period));
     d_carrier_loop_filter.set_PLL_BW(trk_parameters.pll_bw_hz);
@@ -372,9 +370,9 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     d_rem_carr_phase_rad = 0.0;
 
     // sample synchronization
-    d_sample_counter = 0;
-    d_acq_sample_stamp = 0;
-    d_absolute_samples_offset = 0;
+    d_sample_counter = 0ULL;
+    d_acq_sample_stamp = 0ULL;
+    d_absolute_samples_offset = 0ULL;
 
     d_current_prn_length_samples = static_cast<int32_t>(trk_parameters.vector_length);
     d_next_prn_length_samples = d_current_prn_length_samples;
@@ -423,6 +421,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
 
     d_pull_in = 0;
 }
+
 
 void dll_pll_veml_tracking_fpga::start_tracking()
 {
@@ -565,6 +564,7 @@ void dll_pll_veml_tracking_fpga::start_tracking()
     d_state = 1;
 }
 
+
 dll_pll_veml_tracking_fpga::~dll_pll_veml_tracking_fpga()
 {
     if (signal_type.compare("1C") == 0)
@@ -646,7 +646,6 @@ bool dll_pll_veml_tracking_fpga::acquire_secondary()
 
     //    if (abs(corr_value) == d_secondary_code_length)
     if (abs(corr_value) == static_cast<int32_t>(d_secondary_code_length))
-
         {
             return true;
         }
@@ -851,7 +850,7 @@ void dll_pll_veml_tracking_fpga::log_data(bool integrating)
             float tmp_VE, tmp_E, tmp_P, tmp_L, tmp_VL;
             float tmp_float;
             double tmp_double;
-            int64_t tmp_long_int;
+            uint64_t tmp_long_int;
             if (trk_parameters.track_pilot)
                 {
                     if (interchange_iq)
@@ -1182,6 +1181,7 @@ int32_t dll_pll_veml_tracking_fpga::save_matfile()
     return 0;
 }
 
+
 void dll_pll_veml_tracking_fpga::set_channel(uint32_t channel)
 {
     d_channel = channel;
@@ -1207,6 +1207,7 @@ void dll_pll_veml_tracking_fpga::set_channel(uint32_t channel)
                 }
         }
 }
+
 
 void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
 {
@@ -1235,7 +1236,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                         d_correlator_outs[n] = gr_complex(0, 0);
                     }
 
-                current_synchro_data.Tracking_sample_counter = 0;  // in order to reduce computational workload do not read the sample counter until we start tracking d_sample_counter + d_current_prn_length_samples;
+                current_synchro_data.Tracking_sample_counter = 0ULL;  // in order to reduce computational workload do not read the sample counter until we start tracking d_sample_counter + d_current_prn_length_samples;
                 current_synchro_data.System = {'G'};
                 current_synchro_data.correlation_length_ms = 1;
                 break;
@@ -1251,7 +1252,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                 //printf("333333 d_correlation_length_samples = %d\n", d_correlation_length_samples);
                 uint32_t num_frames = ceil((counter_value - current_synchro_data.Acq_samplestamp_samples - current_synchro_data.Acq_delay_samples) / d_correlation_length_samples);
                 //printf("333333 num_frames = %d\n", num_frames);
-                uint64_t absolute_samples_offset = current_synchro_data.Acq_delay_samples + current_synchro_data.Acq_samplestamp_samples + num_frames * d_correlation_length_samples;
+                uint64_t absolute_samples_offset = static_cast<uint64_t>(current_synchro_data.Acq_delay_samples + current_synchro_data.Acq_samplestamp_samples + num_frames * d_correlation_length_samples);
                 //printf("333333 absolute_samples_offset = %llu\n", absolute_samples_offset);
                 multicorrelator_fpga->set_initial_sample(absolute_samples_offset);
                 d_absolute_samples_offset = absolute_samples_offset;
@@ -1266,7 +1267,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
         case 2:
             {
                 d_sample_counter = d_sample_counter_next;
-                d_sample_counter_next = d_sample_counter + d_current_prn_length_samples;
+                d_sample_counter_next = d_sample_counter + static_cast<uint64_t>(d_current_prn_length_samples);
 
                 // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
                 // perform carrier wipe-off and compute Early, Prompt and Late correlation
@@ -1424,7 +1425,6 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                         current_synchro_data.Flag_valid_symbol_output = true;
                         current_synchro_data.correlation_length_ms = d_correlation_length_ms;
 
-
                         if (next_state)
                             {  // reset extended correlator
                                 d_VE_accu = gr_complex(0.0, 0.0);
@@ -1540,7 +1540,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
         case 4:  // narrow tracking
             {
                 d_sample_counter = d_sample_counter_next;
-                d_sample_counter_next = d_sample_counter + d_current_prn_length_samples;
+                d_sample_counter_next = d_sample_counter + static_cast<uint64_t>(d_current_prn_length_samples);
 
                 // perform a correlation step
                 //do_correlation_step(in);
@@ -1616,12 +1616,13 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
     if (current_synchro_data.Flag_valid_symbol_output)
         {
             current_synchro_data.fs = static_cast<int64_t>(trk_parameters.fs_in);
-            current_synchro_data.Tracking_sample_counter = d_sample_counter + d_current_prn_length_samples;
+            current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(d_current_prn_length_samples);
             *out[0] = current_synchro_data;
             return 1;
         }
     return 0;
 }
+
 
 void dll_pll_veml_tracking_fpga::reset(void)
 {

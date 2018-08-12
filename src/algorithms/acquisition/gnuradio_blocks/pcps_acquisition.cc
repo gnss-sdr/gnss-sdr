@@ -58,12 +58,12 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
     this->message_port_register_out(pmt::mp("events"));
 
     acq_parameters = conf_;
-    d_sample_counter = 0;  // SAMPLE COUNTER
+    d_sample_counter = 0ULL;  // SAMPLE COUNTER
     d_active = false;
     d_positive_acq = 0;
     d_state = 0;
-    d_old_freq = 0;
-    d_num_noncoherent_integrations_counter = 0;
+    d_old_freq = 0LL;
+    d_num_noncoherent_integrations_counter = 0U;
     d_consumed_samples = acq_parameters.sampled_ms * acq_parameters.samples_per_ms * (acq_parameters.bit_transition_flag ? 2 : 1);
     if (acq_parameters.sampled_ms == acq_parameters.ms_per_code)
         {
@@ -76,12 +76,12 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
     // d_fft_size = next power of two?  ////
     d_mag = 0;
     d_input_power = 0.0;
-    d_num_doppler_bins = 0;
+    d_num_doppler_bins = 0U;
     d_threshold = 0.0;
-    d_doppler_step = 0;
+    d_doppler_step = 0U;
     d_doppler_center_step_two = 0.0;
     d_test_statistics = 0.0;
-    d_channel = 0;
+    d_channel = 0U;
     if (conf_.it_size == sizeof(gr_complex))
         {
             d_cshort = false;
@@ -136,10 +136,10 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
     narrow_grid_ = arma::fmat();
     d_step_two = false;
     d_num_doppler_bins_step2 = acq_parameters.num_doppler_bins_step2;
-    d_dump_number = 0;
+    d_dump_number = 0LL;
     d_dump_channel = acq_parameters.dump_channel;
     d_samplesPerChip = acq_parameters.samples_per_chip;
-    d_buffer_count = 0;
+    d_buffer_count = 0U;
     // todo: CFAR statistic not available for non-coherent integration
     if (acq_parameters.max_dwells == 1)
         {
@@ -189,7 +189,7 @@ pcps_acquisition::~pcps_acquisition()
 void pcps_acquisition::set_local_code(std::complex<float>* code)
 {
     // reset the intermediate frequency
-    d_old_freq = 0;
+    d_old_freq = 0LL;
     // This will check if it's fdma, if yes will update the intermediate frequency and the doppler grid
     if (is_fdma())
         {
@@ -250,7 +250,7 @@ void pcps_acquisition::update_local_carrier(gr_complex* carrier_vector, int32_t 
 {
     float phase_step_rad = GPS_TWO_PI * freq / static_cast<float>(acq_parameters.fs_in);
     float _phase[1];
-    _phase[0] = 0;
+    _phase[0] = 0.0;
     volk_gnsssdr_s32f_sincos_32fc(carrier_vector, -phase_step_rad, _phase, correlator_length_samples);
 }
 
@@ -264,7 +264,7 @@ void pcps_acquisition::init()
 
     d_gnss_synchro->Acq_delay_samples = 0.0;
     d_gnss_synchro->Acq_doppler_hz = 0.0;
-    d_gnss_synchro->Acq_samplestamp_samples = 0;
+    d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
     d_mag = 0.0;
     d_input_power = 0.0;
 
@@ -333,7 +333,7 @@ void pcps_acquisition::set_state(int32_t state)
         {
             d_gnss_synchro->Acq_delay_samples = 0.0;
             d_gnss_synchro->Acq_doppler_hz = 0.0;
-            d_gnss_synchro->Acq_samplestamp_samples = 0;
+            d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
             d_mag = 0.0;
             d_input_power = 0.0;
             d_test_statistics = 0.0;
@@ -491,9 +491,9 @@ void pcps_acquisition::dump_results(int32_t effective_fft_size)
 float pcps_acquisition::max_to_input_power_statistic(uint32_t& indext, int32_t& doppler, float input_power, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step)
 {
     float grid_maximum = 0.0;
-    uint32_t index_doppler = 0;
-    uint32_t tmp_intex_t = 0;
-    uint32_t index_time = 0;
+    uint32_t index_doppler = 0U;
+    uint32_t tmp_intex_t = 0U;
+    uint32_t index_time = 0U;
     float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
 
     // Find the correlation peak and the carrier frequency
@@ -529,9 +529,9 @@ float pcps_acquisition::first_vs_second_peak_statistic(uint32_t& indext, int32_t
     // The second peak is chosen not closer than 1 chip to the highest peak
 
     float firstPeak = 0.0;
-    uint32_t index_doppler = 0;
-    uint32_t tmp_intex_t = 0;
-    uint32_t index_time = 0;
+    uint32_t index_doppler = 0U;
+    uint32_t tmp_intex_t = 0U;
+    uint32_t index_time = 0U;
 
     // Find the correlation peak and the carrier frequency
     for (uint32_t i = 0; i < num_doppler_bins; i++)
@@ -594,7 +594,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
 
     // Initialize acquisition algorithm
     int32_t doppler = 0;
-    uint32_t indext = 0;
+    uint32_t indext = 0U;
     int32_t effective_fft_size = (acq_parameters.bit_transition_flag ? d_fft_size / 2 : d_fft_size);
     if (d_cshort)
         {
@@ -785,7 +785,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                             else
                                 {
                                     d_step_two = true;  // Clear input buffer and make small grid acquisition
-                                    d_num_noncoherent_integrations_counter = 0;
+                                    d_num_noncoherent_integrations_counter = 0U;
                                     d_state = 0;
                                 }
                         }
@@ -811,7 +811,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                 {
                     pcps_acquisition::dump_results(effective_fft_size);
                 }
-            d_num_noncoherent_integrations_counter = 0;
+            d_num_noncoherent_integrations_counter = 0U;
             d_positive_acq = 0;
             // Reset grid
             for (uint32_t i = 0; i < d_num_doppler_bins; i++)
@@ -864,12 +864,12 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                 // Restart acquisition variables
                 d_gnss_synchro->Acq_delay_samples = 0.0;
                 d_gnss_synchro->Acq_doppler_hz = 0.0;
-                d_gnss_synchro->Acq_samplestamp_samples = 0;
+                d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
                 d_mag = 0.0;
                 d_input_power = 0.0;
                 d_test_statistics = 0.0;
                 d_state = 1;
-                d_buffer_count = 0;
+                d_buffer_count = 0U;
                 if (!acq_parameters.blocking_on_standby)
                     {
                         d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
@@ -931,7 +931,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                         d_worker_active = true;
                     }
                 consume_each(0);
-                d_buffer_count = 0;
+                d_buffer_count = 0U;
                 break;
             }
         }

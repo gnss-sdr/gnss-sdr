@@ -62,18 +62,18 @@ pcps_acquisition_fpga::pcps_acquisition_fpga(pcpsconf_fpga_t conf_) : gr::block(
     this->message_port_register_out(pmt::mp("events"));
 
     acq_parameters = conf_;
-    d_sample_counter = 0;  // SAMPLE COUNTER
+    d_sample_counter = 0ULL;  // SAMPLE COUNTER
     d_active = false;
     d_state = 0;
     //d_fft_size = acq_parameters.sampled_ms * acq_parameters.samples_per_ms;
     d_fft_size = acq_parameters.samples_per_code;
     d_mag = 0;
     d_input_power = 0.0;
-    d_num_doppler_bins = 0;
+    d_num_doppler_bins = 0U;
     d_threshold = 0.0;
-    d_doppler_step = 0;
+    d_doppler_step = 0U;
     d_test_statistics = 0.0;
-    d_channel = 0;
+    d_channel = 0U;
     d_gnss_synchro = 0;
 
     //printf("zzzz acq_parameters.code_length = %d\n", acq_parameters.code_length);
@@ -207,7 +207,7 @@ void pcps_acquisition_fpga::set_active(bool active)
     d_active = active;
 
     // initialize acquisition algorithm
-    uint32_t indext = 0;
+    uint32_t indext = 0U;
     float magt = 0.0;
     float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
 

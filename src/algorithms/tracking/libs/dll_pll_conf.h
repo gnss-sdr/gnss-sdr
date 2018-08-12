@@ -33,6 +33,7 @@
 #ifndef GNSS_SDR_DLL_PLL_CONF_H_
 #define GNSS_SDR_DLL_PLL_CONF_H_
 
+#include <cstdint>
 #include <string>
 
 class Dll_Pll_Conf
@@ -41,7 +42,7 @@ private:
 public:
     /* DLL/PLL tracking configuration */
     double fs_in;
-    unsigned int vector_length;
+    uint32_t vector_length;
     bool dump;
     std::string dump_filename;
     float pll_pull_in_bw_hz;
@@ -54,12 +55,12 @@ public:
     float very_early_late_space_chips;
     float early_late_space_narrow_chips;
     float very_early_late_space_narrow_chips;
-    int extend_correlation_symbols;
+    int32_t extend_correlation_symbols;
     bool use_fast_resampler;
-    int cn0_samples;
-    int carrier_lock_det_mav_samples;
-    int cn0_min;
-    int max_lock_fail;
+    int32_t cn0_samples;
+    int32_t carrier_lock_det_mav_samples;
+    int32_t cn0_min;
+    int32_t max_lock_fail;
     double carrier_lock_th;
     bool track_pilot;
     char system;

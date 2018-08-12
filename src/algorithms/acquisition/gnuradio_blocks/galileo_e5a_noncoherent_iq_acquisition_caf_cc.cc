@@ -80,7 +80,7 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
                              gr::io_signature::make(0, 0, sizeof(gr_complex)))
 {
     this->message_port_register_out(pmt::mp("events"));
-    d_sample_counter = 0;  // SAMPLE COUNTER
+    d_sample_counter = 0ULL;  // SAMPLE COUNTER
     d_active = false;
     d_state = 0;
     d_fs_in = fs_in;
@@ -383,7 +383,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                         d_test_statistics = 0.0;
                         d_state = 1;
                     }
-                d_sample_counter += ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
                 consume_each(ninput_items[0]);
 
                 break;
@@ -407,7 +407,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                         d_state = 2;
                     }
                 d_buffer_count += buff_increment;
-                d_sample_counter += buff_increment;  // sample counter
+                d_sample_counter += static_cast<uint64_t>(buff_increment);  // sample counter
                 consume_each(buff_increment);
                 break;
             }
@@ -419,7 +419,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                     {
                         memcpy(&d_inbuffer[d_buffer_count], in, sizeof(gr_complex) * (d_fft_size - d_buffer_count));
                     }
-                d_sample_counter += (d_fft_size - d_buffer_count);  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_fft_size - d_buffer_count);  // sample counter
 
                 // initialize acquisition algorithm
                 int doppler;
@@ -806,7 +806,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
 
                 acquisition_message = 1;
                 this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
-                d_sample_counter += ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
                 consume_each(ninput_items[0]);
                 break;
             }
@@ -826,7 +826,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                 d_active = false;
                 d_state = 0;
 
-                d_sample_counter += ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
                 consume_each(ninput_items[0]);
                 acquisition_message = 2;
                 this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));

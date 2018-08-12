@@ -38,6 +38,7 @@ set(__INCLUDED_VOLK_BUILD_TYPES_CMAKE TRUE)
 list(APPEND AVAIL_BUILDTYPES
   None Debug Release RelWithDebInfo MinSizeRel
   DebugParanoid NoOptWithASM O2WithASM O3WithASM
+  ASAN
 )
 
 ########################################################################
@@ -185,3 +186,25 @@ if(NOT WIN32)
     CMAKE_EXE_LINKER_FLAGS_O3WITHASM
     CMAKE_SHARED_LINKER_FLAGS_O3WITHASM)
 endif(NOT WIN32)
+
+########################################################################
+# For GCC and Clang, we can set a build type:
+#
+# -DCMAKE_BUILD_TYPE=ASAN
+#
+# This type creates an address sanitized build (-fsanitize=address)
+# and defaults to the DebugParanoid linker flags.
+# NOTE: This is not defined on Windows systems.
+########################################################################
+if(NOT WIN32)
+  SET(CMAKE_CXX_FLAGS_ASAN "-Wall -Wextra -g -O2 -fsanitize=address -fno-omit-frame-pointer" CACHE STRING
+    "Flags used by the C++ compiler during Address Sanitized builds." FORCE)
+  SET(CMAKE_C_FLAGS_ASAN "-Wall -Wextra -g -O2 -fsanitize=address -fno-omit-frame-pointer" CACHE STRING
+    "Flags used by the C compiler during Address Sanitized builds." FORCE)
+  MARK_AS_ADVANCED(
+    CMAKE_CXX_FLAGS_ASAN
+    CMAKE_C_FLAGS_ASAN
+    CMAKE_EXE_LINKER_FLAGS_DEBUGPARANOID
+    CMAKE_SHARED_LINKER_DEBUGPARANOID)
+endif(NOT WIN32)
+

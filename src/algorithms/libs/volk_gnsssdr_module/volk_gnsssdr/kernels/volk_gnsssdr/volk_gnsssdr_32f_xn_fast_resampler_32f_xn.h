@@ -82,7 +82,7 @@ static inline void volk_gnsssdr_32f_xn_fast_resampler_32f_xn_generic(float** res
 {
     int local_code_chip_index;
     int current_correlator_tap;
-    int n;
+    unsigned int n;
     //first correlator
     for (n = 0; n < num_points; n++)
         {
@@ -116,7 +116,7 @@ static inline void volk_gnsssdr_32f_xn_fast_resampler_32f_xn_a_sse3(float** resu
     //    int current_correlator_tap;
     unsigned int n;
     unsigned int k;
-    unsigned int current_correlator_tap;
+    int current_correlator_tap;
     const __m128 ones = _mm_set1_ps(1.0f);
     const __m128 fours = _mm_set1_ps(4.0f);
     const __m128 rem_code_phase_chips_reg = _mm_set_ps1(rem_code_phase_chips);
@@ -201,7 +201,7 @@ static inline void volk_gnsssdr_32f_xn_fast_resampler_32f_xn_u_sse3(float** resu
     //    int current_correlator_tap;
     unsigned int n;
     unsigned int k;
-    unsigned int current_correlator_tap;
+    int current_correlator_tap;
     const __m128 ones = _mm_set1_ps(1.0f);
     const __m128 fours = _mm_set1_ps(4.0f);
     const __m128 rem_code_phase_chips_reg = _mm_set_ps1(rem_code_phase_chips);
@@ -287,7 +287,7 @@ static inline void volk_gnsssdr_32f_xn_fast_resampler_32f_xn_a_sse4_1(float** re
     //    int current_correlator_tap;
     unsigned int n;
     unsigned int k;
-    unsigned int current_correlator_tap;
+    int current_correlator_tap;
     const __m128 ones = _mm_set1_ps(1.0f);
     const __m128 fours = _mm_set1_ps(4.0f);
     const __m128 rem_code_phase_chips_reg = _mm_set_ps1(rem_code_phase_chips);
@@ -369,7 +369,7 @@ static inline void volk_gnsssdr_32f_xn_fast_resampler_32f_xn_u_sse4_1(float** re
     //    int current_correlator_tap;
     unsigned int n;
     unsigned int k;
-    unsigned int current_correlator_tap;
+    int current_correlator_tap;
     const __m128 ones = _mm_set1_ps(1.0f);
     const __m128 fours = _mm_set1_ps(4.0f);
     const __m128 rem_code_phase_chips_reg = _mm_set_ps1(rem_code_phase_chips);

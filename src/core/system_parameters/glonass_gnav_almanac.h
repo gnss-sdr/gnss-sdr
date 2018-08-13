@@ -35,6 +35,7 @@
 #define GNSS_SDR_GLONASS_ALMANAC_H_
 
 #include <boost/serialization/nvp.hpp>
+#include <cstdint>
 
 /*!
  * \brief This class is a storage for the GLONASS SV ALMANAC data as described GLONASS ICD (Edition 5.1)
@@ -60,15 +61,15 @@ public:
     bool d_l_n;                //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
 
     // Satellite Identification Information
-    int i_satellite_freq_channel;          //!< SV Frequency Channel Number
-    unsigned int i_satellite_PRN;          //!< SV PRN Number, equivalent to slot number for compatibility with GPS
-    unsigned int i_satellite_slot_number;  //!< SV Slot Number
+    int32_t i_satellite_freq_channel;  //!< SV Frequency Channel Number
+    uint32_t i_satellite_PRN;          //!< SV PRN Number, equivalent to slot number for compatibility with GPS
+    uint32_t i_satellite_slot_number;  //!< SV Slot Number
 
     template <class Archive>
     /*!
      * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the almanac data on disk file.
      */
-    void serialize(Archive& archive, const unsigned int version)
+    void serialize(Archive& archive, const uint32_t version)
     {
         using boost::serialization::make_nvp;
         if (version)

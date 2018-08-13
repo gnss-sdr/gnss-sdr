@@ -34,8 +34,8 @@
 #ifndef GNSS_SDR_GLONASS_GNAV_UTC_MODEL_H_
 #define GNSS_SDR_GLONASS_GNAV_UTC_MODEL_H_
 
-#include <boost/assign.hpp>
 #include <boost/serialization/nvp.hpp>
+#include <cstdint>
 
 /*!
  * \brief This class is a storage for the GLONASS GNAV UTC MODEL data as described in GLONASS ICD (Edition 5.1)
@@ -58,7 +58,7 @@ public:
     /*!
      * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the almanac data on disk file.
      */
-    void serialize(Archive& archive, const unsigned int version)
+    void serialize(Archive& archive, const uint32_t version)
     {
         using boost::serialization::make_nvp;
         if (version)

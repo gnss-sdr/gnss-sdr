@@ -35,6 +35,7 @@
 
 #include <boost/assign.hpp>
 #include <boost/serialization/nvp.hpp>
+#include <cstdint>
 
 
 /*!
@@ -48,9 +49,9 @@ public:
     /* Galileo ephemeris are 16 parameters and here are reported following the ICD order, paragraph 5.1.1.
        The number in the name after underscore (_1, _2, _3 and so on) refers to the page were we can find that parameter */
     bool flag_all_ephemeris;
-    int IOD_ephemeris;
-    int IOD_nav_1;
-    int SV_ID_PRN_4;
+    int32_t IOD_ephemeris;
+    int32_t IOD_nav_1;
+    int32_t SV_ID_PRN_4;
     double M0_1;         //!< Mean anomaly at reference time [semi-circles]
     double delta_n_3;    //!< Mean motion difference from computed value [semi-circles/sec]
     double e_1;          //!< Eccentricity
@@ -83,12 +84,12 @@ public:
 
     // SV status
     double SISA_3;
-    unsigned int E5a_HS;  //!< E5a Signal Health Status
-    double E5b_HS_5;      //!< E5b Signal Health Status
-    double E1B_HS_5;      //!< E1B Signal Health Status
-    bool E5a_DVS;         //!< E5a Data Validity Status
-    double E5b_DVS_5;     //!< E5b Data Validity Status
-    double E1B_DVS_5;     //!< E1B Data Validity Status
+    uint32_t E5a_HS;   //!< E5a Signal Health Status
+    double E5b_HS_5;   //!< E5b Signal Health Status
+    double E1B_HS_5;   //!< E1B Signal Health Status
+    bool E5a_DVS;      //!< E5a Data Validity Status
+    double E5b_DVS_5;  //!< E5b Data Validity Status
+    double E1B_DVS_5;  //!< E1B Data Validity Status
 
     double BGD_E1E5a_5;  //!< E1-E5a Broadcast Group Delay [s]
     double BGD_E1E5b_5;  //!< E1-E5b Broadcast Group Delay [s]
@@ -103,7 +104,7 @@ public:
     double d_satvel_Y;  //!< Earth-fixed velocity coordinate y of the satellite [m]
     double d_satvel_Z;  //!< Earth-fixed velocity coordinate z of the satellite [m]
 
-    unsigned int i_satellite_PRN;  //!< SV PRN NUMBER
+    uint32_t i_satellite_PRN;  //!< SV PRN NUMBER
 
     void satellitePosition(double transmitTime);             //!< Computes the ECEF SV coordinates and ECEF velocity
     double Galileo_System_Time(double WN, double TOW);       //!< Galileo System Time (GST), ICD paragraph 5.1.2
@@ -116,7 +117,7 @@ public:
     /*!
      * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the ephemeris data on disk file.
      */
-    inline void serialize(Archive& archive, const unsigned int version)
+    inline void serialize(Archive& archive, const uint32_t version)
     {
         using boost::serialization::make_nvp;
         if (version)

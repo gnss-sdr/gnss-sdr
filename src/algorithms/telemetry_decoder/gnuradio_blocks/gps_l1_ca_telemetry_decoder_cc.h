@@ -70,23 +70,23 @@ private:
 
     gps_l1_ca_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
 
-    bool gps_word_parityCheck(unsigned int gpsword);
+    bool gps_word_parityCheck(uint32_t gpsword);
 
     bool decode_subframe();
     bool new_decoder();
     int d_crc_error_synchronization_counter;
 
     int *d_preambles_symbols;
-    unsigned int d_stat;
+    uint32_t d_stat;
     bool d_flag_frame_sync;
 
     // symbols
     boost::circular_buffer<Gnss_Synchro> d_symbol_history;
-    float d_subframe_symbols[GPS_SUBFRAME_MS];  //symbols per subframe
+    float d_subframe_symbols[GPS_SUBFRAME_MS];  // symbols per subframe
     int d_current_subframe_symbol;
 
-    //bits and frame
-    unsigned int d_prev_GPS_frame_4bytes;
+    // bits and frame
+    uint32_t d_prev_GPS_frame_4bytes;
     bool d_flag_preamble;
     bool d_flag_new_tow_available;
 
@@ -99,8 +99,8 @@ private:
 
     uint64_t d_preamble_time_samples;
 
-    unsigned int d_TOW_at_Preamble_ms;
-    unsigned int d_TOW_at_current_symbol_ms;
+    uint32_t d_TOW_at_Preamble_ms;
+    uint32_t d_TOW_at_current_symbol_ms;
 
     bool flag_TOW_set;
     bool flag_PLL_180_deg_phase_locked;

@@ -632,7 +632,7 @@ Gps_Iono Gps_Navigation_Message::get_iono()
     iono.d_beta2 = d_beta2;
     iono.d_beta3 = d_beta3;
     iono.valid = flag_iono_valid;
-    //WARNING: We clear flag_utc_model_valid in order to not re-send the same information to the ionospheric parameters queue
+    // WARNING: We clear flag_utc_model_valid in order to not re-send the same information to the ionospheric parameters queue
     flag_iono_valid = false;
     return iono;
 }

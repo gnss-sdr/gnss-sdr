@@ -268,7 +268,7 @@ uint64_t Galileo_Navigation_Message::read_navigation_unsigned(std::bitset<GALILE
         {
             for (int32_t j = 0; j < parameter[i].second; j++)
                 {
-                    value <<= 1;  //shift left
+                    value <<= 1;  // shift left
                     if (bits[GALILEO_DATA_JK_BITS - parameter[i].first - j] == 1)
                         {
                             value += 1;  // insert the bit
@@ -287,7 +287,7 @@ uint64_t Galileo_Navigation_Message::read_page_type_unsigned(std::bitset<GALILEO
         {
             for (int32_t j = 0; j < parameter[i].second; j++)
                 {
-                    value <<= 1;  //shift left
+                    value <<= 1;  // shift left
                     if (bits[GALILEO_PAGE_TYPE_BITS - parameter[i].first - j] == 1)
                         {
                             value += 1;  // insert the bit

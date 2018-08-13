@@ -35,34 +35,34 @@
 
 Gps_CNAV_Ephemeris::Gps_CNAV_Ephemeris()
 {
-    i_satellite_PRN = 0;
+    i_satellite_PRN = 0U;
 
-    d_Toe1 = -1;
-    d_Toe2 = -1;
+    d_Toe1 = -1.0;
+    d_Toe2 = -1.0;
 
-    d_TOW = 0;
-    d_Crs = 0;
-    d_M_0 = 0;
-    d_Cuc = 0;
-    d_e_eccentricity = 0;
-    d_Cus = 0;
+    d_TOW = 0.0;
+    d_Crs = 0.0;
+    d_M_0 = 0.0;
+    d_Cuc = 0.0;
+    d_e_eccentricity = 0.0;
+    d_Cus = 0.0;
 
-    d_Toc = 0;
-    d_Cic = 0;
-    d_OMEGA0 = 0;
-    d_Cis = 0;
-    d_i_0 = 0;
-    d_Crc = 0;
-    d_OMEGA = 0;
-    d_IDOT = 0;
+    d_Toc = 0.0;
+    d_Cic = 0.0;
+    d_OMEGA0 = 0.0;
+    d_Cis = 0.0;
+    d_i_0 = 0.0;
+    d_Crc = 0.0;
+    d_OMEGA = 0.0;
+    d_IDOT = 0.0;
 
     i_GPS_week = 0;
 
-    d_TGD = 0;  // Estimated Group Delay Differential: L1-L2 correction term only for the benefit of "L1 P(Y)" or "L2 P(Y)" s users [s]
+    d_TGD = 0.0;  // Estimated Group Delay Differential: L1-L2 correction term only for the benefit of "L1 P(Y)" or "L2 P(Y)" s users [s]
 
-    d_A_f0 = 0;  // Coefficient 0 of code phase offset model [s]
-    d_A_f1 = 0;  // Coefficient 1 of code phase offset model [s/s]
-    d_A_f2 = 0;  // Coefficient 2 of code phase offset model [s/s^2]
+    d_A_f0 = 0.0;  // Coefficient 0 of code phase offset model [s]
+    d_A_f1 = 0.0;  // Coefficient 1 of code phase offset model [s/s]
+    d_A_f2 = 0.0;  // Coefficient 2 of code phase offset model [s/s^2]
 
     b_integrity_status_flag = false;
     b_alert_flag = false;         // If true, indicates  that the SV URA may be worse than indicated in d_SV_accuracy, use that SV at our own risk.
@@ -94,6 +94,7 @@ Gps_CNAV_Ephemeris::Gps_CNAV_Ephemeris()
     d_ISCL5Q = 0.0;
     b_l2c_phasing_flag = false;
 }
+
 
 double Gps_CNAV_Ephemeris::check_t(double time)
 {
@@ -162,7 +163,7 @@ double Gps_CNAV_Ephemeris::sv_clock_relativistic_term(double transmitTime)
     E = M;
 
     // --- Iteratively compute eccentric anomaly ----------------------------
-    for (int ii = 1; ii < 20; ii++)
+    for (int32_t ii = 1; ii < 20; ii++)
         {
             E_old = E;
             E = M + d_e_eccentricity * sin(E);
@@ -232,7 +233,7 @@ double Gps_CNAV_Ephemeris::satellitePosition(double transmitTime)
     E = M;
 
     // --- Iteratively compute eccentric anomaly ----------------------------
-    for (int ii = 1; ii < 20; ii++)
+    for (int32_t ii = 1; ii < 20; ii++)
         {
             E_old = E;
             E = M + d_e_eccentricity * sin(E);

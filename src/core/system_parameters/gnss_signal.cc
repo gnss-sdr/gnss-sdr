@@ -36,10 +36,12 @@ Gnss_Signal::Gnss_Signal()
     this->signal = "";
 }
 
+
 Gnss_Signal::Gnss_Signal(const std::string& signal_)
 {
     this->signal = signal_;
 }
+
 
 Gnss_Signal::Gnss_Signal(const Gnss_Satellite& satellite_, const std::string& signal_)
 {

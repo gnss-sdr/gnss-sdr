@@ -39,7 +39,7 @@
 using google::LogMessage;
 
 // Constructor
-Channel::Channel(ConfigurationInterface* configuration, unsigned int channel,
+Channel::Channel(ConfigurationInterface* configuration, uint32_t channel,
     std::shared_ptr<GNSSBlockInterface> pass_through, std::shared_ptr<AcquisitionInterface> acq,
     std::shared_ptr<TrackingInterface> trk, std::shared_ptr<TelemetryDecoderInterface> nav,
     std::string role, std::string implementation, gr::msg_queue::sptr queue)
@@ -76,9 +76,9 @@ Channel::Channel(ConfigurationInterface* configuration, unsigned int channel,
 
     // IMPORTANT: Do not change the order between set_doppler_step and set_threshold
 
-    unsigned int doppler_step = configuration->property("Acquisition_" + implementation_ + boost::lexical_cast<std::string>(channel_) + ".doppler_step", 0);
+    uint32_t doppler_step = configuration->property("Acquisition_" + implementation_ + boost::lexical_cast<std::string>(channel_) + ".doppler_step", 0);
     if (doppler_step == 0) doppler_step = configuration->property("Acquisition_" + implementation_ + ".doppler_step", 500);
-    if (FLAGS_doppler_step != 0) doppler_step = static_cast<unsigned int>(FLAGS_doppler_step);
+    if (FLAGS_doppler_step != 0) doppler_step = static_cast<uint32_t>(FLAGS_doppler_step);
     DLOG(INFO) << "Channel " << channel_ << " Doppler_step = " << doppler_step;
 
     acq_->set_doppler_step(doppler_step);

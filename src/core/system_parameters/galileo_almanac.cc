@@ -32,7 +32,7 @@
 
 Galileo_Almanac::Galileo_Almanac()
 {
-    /*Word type 7: Almanac for SVID1 (1/2), almanac reference time and almanac reference week number*/
+    // Word type 7: Almanac for SVID1 (1/2), almanac reference time and almanac reference week number
     IOD_a_7 = 0;
     WN_a_7 = 0.0;
     t0a_7 = 0.0;
@@ -45,7 +45,7 @@ Galileo_Almanac::Galileo_Almanac()
     Omega_dot_7 = 0.0;
     M0_7 = 0.0;
 
-    /*Word type 8: Almanac for SVID1 (2/2) and SVID2 (1/2)*/
+    // Word type 8: Almanac for SVID1 (2/2) and SVID2 (1/2)
     IOD_a_8 = 0;
     af0_8 = 0.0;
     af1_8 = 0.0;
@@ -60,7 +60,7 @@ Galileo_Almanac::Galileo_Almanac()
     Omega0_8 = 0.0;
     Omega_dot_8 = 0.0;
 
-    /*Word type 9: Almanac for SVID2 (2/2) and SVID3 (1/2)*/
+    // Word type 9: Almanac for SVID2 (2/2) and SVID3 (1/2)
     IOD_a_9 = 0;
     WN_a_9 = 0.0;
     t0a_9 = 0.0;
@@ -76,7 +76,7 @@ Galileo_Almanac::Galileo_Almanac()
     omega_9 = 0.0;
     delta_i_9 = 0.0;
 
-    /*Word type 10: Almanac for SVID3 (2/2)*/
+    // Word type 10: Almanac for SVID3 (2/2)
     IOD_a_10 = 0;
     Omega0_10 = 0.0;
     Omega_dot_10 = 0.0;
@@ -87,7 +87,7 @@ Galileo_Almanac::Galileo_Almanac()
     E1B_HS_10 = 0.0;
     E5a_HS_10 = 0.0;
 
-    /*GPS to Galileo GST conversion parameters*/
+    // GPS to Galileo GST conversion parameters
     A_0G_10 = 0.0;
     A_1G_10 = 0.0;
     t_0G_10 = 0.0;

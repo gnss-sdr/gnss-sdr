@@ -36,9 +36,9 @@
 #include <gnuradio/fxpt_nco.h>
 
 
-auto auxCeil2 = [](float x) { return static_cast<int>(static_cast<long>((x) + 1)); };
+auto auxCeil2 = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
 
-void complex_exp_gen(std::complex<float>* _dest, double _f, double _fs, unsigned int _samps)
+void complex_exp_gen(std::complex<float>* _dest, double _f, double _fs, uint32_t _samps)
 {
     gr::fxpt_nco d_nco;
     d_nco.set_freq((GPS_TWO_PI * _f) / _fs);
@@ -46,14 +46,15 @@ void complex_exp_gen(std::complex<float>* _dest, double _f, double _fs, unsigned
 }
 
 
-void complex_exp_gen_conj(std::complex<float>* _dest, double _f, double _fs, unsigned int _samps)
+void complex_exp_gen_conj(std::complex<float>* _dest, double _f, double _fs, uint32_t _samps)
 {
     gr::fxpt_nco d_nco;
     d_nco.set_freq(-(GPS_TWO_PI * _f) / _fs);
     d_nco.sincos(_dest, _samps, 1);
 }
 
-void hex_to_binary_converter(int* _dest, char _from)
+
+void hex_to_binary_converter(int32_t* _dest, char _from)
 {
     switch (_from)
         {
@@ -156,15 +157,16 @@ void hex_to_binary_converter(int* _dest, char _from)
         }
 }
 
+
 void resampler(float* _from, float* _dest, float _fs_in,
-    float _fs_out, unsigned int _length_in, unsigned int _length_out)
+    float _fs_out, uint32_t _length_in, uint32_t _length_out)
 {
-    unsigned int _codeValueIndex;
+    uint32_t _codeValueIndex;
     float aux;
     //--- Find time constants --------------------------------------------------
     const float _t_in = 1 / _fs_in;    // Incoming sampling  period in sec
     const float _t_out = 1 / _fs_out;  // Out sampling period in sec
-    for (unsigned int i = 0; i < _length_out - 1; i++)
+    for (uint32_t i = 0; i < _length_out - 1; i++)
         {
             //=== Digitizing =======================================================
             //--- compute index array to read sampled values -------------------------
@@ -179,15 +181,16 @@ void resampler(float* _from, float* _dest, float _fs_in,
     _dest[_length_out - 1] = _from[_length_in - 1];
 }
 
+
 void resampler(std::complex<float>* _from, std::complex<float>* _dest, float _fs_in,
-    float _fs_out, unsigned int _length_in, unsigned int _length_out)
+    float _fs_out, uint32_t _length_in, uint32_t _length_out)
 {
-    unsigned int _codeValueIndex;
+    uint32_t _codeValueIndex;
     float aux;
     //--- Find time constants --------------------------------------------------
     const float _t_in = 1 / _fs_in;    // Incoming sampling  period in sec
     const float _t_out = 1 / _fs_out;  // Out sampling period in sec
-    for (unsigned int i = 0; i < _length_out - 1; i++)
+    for (uint32_t i = 0; i < _length_out - 1; i++)
         {
             //=== Digitizing =======================================================
             //--- compute index array to read sampled values -------------------------

@@ -33,18 +33,18 @@
 
 Galileo_Utc_Model::Galileo_Utc_Model()
 {
-    //valid = false;
-    /*Word type 6: GST-UTC conversion parameters*/
-    A0_6 = 0;
-    A1_6 = 0;
-    Delta_tLS_6 = 0;
-    t0t_6 = 0;
-    WNot_6 = 0;
-    WN_LSF_6 = 0;
-    DN_6 = 0;
-    Delta_tLSF_6 = 0;
+    // Word type 6: GST-UTC conversion parameters
+    A0_6 = 0.0;
+    A1_6 = 0.0;
+    Delta_tLS_6 = 0.0;
+    t0t_6 = 0.0;
+    WNot_6 = 0.0;
+    WN_LSF_6 = 0.0;
+    DN_6 = 0.0;
+    Delta_tLSF_6 = 0.0;
     flag_utc_model = false;
 }
+
 
 double Galileo_Utc_Model::GST_to_UTC_time(double t_e, int WN)
 {
@@ -56,7 +56,7 @@ double Galileo_Utc_Model::GST_to_UTC_time(double t_e, int WN)
 
     if ((weeksToLeapSecondEvent) >= 0)  // is not in the past
         {
-            //Detect if the effectivity time and user's time is within six hours  = 6 * 60 *60 = 21600 s
+            // Detect if the effectivity time and user's time is within six hours  = 6 * 60 *60 = 21600 s
             int secondOfLeapSecondEvent = DN_6 * 24 * 60 * 60;
             if (std::abs(t_e - secondOfLeapSecondEvent) > 21600)
                 {
@@ -74,7 +74,7 @@ double Galileo_Utc_Model::GST_to_UTC_time(double t_e, int WN)
                 {
                     /* 5.1.7b GST->UTC case b
                      * Whenever the user's current time falls within the time span of six hours
-                     * prior to the leap second adjustment to six hours after the adjustment time, ,
+                     * prior to the leap second adjustment to six hours after the adjustment time,
                      * the effective time is computed according to the following equations:
                      */
                     Delta_t_Utc = Delta_tLS_6 + A0_6 + A1_6 * (t_e - t0t_6 + 604800 * static_cast<double>((WN % 256) - WNot_6));

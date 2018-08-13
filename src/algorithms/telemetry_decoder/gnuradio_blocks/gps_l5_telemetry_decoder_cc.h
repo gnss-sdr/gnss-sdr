@@ -35,13 +35,15 @@
 #include "gps_cnav_navigation_message.h"
 #include <gnuradio/block.h>
 #include <algorithm>
+#include <cstdint>
 #include <deque>
 #include <fstream>
 #include <string>
 #include <utility>
 #include <vector>
 
-extern "C" {
+extern "C"
+{
 #include "cnav_msg.h"
 #include "edc.h"
 #include "bits.h"
@@ -65,10 +67,9 @@ class gps_l5_telemetry_decoder_cc : public gr::block
 public:
     ~gps_l5_telemetry_decoder_cc();
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
-    void set_channel(int channel);                        //!< Set receiver's channel
+    void set_channel(int32_t channel);                    //!< Set receiver's channel
     int general_work(int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
-
 
 private:
     friend gps_l5_telemetry_decoder_cc_sptr
@@ -77,15 +78,15 @@ private:
 
     bool d_dump;
     Gnss_Satellite d_satellite;
-    int d_channel;
+    int32_t d_channel;
 
     std::string d_dump_filename;
     std::ofstream d_dump_file;
 
     cnav_msg_decoder_t d_cnav_decoder;
 
-    unsigned int d_TOW_at_current_symbol_ms;
-    unsigned int d_TOW_at_Preamble_ms;
+    uint32_t d_TOW_at_current_symbol_ms;
+    uint32_t d_TOW_at_Preamble_ms;
     bool d_flag_valid_word;
 
     Gps_CNAV_Navigation_Message d_CNAV_Message;

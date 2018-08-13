@@ -35,6 +35,7 @@
 
 #include "gnss_frequencies.h"
 #include "MATH_CONSTANTS.h"
+#include <cstdint>
 #include <map>
 #include <vector>
 #include <utility>  // std::pair
@@ -96,7 +97,7 @@ const double GLONASS_L1_CA_CODE_PERIOD = 0.001;        //!< GLONASS L1 C/A code 
 const double GLONASS_L1_CA_CHIP_PERIOD = 1.9569e-06;   //!< GLONASS L1 C/A chip period [seconds]
 const double GLONASS_L1_CA_SYMBOL_RATE_BPS = 1000;
 
-const int GLONASS_CA_NBR_SATS = 24;  // STRING DATA WITHOUT PREAMBLE
+const int32_t GLONASS_CA_NBR_SATS = 24;  // STRING DATA WITHOUT PREAMBLE
 
 /*!
  * \brief Record of leap seconds definition for GLOT to GPST conversion and vice versa
@@ -125,7 +126,7 @@ const double GLONASS_LEAP_SECONDS[19][7] = {
     {}};
 
 //!< GLONASS SV's orbital slots PRN = (orbital_slot - 1)
-const std::map<unsigned int, int> GLONASS_PRN = {
+const std::map<uint32_t, int32_t> GLONASS_PRN = {
     {
         0,
         8,
@@ -227,7 +228,7 @@ const std::map<unsigned int, int> GLONASS_PRN = {
 const double GLONASS_STARTOFFSET_ms = 68.802;  //[ms] Initial sign. travel time (this cannot go here)
 
 // OBSERVABLE HISTORY DEEP FOR INTERPOLATION
-const int GLONASS_L1_CA_HISTORY_DEEP = 100;
+const int32_t GLONASS_L1_CA_HISTORY_DEEP = 100;
 
 // NAVIGATION MESSAGE DEMODULATION AND DECODING
 #define GLONASS_GNAV_PREAMBLE                                                                    \
@@ -235,96 +236,96 @@ const int GLONASS_L1_CA_HISTORY_DEEP = 100;
         1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0 \
     }
 const double GLONASS_GNAV_PREAMBLE_DURATION_S = 0.300;
-const int GLONASS_GNAV_PREAMBLE_LENGTH_BITS = 30;
-const int GLONASS_GNAV_PREAMBLE_LENGTH_SYMBOLS = 300;
-const int GLONASS_GNAV_PREAMBLE_PERIOD_SYMBOLS = 2000;
-const int GLONASS_GNAV_TELEMETRY_RATE_BITS_SECOND = 50;  //!< NAV message bit rate [bits/s]
-const int GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_BIT = 10;
-const int GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_PREAMBLE_BIT = 10;
-const int GLONASS_GNAV_TELEMETRY_RATE_SYMBOLS_SECOND = GLONASS_GNAV_TELEMETRY_RATE_BITS_SECOND * GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_BIT;  //!< NAV message bit rate [symbols/s]
-const int GLONASS_GNAV_STRING_SYMBOLS = 2000;                                                                                             //!< Number of bits per string in the GNAV message (85 data bits + 30 time mark bits) [bits]
-const int GLONASS_GNAV_STRING_BITS = 85;                                                                                                  //!< Number of bits per string in the GNAV message (85 data bits + 30 time mark bits) [bits]
-const int GLONASS_GNAV_HAMMING_CODE_BITS = 8;                                                                                             //!< Number of bits in hamming code sequence of GNAV message
-const int GLONASS_GNAV_DATA_SYMBOLS = 1700;                                                                                               // STRING DATA WITHOUT PREAMBLE
+const int32_t GLONASS_GNAV_PREAMBLE_LENGTH_BITS = 30;
+const int32_t GLONASS_GNAV_PREAMBLE_LENGTH_SYMBOLS = 300;
+const int32_t GLONASS_GNAV_PREAMBLE_PERIOD_SYMBOLS = 2000;
+const int32_t GLONASS_GNAV_TELEMETRY_RATE_BITS_SECOND = 50;  //!< NAV message bit rate [bits/s]
+const int32_t GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_BIT = 10;
+const int32_t GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_PREAMBLE_BIT = 10;
+const int32_t GLONASS_GNAV_TELEMETRY_RATE_SYMBOLS_SECOND = GLONASS_GNAV_TELEMETRY_RATE_BITS_SECOND * GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_BIT;  //!< NAV message bit rate [symbols/s]
+const int32_t GLONASS_GNAV_STRING_SYMBOLS = 2000;                                                                                             //!< Number of bits per string in the GNAV message (85 data bits + 30 time mark bits) [bits]
+const int32_t GLONASS_GNAV_STRING_BITS = 85;                                                                                                  //!< Number of bits per string in the GNAV message (85 data bits + 30 time mark bits) [bits]
+const int32_t GLONASS_GNAV_HAMMING_CODE_BITS = 8;                                                                                             //!< Number of bits in hamming code sequence of GNAV message
+const int32_t GLONASS_GNAV_DATA_SYMBOLS = 1700;                                                                                               // STRING DATA WITHOUT PREAMBLE
 
-const std::vector<int> GLONASS_GNAV_CRC_I_INDEX{9, 10, 12, 13, 15, 17, 19, 20, 22, 24, 26, 28, 30, 32, 34, 35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63, 65, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84};
-const std::vector<int> GLONASS_GNAV_CRC_J_INDEX{9, 11, 12, 14, 15, 18, 19, 21, 22, 25, 26, 29, 30, 33, 34, 36, 37, 40, 41, 44, 45, 48, 49, 52, 53, 56, 57, 60, 61, 64, 65, 67, 68, 71, 72, 75, 76, 79, 80, 83, 84};
-const std::vector<int> GLONASS_GNAV_CRC_K_INDEX{10, 11, 12, 16, 17, 18, 19, 23, 24, 25, 26, 31, 32, 33, 34, 38, 39, 40, 41, 46, 47, 48, 49, 54, 55, 56, 57, 62, 63, 64, 65, 69, 70, 71, 72, 77, 78, 79, 80, 85};
-const std::vector<int> GLONASS_GNAV_CRC_L_INDEX{13, 14, 15, 16, 17, 18, 19, 27, 28, 29, 30, 31, 32, 33, 34, 42, 43, 44, 45, 46, 47, 48, 49, 58, 59, 60, 61, 62, 63, 64, 65, 73, 74, 75, 76, 77, 78, 79, 80};
-const std::vector<int> GLONASS_GNAV_CRC_M_INDEX{20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 81, 82, 83, 84, 85};
-const std::vector<int> GLONASS_GNAV_CRC_N_INDEX{35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65};
-const std::vector<int> GLONASS_GNAV_CRC_P_INDEX{66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85};
-const std::vector<int> GLONASS_GNAV_CRC_Q_INDEX{9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85};
+const std::vector<int32_t> GLONASS_GNAV_CRC_I_INDEX{9, 10, 12, 13, 15, 17, 19, 20, 22, 24, 26, 28, 30, 32, 34, 35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63, 65, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84};
+const std::vector<int32_t> GLONASS_GNAV_CRC_J_INDEX{9, 11, 12, 14, 15, 18, 19, 21, 22, 25, 26, 29, 30, 33, 34, 36, 37, 40, 41, 44, 45, 48, 49, 52, 53, 56, 57, 60, 61, 64, 65, 67, 68, 71, 72, 75, 76, 79, 80, 83, 84};
+const std::vector<int32_t> GLONASS_GNAV_CRC_K_INDEX{10, 11, 12, 16, 17, 18, 19, 23, 24, 25, 26, 31, 32, 33, 34, 38, 39, 40, 41, 46, 47, 48, 49, 54, 55, 56, 57, 62, 63, 64, 65, 69, 70, 71, 72, 77, 78, 79, 80, 85};
+const std::vector<int32_t> GLONASS_GNAV_CRC_L_INDEX{13, 14, 15, 16, 17, 18, 19, 27, 28, 29, 30, 31, 32, 33, 34, 42, 43, 44, 45, 46, 47, 48, 49, 58, 59, 60, 61, 62, 63, 64, 65, 73, 74, 75, 76, 77, 78, 79, 80};
+const std::vector<int32_t> GLONASS_GNAV_CRC_M_INDEX{20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 81, 82, 83, 84, 85};
+const std::vector<int32_t> GLONASS_GNAV_CRC_N_INDEX{35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65};
+const std::vector<int32_t> GLONASS_GNAV_CRC_P_INDEX{66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85};
+const std::vector<int32_t> GLONASS_GNAV_CRC_Q_INDEX{9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85};
 
 // GLONASS GNAV NAVIGATION MESSAGE STRUCTURE
 // NAVIGATION MESSAGE FIELDS POSITIONS (from IS-GPS-200E Appendix II)
 
 // FRAME 1-4
 // COMMON FIELDS
-const std::vector<std::pair<int, int>> STRING_ID({{2, 4}});
-const std::vector<std::pair<int, int>> KX({{78, 8}});
+const std::vector<std::pair<int32_t, int32_t>> STRING_ID({{2, 4}});
+const std::vector<std::pair<int32_t, int32_t>> KX({{78, 8}});
 //STRING 1
-const std::vector<std::pair<int, int>> P1({{8, 2}});
-const std::vector<std::pair<int, int>> T_K_HR({{10, 5}});
-const std::vector<std::pair<int, int>> T_K_MIN({{15, 6}});
-const std::vector<std::pair<int, int>> T_K_SEC({{21, 1}});
-const std::vector<std::pair<int, int>> X_N_DOT({{22, 24}});
-const std::vector<std::pair<int, int>> X_N_DOT_DOT({{46, 5}});
-const std::vector<std::pair<int, int>> X_N({{51, 27}});
+const std::vector<std::pair<int32_t, int32_t>> P1({{8, 2}});
+const std::vector<std::pair<int32_t, int32_t>> T_K_HR({{10, 5}});
+const std::vector<std::pair<int32_t, int32_t>> T_K_MIN({{15, 6}});
+const std::vector<std::pair<int32_t, int32_t>> T_K_SEC({{21, 1}});
+const std::vector<std::pair<int32_t, int32_t>> X_N_DOT({{22, 24}});
+const std::vector<std::pair<int32_t, int32_t>> X_N_DOT_DOT({{46, 5}});
+const std::vector<std::pair<int32_t, int32_t>> X_N({{51, 27}});
 
 //STRING 2
-const std::vector<std::pair<int, int>> B_N({{6, 3}});
-const std::vector<std::pair<int, int>> P2({{9, 1}});
-const std::vector<std::pair<int, int>> T_B({{10, 7}});
-const std::vector<std::pair<int, int>> Y_N_DOT({{22, 24}});
-const std::vector<std::pair<int, int>> Y_N_DOT_DOT({{46, 5}});
-const std::vector<std::pair<int, int>> Y_N({{51, 27}});
+const std::vector<std::pair<int32_t, int32_t>> B_N({{6, 3}});
+const std::vector<std::pair<int32_t, int32_t>> P2({{9, 1}});
+const std::vector<std::pair<int32_t, int32_t>> T_B({{10, 7}});
+const std::vector<std::pair<int32_t, int32_t>> Y_N_DOT({{22, 24}});
+const std::vector<std::pair<int32_t, int32_t>> Y_N_DOT_DOT({{46, 5}});
+const std::vector<std::pair<int32_t, int32_t>> Y_N({{51, 27}});
 
 //STRING 3
-const std::vector<std::pair<int, int>> P3({{6, 1}});
-const std::vector<std::pair<int, int>> GAMMA_N({{7, 11}});
-const std::vector<std::pair<int, int>> P({{19, 2}});
-const std::vector<std::pair<int, int>> EPH_L_N({{21, 1}});
-const std::vector<std::pair<int, int>> Z_N_DOT({{22, 24}});
-const std::vector<std::pair<int, int>> Z_N_DOT_DOT({{46, 5}});
-const std::vector<std::pair<int, int>> Z_N({{51, 27}});
+const std::vector<std::pair<int32_t, int32_t>> P3({{6, 1}});
+const std::vector<std::pair<int32_t, int32_t>> GAMMA_N({{7, 11}});
+const std::vector<std::pair<int32_t, int32_t>> P({{19, 2}});
+const std::vector<std::pair<int32_t, int32_t>> EPH_L_N({{21, 1}});
+const std::vector<std::pair<int32_t, int32_t>> Z_N_DOT({{22, 24}});
+const std::vector<std::pair<int32_t, int32_t>> Z_N_DOT_DOT({{46, 5}});
+const std::vector<std::pair<int32_t, int32_t>> Z_N({{51, 27}});
 
 // STRING 4
-const std::vector<std::pair<int, int>> TAU_N({{6, 22}});
-const std::vector<std::pair<int, int>> DELTA_TAU_N({{28, 5}});
-const std::vector<std::pair<int, int>> E_N({{33, 5}});
-const std::vector<std::pair<int, int>> P4({{52, 1}});
-const std::vector<std::pair<int, int>> F_T({{53, 4}});
-const std::vector<std::pair<int, int>> N_T({{60, 11}});
-const std::vector<std::pair<int, int>> N({{71, 5}});
-const std::vector<std::pair<int, int>> M({{76, 2}});
+const std::vector<std::pair<int32_t, int32_t>> TAU_N({{6, 22}});
+const std::vector<std::pair<int32_t, int32_t>> DELTA_TAU_N({{28, 5}});
+const std::vector<std::pair<int32_t, int32_t>> E_N({{33, 5}});
+const std::vector<std::pair<int32_t, int32_t>> P4({{52, 1}});
+const std::vector<std::pair<int32_t, int32_t>> F_T({{53, 4}});
+const std::vector<std::pair<int32_t, int32_t>> N_T({{60, 11}});
+const std::vector<std::pair<int32_t, int32_t>> N({{71, 5}});
+const std::vector<std::pair<int32_t, int32_t>> M({{76, 2}});
 
 // STRING 5
-const std::vector<std::pair<int, int>> N_A({{6, 11}});
-const std::vector<std::pair<int, int>> TAU_C({{17, 32}});
-const std::vector<std::pair<int, int>> N_4({{50, 5}});
-const std::vector<std::pair<int, int>> TAU_GPS({{55, 22}});
-const std::vector<std::pair<int, int>> ALM_L_N({{77, 1}});
+const std::vector<std::pair<int32_t, int32_t>> N_A({{6, 11}});
+const std::vector<std::pair<int32_t, int32_t>> TAU_C({{17, 32}});
+const std::vector<std::pair<int32_t, int32_t>> N_4({{50, 5}});
+const std::vector<std::pair<int32_t, int32_t>> TAU_GPS({{55, 22}});
+const std::vector<std::pair<int32_t, int32_t>> ALM_L_N({{77, 1}});
 
 // STRING 6, 8, 10, 12, 14
-const std::vector<std::pair<int, int>> C_N({{6, 1}});
-const std::vector<std::pair<int, int>> M_N_A({{7, 2}});
-const std::vector<std::pair<int, int>> n_A({{9, 5}});
-const std::vector<std::pair<int, int>> TAU_N_A({{14, 10}});
-const std::vector<std::pair<int, int>> LAMBDA_N_A({{24, 21}});
-const std::vector<std::pair<int, int>> DELTA_I_N_A({{45, 18}});
-const std::vector<std::pair<int, int>> EPSILON_N_A({{63, 15}});
+const std::vector<std::pair<int32_t, int32_t>> C_N({{6, 1}});
+const std::vector<std::pair<int32_t, int32_t>> M_N_A({{7, 2}});
+const std::vector<std::pair<int32_t, int32_t>> n_A({{9, 5}});
+const std::vector<std::pair<int32_t, int32_t>> TAU_N_A({{14, 10}});
+const std::vector<std::pair<int32_t, int32_t>> LAMBDA_N_A({{24, 21}});
+const std::vector<std::pair<int32_t, int32_t>> DELTA_I_N_A({{45, 18}});
+const std::vector<std::pair<int32_t, int32_t>> EPSILON_N_A({{63, 15}});
 
 //STRING 7, 9, 11, 13, 15
-const std::vector<std::pair<int, int>> OMEGA_N_A({{6, 16}});
-const std::vector<std::pair<int, int>> T_LAMBDA_N_A({{22, 21}});
-const std::vector<std::pair<int, int>> DELTA_T_N_A({{43, 22}});
-const std::vector<std::pair<int, int>> DELTA_T_DOT_N_A({{65, 7}});
-const std::vector<std::pair<int, int>> H_N_A({{72, 5}});
+const std::vector<std::pair<int32_t, int32_t>> OMEGA_N_A({{6, 16}});
+const std::vector<std::pair<int32_t, int32_t>> T_LAMBDA_N_A({{22, 21}});
+const std::vector<std::pair<int32_t, int32_t>> DELTA_T_N_A({{43, 22}});
+const std::vector<std::pair<int32_t, int32_t>> DELTA_T_DOT_N_A({{65, 7}});
+const std::vector<std::pair<int32_t, int32_t>> H_N_A({{72, 5}});
 
 // STRING 14 FRAME 5
-const std::vector<std::pair<int, int>> B1({{6, 11}});
-const std::vector<std::pair<int, int>> B2({{17, 10}});
+const std::vector<std::pair<int32_t, int32_t>> B1({{6, 11}});
+const std::vector<std::pair<int32_t, int32_t>> B2({{17, 10}});
 
 
 #endif /* GNSS_SDR_GLONASS_L1_L2_CA_H_ */

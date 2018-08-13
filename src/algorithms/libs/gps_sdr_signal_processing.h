@@ -34,20 +34,21 @@
 #define GNSS_SDR_GPS_SDR_SIGNAL_PROCESSING_H_
 
 #include <complex>
+#include <cstdint>
 
-//!Generates int GPS L1 C/A code for the desired SV ID and code shift
-void gps_l1_ca_code_gen_int(int* _dest, signed int _prn, unsigned int _chip_shift);
+//! Generates int GPS L1 C/A code for the desired SV ID and code shift
+void gps_l1_ca_code_gen_int(int32_t* _dest, int32_t _prn, uint32_t _chip_shift);
 
-//!Generates float GPS L1 C/A code for the desired SV ID and code shift
-void gps_l1_ca_code_gen_float(float* _dest, signed int _prn, unsigned int _chip_shift);
+//! Generates float GPS L1 C/A code for the desired SV ID and code shift
+void gps_l1_ca_code_gen_float(float* _dest, int32_t _prn, uint32_t _chip_shift);
 
-//!Generates complex GPS L1 C/A code for the desired SV ID and code shift, and sampled to specific sampling frequency
-void gps_l1_ca_code_gen_complex(std::complex<float>* _dest, signed int _prn, unsigned int _chip_shift);
+//! Generates complex GPS L1 C/A code for the desired SV ID and code shift, and sampled to specific sampling frequency
+void gps_l1_ca_code_gen_complex(std::complex<float>* _dest, int32_t _prn, uint32_t _chip_shift);
 
 //! Generates N complex GPS L1 C/A codes for the desired SV ID and code shift
-void gps_l1_ca_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, signed int _fs, unsigned int _chip_shift, unsigned int _ncodes);
+void gps_l1_ca_code_gen_complex_sampled(std::complex<float>* _dest, uint32_t _prn, int32_t _fs, uint32_t _chip_shift, uint32_t _ncodes);
 
 //! Generates complex GPS L1 C/A code for the desired SV ID and code shift
-void gps_l1_ca_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, signed int _fs, unsigned int _chip_shift);
+void gps_l1_ca_code_gen_complex_sampled(std::complex<float>* _dest, uint32_t _prn, int32_t _fs, uint32_t _chip_shift);
 
 #endif /* GNSS_SDR_GPS_SDR_SIGNAL_PROCESSING_H_ */

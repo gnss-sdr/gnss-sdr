@@ -61,7 +61,7 @@ class glonass_l2_ca_telemetry_decoder_cc : public gr::block
 public:
     ~glonass_l2_ca_telemetry_decoder_cc();                //!< Class destructor
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
-    void set_channel(int channel);                        //!< Set receiver's channel
+    void set_channel(int32_t channel);                    //!< Set receiver's channel
 
     /*!
      * \brief This is where all signal processing takes place
@@ -74,30 +74,30 @@ private:
     glonass_l2_ca_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
     glonass_l2_ca_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
 
-    void decode_string(double *symbols, int frame_length);
+    void decode_string(double *symbols, int32_t frame_length);
 
     //!< Help with coherent tracking
     double d_preamble_time_samples;
 
     //!< Preamble decoding
-    unsigned short int d_preambles_bits[GLONASS_GNAV_PREAMBLE_LENGTH_BITS];
-    int *d_preambles_symbols;
-    unsigned int d_samples_per_symbol;
-    int d_symbols_per_preamble;
+    uint16_t d_preambles_bits[GLONASS_GNAV_PREAMBLE_LENGTH_BITS];
+    int32_t *d_preambles_symbols;
+    uint32_t d_samples_per_symbol;
+    int32_t d_symbols_per_preamble;
 
     //!< Storage for incoming data
     std::deque<Gnss_Synchro> d_symbol_history;
 
     //!< Variables for internal functionality
-    uint64_t d_sample_counter;  //!< Sample counter as an index (1,2,3,..etc) indicating number of samples processed
-    uint64_t d_preamble_index;  //!< Index of sample number where preamble was found
-    unsigned int d_stat;        //!< Status of decoder
-    bool d_flag_frame_sync;     //!< Indicate when a frame sync is achieved
-    bool d_flag_parity;         //!< Flag indicating when parity check was achieved (crc check)
-    bool d_flag_preamble;       //!< Flag indicating when preamble was found
-    int d_CRC_error_counter;    //!< Number of failed CRC operations
-    bool flag_TOW_set;          //!< Indicates when time of week is set
-    double delta_t;             //!< GPS-GLONASS time offset
+    uint64_t d_sample_counter;    //!< Sample counter as an index (1,2,3,..etc) indicating number of samples processed
+    uint64_t d_preamble_index;    //!< Index of sample number where preamble was found
+    uint32_t d_stat;              //!< Status of decoder
+    bool d_flag_frame_sync;       //!< Indicate when a frame sync is achieved
+    bool d_flag_parity;           //!< Flag indicating when parity check was achieved (crc check)
+    bool d_flag_preamble;         //!< Flag indicating when preamble was found
+    int32_t d_CRC_error_counter;  //!< Number of failed CRC operations
+    bool flag_TOW_set;            //!< Indicates when time of week is set
+    double delta_t;               //!< GPS-GLONASS time offset
 
     //!< Navigation Message variable
     Glonass_Gnav_Navigation_Message d_nav;
@@ -108,7 +108,7 @@ private:
 
     //!< Satellite Information and logging capacity
     Gnss_Satellite d_satellite;
-    int d_channel;
+    int32_t d_channel;
     bool d_dump;
     std::string d_dump_filename;
     std::ofstream d_dump_file;

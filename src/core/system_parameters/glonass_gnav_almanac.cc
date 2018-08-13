@@ -35,8 +35,8 @@
 Glonass_Gnav_Almanac::Glonass_Gnav_Almanac()
 {
     i_satellite_freq_channel = 0;
-    i_satellite_PRN = 0;
-    i_satellite_slot_number = 0;
+    i_satellite_PRN = 0U;
+    i_satellite_slot_number = 0U;
 
     d_n_A = 0.0;
     d_H_n_A = 0.0;

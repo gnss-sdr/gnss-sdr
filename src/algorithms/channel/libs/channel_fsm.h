@@ -36,6 +36,7 @@
 #include "tracking_interface.h"
 #include "telemetry_decoder_interface.h"
 #include <gnuradio/msg_queue.h>
+#include <cstdint>
 #include <memory>
 #include <mutex>
 
@@ -52,7 +53,7 @@ public:
     void set_acquisition(std::shared_ptr<AcquisitionInterface> acquisition);
     void set_tracking(std::shared_ptr<TrackingInterface> tracking);
     void set_queue(gr::msg_queue::sptr queue);
-    void set_channel(unsigned int channel);
+    void set_channel(uint32_t channel);
 
     //FSM EVENTS
     bool Event_start_acquisition();
@@ -70,8 +71,8 @@ private:
     std::shared_ptr<AcquisitionInterface> acq_;
     std::shared_ptr<TrackingInterface> trk_;
     gr::msg_queue::sptr queue_;
-    unsigned int channel_;
-    unsigned int d_state;
+    uint32_t channel_;
+    uint32_t d_state;
     std::mutex mx;
 };
 

@@ -37,11 +37,11 @@
 #include <gnuradio/gr_complex.h>
 
 
-void galileo_e5_a_code_gen_complex_primary(std::complex<float>* _dest, signed int _prn, char _Signal[3])
+void galileo_e5_a_code_gen_complex_primary(std::complex<float>* _dest, int32_t _prn, char _Signal[3])
 {
-    unsigned int prn = _prn - 1;
-    unsigned int index = 0;
-    int a[4];
+    uint32_t prn = _prn - 1;
+    uint32_t index = 0;
+    int32_t a[4];
     if ((_prn < 1) || (_prn > 50))
         {
             return;
@@ -80,7 +80,7 @@ void galileo_e5_a_code_gen_complex_primary(std::complex<float>* _dest, signed in
         }
     else if (_Signal[0] == '5' && _Signal[1] == 'X')
         {
-            int b[4];
+            int32_t b[4];
             for (size_t i = 0; i < Galileo_E5a_I_PRIMARY_CODE[prn].length() - 1; i++)
                 {
                     hex_to_binary_converter(a, Galileo_E5a_I_PRIMARY_CODE[prn].at(i));
@@ -99,19 +99,20 @@ void galileo_e5_a_code_gen_complex_primary(std::complex<float>* _dest, signed in
         }
 }
 
+
 void galileo_e5_a_code_gen_complex_sampled(std::complex<float>* _dest, char _Signal[3],
-    unsigned int _prn, signed int _fs, unsigned int _chip_shift)
+    uint32_t _prn, int32_t _fs, uint32_t _chip_shift)
 {
-    unsigned int _samplesPerCode;
-    unsigned int delay;
-    const unsigned int _codeLength = Galileo_E5a_CODE_LENGTH_CHIPS;
-    const int _codeFreqBasis = Galileo_E5a_CODE_CHIP_RATE_HZ;
+    uint32_t _samplesPerCode;
+    uint32_t delay;
+    const uint32_t _codeLength = Galileo_E5a_CODE_LENGTH_CHIPS;
+    const int32_t _codeFreqBasis = Galileo_E5a_CODE_CHIP_RATE_HZ;
 
     std::complex<float>* _code = new std::complex<float>[_codeLength]();
 
     galileo_e5_a_code_gen_complex_primary(_code, _prn, _Signal);
 
-    _samplesPerCode = static_cast<unsigned int>(static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis) / static_cast<double>(_codeLength)));
+    _samplesPerCode = static_cast<uint32_t>(static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis) / static_cast<double>(_codeLength)));
 
     delay = ((_codeLength - _chip_shift) % _codeLength) * _samplesPerCode / _codeLength;
 
@@ -121,12 +122,12 @@ void galileo_e5_a_code_gen_complex_sampled(std::complex<float>* _dest, char _Sig
             if (posix_memalign((void**)&_resampled_signal, 16, _samplesPerCode * sizeof(gr_complex)) == 0)
                 {
                 };
-            resampler(_code, _resampled_signal, _codeFreqBasis, _fs, _codeLength, _samplesPerCode);  //resamples code to fs
+            resampler(_code, _resampled_signal, _codeFreqBasis, _fs, _codeLength, _samplesPerCode);  // resamples code to fs
             delete[] _code;
             _code = _resampled_signal;
         }
 
-    for (unsigned int i = 0; i < _samplesPerCode; i++)
+    for (uint32_t i = 0; i < _samplesPerCode; i++)
         {
             _dest[(i + delay) % _samplesPerCode] = _code[i];
         }

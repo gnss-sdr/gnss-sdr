@@ -60,7 +60,7 @@ class Channel : public ChannelInterface
 {
 public:
     //! Constructor
-    Channel(ConfigurationInterface* configuration, unsigned int channel,
+    Channel(ConfigurationInterface* configuration, uint32_t channel,
         std::shared_ptr<GNSSBlockInterface> pass_through, std::shared_ptr<AcquisitionInterface> acq,
         std::shared_ptr<TrackingInterface> trk, std::shared_ptr<TelemetryDecoderInterface> nav,
         std::string role, std::string implementation, gr::msg_queue::sptr queue);
@@ -99,7 +99,7 @@ private:
     std::string role_;
     std::string implementation_;
     bool flag_enable_fpga;
-    unsigned int channel_;
+    uint32_t channel_;
     Gnss_Synchro gnss_synchro_;
     Gnss_Signal gnss_signal_;
     bool connected_;

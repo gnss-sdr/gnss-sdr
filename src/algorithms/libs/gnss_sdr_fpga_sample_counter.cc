@@ -45,12 +45,12 @@ gnss_sdr_fpga_sample_counter::gnss_sdr_fpga_sample_counter(double _fs, int32_t _
     interval_ms = _interval_ms;
     fs = _fs;
     samples_per_output = std::round(fs * static_cast<double>(interval_ms) / 1e3);
-    //todo: Load here the hardware counter register with this amount of samples. It should produde an
+    //todo: Load here the hardware counter register with this amount of samples. It should produce an
     //interrupt every samples_per_output count.
-    //The hardware timmer must keep always interrupting the PS. It must not wait for the interrupt to
+    //The hardware timer must keep always interrupting the PS. It must not wait for the interrupt to
     //be served.
 
-    sample_counter = 0;
+    sample_counter = 0ULL;
     current_T_rx_ms = 0;
     current_s = 0;
     current_m = 0;

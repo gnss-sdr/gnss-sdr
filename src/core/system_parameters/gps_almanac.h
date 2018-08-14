@@ -32,6 +32,7 @@
 #ifndef GNSS_SDR_GPS_ALMANAC_H_
 #define GNSS_SDR_GPS_ALMANAC_H_
 
+#include <cstdint>
 
 /*!
  * \brief This class is a storage for the GPS SV ALMANAC data as described in IS-GPS-200E
@@ -41,7 +42,7 @@
 class Gps_Almanac
 {
 public:
-    unsigned int i_satellite_PRN;  //!< SV PRN NUMBER
+    uint32_t i_satellite_PRN;  //!< SV PRN NUMBER
     double d_Delta_i;
     double d_Toa;             //!< Almanac data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
     double d_M_0;             //!< Mean Anomaly at Reference Time [semi-circles]
@@ -50,7 +51,7 @@ public:
     double d_OMEGA0;          //!< Longitude of Ascending Node of Orbit Plane at Weekly Epoch [semi-circles]
     double d_OMEGA;           //!< Argument of Perigee [semi-cicles]
     double d_OMEGA_DOT;       //!< Rate of Right Ascension [semi-circles/s]
-    int i_SV_health;          // SV Health
+    int32_t i_SV_health;      // SV Health
     double d_A_f0;            //!< Coefficient 0 of code phase offset model [s]
     double d_A_f1;            //!< Coefficient 1 of code phase offset model [s/s]
 

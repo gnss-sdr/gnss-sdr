@@ -65,18 +65,18 @@ glonass_l1_ca_telemetry_decoder_cc::glonass_l1_ca_telemetry_decoder_cc(
     d_samples_per_symbol = (GLONASS_L1_CA_CODE_RATE_HZ / GLONASS_L1_CA_CODE_LENGTH_CHIPS) / GLONASS_L1_CA_SYMBOL_RATE_BPS;
 
     // Set the preamble information
-    unsigned short int preambles_bits[GLONASS_GNAV_PREAMBLE_LENGTH_BITS] = GLONASS_GNAV_PREAMBLE;
+    uint16_t preambles_bits[GLONASS_GNAV_PREAMBLE_LENGTH_BITS] = GLONASS_GNAV_PREAMBLE;
     // Since preamble rate is different than navigation data rate we use a constant
     d_symbols_per_preamble = GLONASS_GNAV_PREAMBLE_LENGTH_SYMBOLS;
 
-    memcpy(static_cast<unsigned short int *>(this->d_preambles_bits), static_cast<unsigned short int *>(preambles_bits), GLONASS_GNAV_PREAMBLE_LENGTH_BITS * sizeof(unsigned short int));
+    memcpy(static_cast<uint16_t *>(this->d_preambles_bits), static_cast<uint16_t *>(preambles_bits), GLONASS_GNAV_PREAMBLE_LENGTH_BITS * sizeof(uint16_t));
 
     // preamble bits to sampled symbols
-    d_preambles_symbols = static_cast<signed int *>(malloc(sizeof(signed int) * d_symbols_per_preamble));
-    int n = 0;
-    for (int i = 0; i < GLONASS_GNAV_PREAMBLE_LENGTH_BITS; i++)
+    d_preambles_symbols = static_cast<int32_t *>(malloc(sizeof(int32_t) * d_symbols_per_preamble));
+    int32_t n = 0;
+    for (int32_t i = 0; i < GLONASS_GNAV_PREAMBLE_LENGTH_BITS; i++)
         {
-            for (unsigned int j = 0; j < GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_PREAMBLE_BIT; j++)
+            for (uint32_t j = 0; j < GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_PREAMBLE_BIT; j++)
                 {
                     if (d_preambles_bits[i] == 1)
                         {
@@ -89,9 +89,9 @@ glonass_l1_ca_telemetry_decoder_cc::glonass_l1_ca_telemetry_decoder_cc(
                     n++;
                 }
         }
-    d_sample_counter = 0;
+    d_sample_counter = 0ULL;
     d_stat = 0;
-    d_preamble_index = 0;
+    d_preamble_index = 0ULL;
 
     d_flag_frame_sync = false;
 
@@ -124,10 +124,10 @@ glonass_l1_ca_telemetry_decoder_cc::~glonass_l1_ca_telemetry_decoder_cc()
 }
 
 
-void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols, int frame_length)
+void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols, int32_t frame_length)
 {
     double chip_acc = 0.0;
-    int chip_acc_counter = 0;
+    int32_t chip_acc_counter = 0;
 
     // 1. Transform from symbols to bits
     std::string bi_binary_code;
@@ -135,7 +135,7 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols, in
     std::string data_bits;
 
     // Group samples into bi-binary code
-    for (int i = 0; i < (frame_length); i++)
+    for (int32_t i = 0; i < (frame_length); i++)
         {
             chip_acc += frame_symbols[i];
             chip_acc_counter += 1;
@@ -157,7 +157,7 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols, in
                 }
         }
     // Convert from bi-binary code to relative code
-    for (int i = 0; i < (GLONASS_GNAV_STRING_BITS); i++)
+    for (int32_t i = 0; i < (GLONASS_GNAV_STRING_BITS); i++)
         {
             if (bi_binary_code[2 * i] == '1' && bi_binary_code[2 * i + 1] == '0')
                 {
@@ -170,7 +170,7 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols, in
         }
     // Convert from relative code to data bits
     data_bits.push_back('0');
-    for (int i = 1; i < (GLONASS_GNAV_STRING_BITS); i++)
+    for (int32_t i = 1; i < (GLONASS_GNAV_STRING_BITS); i++)
         {
             data_bits.push_back(((relative_code[i - 1] - '0') ^ (relative_code[i] - '0')) + '0');
         }
@@ -207,7 +207,7 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols, in
         }
     if (d_nav.have_new_almanac() == true)
         {
-            unsigned int slot_nbr = d_nav.i_alm_satellite_slot_number;
+            uint32_t slot_nbr = d_nav.i_alm_satellite_slot_number;
             std::shared_ptr<Glonass_Gnav_Almanac> tmp_obj = std::make_shared<Glonass_Gnav_Almanac>(d_nav.get_almanac(slot_nbr));
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "GLONASS GNAV Almanac have been received in channel" << d_channel << " in slot number " << slot_nbr;
@@ -232,7 +232,7 @@ void glonass_l1_ca_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &sat
 }
 
 
-void glonass_l1_ca_telemetry_decoder_cc::set_channel(int channel)
+void glonass_l1_ca_telemetry_decoder_cc::set_channel(int32_t channel)
 {
     d_channel = channel;
     LOG(INFO) << "Navigation channel set to " << channel;
@@ -262,8 +262,8 @@ void glonass_l1_ca_telemetry_decoder_cc::set_channel(int channel)
 int glonass_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
-    int corr_value = 0;
-    int preamble_diff = 0;
+    int32_t corr_value = 0;
+    int32_t preamble_diff = 0;
 
     Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);            // Get the output buffer pointer
     const Gnss_Synchro **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);  // Get the input buffer pointer
@@ -276,12 +276,12 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
     consume_each(1);
 
     d_flag_preamble = false;
-    unsigned int required_symbols = GLONASS_GNAV_STRING_SYMBOLS;
+    uint32_t required_symbols = GLONASS_GNAV_STRING_SYMBOLS;
 
     if (d_symbol_history.size() > required_symbols)
         {
             // ******* preamble correlation ********
-            for (int i = 0; i < d_symbols_per_preamble; i++)
+            for (int32_t i = 0; i < d_symbols_per_preamble; i++)
                 {
                     if (d_symbol_history.at(i).Prompt_I < 0)  // symbols clipping
                         {
@@ -312,9 +312,9 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
             if (abs(corr_value) >= d_symbols_per_preamble)
                 {
                     // check preamble separation
-                    preamble_diff = d_sample_counter - d_preamble_index;
+                    preamble_diff = static_cast<int32_t>(d_sample_counter - d_preamble_index);
                     // Record the PRN start sample index associated to the preamble
-                    d_preamble_time_samples = d_symbol_history.at(0).Tracking_sample_counter;
+                    d_preamble_time_samples = static_cast<double>(d_symbol_history.at(0).Tracking_sample_counter);
                     if (abs(preamble_diff - GLONASS_GNAV_PREAMBLE_PERIOD_SYMBOLS) == 0)
                         {
                             // try to decode frame
@@ -335,15 +335,15 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
     else if (d_stat == 2)
         {
             // FIXME: The preamble index marks the first symbol of the string count. Here I just wait for another full string to be received before processing
-            if (d_sample_counter == d_preamble_index + GLONASS_GNAV_STRING_SYMBOLS)
+            if (d_sample_counter == d_preamble_index + static_cast<uint64_t>(GLONASS_GNAV_STRING_SYMBOLS))
                 {
                     // NEW GLONASS string received
                     // 0. fetch the symbols into an array
-                    int string_length = GLONASS_GNAV_STRING_SYMBOLS - d_symbols_per_preamble;
+                    int32_t string_length = GLONASS_GNAV_STRING_SYMBOLS - d_symbols_per_preamble;
                     double string_symbols[GLONASS_GNAV_DATA_SYMBOLS] = {0};
 
                     // ******* SYMBOL TO BIT *******
-                    for (int i = 0; i < string_length; i++)
+                    for (int32_t i = 0; i < string_length; i++)
                         {
                             if (corr_value > 0)
                                 {
@@ -415,7 +415,7 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
     current_symbol.PRN = this->d_satellite.get_PRN();
     current_symbol.TOW_at_current_symbol_ms = round(d_TOW_at_current_symbol * 1000.0);
     // todo: glonass time to gps time should be done in observables block
-    // current_symbol.TOW_at_current_symbol_ms -= -= static_cast<unsigned int>(delta_t) * 1000;  // Galileo to GPS TOW
+    // current_symbol.TOW_at_current_symbol_ms -= -= static_cast<uint32_t>(delta_t) * 1000;  // Galileo to GPS TOW
 
     if (d_dump == true)
         {

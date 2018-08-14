@@ -62,14 +62,14 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
 
     // set the preamble
-    unsigned short int preambles_bits[GPS_CA_PREAMBLE_LENGTH_BITS] = GPS_PREAMBLE;
+    uint16_t preambles_bits[GPS_CA_PREAMBLE_LENGTH_BITS] = GPS_PREAMBLE;
 
     // preamble bits to sampled symbols
-    d_preambles_symbols = static_cast<int *>(volk_gnsssdr_malloc(GPS_CA_PREAMBLE_LENGTH_SYMBOLS * sizeof(int), volk_gnsssdr_get_alignment()));
-    int n = 0;
-    for (int i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
+    d_preambles_symbols = static_cast<int32_t *>(volk_gnsssdr_malloc(GPS_CA_PREAMBLE_LENGTH_SYMBOLS * sizeof(int32_t), volk_gnsssdr_get_alignment()));
+    int32_t n = 0;
+    for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
         {
-            for (unsigned int j = 0; j < GPS_CA_TELEMETRY_SYMBOLS_PER_BIT; j++)
+            for (uint32_t j = 0; j < GPS_CA_TELEMETRY_SYMBOLS_PER_BIT; j++)
                 {
                     if (preambles_bits[i] == 1)
                         {
@@ -91,7 +91,7 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     d_flag_new_tow_available = false;
     d_channel = 0;
     flag_PLL_180_deg_phase_locked = false;
-    d_preamble_time_samples = 0;
+    d_preamble_time_samples = 0ULL;
     d_TOW_at_current_symbol_ms = 0;
     d_symbol_history.resize(GPS_CA_PREAMBLE_LENGTH_SYMBOLS);  // Change fixed buffer size
     d_symbol_history.clear();                                 // Clear all the elements in the buffer
@@ -117,13 +117,13 @@ gps_l1_ca_telemetry_decoder_cc::~gps_l1_ca_telemetry_decoder_cc()
 }
 
 
-bool gps_l1_ca_telemetry_decoder_cc::gps_word_parityCheck(unsigned int gpsword)
+bool gps_l1_ca_telemetry_decoder_cc::gps_word_parityCheck(uint32_t gpsword)
 {
-    unsigned int d1, d2, d3, d4, d5, d6, d7, t, parity;
-    /* XOR as many bits in parallel as possible.  The magic constants pick
-       up bits which are to be XOR'ed together to implement the GPS parity
-       check algorithm described in IS-GPS-200E.  This avoids lengthy shift-
-       and-xor loops. */
+    uint32_t d1, d2, d3, d4, d5, d6, d7, t, parity;
+    // XOR as many bits in parallel as possible.  The magic constants pick
+    //   up bits which are to be XOR'ed together to implement the GPS parity
+    //   check algorithm described in IS-GPS-200E.  This avoids lengthy shift-
+    //   and-xor loops.
     d1 = gpsword & 0xFBFFBF00;
     d2 = _rotl(gpsword, 1) & 0x07FFBF01;
     d3 = _rotl(gpsword, 2) & 0xFC0F8100;
@@ -152,7 +152,7 @@ void gps_l1_ca_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satelli
 }
 
 
-void gps_l1_ca_telemetry_decoder_cc::set_channel(int channel)
+void gps_l1_ca_telemetry_decoder_cc::set_channel(int32_t channel)
 {
     d_channel = channel;
     d_nav.i_channel_ID = channel;
@@ -185,28 +185,28 @@ bool gps_l1_ca_telemetry_decoder_cc::decode_subframe()
 {
     char subframe[GPS_SUBFRAME_LENGTH];
 
-    int symbol_accumulator_counter = 0;
-    int frame_bit_index = 0;
-    int word_index = 0;
+    int32_t symbol_accumulator_counter = 0;
+    int32_t frame_bit_index = 0;
+    int32_t word_index = 0;
     uint32_t GPS_frame_4bytes = 0;
     float symbol_accumulator = 0;
     bool subframe_synchro_confirmation = false;
     bool CRC_ok = true;
 
-    for (int n = 0; n < GPS_SUBFRAME_MS; n++)
+    for (int32_t n = 0; n < GPS_SUBFRAME_MS; n++)
         {
-            //******* SYMBOL TO BIT *******
+            // ******* SYMBOL TO BIT *******
             // extended correlation to bit period is enabled in tracking!
             symbol_accumulator += d_subframe_symbols[n];  // accumulate the input value in d_symbol_accumulator
             symbol_accumulator_counter++;
             if (symbol_accumulator_counter == 20)
                 {
-                    //symbol to bit
-                    if (symbol_accumulator > 0) GPS_frame_4bytes += 1;  //insert the telemetry bit in LSB
+                    // symbol to bit
+                    if (symbol_accumulator > 0) GPS_frame_4bytes += 1;  // insert the telemetry bit in LSB
                     symbol_accumulator = 0;
                     symbol_accumulator_counter = 0;
 
-                    //******* bits to words ******
+                    // ******* bits to words ******
                     frame_bit_index++;
                     if (frame_bit_index == 30)
                         {
@@ -224,8 +224,8 @@ bool gps_l1_ca_telemetry_decoder_cc::decode_subframe()
                                 {
                                     GPS_frame_4bytes = GPS_frame_4bytes | 0x80000000;
                                 }
-                            /* Check that the 2 most recently logged words pass parity. Have to first
-                      invert the data bits according to bit 30 of the previous word. */
+                            // Check that the 2 most recently logged words pass parity. Have to first
+                            // invert the data bits according to bit 30 of the previous word.
                             if (GPS_frame_4bytes & 0x40000000)
                                 {
                                     GPS_frame_4bytes ^= 0x3FFFFFC0;  // invert the data bits (using XOR)
@@ -236,10 +236,10 @@ bool gps_l1_ca_telemetry_decoder_cc::decode_subframe()
                                 }
                             else
                                 {
-                                    //std::cout << "word invalid sat " << this->d_satellite << std::endl;
+                                    // std::cout << "word invalid sat " << this->d_satellite << std::endl;
                                     CRC_ok = false;
                                 }
-                            //add word to subframe
+                            // add word to subframe
                             // insert the word in the correct position of the subframe
                             std::memcpy(&subframe[word_index * GPS_WORD_LENGTH], &GPS_frame_4bytes, sizeof(uint32_t));
                             word_index++;
@@ -248,17 +248,16 @@ bool gps_l1_ca_telemetry_decoder_cc::decode_subframe()
                         }
                     else
                         {
-                            GPS_frame_4bytes <<= 1;  //shift 1 bit left the telemetry word
+                            GPS_frame_4bytes <<= 1;  // shift 1 bit left the telemetry word
                         }
                 }
         }
 
-
-    //decode subframe
+    // decode subframe
     // NEW GPS SUBFRAME HAS ARRIVED!
     if (CRC_ok)
         {
-            int subframe_ID = d_nav.subframe_decoder(subframe);  //decode the subframe
+            int32_t subframe_ID = d_nav.subframe_decoder(subframe);  //d ecode the subframe
             if (subframe_ID > 0 and subframe_ID < 6)
                 {
                     std::cout << "New GPS NAV message received in channel " << this->d_channel << ": "
@@ -268,7 +267,7 @@ bool gps_l1_ca_telemetry_decoder_cc::decode_subframe()
 
                     switch (subframe_ID)
                         {
-                        case 3:  //we have a new set of ephemeris data for the current SV
+                        case 3:  // we have a new set of ephemeris data for the current SV
                             if (d_nav.satellite_validation() == true)
                                 {
                                     // get ephemeris object for this SV (mandatory)
@@ -306,37 +305,37 @@ bool gps_l1_ca_telemetry_decoder_cc::decode_subframe()
     return subframe_synchro_confirmation;
 }
 
+
 int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
-    int preamble_diff_ms = 0;
+    int32_t preamble_diff_ms = 0;
 
     Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);            // Get the output buffer pointer
     const Gnss_Synchro **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);  // Get the input buffer pointer
 
-    Gnss_Synchro current_symbol;  //structure to save the synchronization information and send the output object to the next block
-    //1. Copy the current tracking output
+    Gnss_Synchro current_symbol;  // structure to save the synchronization information and send the output object to the next block
+    // 1. Copy the current tracking output
     current_symbol = in[0][0];
 
-    //record the oldest subframe symbol before inserting a new symbol into the circular buffer
+    // record the oldest subframe symbol before inserting a new symbol into the circular buffer
     if (d_current_subframe_symbol < GPS_SUBFRAME_MS and d_symbol_history.size() > 0)
         {
             d_subframe_symbols[d_current_subframe_symbol] = d_symbol_history.at(0).Prompt_I;
             d_current_subframe_symbol++;
         }
 
-    d_symbol_history.push_back(current_symbol);  //add new symbol to the symbol queue
+    d_symbol_history.push_back(current_symbol);  // add new symbol to the symbol queue
     consume_each(1);
 
     d_flag_preamble = false;
 
-
-    //******* preamble correlation ********
-    int corr_value = 0;
+    // ******* preamble correlation ********
+    int32_t corr_value = 0;
     if ((d_symbol_history.size() == GPS_CA_PREAMBLE_LENGTH_SYMBOLS))  // and (d_make_correlation or !d_flag_frame_sync))
         {
-            //            std::cout << "-------\n";
-            for (unsigned int i = 0; i < GPS_CA_PREAMBLE_LENGTH_SYMBOLS; i++)
+            // std::cout << "-------\n";
+            for (uint32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_SYMBOLS; i++)
                 {
                     if (d_symbol_history.at(i).Flag_valid_symbol_output == true)
                         {
@@ -352,21 +351,20 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
                 }
         }
 
-
-    //******* frame sync ******************
+    // ******* frame sync ******************
     if (std::abs(corr_value) == GPS_CA_PREAMBLE_LENGTH_SYMBOLS)
         {
             //TODO: Rewrite with state machine
             if (d_stat == 0)
                 {
-                    //record the preamble sample stamp
+                    // record the preamble sample stamp
                     d_preamble_time_samples = d_symbol_history.at(0).Tracking_sample_counter;  // record the preamble sample stamp
                     DLOG(INFO) << "Preamble detection for SAT " << this->d_satellite << "d_symbol_history.at(0).Tracking_sample_counter=" << d_symbol_history.at(0).Tracking_sample_counter;
                     d_stat = 1;  // enter into frame pre-detection status
                 }
-            else if (d_stat == 1)  //check 6 seconds of preamble separation
+            else if (d_stat == 1)  // check 6 seconds of preamble separation
                 {
-                    preamble_diff_ms = std::round(((static_cast<double>(d_symbol_history.at(0).Tracking_sample_counter) - d_preamble_time_samples) / static_cast<double>(d_symbol_history.at(0).fs)) * 1000.0);
+                    preamble_diff_ms = std::round(((static_cast<double>(d_symbol_history.at(0).Tracking_sample_counter) - static_cast<double>(d_preamble_time_samples)) / static_cast<double>(d_symbol_history.at(0).fs)) * 1000.0);
                     if (std::abs(preamble_diff_ms - GPS_SUBFRAME_MS) % GPS_SUBFRAME_MS == 0)
                         {
                             DLOG(INFO) << "Preamble confirmation for SAT " << this->d_satellite;
@@ -388,14 +386,14 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
                                                << static_cast<double>(d_preamble_time_samples) / static_cast<double>(d_symbol_history.at(0).fs) << " [s]";
                                 }
 
-                            //try to decode the subframe:
+                            // try to decode the subframe:
                             if (decode_subframe() == false)
                                 {
                                     d_crc_error_synchronization_counter++;
                                     if (d_crc_error_synchronization_counter > 3)
                                         {
                                             DLOG(INFO) << "TOO MANY CRC ERRORS: Lost of frame sync SAT " << this->d_satellite << std::endl;
-                                            d_stat = 0;  //lost of frame sync
+                                            d_stat = 0;  // lost of frame sync
                                             d_flag_frame_sync = false;
                                             flag_TOW_set = false;
                                             d_crc_error_synchronization_counter = 0;
@@ -413,8 +411,8 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
                     if (preamble_diff_ms > GPS_SUBFRAME_MS)
                         {
                             DLOG(INFO) << "Lost of frame sync SAT " << this->d_satellite << " preamble_diff= " << preamble_diff_ms;
-                            //                            std::cout << "Lost of frame sync SAT " << this->d_satellite << " preamble_diff= " << preamble_diff_ms << std::endl;
-                            d_stat = 0;  //lost of frame sync
+                            //  std::cout << "Lost of frame sync SAT " << this->d_satellite << " preamble_diff= " << preamble_diff_ms << std::endl;
+                            d_stat = 0;  // lost of frame sync
                             d_flag_frame_sync = false;
                             flag_TOW_set = false;
                             d_current_subframe_symbol = 0;
@@ -424,11 +422,11 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
                 }
         }
 
-    //2. Add the telemetry decoder information
+    // 2. Add the telemetry decoder information
     if (this->d_flag_preamble == true and d_flag_new_tow_available == true)
         {
-            d_TOW_at_current_symbol_ms = static_cast<unsigned int>(d_nav.d_TOW * 1000.0) + GPS_CA_PREAMBLE_DURATION_MS;
-            d_TOW_at_Preamble_ms = static_cast<unsigned int>(d_nav.d_TOW * 1000.0);
+            d_TOW_at_current_symbol_ms = static_cast<uint32_t>(d_nav.d_TOW * 1000.0) + GPS_CA_PREAMBLE_DURATION_MS;
+            d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_nav.d_TOW * 1000.0);
             flag_TOW_set = true;
             d_flag_new_tow_available = false;
         }
@@ -447,7 +445,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
 
             if (flag_PLL_180_deg_phase_locked == true)
                 {
-                    //correct the accumulated phase for the Costas loop phase shift, if required
+                    // correct the accumulated phase for the Costas loop phase shift, if required
                     current_symbol.Carrier_phase_rads += GPS_PI;
                 }
 
@@ -471,7 +469,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
                         }
                 }
 
-            //3. Make the output (copy the object contents to the GNURadio reserved memory)
+            // 3. Make the output (copy the object contents to the GNURadio reserved memory)
             *out[0] = current_symbol;
 
             return 1;

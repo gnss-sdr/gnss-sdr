@@ -69,8 +69,8 @@ Glonass_Gnav_Ephemeris::Glonass_Gnav_Ephemeris()
 
     // Satellite Identification Information
     i_satellite_freq_channel = 0;  //!< SV Frequency Channel Number
-    i_satellite_PRN = 0;           //!< SV PRN Number, equivalent to slot number for compatibility with GPS
-    i_satellite_slot_number = 0;   //!< SV Slot Number
+    i_satellite_PRN = 0U;          //!< SV PRN Number, equivalent to slot number for compatibility with GPS
+    i_satellite_slot_number = 0U;  //!< SV Slot Number
     d_yr = 1972;                   //!< Current year, defaults to 1972 (UTC Epoch with leap seconds)
     d_satClkDrift = 0.0;           //!< GLONASS clock error
     d_dtr = 0.0;                   //!< relativistic clock correction term

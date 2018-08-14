@@ -67,7 +67,7 @@ class galileo_e5a_telemetry_decoder_cc : public gr::block
 public:
     ~galileo_e5a_telemetry_decoder_cc();
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
-    void set_channel(int channel);                        //!< Set receiver's channel
+    void set_channel(int32_t channel);                    //!< Set receiver's channel
     /*!
      * \brief This is where all signal processing takes place
      */
@@ -79,21 +79,21 @@ private:
     galileo_e5a_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
     galileo_e5a_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
 
-    void viterbi_decoder(double *page_part_symbols, int *page_part_bits);
+    void viterbi_decoder(double *page_part_symbols, int32_t *page_part_bits);
 
-    void deinterleaver(int rows, int cols, double *in, double *out);
+    void deinterleaver(int32_t rows, int32_t cols, double *in, double *out);
 
-    void decode_word(double *page_symbols, int frame_length);
+    void decode_word(double *page_symbols, int32_t frame_length);
 
-    int d_preambles_bits[GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
-    int d_preamble_samples[GALILEO_FNAV_CODES_PER_PREAMBLE];
+    int32_t d_preambles_bits[GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
+    int32_t d_preamble_samples[GALILEO_FNAV_CODES_PER_PREAMBLE];
     std::deque<int> d_preamble_init;
-    int d_stat;
-    int d_CRC_error_counter;
-    int d_channel;
-    int d_symbol_counter;
-    int corr_value;
-    unsigned int required_symbols;
+    int32_t d_stat;
+    int32_t d_CRC_error_counter;
+    int32_t d_channel;
+    int32_t d_symbol_counter;
+    int32_t corr_value;
+    uint32_t required_symbols;
     uint64_t d_sample_counter;
     uint64_t d_preamble_index;
     bool d_flag_frame_sync;
@@ -104,8 +104,8 @@ private:
     bool new_symbol;
     double d_prompt_acum;
     double page_symbols[GALILEO_FNAV_SYMBOLS_PER_PAGE - GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
-    unsigned int d_TOW_at_Preamble_ms;
-    unsigned int d_TOW_at_current_symbol_ms;
+    uint32_t d_TOW_at_Preamble_ms;
+    uint32_t d_TOW_at_current_symbol_ms;
     double delta_t;  //GPS-GALILEO time offset
     std::string d_dump_filename;
     std::ofstream d_dump_file;
@@ -115,13 +115,13 @@ private:
     Galileo_Fnav_Message d_nav;
 
     // vars for Viterbi decoder
-    int *out0, *out1, *state0, *state1;
-    int g_encoder[2];
-    const int nn = 2;  // Coding rate 1/n
-    const int KK = 7;  // Constraint Length
-    int mm = KK - 1;
-    const int CodeLength = 488;
-    int DataLength = (CodeLength / nn) - mm;
+    int32_t *out0, *out1, *state0, *state1;
+    int32_t g_encoder[2];
+    const int32_t nn = 2;  // Coding rate 1/n
+    const int32_t KK = 7;  // Constraint Length
+    int32_t mm = KK - 1;
+    const int32_t CodeLength = 488;
+    int32_t DataLength = (CodeLength / nn) - mm;
 };
 
 #endif /* GNSS_SDR_GALILEO_E5A_TELEMETRY_DECODER_CC_H_ */

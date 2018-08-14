@@ -42,7 +42,7 @@
 class Galileo_Utc_Model
 {
 public:
-    /*Word type 6: GST-UTC conversion parameters*/
+    // Word type 6: GST-UTC conversion parameters
     double A0_6;
     double A1_6;
     double Delta_tLS_6;

@@ -65,14 +65,15 @@ public:
     Bayesian_estimator(arma::vec mu_prior_0, int kappa_prior_0, int nu_prior_0, arma::mat Psi_prior_0);
     ~Bayesian_estimator();
 
+    void init(arma::vec mu_prior_0, int kappa_prior_0, int nu_prior_0, arma::mat Psi_prior_0);
+
     void update_sequential(arma::vec data);
     void update_sequential(arma::vec data, arma::vec mu_prior_0, int kappa_prior_0, int nu_prior_0, arma::mat Psi_prior_0);
 
-    arma::vec get_mu_est();
+    arma::mat get_mu_est();
     arma::mat get_Psi_est();
 
 private:
-
     arma::vec mu_est;
     arma::mat Psi_est;
     

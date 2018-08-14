@@ -364,7 +364,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
                 }
             else if (d_stat == 1)  // check 6 seconds of preamble separation
                 {
-                    preamble_diff_ms = std::round(((static_cast<double>(d_symbol_history.at(0).Tracking_sample_counter) - d_preamble_time_samples) / static_cast<double>(d_symbol_history.at(0).fs)) * 1000.0);
+                    preamble_diff_ms = std::round(((static_cast<double>(d_symbol_history.at(0).Tracking_sample_counter) - static_cast<double>(d_preamble_time_samples)) / static_cast<double>(d_symbol_history.at(0).fs)) * 1000.0);
                     if (std::abs(preamble_diff_ms - GPS_SUBFRAME_MS) % GPS_SUBFRAME_MS == 0)
                         {
                             DLOG(INFO) << "Preamble confirmation for SAT " << this->d_satellite;

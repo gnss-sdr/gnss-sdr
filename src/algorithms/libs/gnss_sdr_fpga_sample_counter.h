@@ -45,13 +45,18 @@ class gnss_sdr_fpga_sample_counter : public gr::block
 {
 private:
     gnss_sdr_fpga_sample_counter(double _fs, int32_t _interval_ms);
+    uint32_t test_register(uint32_t writeval);
+    void configure_samples_per_output(uint32_t interval);
+    void close_device(void);
+    void open_device(void);
     bool start();
     bool stop();
+    uint32_t wait_for_interrupt_and_read_counter(void);
     uint32_t samples_per_output;
     double fs;
     uint64_t sample_counter;
-    int32_t interval_ms;
-    int64_t current_T_rx_ms;  // Receiver time in ms since the beginning of the run
+    uint32_t interval_ms;
+    uint64_t current_T_rx_ms;  // Receiver time in ms since the beginning of the run
     uint32_t current_s;       // Receiver time in seconds, modulo 60
     bool flag_m;              // True if the receiver has been running for at least 1 minute
     uint32_t current_m;       // Receiver time in minutes, modulo 60
@@ -61,6 +66,9 @@ private:
     uint32_t current_days;    // Receiver time in days since the beginning of the run
     int32_t report_interval_ms;
     bool flag_enable_send_msg;
+    int32_t fd;                   			// driver descriptor
+    volatile uint32_t *map_base;  // driver memory map
+    std::string device_name = "/dev/uio26";	// HW device name
 
 public:
     friend gnss_sdr_fpga_sample_counter_sptr gnss_sdr_make_fpga_sample_counter(double _fs, int32_t _interval_ms);

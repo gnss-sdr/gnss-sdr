@@ -49,6 +49,7 @@ void run_correlator_cpu_real_codes(cpu_multicorrelator_real_codes* correlator,
     float d_rem_carrier_phase_rad,
     float d_carrier_phase_step_rad,
     float d_code_phase_step_chips,
+    float d_code_phase_rate_step_chips,
     float d_rem_code_phase_chips,
     int correlation_size)
 {
@@ -58,6 +59,7 @@ void run_correlator_cpu_real_codes(cpu_multicorrelator_real_codes* correlator,
                 d_carrier_phase_step_rad,
                 d_code_phase_step_chips,
                 d_rem_code_phase_chips,
+                d_code_phase_rate_step_chips,
                 correlation_size);
         }
 }
@@ -125,6 +127,7 @@ TEST(CpuMulticorrelatorRealCodesTest, MeasureExecutionTime)
     float d_rem_carrier_phase_rad = 0.0;
     float d_carrier_phase_step_rad = 0.1;
     float d_code_phase_step_chips = 0.3;
+    float d_code_phase_rate_step_chips = 0.00001;
     float d_rem_code_phase_chips = 0.4;
 
     EXPECT_NO_THROW(
@@ -141,6 +144,7 @@ TEST(CpuMulticorrelatorRealCodesTest, MeasureExecutionTime)
                                 d_rem_carrier_phase_rad,
                                 d_carrier_phase_step_rad,
                                 d_code_phase_step_chips,
+                                d_code_phase_rate_step_chips,
                                 d_rem_code_phase_chips,
                                 correlation_sizes[correlation_sizes_idx]));
                         }

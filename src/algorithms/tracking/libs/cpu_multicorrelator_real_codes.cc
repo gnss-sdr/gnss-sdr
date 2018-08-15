@@ -131,9 +131,10 @@ bool cpu_multicorrelator_real_codes::Carrier_wipeoff_multicorrelator_resampler(
     float phase_step_rad,
     float rem_code_phase_chips,
     float code_phase_step_chips,
+    float code_phase_rate_step_chips,
     int signal_length_samples)
 {
-    update_local_code(signal_length_samples, rem_code_phase_chips, code_phase_step_chips);
+    update_local_code(signal_length_samples, rem_code_phase_chips, code_phase_step_chips, code_phase_rate_step_chips);
     // Regenerate phase at each call in order to avoid numerical issues
     lv_32fc_t phase_offset_as_complex[1];
     phase_offset_as_complex[0] = lv_cmake(std::cos(rem_carrier_phase_in_rad), -std::sin(rem_carrier_phase_in_rad));

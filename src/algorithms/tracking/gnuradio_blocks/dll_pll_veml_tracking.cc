@@ -394,6 +394,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
 
     d_extend_correlation_symbols_count = 0;
     d_code_phase_step_chips = 0.0;
+    d_code_phase_rate_step_chips = 0.0;
     d_carrier_phase_step_rad = 0.0;
     d_rem_code_phase_chips = 0.0;
     d_K_blk_samples = 0.0;
@@ -707,6 +708,7 @@ void dll_pll_veml_tracking::do_correlation_step(const gr_complex *input_samples)
         d_carrier_phase_step_rad,
         static_cast<float>(d_rem_code_phase_chips) * static_cast<float>(d_code_samples_per_chip),
         static_cast<float>(d_code_phase_step_chips) * static_cast<float>(d_code_samples_per_chip),
+        static_cast<float>(d_code_phase_rate_step_chips) * static_cast<float>(d_code_samples_per_chip),
         trk_parameters.vector_length);
 
     // DATA CORRELATOR (if tracking tracks the pilot signal)
@@ -718,6 +720,7 @@ void dll_pll_veml_tracking::do_correlation_step(const gr_complex *input_samples)
                 d_carrier_phase_step_rad,
                 static_cast<float>(d_rem_code_phase_chips) * static_cast<float>(d_code_samples_per_chip),
                 static_cast<float>(d_code_phase_step_chips) * static_cast<float>(d_code_samples_per_chip),
+                static_cast<float>(d_code_phase_rate_step_chips) * static_cast<float>(d_code_samples_per_chip),
                 trk_parameters.vector_length);
         }
 }

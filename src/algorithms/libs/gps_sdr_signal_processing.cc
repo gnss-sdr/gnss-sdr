@@ -116,7 +116,7 @@ void gps_l1_ca_code_gen_int(int32_t* _dest, int32_t _prn, uint32_t _chip_shift)
 
 void gps_l1_ca_code_gen_float(float* _dest, int32_t _prn, uint32_t _chip_shift)
 {
-    uint32_t _code_length = 1023;
+    const uint32_t _code_length = 1023;
     int32_t ca_code_int[_code_length];
 
     gps_l1_ca_code_gen_int(ca_code_int, _prn, _chip_shift);
@@ -130,7 +130,7 @@ void gps_l1_ca_code_gen_float(float* _dest, int32_t _prn, uint32_t _chip_shift)
 
 void gps_l1_ca_code_gen_complex(std::complex<float>* _dest, int32_t _prn, uint32_t _chip_shift)
 {
-    uint32_t _code_length = 1023;
+    const uint32_t _code_length = 1023;
     int32_t ca_code_int[_code_length];
 
     gps_l1_ca_code_gen_int(ca_code_int, _prn, _chip_shift);

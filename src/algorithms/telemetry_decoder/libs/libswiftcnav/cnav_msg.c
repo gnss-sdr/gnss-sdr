@@ -30,7 +30,6 @@
  */
 
 
-
 #include "edc.h"
 #include "bits.h"
 #include "cnav_msg.h"
@@ -48,26 +47,26 @@
  * Block Viterbi decoding parameters.
  */
 /** Viterbi decoder reversed polynomial A */
-#define GPS_L2C_V27_POLY_A       (0x4F) /* 0b01001111 - reversed 0171*/
+#define GPS_L2C_V27_POLY_A (0x4F) /* 0b01001111 - reversed 0171*/
 
 /** Viterbi decoder reversed polynomial B */
-#define GPS_L2C_V27_POLY_B       (0x6D) /* 0b01101101 - reversed 0133 */
+#define GPS_L2C_V27_POLY_B (0x6D) /* 0b01101101 - reversed 0133 */
 /*
  * GPS L2C message constants.
  */
 
 /** GPS L2C preamble */
-#define GPS_CNAV_PREAMBLE1          (0b10001011u)
+const u32 GPS_CNAV_PREAMBLE1 = 0x989A73u;
 /** Inverted GPS L2C preamble */
-#define GPS_CNAV_PREAMBLE2          (0b01110100u)
+const u32 GPS_CNAV_PREAMBLE2 = 0x010F054u;
 /** GPS L2C preamble length in bits */
-#define GPS_CNAV_PREAMBLE_LENGTH    (8)
+#define GPS_CNAV_PREAMBLE_LENGTH (8)
 /** GPS L2C CNAV message length in bits */
-#define GPS_CNAV_MSG_LENGTH         (300)
+#define GPS_CNAV_MSG_LENGTH (300)
 /** GPS LC2 CNAV CRC length in bits */
-#define GPS_CNAV_MSG_CRC_LENGTH     (24)
+#define GPS_CNAV_MSG_CRC_LENGTH (24)
 /** GPS L2C CNAV message payload length in bits */
-#define GPS_CNAV_MSG_DATA_LENGTH    (GPS_CNAV_MSG_LENGTH - GPS_CNAV_MSG_CRC_LENGTH)
+#define GPS_CNAV_MSG_DATA_LENGTH (GPS_CNAV_MSG_LENGTH - GPS_CNAV_MSG_CRC_LENGTH)
 /** GPS L2C CNAV message lock detector threshold */
 #define GPS_CNAV_LOCK_MAX_CRC_FAILS (10)
 
@@ -85,7 +84,7 @@
 static u32 _cnav_compute_crc(cnav_v27_part_t *part)
 {
     u32 crc = crc24q_bits(0, part->decoded, GPS_CNAV_MSG_DATA_LENGTH,
-            part->invert);
+        part->invert);
 
     return crc;
 }
@@ -104,7 +103,7 @@ static u32 _cnav_compute_crc(cnav_v27_part_t *part)
 static u32 _cnav_extract_crc(const cnav_v27_part_t *part)
 {
     u32 crc = getbitu(part->decoded, GPS_CNAV_MSG_DATA_LENGTH,
-            GPS_CNAV_MSG_CRC_LENGTH);
+        GPS_CNAV_MSG_CRC_LENGTH);
     if (part->invert)
         {
             crc ^= 0xFFFFFF;
@@ -152,7 +151,7 @@ static void _cnav_rescan_preamble(cnav_v27_part_t *part)
     if (!part->preamble_seen && part->n_decoded >= GPS_CNAV_PREAMBLE_LENGTH)
         {
             bitshl(part->decoded, sizeof(part->decoded),
-                    part->n_decoded - GPS_CNAV_PREAMBLE_LENGTH + 1);
+                part->n_decoded - GPS_CNAV_PREAMBLE_LENGTH + 1);
             part->n_decoded = GPS_CNAV_PREAMBLE_LENGTH - 1;
         }
 }
@@ -200,11 +199,12 @@ static void _cnav_add_symbol(cnav_v27_part_t *part, u8 ch)
      * - N - Number of bits to put into decoded buffer
      * - M - Number of bits in the tail to ignore.
      */
-    unsigned char tmp_bits[ (GPS_L2C_V27_DECODE_BITS + GPS_L2C_V27_DELAY_BITS +
-            CHAR_BIT - 1) / CHAR_BIT];
+    unsigned char tmp_bits[(GPS_L2C_V27_DECODE_BITS + GPS_L2C_V27_DELAY_BITS +
+                               CHAR_BIT - 1) /
+                           CHAR_BIT];
 
     v27_chainback_likely(&part->dec, tmp_bits,
-            GPS_L2C_V27_DECODE_BITS + GPS_L2C_V27_DELAY_BITS);
+        GPS_L2C_V27_DECODE_BITS + GPS_L2C_V27_DELAY_BITS);
 
     /* Read decoded bits and add them to the decoded buffer */
     bitcopy(part->decoded, part->n_decoded, tmp_bits, 0, GPS_L2C_V27_DECODE_BITS);
@@ -238,10 +238,9 @@ static void _cnav_add_symbol(cnav_v27_part_t *part, u8 ch)
                 }
             if (part->preamble_seen && GPS_CNAV_MSG_LENGTH <= part->n_decoded)
                 {
-
                     /* We have collected 300 bits starting from message preamble. Now try
                      * to compute CRC-24Q */
-                    u32 crc  = _cnav_compute_crc(part);
+                    u32 crc = _cnav_compute_crc(part);
                     u32 crc2 = _cnav_extract_crc(part);
 
                     if (part->message_lock)
@@ -260,8 +259,8 @@ static void _cnav_add_symbol(cnav_v27_part_t *part, u8 ch)
                                     if (part->n_crc_fail > GPS_CNAV_LOCK_MAX_CRC_FAILS)
                                         {
                                             /* CRC has failed too many times - drop the lock. */
-                                            part->n_crc_fail    = 0;
-                                            part->message_lock  = false;
+                                            part->n_crc_fail = 0;
+                                            part->message_lock = false;
                                             part->preamble_seen = false;
                                             /* Try to find a new preamble, reuse data from buffer. */
                                             retry = true;
@@ -272,8 +271,8 @@ static void _cnav_add_symbol(cnav_v27_part_t *part, u8 ch)
                         {
                             /* CRC match - message can be decoded */
                             part->message_lock = true;
-                            part->crc_ok       = true;
-                            part->n_crc_fail   = 0;
+                            part->crc_ok = true;
+                            part->n_crc_fail = 0;
                         }
                     else
                         {
@@ -346,13 +345,13 @@ static bool _cnav_msg_decode(cnav_v27_part_t *part, cnav_msg_t *msg, u32 *delay)
                             _cnav_msg_invert(part);
                         }
 
-                    msg->prn    = getbitu(part->decoded, 8, 6);
+                    msg->prn = getbitu(part->decoded, 8, 6);
                     msg->msg_id = getbitu(part->decoded, 14, 6);
-                    msg->tow    = getbitu(part->decoded, 20, 17);
-                    msg->alert  = getbitu(part->decoded, 37, 1) ? true : false;
+                    msg->tow = getbitu(part->decoded, 20, 17);
+                    msg->alert = getbitu(part->decoded, 37, 1) ? true : false;
 
                     /* copy RAW message for GNSS-SDR */
-                    memcpy(msg->raw_msg,part->decoded,GPS_L2C_V27_DECODE_BITS + GPS_L2C_V27_DELAY_BITS);
+                    memcpy(msg->raw_msg, part->decoded, GPS_L2C_V27_DECODE_BITS + GPS_L2C_V27_DELAY_BITS);
 
                     *delay = (part->n_decoded - GPS_CNAV_MSG_LENGTH + GPS_L2C_V27_DELAY_BITS) * 2 + part->n_symbols;
 
@@ -388,15 +387,15 @@ void cnav_msg_decoder_init(cnav_msg_decoder_t *dec)
 {
     memset(dec, 0, sizeof(*dec));
     v27_init(&dec->part1.dec,
-            dec->part1.decisions,
-            GPS_L2_V27_HISTORY_LENGTH_BITS,
-            cnav_msg_decoder_get_poly(),
-            0);
+        dec->part1.decisions,
+        GPS_L2_V27_HISTORY_LENGTH_BITS,
+        cnav_msg_decoder_get_poly(),
+        0);
     v27_init(&dec->part2.dec,
-            dec->part2.decisions,
-            GPS_L2_V27_HISTORY_LENGTH_BITS,
-            cnav_msg_decoder_get_poly(),
-            0);
+        dec->part2.decisions,
+        GPS_L2_V27_HISTORY_LENGTH_BITS,
+        cnav_msg_decoder_get_poly(),
+        0);
     dec->part1.init = true;
     dec->part2.init = true;
     _cnav_add_symbol(&dec->part2, 0x80);
@@ -426,9 +425,9 @@ void cnav_msg_decoder_init(cnav_msg_decoder_t *dec)
  * \retval false More data is required.
  */
 bool cnav_msg_decoder_add_symbol(cnav_msg_decoder_t *dec,
-        u8 symbol,
-        cnav_msg_t *msg,
-        u32 *pdelay)
+    u8 symbol,
+    cnav_msg_t *msg,
+    u32 *pdelay)
 {
     _cnav_add_symbol(&dec->part1, symbol);
     _cnav_add_symbol(&dec->part2, symbol);
@@ -470,7 +469,7 @@ const v27_poly_t *cnav_msg_decoder_get_poly(void)
     if (!initialized)
         {
             /* Coefficients for polynomial object */
-            const signed char coeffs[2] = { GPS_L2C_V27_POLY_A, GPS_L2C_V27_POLY_B };
+            const signed char coeffs[2] = {GPS_L2C_V27_POLY_A, GPS_L2C_V27_POLY_B};
 
             /* Racing condition handling: the data can be potential initialized more
              * than once in case multiple threads request concurrent access. However,

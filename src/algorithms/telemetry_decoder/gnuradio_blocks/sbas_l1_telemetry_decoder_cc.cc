@@ -189,7 +189,7 @@ sbas_l1_telemetry_decoder_cc::symbol_aligner_and_decoder::symbol_aligner_and_dec
 {
     // convolutional code properties
     d_KK = 7;
-    int32_t nn = 2;
+    const int32_t nn = 2;
     int32_t g_encoder[nn];
     g_encoder[0] = 121;
     g_encoder[1] = 91;

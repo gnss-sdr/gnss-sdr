@@ -79,8 +79,8 @@ void galileo_e5a_telemetry_decoder_cc::deinterleaver(int32_t rows, int32_t cols,
 
 void galileo_e5a_telemetry_decoder_cc::decode_word(double *page_symbols, int32_t frame_length)
 {
-    double page_symbols_deint[frame_length];
     // 1. De-interleave
+    double *page_symbols_deint = static_cast<double *>(volk_gnsssdr_malloc(frame_length * sizeof(double), volk_gnsssdr_get_alignment()));
     deinterleaver(GALILEO_FNAV_INTERLEAVER_ROWS, GALILEO_FNAV_INTERLEAVER_COLS, page_symbols, page_symbols_deint);
 
     // 2. Viterbi decoder
@@ -93,8 +93,9 @@ void galileo_e5a_telemetry_decoder_cc::decode_word(double *page_symbols, int32_t
                     page_symbols_deint[i] = -page_symbols_deint[i];
                 }
         }
-    int32_t page_bits[frame_length / 2];
+    int32_t *page_bits = static_cast<int32_t *>(volk_gnsssdr_malloc((frame_length / 2) * sizeof(int32_t), volk_gnsssdr_get_alignment()));
     viterbi_decoder(page_symbols_deint, page_bits);
+    volk_gnsssdr_free(page_symbols_deint);
 
     // 3. Call the Galileo page decoder
     std::string page_String;
@@ -109,6 +110,7 @@ void galileo_e5a_telemetry_decoder_cc::decode_word(double *page_symbols, int32_t
                     page_String.push_back('0');
                 }
         }
+    volk_gnsssdr_free(page_bits);
 
     // DECODE COMPLETE WORD (even + odd) and TEST CRC
     d_nav.split_page(page_String);

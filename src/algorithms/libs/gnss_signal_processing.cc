@@ -158,7 +158,7 @@ void hex_to_binary_converter(int32_t* _dest, char _from)
 }
 
 
-void resampler(float* _from, float* _dest, float _fs_in,
+void resampler(const float* _from, float* _dest, float _fs_in,
     float _fs_out, uint32_t _length_in, uint32_t _length_out)
 {
     uint32_t _codeValueIndex;
@@ -182,7 +182,7 @@ void resampler(float* _from, float* _dest, float _fs_in,
 }
 
 
-void resampler(std::complex<float>* _from, std::complex<float>* _dest, float _fs_in,
+void resampler(const std::complex<float>* _from, std::complex<float>* _dest, float _fs_in,
     float _fs_out, uint32_t _length_in, uint32_t _length_out)
 {
     uint32_t _codeValueIndex;

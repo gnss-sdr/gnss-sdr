@@ -391,7 +391,7 @@ int StaticPositionSystemTest::configure_receiver()
             config->set_property("PVT.iono_model", "OFF");
             config->set_property("PVT.trop_model", "OFF");
             config->set_property("PVT.AR_GPS", "PPP-AR");
-            //config->set_property("PVT.elevation_mask", std::to_string(25));
+            config->set_property("PVT.elevation_mask", std::to_string(15));
 
             config_f = 0;
         }

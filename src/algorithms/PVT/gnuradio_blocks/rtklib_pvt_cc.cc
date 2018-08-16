@@ -412,7 +412,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
     // save GPS L2CM ephemeris to XML file
     std::string file_name = "eph_GPS_CNAV.xml";
 
-    if (d_ls_pvt->gps_cnav_ephemeris_map.size() > 0)
+    if (d_ls_pvt->gps_cnav_ephemeris_map.empty() == false)
         {
             try
                 {
@@ -435,7 +435,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
     // save GPS L1 CA ephemeris to XML file
     file_name = "eph_GPS_L1CA.xml";
 
-    if (d_ls_pvt->gps_ephemeris_map.size() > 0)
+    if (d_ls_pvt->gps_ephemeris_map.empty() == false)
         {
             try
                 {
@@ -458,7 +458,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
     // save Galileo E1 ephemeris to XML file
     file_name = "eph_Galileo_E1.xml";
 
-    if (d_ls_pvt->galileo_ephemeris_map.size() > 0)
+    if (d_ls_pvt->galileo_ephemeris_map.empty() == false)
         {
             try
                 {
@@ -481,7 +481,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
     // save GLONASS GNAV ephemeris to XML file
     file_name = "eph_GLONASS_GNAV.xml";
 
-    if (d_ls_pvt->glonass_gnav_ephemeris_map.size() > 0)
+    if (d_ls_pvt->glonass_gnav_ephemeris_map.empty() == false)
         {
             try
                 {
@@ -573,28 +573,28 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                 }
                             try
                                 {
-                                    if (d_ls_pvt->gps_ephemeris_map.size() > 0)
+                                    if (d_ls_pvt->gps_ephemeris_map.empty() == false)
                                         {
                                             if (tmp_eph_iter_gps != d_ls_pvt->gps_ephemeris_map.end())
                                                 {
                                                     d_rtcm_printer->lock_time(d_ls_pvt->gps_ephemeris_map.find(in[i][epoch].PRN)->second, in[i][epoch].RX_time, in[i][epoch]);  // keep track of locking time
                                                 }
                                         }
-                                    if (d_ls_pvt->galileo_ephemeris_map.size() > 0)
+                                    if (d_ls_pvt->galileo_ephemeris_map.empty() == false)
                                         {
                                             if (tmp_eph_iter_gal != d_ls_pvt->galileo_ephemeris_map.end())
                                                 {
                                                     d_rtcm_printer->lock_time(d_ls_pvt->galileo_ephemeris_map.find(in[i][epoch].PRN)->second, in[i][epoch].RX_time, in[i][epoch]);  // keep track of locking time
                                                 }
                                         }
-                                    if (d_ls_pvt->gps_cnav_ephemeris_map.size() > 0)
+                                    if (d_ls_pvt->gps_cnav_ephemeris_map.empty() == false)
                                         {
                                             if (tmp_eph_iter_cnav != d_ls_pvt->gps_cnav_ephemeris_map.end())
                                                 {
                                                     d_rtcm_printer->lock_time(d_ls_pvt->gps_cnav_ephemeris_map.find(in[i][epoch].PRN)->second, in[i][epoch].RX_time, in[i][epoch]);  // keep track of locking time
                                                 }
                                         }
-                                    if (d_ls_pvt->glonass_gnav_ephemeris_map.size() > 0)
+                                    if (d_ls_pvt->glonass_gnav_ephemeris_map.empty() == false)
                                         {
                                             if (tmp_eph_iter_glo_gnav != d_ls_pvt->glonass_gnav_ephemeris_map.end())
                                                 {
@@ -616,7 +616,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                 }
 
             // ############ 2 COMPUTE THE PVT ################################
-            if (gnss_observables_map.size() > 0)
+            if (gnss_observables_map.empty() == false)
                 {
                     double current_RX_time = gnss_observables_map.begin()->second.RX_time;
                     uint32_t current_RX_time_ms = static_cast<uint32_t>(current_RX_time * 1000.0);

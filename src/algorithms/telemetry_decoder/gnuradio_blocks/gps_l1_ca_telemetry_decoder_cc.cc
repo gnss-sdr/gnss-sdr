@@ -82,7 +82,7 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
                     n++;
                 }
         }
-    d_stat = 0;
+    d_stat = 0U;
     d_flag_frame_sync = false;
     d_prev_GPS_frame_4bytes = 0;
     d_TOW_at_Preamble_ms = 0;
@@ -93,8 +93,7 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     flag_PLL_180_deg_phase_locked = false;
     d_preamble_time_samples = 0ULL;
     d_TOW_at_current_symbol_ms = 0;
-    d_symbol_history.resize(GPS_CA_PREAMBLE_LENGTH_SYMBOLS);  // Change fixed buffer size
-    d_symbol_history.clear();                                 // Clear all the elements in the buffer
+    d_symbol_history.set_capacity(GPS_CA_PREAMBLE_LENGTH_SYMBOLS);
     d_crc_error_synchronization_counter = 0;
     d_current_subframe_symbol = 0;
 }
@@ -103,6 +102,7 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
 gps_l1_ca_telemetry_decoder_cc::~gps_l1_ca_telemetry_decoder_cc()
 {
     volk_gnsssdr_free(d_preambles_symbols);
+    d_symbol_history.clear();
     if (d_dump_file.is_open() == true)
         {
             try

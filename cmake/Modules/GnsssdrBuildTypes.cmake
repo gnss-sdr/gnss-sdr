@@ -80,10 +80,10 @@ if(NOT WIN32)
   set(CMAKE_C_FLAGS_COVERAGE "-Wall -pedantic -pthread -g -O0 -fprofile-arcs -ftest-coverage" CACHE STRING
     "Flags used by the C compiler during Coverage builds." FORCE)
   set(CMAKE_EXE_LINKER_FLAGS_COVERAGE
-    "-Wl" CACHE STRING
+    "-W" CACHE STRING
     "Flags used for linking binaries during Coverage builds." FORCE)
   set(CMAKE_SHARED_LINKER_FLAGS_COVERAGE
-    "-Wl" CACHE STRING
+    "-W" CACHE STRING
     "Flags used by the shared lib linker during Coverage builds." FORCE)
 
   MARK_AS_ADVANCED(
@@ -111,10 +111,10 @@ if(NOT WIN32)
   set(CMAKE_C_FLAGS_NOOPTWITHASM "-Wall -save-temps -g -O0" CACHE STRING
     "Flags used by the C compiler during NoOptWithASM builds." FORCE)
   set(CMAKE_EXE_LINKER_FLAGS_NOOPTWITHASM
-    "-Wl" CACHE STRING
+    "-W" CACHE STRING
     "Flags used for linking binaries during NoOptWithASM builds." FORCE)
   set(CMAKE_SHARED_LINKER_FLAGS_NOOPTWITHASM
-    "-Wl" CACHE STRING
+    "-W" CACHE STRING
     "Flags used by the shared lib linker during NoOptWithASM builds." FORCE)
 
   MARK_AS_ADVANCED(
@@ -144,10 +144,10 @@ if(NOT WIN32)
   set(CMAKE_C_FLAGS_O2WITHASM "-Wall -save-temps -g -O2" CACHE STRING
     "Flags used by the C compiler during O2WithASM builds." FORCE)
   set(CMAKE_EXE_LINKER_FLAGS_O2WITHASM
-    "-Wl" CACHE STRING
+    "-W" CACHE STRING
     "Flags used for linking binaries during O2WithASM builds." FORCE)
   set(CMAKE_SHARED_LINKER_FLAGS_O2WITHASM
-    "-Wl" CACHE STRING
+    "-W" CACHE STRING
     "Flags used by the shared lib linker during O2WithASM builds." FORCE)
 
   MARK_AS_ADVANCED(
@@ -176,10 +176,10 @@ if(NOT WIN32)
   set(CMAKE_C_FLAGS_O3WITHASM "-Wall -save-temps -g -O3" CACHE STRING
     "Flags used by the C compiler during O3WithASM builds." FORCE)
   set(CMAKE_EXE_LINKER_FLAGS_O3WITHASM
-    "-Wl" CACHE STRING
+    "-W" CACHE STRING
     "Flags used for linking binaries during O3WithASM builds." FORCE)
   set(CMAKE_SHARED_LINKER_FLAGS_O3WITHASM
-    "-Wl" CACHE STRING
+    "-W" CACHE STRING
     "Flags used by the shared lib linker during O3WithASM builds." FORCE)
 
   MARK_AS_ADVANCED(
@@ -205,10 +205,10 @@ if(NOT WIN32)
   set(CMAKE_C_FLAGS_ASAN "-Wall -Wextra -g -O2 -fsanitize=address -fno-omit-frame-pointer" CACHE STRING
     "Flags used by the C compiler during Address Sanitized builds." FORCE)
   set(CMAKE_EXE_LINKER_FLAGS_ASAN
-    "-Wl" CACHE STRING
+    "-W" CACHE STRING
     "Flags used for linking binaries during Address Sanitized builds." FORCE)
   set(CMAKE_SHARED_LINKER_FLAGS_ASAN
-    "-Wl" CACHE STRING
+    "-W" CACHE STRING
     "Flags used by the shared lib linker during Address Sanitized builds." FORCE)
 
   MARK_AS_ADVANCED(

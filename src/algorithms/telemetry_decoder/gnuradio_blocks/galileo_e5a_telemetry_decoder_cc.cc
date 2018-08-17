@@ -438,37 +438,37 @@ int galileo_e5a_telemetry_decoder_cc::general_work(int noutput_items __attribute
             if (d_nav.flag_TOW_1 == true)
                 {
                     d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_nav.FNAV_TOW_1 * 1000.0);
-                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + (GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS;
+                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS);
                     d_nav.flag_TOW_1 = false;
                 }
             else if (d_nav.flag_TOW_2 == true)
                 {
                     d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_nav.FNAV_TOW_2 * 1000.0);
-                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + (GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS;
+                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS);
                     d_nav.flag_TOW_2 = false;
                 }
             else if (d_nav.flag_TOW_3 == true)
                 {
                     d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_nav.FNAV_TOW_3 * 1000.0);
-                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + (GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS;
+                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS);
                     d_nav.flag_TOW_3 = false;
                 }
             else if (d_nav.flag_TOW_4 == true)
                 {
                     d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_nav.FNAV_TOW_4 * 1000.0);
-                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + (GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS;
+                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS);
                     d_nav.flag_TOW_4 = false;
                 }
             else
                 {
-                    d_TOW_at_current_symbol_ms += GALILEO_E5a_CODE_PERIOD_MS;
+                    d_TOW_at_current_symbol_ms += static_cast<uint32_t>(GALILEO_E5a_CODE_PERIOD_MS);
                 }
         }
     else  // if there is not a new preamble, we define the TOW of the current symbol
         {
             if (d_nav.flag_TOW_set == true)
                 {
-                    d_TOW_at_current_symbol_ms += GALILEO_E5a_CODE_PERIOD_MS;
+                    d_TOW_at_current_symbol_ms += static_cast<uint32_t>(GALILEO_E5a_CODE_PERIOD_MS);
                 }
         }
 

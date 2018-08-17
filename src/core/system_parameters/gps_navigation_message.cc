@@ -184,10 +184,10 @@ uint64_t Gps_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_SUBFRA
         {
             for (int32_t j = 0; j < parameter[i].second; j++)
                 {
-                    value <<= 1;  //shift left
+                    value <<= 1;  // shift left
                     if (bits[GPS_SUBFRAME_BITS - parameter[i].first - j] == 1)
                         {
-                            value += 1;  // insert the bit
+                            value += 1ULL;  // insert the bit
                         }
                 }
         }
@@ -203,22 +203,22 @@ int64_t Gps_Navigation_Message::read_navigation_signed(std::bitset<GPS_SUBFRAME_
     // read the MSB and perform the sign extension
     if (bits[GPS_SUBFRAME_BITS - parameter[0].first] == 1)
         {
-            value ^= 0xFFFFFFFFFFFFFFFF;  // 64 bits variable
+            value ^= 0xFFFFFFFFFFFFFFFFLL;  // 64 bits variable
         }
     else
         {
-            value &= 0;
+            value &= 0LL;
         }
 
     for (int32_t i = 0; i < num_of_slices; i++)
         {
             for (int32_t j = 0; j < parameter[i].second; j++)
                 {
-                    value <<= 1;                  // shift left
-                    value &= 0xFFFFFFFFFFFFFFFE;  // reset the corresponding bit (for the 64 bits variable)
+                    value <<= 1;                    // shift left
+                    value &= 0xFFFFFFFFFFFFFFFELL;  // reset the corresponding bit (for the 64 bits variable)
                     if (bits[GPS_SUBFRAME_BITS - parameter[i].first - j] == 1)
                         {
-                            value += 1;  // insert the bit
+                            value += 1LL;  // insert the bit
                         }
                 }
         }

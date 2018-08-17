@@ -321,7 +321,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
     // record the oldest subframe symbol before inserting a new symbol into the circular buffer
     if (d_current_subframe_symbol < GPS_SUBFRAME_MS and d_symbol_history.size() > 0)
         {
-            d_subframe_symbols[d_current_subframe_symbol] = d_symbol_history.at(0).Prompt_I;
+            d_subframe_symbols[d_current_subframe_symbol] = d_symbol_history[0].Prompt_I;
             d_current_subframe_symbol++;
         }
 
@@ -337,9 +337,9 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
             // std::cout << "-------\n";
             for (uint32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_SYMBOLS; i++)
                 {
-                    if (d_symbol_history.at(i).Flag_valid_symbol_output == true)
+                    if (d_symbol_history[i].Flag_valid_symbol_output == true)
                         {
-                            if (d_symbol_history.at(i).Prompt_I < 0)  // symbols clipping
+                            if (d_symbol_history[i].Prompt_I < 0)  // symbols clipping
                                 {
                                     corr_value -= d_preambles_symbols[i];
                                 }
@@ -358,18 +358,18 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
             if (d_stat == 0)
                 {
                     // record the preamble sample stamp
-                    d_preamble_time_samples = d_symbol_history.at(0).Tracking_sample_counter;  // record the preamble sample stamp
-                    DLOG(INFO) << "Preamble detection for SAT " << this->d_satellite << "d_symbol_history.at(0).Tracking_sample_counter=" << d_symbol_history.at(0).Tracking_sample_counter;
+                    d_preamble_time_samples = d_symbol_history[0].Tracking_sample_counter;  // record the preamble sample stamp
+                    DLOG(INFO) << "Preamble detection for SAT " << this->d_satellite << "d_symbol_history[0].Tracking_sample_counter=" << d_symbol_history[0].Tracking_sample_counter;
                     d_stat = 1;  // enter into frame pre-detection status
                 }
             else if (d_stat == 1)  // check 6 seconds of preamble separation
                 {
-                    preamble_diff_ms = std::round(((static_cast<double>(d_symbol_history.at(0).Tracking_sample_counter) - static_cast<double>(d_preamble_time_samples)) / static_cast<double>(d_symbol_history.at(0).fs)) * 1000.0);
+                    preamble_diff_ms = std::round(((static_cast<double>(d_symbol_history[0].Tracking_sample_counter) - static_cast<double>(d_preamble_time_samples)) / static_cast<double>(d_symbol_history[0].fs)) * 1000.0);
                     if (std::abs(preamble_diff_ms - GPS_SUBFRAME_MS) % GPS_SUBFRAME_MS == 0)
                         {
                             DLOG(INFO) << "Preamble confirmation for SAT " << this->d_satellite;
                             d_flag_preamble = true;
-                            d_preamble_time_samples = d_symbol_history.at(0).Tracking_sample_counter;  // record the PRN start sample index associated to the preamble
+                            d_preamble_time_samples = d_symbol_history[0].Tracking_sample_counter;  // record the PRN start sample index associated to the preamble
                             if (!d_flag_frame_sync)
                                 {
                                     d_flag_frame_sync = true;
@@ -383,7 +383,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
                                             flag_PLL_180_deg_phase_locked = false;
                                         }
                                     DLOG(INFO) << " Frame sync SAT " << this->d_satellite << " with preamble start at "
-                                               << static_cast<double>(d_preamble_time_samples) / static_cast<double>(d_symbol_history.at(0).fs) << " [s]";
+                                               << static_cast<double>(d_preamble_time_samples) / static_cast<double>(d_symbol_history[0].fs) << " [s]";
                                 }
 
                             // try to decode the subframe:
@@ -407,7 +407,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
         {
             if (d_stat == 1)
                 {
-                    preamble_diff_ms = round(((static_cast<double>(d_symbol_history.at(0).Tracking_sample_counter) - static_cast<double>(d_preamble_time_samples)) / static_cast<double>(d_symbol_history.at(0).fs)) * 1000.0);
+                    preamble_diff_ms = round(((static_cast<double>(d_symbol_history[0].Tracking_sample_counter) - static_cast<double>(d_preamble_time_samples)) / static_cast<double>(d_symbol_history[0].fs)) * 1000.0);
                     if (preamble_diff_ms > GPS_SUBFRAME_MS)
                         {
                             DLOG(INFO) << "Lost of frame sync SAT " << this->d_satellite << " preamble_diff= " << preamble_diff_ms;

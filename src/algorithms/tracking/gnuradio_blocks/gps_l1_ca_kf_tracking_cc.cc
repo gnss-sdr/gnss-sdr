@@ -66,10 +66,16 @@ gps_l1_ca_kf_make_tracking_cc(
     bool dump,
     std::string dump_filename,
     float dll_bw_hz,
-    float early_late_space_chips)
+    float early_late_space_chips,
+    bool bce_run,
+    unsigned int bce_ptrans,
+    unsigned int bce_strans,
+    int bce_nu,
+    int bce_kappa)
 {
     return gps_l1_ca_kf_tracking_cc_sptr(new Gps_L1_Ca_Kf_Tracking_cc(order, if_freq,
-        fs_in, vector_length, dump, dump_filename, dll_bw_hz, early_late_space_chips));
+        fs_in, vector_length, dump, dump_filename, dll_bw_hz, early_late_space_chips,
+        bce_run, bce_ptrans, bce_strans, bce_nu, bce_kappa));
 }
 
 
@@ -91,7 +97,12 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
     bool dump,
     std::string dump_filename,
     float dll_bw_hz,
-    float early_late_space_chips) : gr::block("Gps_L1_Ca_Kf_Tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
+    float early_late_space_chips,
+    bool bce_run,
+    unsigned int bce_ptrans,
+    unsigned int bce_strans,
+    int bce_nu,
+    int bce_kappa) : gr::block("Gps_L1_Ca_Kf_Tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
                                         gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
     // Telemetry bit synchronization message port input
@@ -140,6 +151,8 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
     d_rem_code_phase_samples = 0.0;
     // define residual carrier phase
     d_rem_carr_phase_rad = 0.0;
+    // define residual carrier phase covariance
+    d_carr_phase_sigma2 = 0.0;
 
     // sample synchronization
     d_sample_counter = 0;
@@ -165,6 +178,7 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
     d_acq_code_phase_samples = 0.0;
     d_acq_carrier_doppler_hz = 0.0;
     d_carrier_doppler_hz = 0.0;
+    d_carrier_dopplerrate_hz2 = 0.0;
     d_acc_carrier_phase_rad = 0.0;
     d_code_phase_samples = 0.0;
     d_rem_code_phase_chips = 0.0;
@@ -186,7 +200,7 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
     //covariances (static)
     double sigma2_carrier_phase = GPS_TWO_PI / 4;
     double sigma2_doppler       = 450;
-    double sigma2_doppler_rate  = 1.0 / 24.0;
+    double sigma2_doppler_rate  = pow(4.0 * GPS_TWO_PI, 2) / 12.0;
 
     kf_P_x_ini = arma::zeros(2, 2);
     kf_P_x_ini(0, 0) = sigma2_carrier_phase;
@@ -196,7 +210,7 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
     kf_R(0, 0) = sigma2_phase_detector_cycles2;
 
     kf_Q = arma::zeros(2, 2);
-    kf_Q(0, 0) = pow(4, GPS_L1_CA_CODE_PERIOD);
+    kf_Q(0, 0) = pow(GPS_L1_CA_CODE_PERIOD, 4);
     kf_Q(1, 1) = GPS_L1_CA_CODE_PERIOD;
 
     kf_F = arma::zeros(2, 2);
@@ -210,6 +224,7 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
 
     kf_x = arma::zeros(2, 1);
     kf_y = arma::zeros(1, 1);
+    kf_P_y = arma::zeros(1, 1);
 
     // order three
     if (d_order == 3)
@@ -218,12 +233,12 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
             kf_P_x_ini(2, 2) = sigma2_doppler_rate;
 
             kf_Q = arma::zeros(3, 3);
-            kf_Q(0, 0) = pow(6, GPS_L1_CA_CODE_PERIOD);
-            kf_Q(1, 1) = pow(4, GPS_L1_CA_CODE_PERIOD);
-            kf_Q(2, 2) = pow(2, GPS_L1_CA_CODE_PERIOD);
+            kf_Q(0, 0) = pow(GPS_L1_CA_CODE_PERIOD, 4);
+            kf_Q(1, 1) = GPS_L1_CA_CODE_PERIOD;
+            kf_Q(2, 2) = GPS_L1_CA_CODE_PERIOD;
 
             kf_F = arma::resize(kf_F, 3, 3);
-            kf_F(0, 2) = 0.25 * GPS_TWO_PI * pow(2, GPS_L1_CA_CODE_PERIOD);
+            kf_F(0, 2) = 0.5 * GPS_TWO_PI * pow(GPS_L1_CA_CODE_PERIOD, 2);
             kf_F(1, 2) = GPS_L1_CA_CODE_PERIOD;
             kf_F(2, 0) = 0.0;
             kf_F(2, 1) = 0.0;
@@ -233,10 +248,21 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
             kf_H(0, 2) = 0.0;
 
             kf_x = arma::resize(kf_x, 3, 1);
-            kf_x(2, 0) = -0.25;
+            kf_x(2, 0) = 0.0;
         }
-}
 
+    // Bayesian covariance estimator initialization
+    kf_iter      = 0;
+    bayes_run    = bce_run;
+    bayes_ptrans = bce_ptrans;
+    bayes_strans = bce_strans;
+
+    bayes_kappa  = bce_kappa;
+    bayes_nu     = bce_nu;
+    kf_R_est     = kf_R;
+
+    bayes_estimator.init(arma::zeros(1,1), bayes_kappa, bayes_nu, (kf_H * kf_P_x_ini * kf_H.t() + kf_R)*(bayes_nu + 2));
+}
 
 void Gps_L1_Ca_Kf_Tracking_cc::start_tracking()
 {
@@ -251,7 +277,8 @@ void Gps_L1_Ca_Kf_Tracking_cc::start_tracking()
     // Correct Kalman filter covariance according to acq doppler step size (3 sigma)
     if (d_acquisition_gnss_synchro->Acq_doppler_step > 0)
         {
-            kf_P_x_ini(1, 1) = pow(2, d_acq_carrier_doppler_step_hz / 3.0);
+            kf_P_x_ini(1, 1) = pow(d_acq_carrier_doppler_step_hz / 3.0, 2);
+            bayes_estimator.init(arma::zeros(1,1), bayes_kappa, bayes_nu, (kf_H * kf_P_x_ini * kf_H.t() + kf_R)*(bayes_nu + 2));
         }
 
     long int acq_trk_diff_samples;
@@ -288,6 +315,7 @@ void Gps_L1_Ca_Kf_Tracking_cc::start_tracking()
     d_acq_code_phase_samples = corrected_acq_phase_samples;
 
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
+    d_carrier_dopplerrate_hz2 = 0;
     d_carrier_phase_step_rad = GPS_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
 
     // DLL filter initialization
@@ -307,6 +335,7 @@ void Gps_L1_Ca_Kf_Tracking_cc::start_tracking()
     d_rem_carr_phase_rad = 0.0;
     d_rem_code_phase_chips = 0.0;
     d_acc_carrier_phase_rad = 0.0;
+    d_carr_phase_sigma2 = 0.0;
 
     d_code_phase_samples = d_acq_code_phase_samples;
 
@@ -372,7 +401,7 @@ int Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
     // READ DUMP FILE
     std::ifstream::pos_type size;
     int number_of_double_vars = 1;
-    int number_of_float_vars = 17;
+    int number_of_float_vars = 19;
     int epoch_size_bytes = sizeof(unsigned long int) + sizeof(double) * number_of_double_vars +
                            sizeof(float) * number_of_float_vars + sizeof(unsigned int);
     std::ifstream dump_file;
@@ -408,8 +437,10 @@ int Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
     unsigned long int *PRN_start_sample_count = new unsigned long int[num_epoch];
     float *acc_carrier_phase_rad = new float[num_epoch];
     float *carrier_doppler_hz = new float[num_epoch];
+    float *carrier_dopplerrate_hz2 = new float[num_epoch];
     float *code_freq_chips = new float[num_epoch];
     float *carr_error_hz = new float[num_epoch];
+    float *carr_noise_sigma2 = new float[num_epoch];
     float *carr_error_filt_hz = new float[num_epoch];
     float *code_error_chips = new float[num_epoch];
     float *code_error_filt_chips = new float[num_epoch];
@@ -435,8 +466,10 @@ int Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
                             dump_file.read(reinterpret_cast<char *>(&PRN_start_sample_count[i]), sizeof(unsigned long int));
                             dump_file.read(reinterpret_cast<char *>(&acc_carrier_phase_rad[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&carrier_doppler_hz[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&carrier_dopplerrate_hz2[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&code_freq_chips[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&carr_error_hz[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&carr_noise_sigma2[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&carr_error_filt_hz[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&code_error_chips[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&code_error_filt_chips[i]), sizeof(float));
@@ -462,8 +495,10 @@ int Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
             delete[] PRN_start_sample_count;
             delete[] acc_carrier_phase_rad;
             delete[] carrier_doppler_hz;
+            delete[] carrier_dopplerrate_hz2;
             delete[] code_freq_chips;
             delete[] carr_error_hz;
+            delete[] carr_noise_sigma2;
             delete[] carr_error_filt_hz;
             delete[] code_error_chips;
             delete[] code_error_filt_chips;
@@ -525,11 +560,19 @@ int Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
+            matvar = Mat_VarCreate("carrier_dopplerrate_hz2", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, carrier_dopplerrate_hz2, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
             matvar = Mat_VarCreate("code_freq_chips", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, code_freq_chips, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
             matvar = Mat_VarCreate("carr_error_hz", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, carr_error_hz, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("carr_noise_sigma2", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, carr_noise_sigma2, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
@@ -576,8 +619,10 @@ int Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
     delete[] PRN_start_sample_count;
     delete[] acc_carrier_phase_rad;
     delete[] carrier_doppler_hz;
+    delete[] carrier_dopplerrate_hz2;
     delete[] code_freq_chips;
     delete[] carr_error_hz;
+    delete[] carr_noise_sigma2;
     delete[] carr_error_filt_hz;
     delete[] code_error_chips;
     delete[] code_error_filt_chips;
@@ -627,7 +672,7 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     // process vars
-    double carr_phase_error_rad = 0.0;
+    d_carr_phase_error_rad = 0.0;
     double code_error_chips = 0.0;
     double code_error_filt_chips = 0.0;
 
@@ -667,7 +712,15 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
                     kf_P_x = kf_P_x_ini;
                     // Update Kalman states based on acquisition information
                     kf_x(0) = d_carrier_phase_step_rad * samples_offset;
-                    kf_x(1) = current_synchro_data.Carrier_Doppler_hz;
+                    kf_x(1) = d_carrier_doppler_hz;
+                    if (kf_x.n_elem > 2)
+                        {
+                            kf_x(2) = d_carrier_dopplerrate_hz2;
+                        }
+
+                    // Covariance estimation initialization reset
+                    kf_iter = 0;
+                    bayes_estimator.init(arma::zeros(1,1), bayes_kappa, bayes_nu, (kf_H * kf_P_x_ini * kf_H.t() + kf_R)*(bayes_nu + 2));
 
                     consume_each(samples_offset);  // shift input to perform alignment with local replica
                     return 1;
@@ -689,24 +742,49 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
             kf_P_x_pre = kf_F * kf_P_x * kf_F.t() + kf_Q;  //state error covariance prediction
 
             // Update discriminator [rads/Ti]
-            carr_phase_error_rad = pll_cloop_two_quadrant_atan(d_correlator_outs[1]);  // prompt output
+            d_carr_phase_error_rad = pll_cloop_two_quadrant_atan(d_correlator_outs[1]);  // prompt output
 
             // Kalman estimation (measurement update)
             double sigma2_phase_detector_cycles2;
             double CN_lin = pow(10, d_CN0_SNV_dB_Hz / 10.0);
             sigma2_phase_detector_cycles2 = (1.0 / (2.0 * CN_lin * GPS_L1_CA_CODE_PERIOD)) * (1.0 + 1.0 / (2.0 * CN_lin * GPS_L1_CA_CODE_PERIOD));
+
+            kf_y(0) = d_carr_phase_error_rad;  // measurement vector
             kf_R(0, 0) = sigma2_phase_detector_cycles2;
 
-            kf_P_y = kf_H * kf_P_x_pre * kf_H.t() + kf_R;        // innovation covariance matrix
-            kf_K = (kf_P_x_pre * kf_H.t()) * arma::inv(kf_P_y);  // Kalman gain
+            if (bayes_run && (kf_iter >= bayes_ptrans))
+                {
+                    bayes_estimator.update_sequential(kf_y);
+                }
+            if (bayes_run && (kf_iter >= (bayes_ptrans + bayes_strans)))
+                {
+                    // TODO: Resolve segmentation fault
+                    kf_P_y = bayes_estimator.get_Psi_est();
+                    kf_R_est = kf_P_y - kf_H * kf_P_x_pre * kf_H.t();
+                }
+            else
+                {
+                    kf_P_y = kf_H * kf_P_x_pre * kf_H.t() + kf_R;        // innovation covariance matrix
+                    kf_R_est = kf_R;
+                }
 
-            kf_y(0) = carr_phase_error_rad;  // measurement vector
-            kf_x = kf_x_pre + kf_K * kf_y;   // updated state estimation
-
+            // Kalman filter update step
+            kf_K   = (kf_P_x_pre * kf_H.t()) * arma::inv(kf_P_y);  // Kalman gain
+            kf_x   = kf_x_pre + kf_K * kf_y;   // updated state estimation
             kf_P_x = (arma::eye(size(kf_P_x_pre)) - kf_K * kf_H) * kf_P_x_pre;  // update state estimation error covariance matrix
 
+            // Store Kalman filter results
             d_rem_carr_phase_rad = kf_x(0);  // set a new carrier Phase estimation to the NCO
             d_carrier_doppler_hz = kf_x(1);  // set a new carrier Doppler estimation to the NCO
+            if (kf_x.n_elem > 2)
+                {
+                    d_carrier_dopplerrate_hz2 = kf_x(2);
+                }
+            else
+                {
+                    d_carrier_dopplerrate_hz2 = 0;
+                }
+            d_carr_phase_sigma2 = kf_R_est(0, 0);
 
             // ################## DLL ##########################################################
             // New code Doppler frequency estimation based on carrier frequency estimation
@@ -756,7 +834,10 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
                     // Loss of lock detection
                     if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < FLAGS_cn0_min)
                         {
+                            //if (d_channel == 1)
+                            //std::cout << "Carrier Lock Test Fail in channel " << d_channel << ": " << d_carrier_lock_test << " < " << d_carrier_lock_threshold << "," << nfail++ << std::endl;
                             d_carrier_lock_fail_counter++;
+                            //nfail++;
                         }
                     else
                         {
@@ -781,6 +862,9 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
             current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
             current_synchro_data.Flag_valid_symbol_output = true;
             current_synchro_data.correlation_length_ms = 1;
+
+            kf_iter++;
+
         }
     else
         {
@@ -833,10 +917,14 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
                     // carrier and code frequency
                     tmp_float = d_carrier_doppler_hz;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    tmp_float = d_carrier_dopplerrate_hz2;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     tmp_float = d_code_freq_chips;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
-                    // PLL commands
-                    tmp_float = static_cast<float>(carr_phase_error_rad * GPS_TWO_PI);
+                    // Kalman commands
+                    tmp_float = static_cast<float>(d_carr_phase_error_rad * GPS_TWO_PI);
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    tmp_float = static_cast<float>(d_carr_phase_sigma2);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     tmp_float = static_cast<float>(d_rem_carr_phase_rad * GPS_TWO_PI);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));

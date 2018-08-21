@@ -659,7 +659,8 @@ endif(NOT ${GTEST_DIR_LOCAL})
 add_executable(trk_test ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
                         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/galileo_e1_dll_pll_veml_tracking_test.cc
                         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/tracking_loop_filter_test.cc
-                        ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/cpu_multicorrelator_real_codes_test.cc )
+                        ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/cpu_multicorrelator_real_codes_test.cc
+                        ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/bayesian_estimation_test.cc )
 
 target_link_libraries(trk_test ${Boost_LIBRARIES}
                                ${GFlags_LIBS}

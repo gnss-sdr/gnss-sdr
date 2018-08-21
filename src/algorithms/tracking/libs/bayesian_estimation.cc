@@ -42,8 +42,14 @@
 
 Bayesian_estimator::Bayesian_estimator()
 {
+    int ny      = 1;
+    mu_prior    = arma::zeros(ny,1);
     kappa_prior = 0;
     nu_prior    = 0;
+    Psi_prior   = arma::eye(ny,ny) * (nu_prior + ny + 1);
+
+    mu_est      = mu_prior;
+    Psi_est     = Psi_prior;
 }
 
 Bayesian_estimator::Bayesian_estimator(int ny)
@@ -52,6 +58,9 @@ Bayesian_estimator::Bayesian_estimator(int ny)
     kappa_prior = 0;
     nu_prior    = 0;
     Psi_prior   = arma::eye(ny,ny) * (nu_prior + ny + 1);
+
+    mu_est      = mu_prior;
+    Psi_est     = Psi_prior;
 }
 
 Bayesian_estimator::Bayesian_estimator(arma::vec mu_prior_0, int kappa_prior_0, int nu_prior_0, arma::mat Psi_prior_0)
@@ -60,10 +69,24 @@ Bayesian_estimator::Bayesian_estimator(arma::vec mu_prior_0, int kappa_prior_0, 
     kappa_prior = kappa_prior_0;
     nu_prior    = nu_prior_0;
     Psi_prior   = Psi_prior_0;
+
+    mu_est      = mu_prior;
+    Psi_est     = Psi_prior;
 }
 
 Bayesian_estimator::~Bayesian_estimator()
 {
+}
+
+void Bayesian_estimator::init(arma::vec mu_prior_0, int kappa_prior_0, int nu_prior_0, arma::mat Psi_prior_0)
+{
+    mu_prior    = mu_prior_0;
+    kappa_prior = kappa_prior_0;
+    nu_prior    = nu_prior_0;
+    Psi_prior   = Psi_prior_0;
+
+    mu_est      = mu_prior;
+    Psi_est     = Psi_prior;
 }
 
 /*
@@ -152,10 +175,9 @@ void Bayesian_estimator::update_sequential(arma::vec data, arma::vec mu_prior_0,
     kappa_prior = kappa_posterior;
     nu_prior    = nu_posterior;
     Psi_prior   = Psi_posterior;
-
 }
 
-arma::vec Bayesian_estimator::get_mu_est()
+arma::mat Bayesian_estimator::get_mu_est()
 {
     return mu_est;
 }

@@ -64,6 +64,11 @@ GpsL1CaKfTracking::GpsL1CaKfTracking(
     float pll_bw_hz;
     float dll_bw_hz;
     float early_late_space_chips;
+    bool bce_run;
+    unsigned int bce_ptrans;
+    unsigned int bce_strans;
+    int bce_nu;
+    int bce_kappa;
 
     item_type = configuration->property(role + ".item_type", default_item_type);
     order = configuration->property(role + ".order", 2);
@@ -78,6 +83,12 @@ GpsL1CaKfTracking::GpsL1CaKfTracking(
     dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
     vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
+    bce_run = configuration->property(role + ".bce_run", false);
+    bce_ptrans = configuration->property(role + ".p_transient", 0);
+    bce_strans = configuration->property(role + ".s_transient", 0);
+    bce_nu = configuration->property(role + ".bce_nu", 0);
+    bce_kappa = configuration->property(role + ".bce_kappa", 0);
+
     //################# MAKE TRACKING GNURadio object ###################
     if (item_type.compare("gr_complex") == 0)
         {
@@ -90,7 +101,12 @@ GpsL1CaKfTracking::GpsL1CaKfTracking(
                 dump,
                 dump_filename,
                 dll_bw_hz,
-                early_late_space_chips);
+                early_late_space_chips,
+                bce_run,
+                bce_ptrans,
+                bce_strans,
+                bce_nu,
+                bce_kappa);
         }
     else
         {

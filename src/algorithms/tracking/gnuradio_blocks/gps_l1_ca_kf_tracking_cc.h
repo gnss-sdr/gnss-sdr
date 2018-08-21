@@ -63,7 +63,12 @@ gps_l1_ca_kf_make_tracking_cc(unsigned int order,
     bool dump,
     std::string dump_filename,
     float pll_bw_hz,
-    float early_late_space_chips);
+    float early_late_space_chips,
+    bool bce_run,
+    unsigned int bce_ptrans,
+    unsigned int bce_strans,
+    int bce_nu,
+    int bce_kappa);
 
 
 /*!
@@ -91,7 +96,12 @@ private:
         bool dump,
         std::string dump_filename,
         float dll_bw_hz,
-        float early_late_space_chips);
+        float early_late_space_chips,
+        bool bce_run,
+        unsigned int bce_ptrans,
+        unsigned int bce_strans,
+        int bce_nu,
+        int bce_kappa);
 
     Gps_L1_Ca_Kf_Tracking_cc(unsigned int order,
         long if_freq,
@@ -99,7 +109,12 @@ private:
         bool dump,
         std::string dump_filename,
         float dll_bw_hz,
-        float early_late_space_chips);
+        float early_late_space_chips,
+        bool bce_run,
+        unsigned int bce_ptrans,
+        unsigned int bce_strans,
+        int bce_nu,
+        int bce_kappa);
 
     // tracking configuration vars
     unsigned int d_order;
@@ -124,19 +139,27 @@ private:
     arma::mat kf_P_x;       //state error covariance matrix
     arma::mat kf_P_x_pre;   //Predicted state error covariance matrix
     arma::mat kf_P_y;       //innovation covariance matrix
+
     arma::mat kf_F;         //state transition matrix
     arma::mat kf_H;         //system matrix
     arma::mat kf_R;         //measurement error covariance matrix
     arma::mat kf_Q;         //system error covariance matrix
+
     arma::colvec kf_x;      //state vector
     arma::colvec kf_x_pre;  //predicted state vector
     arma::colvec kf_y;      //measurement vector
-    arma::colvec kf_y_pre;  //measurement vector
     arma::mat kf_K;         //Kalman gain matrix
 
     // Bayesian estimator
-    Bayesian_estimator cov_est;
+    Bayesian_estimator bayes_estimator;
+    arma::mat kf_R_est;         //measurement error covariance
+    unsigned int bayes_ptrans;
+    unsigned int bayes_strans;
+    int bayes_nu;
+    int bayes_kappa;
 
+    bool bayes_run;
+    unsigned int kf_iter;
 
     // PLL and DLL filter library
     Tracking_2nd_DLL_filter d_code_loop_filter;
@@ -157,8 +180,11 @@ private:
     double d_code_freq_chips;
     double d_code_phase_step_chips;
     double d_carrier_doppler_hz;
+    double d_carrier_dopplerrate_hz2;
     double d_carrier_phase_step_rad;
     double d_acc_carrier_phase_rad;
+    double d_carr_phase_error_rad;
+    double d_carr_phase_sigma2;
     double d_code_phase_samples;
     double code_error_chips;
     double code_error_filt_chips;

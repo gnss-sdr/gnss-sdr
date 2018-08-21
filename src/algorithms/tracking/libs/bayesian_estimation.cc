@@ -38,7 +38,7 @@
  */
 
 #include "bayesian_estimation.h"
-#include <armadillo>
+
 
 Bayesian_estimator::Bayesian_estimator()
 {
@@ -176,12 +176,12 @@ void Bayesian_estimator::update_sequential(const arma::vec& data, const arma::ve
     Psi_prior = Psi_posterior;
 }
 
-arma::mat Bayesian_estimator::get_mu_est()
+arma::mat Bayesian_estimator::get_mu_est() const
 {
     return mu_est;
 }
 
-arma::mat Bayesian_estimator::get_Psi_est()
+arma::mat Bayesian_estimator::get_Psi_est() const
 {
     return Psi_est;
 }

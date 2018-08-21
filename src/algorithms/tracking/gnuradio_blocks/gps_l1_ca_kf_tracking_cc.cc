@@ -84,7 +84,7 @@ void Gps_L1_Ca_Kf_Tracking_cc::forecast(int noutput_items,
 {
     if (noutput_items != 0)
         {
-            ninput_items_required[0] = static_cast<int>(d_vector_length) * 2;  //set the required available samples in each call
+            ninput_items_required[0] = static_cast<int>(d_vector_length) * 2;  // set the required available samples in each call
         }
 }
 
@@ -122,7 +122,7 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
     // Initialize tracking  ==========================================
     d_code_loop_filter.set_DLL_BW(dll_bw_hz);
 
-    //--- DLL variables --------------------------------------------------------
+    // --- DLL variables --------------------------------------------------------
     d_early_late_spc_chips = early_late_space_chips;  // Define early-late offset (in chips)
 
     // Initialization of local code replica
@@ -144,7 +144,7 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
 
     multicorrelator_cpu.init(2 * d_current_prn_length_samples, d_n_correlator_taps);
 
-    //--- Perform initializations ------------------------------
+    // --- Perform initializations ------------------------------
     // define initial code frequency basis of NCO
     d_code_freq_chips = GPS_L1_CA_CODE_RATE_HZ;
     // define residual code phase (in chips)
@@ -156,7 +156,6 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
 
     // sample synchronization
     d_sample_counter = 0;
-    //d_sample_counter_seconds = 0;
     d_acq_sample_stamp = 0;
 
     d_enable_tracking = false;
@@ -197,7 +196,7 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
     double sigma2_phase_detector_cycles2;
     sigma2_phase_detector_cycles2 = (1.0 / (2.0 * CN_lin * GPS_L1_CA_CODE_PERIOD)) * (1.0 + 1.0 / (2.0 * CN_lin * GPS_L1_CA_CODE_PERIOD));
 
-    //covariances (static)
+    // covariances (static)
     double sigma2_carrier_phase = GPS_TWO_PI / 4;
     double sigma2_doppler = 450;
     double sigma2_doppler_rate = pow(4.0 * GPS_TWO_PI, 2) / 12.0;

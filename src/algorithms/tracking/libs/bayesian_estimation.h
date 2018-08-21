@@ -69,8 +69,8 @@ public:
     void update_sequential(const arma::vec& data);
     void update_sequential(const arma::vec& data, const arma::vec& mu_prior_0, int kappa_prior_0, int nu_prior_0, const arma::mat& Psi_prior_0);
 
-    arma::mat get_mu_est();
-    arma::mat get_Psi_est();
+    arma::mat get_mu_est() const;
+    arma::mat get_Psi_est() const;
 
 private:
     arma::vec mu_est;

@@ -184,26 +184,30 @@ void Gnss_Satellite::set_PRN(uint32_t PRN_)
         }
     else if (system.compare("SBAS") == 0)
         {
-            if (PRN_ == 122)
+            if (PRN_ == 120)
                 {
                     PRN = PRN_;
-                }  // WAAS Inmarsat 3F4 (AOR-W)
-            else if (PRN_ == 134)
+                }  // EGNOS Test Platform.Inmarsat 3-F2 (Atlantic Ocean Region-East)
+            else if (PRN_ == 123)
                 {
                     PRN = PRN_;
-                }  // WAAS Inmarsat 3F3 (POR)
-            else if (PRN_ == 120)
+                }  // EGNOS Operational Platform. Astra 5B
+            else if (PRN_ == 131)
                 {
                     PRN = PRN_;
-                }  // EGNOS AOR-E Broadcast satellite http://www.egnos-pro.esa.int/index.html
-            else if (PRN_ == 124)
+                }  // WAAS Eutelsat 117 West B
+            else if (PRN_ == 135)
                 {
                     PRN = PRN_;
-                }  // EGNOS ESA ARTEMIS used for EGNOS Operations
-            else if (PRN_ == 126)
+                }  // WAAS Galaxy 15
+            else if (PRN_ == 136)
                 {
                     PRN = PRN_;
-                }  // EGNOS IOR-W  currently used by Industry to perform various tests on the system.
+                }  // EGNOS Operational Platform. SES-5 (a.k.a. Sirius 5 or Astra 4B)
+            else if (PRN_ == 138)
+                {
+                    PRN = PRN_;
+                }  // WAAS Anik F1R
             else
                 {
                     DLOG(INFO) << "This PRN is not defined";
@@ -492,20 +496,23 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
         {
             switch (PRN_)
                 {
-                case 122:
-                    block_ = std::string("WAAS");  // WAAS Inmarsat 3F4 (AOR-W)
-                    break;
-                case 134:
-                    block_ = std::string("WAAS");  // WAAS Inmarsat 3F3 (POR)
-                    break;
                 case 120:
-                    block_ = std::string("EGNOS");  // EGNOS AOR-E Broadcast satellite http://www.egnos-pro.esa.int/index.html
+                    block_ = std::string("EGNOS Test Platform");  // Inmarsat 3-F2 (Atlantic Ocean Region-East)
                     break;
-                case 124:
-                    block_ = std::string("EGNOS");  // EGNOS ESA ARTEMIS used for EGNOS Operations
+                case 123:
+                    block_ = std::string("EGNOS");  // EGNOS Operational Platform. Astra 5B
                     break;
-                case 126:
-                    block_ = std::string("EGNOS");  // EGNOS IOR-W  currently used by Industry to perform various tests on the system.
+                case 131:
+                    block_ = std::string("WAAS");  // WAAS Eutelsat 117 West B
+                    break;
+                case 135:
+                    block_ = std::string("WAAS");  // WAAS Galaxy 15
+                    break;
+                case 136:
+                    block_ = std::string("EGNOS");  // EGNOS Operational Platform. SES-5 (a.k.a. Sirius 5 or Astra 4B)
+                    break;
+                case 138:
+                    block_ = std::string("WAAS");  // WAAS Anik F1R
                     break;
                 default:
                     block_ = std::string("Unknown");

@@ -34,6 +34,7 @@ set(TRACKING_GR_BLOCKS_SOURCES
      glonass_l1_ca_dll_pll_tracking_cc.cc
      glonass_l1_ca_dll_pll_c_aid_tracking_cc.cc
      glonass_l1_ca_dll_pll_c_aid_tracking_sc.cc
+     gps_l1_ca_kf_tracking_cc.cc  
      glonass_l2_ca_dll_pll_tracking_cc.cc
      glonass_l2_ca_dll_pll_c_aid_tracking_cc.cc
      glonass_l2_ca_dll_pll_c_aid_tracking_sc.cc
@@ -48,6 +49,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/receiver
      ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+     ${ARMADILLO_INCLUDE_DIRS}
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${Boost_INCLUDE_DIRS}

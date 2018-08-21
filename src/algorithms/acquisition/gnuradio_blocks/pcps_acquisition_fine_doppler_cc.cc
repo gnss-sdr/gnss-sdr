@@ -180,10 +180,10 @@ void pcps_acquisition_fine_doppler_cc::init()
     d_gnss_synchro->Flag_valid_symbol_output = false;
     d_gnss_synchro->Flag_valid_pseudorange = false;
     d_gnss_synchro->Flag_valid_word = false;
-
+    d_gnss_synchro->Acq_doppler_step = 0U;
     d_gnss_synchro->Acq_delay_samples = 0.0;
     d_gnss_synchro->Acq_doppler_hz = 0.0;
-    d_gnss_synchro->Acq_samplestamp_samples = 0;
+    d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
     d_state = 0;
 }
 
@@ -295,6 +295,7 @@ double pcps_acquisition_fine_doppler_cc::compute_CAF()
     d_gnss_synchro->Acq_delay_samples = static_cast<double>(index_time);
     d_gnss_synchro->Acq_doppler_hz = static_cast<double>(index_doppler * d_doppler_step - d_config_doppler_max);
     d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
+    d_gnss_synchro->Acq_doppler_step = d_doppler_step;
 
     return d_test_statistics;
 }
@@ -461,7 +462,8 @@ void pcps_acquisition_fine_doppler_cc::set_state(int state)
         {
             d_gnss_synchro->Acq_delay_samples = 0.0;
             d_gnss_synchro->Acq_doppler_hz = 0.0;
-            d_gnss_synchro->Acq_samplestamp_samples = 0;
+            d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
+            d_gnss_synchro->Acq_doppler_step = 0U;
             d_well_count = 0;
             d_test_statistics = 0.0;
             d_active = true;

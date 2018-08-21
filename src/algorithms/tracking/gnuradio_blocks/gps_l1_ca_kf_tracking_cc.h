@@ -40,16 +40,16 @@
 #ifndef GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H
 #define GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H
 
-#include <fstream>
-#include <map>
-#include <string>
-#include <gnuradio/block.h>
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
-#include <armadillo>
 #include "cpu_multicorrelator_real_codes.h"
 #include "bayesian_estimation.h"
+#include <armadillo>
+#include <gnuradio/block.h>
+#include <fstream>
+#include <map>
+#include <string>
 
 class Gps_L1_Ca_Kf_Tracking_cc;
 
@@ -57,18 +57,18 @@ typedef boost::shared_ptr<Gps_L1_Ca_Kf_Tracking_cc>
     gps_l1_ca_kf_tracking_cc_sptr;
 
 gps_l1_ca_kf_tracking_cc_sptr
-gps_l1_ca_kf_make_tracking_cc(unsigned int order,
-    long if_freq,
-    long fs_in, unsigned int vector_length,
+gps_l1_ca_kf_make_tracking_cc(uint32_t order,
+    int64_t if_freq,
+    int64_t fs_in, uint32_t vector_length,
     bool dump,
     std::string dump_filename,
     float pll_bw_hz,
     float early_late_space_chips,
     bool bce_run,
-    unsigned int bce_ptrans,
-    unsigned int bce_strans,
-    int bce_nu,
-    int bce_kappa);
+    uint32_t bce_ptrans,
+    uint32_t bce_strans,
+    int32_t bce_nu,
+    int32_t bce_kappa);
 
 
 /*!
@@ -79,7 +79,7 @@ class Gps_L1_Ca_Kf_Tracking_cc : public gr::block
 public:
     ~Gps_L1_Ca_Kf_Tracking_cc();
 
-    void set_channel(unsigned int channel);
+    void set_channel(uint32_t channel);
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
     void start_tracking();
 
@@ -90,42 +90,42 @@ public:
 
 private:
     friend gps_l1_ca_kf_tracking_cc_sptr
-    gps_l1_ca_kf_make_tracking_cc(unsigned int order,
-        long if_freq,
-        long fs_in, unsigned int vector_length,
+    gps_l1_ca_kf_make_tracking_cc(uint32_t order,
+        int64_t if_freq,
+        int64_t fs_in, uint32_t vector_length,
         bool dump,
         std::string dump_filename,
         float dll_bw_hz,
         float early_late_space_chips,
         bool bce_run,
-        unsigned int bce_ptrans,
-        unsigned int bce_strans,
-        int bce_nu,
-        int bce_kappa);
+        uint32_t bce_ptrans,
+        uint32_t bce_strans,
+        int32_t bce_nu,
+        int32_t bce_kappa);
 
-    Gps_L1_Ca_Kf_Tracking_cc(unsigned int order,
-        long if_freq,
-        long fs_in, unsigned int vector_length,
+    Gps_L1_Ca_Kf_Tracking_cc(uint32_t order,
+        int64_t if_freq,
+        int64_t fs_in, uint32_t vector_length,
         bool dump,
         std::string dump_filename,
         float dll_bw_hz,
         float early_late_space_chips,
         bool bce_run,
-        unsigned int bce_ptrans,
-        unsigned int bce_strans,
-        int bce_nu,
-        int bce_kappa);
+        uint32_t bce_ptrans,
+        uint32_t bce_strans,
+        int32_t bce_nu,
+        int32_t bce_kappa);
 
     // tracking configuration vars
-    unsigned int d_order;
-    unsigned int d_vector_length;
+    uint32_t d_order;
+    uint32_t d_vector_length;
     bool d_dump;
 
     Gnss_Synchro* d_acquisition_gnss_synchro;
-    unsigned int d_channel;
+    uint32_t d_channel;
 
-    long d_if_freq;
-    long d_fs_in;
+    int64_t d_if_freq;
+    int64_t d_fs_in;
 
     double d_early_late_spc_chips;
 
@@ -135,42 +135,42 @@ private:
     double d_rem_carr_phase_rad;
 
     // Kalman filter variables
-    arma::mat kf_P_x_ini;   //initial state error covariance matrix
-    arma::mat kf_P_x;       //state error covariance matrix
-    arma::mat kf_P_x_pre;   //Predicted state error covariance matrix
-    arma::mat kf_P_y;       //innovation covariance matrix
+    arma::mat kf_P_x_ini;  // initial state error covariance matrix
+    arma::mat kf_P_x;      // state error covariance matrix
+    arma::mat kf_P_x_pre;  // Predicted state error covariance matrix
+    arma::mat kf_P_y;      // innovation covariance matrix
 
-    arma::mat kf_F;         //state transition matrix
-    arma::mat kf_H;         //system matrix
-    arma::mat kf_R;         //measurement error covariance matrix
-    arma::mat kf_Q;         //system error covariance matrix
+    arma::mat kf_F;  // state transition matrix
+    arma::mat kf_H;  // system matrix
+    arma::mat kf_R;  // measurement error covariance matrix
+    arma::mat kf_Q;  // system error covariance matrix
 
-    arma::colvec kf_x;      //state vector
-    arma::colvec kf_x_pre;  //predicted state vector
-    arma::colvec kf_y;      //measurement vector
-    arma::mat kf_K;         //Kalman gain matrix
+    arma::colvec kf_x;      // state vector
+    arma::colvec kf_x_pre;  // predicted state vector
+    arma::colvec kf_y;      // measurement vector
+    arma::mat kf_K;         // Kalman gain matrix
 
     // Bayesian estimator
     Bayesian_estimator bayes_estimator;
-    arma::mat kf_R_est;         //measurement error covariance
-    unsigned int bayes_ptrans;
-    unsigned int bayes_strans;
-    int bayes_nu;
-    int bayes_kappa;
+    arma::mat kf_R_est;  // measurement error covariance
+    uint32_t bayes_ptrans;
+    uint32_t bayes_strans;
+    int32_t bayes_nu;
+    int32_t bayes_kappa;
 
     bool bayes_run;
-    unsigned int kf_iter;
+    uint32_t kf_iter;
 
     // PLL and DLL filter library
     Tracking_2nd_DLL_filter d_code_loop_filter;
-    //Tracking_2nd_PLL_filter d_carrier_loop_filter;
+    // Tracking_2nd_PLL_filter d_carrier_loop_filter;
 
     // acquisition
     double d_acq_carrier_doppler_step_hz;
     double d_acq_code_phase_samples;
     double d_acq_carrier_doppler_hz;
     // correlator
-    int d_n_correlator_taps;
+    int32_t d_n_correlator_taps;
     float* d_ca_code;
     float* d_local_code_shift_chips;
     gr_complex* d_correlator_outs;
@@ -189,20 +189,20 @@ private:
     double code_error_chips;
     double code_error_filt_chips;
 
-    //PRN period in samples
-    int d_current_prn_length_samples;
+    // PRN period in samples
+    int32_t d_current_prn_length_samples;
 
-    //processing samples counters
-    unsigned long int d_sample_counter;
-    unsigned long int d_acq_sample_stamp;
+    // processing samples counters
+    uint64_t d_sample_counter;
+    uint64_t d_acq_sample_stamp;
 
     // CN0 estimation and lock detector
-    int d_cn0_estimation_counter;
+    int32_t d_cn0_estimation_counter;
     gr_complex* d_Prompt_buffer;
     double d_carrier_lock_test;
     double d_CN0_SNV_dB_Hz;
     double d_carrier_lock_threshold;
-    int d_carrier_lock_fail_counter;
+    int32_t d_carrier_lock_fail_counter;
 
     // control vars
     bool d_enable_tracking;
@@ -215,7 +215,7 @@ private:
     std::map<std::string, std::string> systemName;
     std::string sys;
 
-    int save_matfile();
+    int32_t save_matfile();
 };
 
-#endif  //GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H
+#endif  // GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H

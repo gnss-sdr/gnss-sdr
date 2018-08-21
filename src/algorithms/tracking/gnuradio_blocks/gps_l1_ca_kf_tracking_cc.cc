@@ -59,19 +59,19 @@ using google::LogMessage;
 
 gps_l1_ca_kf_tracking_cc_sptr
 gps_l1_ca_kf_make_tracking_cc(
-    unsigned int order,
-    long if_freq,
-    long fs_in,
-    unsigned int vector_length,
+    uint32_t order,
+    int64_t if_freq,
+    int64_t fs_in,
+    uint32_t vector_length,
     bool dump,
     std::string dump_filename,
     float dll_bw_hz,
     float early_late_space_chips,
     bool bce_run,
-    unsigned int bce_ptrans,
-    unsigned int bce_strans,
-    int bce_nu,
-    int bce_kappa)
+    uint32_t bce_ptrans,
+    uint32_t bce_strans,
+    int32_t bce_nu,
+    int32_t bce_kappa)
 {
     return gps_l1_ca_kf_tracking_cc_sptr(new Gps_L1_Ca_Kf_Tracking_cc(order, if_freq,
         fs_in, vector_length, dump, dump_filename, dll_bw_hz, early_late_space_chips,
@@ -90,20 +90,20 @@ void Gps_L1_Ca_Kf_Tracking_cc::forecast(int noutput_items,
 
 
 Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
-    unsigned int order,
-    long if_freq,
-    long fs_in,
-    unsigned int vector_length,
+    uint32_t order,
+    int64_t if_freq,
+    int64_t fs_in,
+    uint32_t vector_length,
     bool dump,
     std::string dump_filename,
     float dll_bw_hz,
     float early_late_space_chips,
     bool bce_run,
-    unsigned int bce_ptrans,
-    unsigned int bce_strans,
-    int bce_nu,
-    int bce_kappa) : gr::block("Gps_L1_Ca_Kf_Tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
-                                        gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
+    uint32_t bce_ptrans,
+    uint32_t bce_strans,
+    int32_t bce_nu,
+    int32_t bce_kappa) : gr::block("Gps_L1_Ca_Kf_Tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
+                             gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
     // Telemetry bit synchronization message port input
     this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
@@ -132,7 +132,7 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
     // correlator outputs (scalar)
     d_n_correlator_taps = 3;  // Early, Prompt, and Late
     d_correlator_outs = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_n_correlator_taps * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-    for (int n = 0; n < d_n_correlator_taps; n++)
+    for (int32_t n = 0; n < d_n_correlator_taps; n++)
         {
             d_correlator_outs[n] = gr_complex(0, 0);
         }
@@ -199,8 +199,8 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
 
     //covariances (static)
     double sigma2_carrier_phase = GPS_TWO_PI / 4;
-    double sigma2_doppler       = 450;
-    double sigma2_doppler_rate  = pow(4.0 * GPS_TWO_PI, 2) / 12.0;
+    double sigma2_doppler = 450;
+    double sigma2_doppler_rate = pow(4.0 * GPS_TWO_PI, 2) / 12.0;
 
     kf_P_x_ini = arma::zeros(2, 2);
     kf_P_x_ini(0, 0) = sigma2_carrier_phase;
@@ -252,16 +252,16 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
         }
 
     // Bayesian covariance estimator initialization
-    kf_iter      = 0;
-    bayes_run    = bce_run;
+    kf_iter = 0;
+    bayes_run = bce_run;
     bayes_ptrans = bce_ptrans;
     bayes_strans = bce_strans;
 
-    bayes_kappa  = bce_kappa;
-    bayes_nu     = bce_nu;
-    kf_R_est     = kf_R;
+    bayes_kappa = bce_kappa;
+    bayes_nu = bce_nu;
+    kf_R_est = kf_R;
 
-    bayes_estimator.init(arma::zeros(1,1), bayes_kappa, bayes_nu, (kf_H * kf_P_x_ini * kf_H.t() + kf_R)*(bayes_nu + 2));
+    bayes_estimator.init(arma::zeros(1, 1), bayes_kappa, bayes_nu, (kf_H * kf_P_x_ini * kf_H.t() + kf_R) * (bayes_nu + 2));
 }
 
 void Gps_L1_Ca_Kf_Tracking_cc::start_tracking()
@@ -278,12 +278,12 @@ void Gps_L1_Ca_Kf_Tracking_cc::start_tracking()
     if (d_acquisition_gnss_synchro->Acq_doppler_step > 0)
         {
             kf_P_x_ini(1, 1) = pow(d_acq_carrier_doppler_step_hz / 3.0, 2);
-            bayes_estimator.init(arma::zeros(1,1), bayes_kappa, bayes_nu, (kf_H * kf_P_x_ini * kf_H.t() + kf_R)*(bayes_nu + 2));
+            bayes_estimator.init(arma::zeros(1, 1), bayes_kappa, bayes_nu, (kf_H * kf_P_x_ini * kf_H.t() + kf_R) * (bayes_nu + 2));
         }
 
-    long int acq_trk_diff_samples;
+    int64_t acq_trk_diff_samples;
     double acq_trk_diff_seconds;
-    acq_trk_diff_samples = static_cast<long int>(d_sample_counter) - static_cast<long int>(d_acq_sample_stamp);  //-d_vector_length;
+    acq_trk_diff_samples = static_cast<int64_t>(d_sample_counter) - static_cast<int64_t>(d_acq_sample_stamp);  //-d_vector_length;
     DLOG(INFO) << "Number of samples between Acquisition and Tracking = " << acq_trk_diff_samples;
     acq_trk_diff_seconds = static_cast<float>(acq_trk_diff_samples) / static_cast<float>(d_fs_in);
     // Doppler effect Fd = (C / (C + Vr)) * F
@@ -325,7 +325,7 @@ void Gps_L1_Ca_Kf_Tracking_cc::start_tracking()
     gps_l1_ca_code_gen_float(d_ca_code, d_acquisition_gnss_synchro->PRN, 0);
 
     multicorrelator_cpu.set_local_code_and_taps(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS), d_ca_code, d_local_code_shift_chips);
-    for (int n = 0; n < d_n_correlator_taps; n++)
+    for (int32_t n = 0; n < d_n_correlator_taps; n++)
         {
             d_correlator_outs[n] = gr_complex(0, 0);
         }
@@ -396,14 +396,14 @@ Gps_L1_Ca_Kf_Tracking_cc::~Gps_L1_Ca_Kf_Tracking_cc()
 }
 
 
-int Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
+int32_t Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
 {
     // READ DUMP FILE
     std::ifstream::pos_type size;
-    int number_of_double_vars = 1;
-    int number_of_float_vars = 19;
-    int epoch_size_bytes = sizeof(unsigned long int) + sizeof(double) * number_of_double_vars +
-                           sizeof(float) * number_of_float_vars + sizeof(unsigned int);
+    int32_t number_of_double_vars = 1;
+    int32_t number_of_float_vars = 19;
+    int32_t epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
+                               sizeof(float) * number_of_float_vars + sizeof(uint32_t);
     std::ifstream dump_file;
     dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try
@@ -416,11 +416,11 @@ int Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
             return 1;
         }
     // count number of epochs and rewind
-    long int num_epoch = 0;
+    int64_t num_epoch = 0;
     if (dump_file.is_open())
         {
             size = dump_file.tellg();
-            num_epoch = static_cast<long int>(size) / static_cast<long int>(epoch_size_bytes);
+            num_epoch = static_cast<int64_t>(size) / static_cast<int64_t>(epoch_size_bytes);
             dump_file.seekg(0, std::ios::beg);
         }
     else
@@ -434,7 +434,7 @@ int Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
     float *abs_VL = new float[num_epoch];
     float *Prompt_I = new float[num_epoch];
     float *Prompt_Q = new float[num_epoch];
-    unsigned long int *PRN_start_sample_count = new unsigned long int[num_epoch];
+    uint64_t *PRN_start_sample_count = new uint64_t[num_epoch];
     float *acc_carrier_phase_rad = new float[num_epoch];
     float *carrier_doppler_hz = new float[num_epoch];
     float *carrier_dopplerrate_hz2 = new float[num_epoch];
@@ -448,13 +448,13 @@ int Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
     float *carrier_lock_test = new float[num_epoch];
     float *aux1 = new float[num_epoch];
     double *aux2 = new double[num_epoch];
-    unsigned int *PRN = new unsigned int[num_epoch];
+    uint32_t *PRN = new uint32_t[num_epoch];
 
     try
         {
             if (dump_file.is_open())
                 {
-                    for (long int i = 0; i < num_epoch; i++)
+                    for (int64_t i = 0; i < num_epoch; i++)
                         {
                             dump_file.read(reinterpret_cast<char *>(&abs_VE[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&abs_E[i]), sizeof(float));
@@ -463,7 +463,7 @@ int Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
                             dump_file.read(reinterpret_cast<char *>(&abs_VL[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&Prompt_I[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&Prompt_Q[i]), sizeof(float));
-                            dump_file.read(reinterpret_cast<char *>(&PRN_start_sample_count[i]), sizeof(unsigned long int));
+                            dump_file.read(reinterpret_cast<char *>(&PRN_start_sample_count[i]), sizeof(uint64_t));
                             dump_file.read(reinterpret_cast<char *>(&acc_carrier_phase_rad[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&carrier_doppler_hz[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&carrier_dopplerrate_hz2[i]), sizeof(float));
@@ -477,7 +477,7 @@ int Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
                             dump_file.read(reinterpret_cast<char *>(&carrier_lock_test[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&aux1[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&aux2[i]), sizeof(double));
-                            dump_file.read(reinterpret_cast<char *>(&PRN[i]), sizeof(unsigned int));
+                            dump_file.read(reinterpret_cast<char *>(&PRN[i]), sizeof(uint32_t));
                         }
                 }
             dump_file.close();
@@ -635,7 +635,7 @@ int Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
 }
 
 
-void Gps_L1_Ca_Kf_Tracking_cc::set_channel(unsigned int channel)
+void Gps_L1_Ca_Kf_Tracking_cc::set_channel(uint32_t channel)
 {
     gr::thread::scoped_lock l(d_setlock);
     d_channel = channel;
@@ -691,9 +691,9 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
             if (d_pull_in == true)
                 {
                     // Signal alignment (skip samples until the incoming signal is aligned with local replica)
-                    unsigned long int acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
+                    uint64_t acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
                     double acq_trk_shif_correction_samples = static_cast<double>(d_current_prn_length_samples) - std::fmod(static_cast<double>(acq_to_trk_delay_samples), static_cast<double>(d_current_prn_length_samples));
-                    int samples_offset = std::round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
+                    int32_t samples_offset = std::round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
                     if (samples_offset < 0)
                         {
                             samples_offset = 0;
@@ -720,7 +720,7 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
 
                     // Covariance estimation initialization reset
                     kf_iter = 0;
-                    bayes_estimator.init(arma::zeros(1,1), bayes_kappa, bayes_nu, (kf_H * kf_P_x_ini * kf_H.t() + kf_R)*(bayes_nu + 2));
+                    bayes_estimator.init(arma::zeros(1, 1), bayes_kappa, bayes_nu, (kf_H * kf_P_x_ini * kf_H.t() + kf_R) * (bayes_nu + 2));
 
                     consume_each(samples_offset);  // shift input to perform alignment with local replica
                     return 1;
@@ -764,13 +764,13 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
                 }
             else
                 {
-                    kf_P_y = kf_H * kf_P_x_pre * kf_H.t() + kf_R;        // innovation covariance matrix
+                    kf_P_y = kf_H * kf_P_x_pre * kf_H.t() + kf_R;  // innovation covariance matrix
                     kf_R_est = kf_R;
                 }
 
             // Kalman filter update step
-            kf_K   = (kf_P_x_pre * kf_H.t()) * arma::inv(kf_P_y);  // Kalman gain
-            kf_x   = kf_x_pre + kf_K * kf_y;   // updated state estimation
+            kf_K = (kf_P_x_pre * kf_H.t()) * arma::inv(kf_P_y);                 // Kalman gain
+            kf_x = kf_x_pre + kf_K * kf_y;                                      // updated state estimation
             kf_P_x = (arma::eye(size(kf_P_x_pre)) - kf_K * kf_H) * kf_P_x_pre;  // update state estimation error covariance matrix
 
             // Store Kalman filter results
@@ -855,7 +855,7 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
             // ########### Output the tracking data to navigation and PVT ##########
             current_synchro_data.Prompt_I = static_cast<double>((d_correlator_outs[1]).real());
             current_synchro_data.Prompt_Q = static_cast<double>((d_correlator_outs[1]).imag());
-            current_synchro_data.Tracking_sample_counter = d_sample_counter + d_current_prn_length_samples;
+            current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(d_current_prn_length_samples);
             current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
             current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
             current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
@@ -864,16 +864,15 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
             current_synchro_data.correlation_length_ms = 1;
 
             kf_iter++;
-
         }
     else
         {
-            for (int n = 0; n < d_n_correlator_taps; n++)
+            for (int32_t n = 0; n < d_n_correlator_taps; n++)
                 {
                     d_correlator_outs[n] = gr_complex(0, 0);
                 }
 
-            current_synchro_data.Tracking_sample_counter = d_sample_counter + d_current_prn_length_samples;
+            current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(d_current_prn_length_samples);
             current_synchro_data.System = {'G'};
             current_synchro_data.correlation_length_ms = 1;
         }
@@ -892,7 +891,6 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
             float tmp_VL = 0.0;
             float tmp_float;
             double tmp_double;
-            unsigned long int tmp_long;
             prompt_I = d_correlator_outs[1].real();
             prompt_Q = d_correlator_outs[1].imag();
             tmp_E = std::abs<float>(d_correlator_outs[0]);
@@ -910,7 +908,7 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
                     d_dump_file.write(reinterpret_cast<char *>(&prompt_I), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char *>(&prompt_Q), sizeof(float));
                     // PRN start sample stamp
-                    d_dump_file.write(reinterpret_cast<char *>(&d_sample_counter), sizeof(unsigned long int));
+                    d_dump_file.write(reinterpret_cast<char *>(&d_sample_counter), sizeof(uint64_t));
                     // accumulated carrier phase
                     tmp_float = d_acc_carrier_phase_rad;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
@@ -941,11 +939,11 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
                     // AUX vars (for debug purposes)
                     tmp_float = d_rem_code_phase_samples;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
-                    tmp_double = static_cast<double>(d_sample_counter + d_current_prn_length_samples);
+                    tmp_double = static_cast<double>(d_sample_counter + static_cast<uint64_t>(d_current_prn_length_samples));
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                     // PRN
-                    unsigned int prn_ = d_acquisition_gnss_synchro->PRN;
-                    d_dump_file.write(reinterpret_cast<char *>(&prn_), sizeof(unsigned int));
+                    uint32_t prn_ = d_acquisition_gnss_synchro->PRN;
+                    d_dump_file.write(reinterpret_cast<char *>(&prn_), sizeof(uint32_t));
                 }
             catch (const std::ifstream::failure &e)
                 {

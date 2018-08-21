@@ -229,11 +229,11 @@ Galileo_Navigation_Message::Galileo_Navigation_Message()
 }
 
 
-bool Galileo_Navigation_Message::CRC_test(std::bitset<GALILEO_DATA_FRAME_BITS> bits, boost::uint32_t checksum)
+bool Galileo_Navigation_Message::CRC_test(std::bitset<GALILEO_DATA_FRAME_BITS> bits, uint32_t checksum)
 {
     CRC_Galileo_INAV_type CRC_Galileo;
 
-    boost::uint32_t crc_computed;
+    uint32_t crc_computed;
     // Galileo INAV frame for CRC is not an integer multiple of bytes
     // it needs to be filled with zeroes at the start of the frame.
     // This operation is done in the transformation from bits to bytes
@@ -290,7 +290,7 @@ uint64_t Galileo_Navigation_Message::read_page_type_unsigned(std::bitset<GALILEO
                     value <<= 1;  // shift left
                     if (bits[GALILEO_PAGE_TYPE_BITS - parameter[i].first - j] == 1)
                         {
-                            value += 1;  // insert the bit
+                            value += 1ULL;  // insert the bit
                         }
                 }
         }
@@ -306,11 +306,11 @@ int64_t Galileo_Navigation_Message::read_navigation_signed(std::bitset<GALILEO_D
     // read the MSB and perform the sign extension
     if (bits[GALILEO_DATA_JK_BITS - parameter[0].first] == 1)
         {
-            value ^= 0xFFFFFFFFFFFFFFFF;  // 64 bits variable
+            value ^= 0xFFFFFFFFFFFFFFFFLL;  // 64 bits variable
         }
     else
         {
-            value &= 0;
+            value &= 0LL;
         }
 
     for (int32_t i = 0; i < num_of_slices; i++)
@@ -321,7 +321,7 @@ int64_t Galileo_Navigation_Message::read_navigation_signed(std::bitset<GALILEO_D
                     value &= 0xFFFFFFFFFFFFFFFE;  // reset the corresponding bit (for the 64 bits variable)
                     if (bits[GALILEO_DATA_JK_BITS - parameter[i].first - j] == 1)
                         {
-                            value += 1;  // insert the bit
+                            value += 1LL;  // insert the bit
                         }
                 }
         }

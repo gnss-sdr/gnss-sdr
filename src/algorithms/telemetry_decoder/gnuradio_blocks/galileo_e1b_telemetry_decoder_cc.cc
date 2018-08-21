@@ -314,7 +314,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute
     consume_each(1);
 
     d_flag_preamble = false;
-    uint32_t required_symbols = GALILEO_INAV_PAGE_SYMBOLS + d_symbols_per_preamble;
+    uint32_t required_symbols = static_cast<uint32_t>(GALILEO_INAV_PAGE_SYMBOLS) + static_cast<uint32_t>(d_symbols_per_preamble);
 
     if (d_symbol_history.size() > required_symbols)
         {
@@ -427,7 +427,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute
                 {
                     // TOW_5 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
                     d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_nav.TOW_5 * 1000.0);
-                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + GALILEO_INAV_PAGE_PART_MS + (required_symbols + 1) * GALILEO_E1_CODE_PERIOD_MS;
+                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (required_symbols + 1) * GALILEO_E1_CODE_PERIOD_MS);
                     d_nav.flag_TOW_5 = false;
                 }
 
@@ -435,20 +435,20 @@ int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute
                 {
                     // TOW_6 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
                     d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_nav.TOW_6 * 1000.0);
-                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + GALILEO_INAV_PAGE_PART_MS + (required_symbols + 1) * GALILEO_E1_CODE_PERIOD_MS;
+                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (required_symbols + 1) * GALILEO_E1_CODE_PERIOD_MS);
                     d_nav.flag_TOW_6 = false;
                 }
             else
                 {
                     // this page has no timing information
-                    d_TOW_at_current_symbol_ms += GALILEO_E1_CODE_PERIOD_MS;  // + GALILEO_INAV_PAGE_PART_SYMBOLS*GALILEO_E1_CODE_PERIOD;
+                    d_TOW_at_current_symbol_ms += static_cast<uint32_t>(GALILEO_E1_CODE_PERIOD_MS);  // + GALILEO_INAV_PAGE_PART_SYMBOLS*GALILEO_E1_CODE_PERIOD;
                 }
         }
     else  // if there is not a new preamble, we define the TOW of the current symbol
         {
             if (d_nav.flag_TOW_set == true)
                 {
-                    d_TOW_at_current_symbol_ms += GALILEO_E1_CODE_PERIOD_MS;
+                    d_TOW_at_current_symbol_ms += static_cast<uint32_t>(GALILEO_E1_CODE_PERIOD_MS);
                 }
         }
 

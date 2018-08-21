@@ -127,6 +127,7 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/tracking/tracking_loop_filter_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/cpu_multicorrelator_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/cpu_multicorrelator_real_codes_test.cc"
+#include "unit-tests/signal-processing-blocks/tracking/bayesian_estimation_test.cc"
 
 #if CUDA_BLOCKS_TEST
 #include "unit-tests/signal-processing-blocks/tracking/gpu_multicorrelator_test.cc"
@@ -148,6 +149,7 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/acquisition/acq_performance_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/gps_l2_m_dll_pll_tracking_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/gps_l1_ca_dll_pll_tracking_test.cc"
+#include "unit-tests/signal-processing-blocks/tracking/gps_l1_ca_kf_tracking_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/tracking_pull-in_test.cc"
 #if ENABLE_FPGA
 #include "unit-tests/signal-processing-blocks/tracking/tracking_pull-in_test_fpga.cc"

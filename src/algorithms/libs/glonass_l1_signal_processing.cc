@@ -32,17 +32,17 @@
 
 #include "glonass_l1_signal_processing.h"
 
-auto auxCeil = [](float x) { return static_cast<int>(static_cast<long>((x) + 1)); };
+auto auxCeil = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
 
-void glonass_l1_ca_code_gen_complex(std::complex<float>* _dest, /* signed int _prn,*/ unsigned int _chip_shift)
+void glonass_l1_ca_code_gen_complex(std::complex<float>* _dest, /* int32_t  _prn,*/ uint32_t _chip_shift)
 {
-    const unsigned int _code_length = 511;
+    const uint32_t _code_length = 511;
     bool G1[_code_length];
     bool G1_register[9];
     bool feedback1;
     bool aux;
-    unsigned int delay;
-    unsigned int lcv, lcv2;
+    uint32_t delay;
+    uint32_t lcv, lcv2;
 
     for (lcv = 0; lcv < 9; lcv++)
         {
@@ -104,26 +104,26 @@ void glonass_l1_ca_code_gen_complex(std::complex<float>* _dest, /* signed int _p
 /*
  *  Generates complex GLONASS L1 C/A code for the desired SV ID and sampled to specific sampling frequency
  */
-void glonass_l1_ca_code_gen_complex_sampled(std::complex<float>* _dest, /* unsigned int _prn,*/ signed int _fs, unsigned int _chip_shift)
+void glonass_l1_ca_code_gen_complex_sampled(std::complex<float>* _dest, /* uint32_t _prn,*/ int32_t _fs, uint32_t _chip_shift)
 {
     // This function is based on the GNU software GPS for MATLAB in the Kay Borre book
     std::complex<float> _code[511];
-    signed int _samplesPerCode, _codeValueIndex;
+    int32_t _samplesPerCode, _codeValueIndex;
     float _ts;
     float _tc;
     float aux;
-    const signed int _codeFreqBasis = 511000;  //Hz
-    const signed int _codeLength = 511;
+    const int32_t _codeFreqBasis = 511000;  //Hz
+    const int32_t _codeLength = 511;
 
     //--- Find number of samples per spreading code ----------------------------
-    _samplesPerCode = static_cast<signed int>(static_cast<double>(_fs) / static_cast<double>(_codeFreqBasis / _codeLength));
+    _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / static_cast<double>(_codeFreqBasis / _codeLength));
 
     //--- Find time constants --------------------------------------------------
     _ts = 1.0 / static_cast<float>(_fs);                 // Sampling period in sec
     _tc = 1.0 / static_cast<float>(_codeFreqBasis);      // C/A chip period in sec
     glonass_l1_ca_code_gen_complex(_code, _chip_shift);  //generate C/A code 1 sample per chip
 
-    for (signed int i = 0; i < _samplesPerCode; i++)
+    for (int32_t i = 0; i < _samplesPerCode; i++)
         {
             //=== Digitizing =======================================================
 

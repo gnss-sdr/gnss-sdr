@@ -32,22 +32,22 @@
 
 #include "gps_sdr_signal_processing.h"
 
-auto auxCeil = [](float x) { return static_cast<int>(static_cast<long>((x) + 1)); };
+auto auxCeil = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
 
-void gps_l1_ca_code_gen_int(int* _dest, signed int _prn, unsigned int _chip_shift)
+void gps_l1_ca_code_gen_int(int32_t* _dest, int32_t _prn, uint32_t _chip_shift)
 {
-    const unsigned int _code_length = 1023;
+    const uint32_t _code_length = 1023;
     bool G1[_code_length];
     bool G2[_code_length];
     bool G1_register[10], G2_register[10];
     bool feedback1, feedback2;
     bool aux;
-    unsigned int lcv, lcv2;
-    unsigned int delay;
-    signed int prn_idx;
+    uint32_t lcv, lcv2;
+    uint32_t delay;
+    int32_t prn_idx;
 
     /* G2 Delays as defined in GPS-ISD-200D */
-    const signed int delays[51] = {5 /*PRN1*/, 6, 7, 8, 17, 18, 139, 140, 141, 251, 252, 254, 255, 256, 257, 258, 469, 470, 471, 472,
+    const int32_t delays[51] = {5 /*PRN1*/, 6, 7, 8, 17, 18, 139, 140, 141, 251, 252, 254, 255, 256, 257, 258, 469, 470, 471, 472,
         473, 474, 509, 512, 513, 514, 515, 516, 859, 860, 861, 862 /*PRN32*/,
         145 /*PRN120*/, 175, 52, 21, 237, 235, 886, 657, 634, 762,
         355, 1012, 176, 603, 130, 359, 595, 68, 386 /*PRN138*/};
@@ -114,28 +114,28 @@ void gps_l1_ca_code_gen_int(int* _dest, signed int _prn, unsigned int _chip_shif
 }
 
 
-void gps_l1_ca_code_gen_float(float* _dest, signed int _prn, unsigned int _chip_shift)
+void gps_l1_ca_code_gen_float(float* _dest, int32_t _prn, uint32_t _chip_shift)
 {
-    unsigned int _code_length = 1023;
-    int ca_code_int[_code_length];
+    const uint32_t _code_length = 1023;
+    int32_t ca_code_int[_code_length];
 
     gps_l1_ca_code_gen_int(ca_code_int, _prn, _chip_shift);
 
-    for (unsigned int ii = 0; ii < _code_length; ++ii)
+    for (uint32_t ii = 0; ii < _code_length; ++ii)
         {
             _dest[ii] = static_cast<float>(ca_code_int[ii]);
         }
 }
 
 
-void gps_l1_ca_code_gen_complex(std::complex<float>* _dest, signed int _prn, unsigned int _chip_shift)
+void gps_l1_ca_code_gen_complex(std::complex<float>* _dest, int32_t _prn, uint32_t _chip_shift)
 {
-    unsigned int _code_length = 1023;
-    int ca_code_int[_code_length];
+    const uint32_t _code_length = 1023;
+    int32_t ca_code_int[_code_length];
 
     gps_l1_ca_code_gen_int(ca_code_int, _prn, _chip_shift);
 
-    for (unsigned int ii = 0; ii < _code_length; ++ii)
+    for (uint32_t ii = 0; ii < _code_length; ++ii)
         {
             _dest[ii] = std::complex<float>(static_cast<float>(ca_code_int[ii]), 0.0f);
         }
@@ -144,27 +144,28 @@ void gps_l1_ca_code_gen_complex(std::complex<float>* _dest, signed int _prn, uns
 
 /*
  *  Generates complex GPS L1 C/A code for the desired SV ID and sampled to specific sampling frequency
+ *  NOTICE: the number of samples is rounded towards zero (integer truncation)
  */
-void gps_l1_ca_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, signed int _fs, unsigned int _chip_shift)
+void gps_l1_ca_code_gen_complex_sampled(std::complex<float>* _dest, uint32_t _prn, int32_t _fs, uint32_t _chip_shift)
 {
     // This function is based on the GNU software GPS for MATLAB in the Kay Borre book
     std::complex<float> _code[1023];
-    signed int _samplesPerCode, _codeValueIndex;
+    int32_t _samplesPerCode, _codeValueIndex;
     float _ts;
     float _tc;
     float aux;
-    const signed int _codeFreqBasis = 1023000;  //Hz
-    const signed int _codeLength = 1023;
+    const int32_t _codeFreqBasis = 1023000;  //Hz
+    const int32_t _codeLength = 1023;
 
     //--- Find number of samples per spreading code ----------------------------
-    _samplesPerCode = static_cast<signed int>(static_cast<double>(_fs) / static_cast<double>(_codeFreqBasis / _codeLength));
+    _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / static_cast<double>(_codeFreqBasis / _codeLength));
 
     //--- Find time constants --------------------------------------------------
     _ts = 1.0 / static_cast<float>(_fs);                   // Sampling period in sec
     _tc = 1.0 / static_cast<float>(_codeFreqBasis);        // C/A chip period in sec
     gps_l1_ca_code_gen_complex(_code, _prn, _chip_shift);  //generate C/A code 1 sample per chip
 
-    for (signed int i = 0; i < _samplesPerCode; i++)
+    for (int32_t i = 0; i < _samplesPerCode; i++)
         {
             //=== Digitizing =======================================================
 

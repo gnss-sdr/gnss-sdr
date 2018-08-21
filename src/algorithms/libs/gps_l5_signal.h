@@ -34,21 +34,21 @@
 #define GNSS_SDR_GPS_L5_SIGNAL_H_
 
 #include <complex>
-
+#include <cstdint>
 
 //!Generates complex GPS L5i M code for the desired SV ID
-void gps_l5i_code_gen_complex(std::complex<float>* _dest, unsigned int _prn);
-void gps_l5i_code_gen_float(float* _dest, unsigned int _prn);
+void gps_l5i_code_gen_complex(std::complex<float>* _dest, uint32_t _prn);
+void gps_l5i_code_gen_float(float* _dest, uint32_t _prn);
 
 //!Generates complex GPS L5q M code for the desired SV ID
-void gps_l5q_code_gen_complex(std::complex<float>* _dest, unsigned int _prn);
-void gps_l5q_code_gen_float(float* _dest, unsigned int _prn);
+void gps_l5q_code_gen_complex(std::complex<float>* _dest, uint32_t _prn);
+void gps_l5q_code_gen_float(float* _dest, uint32_t _prn);
 
 //! Generates complex GPS L5i M code for the desired SV ID, and sampled to specific sampling frequency
-void gps_l5i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, signed int _fs);
+void gps_l5i_code_gen_complex_sampled(std::complex<float>* _dest, uint32_t _prn, int32_t _fs);
 
 //! Generates complex GPS L5q M code for the desired SV ID, and sampled to specific sampling frequency
-void gps_l5q_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, signed int _fs);
+void gps_l5q_code_gen_complex_sampled(std::complex<float>* _dest, uint32_t _prn, int32_t _fs);
 
 
 #endif /* GNSS_SDR_GPS_L5_SIGNAL_H_ */

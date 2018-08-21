@@ -38,7 +38,6 @@
 #include "gnss_synchro.h"
 #include "pcps_acquisition.h"
 #include "complex_byte_to_float_x2.h"
-#include <gnuradio/blocks/stream_to_vector.h>
 #include <gnuradio/blocks/float_to_complex.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <string>
@@ -137,7 +136,6 @@ public:
 private:
     ConfigurationInterface* configuration_;
     pcps_acquisition_sptr acquisition_;
-    gr::blocks::stream_to_vector::sptr stream_to_vector_;
     gr::blocks::float_to_complex::sptr float_to_complex_;
     complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
     size_t item_size_;
@@ -160,6 +158,7 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
+    unsigned int num_codes_;
 
     float calculate_threshold(float pfa);
 };

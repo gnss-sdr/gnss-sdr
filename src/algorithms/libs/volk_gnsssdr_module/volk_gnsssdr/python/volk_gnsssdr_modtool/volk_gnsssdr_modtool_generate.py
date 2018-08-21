@@ -21,15 +21,10 @@
 from __future__ import print_function
 
 import os
-import glob
-import sys
 import re
 import glob
-import shutil
-import exceptions
-from sets import Set
 
-class volk_gnsssdr_modtool:
+class volk_gnsssdr_modtool(object):
     def __init__(self, cfg):
         self.volk_gnsssdr = re.compile('volk_gnsssdr');
         self.remove_after_underscore = re.compile("_.*");
@@ -96,7 +91,7 @@ class volk_gnsssdr_modtool:
 
         dest = os.path.join(self.my_dict['destination'], 'volk_gnsssdr_' + self.my_dict['name'])
         if os.path.exists(dest):
-            raise exceptions.IOError("Destination %s already exits!"%(dest));
+            raise IOError("Destination %s already exits!" % (dest));
 
         if not os.path.exists(os.path.join(self.my_dict['destination'], 'volk_gnsssdr_' + self.my_dict['name'], 'kernels/volk_gnsssdr_' + self.my_dict['name'])):
             os.makedirs(os.path.join(self.my_dict['destination'], 'volk_gnsssdr_' + self.my_dict['name'], 'kernels/volk_gnsssdr_' + self.my_dict['name']))
@@ -108,7 +103,7 @@ class volk_gnsssdr_modtool:
 
         for root, dirnames, filenames in os.walk(self.my_dict['base']):
             for name in filenames:
-                t_table = map(lambda a: re.search(a, name), current_kernel_names);
+                t_table = [re.search(a, name) for a in current_kernel_names]
                 t_table = set(t_table);
                 if t_table == set([None]):
                     infile = os.path.join(root, name);
@@ -188,16 +183,11 @@ class volk_gnsssdr_modtool:
         base = os.path.join(self.my_dict['destination'], top[:-1]) ;
 
         if not name in self.get_current_kernels():
-
-            raise exceptions.IOError("Requested kernel %s is not in module %s"%(name,base));
-
-
+            raise IOError("Requested kernel %s is not in module %s" % (name,base));
 
         inpath = os.path.abspath(base);
-
-
         kernel = re.compile(name)
-        search_kernels = Set([kernel])
+        search_kernels = set([kernel])
         profile = re.compile('^\s*VOLK_PROFILE')
         puppet = re.compile('^\s*VOLK_PUPPET')
         src_dest = os.path.join(inpath, 'apps/', top[:-1] + '_profile.cc');
@@ -253,7 +243,7 @@ class volk_gnsssdr_modtool:
         else:
             basename = self.get_basename(base);
         if not name in self.get_current_kernels(base):
-            raise exceptions.IOError("Requested kernel %s is not in module %s"%(name,base));
+            raise IOError("Requested kernel %s is not in module %s" % (name, base));
 
         inpath = os.path.abspath(base);
         if len(basename) > 0:
@@ -265,7 +255,7 @@ class volk_gnsssdr_modtool:
         self.convert_kernel(oldvolk_gnsssdr, name, base, inpath, top);
 
         kernel = re.compile(name)
-        search_kernels = Set([kernel])
+        search_kernels = set([kernel])
 
         profile = re.compile('^\s*VOLK_PROFILE')
         puppet = re.compile('^\s*VOLK_PUPPET')

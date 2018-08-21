@@ -44,6 +44,7 @@
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <chrono>
+#include <cstdint>
 #include <fstream>
 #include <utility>
 #include <string>
@@ -53,24 +54,24 @@ class rtklib_pvt_cc;
 
 typedef boost::shared_ptr<rtklib_pvt_cc> rtklib_pvt_cc_sptr;
 
-rtklib_pvt_cc_sptr rtklib_make_pvt_cc(unsigned int n_channels,
+rtklib_pvt_cc_sptr rtklib_make_pvt_cc(uint32_t n_channels,
     bool dump,
     std::string dump_filename,
-    int output_rate_ms,
-    int display_rate_ms,
+    int32_t output_rate_ms,
+    int32_t display_rate_ms,
     bool flag_nmea_tty_port,
     std::string nmea_dump_filename,
     std::string nmea_dump_devname,
-    int rinex_version,
-    int rinexobs_rate_ms,
-    int rinexnav_rate_ms,
+    int32_t rinex_version,
+    int32_t rinexobs_rate_ms,
+    int32_t rinexnav_rate_ms,
     bool flag_rtcm_server,
     bool flag_rtcm_tty_port,
-    unsigned short rtcm_tcp_port,
-    unsigned short rtcm_station_id,
+    uint16_t rtcm_tcp_port,
+    uint16_t rtcm_station_id,
     std::map<int, int> rtcm_msg_rate_ms,
     std::string rtcm_dump_devname,
-    const unsigned int type_of_receiver,
+    const uint32_t type_of_receiver,
     rtk_t& rtk);
 
 /*!
@@ -79,24 +80,24 @@ rtklib_pvt_cc_sptr rtklib_make_pvt_cc(unsigned int n_channels,
 class rtklib_pvt_cc : public gr::sync_block
 {
 private:
-    friend rtklib_pvt_cc_sptr rtklib_make_pvt_cc(unsigned int nchannels,
+    friend rtklib_pvt_cc_sptr rtklib_make_pvt_cc(uint32_t nchannels,
         bool dump,
         std::string dump_filename,
-        int output_rate_ms,
-        int display_rate_ms,
+        int32_t output_rate_ms,
+        int32_t display_rate_ms,
         bool flag_nmea_tty_port,
         std::string nmea_dump_filename,
         std::string nmea_dump_devname,
-        int rinex_version,
-        int rinexobs_rate_ms,
-        int rinexnav_rate_ms,
+        int32_t rinex_version,
+        int32_t rinexobs_rate_ms,
+        int32_t rinexnav_rate_ms,
         bool flag_rtcm_server,
         bool flag_rtcm_tty_port,
-        unsigned short rtcm_tcp_port,
-        unsigned short rtcm_station_id,
+        uint16_t rtcm_tcp_port,
+        uint16_t rtcm_station_id,
         std::map<int, int> rtcm_msg_rate_ms,
         std::string rtcm_dump_devname,
-        const unsigned int type_of_receiver,
+        const uint32_t type_of_receiver,
         rtk_t& rtk);
 
     void msg_handler_telemetry(pmt::pmt_t msg);
@@ -105,26 +106,26 @@ private:
     bool b_rinex_header_written;
     bool b_rinex_header_updated;
     double d_rinex_version;
-    int d_rinexobs_rate_ms;
-    int d_rinexnav_rate_ms;
+    int32_t d_rinexobs_rate_ms;
+    int32_t d_rinexnav_rate_ms;
 
     bool b_rtcm_writing_started;
-    int d_rtcm_MT1045_rate_ms;  //!< Galileo Broadcast Ephemeris
-    int d_rtcm_MT1019_rate_ms;  //!< GPS Broadcast Ephemeris (orbits)
-    int d_rtcm_MT1020_rate_ms;  //!< GLONASS Broadcast Ephemeris (orbits)
-    int d_rtcm_MT1077_rate_ms;  //!< The type 7 Multiple Signal Message format for the USA’s GPS system, popular
-    int d_rtcm_MT1087_rate_ms;  //!< GLONASS MSM7. The type 7 Multiple Signal Message format for the Russian GLONASS system
-    int d_rtcm_MT1097_rate_ms;  //!< Galileo MSM7. The type 7 Multiple Signal Message format for Europe’s Galileo system
-    int d_rtcm_MSM_rate_ms;
+    int32_t d_rtcm_MT1045_rate_ms;  //!< Galileo Broadcast Ephemeris
+    int32_t d_rtcm_MT1019_rate_ms;  //!< GPS Broadcast Ephemeris (orbits)
+    int32_t d_rtcm_MT1020_rate_ms;  //!< GLONASS Broadcast Ephemeris (orbits)
+    int32_t d_rtcm_MT1077_rate_ms;  //!< The type 7 Multiple Signal Message format for the USA’s GPS system, popular
+    int32_t d_rtcm_MT1087_rate_ms;  //!< GLONASS MSM7. The type 7 Multiple Signal Message format for the Russian GLONASS system
+    int32_t d_rtcm_MT1097_rate_ms;  //!< Galileo MSM7. The type 7 Multiple Signal Message format for Europe’s Galileo system
+    int32_t d_rtcm_MSM_rate_ms;
 
-    int d_last_status_print_seg;  //for status printer
+    int32_t d_last_status_print_seg;  //for status printer
 
-    unsigned int d_nchannels;
+    uint32_t d_nchannels;
     std::string d_dump_filename;
     std::ofstream d_dump_file;
 
-    int d_output_rate_ms;
-    int d_display_rate_ms;
+    int32_t d_output_rate_ms;
+    int32_t d_display_rate_ms;
 
     std::shared_ptr<Rinex_Printer> rp;
     std::shared_ptr<Kml_Printer> d_kml_dump;
@@ -139,7 +140,7 @@ private:
     std::map<int, Gnss_Synchro> gnss_observables_map;
     bool observables_pairCompare_min(const std::pair<int, Gnss_Synchro>& a, const std::pair<int, Gnss_Synchro>& b);
 
-    unsigned int type_of_rx;
+    uint32_t type_of_rx;
 
     bool first_fix;
     key_t sysv_msg_key;
@@ -153,23 +154,23 @@ private:
     std::chrono::time_point<std::chrono::system_clock> start, end;
 
 public:
-    rtklib_pvt_cc(unsigned int nchannels,
+    rtklib_pvt_cc(uint32_t nchannels,
         bool dump, std::string dump_filename,
-        int output_rate_ms,
-        int display_rate_ms,
+        int32_t output_rate_ms,
+        int32_t display_rate_ms,
         bool flag_nmea_tty_port,
         std::string nmea_dump_filename,
         std::string nmea_dump_devname,
-        int rinex_version,
-        int rinexobs_rate_ms,
-        int rinexnav_rate_ms,
+        int32_t rinex_version,
+        int32_t rinexobs_rate_ms,
+        int32_t rinexnav_rate_ms,
         bool flag_rtcm_server,
         bool flag_rtcm_tty_port,
-        unsigned short rtcm_tcp_port,
-        unsigned short rtcm_station_id,
+        uint16_t rtcm_tcp_port,
+        uint16_t rtcm_station_id,
         std::map<int, int> rtcm_msg_rate_ms,
         std::string rtcm_dump_devname,
-        const unsigned int type_of_receiver,
+        const uint32_t type_of_receiver,
         rtk_t& rtk);
 
     /*!

@@ -1,5 +1,5 @@
 /*!
- * \file gps_l1_ca_dll_pll_tracking.cc
+ * \file gps_l1_ca_dll_pll_tracking_fpga.cc
  * \brief Implementation of an adapter of a DLL+PLL tracking loop block
  * for GPS L1 C/A to a TrackingInterface that uses the FPGA
  * \author Marc Majoral, 2018, mmajoral(at)cttc.es
@@ -13,7 +13,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,32 +31,34 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
+#include <glog/logging.h>
+#include "gps_sdr_signal_processing.h"
 #include "gps_l1_ca_dll_pll_tracking_fpga.h"
 #include "configuration_interface.h"
-#include "display.h"
-#include "gnss_sdr_flags.h"
 #include "GPS_L1_CA.h"
-#include "gps_sdr_signal_processing.h"
-#include <glog/logging.h>
-
+#include "gnss_sdr_flags.h"
+#include "display.h"
 
 #define NUM_PRNs 32
 
 using google::LogMessage;
 
 GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
-    ConfigurationInterface* configuration, std::string role,
-    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+        ConfigurationInterface* configuration, std::string role,
+        unsigned int in_streams, unsigned int out_streams) :
+                role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
-    dllpllconf_fpga_t trk_param_fpga;
+	Dll_Pll_Conf_Fpga trk_param_fpga = Dll_Pll_Conf_Fpga();
     DLOG(INFO) << "role " << role;
-
+    
     //################# CONFIGURATION PARAMETERS ########################
+    //std::string default_item_type = "gr_complex";
+    //std::string item_type = configuration->property(role + ".item_type", default_item_type);
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     int fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     trk_param_fpga.fs_in = fs_in;
@@ -127,42 +129,35 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     trk_param_fpga.device_name = device_name;
     unsigned int device_base = configuration->property(role + ".device_base", 1);
     trk_param_fpga.device_base = device_base;
+    //unsigned int multicorr_type = configuration->property(role + ".multicorr_type", 0);
+    trk_param_fpga.multicorr_type = 0; //multicorr_type : 0 -> 3 correlators, 1 -> 5 correlators
 
     //################# PRE-COMPUTE ALL THE CODES #################
-    d_ca_codes = static_cast<int*>(volk_gnsssdr_malloc(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS * NUM_PRNs) * sizeof(int), volk_gnsssdr_get_alignment()));
+    d_ca_codes = static_cast<int*>(volk_gnsssdr_malloc(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS*NUM_PRNs) * sizeof(int), volk_gnsssdr_get_alignment()));
     for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
-        {
-            gps_l1_ca_code_gen_int(&d_ca_codes[(int(GPS_L1_CA_CODE_LENGTH_CHIPS)) * (PRN - 1)], PRN, 0);
-        }
+    {
+        gps_l1_ca_code_gen_int(&d_ca_codes[(int(GPS_L1_CA_CODE_LENGTH_CHIPS)) * (PRN - 1)], PRN, 0);
+    }
     trk_param_fpga.ca_codes = d_ca_codes;
-    trk_param_fpga.code_length = GPS_L1_CA_CODE_LENGTH_CHIPS;
+    trk_param_fpga.code_length_chips = GPS_L1_CA_CODE_LENGTH_CHIPS;
+    trk_param_fpga.code_samples_per_chip = 1; // 1 sample per chip
 
     //################# MAKE TRACKING GNURadio object ###################
     tracking_fpga_sc = dll_pll_veml_make_tracking_fpga(trk_param_fpga);
     channel_ = 0;
     DLOG(INFO) << "tracking(" << tracking_fpga_sc->unique_id() << ")";
-    if (in_streams_ > 1)
-        {
-            LOG(ERROR) << "This implementation only supports one input stream";
-        }
-    if (out_streams_ > 1)
-        {
-            LOG(ERROR) << "This implementation only supports one output stream";
-        }
+    
 }
-
 
 GpsL1CaDllPllTrackingFpga::~GpsL1CaDllPllTrackingFpga()
 {
     delete[] d_ca_codes;
 }
 
-
 void GpsL1CaDllPllTrackingFpga::start_tracking()
 {
     tracking_fpga_sc->start_tracking();
 }
-
 
 /*
  * Set tracking channel unique ID
@@ -173,27 +168,21 @@ void GpsL1CaDllPllTrackingFpga::set_channel(unsigned int channel)
     tracking_fpga_sc->set_channel(channel);
 }
 
-
 void GpsL1CaDllPllTrackingFpga::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
     tracking_fpga_sc->set_gnss_synchro(p_gnss_synchro);
 }
 
-
 void GpsL1CaDllPllTrackingFpga::connect(gr::top_block_sptr top_block)
 {
-    if (top_block)
-        { /* top_block is not null */
-        };
+    if(top_block) { /* top_block is not null */};
     //nothing to connect
 }
 
 
 void GpsL1CaDllPllTrackingFpga::disconnect(gr::top_block_sptr top_block)
 {
-    if (top_block)
-        { /* top_block is not null */
-        };
+    if(top_block) { /* top_block is not null */};
     //nothing to disconnect
 }
 
@@ -208,3 +197,5 @@ gr::basic_block_sptr GpsL1CaDllPllTrackingFpga::get_right_block()
 {
     return tracking_fpga_sc;
 }
+
+

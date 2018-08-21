@@ -60,7 +60,7 @@ galileo_pcps_8ms_acquisition_cc::galileo_pcps_8ms_acquisition_cc(
                                      gr::io_signature::make(0, 0, sizeof(gr_complex) * sampled_ms * samples_per_ms))
 {
     this->message_port_register_out(pmt::mp("events"));
-    d_sample_counter = 0;  // SAMPLE COUNTER
+    d_sample_counter = 0ULL;  // SAMPLE COUNTER
     d_active = false;
     d_state = 0;
     d_fs_in = fs_in;
@@ -151,10 +151,10 @@ void galileo_pcps_8ms_acquisition_cc::init()
     d_gnss_synchro->Flag_valid_symbol_output = false;
     d_gnss_synchro->Flag_valid_pseudorange = false;
     d_gnss_synchro->Flag_valid_word = false;
-
+    d_gnss_synchro->Acq_doppler_step = 0U;
     d_gnss_synchro->Acq_delay_samples = 0.0;
     d_gnss_synchro->Acq_doppler_hz = 0.0;
-    d_gnss_synchro->Acq_samplestamp_samples = 0;
+    d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
     d_mag = 0.0;
     d_input_power = 0.0;
     const double GALILEO_TWO_PI = 6.283185307179600;
@@ -188,7 +188,8 @@ void galileo_pcps_8ms_acquisition_cc::set_state(int state)
         {
             d_gnss_synchro->Acq_delay_samples = 0.0;
             d_gnss_synchro->Acq_doppler_hz = 0.0;
-            d_gnss_synchro->Acq_samplestamp_samples = 0;
+            d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
+            d_gnss_synchro->Acq_doppler_step = 0U;
             d_well_count = 0;
             d_mag = 0.0;
             d_input_power = 0.0;
@@ -219,7 +220,8 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
                         //restart acquisition variables
                         d_gnss_synchro->Acq_delay_samples = 0.0;
                         d_gnss_synchro->Acq_doppler_hz = 0.0;
-                        d_gnss_synchro->Acq_samplestamp_samples = 0;
+                        d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
+                        d_gnss_synchro->Acq_doppler_step = 0U;
                         d_well_count = 0;
                         d_mag = 0.0;
                         d_input_power = 0.0;
@@ -228,7 +230,7 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
                         d_state = 1;
                     }
 
-                d_sample_counter += d_fft_size * ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_fft_size * ninput_items[0]);  // sample counter
                 consume_each(ninput_items[0]);
 
                 break;
@@ -249,7 +251,7 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
                 d_input_power = 0.0;
                 d_mag = 0.0;
 
-                d_sample_counter += d_fft_size;  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_fft_size);  // sample counter
 
                 d_well_count++;
 
@@ -328,6 +330,7 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
                                 d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
                                 d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
                                 d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
+                                d_gnss_synchro->Acq_doppler_step = d_doppler_step;
                             }
 
                         // Record results to file if required
@@ -404,7 +407,7 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
                 d_active = false;
                 d_state = 0;
 
-                d_sample_counter += d_fft_size * ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_fft_size * ninput_items[0]);  // sample counter
                 consume_each(ninput_items[0]);
 
                 acquisition_message = 2;

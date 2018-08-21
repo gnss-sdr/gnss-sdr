@@ -63,7 +63,7 @@ TEST(RtcmPrinterTest, Run)
     unsigned char c[1];
     for (unsigned int i = 0; i < reference_msg.length(); i = i + 2)
         {
-            unsigned long int n, n2;
+            uint64_t n, n2;
             std::istringstream(reference_msg.substr(i, 1)) >> std::hex >> n;
             std::istringstream(reference_msg.substr(i + 1, 1)) >> std::hex >> n2;
             c[0] = static_cast<unsigned char>(n * 16) + static_cast<unsigned char>(n2);

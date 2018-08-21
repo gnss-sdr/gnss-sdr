@@ -95,6 +95,7 @@ private:
     gr::filter::freq_xlating_fir_filter_fcf::sptr freq_xlating_fir_filter_fcf_;
     gr::filter::freq_xlating_fir_filter_scf::sptr freq_xlating_fir_filter_scf_;
     ConfigurationInterface* config_;
+    int decimation_factor_;
     bool dump_;
     std::string dump_filename_;
     std::string input_item_type_;
@@ -114,7 +115,6 @@ private:
     gr::blocks::float_to_short::sptr float_to_short_2_;
     short_x2_to_cshort_sptr short_x2_to_cshort_;
     complex_float_to_complex_byte_sptr complex_to_complex_byte_;
-    void init();
 };
 
 #endif  // GNSS_SDR_FREQ_XLATING_FIR_FILTER_H_

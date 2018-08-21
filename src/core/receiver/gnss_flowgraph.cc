@@ -277,7 +277,8 @@ void GNSSFlowgraph::connect()
                             std::cout << "Set GNSS-SDR.internal_fs_sps in configuration file" << std::endl;
                             throw(std::invalid_argument("Set GNSS-SDR.internal_fs_sps in configuration"));
                         }
-                    ch_out_sample_counter = gnss_sdr_make_sample_counter(fs, sig_conditioner_.at(0)->get_right_block()->output_signature()->sizeof_stream_item(0));
+                    int observable_interval_ms = static_cast<double>(configuration_->property("GNSS-SDR.observable_interval_ms", 20));
+                    ch_out_sample_counter = gnss_sdr_make_sample_counter(fs, observable_interval_ms, sig_conditioner_.at(0)->get_right_block()->output_signature()->sizeof_stream_item(0));
                     top_block_->connect(sig_conditioner_.at(0)->get_right_block(), 0, ch_out_sample_counter, 0);
                     top_block_->connect(ch_out_sample_counter, 0, observables_->get_left_block(), channels_count_);  //extra port for the sample counter pulse
                 }
@@ -291,21 +292,23 @@ void GNSSFlowgraph::connect()
         }
     else
         {
-            //create a software-defined 1kHz gnss_synchro pulse for the observables block
+            //create a hardware-defined gnss_synchro pulse for the observables block
             try
                 {
-                    //null source
-                    null_source_ = gr::blocks::null_source::make(sizeof(Gnss_Synchro));
-                    //throttle 1kHz
-                    throttle_ = gr::blocks::throttle::make(sizeof(Gnss_Synchro), 1000);  // 1000 samples per second (1kHz)
-                    time_counter_ = gnss_sdr_make_time_counter();
-                    top_block_->connect(null_source_, 0, throttle_, 0);
-                    top_block_->connect(throttle_, 0, time_counter_, 0);
-                    top_block_->connect(time_counter_, 0, observables_->get_left_block(), channels_count_);
+                    double fs = static_cast<double>(configuration_->property("GNSS-SDR.internal_fs_sps", 0));
+                    if (fs == 0.0)
+                        {
+                            LOG(WARNING) << "Set GNSS-SDR.internal_fs_sps in configuration file";
+                            std::cout << "Set GNSS-SDR.internal_fs_sps in configuration file" << std::endl;
+                            throw(std::invalid_argument("Set GNSS-SDR.internal_fs_sps in configuration"));
+                        }
+                    int observable_interval_ms = static_cast<double>(configuration_->property("GNSS-SDR.observable_interval_ms", 20));
+                    ch_out_fpga_sample_counter = gnss_sdr_make_fpga_sample_counter(fs, observable_interval_ms);
+                    top_block_->connect(ch_out_fpga_sample_counter, 0, observables_->get_left_block(), channels_count_);  //extra port for the sample counter pulse
                 }
             catch (const std::exception& e)
                 {
-                    LOG(WARNING) << "Can't connect sample counter";
+                    LOG(WARNING) << "Can't connect FPGA sample counter";
                     LOG(ERROR) << e.what();
                     top_block_->disconnect_all();
                     return;
@@ -323,7 +326,9 @@ void GNSSFlowgraph::connect()
                     std::cout << "Set GNSS-SDR.internal_fs_sps in configuration file" << std::endl;
                     throw(std::invalid_argument("Set GNSS-SDR.internal_fs_sps in configuration"));
                 }
-            ch_out_sample_counter = gnss_sdr_make_sample_counter(fs, sig_conditioner_.at(0)->get_right_block()->output_signature()->sizeof_stream_item(0));
+
+            int observable_interval_ms = static_cast<double>(configuration_->property("GNSS-SDR.observable_interval_ms", 20));
+            ch_out_sample_counter = gnss_sdr_make_sample_counter(fs, observable_interval_ms, sig_conditioner_.at(0)->get_right_block()->output_signature()->sizeof_stream_item(0));
             top_block_->connect(sig_conditioner_.at(0)->get_right_block(), 0, ch_out_sample_counter, 0);
             top_block_->connect(ch_out_sample_counter, 0, observables_->get_left_block(), channels_count_);  //extra port for the sample counter pulse
         }
@@ -629,13 +634,11 @@ void GNSSFlowgraph::disconnect()
         {
             try
                 {
-                    top_block_->disconnect(null_source_, 0, throttle_, 0);
-                    top_block_->disconnect(throttle_, 0, time_counter_, 0);
-                    top_block_->disconnect(time_counter_, 0, observables_->get_left_block(), channels_count_);
+                    top_block_->disconnect(ch_out_fpga_sample_counter, 0, observables_->get_left_block(), channels_count_);
                 }
             catch (const std::exception& e)
                 {
-                    LOG(WARNING) << "Can't connect sample counter";
+                    LOG(WARNING) << "Can't connect FPGA sample counter";
                     LOG(ERROR) << e.what();
                     top_block_->disconnect_all();
                     return;
@@ -896,6 +899,43 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
 
         case 1:
             LOG(INFO) << "Channel " << who << " ACQ SUCCESS satellite " << channels_[who]->get_signal().get_satellite();
+
+            // If the satellite is in the list of available ones, remove it.
+            switch (mapStringValues_[channels_[who]->get_signal().get_signal_str()])
+                {
+                case evGPS_1C:
+                    available_GPS_1C_signals_.remove(channels_[who]->get_signal());
+                    break;
+
+                case evGPS_2S:
+                    available_GPS_2S_signals_.remove(channels_[who]->get_signal());
+                    break;
+
+                case evGPS_L5:
+                    available_GPS_L5_signals_.remove(channels_[who]->get_signal());
+                    break;
+
+                case evGAL_1B:
+                    available_GAL_1B_signals_.remove(channels_[who]->get_signal());
+                    break;
+
+                case evGAL_5X:
+                    available_GAL_5X_signals_.remove(channels_[who]->get_signal());
+                    break;
+
+                case evGLO_1G:
+                    available_GLO_1G_signals_.remove(channels_[who]->get_signal());
+                    break;
+
+                case evGLO_2G:
+                    available_GLO_2G_signals_.remove(channels_[who]->get_signal());
+                    break;
+
+                default:
+                    LOG(ERROR) << "This should not happen :-(";
+                    break;
+                }
+
             channels_state_[who] = 2;
             acq_channels_count_--;
             for (unsigned int i = 0; i < channels_count_; i++)

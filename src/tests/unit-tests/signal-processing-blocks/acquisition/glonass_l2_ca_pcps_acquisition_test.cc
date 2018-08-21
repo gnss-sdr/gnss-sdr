@@ -84,7 +84,7 @@ void GlonassL2CaPcpsAcquisitionTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            long int message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(msg);
             rx_message = message;
             channel_internal_queue.push(rx_message);
         }
@@ -354,8 +354,8 @@ void GlonassL2CaPcpsAcquisitionTest::start_queue()
 void GlonassL2CaPcpsAcquisitionTest::wait_message()
 {
     struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    int64_t begin = 0;
+    int64_t end = 0;
 
     while (!stop)
         {

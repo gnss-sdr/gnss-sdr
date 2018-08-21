@@ -39,6 +39,7 @@
 #include "gps_almanac.h"
 #include "gps_utc_model.h"
 #include <bitset>
+#include <cstdint>
 #include <map>
 #include <string>
 #include <utility>
@@ -53,70 +54,66 @@
 class Gps_Navigation_Message
 {
 private:
-    unsigned long int read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int, int>> parameter);
-    signed long int read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int, int>> parameter);
-    bool read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int, int>> parameter);
-    void print_gps_word_bytes(unsigned int GPS_word);
+    uint64_t read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter);
+    int64_t read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter);
+    bool read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter);
+    void print_gps_word_bytes(uint32_t GPS_word);
 
 public:
     bool b_valid_ephemeris_set_flag;  // flag indicating that this ephemeris set have passed the validation check
-    //broadcast orbit 1
+    // broadcast orbit 1
     double d_TOW;      //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
     double d_TOW_SF1;  //!< Time of GPS Week from HOW word of Subframe 1 [s]
     double d_TOW_SF2;  //!< Time of GPS Week from HOW word of Subframe 2 [s]
     double d_TOW_SF3;  //!< Time of GPS Week from HOW word of Subframe 3 [s]
     double d_TOW_SF4;  //!< Time of GPS Week from HOW word of Subframe 4 [s]
     double d_TOW_SF5;  //!< Time of GPS Week from HOW word of Subframe 5 [s]
-
     double d_IODE_SF2;
     double d_IODE_SF3;
     double d_Crs;      //!< Amplitude of the Sine Harmonic Correction Term to the Orbit Radius [m]
     double d_Delta_n;  //!< Mean Motion Difference From Computed Value [semi-circles/s]
     double d_M_0;      //!< Mean Anomaly at Reference Time [semi-circles]
-    //broadcast orbit 2
+    // broadcast orbit 2
     double d_Cuc;             //!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
     double d_e_eccentricity;  //!< Eccentricity [dimensionless]
     double d_Cus;             //!< Amplitude of the Sine Harmonic Correction Term to the Argument of Latitude [rad]
     double d_sqrt_A;          //!< Square Root of the Semi-Major Axis [sqrt(m)]
-    //broadcast orbit 3
+    // broadcast orbit 3
     double d_Toe;     //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
     double d_Toc;     //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200E) [s]
     double d_Cic;     //!< Amplitude of the Cosine Harmonic Correction Term to the Angle of Inclination [rad]
     double d_OMEGA0;  //!< Longitude of Ascending Node of Orbit Plane at Weekly Epoch [semi-circles]
     double d_Cis;     //!< Amplitude of the Sine Harmonic Correction Term to the Angle of Inclination [rad]
-    //broadcast orbit 4
+    // broadcast orbit 4
     double d_i_0;        //!< Inclination Angle at Reference Time [semi-circles]
     double d_Crc;        //!< Amplitude of the Cosine Harmonic Correction Term to the Orbit Radius [m]
     double d_OMEGA;      //!< Argument of Perigee [semi-cicles]
     double d_OMEGA_DOT;  //!< Rate of Right Ascension [semi-circles/s]
-    //broadcast orbit 5
+    // broadcast orbit 5
     double d_IDOT;          //!< Rate of Inclination Angle [semi-circles/s]
-    int i_code_on_L2;       //!< If 1, P code ON in L2;  if 2, C/A code ON in L2;
-    int i_GPS_week;         //!< GPS week number, aka WN [week]
+    int32_t i_code_on_L2;   //!< If 1, P code ON in L2;  if 2, C/A code ON in L2;
+    int32_t i_GPS_week;     //!< GPS week number, aka WN [week]
     bool b_L2_P_data_flag;  //!< When true, indicates that the NAV data stream was commanded OFF on the P-code of the L2 channel
-    //broadcast orbit 6
-    int i_SV_accuracy;  //!< User Range Accuracy (URA) index of the SV (reference paragraph 6.2.1) for the standard positioning service user (Ref 20.3.3.3.1.3 IS-GPS-200E)
-    int i_SV_health;
+    // broadcast orbit 6
+    int32_t i_SV_accuracy;  //!< User Range Accuracy (URA) index of the SV (reference paragraph 6.2.1) for the standard positioning service user (Ref 20.3.3.3.1.3 IS-GPS-200E)
+    int32_t i_SV_health;
     double d_TGD;   //!< Estimated Group Delay Differential: L1-L2 correction term only for the benefit of "L1 P(Y)" or "L2 P(Y)" s users [s]
     double d_IODC;  //!< Issue of Data, Clock
-    //broadcast orbit 7
-    int i_AODO;  //!< Age of Data Offset (AODO) term for the navigation message correction table (NMCT) contained in subframe 4 (reference paragraph 20.3.3.5.1.9) [s]
-
+    // broadcast orbit 7
+    int32_t i_AODO;            //!< Age of Data Offset (AODO) term for the navigation message correction table (NMCT) contained in subframe 4 (reference paragraph 20.3.3.5.1.9) [s]
     bool b_fit_interval_flag;  //!< indicates the curve-fit interval used by the CS (Block II/IIA/IIR/IIR-M/IIF) and SS (Block IIIA) in determining the ephemeris parameters, as follows: 0 = 4 hours, 1 = greater than 4 hours.
     double d_spare1;
     double d_spare2;
-
     double d_A_f0;  //!< Coefficient 0 of code phase offset model [s]
     double d_A_f1;  //!< Coefficient 1 of code phase offset model [s/s]
     double d_A_f2;  //!< Coefficient 2 of code phase offset model [s/s^2]
 
-
     // Almanac
-    double d_Toa;                      //!< Almanac reference time [s]
-    int i_WN_A;                        //!< Modulo 256 of the GPS week number to which the almanac reference time (d_Toa) is referenced
-    std::map<int, int> almanacHealth;  //!< Map that stores the health information stored in the almanac
+    double d_Toa;                              //!< Almanac reference time [s]
+    int32_t i_WN_A;                            //!< Modulo 256 of the GPS week number to which the almanac reference time (d_Toa) is referenced
+    std::map<int32_t, int32_t> almanacHealth;  //!< Map that stores the health information stored in the almanac
 
-    std::map<int, std::string> satelliteBlock;  //!< Map that stores to which block the PRN belongs http://www.navcen.uscg.gov/?Do=constellationStatus
+    std::map<int32_t, std::string> satelliteBlock;  //!< Map that stores to which block the PRN belongs http://www.navcen.uscg.gov/?Do=constellationStatus
 
     // Flags
 
@@ -146,11 +143,11 @@ public:
     double d_satpos_Z;  //!< Earth-fixed coordinate z of the satellite [m]. The direction of the IERS (International Earth Rotation and Reference Systems Service) Reference Pole (IRP).
 
     // satellite identification info
-    int i_channel_ID;
-    unsigned int i_satellite_PRN;
+    int32_t i_channel_ID;
+    uint32_t i_satellite_PRN;
 
     // time synchro
-    double d_subframe_timestamp_ms;  //[ms]
+    double d_subframe_timestamp_ms;  // [ms]
 
     // Ionospheric parameters
     bool flag_iono_valid;  //!< If set, it indicates that the ionospheric parameters are filled (page 18 has arrived and decoded)
@@ -168,10 +165,10 @@ public:
     double d_A1;                //!< 1st order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s/s]
     double d_A0;                //!< Constant of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s]
     double d_t_OT;              //!< Reference time for UTC data (reference 20.3.4.5 and 20.3.3.5.2.4 IS-GPS-200E) [s]
-    int i_WN_T;                 //!< UTC reference week number [weeks]
+    int32_t i_WN_T;             //!< UTC reference week number [weeks]
     double d_DeltaT_LS;         //!< delta time due to leap seconds [s]. Number of leap seconds since 6-Jan-1980 as transmitted by the GPS almanac.
-    int i_WN_LSF;               //!< Week number at the end of which the leap second becomes effective [weeks]
-    int i_DN;                   //!< Day number (DN) at the end of which the leap second becomes effective [days]
+    int32_t i_WN_LSF;           //!< Week number at the end of which the leap second becomes effective [weeks]
+    int32_t i_DN;               //!< Day number (DN) at the end of which the leap second becomes effective [days]
     double d_DeltaT_LSF;        //!< Scheduled future or recent past (relative to NAV message upload) value of the delta time due to leap seconds [s]
 
     // Satellite velocity
@@ -201,7 +198,7 @@ public:
     /*!
      * \brief Decodes the GPS NAV message
      */
-    int subframe_decoder(char *subframe);
+    int32_t subframe_decoder(char *subframe);
 
     /*!
      * \brief Computes the Coordinated Universal Time (UTC) and

@@ -121,7 +121,7 @@ private:
     unsigned int d_fft_size;
     unsigned int d_fft_size_pow2;
     int* d_max_doppler_indexs;
-    unsigned long int d_sample_counter;
+    uint64_t d_sample_counter;
     gr_complex** d_grid_doppler_wipeoffs;
     unsigned int d_num_doppler_bins;
     gr_complex* d_fft_codes;
@@ -144,7 +144,7 @@ private:
     std::string d_dump_filename;
     gr_complex* d_zero_vector;
     gr_complex** d_in_buffer;
-    std::vector<unsigned long int> d_sample_counter_buffer;
+    std::vector<uint64_t> d_sample_counter_buffer;
     unsigned int d_in_dwell_count;
 
     cl::Platform d_cl_platform;

@@ -32,6 +32,7 @@
 #ifndef GNSS_SDR_ACQUISITION_DUMP_READER_H
 #define GNSS_SDR_ACQUISITION_DUMP_READER_H
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -64,7 +65,8 @@ public:
     float threshold;
     int positive_acq;
     unsigned int PRN;
-    long unsigned int sample_counter;
+    unsigned int num_dwells;
+    uint64_t sample_counter;
 
 private:
     std::string d_basename;

@@ -33,7 +33,7 @@
 
 #include <gnuradio/block.h>
 #include <boost/shared_ptr.hpp>
-
+#include <cstdint>
 
 class gnss_sdr_time_counter;
 
@@ -45,20 +45,20 @@ class gnss_sdr_time_counter : public gr::block
 {
 private:
     gnss_sdr_time_counter();
-    long long int current_T_rx_ms;  // Receiver time in ms since the beginning of the run
-    unsigned int current_s;         // Receiver time in seconds, modulo 60
-    bool flag_m;                    // True if the receiver has been running for at least 1 minute
-    unsigned int current_m;         // Receiver time in minutes, modulo 60
-    bool flag_h;                    // True if the receiver has been running for at least 1 hour
-    unsigned int current_h;         // Receiver time in hours, modulo 24
-    bool flag_days;                 // True if the receiver has been running for at least 1 day
-    unsigned int current_days;      // Receiver time in days since the beginning of the run
-    int report_interval_ms;
+    int64_t current_T_rx_ms;  // Receiver time in ms since the beginning of the run
+    uint32_t current_s;       // Receiver time in seconds, modulo 60
+    bool flag_m;              // True if the receiver has been running for at least 1 minute
+    uint32_t current_m;       // Receiver time in minutes, modulo 60
+    bool flag_h;              // True if the receiver has been running for at least 1 hour
+    uint32_t current_h;       // Receiver time in hours, modulo 24
+    bool flag_days;           // True if the receiver has been running for at least 1 day
+    uint32_t current_days;    // Receiver time in days since the beginning of the run
+    int32_t report_interval_ms;
 
 public:
     friend gnss_sdr_time_counter_sptr gnss_sdr_make_time_counter();
     int general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
-                     gr_vector_const_void_star &input_items __attribute__((unused)), gr_vector_void_star &output_items);
+        gr_vector_const_void_star &input_items __attribute__((unused)), gr_vector_void_star &output_items);
 };
 
 #endif /*GNSS_SDR_SAMPLE_COUNTER_H_*/

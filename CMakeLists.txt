@@ -270,7 +270,19 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
      endif(${DARWIN_VERSION} MATCHES "10")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
-#select the release build type by default to get optimization flags
+# Define extra build types and select Release by default to get optimization flags
+include(GnsssdrBuildTypes)
+# Available options:
+#  - None: nothing set
+#  - Debug: -O2 -g
+#  - Release: -O3
+#  - RelWithDebInfo: -O3 -g
+#  - MinSizeRel: -Os
+#  - Coverage: -Wall -pedantic -pthread -g -O0 -fprofile-arcs -ftest-coverage
+#  - NoOptWithASM: -O0 -g -save-temps
+#  - O2WithASM: -O2 -g -save-temps
+#  - O3WithASM: -O3 -g -save-temps
+#  - ASAN: -Wall -Wextra -g -O2 -fsanitize=address -fno-omit-frame-pointer
 if(NOT CMAKE_BUILD_TYPE)
      if(ENABLE_GPERFTOOLS OR ENABLE_GPROF)
          set(CMAKE_BUILD_TYPE "RelWithDebInfo")
@@ -282,10 +294,8 @@ if(NOT CMAKE_BUILD_TYPE)
 else(NOT CMAKE_BUILD_TYPE)
      message(STATUS "Build type set to ${CMAKE_BUILD_TYPE}.")
 endif(NOT CMAKE_BUILD_TYPE)
+GNSSSDR_CHECK_BUILD_TYPE(${CMAKE_BUILD_TYPE})
 set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
-
-# Append -O2 optimization flag for Debug builds
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2")
 
 # allow 'large' files in 32 bit builds
 if(UNIX)
@@ -318,6 +328,7 @@ set(GNSSSDR_APPLECLANG_MIN_VERSION "500")
 set(GNSSSDR_GNURADIO_MIN_VERSION "3.7.3")
 set(GNSSSDR_BOOST_MIN_VERSION "1.45")
 set(GNSSSDR_PYTHON_MIN_VERSION "2.7")
+set(GNSSSDR_PYTHON3_MIN_VERSION "3.4")
 set(GNSSSDR_MAKO_MIN_VERSION "0.4.2")
 set(GNSSSDR_ARMADILLO_MIN_VERSION "5.300.0")
 set(GNSSSDR_MATIO_MIN_VERSION "1.5.3")
@@ -566,25 +577,28 @@ if(NOT VOLK_GNSSSDR_FOUND)
     ###############################
     # Find Python required modules
     ###############################
-    include(SetupPython) #sets PYTHON_EXECUTABLE and PYTHON_DASH_B
-    GNSSSDR_PYTHON_CHECK_MODULE("python >= ${GNSSSDR_PYTHON_MIN_VERSION}" sys "sys.version.split()[0] >= '${GNSSSDR_PYTHON_MIN_VERSION}'" PYTHON_MIN_VER_FOUND)
-    GNSSSDR_PYTHON_CHECK_MODULE("mako >= ${GNSSSDR_MAKO_MIN_VERSION}" mako "mako.__version__ >= '${GNSSSDR_MAKO_MIN_VERSION}'" MAKO_FOUND)
-    GNSSSDR_PYTHON_CHECK_MODULE("six - python 2 and 3 compatibility library" six "True" SIX_FOUND)
+    include(SetupPython) # sets PYTHON_EXECUTABLE and search for required modules
 
     if(NOT PYTHON_MIN_VER_FOUND)
         message(FATAL_ERROR "Python ${GNSSSDR_PYTHON_MIN_VERSION} or greater required to build VOLK_GNSSSDR")
-    endif()
+    endif(NOT PYTHON_MIN_VER_FOUND)
+
+    if(${PYTHON3})
+        set(PYTHON_NAME "python3")
+    else(${PYTHON3})
+        set(PYTHON_NAME "python")
+    endif(${PYTHON3})
 
     #  Mako
     if(NOT MAKO_FOUND)
-        message(STATUS "Mako templates not found. See http://www.makotemplates.org/ ")
+        message(STATUS "Mako template library not found. See http://www.makotemplates.org/ ")
         message(STATUS " You can try to install it by typing:")
         if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(STATUS " sudo yum install python-mako")
+            message(STATUS " sudo yum install ${PYTHON_NAME}-mako")
         elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
-            message(STATUS " sudo zypper install python-Mako")
+            message(STATUS " sudo zypper install ${PYTHON_NAME}-Mako")
         else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(STATUS " sudo apt-get install python-mako")
+            message(STATUS " sudo apt-get install ${PYTHON_NAME}-mako")
         endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
         message(FATAL_ERROR "Mako templates required to build VOLK_GNSSSDR")
     endif(NOT MAKO_FOUND)
@@ -594,11 +608,11 @@ if(NOT VOLK_GNSSSDR_FOUND)
         message(STATUS "python-six not found. See https://pythonhosted.org/six/ ")
         message(STATUS " You can try to install it by typing:")
         if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(STATUS " sudo yum install python-six")
+            message(STATUS " sudo yum install ${PYTHON_NAME}-six")
         elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
-            message(STATUS " sudo zypper install python-six")
+            message(STATUS " sudo zypper install ${PYTHON_NAME}-six")
         else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(STATUS " sudo apt-get install python-six")
+            message(STATUS " sudo apt-get install ${PYTHON_NAME}-six")
         endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
         message(FATAL_ERROR "six - python 2 and 3 compatibility library required to build VOLK_GNSSSDR")
     endif(NOT SIX_FOUND)

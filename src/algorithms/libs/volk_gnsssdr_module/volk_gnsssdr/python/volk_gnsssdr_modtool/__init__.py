@@ -19,5 +19,5 @@
 #
 #
 
-from cfg import volk_gnsssdr_modtool_config
-from volk_gnsssdr_modtool_generate import volk_gnsssdr_modtool
+from .cfg import volk_gnsssdr_modtool_config
+from .volk_gnsssdr_modtool_generate import volk_gnsssdr_modtool

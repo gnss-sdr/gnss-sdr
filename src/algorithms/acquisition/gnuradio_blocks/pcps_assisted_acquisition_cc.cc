@@ -64,7 +64,7 @@ pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(
                                      gr::io_signature::make(0, 0, sizeof(gr_complex)))
 {
     this->message_port_register_out(pmt::mp("events"));
-    d_sample_counter = 0;  // SAMPLE COUNTER
+    d_sample_counter = 0ULL;  // SAMPLE COUNTER
     d_active = false;
     d_fs_in = fs_in;
     d_samples_per_ms = samples_per_ms;
@@ -150,10 +150,10 @@ void pcps_assisted_acquisition_cc::init()
     d_gnss_synchro->Flag_valid_symbol_output = false;
     d_gnss_synchro->Flag_valid_pseudorange = false;
     d_gnss_synchro->Flag_valid_word = false;
-
+    d_gnss_synchro->Acq_doppler_step = 0U;
     d_gnss_synchro->Acq_delay_samples = 0.0;
     d_gnss_synchro->Acq_doppler_hz = 0.0;
-    d_gnss_synchro->Acq_samplestamp_samples = 0;
+    d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
     d_input_power = 0.0;
     d_state = 0;
 
@@ -279,6 +279,7 @@ double pcps_assisted_acquisition_cc::search_maximum()
     d_gnss_synchro->Acq_delay_samples = static_cast<double>(index_time);
     d_gnss_synchro->Acq_doppler_hz = static_cast<double>(index_doppler * d_doppler_step + d_doppler_min);
     d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
+    d_gnss_synchro->Acq_doppler_step = d_doppler_step;
 
     // Record results to file if required
     if (d_dump)
@@ -380,14 +381,14 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
         {
         case 0:  // S0. StandBy
             if (d_active == true) d_state = 1;
-            d_sample_counter += ninput_items[0];  // sample counter
+            d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
             consume_each(ninput_items[0]);
             break;
         case 1:  // S1. GetAssist
             get_assistance();
             redefine_grid();
             reset_grid();
-            d_sample_counter += ninput_items[0];  // sample counter
+            d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
             consume_each(ninput_items[0]);
             d_state = 2;
             break;
@@ -399,7 +400,7 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
                 {
                     d_state = 3;
                 }
-            d_sample_counter += consumed_samples;
+            d_sample_counter += static_cast<uint64_t>(consumed_samples);
             consume_each(consumed_samples);
             break;
         case 3:  // Compute test statistics and decide
@@ -422,14 +423,14 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
                             d_state = 6;
                         }
                 }
-            d_sample_counter += ninput_items[0];  // sample counter
+            d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
             consume_each(ninput_items[0]);
             break;
         case 4:  // RedefineGrid
             free_grid_memory();
             redefine_grid();
             reset_grid();
-            d_sample_counter += ninput_items[0];  // sample counter
+            d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
             consume_each(ninput_items[0]);
             d_state = 2;
             break;
@@ -447,7 +448,7 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
             this->message_port_pub(pmt::mp("events"), pmt::from_long(1));
             free_grid_memory();
             // consume samples to not block the GNU Radio flowgraph
-            d_sample_counter += ninput_items[0];  // sample counter
+            d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
             consume_each(ninput_items[0]);
             d_state = 0;
             break;
@@ -465,7 +466,7 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
             this->message_port_pub(pmt::mp("events"), pmt::from_long(2));
             free_grid_memory();
             // consume samples to not block the GNU Radio flowgraph
-            d_sample_counter += ninput_items[0];  // sample counter
+            d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
             consume_each(ninput_items[0]);
             d_state = 0;
             break;

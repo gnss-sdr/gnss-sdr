@@ -1,5 +1,5 @@
 /*!
- * \file gps_l1_ca_dll_pll_tracking.h
+ * \file gps_l1_ca_dll_pll_tracking_fpga.h
  * \brief  Interface of an adapter of a DLL+PLL tracking loop block
  * for GPS L1 C/A to a TrackingInterface that uses the FPGA
  * \author Marc Majoral, 2018. mmajoral(at)cttc.es
@@ -13,7 +13,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,7 +31,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -39,9 +39,10 @@
 #ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_
 #define GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_
 
+#include <string>
 #include "tracking_interface.h"
 #include "dll_pll_veml_tracking_fpga.h"
-#include <string>
+
 
 class ConfigurationInterface;
 
@@ -52,9 +53,9 @@ class GpsL1CaDllPllTrackingFpga : public TrackingInterface
 {
 public:
     GpsL1CaDllPllTrackingFpga(ConfigurationInterface* configuration,
-        std::string role,
-        unsigned int in_streams,
-        unsigned int out_streams);
+            std::string role,
+            unsigned int in_streams,
+            unsigned int out_streams);
 
     virtual ~GpsL1CaDllPllTrackingFpga();
 
@@ -92,8 +93,10 @@ public:
 
     void start_tracking() override;
 
+	//void reset(void);
+	
 private:
-    dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
+	dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
     size_t item_size_;
     unsigned int channel_;
     std::string role_;
@@ -102,4 +105,4 @@ private:
     int* d_ca_codes;
 };
 
-#endif  // GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_
+#endif // GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_

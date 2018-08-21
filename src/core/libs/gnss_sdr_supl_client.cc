@@ -47,7 +47,9 @@ gnss_sdr_supl_client::gnss_sdr_supl_client()
     request = 0;
 }
 
+
 gnss_sdr_supl_client::~gnss_sdr_supl_client() {}
+
 
 void gnss_sdr_supl_client::print_assistance()
 {
@@ -189,6 +191,7 @@ int gnss_sdr_supl_client::get_assistance(int i_mcc, int i_mns, int i_lac, int i_
     return err;
 }
 
+
 void gnss_sdr_supl_client::read_supl_data()
 {
     // READ REFERENCE LOCATION
@@ -269,7 +272,6 @@ void gnss_sdr_supl_client::read_supl_data()
                     gps_almanac_iterator->second.d_M_0 = static_cast<double>(a->M0) * pow(2.0, -23);
                 }
         }
-
 
     // READ SV EPHEMERIS
     if (assist.cnt_eph)
@@ -385,9 +387,10 @@ bool gnss_sdr_supl_client::load_ephemeris_xml(const std::string file_name)
     return true;
 }
 
+
 bool gnss_sdr_supl_client::save_ephemeris_map_xml(const std::string file_name, std::map<int, Gps_Ephemeris> eph_map)
 {
-    if (eph_map.size() > 0)
+    if (eph_map.empty() == false)
         {
             try
                 {
@@ -411,6 +414,7 @@ bool gnss_sdr_supl_client::save_ephemeris_map_xml(const std::string file_name, s
         }
 }
 
+
 bool gnss_sdr_supl_client::load_utc_xml(const std::string file_name)
 {
     try
@@ -429,9 +433,10 @@ bool gnss_sdr_supl_client::load_utc_xml(const std::string file_name)
     return true;
 }
 
+
 bool gnss_sdr_supl_client::save_utc_map_xml(const std::string file_name, std::map<int, Gps_Utc_Model> utc_map)
 {
-    if (utc_map.size() > 0)
+    if (utc_map.empty() == false)
         {
             try
                 {
@@ -455,6 +460,7 @@ bool gnss_sdr_supl_client::save_utc_map_xml(const std::string file_name, std::ma
         }
 }
 
+
 bool gnss_sdr_supl_client::load_iono_xml(const std::string file_name)
 {
     try
@@ -473,9 +479,10 @@ bool gnss_sdr_supl_client::load_iono_xml(const std::string file_name)
     return true;
 }
 
+
 bool gnss_sdr_supl_client::save_iono_map_xml(const std::string file_name, std::map<int, Gps_Iono> iono_map)
 {
-    if (iono_map.size() > 0)
+    if (iono_map.empty() == false)
         {
             try
                 {
@@ -499,6 +506,7 @@ bool gnss_sdr_supl_client::save_iono_map_xml(const std::string file_name, std::m
         }
 }
 
+
 bool gnss_sdr_supl_client::load_ref_time_xml(const std::string file_name)
 {
     try
@@ -517,9 +525,10 @@ bool gnss_sdr_supl_client::load_ref_time_xml(const std::string file_name)
     return true;
 }
 
+
 bool gnss_sdr_supl_client::save_ref_time_map_xml(const std::string file_name, std::map<int, Gps_Ref_Time> ref_time_map)
 {
-    if (ref_time_map.size() > 0)
+    if (ref_time_map.empty() == false)
         {
             try
                 {
@@ -543,6 +552,7 @@ bool gnss_sdr_supl_client::save_ref_time_map_xml(const std::string file_name, st
         }
 }
 
+
 bool gnss_sdr_supl_client::load_ref_location_xml(const std::string file_name)
 {
     try
@@ -561,9 +571,10 @@ bool gnss_sdr_supl_client::load_ref_location_xml(const std::string file_name)
     return true;
 }
 
+
 bool gnss_sdr_supl_client::save_ref_location_map_xml(const std::string file_name, std::map<int, Gps_Ref_Location> ref_location_map)
 {
-    if (ref_location_map.size() > 0)
+    if (ref_location_map.empty() == false)
         {
             try
                 {

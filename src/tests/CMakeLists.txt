@@ -123,6 +123,7 @@ if(ENABLE_CUDA)
     set(GNSS_SDR_TEST_OPTIONAL_LIBS ${GNSS_SDR_TEST_OPTIONAL_LIBS} ${CUDA_LIBRARIES})
 endif(ENABLE_CUDA)
 
+
 if(ENABLE_GPERFTOOLS)
     if(GPERFTOOLS_FOUND)
         set(GNSS_SDR_TEST_OPTIONAL_LIBS "${GNSS_SDR_TEST_OPTIONAL_LIBS};${GPERFTOOLS_LIBRARIES}")
@@ -210,7 +211,8 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
    find_package(GPSTK)
    if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
       message(STATUS "GPSTk v${GNSSSDR_GPSTK_LOCAL_VERSION} will be automatically downloaded and built when doing 'make'.")
-      if(NOT ENABLE_FPGA)
+
+ #     if(NOT ENABLE_FPGA)
           if(CMAKE_VERSION VERSION_LESS 3.2)
            ExternalProject_Add(
              gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
@@ -244,10 +246,10 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
           add_definitions(-DGPSTK_BINDIR="${GPSTK_BINDIR}")
           set(gpstk_libs gpstk)
           set(OWN_GPSTK True)
-      else(NOT ENABLE_FPGA)
-          message(STATUS "GPSTk has not been found, try to install it on target.")
-          message(STATUS "Some extra tests requiring GPSTk will not be built.")
-      endif(NOT ENABLE_FPGA)
+#      else(NOT ENABLE_FPGA)
+#          message(STATUS "GPSTk has not been found, try to install it on target.")
+#          message(STATUS "Some extra tests requiring GPSTk will not be built.")
+#      endif(NOT ENABLE_FPGA)
    else(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
        set(gpstk_libs ${GPSTK_LIBRARIES})
        set(GPSTK_INCLUDE_DIRS ${GPSTK_INCLUDE_DIR})
@@ -256,6 +258,11 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
    endif(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
 endif(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
 
+
+if (ENABLE_UNIT_TESTING_EXTRA)
+	set(GNSS_SDR_TEST_OPTIONAL_LIBS ${GNSS_SDR_TEST_OPTIONAL_LIBS} ${gpstk_libs})
+	set(GNSS_SDR_TEST_OPTIONAL_HEADERS ${GNSS_SDR_TEST_OPTIONAL_HEADERS} ${GPSTK_INCLUDE_DIRS} ${GPSTK_INCLUDE_DIRS}/gpstk)
+endif (ENABLE_UNIT_TESTING_EXTRA)
 
 if(ENABLE_UNIT_TESTING_EXTRA)
    add_definitions(-DEXTRA_TESTS)
@@ -659,7 +666,8 @@ endif(NOT ${GTEST_DIR_LOCAL})
 add_executable(trk_test ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
                         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/galileo_e1_dll_pll_veml_tracking_test.cc
                         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/tracking_loop_filter_test.cc
-                        ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/cpu_multicorrelator_real_codes_test.cc )
+                        ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/cpu_multicorrelator_real_codes_test.cc
+                        ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/bayesian_estimation_test.cc )
 
 target_link_libraries(trk_test ${Boost_LIBRARIES}
                                ${GFlags_LIBS}

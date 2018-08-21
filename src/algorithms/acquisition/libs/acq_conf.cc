@@ -34,22 +34,23 @@
 Acq_Conf::Acq_Conf()
 {
     /* PCPS acquisition configuration */
-    sampled_ms = 0;
-    max_dwells = 0;
-    samples_per_chip = 0;
-    doppler_max = 0;
-    num_doppler_bins_step2 = 0;
+    sampled_ms = 0U;
+    ms_per_code = 0U;
+    max_dwells = 0U;
+    samples_per_chip = 0U;
+    doppler_max = 0U;
+    num_doppler_bins_step2 = 0U;
     doppler_step2 = 0.0;
-    fs_in = 0;
-    samples_per_ms = 0;
-    samples_per_code = 0;
+    fs_in = 0LL;
+    samples_per_ms = 0.0;
+    samples_per_code = 0.0;
     bit_transition_flag = false;
     use_CFAR_algorithm_flag = false;
     dump = false;
     blocking = false;
     make_2_steps = false;
     dump_filename = "";
-    dump_channel = 0;
+    dump_channel = 0U;
     it_size = sizeof(char);
     blocking_on_standby = false;
 }

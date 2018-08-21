@@ -101,16 +101,16 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
     acq_parameters.it_size = item_size_;
-    acq_parameters.samples_per_code = code_length_;
-    acq_parameters.samples_per_ms = code_length_;
+    acq_parameters.samples_per_ms = static_cast<float>(fs_in_) * 0.001;
     acq_parameters.sampled_ms = sampled_ms_;
+    acq_parameters.ms_per_code = 1;
+    acq_parameters.samples_per_code = acq_parameters.samples_per_ms * static_cast<float>(GALILEO_E5a_CODE_PERIOD_MS);
     acq_parameters.num_doppler_bins_step2 = configuration_->property(role + ".second_nbins", 4);
     acq_parameters.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
     acq_parameters.make_2_steps = configuration_->property(role + ".make_two_steps", false);
     acq_parameters.blocking_on_standby = configuration_->property(role + ".blocking_on_standby", false);
     acquisition_ = pcps_make_acquisition(acq_parameters);
 
-    stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
     channel_ = 0;
     threshold_ = 0.0;
     doppler_step_ = 0;
@@ -258,15 +258,15 @@ void GalileoE5aPcpsAcquisition::set_state(int state)
 }
 
 
-void GalileoE5aPcpsAcquisition::connect(gr::top_block_sptr top_block)
+void GalileoE5aPcpsAcquisition::connect(gr::top_block_sptr top_block __attribute__((unused)))
 {
     if (item_type_.compare("gr_complex") == 0)
         {
-            top_block->connect(stream_to_vector_, 0, acquisition_, 0);
+            // nothing to connect
         }
     else if (item_type_.compare("cshort") == 0)
         {
-            top_block->connect(stream_to_vector_, 0, acquisition_, 0);
+            // nothing to connect
         }
     else
         {
@@ -275,15 +275,15 @@ void GalileoE5aPcpsAcquisition::connect(gr::top_block_sptr top_block)
 }
 
 
-void GalileoE5aPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
+void GalileoE5aPcpsAcquisition::disconnect(gr::top_block_sptr top_block __attribute__((unused)))
 {
     if (item_type_.compare("gr_complex") == 0)
         {
-            top_block->disconnect(stream_to_vector_, 0, acquisition_, 0);
+            // nothing to disconnect
         }
     else if (item_type_.compare("cshort") == 0)
         {
-            top_block->disconnect(stream_to_vector_, 0, acquisition_, 0);
+            // nothing to disconnect
         }
     else
         {
@@ -294,7 +294,7 @@ void GalileoE5aPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr GalileoE5aPcpsAcquisition::get_left_block()
 {
-    return stream_to_vector_;
+    return acquisition_;
 }
 
 

@@ -39,16 +39,16 @@ ChannelFsm::ChannelFsm()
 {
     acq_ = nullptr;
     trk_ = nullptr;
-    channel_ = 0;
-    d_state = 0;
+    channel_ = 0U;
+    d_state = 0U;
 }
 
 
 ChannelFsm::ChannelFsm(std::shared_ptr<AcquisitionInterface> acquisition) : acq_(acquisition)
 {
     trk_ = nullptr;
-    channel_ = 0;
-    d_state = 0;
+    channel_ = 0U;
+    d_state = 0U;
 }
 
 
@@ -129,7 +129,7 @@ bool ChannelFsm::Event_failed_tracking_standby()
         }
     else
         {
-            d_state = 0;
+            d_state = 0U;
             notify_stop_tracking();
             DLOG(INFO) << "CH = " << channel_ << ". Ev failed tracking standby";
             return true;
@@ -158,7 +158,7 @@ void ChannelFsm::set_queue(gr::msg_queue::sptr queue)
 }
 
 
-void ChannelFsm::set_channel(unsigned int channel)
+void ChannelFsm::set_channel(uint32_t channel)
 {
     std::lock_guard<std::mutex> lk(mx);
     channel_ = channel;

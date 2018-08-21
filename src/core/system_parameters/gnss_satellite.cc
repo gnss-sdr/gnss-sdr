@@ -38,7 +38,7 @@ Gnss_Satellite::Gnss_Satellite()
 }
 
 
-Gnss_Satellite::Gnss_Satellite(const std::string& system_, unsigned int PRN_)
+Gnss_Satellite::Gnss_Satellite(const std::string& system_, uint32_t PRN_)
 {
     Gnss_Satellite::reset();
     Gnss_Satellite::set_system(system_);
@@ -98,9 +98,9 @@ Gnss_Satellite& Gnss_Satellite::operator=(const Gnss_Satellite &rhs) {
     if (this != &rhs) {
             // Deallocate, allocate new space, copy values...
             const std::string system_ = rhs.get_system();
-            const unsigned int PRN_ = rhs.get_PRN();
+            const uint32_t PRN_ = rhs.get_PRN();
             const std::string block_ = rhs.get_block();
-           // const signed int rf_link_ = 0;
+           // const int32_t rf_link_ = 0;
             this->set_system(system_);
             this->set_PRN(PRN_);
             this->set_block(system_, PRN_);
@@ -127,7 +127,7 @@ void Gnss_Satellite::set_system(const std::string& system_)
 }
 
 
-void Gnss_Satellite::update_PRN(unsigned int PRN_)
+void Gnss_Satellite::update_PRN(uint32_t PRN_)
 {
     if (system.compare("Glonass") != 0)
         {
@@ -150,7 +150,7 @@ void Gnss_Satellite::update_PRN(unsigned int PRN_)
 }
 
 
-void Gnss_Satellite::set_PRN(unsigned int PRN_)
+void Gnss_Satellite::set_PRN(uint32_t PRN_)
 {
     // Set satellite's PRN
     if (system.compare("") == 0)
@@ -230,19 +230,19 @@ void Gnss_Satellite::set_PRN(unsigned int PRN_)
 }
 
 
-signed int Gnss_Satellite::get_rf_link() const
+int32_t Gnss_Satellite::get_rf_link() const
 {
     // Get satellite's rf link. Identifies the GLONASS Frequency Channel
-    signed int rf_link_;
+    int32_t rf_link_;
     rf_link_ = rf_link;
     return rf_link_;
 }
 
 
-unsigned int Gnss_Satellite::get_PRN() const
+uint32_t Gnss_Satellite::get_PRN() const
 {
     // Get satellite's PRN
-    unsigned int PRN_;
+    uint32_t PRN_;
     PRN_ = PRN;
     return PRN_;
 }
@@ -273,7 +273,7 @@ std::string Gnss_Satellite::get_block() const
 }
 
 
-std::string Gnss_Satellite::what_block(const std::string& system_, unsigned int PRN_)
+std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_)
 {
     std::string block_ = "Unknown";
     if (system_.compare("GPS") == 0)
@@ -546,8 +546,14 @@ std::string Gnss_Satellite::what_block(const std::string& system_, unsigned int 
                 case 12:
                     block_ = std::string("IOV-FM2");  // Galileo In-Orbit Validation (IOV) satellite FM2 (Flight Model 2) also known as GSAT0102, from French Guiana at 10:30 GMT on October 21, 2011.
                     break;
+                case 13:
+                    block_ = std::string("FOC-FM20");  // Galileo Full Operational Capability (FOC) satellite FM20 / GSAT0220, launched on Jul. 25, 2018. UNDER COMMISSIONING.
+                    break;
                 case 14:
                     block_ = std::string("FOC-FM2*");  // Galileo Full Operational Capability (FOC) satellite FM2 / GSAT0202, launched into incorrect orbit on August 22, 2014. Moved to usable orbit in March, 2015. UNDER TESTING.
+                    break;
+                case 15:
+                    block_ = std::string("FOC-FM21");  // Galileo Full Operational Capability (FOC) satellite FM21 / GSAT0221, launched on Jul. 25, 2018. UNDER COMMISSIONING.
                     break;
                 case 18:
                     block_ = std::string("FOC-FM1*");  // Galileo Full Operational Capability (FOC) satellite FM1 / GSAT0201, launched into incorrect orbit on August 22, 2014. Moved to usable orbit in December, 2014. UNDER TESTING.
@@ -582,6 +588,12 @@ std::string Gnss_Satellite::what_block(const std::string& system_, unsigned int 
                 case 31:
                     block_ = std::string("FOC-FM18");  // Galileo Full Operational Capability (FOC) satellite FM18 / GSAT0218, launched on Dec. 12, 2017. UNDER COMMISSIONING.
                     break;
+                case 33:
+                    block_ = std::string("FOC-FM22");  // Galileo Full Operational Capability (FOC) satellite FM22 / GSAT0222, launched on Jul. 25, 2018. UNDER COMMISSIONING.
+                    break;
+                case 36:
+                    block_ = std::string("FOC-FM19");  // Galileo Full Operational Capability (FOC) satellite FM19 / GSAT0219, launched on Jul. 25, 2018. UNDER COMMISSIONING.
+                    break;
                 default:
                     block_ = std::string("Unknown(Simulated)");
                 }
@@ -590,7 +602,7 @@ std::string Gnss_Satellite::what_block(const std::string& system_, unsigned int 
 }
 
 
-void Gnss_Satellite::set_block(const std::string& system_, unsigned int PRN_)
+void Gnss_Satellite::set_block(const std::string& system_, uint32_t PRN_)
 {
     block = what_block(system_, PRN_);
 }

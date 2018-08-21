@@ -170,7 +170,7 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_generic_reload
 static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_u_avx(lv_32fc_t* result, const lv_32fc_t* in_common, const lv_32fc_t phase_inc, lv_32fc_t* phase, const float** in_a, int num_a_vectors, unsigned int num_points)
 {
     unsigned int number = 0;
-    unsigned int vec_ind = 0;
+    int vec_ind = 0;
     unsigned int i = 0;
     const unsigned int sixteenthPoints = num_points / 16;
 
@@ -334,7 +334,7 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_u_avx(lv_32fc_
 static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_a_avx(lv_32fc_t* result, const lv_32fc_t* in_common, const lv_32fc_t phase_inc, lv_32fc_t* phase, const float** in_a, int num_a_vectors, unsigned int num_points)
 {
     unsigned int number = 0;
-    unsigned int vec_ind = 0;
+    int vec_ind = 0;
     unsigned int i = 0;
     const unsigned int sixteenthPoints = num_points / 16;
 

@@ -42,18 +42,18 @@ void Gps_CNAV_Navigation_Message::reset()
     b_flag_utc_valid = false;
 
     // satellite positions
-    d_satpos_X = 0;
-    d_satpos_Y = 0;
-    d_satpos_Z = 0;
+    d_satpos_X = 0.0;
+    d_satpos_Y = 0.0;
+    d_satpos_Z = 0.0;
 
     // info
     i_channel_ID = 0;
-    i_satellite_PRN = 0;
+    i_satellite_PRN = 0U;
 
     // Satellite velocity
-    d_satvel_X = 0;
-    d_satvel_Y = 0;
-    d_satvel_Z = 0;
+    d_satvel_X = 0.0;
+    d_satvel_Y = 0.0;
+    d_satvel_Z = 0.0;
 
     d_TOW = 0.0;
 }
@@ -63,7 +63,7 @@ Gps_CNAV_Navigation_Message::Gps_CNAV_Navigation_Message()
 {
     reset();
     Gnss_Satellite gnss_satellite_ = Gnss_Satellite();
-    for (unsigned int prn_ = 1; prn_ < 33; prn_++)
+    for (uint32_t prn_ = 1; prn_ < 33; prn_++)
         {
             satelliteBlock[prn_] = gnss_satellite_.what_block("GPS", prn_);
         }
@@ -72,7 +72,7 @@ Gps_CNAV_Navigation_Message::Gps_CNAV_Navigation_Message()
 }
 
 
-bool Gps_CNAV_Navigation_Message::read_navigation_bool(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int, int>> parameter)
+bool Gps_CNAV_Navigation_Message::read_navigation_bool(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter)
 {
     bool value;
 
@@ -88,18 +88,18 @@ bool Gps_CNAV_Navigation_Message::read_navigation_bool(std::bitset<GPS_CNAV_DATA
 }
 
 
-unsigned long int Gps_CNAV_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int, int>> parameter)
+uint64_t Gps_CNAV_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter)
 {
-    unsigned long int value = 0;
-    int num_of_slices = parameter.size();
-    for (int i = 0; i < num_of_slices; i++)
+    uint64_t value = 0ULL;
+    int32_t num_of_slices = parameter.size();
+    for (int32_t i = 0; i < num_of_slices; i++)
         {
-            for (int j = 0; j < parameter[i].second; j++)
+            for (int32_t j = 0; j < parameter[i].second; j++)
                 {
-                    value <<= 1;  //shift left
+                    value <<= 1;  // shift left
                     if (bits[GPS_CNAV_DATA_PAGE_BITS - parameter[i].first - j] == 1)
                         {
-                            value += 1;  // insert the bit
+                            value += 1ULL;  // insert the bit
                         }
                 }
         }
@@ -107,59 +107,30 @@ unsigned long int Gps_CNAV_Navigation_Message::read_navigation_unsigned(std::bit
 }
 
 
-signed long int Gps_CNAV_Navigation_Message::read_navigation_signed(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int, int>> parameter)
+int64_t Gps_CNAV_Navigation_Message::read_navigation_signed(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter)
 {
-    signed long int value = 0;
-    int num_of_slices = parameter.size();
-    // Discriminate between 64 bits and 32 bits compiler
-    int long_int_size_bytes = sizeof(signed long int);
-    if (long_int_size_bytes == 8)  // if a long int takes 8 bytes, we are in a 64 bits system
-        {
-            // read the MSB and perform the sign extension
-            if (bits[GPS_CNAV_DATA_PAGE_BITS - parameter[0].first] == 1)
-                {
-                    value ^= 0xFFFFFFFFFFFFFFFF;  //64 bits variable
-                }
-            else
-                {
-                    value &= 0;
-                }
+    int64_t value = 0LL;
+    int32_t num_of_slices = parameter.size();
 
-            for (int i = 0; i < num_of_slices; i++)
-                {
-                    for (int j = 0; j < parameter[i].second; j++)
-                        {
-                            value <<= 1;                  //shift left
-                            value &= 0xFFFFFFFFFFFFFFFE;  //reset the corresponding bit (for the 64 bits variable)
-                            if (bits[GPS_CNAV_DATA_PAGE_BITS - parameter[i].first - j] == 1)
-                                {
-                                    value += 1;  // insert the bit
-                                }
-                        }
-                }
+    // read the MSB and perform the sign extension
+    if (bits[GPS_CNAV_DATA_PAGE_BITS - parameter[0].first] == 1)
+        {
+            value ^= 0xFFFFFFFFFFFFFFFFLL;  // 64 bits variable
         }
-    else  // we assume we are in a 32 bits system
+    else
         {
-            // read the MSB and perform the sign extension
-            if (bits[GPS_CNAV_DATA_PAGE_BITS - parameter[0].first] == 1)
-                {
-                    value ^= 0xFFFFFFFF;
-                }
-            else
-                {
-                    value &= 0;
-                }
+            value &= 0LL;
+        }
 
-            for (int i = 0; i < num_of_slices; i++)
+    for (int32_t i = 0; i < num_of_slices; i++)
+        {
+            for (int32_t j = 0; j < parameter[i].second; j++)
                 {
-                    for (int j = 0; j < parameter[i].second; j++)
+                    value <<= 1;                    // shift left
+                    value &= 0xFFFFFFFFFFFFFFFELL;  // reset the corresponding bit (for the 64 bits variable)
+                    if (bits[GPS_CNAV_DATA_PAGE_BITS - parameter[i].first - j] == 1)
                         {
-                            value <<= 1;          //shift left
-                            value &= 0xFFFFFFFE;  //reset the corresponding bit
-                            if (bits[GPS_CNAV_DATA_PAGE_BITS - parameter[i].first - j] == 1)
-                                {
-                                    value += 1;  // insert the bit
-                                }
+                            value += 1LL;  // insert the bit
                         }
                 }
         }
@@ -169,13 +140,12 @@ signed long int Gps_CNAV_Navigation_Message::read_navigation_signed(std::bitset<
 
 void Gps_CNAV_Navigation_Message::decode_page(std::bitset<GPS_CNAV_DATA_PAGE_BITS> data_bits)
 {
-    int PRN;
-    int page_type;
-
+    int32_t PRN;
+    int32_t page_type;
     bool alert_flag;
 
     // common to all messages
-    PRN = static_cast<int>(read_navigation_unsigned(data_bits, CNAV_PRN));
+    PRN = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_PRN));
     ephemeris_record.i_satellite_PRN = PRN;
 
     d_TOW = static_cast<double>(read_navigation_unsigned(data_bits, CNAV_TOW));
@@ -185,13 +155,13 @@ void Gps_CNAV_Navigation_Message::decode_page(std::bitset<GPS_CNAV_DATA_PAGE_BIT
     alert_flag = static_cast<bool>(read_navigation_bool(data_bits, CNAV_ALERT_FLAG));
     ephemeris_record.b_alert_flag = alert_flag;
 
-    page_type = static_cast<int>(read_navigation_unsigned(data_bits, CNAV_MSG_TYPE));
+    page_type = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_MSG_TYPE));
 
     switch (page_type)
         {
         case 10:  // Ephemeris 1/2
-            ephemeris_record.i_GPS_week = static_cast<int>(read_navigation_unsigned(data_bits, CNAV_WN));
-            ephemeris_record.i_signal_health = static_cast<int>(read_navigation_unsigned(data_bits, CNAV_HEALTH));
+            ephemeris_record.i_GPS_week = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_WN));
+            ephemeris_record.i_signal_health = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_HEALTH));
             ephemeris_record.d_Top = static_cast<double>(read_navigation_unsigned(data_bits, CNAV_TOP1));
             ephemeris_record.d_Top *= CNAV_TOP1_LSB;
             ephemeris_record.d_URA0 = static_cast<double>(read_navigation_signed(data_bits, CNAV_URA));
@@ -256,7 +226,7 @@ void Gps_CNAV_Navigation_Message::decode_page(std::bitset<GPS_CNAV_DATA_PAGE_BIT
             ephemeris_record.d_A_f2 = static_cast<double>(read_navigation_signed(data_bits, CNAV_AF2));
             ephemeris_record.d_A_f2 *= CNAV_AF2_LSB;
             //group delays
-            //Check if the grup delay values are not available. See IS-GPS-200, Table 30-IV.
+            // Check if the grup delay values are not available. See IS-GPS-200, Table 30-IV.
             //Bit string "1000000000000" is -4096 in 2 complement
             ephemeris_record.d_TGD = static_cast<double>(read_navigation_signed(data_bits, CNAV_TGD));
             if (ephemeris_record.d_TGD < -4095.9)
@@ -330,7 +300,6 @@ void Gps_CNAV_Navigation_Message::decode_page(std::bitset<GPS_CNAV_DATA_PAGE_BIT
             utc_model_record.d_A2 = static_cast<double>(read_navigation_signed(data_bits, CNAV_A2));
             utc_model_record.d_A2 = utc_model_record.d_A2 * CNAV_A2_LSB;
 
-
             utc_model_record.d_DeltaT_LS = static_cast<double>(read_navigation_signed(data_bits, CNAV_DELTA_TLS));
             utc_model_record.d_DeltaT_LS = utc_model_record.d_DeltaT_LS * CNAV_DELTA_TLS_LSB;
 
@@ -356,13 +325,13 @@ void Gps_CNAV_Navigation_Message::decode_page(std::bitset<GPS_CNAV_DATA_PAGE_BIT
 }
 
 
-bool Gps_CNAV_Navigation_Message::have_new_ephemeris()  //Check if we have a new ephemeris stored in the galileo navigation class
+bool Gps_CNAV_Navigation_Message::have_new_ephemeris()  // Check if we have a new ephemeris stored in the galileo navigation class
 {
     if (b_flag_ephemeris_1 == true and b_flag_ephemeris_2 == true)
         {
             if (ephemeris_record.d_Toe1 == ephemeris_record.d_Toe2)  // and ephemeris_record.d_Toe1==ephemeris_record.d_Toc)
                 {
-                    //if all ephemeris pages have the same TOE, then they belong to the same block
+                    // if all ephemeris pages have the same TOE, then they belong to the same block
                     // std::cout << "Ephemeris (1, 2) have been received and belong to the same batch" << std::endl;
                     b_flag_ephemeris_1 = false;  // clear the flag
                     b_flag_ephemeris_2 = false;  // clear the flag
@@ -386,7 +355,7 @@ Gps_CNAV_Ephemeris Gps_CNAV_Navigation_Message::get_ephemeris()
 }
 
 
-bool Gps_CNAV_Navigation_Message::have_new_iono()  //Check if we have a new iono data stored in the galileo navigation class
+bool Gps_CNAV_Navigation_Message::have_new_iono()  // Check if we have a new iono data stored in the galileo navigation class
 {
     if (b_flag_iono_valid == true)
         {
@@ -406,7 +375,7 @@ Gps_CNAV_Iono Gps_CNAV_Navigation_Message::get_iono()
 }
 
 
-bool Gps_CNAV_Navigation_Message::have_new_utc_model()  //Check if we have a new iono data stored in the galileo navigation class
+bool Gps_CNAV_Navigation_Message::have_new_utc_model()  // Check if we have a new iono data stored in the galileo navigation class
 {
     if (b_flag_utc_valid == true)
         {
@@ -418,6 +387,7 @@ bool Gps_CNAV_Navigation_Message::have_new_utc_model()  //Check if we have a new
             return false;
         }
 }
+
 
 Gps_CNAV_Utc_Model Gps_CNAV_Navigation_Message::get_utc_model()
 {

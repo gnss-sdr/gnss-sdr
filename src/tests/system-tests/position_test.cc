@@ -257,7 +257,7 @@ int StaticPositionSystemTest::configure_receiver()
             const int grid_density = 16;
 
             const float zero = 0.0;
-            const int number_of_channels = 8;
+            const int number_of_channels = 12;
             const int in_acquisition = 1;
 
             const float threshold = 0.01;
@@ -376,7 +376,7 @@ int StaticPositionSystemTest::configure_receiver()
 
             // Set PVT
             config->set_property("PVT.implementation", "RTKLIB_PVT");
-            config->set_property("PVT.positioning_mode", "PPP_Static");
+            config->set_property("PVT.positioning_mode", "Single");
             config->set_property("PVT.output_rate_ms", std::to_string(output_rate_ms));
             config->set_property("PVT.display_rate_ms", std::to_string(display_rate_ms));
             config->set_property("PVT.dump_filename", "./PVT");
@@ -391,6 +391,7 @@ int StaticPositionSystemTest::configure_receiver()
             config->set_property("PVT.iono_model", "OFF");
             config->set_property("PVT.trop_model", "OFF");
             config->set_property("PVT.AR_GPS", "PPP-AR");
+            config->set_property("PVT.elevation_mask", std::to_string(15));
 
             config_f = 0;
         }

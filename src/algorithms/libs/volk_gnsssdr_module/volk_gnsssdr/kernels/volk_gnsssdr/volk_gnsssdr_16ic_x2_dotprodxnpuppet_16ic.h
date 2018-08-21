@@ -46,7 +46,7 @@ static inline void volk_gnsssdr_16ic_x2_dotprodxnpuppet_16ic_generic(lv_16sc_t* 
 {
     int num_a_vectors = 3;
     lv_16sc_t** in_a = (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_a_vectors, volk_gnsssdr_get_alignment());
-    unsigned int n;
+    int n;
     for (n = 0; n < num_a_vectors; n++)
         {
             in_a[n] = (lv_16sc_t*)volk_gnsssdr_malloc(sizeof(lv_16sc_t) * num_points, volk_gnsssdr_get_alignment());
@@ -70,7 +70,7 @@ static inline void volk_gnsssdr_16ic_x2_dotprodxnpuppet_16ic_generic_sat(lv_16sc
 {
     int num_a_vectors = 3;
     lv_16sc_t** in_a = (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_a_vectors, volk_gnsssdr_get_alignment());
-    unsigned int n;
+    int n;
     for (n = 0; n < num_a_vectors; n++)
         {
             in_a[n] = (lv_16sc_t*)volk_gnsssdr_malloc(sizeof(lv_16sc_t) * num_points, volk_gnsssdr_get_alignment());
@@ -94,7 +94,7 @@ static inline void volk_gnsssdr_16ic_x2_dotprodxnpuppet_16ic_a_sse2(lv_16sc_t* r
 {
     int num_a_vectors = 3;
     lv_16sc_t** in_a = (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_a_vectors, volk_gnsssdr_get_alignment());
-    unsigned int n;
+    int n;
     for (n = 0; n < num_a_vectors; n++)
         {
             in_a[n] = (lv_16sc_t*)volk_gnsssdr_malloc(sizeof(lv_16sc_t) * num_points, volk_gnsssdr_get_alignment());
@@ -119,7 +119,7 @@ static inline void volk_gnsssdr_16ic_x2_dotprodxnpuppet_16ic_u_sse2(lv_16sc_t* r
 {
     int num_a_vectors = 3;
     lv_16sc_t** in_a = (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_a_vectors, volk_gnsssdr_get_alignment());
-    unsigned int n;
+    int n;
     for (n = 0; n < num_a_vectors; n++)
         {
             in_a[n] = (lv_16sc_t*)volk_gnsssdr_malloc(sizeof(lv_16sc_t) * num_points, volk_gnsssdr_get_alignment());
@@ -144,7 +144,7 @@ static inline void volk_gnsssdr_16ic_x2_dotprodxnpuppet_16ic_a_avx2(lv_16sc_t* r
 {
     int num_a_vectors = 3;
     lv_16sc_t** in_a = (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_a_vectors, volk_gnsssdr_get_alignment());
-    unsigned int n;
+    int n;
     for (n = 0; n < num_a_vectors; n++)
         {
             in_a[n] = (lv_16sc_t*)volk_gnsssdr_malloc(sizeof(lv_16sc_t) * num_points, volk_gnsssdr_get_alignment());
@@ -169,7 +169,7 @@ static inline void volk_gnsssdr_16ic_x2_dotprodxnpuppet_16ic_u_avx2(lv_16sc_t* r
 {
     int num_a_vectors = 3;
     lv_16sc_t** in_a = (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_a_vectors, volk_gnsssdr_get_alignment());
-    unsigned int n;
+    int n;
     for (n = 0; n < num_a_vectors; n++)
         {
             in_a[n] = (lv_16sc_t*)volk_gnsssdr_malloc(sizeof(lv_16sc_t) * num_points, volk_gnsssdr_get_alignment());
@@ -194,7 +194,7 @@ static inline void volk_gnsssdr_16ic_x2_dotprodxnpuppet_16ic_neon(lv_16sc_t* res
 {
     int num_a_vectors = 3;
     lv_16sc_t** in_a = (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_a_vectors, volk_gnsssdr_get_alignment());
-    unsigned int n;
+    int n;
     for (n = 0; n < num_a_vectors; n++)
         {
             in_a[n] = (lv_16sc_t*)volk_gnsssdr_malloc(sizeof(lv_16sc_t) * num_points, volk_gnsssdr_get_alignment());
@@ -219,7 +219,7 @@ static inline void volk_gnsssdr_16ic_x2_dotprodxnpuppet_16ic_neon_vma(lv_16sc_t*
 {
     int num_a_vectors = 3;
     lv_16sc_t** in_a = (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_a_vectors, volk_gnsssdr_get_alignment());
-    unsigned int n;
+    int n;
     for (n = 0; n < num_a_vectors; n++)
         {
             in_a[n] = (lv_16sc_t*)volk_gnsssdr_malloc(sizeof(lv_16sc_t) * num_points, volk_gnsssdr_get_alignment());
@@ -243,7 +243,7 @@ static inline void volk_gnsssdr_16ic_x2_dotprodxnpuppet_16ic_neon_optvma(lv_16sc
 {
     int num_a_vectors = 3;
     lv_16sc_t** in_a = (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_a_vectors, volk_gnsssdr_get_alignment());
-    unsigned int n;
+    int n;
     for (n = 0; n < num_a_vectors; n++)
         {
             in_a[n] = (lv_16sc_t*)volk_gnsssdr_malloc(sizeof(lv_16sc_t) * num_points, volk_gnsssdr_get_alignment());

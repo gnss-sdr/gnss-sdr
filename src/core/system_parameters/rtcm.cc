@@ -46,7 +46,7 @@
 using google::LogMessage;
 
 
-Rtcm::Rtcm(unsigned short port)
+Rtcm::Rtcm(uint16_t port)
 {
     RTCM_port = port;
     preamble = std::bitset<8>("11010011");
@@ -141,9 +141,9 @@ std::string Rtcm::add_CRC(const std::string& message_without_crc) const
 {
     // ******  Computes Qualcomm CRC-24Q ******
     boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false> CRC_RTCM;
-    // 1) Converts the string to a vector of unsigned char:
-    boost::dynamic_bitset<unsigned char> frame_bits(message_without_crc);
-    std::vector<unsigned char> bytes;
+    // 1) Converts the string to a vector of uint8_t:
+    boost::dynamic_bitset<uint8_t> frame_bits(message_without_crc);
+    std::vector<uint8_t> bytes;
     boost::to_block_range(frame_bits, std::back_inserter(bytes));
     std::reverse(bytes.begin(), bytes.end());
 
@@ -167,8 +167,8 @@ bool Rtcm::check_CRC(const std::string& message) const
     std::bitset<24> read_crc = std::bitset<24>(crc);
     std::string msg_without_crc = message_bin.substr(0, message_bin.length() - 24);
 
-    boost::dynamic_bitset<unsigned char> frame_bits(msg_without_crc);
-    std::vector<unsigned char> bytes;
+    boost::dynamic_bitset<uint8_t> frame_bits(msg_without_crc);
+    std::vector<uint8_t> bytes;
     boost::to_block_range(frame_bits, std::back_inserter(bytes));
     std::reverse(bytes.begin(), bytes.end());
 
@@ -188,32 +188,34 @@ bool Rtcm::check_CRC(const std::string& message) const
 std::string Rtcm::bin_to_binary_data(const std::string& s) const
 {
     std::string s_aux;
-    int remainder = static_cast<int>(std::fmod(s.length(), 8));
-    unsigned char c[s.length()];
-    unsigned int k = 0;
+    int32_t remainder = static_cast<int32_t>(std::fmod(s.length(), 8));
+    std::vector<uint8_t> c;
+    c.reserve(s.length());
+
+    uint32_t k = 0;
     if (remainder != 0)
         {
             s_aux.assign(s, 0, remainder);
             boost::dynamic_bitset<> rembits(s_aux);
-            unsigned long int n = rembits.to_ulong();
-            c[0] = static_cast<unsigned char>(n);
+            uint64_t n = rembits.to_ulong();
+            c[0] = static_cast<uint8_t>(n);
             k++;
         }
 
-    unsigned int start = std::max(remainder, 0);
-    for (unsigned int i = start; i < s.length() - 1; i = i + 8)
+    uint32_t start = std::max(remainder, 0);
+    for (uint32_t i = start; i < s.length() - 1; i = i + 8)
         {
             s_aux.assign(s, i, 4);
             std::bitset<4> bs(s_aux);
-            unsigned n = bs.to_ulong();
+            uint32_t n = bs.to_ulong();
             s_aux.assign(s, i + 4, 4);
             std::bitset<4> bs2(s_aux);
-            unsigned n2 = bs2.to_ulong();
-            c[k] = static_cast<unsigned char>(n * 16) + static_cast<unsigned char>(n2);
+            uint32_t n2 = bs2.to_ulong();
+            c[k] = static_cast<uint8_t>(n * 16) + static_cast<uint8_t>(n2);
             k++;
         }
 
-    std::string ret(c, c + k / sizeof(c[0]));
+    std::string ret(c.begin(), c.begin() + k);
     return ret;
 }
 
@@ -223,9 +225,9 @@ std::string Rtcm::binary_data_to_bin(const std::string& s) const
     std::string s_aux;
     std::stringstream ss;
 
-    for (unsigned int i = 0; i < s.length(); i++)
+    for (uint32_t i = 0; i < s.length(); i++)
         {
-            unsigned char val = static_cast<unsigned char>(s.at(i));
+            uint8_t val = static_cast<uint8_t>(s.at(i));
             std::bitset<8> bs(val);
             ss << bs;
         }
@@ -239,22 +241,22 @@ std::string Rtcm::bin_to_hex(const std::string& s) const
 {
     std::string s_aux;
     std::stringstream ss;
-    int remainder = static_cast<int>(std::fmod(s.length(), 4));
+    int32_t remainder = static_cast<int32_t>(std::fmod(s.length(), 4));
 
     if (remainder != 0)
         {
             s_aux.assign(s, 0, remainder);
             boost::dynamic_bitset<> rembits(s_aux);
-            unsigned n = rembits.to_ulong();
+            uint32_t n = rembits.to_ulong();
             ss << std::hex << n;
         }
 
-    unsigned int start = std::max(remainder, 0);
-    for (unsigned int i = start; i < s.length() - 1; i = i + 4)
+    uint32_t start = std::max(remainder, 0);
+    for (uint32_t i = start; i < s.length() - 1; i = i + 4)
         {
             s_aux.assign(s, i, 4);
             std::bitset<4> bs(s_aux);
-            unsigned n = bs.to_ulong();
+            uint32_t n = bs.to_ulong();
             ss << std::hex << n;
         }
     return boost::to_upper_copy(ss.str());
@@ -268,9 +270,9 @@ std::string Rtcm::hex_to_bin(const std::string& s) const
     std::stringstream ss;
     ss << s;
     std::string s_lower = boost::to_upper_copy(ss.str());
-    for (unsigned int i = 0; i < s.length(); i++)
+    for (uint32_t i = 0; i < s.length(); i++)
         {
-            unsigned long int n;
+            uint64_t n;
             std::istringstream(s_lower.substr(i, 1)) >> std::hex >> n;
             std::bitset<4> bs(n);
             s_aux += bs.to_string();
@@ -279,26 +281,26 @@ std::string Rtcm::hex_to_bin(const std::string& s) const
 }
 
 
-unsigned long int Rtcm::bin_to_uint(const std::string& s) const
+uint32_t Rtcm::bin_to_uint(const std::string& s) const
 {
     if (s.length() > 32)
         {
-            LOG(WARNING) << "Cannot convert to a unsigned long int";
+            LOG(WARNING) << "Cannot convert to a uint32_t";
             return 0;
         }
-    unsigned long int reading = strtoul(s.c_str(), NULL, 2);
+    uint32_t reading = strtoul(s.c_str(), NULL, 2);
     return reading;
 }
 
 
-long int Rtcm::bin_to_int(const std::string& s) const
+int32_t Rtcm::bin_to_int(const std::string& s) const
 {
     if (s.length() > 32)
         {
-            LOG(WARNING) << "Cannot convert to a long int";
+            LOG(WARNING) << "Cannot convert to a int32_t";
             return 0;
         }
-    long int reading;
+    int32_t reading;
 
     // Handle negative numbers
     if (s.substr(0, 1).compare("0"))
@@ -316,15 +318,15 @@ long int Rtcm::bin_to_int(const std::string& s) const
 }
 
 
-long int Rtcm::bin_to_sint(const std::string& s) const
+int32_t Rtcm::bin_to_sint(const std::string& s) const
 {
     if (s.length() > 32)
         {
-            LOG(WARNING) << "Cannot convert to a long int";
+            LOG(WARNING) << "Cannot convert to a int32_t";
             return 0;
         }
-    long int reading;
-    long int sign;
+    int32_t reading;
+    int32_t sign;
 
     // Check for sign bit as defined RTCM doc
     if (s.substr(0, 1).compare("0") == 0)
@@ -343,7 +345,7 @@ long int Rtcm::bin_to_sint(const std::string& s) const
 }
 
 // Find the sign for glonass data fields (neg = 1, pos = 0)
-static inline unsigned long glo_sgn(double val)
+static inline uint64_t glo_sgn(double val)
 {
     if (val < 0) return 1;   // If value is negative return 1
     if (val == 0) return 0;  // Positive or equal to zero return 0
@@ -360,7 +362,7 @@ double Rtcm::bin_to_double(const std::string& s) const
             return 0;
         }
 
-    long long int reading_int;
+    int64_t reading_int;
 
     // Handle negative numbers
     if (s.substr(0, 1).compare("0"))
@@ -382,36 +384,36 @@ double Rtcm::bin_to_double(const std::string& s) const
 }
 
 
-unsigned long int Rtcm::hex_to_uint(const std::string& s) const
+uint64_t Rtcm::hex_to_uint(const std::string& s) const
 {
     if (s.length() > 32)
         {
-            LOG(WARNING) << "Cannot convert to a unsigned long int";
+            LOG(WARNING) << "Cannot convert to a uint64_t";
             return 0;
         }
-    unsigned long int reading = strtoul(s.c_str(), NULL, 16);
+    uint64_t reading = strtoul(s.c_str(), NULL, 16);
     return reading;
 }
 
 
-long int Rtcm::hex_to_int(const std::string& s) const
+int64_t Rtcm::hex_to_int(const std::string& s) const
 {
     if (s.length() > 32)
         {
-            LOG(WARNING) << "Cannot convert to a long int";
+            LOG(WARNING) << "Cannot convert to a int64_t";
             return 0;
         }
-    long int reading = strtol(s.c_str(), NULL, 16);
+    int64_t reading = strtol(s.c_str(), NULL, 16);
     return reading;
 }
 
 
 std::string Rtcm::build_message(const std::string& data) const
 {
-    unsigned int msg_length_bits = data.length();
-    unsigned int msg_length_bytes = std::ceil(static_cast<float>(msg_length_bits) / 8.0);
+    uint32_t msg_length_bits = data.length();
+    uint32_t msg_length_bytes = std::ceil(static_cast<float>(msg_length_bits) / 8.0);
     std::bitset<10> message_length = std::bitset<10>(msg_length_bytes);
-    unsigned int zeros_to_fill = 8 * msg_length_bytes - msg_length_bits;
+    uint32_t zeros_to_fill = 8 * msg_length_bytes - msg_length_bits;
     std::string b(zeros_to_fill, '0');
     std::string msg_content = data + b;
     std::string msg_without_crc = preamble.to_string() +
@@ -435,14 +437,14 @@ std::string Rtcm::build_message(const std::string& data) const
 //
 // ********************************************************
 
-std::bitset<64> Rtcm::get_MT1001_4_header(unsigned int msg_number, double obs_time, const std::map<int, Gnss_Synchro>& observables,
-    unsigned int ref_id, unsigned int smooth_int, bool sync_flag, bool divergence_free)
+std::bitset<64> Rtcm::get_MT1001_4_header(uint32_t msg_number, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables,
+    uint32_t ref_id, uint32_t smooth_int, bool sync_flag, bool divergence_free)
 {
-    unsigned int reference_station_id = ref_id;  // Max: 4095
-    const std::map<int, Gnss_Synchro> observables_ = observables;
+    uint32_t reference_station_id = ref_id;  // Max: 4095
+    const std::map<int32_t, Gnss_Synchro> observables_ = observables;
     bool synchronous_GNSS_flag = sync_flag;
     bool divergence_free_smoothing_indicator = divergence_free;
-    unsigned int smoothing_interval = smooth_int;
+    uint32_t smoothing_interval = smooth_int;
     Rtcm::set_DF002(msg_number);
     Rtcm::set_DF003(reference_station_id);
     Rtcm::set_DF004(obs_time);
@@ -484,16 +486,16 @@ std::bitset<58> Rtcm::get_MT1001_sat_content(const Gps_Ephemeris& eph, double ob
 }
 
 
-std::string Rtcm::print_MT1001(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int, Gnss_Synchro>& observables, unsigned short station_id)
+std::string Rtcm::print_MT1001(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, uint16_t station_id)
 {
-    unsigned int ref_id = static_cast<unsigned int>(station_id);
-    unsigned int smooth_int = 0;
+    uint32_t ref_id = static_cast<uint32_t>(station_id);
+    uint32_t smooth_int = 0;
     bool sync_flag = false;
     bool divergence_free = false;
 
     //Get a map with GPS L1 only observations
-    std::map<int, Gnss_Synchro> observablesL1;
-    std::map<int, Gnss_Synchro>::const_iterator observables_iter;
+    std::map<int32_t, Gnss_Synchro> observablesL1;
+    std::map<int32_t, Gnss_Synchro>::const_iterator observables_iter;
 
     for (observables_iter = observables.cbegin();
          observables_iter != observables.cend();
@@ -503,7 +505,7 @@ std::string Rtcm::print_MT1001(const Gps_Ephemeris& gps_eph, double obs_time, co
             std::string sig_(observables_iter->second.Signal);
             if ((system_.compare("G") == 0) && (sig_.compare("1C") == 0))
                 {
-                    observablesL1.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, observables_iter->second));
+                    observablesL1.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                 }
         }
 
@@ -533,16 +535,16 @@ std::string Rtcm::print_MT1001(const Gps_Ephemeris& gps_eph, double obs_time, co
 //
 // ********************************************************
 
-std::string Rtcm::print_MT1002(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int, Gnss_Synchro>& observables, unsigned short station_id)
+std::string Rtcm::print_MT1002(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, uint16_t station_id)
 {
-    unsigned int ref_id = static_cast<unsigned int>(station_id);
-    unsigned int smooth_int = 0;
+    uint32_t ref_id = static_cast<uint32_t>(station_id);
+    uint32_t smooth_int = 0;
     bool sync_flag = false;
     bool divergence_free = false;
 
     //Get a map with GPS L1 only observations
-    std::map<int, Gnss_Synchro> observablesL1;
-    std::map<int, Gnss_Synchro>::const_iterator observables_iter;
+    std::map<int32_t, Gnss_Synchro> observablesL1;
+    std::map<int32_t, Gnss_Synchro>::const_iterator observables_iter;
 
     for (observables_iter = observables.cbegin();
          observables_iter != observables.cend();
@@ -552,7 +554,7 @@ std::string Rtcm::print_MT1002(const Gps_Ephemeris& gps_eph, double obs_time, co
             std::string sig_(observables_iter->second.Signal);
             if ((system_.compare("G") == 0) && (sig_.compare("1C") == 0))
                 {
-                    observablesL1.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, observables_iter->second));
+                    observablesL1.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                 }
         }
 
@@ -604,18 +606,18 @@ std::bitset<74> Rtcm::get_MT1002_sat_content(const Gps_Ephemeris& eph, double ob
 //
 // ********************************************************
 
-std::string Rtcm::print_MT1003(const Gps_Ephemeris& ephL1, const Gps_CNAV_Ephemeris& ephL2, double obs_time, const std::map<int, Gnss_Synchro>& observables, unsigned short station_id)
+std::string Rtcm::print_MT1003(const Gps_Ephemeris& ephL1, const Gps_CNAV_Ephemeris& ephL2, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, uint16_t station_id)
 {
-    unsigned int ref_id = static_cast<unsigned int>(station_id);
-    unsigned int smooth_int = 0;
+    uint32_t ref_id = static_cast<uint32_t>(station_id);
+    uint32_t smooth_int = 0;
     bool sync_flag = false;
     bool divergence_free = false;
 
     //Get maps with GPS L1 and L2 observations
-    std::map<int, Gnss_Synchro> observablesL1;
-    std::map<int, Gnss_Synchro> observablesL2;
-    std::map<int, Gnss_Synchro>::const_iterator observables_iter;
-    std::map<int, Gnss_Synchro>::const_iterator observables_iter2;
+    std::map<int32_t, Gnss_Synchro> observablesL1;
+    std::map<int32_t, Gnss_Synchro> observablesL2;
+    std::map<int32_t, Gnss_Synchro>::const_iterator observables_iter;
+    std::map<int32_t, Gnss_Synchro>::const_iterator observables_iter2;
 
     for (observables_iter = observables.cbegin();
          observables_iter != observables.cend();
@@ -625,24 +627,24 @@ std::string Rtcm::print_MT1003(const Gps_Ephemeris& ephL1, const Gps_CNAV_Epheme
             std::string sig_(observables_iter->second.Signal);
             if ((system_.compare("G") == 0) && (sig_.compare("1C") == 0))
                 {
-                    observablesL1.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, observables_iter->second));
+                    observablesL1.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                 }
             if ((system_.compare("G") == 0) && (sig_.compare("2S") == 0))
                 {
-                    observablesL2.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, observables_iter->second));
+                    observablesL2.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                 }
         }
 
     // Get common observables
     std::vector<std::pair<Gnss_Synchro, Gnss_Synchro> > common_observables;
     std::vector<std::pair<Gnss_Synchro, Gnss_Synchro> >::const_iterator common_observables_iter;
-    std::map<int, Gnss_Synchro> observablesL1_with_L2;
+    std::map<int32_t, Gnss_Synchro> observablesL1_with_L2;
 
     for (observables_iter = observablesL1.cbegin();
          observables_iter != observablesL1.cend();
          observables_iter++)
         {
-            unsigned int prn_ = observables_iter->second.PRN;
+            uint32_t prn_ = observables_iter->second.PRN;
             for (observables_iter2 = observablesL2.cbegin();
                  observables_iter2 != observablesL2.cend();
                  observables_iter2++)
@@ -654,7 +656,7 @@ std::string Rtcm::print_MT1003(const Gps_Ephemeris& ephL1, const Gps_CNAV_Epheme
                             Gnss_Synchro pr2 = observables_iter2->second;
                             p = std::make_pair(pr1, pr2);
                             common_observables.push_back(p);
-                            observablesL1_with_L2.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, observables_iter->second));
+                            observablesL1_with_L2.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                         }
                 }
         }
@@ -713,18 +715,18 @@ std::bitset<101> Rtcm::get_MT1003_sat_content(const Gps_Ephemeris& ephL1, const 
 //
 // ******************************************************************
 
-std::string Rtcm::print_MT1004(const Gps_Ephemeris& ephL1, const Gps_CNAV_Ephemeris& ephL2, double obs_time, const std::map<int, Gnss_Synchro>& observables, unsigned short station_id)
+std::string Rtcm::print_MT1004(const Gps_Ephemeris& ephL1, const Gps_CNAV_Ephemeris& ephL2, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, uint16_t station_id)
 {
-    unsigned int ref_id = static_cast<unsigned int>(station_id);
-    unsigned int smooth_int = 0;
+    uint32_t ref_id = static_cast<uint32_t>(station_id);
+    uint32_t smooth_int = 0;
     bool sync_flag = false;
     bool divergence_free = false;
 
     //Get maps with GPS L1 and L2 observations
-    std::map<int, Gnss_Synchro> observablesL1;
-    std::map<int, Gnss_Synchro> observablesL2;
-    std::map<int, Gnss_Synchro>::const_iterator observables_iter;
-    std::map<int, Gnss_Synchro>::const_iterator observables_iter2;
+    std::map<int32_t, Gnss_Synchro> observablesL1;
+    std::map<int32_t, Gnss_Synchro> observablesL2;
+    std::map<int32_t, Gnss_Synchro>::const_iterator observables_iter;
+    std::map<int32_t, Gnss_Synchro>::const_iterator observables_iter2;
 
     for (observables_iter = observables.cbegin();
          observables_iter != observables.cend();
@@ -734,24 +736,24 @@ std::string Rtcm::print_MT1004(const Gps_Ephemeris& ephL1, const Gps_CNAV_Epheme
             std::string sig_(observables_iter->second.Signal);
             if ((system_.compare("G") == 0) && (sig_.compare("1C") == 0))
                 {
-                    observablesL1.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, observables_iter->second));
+                    observablesL1.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                 }
             if ((system_.compare("G") == 0) && (sig_.compare("2S") == 0))
                 {
-                    observablesL2.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, observables_iter->second));
+                    observablesL2.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                 }
         }
 
     // Get common observables
     std::vector<std::pair<Gnss_Synchro, Gnss_Synchro> > common_observables;
     std::vector<std::pair<Gnss_Synchro, Gnss_Synchro> >::const_iterator common_observables_iter;
-    std::map<int, Gnss_Synchro> observablesL1_with_L2;
+    std::map<int32_t, Gnss_Synchro> observablesL1_with_L2;
 
     for (observables_iter = observablesL1.cbegin();
          observables_iter != observablesL1.cend();
          observables_iter++)
         {
-            unsigned int prn_ = observables_iter->second.PRN;
+            uint32_t prn_ = observables_iter->second.PRN;
             for (observables_iter2 = observablesL2.cbegin();
                  observables_iter2 != observablesL2.cend();
                  observables_iter2++)
@@ -763,7 +765,7 @@ std::string Rtcm::print_MT1004(const Gps_Ephemeris& ephL1, const Gps_CNAV_Epheme
                             Gnss_Synchro pr2 = observables_iter2->second;
                             p = std::make_pair(pr1, pr2);
                             common_observables.push_back(p);
-                            observablesL1_with_L2.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, observables_iter->second));
+                            observablesL1_with_L2.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                         }
                 }
         }
@@ -840,11 +842,11 @@ std::bitset<125> Rtcm::get_MT1004_sat_content(const Gps_Ephemeris& ephL1, const 
  */
 std::bitset<152> Rtcm::get_MT1005_test()
 {
-    unsigned int mt1005 = 1005;
-    unsigned int reference_station_id = 2003;  // Max: 4095
-    double ECEF_X = 1114104.5999;              // units: m
-    double ECEF_Y = -4850729.7108;             // units: m
-    double ECEF_Z = 3975521.4643;              // units: m
+    uint32_t mt1005 = 1005;
+    uint32_t reference_station_id = 2003;  // Max: 4095
+    double ECEF_X = 1114104.5999;          // units: m
+    double ECEF_Y = -4850729.7108;         // units: m
+    double ECEF_Z = 3975521.4643;          // units: m
 
     std::bitset<1> DF001_;
 
@@ -881,9 +883,9 @@ std::bitset<152> Rtcm::get_MT1005_test()
 }
 
 
-std::string Rtcm::print_MT1005(unsigned int ref_id, double ecef_x, double ecef_y, double ecef_z, bool gps, bool glonass, bool galileo, bool non_physical, bool single_oscillator, unsigned int quarter_cycle_indicator)
+std::string Rtcm::print_MT1005(uint32_t ref_id, double ecef_x, double ecef_y, double ecef_z, bool gps, bool glonass, bool galileo, bool non_physical, bool single_oscillator, uint32_t quarter_cycle_indicator)
 {
-    unsigned int msg_number = 1005;
+    uint32_t msg_number = 1005;
     std::bitset<1> DF001_;
 
     Rtcm::set_DF002(msg_number);
@@ -923,7 +925,7 @@ std::string Rtcm::print_MT1005(unsigned int ref_id, double ecef_x, double ecef_y
 }
 
 
-int Rtcm::read_MT1005(const std::string& message, unsigned int& ref_id, double& ecef_x, double& ecef_y, double& ecef_z, bool& gps, bool& glonass, bool& galileo)
+int32_t Rtcm::read_MT1005(const std::string& message, uint32_t& ref_id, double& ecef_x, double& ecef_y, double& ecef_z, bool& gps, bool& glonass, bool& galileo)
 {
     // Convert message to binary
     std::string message_bin = Rtcm::binary_data_to_bin(message);
@@ -935,11 +937,11 @@ int Rtcm::read_MT1005(const std::string& message, unsigned int& ref_id, double& 
         }
 
     // Check than the message number is correct
-    unsigned int preamble_length = 8;
-    unsigned int reserved_field_length = 6;
-    unsigned int index = preamble_length + reserved_field_length;
+    uint32_t preamble_length = 8;
+    uint32_t reserved_field_length = 6;
+    uint32_t index = preamble_length + reserved_field_length;
 
-    unsigned int read_message_length = static_cast<unsigned int>(Rtcm::bin_to_uint(message_bin.substr(index, 10)));
+    uint32_t read_message_length = static_cast<uint32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 10)));
     index += 10;
     if (read_message_length != 19)
         {
@@ -947,7 +949,7 @@ int Rtcm::read_MT1005(const std::string& message, unsigned int& ref_id, double& 
             return 1;
         }
 
-    unsigned int msg_number = 1005;
+    uint32_t msg_number = 1005;
     Rtcm::set_DF002(msg_number);
     std::bitset<12> read_msg_number(message_bin.substr(index, 12));
     index += 12;
@@ -1002,9 +1004,9 @@ std::string Rtcm::print_MT1005_test()
 //
 // ********************************************************
 
-std::string Rtcm::print_MT1006(unsigned int ref_id, double ecef_x, double ecef_y, double ecef_z, bool gps, bool glonass, bool galileo, bool non_physical, bool single_oscillator, unsigned int quarter_cycle_indicator, double height)
+std::string Rtcm::print_MT1006(uint32_t ref_id, double ecef_x, double ecef_y, double ecef_z, bool gps, bool glonass, bool galileo, bool non_physical, bool single_oscillator, uint32_t quarter_cycle_indicator, double height)
 {
-    unsigned int msg_number = 1006;
+    uint32_t msg_number = 1006;
     std::bitset<1> DF001_;
 
     Rtcm::set_DF002(msg_number);
@@ -1051,13 +1053,13 @@ std::string Rtcm::print_MT1006(unsigned int ref_id, double ecef_x, double ecef_y
 //   MESSAGE TYPE 1008 (ANTENNA DESCRIPTOR & SERIAL NUMBER)
 //
 // ********************************************************
-std::string Rtcm::print_MT1008(unsigned int ref_id, const std::string& antenna_descriptor, unsigned int antenna_setup_id, const std::string& antenna_serial_number)
+std::string Rtcm::print_MT1008(uint32_t ref_id, const std::string& antenna_descriptor, uint32_t antenna_setup_id, const std::string& antenna_serial_number)
 {
-    unsigned int msg_number = 1008;
+    uint32_t msg_number = 1008;
     std::bitset<12> DF002_ = std::bitset<12>(msg_number);
     Rtcm::set_DF003(ref_id);
     std::string ant_descriptor = antenna_descriptor;
-    unsigned int len = ant_descriptor.length();
+    uint32_t len = ant_descriptor.length();
     if (len > 31)
         {
             ant_descriptor = ant_descriptor.substr(0, 31);
@@ -1076,7 +1078,7 @@ std::string Rtcm::print_MT1008(unsigned int ref_id, const std::string& antenna_d
     Rtcm::set_DF031(antenna_setup_id);
 
     std::string ant_sn(antenna_serial_number);
-    unsigned int len2 = ant_sn.length();
+    uint32_t len2 = ant_sn.length();
     if (len2 > 31)
         {
             ant_sn = ant_sn.substr(0, 31);
@@ -1114,14 +1116,14 @@ std::string Rtcm::print_MT1008(unsigned int ref_id, const std::string& antenna_d
 //   MESSAGE TYPE 1009 (GLONASS L1 Basic RTK Observables)
 //
 // ********************************************************
-std::bitset<61> Rtcm::get_MT1009_12_header(unsigned int msg_number, double obs_time, const std::map<int, Gnss_Synchro>& observables,
-    unsigned int ref_id, unsigned int smooth_int, bool sync_flag, bool divergence_free)
+std::bitset<61> Rtcm::get_MT1009_12_header(uint32_t msg_number, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables,
+    uint32_t ref_id, uint32_t smooth_int, bool sync_flag, bool divergence_free)
 {
-    unsigned int reference_station_id = ref_id;  // Max: 4095
-    const std::map<int, Gnss_Synchro> observables_ = observables;
+    uint32_t reference_station_id = ref_id;  // Max: 4095
+    const std::map<int32_t, Gnss_Synchro> observables_ = observables;
     bool synchronous_GNSS_flag = sync_flag;
     bool divergence_free_smoothing_indicator = divergence_free;
-    unsigned int smoothing_interval = smooth_int;
+    uint32_t smoothing_interval = smooth_int;
     Rtcm::set_DF002(msg_number);
     Rtcm::set_DF003(reference_station_id);
     Rtcm::set_DF034(obs_time);
@@ -1165,16 +1167,16 @@ std::bitset<64> Rtcm::get_MT1009_sat_content(const Glonass_Gnav_Ephemeris& eph, 
 }
 
 
-std::string Rtcm::print_MT1009(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double obs_time, const std::map<int, Gnss_Synchro>& observables, unsigned short station_id)
+std::string Rtcm::print_MT1009(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, uint16_t station_id)
 {
-    unsigned int ref_id = static_cast<unsigned int>(station_id);
-    unsigned int smooth_int = 0;
+    uint32_t ref_id = static_cast<uint32_t>(station_id);
+    uint32_t smooth_int = 0;
     bool sync_flag = false;
     bool divergence_free = false;
 
     //Get a map with GLONASS L1 only observations
-    std::map<int, Gnss_Synchro> observablesL1;
-    std::map<int, Gnss_Synchro>::const_iterator observables_iter;
+    std::map<int32_t, Gnss_Synchro> observablesL1;
+    std::map<int32_t, Gnss_Synchro>::const_iterator observables_iter;
 
     for (observables_iter = observables.begin();
          observables_iter != observables.end();
@@ -1184,7 +1186,7 @@ std::string Rtcm::print_MT1009(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, d
             std::string sig_(observables_iter->second.Signal);
             if ((system_.compare("R") == 0) && (sig_.compare("1C") == 0))
                 {
-                    observablesL1.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, observables_iter->second));
+                    observablesL1.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                 }
         }
 
@@ -1214,16 +1216,16 @@ std::string Rtcm::print_MT1009(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, d
 //
 // ********************************************************
 
-std::string Rtcm::print_MT1010(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double obs_time, const std::map<int, Gnss_Synchro>& observables, unsigned short station_id)
+std::string Rtcm::print_MT1010(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, uint16_t station_id)
 {
-    unsigned int ref_id = static_cast<unsigned int>(station_id);
-    unsigned int smooth_int = 0;
+    uint32_t ref_id = static_cast<uint32_t>(station_id);
+    uint32_t smooth_int = 0;
     bool sync_flag = false;
     bool divergence_free = false;
 
     //Get a map with GPS L1 only observations
-    std::map<int, Gnss_Synchro> observablesL1;
-    std::map<int, Gnss_Synchro>::const_iterator observables_iter;
+    std::map<int32_t, Gnss_Synchro> observablesL1;
+    std::map<int32_t, Gnss_Synchro>::const_iterator observables_iter;
 
     for (observables_iter = observables.begin();
          observables_iter != observables.end();
@@ -1233,7 +1235,7 @@ std::string Rtcm::print_MT1010(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, d
             std::string sig_(observables_iter->second.Signal);
             if ((system_.compare("R") == 0) && (sig_.compare("1C") == 0))
                 {
-                    observablesL1.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, observables_iter->second));
+                    observablesL1.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                 }
         }
 
@@ -1289,18 +1291,18 @@ std::bitset<79> Rtcm::get_MT1010_sat_content(const Glonass_Gnav_Ephemeris& eph, 
 //
 // ********************************************************
 
-std::string Rtcm::print_MT1011(const Glonass_Gnav_Ephemeris& ephL1, const Glonass_Gnav_Ephemeris& ephL2, double obs_time, const std::map<int, Gnss_Synchro>& observables, unsigned short station_id)
+std::string Rtcm::print_MT1011(const Glonass_Gnav_Ephemeris& ephL1, const Glonass_Gnav_Ephemeris& ephL2, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, uint16_t station_id)
 {
-    unsigned int ref_id = static_cast<unsigned int>(station_id);
-    unsigned int smooth_int = 0;
+    uint32_t ref_id = static_cast<uint32_t>(station_id);
+    uint32_t smooth_int = 0;
     bool sync_flag = false;
     bool divergence_free = false;
 
     //Get maps with GPS L1 and L2 observations
-    std::map<int, Gnss_Synchro> observablesL1;
-    std::map<int, Gnss_Synchro> observablesL2;
-    std::map<int, Gnss_Synchro>::const_iterator observables_iter;
-    std::map<int, Gnss_Synchro>::const_iterator observables_iter2;
+    std::map<int32_t, Gnss_Synchro> observablesL1;
+    std::map<int32_t, Gnss_Synchro> observablesL2;
+    std::map<int32_t, Gnss_Synchro>::const_iterator observables_iter;
+    std::map<int32_t, Gnss_Synchro>::const_iterator observables_iter2;
 
     for (observables_iter = observables.begin();
          observables_iter != observables.end();
@@ -1310,24 +1312,24 @@ std::string Rtcm::print_MT1011(const Glonass_Gnav_Ephemeris& ephL1, const Glonas
             std::string sig_(observables_iter->second.Signal);
             if ((system_.compare("R") == 0) && (sig_.compare("1C") == 0))
                 {
-                    observablesL1.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, observables_iter->second));
+                    observablesL1.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                 }
             if ((system_.compare("R") == 0) && (sig_.compare("2C") == 0))
                 {
-                    observablesL2.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, observables_iter->second));
+                    observablesL2.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                 }
         }
 
     // Get common observables
     std::vector<std::pair<Gnss_Synchro, Gnss_Synchro> > common_observables;
     std::vector<std::pair<Gnss_Synchro, Gnss_Synchro> >::const_iterator common_observables_iter;
-    std::map<int, Gnss_Synchro> observablesL1_with_L2;
+    std::map<int32_t, Gnss_Synchro> observablesL1_with_L2;
 
     for (observables_iter = observablesL1.begin();
          observables_iter != observablesL1.end();
          observables_iter++)
         {
-            unsigned int prn_ = observables_iter->second.PRN;
+            uint32_t prn_ = observables_iter->second.PRN;
             for (observables_iter2 = observablesL2.begin();
                  observables_iter2 != observablesL2.end();
                  observables_iter2++)
@@ -1339,7 +1341,7 @@ std::string Rtcm::print_MT1011(const Glonass_Gnav_Ephemeris& ephL1, const Glonas
                             Gnss_Synchro pr2 = observables_iter2->second;
                             p = std::make_pair(pr1, pr2);
                             common_observables.push_back(p);
-                            observablesL1_with_L2.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, observables_iter->second));
+                            observablesL1_with_L2.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                         }
                 }
         }
@@ -1400,18 +1402,18 @@ std::bitset<107> Rtcm::get_MT1011_sat_content(const Glonass_Gnav_Ephemeris& ephL
 //
 // ******************************************************************
 
-std::string Rtcm::print_MT1012(const Glonass_Gnav_Ephemeris& ephL1, const Glonass_Gnav_Ephemeris& ephL2, double obs_time, const std::map<int, Gnss_Synchro>& observables, unsigned short station_id)
+std::string Rtcm::print_MT1012(const Glonass_Gnav_Ephemeris& ephL1, const Glonass_Gnav_Ephemeris& ephL2, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, uint16_t station_id)
 {
-    unsigned int ref_id = static_cast<unsigned int>(station_id);
-    unsigned int smooth_int = 0;
+    uint32_t ref_id = static_cast<uint32_t>(station_id);
+    uint32_t smooth_int = 0;
     bool sync_flag = false;
     bool divergence_free = false;
 
     //Get maps with GLONASS L1 and L2 observations
-    std::map<int, Gnss_Synchro> observablesL1;
-    std::map<int, Gnss_Synchro> observablesL2;
-    std::map<int, Gnss_Synchro>::const_iterator observables_iter;
-    std::map<int, Gnss_Synchro>::const_iterator observables_iter2;
+    std::map<int32_t, Gnss_Synchro> observablesL1;
+    std::map<int32_t, Gnss_Synchro> observablesL2;
+    std::map<int32_t, Gnss_Synchro>::const_iterator observables_iter;
+    std::map<int32_t, Gnss_Synchro>::const_iterator observables_iter2;
 
     for (observables_iter = observables.begin();
          observables_iter != observables.end();
@@ -1421,24 +1423,24 @@ std::string Rtcm::print_MT1012(const Glonass_Gnav_Ephemeris& ephL1, const Glonas
             std::string sig_(observables_iter->second.Signal);
             if ((system_.compare("R") == 0) && (sig_.compare("1C") == 0))
                 {
-                    observablesL1.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, observables_iter->second));
+                    observablesL1.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                 }
             if ((system_.compare("R") == 0) && (sig_.compare("2C") == 0))
                 {
-                    observablesL2.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, observables_iter->second));
+                    observablesL2.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                 }
         }
 
     // Get common observables
     std::vector<std::pair<Gnss_Synchro, Gnss_Synchro> > common_observables;
     std::vector<std::pair<Gnss_Synchro, Gnss_Synchro> >::const_iterator common_observables_iter;
-    std::map<int, Gnss_Synchro> observablesL1_with_L2;
+    std::map<int32_t, Gnss_Synchro> observablesL1_with_L2;
 
     for (observables_iter = observablesL1.begin();
          observables_iter != observablesL1.end();
          observables_iter++)
         {
-            unsigned int prn_ = observables_iter->second.PRN;
+            uint32_t prn_ = observables_iter->second.PRN;
             for (observables_iter2 = observablesL2.begin();
                  observables_iter2 != observablesL2.end();
                  observables_iter2++)
@@ -1450,7 +1452,7 @@ std::string Rtcm::print_MT1012(const Glonass_Gnav_Ephemeris& ephL1, const Glonas
                             Gnss_Synchro pr2 = observables_iter2->second;
                             p = std::make_pair(pr1, pr2);
                             common_observables.push_back(p);
-                            observablesL1_with_L2.insert(std::pair<int, Gnss_Synchro>(observables_iter->first, observables_iter->second));
+                            observablesL1_with_L2.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                         }
                 }
         }
@@ -1519,7 +1521,7 @@ std::bitset<130> Rtcm::get_MT1012_sat_content(const Glonass_Gnav_Ephemeris& ephL
 
 std::string Rtcm::print_MT1019(const Gps_Ephemeris& gps_eph)
 {
-    unsigned int msg_number = 1019;
+    uint32_t msg_number = 1019;
 
     Rtcm::set_DF002(msg_number);
     Rtcm::set_DF009(gps_eph);
@@ -1601,7 +1603,7 @@ std::string Rtcm::print_MT1019(const Gps_Ephemeris& gps_eph)
 }
 
 
-int Rtcm::read_MT1019(const std::string& message, Gps_Ephemeris& gps_eph)
+int32_t Rtcm::read_MT1019(const std::string& message, Gps_Ephemeris& gps_eph)
 {
     // Convert message to binary
     std::string message_bin = Rtcm::binary_data_to_bin(message);
@@ -1612,11 +1614,11 @@ int Rtcm::read_MT1019(const std::string& message, Gps_Ephemeris& gps_eph)
             return 1;
         }
 
-    unsigned int preamble_length = 8;
-    unsigned int reserved_field_length = 6;
-    unsigned int index = preamble_length + reserved_field_length;
+    uint32_t preamble_length = 8;
+    uint32_t reserved_field_length = 6;
+    uint32_t index = preamble_length + reserved_field_length;
 
-    unsigned int read_message_length = static_cast<unsigned int>(Rtcm::bin_to_uint(message_bin.substr(index, 10)));
+    uint32_t read_message_length = static_cast<uint32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 10)));
     index += 10;
 
     if (read_message_length != 61)
@@ -1626,7 +1628,7 @@ int Rtcm::read_MT1019(const std::string& message, Gps_Ephemeris& gps_eph)
         }
 
     // Check than the message number is correct
-    unsigned int read_msg_number = Rtcm::bin_to_uint(message_bin.substr(index, 12));
+    uint32_t read_msg_number = Rtcm::bin_to_uint(message_bin.substr(index, 12));
     index += 12;
 
     if (1019 != read_msg_number)
@@ -1636,16 +1638,16 @@ int Rtcm::read_MT1019(const std::string& message, Gps_Ephemeris& gps_eph)
         }
 
     // Fill Gps Ephemeris with message data content
-    gps_eph.i_satellite_PRN = static_cast<unsigned int>(Rtcm::bin_to_uint(message_bin.substr(index, 6)));
+    gps_eph.i_satellite_PRN = static_cast<uint32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 6)));
     index += 6;
 
-    gps_eph.i_GPS_week = static_cast<int>(Rtcm::bin_to_uint(message_bin.substr(index, 10)));
+    gps_eph.i_GPS_week = static_cast<int32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 10)));
     index += 10;
 
-    gps_eph.i_SV_accuracy = static_cast<int>(Rtcm::bin_to_uint(message_bin.substr(index, 4)));
+    gps_eph.i_SV_accuracy = static_cast<int32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 4)));
     index += 4;
 
-    gps_eph.i_code_on_L2 = static_cast<int>(Rtcm::bin_to_uint(message_bin.substr(index, 2)));
+    gps_eph.i_code_on_L2 = static_cast<int32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 2)));
     index += 2;
 
     gps_eph.d_IDOT = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 14))) * I_DOT_LSB;
@@ -1718,7 +1720,7 @@ int Rtcm::read_MT1019(const std::string& message, Gps_Ephemeris& gps_eph)
     gps_eph.d_TGD = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 8))) * T_GD_LSB;
     index += 8;
 
-    gps_eph.i_SV_health = static_cast<int>(Rtcm::bin_to_uint(message_bin.substr(index, 6)));
+    gps_eph.i_SV_health = static_cast<int32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 6)));
     index += 6;
 
     gps_eph.b_L2_P_data_flag = static_cast<bool>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
@@ -1738,10 +1740,10 @@ int Rtcm::read_MT1019(const std::string& message, Gps_Ephemeris& gps_eph)
 
 std::string Rtcm::print_MT1020(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model)
 {
-    unsigned int msg_number = 1020;
-    unsigned int glonass_gnav_alm_health = 0;
-    unsigned int glonass_gnav_alm_health_ind = 0;
-    unsigned int fifth_str_additional_data_ind = 1;
+    uint32_t msg_number = 1020;
+    uint32_t glonass_gnav_alm_health = 0;
+    uint32_t glonass_gnav_alm_health_ind = 0;
+    uint32_t fifth_str_additional_data_ind = 1;
 
     Rtcm::set_DF002(msg_number);
     Rtcm::set_DF038(glonass_gnav_eph);
@@ -1834,13 +1836,13 @@ std::string Rtcm::print_MT1020(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, c
 }
 
 
-int Rtcm::read_MT1020(const std::string& message, Glonass_Gnav_Ephemeris& glonass_gnav_eph, Glonass_Gnav_Utc_Model& glonass_gnav_utc_model)
+int32_t Rtcm::read_MT1020(const std::string& message, Glonass_Gnav_Ephemeris& glonass_gnav_eph, Glonass_Gnav_Utc_Model& glonass_gnav_utc_model)
 {
     // Convert message to binary
     std::string message_bin = Rtcm::binary_data_to_bin(message);
-    int glonass_gnav_alm_health = 0;
-    int glonass_gnav_alm_health_ind = 0;
-    int fifth_str_additional_data_ind = 0;
+    int32_t glonass_gnav_alm_health = 0;
+    int32_t glonass_gnav_alm_health_ind = 0;
+    int32_t fifth_str_additional_data_ind = 0;
 
     if (!Rtcm::check_CRC(message))
         {
@@ -1848,11 +1850,11 @@ int Rtcm::read_MT1020(const std::string& message, Glonass_Gnav_Ephemeris& glonas
             return 1;
         }
 
-    unsigned int preamble_length = 8;
-    unsigned int reserved_field_length = 6;
-    unsigned int index = preamble_length + reserved_field_length;
+    uint32_t preamble_length = 8;
+    uint32_t reserved_field_length = 6;
+    uint32_t index = preamble_length + reserved_field_length;
 
-    unsigned int read_message_length = static_cast<unsigned int>(Rtcm::bin_to_uint(message_bin.substr(index, 10)));
+    uint32_t read_message_length = static_cast<uint32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 10)));
     index += 10;
 
     if (read_message_length != 45)  // 360 bits = 45 bytes
@@ -1862,7 +1864,7 @@ int Rtcm::read_MT1020(const std::string& message, Glonass_Gnav_Ephemeris& glonas
         }
 
     // Check than the message number is correct
-    unsigned int read_msg_number = Rtcm::bin_to_uint(message_bin.substr(index, 12));
+    uint32_t read_msg_number = Rtcm::bin_to_uint(message_bin.substr(index, 12));
     index += 12;
 
     if (1020 != read_msg_number)
@@ -1872,19 +1874,19 @@ int Rtcm::read_MT1020(const std::string& message, Glonass_Gnav_Ephemeris& glonas
         }
 
     // Fill Gps Ephemeris with message data content
-    glonass_gnav_eph.i_satellite_slot_number = static_cast<unsigned int>(Rtcm::bin_to_uint(message_bin.substr(index, 6)));
+    glonass_gnav_eph.i_satellite_slot_number = static_cast<uint32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 6)));
     index += 6;
 
-    glonass_gnav_eph.i_satellite_freq_channel = static_cast<int>(Rtcm::bin_to_uint(message_bin.substr(index, 5)) - 7.0);
+    glonass_gnav_eph.i_satellite_freq_channel = static_cast<int32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 5)) - 7.0);
     index += 5;
 
-    glonass_gnav_alm_health = static_cast<int>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
+    glonass_gnav_alm_health = static_cast<int32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
     index += 1;
     if (glonass_gnav_alm_health)
         {
         }  //Avoid comiler warning
 
-    glonass_gnav_alm_health_ind = static_cast<int>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
+    glonass_gnav_alm_health_ind = static_cast<int32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
     index += 1;
     if (glonass_gnav_alm_health_ind)
         {
@@ -1988,7 +1990,7 @@ int Rtcm::read_MT1020(const std::string& message, Glonass_Gnav_Ephemeris& glonas
             glonass_gnav_utc_model.d_tau_gps = static_cast<double>(Rtcm::bin_to_sint(message_bin.substr(index, 22))) * TWO_N30;
             index += 22;
 
-            glonass_gnav_eph.d_l5th_n = static_cast<int>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
+            glonass_gnav_eph.d_l5th_n = static_cast<int32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
         }
 
     return 0;
@@ -2001,16 +2003,16 @@ int Rtcm::read_MT1020(const std::string& message, Glonass_Gnav_Ephemeris& glonas
 //
 // ********************************************************
 
-std::string Rtcm::print_MT1029(unsigned int ref_id, const Gps_Ephemeris& gps_eph, double obs_time, const std::string& message)
+std::string Rtcm::print_MT1029(uint32_t ref_id, const Gps_Ephemeris& gps_eph, double obs_time, const std::string& message)
 {
-    unsigned int msg_number = 1029;
+    uint32_t msg_number = 1029;
 
     Rtcm::set_DF002(msg_number);
     Rtcm::set_DF003(ref_id);
     Rtcm::set_DF051(gps_eph, obs_time);
     Rtcm::set_DF052(gps_eph, obs_time);
 
-    unsigned int i = 0;
+    uint32_t i = 0;
     bool first = true;
     std::string text_binary;
     for (auto it = message.cbegin(); it != message.cend(); it++)
@@ -2070,7 +2072,7 @@ std::string Rtcm::print_MT1029(unsigned int ref_id, const Gps_Ephemeris& gps_eph
 
 std::string Rtcm::print_MT1045(const Galileo_Ephemeris& gal_eph)
 {
-    unsigned int msg_number = 1045;
+    uint32_t msg_number = 1045;
 
     Rtcm::set_DF002(msg_number);
     Rtcm::set_DF252(gal_eph);
@@ -2099,7 +2101,7 @@ std::string Rtcm::print_MT1045(const Galileo_Ephemeris& gal_eph)
     Rtcm::set_DF312(gal_eph);
     Rtcm::set_DF314(gal_eph);
     Rtcm::set_DF315(gal_eph);
-    unsigned int seven_zero = 0;
+    uint32_t seven_zero = 0;
     std::bitset<7> DF001_ = std::bitset<7>(seven_zero);
 
     std::string data;
@@ -2148,7 +2150,7 @@ std::string Rtcm::print_MT1045(const Galileo_Ephemeris& gal_eph)
 }
 
 
-int Rtcm::read_MT1045(const std::string& message, Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::read_MT1045(const std::string& message, Galileo_Ephemeris& gal_eph)
 {
     // Convert message to binary
     std::string message_bin = Rtcm::binary_data_to_bin(message);
@@ -2159,11 +2161,11 @@ int Rtcm::read_MT1045(const std::string& message, Galileo_Ephemeris& gal_eph)
             return 1;
         }
 
-    unsigned int preamble_length = 8;
-    unsigned int reserved_field_length = 6;
-    unsigned int index = preamble_length + reserved_field_length;
+    uint32_t preamble_length = 8;
+    uint32_t reserved_field_length = 6;
+    uint32_t index = preamble_length + reserved_field_length;
 
-    unsigned int read_message_length = static_cast<unsigned int>(Rtcm::bin_to_uint(message_bin.substr(index, 10)));
+    uint32_t read_message_length = static_cast<uint32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 10)));
     index += 10;
 
     if (read_message_length != 62)
@@ -2173,7 +2175,7 @@ int Rtcm::read_MT1045(const std::string& message, Galileo_Ephemeris& gal_eph)
         }
 
     // Check than the message number is correct
-    unsigned int read_msg_number = Rtcm::bin_to_uint(message_bin.substr(index, 12));
+    uint32_t read_msg_number = Rtcm::bin_to_uint(message_bin.substr(index, 12));
     index += 12;
 
     if (1045 != read_msg_number)
@@ -2183,13 +2185,13 @@ int Rtcm::read_MT1045(const std::string& message, Galileo_Ephemeris& gal_eph)
         }
 
     // Fill Galileo Ephemeris with message data content
-    gal_eph.i_satellite_PRN = static_cast<unsigned int>(Rtcm::bin_to_uint(message_bin.substr(index, 6)));
+    gal_eph.i_satellite_PRN = static_cast<uint32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 6)));
     index += 6;
 
     gal_eph.WN_5 = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 12)));
     index += 12;
 
-    gal_eph.IOD_nav_1 = static_cast<int>(Rtcm::bin_to_uint(message_bin.substr(index, 10)));
+    gal_eph.IOD_nav_1 = static_cast<int32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 10)));
     index += 10;
 
     gal_eph.SISA_3 = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 8)));
@@ -2258,7 +2260,7 @@ int Rtcm::read_MT1045(const std::string& message, Galileo_Ephemeris& gal_eph)
     gal_eph.BGD_E1E5a_5 = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 10)));
     index += 10;
 
-    gal_eph.E5a_HS = static_cast<unsigned int>(Rtcm::bin_to_uint(message_bin.substr(index, 2)));
+    gal_eph.E5a_HS = static_cast<uint32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 2)));
     index += 2;
 
     gal_eph.E5a_DVS = static_cast<bool>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
@@ -2278,15 +2280,15 @@ std::string Rtcm::print_MSM_1(const Gps_Ephemeris& gps_eph,
     const Galileo_Ephemeris& gal_eph,
     const Glonass_Gnav_Ephemeris& glo_gnav_eph,
     double obs_time,
-    const std::map<int, Gnss_Synchro>& observables,
-    unsigned int ref_id,
-    unsigned int clock_steering_indicator,
-    unsigned int external_clock_indicator,
-    int smooth_int,
+    const std::map<int32_t, Gnss_Synchro>& observables,
+    uint32_t ref_id,
+    uint32_t clock_steering_indicator,
+    uint32_t external_clock_indicator,
+    int32_t smooth_int,
     bool divergence_free,
     bool more_messages)
 {
-    unsigned int msg_number = 0;
+    uint32_t msg_number = 0;
     if (gps_eph.i_satellite_PRN != 0) msg_number = 1071;
     if (gps_cnav_eph.i_satellite_PRN != 0) msg_number = 1071;
     if (glo_gnav_eph.i_satellite_PRN != 0) msg_number = 1081;
@@ -2326,18 +2328,18 @@ std::string Rtcm::print_MSM_1(const Gps_Ephemeris& gps_eph,
 }
 
 
-std::string Rtcm::get_MSM_header(unsigned int msg_number,
+std::string Rtcm::get_MSM_header(uint32_t msg_number,
     double obs_time,
-    const std::map<int, Gnss_Synchro>& observables,
-    unsigned int ref_id,
-    unsigned int clock_steering_indicator,
-    unsigned int external_clock_indicator,
-    int smooth_int,
+    const std::map<int32_t, Gnss_Synchro>& observables,
+    uint32_t ref_id,
+    uint32_t clock_steering_indicator,
+    uint32_t external_clock_indicator,
+    int32_t smooth_int,
     bool divergence_free,
     bool more_messages)
 {
     // Find first element in observables block and define type of message
-    std::map<int, Gnss_Synchro>::const_iterator observables_iter = observables.begin();
+    std::map<int32_t, Gnss_Synchro>::const_iterator observables_iter = observables.begin();
     std::string sys(observables_iter->second.System, 1);
 
     Rtcm::set_DF002(msg_number);
@@ -2383,18 +2385,18 @@ std::string Rtcm::get_MSM_header(unsigned int msg_number,
 }
 
 
-std::string Rtcm::get_MSM_1_content_sat_data(const std::map<int, Gnss_Synchro>& observables)
+std::string Rtcm::get_MSM_1_content_sat_data(const std::map<int32_t, Gnss_Synchro>& observables)
 {
     std::string sat_data;
     sat_data.clear();
 
     Rtcm::set_DF394(observables);
-    unsigned int num_satellites = DF394.count();
+    uint32_t num_satellites = DF394.count();
 
-    std::vector<std::pair<int, Gnss_Synchro> > observables_vector;
-    std::map<int, Gnss_Synchro>::const_iterator gnss_synchro_iter;
-    std::vector<unsigned int> pos;
-    std::vector<unsigned int>::iterator it;
+    std::vector<std::pair<int32_t, Gnss_Synchro> > observables_vector;
+    std::map<int32_t, Gnss_Synchro>::const_iterator gnss_synchro_iter;
+    std::vector<uint32_t> pos;
+    std::vector<uint32_t>::iterator it;
 
     for (gnss_synchro_iter = observables.cbegin();
          gnss_synchro_iter != observables.cend();
@@ -2408,9 +2410,9 @@ std::string Rtcm::get_MSM_1_content_sat_data(const std::map<int, Gnss_Synchro>& 
                 }
         }
 
-    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(observables_vector);
+    std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(observables_vector);
 
-    for (unsigned int nsat = 0; nsat < num_satellites; nsat++)
+    for (uint32_t nsat = 0; nsat < num_satellites; nsat++)
         {
             Rtcm::set_DF398(ordered_by_PRN_pos.at(nsat).second);
             sat_data += DF398.to_string();
@@ -2420,14 +2422,14 @@ std::string Rtcm::get_MSM_1_content_sat_data(const std::map<int, Gnss_Synchro>& 
 }
 
 
-std::string Rtcm::get_MSM_1_content_signal_data(const std::map<int, Gnss_Synchro>& observables)
+std::string Rtcm::get_MSM_1_content_signal_data(const std::map<int32_t, Gnss_Synchro>& observables)
 {
     std::string signal_data;
     signal_data.clear();
-    unsigned int Ncells = observables.size();
+    uint32_t Ncells = observables.size();
 
-    std::vector<std::pair<int, Gnss_Synchro> > observables_vector;
-    std::map<int, Gnss_Synchro>::const_iterator map_iter;
+    std::vector<std::pair<int32_t, Gnss_Synchro> > observables_vector;
+    std::map<int32_t, Gnss_Synchro>::const_iterator map_iter;
 
     for (map_iter = observables.cbegin();
          map_iter != observables.cend();
@@ -2436,11 +2438,11 @@ std::string Rtcm::get_MSM_1_content_signal_data(const std::map<int, Gnss_Synchro
             observables_vector.push_back(*map_iter);
         }
 
-    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
+    std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
     std::reverse(ordered_by_signal.begin(), ordered_by_signal.end());
-    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
+    std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
 
-    for (unsigned int cell = 0; cell < Ncells; cell++)
+    for (uint32_t cell = 0; cell < Ncells; cell++)
         {
             Rtcm::set_DF400(ordered_by_PRN_pos.at(cell).second);
             signal_data += DF400.to_string();
@@ -2461,15 +2463,15 @@ std::string Rtcm::print_MSM_2(const Gps_Ephemeris& gps_eph,
     const Galileo_Ephemeris& gal_eph,
     const Glonass_Gnav_Ephemeris& glo_gnav_eph,
     double obs_time,
-    const std::map<int, Gnss_Synchro>& observables,
-    unsigned int ref_id,
-    unsigned int clock_steering_indicator,
-    unsigned int external_clock_indicator,
-    int smooth_int,
+    const std::map<int32_t, Gnss_Synchro>& observables,
+    uint32_t ref_id,
+    uint32_t clock_steering_indicator,
+    uint32_t external_clock_indicator,
+    int32_t smooth_int,
     bool divergence_free,
     bool more_messages)
 {
-    unsigned int msg_number = 0;
+    uint32_t msg_number = 0;
     if (gps_eph.i_satellite_PRN != 0) msg_number = 1072;
     if (gps_cnav_eph.i_satellite_PRN != 0) msg_number = 1072;
     if (glo_gnav_eph.i_satellite_PRN != 0) msg_number = 1082;
@@ -2513,17 +2515,17 @@ std::string Rtcm::get_MSM_2_content_signal_data(const Gps_Ephemeris& ephNAV,
     const Galileo_Ephemeris& ephFNAV,
     const Glonass_Gnav_Ephemeris& ephGNAV,
     double obs_time,
-    const std::map<int, Gnss_Synchro>& observables)
+    const std::map<int32_t, Gnss_Synchro>& observables)
 {
     std::string signal_data;
     std::string first_data_type;
     std::string second_data_type;
     std::string third_data_type;
 
-    unsigned int Ncells = observables.size();
+    uint32_t Ncells = observables.size();
 
-    std::vector<std::pair<int, Gnss_Synchro> > observables_vector;
-    std::map<int, Gnss_Synchro>::const_iterator map_iter;
+    std::vector<std::pair<int32_t, Gnss_Synchro> > observables_vector;
+    std::map<int32_t, Gnss_Synchro>::const_iterator map_iter;
 
     for (map_iter = observables.cbegin();
          map_iter != observables.cend();
@@ -2532,11 +2534,11 @@ std::string Rtcm::get_MSM_2_content_signal_data(const Gps_Ephemeris& ephNAV,
             observables_vector.push_back(*map_iter);
         }
 
-    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
+    std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
     std::reverse(ordered_by_signal.begin(), ordered_by_signal.end());
-    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
+    std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
 
-    for (unsigned int cell = 0; cell < Ncells; cell++)
+    for (uint32_t cell = 0; cell < Ncells; cell++)
         {
             Rtcm::set_DF401(ordered_by_PRN_pos.at(cell).second);
             Rtcm::set_DF402(ephNAV, ephCNAV, ephFNAV, ephGNAV, obs_time, ordered_by_PRN_pos.at(cell).second);
@@ -2562,15 +2564,15 @@ std::string Rtcm::print_MSM_3(const Gps_Ephemeris& gps_eph,
     const Galileo_Ephemeris& gal_eph,
     const Glonass_Gnav_Ephemeris& glo_gnav_eph,
     double obs_time,
-    const std::map<int, Gnss_Synchro>& observables,
-    unsigned int ref_id,
-    unsigned int clock_steering_indicator,
-    unsigned int external_clock_indicator,
-    int smooth_int,
+    const std::map<int32_t, Gnss_Synchro>& observables,
+    uint32_t ref_id,
+    uint32_t clock_steering_indicator,
+    uint32_t external_clock_indicator,
+    int32_t smooth_int,
     bool divergence_free,
     bool more_messages)
 {
-    unsigned int msg_number = 0;
+    uint32_t msg_number = 0;
     if (gps_eph.i_satellite_PRN != 0) msg_number = 1073;
     if (gps_cnav_eph.i_satellite_PRN != 0) msg_number = 1073;
     if (glo_gnav_eph.i_satellite_PRN != 0) msg_number = 1083;
@@ -2614,7 +2616,7 @@ std::string Rtcm::get_MSM_3_content_signal_data(const Gps_Ephemeris& ephNAV,
     const Galileo_Ephemeris& ephFNAV,
     const Glonass_Gnav_Ephemeris& ephGNAV,
     double obs_time,
-    const std::map<int, Gnss_Synchro>& observables)
+    const std::map<int32_t, Gnss_Synchro>& observables)
 {
     std::string signal_data;
     std::string first_data_type;
@@ -2622,10 +2624,10 @@ std::string Rtcm::get_MSM_3_content_signal_data(const Gps_Ephemeris& ephNAV,
     std::string third_data_type;
     std::string fourth_data_type;
 
-    unsigned int Ncells = observables.size();
+    uint32_t Ncells = observables.size();
 
-    std::vector<std::pair<int, Gnss_Synchro> > observables_vector;
-    std::map<int, Gnss_Synchro>::const_iterator map_iter;
+    std::vector<std::pair<int32_t, Gnss_Synchro> > observables_vector;
+    std::map<int32_t, Gnss_Synchro>::const_iterator map_iter;
 
     for (map_iter = observables.cbegin();
          map_iter != observables.cend();
@@ -2634,11 +2636,11 @@ std::string Rtcm::get_MSM_3_content_signal_data(const Gps_Ephemeris& ephNAV,
             observables_vector.push_back(*map_iter);
         }
 
-    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
+    std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
     std::reverse(ordered_by_signal.begin(), ordered_by_signal.end());
-    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
+    std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
 
-    for (unsigned int cell = 0; cell < Ncells; cell++)
+    for (uint32_t cell = 0; cell < Ncells; cell++)
         {
             Rtcm::set_DF400(ordered_by_PRN_pos.at(cell).second);
             Rtcm::set_DF401(ordered_by_PRN_pos.at(cell).second);
@@ -2666,15 +2668,15 @@ std::string Rtcm::print_MSM_4(const Gps_Ephemeris& gps_eph,
     const Galileo_Ephemeris& gal_eph,
     const Glonass_Gnav_Ephemeris& glo_gnav_eph,
     double obs_time,
-    const std::map<int, Gnss_Synchro>& observables,
-    unsigned int ref_id,
-    unsigned int clock_steering_indicator,
-    unsigned int external_clock_indicator,
-    int smooth_int,
+    const std::map<int32_t, Gnss_Synchro>& observables,
+    uint32_t ref_id,
+    uint32_t clock_steering_indicator,
+    uint32_t external_clock_indicator,
+    int32_t smooth_int,
     bool divergence_free,
     bool more_messages)
 {
-    unsigned int msg_number = 0;
+    uint32_t msg_number = 0;
     if (gps_eph.i_satellite_PRN != 0) msg_number = 1074;
     if (gps_cnav_eph.i_satellite_PRN != 0) msg_number = 1074;
     if (glo_gnav_eph.i_satellite_PRN != 0) msg_number = 1084;
@@ -2713,19 +2715,19 @@ std::string Rtcm::print_MSM_4(const Gps_Ephemeris& gps_eph,
 }
 
 
-std::string Rtcm::get_MSM_4_content_sat_data(const std::map<int, Gnss_Synchro>& observables)
+std::string Rtcm::get_MSM_4_content_sat_data(const std::map<int32_t, Gnss_Synchro>& observables)
 {
     std::string sat_data;
     std::string first_data_type;
     std::string second_data_type;
 
     Rtcm::set_DF394(observables);
-    unsigned int num_satellites = DF394.count();
+    uint32_t num_satellites = DF394.count();
 
-    std::vector<std::pair<int, Gnss_Synchro> > observables_vector;
-    std::map<int, Gnss_Synchro>::const_iterator gnss_synchro_iter;
-    std::vector<unsigned int> pos;
-    std::vector<unsigned int>::iterator it;
+    std::vector<std::pair<int32_t, Gnss_Synchro> > observables_vector;
+    std::map<int32_t, Gnss_Synchro>::const_iterator gnss_synchro_iter;
+    std::vector<uint32_t> pos;
+    std::vector<uint32_t>::iterator it;
 
     for (gnss_synchro_iter = observables.cbegin();
          gnss_synchro_iter != observables.cend();
@@ -2739,9 +2741,9 @@ std::string Rtcm::get_MSM_4_content_sat_data(const std::map<int, Gnss_Synchro>& 
                 }
         }
 
-    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(observables_vector);
+    std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(observables_vector);
 
-    for (unsigned int nsat = 0; nsat < num_satellites; nsat++)
+    for (uint32_t nsat = 0; nsat < num_satellites; nsat++)
         {
             Rtcm::set_DF397(ordered_by_PRN_pos.at(nsat).second);
             Rtcm::set_DF398(ordered_by_PRN_pos.at(nsat).second);
@@ -2758,7 +2760,7 @@ std::string Rtcm::get_MSM_4_content_signal_data(const Gps_Ephemeris& ephNAV,
     const Galileo_Ephemeris& ephFNAV,
     const Glonass_Gnav_Ephemeris& ephGNAV,
     double obs_time,
-    const std::map<int, Gnss_Synchro>& observables)
+    const std::map<int32_t, Gnss_Synchro>& observables)
 {
     std::string signal_data;
     std::string first_data_type;
@@ -2767,10 +2769,10 @@ std::string Rtcm::get_MSM_4_content_signal_data(const Gps_Ephemeris& ephNAV,
     std::string fourth_data_type;
     std::string fifth_data_type;
 
-    unsigned int Ncells = observables.size();
+    uint32_t Ncells = observables.size();
 
-    std::vector<std::pair<int, Gnss_Synchro> > observables_vector;
-    std::map<int, Gnss_Synchro>::const_iterator map_iter;
+    std::vector<std::pair<int32_t, Gnss_Synchro> > observables_vector;
+    std::map<int32_t, Gnss_Synchro>::const_iterator map_iter;
 
     for (map_iter = observables.cbegin();
          map_iter != observables.cend();
@@ -2779,11 +2781,11 @@ std::string Rtcm::get_MSM_4_content_signal_data(const Gps_Ephemeris& ephNAV,
             observables_vector.push_back(*map_iter);
         }
 
-    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
+    std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
     std::reverse(ordered_by_signal.begin(), ordered_by_signal.end());
-    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
+    std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
 
-    for (unsigned int cell = 0; cell < Ncells; cell++)
+    for (uint32_t cell = 0; cell < Ncells; cell++)
         {
             Rtcm::set_DF400(ordered_by_PRN_pos.at(cell).second);
             Rtcm::set_DF401(ordered_by_PRN_pos.at(cell).second);
@@ -2813,15 +2815,15 @@ std::string Rtcm::print_MSM_5(const Gps_Ephemeris& gps_eph,
     const Galileo_Ephemeris& gal_eph,
     const Glonass_Gnav_Ephemeris& glo_gnav_eph,
     double obs_time,
-    const std::map<int, Gnss_Synchro>& observables,
-    unsigned int ref_id,
-    unsigned int clock_steering_indicator,
-    unsigned int external_clock_indicator,
-    int smooth_int,
+    const std::map<int32_t, Gnss_Synchro>& observables,
+    uint32_t ref_id,
+    uint32_t clock_steering_indicator,
+    uint32_t external_clock_indicator,
+    int32_t smooth_int,
     bool divergence_free,
     bool more_messages)
 {
-    unsigned int msg_number = 0;
+    uint32_t msg_number = 0;
     if (gps_eph.i_satellite_PRN != 0) msg_number = 1075;
     if (gps_cnav_eph.i_satellite_PRN != 0) msg_number = 1075;
     if (glo_gnav_eph.i_satellite_PRN != 0) msg_number = 1085;
@@ -2860,7 +2862,7 @@ std::string Rtcm::print_MSM_5(const Gps_Ephemeris& gps_eph,
 }
 
 
-std::string Rtcm::get_MSM_5_content_sat_data(const std::map<int, Gnss_Synchro>& observables)
+std::string Rtcm::get_MSM_5_content_sat_data(const std::map<int32_t, Gnss_Synchro>& observables)
 {
     std::string sat_data;
     std::string first_data_type;
@@ -2869,12 +2871,12 @@ std::string Rtcm::get_MSM_5_content_sat_data(const std::map<int, Gnss_Synchro>& 
     std::string fourth_data_type;
 
     Rtcm::set_DF394(observables);
-    unsigned int num_satellites = DF394.count();
+    uint32_t num_satellites = DF394.count();
 
-    std::vector<std::pair<int, Gnss_Synchro> > observables_vector;
-    std::map<int, Gnss_Synchro>::const_iterator gnss_synchro_iter;
-    std::vector<unsigned int> pos;
-    std::vector<unsigned int>::iterator it;
+    std::vector<std::pair<int32_t, Gnss_Synchro> > observables_vector;
+    std::map<int32_t, Gnss_Synchro>::const_iterator gnss_synchro_iter;
+    std::vector<uint32_t> pos;
+    std::vector<uint32_t>::iterator it;
 
     for (gnss_synchro_iter = observables.cbegin();
          gnss_synchro_iter != observables.cend();
@@ -2888,9 +2890,9 @@ std::string Rtcm::get_MSM_5_content_sat_data(const std::map<int, Gnss_Synchro>& 
                 }
         }
 
-    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(observables_vector);
+    std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(observables_vector);
 
-    for (unsigned int nsat = 0; nsat < num_satellites; nsat++)
+    for (uint32_t nsat = 0; nsat < num_satellites; nsat++)
         {
             Rtcm::set_DF397(ordered_by_PRN_pos.at(nsat).second);
             Rtcm::set_DF398(ordered_by_PRN_pos.at(nsat).second);
@@ -2911,7 +2913,7 @@ std::string Rtcm::get_MSM_5_content_signal_data(const Gps_Ephemeris& ephNAV,
     const Galileo_Ephemeris& ephFNAV,
     const Glonass_Gnav_Ephemeris& ephGNAV,
     double obs_time,
-    const std::map<int, Gnss_Synchro>& observables)
+    const std::map<int32_t, Gnss_Synchro>& observables)
 {
     std::string signal_data;
     std::string first_data_type;
@@ -2921,10 +2923,10 @@ std::string Rtcm::get_MSM_5_content_signal_data(const Gps_Ephemeris& ephNAV,
     std::string fifth_data_type;
     std::string sixth_data_type;
 
-    unsigned int Ncells = observables.size();
+    uint32_t Ncells = observables.size();
 
-    std::vector<std::pair<int, Gnss_Synchro> > observables_vector;
-    std::map<int, Gnss_Synchro>::const_iterator map_iter;
+    std::vector<std::pair<int32_t, Gnss_Synchro> > observables_vector;
+    std::map<int32_t, Gnss_Synchro>::const_iterator map_iter;
 
     for (map_iter = observables.cbegin();
          map_iter != observables.cend();
@@ -2933,11 +2935,11 @@ std::string Rtcm::get_MSM_5_content_signal_data(const Gps_Ephemeris& ephNAV,
             observables_vector.push_back(*map_iter);
         }
 
-    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
+    std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
     std::reverse(ordered_by_signal.begin(), ordered_by_signal.end());
-    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
+    std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
 
-    for (unsigned int cell = 0; cell < Ncells; cell++)
+    for (uint32_t cell = 0; cell < Ncells; cell++)
         {
             Rtcm::set_DF400(ordered_by_PRN_pos.at(cell).second);
             Rtcm::set_DF401(ordered_by_PRN_pos.at(cell).second);
@@ -2969,15 +2971,15 @@ std::string Rtcm::print_MSM_6(const Gps_Ephemeris& gps_eph,
     const Galileo_Ephemeris& gal_eph,
     const Glonass_Gnav_Ephemeris& glo_gnav_eph,
     double obs_time,
-    const std::map<int, Gnss_Synchro>& observables,
-    unsigned int ref_id,
-    unsigned int clock_steering_indicator,
-    unsigned int external_clock_indicator,
-    int smooth_int,
+    const std::map<int32_t, Gnss_Synchro>& observables,
+    uint32_t ref_id,
+    uint32_t clock_steering_indicator,
+    uint32_t external_clock_indicator,
+    int32_t smooth_int,
     bool divergence_free,
     bool more_messages)
 {
-    unsigned int msg_number = 0;
+    uint32_t msg_number = 0;
     if (gps_eph.i_satellite_PRN != 0) msg_number = 1076;
     if (gps_cnav_eph.i_satellite_PRN != 0) msg_number = 1076;
     if (glo_gnav_eph.i_satellite_PRN != 0) msg_number = 1086;
@@ -3021,7 +3023,7 @@ std::string Rtcm::get_MSM_6_content_signal_data(const Gps_Ephemeris& ephNAV,
     const Galileo_Ephemeris& ephFNAV,
     const Glonass_Gnav_Ephemeris& ephGNAV,
     double obs_time,
-    const std::map<int, Gnss_Synchro>& observables)
+    const std::map<int32_t, Gnss_Synchro>& observables)
 {
     std::string signal_data;
     std::string first_data_type;
@@ -3030,10 +3032,10 @@ std::string Rtcm::get_MSM_6_content_signal_data(const Gps_Ephemeris& ephNAV,
     std::string fourth_data_type;
     std::string fifth_data_type;
 
-    unsigned int Ncells = observables.size();
+    uint32_t Ncells = observables.size();
 
-    std::vector<std::pair<int, Gnss_Synchro> > observables_vector;
-    std::map<int, Gnss_Synchro>::const_iterator map_iter;
+    std::vector<std::pair<int32_t, Gnss_Synchro> > observables_vector;
+    std::map<int32_t, Gnss_Synchro>::const_iterator map_iter;
 
     for (map_iter = observables.cbegin();
          map_iter != observables.cend();
@@ -3042,11 +3044,11 @@ std::string Rtcm::get_MSM_6_content_signal_data(const Gps_Ephemeris& ephNAV,
             observables_vector.push_back(*map_iter);
         }
 
-    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
+    std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
     std::reverse(ordered_by_signal.begin(), ordered_by_signal.end());
-    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
+    std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
 
-    for (unsigned int cell = 0; cell < Ncells; cell++)
+    for (uint32_t cell = 0; cell < Ncells; cell++)
         {
             Rtcm::set_DF405(ordered_by_PRN_pos.at(cell).second);
             Rtcm::set_DF406(ordered_by_PRN_pos.at(cell).second);
@@ -3076,15 +3078,15 @@ std::string Rtcm::print_MSM_7(const Gps_Ephemeris& gps_eph,
     const Galileo_Ephemeris& gal_eph,
     const Glonass_Gnav_Ephemeris& glo_gnav_eph,
     double obs_time,
-    const std::map<int, Gnss_Synchro>& observables,
-    unsigned int ref_id,
-    unsigned int clock_steering_indicator,
-    unsigned int external_clock_indicator,
-    int smooth_int,
+    const std::map<int32_t, Gnss_Synchro>& observables,
+    uint32_t ref_id,
+    uint32_t clock_steering_indicator,
+    uint32_t external_clock_indicator,
+    int32_t smooth_int,
     bool divergence_free,
     bool more_messages)
 {
-    unsigned int msg_number = 0;
+    uint32_t msg_number = 0;
     if (gps_eph.i_satellite_PRN != 0) msg_number = 1077;
     if (gps_cnav_eph.i_satellite_PRN != 0) msg_number = 1077;
     if (glo_gnav_eph.i_satellite_PRN != 0) msg_number = 1087;
@@ -3128,7 +3130,7 @@ std::string Rtcm::get_MSM_7_content_signal_data(const Gps_Ephemeris& ephNAV,
     const Galileo_Ephemeris& ephFNAV,
     const Glonass_Gnav_Ephemeris& ephGNAV,
     double obs_time,
-    const std::map<int, Gnss_Synchro>& observables)
+    const std::map<int32_t, Gnss_Synchro>& observables)
 {
     std::string signal_data;
     std::string first_data_type;
@@ -3138,10 +3140,10 @@ std::string Rtcm::get_MSM_7_content_signal_data(const Gps_Ephemeris& ephNAV,
     std::string fifth_data_type;
     std::string sixth_data_type;
 
-    unsigned int Ncells = observables.size();
+    uint32_t Ncells = observables.size();
 
-    std::vector<std::pair<int, Gnss_Synchro> > observables_vector;
-    std::map<int, Gnss_Synchro>::const_iterator map_iter;
+    std::vector<std::pair<int32_t, Gnss_Synchro> > observables_vector;
+    std::map<int32_t, Gnss_Synchro>::const_iterator map_iter;
 
     for (map_iter = observables.cbegin();
          map_iter != observables.cend();
@@ -3150,11 +3152,11 @@ std::string Rtcm::get_MSM_7_content_signal_data(const Gps_Ephemeris& ephNAV,
             observables_vector.push_back(*map_iter);
         }
 
-    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
+    std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
     std::reverse(ordered_by_signal.begin(), ordered_by_signal.end());
-    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
+    std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
 
-    for (unsigned int cell = 0; cell < Ncells; cell++)
+    for (uint32_t cell = 0; cell < Ncells; cell++)
         {
             Rtcm::set_DF405(ordered_by_PRN_pos.at(cell).second);
             Rtcm::set_DF406(ordered_by_PRN_pos.at(cell).second);
@@ -3179,16 +3181,16 @@ std::string Rtcm::get_MSM_7_content_signal_data(const Gps_Ephemeris& ephNAV,
 // Some utilities
 // *****************************************************************************************************
 
-std::vector<std::pair<int, Gnss_Synchro> > Rtcm::sort_by_PRN_mask(const std::vector<std::pair<int, Gnss_Synchro> >& synchro_map) const
+std::vector<std::pair<int32_t, Gnss_Synchro> > Rtcm::sort_by_PRN_mask(const std::vector<std::pair<int32_t, Gnss_Synchro> >& synchro_map) const
 {
-    std::vector<std::pair<int, Gnss_Synchro> >::const_iterator synchro_map_iter;
-    std::vector<std::pair<int, Gnss_Synchro> > my_vec;
+    std::vector<std::pair<int32_t, Gnss_Synchro> >::const_iterator synchro_map_iter;
+    std::vector<std::pair<int32_t, Gnss_Synchro> > my_vec;
     struct
     {
-        bool operator()(const std::pair<int, Gnss_Synchro>& a, const std::pair<int, Gnss_Synchro>& b)
+        bool operator()(const std::pair<int32_t, Gnss_Synchro>& a, const std::pair<int32_t, Gnss_Synchro>& b)
         {
-            unsigned int value_a = 64 - a.second.PRN;
-            unsigned int value_b = 64 - b.second.PRN;
+            uint32_t value_a = 64 - a.second.PRN;
+            uint32_t value_b = 64 - b.second.PRN;
             return value_a < value_b;
         }
     } has_lower_pos;
@@ -3198,7 +3200,7 @@ std::vector<std::pair<int, Gnss_Synchro> > Rtcm::sort_by_PRN_mask(const std::vec
          synchro_map_iter++)
 
         {
-            std::pair<int, Gnss_Synchro> p(synchro_map_iter->first, synchro_map_iter->second);
+            std::pair<int32_t, Gnss_Synchro> p(synchro_map_iter->first, synchro_map_iter->second);
             my_vec.push_back(p);
         }
 
@@ -3208,17 +3210,17 @@ std::vector<std::pair<int, Gnss_Synchro> > Rtcm::sort_by_PRN_mask(const std::vec
 }
 
 
-std::vector<std::pair<int, Gnss_Synchro> > Rtcm::sort_by_signal(const std::vector<std::pair<int, Gnss_Synchro> >& synchro_map) const
+std::vector<std::pair<int32_t, Gnss_Synchro> > Rtcm::sort_by_signal(const std::vector<std::pair<int32_t, Gnss_Synchro> >& synchro_map) const
 {
-    std::vector<std::pair<int, Gnss_Synchro> >::const_iterator synchro_map_iter;
-    std::vector<std::pair<int, Gnss_Synchro> > my_vec;
+    std::vector<std::pair<int32_t, Gnss_Synchro> >::const_iterator synchro_map_iter;
+    std::vector<std::pair<int32_t, Gnss_Synchro> > my_vec;
 
     struct
     {
-        bool operator()(const std::pair<int, Gnss_Synchro>& a, const std::pair<int, Gnss_Synchro>& b)
+        bool operator()(const std::pair<int32_t, Gnss_Synchro>& a, const std::pair<int32_t, Gnss_Synchro>& b)
         {
-            unsigned int value_a = 0;
-            unsigned int value_b = 0;
+            uint32_t value_a = 0;
+            uint32_t value_b = 0;
             std::string system_a(&a.second.System, 1);
             std::string system_b(&b.second.System, 1);
             std::string sig_a_(a.second.Signal);
@@ -3256,7 +3258,7 @@ std::vector<std::pair<int, Gnss_Synchro> > Rtcm::sort_by_signal(const std::vecto
          synchro_map_iter++)
 
         {
-            std::pair<int, Gnss_Synchro> p(synchro_map_iter->first, synchro_map_iter->second);
+            std::pair<int32_t, Gnss_Synchro> p(synchro_map_iter->first, synchro_map_iter->second);
             my_vec.push_back(p);
         }
 
@@ -3344,9 +3346,9 @@ boost::posix_time::ptime Rtcm::compute_GLONASS_time(const Glonass_Gnav_Ephemeris
 }
 
 
-unsigned int Rtcm::lock_time(const Gps_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
+uint32_t Rtcm::lock_time(const Gps_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
 {
-    unsigned int lock_time_in_seconds;
+    uint32_t lock_time_in_seconds;
     boost::posix_time::ptime current_time = Rtcm::compute_GPS_time(eph, obs_time);
     boost::posix_time::ptime last_lock_time = Rtcm::gps_L1_last_lock_time[65 - gnss_synchro.PRN];
     if (last_lock_time.is_not_a_date_time())  // || CHECK LLI!!......)
@@ -3354,16 +3356,16 @@ unsigned int Rtcm::lock_time(const Gps_Ephemeris& eph, double obs_time, const Gn
             Rtcm::gps_L1_last_lock_time[65 - gnss_synchro.PRN] = current_time;
         }
     boost::posix_time::time_duration lock_duration = current_time - Rtcm::gps_L1_last_lock_time[65 - gnss_synchro.PRN];
-    lock_time_in_seconds = static_cast<unsigned int>(lock_duration.total_seconds());
+    lock_time_in_seconds = static_cast<uint32_t>(lock_duration.total_seconds());
     // Debug:
     // std::cout << "lock time PRN " << gnss_synchro.PRN << ": " << lock_time_in_seconds <<  "  current time: " << current_time << std::endl;
     return lock_time_in_seconds;
 }
 
 
-unsigned int Rtcm::lock_time(const Gps_CNAV_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
+uint32_t Rtcm::lock_time(const Gps_CNAV_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
 {
-    unsigned int lock_time_in_seconds;
+    uint32_t lock_time_in_seconds;
     boost::posix_time::ptime current_time = Rtcm::compute_GPS_time(eph, obs_time);
     boost::posix_time::ptime last_lock_time = Rtcm::gps_L2_last_lock_time[65 - gnss_synchro.PRN];
     if (last_lock_time.is_not_a_date_time())  // || CHECK LLI!!......)
@@ -3371,14 +3373,14 @@ unsigned int Rtcm::lock_time(const Gps_CNAV_Ephemeris& eph, double obs_time, con
             Rtcm::gps_L2_last_lock_time[65 - gnss_synchro.PRN] = current_time;
         }
     boost::posix_time::time_duration lock_duration = current_time - Rtcm::gps_L2_last_lock_time[65 - gnss_synchro.PRN];
-    lock_time_in_seconds = static_cast<unsigned int>(lock_duration.total_seconds());
+    lock_time_in_seconds = static_cast<uint32_t>(lock_duration.total_seconds());
     return lock_time_in_seconds;
 }
 
 
-unsigned int Rtcm::lock_time(const Galileo_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
+uint32_t Rtcm::lock_time(const Galileo_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
 {
-    unsigned int lock_time_in_seconds;
+    uint32_t lock_time_in_seconds;
     boost::posix_time::ptime current_time = Rtcm::compute_Galileo_time(eph, obs_time);
 
     boost::posix_time::ptime last_lock_time;
@@ -3414,14 +3416,14 @@ unsigned int Rtcm::lock_time(const Galileo_Ephemeris& eph, double obs_time, cons
             lock_duration = current_time - Rtcm::gal_E5_last_lock_time[65 - gnss_synchro.PRN];
         }
 
-    lock_time_in_seconds = static_cast<unsigned int>(lock_duration.total_seconds());
+    lock_time_in_seconds = static_cast<uint32_t>(lock_duration.total_seconds());
     return lock_time_in_seconds;
 }
 
 
-unsigned int Rtcm::lock_time(const Glonass_Gnav_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
+uint32_t Rtcm::lock_time(const Glonass_Gnav_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
 {
-    unsigned int lock_time_in_seconds;
+    uint32_t lock_time_in_seconds;
     boost::posix_time::ptime current_time = Rtcm::compute_GLONASS_time(eph, obs_time);
 
     boost::posix_time::ptime last_lock_time;
@@ -3457,12 +3459,12 @@ unsigned int Rtcm::lock_time(const Glonass_Gnav_Ephemeris& eph, double obs_time,
             lock_duration = current_time - Rtcm::glo_L2_last_lock_time[65 - gnss_synchro.PRN];
         }
 
-    lock_time_in_seconds = static_cast<unsigned int>(lock_duration.total_seconds());
+    lock_time_in_seconds = static_cast<uint32_t>(lock_duration.total_seconds());
     return lock_time_in_seconds;
 }
 
 
-unsigned int Rtcm::lock_time_indicator(unsigned int lock_time_period_s)
+uint32_t Rtcm::lock_time_indicator(uint32_t lock_time_period_s)
 {
     // Table 3.4-2
     if (lock_time_period_s <= 0) return 0;
@@ -3476,7 +3478,7 @@ unsigned int Rtcm::lock_time_indicator(unsigned int lock_time_period_s)
 }
 
 
-unsigned int Rtcm::msm_lock_time_indicator(unsigned int lock_time_period_s)
+uint32_t Rtcm::msm_lock_time_indicator(uint32_t lock_time_period_s)
 {
     // Table 3.5-74
     if (lock_time_period_s < 32) return 0;
@@ -3499,7 +3501,7 @@ unsigned int Rtcm::msm_lock_time_indicator(unsigned int lock_time_period_s)
 
 
 // clang-format off
-unsigned int Rtcm::msm_extended_lock_time_indicator(unsigned int lock_time_period_s)
+uint32_t Rtcm::msm_extended_lock_time_indicator(uint32_t lock_time_period_s)
 {
     // Table 3.5-75
     if(                                   lock_time_period_s < 64       ) return (       lock_time_period_s                      );
@@ -3534,7 +3536,7 @@ unsigned int Rtcm::msm_extended_lock_time_indicator(unsigned int lock_time_perio
 //
 // *****************************************************************************************************
 
-int Rtcm::set_DF002(unsigned int message_number)
+int32_t Rtcm::set_DF002(uint32_t message_number)
 {
     if (message_number > 4095)
         {
@@ -3545,9 +3547,9 @@ int Rtcm::set_DF002(unsigned int message_number)
 }
 
 
-int Rtcm::set_DF003(unsigned int ref_station_ID)
+int32_t Rtcm::set_DF003(uint32_t ref_station_ID)
 {
-    //unsigned int station_ID = ref_station_ID;
+    //uint32_t station_ID = ref_station_ID;
     if (ref_station_ID > 4095)
         {
             LOG(WARNING) << "RTCM reference station ID must be between 0 and 4095, but it has been set to " << ref_station_ID;
@@ -3557,10 +3559,10 @@ int Rtcm::set_DF003(unsigned int ref_station_ID)
 }
 
 
-int Rtcm::set_DF004(double obs_time)
+int32_t Rtcm::set_DF004(double obs_time)
 {
     // TOW in milliseconds from the beginning of the GPS week, measured in GPS time
-    unsigned long int tow = static_cast<unsigned long int>(std::round(obs_time * 1000));
+    uint64_t tow = static_cast<uint64_t>(std::round(obs_time * 1000));
     if (tow > 604799999)
         {
             LOG(WARNING) << "To large TOW! Set to the last millisecond of the week";
@@ -3571,7 +3573,7 @@ int Rtcm::set_DF004(double obs_time)
 }
 
 
-int Rtcm::set_DF005(bool sync_flag)
+int32_t Rtcm::set_DF005(bool sync_flag)
 {
     // 0 - No further GNSS observables referenced to the same Epoch Time will be transmitted. This enables the receiver to begin processing
     //     the data immediately after decoding the message.
@@ -3581,11 +3583,11 @@ int Rtcm::set_DF005(bool sync_flag)
 }
 
 
-int Rtcm::set_DF006(const std::map<int, Gnss_Synchro>& observables)
+int32_t Rtcm::set_DF006(const std::map<int32_t, Gnss_Synchro>& observables)
 {
     //Number of satellites observed in current epoch
-    unsigned short int nsats = 0;
-    std::map<int, Gnss_Synchro>::const_iterator observables_iter;
+    uint16_t nsats = 0;
+    std::map<int32_t, Gnss_Synchro>::const_iterator observables_iter;
     for (observables_iter = observables.cbegin();
          observables_iter != observables.cend();
          observables_iter++)
@@ -3602,7 +3604,7 @@ int Rtcm::set_DF006(const std::map<int, Gnss_Synchro>& observables)
 }
 
 
-int Rtcm::set_DF007(bool divergence_free_smoothing_indicator)
+int32_t Rtcm::set_DF007(bool divergence_free_smoothing_indicator)
 {
     // 0 - Divergence-free smoothing not used 1 - Divergence-free smoothing used
     DF007 = std::bitset<1>(divergence_free_smoothing_indicator);
@@ -3610,16 +3612,16 @@ int Rtcm::set_DF007(bool divergence_free_smoothing_indicator)
 }
 
 
-int Rtcm::set_DF008(short int smoothing_interval)
+int32_t Rtcm::set_DF008(int16_t smoothing_interval)
 {
     DF008 = std::bitset<3>(smoothing_interval);
     return 0;
 }
 
 
-int Rtcm::set_DF009(const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF009(const Gnss_Synchro& gnss_synchro)
 {
-    unsigned int prn_ = gnss_synchro.PRN;
+    uint32_t prn_ = gnss_synchro.PRN;
     if (prn_ > 32)
         {
             LOG(WARNING) << "GPS satellite ID must be between 1 and 32, but PRN " << prn_ << " was found";
@@ -3629,9 +3631,9 @@ int Rtcm::set_DF009(const Gnss_Synchro& gnss_synchro)
 }
 
 
-int Rtcm::set_DF009(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF009(const Gps_Ephemeris& gps_eph)
 {
-    unsigned int prn_ = gps_eph.i_satellite_PRN;
+    uint32_t prn_ = gps_eph.i_satellite_PRN;
     if (prn_ > 32)
         {
             LOG(WARNING) << "GPS satellite ID must be between 1 and 32, but PRN " << prn_ << " was found";
@@ -3641,23 +3643,23 @@ int Rtcm::set_DF009(const Gps_Ephemeris& gps_eph)
 }
 
 
-int Rtcm::set_DF010(bool code_indicator)
+int32_t Rtcm::set_DF010(bool code_indicator)
 {
     DF010 = std::bitset<1>(code_indicator);
     return 0;
 }
 
 
-int Rtcm::set_DF011(const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF011(const Gnss_Synchro& gnss_synchro)
 {
     double ambiguity = std::floor(gnss_synchro.Pseudorange_m / 299792.458);
-    unsigned long int gps_L1_pseudorange = static_cast<unsigned long int>(std::round((gnss_synchro.Pseudorange_m - ambiguity * 299792.458) / 0.02));
+    uint64_t gps_L1_pseudorange = static_cast<uint64_t>(std::round((gnss_synchro.Pseudorange_m - ambiguity * 299792.458) / 0.02));
     DF011 = std::bitset<24>(gps_L1_pseudorange);
     return 0;
 }
 
 
-int Rtcm::set_DF012(const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF012(const Gnss_Synchro& gnss_synchro)
 {
     const double lambda = GPS_C_m_s / GPS_L1_FREQ_HZ;
     double ambiguity = std::floor(gnss_synchro.Pseudorange_m / 299792.458);
@@ -3665,64 +3667,64 @@ int Rtcm::set_DF012(const Gnss_Synchro& gnss_synchro)
     double gps_L1_pseudorange_c = gps_L1_pseudorange * 0.02 + ambiguity * 299792.458;
     double L1_phaserange_c = gnss_synchro.Carrier_phase_rads / GPS_TWO_PI;
     double L1_phaserange_c_r = std::fmod(L1_phaserange_c - gps_L1_pseudorange_c / lambda + 1500.0, 3000.0) - 1500.0;
-    long int gps_L1_phaserange_minus_L1_pseudorange = static_cast<long int>(std::round(L1_phaserange_c_r * lambda / 0.0005));
+    int64_t gps_L1_phaserange_minus_L1_pseudorange = static_cast<int64_t>(std::round(L1_phaserange_c_r * lambda / 0.0005));
     DF012 = std::bitset<20>(gps_L1_phaserange_minus_L1_pseudorange);
     return 0;
 }
 
 
-int Rtcm::set_DF013(const Gps_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF013(const Gps_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
 {
-    unsigned int lock_time_indicator;
-    unsigned int lock_time_period_s = Rtcm::lock_time(eph, obs_time, gnss_synchro);
+    uint32_t lock_time_indicator;
+    uint32_t lock_time_period_s = Rtcm::lock_time(eph, obs_time, gnss_synchro);
     lock_time_indicator = Rtcm::lock_time_indicator(lock_time_period_s);
     DF013 = std::bitset<7>(lock_time_indicator);
     return 0;
 }
 
 
-int Rtcm::set_DF014(const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF014(const Gnss_Synchro& gnss_synchro)
 {
-    unsigned int gps_L1_pseudorange_ambiguity = static_cast<unsigned int>(std::floor(gnss_synchro.Pseudorange_m / 299792.458));
+    uint32_t gps_L1_pseudorange_ambiguity = static_cast<uint32_t>(std::floor(gnss_synchro.Pseudorange_m / 299792.458));
     DF014 = std::bitset<8>(gps_L1_pseudorange_ambiguity);
     return 0;
 }
 
 
-int Rtcm::set_DF015(const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF015(const Gnss_Synchro& gnss_synchro)
 {
     double CN0_dB_Hz_est = gnss_synchro.CN0_dB_hz;
     if (CN0_dB_Hz_est > 63.75)
         {
             CN0_dB_Hz_est = 63.75;
         }
-    unsigned int CN0_dB_Hz = static_cast<unsigned int>(std::round(CN0_dB_Hz_est / 0.25));
+    uint32_t CN0_dB_Hz = static_cast<uint32_t>(std::round(CN0_dB_Hz_est / 0.25));
     DF015 = std::bitset<8>(CN0_dB_Hz);
     return 0;
 }
 
 
-int Rtcm::set_DF017(const Gnss_Synchro& gnss_synchroL1, const Gnss_Synchro& gnss_synchroL2)
+int32_t Rtcm::set_DF017(const Gnss_Synchro& gnss_synchroL1, const Gnss_Synchro& gnss_synchroL2)
 {
     double ambiguity = std::floor(gnss_synchroL1.Pseudorange_m / 299792.458);
     double gps_L1_pseudorange = std::round((gnss_synchroL1.Pseudorange_m - ambiguity * 299792.458) / 0.02);
     double gps_L1_pseudorange_c = gps_L1_pseudorange * 0.02 + ambiguity * 299792.458;
 
     double l2_l1_pseudorange = gnss_synchroL2.Pseudorange_m - gps_L1_pseudorange_c;
-    int pseudorange_difference = 0xFFFFE000;  // invalid value;
+    int32_t pseudorange_difference = 0xFFFFE000;  // invalid value;
     if (std::fabs(l2_l1_pseudorange) <= 163.82)
         {
-            pseudorange_difference = static_cast<int>(std::round(l2_l1_pseudorange / 0.02));
+            pseudorange_difference = static_cast<int32_t>(std::round(l2_l1_pseudorange / 0.02));
         }
     DF017 = std::bitset<14>(pseudorange_difference);
     return 0;
 }
 
 
-int Rtcm::set_DF018(const Gnss_Synchro& gnss_synchroL1, const Gnss_Synchro& gnss_synchroL2)
+int32_t Rtcm::set_DF018(const Gnss_Synchro& gnss_synchroL1, const Gnss_Synchro& gnss_synchroL2)
 {
     const double lambda2 = GPS_C_m_s / GPS_L2_FREQ_HZ;
-    int l2_phaserange_minus_l1_pseudorange = 0xFFF80000;
+    int32_t l2_phaserange_minus_l1_pseudorange = 0xFFF80000;
     double ambiguity = std::floor(gnss_synchroL1.Pseudorange_m / 299792.458);
     double gps_L1_pseudorange = std::round((gnss_synchroL1.Pseudorange_m - ambiguity * 299792.458) / 0.02);
     double gps_L1_pseudorange_c = gps_L1_pseudorange * 0.02 + ambiguity * 299792.458;
@@ -3731,7 +3733,7 @@ int Rtcm::set_DF018(const Gnss_Synchro& gnss_synchroL1, const Gnss_Synchro& gnss
 
     if (std::fabs(L1_phaserange_c_r * lambda2) <= 262.1435)
         {
-            l2_phaserange_minus_l1_pseudorange = static_cast<int>(std::round(L1_phaserange_c_r * lambda2 / 0.0005));
+            l2_phaserange_minus_l1_pseudorange = static_cast<int32_t>(std::round(L1_phaserange_c_r * lambda2 / 0.0005));
         }
 
     DF018 = std::bitset<20>(l2_phaserange_minus_l1_pseudorange);
@@ -3739,100 +3741,100 @@ int Rtcm::set_DF018(const Gnss_Synchro& gnss_synchroL1, const Gnss_Synchro& gnss
 }
 
 
-int Rtcm::set_DF019(const Gps_CNAV_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF019(const Gps_CNAV_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
 {
-    unsigned int lock_time_indicator;
-    unsigned int lock_time_period_s = Rtcm::lock_time(eph, obs_time, gnss_synchro);
+    uint32_t lock_time_indicator;
+    uint32_t lock_time_period_s = Rtcm::lock_time(eph, obs_time, gnss_synchro);
     lock_time_indicator = Rtcm::lock_time_indicator(lock_time_period_s);
     DF019 = std::bitset<7>(lock_time_indicator);
     return 0;
 }
 
 
-int Rtcm::set_DF020(const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF020(const Gnss_Synchro& gnss_synchro)
 {
     double CN0_dB_Hz_est = gnss_synchro.CN0_dB_hz;
     if (CN0_dB_Hz_est > 63.75)
         {
             CN0_dB_Hz_est = 63.75;
         }
-    unsigned int CN0_dB_Hz = static_cast<unsigned int>(std::round(CN0_dB_Hz_est / 0.25));
+    uint32_t CN0_dB_Hz = static_cast<uint32_t>(std::round(CN0_dB_Hz_est / 0.25));
     DF020 = std::bitset<8>(CN0_dB_Hz);
     return 0;
 }
 
-int Rtcm::set_DF021()
+int32_t Rtcm::set_DF021()
 {
-    unsigned short int itfr_year = 0;
+    uint16_t itfr_year = 0;
     DF021 = std::bitset<6>(itfr_year);
     return 0;
 }
 
 
-int Rtcm::set_DF022(bool gps_indicator)
+int32_t Rtcm::set_DF022(bool gps_indicator)
 {
     DF022 = std::bitset<1>(gps_indicator);
     return 0;
 }
 
 
-int Rtcm::set_DF023(bool glonass_indicator)
+int32_t Rtcm::set_DF023(bool glonass_indicator)
 {
     DF023 = std::bitset<1>(glonass_indicator);
     return 0;
 }
 
 
-int Rtcm::set_DF024(bool galileo_indicator)
+int32_t Rtcm::set_DF024(bool galileo_indicator)
 {
     DF024 = std::bitset<1>(galileo_indicator);
     return 0;
 }
 
 
-int Rtcm::set_DF025(double antenna_ECEF_X_m)
+int32_t Rtcm::set_DF025(double antenna_ECEF_X_m)
 {
-    long long int ant_ref_x = static_cast<long long int>(std::round(antenna_ECEF_X_m * 10000));
+    int64_t ant_ref_x = static_cast<int64_t>(std::round(antenna_ECEF_X_m * 10000));
     DF025 = std::bitset<38>(ant_ref_x);
     return 0;
 }
 
 
-int Rtcm::set_DF026(double antenna_ECEF_Y_m)
+int32_t Rtcm::set_DF026(double antenna_ECEF_Y_m)
 {
-    long long int ant_ref_y = static_cast<long long int>(std::round(antenna_ECEF_Y_m * 10000));
+    int64_t ant_ref_y = static_cast<int64_t>(std::round(antenna_ECEF_Y_m * 10000));
     DF026 = std::bitset<38>(ant_ref_y);
     return 0;
 }
 
 
-int Rtcm::set_DF027(double antenna_ECEF_Z_m)
+int32_t Rtcm::set_DF027(double antenna_ECEF_Z_m)
 {
-    long long int ant_ref_z = static_cast<long long int>(std::round(antenna_ECEF_Z_m * 10000));
+    int64_t ant_ref_z = static_cast<int64_t>(std::round(antenna_ECEF_Z_m * 10000));
     DF027 = std::bitset<38>(ant_ref_z);
     return 0;
 }
 
 
-int Rtcm::set_DF028(double height)
+int32_t Rtcm::set_DF028(double height)
 {
-    unsigned int h_ = static_cast<unsigned int>(std::round(height * 10000));
+    uint32_t h_ = static_cast<uint32_t>(std::round(height * 10000));
     DF028 = std::bitset<16>(h_);
     return 0;
 }
 
 
-int Rtcm::set_DF031(unsigned int antenna_setup_id)
+int32_t Rtcm::set_DF031(uint32_t antenna_setup_id)
 {
     DF031 = std::bitset<8>(antenna_setup_id);
     return 0;
 }
 
 
-int Rtcm::set_DF034(double obs_time)
+int32_t Rtcm::set_DF034(double obs_time)
 {
     // TOW in milliseconds from the beginning of the GLONASS day, measured in GLONASS time
-    unsigned long int tk = static_cast<unsigned long int>(std::round(obs_time * 1000));
+    uint64_t tk = static_cast<uint64_t>(std::round(obs_time * 1000));
     if (tk > 86400999)
         {
             LOG(WARNING) << "To large GLONASS Epoch Time (tk)! Set to the last millisecond of the day";
@@ -3843,11 +3845,11 @@ int Rtcm::set_DF034(double obs_time)
 }
 
 
-int Rtcm::set_DF035(const std::map<int, Gnss_Synchro>& observables)
+int32_t Rtcm::set_DF035(const std::map<int32_t, Gnss_Synchro>& observables)
 {
     //Number of satellites observed in current epoch
-    unsigned short int nsats = 0;
-    std::map<int, Gnss_Synchro>::const_iterator observables_iter;
+    uint16_t nsats = 0;
+    std::map<int32_t, Gnss_Synchro>::const_iterator observables_iter;
     for (observables_iter = observables.begin();
          observables_iter != observables.end();
          observables_iter++)
@@ -3864,7 +3866,7 @@ int Rtcm::set_DF035(const std::map<int, Gnss_Synchro>& observables)
 }
 
 
-int Rtcm::set_DF036(bool divergence_free_smoothing_indicator)
+int32_t Rtcm::set_DF036(bool divergence_free_smoothing_indicator)
 {
     // 0 - Divergence-free smoothing not used 1 - Divergence-free smoothing used
     DF036 = std::bitset<1>(divergence_free_smoothing_indicator);
@@ -3872,16 +3874,16 @@ int Rtcm::set_DF036(bool divergence_free_smoothing_indicator)
 }
 
 
-int Rtcm::set_DF037(short int smoothing_interval)
+int32_t Rtcm::set_DF037(int16_t smoothing_interval)
 {
     DF037 = std::bitset<3>(smoothing_interval);
     return 0;
 }
 
 
-int Rtcm::set_DF038(const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF038(const Gnss_Synchro& gnss_synchro)
 {
-    unsigned int prn_ = gnss_synchro.PRN;
+    uint32_t prn_ = gnss_synchro.PRN;
     if (prn_ > 24)
         {
             LOG(WARNING) << "GLONASS satellite ID (Slot Number) must be between 1 and 24, but PRN " << prn_ << " was found";
@@ -3891,9 +3893,9 @@ int Rtcm::set_DF038(const Gnss_Synchro& gnss_synchro)
 }
 
 
-int Rtcm::set_DF038(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
+int32_t Rtcm::set_DF038(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    unsigned int prn_ = glonass_gnav_eph.i_satellite_slot_number;
+    uint32_t prn_ = glonass_gnav_eph.i_satellite_slot_number;
     if (prn_ > 24)
         {
             LOG(WARNING) << "GLONASS satellite ID (Slot Number) must be between 0 and 24, but PRN " << prn_ << " was found";
@@ -3903,16 +3905,16 @@ int Rtcm::set_DF038(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 }
 
 
-int Rtcm::set_DF039(bool code_indicator)
+int32_t Rtcm::set_DF039(bool code_indicator)
 {
     DF039 = std::bitset<1>(code_indicator);
     return 0;
 }
 
 
-int Rtcm::set_DF040(int frequency_channel_number)
+int32_t Rtcm::set_DF040(int32_t frequency_channel_number)
 {
-    unsigned int freq_ = frequency_channel_number + 7;
+    uint32_t freq_ = frequency_channel_number + 7;
     if (freq_ > 20)
         {
             LOG(WARNING) << "GLONASS Satellite Frequency Number Conversion Error."
@@ -3925,9 +3927,9 @@ int Rtcm::set_DF040(int frequency_channel_number)
 }
 
 
-int Rtcm::set_DF040(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
+int32_t Rtcm::set_DF040(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    unsigned int freq_ = glonass_gnav_eph.i_satellite_freq_channel + 7;
+    uint32_t freq_ = glonass_gnav_eph.i_satellite_freq_channel + 7;
     if (freq_ > 20)
         {
             LOG(WARNING) << "GLONASS Satellite Frequency Number Conversion Error."
@@ -3940,16 +3942,16 @@ int Rtcm::set_DF040(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 }
 
 
-int Rtcm::set_DF041(const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF041(const Gnss_Synchro& gnss_synchro)
 {
     double ambiguity = std::floor(gnss_synchro.Pseudorange_m / 599584.92);
-    unsigned long int glonass_L1_pseudorange = static_cast<unsigned long int>(std::round((gnss_synchro.Pseudorange_m - ambiguity * 599584.92) / 0.02));
+    uint64_t glonass_L1_pseudorange = static_cast<uint64_t>(std::round((gnss_synchro.Pseudorange_m - ambiguity * 599584.92) / 0.02));
     DF041 = std::bitset<25>(glonass_L1_pseudorange);
     return 0;
 }
 
 
-int Rtcm::set_DF042(const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF042(const Gnss_Synchro& gnss_synchro)
 {
     const double lambda = GLONASS_C_m_s / (GLONASS_L1_CA_FREQ_HZ + (GLONASS_L1_CA_DFREQ_HZ * GLONASS_PRN.at(gnss_synchro.PRN)));
     double ambiguity = std::floor(gnss_synchro.Pseudorange_m / 599584.92);
@@ -3957,31 +3959,31 @@ int Rtcm::set_DF042(const Gnss_Synchro& gnss_synchro)
     double glonass_L1_pseudorange_c = glonass_L1_pseudorange * 0.02 + ambiguity * 299792.458;
     double L1_phaserange_c = gnss_synchro.Carrier_phase_rads / GLONASS_TWO_PI;
     double L1_phaserange_c_r = std::fmod(L1_phaserange_c - glonass_L1_pseudorange_c / lambda + 1500.0, 3000.0) - 1500.0;
-    long int glonass_L1_phaserange_minus_L1_pseudorange = static_cast<long int>(std::round(L1_phaserange_c_r * lambda / 0.0005));
+    int64_t glonass_L1_phaserange_minus_L1_pseudorange = static_cast<int64_t>(std::round(L1_phaserange_c_r * lambda / 0.0005));
     DF042 = std::bitset<20>(glonass_L1_phaserange_minus_L1_pseudorange);
     return 0;
 }
 
 
-int Rtcm::set_DF043(const Glonass_Gnav_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF043(const Glonass_Gnav_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
 {
-    unsigned int lock_time_indicator;
-    unsigned int lock_time_period_s = Rtcm::lock_time(eph, obs_time, gnss_synchro);
+    uint32_t lock_time_indicator;
+    uint32_t lock_time_period_s = Rtcm::lock_time(eph, obs_time, gnss_synchro);
     lock_time_indicator = Rtcm::lock_time_indicator(lock_time_period_s);
     DF043 = std::bitset<7>(lock_time_indicator);
     return 0;
 }
 
 
-int Rtcm::set_DF044(const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF044(const Gnss_Synchro& gnss_synchro)
 {
-    unsigned int glonass_L1_pseudorange_ambiguity = static_cast<unsigned int>(std::floor(gnss_synchro.Pseudorange_m / 599584.916));
+    uint32_t glonass_L1_pseudorange_ambiguity = static_cast<uint32_t>(std::floor(gnss_synchro.Pseudorange_m / 599584.916));
     DF044 = std::bitset<7>(glonass_L1_pseudorange_ambiguity);
     return 0;
 }
 
 
-int Rtcm::set_DF045(const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF045(const Gnss_Synchro& gnss_synchro)
 {
     double CN0_dB_Hz_est = gnss_synchro.CN0_dB_hz;
     if (CN0_dB_Hz_est > 63.75)
@@ -3989,33 +3991,33 @@ int Rtcm::set_DF045(const Gnss_Synchro& gnss_synchro)
             LOG(WARNING) << "GLONASS L1 CNR must be between 0 and 63.75, but CNR " << CN0_dB_Hz_est << " was found. Setting to 63.75 dB-Hz";
             CN0_dB_Hz_est = 63.75;
         }
-    unsigned int CN0_dB_Hz = static_cast<unsigned int>(std::round(CN0_dB_Hz_est / 0.25));
+    uint32_t CN0_dB_Hz = static_cast<uint32_t>(std::round(CN0_dB_Hz_est / 0.25));
     DF045 = std::bitset<8>(CN0_dB_Hz);
     return 0;
 }
 
 
-int Rtcm::set_DF047(const Gnss_Synchro& gnss_synchroL1, const Gnss_Synchro& gnss_synchroL2)
+int32_t Rtcm::set_DF047(const Gnss_Synchro& gnss_synchroL1, const Gnss_Synchro& gnss_synchroL2)
 {
     double ambiguity = std::floor(gnss_synchroL1.Pseudorange_m / 599584.92);
     double glonass_L1_pseudorange = std::round((gnss_synchroL1.Pseudorange_m - ambiguity * 599584.92) / 0.02);
     double glonass_L1_pseudorange_c = glonass_L1_pseudorange * 0.02 + ambiguity * 599584.92;
 
     double l2_l1_pseudorange = gnss_synchroL2.Pseudorange_m - glonass_L1_pseudorange_c;
-    int pseudorange_difference = 0xFFFFE000;  // invalid value;
+    int32_t pseudorange_difference = 0xFFFFE000;  // invalid value;
     if (std::fabs(l2_l1_pseudorange) <= 163.82)
         {
-            pseudorange_difference = static_cast<int>(std::round(l2_l1_pseudorange / 0.02));
+            pseudorange_difference = static_cast<int32_t>(std::round(l2_l1_pseudorange / 0.02));
         }
     DF047 = std::bitset<14>(pseudorange_difference);
     return 0;
 }
 
 //TODO Need to consider frequency channel in this fields
-int Rtcm::set_DF048(const Gnss_Synchro& gnss_synchroL1, const Gnss_Synchro& gnss_synchroL2)
+int32_t Rtcm::set_DF048(const Gnss_Synchro& gnss_synchroL1, const Gnss_Synchro& gnss_synchroL2)
 {
     const double lambda2 = GLONASS_C_m_s / GLONASS_L2_CA_FREQ_HZ;
-    int l2_phaserange_minus_l1_pseudorange = 0xFFF80000;
+    int32_t l2_phaserange_minus_l1_pseudorange = 0xFFF80000;
     double ambiguity = std::floor(gnss_synchroL1.Pseudorange_m / 599584.92);
     double glonass_L1_pseudorange = std::round((gnss_synchroL1.Pseudorange_m - ambiguity * 599584.92) / 0.02);
     double glonass_L1_pseudorange_c = glonass_L1_pseudorange * 0.02 + ambiguity * 599584.92;
@@ -4024,7 +4026,7 @@ int Rtcm::set_DF048(const Gnss_Synchro& gnss_synchroL1, const Gnss_Synchro& gnss
 
     if (std::fabs(L1_phaserange_c_r * lambda2) <= 262.1435)
         {
-            l2_phaserange_minus_l1_pseudorange = static_cast<int>(std::round(L1_phaserange_c_r * lambda2 / 0.0005));
+            l2_phaserange_minus_l1_pseudorange = static_cast<int32_t>(std::round(L1_phaserange_c_r * lambda2 / 0.0005));
         }
 
     DF048 = std::bitset<20>(l2_phaserange_minus_l1_pseudorange);
@@ -4032,319 +4034,319 @@ int Rtcm::set_DF048(const Gnss_Synchro& gnss_synchroL1, const Gnss_Synchro& gnss
 }
 
 
-int Rtcm::set_DF049(const Glonass_Gnav_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF049(const Glonass_Gnav_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
 {
-    unsigned int lock_time_indicator;
-    unsigned int lock_time_period_s = Rtcm::lock_time(eph, obs_time, gnss_synchro);
+    uint32_t lock_time_indicator;
+    uint32_t lock_time_period_s = Rtcm::lock_time(eph, obs_time, gnss_synchro);
     lock_time_indicator = Rtcm::lock_time_indicator(lock_time_period_s);
     DF049 = std::bitset<7>(lock_time_indicator);
     return 0;
 }
 
 
-int Rtcm::set_DF050(const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF050(const Gnss_Synchro& gnss_synchro)
 {
     double CN0_dB_Hz_est = gnss_synchro.CN0_dB_hz;
     if (CN0_dB_Hz_est > 63.75)
         {
             CN0_dB_Hz_est = 63.75;
         }
-    unsigned int CN0_dB_Hz = static_cast<unsigned int>(std::round(CN0_dB_Hz_est / 0.25));
+    uint32_t CN0_dB_Hz = static_cast<uint32_t>(std::round(CN0_dB_Hz_est / 0.25));
     DF050 = std::bitset<8>(CN0_dB_Hz);
     return 0;
 }
 
 
-int Rtcm::set_DF051(const Gps_Ephemeris& gps_eph, double obs_time)
+int32_t Rtcm::set_DF051(const Gps_Ephemeris& gps_eph, double obs_time)
 {
     const double gps_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>((gps_t + 604800 * static_cast<double>(gps_eph.i_GPS_week % 1024)) * 1000));
+    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((gps_t + 604800 * static_cast<double>(gps_eph.i_GPS_week % 1024)) * 1000));
     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
     std::string now_ptime = to_iso_string(p_time);
     std::string today_ptime = now_ptime.substr(0, 8);
     boost::gregorian::date d(boost::gregorian::from_undelimited_string(today_ptime));
-    unsigned int mjd = d.modjulian_day();
+    uint32_t mjd = d.modjulian_day();
     DF051 = std::bitset<16>(mjd);
     return 0;
 }
 
 
-int Rtcm::set_DF052(const Gps_Ephemeris& gps_eph, double obs_time)
+int32_t Rtcm::set_DF052(const Gps_Ephemeris& gps_eph, double obs_time)
 {
     const double gps_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>((gps_t + 604800 * static_cast<double>(gps_eph.i_GPS_week % 1024)) * 1000));
+    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((gps_t + 604800 * static_cast<double>(gps_eph.i_GPS_week % 1024)) * 1000));
     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
     std::string now_ptime = to_iso_string(p_time);
     std::string hours = now_ptime.substr(9, 2);
     std::string minutes = now_ptime.substr(11, 2);
     std::string seconds = now_ptime.substr(13, 8);
     //boost::gregorian::date d(boost::gregorian::from_undelimited_string(today_ptime));
-    long unsigned int seconds_of_day = boost::lexical_cast<unsigned int>(hours) * 60 * 60 + boost::lexical_cast<unsigned int>(minutes) * 60 + boost::lexical_cast<unsigned int>(seconds);
+    uint32_t seconds_of_day = boost::lexical_cast<uint32_t>(hours) * 60 * 60 + boost::lexical_cast<uint32_t>(minutes) * 60 + boost::lexical_cast<uint32_t>(seconds);
     DF052 = std::bitset<17>(seconds_of_day);
     return 0;
 }
 
 
-int Rtcm::set_DF071(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF071(const Gps_Ephemeris& gps_eph)
 {
-    unsigned int iode = static_cast<unsigned int>(gps_eph.d_IODE_SF2);
+    uint32_t iode = static_cast<uint32_t>(gps_eph.d_IODE_SF2);
     DF071 = std::bitset<8>(iode);
     return 0;
 }
 
 
-int Rtcm::set_DF076(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF076(const Gps_Ephemeris& gps_eph)
 {
-    unsigned int week_number = static_cast<unsigned int>(gps_eph.i_GPS_week);
+    uint32_t week_number = static_cast<uint32_t>(gps_eph.i_GPS_week);
     DF076 = std::bitset<10>(week_number);
     return 0;
 }
 
 
-int Rtcm::set_DF077(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF077(const Gps_Ephemeris& gps_eph)
 {
-    unsigned short int ura = static_cast<unsigned short int>(gps_eph.i_SV_accuracy);
+    uint16_t ura = static_cast<uint16_t>(gps_eph.i_SV_accuracy);
     DF077 = std::bitset<4>(ura);
     return 0;
 }
 
 
-int Rtcm::set_DF078(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF078(const Gps_Ephemeris& gps_eph)
 {
-    unsigned short int code_on_L2 = static_cast<unsigned short int>(gps_eph.i_code_on_L2);
+    uint16_t code_on_L2 = static_cast<uint16_t>(gps_eph.i_code_on_L2);
     DF078 = std::bitset<2>(code_on_L2);
     return 0;
 }
 
 
-int Rtcm::set_DF079(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF079(const Gps_Ephemeris& gps_eph)
 {
-    unsigned int idot = static_cast<unsigned int>(std::round(gps_eph.d_IDOT / I_DOT_LSB));
+    uint32_t idot = static_cast<uint32_t>(std::round(gps_eph.d_IDOT / I_DOT_LSB));
     DF079 = std::bitset<14>(idot);
     return 0;
 }
 
 
-int Rtcm::set_DF080(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF080(const Gps_Ephemeris& gps_eph)
 {
-    unsigned short int iode = static_cast<unsigned short int>(gps_eph.d_IODE_SF2);
+    uint16_t iode = static_cast<uint16_t>(gps_eph.d_IODE_SF2);
     DF080 = std::bitset<8>(iode);
     return 0;
 }
 
 
-int Rtcm::set_DF081(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF081(const Gps_Ephemeris& gps_eph)
 {
-    unsigned int toc = static_cast<unsigned int>(std::round(gps_eph.d_Toc / T_OC_LSB));
+    uint32_t toc = static_cast<uint32_t>(std::round(gps_eph.d_Toc / T_OC_LSB));
     DF081 = std::bitset<16>(toc);
     return 0;
 }
 
 
-int Rtcm::set_DF082(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF082(const Gps_Ephemeris& gps_eph)
 {
-    short int af2 = static_cast<short int>(std::round(gps_eph.d_A_f2 / A_F2_LSB));
+    int16_t af2 = static_cast<int16_t>(std::round(gps_eph.d_A_f2 / A_F2_LSB));
     DF082 = std::bitset<8>(af2);
     return 0;
 }
 
 
-int Rtcm::set_DF083(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF083(const Gps_Ephemeris& gps_eph)
 {
-    int af1 = static_cast<int>(std::round(gps_eph.d_A_f1 / A_F1_LSB));
+    int32_t af1 = static_cast<int32_t>(std::round(gps_eph.d_A_f1 / A_F1_LSB));
     DF083 = std::bitset<16>(af1);
     return 0;
 }
 
 
-int Rtcm::set_DF084(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF084(const Gps_Ephemeris& gps_eph)
 {
-    long int af0 = static_cast<long int>(std::round(gps_eph.d_A_f0 / A_F0_LSB));
+    int64_t af0 = static_cast<int64_t>(std::round(gps_eph.d_A_f0 / A_F0_LSB));
     DF084 = std::bitset<22>(af0);
     return 0;
 }
 
 
-int Rtcm::set_DF085(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF085(const Gps_Ephemeris& gps_eph)
 {
-    unsigned int iodc = static_cast<unsigned int>(gps_eph.d_IODC);
+    uint32_t iodc = static_cast<uint32_t>(gps_eph.d_IODC);
     DF085 = std::bitset<10>(iodc);
     return 0;
 }
 
 
-int Rtcm::set_DF086(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF086(const Gps_Ephemeris& gps_eph)
 {
-    int crs = static_cast<int>(std::round(gps_eph.d_Crs / C_RS_LSB));
+    int32_t crs = static_cast<int32_t>(std::round(gps_eph.d_Crs / C_RS_LSB));
     DF086 = std::bitset<16>(crs);
     return 0;
 }
 
 
-int Rtcm::set_DF087(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF087(const Gps_Ephemeris& gps_eph)
 {
-    int delta_n = static_cast<int>(std::round(gps_eph.d_Delta_n / DELTA_N_LSB));
+    int32_t delta_n = static_cast<int32_t>(std::round(gps_eph.d_Delta_n / DELTA_N_LSB));
     DF087 = std::bitset<16>(delta_n);
     return 0;
 }
 
 
-int Rtcm::set_DF088(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF088(const Gps_Ephemeris& gps_eph)
 {
-    long int m0 = static_cast<long int>(std::round(gps_eph.d_M_0 / M_0_LSB));
+    int64_t m0 = static_cast<int64_t>(std::round(gps_eph.d_M_0 / M_0_LSB));
     DF088 = std::bitset<32>(m0);
     return 0;
 }
 
 
-int Rtcm::set_DF089(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF089(const Gps_Ephemeris& gps_eph)
 {
-    int cuc = static_cast<int>(std::round(gps_eph.d_Cuc / C_UC_LSB));
+    int32_t cuc = static_cast<int32_t>(std::round(gps_eph.d_Cuc / C_UC_LSB));
     DF089 = std::bitset<16>(cuc);
     return 0;
 }
 
-int Rtcm::set_DF090(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF090(const Gps_Ephemeris& gps_eph)
 {
-    unsigned long int ecc = static_cast<unsigned long int>(std::round(gps_eph.d_e_eccentricity / E_LSB));
+    uint64_t ecc = static_cast<uint64_t>(std::round(gps_eph.d_e_eccentricity / E_LSB));
     DF090 = std::bitset<32>(ecc);
     return 0;
 }
 
 
-int Rtcm::set_DF091(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF091(const Gps_Ephemeris& gps_eph)
 {
-    int cus = static_cast<int>(std::round(gps_eph.d_Cus / C_US_LSB));
+    int32_t cus = static_cast<int32_t>(std::round(gps_eph.d_Cus / C_US_LSB));
     DF091 = std::bitset<16>(cus);
     return 0;
 }
 
 
-int Rtcm::set_DF092(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF092(const Gps_Ephemeris& gps_eph)
 {
-    unsigned long int sqr_a = static_cast<unsigned long int>(std::round(gps_eph.d_sqrt_A / SQRT_A_LSB));
+    uint64_t sqr_a = static_cast<uint64_t>(std::round(gps_eph.d_sqrt_A / SQRT_A_LSB));
     DF092 = std::bitset<32>(sqr_a);
     return 0;
 }
 
 
-int Rtcm::set_DF093(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF093(const Gps_Ephemeris& gps_eph)
 {
-    unsigned int toe = static_cast<unsigned int>(std::round(gps_eph.d_Toe / T_OE_LSB));
+    uint32_t toe = static_cast<uint32_t>(std::round(gps_eph.d_Toe / T_OE_LSB));
     DF093 = std::bitset<16>(toe);
     return 0;
 }
 
 
-int Rtcm::set_DF094(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF094(const Gps_Ephemeris& gps_eph)
 {
-    int cic = static_cast<int>(std::round(gps_eph.d_Cic / C_IC_LSB));
+    int32_t cic = static_cast<int32_t>(std::round(gps_eph.d_Cic / C_IC_LSB));
     DF094 = std::bitset<16>(cic);
     return 0;
 }
 
 
-int Rtcm::set_DF095(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF095(const Gps_Ephemeris& gps_eph)
 {
-    long int Omega0 = static_cast<long int>(std::round(gps_eph.d_OMEGA0 / OMEGA_0_LSB));
+    int64_t Omega0 = static_cast<int64_t>(std::round(gps_eph.d_OMEGA0 / OMEGA_0_LSB));
     DF095 = std::bitset<32>(Omega0);
     return 0;
 }
 
 
-int Rtcm::set_DF096(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF096(const Gps_Ephemeris& gps_eph)
 {
-    int cis = static_cast<int>(std::round(gps_eph.d_Cis / C_IS_LSB));
+    int32_t cis = static_cast<int32_t>(std::round(gps_eph.d_Cis / C_IS_LSB));
     DF096 = std::bitset<16>(cis);
     return 0;
 }
 
 
-int Rtcm::set_DF097(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF097(const Gps_Ephemeris& gps_eph)
 {
-    long int i0 = static_cast<long int>(std::round(gps_eph.d_i_0 / I_0_LSB));
+    int64_t i0 = static_cast<int64_t>(std::round(gps_eph.d_i_0 / I_0_LSB));
     DF097 = std::bitset<32>(i0);
     return 0;
 }
 
 
-int Rtcm::set_DF098(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF098(const Gps_Ephemeris& gps_eph)
 {
-    int crc = static_cast<int>(std::round(gps_eph.d_Crc / C_RC_LSB));
+    int32_t crc = static_cast<int32_t>(std::round(gps_eph.d_Crc / C_RC_LSB));
     DF098 = std::bitset<16>(crc);
     return 0;
 }
 
 
-int Rtcm::set_DF099(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF099(const Gps_Ephemeris& gps_eph)
 {
-    long int omega = static_cast<long int>(std::round(gps_eph.d_OMEGA / OMEGA_LSB));
+    int64_t omega = static_cast<int64_t>(std::round(gps_eph.d_OMEGA / OMEGA_LSB));
     DF099 = std::bitset<32>(omega);
     return 0;
 }
 
 
-int Rtcm::set_DF100(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF100(const Gps_Ephemeris& gps_eph)
 {
-    long int omegadot = static_cast<long int>(std::round(gps_eph.d_OMEGA_DOT / OMEGA_DOT_LSB));
+    int64_t omegadot = static_cast<int64_t>(std::round(gps_eph.d_OMEGA_DOT / OMEGA_DOT_LSB));
     DF100 = std::bitset<24>(omegadot);
     return 0;
 }
 
 
-int Rtcm::set_DF101(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF101(const Gps_Ephemeris& gps_eph)
 {
-    short int tgd = static_cast<short int>(std::round(gps_eph.d_TGD / T_GD_LSB));
+    int16_t tgd = static_cast<int16_t>(std::round(gps_eph.d_TGD / T_GD_LSB));
     DF101 = std::bitset<8>(tgd);
     return 0;
 }
 
 
-int Rtcm::set_DF102(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF102(const Gps_Ephemeris& gps_eph)
 {
-    unsigned short int sv_heath = static_cast<unsigned short int>(gps_eph.i_SV_health);
+    uint16_t sv_heath = static_cast<uint16_t>(gps_eph.i_SV_health);
     DF102 = std::bitset<6>(sv_heath);
     return 0;
 }
 
 
-int Rtcm::set_DF103(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF103(const Gps_Ephemeris& gps_eph)
 {
     DF103 = std::bitset<1>(gps_eph.b_L2_P_data_flag);
     return 0;
 }
 
 
-int Rtcm::set_DF104(unsigned int glonass_gnav_alm_health)
+int32_t Rtcm::set_DF104(uint32_t glonass_gnav_alm_health)
 {
     DF104 = std::bitset<1>(glonass_gnav_alm_health);
     return 0;
 }
 
 
-int Rtcm::set_DF105(unsigned int glonass_gnav_alm_health_ind)
+int32_t Rtcm::set_DF105(uint32_t glonass_gnav_alm_health_ind)
 {
     DF105 = std::bitset<1>(glonass_gnav_alm_health_ind);
     return 0;
 }
 
 
-int Rtcm::set_DF106(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
+int32_t Rtcm::set_DF106(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
     // Convert the value from (15, 30, 45, 60) to (00, 01, 10, 11)
-    unsigned int P_1 = static_cast<unsigned int>(std::round(glonass_gnav_eph.d_P_1 / 15.0 - 1.0));
+    uint32_t P_1 = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_P_1 / 15.0 - 1.0));
     DF106 = std::bitset<2>(P_1);
     return 0;
 }
 
 
-int Rtcm::set_DF107(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
+int32_t Rtcm::set_DF107(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    unsigned int hrs = 0;
-    unsigned int min = 0;
-    unsigned int sec = 0;
-    unsigned int tk = 0;
-    tk = static_cast<int>(glonass_gnav_eph.d_t_k);
+    uint32_t hrs = 0;
+    uint32_t min = 0;
+    uint32_t sec = 0;
+    uint32_t tk = 0;
+    tk = static_cast<int32_t>(glonass_gnav_eph.d_t_k);
     hrs = tk / 3600;
     min = (tk - hrs * 3600) / 60;
     sec = (tk - hrs * 3600 - min * 60) / 60;
@@ -4360,32 +4362,32 @@ int Rtcm::set_DF107(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 }
 
 
-int Rtcm::set_DF108(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
+int32_t Rtcm::set_DF108(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
     DF108 = std::bitset<1>(glonass_gnav_eph.d_B_n);
     return 0;
 }
 
 
-int Rtcm::set_DF109(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
+int32_t Rtcm::set_DF109(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
     DF109 = std::bitset<1>(glonass_gnav_eph.d_P_2);
     return 0;
 }
 
 
-int Rtcm::set_DF110(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
+int32_t Rtcm::set_DF110(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    unsigned int t_b = static_cast<unsigned int>(std::round(glonass_gnav_eph.d_t_b / (15 * 60)));
+    uint32_t t_b = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_t_b / (15 * 60)));
     DF110 = std::bitset<7>(t_b);
     return 0;
 }
 
 
-int Rtcm::set_DF111(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
+int32_t Rtcm::set_DF111(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    int VXn_mag = static_cast<int>(std::round(fabs(glonass_gnav_eph.d_VXn / TWO_N20)));
-    unsigned int VXn_sgn = glo_sgn(glonass_gnav_eph.d_VXn);
+    int32_t VXn_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_VXn / TWO_N20)));
+    uint32_t VXn_sgn = glo_sgn(glonass_gnav_eph.d_VXn);
 
     DF111 = std::bitset<24>(VXn_mag);
     DF111.set(23, VXn_sgn);
@@ -4393,10 +4395,10 @@ int Rtcm::set_DF111(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 }
 
 
-int Rtcm::set_DF112(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
+int32_t Rtcm::set_DF112(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    int Xn_mag = static_cast<int>(std::round(fabs(glonass_gnav_eph.d_Xn / TWO_N11)));
-    unsigned int Xn_sgn = glo_sgn(glonass_gnav_eph.d_Xn);
+    int32_t Xn_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_Xn / TWO_N11)));
+    uint32_t Xn_sgn = glo_sgn(glonass_gnav_eph.d_Xn);
 
     DF112 = std::bitset<27>(Xn_mag);
     DF112.set(26, Xn_sgn);
@@ -4404,10 +4406,10 @@ int Rtcm::set_DF112(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 }
 
 
-int Rtcm::set_DF113(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
+int32_t Rtcm::set_DF113(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    int AXn_mag = static_cast<int>(std::round(fabs(glonass_gnav_eph.d_AXn / TWO_N30)));
-    unsigned int AXn_sgn = glo_sgn(glonass_gnav_eph.d_AXn);
+    int32_t AXn_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_AXn / TWO_N30)));
+    uint32_t AXn_sgn = glo_sgn(glonass_gnav_eph.d_AXn);
 
     DF113 = std::bitset<5>(AXn_mag);
     DF113.set(4, AXn_sgn);
@@ -4415,10 +4417,10 @@ int Rtcm::set_DF113(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 }
 
 
-int Rtcm::set_DF114(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
+int32_t Rtcm::set_DF114(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    int VYn_mag = static_cast<int>(std::round(fabs(glonass_gnav_eph.d_VYn / TWO_N20)));
-    unsigned int VYn_sgn = glo_sgn(glonass_gnav_eph.d_VYn);
+    int32_t VYn_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_VYn / TWO_N20)));
+    uint32_t VYn_sgn = glo_sgn(glonass_gnav_eph.d_VYn);
 
     DF114 = std::bitset<24>(VYn_mag);
     DF114.set(23, VYn_sgn);
@@ -4426,10 +4428,10 @@ int Rtcm::set_DF114(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 }
 
 
-int Rtcm::set_DF115(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
+int32_t Rtcm::set_DF115(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    int Yn_mag = static_cast<int>(std::round(fabs(glonass_gnav_eph.d_Yn / TWO_N11)));
-    unsigned int Yn_sgn = glo_sgn(glonass_gnav_eph.d_Yn);
+    int32_t Yn_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_Yn / TWO_N11)));
+    uint32_t Yn_sgn = glo_sgn(glonass_gnav_eph.d_Yn);
 
     DF115 = std::bitset<27>(Yn_mag);
     DF115.set(26, Yn_sgn);
@@ -4437,10 +4439,10 @@ int Rtcm::set_DF115(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 }
 
 
-int Rtcm::set_DF116(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
+int32_t Rtcm::set_DF116(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    int AYn_mag = static_cast<int>(std::round(fabs(glonass_gnav_eph.d_AYn / TWO_N30)));
-    unsigned int AYn_sgn = glo_sgn(glonass_gnav_eph.d_AYn);
+    int32_t AYn_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_AYn / TWO_N30)));
+    uint32_t AYn_sgn = glo_sgn(glonass_gnav_eph.d_AYn);
 
     DF116 = std::bitset<5>(AYn_mag);
     DF116.set(4, AYn_sgn);
@@ -4448,10 +4450,10 @@ int Rtcm::set_DF116(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 }
 
 
-int Rtcm::set_DF117(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
+int32_t Rtcm::set_DF117(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    int VZn_mag = static_cast<int>(std::round(fabs(glonass_gnav_eph.d_VZn / TWO_N20)));
-    unsigned int VZn_sgn = glo_sgn(glonass_gnav_eph.d_VZn);
+    int32_t VZn_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_VZn / TWO_N20)));
+    uint32_t VZn_sgn = glo_sgn(glonass_gnav_eph.d_VZn);
 
     DF117 = std::bitset<24>(VZn_mag);
     DF117.set(23, VZn_sgn);
@@ -4459,10 +4461,10 @@ int Rtcm::set_DF117(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 }
 
 
-int Rtcm::set_DF118(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
+int32_t Rtcm::set_DF118(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    int Zn_mag = static_cast<int>(std::round(fabs(glonass_gnav_eph.d_Zn / TWO_N11)));
-    unsigned int Zn_sgn = glo_sgn(glonass_gnav_eph.d_Zn);
+    int32_t Zn_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_Zn / TWO_N11)));
+    uint32_t Zn_sgn = glo_sgn(glonass_gnav_eph.d_Zn);
 
     DF118 = std::bitset<27>(Zn_mag);
     DF118.set(26, Zn_sgn);
@@ -4470,10 +4472,10 @@ int Rtcm::set_DF118(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 }
 
 
-int Rtcm::set_DF119(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
+int32_t Rtcm::set_DF119(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    int AZn_mag = static_cast<int>(std::round(fabs(glonass_gnav_eph.d_AZn / TWO_N30)));
-    unsigned int AZn_sgn = glo_sgn(glonass_gnav_eph.d_AZn);
+    int32_t AZn_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_AZn / TWO_N30)));
+    uint32_t AZn_sgn = glo_sgn(glonass_gnav_eph.d_AZn);
 
     DF119 = std::bitset<5>(AZn_mag);
     DF119.set(4, AZn_sgn);
@@ -4481,18 +4483,18 @@ int Rtcm::set_DF119(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 }
 
 
-int Rtcm::set_DF120(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
+int32_t Rtcm::set_DF120(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    unsigned int P3 = static_cast<int>(std::round(glonass_gnav_eph.d_P_3));
+    uint32_t P3 = static_cast<int32_t>(std::round(glonass_gnav_eph.d_P_3));
     DF120 = std::bitset<1>(P3);
     return 0;
 }
 
 
-int Rtcm::set_DF121(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
+int32_t Rtcm::set_DF121(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    int gamma_mag = static_cast<int>(std::round(fabs(glonass_gnav_eph.d_gamma_n / TWO_N40)));
-    unsigned int gamma_sgn = glo_sgn(glonass_gnav_eph.d_gamma_n);
+    int32_t gamma_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_gamma_n / TWO_N40)));
+    uint32_t gamma_sgn = glo_sgn(glonass_gnav_eph.d_gamma_n);
 
     DF121 = std::bitset<11>(gamma_mag);
     DF121.set(10, gamma_sgn);
@@ -4500,26 +4502,26 @@ int Rtcm::set_DF121(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 }
 
 
-int Rtcm::set_DF122(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
+int32_t Rtcm::set_DF122(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    unsigned int P = static_cast<unsigned int>(std::round(glonass_gnav_eph.d_P));
+    uint32_t P = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_P));
     DF122 = std::bitset<2>(P);
     return 0;
 }
 
 
-int Rtcm::set_DF123(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
+int32_t Rtcm::set_DF123(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    unsigned int ln = static_cast<unsigned int>((glonass_gnav_eph.d_l3rd_n));
+    uint32_t ln = static_cast<uint32_t>((glonass_gnav_eph.d_l3rd_n));
     DF123 = std::bitset<1>(ln);
     return 0;
 }
 
 
-int Rtcm::set_DF124(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
+int32_t Rtcm::set_DF124(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    int tau_mag = static_cast<int>(std::round(fabs(glonass_gnav_eph.d_tau_n / TWO_N30)));
-    unsigned int tau_sgn = glo_sgn(glonass_gnav_eph.d_tau_n);
+    int32_t tau_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_tau_n / TWO_N30)));
+    uint32_t tau_sgn = glo_sgn(glonass_gnav_eph.d_tau_n);
 
     DF124 = std::bitset<22>(tau_mag);
     DF124.set(21, tau_sgn);
@@ -4527,10 +4529,10 @@ int Rtcm::set_DF124(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 }
 
 
-int Rtcm::set_DF125(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
+int32_t Rtcm::set_DF125(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    int delta_tau_mag = static_cast<int>(std::round(fabs(glonass_gnav_eph.d_Delta_tau_n / TWO_N30)));
-    unsigned int delta_tau_sgn = glo_sgn(glonass_gnav_eph.d_Delta_tau_n);
+    int32_t delta_tau_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_Delta_tau_n / TWO_N30)));
+    uint32_t delta_tau_sgn = glo_sgn(glonass_gnav_eph.d_Delta_tau_n);
 
     DF125 = std::bitset<5>(delta_tau_mag);
     DF125.set(4, delta_tau_sgn);
@@ -4538,105 +4540,105 @@ int Rtcm::set_DF125(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 }
 
 
-int Rtcm::set_DF126(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
+int32_t Rtcm::set_DF126(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    unsigned int ecc = static_cast<unsigned int>(std::round(glonass_gnav_eph.d_E_n));
+    uint32_t ecc = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_E_n));
     DF126 = std::bitset<5>(ecc);
     return 0;
 }
 
 
-int Rtcm::set_DF127(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
+int32_t Rtcm::set_DF127(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    unsigned int P4 = static_cast<unsigned int>(std::round(glonass_gnav_eph.d_P_4));
+    uint32_t P4 = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_P_4));
     DF127 = std::bitset<1>(P4);
     return 0;
 }
 
 
-int Rtcm::set_DF128(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
+int32_t Rtcm::set_DF128(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    unsigned int F_t = static_cast<unsigned int>(std::round(glonass_gnav_eph.d_F_T));
+    uint32_t F_t = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_F_T));
     DF128 = std::bitset<4>(F_t);
     return 0;
 }
 
 
-int Rtcm::set_DF129(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
+int32_t Rtcm::set_DF129(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    unsigned int N_t = static_cast<unsigned int>(std::round(glonass_gnav_eph.d_N_T));
+    uint32_t N_t = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_N_T));
     DF129 = std::bitset<11>(N_t);
     return 0;
 }
 
 
-int Rtcm::set_DF130(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
+int32_t Rtcm::set_DF130(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    unsigned int M = static_cast<unsigned int>(std::round(glonass_gnav_eph.d_M));
+    uint32_t M = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_M));
     DF130 = std::bitset<2>(M);
     return 0;
 }
 
 
-int Rtcm::set_DF131(unsigned int fifth_str_additional_data_ind)
+int32_t Rtcm::set_DF131(uint32_t fifth_str_additional_data_ind)
 {
-    unsigned int fith_str_data = static_cast<unsigned int>(fifth_str_additional_data_ind);
+    uint32_t fith_str_data = static_cast<uint32_t>(fifth_str_additional_data_ind);
     DF131 = std::bitset<1>(fith_str_data);
     return 0;
 }
 
 
-int Rtcm::set_DF132(const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model)
+int32_t Rtcm::set_DF132(const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model)
 {
-    unsigned int N_A = static_cast<unsigned int>(std::round(glonass_gnav_utc_model.d_N_A));
+    uint32_t N_A = static_cast<uint32_t>(std::round(glonass_gnav_utc_model.d_N_A));
     DF132 = std::bitset<11>(N_A);
     return 0;
 }
 
 
-int Rtcm::set_DF133(const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model)
+int32_t Rtcm::set_DF133(const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model)
 {
-    int tau_c = static_cast<int>(std::round(glonass_gnav_utc_model.d_tau_c / TWO_N31));
+    int32_t tau_c = static_cast<int32_t>(std::round(glonass_gnav_utc_model.d_tau_c / TWO_N31));
     DF133 = std::bitset<32>(tau_c);
     return 0;
 }
 
 
-int Rtcm::set_DF134(const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model)
+int32_t Rtcm::set_DF134(const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model)
 {
-    unsigned int N_4 = static_cast<unsigned int>(std::round(glonass_gnav_utc_model.d_N_4));
+    uint32_t N_4 = static_cast<uint32_t>(std::round(glonass_gnav_utc_model.d_N_4));
     DF134 = std::bitset<5>(N_4);
     return 0;
 }
 
 
-int Rtcm::set_DF135(const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model)
+int32_t Rtcm::set_DF135(const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model)
 {
-    int tau_gps = static_cast<int>(std::round(glonass_gnav_utc_model.d_tau_gps) / TWO_N30);
+    int32_t tau_gps = static_cast<int32_t>(std::round(glonass_gnav_utc_model.d_tau_gps) / TWO_N30);
     DF135 = std::bitset<22>(tau_gps);
     return 0;
 }
 
 
-int Rtcm::set_DF136(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
+int32_t Rtcm::set_DF136(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    unsigned int l_n = static_cast<unsigned int>(std::round(glonass_gnav_eph.d_l5th_n));
+    uint32_t l_n = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_l5th_n));
     DF136 = std::bitset<1>(l_n);
     return 0;
 }
 
 
-int Rtcm::set_DF137(const Gps_Ephemeris& gps_eph)
+int32_t Rtcm::set_DF137(const Gps_Ephemeris& gps_eph)
 {
     DF137 = std::bitset<1>(gps_eph.b_fit_interval_flag);
     return 0;
 }
 
 
-int Rtcm::set_DF248(double obs_time)
+int32_t Rtcm::set_DF248(double obs_time)
 {
     // TOW in milliseconds from the beginning of the Galileo week, measured in Galileo time
-    unsigned long int tow = static_cast<unsigned long int>(std::round(obs_time * 1000));
+    uint64_t tow = static_cast<uint64_t>(std::round(obs_time * 1000));
     if (tow > 604799999)
         {
             LOG(WARNING) << "To large TOW! Set to the last millisecond of the week";
@@ -4647,9 +4649,9 @@ int Rtcm::set_DF248(double obs_time)
 }
 
 
-int Rtcm::set_DF252(const Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::set_DF252(const Galileo_Ephemeris& gal_eph)
 {
-    unsigned int prn_ = gal_eph.i_satellite_PRN;
+    uint32_t prn_ = gal_eph.i_satellite_PRN;
     if (prn_ > 63)
         {
             LOG(WARNING) << "Galileo satellite ID must be between 0 and 63, but PRN " << prn_ << " was found";
@@ -4659,9 +4661,9 @@ int Rtcm::set_DF252(const Galileo_Ephemeris& gal_eph)
 }
 
 
-int Rtcm::set_DF289(const Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::set_DF289(const Galileo_Ephemeris& gal_eph)
 {
-    unsigned int galileo_week_number = static_cast<unsigned int>(gal_eph.WN_5);
+    uint32_t galileo_week_number = static_cast<uint32_t>(gal_eph.WN_5);
     if (galileo_week_number > 4095)
         {
             LOG(WARNING) << "Error decoding Galileo week number (it has a 4096 roll-off, but " << galileo_week_number << " was detected)";
@@ -4671,9 +4673,9 @@ int Rtcm::set_DF289(const Galileo_Ephemeris& gal_eph)
 }
 
 
-int Rtcm::set_DF290(const Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::set_DF290(const Galileo_Ephemeris& gal_eph)
 {
-    unsigned int iod_nav = static_cast<unsigned int>(gal_eph.IOD_nav_1);
+    uint32_t iod_nav = static_cast<uint32_t>(gal_eph.IOD_nav_1);
     if (iod_nav > 1023)
         {
             LOG(WARNING) << "Error decoding Galileo IODnav (it has a max of 1023, but " << iod_nav << " was detected)";
@@ -4683,26 +4685,26 @@ int Rtcm::set_DF290(const Galileo_Ephemeris& gal_eph)
 }
 
 
-int Rtcm::set_DF291(const Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::set_DF291(const Galileo_Ephemeris& gal_eph)
 {
-    unsigned short int SISA = static_cast<unsigned short int>(gal_eph.SISA_3);
+    uint16_t SISA = static_cast<uint16_t>(gal_eph.SISA_3);
     //SISA = 0; // SIS Accuracy, data content definition not given in Galileo OS SIS ICD, Issue 1.1, Sept 2010
     DF291 = std::bitset<8>(SISA);
     return 0;
 }
 
 
-int Rtcm::set_DF292(const Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::set_DF292(const Galileo_Ephemeris& gal_eph)
 {
-    int idot = static_cast<int>(std::round(gal_eph.iDot_2 / FNAV_idot_2_LSB));
+    int32_t idot = static_cast<int32_t>(std::round(gal_eph.iDot_2 / FNAV_idot_2_LSB));
     DF292 = std::bitset<14>(idot);
     return 0;
 }
 
 
-int Rtcm::set_DF293(const Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::set_DF293(const Galileo_Ephemeris& gal_eph)
 {
-    unsigned int toc = static_cast<unsigned int>(gal_eph.t0c_4);
+    uint32_t toc = static_cast<uint32_t>(gal_eph.t0c_4);
     if (toc > 604740)
         {
             LOG(WARNING) << "Error decoding Galileo ephemeris time (max of 604740, but " << toc << " was detected)";
@@ -4712,193 +4714,193 @@ int Rtcm::set_DF293(const Galileo_Ephemeris& gal_eph)
 }
 
 
-int Rtcm::set_DF294(const Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::set_DF294(const Galileo_Ephemeris& gal_eph)
 {
-    short int af2 = static_cast<short int>(std::round(gal_eph.af2_4 / FNAV_af2_1_LSB));
+    int16_t af2 = static_cast<int16_t>(std::round(gal_eph.af2_4 / FNAV_af2_1_LSB));
     DF294 = std::bitset<6>(af2);
     return 0;
 }
 
 
-int Rtcm::set_DF295(const Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::set_DF295(const Galileo_Ephemeris& gal_eph)
 {
-    long int af1 = static_cast<long int>(std::round(gal_eph.af1_4 / FNAV_af1_1_LSB));
+    int64_t af1 = static_cast<int64_t>(std::round(gal_eph.af1_4 / FNAV_af1_1_LSB));
     DF295 = std::bitset<21>(af1);
     return 0;
 }
 
 
-int Rtcm::set_DF296(const Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::set_DF296(const Galileo_Ephemeris& gal_eph)
 {
-    long int af0 = static_cast<unsigned int>(std::round(gal_eph.af0_4 / FNAV_af0_1_LSB));
+    int64_t af0 = static_cast<uint32_t>(std::round(gal_eph.af0_4 / FNAV_af0_1_LSB));
     DF296 = std::bitset<31>(af0);
     return 0;
 }
 
 
-int Rtcm::set_DF297(const Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::set_DF297(const Galileo_Ephemeris& gal_eph)
 {
-    int crs = static_cast<int>(std::round(gal_eph.C_rs_3 / FNAV_Crs_3_LSB));
+    int32_t crs = static_cast<int32_t>(std::round(gal_eph.C_rs_3 / FNAV_Crs_3_LSB));
     DF297 = std::bitset<16>(crs);
     return 0;
 }
 
 
-int Rtcm::set_DF298(const Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::set_DF298(const Galileo_Ephemeris& gal_eph)
 {
-    int delta_n = static_cast<int>(std::round(gal_eph.delta_n_3 / FNAV_deltan_3_LSB));
+    int32_t delta_n = static_cast<int32_t>(std::round(gal_eph.delta_n_3 / FNAV_deltan_3_LSB));
     DF298 = std::bitset<16>(delta_n);
     return 0;
 }
 
 
-int Rtcm::set_DF299(const Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::set_DF299(const Galileo_Ephemeris& gal_eph)
 {
-    long int m0 = static_cast<long int>(std::round(gal_eph.M0_1 / FNAV_M0_2_LSB));
+    int64_t m0 = static_cast<int64_t>(std::round(gal_eph.M0_1 / FNAV_M0_2_LSB));
     DF299 = std::bitset<32>(m0);
     return 0;
 }
 
 
-int Rtcm::set_DF300(const Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::set_DF300(const Galileo_Ephemeris& gal_eph)
 {
-    int cuc = static_cast<unsigned int>(std::round(gal_eph.C_uc_3 / FNAV_Cuc_3_LSB));
+    int32_t cuc = static_cast<uint32_t>(std::round(gal_eph.C_uc_3 / FNAV_Cuc_3_LSB));
     DF300 = std::bitset<16>(cuc);
     return 0;
 }
 
 
-int Rtcm::set_DF301(const Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::set_DF301(const Galileo_Ephemeris& gal_eph)
 {
-    unsigned long int ecc = static_cast<unsigned long int>(std::round(gal_eph.e_1 / FNAV_e_2_LSB));
+    uint64_t ecc = static_cast<uint64_t>(std::round(gal_eph.e_1 / FNAV_e_2_LSB));
     DF301 = std::bitset<32>(ecc);
     return 0;
 }
 
 
-int Rtcm::set_DF302(const Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::set_DF302(const Galileo_Ephemeris& gal_eph)
 {
-    int cus = static_cast<int>(std::round(gal_eph.C_us_3 / FNAV_Cus_3_LSB));
+    int32_t cus = static_cast<int32_t>(std::round(gal_eph.C_us_3 / FNAV_Cus_3_LSB));
     DF302 = std::bitset<16>(cus);
     return 0;
 }
 
 
-int Rtcm::set_DF303(const Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::set_DF303(const Galileo_Ephemeris& gal_eph)
 {
-    unsigned long int sqr_a = static_cast<unsigned long int>(std::round(gal_eph.A_1 / FNAV_a12_2_LSB));
+    uint64_t sqr_a = static_cast<uint64_t>(std::round(gal_eph.A_1 / FNAV_a12_2_LSB));
     DF303 = std::bitset<32>(sqr_a);
     return 0;
 }
 
 
-int Rtcm::set_DF304(const Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::set_DF304(const Galileo_Ephemeris& gal_eph)
 {
-    unsigned int toe = static_cast<unsigned int>(std::round(gal_eph.t0e_1 / FNAV_t0e_3_LSB));
+    uint32_t toe = static_cast<uint32_t>(std::round(gal_eph.t0e_1 / FNAV_t0e_3_LSB));
     DF304 = std::bitset<14>(toe);
     return 0;
 }
 
 
-int Rtcm::set_DF305(const Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::set_DF305(const Galileo_Ephemeris& gal_eph)
 {
-    int cic = static_cast<int>(std::round(gal_eph.C_ic_4 / FNAV_Cic_4_LSB));
+    int32_t cic = static_cast<int32_t>(std::round(gal_eph.C_ic_4 / FNAV_Cic_4_LSB));
     DF305 = std::bitset<16>(cic);
     return 0;
 }
 
 
-int Rtcm::set_DF306(const Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::set_DF306(const Galileo_Ephemeris& gal_eph)
 {
-    long int Omega0 = static_cast<long int>(std::round(gal_eph.OMEGA_0_2 / FNAV_omega0_2_LSB));
+    int64_t Omega0 = static_cast<int64_t>(std::round(gal_eph.OMEGA_0_2 / FNAV_omega0_2_LSB));
     DF306 = std::bitset<32>(Omega0);
     return 0;
 }
 
 
-int Rtcm::set_DF307(const Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::set_DF307(const Galileo_Ephemeris& gal_eph)
 {
-    int cis = static_cast<int>(std::round(gal_eph.C_is_4 / FNAV_Cis_4_LSB));
+    int32_t cis = static_cast<int32_t>(std::round(gal_eph.C_is_4 / FNAV_Cis_4_LSB));
     DF307 = std::bitset<16>(cis);
     return 0;
 }
 
 
-int Rtcm::set_DF308(const Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::set_DF308(const Galileo_Ephemeris& gal_eph)
 {
-    long int i0 = static_cast<long int>(std::round(gal_eph.i_0_2 / FNAV_i0_3_LSB));
+    int64_t i0 = static_cast<int64_t>(std::round(gal_eph.i_0_2 / FNAV_i0_3_LSB));
     DF308 = std::bitset<32>(i0);
     return 0;
 }
 
 
-int Rtcm::set_DF309(const Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::set_DF309(const Galileo_Ephemeris& gal_eph)
 {
-    int crc = static_cast<unsigned int>(std::round(gal_eph.C_rc_3 / FNAV_Crc_3_LSB));
+    int32_t crc = static_cast<uint32_t>(std::round(gal_eph.C_rc_3 / FNAV_Crc_3_LSB));
     DF309 = std::bitset<16>(crc);
     return 0;
 }
 
 
-int Rtcm::set_DF310(const Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::set_DF310(const Galileo_Ephemeris& gal_eph)
 {
-    int omega = static_cast<int>(std::round(gal_eph.omega_2 / FNAV_omega0_2_LSB));
+    int32_t omega = static_cast<int32_t>(std::round(gal_eph.omega_2 / FNAV_omega0_2_LSB));
     DF310 = std::bitset<32>(omega);
     return 0;
 }
 
 
-int Rtcm::set_DF311(const Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::set_DF311(const Galileo_Ephemeris& gal_eph)
 {
-    long int Omegadot = static_cast<long int>(std::round(gal_eph.OMEGA_dot_3 / FNAV_omegadot_2_LSB));
+    int64_t Omegadot = static_cast<int64_t>(std::round(gal_eph.OMEGA_dot_3 / FNAV_omegadot_2_LSB));
     DF311 = std::bitset<24>(Omegadot);
     return 0;
 }
 
 
-int Rtcm::set_DF312(const Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::set_DF312(const Galileo_Ephemeris& gal_eph)
 {
-    int bdg_E1_E5a = static_cast<int>(std::round(gal_eph.BGD_E1E5a_5 / FNAV_BGD_1_LSB));
+    int32_t bdg_E1_E5a = static_cast<int32_t>(std::round(gal_eph.BGD_E1E5a_5 / FNAV_BGD_1_LSB));
     DF312 = std::bitset<10>(bdg_E1_E5a);
     return 0;
 }
 
 
-int Rtcm::set_DF313(const Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::set_DF313(const Galileo_Ephemeris& gal_eph)
 {
-    unsigned int bdg_E5b_E1 = static_cast<unsigned int>(std::round(gal_eph.BGD_E1E5b_5));
+    uint32_t bdg_E5b_E1 = static_cast<uint32_t>(std::round(gal_eph.BGD_E1E5b_5));
     //bdg_E5b_E1 = 0; //reserved
     DF313 = std::bitset<10>(bdg_E5b_E1);
     return 0;
 }
 
 
-int Rtcm::set_DF314(const Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::set_DF314(const Galileo_Ephemeris& gal_eph)
 {
     DF314 = std::bitset<2>(gal_eph.E5a_HS);
     return 0;
 }
 
 
-int Rtcm::set_DF315(const Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::set_DF315(const Galileo_Ephemeris& gal_eph)
 {
     DF315 = std::bitset<1>(gal_eph.E5a_DVS);
     return 0;
 }
 
 
-int Rtcm::set_DF393(bool more_messages)
+int32_t Rtcm::set_DF393(bool more_messages)
 {
     DF393 = std::bitset<1>(more_messages);
     return 0;
 }
 
 
-int Rtcm::set_DF394(const std::map<int, Gnss_Synchro>& gnss_synchro)
+int32_t Rtcm::set_DF394(const std::map<int32_t, Gnss_Synchro>& gnss_synchro)
 {
     DF394.reset();
-    std::map<int, Gnss_Synchro>::const_iterator gnss_synchro_iter;
-    unsigned int mask_position;
+    std::map<int32_t, Gnss_Synchro>::const_iterator gnss_synchro_iter;
+    uint32_t mask_position;
     for (gnss_synchro_iter = gnss_synchro.cbegin();
          gnss_synchro_iter != gnss_synchro.cend();
          gnss_synchro_iter++)
@@ -4910,16 +4912,16 @@ int Rtcm::set_DF394(const std::map<int, Gnss_Synchro>& gnss_synchro)
 }
 
 
-int Rtcm::set_DF395(const std::map<int, Gnss_Synchro>& gnss_synchro)
+int32_t Rtcm::set_DF395(const std::map<int32_t, Gnss_Synchro>& gnss_synchro)
 {
     DF395.reset();
     if (gnss_synchro.size() == 0)
         {
             return 1;
         }
-    std::map<int, Gnss_Synchro>::const_iterator gnss_synchro_iter;
+    std::map<int32_t, Gnss_Synchro>::const_iterator gnss_synchro_iter;
     std::string sig;
-    unsigned int mask_position;
+    uint32_t mask_position;
     for (gnss_synchro_iter = gnss_synchro.cbegin();
          gnss_synchro_iter != gnss_synchro.cend();
          gnss_synchro_iter++)
@@ -4977,14 +4979,14 @@ int Rtcm::set_DF395(const std::map<int, Gnss_Synchro>& gnss_synchro)
 }
 
 
-std::string Rtcm::set_DF396(const std::map<int, Gnss_Synchro>& observables)
+std::string Rtcm::set_DF396(const std::map<int32_t, Gnss_Synchro>& observables)
 {
     std::string DF396;
-    std::map<int, Gnss_Synchro>::const_iterator observables_iter;
+    std::map<int32_t, Gnss_Synchro>::const_iterator observables_iter;
     Rtcm::set_DF394(observables);
     Rtcm::set_DF395(observables);
-    unsigned int num_signals = DF395.count();
-    unsigned int num_satellites = DF394.count();
+    uint32_t num_signals = DF395.count();
+    uint32_t num_satellites = DF394.count();
 
     if ((num_signals == 0) || (num_satellites == 0))
         {
@@ -4994,7 +4996,7 @@ std::string Rtcm::set_DF396(const std::map<int, Gnss_Synchro>& observables)
     std::vector<std::vector<bool> > matrix(num_signals, std::vector<bool>());
 
     std::string sig;
-    std::vector<unsigned int> list_of_sats;
+    std::vector<uint32_t> list_of_sats;
     std::vector<int> list_of_signals;
 
     for (observables_iter = observables.cbegin();
@@ -5046,9 +5048,9 @@ std::string Rtcm::set_DF396(const std::map<int, Gnss_Synchro>& observables)
     // fill the matrix
     bool value;
 
-    for (unsigned int row = 0; row < num_signals; row++)
+    for (uint32_t row = 0; row < num_signals; row++)
         {
-            for (unsigned int sat = 0; sat < num_satellites; sat++)
+            for (uint32_t sat = 0; sat < num_satellites; sat++)
                 {
                     value = false;
                     for (observables_iter = observables.cbegin();
@@ -5095,9 +5097,9 @@ std::string Rtcm::set_DF396(const std::map<int, Gnss_Synchro>& observables)
 
     // write the matrix column-wise
     DF396.clear();
-    for (unsigned int col = 0; col < num_satellites; col++)
+    for (uint32_t col = 0; col < num_satellites; col++)
         {
-            for (unsigned int row = 0; row < num_signals; row++)
+            for (uint32_t row = 0; row < num_signals; row++)
                 {
                     std::string ss;
                     if (matrix[row].at(col))
@@ -5115,12 +5117,12 @@ std::string Rtcm::set_DF396(const std::map<int, Gnss_Synchro>& observables)
 }
 
 
-int Rtcm::set_DF397(const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF397(const Gnss_Synchro& gnss_synchro)
 {
     double meters_to_miliseconds = GPS_C_m_s * 0.001;
     double rough_range_s = std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10;
 
-    unsigned int int_ms = 0;
+    uint32_t int_ms = 0;
 
     if (rough_range_s == 0.0)
         {
@@ -5132,7 +5134,7 @@ int Rtcm::set_DF397(const Gnss_Synchro& gnss_synchro)
         }
     else
         {
-            int_ms = static_cast<unsigned int>(std::floor(rough_range_s / meters_to_miliseconds / TWO_N10) + 0.5) >> 10;
+            int_ms = static_cast<uint32_t>(std::floor(rough_range_s / meters_to_miliseconds / TWO_N10) + 0.5) >> 10;
         }
 
     DF397 = std::bitset<8>(int_ms);
@@ -5140,25 +5142,25 @@ int Rtcm::set_DF397(const Gnss_Synchro& gnss_synchro)
 }
 
 
-int Rtcm::set_DF398(const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF398(const Gnss_Synchro& gnss_synchro)
 {
     double meters_to_miliseconds = GPS_C_m_s * 0.001;
     double rough_range_m = std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10;
-    unsigned int rr_mod_ms;
+    uint32_t rr_mod_ms;
     if ((rough_range_m <= 0.0) || (rough_range_m > meters_to_miliseconds * 255.0))
         {
             rr_mod_ms = 0;
         }
     else
         {
-            rr_mod_ms = static_cast<unsigned int>(std::floor(rough_range_m / meters_to_miliseconds / TWO_N10) + 0.5) & 0x3FFu;
+            rr_mod_ms = static_cast<uint32_t>(std::floor(rough_range_m / meters_to_miliseconds / TWO_N10) + 0.5) & 0x3FFu;
         }
     DF398 = std::bitset<10>(rr_mod_ms);
     return 0;
 }
 
 
-int Rtcm::set_DF399(const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF399(const Gnss_Synchro& gnss_synchro)
 {
     double lambda = 0.0;
     std::string sig_(gnss_synchro.Signal);
@@ -5189,17 +5191,17 @@ int Rtcm::set_DF399(const Gnss_Synchro& gnss_synchro)
     if (rough_phase_range_rate_ms < -8191) rough_phase_range_rate_ms = -8192;
     if (rough_phase_range_rate_ms > 8191) rough_phase_range_rate_ms = -8192;
 
-    DF399 = std::bitset<14>(static_cast<int>(rough_phase_range_rate_ms));
+    DF399 = std::bitset<14>(static_cast<int32_t>(rough_phase_range_rate_ms));
     return 0;
 }
 
 
-int Rtcm::set_DF400(const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF400(const Gnss_Synchro& gnss_synchro)
 {
     double meters_to_miliseconds = GPS_C_m_s * 0.001;
     double rough_range_m = std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10;
     double psrng_s;
-    int fine_pseudorange;
+    int32_t fine_pseudorange;
 
     psrng_s = gnss_synchro.Pseudorange_m - rough_range_m;
 
@@ -5213,7 +5215,7 @@ int Rtcm::set_DF400(const Gnss_Synchro& gnss_synchro)
         }
     else
         {
-            fine_pseudorange = static_cast<int>(std::round(psrng_s / meters_to_miliseconds / TWO_N24));
+            fine_pseudorange = static_cast<int32_t>(std::round(psrng_s / meters_to_miliseconds / TWO_N24));
         }
 
     DF400 = std::bitset<15>(fine_pseudorange);
@@ -5221,12 +5223,12 @@ int Rtcm::set_DF400(const Gnss_Synchro& gnss_synchro)
 }
 
 
-int Rtcm::set_DF401(const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF401(const Gnss_Synchro& gnss_synchro)
 {
     double meters_to_miliseconds = GPS_C_m_s * 0.001;
     double rough_range_m = std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10;
     double phrng_m;
-    long int fine_phaserange;
+    int64_t fine_phaserange;
 
     double lambda = 0.0;
     std::string sig_(gnss_synchro.Signal);
@@ -5284,7 +5286,7 @@ int Rtcm::set_DF401(const Gnss_Synchro& gnss_synchro)
         }
     else
         {
-            fine_phaserange = static_cast<long int>(std::round(phrng_m / meters_to_miliseconds / TWO_N29));
+            fine_phaserange = static_cast<int64_t>(std::round(phrng_m / meters_to_miliseconds / TWO_N29));
         }
 
     DF401 = std::bitset<22>(fine_phaserange);
@@ -5292,10 +5294,10 @@ int Rtcm::set_DF401(const Gnss_Synchro& gnss_synchro)
 }
 
 
-int Rtcm::set_DF402(const Gps_Ephemeris& ephNAV, const Gps_CNAV_Ephemeris& ephCNAV, const Galileo_Ephemeris& ephFNAV, const Glonass_Gnav_Ephemeris& ephGNAV, double obs_time, const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF402(const Gps_Ephemeris& ephNAV, const Gps_CNAV_Ephemeris& ephCNAV, const Galileo_Ephemeris& ephFNAV, const Glonass_Gnav_Ephemeris& ephGNAV, double obs_time, const Gnss_Synchro& gnss_synchro)
 {
-    unsigned int lock_time_period_s = 0;
-    unsigned int lock_time_indicator;
+    uint32_t lock_time_period_s = 0;
+    uint32_t lock_time_indicator;
     std::string sig_(gnss_synchro.Signal);
     std::string sys(&gnss_synchro.System, 1);
     if ((sig_.compare("1C") == 0) && (sys.compare("G") == 0))
@@ -5325,21 +5327,21 @@ int Rtcm::set_DF402(const Gps_Ephemeris& ephNAV, const Gps_CNAV_Ephemeris& ephCN
 }
 
 
-int Rtcm::set_DF403(const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF403(const Gnss_Synchro& gnss_synchro)
 {
-    unsigned int cnr_dB_Hz;
-    cnr_dB_Hz = static_cast<unsigned int>(std::round(gnss_synchro.CN0_dB_hz));
+    uint32_t cnr_dB_Hz;
+    cnr_dB_Hz = static_cast<uint32_t>(std::round(gnss_synchro.CN0_dB_hz));
     DF403 = std::bitset<6>(cnr_dB_Hz);
     return 0;
 }
 
 
-int Rtcm::set_DF404(const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF404(const Gnss_Synchro& gnss_synchro)
 {
     double lambda = 0.0;
     std::string sig_(gnss_synchro.Signal);
     std::string sig = sig_.substr(0, 2);
-    int fine_phaserange_rate;
+    int32_t fine_phaserange_rate;
     std::string sys_(&gnss_synchro.System, 1);
 
     if ((sig_.compare("1C") == 0) && (sys_.compare("G") == 0))
@@ -5384,7 +5386,7 @@ int Rtcm::set_DF404(const Gnss_Synchro& gnss_synchro)
         }
     else
         {
-            fine_phaserange_rate = static_cast<int>(std::round(phrr / 0.0001));
+            fine_phaserange_rate = static_cast<int32_t>(std::round(phrr / 0.0001));
         }
 
     DF404 = std::bitset<15>(fine_phaserange_rate);
@@ -5392,12 +5394,12 @@ int Rtcm::set_DF404(const Gnss_Synchro& gnss_synchro)
 }
 
 
-int Rtcm::set_DF405(const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF405(const Gnss_Synchro& gnss_synchro)
 {
     double meters_to_miliseconds = GPS_C_m_s * 0.001;
     double rough_range_m = std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10;
     double psrng_s;
-    long int fine_pseudorange;
+    int64_t fine_pseudorange;
 
     psrng_s = gnss_synchro.Pseudorange_m - rough_range_m;
 
@@ -5411,16 +5413,16 @@ int Rtcm::set_DF405(const Gnss_Synchro& gnss_synchro)
         }
     else
         {
-            fine_pseudorange = static_cast<long int>(std::round(psrng_s / meters_to_miliseconds / TWO_N29));
+            fine_pseudorange = static_cast<int64_t>(std::round(psrng_s / meters_to_miliseconds / TWO_N29));
         }
     DF405 = std::bitset<20>(fine_pseudorange);
     return 0;
 }
 
 
-int Rtcm::set_DF406(const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF406(const Gnss_Synchro& gnss_synchro)
 {
-    long int fine_phaserange_ex;
+    int64_t fine_phaserange_ex;
     double meters_to_miliseconds = GPS_C_m_s * 0.001;
     double rough_range_m = std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10;
     double phrng_m;
@@ -5479,7 +5481,7 @@ int Rtcm::set_DF406(const Gnss_Synchro& gnss_synchro)
         }
     else
         {
-            fine_phaserange_ex = static_cast<long int>(std::round(phrng_m / meters_to_miliseconds / TWO_N31));
+            fine_phaserange_ex = static_cast<int64_t>(std::round(phrng_m / meters_to_miliseconds / TWO_N31));
         }
 
     DF406 = std::bitset<24>(fine_phaserange_ex);
@@ -5487,10 +5489,10 @@ int Rtcm::set_DF406(const Gnss_Synchro& gnss_synchro)
 }
 
 
-int Rtcm::set_DF407(const Gps_Ephemeris& ephNAV, const Gps_CNAV_Ephemeris& ephCNAV, const Galileo_Ephemeris& ephFNAV, const Glonass_Gnav_Ephemeris& ephGNAV, double obs_time, const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF407(const Gps_Ephemeris& ephNAV, const Gps_CNAV_Ephemeris& ephCNAV, const Galileo_Ephemeris& ephFNAV, const Glonass_Gnav_Ephemeris& ephGNAV, double obs_time, const Gnss_Synchro& gnss_synchro)
 {
-    unsigned int lock_time_indicator;
-    unsigned int lock_time_period_s = 0;
+    uint32_t lock_time_indicator;
+    uint32_t lock_time_period_s = 0;
 
     std::string sig_(gnss_synchro.Signal);
     std::string sys_(&gnss_synchro.System, 1);
@@ -5520,44 +5522,44 @@ int Rtcm::set_DF407(const Gps_Ephemeris& ephNAV, const Gps_CNAV_Ephemeris& ephCN
 }
 
 
-int Rtcm::set_DF408(const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF408(const Gnss_Synchro& gnss_synchro)
 {
-    unsigned int cnr_dB_Hz;
-    cnr_dB_Hz = static_cast<unsigned int>(std::round(gnss_synchro.CN0_dB_hz / 0.0625));
+    uint32_t cnr_dB_Hz;
+    cnr_dB_Hz = static_cast<uint32_t>(std::round(gnss_synchro.CN0_dB_hz / 0.0625));
     DF408 = std::bitset<10>(cnr_dB_Hz);
     return 0;
 }
 
 
-int Rtcm::set_DF409(unsigned int iods)
+int32_t Rtcm::set_DF409(uint32_t iods)
 {
     DF409 = std::bitset<3>(iods);
     return 0;
 }
 
 
-int Rtcm::set_DF411(unsigned int clock_steering_indicator)
+int32_t Rtcm::set_DF411(uint32_t clock_steering_indicator)
 {
     DF411 = std::bitset<2>(clock_steering_indicator);
     return 0;
 }
 
 
-int Rtcm::set_DF412(unsigned int external_clock_indicator)
+int32_t Rtcm::set_DF412(uint32_t external_clock_indicator)
 {
     DF412 = std::bitset<2>(external_clock_indicator);
     return 0;
 }
 
 
-int Rtcm::set_DF417(bool using_divergence_free_smoothing)
+int32_t Rtcm::set_DF417(bool using_divergence_free_smoothing)
 {
     DF417 = std::bitset<1>(using_divergence_free_smoothing);
     return 0;
 }
 
 
-int Rtcm::set_DF418(int carrier_smoothing_interval_s)
+int32_t Rtcm::set_DF418(int32_t carrier_smoothing_interval_s)
 {
     if (carrier_smoothing_interval_s < 0)
         {
@@ -5598,7 +5600,7 @@ int Rtcm::set_DF418(int carrier_smoothing_interval_s)
 }
 
 
-int Rtcm::set_DF420(const Gnss_Synchro& gnss_synchro __attribute__((unused)))
+int32_t Rtcm::set_DF420(const Gnss_Synchro& gnss_synchro __attribute__((unused)))
 {
     // todo: read the value from gnss_synchro
     bool half_cycle_ambiguity_indicator = true;

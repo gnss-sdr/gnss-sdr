@@ -22,7 +22,7 @@ if(ENABLE_CUDA)
 endif(ENABLE_CUDA)
 
 if(ENABLE_FPGA)
-     SET(OPT_TRACKING_ADAPTERS ${OPT_TRACKING_ADAPTERS} gps_l1_ca_dll_pll_tracking_fpga.cc)
+     SET(OPT_TRACKING_ADAPTERS ${OPT_TRACKING_ADAPTERS} gps_l1_ca_dll_pll_tracking_fpga.cc gps_l2_m_dll_pll_tracking_fpga.cc galileo_e1_dll_pll_veml_tracking_fpga.cc galileo_e5a_dll_pll_tracking_fpga.cc gps_l5_dll_pll_tracking_fpga.cc)
 endif(ENABLE_FPGA)
 
 set(TRACKING_ADAPTER_SOURCES
@@ -35,6 +35,7 @@ set(TRACKING_ADAPTER_SOURCES
      gps_l2_m_dll_pll_tracking.cc
      glonass_l1_ca_dll_pll_tracking.cc
      glonass_l1_ca_dll_pll_c_aid_tracking.cc
+     gps_l1_ca_kf_tracking.cc
      gps_l5_dll_pll_tracking.cc
      glonass_l2_ca_dll_pll_tracking.cc
      glonass_l2_ca_dll_pll_c_aid_tracking.cc
@@ -49,6 +50,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+     ${ARMADILLO_INCLUDE_DIRS}
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}

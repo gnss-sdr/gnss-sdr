@@ -50,7 +50,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dotprodxnpuppet_32fc_generic(lv_
     phase[0] = lv_cmake(cos(rem_carrier_phase_in_rad), sin(rem_carrier_phase_in_rad));
     lv_32fc_t phase_inc[1];
     phase_inc[0] = lv_cmake(cos(phase_step_rad), sin(phase_step_rad));
-    unsigned int n;
+    int n;
     int num_a_vectors = 3;
     lv_32fc_t** in_a = (lv_32fc_t**)volk_gnsssdr_malloc(sizeof(lv_32fc_t*) * num_a_vectors, volk_gnsssdr_get_alignment());
     for (n = 0; n < num_a_vectors; n++)
@@ -80,7 +80,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dotprodxnpuppet_32fc_generic_rel
     phase[0] = lv_cmake(cos(rem_carrier_phase_in_rad), sin(rem_carrier_phase_in_rad));
     lv_32fc_t phase_inc[1];
     phase_inc[0] = lv_cmake(cos(phase_step_rad), sin(phase_step_rad));
-    unsigned int n;
+    int n;
     int num_a_vectors = 3;
     lv_32fc_t** in_a = (lv_32fc_t**)volk_gnsssdr_malloc(sizeof(lv_32fc_t*) * num_a_vectors, volk_gnsssdr_get_alignment());
     for (n = 0; n < num_a_vectors; n++)
@@ -110,7 +110,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dotprodxnpuppet_32fc_u_sse3(lv_3
     phase[0] = lv_cmake(cos(rem_carrier_phase_in_rad), sin(rem_carrier_phase_in_rad));
     lv_32fc_t phase_inc[1];
     phase_inc[0] = lv_cmake(cos(phase_step_rad), sin(phase_step_rad));
-    unsigned int n;
+    int n;
     int num_a_vectors = 3;
     lv_32fc_t** in_a = (lv_32fc_t**)volk_gnsssdr_malloc(sizeof(lv_32fc_t*) * num_a_vectors, volk_gnsssdr_get_alignment());
     for (n = 0; n < num_a_vectors; n++)
@@ -140,7 +140,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dotprodxnpuppet_32fc_a_sse3(lv_3
     phase[0] = lv_cmake(cos(rem_carrier_phase_in_rad), sin(rem_carrier_phase_in_rad));
     lv_32fc_t phase_inc[1];
     phase_inc[0] = lv_cmake(cos(phase_step_rad), sin(phase_step_rad));
-    unsigned int n;
+    int n;
     int num_a_vectors = 3;
     lv_32fc_t** in_a = (lv_32fc_t**)volk_gnsssdr_malloc(sizeof(lv_32fc_t*) * num_a_vectors, volk_gnsssdr_get_alignment());
     for (n = 0; n < num_a_vectors; n++)
@@ -170,7 +170,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dotprodxnpuppet_32fc_u_avx(lv_32
     phase[0] = lv_cmake(cos(rem_carrier_phase_in_rad), sin(rem_carrier_phase_in_rad));
     lv_32fc_t phase_inc[1];
     phase_inc[0] = lv_cmake(cos(phase_step_rad), sin(phase_step_rad));
-    unsigned int n;
+    int n;
     int num_a_vectors = 3;
     lv_32fc_t** in_a = (lv_32fc_t**)volk_gnsssdr_malloc(sizeof(lv_32fc_t*) * num_a_vectors, volk_gnsssdr_get_alignment());
     for (n = 0; n < num_a_vectors; n++)
@@ -200,7 +200,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dotprodxnpuppet_32fc_a_avx(lv_32
     phase[0] = lv_cmake(cos(rem_carrier_phase_in_rad), sin(rem_carrier_phase_in_rad));
     lv_32fc_t phase_inc[1];
     phase_inc[0] = lv_cmake(cos(phase_step_rad), sin(phase_step_rad));
-    unsigned int n;
+    int n;
     int num_a_vectors = 3;
     lv_32fc_t** in_a = (lv_32fc_t**)volk_gnsssdr_malloc(sizeof(lv_32fc_t*) * num_a_vectors, volk_gnsssdr_get_alignment());
     for (n = 0; n < num_a_vectors; n++)
@@ -230,7 +230,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dotprodxnpuppet_32fc_neon(lv_32f
     phase[0] = lv_cmake(cos(rem_carrier_phase_in_rad), sin(rem_carrier_phase_in_rad));
     lv_32fc_t phase_inc[1];
     phase_inc[0] = lv_cmake(cos(phase_step_rad), sin(phase_step_rad));
-    unsigned int n;
+    int n;
     int num_a_vectors = 3;
     lv_32fc_t** in_a = (lv_32fc_t**)volk_gnsssdr_malloc(sizeof(lv_32fc_t*) * num_a_vectors, volk_gnsssdr_get_alignment());
     for (n = 0; n < num_a_vectors; n++)

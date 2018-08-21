@@ -34,35 +34,36 @@
 Gps_CNAV_Utc_Model::Gps_CNAV_Utc_Model()
 {
     valid = false;
-    d_A2 = 0;
-    d_A1 = 0;
-    d_A0 = 0;
-    d_t_OT = 0;
+    d_A2 = 0.0;
+    d_A1 = 0.0;
+    d_A0 = 0.0;
+    d_t_OT = 0.0;
     i_WN_T = 0;
-    d_DeltaT_LS = 0;
+    d_DeltaT_LS = 0.0;
     i_WN_LSF = 0;
     i_DN = 0;
-    d_DeltaT_LSF = 0;
+    d_DeltaT_LSF = 0.0;
 }
 
-double Gps_CNAV_Utc_Model::utc_time(double gpstime_corrected, int i_GPS_week)
+
+double Gps_CNAV_Utc_Model::utc_time(double gpstime_corrected, int32_t i_GPS_week)
 {
     double t_utc;
     double t_utc_daytime;
     double Delta_t_UTC = d_DeltaT_LS + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 * static_cast<double>(i_GPS_week - i_WN_T));
 
     // Determine if the effectivity time of the leap second event is in the past
-    int weeksToLeapSecondEvent = i_WN_LSF - i_GPS_week;
+    int32_t weeksToLeapSecondEvent = i_WN_LSF - i_GPS_week;
 
     if (weeksToLeapSecondEvent >= 0)  // is not in the past
         {
-            //Detect if the effectivity time and user's time is within six hours  = 6 * 60 *60 = 21600 s
-            int secondOfLeapSecondEvent = i_DN * 24 * 60 * 60;
+            // Detect if the effectivity time and user's time is within six hours  = 6 * 60 *60 = 21600 s
+            int32_t secondOfLeapSecondEvent = i_DN * 24 * 60 * 60;
             if (weeksToLeapSecondEvent > 0)
                 {
                     t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
                 }
-            else  //we are in the same week than the leap second event
+            else  // we are in the same week than the leap second event
                 {
                     if (std::abs(gpstime_corrected - secondOfLeapSecondEvent) > 21600)
                         {
@@ -83,9 +84,9 @@ double Gps_CNAV_Utc_Model::utc_time(double gpstime_corrected, int i_GPS_week)
                              * proper accommodation of the leap second event with a possible week number
                              * transition is provided by the following expression for UTC:
                              */
-                            int W = fmod(gpstime_corrected - Delta_t_UTC - 43200, 86400) + 43200;
+                            int32_t W = fmod(gpstime_corrected - Delta_t_UTC - 43200, 86400) + 43200;
                             t_utc_daytime = fmod(W, 86400 + d_DeltaT_LSF - d_DeltaT_LS);
-                            //implement something to handle a leap second event!
+                            // implement something to handle a leap second event!
                         }
                     if ((gpstime_corrected - secondOfLeapSecondEvent) > 21600)
                         {

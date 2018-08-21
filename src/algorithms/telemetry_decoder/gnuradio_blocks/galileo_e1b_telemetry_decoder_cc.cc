@@ -53,18 +53,18 @@ galileo_e1b_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump
 }
 
 
-void galileo_e1b_telemetry_decoder_cc::viterbi_decoder(double *page_part_symbols, int *page_part_bits)
+void galileo_e1b_telemetry_decoder_cc::viterbi_decoder(double *page_part_symbols, int32_t *page_part_bits)
 {
     Viterbi(page_part_bits, out0, state0, out1, state1,
         page_part_symbols, KK, nn, DataLength);
 }
 
 
-void galileo_e1b_telemetry_decoder_cc::deinterleaver(int rows, int cols, double *in, double *out)
+void galileo_e1b_telemetry_decoder_cc::deinterleaver(int32_t rows, int32_t cols, double *in, double *out)
 {
-    for (int r = 0; r < rows; r++)
+    for (int32_t r = 0; r < rows; r++)
         {
-            for (int c = 0; c < cols; c++)
+            for (int32_t c = 0; c < cols; c++)
                 {
                     out[c * rows + r] = in[r * cols + c];
                 }
@@ -86,18 +86,18 @@ galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
     d_samples_per_symbol = (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS) / Galileo_E1_B_SYMBOL_RATE_BPS;
 
     // set the preamble
-    unsigned short int preambles_bits[GALILEO_INAV_PREAMBLE_LENGTH_BITS] = GALILEO_INAV_PREAMBLE;
+    uint16_t preambles_bits[GALILEO_INAV_PREAMBLE_LENGTH_BITS] = GALILEO_INAV_PREAMBLE;
 
     d_symbols_per_preamble = GALILEO_INAV_PREAMBLE_LENGTH_BITS * d_samples_per_symbol;
 
-    memcpy(static_cast<unsigned short int *>(this->d_preambles_bits), static_cast<unsigned short int *>(preambles_bits), GALILEO_INAV_PREAMBLE_LENGTH_BITS * sizeof(unsigned short int));
+    memcpy(static_cast<uint16_t *>(this->d_preambles_bits), static_cast<uint16_t *>(preambles_bits), GALILEO_INAV_PREAMBLE_LENGTH_BITS * sizeof(uint16_t));
 
     // preamble bits to sampled symbols
-    d_preambles_symbols = static_cast<int *>(volk_gnsssdr_malloc(d_symbols_per_preamble * sizeof(int), volk_gnsssdr_get_alignment()));
-    int n = 0;
-    for (int i = 0; i < GALILEO_INAV_PREAMBLE_LENGTH_BITS; i++)
+    d_preambles_symbols = static_cast<int32_t *>(volk_gnsssdr_malloc(d_symbols_per_preamble * sizeof(int32_t), volk_gnsssdr_get_alignment()));
+    int32_t n = 0;
+    for (int32_t i = 0; i < GALILEO_INAV_PREAMBLE_LENGTH_BITS; i++)
         {
-            for (unsigned int j = 0; j < d_samples_per_symbol; j++)
+            for (uint32_t j = 0; j < d_samples_per_symbol; j++)
                 {
                     if (d_preambles_bits[i] == 1)
                         {
@@ -110,14 +110,15 @@ galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
                     n++;
                 }
         }
-    d_sample_counter = 0;
+    d_sample_counter = 0ULL;
     d_stat = 0;
-    d_preamble_index = 0;
+    d_preamble_index = 0ULL;
 
     d_flag_frame_sync = false;
 
     d_flag_parity = false;
-    d_TOW_at_current_symbol = 0;
+    d_TOW_at_current_symbol_ms = 0;
+    d_TOW_at_Preamble_ms = 0;
     delta_t = 0;
     d_CRC_error_counter = 0;
     flag_even_word_arrived = 0;
@@ -126,14 +127,14 @@ galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
     flag_TOW_set = false;
 
     // vars for Viterbi decoder
-    int max_states = 1 << mm; /* 2^mm */
-    g_encoder[0] = 121;       // Polynomial G1
-    g_encoder[1] = 91;        // Polynomial G2
-    out0 = static_cast<int *>(volk_gnsssdr_malloc(max_states * sizeof(int), volk_gnsssdr_get_alignment()));
-    out1 = static_cast<int *>(volk_gnsssdr_malloc(max_states * sizeof(int), volk_gnsssdr_get_alignment()));
-    state0 = static_cast<int *>(volk_gnsssdr_malloc(max_states * sizeof(int), volk_gnsssdr_get_alignment()));
-    state1 = static_cast<int *>(volk_gnsssdr_malloc(max_states * sizeof(int), volk_gnsssdr_get_alignment()));
-    /* create appropriate transition matrices */
+    int32_t max_states = 1 << mm;  // 2^mm
+    g_encoder[0] = 121;            // Polynomial G1
+    g_encoder[1] = 91;             // Polynomial G2
+    out0 = static_cast<int32_t *>(volk_gnsssdr_malloc(max_states * sizeof(int32_t), volk_gnsssdr_get_alignment()));
+    out1 = static_cast<int32_t *>(volk_gnsssdr_malloc(max_states * sizeof(int32_t), volk_gnsssdr_get_alignment()));
+    state0 = static_cast<int32_t *>(volk_gnsssdr_malloc(max_states * sizeof(int32_t), volk_gnsssdr_get_alignment()));
+    state1 = static_cast<int32_t *>(volk_gnsssdr_malloc(max_states * sizeof(int32_t), volk_gnsssdr_get_alignment()));
+    // create appropriate transition matrices
     nsc_transit(out0, state0, 0, g_encoder, KK, nn);
     nsc_transit(out1, state1, 1, g_encoder, KK, nn);
 }
@@ -160,16 +161,16 @@ galileo_e1b_telemetry_decoder_cc::~galileo_e1b_telemetry_decoder_cc()
 }
 
 
-void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols, int frame_length)
+void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols, int32_t frame_length)
 {
-    double page_part_symbols_deint[frame_length];
     // 1. De-interleave
+    double *page_part_symbols_deint = static_cast<double *>(volk_gnsssdr_malloc(frame_length * sizeof(double), volk_gnsssdr_get_alignment()));
     deinterleaver(GALILEO_INAV_INTERLEAVER_ROWS, GALILEO_INAV_INTERLEAVER_COLS, page_part_symbols, page_part_symbols_deint);
 
     // 2. Viterbi decoder
     // 2.1 Take into account the NOT gate in G2 polynomial (Galileo ICD Figure 13, FEC encoder)
-    // 2.2 Take into account the possible inversion of the polarity due to PLL lock at 180�
-    for (int i = 0; i < frame_length; i++)
+    // 2.2 Take into account the possible inversion of the polarity due to PLL lock at 180º
+    for (int32_t i = 0; i < frame_length; i++)
         {
             if ((i + 1) % 2 == 0)
                 {
@@ -177,12 +178,13 @@ void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols, in
                 }
         }
 
-    int page_part_bits[frame_length / 2];
+    int32_t *page_part_bits = static_cast<int32_t *>(volk_gnsssdr_malloc((frame_length / 2) * sizeof(int32_t), volk_gnsssdr_get_alignment()));
     viterbi_decoder(page_part_symbols_deint, page_part_bits);
+    volk_gnsssdr_free(page_part_symbols_deint);
 
     // 3. Call the Galileo page decoder
     std::string page_String;
-    for (int i = 0; i < (frame_length / 2); i++)
+    for (int32_t i = 0; i < (frame_length / 2); i++)
         {
             if (page_part_bits[i] > 0)
                 {
@@ -216,6 +218,7 @@ void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols, in
             d_nav.split_page(page_String.c_str(), flag_even_word_arrived);
             flag_even_word_arrived = 1;
         }
+    volk_gnsssdr_free(page_part_bits);
 
     // 4. Push the new navigation data to the queues
     if (d_nav.have_new_ephemeris() == true)
@@ -251,9 +254,9 @@ void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols, in
             DLOG(INFO) << "T0G=" << tmp_obj->t_0G_10;
             DLOG(INFO) << "WN_0G_10=" << tmp_obj->WN_0G_10;
             DLOG(INFO) << "Current parameters:";
-            DLOG(INFO) << "d_TOW_at_current_symbol=" << d_TOW_at_current_symbol;
+            DLOG(INFO) << "d_TOW_at_current_symbol_ms=" << d_TOW_at_current_symbol_ms;
             DLOG(INFO) << "d_nav.WN_0=" << d_nav.WN_0;
-            delta_t = tmp_obj->A_0G_10 + tmp_obj->A_1G_10 * (d_TOW_at_current_symbol - tmp_obj->t_0G_10 + 604800 * (fmod((d_nav.WN_0 - tmp_obj->WN_0G_10), 64)));
+            delta_t = tmp_obj->A_0G_10 + tmp_obj->A_1G_10 * (static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0 - tmp_obj->t_0G_10 + 604800 * (fmod((d_nav.WN_0 - tmp_obj->WN_0G_10), 64)));
             DLOG(INFO) << "delta_t=" << delta_t << "[s]";
         }
 }
@@ -267,7 +270,7 @@ void galileo_e1b_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satel
 }
 
 
-void galileo_e1b_telemetry_decoder_cc::set_channel(int channel)
+void galileo_e1b_telemetry_decoder_cc::set_channel(int32_t channel)
 {
     d_channel = channel;
     LOG(INFO) << "Navigation channel set to " << channel;
@@ -297,8 +300,8 @@ void galileo_e1b_telemetry_decoder_cc::set_channel(int channel)
 int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
-    int corr_value = 0;
-    int preamble_diff = 0;
+    int32_t corr_value = 0;
+    int32_t preamble_diff = 0;
 
     Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);            // Get the output buffer pointer
     const Gnss_Synchro **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);  // Get the input buffer pointer
@@ -311,13 +314,13 @@ int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute
     consume_each(1);
 
     d_flag_preamble = false;
-    unsigned int required_symbols = GALILEO_INAV_PAGE_SYMBOLS + d_symbols_per_preamble;
+    uint32_t required_symbols = static_cast<uint32_t>(GALILEO_INAV_PAGE_SYMBOLS) + static_cast<uint32_t>(d_symbols_per_preamble);
 
     if (d_symbol_history.size() > required_symbols)
         {
             // TODO Optimize me!
             // ******* preamble correlation ********
-            for (int i = 0; i < d_symbols_per_preamble; i++)
+            for (int32_t i = 0; i < d_symbols_per_preamble; i++)
                 {
                     if (d_symbol_history.at(i).Prompt_I < 0)  // symbols clipping
                         {
@@ -345,7 +348,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute
             if (abs(corr_value) >= d_symbols_per_preamble)
                 {
                     // check preamble separation
-                    preamble_diff = d_sample_counter - d_preamble_index;
+                    preamble_diff = static_cast<int32_t>(d_sample_counter - d_preamble_index);
                     if (abs(preamble_diff - GALILEO_INAV_PREAMBLE_PERIOD_SYMBOLS) == 0)
                         {
                             // try to decode frame
@@ -364,14 +367,14 @@ int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute
         }
     else if (d_stat == 2)
         {
-            if (d_sample_counter == d_preamble_index + GALILEO_INAV_PREAMBLE_PERIOD_SYMBOLS)
+            if (d_sample_counter == d_preamble_index + static_cast<uint64_t>(GALILEO_INAV_PREAMBLE_PERIOD_SYMBOLS))
                 {
                     // NEW Galileo page part is received
                     // 0. fetch the symbols into an array
-                    int frame_length = GALILEO_INAV_PAGE_PART_SYMBOLS - d_symbols_per_preamble;
-                    double page_part_symbols[frame_length];
+                    int32_t frame_length = GALILEO_INAV_PAGE_PART_SYMBOLS - d_symbols_per_preamble;
+                    double *page_part_symbols = static_cast<double *>(volk_gnsssdr_malloc(frame_length * sizeof(double), volk_gnsssdr_get_alignment()));
 
-                    for (int i = 0; i < frame_length; i++)
+                    for (int32_t i = 0; i < frame_length; i++)
                         {
                             if (corr_value > 0)
                                 {
@@ -406,8 +409,12 @@ int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute
                                     LOG(INFO) << "Lost of frame sync SAT " << this->d_satellite;
                                     d_flag_frame_sync = false;
                                     d_stat = 0;
+                                    d_TOW_at_current_symbol_ms = 0;
+                                    d_TOW_at_Preamble_ms = 0;
+                                    d_nav.flag_TOW_set = false;
                                 }
                         }
+                    volk_gnsssdr_free(page_part_symbols);
                 }
         }
 
@@ -419,73 +426,76 @@ int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute
             if (d_nav.flag_TOW_5 == true)  // page 5 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
                 {
                     // TOW_5 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
-                    d_TOW_at_current_symbol = d_nav.TOW_5 + static_cast<double>(GALILEO_INAV_PAGE_PART_SECONDS) + static_cast<double>(required_symbols + 1) * GALILEO_E1_CODE_PERIOD;
+                    d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_nav.TOW_5 * 1000.0);
+                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (required_symbols + 1) * GALILEO_E1_CODE_PERIOD_MS);
                     d_nav.flag_TOW_5 = false;
                 }
 
             else if (d_nav.flag_TOW_6 == true)  // page 6 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
                 {
                     // TOW_6 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
-                    d_TOW_at_current_symbol = d_nav.TOW_6 + static_cast<double>(GALILEO_INAV_PAGE_PART_SECONDS) + static_cast<double>(required_symbols + 1) * GALILEO_E1_CODE_PERIOD;
+                    d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_nav.TOW_6 * 1000.0);
+                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (required_symbols + 1) * GALILEO_E1_CODE_PERIOD_MS);
                     d_nav.flag_TOW_6 = false;
                 }
             else
                 {
                     // this page has no timing information
-                    d_TOW_at_current_symbol += GALILEO_E1_CODE_PERIOD;  // + GALILEO_INAV_PAGE_PART_SYMBOLS*GALILEO_E1_CODE_PERIOD;
+                    d_TOW_at_current_symbol_ms += static_cast<uint32_t>(GALILEO_E1_CODE_PERIOD_MS);  // + GALILEO_INAV_PAGE_PART_SYMBOLS*GALILEO_E1_CODE_PERIOD;
                 }
         }
     else  // if there is not a new preamble, we define the TOW of the current symbol
         {
-            d_TOW_at_current_symbol += GALILEO_E1_CODE_PERIOD;
-        }
-
-    // if (d_flag_frame_sync == true and d_nav.flag_TOW_set==true and d_nav.flag_CRC_test == true)
-
-    if (d_nav.flag_GGTO_1 == true and d_nav.flag_GGTO_2 == true and d_nav.flag_GGTO_3 == true and d_nav.flag_GGTO_4 == true)  // all GGTO parameters arrived
-        {
-            delta_t = d_nav.A_0G_10 + d_nav.A_1G_10 * (d_TOW_at_current_symbol - d_nav.t_0G_10 + 604800.0 * (fmod((d_nav.WN_0 - d_nav.WN_0G_10), 64.0)));
-        }
-
-    if (d_flag_frame_sync == true and d_nav.flag_TOW_set == true)
-        {
-            current_symbol.Flag_valid_word = true;
-        }
-    else
-        {
-            current_symbol.Flag_valid_word = false;
-        }
-
-    current_symbol.TOW_at_current_symbol_ms = round(d_TOW_at_current_symbol * 1000.0);
-    // todo: Galileo to GPS time conversion should be moved to observable block.
-    // current_symbol.TOW_at_current_symbol_ms -= delta_t;  //Galileo to GPS TOW
-
-    if (d_dump == true)
-        {
-            // MULTIPLEXED FILE RECORDING - Record results to file
-            try
+            if (d_nav.flag_TOW_set == true)
                 {
-                    double tmp_double;
-                    unsigned long int tmp_ulong_int;
-                    tmp_double = d_TOW_at_current_symbol;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                    tmp_ulong_int = current_symbol.Tracking_sample_counter;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(unsigned long int));
-                    tmp_double = 0;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                }
-            catch (const std::ifstream::failure &e)
-                {
-                    LOG(WARNING) << "Exception writing observables dump file " << e.what();
+                    d_TOW_at_current_symbol_ms += static_cast<uint32_t>(GALILEO_E1_CODE_PERIOD_MS);
                 }
         }
 
     // remove used symbols from history
+    // todo: Use circular buffer here
     if (d_symbol_history.size() > required_symbols)
         {
             d_symbol_history.pop_front();
         }
-    // 3. Make the output (copy the object contents to the GNURadio reserved memory)
-    *out[0] = current_symbol;
-    return 1;
+
+    if (d_nav.flag_TOW_set)
+        {
+            if (d_nav.flag_GGTO_1 == true and d_nav.flag_GGTO_2 == true and d_nav.flag_GGTO_3 == true and d_nav.flag_GGTO_4 == true)  // all GGTO parameters arrived
+                {
+                    delta_t = d_nav.A_0G_10 + d_nav.A_1G_10 * (static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0 - d_nav.t_0G_10 + 604800.0 * (fmod((d_nav.WN_0 - d_nav.WN_0G_10), 64.0)));
+                }
+
+            current_symbol.Flag_valid_word = d_nav.flag_TOW_set;
+            current_symbol.TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
+            // todo: Galileo to GPS time conversion should be moved to observable block.
+            // current_symbol.TOW_at_current_symbol_ms -= delta_t;  //Galileo to GPS TOW
+
+            if (d_dump == true)
+                {
+                    // MULTIPLEXED FILE RECORDING - Record results to file
+                    try
+                        {
+                            double tmp_double;
+                            uint64_t tmp_ulong_int;
+                            tmp_double = static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0;
+                            d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                            tmp_ulong_int = current_symbol.Tracking_sample_counter;
+                            d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(uint64_t));
+                            tmp_double = static_cast<double>(d_TOW_at_Preamble_ms) / 1000.0;
+                            d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                        }
+                    catch (const std::ifstream::failure &e)
+                        {
+                            LOG(WARNING) << "Exception writing observables dump file " << e.what();
+                        }
+                }
+            // 3. Make the output (copy the object contents to the GNURadio reserved memory)
+            *out[0] = current_symbol;
+            return 1;
+        }
+    else
+        {
+            return 0;
+        }
 }

@@ -42,7 +42,7 @@
 using google::LogMessage;
 
 
-Rtcm_Printer::Rtcm_Printer(std::string filename, bool flag_rtcm_server, bool flag_rtcm_tty_port, unsigned short rtcm_tcp_port, unsigned short rtcm_station_id, std::string rtcm_dump_devname, bool time_tag_name)
+Rtcm_Printer::Rtcm_Printer(std::string filename, bool flag_rtcm_server, bool flag_rtcm_tty_port, uint16_t rtcm_tcp_port, uint16_t rtcm_station_id, std::string rtcm_dump_devname, bool time_tag_name)
 {
     boost::posix_time::ptime pt = boost::posix_time::second_clock::local_time();
     tm timeinfo = boost::posix_time::to_tm(pt);
@@ -50,33 +50,33 @@ Rtcm_Printer::Rtcm_Printer(std::string filename, bool flag_rtcm_server, bool fla
     if (time_tag_name)
         {
             std::stringstream strm0;
-            const int year = timeinfo.tm_year - 100;
+            const int32_t year = timeinfo.tm_year - 100;
             strm0 << year;
-            const int month = timeinfo.tm_mon + 1;
+            const int32_t month = timeinfo.tm_mon + 1;
             if (month < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << month;
-            const int day = timeinfo.tm_mday;
+            const int32_t day = timeinfo.tm_mday;
             if (day < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << day << "_";
-            const int hour = timeinfo.tm_hour;
+            const int32_t hour = timeinfo.tm_hour;
             if (hour < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << hour;
-            const int min = timeinfo.tm_min;
+            const int32_t min = timeinfo.tm_min;
             if (min < 10)
                 {
                     strm0 << "0";
                 }
             strm0 << min;
-            const int sec = timeinfo.tm_sec;
+            const int32_t sec = timeinfo.tm_sec;
             if (sec < 10)
                 {
                     strm0 << "0";
@@ -153,7 +153,7 @@ Rtcm_Printer::~Rtcm_Printer()
 }
 
 
-bool Rtcm_Printer::Print_Rtcm_MT1001(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int, Gnss_Synchro>& observables)
+bool Rtcm_Printer::Print_Rtcm_MT1001(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables)
 {
     std::string m1001 = rtcm->print_MT1001(gps_eph, obs_time, observables, station_id);
     Rtcm_Printer::Print_Message(m1001);
@@ -161,7 +161,7 @@ bool Rtcm_Printer::Print_Rtcm_MT1001(const Gps_Ephemeris& gps_eph, double obs_ti
 }
 
 
-bool Rtcm_Printer::Print_Rtcm_MT1002(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int, Gnss_Synchro>& observables)
+bool Rtcm_Printer::Print_Rtcm_MT1002(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables)
 {
     std::string m1002 = rtcm->print_MT1002(gps_eph, obs_time, observables, station_id);
     Rtcm_Printer::Print_Message(m1002);
@@ -169,7 +169,7 @@ bool Rtcm_Printer::Print_Rtcm_MT1002(const Gps_Ephemeris& gps_eph, double obs_ti
 }
 
 
-bool Rtcm_Printer::Print_Rtcm_MT1003(const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& cnav_eph, double obs_time, const std::map<int, Gnss_Synchro>& observables)
+bool Rtcm_Printer::Print_Rtcm_MT1003(const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& cnav_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables)
 {
     std::string m1003 = rtcm->print_MT1003(gps_eph, cnav_eph, obs_time, observables, station_id);
     Rtcm_Printer::Print_Message(m1003);
@@ -177,7 +177,7 @@ bool Rtcm_Printer::Print_Rtcm_MT1003(const Gps_Ephemeris& gps_eph, const Gps_CNA
 }
 
 
-bool Rtcm_Printer::Print_Rtcm_MT1004(const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& cnav_eph, double obs_time, const std::map<int, Gnss_Synchro>& observables)
+bool Rtcm_Printer::Print_Rtcm_MT1004(const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& cnav_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables)
 {
     std::string m1003 = rtcm->print_MT1004(gps_eph, cnav_eph, obs_time, observables, station_id);
     Rtcm_Printer::Print_Message(m1003);
@@ -185,7 +185,7 @@ bool Rtcm_Printer::Print_Rtcm_MT1004(const Gps_Ephemeris& gps_eph, const Gps_CNA
 }
 
 
-bool Rtcm_Printer::Print_Rtcm_MT1009(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double obs_time, const std::map<int, Gnss_Synchro>& observables)
+bool Rtcm_Printer::Print_Rtcm_MT1009(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables)
 {
     std::string m1009 = rtcm->print_MT1009(glonass_gnav_eph, obs_time, observables, station_id);
     Rtcm_Printer::Print_Message(m1009);
@@ -193,7 +193,7 @@ bool Rtcm_Printer::Print_Rtcm_MT1009(const Glonass_Gnav_Ephemeris& glonass_gnav_
 }
 
 
-bool Rtcm_Printer::Print_Rtcm_MT1010(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double obs_time, const std::map<int, Gnss_Synchro>& observables)
+bool Rtcm_Printer::Print_Rtcm_MT1010(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables)
 {
     std::string m1010 = rtcm->print_MT1010(glonass_gnav_eph, obs_time, observables, station_id);
     Rtcm_Printer::Print_Message(m1010);
@@ -201,7 +201,7 @@ bool Rtcm_Printer::Print_Rtcm_MT1010(const Glonass_Gnav_Ephemeris& glonass_gnav_
 }
 
 
-bool Rtcm_Printer::Print_Rtcm_MT1011(const Glonass_Gnav_Ephemeris& glonass_gnav_ephL1, const Glonass_Gnav_Ephemeris& glonass_gnav_ephL2, double obs_time, const std::map<int, Gnss_Synchro>& observables)
+bool Rtcm_Printer::Print_Rtcm_MT1011(const Glonass_Gnav_Ephemeris& glonass_gnav_ephL1, const Glonass_Gnav_Ephemeris& glonass_gnav_ephL2, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables)
 {
     std::string m1011 = rtcm->print_MT1011(glonass_gnav_ephL1, glonass_gnav_ephL2, obs_time, observables, station_id);
     Rtcm_Printer::Print_Message(m1011);
@@ -209,7 +209,7 @@ bool Rtcm_Printer::Print_Rtcm_MT1011(const Glonass_Gnav_Ephemeris& glonass_gnav_
 }
 
 
-bool Rtcm_Printer::Print_Rtcm_MT1012(const Glonass_Gnav_Ephemeris& glonass_gnav_ephL1, const Glonass_Gnav_Ephemeris& glonass_gnav_ephL2, double obs_time, const std::map<int, Gnss_Synchro>& observables)
+bool Rtcm_Printer::Print_Rtcm_MT1012(const Glonass_Gnav_Ephemeris& glonass_gnav_ephL1, const Glonass_Gnav_Ephemeris& glonass_gnav_ephL2, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables)
 {
     std::string m1012 = rtcm->print_MT1012(glonass_gnav_ephL1, glonass_gnav_ephL2, obs_time, observables, station_id);
     Rtcm_Printer::Print_Message(m1012);
@@ -241,15 +241,15 @@ bool Rtcm_Printer::Print_Rtcm_MT1045(const Galileo_Ephemeris& gal_eph)
 }
 
 
-bool Rtcm_Printer::Print_Rtcm_MSM(unsigned int msm_number, const Gps_Ephemeris& gps_eph,
+bool Rtcm_Printer::Print_Rtcm_MSM(uint32_t msm_number, const Gps_Ephemeris& gps_eph,
     const Gps_CNAV_Ephemeris& gps_cnav_eph,
     const Galileo_Ephemeris& gal_eph,
     const Glonass_Gnav_Ephemeris& glo_gnav_eph,
     double obs_time,
-    const std::map<int, Gnss_Synchro>& observables,
-    unsigned int clock_steering_indicator,
-    unsigned int external_clock_indicator,
-    int smooth_int,
+    const std::map<int32_t, Gnss_Synchro>& observables,
+    uint32_t clock_steering_indicator,
+    uint32_t external_clock_indicator,
+    int32_t smooth_int,
     bool divergence_free,
     bool more_messages)
 {
@@ -297,7 +297,7 @@ int Rtcm_Printer::init_serial(std::string serial_device)
     /*
      * Opens the serial device and sets the default baud rate for a RTCM transmission (9600,8,N,1)
      */
-    int fd = 0;
+    int32_t fd = 0;
     struct termios options;
     long BAUD;
     long DATABITS;
@@ -372,25 +372,25 @@ std::string Rtcm_Printer::print_MT1005_test()
 }
 
 
-unsigned int Rtcm_Printer::lock_time(const Gps_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
+uint32_t Rtcm_Printer::lock_time(const Gps_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
 {
     return rtcm->lock_time(eph, obs_time, gnss_synchro);
 }
 
 
-unsigned int Rtcm_Printer::lock_time(const Gps_CNAV_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
+uint32_t Rtcm_Printer::lock_time(const Gps_CNAV_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
 {
     return rtcm->lock_time(eph, obs_time, gnss_synchro);
 }
 
 
-unsigned int Rtcm_Printer::lock_time(const Galileo_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
+uint32_t Rtcm_Printer::lock_time(const Galileo_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
 {
     return rtcm->lock_time(eph, obs_time, gnss_synchro);
 }
 
 
-unsigned int Rtcm_Printer::lock_time(const Glonass_Gnav_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
+uint32_t Rtcm_Printer::lock_time(const Glonass_Gnav_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
 {
     return rtcm->lock_time(eph, obs_time, gnss_synchro);
 }

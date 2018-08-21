@@ -108,7 +108,7 @@ private:
     unsigned int d_tong_max_val;
     unsigned int d_tong_max_dwells;
     unsigned int d_fft_size;
-    unsigned long int d_sample_counter;
+    uint64_t d_sample_counter;
     gr_complex** d_grid_doppler_wipeoffs;
     unsigned int d_num_doppler_bins;
     gr_complex* d_fft_codes;

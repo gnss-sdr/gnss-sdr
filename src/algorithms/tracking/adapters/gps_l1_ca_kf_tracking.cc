@@ -61,7 +61,6 @@ GpsL1CaKfTracking::GpsL1CaKfTracking(
     std::string dump_filename;
     std::string item_type;
     std::string default_item_type = "gr_complex";
-    float pll_bw_hz;
     float dll_bw_hz;
     float early_late_space_chips;
     bool bce_run;

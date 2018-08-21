@@ -53,22 +53,21 @@
  * \mathbf{\mu}_{0}, \kappa_{0}, \nu_{0}, and \mathbf{\Psi}.
  *
  * [1] TODO: Ref1
- * 
+ *
  */
 
 class Bayesian_estimator
 {
-
 public:
     Bayesian_estimator();
     Bayesian_estimator(int ny);
-    Bayesian_estimator(arma::vec mu_prior_0, int kappa_prior_0, int nu_prior_0, arma::mat Psi_prior_0);
+    Bayesian_estimator(const arma::vec& mu_prior_0, int kappa_prior_0, int nu_prior_0, const arma::mat& Psi_prior_0);
     ~Bayesian_estimator();
 
-    void init(arma::vec mu_prior_0, int kappa_prior_0, int nu_prior_0, arma::mat Psi_prior_0);
+    void init(const arma::mat& mu_prior_0, int kappa_prior_0, int nu_prior_0, const arma::mat& Psi_prior_0);
 
-    void update_sequential(arma::vec data);
-    void update_sequential(arma::vec data, arma::vec mu_prior_0, int kappa_prior_0, int nu_prior_0, arma::mat Psi_prior_0);
+    void update_sequential(const arma::vec& data);
+    void update_sequential(const arma::vec& data, const arma::vec& mu_prior_0, int kappa_prior_0, int nu_prior_0, const arma::mat& Psi_prior_0);
 
     arma::mat get_mu_est();
     arma::mat get_Psi_est();
@@ -76,12 +75,11 @@ public:
 private:
     arma::vec mu_est;
     arma::mat Psi_est;
-    
+
     arma::vec mu_prior;
     int kappa_prior;
     int nu_prior;
     arma::mat Psi_prior;
-    
 };
 
 #endif

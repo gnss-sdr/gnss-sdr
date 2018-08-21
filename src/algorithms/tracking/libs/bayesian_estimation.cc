@@ -42,84 +42,84 @@
 
 Bayesian_estimator::Bayesian_estimator()
 {
-    int ny      = 1;
-    mu_prior    = arma::zeros(ny,1);
+    int ny = 1;
+    mu_prior = arma::zeros(ny, 1);
     kappa_prior = 0;
-    nu_prior    = 0;
-    Psi_prior   = arma::eye(ny,ny) * (nu_prior + ny + 1);
+    nu_prior = 0;
+    Psi_prior = arma::eye(ny, ny) * (nu_prior + ny + 1);
 
-    mu_est      = mu_prior;
-    Psi_est     = Psi_prior;
+    mu_est = mu_prior;
+    Psi_est = Psi_prior;
 }
 
 Bayesian_estimator::Bayesian_estimator(int ny)
 {
-    mu_prior    = arma::zeros(ny,1);
+    mu_prior = arma::zeros(ny, 1);
     kappa_prior = 0;
-    nu_prior    = 0;
-    Psi_prior   = arma::eye(ny,ny) * (nu_prior + ny + 1);
+    nu_prior = 0;
+    Psi_prior = arma::eye(ny, ny) * (nu_prior + ny + 1);
 
-    mu_est      = mu_prior;
-    Psi_est     = Psi_prior;
+    mu_est = mu_prior;
+    Psi_est = Psi_prior;
 }
 
-Bayesian_estimator::Bayesian_estimator(arma::vec mu_prior_0, int kappa_prior_0, int nu_prior_0, arma::mat Psi_prior_0)
+Bayesian_estimator::Bayesian_estimator(const arma::vec& mu_prior_0, int kappa_prior_0, int nu_prior_0, const arma::mat& Psi_prior_0)
 {
-    mu_prior    = mu_prior_0;
+    mu_prior = mu_prior_0;
     kappa_prior = kappa_prior_0;
-    nu_prior    = nu_prior_0;
-    Psi_prior   = Psi_prior_0;
+    nu_prior = nu_prior_0;
+    Psi_prior = Psi_prior_0;
 
-    mu_est      = mu_prior;
-    Psi_est     = Psi_prior;
+    mu_est = mu_prior;
+    Psi_est = Psi_prior;
 }
 
 Bayesian_estimator::~Bayesian_estimator()
 {
 }
 
-void Bayesian_estimator::init(arma::vec mu_prior_0, int kappa_prior_0, int nu_prior_0, arma::mat Psi_prior_0)
+void Bayesian_estimator::init(const arma::mat& mu_prior_0, int kappa_prior_0, int nu_prior_0, const arma::mat& Psi_prior_0)
 {
-    mu_prior    = mu_prior_0;
+    mu_prior = mu_prior_0;
     kappa_prior = kappa_prior_0;
-    nu_prior    = nu_prior_0;
-    Psi_prior   = Psi_prior_0;
+    nu_prior = nu_prior_0;
+    Psi_prior = Psi_prior_0;
 
-    mu_est      = mu_prior;
-    Psi_est     = Psi_prior;
+    mu_est = mu_prior;
+    Psi_est = Psi_prior;
 }
 
 /*
  * Perform Bayesian noise estimation using the normal-inverse-Wishart priors stored in
  * the class structure, and update the priors according to the computed posteriors
  */
-void Bayesian_estimator::update_sequential(arma::vec data)
+void Bayesian_estimator::update_sequential(const arma::vec& data)
 {
-    int K  = data.n_cols;
+    int K = data.n_cols;
     int ny = data.n_rows;
 
     if (mu_prior.is_empty())
         {
-            mu_prior = arma::zeros(ny,1);
+            mu_prior = arma::zeros(ny, 1);
         }
 
     if (Psi_prior.is_empty())
         {
-            Psi_prior = arma::zeros(ny,ny);
+            Psi_prior = arma::zeros(ny, ny);
         }
 
     arma::vec y_mean = arma::mean(data, 1);
-    arma::mat Psi_N  = arma::zeros(ny, ny);
+    arma::mat Psi_N = arma::zeros(ny, ny);
 
     for (int kk = 0; kk < K; kk++)
         {
-            Psi_N = Psi_N + (data.col(kk)-y_mean)*((data.col(kk)-y_mean).t());
+            Psi_N = Psi_N + (data.col(kk) - y_mean) * ((data.col(kk) - y_mean).t());
         }
 
-    arma::vec mu_posterior  = (kappa_prior*mu_prior + K*y_mean) / (kappa_prior + K);
-    int kappa_posterior     = kappa_prior + K;
-    int nu_posterior        = nu_prior + K;
-    arma::mat Psi_posterior = Psi_prior + Psi_N + (kappa_prior*K)/(kappa_prior + K)*(y_mean - mu_prior)*((y_mean - mu_prior).t());
+    arma::vec mu_posterior = (kappa_prior * mu_prior + K * y_mean) / (kappa_prior + K);
+    int kappa_posterior = kappa_prior + K;
+    int nu_posterior = nu_prior + K;
+    arma::mat Psi_posterior = Psi_prior + Psi_N + (kappa_prior * K) / (kappa_prior + K) * (y_mean - mu_prior) * ((y_mean - mu_prior).t());
 
     mu_est = mu_posterior;
     if ((nu_posterior - ny - 1) > 0)
@@ -131,10 +131,10 @@ void Bayesian_estimator::update_sequential(arma::vec data)
             Psi_est = Psi_posterior / (nu_posterior + ny + 1);
         }
 
-    mu_prior    = mu_posterior;
+    mu_prior = mu_posterior;
     kappa_prior = kappa_posterior;
-    nu_prior    = nu_posterior;
-    Psi_prior   = Psi_posterior;
+    nu_prior = nu_posterior;
+    Psi_prior = Psi_posterior;
 }
 
 
@@ -142,10 +142,9 @@ void Bayesian_estimator::update_sequential(arma::vec data)
  * Perform Bayesian noise estimation using a new set of normal-inverse-Wishart priors
  * and update the priors according to the computed posteriors
  */
-void Bayesian_estimator::update_sequential(arma::vec data, arma::vec mu_prior_0, int kappa_prior_0, int nu_prior_0, arma::mat Psi_prior_0)
+void Bayesian_estimator::update_sequential(const arma::vec& data, const arma::vec& mu_prior_0, int kappa_prior_0, int nu_prior_0, const arma::mat& Psi_prior_0)
 {
-
-    int K  = data.n_cols;
+    int K = data.n_cols;
     int ny = data.n_rows;
 
     arma::vec y_mean = arma::mean(data, 1);
@@ -153,13 +152,13 @@ void Bayesian_estimator::update_sequential(arma::vec data, arma::vec mu_prior_0,
 
     for (int kk = 0; kk < K; kk++)
         {
-            Psi_N = Psi_N + (data.col(kk)-y_mean)*((data.col(kk)-y_mean).t());
+            Psi_N = Psi_N + (data.col(kk) - y_mean) * ((data.col(kk) - y_mean).t());
         }
 
-    arma::vec mu_posterior  = (kappa_prior_0*mu_prior_0 + K*y_mean) / (kappa_prior_0 + K);
-    int kappa_posterior     = kappa_prior_0 + K;
-    int nu_posterior        = nu_prior_0 + K;
-    arma::mat Psi_posterior = Psi_prior_0 + Psi_N + (kappa_prior_0*K)/(kappa_prior_0 + K)*(y_mean - mu_prior_0)*((y_mean - mu_prior_0).t());
+    arma::vec mu_posterior = (kappa_prior_0 * mu_prior_0 + K * y_mean) / (kappa_prior_0 + K);
+    int kappa_posterior = kappa_prior_0 + K;
+    int nu_posterior = nu_prior_0 + K;
+    arma::mat Psi_posterior = Psi_prior_0 + Psi_N + (kappa_prior_0 * K) / (kappa_prior_0 + K) * (y_mean - mu_prior_0) * ((y_mean - mu_prior_0).t());
 
     mu_est = mu_posterior;
     if ((nu_posterior - ny - 1) > 0)
@@ -171,10 +170,10 @@ void Bayesian_estimator::update_sequential(arma::vec data, arma::vec mu_prior_0,
             Psi_est = Psi_posterior / (nu_posterior + ny + 1);
         }
 
-    mu_prior    = mu_posterior;
+    mu_prior = mu_posterior;
     kappa_prior = kappa_posterior;
-    nu_prior    = nu_posterior;
-    Psi_prior   = Psi_posterior;
+    nu_prior = nu_posterior;
+    Psi_prior = Psi_posterior;
 }
 
 arma::mat Bayesian_estimator::get_mu_est()
@@ -186,4 +185,3 @@ arma::mat Bayesian_estimator::get_Psi_est()
 {
     return Psi_est;
 }
-

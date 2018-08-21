@@ -29,15 +29,9 @@
  * -------------------------------------------------------------------------
  */
 
-#include <chrono>
-#include <complex>
 #include <random>
-#include <thread>
 #include <armadillo>
 #include <gtest/gtest.h>
-#include <gflags/gflags.h>
-#include <gnuradio/gr_complex.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
 #include "bayesian_estimation.h"
 
 #define BAYESIAN_TEST_N_TRIALS 100
@@ -46,16 +40,11 @@
 TEST(BayesianEstimationPositivityTest, BayesianPositivityTest)
 {
     Bayesian_estimator bayes;
-    std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds(0);
-
     arma::vec bayes_mu = arma::zeros(1, 1);
     int bayes_nu = 0;
     int bayes_kappa = 0;
     arma::mat bayes_Psi = arma::ones(1, 1);
-
-    arma::vec input  = arma::zeros(1, 1);
-    arma::mat output = arma::ones(1, 1);
+    arma::vec input = arma::zeros(1, 1);
 
     //--- Perform initializations ------------------------------
 
@@ -67,14 +56,14 @@ TEST(BayesianEstimationPositivityTest, BayesianPositivityTest)
         {
             bayes.init(bayes_mu, bayes_kappa, bayes_nu, bayes_Psi);
 
-
             for (int n = 0; n < BAYESIAN_TEST_ITER; n++)
                 {
-                    input(0) = (double)(normal_dist(e1));
+                    input(0) = static_cast<double>(normal_dist(e1));
                     bayes.update_sequential(input);
 
-                    output = bayes.get_Psi_est();
-                    ASSERT_EQ(output(0) > 0, true);
+                    arma::mat output = bayes.get_Psi_est();
+                    double output0 = output(0, 0);
+                    ASSERT_EQ(output0 > 0.0, true);
                 }
         }
 }

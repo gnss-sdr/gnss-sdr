@@ -182,6 +182,7 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
     d_code_phase_samples = 0.0;
     d_rem_code_phase_chips = 0.0;
     d_code_phase_step_chips = 0.0;
+    d_code_phase_rate_step_chips = 0.0;
     d_carrier_phase_step_rad = 0.0;
     code_error_chips = 0.0;
     code_error_filt_chips = 0.0;
@@ -732,6 +733,7 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
                 d_carrier_phase_step_rad,
                 d_rem_code_phase_chips,
                 d_code_phase_step_chips,
+                d_code_phase_rate_step_chips,
                 d_current_prn_length_samples);
 
             // ################## Kalman Carrier Tracking ######################################

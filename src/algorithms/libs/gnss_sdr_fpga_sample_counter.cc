@@ -293,8 +293,8 @@ uint32_t gnss_sdr_fpga_sample_counter::wait_for_interrupt_and_read_counter()
             printf("acquisition module Interrupt number %d\n", irq_count);
         }
 
-    // acknowledge the interrupt
-    map_base[1] = 0; // writing anything to reg 1 acknowledges the interrupt
+    // it is a rising edge interrupt, the interrupt does not need to be acknowledged
+    //map_base[1] = 0; // writing anything to reg 1 acknowledges the interrupt
 
     // add number of passed samples or read the current counter value for more accuracy
     counter = samples_per_output; //map_base[0];

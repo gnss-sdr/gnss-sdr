@@ -68,7 +68,7 @@ private:
     bool flag_enable_send_msg;
     int32_t fd;                   			// driver descriptor
     volatile uint32_t *map_base;  // driver memory map
-    std::string device_name = "/dev/uio26";	// HW device name
+    std::string device_name = "/dev/uio2";	// HW device name
 
 public:
     friend gnss_sdr_fpga_sample_counter_sptr gnss_sdr_make_fpga_sample_counter(double _fs, int32_t _interval_ms);

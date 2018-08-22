@@ -79,8 +79,8 @@ void galileo_e5a_telemetry_decoder_cc::deinterleaver(int32_t rows, int32_t cols,
 
 void galileo_e5a_telemetry_decoder_cc::decode_word(double *page_symbols, int32_t frame_length)
 {
-    double page_symbols_deint[frame_length];
     // 1. De-interleave
+    double *page_symbols_deint = static_cast<double *>(volk_gnsssdr_malloc(frame_length * sizeof(double), volk_gnsssdr_get_alignment()));
     deinterleaver(GALILEO_FNAV_INTERLEAVER_ROWS, GALILEO_FNAV_INTERLEAVER_COLS, page_symbols, page_symbols_deint);
 
     // 2. Viterbi decoder
@@ -93,8 +93,9 @@ void galileo_e5a_telemetry_decoder_cc::decode_word(double *page_symbols, int32_t
                     page_symbols_deint[i] = -page_symbols_deint[i];
                 }
         }
-    int32_t page_bits[frame_length / 2];
+    int32_t *page_bits = static_cast<int32_t *>(volk_gnsssdr_malloc((frame_length / 2) * sizeof(int32_t), volk_gnsssdr_get_alignment()));
     viterbi_decoder(page_symbols_deint, page_bits);
+    volk_gnsssdr_free(page_symbols_deint);
 
     // 3. Call the Galileo page decoder
     std::string page_String;
@@ -109,6 +110,7 @@ void galileo_e5a_telemetry_decoder_cc::decode_word(double *page_symbols, int32_t
                     page_String.push_back('0');
                 }
         }
+    volk_gnsssdr_free(page_bits);
 
     // DECODE COMPLETE WORD (even + odd) and TEST CRC
     d_nav.split_page(page_String);
@@ -436,37 +438,37 @@ int galileo_e5a_telemetry_decoder_cc::general_work(int noutput_items __attribute
             if (d_nav.flag_TOW_1 == true)
                 {
                     d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_nav.FNAV_TOW_1 * 1000.0);
-                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + (GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS;
+                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS);
                     d_nav.flag_TOW_1 = false;
                 }
             else if (d_nav.flag_TOW_2 == true)
                 {
                     d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_nav.FNAV_TOW_2 * 1000.0);
-                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + (GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS;
+                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS);
                     d_nav.flag_TOW_2 = false;
                 }
             else if (d_nav.flag_TOW_3 == true)
                 {
                     d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_nav.FNAV_TOW_3 * 1000.0);
-                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + (GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS;
+                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS);
                     d_nav.flag_TOW_3 = false;
                 }
             else if (d_nav.flag_TOW_4 == true)
                 {
                     d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_nav.FNAV_TOW_4 * 1000.0);
-                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + (GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS;
+                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS);
                     d_nav.flag_TOW_4 = false;
                 }
             else
                 {
-                    d_TOW_at_current_symbol_ms += GALILEO_E5a_CODE_PERIOD_MS;
+                    d_TOW_at_current_symbol_ms += static_cast<uint32_t>(GALILEO_E5a_CODE_PERIOD_MS);
                 }
         }
     else  // if there is not a new preamble, we define the TOW of the current symbol
         {
             if (d_nav.flag_TOW_set == true)
                 {
-                    d_TOW_at_current_symbol_ms += GALILEO_E5a_CODE_PERIOD_MS;
+                    d_TOW_at_current_symbol_ms += static_cast<uint32_t>(GALILEO_E5a_CODE_PERIOD_MS);
                 }
         }
 

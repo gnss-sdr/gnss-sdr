@@ -64,8 +64,8 @@ gps_l5_telemetry_decoder_cc::gps_l5_telemetry_decoder_cc(
     DLOG(INFO) << "GPS L5 TELEMETRY PROCESSING: satellite " << d_satellite;
     d_channel = 0;
     d_flag_valid_word = false;
-    d_TOW_at_current_symbol_ms = 0;
-    d_TOW_at_Preamble_ms = 0;
+    d_TOW_at_current_symbol_ms = 0U;
+    d_TOW_at_Preamble_ms = 0U;
     // initialize the CNAV frame decoder (libswiftcnav)
     cnav_msg_decoder_init(&d_cnav_decoder);
     for (int32_t aux = 0; aux < GPS_L5i_NH_CODE_LENGTH; aux++)

@@ -261,7 +261,7 @@ void pcps_acquisition::init()
     d_gnss_synchro->Flag_valid_symbol_output = false;
     d_gnss_synchro->Flag_valid_pseudorange = false;
     d_gnss_synchro->Flag_valid_word = false;
-
+    d_gnss_synchro->Acq_doppler_step = 0U;
     d_gnss_synchro->Acq_delay_samples = 0.0;
     d_gnss_synchro->Acq_doppler_hz = 0.0;
     d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
@@ -334,6 +334,7 @@ void pcps_acquisition::set_state(int32_t state)
             d_gnss_synchro->Acq_delay_samples = 0.0;
             d_gnss_synchro->Acq_doppler_hz = 0.0;
             d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
+            d_gnss_synchro->Acq_doppler_step = 0U;
             d_mag = 0.0;
             d_input_power = 0.0;
             d_test_statistics = 0.0;
@@ -725,6 +726,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
             d_gnss_synchro->Acq_delay_samples = static_cast<double>(std::fmod(static_cast<float>(indext), acq_parameters.samples_per_code));
             d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
             d_gnss_synchro->Acq_samplestamp_samples = samp_count;
+            d_gnss_synchro->Acq_doppler_step = acq_parameters.doppler_step2;
         }
 
     lk.lock();
@@ -865,6 +867,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                 d_gnss_synchro->Acq_delay_samples = 0.0;
                 d_gnss_synchro->Acq_doppler_hz = 0.0;
                 d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
+                d_gnss_synchro->Acq_doppler_step = 0U;
                 d_mag = 0.0;
                 d_input_power = 0.0;
                 d_test_statistics = 0.0;

@@ -163,8 +163,8 @@ galileo_e1b_telemetry_decoder_cc::~galileo_e1b_telemetry_decoder_cc()
 
 void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols, int32_t frame_length)
 {
-    double page_part_symbols_deint[frame_length];
     // 1. De-interleave
+    double *page_part_symbols_deint = static_cast<double *>(volk_gnsssdr_malloc(frame_length * sizeof(double), volk_gnsssdr_get_alignment()));
     deinterleaver(GALILEO_INAV_INTERLEAVER_ROWS, GALILEO_INAV_INTERLEAVER_COLS, page_part_symbols, page_part_symbols_deint);
 
     // 2. Viterbi decoder
@@ -178,8 +178,9 @@ void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols, in
                 }
         }
 
-    int32_t page_part_bits[frame_length / 2];
+    int32_t *page_part_bits = static_cast<int32_t *>(volk_gnsssdr_malloc((frame_length / 2) * sizeof(int32_t), volk_gnsssdr_get_alignment()));
     viterbi_decoder(page_part_symbols_deint, page_part_bits);
+    volk_gnsssdr_free(page_part_symbols_deint);
 
     // 3. Call the Galileo page decoder
     std::string page_String;
@@ -217,6 +218,7 @@ void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols, in
             d_nav.split_page(page_String.c_str(), flag_even_word_arrived);
             flag_even_word_arrived = 1;
         }
+    volk_gnsssdr_free(page_part_bits);
 
     // 4. Push the new navigation data to the queues
     if (d_nav.have_new_ephemeris() == true)
@@ -312,7 +314,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute
     consume_each(1);
 
     d_flag_preamble = false;
-    uint32_t required_symbols = GALILEO_INAV_PAGE_SYMBOLS + d_symbols_per_preamble;
+    uint32_t required_symbols = static_cast<uint32_t>(GALILEO_INAV_PAGE_SYMBOLS) + static_cast<uint32_t>(d_symbols_per_preamble);
 
     if (d_symbol_history.size() > required_symbols)
         {
@@ -370,7 +372,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute
                     // NEW Galileo page part is received
                     // 0. fetch the symbols into an array
                     int32_t frame_length = GALILEO_INAV_PAGE_PART_SYMBOLS - d_symbols_per_preamble;
-                    double page_part_symbols[frame_length];
+                    double *page_part_symbols = static_cast<double *>(volk_gnsssdr_malloc(frame_length * sizeof(double), volk_gnsssdr_get_alignment()));
 
                     for (int32_t i = 0; i < frame_length; i++)
                         {
@@ -412,6 +414,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute
                                     d_nav.flag_TOW_set = false;
                                 }
                         }
+                    volk_gnsssdr_free(page_part_symbols);
                 }
         }
 
@@ -424,7 +427,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute
                 {
                     // TOW_5 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
                     d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_nav.TOW_5 * 1000.0);
-                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + GALILEO_INAV_PAGE_PART_MS + (required_symbols + 1) * GALILEO_E1_CODE_PERIOD_MS;
+                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (required_symbols + 1) * GALILEO_E1_CODE_PERIOD_MS);
                     d_nav.flag_TOW_5 = false;
                 }
 
@@ -432,20 +435,20 @@ int galileo_e1b_telemetry_decoder_cc::general_work(int noutput_items __attribute
                 {
                     // TOW_6 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
                     d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_nav.TOW_6 * 1000.0);
-                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + GALILEO_INAV_PAGE_PART_MS + (required_symbols + 1) * GALILEO_E1_CODE_PERIOD_MS;
+                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (required_symbols + 1) * GALILEO_E1_CODE_PERIOD_MS);
                     d_nav.flag_TOW_6 = false;
                 }
             else
                 {
                     // this page has no timing information
-                    d_TOW_at_current_symbol_ms += GALILEO_E1_CODE_PERIOD_MS;  // + GALILEO_INAV_PAGE_PART_SYMBOLS*GALILEO_E1_CODE_PERIOD;
+                    d_TOW_at_current_symbol_ms += static_cast<uint32_t>(GALILEO_E1_CODE_PERIOD_MS);  // + GALILEO_INAV_PAGE_PART_SYMBOLS*GALILEO_E1_CODE_PERIOD;
                 }
         }
     else  // if there is not a new preamble, we define the TOW of the current symbol
         {
             if (d_nav.flag_TOW_set == true)
                 {
-                    d_TOW_at_current_symbol_ms += GALILEO_E1_CODE_PERIOD_MS;
+                    d_TOW_at_current_symbol_ms += static_cast<uint32_t>(GALILEO_E1_CODE_PERIOD_MS);
                 }
         }
 

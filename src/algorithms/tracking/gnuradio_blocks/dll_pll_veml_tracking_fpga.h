@@ -233,7 +233,7 @@ private:
     int32_t d_correlation_length_samples;
     int32_t d_next_prn_length_samples;
     uint64_t d_sample_counter_next;
-    uint32_t d_pull_in = 0;
+    uint32_t d_pull_in = 0U;
 };
 
 #endif  //GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H

@@ -179,6 +179,7 @@ private:
     // tracking vars
     double d_code_freq_chips;
     double d_code_phase_step_chips;
+    double d_code_phase_rate_step_chips;
     double d_carrier_doppler_hz;
     double d_carrier_dopplerrate_hz2;
     double d_carrier_phase_step_rad;

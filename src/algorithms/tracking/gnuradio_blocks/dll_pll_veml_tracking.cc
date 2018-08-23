@@ -362,7 +362,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
         }
 
     // --- Initializations ---
-    multicorrelator_cpu.set_fast_resampler(trk_parameters.use_fast_resampler);
+    multicorrelator_cpu.set_high_dynamics_resampler(trk_parameters.use_high_dynamics_resampler);
     // Initial code frequency basis of NCO
     d_code_freq_chips = d_code_chip_rate;
     // Residual code phase (in chips)

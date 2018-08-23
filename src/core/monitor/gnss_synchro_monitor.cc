@@ -61,6 +61,8 @@ gnss_synchro_monitor::gnss_synchro_monitor(unsigned int n_channels,
     d_nchannels = n_channels;
 
     udp_sink_ptr = std::unique_ptr<Gnss_Synchro_Udp_Sink>(new Gnss_Synchro_Udp_Sink(udp_addresses, udp_port));
+
+    count = 0;
 }
 
 
@@ -75,17 +77,16 @@ int gnss_synchro_monitor::work(int noutput_items, gr_vector_const_void_star& inp
     const Gnss_Synchro** in = reinterpret_cast<const Gnss_Synchro**>(&input_items[0]);  // Get the input buffer pointer
     for (int epoch = 0; epoch < noutput_items; epoch++)
         {
-            // ############ 1. READ PSEUDORANGES ####
-            for (unsigned int i = 0; i < d_nchannels; i++)
+            count++;
+            if (count >= d_output_rate_ms)
                 {
-                    //if (in[i][epoch].Flag_valid_pseudorange)
-                    //    {
-                    //    }
-                    //todo: send the gnss_synchro objects
-
-                    std::vector<Gnss_Synchro> stocks;
-                    stocks.push_back(in[i][epoch]);
-                    udp_sink_ptr->write_gnss_synchro(stocks);
+                    for (unsigned int i = 0; i < d_nchannels; i++)
+                        {
+                            std::vector<Gnss_Synchro> stocks;
+                            stocks.push_back(in[i][epoch]);
+                            udp_sink_ptr->write_gnss_synchro(stocks);
+                        }
+                    count = 0;
                 }
         }
     return noutput_items;

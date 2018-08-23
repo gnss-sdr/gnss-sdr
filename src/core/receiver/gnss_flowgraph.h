@@ -186,6 +186,7 @@ private:
 
     bool enable_monitor_;
     gr::basic_block_sptr GnssSynchroMonitor_;
+    std::vector<std::string> split_string(const std::string &s, char delim);
 };
 
 #endif /*GNSS_SDR_GNSS_FLOWGRAPH_H_*/

@@ -68,7 +68,7 @@ private:
 
     std::unique_ptr<Gnss_Synchro_Udp_Sink> udp_sink_ptr;
 
-    unsigned int count;
+    int count;
 
 
 public:

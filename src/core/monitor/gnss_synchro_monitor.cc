@@ -1,6 +1,9 @@
 /*!
  * \file gnss_synchro_monitor.cc
- * \brief Interface of a Position Velocity and Time computation block
+ * \brief Implementation of a receiver monitoring block which allows sending
+ * a data stream with the receiver internal parameters (Gnss_Synchro objects)
+ * to local or remote clients over UDP.
+ *
  * \author Álvaro Cebrián Juan, 2018. acebrianjuan(at)gmail.com
  *
  * -------------------------------------------------------------------------

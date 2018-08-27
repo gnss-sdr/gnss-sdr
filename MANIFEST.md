@@ -11,7 +11,12 @@ author:
   - et altri (see AUTHORS file for a list of contributors)
 copyright_owner:
   - The Authors
-dependencies: gnuradio (>= 3.7.3), armadillo, gflags, glog, gnutls
+dependencies:
+  - gnuradio (>= 3.7.3)
+  - armadillo
+  - gflags
+  - glog
+  - gnutls
 license: GPLv3+
 repo: https://github.com/gnss-sdr/gnss-sdr
 website: http://gnss-sdr.org

@@ -110,7 +110,7 @@ GpsL5DllPllTracking::GpsL5DllPllTracking(
     int max_lock_fail = configuration->property(role + ".max_lock_fail", 50);
     if (FLAGS_max_lock_fail != 50) max_lock_fail = FLAGS_max_lock_fail;
     trk_param.max_lock_fail = max_lock_fail;
-    double carrier_lock_th = configuration->property(role + ".carrier_lock_th", 0.85);
+    double carrier_lock_th = configuration->property(role + ".carrier_lock_th", 0.75);
     if (FLAGS_carrier_lock_th != 0.85) carrier_lock_th = FLAGS_carrier_lock_th;
     trk_param.carrier_lock_th = carrier_lock_th;
 

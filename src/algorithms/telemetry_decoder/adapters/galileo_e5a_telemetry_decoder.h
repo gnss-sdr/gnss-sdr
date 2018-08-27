@@ -37,7 +37,7 @@
 #ifndef GNSS_SDR_GALILEO_E5A_TELEMETRY_DECODER_H_
 #define GNSS_SDR_GALILEO_E5A_TELEMETRY_DECODER_H_
 
-#include "galileo_e5a_telemetry_decoder_cc.h"
+#include "galileo_telemetry_decoder_cc.h"
 #include "telemetry_decoder_interface.h"
 #include <string>
 
@@ -76,7 +76,6 @@ public:
 
     void set_satellite(const Gnss_Satellite& satellite) override;
     inline void set_channel(int channel) override { telemetry_decoder_->set_channel(channel); }
-
     inline void reset() override
     {
         return;
@@ -88,7 +87,7 @@ public:
     }
 
 private:
-    galileo_e5a_telemetry_decoder_cc_sptr telemetry_decoder_;
+    galileo_telemetry_decoder_cc_sptr telemetry_decoder_;
     Gnss_Satellite satellite_;
     int channel_;
     bool dump_;

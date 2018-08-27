@@ -55,7 +55,7 @@ GalileoE1BTelemetryDecoder::GalileoE1BTelemetryDecoder(ConfigurationInterface* c
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     // make telemetry decoder object
-    telemetry_decoder_ = galileo_e1b_make_telemetry_decoder_cc(satellite_, dump_);  // TODO fix me
+    telemetry_decoder_ = galileo_make_telemetry_decoder_cc(satellite_, 1, dump_);  //unified galileo decoder set to INAV (frame_type=1)
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
     channel_ = 0;
     if (in_streams_ > 1)

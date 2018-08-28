@@ -147,6 +147,7 @@ private:
     double d_code_phase_step_chips;
     double d_code_phase_rate_step_chips;
     double d_carrier_phase_step_rad;
+    double d_carrier_phase_rate_step_rad;
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;
     double d_rem_carr_phase_rad;

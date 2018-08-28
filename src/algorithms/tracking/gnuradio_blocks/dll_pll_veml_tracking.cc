@@ -355,6 +355,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
         {
             // Extra correlator for the data component
             correlator_data_cpu.init(2 * trk_parameters.vector_length, 1);
+            correlator_data_cpu.set_high_dynamics_resampler(trk_parameters.use_high_dynamics_resampler);
             d_data_code = static_cast<float *>(volk_gnsssdr_malloc(2 * d_code_length_chips * sizeof(float), volk_gnsssdr_get_alignment()));
         }
     else
@@ -397,6 +398,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     d_code_phase_step_chips = 0.0;
     d_code_phase_rate_step_chips = 0.0;
     d_carrier_phase_step_rad = 0.0;
+    d_carrier_phase_rate_step_rad = 0.0;
     d_rem_code_phase_chips = 0.0;
     d_K_blk_samples = 0.0;
     d_code_phase_samples = 0.0;
@@ -424,6 +426,7 @@ void dll_pll_veml_tracking::start_tracking()
     // new chip and PRN sequence periods based on acq Doppler
     d_code_freq_chips = radial_velocity * d_code_chip_rate;
     d_code_phase_step_chips = d_code_freq_chips / trk_parameters.fs_in;
+    d_code_phase_rate_step_chips = 0.0;
     double T_chip_mod_seconds = 1.0 / d_code_freq_chips;
     double T_prn_mod_seconds = T_chip_mod_seconds * static_cast<double>(d_code_length_chips);
     double T_prn_mod_samples = T_prn_mod_seconds * trk_parameters.fs_in;
@@ -446,6 +449,7 @@ void dll_pll_veml_tracking::start_tracking()
 
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
     d_carrier_phase_step_rad = PI_2 * d_carrier_doppler_hz / trk_parameters.fs_in;
+    d_carrier_phase_rate_step_rad = 0.0;
 
     // DLL/PLL filter initialization
     d_carrier_loop_filter.initialize();  // initialize the carrier filter

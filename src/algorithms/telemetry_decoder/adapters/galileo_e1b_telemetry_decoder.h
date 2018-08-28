@@ -36,7 +36,7 @@
 
 
 #include "telemetry_decoder_interface.h"
-#include "galileo_e1b_telemetry_decoder_cc.h"
+#include "galileo_telemetry_decoder_cc.h"
 #include "gnss_satellite.h"
 #include <string>
 
@@ -76,7 +76,6 @@ public:
 
     void set_satellite(const Gnss_Satellite& satellite) override;
     inline void set_channel(int channel) override { telemetry_decoder_->set_channel(channel); }
-
     inline void reset() override
     {
         return;
@@ -88,7 +87,7 @@ public:
     }
 
 private:
-    galileo_e1b_telemetry_decoder_cc_sptr telemetry_decoder_;
+    galileo_telemetry_decoder_cc_sptr telemetry_decoder_;
     Gnss_Satellite satellite_;
     int channel_;
     bool dump_;

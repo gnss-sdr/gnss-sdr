@@ -64,7 +64,7 @@ DEFINE_int32(acq_test_second_doppler_step, 10, "If --acq_test_make_two_steps is 
 
 DEFINE_int32(acq_test_signal_duration_s, 2, "Generated signal duration, in s");
 DEFINE_int32(acq_test_num_meas, 0, "Number of measurements per run. 0 means the complete file.");
-DEFINE_double(acq_test_cn0_init, 33.0, "Initial CN0, in dBHz.");
+DEFINE_double(acq_test_cn0_init, 30.0, "Initial CN0, in dBHz.");
 DEFINE_double(acq_test_cn0_final, 45.0, "Final CN0, in dBHz.");
 DEFINE_double(acq_test_cn0_step, 3.0, "CN0 step, in dB.");
 

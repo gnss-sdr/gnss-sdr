@@ -238,17 +238,18 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                     d_correlation_length_ms = 1;
                     d_code_samples_per_chip = 1;
                     d_code_length_chips = static_cast<uint32_t>(Galileo_E5a_CODE_LENGTH_CHIPS);
-                    d_secondary = true;
+
                     if (trk_parameters.track_pilot)
                         {
+                            d_secondary = true;
                             d_secondary_code_length = static_cast<uint32_t>(Galileo_E5a_Q_SECONDARY_CODE_LENGTH);
                             signal_pretty_name = signal_pretty_name + "Q";
                             interchange_iq = true;
                         }
                     else
                         {
-                            d_secondary_code_length = static_cast<uint32_t>(Galileo_E5a_I_SECONDARY_CODE_LENGTH);
-                            d_secondary_code_string = const_cast<std::string *>(&Galileo_E5a_I_SECONDARY_CODE);
+                            //Do not acquire secondary code in data component. It is done in telemetry decoder
+                            d_secondary = false;
                             signal_pretty_name = signal_pretty_name + "I";
                             interchange_iq = false;
                         }
@@ -362,7 +363,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
         }
 
     // --- Initializations ---
-    multicorrelator_cpu.set_fast_resampler(trk_parameters.use_fast_resampler);
+    multicorrelator_cpu.set_high_dynamics_resampler(trk_parameters.use_high_dynamics_resampler);
     // Initial code frequency basis of NCO
     d_code_freq_chips = d_code_chip_rate;
     // Residual code phase (in chips)
@@ -497,7 +498,7 @@ void dll_pll_veml_tracking::start_tracking()
                     for (uint32_t i = 0; i < d_code_length_chips; i++)
                         {
                             d_tracking_code[i] = aux_code[i].imag();
-                            d_data_code[i] = aux_code[i].real();
+                            d_data_code[i] = aux_code[i].real();  //the same because it is generated the full signal (E5aI + E5aQ)
                         }
                     d_Prompt_Data[0] = gr_complex(0.0, 0.0);
                     correlator_data_cpu.set_local_code_and_taps(d_code_length_chips, d_data_code, d_prompt_data_shift);

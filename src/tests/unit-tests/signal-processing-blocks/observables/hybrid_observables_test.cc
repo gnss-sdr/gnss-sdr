@@ -53,7 +53,6 @@
 #include "telemetry_decoder_interface.h"
 #include "in_memory_configuration.h"
 #include "gnss_synchro.h"
-#include "gps_l1_ca_telemetry_decoder.h"
 #include "tracking_true_obs_reader.h"
 #include "true_observables_reader.h"
 #include "tracking_dump_reader.h"
@@ -326,7 +325,8 @@ bool HybridObservablesTest::acquire_signal()
         {
             tmp_gnss_synchro.System = 'G';
             std::string signal = "1C";
-            signal.copy(tmp_gnss_synchro.Signal, 2, 0);
+            const char* str = signal.c_str();                                  // get a C style null terminated string
+            std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "GPS L1 CA";
             config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
@@ -337,7 +337,8 @@ bool HybridObservablesTest::acquire_signal()
         {
             tmp_gnss_synchro.System = 'E';
             std::string signal = "1B";
-            signal.copy(tmp_gnss_synchro.Signal, 2, 0);
+            const char* str = signal.c_str();                                  // get a C style null terminated string
+            std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "Galileo E1B";
             config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
@@ -347,7 +348,8 @@ bool HybridObservablesTest::acquire_signal()
         {
             tmp_gnss_synchro.System = 'G';
             std::string signal = "2S";
-            signal.copy(tmp_gnss_synchro.Signal, 2, 0);
+            const char* str = signal.c_str();                                  // get a C style null terminated string
+            std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "GPS L2CM";
             config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
@@ -357,7 +359,8 @@ bool HybridObservablesTest::acquire_signal()
         {
             tmp_gnss_synchro.System = 'E';
             std::string signal = "5X";
-            signal.copy(tmp_gnss_synchro.Signal, 2, 0);
+            const char* str = signal.c_str();                                  // get a C style null terminated string
+            std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "Galileo E5a";
             config->set_property("Acquisition_5X.coherent_integration_time_ms", "1");
@@ -372,7 +375,8 @@ bool HybridObservablesTest::acquire_signal()
         {
             tmp_gnss_synchro.System = 'E';
             std::string signal = "5X";
-            signal.copy(tmp_gnss_synchro.Signal, 2, 0);
+            const char* str = signal.c_str();                                  // get a C style null terminated string
+            std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "Galileo E5a";
             config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
@@ -382,7 +386,8 @@ bool HybridObservablesTest::acquire_signal()
         {
             tmp_gnss_synchro.System = 'G';
             std::string signal = "L5";
-            signal.copy(tmp_gnss_synchro.Signal, 2, 0);
+            const char* str = signal.c_str();                                  // get a C style null terminated string
+            std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "GPS L5I";
             config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
@@ -579,7 +584,7 @@ void HybridObservablesTest::configure_receiver(
             std::memcpy(static_cast<void*>(gnss_synchro_master.Signal), str, 3);  // copy string into synchro char array: 2 char + null
 
             config->set_property("Tracking.early_late_space_chips", "0.5");
-            config->set_property("Tracking.track_pilot", "false");
+            config->set_property("Tracking.track_pilot", "true");
 
             config->set_property("TelemetryDecoder.implementation", "GPS_L2C_Telemetry_Decoder");
         }
@@ -596,7 +601,7 @@ void HybridObservablesTest::configure_receiver(
                     config->supersede_property("Tracking.implementation", std::string("Galileo_E5a_DLL_PLL_Tracking"));
                 }
             config->set_property("Tracking.early_late_space_chips", "0.5");
-            config->set_property("Tracking.track_pilot", "false");
+            config->set_property("Tracking.track_pilot", "true");
             config->set_property("Tracking.order", "2");
 
             config->set_property("TelemetryDecoder.implementation", "Galileo_E5a_Telemetry_Decoder");
@@ -610,7 +615,7 @@ void HybridObservablesTest::configure_receiver(
             std::memcpy(static_cast<void*>(gnss_synchro_master.Signal), str, 3);  // copy string into synchro char array: 2 char + null
 
             config->set_property("Tracking.early_late_space_chips", "0.5");
-            config->set_property("Tracking.track_pilot", "false");
+            config->set_property("Tracking.track_pilot", "true");
             config->set_property("Tracking.order", "2");
 
             config->set_property("TelemetryDecoder.implementation", "GPS_L5_Telemetry_Decoder");
@@ -888,9 +893,9 @@ void HybridObservablesTest::check_results_carrier_doppler_double_diff(
     ASSERT_LT(error_mean, 5);
     ASSERT_GT(error_mean, -5);
     //assuming PLL BW=35
-    ASSERT_LT(error_var, 200);
-    ASSERT_LT(max_error, 70);
-    ASSERT_GT(min_error, -70);
+    ASSERT_LT(error_var, 250);
+    ASSERT_LT(max_error, 100);
+    ASSERT_GT(min_error, -100);
     ASSERT_LT(rmse, 30);
 }
 
@@ -967,9 +972,9 @@ void HybridObservablesTest::check_results_carrier_doppler(
     ASSERT_LT(error_mean_ch0, 5);
     ASSERT_GT(error_mean_ch0, -5);
     //assuming PLL BW=35
-    ASSERT_LT(error_var_ch0, 200);
-    ASSERT_LT(max_error_ch0, 70);
-    ASSERT_GT(min_error_ch0, -70);
+    ASSERT_LT(error_var_ch0, 250);
+    ASSERT_LT(max_error_ch0, 100);
+    ASSERT_GT(min_error_ch0, -100);
     ASSERT_LT(rmse_ch0, 30);
 }
 
@@ -1195,7 +1200,7 @@ bool HybridObservablesTest::ReadRinexObs(std::vector<arma::mat>* obs_vec, Gnss_S
                                             dataobj = r_ref_data.getObs(prn, "L5I", r_ref_header);
                                             obs_vec->at(n)(obs_vec->at(n).n_rows - 1, 3) = dataobj.data;
                                         }
-                                    else if (strcmp("5X\0", gnss.Signal) == 0)  //Simulator gives RINEX with E5a+E5b
+                                    else if (strcmp("5X\0", gnss.Signal) == 0)  //Simulator gives RINEX with E5a+E5b. Doppler and accumulated Carrier phase WILL differ
                                         {
                                             obs_vec->at(n)(obs_vec->at(n).n_rows - 1, 0) = sow;
                                             dataobj = r_ref_data.getObs(prn, "C8I", r_ref_header);
@@ -1579,8 +1584,8 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
         }
 
     arma::vec receiver_time_offset_ref_channel_s;
-    receiver_time_offset_ref_channel_s = true_obs_vec.at(min_pr_ch_id).col(1) / GPS_C_m_s - GPS_STARTOFFSET_ms / 1000.0;
-    std::cout << "Ref channel initial Receiver time offset " << receiver_time_offset_ref_channel_s(0) * 1e3 << " [ms]" << std::endl;
+    receiver_time_offset_ref_channel_s = (true_obs_vec.at(min_pr_ch_id).col(1)(0) - measured_obs_vec.at(min_pr_ch_id).col(4)(0)) / GPS_C_m_s;
+    std::cout << "Ref. channel initial Receiver time offset " << receiver_time_offset_ref_channel_s(0) * 1e3 << " [ms]" << std::endl;
 
     for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
         {
@@ -1624,21 +1629,27 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                                 measured_obs_vec.at(n),
                                 measured_obs_vec.at(min_pr_ch_id),
                                 "[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
-                            check_results_carrier_phase_double_diff(true_obs_vec.at(n),
-                                true_obs_vec.at(min_pr_ch_id),
-                                true_TOW_ch_s,
-                                true_TOW_ref_ch_s,
-                                measured_obs_vec.at(n),
-                                measured_obs_vec.at(min_pr_ch_id),
-                                "[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
 
-                            check_results_carrier_doppler_double_diff(true_obs_vec.at(n),
-                                true_obs_vec.at(min_pr_ch_id),
-                                true_TOW_ch_s,
-                                true_TOW_ref_ch_s,
-                                measured_obs_vec.at(n),
-                                measured_obs_vec.at(min_pr_ch_id),
-                                "[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
+                            //Do not compare E5a with E5 RINEX due to the Doppler frequency discrepancy caused by the different center frequencies
+                            //E5a_fc=1176.45e6, E5b_fc=1207.14e6, E5_fc=1191.795e6;
+                            if (strcmp("5X\0", gnss_synchro_vec.at(n).Signal) != 0 or FLAGS_compare_with_5X)
+                                {
+                                    check_results_carrier_phase_double_diff(true_obs_vec.at(n),
+                                        true_obs_vec.at(min_pr_ch_id),
+                                        true_TOW_ch_s,
+                                        true_TOW_ref_ch_s,
+                                        measured_obs_vec.at(n),
+                                        measured_obs_vec.at(min_pr_ch_id),
+                                        "[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
+
+                                    check_results_carrier_doppler_double_diff(true_obs_vec.at(n),
+                                        true_obs_vec.at(min_pr_ch_id),
+                                        true_TOW_ch_s,
+                                        true_TOW_ref_ch_s,
+                                        measured_obs_vec.at(n),
+                                        measured_obs_vec.at(min_pr_ch_id),
+                                        "[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
+                                }
                         }
                     else
                         {

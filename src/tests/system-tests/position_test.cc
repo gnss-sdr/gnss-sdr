@@ -1,7 +1,10 @@
 /*!
  * \file position_test.cc
  * \brief  This class implements a test for the validation of computed position.
- * \author Carles Fernandez-Prades, 2016. cfernandez(at)cttc.es
+ * \authors <ul>
+ *          <li> Carles Fernandez-Prades, 2016. cfernandez(at)cttc.es
+ *          <li> Javier Arribas, 2018. jarribas(at)cttc.es
+ *          </ul>
  *
  *
  * -------------------------------------------------------------------------
@@ -29,6 +32,9 @@
  * -------------------------------------------------------------------------
  */
 
+#include "position_test_flags.h"
+#include "rtklib_solver_dump_reader.h"
+#include "spirent_motion_csv_dump_reader.h"
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
 #include "control_thread.h"
@@ -39,6 +45,7 @@
 #include "test_flags.h"
 #include "signal_generator_flags.h"
 #include <boost/filesystem.hpp>
+#include <armadillo>
 #include <glog/logging.h>
 #include <gtest/gtest.h>
 #include <algorithm>
@@ -47,10 +54,6 @@
 #include <fstream>
 #include <numeric>
 #include <thread>
-
-
-DEFINE_string(config_file_ptest, std::string(""), "File containing the configuration parameters for the position test.");
-DEFINE_bool(plot_position_test, false, "Plots results of FFTLengthTest with gnuplot");
 
 // For GPS NAVIGATION (L1)
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
@@ -144,9 +147,9 @@ void StaticPositionSystemTest::geodetic2Enu(double latitude, double longitude, d
 
     geodetic2Ecef(ref_lat * d2r, ref_long * d2r, ref_h, &ref_x, &ref_y, &ref_z);
 
-    double aux_x = x - ref_x;
-    double aux_y = y - ref_y;
-    double aux_z = z - ref_z;
+    double aux_x = x;  // - ref_x;
+    double aux_y = y;  // - ref_y;
+    double aux_z = z;  // - ref_z;
 
     // ECEF to NED matrix
     double phiP = atan2(ref_z, sqrt(std::pow(ref_x, 2.0) + std::pow(ref_y, 2.0)));
@@ -386,7 +389,7 @@ int StaticPositionSystemTest::configure_receiver()
             config->set_property("PVT.flag_rtcm_server", "false");
             config->set_property("PVT.flag_rtcm_tty_port", "false");
             config->set_property("PVT.rtcm_dump_devname", "/dev/pts/1");
-            config->set_property("PVT.dump", "false");
+            config->set_property("PVT.dump", "true");
             config->set_property("PVT.rinex_version", std::to_string(2));
             config->set_property("PVT.iono_model", "OFF");
             config->set_property("PVT.trop_model", "OFF");
@@ -455,123 +458,166 @@ int StaticPositionSystemTest::run_receiver()
 
 void StaticPositionSystemTest::check_results()
 {
-    std::fstream myfile(StaticPositionSystemTest::generated_kml_file, std::ios_base::in);
-    ASSERT_TRUE(myfile.is_open()) << "No valid kml file could be opened";
-    std::string line;
-
     std::vector<double> pos_e;
     std::vector<double> pos_n;
     std::vector<double> pos_u;
 
-    // Skip header
-    std::getline(myfile, line);
-    bool is_header = true;
-    while (is_header)
+    std::istringstream iss2(FLAGS_static_position);
+    std::string str_aux;
+    std::getline(iss2, str_aux, ',');
+    double ref_lat = std::stod(str_aux);
+    std::getline(iss2, str_aux, ',');
+    double ref_long = std::stod(str_aux);
+    std::getline(iss2, str_aux, '\n');
+    double ref_h = std::stod(str_aux);
+    double ref_e, ref_n, ref_u;
+    geodetic2Enu(ref_lat, ref_long, ref_h,
+        &ref_e, &ref_n, &ref_u);
+
+    if (!FLAGS_use_pvt_solver_dump)
         {
+            //fall back to read receiver KML output (position only)
+            std::fstream myfile(StaticPositionSystemTest::generated_kml_file, std::ios_base::in);
+            ASSERT_TRUE(myfile.is_open()) << "No valid kml file could be opened";
+            std::string line;
+            // Skip header
             std::getline(myfile, line);
-            ASSERT_FALSE(myfile.eof()) << "No valid kml file found.";
-            std::size_t found = line.find("<coordinates>");
-            if (found != std::string::npos) is_header = false;
-        }
-    bool is_data = true;
-
-    //read data
-    while (is_data)
-        {
-            if (!std::getline(myfile, line))
+            bool is_header = true;
+            while (is_header)
                 {
-                    is_data = false;
-                    break;
+                    std::getline(myfile, line);
+                    ASSERT_FALSE(myfile.eof()) << "No valid kml file found.";
+                    std::size_t found = line.find("<coordinates>");
+                    if (found != std::string::npos) is_header = false;
                 }
-            std::size_t found = line.find("</coordinates>");
-            if (found != std::string::npos)
-                is_data = false;
-            else
-                {
-                    std::string str2;
-                    std::istringstream iss(line);
-                    double value;
-                    double lat = 0.0;
-                    double longitude = 0.0;
-                    double h = 0.0;
-                    for (int i = 0; i < 3; i++)
-                        {
-                            std::getline(iss, str2, ',');
-                            value = std::stod(str2);
-                            if (i == 0) lat = value;
-                            if (i == 1) longitude = value;
-                            if (i == 2) h = value;
-                        }
+            bool is_data = true;
 
+            //read data
+            while (is_data)
+                {
+                    if (!std::getline(myfile, line))
+                        {
+                            is_data = false;
+                            break;
+                        }
+                    std::size_t found = line.find("</coordinates>");
+                    if (found != std::string::npos)
+                        is_data = false;
+                    else
+                        {
+                            std::string str2;
+                            std::istringstream iss(line);
+                            double value;
+                            double lat = 0.0;
+                            double longitude = 0.0;
+                            double h = 0.0;
+                            for (int i = 0; i < 3; i++)
+                                {
+                                    std::getline(iss, str2, ',');
+                                    value = std::stod(str2);
+                                    if (i == 0) longitude = value;
+                                    if (i == 1) lat = value;
+                                    if (i == 2) h = value;
+                                }
+
+                            double north, east, up;
+                            geodetic2Enu(lat, longitude, h, &east, &north, &up);
+                            //                            std::cout << "lat = " << lat << ", longitude = " << longitude << "  h = " << h << std::endl;
+                            //                            std::cout << "E = " << east << ", N = " << north << " U = " << up << std::endl;
+                            pos_e.push_back(east);
+                            pos_n.push_back(north);
+                            pos_u.push_back(up);
+                            //                            getchar();
+                        }
+                }
+            myfile.close();
+            ASSERT_FALSE(pos_e.size() == 0) << "KML file is empty";
+        }
+    else
+        {
+            //use complete binary dump from pvt solver
+            rtklib_solver_dump_reader pvt_reader;
+            pvt_reader.open_obs_file(FLAGS_pvt_solver_dump_filename);
+            while (pvt_reader.read_binary_obs())
+                {
                     double north, east, up;
-                    geodetic2Enu(lat, longitude, h, &east, &north, &up);
-                    //std::cout << "E = " << east << ", N = " << north << " U = " << up << std::endl;
+                    geodetic2Enu(pvt_reader.latitude, pvt_reader.longitude, pvt_reader.height, &east, &north, &up);
+                    //                    std::cout << "lat = " << pvt_reader.latitude << ", longitude = " << pvt_reader.longitude << "  h = " << pvt_reader.height << std::endl;
+                    //                    std::cout << "E = " << east << ", N = " << north << " U = " << up << std::endl;
                     pos_e.push_back(east);
                     pos_n.push_back(north);
                     pos_u.push_back(up);
+                    //                    getchar();
                 }
         }
-    myfile.close();
-    ASSERT_FALSE(pos_e.size() == 0) << "KML file is empty";
 
-    double sigma_E_2_precision = std::pow(compute_stdev_precision(pos_e), 2.0);
-    double sigma_N_2_precision = std::pow(compute_stdev_precision(pos_n), 2.0);
-    double sigma_U_2_precision = std::pow(compute_stdev_precision(pos_u), 2.0);
+    // compute results
 
-    double sigma_E_2_accuracy = std::pow(compute_stdev_accuracy(pos_e, 0.0), 2.0);
-    double sigma_N_2_accuracy = std::pow(compute_stdev_accuracy(pos_n, 0.0), 2.0);
-    double sigma_U_2_accuracy = std::pow(compute_stdev_accuracy(pos_u, 0.0), 2.0);
-
-    double sum__e = std::accumulate(pos_e.begin(), pos_e.end(), 0.0);
-    double mean__e = sum__e / pos_e.size();
-    double sum__n = std::accumulate(pos_n.begin(), pos_n.end(), 0.0);
-    double mean__n = sum__n / pos_n.size();
-    double sum__u = std::accumulate(pos_u.begin(), pos_u.end(), 0.0);
-    double mean__u = sum__u / pos_u.size();
-
-    std::stringstream stm;
-    std::ofstream position_test_file;
-
-    if (FLAGS_config_file_ptest.empty())
+    if (FLAGS_static_scenario)
         {
-            stm << "---- ACCURACY ----" << std::endl;
-            stm << "2DRMS = " << 2 * sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]" << std::endl;
-            stm << "DRMS = " << sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]" << std::endl;
-            stm << "CEP = " << 0.62 * compute_stdev_accuracy(pos_n, 0.0) + 0.56 * compute_stdev_accuracy(pos_e, 0.0) << " [m]" << std::endl;
-            stm << "99% SAS = " << 1.122 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
-            stm << "90% SAS = " << 0.833 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
-            stm << "MRSE = " << sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
-            stm << "SEP = " << 0.51 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
-            stm << "Bias 2D = " << sqrt(std::pow(mean__e, 2.0) + std::pow(mean__n, 2.0)) << " [m]" << std::endl;
-            stm << "Bias 3D = " << sqrt(std::pow(mean__e, 2.0) + std::pow(mean__n, 2.0) + std::pow(mean__u, 2.0)) << " [m]" << std::endl;
-            stm << std::endl;
+            double sigma_E_2_precision = std::pow(compute_stdev_precision(pos_e), 2.0);
+            double sigma_N_2_precision = std::pow(compute_stdev_precision(pos_n), 2.0);
+            double sigma_U_2_precision = std::pow(compute_stdev_precision(pos_u), 2.0);
+
+            double sigma_E_2_accuracy = std::pow(compute_stdev_accuracy(pos_e, ref_e), 2.0);
+            double sigma_N_2_accuracy = std::pow(compute_stdev_accuracy(pos_n, ref_n), 2.0);
+            double sigma_U_2_accuracy = std::pow(compute_stdev_accuracy(pos_u, ref_u), 2.0);
+
+            double sum__e = std::accumulate(pos_e.begin(), pos_e.end(), 0.0);
+            double mean__e = sum__e / pos_e.size();
+            double sum__n = std::accumulate(pos_n.begin(), pos_n.end(), 0.0);
+            double mean__n = sum__n / pos_n.size();
+            double sum__u = std::accumulate(pos_u.begin(), pos_u.end(), 0.0);
+            double mean__u = sum__u / pos_u.size();
+
+            std::stringstream stm;
+            std::ofstream position_test_file;
+
+            if (FLAGS_config_file_ptest.empty())
+                {
+                    stm << "---- ACCURACY ----" << std::endl;
+                    stm << "2DRMS = " << 2 * sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]" << std::endl;
+                    stm << "DRMS = " << sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]" << std::endl;
+                    stm << "CEP = " << 0.62 * compute_stdev_accuracy(pos_n, 0.0) + 0.56 * compute_stdev_accuracy(pos_e, 0.0) << " [m]" << std::endl;
+                    stm << "99% SAS = " << 1.122 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
+                    stm << "90% SAS = " << 0.833 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
+                    stm << "MRSE = " << sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
+                    stm << "SEP = " << 0.51 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
+                    stm << "Bias 2D = " << sqrt(std::pow(mean__e, 2.0) + std::pow(mean__n, 2.0)) << " [m]" << std::endl;
+                    stm << "Bias 3D = " << sqrt(std::pow(mean__e, 2.0) + std::pow(mean__n, 2.0) + std::pow(mean__u, 2.0)) << " [m]" << std::endl;
+                    stm << std::endl;
+                }
+
+            stm << "---- PRECISION ----" << std::endl;
+            stm << "2DRMS = " << 2 * sqrt(sigma_E_2_precision + sigma_N_2_precision) << " [m]" << std::endl;
+            stm << "DRMS = " << sqrt(sigma_E_2_precision + sigma_N_2_precision) << " [m]" << std::endl;
+            stm << "CEP = " << 0.62 * compute_stdev_precision(pos_n) + 0.56 * compute_stdev_precision(pos_e) << " [m]" << std::endl;
+            stm << "99% SAS = " << 1.122 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]" << std::endl;
+            stm << "90% SAS = " << 0.833 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]" << std::endl;
+            stm << "MRSE = " << sqrt(sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]" << std::endl;
+            stm << "SEP = " << 0.51 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]" << std::endl;
+
+            std::cout << stm.rdbuf();
+            std::string output_filename = "position_test_output_" + StaticPositionSystemTest::generated_kml_file.erase(StaticPositionSystemTest::generated_kml_file.length() - 3, 3) + "txt";
+            position_test_file.open(output_filename.c_str());
+            if (position_test_file.is_open())
+                {
+                    position_test_file << stm.str();
+                    position_test_file.close();
+                }
+
+            // Sanity Check
+            double precision_SEP = 0.51 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision);
+            ASSERT_LT(precision_SEP, 20.0);
+
+            if (FLAGS_plot_position_test == true)
+                {
+                    print_results(pos_e, pos_n, pos_u);
+                }
         }
-
-    stm << "---- PRECISION ----" << std::endl;
-    stm << "2DRMS = " << 2 * sqrt(sigma_E_2_precision + sigma_N_2_precision) << " [m]" << std::endl;
-    stm << "DRMS = " << sqrt(sigma_E_2_precision + sigma_N_2_precision) << " [m]" << std::endl;
-    stm << "CEP = " << 0.62 * compute_stdev_precision(pos_n) + 0.56 * compute_stdev_precision(pos_e) << " [m]" << std::endl;
-    stm << "99% SAS = " << 1.122 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]" << std::endl;
-    stm << "90% SAS = " << 0.833 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]" << std::endl;
-    stm << "MRSE = " << sqrt(sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]" << std::endl;
-    stm << "SEP = " << 0.51 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]" << std::endl;
-
-    std::cout << stm.rdbuf();
-    std::string output_filename = "position_test_output_" + StaticPositionSystemTest::generated_kml_file.erase(StaticPositionSystemTest::generated_kml_file.length() - 3, 3) + "txt";
-    position_test_file.open(output_filename.c_str());
-    if (position_test_file.is_open())
+    else
         {
-            position_test_file << stm.str();
-            position_test_file.close();
-        }
-
-    // Sanity Check
-    double precision_SEP = 0.51 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision);
-    ASSERT_LT(precision_SEP, 20.0);
-
-    if (FLAGS_plot_position_test == true)
-        {
-            print_results(pos_e, pos_n, pos_u);
+            //dynamic position
         }
 }
 
@@ -698,7 +744,7 @@ TEST_F(StaticPositionSystemTest, Position_system_test)
     configure_receiver();
 
     // Run the receiver
-    EXPECT_EQ(run_receiver(), 0) << "Problem executing the software-defined signal generator";
+    EXPECT_EQ(run_receiver(), 0) << "Problem executing GNSS-SDR";
 
     // Check results
     check_results();

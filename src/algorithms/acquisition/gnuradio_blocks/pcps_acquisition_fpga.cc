@@ -76,6 +76,8 @@ pcps_acquisition_fpga::pcps_acquisition_fpga(pcpsconf_fpga_t conf_) : gr::block(
     d_channel = 0U;
     d_gnss_synchro = 0;
 
+    d_downsampling_factor = acq_parameters.downsampling_factor;
+    d_select_queue_Fpga = acq_parameters.select_queue_Fpga;
     //printf("zzzz acq_parameters.code_length = %d\n", acq_parameters.code_length);
     //printf("zzzz acq_parameters.samples_per_ms = %d\n", acq_parameters.samples_per_ms);
     //printf("zzzz d_fft_size = %d\n", d_fft_size);
@@ -176,6 +178,7 @@ void pcps_acquisition_fpga::send_positive_acquisition()
                << ", magnitude " << d_mag
                << ", input signal power " << d_input_power;
 
+    //printf("acq sending positive acquisition\n");
     this->message_port_pub(pmt::mp("events"), pmt::from_long(1));
     //    printf("acq send positive acquisition end\n");
 }
@@ -196,6 +199,7 @@ void pcps_acquisition_fpga::send_negative_acquisition()
                << ", magnitude " << d_mag
                << ", input signal power " << d_input_power;
 
+    //printf("acq sending negative acquisition\n");
     this->message_port_pub(pmt::mp("events"), pmt::from_long(2));
     //    printf("acq send negative acquisition end\n");
 }
@@ -269,8 +273,12 @@ void pcps_acquisition_fpga::set_active(bool active)
 
     // run loop in hw
     //printf("LAUNCH ACQ\n");
+    //printf("acq lib d_num_doppler_bins = %d\n", d_num_doppler_bins);
     acquisition_fpga->set_doppler_sweep(d_num_doppler_bins);
+    //acquisition_fpga->set_doppler_sweep(2);
+    //printf("acq lib going to launch acquisition\n");
     acquisition_fpga->run_acquisition();
+    //printf("acq lib going to read the acquisition results\n");
     acquisition_fpga->read_acquisition_results(&indext, &magt,
         &initial_sample, &d_input_power, &d_doppler_index);
     //printf("READ ACQ RESULTS\n");
@@ -292,12 +300,35 @@ void pcps_acquisition_fpga::set_active(bool active)
     d_input_power = (d_input_power - d_mag) / (d_fft_size - 1);
     int32_t doppler = -static_cast<int32_t>(acq_parameters.doppler_max) + d_doppler_step * d_doppler_index;
     //d_gnss_synchro->Acq_delay_samples = static_cast<double>(2*(indext % (2*acq_parameters.samples_per_code)));
-    d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % acq_parameters.samples_per_code);
+
+
     d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
     d_sample_counter = initial_sample;
+
+    if (d_select_queue_Fpga == 0)
+    {
+    	if (d_downsampling_factor > 1)
+    	{
+    		d_gnss_synchro->Acq_delay_samples = static_cast<double>(d_downsampling_factor*(indext % acq_parameters.samples_per_code));
+    		d_gnss_synchro->Acq_samplestamp_samples = d_downsampling_factor*d_sample_counter - 81*0.5*d_downsampling_factor; // delay due to the downsampling filter in the acquisition
+    	}
+    	else
+    	{
+        	d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % acq_parameters.samples_per_code);
+        	d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;  // delay due to the downsampling filter in the acquisition
+        }
+    }
+    else
+    {
+    	d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % acq_parameters.samples_per_code);
+    	d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;  // delay due to the downsampling filter in the acquisition
+    }
+
+
+
     //d_gnss_synchro->Acq_samplestamp_samples = 2*d_sample_counter - 81; // delay due to the downsampling filter in the acquisition
     //d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter - 40; // delay due to the downsampling filter in the acquisition
-    d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;  // delay due to the downsampling filter in the acquisition
+
     d_test_statistics = (d_mag / d_input_power);                 //* correction_factor;
 
     // debug
@@ -339,7 +370,7 @@ void pcps_acquisition_fpga::set_active(bool active)
             send_negative_acquisition();
         }
 
-    //   printf("acq set active end\n");
+    //printf("acq set active end\n");
 }
 
 
@@ -347,6 +378,7 @@ int pcps_acquisition_fpga::general_work(int noutput_items __attribute__((unused)
     gr_vector_int& ninput_items, gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items __attribute__((unused)))
 {
+	//printf("ACQ GENERAL WORK CALLED\n");
     // the general work is not used with the acquisition that uses the FPGA
     return noutput_items;
 }

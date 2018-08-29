@@ -60,7 +60,15 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
 
     long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     long fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+
+    float downsampling_factor = configuration_->property("GNSS-SDR.downsampling_factor", 1.0);
+    acq_parameters.downsampling_factor = downsampling_factor;
     //fs_in = fs_in/2.0; // downampling filter
+    printf("fs_in pre downsampling = %ld\n", fs_in);
+
+    fs_in = fs_in/downsampling_factor;
+    printf("fs_in post downsampling = %ld\n", fs_in);
+
     //printf("####### DEBUG Acq: fs_in = %d\n", fs_in);
     acq_parameters.fs_in = fs_in;
     acq_parameters.samples_per_code = static_cast<unsigned int>(ceil(GPS_L1_CA_CHIP_PERIOD * static_cast<float>(acq_parameters.fs_in)));
@@ -71,16 +79,20 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     acq_parameters.sampled_ms = sampled_ms;
     unsigned int code_length = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
     acq_parameters.code_length = code_length;
+    //printf("acq adapter code_length = %d\n", code_length);
     // The FPGA can only use FFT lengths that are a power of two.
     float nbits = ceilf(log2f((float)code_length));
     unsigned int nsamples_total = pow(2, nbits);
     unsigned int vector_length = nsamples_total;
+    //printf("acq adapter vector_length = %d\n", vector_length);
     unsigned int select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga", 0);
     acq_parameters.select_queue_Fpga = select_queue_Fpga;
     std::string default_device_name = "/dev/uio0";
     std::string device_name = configuration_->property(role + ".devicename", default_device_name);
+    //printf("acq adapter device name = %s\n", device_name.c_str());
     acq_parameters.device_name = device_name;
     acq_parameters.samples_per_ms = nsamples_total / sampled_ms;
+    //printf("acq adapter samples_per_ms = %d\n", nsamples_total / sampled_ms);
     acq_parameters.samples_per_code = nsamples_total;
 
     // compute all the GPS L1 PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
@@ -237,6 +249,7 @@ void GpsL1CaPcpsAcquisitionFpga::set_local_code()
 void GpsL1CaPcpsAcquisitionFpga::reset()
 {
     acquisition_fpga_->set_active(true);
+    //printf("acq reset end dddsss\n");
 }
 
 

@@ -73,7 +73,7 @@ typedef struct
     uint32_t select_queue_Fpga;
     std::string device_name;
     lv_16sc_t* all_fft_codes;  // memory that contains all the code ffts
-
+    float downsampling_factor;
 } pcpsconf_fpga_t;
 
 class pcps_acquisition_fpga;
@@ -123,6 +123,9 @@ private:
     float debug_d_input_power_absolute;
     int32_t debug_indext;
     int32_t debug_doppler_index;
+
+    float d_downsampling_factor;
+    uint32_t d_select_queue_Fpga;
 
 public:
     ~pcps_acquisition_fpga();

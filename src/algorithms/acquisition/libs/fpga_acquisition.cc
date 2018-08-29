@@ -70,6 +70,7 @@
 
 bool fpga_acquisition::init()
 {
+	//printf("acq lib init called\n");
     // configure the acquisition with the main initialization values
     fpga_acquisition::configure_acquisition();
     return true;
@@ -78,6 +79,7 @@ bool fpga_acquisition::init()
 
 bool fpga_acquisition::set_local_code(uint32_t PRN)
 {
+	//printf("acq lib set_local_code_called\n");
     // select the code with the chosen PRN
     fpga_acquisition::fpga_configure_acquisition_local_code(
         &d_all_fft_codes[d_nsamples_total * (PRN - 1)]);
@@ -96,6 +98,7 @@ fpga_acquisition::fpga_acquisition(std::string device_name,
     uint32_t sampled_ms, uint32_t select_queue,
     lv_16sc_t *all_fft_codes)
 {
+	//printf("acq lib constructor called\n");
     //printf("AAA- sampled_ms = %d\n ", sampled_ms);
 
     uint32_t vector_length = nsamples_total;  // * sampled_ms;
@@ -121,6 +124,10 @@ fpga_acquisition::fpga_acquisition(std::string device_name,
             LOG(WARNING) << "Cannot open deviceio" << d_device_name;
             std::cout << "Acq: cannot open deviceio" << d_device_name << std::endl;
         }
+    else
+    {
+    	//printf("acq lib DEVICE OPENED CORRECTLY\n");
+    }
     d_map_base = reinterpret_cast<volatile uint32_t *>(mmap(NULL, PAGE_SIZE,
         PROT_READ | PROT_WRITE, MAP_SHARED, d_fd, 0));
 
@@ -129,6 +136,10 @@ fpga_acquisition::fpga_acquisition(std::string device_name,
             LOG(WARNING) << "Cannot map the FPGA acquisition module into user memory";
             std::cout << "Acq: cannot map deviceio" << d_device_name << std::endl;
         }
+    else
+    {
+    	//printf("acq lib MAP BASE MAPPED CORRECTLY\n");
+    }
 
     // sanity check : check test register
     uint32_t writeval = TEST_REG_SANITY_CHECK;
@@ -141,6 +152,7 @@ fpga_acquisition::fpga_acquisition(std::string device_name,
     else
         {
             LOG(INFO) << "Acquisition test register sanity check success!";
+            //printf("acq lib REG SANITY CHECK SUCCESS\n");
             //std::cout << "Acquisition test register sanity check success!" << std::endl;
         }
     fpga_acquisition::reset_acquisition();
@@ -150,18 +162,21 @@ fpga_acquisition::fpga_acquisition(std::string device_name,
 
 fpga_acquisition::~fpga_acquisition()
 {
+	//printf("acq lib destructor called\n");
     close_device();
 }
 
 
 bool fpga_acquisition::free()
 {
+	//printf("acq lib free called\n");
     return true;
 }
 
 
 uint32_t fpga_acquisition::fpga_acquisition_test_register(uint32_t writeval)
 {
+	//printf("acq lib test register called\n");
     uint32_t readval;
     // write value to test register
     d_map_base[15] = writeval;
@@ -177,7 +192,7 @@ void fpga_acquisition::fpga_configure_acquisition_local_code(lv_16sc_t fft_local
     uint32_t local_code;
     uint32_t k, tmp, tmp2;
     uint32_t fft_data;
-
+    //printf("acq lib fpga_configure_acquisition_local_code_called\n");
     // clear memory address counter
     //d_map_base[6] = LOCAL_CODE_CLEAR_MEM;
     d_map_base[9] = LOCAL_CODE_CLEAR_MEM;
@@ -208,13 +223,14 @@ void fpga_acquisition::fpga_configure_acquisition_local_code(lv_16sc_t fft_local
 
 void fpga_acquisition::run_acquisition(void)
 {
+	//printf("acq lib run_acqisition called\n");
     // enable interrupts
     int32_t reenable = 1;
     write(d_fd, reinterpret_cast<void *>(&reenable), sizeof(int32_t));
     // launch the acquisition process
-    //printf("launchin acquisition ...\n");
+    //printf("acq lib launchin acquisition ...\n");
     d_map_base[8] = LAUNCH_ACQUISITION;  // writing a 1 to reg 8 launches the acquisition process
-
+    //printf("acq lib waiting for interrupt ...\n");
     int32_t irq_count;
     ssize_t nb;
     // wait for interrupt
@@ -230,6 +246,7 @@ void fpga_acquisition::run_acquisition(void)
 
 void fpga_acquisition::set_doppler_sweep(uint32_t num_sweeps)
 {
+	//printf("acq lib set_doppler_sweep called\n");
     float phase_step_rad_real;
     float phase_step_rad_int_temp;
     int32_t phase_step_rad_int;
@@ -276,6 +293,7 @@ void fpga_acquisition::set_doppler_sweep(uint32_t num_sweeps)
 
 void fpga_acquisition::set_doppler_sweep_debug(uint32_t num_sweeps, uint32_t doppler_index)
 {
+	//printf("acq lib set_doppler_sweep_debug called\n");
     float phase_step_rad_real;
     float phase_step_rad_int_temp;
     int32_t phase_step_rad_int;
@@ -323,6 +341,7 @@ void fpga_acquisition::set_doppler_sweep_debug(uint32_t num_sweeps, uint32_t dop
 
 void fpga_acquisition::configure_acquisition()
 {
+	//printf("acq lib configure acquisition called\n");
     //printf("AAA d_select_queue = %d\n", d_select_queue);
     d_map_base[0] = d_select_queue;
     //printf("AAA writing d_vector_length = %d to d map base 1\n ", d_vector_length);
@@ -338,6 +357,7 @@ void fpga_acquisition::configure_acquisition()
 
 void fpga_acquisition::set_phase_step(uint32_t doppler_index)
 {
+	//printf("acq lib set phase step called\n");
     float phase_step_rad_real;
     float phase_step_rad_int_temp;
     int32_t phase_step_rad_int;
@@ -367,6 +387,7 @@ void fpga_acquisition::set_phase_step(uint32_t doppler_index)
 void fpga_acquisition::read_acquisition_results(uint32_t *max_index,
     float *max_magnitude, uint64_t *initial_sample, float *power_sum, uint32_t *doppler_index)
 {
+	//printf("acq lib read_acquisition_results_called\n");
     uint64_t initial_sample_tmp = 0;
 
     uint32_t readval = 0;
@@ -396,18 +417,21 @@ void fpga_acquisition::read_acquisition_results(uint32_t *max_index,
 
 void fpga_acquisition::block_samples()
 {
+	//printf("acq lib block samples called\n");
     d_map_base[14] = 1;  // block the samples
 }
 
 
 void fpga_acquisition::unblock_samples()
 {
+	//printf("acq lib unblock samples called\n");
     d_map_base[14] = 0;  // unblock the samples
 }
 
 
 void fpga_acquisition::close_device()
 {
+	//printf("acq lib close device called\n");
     uint32_t *aux = const_cast<uint32_t *>(d_map_base);
     if (munmap(static_cast<void *>(aux), PAGE_SIZE) == -1)
         {
@@ -419,5 +443,6 @@ void fpga_acquisition::close_device()
 
 void fpga_acquisition::reset_acquisition(void)
 {
+	//printf("acq lib reset acquisition called\n");
     d_map_base[8] = RESET_ACQUISITION;  // writing a 2 to d_map_base[8] resets the multicorrelator
 }

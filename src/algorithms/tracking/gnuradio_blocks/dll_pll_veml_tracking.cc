@@ -581,7 +581,7 @@ dll_pll_veml_tracking::~dll_pll_veml_tracking()
                 {
                     std::cout << "Writing .mat files ...";
                 }
-            save_matfile();
+//            save_matfile();
             if (d_channel == 0)
                 {
                     std::cout << " done." << std::endl;

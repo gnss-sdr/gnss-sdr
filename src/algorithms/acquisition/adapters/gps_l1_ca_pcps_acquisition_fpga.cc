@@ -64,10 +64,10 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     float downsampling_factor = configuration_->property("GNSS-SDR.downsampling_factor", 1.0);
     acq_parameters.downsampling_factor = downsampling_factor;
     //fs_in = fs_in/2.0; // downampling filter
-    printf("fs_in pre downsampling = %ld\n", fs_in);
+    //printf("fs_in pre downsampling = %ld\n", fs_in);
 
     fs_in = fs_in/downsampling_factor;
-    printf("fs_in post downsampling = %ld\n", fs_in);
+    //printf("fs_in post downsampling = %ld\n", fs_in);
 
     //printf("####### DEBUG Acq: fs_in = %d\n", fs_in);
     acq_parameters.fs_in = fs_in;

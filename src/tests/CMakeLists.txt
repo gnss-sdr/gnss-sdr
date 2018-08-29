@@ -18,6 +18,7 @@
 
 
 add_subdirectory(unit-tests/signal-processing-blocks/libs)
+add_subdirectory(system-tests/libs)
 
 ################################################################################
 # Google Test - https://github.com/google/googletest
@@ -342,6 +343,7 @@ set(LIST_INCLUDE_DIRS
      ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
      ${CMAKE_SOURCE_DIR}/src/tests/unit-tests/signal-processing-blocks/libs
+     ${CMAKE_SOURCE_DIR}/src/tests/system-tests/libs
      ${CMAKE_SOURCE_DIR}/src/tests/common-files
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
@@ -489,7 +491,8 @@ if(ENABLE_SYSTEM_TESTING)
                       ${GTEST_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES}
                       ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES}
                       ${GNURADIO_ANALOG_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES}
-                      gnss_sp_libs gnss_rx gnss_system_parameters )
+                      gnss_sp_libs gnss_rx gnss_system_parameters 
+                      system_testing_lib)
 
         add_system_test(position_test)
 

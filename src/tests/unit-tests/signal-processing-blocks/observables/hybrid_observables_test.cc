@@ -1632,7 +1632,6 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
 
                             //Do not compare E5a with E5 RINEX due to the Doppler frequency discrepancy caused by the different center frequencies
                             //E5a_fc=1176.45e6, E5b_fc=1207.14e6, E5_fc=1191.795e6;
-                            std::cout << "s:" << gnss_synchro_vec.at(n).Signal << std::endl;
                             if (strcmp("5X\0", gnss_synchro_vec.at(n).Signal) != 0 or FLAGS_compare_with_5X)
                                 {
                                     check_results_carrier_phase_double_diff(true_obs_vec.at(n),

@@ -1,5 +1,5 @@
 /*!
- * \file geofunctions.h
+ * \file geofunctions.cc
  * \brief A set of coordinate transformations functions and helpers,
  * some of them migrated from MATLAB, for geographic information systems.
  * \author Javier Arribas, 2018. jarribas(at)cttc.es
@@ -30,10 +30,10 @@
  */
 #include "geofunctions.h"
 
-#define STRP_G_SI 9.80665
-#define STRP_PI 3.1415926535898  //!< Pi as defined in IS-GPS-200E
+const double STRP_G_SI = 9.80665;
+const double STRP_PI = 3.1415926535898;  //!< Pi as defined in IS-GPS-200E
 
-arma::mat Skew_symmetric(arma::vec a)
+arma::mat Skew_symmetric(const arma::vec &a)
 {
     arma::mat A = arma::zeros(3, 3);
 
@@ -41,54 +41,55 @@ arma::mat Skew_symmetric(arma::vec a)
       << a(2) << 0.0 << -a(0) << arma::endr
       << -a(1) << a(0) << 0 << arma::endr;
 
-    //    {{0, -a(2),  a(1)},
-    //         {a(2),     0, -a(0)},
-    //         {-a(1),  a(0),     0}};
+    //    {{0,    -a(2),  a(1)},
+    //     {a(2),     0, -a(0)},
+    //     {-a(1), a(0),     0}};
     return A;
 }
 
 
 double WGS84_g0(double Lat_rad)
 {
-    double k = 0.001931853;        //normal gravity constant
-    double e2 = 0.00669438002290;  //the square of the first numerical eccentricity
-    double nge = 9.7803253359;     //normal gravity value on the equator (m/sec^2)
-    double b = sin(Lat_rad);       //Lat in degrees
+    const double k = 0.001931853;        // normal gravity constant
+    const double e2 = 0.00669438002290;  // the square of the first numerical eccentricity
+    const double nge = 9.7803253359;     // normal gravity value on the equator (m/sec^2)
+    double b = sin(Lat_rad);             // Lat in degrees
     b = b * b;
     double g0 = nge * (1 + k * b) / (sqrt(1 - e2 * b));
     return g0;
 }
 
+
 double WGS84_geocentric_radius(double Lat_geodetic_rad)
 {
-    //WGS84 earth model Geocentric radius (Eq. 2.88)
+    // WGS84 earth model Geocentric radius (Eq. 2.88)
+    const double WGS84_A = 6378137.0;         // Semi-major axis of the Earth, a [m]
+    const double WGS84_IF = 298.257223563;    // Inverse flattening of the Earth
+    const double WGS84_F = (1.0 / WGS84_IF);  // The flattening of the Earth
+    // double WGS84_B=(WGS84_A*(1-WGS84_F));  // Semi-minor axis of the Earth [m]
+    double WGS84_E = (sqrt(2 * WGS84_F - WGS84_F * WGS84_F));  // Eccentricity of the Earth
 
-    double WGS84_A = 6378137.0;       //Semi-major axis of the Earth, a [m]
-    double WGS84_IF = 298.257223563;  //Inverse flattening of the Earth
-    double WGS84_F = (1 / WGS84_IF);  //The flattening of the Earth
-    //double WGS84_B=(WGS84_A*(1-WGS84_F)); // Semi-minor axis of the Earth [m]
-    double WGS84_E = (sqrt(2 * WGS84_F - WGS84_F * WGS84_F));  //Eccentricity of the Earth
-
-    //transverse radius of curvature
+    // transverse radius of curvature
     double R_E = WGS84_A / sqrt(1 -
                                 WGS84_E * WGS84_E *
                                     sin(Lat_geodetic_rad) *
                                     sin(Lat_geodetic_rad));  // (Eq. 2.66)
 
-    //gocentric radius at the Earth surface
+    // geocentric radius at the Earth surface
     double r_eS = R_E * sqrt(cos(Lat_geodetic_rad) * cos(Lat_geodetic_rad) +
                              (1 - WGS84_E * WGS84_E) * (1 - WGS84_E * WGS84_E) * sin(Lat_geodetic_rad) * sin(Lat_geodetic_rad));  // (Eq. 2.88)
     return r_eS;
 }
+
 
 int topocent(double *Az, double *El, double *D, const arma::vec &x, const arma::vec &dx)
 {
     double lambda;
     double phi;
     double h;
-    double dtr = STRP_PI / 180.0;
-    double a = 6378137.0;         // semi-major axis of the reference ellipsoid WGS-84
-    double finv = 298.257223563;  // inverse of flattening of the reference ellipsoid WGS-84
+    const double dtr = STRP_PI / 180.0;
+    const double a = 6378137.0;         // semi-major axis of the reference ellipsoid WGS-84
+    const double finv = 298.257223563;  // inverse of flattening of the reference ellipsoid WGS-84
 
     // Transform x into geodetic coordinates
     togeod(&phi, &lambda, &h, a, finv, x(0), x(1), x(2));
@@ -147,9 +148,9 @@ int topocent(double *Az, double *El, double *D, const arma::vec &x, const arma::
 int togeod(double *dphi, double *dlambda, double *h, double a, double finv, double X, double Y, double Z)
 {
     *h = 0;
-    double tolsq = 1.e-10;  // tolerance to accept convergence
-    int maxit = 10;         // max number of iterations
-    double rtd = 180.0 / STRP_PI;
+    const double tolsq = 1.e-10;  // tolerance to accept convergence
+    const int maxit = 10;         // max number of iterations
+    const double rtd = 180.0 / STRP_PI;
 
     // compute square of eccentricity
     double esq;
@@ -165,7 +166,7 @@ int togeod(double *dphi, double *dlambda, double *h, double a, double finv, doub
     // first guess
     double P = sqrt(X * X + Y * Y);  // P is distance from spin axis
 
-    //direct calculation of longitude
+    // direct calculation of longitude
     if (P > 1.0E-20)
         {
             *dlambda = atan2(Y, X) * rtd;
@@ -241,27 +242,28 @@ int togeod(double *dphi, double *dlambda, double *h, double a, double finv, doub
     return 0;
 }
 
-arma::mat Gravity_ECEF(arma::vec r_eb_e)
+
+arma::mat Gravity_ECEF(const arma::vec &r_eb_e)
 {
-    //Parameters
-    double R_0 = 6378137;           //WGS84 Equatorial radius in meters
-    double mu = 3.986004418E14;     //WGS84 Earth gravitational constant (m^3 s^-2)
-    double J_2 = 1.082627E-3;       //WGS84 Earth's second gravitational constant
-    double omega_ie = 7.292115E-5;  // Earth rotation rate (rad/s)
+    // Parameters
+    const double R_0 = 6378137;           // WGS84 Equatorial radius in meters
+    const double mu = 3.986004418E14;     // WGS84 Earth gravitational constant (m^3 s^-2)
+    const double J_2 = 1.082627E-3;       // WGS84 Earth's second gravitational constant
+    const double omega_ie = 7.292115E-5;  // Earth rotation rate (rad/s)
     // Calculate distance from center of the Earth
     double mag_r = sqrt(arma::as_scalar(r_eb_e.t() * r_eb_e));
     // If the input position is 0,0,0, produce a dummy output
     arma::vec g = arma::zeros(3, 1);
     if (mag_r != 0)
         {
-            //Calculate gravitational acceleration using (2.142)
+            // Calculate gravitational acceleration using (2.142)
             double z_scale = 5 * pow((r_eb_e(2) / mag_r), 2);
             arma::vec tmp_vec = {(1 - z_scale) * r_eb_e(0),
                 (1 - z_scale) * r_eb_e(1),
                 (3 - z_scale) * r_eb_e(2)};
             arma::vec gamma_ = (-mu / pow(mag_r, 3)) * (r_eb_e + 1.5 * J_2 * pow(R_0 / mag_r, 2) * tmp_vec);
 
-            //Add centripetal acceleration using (2.133)
+            // Add centripetal acceleration using (2.133)
             g(0) = gamma_(0) + pow(omega_ie, 2) * r_eb_e(0);
             g(1) = gamma_(1) + pow(omega_ie, 2) * r_eb_e(1);
             g(2) = gamma_(2);
@@ -269,19 +271,22 @@ arma::mat Gravity_ECEF(arma::vec r_eb_e)
     return g;
 }
 
-arma::vec LLH_to_deg(arma::vec LLH)
+
+arma::vec LLH_to_deg(arma::vec &LLH)
 {
-    double rtd = 180.0 / STRP_PI;
+    const double rtd = 180.0 / STRP_PI;
     LLH(0) = LLH(0) * rtd;
     LLH(1) = LLH(1) * rtd;
     return LLH;
 }
+
 
 double degtorad(double angleInDegrees)
 {
     double angleInRadians = (STRP_PI / 180.0) * angleInDegrees;
     return angleInRadians;
 }
+
 
 double radtodeg(double angleInRadians)
 {
@@ -296,15 +301,17 @@ double mstoknotsh(double MetersPerSeconds)
     return knots;
 }
 
+
 double mstokph(double MetersPerSeconds)
 {
     double kph = 3600.0 * MetersPerSeconds / 1e3;
     return kph;
 }
 
-arma::vec CTM_to_Euler(arma::mat C)
+
+arma::vec CTM_to_Euler(arma::mat &C)
 {
-    //Calculate Euler angles using (2.23)
+    // Calculate Euler angles using (2.23)
     arma::vec eul = arma::zeros(3, 1);
     eul(0) = atan2(C(1, 2), C(2, 2));  // roll
     if (C(0, 2) < -1.0) C(0, 2) = -1.0;
@@ -314,18 +321,19 @@ arma::vec CTM_to_Euler(arma::mat C)
     return eul;
 }
 
-arma::mat Euler_to_CTM(arma::vec eul)
+
+arma::mat Euler_to_CTM(const arma::vec &eul)
 {
-    //Eq.2.15
-    //Euler angles to Attitude matrix is equivalent to rotate the body
-    //in the three axes:
+    // Eq.2.15
+    // Euler angles to Attitude matrix is equivalent to rotate the body
+    // in the three axes:
     //     arma::mat Ax= {{1,0,0}, {0,cos(Att_phi),sin(Att_phi)} ,{0,-sin(Att_phi),cos(Att_phi)}};
     //     arma::mat Ay= {{cos(Att_theta), 0, -sin(Att_theta)}, {0,1,0} , {sin(Att_theta), 0, cos(Att_theta)}};
     //     arma::mat Az= {{cos(Att_psi), sin(Att_psi), 0}, {-sin(Att_psi), cos(Att_psi), 0},{0,0,1}};
     //     arma::mat C_b_n=Ax*Ay*Az; // Attitude expressed in the LOCAL FRAME (NED)
     //    C_b_n=C_b_n.t();
 
-    //Precalculate sines and cosines of the Euler angles
+    // Precalculate sines and cosines of the Euler angles
     double sin_phi = sin(eul(0));
     double cos_phi = cos(eul(0));
     double sin_theta = sin(eul(1));
@@ -334,7 +342,7 @@ arma::mat Euler_to_CTM(arma::vec eul)
     double cos_psi = cos(eul(2));
 
     arma::mat C = arma::zeros(3, 3);
-    //Calculate coordinate transformation matrix using (2.22)
+    // Calculate coordinate transformation matrix using (2.22)
     C(0, 0) = cos_theta * cos_psi;
     C(0, 1) = cos_theta * sin_psi;
     C(0, 2) = -sin_theta;
@@ -347,7 +355,8 @@ arma::mat Euler_to_CTM(arma::vec eul)
     return C;
 }
 
-arma::vec cart2geo(arma::vec XYZ, int elipsoid_selection)
+
+arma::vec cart2geo(const arma::vec &XYZ, int elipsoid_selection)
 {
     const double a[5] = {6378388.0, 6378160.0, 6378135.0, 6378137.0, 6378137.0};
     const double f[5] = {1.0 / 297.0, 1.0 / 298.247, 1.0 / 298.26, 1.0 / 298.257222101, 1.0 / 298.257223563};
@@ -380,37 +389,37 @@ arma::vec cart2geo(arma::vec XYZ, int elipsoid_selection)
     return LLH;
 }
 
-void ECEF_to_Geo(arma::vec r_eb_e, arma::vec v_eb_e, arma::mat C_b_e, arma::vec &LLH, arma::vec &v_eb_n, arma::mat &C_b_n)
+
+void ECEF_to_Geo(const arma::vec &r_eb_e, const arma::vec &v_eb_e, const arma::mat &C_b_e, arma::vec &LLH, arma::vec &v_eb_n, arma::mat &C_b_n)
 {
-    //Compute the Latitude of the ECEF position
-    LLH = cart2geo(r_eb_e, 4);  //ECEF -> WGS84 geographical
+    // Compute the Latitude of the ECEF position
+    LLH = cart2geo(r_eb_e, 4);  // ECEF -> WGS84 geographical
 
     // Calculate ECEF to Geographical coordinate transformation matrix using (2.150)
     double cos_lat = cos(LLH(0));
     double sin_lat = sin(LLH(0));
     double cos_long = cos(LLH(1));
     double sin_long = sin(LLH(1));
-    //C++11 and arma >= 5.2
+    // C++11 and arma >= 5.2
     //    arma::mat C_e_n = {{-sin_lat * cos_long, -sin_lat * sin_long,  cos_lat},
     //                      {-sin_long, cos_long, 0},
     //                      {-cos_lat * cos_long, -cos_lat * sin_long, -sin_lat}}; //ECEF to Geo
-
-    //C++98 arma <5.2
     arma::mat C_e_n = arma::zeros(3, 3);
     C_e_n << -sin_lat * cos_long << -sin_lat * sin_long << cos_lat << arma::endr
           << -sin_long << cos_long << 0 << arma::endr
-          << -cos_lat * cos_long << -cos_lat * sin_long << -sin_lat << arma::endr;  //ECEF to Geo
+          << -cos_lat * cos_long << -cos_lat * sin_long << -sin_lat << arma::endr;  // ECEF to Geo
     // Transform velocity using (2.73)
     v_eb_n = C_e_n * v_eb_e;
 
     C_b_n = C_e_n * C_b_e;  // Attitude conversion from ECEF to NED
 }
 
-void Geo_to_ECEF(arma::vec LLH, arma::vec v_eb_n, arma::mat C_b_n, arma::vec &r_eb_e, arma::vec &v_eb_e, arma::mat &C_b_e)
+
+void Geo_to_ECEF(const arma::vec &LLH, const arma::vec &v_eb_n, const arma::mat &C_b_n, arma::vec &r_eb_e, arma::vec &v_eb_e, arma::mat &C_b_e)
 {
     // Parameters
-    double R_0 = 6378137;        //WGS84 Equatorial radius in meters
-    double e = 0.0818191908425;  //WGS84 eccentricity
+    double R_0 = 6378137;        // WGS84 Equatorial radius in meters
+    double e = 0.0818191908425;  // WGS84 eccentricity
 
     // Calculate transverse radius of curvature using (2.105)
     double R_E = R_0 / sqrt(1 - (e * sin(LLH(0))) * (e * sin(LLH(0))));
@@ -424,13 +433,11 @@ void Geo_to_ECEF(arma::vec LLH, arma::vec v_eb_n, arma::mat C_b_n, arma::vec &r_
         (R_E + LLH(2)) * cos_lat * sin_long,
         ((1 - e * e) * R_E + LLH(2)) * sin_lat};
 
-    //Calculate ECEF to Geo coordinate transformation matrix using (2.150)
-    //C++11 and arma>=5.2
+    // Calculate ECEF to Geo coordinate transformation matrix using (2.150)
+    // C++11 and arma>=5.2
     //    arma::mat C_e_n = {{-sin_lat * cos_long, -sin_lat * sin_long,  cos_lat},
     //                       {-sin_long,            cos_long,        0},
     //                       {-cos_lat * cos_long, -cos_lat * sin_long, -sin_lat}};
-    //C++98 arma <5.2
-    //Calculate ECEF to Geo coordinate transformation matrix using (2.150)
     arma::mat C_e_n = arma::zeros(3, 3);
     C_e_n << -sin_lat * cos_long << -sin_lat * sin_long << cos_lat << arma::endr
           << -sin_long << cos_long << 0 << arma::endr
@@ -444,11 +451,11 @@ void Geo_to_ECEF(arma::vec LLH, arma::vec v_eb_n, arma::mat C_b_n, arma::vec &r_
 }
 
 
-void pv_Geo_to_ECEF(double L_b, double lambda_b, double h_b, arma::vec v_eb_n, arma::vec &r_eb_e, arma::vec &v_eb_e)
+void pv_Geo_to_ECEF(double L_b, double lambda_b, double h_b, const arma::vec &v_eb_n, arma::vec &r_eb_e, arma::vec &v_eb_e)
 {
-    //% Parameters
-    double R_0 = 6378137;        //WGS84 Equatorial radius in meters
-    double e = 0.0818191908425;  //WGS84 eccentricity
+    // Parameters
+    const double R_0 = 6378137;        // WGS84 Equatorial radius in meters
+    const double e = 0.0818191908425;  // WGS84 eccentricity
 
     // Calculate transverse radius of curvature using (2.105)
     double R_E = R_0 / sqrt(1 - pow(e * sin(L_b), 2));

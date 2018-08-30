@@ -29,8 +29,8 @@
  */
 
 
-#ifndef GNSS_SDR_galileo_telemetry_decoder_cc_H
-#define GNSS_SDR_galileo_telemetry_decoder_cc_H
+#ifndef GNSS_SDR_GALILEO_TELEMETRY_DECODER_CC_H
+#define GNSS_SDR_GALILEO_TELEMETRY_DECODER_CC_H
 
 
 #include "Galileo_E1.h"
@@ -56,7 +56,6 @@ galileo_telemetry_decoder_cc_sptr galileo_make_telemetry_decoder_cc(const Gnss_S
 
 /*!
  * \brief This class implements a block that decodes the INAV and FNAV data defined in Galileo ICD
- *
  */
 class galileo_telemetry_decoder_cc : public gr::block
 {

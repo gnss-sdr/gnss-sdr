@@ -87,7 +87,7 @@ galileo_telemetry_decoder_cc::galileo_telemetry_decoder_cc(
 
     switch (d_frame_type)
         {
-        case 1:  //INAV
+        case 1:  // INAV
             {
                 d_PRN_code_period_ms = static_cast<uint32_t>(GALILEO_E1_CODE_PERIOD_MS);
                 d_samples_per_symbol = Galileo_E1_B_SAMPLES_PER_SYMBOL;
@@ -98,12 +98,13 @@ galileo_telemetry_decoder_cc::galileo_telemetry_decoder_cc(
                 d_required_symbols = static_cast<uint32_t>(GALILEO_INAV_PAGE_SYMBOLS) + d_samples_per_preamble;
                 // preamble bits to sampled symbols
                 d_preamble_samples = static_cast<int32_t *>(volk_gnsssdr_malloc(d_samples_per_preamble * sizeof(int32_t), volk_gnsssdr_get_alignment()));
+                d_secondary_code_samples = nullptr;
                 d_frame_length_symbols = GALILEO_INAV_PAGE_PART_SYMBOLS - GALILEO_INAV_PREAMBLE_LENGTH_BITS;
                 CodeLength = GALILEO_INAV_PAGE_PART_SYMBOLS - GALILEO_INAV_PREAMBLE_LENGTH_BITS;
                 DataLength = (CodeLength / nn) - mm;
                 break;
             }
-        case 2:  //FNAV
+        case 2:  // FNAV
             {
                 d_PRN_code_period_ms = static_cast<uint32_t>(GALILEO_E5a_CODE_PERIOD_MS);
                 d_samples_per_symbol = GALILEO_FNAV_CODES_PER_SYMBOL;
@@ -114,7 +115,6 @@ galileo_telemetry_decoder_cc::galileo_telemetry_decoder_cc(
                 d_required_symbols = static_cast<uint32_t>(GALILEO_FNAV_SYMBOLS_PER_PAGE) * d_samples_per_symbol + d_samples_per_preamble;
                 // preamble bits to sampled symbols
                 d_preamble_samples = static_cast<int32_t *>(volk_gnsssdr_malloc(d_samples_per_preamble * sizeof(int32_t), volk_gnsssdr_get_alignment()));
-
                 d_secondary_code_samples = static_cast<int32_t *>(volk_gnsssdr_malloc(Galileo_E5a_I_SECONDARY_CODE_LENGTH * sizeof(int32_t), volk_gnsssdr_get_alignment()));
                 d_frame_length_symbols = GALILEO_FNAV_SYMBOLS_PER_PAGE - GALILEO_FNAV_PREAMBLE_LENGTH_BITS;
                 CodeLength = GALILEO_FNAV_SYMBOLS_PER_PAGE - GALILEO_FNAV_PREAMBLE_LENGTH_BITS;
@@ -142,7 +142,7 @@ galileo_telemetry_decoder_cc::galileo_telemetry_decoder_cc(
         {
             switch (d_frame_type)
                 {
-                case 1:  //INAV
+                case 1:  // INAV
                     {
                         if (GALILEO_INAV_PREAMBLE.at(i) == '1')
                             {
@@ -162,7 +162,7 @@ galileo_telemetry_decoder_cc::galileo_telemetry_decoder_cc(
                             }
                         break;
                     }
-                case 2:  //FNAV for E5a-I
+                case 2:  // FNAV for E5a-I
                     {
                         // Galileo E5a data channel (E5a-I) still has a secondary code
                         int m = 0;
@@ -412,6 +412,7 @@ void galileo_telemetry_decoder_cc::decode_FNAV_word(double *page_symbols, int32_
         }
 }
 
+
 void galileo_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satellite)
 {
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
@@ -525,7 +526,7 @@ int galileo_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
                         // call the decoder
                         switch (d_frame_type)
                             {
-                            case 1:  //INAV
+                            case 1:  // INAV
                                      // NEW Galileo page part is received
                                 // 0. fetch the symbols into an array
                                 if (corr_value > 0)  //normal PLL lock
@@ -544,7 +545,7 @@ int galileo_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
                                     }
                                 decode_INAV_word(d_page_part_symbols, d_frame_length_symbols);
                                 break;
-                            case 2:  //FNAV
+                            case 2:  // FNAV
                                      // NEW Galileo page part is received
                                 // 0. fetch the symbols into an array
                                 if (corr_value > 0)  //normal PLL lock
@@ -620,7 +621,7 @@ int galileo_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
         {
             switch (d_frame_type)
                 {
-                case 1:  //INAV
+                case 1:  // INAV
                     {
                         if (d_inav_nav.flag_TOW_set == true)
                             {
@@ -647,7 +648,7 @@ int galileo_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
                             }
                         break;
                     }
-                case 2:  //FNAV
+                case 2:  // FNAV
                     {
                         if (d_fnav_nav.flag_TOW_set == true)
                             {
@@ -692,7 +693,7 @@ int galileo_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
         {
             switch (d_frame_type)
                 {
-                case 1:  //INAV
+                case 1:  // INAV
                     {
                         if (d_inav_nav.flag_TOW_set == true)
                             {
@@ -700,7 +701,7 @@ int galileo_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
                             }
                         break;
                     }
-                case 2:  //FNAV
+                case 2:  // FNAV
                     {
                         if (d_fnav_nav.flag_TOW_set == true)
                             {
@@ -720,7 +721,7 @@ int galileo_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
 
     switch (d_frame_type)
         {
-        case 1:  //INAV
+        case 1:  // INAV
             {
                 if (d_inav_nav.flag_TOW_set)
                     {
@@ -734,7 +735,7 @@ int galileo_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
                 break;
             }
 
-        case 2:  //FNAV
+        case 2:  // FNAV
             {
                 if (d_fnav_nav.flag_TOW_set)
                     {

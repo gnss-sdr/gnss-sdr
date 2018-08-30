@@ -29,7 +29,6 @@
  */
 
 #include "rtklib_solver_dump_reader.h"
-
 #include <iostream>
 
 bool rtklib_solver_dump_reader::read_binary_obs()
@@ -37,46 +36,20 @@ bool rtklib_solver_dump_reader::read_binary_obs()
     try
         {
             d_dump_file.read(reinterpret_cast<char *>(&TOW_at_current_symbol_ms), sizeof(TOW_at_current_symbol_ms));
-            //            std::cout << "TOW_at_current_symbol_ms: " << TOW_at_current_symbol_ms << std::endl;
             d_dump_file.read(reinterpret_cast<char *>(&week), sizeof(week));
-            //            std::cout << "week: " << week << std::endl;
             d_dump_file.read(reinterpret_cast<char *>(&RX_time), sizeof(RX_time));
-            //            std::cout << "RX_time: " << RX_time << std::endl;
             d_dump_file.read(reinterpret_cast<char *>(&clk_offset_s), sizeof(clk_offset_s));
-            //            std::cout << "clk_offset_s: " << clk_offset_s << std::endl;
             d_dump_file.read(reinterpret_cast<char *>(&rr[0]), sizeof(rr));
-            //            for (int n = 0; n < 6; n++)
-            //                {
-            //                    std::cout << "rr: " << rr[n] << std::endl;
-            //                }
             d_dump_file.read(reinterpret_cast<char *>(&qr[0]), sizeof(qr));
-            //            for (int n = 0; n < 6; n++)
-            //                {
-            //                    std::cout << "qr" << qr[n] << std::endl;
-            //                }
             d_dump_file.read(reinterpret_cast<char *>(&latitude), sizeof(latitude));
-            //std::cout << "latitude: " << latitude << std::endl;
             d_dump_file.read(reinterpret_cast<char *>(&longitude), sizeof(longitude));
-            //std::cout << "longitude: " << longitude << std::endl;
             d_dump_file.read(reinterpret_cast<char *>(&height), sizeof(height));
-            //std::cout << "height: " << height << std::endl;
             d_dump_file.read(reinterpret_cast<char *>(&ns), sizeof(ns));
-            //            std::cout << "ns: " << (int)ns << std::endl;
             d_dump_file.read(reinterpret_cast<char *>(&status), sizeof(status));
-            //            std::cout << "status: " << (int)status << std::endl;
             d_dump_file.read(reinterpret_cast<char *>(&type), sizeof(type));
-            //            std::cout << "type: " << (int)type << std::endl;
             d_dump_file.read(reinterpret_cast<char *>(&AR_ratio), sizeof(AR_ratio));
-            //            std::cout << "AR_ratio: " << AR_ratio << std::endl;
             d_dump_file.read(reinterpret_cast<char *>(&AR_thres), sizeof(AR_thres));
-            //            std::cout << "AR_thres: " << AR_thres << std::endl;
             d_dump_file.read(reinterpret_cast<char *>(&dop[0]), sizeof(dop));
-
-            //            for (int n = 0; n < 4; n++)
-            //                {
-            //                    std::cout << "dop" << dop[n] << std::endl;
-            //                }
-            //            getchar();
         }
     catch (const std::ifstream::failure &e)
         {

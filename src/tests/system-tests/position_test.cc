@@ -462,6 +462,16 @@ void StaticPositionSystemTest::check_results()
     std::vector<double> pos_n;
     std::vector<double> pos_u;
 
+    arma::mat R_eb_e;  //ECEF position (x,y,z) estimation in the Earth frame (Nx3)
+    arma::mat V_eb_e;  //ECEF velocity (x,y,z) estimation in the Earth frame (Nx3)
+    arma::mat LLH;     //Geodetic coordinates (latitude, longitude, height) estimation in WGS84 datum
+    arma::vec receiver_time_s;
+
+    arma::mat ref_R_eb_e;  //ECEF position (x,y,z) reference in the Earth frame (Nx3)
+    arma::mat ref_V_eb_e;  //ECEF velocity (x,y,z) reference in the Earth frame (Nx3)
+    arma::mat ref_LLH;     //Geodetic coordinates (latitude, longitude, height) reference in WGS84 datum
+    arma::vec ref_time_s;
+
     std::istringstream iss2(FLAGS_static_position);
     std::string str_aux;
     std::getline(iss2, str_aux, ',');
@@ -538,6 +548,12 @@ void StaticPositionSystemTest::check_results()
             //use complete binary dump from pvt solver
             rtklib_solver_dump_reader pvt_reader;
             pvt_reader.open_obs_file(FLAGS_pvt_solver_dump_filename);
+            int64_t n_epochs = pvt_reader.num_epochs();
+            R_eb_e = arma::zeros(n_epochs, 3);
+            V_eb_e = arma::zeros(n_epochs, 3);
+            LLH = arma::zeros(n_epochs, 3);
+            receiver_time_s = arma::zeros(n_epochs, 1);
+            int64_t current_epoch = 0;
             while (pvt_reader.read_binary_obs())
                 {
                     double north, east, up;
@@ -548,7 +564,27 @@ void StaticPositionSystemTest::check_results()
                     pos_n.push_back(north);
                     pos_u.push_back(up);
                     //                    getchar();
+
+                    //                    receiver_time_s(current_epoch) = static_cast<double>(pvt_reader.TOW_at_current_symbol_ms) / 1000.0;
+                    receiver_time_s(current_epoch) = pvt_reader.RX_time - pvt_reader.clk_offset_s;
+                    R_eb_e(current_epoch, 0) = pvt_reader.rr[0];
+                    R_eb_e(current_epoch, 1) = pvt_reader.rr[1];
+                    R_eb_e(current_epoch, 2) = pvt_reader.rr[2];
+                    V_eb_e(current_epoch, 0) = pvt_reader.rr[3];
+                    V_eb_e(current_epoch, 1) = pvt_reader.rr[4];
+                    V_eb_e(current_epoch, 2) = pvt_reader.rr[5];
+                    LLH(current_epoch, 0) = pvt_reader.latitude;
+                    LLH(current_epoch, 1) = pvt_reader.longitude;
+                    LLH(current_epoch, 2) = pvt_reader.height;
+
+                    //debug check
+                    //                    std::cout << "t1: " << pvt_reader.RX_time << std::endl;
+                    //                    std::cout << "t2: " << pvt_reader.TOW_at_current_symbol_ms << std::endl;
+                    //                    std::cout << "offset: " << pvt_reader.clk_offset_s << std::endl;
+                    //                    getchar();
+                    current_epoch++;
                 }
+            ASSERT_FALSE(current_epoch == 0) << "PVT dump is empty";
         }
 
     // compute results
@@ -618,6 +654,158 @@ void StaticPositionSystemTest::check_results()
     else
         {
             //dynamic position
+            spirent_motion_csv_dump_reader ref_reader;
+            ref_reader.open_obs_file(FLAGS_ref_motion_filename);
+            int64_t n_epochs = ref_reader.num_epochs();
+            ref_R_eb_e = arma::zeros(n_epochs, 3);
+            ref_V_eb_e = arma::zeros(n_epochs, 3);
+            ref_LLH = arma::zeros(n_epochs, 3);
+            ref_time_s = arma::zeros(n_epochs, 1);
+            int64_t current_epoch = 0;
+            while (ref_reader.read_csv_obs())
+                {
+                    ref_time_s(current_epoch) = ref_reader.TOW_ms / 1000.0;
+                    ref_R_eb_e(current_epoch, 0) = ref_reader.Pos_X;
+                    ref_R_eb_e(current_epoch, 1) = ref_reader.Pos_Y;
+                    ref_R_eb_e(current_epoch, 2) = ref_reader.Pos_Z;
+                    ref_V_eb_e(current_epoch, 0) = ref_reader.Vel_X;
+                    ref_V_eb_e(current_epoch, 1) = ref_reader.Vel_Y;
+                    ref_V_eb_e(current_epoch, 2) = ref_reader.Vel_Z;
+                    ref_LLH(current_epoch, 0) = ref_reader.Lat;
+                    ref_LLH(current_epoch, 1) = ref_reader.Long;
+                    ref_LLH(current_epoch, 2) = ref_reader.Height;
+                    current_epoch++;
+                }
+
+            //interpolation of reference data to receiver epochs timestamps
+            arma::mat ref_interp_R_eb_e = arma::zeros(R_eb_e.n_rows, 3);
+            arma::mat ref_interp_V_eb_e = arma::zeros(V_eb_e.n_rows, 3);
+            arma::mat ref_interp_LLH = arma::zeros(LLH.n_rows, 3);
+            arma::vec tmp_vector;
+            for (int n = 0; n < 3; n++)
+                {
+                    arma::interp1(ref_time_s, ref_R_eb_e.col(n), receiver_time_s, tmp_vector);
+                    ref_interp_R_eb_e.col(n) = tmp_vector;
+                    arma::interp1(ref_time_s, ref_V_eb_e.col(n), receiver_time_s, tmp_vector);
+                    ref_interp_V_eb_e.col(n) = tmp_vector;
+                    arma::interp1(ref_time_s, ref_LLH.col(n), receiver_time_s, tmp_vector);
+                    ref_interp_LLH.col(n) = tmp_vector;
+                }
+
+            //compute error vectors
+
+            arma::mat error_R_eb_e = arma::zeros(R_eb_e.n_rows, 3);
+            arma::mat error_V_eb_e = arma::zeros(V_eb_e.n_rows, 3);
+            arma::mat error_LLH = arma::zeros(LLH.n_rows, 3);
+            error_R_eb_e = R_eb_e - ref_interp_R_eb_e;
+            error_V_eb_e = V_eb_e - ref_interp_V_eb_e;
+            error_LLH = LLH - ref_interp_LLH;
+            arma::vec error_module_R_eb_e = arma::zeros(R_eb_e.n_rows, 1);
+            arma::vec error_module_V_eb_e = arma::zeros(V_eb_e.n_rows, 1);
+            for (uint64_t n = 0; n < R_eb_e.n_rows; n++)
+                {
+                    error_module_R_eb_e(n) = arma::norm(error_R_eb_e.row(n));
+                    error_module_V_eb_e(n) = arma::norm(error_V_eb_e.row(n));
+                }
+            //Error statistics
+            arma::vec tmp_vec;
+            //RMSE, Mean, Variance and peaks
+            tmp_vec = arma::square(error_module_R_eb_e);
+            double rmse_R_eb_e = sqrt(arma::mean(tmp_vec));
+            double error_mean_R_eb_e = arma::mean(error_module_R_eb_e);
+            double error_var_R_eb_e = arma::var(error_module_R_eb_e);
+            double max_error_R_eb_e = arma::max(error_module_R_eb_e);
+            double min_error_R_eb_e = arma::min(error_module_R_eb_e);
+
+            tmp_vec = arma::square(error_module_V_eb_e);
+            double rmse_V_eb_e = sqrt(arma::mean(tmp_vec));
+            double error_mean_V_eb_e = arma::mean(error_module_V_eb_e);
+            double error_var_V_eb_e = arma::var(error_module_V_eb_e);
+            double max_error_V_eb_e = arma::max(error_module_V_eb_e);
+            double min_error_V_eb_e = arma::min(error_module_V_eb_e);
+
+            //report
+            std::cout << "----- Position and Velocity 3D ECEF error statistics -----" << std::endl;
+            std::streamsize ss = std::cout.precision();
+            std::cout << std::setprecision(10) << "---- 3D ECEF Position RMSE = "
+                      << rmse_R_eb_e << ", mean = " << error_mean_R_eb_e
+                      << ", stdev = " << sqrt(error_var_R_eb_e)
+                      << " (max,min) = " << max_error_R_eb_e
+                      << "," << min_error_R_eb_e
+                      << " [m]" << std::endl;
+            std::cout << "---- 3D ECEF Velocity RMSE = "
+                      << rmse_V_eb_e << ", mean = " << error_mean_V_eb_e
+                      << ", stdev = " << sqrt(error_var_V_eb_e)
+                      << " (max,min) = " << max_error_V_eb_e
+                      << "," << min_error_V_eb_e
+                      << " [m/s]" << std::endl;
+            std::cout.precision(ss);
+
+            //plots
+            Gnuplot g1("points");
+            if (FLAGS_show_plots)
+                {
+                    g1.showonscreen();  // window output
+                }
+            else
+                {
+                    g1.disablescreen();
+                }
+            g1.set_title("3D ECEF error coordinates");
+            g1.set_grid();
+            //conversion between arma::vec and std:vector
+            std::vector<double> X(error_R_eb_e.colptr(0), error_R_eb_e.colptr(0) + error_R_eb_e.n_rows);
+            std::vector<double> Y(error_R_eb_e.colptr(1), error_R_eb_e.colptr(1) + error_R_eb_e.n_rows);
+            std::vector<double> Z(error_R_eb_e.colptr(2), error_R_eb_e.colptr(2) + error_R_eb_e.n_rows);
+
+            g1.cmd("set key box opaque");
+            g1.plot_xyz(X, Y, Z, "ECEF_3d_error");
+            g1.set_legend();
+            g1.savetops("ECEF_3d_error");
+
+
+            arma::vec time_vector_from_start_s = receiver_time_s - receiver_time_s(0);
+            Gnuplot g3("linespoints");
+            if (FLAGS_show_plots)
+                {
+                    g3.showonscreen();  // window output
+                }
+            else
+                {
+                    g3.disablescreen();
+                }
+            g3.set_title("3D Position estimation error module [m]");
+            g3.set_grid();
+            g3.set_xlabel("Receiver epoch time from first valid PVT [s]");
+            g3.set_ylabel("3D Position error [m]");
+            //conversion between arma::vec and std:vector
+            std::vector<double> error_vec(error_module_R_eb_e.colptr(0), error_module_R_eb_e.colptr(0) + error_module_R_eb_e.n_rows);
+            g3.cmd("set key box opaque");
+            g3.plot_xy(time_vector_from_start_s, error_vec,
+                "Position_3d_error");
+            g3.set_legend();
+            g3.savetops("Position_3d_error");
+
+            Gnuplot g4("linespoints");
+            if (FLAGS_show_plots)
+                {
+                    g4.showonscreen();  // window output
+                }
+            else
+                {
+                    g4.disablescreen();
+                }
+            g4.set_title("3D Velocity estimation error module [m/s]");
+            g4.set_grid();
+            g4.set_xlabel("Receiver epoch time from first valid PVT [s]");
+            g4.set_ylabel("3D Velocity error [m/s]");
+            //conversion between arma::vec and std:vector
+            std::vector<double> error_vec2(error_module_V_eb_e.colptr(0), error_module_V_eb_e.colptr(0) + error_module_V_eb_e.n_rows);
+            g4.cmd("set key box opaque");
+            g4.plot_xy(time_vector_from_start_s, error_vec2,
+                "Velocity_3d_error");
+            g4.set_legend();
+            g4.savetops("Velocity_3d_error");
         }
 }
 

@@ -54,6 +54,7 @@ bool spirent_motion_csv_dump_reader::read_csv_obs()
                                     vec.push_back(0.0);
                                 }
                         }
+                    parse_vector(vec);
                 }
         }
     catch (const std::ifstream::failure &e)
@@ -137,11 +138,13 @@ int64_t spirent_motion_csv_dump_reader::num_epochs()
 {
     int64_t nepoch = 0;
     std::string line;
-    std::ifstream tmpfile(d_dump_filename.c_str(), std::ios::binary | std::ios::ate);
+    std::ifstream tmpfile(d_dump_filename.c_str());
     if (tmpfile.is_open())
         {
             while (std::getline(tmpfile, line))
-                ++nepoch;
+                {
+                    ++nepoch;
+                }
             return nepoch - header_lines;
         }
     else

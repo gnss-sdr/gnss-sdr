@@ -55,11 +55,11 @@ bool rtklib_solver_dump_reader::read_binary_obs()
             //                    std::cout << "qr" << qr[n] << std::endl;
             //                }
             d_dump_file.read(reinterpret_cast<char *>(&latitude), sizeof(latitude));
-            std::cout << "latitude: " << latitude << std::endl;
+            //std::cout << "latitude: " << latitude << std::endl;
             d_dump_file.read(reinterpret_cast<char *>(&longitude), sizeof(longitude));
-            std::cout << "longitude: " << longitude << std::endl;
+            //std::cout << "longitude: " << longitude << std::endl;
             d_dump_file.read(reinterpret_cast<char *>(&height), sizeof(height));
-            std::cout << "height: " << height << std::endl;
+            //std::cout << "height: " << height << std::endl;
             d_dump_file.read(reinterpret_cast<char *>(&ns), sizeof(ns));
             //            std::cout << "ns: " << (int)ns << std::endl;
             d_dump_file.read(reinterpret_cast<char *>(&status), sizeof(status));
@@ -103,22 +103,20 @@ bool rtklib_solver_dump_reader::restart()
 
 int64_t rtklib_solver_dump_reader::num_epochs()
 {
-    //    std::ifstream::pos_type size;
-    //    int number_of_double_vars = 1;
-    //    int number_of_float_vars = 17;
-    //    int epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
-    //                           sizeof(float) * number_of_float_vars + sizeof(unsigned int);
-    //    std::ifstream tmpfile(d_dump_filename.c_str(), std::ios::binary | std::ios::ate);
-    //    if (tmpfile.is_open())
-    //        {
-    //            size = tmpfile.tellg();
-    //            int64_t nepoch = size / epoch_size_bytes;
-    //            return nepoch;
-    //        }
-    //    else
-    //        {
-    return 0;
-    //        }
+    std::ifstream::pos_type size;
+    int epoch_size_bytes = sizeof(TOW_at_current_symbol_ms) + sizeof(week) + sizeof(RX_time) + sizeof(clk_offset_s) + sizeof(rr) + sizeof(qr) + sizeof(latitude) + sizeof(longitude) + sizeof(height) + sizeof(ns) + sizeof(status) + sizeof(type) + sizeof(AR_ratio) + sizeof(AR_thres) + sizeof(dop);
+
+    std::ifstream tmpfile(d_dump_filename.c_str(), std::ios::binary | std::ios::ate);
+    if (tmpfile.is_open())
+        {
+            size = tmpfile.tellg();
+            int64_t nepoch = size / epoch_size_bytes;
+            return nepoch;
+        }
+    else
+        {
+            return 0;
+        }
 }
 
 

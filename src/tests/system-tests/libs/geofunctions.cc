@@ -70,10 +70,7 @@ double WGS84_geocentric_radius(double Lat_geodetic_rad)
     double WGS84_E = (sqrt(2 * WGS84_F - WGS84_F * WGS84_F));  // Eccentricity of the Earth
 
     // transverse radius of curvature
-    double R_E = WGS84_A / sqrt(1 -
-                                WGS84_E * WGS84_E *
-                                    sin(Lat_geodetic_rad) *
-                                    sin(Lat_geodetic_rad));  // (Eq. 2.66)
+    double R_E = WGS84_A / sqrt(1 - WGS84_E * WGS84_E * sin(Lat_geodetic_rad) * sin(Lat_geodetic_rad));  // (Eq. 2.66)
 
     // geocentric radius at the Earth surface
     double r_eS = R_E * sqrt(cos(Lat_geodetic_rad) * cos(Lat_geodetic_rad) +
@@ -99,19 +96,9 @@ int topocent(double *Az, double *El, double *D, const arma::vec &x, const arma::
     double cb = cos(phi * dtr);
     double sb = sin(phi * dtr);
 
-    arma::mat F = arma::zeros(3, 3);
-
-    F(0, 0) = -sl;
-    F(0, 1) = -sb * cl;
-    F(0, 2) = cb * cl;
-
-    F(1, 0) = cl;
-    F(1, 1) = -sb * sl;
-    F(1, 2) = cb * sl;
-
-    F(2, 0) = 0;
-    F(2, 1) = cb;
-    F(2, 2) = sb;
+    arma::mat F = {{-sl, -sb * cl, cb * cl},
+        {cl, -sb * sl, cb * sl},
+        {0.0, cb, sb}};
 
     arma::vec local_vector;
 
@@ -126,8 +113,8 @@ int topocent(double *Az, double *El, double *D, const arma::vec &x, const arma::
 
     if (hor_dis < 1.0E-20)
         {
-            *Az = 0;
-            *El = 90;
+            *Az = 0.0;
+            *El = 90.0;
         }
     else
         {
@@ -147,7 +134,7 @@ int topocent(double *Az, double *El, double *D, const arma::vec &x, const arma::
 
 int togeod(double *dphi, double *dlambda, double *h, double a, double finv, double X, double Y, double Z)
 {
-    *h = 0;
+    *h = 0.0;
     const double tolsq = 1.e-10;  // tolerance to accept convergence
     const int maxit = 10;         // max number of iterations
     const double rtd = 180.0 / STRP_PI;
@@ -199,7 +186,7 @@ int togeod(double *dphi, double *dlambda, double *h, double a, double finv, doub
     // approximate distance from origin to surface of ellipsoid
     if (r < 1.0E-20)
         {
-            *h = 0;
+            *h = 0.0;
             return 1;
         }
 

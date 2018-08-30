@@ -89,38 +89,6 @@ double leaps[MAXLEAPS + 1][7] = {/* leap seconds (y,m,d,h,m,s,utc-gpst) */
     {}};
 
 
-const prcopt_t prcopt_default = {            /* defaults processing options */
-    PMODE_SINGLE, 0, 2, SYS_GPS,             /* mode, soltype, nf, navsys */
-    15.0 * D2R, {{}, {{}, {}}},              /* elmin, snrmask */
-    0, 1, 1, 1,                              /* sateph, modear, glomodear, bdsmodear */
-    5, 0, 10, 1,                             /* maxout, minlock, minfix, armaxiter */
-    0, 0, 0, 0,                              /* estion, esttrop, dynamics, tidecorr */
-    1, 0, 0, 0, 0,                           /* niter, codesmooth, intpref, sbascorr, sbassatsel */
-    0, 0,                                    /* rovpos, refpos */
-    {100.0, 100.0, 100.0},                   /* eratio[] */
-    {100.0, 0.003, 0.003, 0.0, 1.0},         /* err[] */
-    {30.0, 0.03, 0.3},                       /* std[] */
-    {1e-4, 1e-3, 1e-4, 1e-1, 1e-2, 0.0},     /* prn[] */
-    5E-12,                                   /* sclkstab */
-    {3.0, 0.9999, 0.25, 0.1, 0.05, 0, 0, 0}, /* thresar */
-    0.0, 0.0, 0.05,                          /* elmaskar, almaskhold, thresslip */
-    30.0, 30.0, 30.0,                        /* maxtdif, maxinno, maxgdop */
-    {}, {}, {},                              /* baseline, ru, rb */
-    {"", ""},                                /* anttype */
-    {}, {}, {},                              /* antdel, pcv, exsats */
-    0, 0, 0, {"", ""}, {}, 0, {{}, {}}, {{}, {{}, {}}, {{}, {}}, {}, {}}, 0, {}};
-
-
-const solopt_t solopt_default = {
-    /* defaults solution output options */
-    SOLF_LLH, TIMES_GPST, 1, 3, /* posf, times, timef, timeu */
-    0, 1, 0, 0, 0, 0,           /* degf, outhead, outopt, datum, height, geoid */
-    0, 0, 0,                    /* solstatic, sstat, trace */
-    {0.0, 0.0},                 /* nmeaintv */
-    " ", "", 0                  /* separator/program name */
-};
-
-
 const char *formatstrs[32] = {/* stream format strings */
     "RTCM 2",                 /*  0 */
     "RTCM 3",                 /*  1 */

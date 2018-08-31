@@ -35,6 +35,7 @@
 #include <gnuradio/top_block.h>
 #ifdef GR_GREATER_38
 #include <gnuradio/blocks/vector_source.h>
+#include <gnuradio/blocks/vector_sink.h>
 #else
 #include <gnuradio/blocks/vector_source_b.h>
 #include <gnuradio/blocks/vector_source_s.h>

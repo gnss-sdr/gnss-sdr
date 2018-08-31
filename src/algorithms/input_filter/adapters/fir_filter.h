@@ -44,7 +44,7 @@
 #include <gnuradio/blocks/float_to_complex.h>
 #include <gnuradio/blocks/float_to_short.h>
 #ifdef GR_GREATER_38
-#include <gnuradio/filter/fir_filter.h>
+#include <gnuradio/filter/fir_filter_blk.h>
 #else
 #include <gnuradio/filter/fir_filter_ccf.h>
 #include <gnuradio/filter/fir_filter_fff.h>

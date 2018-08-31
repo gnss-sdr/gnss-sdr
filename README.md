@@ -232,7 +232,7 @@ $ sudo ldconfig
 $ wget https://github.com/google/googletest/archive/release-1.8.1.zip
 $ unzip release-1.8.1.zip
 $ cd googletest-release-1.8.1
-$ cmake -DBUILD_GTEST=ON -DBUILD_GMOCK=OFF .
+$ cmake -DINSTALL_GTEST=OFF -DBUILD_GMOCK=OFF .
 $ make
 ~~~~~~
 

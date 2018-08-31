@@ -33,9 +33,13 @@
 
 #include <gtest/gtest.h>
 #include <gnuradio/top_block.h>
+#ifdef GR_GREATER_38
+#include <gnuradio/blocks/vector_source.h>
+#else
 #include <gnuradio/blocks/vector_source_b.h>
 #include <gnuradio/blocks/vector_source_s.h>
 #include <gnuradio/blocks/vector_sink_b.h>
+#endif
 #include <gnuradio/blocks/stream_to_vector.h>
 #include "unpack_2bit_samples.h"
 

@@ -600,7 +600,10 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
                                     d_dump_file.write(reinterpret_cast<char*>(&pvt_sol.thres), sizeof(float));
 
                                     // GDOP / PDOP/ HDOP/ VDOP
-                                    d_dump_file.write(reinterpret_cast<char*>(&dop_[0]), sizeof(double) * 4);
+                                    d_dump_file.write(reinterpret_cast<char*>(&dop_[0]), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char*>(&dop_[1]), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char*>(&dop_[2]), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char*>(&dop_[3]), sizeof(double));
                                 }
                             catch (const std::ifstream::failure& e)
                                 {

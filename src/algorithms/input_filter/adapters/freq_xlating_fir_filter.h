@@ -36,9 +36,13 @@
 #include "gnss_block_interface.h"
 #include "short_x2_to_cshort.h"
 #include "complex_float_to_complex_byte.h"
+#ifdef GR_GREATER_38
+#include <gnuradio/filter/freq_xlating_fir_filter.h>
+#else
 #include <gnuradio/filter/freq_xlating_fir_filter_ccf.h>
 #include <gnuradio/filter/freq_xlating_fir_filter_fcf.h>
 #include <gnuradio/filter/freq_xlating_fir_filter_scf.h>
+#endif
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/complex_to_float.h>
 #include <gnuradio/blocks/char_to_short.h>

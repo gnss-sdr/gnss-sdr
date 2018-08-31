@@ -139,7 +139,7 @@ endif(Boost_VERSION LESS 105000)
 if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13.4" )
      add_definitions( -DGR_GREATER_38=1 )
 endif(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13.4" )
-message(STATUS "++++++++++++++++++++++++++++ ${PC_GNURADIO_RUNTIME_VERSION}")
+
 if(OPENSSL_FOUND)
     add_definitions( -DUSE_OPENSSL_FALLBACK=1 )
 endif(OPENSSL_FOUND)

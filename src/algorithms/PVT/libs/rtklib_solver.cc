@@ -599,8 +599,8 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
                                     tmp_double = pvt_sol.thres;
                                     d_dump_file.write(reinterpret_cast<char*>(&pvt_sol.thres), sizeof(float));
 
-                                    //GDOP//PDOP//HDOP//VDOP
-                                    d_dump_file.write(reinterpret_cast<char*>(&dop_[0]), sizeof(dop_));
+                                    // GDOP / PDOP/ HDOP/ VDOP
+                                    d_dump_file.write(reinterpret_cast<char*>(&dop_[0]), sizeof(double) * 4);
                                 }
                             catch (const std::ifstream::failure& e)
                                 {

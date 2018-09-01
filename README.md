@@ -229,10 +229,10 @@ $ sudo ldconfig
 #### Build the [Google C++ Testing Framework](https://github.com/google/googletest "Googletest Homepage"), also known as Google Test:
 
 ~~~~~~
-$ wget https://github.com/google/googletest/archive/release-1.8.0.zip
-$ unzip release-1.8.0.zip
-$ cd googletest-release-1.8.0
-$ cmake -DBUILD_GTEST=ON -DBUILD_GMOCK=OFF .
+$ wget https://github.com/google/googletest/archive/release-1.8.1.zip
+$ unzip release-1.8.1.zip
+$ cd googletest-release-1.8.1
+$ cmake -DINSTALL_GTEST=OFF -DBUILD_GMOCK=OFF .
 $ make
 ~~~~~~
 

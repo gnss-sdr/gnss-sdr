@@ -239,10 +239,10 @@ $ make
 Please **DO NOT install** Google Test (do *not* type ```sudo make install```). Every user needs to compile his tests using the same compiler flags used to compile the installed Google Test libraries; otherwise he may run into undefined behaviors (i.e. the tests can behave strangely and may even crash for no obvious reasons). The reason is that C++ has this thing called the One-Definition Rule: if two C++ source files contain different definitions of the same class/function/variable, and you link them together, you violate the rule. The linker may or may not catch the error (in many cases it is not required by the C++ standard to catch the violation). If it does not, you get strange run-time behaviors that are unexpected and hard to debug. If you compile Google Test and your test code using different compiler flags, they may see different definitions of the same class/function/variable (e.g. due to the use of ```#if``` in Google Test). Therefore, for your sanity, we recommend to avoid installing pre-compiled Google Test libraries. Instead, each project should compile Google Test itself such that it can be sure that the same flags are used for both Google Test and the tests. The building system of GNSS-SDR does the compilation and linking of googletest to its own tests; it is only required that you tell the system where the googletest folder that you downloaded resides. Just add to your ```$HOME/.bashrc``` file the following line:
 
 ~~~~~~
-export GTEST_DIR=/home/username/googletest-release-1.8.0/googletest
+export GTEST_DIR=/home/username/googletest-release-1.8.1/googletest
 ~~~~~~
 
-changing `/home/username/googletest-release-1.8.0/googletest` by the actual directory where you built googletest.
+changing `/home/username/googletest-release-1.8.1/googletest` by the actual directory where you built googletest.
 
 
 

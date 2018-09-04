@@ -29,6 +29,7 @@
  */
 
 #include "spirent_motion_csv_dump_reader.h"
+#include <boost/tokenizer.hpp>
 #include <iostream>
 
 

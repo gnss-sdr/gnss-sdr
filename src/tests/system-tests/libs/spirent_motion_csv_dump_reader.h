@@ -31,7 +31,6 @@
 #ifndef GNSS_SDR_SPIRENT_MOTION_CSV_DUMP_READER_H
 #define GNSS_SDR_SPIRENT_MOTION_CSV_DUMP_READER_H
 
-#include <boost/tokenizer.hpp>
 #include <cstdint>
 #include <fstream>
 #include <string>

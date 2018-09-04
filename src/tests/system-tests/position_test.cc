@@ -614,13 +614,13 @@ void StaticPositionSystemTest::check_results()
                     stm << "---- ACCURACY ----" << std::endl;
                     stm << "2DRMS = " << 2 * sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]" << std::endl;
                     stm << "DRMS = " << sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]" << std::endl;
-                    stm << "CEP = " << 0.62 * compute_stdev_accuracy(pos_n, 0.0) + 0.56 * compute_stdev_accuracy(pos_e, 0.0) << " [m]" << std::endl;
+                    stm << "CEP = " << 0.62 * compute_stdev_accuracy(pos_n, ref_n) + 0.56 * compute_stdev_accuracy(pos_e, ref_e) << " [m]" << std::endl;
                     stm << "99% SAS = " << 1.122 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
                     stm << "90% SAS = " << 0.833 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
                     stm << "MRSE = " << sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
                     stm << "SEP = " << 0.51 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
-                    stm << "Bias 2D = " << sqrt(std::pow(mean__e, 2.0) + std::pow(mean__n, 2.0)) << " [m]" << std::endl;
-                    stm << "Bias 3D = " << sqrt(std::pow(mean__e, 2.0) + std::pow(mean__n, 2.0) + std::pow(mean__u, 2.0)) << " [m]" << std::endl;
+                    stm << "Bias 2D = " << sqrt(std::pow(abs(mean__e - ref_e), 2.0) + std::pow(abs(mean__n - ref_n), 2.0)) << " [m]" << std::endl;
+                    stm << "Bias 3D = " << sqrt(std::pow(abs(mean__e - ref_e), 2.0) + std::pow(abs(mean__n - ref_n), 2.0) + std::pow(abs(mean__u - ref_u), 2.0)) << " [m]" << std::endl;
                     stm << std::endl;
                 }
 

@@ -45,7 +45,7 @@ public:
     int64_t num_epochs();
     bool open_obs_file(std::string out_file);
 
-    //rtklib_solver dump variables
+    // rtklib_solver dump variables
     // TOW
     uint32_t TOW_at_current_symbol_ms;
     // WEEK
@@ -57,7 +57,7 @@ public:
     // ECEF POS X,Y,X [m] + ECEF VEL X,Y,X [m/s] (6 x double)
     double rr[6];
     //  position variance/covariance (m^2) {c_xx,c_yy,c_zz,c_xy,c_yz,c_zx} (6 x double)
-    float qr[6];
+    double qr[6];
 
     // GEO user position Latitude [deg]
     double latitude;
@@ -72,12 +72,12 @@ public:
     uint8_t status;
     // RTKLIB solution type (0:xyz-ecef,1:enu-baseline)
     uint8_t type;
-    //AR ratio factor for validation
+    // AR ratio factor for validation
     float AR_ratio;
-    //AR ratio threshold for validation
+    // AR ratio threshold for validation
     float AR_thres;
 
-    //GDOP//PDOP//HDOP//VDOP
+    // GDOP / PDOP / HDOP / VDOP
     double dop[4];
 
 private:

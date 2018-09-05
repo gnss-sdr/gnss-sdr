@@ -109,7 +109,7 @@ position-test-180417100529:
     - export DISPLAY=unknown
     - ../install/position_test -config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L1E1.conf -static_scenario=0 -use_pvt_solver_dump=1 -use_ref_motion_file=1 -ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv -pvt_solver_dump_filename=./PVT_pvt.dat -show_plots=0 
     - mv *.xml ../build64/
-    - mv position_test*.txt ../build64/
+    - mv *.ps ../build64/
     - cd ..
     - rm -rf build-test
   artifacts:

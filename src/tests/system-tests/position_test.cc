@@ -783,7 +783,7 @@ void StaticPositionSystemTest::check_results()
             g3.cmd("set key box opaque");
             g3.plot_xy(time_vector_from_start_s, error_vec, "Position 3D error");
             double mean3d = std::accumulate(error_vec.begin(), error_vec.end(), 0.0) / error_vec.size();
-            std::vector<double> error_mean(mean3d, time_vector_from_start_s.n_elem);
+            std::vector<double> error_mean(mean3d, error_module_R_eb_e.colptr(0) + error_module_R_eb_e.n_rows);
             g3.plot_xy(time_vector_from_start_s, error_mean, "Mean");
             g3.set_legend();
             g3.savetops("Position_3d_error");
@@ -804,8 +804,7 @@ void StaticPositionSystemTest::check_results()
             //conversion between arma::vec and std:vector
             std::vector<double> error_vec2(error_module_V_eb_e.colptr(0), error_module_V_eb_e.colptr(0) + error_module_V_eb_e.n_rows);
             g4.cmd("set key box opaque");
-            g4.plot_xy(time_vector_from_start_s, error_vec2,
-                "Velocity_3d_error");
+            g4.plot_xy(time_vector_from_start_s, error_vec2, "Velocity 3D error");
             g4.set_legend();
             g4.savetops("Velocity_3d_error");
         }

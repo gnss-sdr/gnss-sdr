@@ -115,7 +115,7 @@ position-test-180417100529:
   artifacts:
     paths:
       - build64/*.xml
-      - build64/*.txt
+      - build64/*.ps
 
 run-tests-arm:
   image: debian:9.3-slim

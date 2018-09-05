@@ -783,7 +783,7 @@ void StaticPositionSystemTest::check_results()
             g3.cmd("set key box opaque");
             g3.plot_xy(time_vector_from_start_s, error_vec, "Position 3D error");
             double mean3d = std::accumulate(error_vec.begin(), error_vec.end(), 0.0) / error_vec.size();
-            std::vector<double> error_mean(mean3d, error_vec.size());
+            std::vector<double> error_mean(mean3d, time_vector_from_start_s.n_elem);
             g3.plot_xy(time_vector_from_start_s, error_mean, "Mean");
             g3.set_legend();
             g3.savetops("Position_3d_error");

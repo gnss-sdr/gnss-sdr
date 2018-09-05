@@ -118,7 +118,7 @@ position-test-180417100529:
       - build64/*.ps
 
 run-tests-arm:
-  image: debian:9.3-slim
+  image: debian:latest-slim
   stage: test
   tags:
     - arm
@@ -130,7 +130,7 @@ run-tests-arm:
     - mkdir build64
     - cd build-test
     - cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON ..
-    - make -j2
+    - make -j1
     # Execute Unit Tests
     - ../install/run_tests --gtest_output=xml
     - mv *.xml ../build64/

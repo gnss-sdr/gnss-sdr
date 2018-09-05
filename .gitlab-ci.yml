@@ -121,7 +121,7 @@ run-tests-arm:
   image: debian:9.3-slim
   stage: test
   tags:
-    - arm-nvidia
+    - arm
   when: manual
   script:
     - apt-get update

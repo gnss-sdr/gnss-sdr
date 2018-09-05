@@ -118,7 +118,7 @@ position-test-180417100529:
       - build64/*.txt
 
 run-tests-arm:
-  image: debian:buster-slim
+  image: debian:9.3-slim
   stage: test
   tags:
     - arm

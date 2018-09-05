@@ -62,7 +62,7 @@ observables-test-180417100529:
   when: manual
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends build-essential cmake ca-certificates git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
+    - apt-get install -y --no-install-recommends build-essential cmake ca-certificates git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest gnuplot
     - mkdir build-test
     - mkdir build64
     - cd build-test
@@ -98,7 +98,7 @@ position-test-180417100529:
   when: manual
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends build-essential cmake ca-certificates git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
+    - apt-get install -y --no-install-recommends build-essential cmake ca-certificates git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest gnuplot
     - mkdir build-test
     - mkdir build64
     - cd build-test
@@ -125,7 +125,7 @@ run-tests-arm:
   when: manual
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends build-essential cmake ca-certificates git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
+    - apt-get install -y --no-install-recommends build-essential cmake ca-certificates git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest gnuplot
     - mkdir build-test
     - mkdir build64
     - cd build-test

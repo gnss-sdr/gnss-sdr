@@ -118,7 +118,7 @@ position-test-180417100529:
       - build64/*.ps
 
 run-tests-arm:
-  image: debian:latest-slim
+  image: debian:stretch-slim
   stage: test
   tags:
     - arm

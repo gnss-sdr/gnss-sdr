@@ -710,7 +710,7 @@ void dll_pll_veml_tracking::do_correlation_step(const gr_complex *input_samples)
     multicorrelator_cpu.set_input_output_vectors(d_correlator_outs, input_samples);
     multicorrelator_cpu.Carrier_wipeoff_multicorrelator_resampler(
         d_rem_carr_phase_rad,
-        d_carrier_phase_step_rad,
+        d_carrier_phase_step_rad, d_carrier_phase_rate_step_rad,
         static_cast<float>(d_rem_code_phase_chips) * static_cast<float>(d_code_samples_per_chip),
         static_cast<float>(d_code_phase_step_chips) * static_cast<float>(d_code_samples_per_chip),
         static_cast<float>(d_code_phase_rate_step_chips) * static_cast<float>(d_code_samples_per_chip),
@@ -722,7 +722,7 @@ void dll_pll_veml_tracking::do_correlation_step(const gr_complex *input_samples)
             correlator_data_cpu.set_input_output_vectors(d_Prompt_Data, input_samples);
             correlator_data_cpu.Carrier_wipeoff_multicorrelator_resampler(
                 d_rem_carr_phase_rad,
-                d_carrier_phase_step_rad,
+                d_carrier_phase_step_rad, d_carrier_phase_rate_step_rad,
                 static_cast<float>(d_rem_code_phase_chips) * static_cast<float>(d_code_samples_per_chip),
                 static_cast<float>(d_code_phase_step_chips) * static_cast<float>(d_code_samples_per_chip),
                 static_cast<float>(d_code_phase_rate_step_chips) * static_cast<float>(d_code_samples_per_chip),

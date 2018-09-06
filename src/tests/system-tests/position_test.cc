@@ -732,7 +732,7 @@ void PositionSystemTest::check_results()
             std::cout << "----- Position and Velocity 3D ECEF error statistics -----" << std::endl;
             if (!FLAGS_config_file_ptest.empty())
                 {
-                    std::cout << "----- Configuration file: " << FLAGS_config_file_ptest << std::endl;
+                    std::cout << "---- Configuration file: " << FLAGS_config_file_ptest << std::endl;
                 }
             std::streamsize ss = std::cout.precision();
             std::cout << std::setprecision(10) << "---- 3D ECEF Position RMSE = "

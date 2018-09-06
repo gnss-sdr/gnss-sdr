@@ -761,9 +761,14 @@ void StaticPositionSystemTest::check_results()
             g1.cmd("set key box opaque");
             g1.plot_xyz(X, Y, Z, "ECEF 3D error");
             g1.set_legend();
-            g1.savetops("ECEF_3d_error");
-
-
+            if (FLAGS_config_file_ptest.empty())
+                {
+                    g1.savetops("ECEF_3d_error");
+                }
+            else
+                {
+                    g1.savetops("ECEF_3d_error_" + FLAGS_config_file_ptest.erase(FLAGS_config_file_ptest.length() - 5));
+                }
             arma::vec time_vector_from_start_s = receiver_time_s - receiver_time_s(0);
             Gnuplot g3("linespoints");
             if (FLAGS_show_plots)
@@ -787,7 +792,14 @@ void StaticPositionSystemTest::check_results()
             g3.set_style("lines");
             g3.plot_xy(time_vector_from_start_s, error_mean, "Mean");
             g3.set_legend();
-            g3.savetops("Position_3d_error");
+            if (FLAGS_config_file_ptest.empty())
+                {
+                    g3.savetops("Position_3d_error");
+                }
+            else
+                {
+                    g3.savetops("Position_3d_error_" + FLAGS_config_file_ptest.erase(FLAGS_config_file_ptest.length() - 5));
+                }
 
             Gnuplot g4("linespoints");
             if (FLAGS_show_plots)
@@ -811,7 +823,14 @@ void StaticPositionSystemTest::check_results()
             g4.set_style("lines");
             g4.plot_xy(time_vector_from_start_s, error_mean_v, "Mean");
             g4.set_legend();
-            g4.savetops("Velocity_3d_error");
+            if (FLAGS_config_file_ptest.empty())
+                {
+                    g4.savetops("Velocity_3d_error");
+                }
+            else
+                {
+                    g4.savetops("Velocity_3d_error_" + FLAGS_config_file_ptest.erase(FLAGS_config_file_ptest.length() - 5));
+                }
         }
 }
 
@@ -881,9 +900,16 @@ void StaticPositionSystemTest::print_results(const std::vector<double>& east,
 
                     g1.cmd("set grid front");
                     g1.cmd("replot");
-
-                    g1.savetops("Position_test_2D");
-                    g1.savetopdf("Position_test_2D", 18);
+                    if (FLAGS_config_file_ptest.empty())
+                        {
+                            g1.savetops("Position_test_2D");
+                            g1.savetopdf("Position_test_2D", 18);
+                        }
+                    else
+                        {
+                            g1.savetops("Position_test_2D_" + FLAGS_config_file_ptest.erase(FLAGS_config_file_ptest.length() - 5));
+                            g1.savetopdf("Position_test_2D_" + FLAGS_config_file_ptest.erase(FLAGS_config_file_ptest.length() - 5), 18);
+                        }
 
                     Gnuplot g2("points");
                     if (FLAGS_show_plots)
@@ -909,9 +935,16 @@ void StaticPositionSystemTest::print_results(const std::vector<double>& east,
                            std::to_string(ninty_sas) +
                            "\n fx(v,u) = r*cos(v)*cos(u)\n fy(v,u) = r*cos(v)*sin(u)\n fz(v) = r*sin(v) \n splot fx(v,u),fy(v,u),fz(v) title \"90\%-SAS\" lt rgb \"gray\"\n");
                     g2.plot_xyz(east, north, up, "3D Position Fixes");
-
-                    g2.savetops("Position_test_3D");
-                    g2.savetopdf("Position_test_3D");
+                    if (FLAGS_config_file_ptest.empty())
+                        {
+                            g2.savetops("Position_test_3D");
+                            g2.savetopdf("Position_test_3D");
+                        }
+                    else
+                        {
+                            g2.savetops("Position_test_3D_" + FLAGS_config_file_ptest.erase(FLAGS_config_file_ptest.length() - 5));
+                            g2.savetopdf("Position_test_3D_" + FLAGS_config_file_ptest.erase(FLAGS_config_file_ptest.length() - 5));
+                        }
                 }
             catch (const GnuplotException& ge)
                 {

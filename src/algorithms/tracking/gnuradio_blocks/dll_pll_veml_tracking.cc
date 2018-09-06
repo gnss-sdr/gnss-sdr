@@ -58,6 +58,7 @@
 #include <cmath>
 #include <iostream>
 #include <sstream>
+#include <numeric>
 
 using google::LogMessage;
 
@@ -405,6 +406,14 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     d_last_prompt = gr_complex(0.0, 0.0);
     d_state = 0;  // initial state: standby
     clear_tracking_vars();
+    if (trk_parameters.smoother_length > 0)
+        {
+            d_cp_history.resize(trk_parameters.smoother_length);
+        }
+    else
+        {
+            d_cp_history.resize(1);
+        }
 }
 
 
@@ -450,7 +459,7 @@ void dll_pll_veml_tracking::start_tracking()
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
     d_carrier_phase_step_rad = PI_2 * d_carrier_doppler_hz / trk_parameters.fs_in;
     d_carrier_phase_rate_step_rad = 0.0;
-
+    d_cp_history.clear();
     // DLL/PLL filter initialization
     d_carrier_loop_filter.initialize();  // initialize the carrier filter
     d_code_loop_filter.initialize();     // initialize the code filter
@@ -799,7 +808,21 @@ void dll_pll_veml_tracking::update_tracking_vars()
 
     //################### PLL COMMANDS #################################################
     // carrier phase step (NCO phase increment per sample) [rads/sample]
+    // carrier phase difference = carrier_phase(t2) - carrier_phase(t1)
+    double cp_diff = -d_carrier_phase_step_rad;  // The previous cp value is stored in the variable
     d_carrier_phase_step_rad = PI_2 * d_carrier_doppler_hz / trk_parameters.fs_in;
+    if (trk_parameters.use_high_dynamics_resampler)
+        {
+            cp_diff += d_carrier_phase_step_rad;  // The new cp value is added to the previous in order to obtain the difference
+            // carrier phase rate step (NCO phase increment rate per sample) [rads/sample^2]
+            cp_diff /= static_cast<double>(d_current_prn_length_samples);
+            d_cp_history.push_back(cp_diff);
+            if (d_cp_history.full())
+                {
+                    d_carrier_phase_rate_step_rad = std::accumulate(d_cp_history.begin(), d_cp_history.end(), 0.0) / static_cast<double>(d_cp_history.size());
+                }
+        }
+
     // remnant carrier phase to prevent overflow in the code NCO
     d_rem_carr_phase_rad += d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples);
     d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, PI_2);

@@ -37,6 +37,7 @@ Dll_Pll_Conf::Dll_Pll_Conf()
 {
     /* DLL/PLL tracking configuration */
     use_high_dynamics_resampler = true;
+    smoother_length = 10;
     fs_in = 0.0;
     vector_length = 0U;
     dump = false;

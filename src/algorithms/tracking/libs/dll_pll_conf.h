@@ -61,6 +61,7 @@ public:
     int32_t carrier_lock_det_mav_samples;
     int32_t cn0_min;
     int32_t max_lock_fail;
+    uint32_t smoother_length;
     double carrier_lock_th;
     bool track_pilot;
     char system;

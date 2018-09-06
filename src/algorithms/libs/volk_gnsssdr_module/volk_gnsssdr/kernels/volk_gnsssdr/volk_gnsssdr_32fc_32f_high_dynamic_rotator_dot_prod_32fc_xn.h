@@ -74,23 +74,18 @@
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
 #include <volk_gnsssdr/saturation_arithmetic.h>
 #include <math.h>
-//#include <stdio.h>
 
 #ifdef LV_HAVE_GENERIC
 
 static inline void volk_gnsssdr_32fc_32f_high_dynamic_rotator_dot_prod_32fc_xn_generic(lv_32fc_t* result, const lv_32fc_t* in_common, const lv_32fc_t phase_inc, const lv_32fc_t phase_inc_rate, lv_32fc_t* phase, const float** in_a, int num_a_vectors, unsigned int num_points)
 {
-    lv_32fc_t tmp32_1, tmp32_2;
+    lv_32fc_t tmp32_1;
 #ifdef __cplusplus
-    float d_arg = std::arg(phase_inc_rate) / 2.0;
-    //    float d_arg = 0.5;  //BORRAR
-    lv_32fc_t half_phase_inc_rate = std::exp(0.0, d_arg);
+    lv_32fc_t half_phase_inc_rate = std::sqrt(phase_inc_rate);
 #else
-    float d_arg = carg(phase_inc_rate) / 2.0;
-    //    float d_arg = 0.5;  //BORRAR
-    lv_32fc_t half_phase_inc_rate = cexp(lv_cmake(0.0, d_arg));
+    lv_32fc_t half_phase_inc_rate = csqrtf(phase_inc_rate);
 #endif
-    //    lv_32fc_t half_phase_inc_rate = lv_cmake(0.0, 1.0);  //BORRAR
+    lv_32fc_t constant_rotation = phase_inc * half_phase_inc_rate;
     lv_32fc_t delta_phase_rate = lv_cmake(1.0, 0.0);
     int n_vec;
     unsigned int n;
@@ -104,7 +99,6 @@ static inline void volk_gnsssdr_32fc_32f_high_dynamic_rotator_dot_prod_32fc_xn_g
                                                 // Regenerate phase
             if (n % 256 == 0)
                 {
-                    //printf("Phase before regeneration %i: %f,%f  Modulus: %f\n", n,lv_creal(*phase),lv_cimag(*phase), cabsf(*phase));
 #ifdef __cplusplus
                     (*phase) /= std::abs((*phase));
                     delta_phase_rate /= std::abs(delta_phase_rate);
@@ -112,14 +106,12 @@ static inline void volk_gnsssdr_32fc_32f_high_dynamic_rotator_dot_prod_32fc_xn_g
                     (*phase) /= hypotf(lv_creal(*phase), lv_cimag(*phase));
                     delta_phase_rate /= hypotf(lv_creal(delta_phase_rate), lv_cimag(delta_phase_rate));
 #endif
-                    //printf("Phase after regeneration %i: %f,%f  Modulus: %f\n", n,lv_creal(*phase),lv_cimag(*phase), cabsf(*phase));
                 }
-            (*phase) *= (phase_inc * half_phase_inc_rate * delta_phase_rate);
+            (*phase) *= (constant_rotation * delta_phase_rate);
             delta_phase_rate *= phase_inc_rate;
             for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {
-                    tmp32_2 = tmp32_1 * in_a[n_vec][n];
-                    result[n_vec] += tmp32_2;
+                    result[n_vec] += (tmp32_1 * in_a[n_vec][n]);
                 }
         }
 }

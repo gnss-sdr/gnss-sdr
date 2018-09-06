@@ -759,7 +759,7 @@ void StaticPositionSystemTest::check_results()
             std::vector<double> Z(error_R_eb_e.colptr(2), error_R_eb_e.colptr(2) + error_R_eb_e.n_rows);
 
             g1.cmd("set key box opaque");
-            g1.plot_xyz(X, Y, Z, "ECEF_3d_error");
+            g1.plot_xyz(X, Y, Z, "ECEF 3D error");
             g1.set_legend();
             g1.savetops("ECEF_3d_error");
 
@@ -784,6 +784,7 @@ void StaticPositionSystemTest::check_results()
             g3.plot_xy(time_vector_from_start_s, error_vec, "Position 3D error");
             double mean3d = std::accumulate(error_vec.begin(), error_vec.end(), 0.0) / error_vec.size();
             std::vector<double> error_mean(error_module_R_eb_e.n_rows, mean3d);
+            g3.set_style("lines");
             g3.plot_xy(time_vector_from_start_s, error_mean, "Mean");
             g3.set_legend();
             g3.savetops("Position_3d_error");
@@ -805,6 +806,10 @@ void StaticPositionSystemTest::check_results()
             std::vector<double> error_vec2(error_module_V_eb_e.colptr(0), error_module_V_eb_e.colptr(0) + error_module_V_eb_e.n_rows);
             g4.cmd("set key box opaque");
             g4.plot_xy(time_vector_from_start_s, error_vec2, "Velocity 3D error");
+            double mean3dv = std::accumulate(error_vec2.begin(), error_vec2.end(), 0.0) / error_vec2.size();
+            std::vector<double> error_mean_v(error_module_V_eb_e.n_rows, mean3dv);
+            g4.set_style("lines");
+            g4.plot_xy(time_vector_from_start_s, error_mean_v, "Mean");
             g4.set_legend();
             g4.savetops("Velocity_3d_error");
         }

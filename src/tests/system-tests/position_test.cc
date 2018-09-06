@@ -67,6 +67,7 @@ public:
     int configure_receiver();
     int run_receiver();
     void check_results();
+    std::string config_filename_no_extension;
 
 private:
     std::string generator_binary;
@@ -608,7 +609,10 @@ void StaticPositionSystemTest::check_results()
 
             std::stringstream stm;
             std::ofstream position_test_file;
-
+            if (!FLAGS_config_file_ptest.empty())
+                {
+                    stm << "Configuration file: " << FLAGS_config_file_ptest << std::endl;
+                }
             if (FLAGS_config_file_ptest.empty())
                 {
                     stm << "---- ACCURACY ----" << std::endl;
@@ -726,6 +730,10 @@ void StaticPositionSystemTest::check_results()
 
             //report
             std::cout << "----- Position and Velocity 3D ECEF error statistics -----" << std::endl;
+            if (!FLAGS_config_file_ptest.empty())
+                {
+                    std::cout << "Configuration file: " << FLAGS_config_file_ptest << std::endl;
+                }
             std::streamsize ss = std::cout.precision();
             std::cout << std::setprecision(10) << "---- 3D ECEF Position RMSE = "
                       << rmse_R_eb_e << ", mean = " << error_mean_R_eb_e
@@ -767,7 +775,7 @@ void StaticPositionSystemTest::check_results()
                 }
             else
                 {
-                    g1.savetops("ECEF_3d_error_" + FLAGS_config_file_ptest.erase(FLAGS_config_file_ptest.length() - 5));
+                    g1.savetops("ECEF_3d_error_" + config_filename_no_extension);
                 }
             arma::vec time_vector_from_start_s = receiver_time_s - receiver_time_s(0);
             Gnuplot g3("linespoints");
@@ -798,7 +806,7 @@ void StaticPositionSystemTest::check_results()
                 }
             else
                 {
-                    g3.savetops("Position_3d_error_" + FLAGS_config_file_ptest.erase(FLAGS_config_file_ptest.length() - 5));
+                    g3.savetops("Position_3d_error_" + config_filename_no_extension);
                 }
 
             Gnuplot g4("linespoints");
@@ -829,7 +837,7 @@ void StaticPositionSystemTest::check_results()
                 }
             else
                 {
-                    g4.savetops("Velocity_3d_error_" + FLAGS_config_file_ptest.erase(FLAGS_config_file_ptest.length() - 5));
+                    g4.savetops("Velocity_3d_error_" + config_filename_no_extension);
                 }
         }
 }
@@ -907,8 +915,8 @@ void StaticPositionSystemTest::print_results(const std::vector<double>& east,
                         }
                     else
                         {
-                            g1.savetops("Position_test_2D_" + FLAGS_config_file_ptest.erase(FLAGS_config_file_ptest.length() - 5));
-                            g1.savetopdf("Position_test_2D_" + FLAGS_config_file_ptest.erase(FLAGS_config_file_ptest.length() - 5), 18);
+                            g1.savetops("Position_test_2D_" + config_filename_no_extension);
+                            g1.savetopdf("Position_test_2D_" + config_filename_no_extension, 18);
                         }
 
                     Gnuplot g2("points");
@@ -942,8 +950,8 @@ void StaticPositionSystemTest::print_results(const std::vector<double>& east,
                         }
                     else
                         {
-                            g2.savetops("Position_test_3D_" + FLAGS_config_file_ptest.erase(FLAGS_config_file_ptest.length() - 5));
-                            g2.savetopdf("Position_test_3D_" + FLAGS_config_file_ptest.erase(FLAGS_config_file_ptest.length() - 5));
+                            g2.savetops("Position_test_3D_" + config_filename_no_extension);
+                            g2.savetopdf("Position_test_3D_" + config_filename_no_extension);
                         }
                 }
             catch (const GnuplotException& ge)
@@ -965,6 +973,11 @@ TEST_F(StaticPositionSystemTest, Position_system_test)
                 {
                     generate_signal();
                 }
+        }
+    else
+        {
+            config_filename_no_extension = FLAGS_config_file_ptest.substr(FLAGS_config_file_ptest.find_last_of("/\\") + 1);
+            config_filename_no_extension = config_filename_no_extension.erase(config_filename_no_extension.length() - 5);
         }
 
     // Configure receiver

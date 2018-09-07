@@ -417,7 +417,6 @@ position-test-180417100529:
   stage: test
   tags:
     - kepler
-  when: manual
   script:
     - apt-get update
     - apt-get install -y --no-install-recommends build-essential cmake ca-certificates git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest gnuplot
@@ -429,15 +428,26 @@ position-test-180417100529:
     - make -j$(($NPROC+1))
     # Execute System Tests
     - export DISPLAY=unknown
-    - ../install/position_test -config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L1E1.conf -static_scenario=0 -use_pvt_solver_dump=1 -use_ref_motion_file=1 -ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv -pvt_solver_dump_filename=./PVT_pvt.dat -show_plots=0 
-    - mv *.xml ../build64/
+    - ../install/position_test -config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L1.conf -static_scenario=0 -use_pvt_solver_dump=1 -use_ref_motion_file=1 -ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv -pvt_solver_dump_filename=./PVT_pvt.dat -show_plots=0
+    - rm PVT_*.* && mv *.ps ../build64/
+    - ../install/position_test -config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_E1.conf -static_scenario=0 -use_pvt_solver_dump=1 -use_ref_motion_file=1 -ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv -pvt_solver_dump_filename=./PVT_pvt.dat -show_plots=0
+    - rm PVT_*.* && mv *.ps ../build64/
+    - ../install/position_test -config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L1E1.conf -static_scenario=0 -use_pvt_solver_dump=1 -use_ref_motion_file=1 -ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv -pvt_solver_dump_filename=./PVT_pvt.dat -show_plots=0
+    - rm PVT_*.* && mv *.ps ../build64/
+    - ../install/position_test -config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L5.conf -static_scenario=0 -use_pvt_solver_dump=1 -use_ref_motion_file=1 -ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv -pvt_solver_dump_filename=./PVT_pvt.dat -show_plots=0
+    - rm PVT_*.* && mv *.ps ../build64/
+    # - ../install/position_test -config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_E5.conf -static_scenario=0 -use_pvt_solver_dump=1 -use_ref_motion_file=1 -ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv -pvt_solver_dump_filename=./PVT_pvt.dat -show_plots=0
+    # - rm PVT_*.* && mv *.ps ../build64/
+    - ../install/position_test -config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L5E5.conf -static_scenario=0 -use_pvt_solver_dump=1 -use_ref_motion_file=1 -ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv -pvt_solver_dump_filename=./PVT_pvt.dat -show_plots=0
     - mv *.ps ../build64/
+    - mv *.xml ../build64/
     - cd ..
     - rm -rf build-test
   artifacts:
     paths:
       - build64/*.xml
       - build64/*.ps
+
 
 # Stage "deploy"
 docker-gnsssdr:

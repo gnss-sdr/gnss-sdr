@@ -550,7 +550,14 @@ TEST_F(GpsL1CAKfTrackingTest, ValidationOfResults)
                             g1.plot_xy(timevec, late, "Late", decimate);
                             g1.savetops("Correlators_outputs");
                             g1.savetopdf("Correlators_outputs", 18);
-                            g1.showonscreen();  // window output
+                            if (FLAGS_show_plots)
+                                {
+                                    g1.showonscreen();  // window output
+                                }
+                            else
+                                {
+                                    g1.disablescreen();
+                                }
 
                             Gnuplot g2("points");
                             g2.set_title("Constellation diagram (satellite PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
@@ -561,7 +568,14 @@ TEST_F(GpsL1CAKfTrackingTest, ValidationOfResults)
                             g2.plot_xy(promptI, promptQ);
                             g2.savetops("Constellation");
                             g2.savetopdf("Constellation", 18);
-                            g2.showonscreen();  // window output
+                            if (FLAGS_show_plots)
+                                {
+                                    g2.showonscreen();  // window output
+                                }
+                            else
+                                {
+                                    g2.disablescreen();
+                                }
                         }
                     catch (const GnuplotException& ge)
                         {

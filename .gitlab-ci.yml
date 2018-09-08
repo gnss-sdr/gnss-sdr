@@ -113,8 +113,8 @@ crosscompile:
   allow_failure: true
 
 
-debian8.10:
-  image: debian:8.10-slim
+debian8.11:
+  image: debian:8.11-slim
   stage: build
   script:
     - apt-get update
@@ -128,8 +128,8 @@ debian8.10:
   allow_failure: true
 
 
-debian9.3:
-  image: debian:9.3-slim
+debian9.5:
+  image: debian:9.5-slim
   stage: build
   script:
     - apt-get update
@@ -142,8 +142,8 @@ debian9.3:
     - make install
 
 
-debian9.3-i386:
-  image: i386/debian:9.3-slim
+debian9.5-i386:
+  image: i386/debian:9.5-slim
   stage: build
   script:
     - apt-get update
@@ -157,7 +157,7 @@ debian9.3-i386:
 
 
 debian10:
-  image: debian:buster-slim
+  image: debian:buster
   stage: build
   script:
     - apt-get update

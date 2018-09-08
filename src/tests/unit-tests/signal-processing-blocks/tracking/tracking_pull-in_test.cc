@@ -30,24 +30,14 @@
  * -------------------------------------------------------------------------
  */
 
-#include <chrono>
-#include <unistd.h>
-#include <vector>
-#include <armadillo>
-#include <boost/filesystem.hpp>
-#include <gnuradio/top_block.h>
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/blocks/interleaved_char_to_complex.h>
-#include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/blocks/skiphead.h>
-#include <gnuradio/blocks/head.h>
-#include <gtest/gtest.h>
+
 #include "GPS_L1_CA.h"
 #include "gnss_block_factory.h"
 #include "tracking_interface.h"
 #include "gps_l2_m_pcps_acquisition.h"
 #include "gps_l1_ca_pcps_acquisition.h"
 #include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
+#include "galileo_e1_pcps_ambiguous_acquisition.h"
 #include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
 #include "galileo_e5a_pcps_acquisition.h"
 #include "gps_l5i_pcps_acquisition.h"
@@ -58,61 +48,21 @@
 #include "gnuplot_i.h"
 #include "test_flags.h"
 #include "tracking_tests_flags.h"
+#include "acquisition_msg_rx.h"
+#include <boost/filesystem.hpp>
+#include <gnuradio/top_block.h>
+#include <gnuradio/blocks/file_source.h>
+#include <gnuradio/blocks/interleaved_char_to_complex.h>
+#include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/blocks/skiphead.h>
+#include <gnuradio/blocks/head.h>
+#include <gtest/gtest.h>
+#include <chrono>
+#include <cstdint>
+#include <vector>
+#include <armadillo>
 
 
-// ######## GNURADIO ACQUISITION BLOCK MESSAGE RECEVER #########
-class Acquisition_msg_rx;
-
-typedef boost::shared_ptr<Acquisition_msg_rx> Acquisition_msg_rx_sptr;
-
-Acquisition_msg_rx_sptr Acquisition_msg_rx_make();
-
-
-class Acquisition_msg_rx : public gr::block
-{
-private:
-    friend Acquisition_msg_rx_sptr Acquisition_msg_rx_make();
-    void msg_handler_events(pmt::pmt_t msg);
-    Acquisition_msg_rx();
-
-public:
-    int rx_message;
-    gr::top_block_sptr top_block;
-    ~Acquisition_msg_rx();  //!< Default destructor
-};
-
-
-Acquisition_msg_rx_sptr Acquisition_msg_rx_make()
-{
-    return Acquisition_msg_rx_sptr(new Acquisition_msg_rx());
-}
-
-
-void Acquisition_msg_rx::msg_handler_events(pmt::pmt_t msg)
-{
-    try
-        {
-            int64_t message = pmt::to_long(msg);
-            rx_message = message;
-            top_block->stop();  //stop the flowgraph
-        }
-    catch (boost::bad_any_cast& e)
-        {
-            LOG(WARNING) << "msg_handler_acquisition Bad cast!\n";
-            rx_message = 0;
-        }
-}
-
-
-Acquisition_msg_rx::Acquisition_msg_rx() : gr::block("Acquisition_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
-{
-    this->message_port_register_in(pmt::mp("events"));
-    this->set_msg_handler(pmt::mp("events"), boost::bind(&Acquisition_msg_rx::msg_handler_events, this, _1));
-    rx_message = 0;
-}
-
-
-Acquisition_msg_rx::~Acquisition_msg_rx() {}
 // ######## GNURADIO TRACKING BLOCK MESSAGE RECEVER #########
 class TrackingPullInTest_msg_rx;
 

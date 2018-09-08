@@ -571,10 +571,32 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
                                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
 
                                     // ECEF POS X,Y,X [m] + ECEF VEL X,Y,X [m/s] (6 x double)
-                                    d_dump_file.write(reinterpret_cast<char*>(&pvt_sol.rr[0]), sizeof(pvt_sol.rr));
+                                    tmp_double = pvt_sol.rr[0];
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    tmp_double = pvt_sol.rr[1];
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    tmp_double = pvt_sol.rr[2];
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    tmp_double = pvt_sol.rr[3];
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    tmp_double = pvt_sol.rr[4];
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    tmp_double = pvt_sol.rr[5];
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
 
-                                    //  position variance/covariance (m^2) {c_xx,c_yy,c_zz,c_xy,c_yz,c_zx} (6 x double)
-                                    d_dump_file.write(reinterpret_cast<char*>(&pvt_sol.qr[0]), sizeof(pvt_sol.qr));
+                                    // position variance/covariance (m^2) {c_xx,c_yy,c_zz,c_xy,c_yz,c_zx} (6 x double)
+                                    tmp_double = pvt_sol.qr[0];
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    tmp_double = pvt_sol.qr[1];
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    tmp_double = pvt_sol.qr[2];
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    tmp_double = pvt_sol.qr[3];
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    tmp_double = pvt_sol.qr[4];
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    tmp_double = pvt_sol.qr[5];
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
 
                                     // GEO user position Latitude [deg]
                                     tmp_double = get_latitude();
@@ -592,15 +614,16 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
                                     d_dump_file.write(reinterpret_cast<char*>(&pvt_sol.stat), sizeof(uint8_t));
                                     // RTKLIB solution type (0:xyz-ecef,1:enu-baseline)
                                     d_dump_file.write(reinterpret_cast<char*>(&pvt_sol.type), sizeof(uint8_t));
-                                    //AR ratio factor for validation
-                                    tmp_double = pvt_sol.ratio;
+                                    // AR ratio factor for validation
                                     d_dump_file.write(reinterpret_cast<char*>(&pvt_sol.ratio), sizeof(float));
-                                    //AR ratio threshold for validation
-                                    tmp_double = pvt_sol.thres;
+                                    // AR ratio threshold for validation
                                     d_dump_file.write(reinterpret_cast<char*>(&pvt_sol.thres), sizeof(float));
 
-                                    //GDOP//PDOP//HDOP//VDOP
-                                    d_dump_file.write(reinterpret_cast<char*>(&dop_[0]), sizeof(dop_));
+                                    // GDOP / PDOP/ HDOP/ VDOP
+                                    d_dump_file.write(reinterpret_cast<char*>(&dop_[0]), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char*>(&dop_[1]), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char*>(&dop_[2]), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char*>(&dop_[3]), sizeof(double));
                                 }
                             catch (const std::ifstream::failure& e)
                                 {

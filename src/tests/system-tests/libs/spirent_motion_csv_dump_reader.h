@@ -28,10 +28,9 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_spirent_motion_csv_dump_READER_H
-#define GNSS_SDR_spirent_motion_csv_dump_READER_H
+#ifndef GNSS_SDR_SPIRENT_MOTION_CSV_DUMP_READER_H
+#define GNSS_SDR_SPIRENT_MOTION_CSV_DUMP_READER_H
 
-#include <boost/tokenizer.hpp>
 #include <cstdint>
 #include <fstream>
 #include <string>
@@ -49,7 +48,7 @@ public:
     void close_obs_file();
 
     int header_lines;
-    //dump variables
+    // dump variables
     double TOW_ms;
     double Pos_X;
     double Pos_Y;
@@ -95,4 +94,4 @@ private:
     bool parse_vector(std::vector<double> &vec);
 };
 
-#endif  //GNSS_SDR_spirent_motion_csv_dump_READER_H
+#endif  // GNSS_SDR_SPIRENT_MOTION_CSV_DUMP_READER_H

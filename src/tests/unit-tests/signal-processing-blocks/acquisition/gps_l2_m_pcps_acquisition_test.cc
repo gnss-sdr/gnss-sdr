@@ -37,7 +37,11 @@
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
+#ifdef GR_GREATER_38
+#include <gnuradio/analog/sig_source.h>
+#else
 #include <gnuradio/analog/sig_source_c.h>
+#endif
 #include <gnuradio/blocks/interleaved_short_to_complex.h>
 #include <gnuradio/blocks/char_to_short.h>
 #include <gnuradio/msg_queue.h>

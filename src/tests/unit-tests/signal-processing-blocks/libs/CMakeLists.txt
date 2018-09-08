@@ -19,6 +19,7 @@
 
 set(SIGNAL_PROCESSING_TESTING_LIB_SOURCES
     acquisition_dump_reader.cc
+    acquisition_msg_rx.cc
     tracking_dump_reader.cc
     tlm_dump_reader.cc  
     observables_dump_reader.cc    

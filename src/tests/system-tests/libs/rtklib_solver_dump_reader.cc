@@ -29,54 +29,40 @@
  */
 
 #include "rtklib_solver_dump_reader.h"
-
 #include <iostream>
 
 bool rtklib_solver_dump_reader::read_binary_obs()
 {
     try
         {
-            d_dump_file.read(reinterpret_cast<char *>(&TOW_at_current_symbol_ms), sizeof(TOW_at_current_symbol_ms));
-            //            std::cout << "TOW_at_current_symbol_ms: " << TOW_at_current_symbol_ms << std::endl;
-            d_dump_file.read(reinterpret_cast<char *>(&week), sizeof(week));
-            //            std::cout << "week: " << week << std::endl;
-            d_dump_file.read(reinterpret_cast<char *>(&RX_time), sizeof(RX_time));
-            //            std::cout << "RX_time: " << RX_time << std::endl;
-            d_dump_file.read(reinterpret_cast<char *>(&clk_offset_s), sizeof(clk_offset_s));
-            //            std::cout << "clk_offset_s: " << clk_offset_s << std::endl;
-            d_dump_file.read(reinterpret_cast<char *>(&rr[0]), sizeof(rr));
-            //            for (int n = 0; n < 6; n++)
-            //                {
-            //                    std::cout << "rr: " << rr[n] << std::endl;
-            //                }
-            d_dump_file.read(reinterpret_cast<char *>(&qr[0]), sizeof(qr));
-            //            for (int n = 0; n < 6; n++)
-            //                {
-            //                    std::cout << "qr" << qr[n] << std::endl;
-            //                }
-            d_dump_file.read(reinterpret_cast<char *>(&latitude), sizeof(latitude));
-            std::cout << "latitude: " << latitude << std::endl;
-            d_dump_file.read(reinterpret_cast<char *>(&longitude), sizeof(longitude));
-            std::cout << "longitude: " << longitude << std::endl;
-            d_dump_file.read(reinterpret_cast<char *>(&height), sizeof(height));
-            std::cout << "height: " << height << std::endl;
-            d_dump_file.read(reinterpret_cast<char *>(&ns), sizeof(ns));
-            //            std::cout << "ns: " << (int)ns << std::endl;
-            d_dump_file.read(reinterpret_cast<char *>(&status), sizeof(status));
-            //            std::cout << "status: " << (int)status << std::endl;
-            d_dump_file.read(reinterpret_cast<char *>(&type), sizeof(type));
-            //            std::cout << "type: " << (int)type << std::endl;
-            d_dump_file.read(reinterpret_cast<char *>(&AR_ratio), sizeof(AR_ratio));
-            //            std::cout << "AR_ratio: " << AR_ratio << std::endl;
-            d_dump_file.read(reinterpret_cast<char *>(&AR_thres), sizeof(AR_thres));
-            //            std::cout << "AR_thres: " << AR_thres << std::endl;
-            d_dump_file.read(reinterpret_cast<char *>(&dop[0]), sizeof(dop));
-
-            //            for (int n = 0; n < 4; n++)
-            //                {
-            //                    std::cout << "dop" << dop[n] << std::endl;
-            //                }
-            //            getchar();
+            d_dump_file.read(reinterpret_cast<char *>(&TOW_at_current_symbol_ms), sizeof(uint32_t));
+            d_dump_file.read(reinterpret_cast<char *>(&week), sizeof(uint32_t));
+            d_dump_file.read(reinterpret_cast<char *>(&RX_time), sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&clk_offset_s), sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&rr[0]), sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&rr[1]), sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&rr[2]), sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&rr[3]), sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&rr[4]), sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&rr[5]), sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&qr[0]), sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&qr[1]), sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&qr[2]), sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&qr[3]), sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&qr[4]), sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&qr[5]), sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&latitude), sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&longitude), sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&height), sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&ns), sizeof(uint8_t));
+            d_dump_file.read(reinterpret_cast<char *>(&status), sizeof(uint8_t));
+            d_dump_file.read(reinterpret_cast<char *>(&type), sizeof(uint8_t));
+            d_dump_file.read(reinterpret_cast<char *>(&AR_ratio), sizeof(float));
+            d_dump_file.read(reinterpret_cast<char *>(&AR_thres), sizeof(float));
+            d_dump_file.read(reinterpret_cast<char *>(&dop[0]), sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&dop[1]), sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&dop[2]), sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&dop[3]), sizeof(double));
         }
     catch (const std::ifstream::failure &e)
         {
@@ -103,22 +89,19 @@ bool rtklib_solver_dump_reader::restart()
 
 int64_t rtklib_solver_dump_reader::num_epochs()
 {
-    //    std::ifstream::pos_type size;
-    //    int number_of_double_vars = 1;
-    //    int number_of_float_vars = 17;
-    //    int epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
-    //                           sizeof(float) * number_of_float_vars + sizeof(unsigned int);
-    //    std::ifstream tmpfile(d_dump_filename.c_str(), std::ios::binary | std::ios::ate);
-    //    if (tmpfile.is_open())
-    //        {
-    //            size = tmpfile.tellg();
-    //            int64_t nepoch = size / epoch_size_bytes;
-    //            return nepoch;
-    //        }
-    //    else
-    //        {
-    return 0;
-    //        }
+    std::ifstream::pos_type size;
+    int epoch_size_bytes = 2 * sizeof(uint32_t) + 21 * sizeof(double) + 3 * sizeof(uint8_t) + 2 * sizeof(float);
+    std::ifstream tmpfile(d_dump_filename.c_str(), std::ios::binary | std::ios::ate);
+    if (tmpfile.is_open())
+        {
+            size = tmpfile.tellg();
+            int64_t nepoch = size / epoch_size_bytes;
+            return nepoch;
+        }
+    else
+        {
+            return 0;
+        }
 }
 
 

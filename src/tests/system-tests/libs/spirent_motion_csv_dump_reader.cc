@@ -29,7 +29,62 @@
  */
 
 #include "spirent_motion_csv_dump_reader.h"
+#include <boost/tokenizer.hpp>
 #include <iostream>
+
+
+spirent_motion_csv_dump_reader::spirent_motion_csv_dump_reader()
+{
+    header_lines = 2;
+    TOW_ms = 0.0;
+    Pos_X = 0.0;
+    Pos_Y = 0.0;
+    Pos_Z = 0.0;
+    Vel_X = 0.0;
+    Vel_Y = 0.0;
+    Vel_Z = 0.0;
+    Acc_X = 0.0;
+    Acc_Y = 0.0;
+    Acc_Z = 0.0;
+    Jerk_X = 0.0;
+    Jerk_Y = 0.0;
+    Jerk_Z = 0.0;
+    Lat = 0.0;
+    Long = 0.0;
+    Height = 0.0;
+    Heading = 0.0;
+    Elevation = 0.0;
+    Bank = 0.0;
+    Ang_vel_X = 0.0;
+    Ang_vel_Y = 0.0;
+    Ang_vel_Z = 0.0;
+    Ang_acc_X = 0.0;
+    Ang_acc_Y = 0.0;
+    Ang_acc_Z = 0.0;
+    Ant1_Pos_X = 0.0;
+    Ant1_Pos_Y = 0.0;
+    Ant1_Pos_Z = 0.0;
+    Ant1_Vel_X = 0.0;
+    Ant1_Vel_Y = 0.0;
+    Ant1_Vel_Z = 0.0;
+    Ant1_Acc_X = 0.0;
+    Ant1_Acc_Y = 0.0;
+    Ant1_Acc_Z = 0.0;
+    Ant1_Lat = 0.0;
+    Ant1_Long = 0.0;
+    Ant1_Height = 0.0;
+    Ant1_DOP = 0.0;
+}
+
+
+spirent_motion_csv_dump_reader::~spirent_motion_csv_dump_reader()
+{
+    if (d_dump_file.is_open() == true)
+        {
+            d_dump_file.close();
+        }
+}
+
 
 bool spirent_motion_csv_dump_reader::read_csv_obs()
 {
@@ -54,6 +109,7 @@ bool spirent_motion_csv_dump_reader::read_csv_obs()
                                     vec.push_back(0.0);
                                 }
                         }
+                    parse_vector(vec);
                 }
         }
     catch (const std::ifstream::failure &e)
@@ -62,6 +118,7 @@ bool spirent_motion_csv_dump_reader::read_csv_obs()
         }
     return true;
 }
+
 
 bool spirent_motion_csv_dump_reader::parse_vector(std::vector<double> &vec)
 {
@@ -113,6 +170,8 @@ bool spirent_motion_csv_dump_reader::parse_vector(std::vector<double> &vec)
             return false;
         }
 }
+
+
 bool spirent_motion_csv_dump_reader::restart()
 {
     if (d_dump_file.is_open())
@@ -135,13 +194,15 @@ bool spirent_motion_csv_dump_reader::restart()
 
 int64_t spirent_motion_csv_dump_reader::num_epochs()
 {
-    int64_t nepoch = 0;
+    int64_t nepoch = 0LL;
     std::string line;
-    std::ifstream tmpfile(d_dump_filename.c_str(), std::ios::binary | std::ios::ate);
+    std::ifstream tmpfile(d_dump_filename.c_str());
     if (tmpfile.is_open())
         {
             while (std::getline(tmpfile, line))
-                ++nepoch;
+                {
+                    ++nepoch;
+                }
             return nepoch - header_lines;
         }
     else
@@ -179,23 +240,10 @@ bool spirent_motion_csv_dump_reader::open_obs_file(std::string out_file)
         }
 }
 
+
 void spirent_motion_csv_dump_reader::close_obs_file()
 {
     if (d_dump_file.is_open() == false)
-        {
-            d_dump_file.close();
-        }
-}
-
-spirent_motion_csv_dump_reader::spirent_motion_csv_dump_reader()
-{
-    header_lines = 2;
-}
-
-
-spirent_motion_csv_dump_reader::~spirent_motion_csv_dump_reader()
-{
-    if (d_dump_file.is_open() == true)
         {
             d_dump_file.close();
         }

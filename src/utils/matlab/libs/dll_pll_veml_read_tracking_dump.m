@@ -33,7 +33,7 @@ function [GNSS_tracking] = dll_pll_veml_read_tracking_dump (filename, count)
 
 m = nargchk (1,2,nargin);
 
-num_float_vars = 17;
+num_float_vars = 18;
 num_unsigned_long_int_vars = 1;
 num_double_vars = 1;
 num_unsigned_int_vars = 1;
@@ -114,17 +114,20 @@ else
     fseek(f,bytes_shift,'bof'); % move to next float
     v16 = fread (f, count, 'float', skip_bytes_each_read - float_size_bytes);
     bytes_shift = bytes_shift + float_size_bytes;
-    fseek(f,bytes_shift,'bof'); % move to next interleaved float
+    fseek(f,bytes_shift,'bof'); % move to next float
     v17 = fread (f, count, 'float', skip_bytes_each_read - float_size_bytes);
     bytes_shift = bytes_shift + float_size_bytes;
+    fseek(f,bytes_shift,'bof'); % move to next interleaved float
+    v18 = fread (f, count, 'float', skip_bytes_each_read - float_size_bytes);
+    bytes_shift = bytes_shift + float_size_bytes;
     fseek(f,bytes_shift,'bof'); % move to next float
-    v18 = fread (f, count, 'float', skip_bytes_each_read-float_size_bytes);
+    v19 = fread (f, count, 'float', skip_bytes_each_read-float_size_bytes);
     bytes_shift = bytes_shift + float_size_bytes;
     fseek(f,bytes_shift,'bof'); % move to next double
-    v19 = fread (f, count, 'double', skip_bytes_each_read - double_size_bytes);
+    v20 = fread (f, count, 'double', skip_bytes_each_read - double_size_bytes);
     bytes_shift = bytes_shift + double_size_bytes;
     fseek(f,bytes_shift,'bof'); % move to next unsigned int
-    v20 = fread (f, count, 'uint', skip_bytes_each_read - unsigned_int_size_bytes);
+    v21 = fread (f, count, 'uint', skip_bytes_each_read - unsigned_int_size_bytes);
     fclose (f);
     
     GNSS_tracking.VE = v1;
@@ -137,15 +140,16 @@ else
     GNSS_tracking.PRN_start_sample = v8;
     GNSS_tracking.acc_carrier_phase_rad = v9;
     GNSS_tracking.carrier_doppler_hz = v10;
-    GNSS_tracking.code_freq_hz = v11;
-    GNSS_tracking.carr_error = v12;
-    GNSS_tracking.carr_nco = v13;
-    GNSS_tracking.code_error = v14;
-    GNSS_tracking.code_nco = v15;
-    GNSS_tracking.CN0_SNV_dB_Hz = v16;
-    GNSS_tracking.carrier_lock_test = v17;
-    GNSS_tracking.var1 = v18;
-    GNSS_tracking.var2 = v19;
-    GNSS_tracking.PRN = v20;
+    GNSS_tracking.carrier_doppler_rate_hz = v11;
+    GNSS_tracking.code_freq_hz = v12;
+    GNSS_tracking.carr_error = v13;
+    GNSS_tracking.carr_nco = v14;
+    GNSS_tracking.code_error = v15;
+    GNSS_tracking.code_nco = v16;
+    GNSS_tracking.CN0_SNV_dB_Hz = v17;
+    GNSS_tracking.carrier_lock_test = v18;
+    GNSS_tracking.var1 = v19;
+    GNSS_tracking.var2 = v20;
+    GNSS_tracking.PRN = v21;
 end
 

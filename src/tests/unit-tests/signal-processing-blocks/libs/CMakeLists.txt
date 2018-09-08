@@ -41,5 +41,7 @@ add_library(signal_processing_testing_lib ${SIGNAL_PROCESSING_TESTING_LIB_SOURCE
 source_group(Headers FILES ${SIGNAL_PROCESSING_TESTING_LIB_HEADERS})
 
 if(NOT MATIO_FOUND)
-   add_dependencies(signal_processing_testing_lib matio-${GNSSSDR_MATIO_LOCAL_VERSION})
+   add_dependencies(signal_processing_testing_lib matio-${GNSSSDR_MATIO_LOCAL_VERSION} glog-${glog_RELEASE})
+else(NOT MATIO_FOUND)
+   add_dependencies(signal_processing_testing_lib glog-${glog_RELEASE})
 endif(NOT MATIO_FOUND)

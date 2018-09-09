@@ -56,7 +56,7 @@ public:
     float early_late_space_narrow_chips;
     float very_early_late_space_narrow_chips;
     int32_t extend_correlation_symbols;
-    bool use_high_dynamics_resampler;
+    bool high_dyn;
     int32_t cn0_samples;
     int32_t carrier_lock_det_mav_samples;
     int32_t cn0_min;

@@ -356,7 +356,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
         {
             // Extra correlator for the data component
             correlator_data_cpu.init(2 * trk_parameters.vector_length, 1);
-            correlator_data_cpu.set_high_dynamics_resampler(trk_parameters.use_high_dynamics_resampler);
+            correlator_data_cpu.set_high_dynamics_resampler(trk_parameters.high_dyn);
             d_data_code = static_cast<float *>(volk_gnsssdr_malloc(2 * d_code_length_chips * sizeof(float), volk_gnsssdr_get_alignment()));
         }
     else
@@ -365,7 +365,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
         }
 
     // --- Initializations ---
-    multicorrelator_cpu.set_high_dynamics_resampler(trk_parameters.use_high_dynamics_resampler);
+    multicorrelator_cpu.set_high_dynamics_resampler(trk_parameters.high_dyn);
     // Initial code frequency basis of NCO
     d_code_freq_chips = d_code_chip_rate;
     // Residual code phase (in chips)
@@ -717,6 +717,7 @@ void dll_pll_veml_tracking::do_correlation_step(const gr_complex *input_samples)
     // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
     // perform carrier wipe-off and compute Early, Prompt and Late correlation
     multicorrelator_cpu.set_input_output_vectors(d_correlator_outs, input_samples);
+    float tmp_f = d_rem_carr_phase_rad;
     multicorrelator_cpu.Carrier_wipeoff_multicorrelator_resampler(
         d_rem_carr_phase_rad,
         d_carrier_phase_step_rad, d_carrier_phase_rate_step_rad,
@@ -730,7 +731,7 @@ void dll_pll_veml_tracking::do_correlation_step(const gr_complex *input_samples)
         {
             correlator_data_cpu.set_input_output_vectors(d_Prompt_Data, input_samples);
             correlator_data_cpu.Carrier_wipeoff_multicorrelator_resampler(
-                d_rem_carr_phase_rad,
+                tmp_f,
                 d_carrier_phase_step_rad, d_carrier_phase_rate_step_rad,
                 static_cast<float>(d_rem_code_phase_chips) * static_cast<float>(d_code_samples_per_chip),
                 static_cast<float>(d_code_phase_step_chips) * static_cast<float>(d_code_samples_per_chip),
@@ -814,7 +815,7 @@ void dll_pll_veml_tracking::update_tracking_vars()
     cp_diff += d_carrier_phase_step_rad;  // The new cp value is added to the previous in order to obtain the difference
     // carrier phase rate step (NCO phase increment rate per sample) [rads/sample^2]
     cp_diff /= static_cast<double>(d_current_prn_length_samples);
-    if (trk_parameters.use_high_dynamics_resampler)
+    if (trk_parameters.high_dyn)
         {
             d_cp_history.push_back(cp_diff);
             if (d_cp_history.full())
@@ -823,11 +824,14 @@ void dll_pll_veml_tracking::update_tracking_vars()
                 }
         }
 
+    // Now the remnant carrier phase is computed in the Carrier Wipeoff function
     // remnant carrier phase to prevent overflow in the code NCO
-    d_rem_carr_phase_rad += d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples);
-    d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, PI_2);
+    //d_rem_carr_phase_rad += (d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples) + 0.5 * d_carrier_phase_rate_step_rad * static_cast<double>(d_current_prn_length_samples) * static_cast<double>(d_current_prn_length_samples));
+    //d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, PI_2);
+
+
     // carrier phase accumulator
-    d_acc_carrier_phase_rad -= d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples);
+    d_acc_carrier_phase_rad -= (d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples) + 0.5 * d_carrier_phase_rate_step_rad * static_cast<double>(d_current_prn_length_samples) * static_cast<double>(d_current_prn_length_samples));
 
     //################### DLL COMMANDS #################################################
     // code phase step (Code resampler phase increment per sample) [chips/sample]
@@ -974,7 +978,7 @@ void dll_pll_veml_tracking::log_data(bool integrating)
                     // carrier and code frequency
                     tmp_float = d_carrier_doppler_hz;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
-                    // carrier phase rate [Hz/s^2]
+                    // carrier phase rate [Hz/s]
                     tmp_float = d_carrier_phase_rate_step_rad * trk_parameters.fs_in * trk_parameters.fs_in / PI_2;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     tmp_float = d_code_freq_chips;

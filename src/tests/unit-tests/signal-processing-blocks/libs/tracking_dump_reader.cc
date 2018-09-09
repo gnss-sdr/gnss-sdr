@@ -45,6 +45,7 @@ bool tracking_dump_reader::read_binary_obs()
             d_dump_file.read(reinterpret_cast<char *>(&PRN_start_sample_count), sizeof(uint64_t));
             d_dump_file.read(reinterpret_cast<char *>(&acc_carrier_phase_rad), sizeof(float));
             d_dump_file.read(reinterpret_cast<char *>(&carrier_doppler_hz), sizeof(float));
+            d_dump_file.read(reinterpret_cast<char *>(&carrier_doppler_rate_hz_s), sizeof(float));
             d_dump_file.read(reinterpret_cast<char *>(&code_freq_chips), sizeof(float));
             d_dump_file.read(reinterpret_cast<char *>(&carr_error_hz), sizeof(float));
             d_dump_file.read(reinterpret_cast<char *>(&carr_error_filt_hz), sizeof(float));
@@ -83,7 +84,7 @@ int64_t tracking_dump_reader::num_epochs()
 {
     std::ifstream::pos_type size;
     int number_of_double_vars = 1;
-    int number_of_float_vars = 17;
+    int number_of_float_vars = 18;
     int epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
                            sizeof(float) * number_of_float_vars + sizeof(unsigned int);
     std::ifstream tmpfile(d_dump_filename.c_str(), std::ios::binary | std::ios::ate);

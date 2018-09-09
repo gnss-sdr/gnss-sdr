@@ -57,7 +57,7 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     int fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     trk_param.fs_in = fs_in;
-    trk_param.use_high_dynamics_resampler = configuration->property(role + ".high_dyn", false);
+    trk_param.high_dyn = configuration->property(role + ".high_dyn", false);
     if (configuration->property(role + ".cp_smoother_length", 10) < 1)
         {
             trk_param.smoother_length = 1;

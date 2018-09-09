@@ -18,6 +18,7 @@
 
 
 add_subdirectory(unit-tests/signal-processing-blocks/libs)
+add_subdirectory(system-tests/libs)
 
 ################################################################################
 # Google Test - https://github.com/google/googletest
@@ -54,7 +55,7 @@ if(NOT ${GTEST_DIR_LOCAL})
          GIT_TAG release-${GNSSSDR_GTEST_LOCAL_VERSION}
          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
-         CMAKE_ARGS ${GTEST_COMPILER} -DBUILD_GTEST=ON -DBUILD_GMOCK=OFF ${TOOLCHAIN_ARG}
+         CMAKE_ARGS ${GTEST_COMPILER} -DINSTALL_GTEST=OFF -DBUILD_GMOCK=OFF ${TOOLCHAIN_ARG}
          UPDATE_COMMAND ""
          PATCH_COMMAND ""
          INSTALL_COMMAND ""
@@ -66,7 +67,7 @@ if(NOT ${GTEST_DIR_LOCAL})
          GIT_TAG release-${GNSSSDR_GTEST_LOCAL_VERSION}
          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
-         CMAKE_ARGS ${GTEST_COMPILER} -DBUILD_GTEST=ON -DBUILD_GMOCK=OFF ${TOOLCHAIN_ARG}
+         CMAKE_ARGS ${GTEST_COMPILER} -DINSTALL_GTEST=OFF -DBUILD_GMOCK=OFF ${TOOLCHAIN_ARG}
          UPDATE_COMMAND ""
          PATCH_COMMAND ""
          BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/googletest/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
@@ -135,6 +136,10 @@ if(Boost_VERSION LESS 105000)
      add_definitions(-DOLD_BOOST=1)
 endif(Boost_VERSION LESS 105000)
 
+if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13.4" )
+     add_definitions( -DGR_GREATER_38=1 )
+endif(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13.4" )
+
 if(OPENSSL_FOUND)
     add_definitions( -DUSE_OPENSSL_FALLBACK=1 )
 endif(OPENSSL_FOUND)
@@ -163,8 +168,12 @@ if(GNUPLOT_FOUND)
 endif(GNUPLOT_FOUND)
 
 if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.15" )
-     add_definitions( -DGR_GREATER_38=1 )
+    add_definitions( -DGR_GREATER_38=1 )
 endif(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.15" )
+
+if(ENABLE_UNIT_TESTING_MINIMAL)
+    add_definitions(-DUNIT_TESTING_MINIMAL=1)
+endif(ENABLE_UNIT_TESTING_MINIMAL)
 
 
 ################################################################################
@@ -342,6 +351,7 @@ set(LIST_INCLUDE_DIRS
      ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
      ${CMAKE_SOURCE_DIR}/src/tests/unit-tests/signal-processing-blocks/libs
+     ${CMAKE_SOURCE_DIR}/src/tests/system-tests/libs
      ${CMAKE_SOURCE_DIR}/src/tests/common-files
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
@@ -489,29 +499,24 @@ if(ENABLE_SYSTEM_TESTING)
                       ${GTEST_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES}
                       ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES}
                       ${GNURADIO_ANALOG_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES}
-                      gnss_sp_libs gnss_rx gnss_system_parameters )
+                      gnss_sp_libs gnss_rx gnss_system_parameters 
+                      system_testing_lib)
 
         add_system_test(position_test)
 
-        if(GPSTK_FOUND OR OWN_GPSTK)
+        #if(GPSTK_FOUND OR OWN_GPSTK)
             ## OBS_SYSTEM_TEST and OBS_GPS_L1_SYSTEM_TEST
-            set(OPT_LIBS_ ${GFlags_LIBS} ${GLOG_LIBRARIES} ${GTEST_LIBRARIES}
-                          gnss_sp_libs gnss_rx ${gpstk_libs} )
-            set(OPT_INCLUDES_ ${GPSTK_INCLUDE_DIRS} ${GPSTK_INCLUDE_DIRS}/gpstk)
-            add_system_test(obs_gps_l1_system_test)
-            add_system_test(obs_system_test)
-        endif(GPSTK_FOUND OR OWN_GPSTK)
+        #    set(OPT_LIBS_ ${GFlags_LIBS} ${GLOG_LIBRARIES} ${GTEST_LIBRARIES}
+        #                  gnss_sp_libs gnss_rx ${gpstk_libs} )
+        #    set(OPT_INCLUDES_ ${GPSTK_INCLUDE_DIRS} ${GPSTK_INCLUDE_DIRS}/gpstk)
+        #    add_system_test(obs_gps_l1_system_test)
+        #    add_system_test(obs_system_test)
+        #endif(GPSTK_FOUND OR OWN_GPSTK)
     else(ENABLE_SYSTEM_TESTING_EXTRA)
         # Avoid working with old executables if they were switched ON and then OFF
         if(EXISTS ${CMAKE_SOURCE_DIR}/install/position_test)
            file(REMOVE ${CMAKE_SOURCE_DIR}/install/position_test)
         endif(EXISTS ${CMAKE_SOURCE_DIR}/install/position_test)
-        if(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
-           file(REMOVE ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
-        endif(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
-        if(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_system_test)
-           file(REMOVE ${CMAKE_SOURCE_DIR}/install/obs_system_test)
-        endif(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_system_test)
     endif(ENABLE_SYSTEM_TESTING_EXTRA)
 else(ENABLE_SYSTEM_TESTING)
     # Avoid working with old executables if they were switched ON and then OFF
@@ -521,12 +526,6 @@ else(ENABLE_SYSTEM_TESTING)
     if(EXISTS ${CMAKE_SOURCE_DIR}/install/position_test)
         file(REMOVE ${CMAKE_SOURCE_DIR}/install/position_test)
     endif(EXISTS ${CMAKE_SOURCE_DIR}/install/position_test)
-    if(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
-       file(REMOVE ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
-    endif(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_gps_l1_system_test)
-    if(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_system_test)
-       file(REMOVE ${CMAKE_SOURCE_DIR}/install/obs_system_test)
-    endif(EXISTS ${CMAKE_SOURCE_DIR}/install/obs_system_test)
 endif(ENABLE_SYSTEM_TESTING)
 
 

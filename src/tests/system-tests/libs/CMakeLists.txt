@@ -17,14 +17,10 @@
 #
 
 
-set(SIGNAL_PROCESSING_TESTING_LIB_SOURCES
-    acquisition_dump_reader.cc
-    acquisition_msg_rx.cc
-    tracking_dump_reader.cc
-    tlm_dump_reader.cc  
-    observables_dump_reader.cc    
-    tracking_true_obs_reader.cc
-    true_observables_reader.cc
+set(SYSTEM_TESTING_LIB_SOURCES
+    geofunctions.cc
+    spirent_motion_csv_dump_reader.cc
+    rtklib_solver_dump_reader.cc
 )
 
 include_directories(
@@ -32,16 +28,17 @@ include_directories(
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${MATIO_INCLUDE_DIRS}
+     ${ARMADILLO_INCLUDE_DIRS}
 )
 
 
-file(GLOB SIGNAL_PROCESSING_TESTING_LIB_HEADERS "*.h")
-list(SORT SIGNAL_PROCESSING_TESTING_LIB_HEADERS)
-add_library(signal_processing_testing_lib ${SIGNAL_PROCESSING_TESTING_LIB_SOURCES} ${SIGNAL_PROCESSING_TESTING_LIB_HEADERS})
-source_group(Headers FILES ${SIGNAL_PROCESSING_TESTING_LIB_HEADERS})
+file(GLOB SYSTEM_TESTING_LIB_HEADERS "*.h")
+list(SORT SYSTEM_TESTING_LIB_HEADERS)
+add_library(system_testing_lib ${SYSTEM_TESTING_LIB_SOURCES} ${SYSTEM_TESTING_LIB_HEADERS})
+source_group(Headers FILES ${SYSTEM_TESTING_LIB_HEADERS})
 
 if(NOT MATIO_FOUND)
-   add_dependencies(signal_processing_testing_lib matio-${GNSSSDR_MATIO_LOCAL_VERSION} glog-${glog_RELEASE})
+   add_dependencies(system_testing_lib armadillo-${armadillo_RELEASE} matio-${GNSSSDR_MATIO_LOCAL_VERSION})
 else(NOT MATIO_FOUND)
-   add_dependencies(signal_processing_testing_lib glog-${glog_RELEASE})
+   add_dependencies(system_testing_lib armadillo-${armadillo_RELEASE})
 endif(NOT MATIO_FOUND)

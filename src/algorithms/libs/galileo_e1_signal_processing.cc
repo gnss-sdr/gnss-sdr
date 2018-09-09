@@ -108,7 +108,7 @@ void galileo_e1_sinboc_61_gen_int(int* _dest, int* _prn, uint32_t _length_out)
 void galileo_e1_code_gen_sinboc11_float(float* _dest, char _Signal[3], uint32_t _prn)
 {
     std::string _galileo_signal = _Signal;
-    const uint32_t _codeLength = static_cast<const uint32_t>(Galileo_E1_B_CODE_LENGTH_CHIPS);
+    const uint32_t _codeLength = static_cast<uint32_t>(Galileo_E1_B_CODE_LENGTH_CHIPS);
     int32_t primary_code_E1_chips[4092];                            // _codeLength not accepted by Clang
     galileo_e1_code_gen_int(primary_code_E1_chips, _Signal, _prn);  //generate Galileo E1 code, 1 sample per chip
     for (uint32_t i = 0; i < _codeLength; i++)

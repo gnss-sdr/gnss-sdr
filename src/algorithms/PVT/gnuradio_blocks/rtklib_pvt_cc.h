@@ -122,7 +122,6 @@ private:
 
     uint32_t d_nchannels;
     std::string d_dump_filename;
-    std::ofstream d_dump_file;
 
     int32_t d_output_rate_ms;
     int32_t d_display_rate_ms;

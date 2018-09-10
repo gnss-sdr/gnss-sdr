@@ -65,6 +65,7 @@ public:
     float carrier_doppler_hz;
     float carrier_doppler_rate_hz_s;
     float code_freq_chips;
+    float code_freq_rate_chips;
 
     // PLL commands
     float carr_error_hz;

@@ -146,9 +146,10 @@ private:
 
     double d_code_phase_step_chips;
     double d_code_phase_rate_step_chips;
+    boost::circular_buffer<double> d_code_ph_history;
     double d_carrier_phase_step_rad;
     double d_carrier_phase_rate_step_rad;
-    boost::circular_buffer<double> d_cp_history;
+    boost::circular_buffer<double> d_carr_ph_history;
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;
     float d_rem_carr_phase_rad;
@@ -166,7 +167,6 @@ private:
     double d_carr_error_filt_hz;
     double d_code_error_chips;
     double d_code_error_filt_chips;
-    double d_K_blk_samples;
     double d_code_freq_chips;
     double d_carrier_doppler_hz;
     double d_acc_carrier_phase_rad;

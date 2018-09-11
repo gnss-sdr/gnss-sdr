@@ -407,8 +407,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     clear_tracking_vars();
     if (trk_parameters.smoother_length > 0)
         {
-            d_carr_ph_history.resize(trk_parameters.smoother_length);
-            d_code_ph_history.resize(trk_parameters.smoother_length);
+            d_carr_ph_history.resize(trk_parameters.smoother_length * 2);
+            d_code_ph_history.resize(trk_parameters.smoother_length * 2);
         }
     else
         {
@@ -812,17 +812,30 @@ void dll_pll_veml_tracking::update_tracking_vars()
     //################### PLL COMMANDS #################################################
     // carrier phase step (NCO phase increment per sample) [rads/sample]
     // carrier phase difference = carrier_phase(t2) - carrier_phase(t1)
-    double tmp_diff = -d_carrier_phase_step_rad;  // The previous cp value is stored in the variable
+    //double tmp_diff = -d_carrier_phase_step_rad;  // The previous cp value is stored in the variable
     d_carrier_phase_step_rad = PI_2 * d_carrier_doppler_hz / trk_parameters.fs_in;
-    tmp_diff += d_carrier_phase_step_rad;  // The new cp value is added to the previous in order to obtain the difference
+    //tmp_diff += d_carrier_phase_step_rad;  // The new cp value is added to the previous in order to obtain the difference
     // carrier phase rate step (NCO phase increment rate per sample) [rads/sample^2]
-    tmp_diff /= static_cast<double>(d_current_prn_length_samples);
+    //tmp_diff /= static_cast<double>(d_current_prn_length_samples);
     if (trk_parameters.high_dyn)
         {
-            d_carr_ph_history.push_back(tmp_diff);
+            d_carr_ph_history.push_back(std::pair<double, double>(d_carrier_phase_step_rad, static_cast<double>(d_current_prn_length_samples)));
             if (d_carr_ph_history.full())
                 {
-                    d_carrier_phase_rate_step_rad = std::accumulate(d_carr_ph_history.begin(), d_carr_ph_history.end(), 0.0) / static_cast<double>(d_carr_ph_history.size());
+                    //d_carr_ph_history.front().second = 0.0;
+                    //d_carr_ph_history.at(trk_parameters.smoother_length).second = 0.0;
+                    double tmp_cp1 = 0.0;
+                    double tmp_cp2 = 0.0;
+                    double tmp_samples = 0.0;
+                    for (unsigned int k = 0; k < trk_parameters.smoother_length; k++)
+                        {
+                            tmp_cp1 += d_carr_ph_history.at(k).first;
+                            tmp_cp2 += d_carr_ph_history.at(trk_parameters.smoother_length * 2 - k - 1).first;
+                            tmp_samples += d_carr_ph_history.at(trk_parameters.smoother_length * 2 - k - 1).second;
+                        }
+                    tmp_cp1 /= static_cast<double>(trk_parameters.smoother_length);
+                    tmp_cp2 /= static_cast<double>(trk_parameters.smoother_length);
+                    d_carrier_phase_rate_step_rad = (tmp_cp2 - tmp_cp1) / tmp_samples;
                 }
         }
 
@@ -837,16 +850,29 @@ void dll_pll_veml_tracking::update_tracking_vars()
 
     //################### DLL COMMANDS #################################################
     // code phase step (Code resampler phase increment per sample) [chips/sample]
-    tmp_diff = -d_code_phase_step_chips;
+    //tmp_diff = -d_code_phase_step_chips;
     d_code_phase_step_chips = d_code_freq_chips / trk_parameters.fs_in;
-    tmp_diff += d_code_phase_step_chips;
-    tmp_diff /= static_cast<double>(d_current_prn_length_samples);
+    //tmp_diff += d_code_phase_step_chips;
+    //tmp_diff /= static_cast<double>(d_current_prn_length_samples);
     if (trk_parameters.high_dyn)
         {
-            d_code_ph_history.push_back(tmp_diff);
+            d_code_ph_history.push_back(std::pair<double, double>(d_code_phase_step_chips, static_cast<double>(d_current_prn_length_samples)));
             if (d_code_ph_history.full())
                 {
-                    d_code_phase_rate_step_chips = std::accumulate(d_code_ph_history.begin(), d_code_ph_history.end(), 0.0) / static_cast<double>(d_code_ph_history.size());
+                    //d_code_ph_history.front().second = 0.0;
+                    //d_code_ph_history.at(trk_parameters.smoother_length).second = 0.0;
+                    double tmp_cp1 = 0.0;
+                    double tmp_cp2 = 0.0;
+                    double tmp_samples = 0.0;
+                    for (unsigned int k = 0; k < trk_parameters.smoother_length; k++)
+                        {
+                            tmp_cp1 += d_code_ph_history.at(k).first;
+                            tmp_cp2 += d_code_ph_history.at(trk_parameters.smoother_length * 2 - k - 1).first;
+                            tmp_samples += d_code_ph_history.at(trk_parameters.smoother_length * 2 - k - 1).second;
+                        }
+                    tmp_cp1 /= static_cast<double>(trk_parameters.smoother_length);
+                    tmp_cp2 /= static_cast<double>(trk_parameters.smoother_length);
+                    d_code_phase_rate_step_chips = (tmp_cp2 - tmp_cp1) / tmp_samples;
                 }
         }
     // remnant code phase [chips]

@@ -60,7 +60,7 @@ public:
     bool set_local_code(uint32_t PRN);
     bool free();
     void set_doppler_sweep(uint32_t num_sweeps);
-    void set_doppler_sweep_debug(uint32_t num_sweeps, uint32_t doppler_index);
+    //void set_doppler_sweep_debug(uint32_t num_sweeps, uint32_t doppler_index);
     void run_acquisition(void);
     void set_phase_step(uint32_t doppler_index);
     void read_acquisition_results(uint32_t *max_index, float *max_magnitude,
@@ -88,6 +88,16 @@ public:
         d_doppler_step = doppler_step;
     }
 
+    /*!
+     * \brief this function is only used in the unit test
+     */
+    void set_single_doppler_flag(unsigned int single_doppler_flag);
+
+    /*!
+     * \brief this function is only used in the unit test
+     */
+    void reset_acquisition(void);
+
 private:
     int64_t d_fs_in;
     // data related to the hardware module and the driver
@@ -105,8 +115,10 @@ private:
     uint32_t fpga_acquisition_test_register(uint32_t writeval);
     void fpga_configure_acquisition_local_code(lv_16sc_t fft_local_code[]);
     void configure_acquisition();
-    void reset_acquisition(void);
     void close_device();
+
+    // test parameters
+    unsigned int d_single_doppler_flag; // this flag is only used for testing purposes
 };
 
 #endif /* GNSS_SDR_FPGA_ACQUISITION_H_ */

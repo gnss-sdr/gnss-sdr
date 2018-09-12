@@ -320,7 +320,7 @@ bool fpga_multicorrelator_8sc::free()
 
 void fpga_multicorrelator_8sc::set_channel(uint32_t channel)
 {
-    //printf("www trk set channel\n");
+    //printf("www trk set channel channel=%lu\n", (unsigned long) channel);
     char device_io_name[MAX_LENGTH_DEVICEIO_NAME];  // driver io name
     d_channel = channel;
 

@@ -1218,6 +1218,7 @@ void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
 int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
+
     // Block input data and block output stream pointers
     Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
 
@@ -1247,15 +1248,29 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                 multicorrelator_fpga->lock_channel();
                 uint64_t counter_value = multicorrelator_fpga->read_sample_counter();
                 //printf("333333 counter_value = %llu\n", counter_value);
-                //printf("333333 current_synchro_data.Acq_samplestamp_samples = %d\n", current_synchro_data.Acq_samplestamp_samples);
+                //printf("333333 current_synchro_data.Acq_samplestamp_samples = %llu\n", current_synchro_data.Acq_samplestamp_samples);
                 //printf("333333 current_synchro_data.Acq_delay_samples = %f\n", current_synchro_data.Acq_delay_samples);
                 //printf("333333 d_correlation_length_samples = %d\n", d_correlation_length_samples);
-                uint32_t num_frames = ceil((counter_value - current_synchro_data.Acq_samplestamp_samples - current_synchro_data.Acq_delay_samples) / d_correlation_length_samples);
-                //uint32_t num_frames = ceil((counter_value - current_synchro_data.Acq_samplestamp_samples*2 - current_synchro_data.Acq_delay_samples*2) / d_correlation_length_samples);
-                //printf("333333 num_frames = %d\n", num_frames);
-                uint64_t absolute_samples_offset = static_cast<uint64_t>(current_synchro_data.Acq_delay_samples + current_synchro_data.Acq_samplestamp_samples + num_frames * d_correlation_length_samples);
-                //uint64_t absolute_samples_offset = static_cast<uint64_t>(current_synchro_data.Acq_delay_samples*2 + current_synchro_data.Acq_samplestamp_samples*2 + num_frames * d_correlation_length_samples);
-                //printf("333333 absolute_samples_offset = %llu\n", absolute_samples_offset);
+
+                uint64_t absolute_samples_offset;
+
+                if (counter_value > (current_synchro_data.Acq_samplestamp_samples + current_synchro_data.Acq_delay_samples))
+                {
+                	// normal operation
+                    uint32_t num_frames = ceil((counter_value - current_synchro_data.Acq_samplestamp_samples - current_synchro_data.Acq_delay_samples) / d_correlation_length_samples);
+                    //uint32_t num_frames = ceil((counter_value - current_synchro_data.Acq_samplestamp_samples*2 - current_synchro_data.Acq_delay_samples*2) / d_correlation_length_samples);
+                    //printf("333333 num_frames = %d\n", num_frames);
+                    absolute_samples_offset = static_cast<uint64_t>(current_synchro_data.Acq_delay_samples + current_synchro_data.Acq_samplestamp_samples + num_frames * d_correlation_length_samples);
+                    //uint64_t absolute_samples_offset = static_cast<uint64_t>(current_synchro_data.Acq_delay_samples*2 + current_synchro_data.Acq_samplestamp_samples*2 + num_frames * d_correlation_length_samples);
+                    //printf("333333 absolute_samples_offset = %llu\n", absolute_samples_offset);
+                }
+                else
+                {
+                	// during the unit tests the counter value may be reset after the acquisition process. We have to take this into account
+                	absolute_samples_offset = static_cast<uint64_t>(current_synchro_data.Acq_delay_samples + current_synchro_data.Acq_samplestamp_samples);
+                	//printf("333333 absolute_samples_offset = %llu\n", absolute_samples_offset);
+                }
+
                 multicorrelator_fpga->set_initial_sample(absolute_samples_offset);
                 d_absolute_samples_offset = absolute_samples_offset;
                 d_sample_counter = absolute_samples_offset;
@@ -1268,6 +1283,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
 
         case 2:
             {
+            	//printf("trk state 2 counter value = %" PRIu64 "\n", multicorrelator_fpga->read_sample_counter());
                 d_sample_counter = d_sample_counter_next;
                 d_sample_counter_next = d_sample_counter + static_cast<uint64_t>(d_current_prn_length_samples);
 
@@ -1481,6 +1497,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
 
         case 3:
             {
+            	//printf("trk state 3 counter value = %" PRIu64 "\n", multicorrelator_fpga->read_sample_counter());
                 d_sample_counter = d_sample_counter_next;
                 d_sample_counter_next = d_sample_counter + static_cast<uint64_t>(d_current_prn_length_samples);
 
@@ -1541,6 +1558,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
 
         case 4:  // narrow tracking
             {
+            	//printf("trk state 4 counter value = %" PRIu64 "\n", multicorrelator_fpga->read_sample_counter());
                 d_sample_counter = d_sample_counter_next;
                 d_sample_counter_next = d_sample_counter + static_cast<uint64_t>(d_current_prn_length_samples);
 

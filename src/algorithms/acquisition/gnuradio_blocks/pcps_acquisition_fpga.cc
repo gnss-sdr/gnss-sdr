@@ -130,8 +130,10 @@ void pcps_acquisition_fpga::init()
     d_gnss_synchro->Acq_samplestamp_samples = 0;
     d_mag = 0.0;
     d_input_power = 0.0;
-    d_num_doppler_bins = static_cast<uint32_t>(std::ceil(static_cast<double>(static_cast<int32_t>(acq_parameters.doppler_max) - static_cast<int32_t>(-acq_parameters.doppler_max)) / static_cast<double>(d_doppler_step)));
-
+    d_num_doppler_bins = static_cast<uint32_t>(std::ceil(static_cast<double>(static_cast<int32_t>(acq_parameters.doppler_max) - static_cast<int32_t>(-acq_parameters.doppler_max)) / static_cast<double>(d_doppler_step))) + 1;
+    //printf("acq gnuradioblock doppler_max = %lu\n", (unsigned long) static_cast<int32_t>(acq_parameters.doppler_max));
+    //printf("acq gnuradioblock doppler_step = %lu\n", (unsigned long) d_doppler_step);
+    //printf("acq gnuradioblock d_num_doppler_bins = %lu\n", (unsigned long) d_num_doppler_bins);
     acquisition_fpga->init();
     //  printf("acq init end\n");
 }
@@ -290,15 +292,15 @@ void pcps_acquisition_fpga::set_active(bool active)
 
 
     // debug
-    debug_d_max_absolute = magt;
-    debug_d_input_power_absolute = d_input_power;
-    debug_indext = indext;
-    debug_doppler_index = d_doppler_index;
+    //debug_d_max_absolute = magt;
+    //debug_d_input_power_absolute = d_input_power;
+    //debug_indext = indext;
+    //debug_doppler_index = d_doppler_index;
 
     //  temp_d_input_power = d_input_power;
 
     d_input_power = (d_input_power - d_mag) / (d_fft_size - 1);
-    int32_t doppler = -static_cast<int32_t>(acq_parameters.doppler_max) + d_doppler_step * d_doppler_index;
+    int32_t doppler = -static_cast<int32_t>(acq_parameters.doppler_max) + d_doppler_step * (d_doppler_index - 1);
     //d_gnss_synchro->Acq_delay_samples = static_cast<double>(2*(indext % (2*acq_parameters.samples_per_code)));
 
 
@@ -382,3 +384,26 @@ int pcps_acquisition_fpga::general_work(int noutput_items __attribute__((unused)
     // the general work is not used with the acquisition that uses the FPGA
     return noutput_items;
 }
+
+
+// this function is only used for the unit tests
+void pcps_acquisition_fpga::set_single_doppler_flag(unsigned int single_doppler_flag)
+{
+	acquisition_fpga->set_single_doppler_flag(single_doppler_flag);
+}
+
+// this function is only used for the unit tests
+void pcps_acquisition_fpga::read_acquisition_results(uint32_t *max_index,
+    float *max_magnitude, uint64_t *initial_sample, float *power_sum, uint32_t *doppler_index)
+{
+	acquisition_fpga->read_acquisition_results(max_index, max_magnitude,
+	        initial_sample, power_sum, doppler_index);
+}
+
+// this function is only used for the unit tests
+void pcps_acquisition_fpga::reset_acquisition(void)
+{
+	acquisition_fpga->reset_acquisition();
+}
+
+

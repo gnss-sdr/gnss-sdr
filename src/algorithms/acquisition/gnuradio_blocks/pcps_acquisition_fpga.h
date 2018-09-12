@@ -119,13 +119,15 @@ private:
     std::shared_ptr<fpga_acquisition> acquisition_fpga;
 
     // debug
-    float debug_d_max_absolute;
-    float debug_d_input_power_absolute;
-    int32_t debug_indext;
-    int32_t debug_doppler_index;
+    //float debug_d_max_absolute;
+    //float debug_d_input_power_absolute;
+    //int32_t debug_indext;
+    //int32_t debug_doppler_index;
 
     float d_downsampling_factor;
     uint32_t d_select_queue_Fpga;
+
+
 
 public:
     ~pcps_acquisition_fpga();
@@ -228,6 +230,22 @@ public:
     int general_work(int noutput_items, gr_vector_int& ninput_items,
         gr_vector_const_void_star& input_items,
         gr_vector_void_star& output_items);
+
+    /*!
+     * \brief This function is only used for the unit tests
+     */
+    void set_single_doppler_flag(unsigned int single_doppler_flag);
+
+    /*!
+     * \brief This funciton is only used for the unit tests
+     */
+    void read_acquisition_results(uint32_t *max_index,
+        float *max_magnitude, uint64_t *initial_sample, float *power_sum, uint32_t *doppler_index);
+
+    /*!
+     * \brief This funciton is only used for the unit tests
+     */
+    void reset_acquisition(void);
 };
 
 #endif /* GNSS_SDR_PCPS_ACQUISITION_FPGA_H_*/

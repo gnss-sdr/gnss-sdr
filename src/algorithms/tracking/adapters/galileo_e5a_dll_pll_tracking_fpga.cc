@@ -123,7 +123,7 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     std::string default_device_name = "/dev/uio";
     std::string device_name = configuration->property(role + ".devicename", default_device_name);
     trk_param_fpga.device_name = device_name;
-    unsigned int device_base = configuration->property(role + ".device_base", 1);
+    unsigned int device_base = configuration->property(role + ".device_base", 27);
     trk_param_fpga.device_base = device_base;
     //unsigned int multicorr_type = configuration->property(role + ".multicorr_type", 1);
     trk_param_fpga.multicorr_type = 1; // 0 -> 3 correlators, 1 -> up to 5+1 correlators

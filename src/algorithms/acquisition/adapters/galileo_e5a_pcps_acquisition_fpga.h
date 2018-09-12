@@ -124,6 +124,21 @@ public:
      */
     void set_state(int state) override;
 
+    /*!
+     * \brief This function is only used in the unit tests
+     */
+    void set_single_doppler_flag(unsigned int single_doppler_flag);
+    /*!
+     * \brief This function is only used in the unit tests
+     */
+    void read_acquisition_results(uint32_t *max_index,
+        float *max_magnitude, uint64_t *initial_sample, float *power_sum, uint32_t *doppler_index);
+
+    /*!
+     * \brief This function is only used in the unit tests
+     */
+    void reset_acquisition(void);
+
 private:
     //float calculate_threshold(float pfa);
 

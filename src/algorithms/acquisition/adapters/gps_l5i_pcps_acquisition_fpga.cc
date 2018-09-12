@@ -323,6 +323,26 @@ void GpsL5iPcpsAcquisitionFpga::set_state(int state)
 //}
 
 
+// this function is only used for the unit tests
+void GpsL5iPcpsAcquisitionFpga::set_single_doppler_flag(unsigned int single_doppler_flag)
+{
+	acquisition_fpga_->set_single_doppler_flag(single_doppler_flag);
+}
+// this function is only used for the unit tests
+void GpsL5iPcpsAcquisitionFpga::read_acquisition_results(uint32_t *max_index,
+    float *max_magnitude, uint64_t *initial_sample, float *power_sum, uint32_t *doppler_index)
+{
+	acquisition_fpga_->read_acquisition_results(max_index, max_magnitude,
+	        initial_sample, power_sum, doppler_index);
+}
+
+// this function is only used for the unit tests
+void GpsL5iPcpsAcquisitionFpga::reset_acquisition(void)
+{
+	acquisition_fpga_->reset_acquisition();
+}
+
+
 void GpsL5iPcpsAcquisitionFpga::connect(gr::top_block_sptr top_block)
 {
 //    if (item_type_.compare("gr_complex") == 0)

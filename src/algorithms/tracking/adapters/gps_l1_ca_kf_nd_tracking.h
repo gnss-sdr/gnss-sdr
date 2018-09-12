@@ -1,7 +1,7 @@
 /*!
- * \file GPS_L1_CA_KF3_Tracking.h
+ * \file GPS_L1_CA_KF_ND_Tracking.h
  * \brief  Interface of an adapter of a DLL + Kalman carrier
- * tracking loop block for GPS L1 C/A signals
+ * tracking loop block for GPS L1 C/A signals.
  * \author Javier Arribas, 2018. jarribas(at)cttc.es
  * \author Jordi Vila-Valls 2018. jvila(at)cttc.es
  * \author Carles Fernandez-Prades 2018. cfernandez(at)cttc.es
@@ -38,10 +38,10 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L1_CA_KF3_TRACKING_H_
-#define GNSS_SDR_GPS_L1_CA_KF3_TRACKING_H_
+#ifndef GNSS_SDR_GPS_L1_CA_KF_ND_TRACKING_H_
+#define GNSS_SDR_GPS_L1_CA_KF_ND_TRACKING_H_
 
-#include "gps_l1_ca_kf3_tracking_cc.h"
+#include "gps_l1_ca_kf_nd_tracking_cc.h"
 #include "tracking_interface.h"
 #include <string>
 
@@ -50,25 +50,25 @@ class ConfigurationInterface;
 /*!
  * \brief This class implements a code DLL + carrier PLL tracking loop
  */
-class GpsL1CaKf3Tracking : public TrackingInterface
+class GpsL1CaKfNdTracking : public TrackingInterface
 {
 public:
-    GpsL1CaKf3Tracking(ConfigurationInterface* configuration,
+    GpsL1CaKfNdTracking(ConfigurationInterface* configuration,
         std::string role,
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~GpsL1CaKf3Tracking();
+    virtual ~GpsL1CaKfNdTracking();
 
     inline std::string role() override
     {
         return role_;
     }
 
-    //! Returns "GPS_L1_CA_KF3_Tracking"
+    //! Returns "GPS_L1_CA_KF_ND_Tracking"
     inline std::string implementation() override
     {
-        return "GPS_L1_CA_KF3_Tracking";
+        return "GPS_L1_CA_KF_ND_Tracking";
     }
 
     inline size_t item_size() override
@@ -95,7 +95,7 @@ public:
     void start_tracking() override;
 
 private:
-    gps_l1_ca_kf3_tracking_cc_sptr tracking_;
+    gps_l1_ca_kf_nd_tracking_cc_sptr tracking_;
     size_t item_size_;
     unsigned int channel_;
     std::string role_;
@@ -103,4 +103,4 @@ private:
     unsigned int out_streams_;
 };
 
-#endif  // GNSS_SDR_GPS_L1_CA_KF3_TRACKING_H_
+#endif  // GNSS_SDR_GPS_L1_CA_KF_ND_TRACKING_H_

@@ -5,6 +5,7 @@
  * \author Javier Arribas, 2018. jarribas(at)cttc.es
  * \author Jordi Vila-Valls 2018. jvila(at)cttc.es
  * \author Carles Fernandez-Prades 2018. cfernandez(at)cttc.es
+ * \author Gerald LaMountain 2018. gerald(at)ece.neu.edu
  *
  * Reference:
  * J. Vila-Valls, P. Closas, M. Navarro and C. Fernández-Prades,

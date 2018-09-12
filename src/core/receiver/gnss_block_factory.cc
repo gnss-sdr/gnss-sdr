@@ -108,6 +108,7 @@
 #include "gps_l1_ca_kf2_tracking.h"
 #include "gps_l1_ca_kf3_tracking.h"
 #include "gps_l1_ca_kf_bce_tracking.h"
+#include "gps_l1_ca_kf_nd_tracking.h"
 
 #if RAW_UDP
 #include "custom_udp_signal_source.h"
@@ -1529,6 +1530,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     out_streams));
             block = std::move(block_);
         }
+    else if (implementation.compare("GPS_L1_CA_KF_ND_Tracking") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new GpsL1CaKfNdTracking(configuration.get(), role, in_streams,
+                    out_streams));
+            block = std::move(block_);
+        }
     else if (implementation.compare("GPS_L1_CA_DLL_PLL_C_Aid_Tracking") == 0)
         {
             std::unique_ptr<TrackingInterface> block_(new GpsL1CaDllPllCAidTracking(configuration.get(), role, in_streams,
@@ -1925,6 +1932,12 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
     else if (implementation.compare("GPS_L1_CA_KF_BCE_Tracking") == 0)
         {
             std::unique_ptr<TrackingInterface> block_(new GpsL1CaKfBceTracking(configuration.get(), role, in_streams,
+                    out_streams));
+            block = std::move(block_);
+        }
+    else if (implementation.compare("GPS_L1_CA_KF_ND_Tracking") == 0)
+        {
+            std::unique_ptr<TrackingInterface> block_(new GpsL1CaKfNdTracking(configuration.get(), role, in_streams,
                     out_streams));
             block = std::move(block_);
         }

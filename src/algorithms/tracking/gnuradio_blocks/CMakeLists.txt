@@ -38,6 +38,7 @@ set(TRACKING_GR_BLOCKS_SOURCES
      gps_l1_ca_kf2_tracking_cc.cc
      gps_l1_ca_kf3_tracking_cc.cc
      gps_l1_ca_kf_bce_tracking_cc.cc
+     gps_l1_ca_kf_nd_tracking_cc.cc
      glonass_l2_ca_dll_pll_tracking_cc.cc
      glonass_l2_ca_dll_pll_c_aid_tracking_cc.cc
      glonass_l2_ca_dll_pll_c_aid_tracking_sc.cc

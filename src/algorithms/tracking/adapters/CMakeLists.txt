@@ -39,6 +39,7 @@ set(TRACKING_ADAPTER_SOURCES
      gps_l1_ca_kf2_tracking.cc
      gps_l1_ca_kf3_tracking.cc
      gps_l1_ca_kf_bce_tracking.cc
+     gps_l1_ca_kf_nd_tracking.cc
      gps_l5_dll_pll_tracking.cc
      glonass_l2_ca_dll_pll_tracking.cc
      glonass_l2_ca_dll_pll_c_aid_tracking.cc

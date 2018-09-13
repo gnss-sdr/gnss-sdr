@@ -345,10 +345,10 @@ void TrackingPullInTestFpga::configure_receiver(
             std::string signal = "5X";
             System_and_Signal = "Galileo E5a";
             signal.copy(gnss_synchro.Signal, 2, 0);
-            if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_b") == 0)
-                {
-                    config->supersede_property("Tracking.implementation", std::string("Galileo_E5a_DLL_PLL_Tracking"));
-                }
+            //if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_b") == 0)
+            //    {
+            //        config->supersede_property("Tracking.implementation", std::string("Galileo_E5a_DLL_PLL_Tracking"));
+            //    }
             config->set_property("Tracking.early_late_space_chips", "0.5");
             config->set_property("Tracking.track_pilot", "false");
             config->set_property("Tracking.order", "2");

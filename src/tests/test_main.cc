@@ -154,6 +154,9 @@ DECLARE_string(log_dir);
 #endif
 #include "unit-tests/signal-processing-blocks/telemetry_decoder/gps_l1_ca_telemetry_decoder_test.cc"
 #include "unit-tests/signal-processing-blocks/observables/hybrid_observables_test.cc"
+#if FPGA_BLOCKS_TEST
+#include "unit-tests/signal-processing-blocks/observables/hybrid_observables_test_fpga.cc"
+#endif
 #endif
 
 #include "unit-tests/system-parameters/glonass_gnav_ephemeris_test.cc"

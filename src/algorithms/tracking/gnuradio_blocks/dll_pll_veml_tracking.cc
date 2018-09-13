@@ -719,7 +719,7 @@ void dll_pll_veml_tracking::do_correlation_step(const gr_complex *input_samples)
     // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
     // perform carrier wipe-off and compute Early, Prompt and Late correlation
     multicorrelator_cpu.set_input_output_vectors(d_correlator_outs, input_samples);
-    float tmp_f = d_rem_carr_phase_rad;
+    //float tmp_f = d_rem_carr_phase_rad;
     multicorrelator_cpu.Carrier_wipeoff_multicorrelator_resampler(
         d_rem_carr_phase_rad,
         d_carrier_phase_step_rad, d_carrier_phase_rate_step_rad,
@@ -733,7 +733,7 @@ void dll_pll_veml_tracking::do_correlation_step(const gr_complex *input_samples)
         {
             correlator_data_cpu.set_input_output_vectors(d_Prompt_Data, input_samples);
             correlator_data_cpu.Carrier_wipeoff_multicorrelator_resampler(
-                tmp_f,
+                d_rem_carr_phase_rad,
                 d_carrier_phase_step_rad, d_carrier_phase_rate_step_rad,
                 static_cast<float>(d_rem_code_phase_chips) * static_cast<float>(d_code_samples_per_chip),
                 static_cast<float>(d_code_phase_step_chips) * static_cast<float>(d_code_samples_per_chip),
@@ -793,6 +793,10 @@ void dll_pll_veml_tracking::clear_tracking_vars()
     d_current_symbol = 0;
     d_Prompt_buffer_deque.clear();
     d_last_prompt = gr_complex(0.0, 0.0);
+    d_carrier_phase_rate_step_rad = 0.0;
+    d_code_phase_rate_step_chips = 0.0;
+    d_carr_ph_history.clear();
+    d_code_ph_history.clear();
 }
 
 
@@ -811,19 +815,13 @@ void dll_pll_veml_tracking::update_tracking_vars()
 
     //################### PLL COMMANDS #################################################
     // carrier phase step (NCO phase increment per sample) [rads/sample]
-    // carrier phase difference = carrier_phase(t2) - carrier_phase(t1)
-    //double tmp_diff = -d_carrier_phase_step_rad;  // The previous cp value is stored in the variable
     d_carrier_phase_step_rad = PI_2 * d_carrier_doppler_hz / trk_parameters.fs_in;
-    //tmp_diff += d_carrier_phase_step_rad;  // The new cp value is added to the previous in order to obtain the difference
     // carrier phase rate step (NCO phase increment rate per sample) [rads/sample^2]
-    //tmp_diff /= static_cast<double>(d_current_prn_length_samples);
     if (trk_parameters.high_dyn)
         {
             d_carr_ph_history.push_back(std::pair<double, double>(d_carrier_phase_step_rad, static_cast<double>(d_current_prn_length_samples)));
             if (d_carr_ph_history.full())
                 {
-                    //d_carr_ph_history.front().second = 0.0;
-                    //d_carr_ph_history.at(trk_parameters.smoother_length).second = 0.0;
                     double tmp_cp1 = 0.0;
                     double tmp_cp2 = 0.0;
                     double tmp_samples = 0.0;
@@ -838,11 +836,9 @@ void dll_pll_veml_tracking::update_tracking_vars()
                     d_carrier_phase_rate_step_rad = (tmp_cp2 - tmp_cp1) / tmp_samples;
                 }
         }
-
-    // Now the remnant carrier phase is computed in the Carrier Wipeoff function
     // remnant carrier phase to prevent overflow in the code NCO
-    //d_rem_carr_phase_rad += (d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples) + 0.5 * d_carrier_phase_rate_step_rad * static_cast<double>(d_current_prn_length_samples) * static_cast<double>(d_current_prn_length_samples));
-    //d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, PI_2);
+    d_rem_carr_phase_rad += static_cast<float>(d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples) + 0.5 * d_carrier_phase_rate_step_rad * static_cast<double>(d_current_prn_length_samples) * static_cast<double>(d_current_prn_length_samples));
+    d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, PI_2);
 
 
     // carrier phase accumulator
@@ -850,17 +846,12 @@ void dll_pll_veml_tracking::update_tracking_vars()
 
     //################### DLL COMMANDS #################################################
     // code phase step (Code resampler phase increment per sample) [chips/sample]
-    //tmp_diff = -d_code_phase_step_chips;
     d_code_phase_step_chips = d_code_freq_chips / trk_parameters.fs_in;
-    //tmp_diff += d_code_phase_step_chips;
-    //tmp_diff /= static_cast<double>(d_current_prn_length_samples);
     if (trk_parameters.high_dyn)
         {
             d_code_ph_history.push_back(std::pair<double, double>(d_code_phase_step_chips, static_cast<double>(d_current_prn_length_samples)));
             if (d_code_ph_history.full())
                 {
-                    //d_code_ph_history.front().second = 0.0;
-                    //d_code_ph_history.at(trk_parameters.smoother_length).second = 0.0;
                     double tmp_cp1 = 0.0;
                     double tmp_cp2 = 0.0;
                     double tmp_samples = 0.0;

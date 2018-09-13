@@ -127,7 +127,7 @@ void cpu_multicorrelator_real_codes::update_local_code(int correlator_length_sam
 
 // Overload Carrier_wipeoff_multicorrelator_resampler to ensure back compatibility
 bool cpu_multicorrelator_real_codes::Carrier_wipeoff_multicorrelator_resampler(
-    float& rem_carrier_phase_in_rad,
+    float rem_carrier_phase_in_rad,
     float phase_step_rad,
     float phase_rate_step_rad,
     float rem_code_phase_chips,
@@ -148,7 +148,7 @@ bool cpu_multicorrelator_real_codes::Carrier_wipeoff_multicorrelator_resampler(
         {
             volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn(d_corr_out, d_sig_in, std::exp(lv_32fc_t(0.0, -phase_step_rad)), phase_offset_as_complex, const_cast<const float**>(d_local_codes_resampled), d_n_correlators, signal_length_samples);
         }
-    rem_carrier_phase_in_rad = std::arg(std::conj(phase_offset_as_complex[0]));
+    //rem_carrier_phase_in_rad = std::arg(std::conj(phase_offset_as_complex[0]));
     return true;
 }
 // Overload Carrier_wipeoff_multicorrelator_resampler to ensure back compatibility

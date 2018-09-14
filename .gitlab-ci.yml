@@ -97,20 +97,34 @@ centos7:
 crosscompile:
   image: ubuntu:xenial
   stage: build
+  tags:
+    - kepler
   script:
     - apt-get update
     - apt-get install -y build-essential xz-utils curl gawk wget git-core diffstat unzip texinfo gcc-multilib chrpath socat cpio python python3 python3-pip python3-pexpect debianutils iputils-ping
     - curl https://sites.cttc.es/gnss_files/SDK/Rocko/oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh --output oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh
-    - echo "d3c3d5f909c1ca81435108a3cfc4227b  oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh" > sdk.md5
+    - echo "fb26ff0b84f67006e19266154c36173b  oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh" > sdk.md5
     - md5sum -c sdk.md5
     - chmod +x ./oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh
     - sh ./oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh -y
     - . /usr/local/oecore-x86_64/environment-setup-armv7ahf-neon-oe-linux-gnueabi
     - cd build
-    - cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/Toolchains/oe-sdk_cross.cmake -DCMAKE_INSTALL_PREFIX=/usr -DENABLE_FMCOMMS2=ON -DENABLE_AD9361=ON -DENABLE_RAW_UDP=ON ..
-    - make
-    - make install DESTDIR=/usr/local/oecore-x86_64/sysroots/armv7ahf-neon-oe-linux-gnueabi/
+    - cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/Toolchains/oe-sdk_cross.cmake -DENABLE_OSMOSDR=ON -DENABLE_UNIT_TESTING_EXTRA=ON -DENABLE_SYSTEM_TESTING_EXTRA=ON -DCMAKE_INSTALL_PREFIX=/usr -DENABLE_FMCOMMS2=ON -DENABLE_AD9361=ON -DENABLE_RAW_UDP=ON -DENABLE_INSTALL_TESTS=ON ..
+    - make -j
+    - mkdir local_install
+    - make install DESTDIR=./local_install
+    - rm ./local_install/usr/bin/front-end-cal
+    - rm ./local_install/usr/bin/ttff
+    - cd ..
+    - mkdir binaries
+    - mkdir binaries/bin
+    - mkdir binaries/share
+    - cp build/local_install/usr/bin/* binaries/bin/
+    - cp build/local_install/usr/share/gnss-sim/* binaries/share/
   allow_failure: true
+  artifacts:
+    paths:
+      - binaries/*
 
 
 debian8.11:
@@ -390,27 +404,23 @@ observables-test-180417100529:
     - cmake -DENABLE_UNIT_TESTING_EXTRA=ON -DENABLE_SYSTEM_TESTING_EXTRA=ON ..
     - NPROC=$(grep -c ^processor /proc/cpuinfo)
     - make -j$(($NPROC+1))
-
     # Execute Unit Tests
     - export DISPLAY=unknown
     - echo "Running HybridObservablesTest for GPS L1 CA..."
-    - ../install/run_tests --gtest_filter=HybridObservablesTest* -PLL_bw_hz_start=25.0 -DLL_bw_hz_start=1.5  -PLL_narrow_bw_hz=10.0 -DLL_narrow_bw_hz=0.75 -disable_generator=1 -enable_external_signal_file=1 -signal_file=/captures/gitlab_test_signals/static/180417100529.A_L1E1_12500000Hz_ichar.dat -fs_gen_sps=12500000 -skip_samples=125000000 -external_signal_acquisition_threshold=4.0 -extend_correlation_symbols=5 -external_signal_acquisition_doppler_step_hz=10 -trk_test_implementation=GPS_L1_CA_DLL_PLL_Tracking --show_plots=0 -filename_rinex_obs=/captures/gitlab_test_signals/static/true_data_180417100529/rinex_obs/rinex-obs_V1_A1-static_vehicle.txt -skip_trk_transitory_s=30 --gtest_output=xml:test_results.xml
-
+    - ../install/run_tests --gtest_filter=HybridObservablesTest* -PLL_bw_hz_start=25.0 --DLL_bw_hz_start=1.5  --PLL_narrow_bw_hz=10.0 --DLL_narrow_bw_hz=0.75 --disable_generator=1 --enable_external_signal_file=1 --signal_file=/captures/gitlab_test_signals/static/180417100529.A_L1E1_12500000Hz_ichar.dat --fs_gen_sps=12500000 --skip_samples=125000000 --external_signal_acquisition_threshold=4.0 --extend_correlation_symbols=5 --external_signal_acquisition_doppler_step_hz=10 --trk_test_implementation=GPS_L1_CA_DLL_PLL_Tracking --show_plots=0 --filename_rinex_obs=/captures/gitlab_test_signals/static/true_data_180417100529/rinex_obs/rinex-obs_V1_A1-static_vehicle.txt --skip_trk_transitory_s=30 --gtest_output=xml:test_results.xml
     - echo "Running HybridObservablesTest for Galileo E1..."
     - ../install/run_tests --gtest_filter=HybridObservablesTest* --PLL_bw_hz_start=5.0 --DLL_bw_hz_start=0.75 --disable_generator=1 --enable_external_signal_file=1 --show_plots=true --fs_gen_sps=12500000 --skip_samples=50000000 --external_signal_acquisition_threshold=2.5 --trk_test_implementation=Galileo_E1_DLL_PLL_VEML_Tracking --external_signal_acquisition_doppler_step_hz=25  --show_plots=0 --signal_file=/captures/gitlab_test_signals/static/180417100529.A_L1E1_12500000Hz_ichar.dat --filename_rinex_obs=/captures/gitlab_test_signals/static/true_data_180417100529/rinex_obs/rinex-obs_V1_A1-static_vehicle.txt --skip_trk_transitory_s=15 --gtest_output=xml:test_results.xml
-
     - echo "Running HybridObservablesTest for GPS L5..."
     - ../install/run_tests --gtest_filter=HybridObservablesTest* --PLL_bw_hz_start=25.0 --DLL_bw_hz_start=2.5 --disable_generator=1 --enable_external_signal_file=1 --show_plots=true --fs_gen_sps=12500000 --skip_samples=250000000 --external_signal_acquisition_threshold=2.4 --trk_test_implementation=GPS_L5_DLL_PLL_Tracking --external_signal_acquisition_dwells=10 --external_signal_acquisition_doppler_step_hz=10  --show_plots=0 --signal_file=/captures/gitlab_test_signals/static/180417100529.A_L5E5_12500000Hz_ichar.dat --filename_rinex_obs=/captures/gitlab_test_signals/static/true_data_180417100529/rinex_obs/rinex-obs_V1_A1-static_vehicle.txt --skip_trk_transitory_s=5 --gtest_output=xml:test_results.xml
-
     - echo "Running HybridObservablesTest for Galileo E5a..."
     - ../install/run_tests --gtest_filter=HybridObservablesTest* --PLL_bw_hz_start=30.0 --DLL_bw_hz_start=1.0 --disable_generator=1 --enable_external_signal_file=1 --show_plots=true --fs_gen_sps=12500000 --skip_samples=125000000 --external_signal_acquisition_threshold=2.2 --trk_test_implementation=Galileo_E5a_DLL_PLL_Tracking --external_signal_acquisition_doppler_step_hz=10  --show_plots=0 --signal_file=/captures/gitlab_test_signals/static/180417100529.A_L5E5_12500000Hz_ichar.dat --filename_rinex_obs=/captures/gitlab_test_signals/static/true_data_180417100529/rinex_obs/rinex-obs_V1_A1-static_vehicle.txt --skip_trk_transitory_s=5 --gtest_output=xml:test_results.xml
-
     - mv *.xml ../build64/
     - cd ..
     - rm -rf build-test
   artifacts:
     paths:
       - build64/*.xml
+
 
 position-test-180417100529:
   image: ubuntu:bionic
@@ -428,17 +438,17 @@ position-test-180417100529:
     - make -j$(($NPROC+1))
     # Execute System Tests
     - export DISPLAY=unknown
-    - ../install/position_test -config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L1.conf -static_scenario=0 -use_pvt_solver_dump=1 -use_ref_motion_file=1 -ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv -pvt_solver_dump_filename=./PVT_pvt.dat -show_plots=0
+    - ../install/position_test -config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L1.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT_pvt.dat --show_plots=0
     - rm PVT_*.* && mv *.ps ../build64/
-    - ../install/position_test -config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_E1.conf -static_scenario=0 -use_pvt_solver_dump=1 -use_ref_motion_file=1 -ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv -pvt_solver_dump_filename=./PVT_pvt.dat -show_plots=0
+    - ../install/position_test -config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_E1.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT_pvt.dat --show_plots=0
     - rm PVT_*.* && mv *.ps ../build64/
-    - ../install/position_test -config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L1E1.conf -static_scenario=0 -use_pvt_solver_dump=1 -use_ref_motion_file=1 -ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv -pvt_solver_dump_filename=./PVT_pvt.dat -show_plots=0
+    - ../install/position_test -config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L1E1.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT_pvt.dat --show_plots=0
     - rm PVT_*.* && mv *.ps ../build64/
-    - ../install/position_test -config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L5.conf -static_scenario=0 -use_pvt_solver_dump=1 -use_ref_motion_file=1 -ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv -pvt_solver_dump_filename=./PVT_pvt.dat -show_plots=0
+    - ../install/position_test -config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L5.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT_pvt.dat --show_plots=0
     - rm PVT_*.* && mv *.ps ../build64/
-    # - ../install/position_test -config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_E5.conf -static_scenario=0 -use_pvt_solver_dump=1 -use_ref_motion_file=1 -ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv -pvt_solver_dump_filename=./PVT_pvt.dat -show_plots=0
+    # - ../install/position_test -config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_E5.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT_pvt.dat --show_plots=0
     # - rm PVT_*.* && mv *.ps ../build64/
-    - ../install/position_test -config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L5E5.conf -static_scenario=0 -use_pvt_solver_dump=1 -use_ref_motion_file=1 -ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv -pvt_solver_dump_filename=./PVT_pvt.dat -show_plots=0
+    - ../install/position_test -config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L5E5.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT_pvt.dat --show_plots=0
     - mv *.ps ../build64/
     - mv *.xml ../build64/
     - cd ..
@@ -447,6 +457,25 @@ position-test-180417100529:
     paths:
       - build64/*.xml
       - build64/*.ps
+
+
+run-test-arm:
+  image: carlesfernandez/gnsssdr-dev-arm32v7:latest
+  stage: test
+  tags:
+    - arm
+  when: manual
+  dependencies:
+    - crosscompile
+  script:
+    - cp binaries/bin/* /usr/bin/
+    - mkdir /usr/share/gnss-sim/
+    - cp -f binaries/share/* /usr/share/gnss-sim/
+    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib
+    - ldconfig
+    - position_test
+    - run_tests --gtest_filter=HybridObservablesTest* --PLL_bw_hz_start=25.0 --DLL_bw_hz_start=1.5  --PLL_narrow_bw_hz=10.0 --DLL_narrow_bw_hz=0.75 --disable_generator=1 --enable_external_signal_file=1 --signal_file=/captures/gitlab_test_signals/static/180417100529.A_L1E1_12500000Hz_ichar.dat --fs_gen_sps=12500000 --skip_samples=125000000 --external_signal_acquisition_threshold=4.0 --extend_correlation_symbols=5 --external_signal_acquisition_doppler_step_hz=10 --trk_test_implementation=GPS_L1_CA_DLL_PLL_Tracking --show_plots=0 --filename_rinex_obs=/captures/gitlab_test_signals/static/true_data_180417100529/rinex_obs/rinex-obs_V1_A1-static_vehicle.txt --skip_trk_transitory_s=30 --gtest_output=xml:test_results.xml
+  allow_failure: true
 
 
 # Stage "deploy"

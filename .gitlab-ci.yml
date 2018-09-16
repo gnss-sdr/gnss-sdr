@@ -109,7 +109,7 @@ crosscompile:
     - sh ./oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh -y
     - . /usr/local/oecore-x86_64/environment-setup-armv7ahf-neon-oe-linux-gnueabi
     - cd build
-    - cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/Toolchains/oe-sdk_cross.cmake -DENABLE_OSMOSDR=ON -DENABLE_UNIT_TESTING_EXTRA=ON -DENABLE_SYSTEM_TESTING_EXTRA=ON -DCMAKE_INSTALL_PREFIX=/usr -DENABLE_FMCOMMS2=ON -DENABLE_AD9361=ON -DENABLE_RAW_UDP=ON -DENABLE_INSTALL_TESTS=ON -DCMAKE_C_FLAGS_RELEASE="-s" -DCMAKE_CXX_FLAGS_RELEASE="-s" ..
+    - cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/Toolchains/oe-sdk_cross.cmake -DENABLE_OSMOSDR=ON -DENABLE_UNIT_TESTING_EXTRA=ON -DENABLE_SYSTEM_TESTING_EXTRA=ON -DCMAKE_INSTALL_PREFIX=/usr -DENABLE_FMCOMMS2=ON -DENABLE_AD9361=ON -DENABLE_RAW_UDP=ON -DENABLE_INSTALL_TESTS=ON -DCMAKE_C_FLAGS_RELEASE="-s" -DCMAKE_CXX_FLAGS_RELEASE="-s" -DENABLE_PACKAGING=ON  ..
     - make -j
     - mkdir local_install
     - make install DESTDIR=./local_install

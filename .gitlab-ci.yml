@@ -337,7 +337,7 @@ coverity-scan:
 
 
 # Stage "test"
-run-tests:
+run-tests-x86:
   image: debian:9.3-slim
   stage: test
   script:
@@ -459,8 +459,8 @@ position-test-180417100529:
       - build64/*.ps
 
 
-run-test-arm:
-  image: carlesfernandez/gnsssdr-dev-arm32v7:latest
+run-tests-armhf:
+  image: carlesfernandez/gnsssdr-dev-arm32v7:rocko
   stage: test
   tags:
     - arm

@@ -156,20 +156,6 @@ debian9.5:
     - make install
 
 
-debian9.5-i386:
-  image: i386/debian:9.5-slim
-  stage: build
-  script:
-    - apt-get update
-    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
-    - cd build
-    - cmake -DENABLE_PACKAGING=ON -DENABLE_OSMOSDR=ON -DENABLE_RAW_UDP=ON ..
-    - NPROC=$(grep -c ^processor /proc/cpuinfo)
-    - make -j$(($NPROC+1))
-    - make check
-    - make install
-
-
 debian10:
   image: debian:buster
   stage: build

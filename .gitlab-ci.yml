@@ -337,7 +337,7 @@ coverity-scan:
 
 
 # Stage "test"
-run-tests-x86:
+run-tests-x86_64:
   image: debian:9.3-slim
   stage: test
   script:
@@ -474,7 +474,8 @@ run-tests-armhf:
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib
     - ldconfig
     - position_test
-    - run_tests --gtest_filter=HybridObservablesTest* --PLL_bw_hz_start=25.0 --DLL_bw_hz_start=1.5  --PLL_narrow_bw_hz=10.0 --DLL_narrow_bw_hz=0.75 --disable_generator=1 --enable_external_signal_file=1 --signal_file=/captures/gitlab_test_signals/static/180417100529.A_L1E1_12500000Hz_ichar.dat --fs_gen_sps=12500000 --skip_samples=125000000 --external_signal_acquisition_threshold=4.0 --extend_correlation_symbols=5 --external_signal_acquisition_doppler_step_hz=10 --trk_test_implementation=GPS_L1_CA_DLL_PLL_Tracking --show_plots=0 --filename_rinex_obs=/captures/gitlab_test_signals/static/true_data_180417100529/rinex_obs/rinex-obs_V1_A1-static_vehicle.txt --skip_trk_transitory_s=30 --gtest_output=xml:test_results.xml
+    - run_tests --gtest_filter=Matio*
+ #   - run_tests --gtest_filter=HybridObservablesTest* --PLL_bw_hz_start=25.0 --DLL_bw_hz_start=1.5  --PLL_narrow_bw_hz=10.0 --DLL_narrow_bw_hz=0.75 --disable_generator=1 --enable_external_signal_file=1 --signal_file=/captures/gitlab_test_signals/static/180417100529.A_L1E1_12500000Hz_ichar.dat --fs_gen_sps=12500000 --skip_samples=125000000 --external_signal_acquisition_threshold=4.0 --extend_correlation_symbols=5 --external_signal_acquisition_doppler_step_hz=10 --trk_test_implementation=GPS_L1_CA_DLL_PLL_Tracking --show_plots=0 --filename_rinex_obs=/captures/gitlab_test_signals/static/true_data_180417100529/rinex_obs/rinex-obs_V1_A1-static_vehicle.txt --skip_trk_transitory_s=30 --gtest_output=xml:test_results.xml
   allow_failure: true
 
 

@@ -613,7 +613,7 @@ void PositionSystemTest::check_results()
                 {
                     stm << "Configuration file: " << FLAGS_config_file_ptest << std::endl;
                 }
-            if (FLAGS_config_file_ptest.empty())
+            if (FLAGS_static_scenario)
                 {
                     stm << "---- ACCURACY ----" << std::endl;
                     stm << "2DRMS = " << 2 * sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]" << std::endl;

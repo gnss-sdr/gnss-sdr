@@ -168,8 +168,12 @@ if(GNUPLOT_FOUND)
 endif(GNUPLOT_FOUND)
 
 if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.15" )
-     add_definitions( -DGR_GREATER_38=1 )
+    add_definitions( -DGR_GREATER_38=1 )
 endif(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.15" )
+
+if(ENABLE_UNIT_TESTING_MINIMAL)
+    add_definitions(-DUNIT_TESTING_MINIMAL=1)
+endif(ENABLE_UNIT_TESTING_MINIMAL)
 
 
 ################################################################################

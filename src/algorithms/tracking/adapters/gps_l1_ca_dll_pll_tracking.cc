@@ -58,14 +58,14 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     int fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     trk_param.fs_in = fs_in;
     trk_param.high_dyn = configuration->property(role + ".high_dyn", false);
-    if (configuration->property(role + ".cp_smoother_length", 10) < 1)
+    if (configuration->property(role + ".smoother_length", 10) < 1)
         {
             trk_param.smoother_length = 1;
-            std::cout << TEXT_RED << "WARNING: GPS L1 C/A. cp_smoother_length must be bigger than 0. It has been set to 1" << TEXT_RESET << std::endl;
+            std::cout << TEXT_RED << "WARNING: GPS L1 C/A. smoother_length must be bigger than 0. It has been set to 1" << TEXT_RESET << std::endl;
         }
     else
         {
-            trk_param.smoother_length = configuration->property(role + ".cp_smoother_length", 10);
+            trk_param.smoother_length = configuration->property(role + ".smoother_length", 10);
         }
     bool dump = configuration->property(role + ".dump", false);
     trk_param.dump = dump;

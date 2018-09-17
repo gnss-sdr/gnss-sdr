@@ -3,7 +3,7 @@
  * \brief VOLK_GNSSSDR kernel: multiplies N complex (32-bit float per component) vectors
  * by a common vector, phase rotated and accumulates the results in N float complex outputs.
  * \authors <ul>
- *          <li> Cillian O'Driscoll 2016. cillian.odriscoll(at)gmail.com
+ *          <li> Antonio Ramos 2018. antonio.ramosdet(at)gmail.com
  *          </ul>
  *
  * VOLK_GNSSSDR kernel that multiplies N 32 bits complex vectors by a common vector, which is
@@ -37,7 +37,7 @@
  */
 
 /*!
- * \page volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn
+ * \page volk_gnsssdr_32fc_32f_high_dynamic_rotator_dot_prod_32fc_xn
  *
  * \b Overview
  *
@@ -48,16 +48,17 @@
  *
  * <b>Dispatcher Prototype</b>
  * \code
- * void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn(lv_32fc_t* result, const lv_32fc_t* in_common, const lv_32fc_t phase_inc, lv_32fc_t* phase, const float** in_a, int num_a_vectors, unsigned int num_points);
+ * void volk_gnsssdr_32fc_32f_high_dynamic_rotator_dot_prod_32fc_xn(lv_32fc_t* result, const lv_32fc_t* in_common, const lv_32fc_t phase_inc, const lv_32fc_t phase_inc_rate, lv_32fc_t* phase, const float** in_a, int num_a_vectors, unsigned int num_points);
  * \endcode
  *
  * \b Inputs
- * \li in_common:     Pointer to one of the vectors to be rotated, multiplied and accumulated (reference vector).
- * \li phase_inc:     Phase increment = lv_cmake(cos(phase_step_rad), sin(phase_step_rad))
- * \li phase:         Initial phase = lv_cmake(cos(initial_phase_rad), sin(initial_phase_rad))
- * \li in_a:          Pointer to an array of pointers to multiple vectors to be multiplied and accumulated.
- * \li num_a_vectors: Number of vectors to be multiplied by the reference vector and accumulated.
- * \li num_points:    Number of complex values to be multiplied together, accumulated and stored into \p result.
+ * \li in_common:      Pointer to one of the vectors to be rotated, multiplied and accumulated (reference vector).
+ * \li phase_inc:      Phase increment = lv_cmake(cos(phase_step_rad), sin(phase_step_rad))
+ * \li phase_inc_rate: Phase increment rate = lv_cmake(cos(phase_step_rate_rad), sin(phase_step_rate_rad))
+ * \li phase:          Initial phase = lv_cmake(cos(initial_phase_rad), sin(initial_phase_rad))
+ * \li in_a:           Pointer to an array of pointers to multiple vectors to be multiplied and accumulated.
+ * \li num_a_vectors:  Number of vectors to be multiplied by the reference vector and accumulated.
+ * \li num_points:     Number of complex values to be multiplied together, accumulated and stored into \p result.
  *
  * \b Outputs
  * \li phase:         Final phase.

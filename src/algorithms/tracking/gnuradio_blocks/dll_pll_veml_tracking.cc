@@ -719,7 +719,6 @@ void dll_pll_veml_tracking::do_correlation_step(const gr_complex *input_samples)
     // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
     // perform carrier wipe-off and compute Early, Prompt and Late correlation
     multicorrelator_cpu.set_input_output_vectors(d_correlator_outs, input_samples);
-    //float tmp_f = d_rem_carr_phase_rad;
     multicorrelator_cpu.Carrier_wipeoff_multicorrelator_resampler(
         d_rem_carr_phase_rad,
         d_carrier_phase_step_rad, d_carrier_phase_rate_step_rad,

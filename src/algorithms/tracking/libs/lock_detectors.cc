@@ -84,6 +84,25 @@ float cn0_svn_estimator(const gr_complex* Prompt_buffer, int length, double coh_
     return static_cast<float>(SNR_dB_Hz);
 }
 
+/*
+ * Signal Power (\f$\hat{P}_s\f$) estimator:
+ * \f{equation}
+ *     \hat{P}_s=\left(\frac{1}{N}\sum^{N-1}_{i=0}|Re(Pc(i))|\right)^2,
+ * \f}
+ * \f$Re(\cdot)\f$ stands for the real part of the value, and \f$Pc(i)\f$ is the prompt correlator output for the sample index i.
+ *
+ */
+float c_svn_estimator(const gr_complex* Prompt_buffer, int length)
+{
+    double Psig = 0.0;
+    for (int i = 0; i < length; i++)
+        {
+            Psig += std::abs(static_cast<double>(Prompt_buffer[i].real()));
+        }
+    Psig /= static_cast<double>(length);
+    Psig = Psig * Psig;
+    return static_cast<float>(Psig);
+}
 
 /*
  * The estimate of the cosine of twice the carrier phase error is given by

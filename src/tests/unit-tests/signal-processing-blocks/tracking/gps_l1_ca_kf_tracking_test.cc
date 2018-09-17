@@ -127,7 +127,7 @@ public:
     std::string p4;
     std::string p5;
 
-    std::string implementation = "GPS_L1_CA_KF_Tracking";
+    std::string implementation = "GPS_L1_CA_KF2_Tracking";
 
     const int baseband_sampling_freq = FLAGS_fs_gen_sps;
 

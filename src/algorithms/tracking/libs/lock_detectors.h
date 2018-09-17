@@ -74,6 +74,15 @@
  */
 float cn0_svn_estimator(const gr_complex* Prompt_buffer, int length, double coh_integration_time_s);
 
+/*
+ * Signal Power (\f$\hat{P}_s\f$) estimator:
+ * \f{equation}
+ *     \hat{P}_s=\left(\frac{1}{N}\sum^{N-1}_{i=0}|Re(Pc(i))|\right)^2,
+ * \f}
+ * \f$Re(\cdot)\f$ stands for the real part of the value, and \f$Pc(i)\f$ is the prompt correlator output for the sample index i.
+ *
+ */
+float c_svn_estimator(const gr_complex* Prompt_buffer, int length);
 
 /*! \brief A carrier lock detector
  *

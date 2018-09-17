@@ -59,7 +59,7 @@
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
-class StaticPositionSystemTest : public ::testing::Test
+class PositionSystemTest : public ::testing::Test
 {
 public:
     int configure_generator();
@@ -67,6 +67,7 @@ public:
     int configure_receiver();
     int run_receiver();
     void check_results();
+    std::string config_filename_no_extension;
 
 private:
     std::string generator_binary;
@@ -100,7 +101,7 @@ private:
 };
 
 
-void StaticPositionSystemTest::geodetic2Ecef(const double latitude, const double longitude, const double altitude,
+void PositionSystemTest::geodetic2Ecef(const double latitude, const double longitude, const double altitude,
     double* x, double* y, double* z)
 {
     const double a = 6378137.0;       // WGS84
@@ -125,7 +126,7 @@ void StaticPositionSystemTest::geodetic2Ecef(const double latitude, const double
 }
 
 
-void StaticPositionSystemTest::geodetic2Enu(double latitude, double longitude, double altitude,
+void PositionSystemTest::geodetic2Enu(double latitude, double longitude, double altitude,
     double* east, double* north, double* up)
 {
     double x, y, z;
@@ -168,7 +169,7 @@ void StaticPositionSystemTest::geodetic2Enu(double latitude, double longitude, d
 }
 
 
-double StaticPositionSystemTest::compute_stdev_precision(const std::vector<double>& vec)
+double PositionSystemTest::compute_stdev_precision(const std::vector<double>& vec)
 {
     double sum__ = std::accumulate(vec.begin(), vec.end(), 0.0);
     double mean__ = sum__ / vec.size();
@@ -181,7 +182,7 @@ double StaticPositionSystemTest::compute_stdev_precision(const std::vector<doubl
 }
 
 
-double StaticPositionSystemTest::compute_stdev_accuracy(const std::vector<double>& vec, const double ref)
+double PositionSystemTest::compute_stdev_accuracy(const std::vector<double>& vec, const double ref)
 {
     const double mean__ = ref;
     double accum__ = 0.0;
@@ -193,7 +194,7 @@ double StaticPositionSystemTest::compute_stdev_accuracy(const std::vector<double
 }
 
 
-int StaticPositionSystemTest::configure_generator()
+int PositionSystemTest::configure_generator()
 {
     // Configure signal generator
     generator_binary = FLAGS_generator_binary;
@@ -215,7 +216,7 @@ int StaticPositionSystemTest::configure_generator()
 }
 
 
-int StaticPositionSystemTest::generate_signal()
+int PositionSystemTest::generate_signal()
 {
     pid_t wait_result;
     int child_status;
@@ -238,7 +239,7 @@ int StaticPositionSystemTest::generate_signal()
 }
 
 
-int StaticPositionSystemTest::configure_receiver()
+int PositionSystemTest::configure_receiver()
 {
     if (FLAGS_config_file_ptest.empty())
         {
@@ -407,7 +408,7 @@ int StaticPositionSystemTest::configure_receiver()
 }
 
 
-int StaticPositionSystemTest::run_receiver()
+int PositionSystemTest::run_receiver()
 {
     std::shared_ptr<ControlThread> control_thread;
     if (FLAGS_config_file_ptest.empty())
@@ -448,15 +449,15 @@ int StaticPositionSystemTest::run_receiver()
         {
             std::string aux = std::string(buffer);
             EXPECT_EQ(aux.empty(), false);
-            StaticPositionSystemTest::generated_kml_file = aux.erase(aux.length() - 1, 1);
+            PositionSystemTest::generated_kml_file = aux.erase(aux.length() - 1, 1);
         }
     pclose(fp);
-    EXPECT_EQ(StaticPositionSystemTest::generated_kml_file.empty(), false);
+    EXPECT_EQ(PositionSystemTest::generated_kml_file.empty(), false);
     return 0;
 }
 
 
-void StaticPositionSystemTest::check_results()
+void PositionSystemTest::check_results()
 {
     std::vector<double> pos_e;
     std::vector<double> pos_n;
@@ -487,7 +488,7 @@ void StaticPositionSystemTest::check_results()
     if (!FLAGS_use_pvt_solver_dump)
         {
             //fall back to read receiver KML output (position only)
-            std::fstream myfile(StaticPositionSystemTest::generated_kml_file, std::ios_base::in);
+            std::fstream myfile(PositionSystemTest::generated_kml_file, std::ios_base::in);
             ASSERT_TRUE(myfile.is_open()) << "No valid kml file could be opened";
             std::string line;
             // Skip header
@@ -608,7 +609,10 @@ void StaticPositionSystemTest::check_results()
 
             std::stringstream stm;
             std::ofstream position_test_file;
-
+            if (!FLAGS_config_file_ptest.empty())
+                {
+                    stm << "Configuration file: " << FLAGS_config_file_ptest << std::endl;
+                }
             if (FLAGS_config_file_ptest.empty())
                 {
                     stm << "---- ACCURACY ----" << std::endl;
@@ -634,7 +638,7 @@ void StaticPositionSystemTest::check_results()
             stm << "SEP = " << 0.51 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]" << std::endl;
 
             std::cout << stm.rdbuf();
-            std::string output_filename = "position_test_output_" + StaticPositionSystemTest::generated_kml_file.erase(StaticPositionSystemTest::generated_kml_file.length() - 3, 3) + "txt";
+            std::string output_filename = "position_test_output_" + PositionSystemTest::generated_kml_file.erase(PositionSystemTest::generated_kml_file.length() - 3, 3) + "txt";
             position_test_file.open(output_filename.c_str());
             if (position_test_file.is_open())
                 {
@@ -726,6 +730,10 @@ void StaticPositionSystemTest::check_results()
 
             //report
             std::cout << "----- Position and Velocity 3D ECEF error statistics -----" << std::endl;
+            if (!FLAGS_config_file_ptest.empty())
+                {
+                    std::cout << "---- Configuration file: " << FLAGS_config_file_ptest << std::endl;
+                }
             std::streamsize ss = std::cout.precision();
             std::cout << std::setprecision(10) << "---- 3D ECEF Position RMSE = "
                       << rmse_R_eb_e << ", mean = " << error_mean_R_eb_e
@@ -759,11 +767,16 @@ void StaticPositionSystemTest::check_results()
             std::vector<double> Z(error_R_eb_e.colptr(2), error_R_eb_e.colptr(2) + error_R_eb_e.n_rows);
 
             g1.cmd("set key box opaque");
-            g1.plot_xyz(X, Y, Z, "ECEF_3d_error");
+            g1.plot_xyz(X, Y, Z, "ECEF 3D error");
             g1.set_legend();
-            g1.savetops("ECEF_3d_error");
-
-
+            if (FLAGS_config_file_ptest.empty())
+                {
+                    g1.savetops("ECEF_3d_error");
+                }
+            else
+                {
+                    g1.savetops("ECEF_3d_error_" + config_filename_no_extension);
+                }
             arma::vec time_vector_from_start_s = receiver_time_s - receiver_time_s(0);
             Gnuplot g3("linespoints");
             if (FLAGS_show_plots)
@@ -781,10 +794,20 @@ void StaticPositionSystemTest::check_results()
             //conversion between arma::vec and std:vector
             std::vector<double> error_vec(error_module_R_eb_e.colptr(0), error_module_R_eb_e.colptr(0) + error_module_R_eb_e.n_rows);
             g3.cmd("set key box opaque");
-            g3.plot_xy(time_vector_from_start_s, error_vec,
-                "Position_3d_error");
+            g3.plot_xy(time_vector_from_start_s, error_vec, "Position 3D error");
+            double mean3d = std::accumulate(error_vec.begin(), error_vec.end(), 0.0) / error_vec.size();
+            std::vector<double> error_mean(error_module_R_eb_e.n_rows, mean3d);
+            g3.set_style("lines");
+            g3.plot_xy(time_vector_from_start_s, error_mean, "Mean");
             g3.set_legend();
-            g3.savetops("Position_3d_error");
+            if (FLAGS_config_file_ptest.empty())
+                {
+                    g3.savetops("Position_3d_error");
+                }
+            else
+                {
+                    g3.savetops("Position_3d_error_" + config_filename_no_extension);
+                }
 
             Gnuplot g4("linespoints");
             if (FLAGS_show_plots)
@@ -802,15 +825,25 @@ void StaticPositionSystemTest::check_results()
             //conversion between arma::vec and std:vector
             std::vector<double> error_vec2(error_module_V_eb_e.colptr(0), error_module_V_eb_e.colptr(0) + error_module_V_eb_e.n_rows);
             g4.cmd("set key box opaque");
-            g4.plot_xy(time_vector_from_start_s, error_vec2,
-                "Velocity_3d_error");
+            g4.plot_xy(time_vector_from_start_s, error_vec2, "Velocity 3D error");
+            double mean3dv = std::accumulate(error_vec2.begin(), error_vec2.end(), 0.0) / error_vec2.size();
+            std::vector<double> error_mean_v(error_module_V_eb_e.n_rows, mean3dv);
+            g4.set_style("lines");
+            g4.plot_xy(time_vector_from_start_s, error_mean_v, "Mean");
             g4.set_legend();
-            g4.savetops("Velocity_3d_error");
+            if (FLAGS_config_file_ptest.empty())
+                {
+                    g4.savetops("Velocity_3d_error");
+                }
+            else
+                {
+                    g4.savetops("Velocity_3d_error_" + config_filename_no_extension);
+                }
         }
 }
 
 
-void StaticPositionSystemTest::print_results(const std::vector<double>& east,
+void PositionSystemTest::print_results(const std::vector<double>& east,
     const std::vector<double>& north,
     const std::vector<double>& up)
 {
@@ -875,9 +908,16 @@ void StaticPositionSystemTest::print_results(const std::vector<double>& east,
 
                     g1.cmd("set grid front");
                     g1.cmd("replot");
-
-                    g1.savetops("Position_test_2D");
-                    g1.savetopdf("Position_test_2D", 18);
+                    if (FLAGS_config_file_ptest.empty())
+                        {
+                            g1.savetops("Position_test_2D");
+                            g1.savetopdf("Position_test_2D", 18);
+                        }
+                    else
+                        {
+                            g1.savetops("Position_test_2D_" + config_filename_no_extension);
+                            g1.savetopdf("Position_test_2D_" + config_filename_no_extension, 18);
+                        }
 
                     Gnuplot g2("points");
                     if (FLAGS_show_plots)
@@ -903,9 +943,16 @@ void StaticPositionSystemTest::print_results(const std::vector<double>& east,
                            std::to_string(ninty_sas) +
                            "\n fx(v,u) = r*cos(v)*cos(u)\n fy(v,u) = r*cos(v)*sin(u)\n fz(v) = r*sin(v) \n splot fx(v,u),fy(v,u),fz(v) title \"90\%-SAS\" lt rgb \"gray\"\n");
                     g2.plot_xyz(east, north, up, "3D Position Fixes");
-
-                    g2.savetops("Position_test_3D");
-                    g2.savetopdf("Position_test_3D");
+                    if (FLAGS_config_file_ptest.empty())
+                        {
+                            g2.savetops("Position_test_3D");
+                            g2.savetopdf("Position_test_3D");
+                        }
+                    else
+                        {
+                            g2.savetops("Position_test_3D_" + config_filename_no_extension);
+                            g2.savetopdf("Position_test_3D_" + config_filename_no_extension);
+                        }
                 }
             catch (const GnuplotException& ge)
                 {
@@ -914,7 +961,7 @@ void StaticPositionSystemTest::print_results(const std::vector<double>& east,
         }
 }
 
-TEST_F(StaticPositionSystemTest, Position_system_test)
+TEST_F(PositionSystemTest, Position_system_test)
 {
     if (FLAGS_config_file_ptest.empty())
         {
@@ -926,6 +973,11 @@ TEST_F(StaticPositionSystemTest, Position_system_test)
                 {
                     generate_signal();
                 }
+        }
+    else
+        {
+            config_filename_no_extension = FLAGS_config_file_ptest.substr(FLAGS_config_file_ptest.find_last_of("/\\") + 1);
+            config_filename_no_extension = config_filename_no_extension.erase(config_filename_no_extension.length() - 5);
         }
 
     // Configure receiver

@@ -1,6 +1,6 @@
 /*!
- * \file GPS_L1_CA_KF_Tracking.h
- * \brief  Interface of an adapter of a DLL + Kalman carrier
+ * \file gps_l1_ca_kf_tracking.h
+ * \brief Interface of an adapter of a DLL + Kalman carrier
  * tracking loop block for GPS L1 C/A signals
  * \author Javier Arribas, 2018. jarribas(at)cttc.es
  * \author Jordi Vila-Valls 2018. jvila(at)cttc.es

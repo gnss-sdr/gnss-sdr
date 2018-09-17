@@ -138,10 +138,15 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_test_fpga.cc"
 #endif
 
+#include "unit-tests/signal-processing-blocks/telemetry_decoder/galileo_fnav_inav_decoder_test.cc"
+#include "unit-tests/system-parameters/glonass_gnav_ephemeris_test.cc"
+#include "unit-tests/system-parameters/glonass_gnav_nav_message_test.cc"
+
 #include "unit-tests/signal-processing-blocks/pvt/rtcm_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/rtcm_printer_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/rinex_printer_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/nmea_printer_test.cc"
+
 
 #if EXTRA_TESTS
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l2_m_pcps_acquisition_test.cc"
@@ -158,9 +163,6 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/observables/hybrid_observables_test.cc"
 #endif
 
-#include "unit-tests/signal-processing-blocks/telemetry_decoder/galileo_fnav_inav_decoder_test.cc"
-#include "unit-tests/system-parameters/glonass_gnav_ephemeris_test.cc"
-#include "unit-tests/system-parameters/glonass_gnav_nav_message_test.cc"
 
 // For GPS NAVIGATION (L1)
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;

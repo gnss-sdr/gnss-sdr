@@ -1634,6 +1634,18 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                 measured_obs_vec.at(n).col(2).colptr(0) + measured_obs_vec.at(n).col(2).n_rows);
             save_mat_xy(tmp_vector_x4, tmp_vector_y4, std::string("measured_doppler_ch_" + std::to_string(n)));
 
+            std::vector<double> tmp_vector_x5(true_obs_vec.at(n).col(0).colptr(0),
+                true_obs_vec.at(n).col(0).colptr(0) + true_obs_vec.at(n).col(0).n_rows);
+            std::vector<double> tmp_vector_y5(true_obs_vec.at(n).col(3).colptr(0),
+                true_obs_vec.at(n).col(3).colptr(0) + true_obs_vec.at(n).col(3).n_rows);
+            save_mat_xy(tmp_vector_x5, tmp_vector_y5, std::string("true_cp_ch_" + std::to_string(n)));
+
+            std::vector<double> tmp_vector_x6(measured_obs_vec.at(n).col(0).colptr(0),
+                measured_obs_vec.at(n).col(0).colptr(0) + measured_obs_vec.at(n).col(0).n_rows);
+            std::vector<double> tmp_vector_y6(measured_obs_vec.at(n).col(3).colptr(0),
+                measured_obs_vec.at(n).col(3).colptr(0) + measured_obs_vec.at(n).col(3).n_rows);
+            save_mat_xy(tmp_vector_x6, tmp_vector_y6, std::string("measured_cp_ch_" + std::to_string(n)));
+
 
             if (epoch_counters_vec.at(n) > 10)  //discard non-valid channels
                 {

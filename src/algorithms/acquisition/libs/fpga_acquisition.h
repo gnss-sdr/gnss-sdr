@@ -98,6 +98,11 @@ public:
      */
     void reset_acquisition(void);
 
+    /*!
+     * \brief this function is only used in the unit test
+     */
+    void read_fpga_total_scale_factor(uint32_t *total_scale_factor, uint32_t *fw_scale_factor);
+
 private:
     int64_t d_fs_in;
     // data related to the hardware module and the driver

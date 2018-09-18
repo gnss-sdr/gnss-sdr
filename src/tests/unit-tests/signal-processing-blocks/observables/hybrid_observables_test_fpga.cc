@@ -843,269 +843,269 @@ bool HybridObservablesTestFpga::acquire_signal()
 				}
     	}
     else
-    {
-    	unsigned int code_length;
-	    if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
-	    {
-	    	code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
-	    }
-	    else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
-	    {
-	        code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
-	    }
-	    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
-	    {
-	        code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / Galileo_E5a_CODE_CHIP_RATE_HZ * static_cast<double>(Galileo_E5a_CODE_LENGTH_CHIPS)));
-
-	    }
-	    else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
-	    {
-	        code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L5i_CODE_RATE_HZ / static_cast<double>(GPS_L5i_CODE_LENGTH_CHIPS))));
-	    }
-
-        float nbits = ceilf(log2f((float)code_length));
-        unsigned int fft_size = pow(2, nbits);
-        unsigned int nsamples_total = fft_size;
-
-	    if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
-	    {
-	    	acquisition_GpsL1Ca_Fpga->set_single_doppler_flag(1);
-	    }
-	    else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
-	    {
-	    	acquisition_GpsE1_Fpga->set_single_doppler_flag(1);
-	    }
-	    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
-	    {
-	    	acquisition_GpsE5a_Fpga->set_single_doppler_flag(1);
-	    }
-	    else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
-	    {
-	    	acquisition_GpsL5_Fpga->set_single_doppler_flag(1);
-	    }
-
-        int acq_doppler_max = config->property("Acquisition.doppler_max", FLAGS_external_signal_acquisition_doppler_max_hz);
-        int acq_doppler_step = config->property("Acquisition.doppler_step", FLAGS_external_signal_acquisition_doppler_step_hz);
-
-        int num_doppler_steps = (2*acq_doppler_max)/acq_doppler_step + 1;
-
-        float result_table[MAX_PRN_IDX][num_doppler_steps][2];
-
-        for (unsigned int PRN = 1; PRN < MAX_PRN_IDX; PRN++)
+    	{
+			unsigned int code_length;
+			if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
 			{
-
-        	uint32_t max_index = 0;
-	        float max_magnitude = 0.0;
-	        uint64_t initial_sample = 0;
-	        float power_sum = 0;
-	        uint32_t doppler_index = 0;
-
-	        uint32_t max_index_iteration;
-	        float max_magnitude_iteration;
-	        uint64_t initial_sample_iteration;
-	        float power_sum_iteration;
-	        uint32_t doppler_index_iteration;
-	        int doppler_shift_selected;
-	        int doppler_num = 0;
-
-			for (int doppler_shift = -acq_doppler_max;doppler_shift <= acq_doppler_max;doppler_shift = doppler_shift + acq_doppler_step)
-				{
-					tmp_gnss_synchro.PRN = PRN;
-
-					pthread_mutex_lock(&mutex_obs_test);
-					send_samples_start_obs_test = 0;
-					pthread_mutex_unlock(&mutex_obs_test);
-
-				    if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
-				    {
-				    	acquisition_GpsL1Ca_Fpga->reset_acquisition(); // reset the whole system including the sample counters
-				    	acquisition_GpsL1Ca_Fpga->set_doppler_max(doppler_shift);
-				    	acquisition_GpsL1Ca_Fpga->set_doppler_step(0);
-
-				    	acquisition_GpsL1Ca_Fpga->set_gnss_synchro(&tmp_gnss_synchro);
-				    	acquisition_GpsL1Ca_Fpga->init();
-				    	acquisition_GpsL1Ca_Fpga->set_local_code();
-				    	args.freq_band = 0;
-				    }
-				    else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
-				    {
-				    	//printf("starting configuring acquisition\n");
-				    	acquisition_GpsE1_Fpga->reset_acquisition(); // reset the whole system including the sample counters
-				    	acquisition_GpsE1_Fpga->set_doppler_max(doppler_shift);
-				    	acquisition_GpsE1_Fpga->set_doppler_step(0);
-
-				    	acquisition_GpsE1_Fpga->set_gnss_synchro(&tmp_gnss_synchro);
-				    	acquisition_GpsE1_Fpga->init();
-				    	acquisition_GpsE1_Fpga->set_local_code();
-				    	args.freq_band = 0;
-				    	//printf("ending configuring acquisition\n");
-				    }
-				    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
-				    {
-				    	acquisition_GpsE5a_Fpga->reset_acquisition(); // reset the whole system including the sample counters
-				    	acquisition_GpsE5a_Fpga->set_doppler_max(doppler_shift);
-				    	acquisition_GpsE5a_Fpga->set_doppler_step(0);
-
-				    	acquisition_GpsE5a_Fpga->set_gnss_synchro(&tmp_gnss_synchro);
-				    	acquisition_GpsE5a_Fpga->init();
-				    	acquisition_GpsE5a_Fpga->set_local_code();
-				    	args.freq_band = 1;
-				    }
-				    else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
-				    {
-				    	acquisition_GpsL5_Fpga->reset_acquisition(); // reset the whole system including the sample counters
-				    	acquisition_GpsL5_Fpga->set_doppler_max(doppler_shift);
-				    	acquisition_GpsL5_Fpga->set_doppler_step(0);
-
-				    	acquisition_GpsL5_Fpga->set_gnss_synchro(&tmp_gnss_synchro);
-				    	acquisition_GpsL5_Fpga->init();
-				    	acquisition_GpsL5_Fpga->set_local_code();
-				    	args.freq_band = 1;
-				    }
-
-			        args.file = file;
-			        args.nsamples_tx = fft_size; //50000;		// max size of the FFT
-			        if (test_observables_skip_samples_already_used == 1)
-			        {
-			        	args.skip_used_samples = (PRN -1)*fft_size;
-			        }
-			        else
-			        {
-			        	args.skip_used_samples = 0;
-			        }
-
-					// create DMA child process
-					if (pthread_create(&thread_DMA, NULL, handler_DMA_obs_test, (void *)&args) < 0)
-					{
-						printf("ERROR cannot create DMA Process\n");
-					}
-
-					msg_rx->rx_message = 0;
-					top_block->start();
-
-					pthread_mutex_lock(&mutex_obs_test);
-					send_samples_start_obs_test = 1;
-					pthread_mutex_unlock(&mutex_obs_test);
-
-				    if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
-				    {
-				    	acquisition_GpsL1Ca_Fpga->reset();
-				    }
-				    else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
-				    {
-				    	acquisition_GpsE1_Fpga->reset();
-				    }
-				    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
-				    {
-				    	acquisition_GpsE5a_Fpga->reset();
-				    }
-				    else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
-				    {
-				    	acquisition_GpsL5_Fpga->reset();
-				    }
-
-					if (start_msg == true)
-						{
-							std::cout << "Reading external signal file: " << FLAGS_signal_file << std::endl;
-							std::cout << "Searching for " << System_and_Signal << " Satellites..." << std::endl;
-							std::cout << "[";
-							start_msg = false;
-						}
-
-					// wait for the child DMA process to finish
-					pthread_join(thread_DMA, NULL);
-
-					pthread_mutex_lock(&mutex_obs_test);
-					send_samples_start_obs_test = 0;
-					pthread_mutex_unlock(&mutex_obs_test);
-
-					while (msg_rx->rx_message == 0)
-						{
-							usleep(100000);
-						}
-
-				    if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
-				    {
-				    	acquisition_GpsL1Ca_Fpga->read_acquisition_results(&max_index_iteration, &max_magnitude_iteration,&initial_sample_iteration, &power_sum_iteration, &doppler_index_iteration);
-				    }
-				    else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
-				    {
-				    	acquisition_GpsE1_Fpga->read_acquisition_results(&max_index_iteration, &max_magnitude_iteration,&initial_sample_iteration, &power_sum_iteration, &doppler_index_iteration);
-				    }
-				    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
-				    {
-				    	acquisition_GpsE5a_Fpga->read_acquisition_results(&max_index_iteration, &max_magnitude_iteration,&initial_sample_iteration, &power_sum_iteration, &doppler_index_iteration);
-				    }
-				    else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
-				    {
-				    	acquisition_GpsL5_Fpga->read_acquisition_results(&max_index_iteration, &max_magnitude_iteration,&initial_sample_iteration, &power_sum_iteration, &doppler_index_iteration);
-				    }
-
-					result_table[PRN][doppler_num][0] = max_magnitude_iteration;
-					result_table[PRN][doppler_num][1] = power_sum_iteration;
-					doppler_num = doppler_num + 1;
-
-					if (max_magnitude_iteration > max_magnitude)
-					{
-				        max_index = max_index_iteration;
-				        max_magnitude = max_magnitude_iteration;
-				        initial_sample = initial_sample_iteration;
-				        power_sum = power_sum_iteration;
-				        doppler_index = doppler_index_iteration;
-				        doppler_shift_selected = doppler_shift;
-					}
-					top_block->stop();
-				}
-
-		        power_sum = (power_sum - max_magnitude) / (fft_size - 1);
-				float test_statistics = (max_magnitude / power_sum);
-				float threshold = config->property("Acquisition.threshold", FLAGS_external_signal_acquisition_threshold);
-				if (test_statistics > threshold)
-					{
-						std::cout << " " << PRN << " ";
-						//doppler_measurements_map.insert(std::pair<int, double>(PRN, static_cast<double>(doppler_shift_selected)));
-						//code_delay_measurements_map.insert(std::pair<int, double>(PRN, static_cast<double>(max_index % nsamples_total)));
-						//acq_samplestamp_map.insert(std::pair<int, double>(PRN, initial_sample)); // should be 0 (first sample upon which acq starts is always 0 in this case)
-						gnss_synchro_vec.push_back(tmp_gnss_synchro);
-					}
-				else
-					{
-						std::cout << " . ";
-					}
-
-				std::cout.flush();
+				code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
+			}
+			else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
+			{
+				code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
+			}
+			else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
+			{
+				code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / Galileo_E5a_CODE_CHIP_RATE_HZ * static_cast<double>(Galileo_E5a_CODE_LENGTH_CHIPS)));
 
 			}
-
-			uint32_t max_index = 0;
-			float max_magnitude = 0.0;
-			uint64_t initial_sample = 0;
-			float power_sum = 0;
-			uint32_t doppler_index = 0;
-
-			if (test_observables_show_results_table == 1)
+			else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
 			{
-				for (unsigned int PRN = 1; PRN < MAX_PRN_IDX; PRN++)
+				code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L5i_CODE_RATE_HZ / static_cast<double>(GPS_L5i_CODE_LENGTH_CHIPS))));
+			}
+
+			float nbits = ceilf(log2f((float)code_length));
+			unsigned int fft_size = pow(2, nbits);
+			unsigned int nsamples_total = fft_size;
+
+			if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
+			{
+				acquisition_GpsL1Ca_Fpga->set_single_doppler_flag(1);
+			}
+			else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
+			{
+				acquisition_GpsE1_Fpga->set_single_doppler_flag(1);
+			}
+			else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
+			{
+				acquisition_GpsE5a_Fpga->set_single_doppler_flag(1);
+			}
+			else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
+			{
+				acquisition_GpsL5_Fpga->set_single_doppler_flag(1);
+			}
+
+			int acq_doppler_max = config->property("Acquisition.doppler_max", FLAGS_external_signal_acquisition_doppler_max_hz);
+			int acq_doppler_step = config->property("Acquisition.doppler_step", FLAGS_external_signal_acquisition_doppler_step_hz);
+
+			int num_doppler_steps = (2*acq_doppler_max)/acq_doppler_step + 1;
+
+			float result_table[MAX_PRN_IDX][num_doppler_steps][2];
+
+			for (unsigned int PRN = 1; PRN < MAX_PRN_IDX; PRN++)
 				{
-					std::cout << std::endl << "############################################ Results for satellite " << PRN << std::endl;
-					int doppler_num = 0;
-					for (int doppler_shift = -acq_doppler_max;doppler_shift <= acq_doppler_max;doppler_shift = doppler_shift + acq_doppler_step)
+
+				uint32_t max_index = 0;
+				float max_magnitude = 0.0;
+				uint64_t initial_sample = 0;
+				float power_sum = 0;
+				uint32_t doppler_index = 0;
+
+				uint32_t max_index_iteration;
+				float max_magnitude_iteration;
+				uint64_t initial_sample_iteration;
+				float power_sum_iteration;
+				uint32_t doppler_index_iteration;
+				int doppler_shift_selected;
+				int doppler_num = 0;
+
+				for (int doppler_shift = -acq_doppler_max;doppler_shift <= acq_doppler_max;doppler_shift = doppler_shift + acq_doppler_step)
 					{
-						max_magnitude = result_table[PRN][doppler_num][0];
-						power_sum = result_table[PRN][doppler_num][1];
+						tmp_gnss_synchro.PRN = PRN;
+
+						pthread_mutex_lock(&mutex_obs_test);
+						send_samples_start_obs_test = 0;
+						pthread_mutex_unlock(&mutex_obs_test);
+
+						if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
+						{
+							acquisition_GpsL1Ca_Fpga->reset_acquisition(); // reset the whole system including the sample counters
+							acquisition_GpsL1Ca_Fpga->set_doppler_max(doppler_shift);
+							acquisition_GpsL1Ca_Fpga->set_doppler_step(0);
+
+							acquisition_GpsL1Ca_Fpga->set_gnss_synchro(&tmp_gnss_synchro);
+							acquisition_GpsL1Ca_Fpga->init();
+							acquisition_GpsL1Ca_Fpga->set_local_code();
+							args.freq_band = 0;
+						}
+						else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
+						{
+							//printf("starting configuring acquisition\n");
+							acquisition_GpsE1_Fpga->reset_acquisition(); // reset the whole system including the sample counters
+							acquisition_GpsE1_Fpga->set_doppler_max(doppler_shift);
+							acquisition_GpsE1_Fpga->set_doppler_step(0);
+
+							acquisition_GpsE1_Fpga->set_gnss_synchro(&tmp_gnss_synchro);
+							acquisition_GpsE1_Fpga->init();
+							acquisition_GpsE1_Fpga->set_local_code();
+							args.freq_band = 0;
+							//printf("ending configuring acquisition\n");
+						}
+						else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
+						{
+							acquisition_GpsE5a_Fpga->reset_acquisition(); // reset the whole system including the sample counters
+							acquisition_GpsE5a_Fpga->set_doppler_max(doppler_shift);
+							acquisition_GpsE5a_Fpga->set_doppler_step(0);
+
+							acquisition_GpsE5a_Fpga->set_gnss_synchro(&tmp_gnss_synchro);
+							acquisition_GpsE5a_Fpga->init();
+							acquisition_GpsE5a_Fpga->set_local_code();
+							args.freq_band = 1;
+						}
+						else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
+						{
+							acquisition_GpsL5_Fpga->reset_acquisition(); // reset the whole system including the sample counters
+							acquisition_GpsL5_Fpga->set_doppler_max(doppler_shift);
+							acquisition_GpsL5_Fpga->set_doppler_step(0);
+
+							acquisition_GpsL5_Fpga->set_gnss_synchro(&tmp_gnss_synchro);
+							acquisition_GpsL5_Fpga->init();
+							acquisition_GpsL5_Fpga->set_local_code();
+							args.freq_band = 1;
+						}
+
+						args.file = file;
+						args.nsamples_tx = fft_size; //50000;		// max size of the FFT
+						if (test_observables_skip_samples_already_used == 1)
+						{
+							args.skip_used_samples = (PRN -1)*fft_size;
+						}
+						else
+						{
+							args.skip_used_samples = 0;
+						}
+
+						// create DMA child process
+						if (pthread_create(&thread_DMA, NULL, handler_DMA_obs_test, (void *)&args) < 0)
+						{
+							printf("ERROR cannot create DMA Process\n");
+						}
+
+						msg_rx->rx_message = 0;
+						top_block->start();
+
+						pthread_mutex_lock(&mutex_obs_test);
+						send_samples_start_obs_test = 1;
+						pthread_mutex_unlock(&mutex_obs_test);
+
+						if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
+						{
+							acquisition_GpsL1Ca_Fpga->reset();
+						}
+						else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
+						{
+							acquisition_GpsE1_Fpga->reset();
+						}
+						else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
+						{
+							acquisition_GpsE5a_Fpga->reset();
+						}
+						else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
+						{
+							acquisition_GpsL5_Fpga->reset();
+						}
+
+						if (start_msg == true)
+							{
+								std::cout << "Reading external signal file: " << FLAGS_signal_file << std::endl;
+								std::cout << "Searching for " << System_and_Signal << " Satellites..." << std::endl;
+								std::cout << "[";
+								start_msg = false;
+							}
+
+						// wait for the child DMA process to finish
+						pthread_join(thread_DMA, NULL);
+
+						pthread_mutex_lock(&mutex_obs_test);
+						send_samples_start_obs_test = 0;
+						pthread_mutex_unlock(&mutex_obs_test);
+
+						while (msg_rx->rx_message == 0)
+							{
+								usleep(100000);
+							}
+
+						if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
+						{
+							acquisition_GpsL1Ca_Fpga->read_acquisition_results(&max_index_iteration, &max_magnitude_iteration,&initial_sample_iteration, &power_sum_iteration, &doppler_index_iteration);
+						}
+						else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
+						{
+							acquisition_GpsE1_Fpga->read_acquisition_results(&max_index_iteration, &max_magnitude_iteration,&initial_sample_iteration, &power_sum_iteration, &doppler_index_iteration);
+						}
+						else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
+						{
+							acquisition_GpsE5a_Fpga->read_acquisition_results(&max_index_iteration, &max_magnitude_iteration,&initial_sample_iteration, &power_sum_iteration, &doppler_index_iteration);
+						}
+						else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
+						{
+							acquisition_GpsL5_Fpga->read_acquisition_results(&max_index_iteration, &max_magnitude_iteration,&initial_sample_iteration, &power_sum_iteration, &doppler_index_iteration);
+						}
+
+						result_table[PRN][doppler_num][0] = max_magnitude_iteration;
+						result_table[PRN][doppler_num][1] = power_sum_iteration;
 						doppler_num = doppler_num + 1;
 
-						std::cout << "Doppler shift " << doppler_shift << std::endl;
-						std::cout << "Max magnitude = " << max_magnitude << "Power sum = " << power_sum << std::endl;
+						if (max_magnitude_iteration > max_magnitude)
+						{
+							max_index = max_index_iteration;
+							max_magnitude = max_magnitude_iteration;
+							initial_sample = initial_sample_iteration;
+							power_sum = power_sum_iteration;
+							doppler_index = doppler_index_iteration;
+							doppler_shift_selected = doppler_shift;
+						}
+						top_block->stop();
+					}
 
-						power_sum = (power_sum - max_magnitude) / (fft_size - 1);
-						float test_statistics = (max_magnitude / power_sum);
-						std::cout << "test_statistics = " << test_statistics << std::endl;
+					power_sum = (power_sum - max_magnitude) / (fft_size - 1);
+					float test_statistics = (max_magnitude / power_sum);
+					float threshold = config->property("Acquisition.threshold", FLAGS_external_signal_acquisition_threshold);
+					if (test_statistics > threshold)
+						{
+							std::cout << " " << PRN << " ";
+							//doppler_measurements_map.insert(std::pair<int, double>(PRN, static_cast<double>(doppler_shift_selected)));
+							//code_delay_measurements_map.insert(std::pair<int, double>(PRN, static_cast<double>(max_index % nsamples_total)));
+							//acq_samplestamp_map.insert(std::pair<int, double>(PRN, initial_sample)); // should be 0 (first sample upon which acq starts is always 0 in this case)
+							gnss_synchro_vec.push_back(tmp_gnss_synchro);
+						}
+					else
+						{
+							std::cout << " . ";
+						}
 
+					std::cout.flush();
+
+				}
+
+				uint32_t max_index = 0;
+				float max_magnitude = 0.0;
+				uint64_t initial_sample = 0;
+				float power_sum = 0;
+				uint32_t doppler_index = 0;
+
+				if (test_observables_show_results_table == 1)
+				{
+					for (unsigned int PRN = 1; PRN < MAX_PRN_IDX; PRN++)
+					{
+						std::cout << std::endl << "############################################ Results for satellite " << PRN << std::endl;
+						int doppler_num = 0;
+						for (int doppler_shift = -acq_doppler_max;doppler_shift <= acq_doppler_max;doppler_shift = doppler_shift + acq_doppler_step)
+						{
+							max_magnitude = result_table[PRN][doppler_num][0];
+							power_sum = result_table[PRN][doppler_num][1];
+							doppler_num = doppler_num + 1;
+
+							std::cout << "Doppler shift " << doppler_shift << std::endl;
+							std::cout << "Max magnitude = " << max_magnitude << "Power sum = " << power_sum << std::endl;
+
+							power_sum = (power_sum - max_magnitude) / (fft_size - 1);
+							float test_statistics = (max_magnitude / power_sum);
+							std::cout << "test_statistics = " << test_statistics << std::endl;
+
+						}
 					}
 				}
-			}
-    }
+		}
     std::cout << "]" << std::endl;
     std::cout << "-------------------------------------------\n";
 
@@ -1899,7 +1899,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
                 }
         }
 
-
+    printf("@@@@@@@@@@@@@@@@@@@@@@@@@@ Signal Acquired\n");
     configure_receiver(FLAGS_PLL_bw_hz_start,
         FLAGS_DLL_bw_hz_start,
         FLAGS_PLL_narrow_bw_hz,

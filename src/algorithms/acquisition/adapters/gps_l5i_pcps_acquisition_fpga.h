@@ -149,6 +149,11 @@ public:
      */
     void reset_acquisition(void);
 
+    /*!
+     * \brief This function is only used in the unit tests
+     */
+    void read_fpga_total_scale_factor(uint32_t *total_scale_factor, uint32_t *fw_scale_factor);
+
 private:
     ConfigurationInterface* configuration_;
     //pcps_acquisition_sptr acquisition_;

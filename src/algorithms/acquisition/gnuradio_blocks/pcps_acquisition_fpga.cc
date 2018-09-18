@@ -406,4 +406,7 @@ void pcps_acquisition_fpga::reset_acquisition(void)
 	acquisition_fpga->reset_acquisition();
 }
 
-
+void pcps_acquisition_fpga::read_fpga_total_scale_factor(uint32_t *total_scale_factor, uint32_t *fw_scale_factor)
+{
+	acquisition_fpga->read_fpga_total_scale_factor(total_scale_factor, fw_scale_factor);
+}

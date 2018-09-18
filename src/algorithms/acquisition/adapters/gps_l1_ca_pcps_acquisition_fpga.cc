@@ -278,6 +278,13 @@ void GpsL1CaPcpsAcquisitionFpga::reset_acquisition(void)
 	acquisition_fpga_->reset_acquisition();
 }
 
+// this function is only used for the unit tests
+void GpsL1CaPcpsAcquisitionFpga::read_fpga_total_scale_factor(uint32_t *total_scale_factor, uint32_t *fw_scale_factor)
+{
+	acquisition_fpga_->read_fpga_total_scale_factor(total_scale_factor, fw_scale_factor);
+}
+
+
 void GpsL1CaPcpsAcquisitionFpga::connect(gr::top_block_sptr top_block)
 {
     // nothing to connect

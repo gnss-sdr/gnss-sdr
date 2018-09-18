@@ -509,3 +509,12 @@ void fpga_acquisition::set_single_doppler_flag(unsigned int single_doppler_flag)
 	d_single_doppler_flag = single_doppler_flag;
 }
 
+// this function is only used for the unit tests
+void fpga_acquisition::read_fpga_total_scale_factor(uint32_t *total_scale_factor, uint32_t *fw_scale_factor)
+{
+	uint32_t readval = 0;
+	readval = d_map_base[7];
+	*total_scale_factor = readval;
+	readval = d_map_base[8];
+	*fw_scale_factor = readval;
+}

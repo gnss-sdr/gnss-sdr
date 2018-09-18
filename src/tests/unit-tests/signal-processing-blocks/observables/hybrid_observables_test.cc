@@ -654,6 +654,8 @@ void HybridObservablesTest::configure_receiver(
     std::cout << "pll_bw_narrow_hz: " << config->property("Tracking.pll_bw_narrow_hz", 0.0) << " Hz\n";
     std::cout << "dll_bw_narrow_hz: " << config->property("Tracking.dll_bw_narrow_hz", 0.0) << " Hz\n";
     std::cout << "extend_correlation_symbols: " << config->property("Tracking.extend_correlation_symbols", 0) << " Symbols\n";
+    std::cout << "high_dyn: " << config->property("Tracking.high_dyn", false) << "\n";
+    std::cout << "smoother_length: " << config->property("Tracking.smoother_length", 0) << "\n";
     std::cout << "*****************************************\n";
     std::cout << "*****************************************\n";
 }

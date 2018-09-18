@@ -290,10 +290,10 @@ void pcps_opencl_acquisition_cc::init()
     d_gnss_synchro->Flag_valid_symbol_output = false;
     d_gnss_synchro->Flag_valid_pseudorange = false;
     d_gnss_synchro->Flag_valid_word = false;
-
+    d_gnss_synchro->Acq_doppler_step = 0U;
     d_gnss_synchro->Acq_delay_samples = 0.0;
     d_gnss_synchro->Acq_doppler_hz = 0.0;
-    d_gnss_synchro->Acq_samplestamp_samples = 0;
+    d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
     d_mag = 0.0;
     d_input_power = 0.0;
 
@@ -450,6 +450,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_volk()
                             d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
                             d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
                             d_gnss_synchro->Acq_samplestamp_samples = samplestamp;
+                            d_gnss_synchro->Acq_doppler_step = d_doppler_step;
 
                             // 5- Compute the test statistics and compare to the threshold
                             //d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
@@ -613,6 +614,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
                             d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
                             d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
                             d_gnss_synchro->Acq_samplestamp_samples = samplestamp;
+                            d_gnss_synchro->Acq_doppler_step = d_doppler_step;
 
                             // 5- Compute the test statistics and compare to the threshold
                             //d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
@@ -676,7 +678,8 @@ void pcps_opencl_acquisition_cc::set_state(int state)
         {
             d_gnss_synchro->Acq_delay_samples = 0.0;
             d_gnss_synchro->Acq_doppler_hz = 0.0;
-            d_gnss_synchro->Acq_samplestamp_samples = 0;
+            d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
+            d_gnss_synchro->Acq_doppler_step = 0U;
             d_well_count = 0;
             d_mag = 0.0;
             d_input_power = 0.0;
@@ -708,7 +711,8 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
                         //restart acquisition variables
                         d_gnss_synchro->Acq_delay_samples = 0.0;
                         d_gnss_synchro->Acq_doppler_hz = 0.0;
-                        d_gnss_synchro->Acq_samplestamp_samples = 0;
+                        d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
+                        d_gnss_synchro->Acq_doppler_step = 0U;
                         d_well_count = 0;
                         d_mag = 0.0;
                         d_input_power = 0.0;

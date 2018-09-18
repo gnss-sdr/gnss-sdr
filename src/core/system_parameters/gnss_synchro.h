@@ -53,6 +53,7 @@ public:
     double Acq_delay_samples;          //!< Set by Acquisition processing block
     double Acq_doppler_hz;             //!< Set by Acquisition processing block
     uint64_t Acq_samplestamp_samples;  //!< Set by Acquisition processing block
+    uint32_t Acq_doppler_step;         //!< Set by Acquisition processing block
     bool Flag_valid_acquisition;       //!< Set by Acquisition processing block
 
     // Tracking
@@ -96,6 +97,7 @@ public:
         ar& Acq_delay_samples;
         ar& Acq_doppler_hz;
         ar& Acq_samplestamp_samples;
+        ar& Acq_doppler_step;
         ar& Flag_valid_acquisition;
         // Tracking
         ar& fs;

@@ -71,7 +71,6 @@
 #define socket_t int
 #define closesocket close
 #define lock_t pthread_mutex_t
-#define thread_t pthread_t
 #define initlock(f) pthread_mutex_init(f, NULL)
 #define rtk_lock(f) pthread_mutex_lock(f)
 #define rtk_unlock(f) pthread_mutex_unlock(f)
@@ -1211,7 +1210,7 @@ typedef struct
     char local[1024]; /* local file path */
     int topts[4];     /* time options {poff,tint,toff,tretry} (s) */
     gtime_t tnext;    /* next retry time (gpst) */
-    thread_t thread;  /* download thread */
+    pthread_t thread;  /* download thread */
 } ftp_t;
 
 
@@ -1284,7 +1283,7 @@ typedef struct
     stream_t stream[8];         /* streams {rov,base,corr,sol1,sol2,logr,logb,logc} */
     stream_t *moni;             /* monitor stream */
     unsigned int tick;          /* start tick */
-    thread_t thread;            /* server thread */
+    pthread_t thread;            /* server thread */
     int cputime;                /* CPU time (ms) for a processing cycle */
     int prcout;                 /* missing observation data count */
     lock_t lock;                /* lock flag */

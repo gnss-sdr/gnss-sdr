@@ -364,8 +364,7 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
     d_rinexobs_rate_ms = rinexobs_rate_ms;
     d_rinexnav_rate_ms = rinexnav_rate_ms;
 
-    d_dump_filename.append("_raw.dat");
-    dump_ls_pvt_filename.append("_ls_pvt.dat");
+    dump_ls_pvt_filename.append("_pvt.dat");
 
     d_ls_pvt = std::make_shared<rtklib_solver>(static_cast<int32_t>(nchannels), dump_ls_pvt_filename, d_dump, rtk);
     d_ls_pvt->set_averaging_depth(1);
@@ -374,23 +373,6 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
 
     d_last_status_print_seg = 0;
 
-    // ############# ENABLE DATA FILE LOG #################
-    if (d_dump == true)
-        {
-            if (d_dump_file.is_open() == false)
-                {
-                    try
-                        {
-                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-                            d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            LOG(INFO) << "PVT dump enabled Log file: " << d_dump_filename.c_str();
-                        }
-                    catch (const std::ifstream::failure& e)
-                        {
-                            LOG(WARNING) << "Exception opening PVT dump file " << e.what();
-                        }
-                }
-        }
 
     // Create Sys V message queue
     first_fix = true;
@@ -412,7 +394,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
     // save GPS L2CM ephemeris to XML file
     std::string file_name = "eph_GPS_CNAV.xml";
 
-    if (d_ls_pvt->gps_cnav_ephemeris_map.size() > 0)
+    if (d_ls_pvt->gps_cnav_ephemeris_map.empty() == false)
         {
             try
                 {
@@ -435,7 +417,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
     // save GPS L1 CA ephemeris to XML file
     file_name = "eph_GPS_L1CA.xml";
 
-    if (d_ls_pvt->gps_ephemeris_map.size() > 0)
+    if (d_ls_pvt->gps_ephemeris_map.empty() == false)
         {
             try
                 {
@@ -458,7 +440,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
     // save Galileo E1 ephemeris to XML file
     file_name = "eph_Galileo_E1.xml";
 
-    if (d_ls_pvt->galileo_ephemeris_map.size() > 0)
+    if (d_ls_pvt->galileo_ephemeris_map.empty() == false)
         {
             try
                 {
@@ -481,7 +463,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
     // save GLONASS GNAV ephemeris to XML file
     file_name = "eph_GLONASS_GNAV.xml";
 
-    if (d_ls_pvt->glonass_gnav_ephemeris_map.size() > 0)
+    if (d_ls_pvt->glonass_gnav_ephemeris_map.empty() == false)
         {
             try
                 {
@@ -499,18 +481,6 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
     else
         {
             LOG(WARNING) << "Failed to save GLONASS GNAV Ephemeris, map is empty";
-        }
-
-    if (d_dump_file.is_open() == true)
-        {
-            try
-                {
-                    d_dump_file.close();
-                }
-            catch (const std::exception& ex)
-                {
-                    LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
-                }
         }
 }
 
@@ -573,28 +543,28 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                 }
                             try
                                 {
-                                    if (d_ls_pvt->gps_ephemeris_map.size() > 0)
+                                    if (d_ls_pvt->gps_ephemeris_map.empty() == false)
                                         {
                                             if (tmp_eph_iter_gps != d_ls_pvt->gps_ephemeris_map.end())
                                                 {
                                                     d_rtcm_printer->lock_time(d_ls_pvt->gps_ephemeris_map.find(in[i][epoch].PRN)->second, in[i][epoch].RX_time, in[i][epoch]);  // keep track of locking time
                                                 }
                                         }
-                                    if (d_ls_pvt->galileo_ephemeris_map.size() > 0)
+                                    if (d_ls_pvt->galileo_ephemeris_map.empty() == false)
                                         {
                                             if (tmp_eph_iter_gal != d_ls_pvt->galileo_ephemeris_map.end())
                                                 {
                                                     d_rtcm_printer->lock_time(d_ls_pvt->galileo_ephemeris_map.find(in[i][epoch].PRN)->second, in[i][epoch].RX_time, in[i][epoch]);  // keep track of locking time
                                                 }
                                         }
-                                    if (d_ls_pvt->gps_cnav_ephemeris_map.size() > 0)
+                                    if (d_ls_pvt->gps_cnav_ephemeris_map.empty() == false)
                                         {
                                             if (tmp_eph_iter_cnav != d_ls_pvt->gps_cnav_ephemeris_map.end())
                                                 {
                                                     d_rtcm_printer->lock_time(d_ls_pvt->gps_cnav_ephemeris_map.find(in[i][epoch].PRN)->second, in[i][epoch].RX_time, in[i][epoch]);  // keep track of locking time
                                                 }
                                         }
-                                    if (d_ls_pvt->glonass_gnav_ephemeris_map.size() > 0)
+                                    if (d_ls_pvt->glonass_gnav_ephemeris_map.empty() == false)
                                         {
                                             if (tmp_eph_iter_glo_gnav != d_ls_pvt->glonass_gnav_ephemeris_map.end())
                                                 {
@@ -616,7 +586,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                 }
 
             // ############ 2 COMPUTE THE PVT ################################
-            if (gnss_observables_map.size() > 0)
+            if (gnss_observables_map.empty() == false)
                 {
                     double current_RX_time = gnss_observables_map.begin()->second.RX_time;
                     uint32_t current_RX_time_ms = static_cast<uint32_t>(current_RX_time * 1000.0);
@@ -2102,7 +2072,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                       << std::fixed << std::setprecision(3)
                                       << " [deg], Height = " << d_ls_pvt->get_height() << " [m]" << TEXT_RESET << std::endl;
                             std::cout << std::setprecision(ss);
-                            LOG(INFO) << "RX clock offset: " << d_ls_pvt->get_time_offset_s() << "[s]";
+                            DLOG(INFO) << "RX clock offset: " << d_ls_pvt->get_time_offset_s() << "[s]";
 
                             // boost::posix_time::ptime p_time;
                             // gtime_t rtklib_utc_time = gpst2time(adjgpsweek(d_ls_pvt->gps_ephemeris_map.cbegin()->second.i_GPS_week), d_rx_time);
@@ -2110,35 +2080,14 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                             // p_time += boost::posix_time::microseconds(round(rtklib_utc_time.sec * 1e6));
                             // std::cout << TEXT_MAGENTA << "Observable RX time (GPST) " << boost::posix_time::to_simple_string(p_time) << TEXT_RESET << std::endl;
 
-                            LOG(INFO) << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->get_position_UTC_time())
-                                      << " UTC using " << d_ls_pvt->get_num_valid_observations() << " observations is Lat = " << d_ls_pvt->get_latitude() << " [deg], Long = " << d_ls_pvt->get_longitude()
-                                      << " [deg], Height = " << d_ls_pvt->get_height() << " [m]";
+                            DLOG(INFO) << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->get_position_UTC_time())
+                                       << " UTC using " << d_ls_pvt->get_num_valid_observations() << " observations is Lat = " << d_ls_pvt->get_latitude() << " [deg], Long = " << d_ls_pvt->get_longitude()
+                                       << " [deg], Height = " << d_ls_pvt->get_height() << " [m]";
 
                             /* std::cout << "Dilution of Precision at " << boost::posix_time::to_simple_string(d_ls_pvt->get_position_UTC_time())
                                          << " UTC using "<< d_ls_pvt->get_num_valid_observations() <<" observations is HDOP = " << d_ls_pvt->get_hdop() << " VDOP = "
                                          << d_ls_pvt->get_vdop()
                                          << " GDOP = " << d_ls_pvt->get_gdop() << std::endl; */
-                        }
-
-                    // MULTIPLEXED FILE RECORDING - Record results to file
-                    if (d_dump == true)
-                        {
-                            try
-                                {
-                                    double tmp_double;
-                                    for (uint32_t i = 0; i < d_nchannels; i++)
-                                        {
-                                            tmp_double = in[i][epoch].Pseudorange_m;
-                                            d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
-                                            tmp_double = 0;
-                                            d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
-                                            d_dump_file.write(reinterpret_cast<char*>(&d_rx_time), sizeof(double));
-                                        }
-                                }
-                            catch (const std::ifstream::failure& e)
-                                {
-                                    LOG(WARNING) << "Exception writing observables dump file " << e.what();
-                                }
                         }
                 }
         }

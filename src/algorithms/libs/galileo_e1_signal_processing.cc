@@ -33,6 +33,7 @@
 #include "galileo_e1_signal_processing.h"
 #include "Galileo_E1.h"
 #include "gnss_signal_processing.h"
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include <string>
 
 
@@ -42,7 +43,7 @@ void galileo_e1_code_gen_int(int* _dest, char _Signal[3], int32_t _prn)
     int32_t prn = _prn - 1;
     int32_t index = 0;
 
-    /* A simple error check */
+    // A simple error check
     if ((_prn < 1) || (_prn > 50))
         {
             return;
@@ -107,7 +108,7 @@ void galileo_e1_sinboc_61_gen_int(int* _dest, int* _prn, uint32_t _length_out)
 void galileo_e1_code_gen_sinboc11_float(float* _dest, char _Signal[3], uint32_t _prn)
 {
     std::string _galileo_signal = _Signal;
-    uint32_t _codeLength = static_cast<uint32_t>(Galileo_E1_B_CODE_LENGTH_CHIPS);
+    const uint32_t _codeLength = static_cast<uint32_t>(Galileo_E1_B_CODE_LENGTH_CHIPS);
     int32_t primary_code_E1_chips[4092];                            // _codeLength not accepted by Clang
     galileo_e1_code_gen_int(primary_code_E1_chips, _Signal, _prn);  //generate Galileo E1 code, 1 sample per chip
     for (uint32_t i = 0; i < _codeLength; i++)
@@ -157,15 +158,16 @@ void galileo_e1_code_gen_float_sampled(float* _dest, char _Signal[3],
     // This function is based on the GNU software GPS for MATLAB in Kay Borre's book
     std::string _galileo_signal = _Signal;
     uint32_t _samplesPerCode;
-    const int32_t _codeFreqBasis = Galileo_E1_CODE_CHIP_RATE_HZ;  //Hz
-    uint32_t _codeLength = Galileo_E1_B_CODE_LENGTH_CHIPS;
-    int32_t primary_code_E1_chips[static_cast<int32_t>(Galileo_E1_B_CODE_LENGTH_CHIPS)];
+    const int32_t _codeFreqBasis = Galileo_E1_CODE_CHIP_RATE_HZ;  // Hz
+    uint32_t _codeLength = static_cast<uint32_t>(Galileo_E1_B_CODE_LENGTH_CHIPS);
+    int32_t* primary_code_E1_chips = static_cast<int32_t*>(volk_gnsssdr_malloc(static_cast<uint32_t>(Galileo_E1_B_CODE_LENGTH_CHIPS) * sizeof(int32_t), volk_gnsssdr_get_alignment()));
+
     _samplesPerCode = static_cast<uint32_t>(static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis) / static_cast<double>(_codeLength)));
     const int32_t _samplesPerChip = (_cboc == true) ? 12 : 2;
 
     const uint32_t delay = ((static_cast<int32_t>(Galileo_E1_B_CODE_LENGTH_CHIPS) - _chip_shift) % static_cast<int32_t>(Galileo_E1_B_CODE_LENGTH_CHIPS)) * _samplesPerCode / Galileo_E1_B_CODE_LENGTH_CHIPS;
 
-    galileo_e1_code_gen_int(primary_code_E1_chips, _Signal, _prn);  //generate Galileo E1 code, 1 sample per chip
+    galileo_e1_code_gen_int(primary_code_E1_chips, _Signal, _prn);  // generate Galileo E1 code, 1 sample per chip
 
     float* _signal_E1;
 
@@ -174,24 +176,26 @@ void galileo_e1_code_gen_float_sampled(float* _dest, char _Signal[3],
 
     if (_cboc == true)
         {
-            galileo_e1_gen_float(_signal_E1, primary_code_E1_chips, _Signal);  //generate cboc 12 samples per chip
+            galileo_e1_gen_float(_signal_E1, primary_code_E1_chips, _Signal);  // generate cboc 12 samples per chip
         }
     else
         {
-            int32_t _signal_E1_int[_codeLength];
-            galileo_e1_sinboc_11_gen_int(_signal_E1_int, primary_code_E1_chips, _codeLength);  //generate sinboc(1,1) 2 samples per chip
+            int32_t* _signal_E1_int = static_cast<int32_t*>(volk_gnsssdr_malloc(_codeLength * sizeof(int32_t), volk_gnsssdr_get_alignment()));
+            galileo_e1_sinboc_11_gen_int(_signal_E1_int, primary_code_E1_chips, _codeLength);  // generate sinboc(1,1) 2 samples per chip
 
             for (uint32_t ii = 0; ii < _codeLength; ++ii)
                 {
                     _signal_E1[ii] = static_cast<float>(_signal_E1_int[ii]);
                 }
+            volk_gnsssdr_free(_signal_E1_int);
         }
 
     if (_fs != _samplesPerChip * _codeFreqBasis)
         {
             float* _resampled_signal = new float[_samplesPerCode];
+
             resampler(_signal_E1, _resampled_signal, _samplesPerChip * _codeFreqBasis, _fs,
-                _codeLength, _samplesPerCode);  //resamples code to fs
+                _codeLength, _samplesPerCode);  // resamples code to fs
 
             delete[] _signal_E1;
             _signal_E1 = _resampled_signal;
@@ -221,6 +225,7 @@ void galileo_e1_code_gen_float_sampled(float* _dest, char _Signal[3],
         }
 
     delete[] _signal_E1;
+    volk_gnsssdr_free(primary_code_E1_chips);
 }
 
 
@@ -229,7 +234,7 @@ void galileo_e1_code_gen_complex_sampled(std::complex<float>* _dest, char _Signa
     bool _secondary_flag)
 {
     std::string _galileo_signal = _Signal;
-    const int32_t _codeFreqBasis = Galileo_E1_CODE_CHIP_RATE_HZ;  //Hz
+    const int32_t _codeFreqBasis = Galileo_E1_CODE_CHIP_RATE_HZ;  // Hz
     uint32_t _samplesPerCode = static_cast<uint32_t>(static_cast<double>(_fs) /
                                                      (static_cast<double>(_codeFreqBasis) / static_cast<double>(Galileo_E1_B_CODE_LENGTH_CHIPS)));
 
@@ -238,7 +243,7 @@ void galileo_e1_code_gen_complex_sampled(std::complex<float>* _dest, char _Signa
             _samplesPerCode *= static_cast<int32_t>(Galileo_E1_C_SECONDARY_CODE_LENGTH);
         }
 
-    float real_code[_samplesPerCode];
+    float* real_code = static_cast<float*>(volk_gnsssdr_malloc(_samplesPerCode * sizeof(float), volk_gnsssdr_get_alignment()));
 
     galileo_e1_code_gen_float_sampled(real_code, _Signal, _cboc, _prn, _fs, _chip_shift, _secondary_flag);
 
@@ -246,6 +251,7 @@ void galileo_e1_code_gen_complex_sampled(std::complex<float>* _dest, char _Signa
         {
             _dest[ii] = std::complex<float>(real_code[ii], 0.0f);
         }
+    volk_gnsssdr_free(real_code);
 }
 
 

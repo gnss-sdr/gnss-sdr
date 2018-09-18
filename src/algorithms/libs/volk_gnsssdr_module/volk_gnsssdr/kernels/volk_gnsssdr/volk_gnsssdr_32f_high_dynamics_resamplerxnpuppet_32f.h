@@ -1,6 +1,6 @@
 /*!
- * \file volk_gnsssdr_32f_fast_resamplerxnpuppet_32f.h
- * \brief VOLK_GNSSSDR puppet for the multiple 32-bit float vector fast resampler kernel.
+ * \file volk_gnsssdr_32f_high_dynamics_resamplerxnpuppet_32f.h
+ * \brief VOLK_GNSSSDR puppet for the multiple 32-bit float vector high dynamics resampler kernel.
  * \authors <ul>
  *          <li> Cillian O'Driscoll 2017 cillian.odriscoll at gmail dot com
  *          <li> Javier Arribas, 2018. javiarribas(at)gmail.com
@@ -33,10 +33,10 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_volk_gnsssdr_32f_fast_resamplerxnpuppet_32f_H
-#define INCLUDED_volk_gnsssdr_32f_fast_resamplerxnpuppet_32f_H
+#ifndef INCLUDED_volk_gnsssdr_32f_high_dynamics_resamplerxnpuppet_32f_H
+#define INCLUDED_volk_gnsssdr_32f_high_dynamics_resamplerxnpuppet_32f_H
 
-#include "volk_gnsssdr/volk_gnsssdr_32f_xn_fast_resampler_32f_xn.h"
+#include "volk_gnsssdr/volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn.h"
 #include <volk_gnsssdr/volk_gnsssdr_malloc.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
@@ -44,7 +44,7 @@
 
 
 #ifdef LV_HAVE_GENERIC
-static inline void volk_gnsssdr_32f_fast_resamplerxnpuppet_32f_generic(float* result, const float* local_code, unsigned int num_points)
+static inline void volk_gnsssdr_32f_high_dynamics_resamplerxnpuppet_32f_generic(float* result, const float* local_code, unsigned int num_points)
 {
     int code_length_chips = 2046;
     float code_phase_step_chips = ((float)(code_length_chips) + 0.1) / ((float)num_points);
@@ -60,7 +60,7 @@ static inline void volk_gnsssdr_32f_fast_resamplerxnpuppet_32f_generic(float* re
             result_aux[n] = (float*)volk_gnsssdr_malloc(sizeof(float) * num_points, volk_gnsssdr_get_alignment());
         }
 
-    volk_gnsssdr_32f_xn_fast_resampler_32f_xn_generic(result_aux, local_code, rem_code_phase_chips, code_phase_step_chips, code_phase_rate_step_chips, shifts_chips, code_length_chips, num_out_vectors, num_points);
+    volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_generic(result_aux, local_code, rem_code_phase_chips, code_phase_step_chips, code_phase_rate_step_chips, shifts_chips, code_length_chips, num_out_vectors, num_points);
 
     memcpy((float*)result, (float*)result_aux[0], sizeof(float) * num_points);
 
@@ -75,7 +75,7 @@ static inline void volk_gnsssdr_32f_fast_resamplerxnpuppet_32f_generic(float* re
 
 
 #ifdef LV_HAVE_SSE3
-static inline void volk_gnsssdr_32f_fast_resamplerxnpuppet_32f_a_sse3(float* result, const float* local_code, unsigned int num_points)
+static inline void volk_gnsssdr_32f_high_dynamics_resamplerxnpuppet_32f_a_sse3(float* result, const float* local_code, unsigned int num_points)
 {
     int code_length_chips = 2046;
     float code_phase_step_chips = ((float)(code_length_chips) + 0.1) / ((float)num_points);
@@ -91,7 +91,7 @@ static inline void volk_gnsssdr_32f_fast_resamplerxnpuppet_32f_a_sse3(float* res
             result_aux[n] = (float*)volk_gnsssdr_malloc(sizeof(float) * num_points, volk_gnsssdr_get_alignment());
         }
 
-    volk_gnsssdr_32f_xn_fast_resampler_32f_xn_a_sse3(result_aux, local_code, rem_code_phase_chips, code_phase_step_chips, code_phase_rate_step_chips, shifts_chips, code_length_chips, num_out_vectors, num_points);
+    volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_a_sse3(result_aux, local_code, rem_code_phase_chips, code_phase_step_chips, code_phase_rate_step_chips, shifts_chips, code_length_chips, num_out_vectors, num_points);
 
     memcpy((float*)result, (float*)result_aux[0], sizeof(float) * num_points);
 
@@ -106,7 +106,7 @@ static inline void volk_gnsssdr_32f_fast_resamplerxnpuppet_32f_a_sse3(float* res
 
 
 #ifdef LV_HAVE_SSE3
-static inline void volk_gnsssdr_32f_fast_resamplerxnpuppet_32f_u_sse3(float* result, const float* local_code, unsigned int num_points)
+static inline void volk_gnsssdr_32f_high_dynamics_resamplerxnpuppet_32f_u_sse3(float* result, const float* local_code, unsigned int num_points)
 {
     int code_length_chips = 2046;
     float code_phase_step_chips = ((float)(code_length_chips) + 0.1) / ((float)num_points);
@@ -122,7 +122,7 @@ static inline void volk_gnsssdr_32f_fast_resamplerxnpuppet_32f_u_sse3(float* res
             result_aux[n] = (float*)volk_gnsssdr_malloc(sizeof(float) * num_points, volk_gnsssdr_get_alignment());
         }
 
-    volk_gnsssdr_32f_xn_fast_resampler_32f_xn_u_sse3(result_aux, local_code, rem_code_phase_chips, code_phase_step_chips, code_phase_rate_step_chips, shifts_chips, code_length_chips, num_out_vectors, num_points);
+    volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_u_sse3(result_aux, local_code, rem_code_phase_chips, code_phase_step_chips, code_phase_rate_step_chips, shifts_chips, code_length_chips, num_out_vectors, num_points);
 
     memcpy((float*)result, (float*)result_aux[0], sizeof(float) * num_points);
 
@@ -137,7 +137,7 @@ static inline void volk_gnsssdr_32f_fast_resamplerxnpuppet_32f_u_sse3(float* res
 
 
 #ifdef LV_HAVE_SSE4_1
-static inline void volk_gnsssdr_32f_fast_resamplerxnpuppet_32f_u_sse4_1(float* result, const float* local_code, unsigned int num_points)
+static inline void volk_gnsssdr_32f_high_dynamics_resamplerxnpuppet_32f_u_sse4_1(float* result, const float* local_code, unsigned int num_points)
 {
     int code_length_chips = 2046;
     float code_phase_step_chips = ((float)(code_length_chips) + 0.1) / ((float)num_points);
@@ -153,7 +153,7 @@ static inline void volk_gnsssdr_32f_fast_resamplerxnpuppet_32f_u_sse4_1(float* r
             result_aux[n] = (float*)volk_gnsssdr_malloc(sizeof(float) * num_points, volk_gnsssdr_get_alignment());
         }
 
-    volk_gnsssdr_32f_xn_fast_resampler_32f_xn_u_sse4_1(result_aux, local_code, rem_code_phase_chips, code_phase_step_chips, code_phase_rate_step_chips, shifts_chips, code_length_chips, num_out_vectors, num_points);
+    volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_u_sse4_1(result_aux, local_code, rem_code_phase_chips, code_phase_step_chips, code_phase_rate_step_chips, shifts_chips, code_length_chips, num_out_vectors, num_points);
 
     memcpy((float*)result, (float*)result_aux[0], sizeof(float) * num_points);
 
@@ -168,7 +168,7 @@ static inline void volk_gnsssdr_32f_fast_resamplerxnpuppet_32f_u_sse4_1(float* r
 
 
 #ifdef LV_HAVE_SSE4_1
-static inline void volk_gnsssdr_32f_fast_resamplerxnpuppet_32f_a_sse4_1(float* result, const float* local_code, unsigned int num_points)
+static inline void volk_gnsssdr_32f_high_dynamics_resamplerxnpuppet_32f_a_sse4_1(float* result, const float* local_code, unsigned int num_points)
 {
     int code_length_chips = 2046;
     float code_phase_step_chips = ((float)(code_length_chips) + 0.1) / ((float)num_points);
@@ -184,7 +184,7 @@ static inline void volk_gnsssdr_32f_fast_resamplerxnpuppet_32f_a_sse4_1(float* r
             result_aux[n] = (float*)volk_gnsssdr_malloc(sizeof(float) * num_points, volk_gnsssdr_get_alignment());
         }
 
-    volk_gnsssdr_32f_xn_fast_resampler_32f_xn_a_sse4_1(result_aux, local_code, rem_code_phase_chips, code_phase_step_chips, code_phase_rate_step_chips, shifts_chips, code_length_chips, num_out_vectors, num_points);
+    volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_a_sse4_1(result_aux, local_code, rem_code_phase_chips, code_phase_step_chips, code_phase_rate_step_chips, shifts_chips, code_length_chips, num_out_vectors, num_points);
 
     memcpy((float*)result, (float*)result_aux[0], sizeof(float) * num_points);
 
@@ -199,7 +199,7 @@ static inline void volk_gnsssdr_32f_fast_resamplerxnpuppet_32f_a_sse4_1(float* r
 
 
 #ifdef LV_HAVE_AVX
-static inline void volk_gnsssdr_32f_fast_resamplerxnpuppet_32f_a_avx(float* result, const float* local_code, unsigned int num_points)
+static inline void volk_gnsssdr_32f_high_dynamics_resamplerxnpuppet_32f_a_avx(float* result, const float* local_code, unsigned int num_points)
 {
     int code_length_chips = 2046;
     float code_phase_step_chips = ((float)(code_length_chips) + 0.1) / ((float)num_points);
@@ -215,7 +215,7 @@ static inline void volk_gnsssdr_32f_fast_resamplerxnpuppet_32f_a_avx(float* resu
             result_aux[n] = (float*)volk_gnsssdr_malloc(sizeof(float) * num_points, volk_gnsssdr_get_alignment());
         }
 
-    volk_gnsssdr_32f_xn_fast_resampler_32f_xn_a_avx(result_aux, local_code, rem_code_phase_chips, code_phase_step_chips, code_phase_rate_step_chips, shifts_chips, code_length_chips, num_out_vectors, num_points);
+    volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_a_avx(result_aux, local_code, rem_code_phase_chips, code_phase_step_chips, code_phase_rate_step_chips, shifts_chips, code_length_chips, num_out_vectors, num_points);
 
     memcpy((float*)result, (float*)result_aux[0], sizeof(float) * num_points);
 
@@ -229,7 +229,7 @@ static inline void volk_gnsssdr_32f_fast_resamplerxnpuppet_32f_a_avx(float* resu
 
 
 #ifdef LV_HAVE_AVX
-static inline void volk_gnsssdr_32f_fast_resamplerxnpuppet_32f_u_avx(float* result, const float* local_code, unsigned int num_points)
+static inline void volk_gnsssdr_32f_high_dynamics_resamplerxnpuppet_32f_u_avx(float* result, const float* local_code, unsigned int num_points)
 {
     int code_length_chips = 2046;
     float code_phase_step_chips = ((float)(code_length_chips) + 0.1) / ((float)num_points);
@@ -245,7 +245,7 @@ static inline void volk_gnsssdr_32f_fast_resamplerxnpuppet_32f_u_avx(float* resu
             result_aux[n] = (float*)volk_gnsssdr_malloc(sizeof(float) * num_points, volk_gnsssdr_get_alignment());
         }
 
-    volk_gnsssdr_32f_xn_fast_resampler_32f_xn_u_avx(result_aux, local_code, rem_code_phase_chips, code_phase_step_chips, code_phase_rate_step_chips, shifts_chips, code_length_chips, num_out_vectors, num_points);
+    volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_u_avx(result_aux, local_code, rem_code_phase_chips, code_phase_step_chips, code_phase_rate_step_chips, shifts_chips, code_length_chips, num_out_vectors, num_points);
 
     memcpy((float*)result, (float*)result_aux[0], sizeof(float) * num_points);
 
@@ -285,4 +285,4 @@ static inline void volk_gnsssdr_32f_fast_resamplerxnpuppet_32f_u_avx(float* resu
 //}
 //#endif
 
-#endif  // INCLUDED_volk_gnsssdr_32f_fast_resamplerpuppet_32f_H
+#endif  // INCLUDED_volk_gnsssdr_32f_high_dynamics_resamplerpuppet_32f_H

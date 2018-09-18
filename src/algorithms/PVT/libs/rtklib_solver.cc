@@ -86,7 +86,7 @@ rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag
                         }
                     catch (const std::ifstream::failure& e)
                         {
-                            LOG(WARNING) << "Exception opening PVT lib dump file " << e.what();
+                            LOG(WARNING) << "Exception opening RTKLIB dump file " << e.what();
                         }
                 }
         }
@@ -103,7 +103,7 @@ rtklib_solver::~rtklib_solver()
                 }
             catch (const std::exception& ex)
                 {
-                    LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
+                    LOG(WARNING) << "Exception in destructor closing the RTKLIB dump file " << ex.what();
                 }
         }
 }
@@ -496,7 +496,8 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
                             if (rtk_.ssat[i].vsat[0] == 1) used_sats++;
                         }
 
-                    double azel[used_sats * 2];
+                    std::vector<double> azel;
+                    azel.reserve(used_sats * 2);
                     unsigned int index_aux = 0;
                     for (unsigned int i = 0; i < MAXSAT; i++)
                         {
@@ -507,7 +508,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
                                     index_aux++;
                                 }
                         }
-                    if (index_aux > 0) dops(index_aux, azel, 0.0, dop_);
+                    if (index_aux > 0) dops(index_aux, azel.data(), 0.0, dop_);
 
                     this->set_valid_position(true);
                     arma::vec rx_position_and_time(4);
@@ -555,34 +556,78 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
                             try
                                 {
                                     double tmp_double;
+                                    uint32_t tmp_uint32;
+                                    // TOW
+                                    tmp_uint32 = gnss_observables_map.begin()->second.TOW_at_current_symbol_ms;
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_uint32), sizeof(uint32_t));
+                                    // WEEK
+                                    tmp_uint32 = adjgpsweek(nav_data.eph[0].week);
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_uint32), sizeof(uint32_t));
                                     // PVT GPS time
                                     tmp_double = gnss_observables_map.begin()->second.RX_time;
-                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
-                                    // ECEF User Position East [m]
-                                    tmp_double = rx_position_and_time(0);
-                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
-                                    // ECEF User Position North [m]
-                                    tmp_double = rx_position_and_time(1);
-                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
-                                    // ECEF User Position Up [m]
-                                    tmp_double = rx_position_and_time(2);
                                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                                     // User clock offset [s]
                                     tmp_double = rx_position_and_time(3);
                                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+
+                                    // ECEF POS X,Y,X [m] + ECEF VEL X,Y,X [m/s] (6 x double)
+                                    tmp_double = pvt_sol.rr[0];
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    tmp_double = pvt_sol.rr[1];
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    tmp_double = pvt_sol.rr[2];
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    tmp_double = pvt_sol.rr[3];
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    tmp_double = pvt_sol.rr[4];
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    tmp_double = pvt_sol.rr[5];
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+
+                                    // position variance/covariance (m^2) {c_xx,c_yy,c_zz,c_xy,c_yz,c_zx} (6 x double)
+                                    tmp_double = pvt_sol.qr[0];
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    tmp_double = pvt_sol.qr[1];
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    tmp_double = pvt_sol.qr[2];
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    tmp_double = pvt_sol.qr[3];
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    tmp_double = pvt_sol.qr[4];
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    tmp_double = pvt_sol.qr[5];
+                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+
                                     // GEO user position Latitude [deg]
-                                    tmp_double = this->get_latitude();
+                                    tmp_double = get_latitude();
                                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                                     // GEO user position Longitude [deg]
-                                    tmp_double = this->get_longitude();
+                                    tmp_double = get_longitude();
                                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                                     // GEO user position Height [m]
-                                    tmp_double = this->get_height();
+                                    tmp_double = get_height();
                                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+
+                                    // NUMBER OF VALID SATS
+                                    d_dump_file.write(reinterpret_cast<char*>(&pvt_sol.ns), sizeof(uint8_t));
+                                    // RTKLIB solution status
+                                    d_dump_file.write(reinterpret_cast<char*>(&pvt_sol.stat), sizeof(uint8_t));
+                                    // RTKLIB solution type (0:xyz-ecef,1:enu-baseline)
+                                    d_dump_file.write(reinterpret_cast<char*>(&pvt_sol.type), sizeof(uint8_t));
+                                    // AR ratio factor for validation
+                                    d_dump_file.write(reinterpret_cast<char*>(&pvt_sol.ratio), sizeof(float));
+                                    // AR ratio threshold for validation
+                                    d_dump_file.write(reinterpret_cast<char*>(&pvt_sol.thres), sizeof(float));
+
+                                    // GDOP / PDOP/ HDOP/ VDOP
+                                    d_dump_file.write(reinterpret_cast<char*>(&dop_[0]), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char*>(&dop_[1]), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char*>(&dop_[2]), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char*>(&dop_[3]), sizeof(double));
                                 }
                             catch (const std::ifstream::failure& e)
                                 {
-                                    LOG(WARNING) << "Exception writing PVT LS dump file " << e.what();
+                                    LOG(WARNING) << "Exception writing RTKLIB dump file " << e.what();
                                 }
                         }
                 }

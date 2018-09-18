@@ -76,6 +76,7 @@ endif(ENABLE_PACKAGING)
 
 # Testing
 option(ENABLE_UNIT_TESTING "Build unit tests" ON)
+option(ENABLE_UNIT_TESTING_MINIMAL "Build a minimal set of unit tests" OFF)
 option(ENABLE_UNIT_TESTING_EXTRA "Download external files and build extra unit tests" OFF)
 option(ENABLE_SYSTEM_TESTING "Build system tests" OFF)
 option(ENABLE_SYSTEM_TESTING_EXTRA "Download external tools and build extra system tests" OFF)
@@ -270,7 +271,19 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
      endif(${DARWIN_VERSION} MATCHES "10")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
-#select the release build type by default to get optimization flags
+# Define extra build types and select Release by default to get optimization flags
+include(GnsssdrBuildTypes)
+# Available options:
+#  - None: nothing set
+#  - Debug: -O2 -g
+#  - Release: -O3
+#  - RelWithDebInfo: -O3 -g
+#  - MinSizeRel: -Os
+#  - Coverage: -Wall -pedantic -pthread -g -O0 -fprofile-arcs -ftest-coverage
+#  - NoOptWithASM: -O0 -g -save-temps
+#  - O2WithASM: -O2 -g -save-temps
+#  - O3WithASM: -O3 -g -save-temps
+#  - ASAN: -Wall -Wextra -g -O2 -fsanitize=address -fno-omit-frame-pointer
 if(NOT CMAKE_BUILD_TYPE)
      if(ENABLE_GPERFTOOLS OR ENABLE_GPROF)
          set(CMAKE_BUILD_TYPE "RelWithDebInfo")
@@ -282,10 +295,8 @@ if(NOT CMAKE_BUILD_TYPE)
 else(NOT CMAKE_BUILD_TYPE)
      message(STATUS "Build type set to ${CMAKE_BUILD_TYPE}.")
 endif(NOT CMAKE_BUILD_TYPE)
+GNSSSDR_CHECK_BUILD_TYPE(${CMAKE_BUILD_TYPE})
 set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
-
-# Append -O2 optimization flag for Debug builds
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2")
 
 # allow 'large' files in 32 bit builds
 if(UNIX)
@@ -331,7 +342,7 @@ set(GNSSSDR_MATIO_MIN_VERSION "1.5.3")
 set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.1")
 set(GNSSSDR_GLOG_LOCAL_VERSION "0.3.5")
 set(GNSSSDR_ARMADILLO_LOCAL_VERSION "unstable")
-set(GNSSSDR_GTEST_LOCAL_VERSION "1.8.0")
+set(GNSSSDR_GTEST_LOCAL_VERSION "1.8.1")
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
 set(GNSSSDR_GPSTK_LOCAL_VERSION "2.10")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.12")
@@ -513,7 +524,6 @@ if(NOT GNURADIO_RUNTIME_FOUND)
        message("You can install it easily via Macports:")
        message("  sudo port install gnuradio ")
        message("Alternatively, you can use homebrew:")
-       message("  brew tap odrisci/gnuradio")
        message("  brew install gnuradio" )
        message(FATAL_ERROR "GNU Radio ${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr")
    endif(OS_IS_MACOSX)

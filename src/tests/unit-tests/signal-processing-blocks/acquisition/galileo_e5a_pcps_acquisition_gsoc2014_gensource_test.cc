@@ -33,7 +33,11 @@
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
+#ifdef GR_GREATER_38
+#include <gnuradio/analog/sig_source.h>
+#else
 #include <gnuradio/analog/sig_source_c.h>
+#endif
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/null_sink.h>
 #include "gnss_block_interface.h"

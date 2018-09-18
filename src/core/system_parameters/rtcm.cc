@@ -189,7 +189,9 @@ std::string Rtcm::bin_to_binary_data(const std::string& s) const
 {
     std::string s_aux;
     int32_t remainder = static_cast<int32_t>(std::fmod(s.length(), 8));
-    uint8_t c[s.length()];
+    std::vector<uint8_t> c;
+    c.reserve(s.length());
+
     uint32_t k = 0;
     if (remainder != 0)
         {
@@ -213,7 +215,7 @@ std::string Rtcm::bin_to_binary_data(const std::string& s) const
             k++;
         }
 
-    std::string ret(c, c + k / sizeof(c[0]));
+    std::string ret(c.begin(), c.begin() + k);
     return ret;
 }
 

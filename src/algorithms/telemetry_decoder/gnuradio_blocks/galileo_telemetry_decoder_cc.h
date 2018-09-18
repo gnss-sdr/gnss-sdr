@@ -1,13 +1,7 @@
 /*!
- * \file galileo_e5a_telemetry_decoder_cc.cc
- * \brief Implementation of a Galileo FNAV message demodulator block
- * \author Marc Sales, 2014. marcsales92(at)gmail.com
- *  		   Javier Arribas, 2017. jarribas(at)cttc.es
- * \based on work from:
- *          <ul>
- *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
- *          </ul>
- *
+ * \file galileo_telemetry_decoder_cc.h
+ * \brief Implementation of a Galileo unified INAV and FNAV message demodulator block
+ * \author Javier Arribas 2018. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
@@ -34,40 +28,43 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GALILEO_E5A_TELEMETRY_DECODER_CC_H_
-#define GNSS_SDR_GALILEO_E5A_TELEMETRY_DECODER_CC_H_
 
+#ifndef GNSS_SDR_GALILEO_TELEMETRY_DECODER_CC_H
+#define GNSS_SDR_GALILEO_TELEMETRY_DECODER_CC_H
+
+
+#include "Galileo_E1.h"
 #include "Galileo_E5a.h"
-#include "gnss_satellite.h"
+#include "galileo_navigation_message.h"
 #include "galileo_fnav_message.h"
 #include "galileo_ephemeris.h"
 #include "galileo_almanac.h"
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
+#include "gnss_satellite.h"
 #include "gnss_synchro.h"
 #include <gnuradio/block.h>
-#include <deque>
 #include <fstream>
 #include <string>
 
 
-class galileo_e5a_telemetry_decoder_cc;
+class galileo_telemetry_decoder_cc;
 
-typedef boost::shared_ptr<galileo_e5a_telemetry_decoder_cc> galileo_e5a_telemetry_decoder_cc_sptr;
+typedef boost::shared_ptr<galileo_telemetry_decoder_cc> galileo_telemetry_decoder_cc_sptr;
 
-galileo_e5a_telemetry_decoder_cc_sptr galileo_e5a_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
-
+galileo_telemetry_decoder_cc_sptr galileo_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, int frame_type, bool dump);
 
 /*!
- * \brief This class implements a block that decodes the FNAV data defined in Galileo ICD
- *
+ * \brief This class implements a block that decodes the INAV and FNAV data defined in Galileo ICD
  */
-class galileo_e5a_telemetry_decoder_cc : public gr::block
+class galileo_telemetry_decoder_cc : public gr::block
 {
 public:
-    ~galileo_e5a_telemetry_decoder_cc();
+    ~galileo_telemetry_decoder_cc();
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
     void set_channel(int32_t channel);                    //!< Set receiver's channel
+    int32_t flag_even_word_arrived;
+
     /*!
      * \brief This is where all signal processing takes place
      */
@@ -75,44 +72,56 @@ public:
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
 private:
-    friend galileo_e5a_telemetry_decoder_cc_sptr
-    galileo_e5a_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
-    galileo_e5a_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
+    friend galileo_telemetry_decoder_cc_sptr
+    galileo_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, int frame_type, bool dump);
+    galileo_telemetry_decoder_cc(const Gnss_Satellite &satellite, int frame_type, bool dump);
 
     void viterbi_decoder(double *page_part_symbols, int32_t *page_part_bits);
 
     void deinterleaver(int32_t rows, int32_t cols, double *in, double *out);
 
-    void decode_word(double *page_symbols, int32_t frame_length);
+    void decode_INAV_word(double *symbols, int32_t frame_length);
+    void decode_FNAV_word(double *page_symbols, int32_t frame_length);
 
-    int32_t d_preambles_bits[GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
-    int32_t d_preamble_samples[GALILEO_FNAV_CODES_PER_PREAMBLE];
-    std::deque<int> d_preamble_init;
-    int32_t d_stat;
-    int32_t d_CRC_error_counter;
-    int32_t d_channel;
-    int32_t d_symbol_counter;
-    int32_t corr_value;
-    uint32_t required_symbols;
+    int d_frame_type;
+    int32_t d_bits_per_preamble;
+    int32_t d_samples_per_preamble;
+    int32_t d_preamble_period_symbols;
+    int32_t *d_preamble_samples;
+    int32_t *d_secondary_code_samples;
+    uint32_t d_samples_per_symbol;
+    uint32_t d_PRN_code_period_ms;
+    uint32_t d_required_symbols;
+    uint32_t d_frame_length_symbols;
+    double *d_page_part_symbols;
+
+    std::deque<float> d_symbol_history;
+
     uint64_t d_sample_counter;
     uint64_t d_preamble_index;
+    uint32_t d_stat;
     bool d_flag_frame_sync;
+
+    bool d_flag_parity;
     bool d_flag_preamble;
+    int32_t d_CRC_error_counter;
+
+    // navigation message vars
+    Galileo_Navigation_Message d_inav_nav;
+    Galileo_Fnav_Message d_fnav_nav;
+
     bool d_dump;
-    bool flag_TOW_set;
-    bool flag_bit_start;
-    bool new_symbol;
-    double d_prompt_acum;
-    double page_symbols[GALILEO_FNAV_SYMBOLS_PER_PAGE - GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
+    Gnss_Satellite d_satellite;
+    int32_t d_channel;
+
     uint32_t d_TOW_at_Preamble_ms;
     uint32_t d_TOW_at_current_symbol_ms;
+
+    bool flag_TOW_set;
     double delta_t;  //GPS-GALILEO time offset
+
     std::string d_dump_filename;
     std::ofstream d_dump_file;
-    std::deque<Gnss_Synchro> d_symbol_history;
-    Gnss_Satellite d_satellite;
-    // navigation message vars
-    Galileo_Fnav_Message d_nav;
 
     // vars for Viterbi decoder
     int32_t *out0, *out1, *state0, *state1;
@@ -120,8 +129,8 @@ private:
     const int32_t nn = 2;  // Coding rate 1/n
     const int32_t KK = 7;  // Constraint Length
     int32_t mm = KK - 1;
-    const int32_t CodeLength = 488;
-    int32_t DataLength = (CodeLength / nn) - mm;
+    int32_t CodeLength;
+    int32_t DataLength;
 };
 
-#endif /* GNSS_SDR_GALILEO_E5A_TELEMETRY_DECODER_CC_H_ */
+#endif

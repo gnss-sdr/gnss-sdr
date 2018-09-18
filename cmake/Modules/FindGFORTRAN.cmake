@@ -135,6 +135,14 @@
                        /usr/lib/sparc64-linux-gnu
                        /usr/lib/x86_64-linux-gnux32
                        /usr/lib/alpha-linux-gnu
+                       /usr/lib/gcc/x86_64-linux-gnu/8     # libgfortran8
+                       /usr/lib/gcc/aarch64-linux-gnu/8
+                       /usr/lib/gcc/arm-linux-gnueabihf/8
+                       /usr/lib/gcc/i686-linux-gnu/8
+                       /usr/lib/gcc/powerpc64le-linux-gnu/8
+                       /usr/lib/gcc/s390x-linux-gnu/8
+                       /usr/lib/gcc/alpha-linux-gnu/8
              )
+
 INCLUDE(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(GFORTRAN DEFAULT_MSG GFORTRAN)

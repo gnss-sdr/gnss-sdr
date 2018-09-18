@@ -69,6 +69,21 @@ using google::LogMessage;
 
 DECLARE_string(log_dir);
 
+#if UNIT_TESTING_MINIMAL
+
+#include "unit-tests/arithmetic/matio_test.cc"
+#if EXTRA_TESTS
+#include "unit-tests/signal-processing-blocks/acquisition/acq_performance_test.cc"
+#include "unit-tests/signal-processing-blocks/tracking/tracking_pull-in_test.cc"
+#if ENABLE_FPGA
+#include "unit-tests/signal-processing-blocks/tracking/tracking_pull-in_test_fpga.cc"
+#endif
+#include "unit-tests/signal-processing-blocks/observables/hybrid_observables_test.cc"
+#endif
+
+
+#else
+
 #include "unit-tests/arithmetic/complex_carrier_test.cc"
 #include "unit-tests/arithmetic/conjugate_test.cc"
 #include "unit-tests/arithmetic/magnitude_squared_test.cc"
@@ -127,6 +142,7 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/tracking/tracking_loop_filter_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/cpu_multicorrelator_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/cpu_multicorrelator_real_codes_test.cc"
+#include "unit-tests/signal-processing-blocks/tracking/bayesian_estimation_test.cc"
 
 #if CUDA_BLOCKS_TEST
 #include "unit-tests/signal-processing-blocks/tracking/gpu_multicorrelator_test.cc"
@@ -137,10 +153,15 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_test_fpga.cc"
 #endif
 
+#include "unit-tests/signal-processing-blocks/telemetry_decoder/galileo_fnav_inav_decoder_test.cc"
+#include "unit-tests/system-parameters/glonass_gnav_ephemeris_test.cc"
+#include "unit-tests/system-parameters/glonass_gnav_nav_message_test.cc"
+
 #include "unit-tests/signal-processing-blocks/pvt/rtcm_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/rtcm_printer_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/rinex_printer_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/nmea_printer_test.cc"
+
 
 #if EXTRA_TESTS
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l2_m_pcps_acquisition_test.cc"
@@ -148,6 +169,7 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/acquisition/acq_performance_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/gps_l2_m_dll_pll_tracking_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/gps_l1_ca_dll_pll_tracking_test.cc"
+#include "unit-tests/signal-processing-blocks/tracking/gps_l1_ca_kf_tracking_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/tracking_pull-in_test.cc"
 #if FPGA_BLOCKS_TEST
 #include "unit-tests/signal-processing-blocks/tracking/tracking_pull-in_test_fpga.cc"
@@ -159,8 +181,7 @@ DECLARE_string(log_dir);
 #endif
 #endif
 
-#include "unit-tests/system-parameters/glonass_gnav_ephemeris_test.cc"
-#include "unit-tests/system-parameters/glonass_gnav_nav_message_test.cc"
+#endif  // UNIT_TESTING_MINIMAL
 
 // For GPS NAVIGATION (L1)
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;

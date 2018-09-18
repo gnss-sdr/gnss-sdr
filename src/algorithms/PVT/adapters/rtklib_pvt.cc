@@ -504,7 +504,7 @@ bool RtklibPvt::save_assistance_to_XML()
     LOG(INFO) << "SUPL: Try to save GPS ephemeris to XML file " << eph_xml_filename_;
     std::map<int, Gps_Ephemeris> eph_map = pvt_->get_GPS_L1_ephemeris_map();
 
-    if (eph_map.size() > 0)
+    if (eph_map.empty() == false)
         {
             try
                 {

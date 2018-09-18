@@ -37,6 +37,10 @@
 #include "glonass_l2_ca_pcps_acquisition.h"
 #include "gps_l2_m_pcps_acquisition.h"
 #include "gps_l5i_pcps_acquisition.h"
+#include "in_memory_configuration.h"
+#include "file_configuration.h"
+#include "gnss_sdr_valve.h"
+#include "acquisition_dump_reader.h"
 #include "display.h"
 #include "gnuplot_i.h"
 #include "signal_generator_flags.h"
@@ -45,6 +49,8 @@
 #include "true_observables_reader.h"
 #include <boost/filesystem.hpp>
 #include <gnuradio/top_block.h>
+#include <gnuradio/blocks/file_source.h>
+#include <gnuradio/blocks/interleaved_char_to_complex.h>
 #include <gnuradio/blocks/skiphead.h>
 
 
@@ -64,7 +70,7 @@ DEFINE_int32(acq_test_second_doppler_step, 10, "If --acq_test_make_two_steps is 
 
 DEFINE_int32(acq_test_signal_duration_s, 2, "Generated signal duration, in s");
 DEFINE_int32(acq_test_num_meas, 0, "Number of measurements per run. 0 means the complete file.");
-DEFINE_double(acq_test_cn0_init, 33.0, "Initial CN0, in dBHz.");
+DEFINE_double(acq_test_cn0_init, 30.0, "Initial CN0, in dBHz.");
 DEFINE_double(acq_test_cn0_final, 45.0, "Final CN0, in dBHz.");
 DEFINE_double(acq_test_cn0_step, 3.0, "CN0 step, in dB.");
 

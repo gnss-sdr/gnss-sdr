@@ -1157,11 +1157,10 @@ void GNSSFlowgraph::init()
 	 */
     enable_monitor_ = configuration_->property("Monitor.enable_monitor", false);
 
-    std::vector<std::string> udp_addr_vec;
-
     std::string address_string = configuration_->property("Monitor.client_addresses", std::string("127.0.0.1"));
-    //todo: split the string in substrings using the separator and fill the address vector.
-    udp_addr_vec.push_back(address_string);
+    std::vector<std::string> udp_addr_vec = split_string(address_string, '_');
+    std::sort(udp_addr_vec.begin(), udp_addr_vec.end());
+    udp_addr_vec.erase(std::unique(udp_addr_vec.begin(), udp_addr_vec.end()), udp_addr_vec.end());
 
     if (enable_monitor_)
         {
@@ -1183,7 +1182,7 @@ void GNSSFlowgraph::set_signals_list()
         11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
         29, 30, 31, 32};
 
-    std::set<unsigned int> available_sbas_prn = {120, 124, 126};
+    std::set<unsigned int> available_sbas_prn = {123, 131, 135, 136, 138};
 
     std::set<unsigned int> available_galileo_prn = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
         11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
@@ -1598,4 +1597,18 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(std::string searched_signal, bool 
             break;
         }
     return result;
+}
+
+std::vector<std::string> GNSSFlowgraph::split_string(const std::string &s, char delim)
+{
+    std::vector<std::string> v;
+    std::stringstream ss(s);
+    std::string item;
+
+    while (std::getline(ss, item, delim))
+    {
+        *(std::back_inserter(v)++) = item;
+    }
+
+    return v;
 }

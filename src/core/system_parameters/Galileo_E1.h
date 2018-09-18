@@ -59,6 +59,7 @@ const double Galileo_E1_SUB_CARRIER_A_RATE_HZ = 1.023e6;  //!< Galileo E1 sub-ca
 const double Galileo_E1_SUB_CARRIER_B_RATE_HZ = 6.138e6;  //!< Galileo E1 sub-carrier 'b' rate [Hz]
 const double Galileo_E1_B_CODE_LENGTH_CHIPS = 4092.0;     //!< Galileo E1-B code length [chips]
 const double Galileo_E1_B_SYMBOL_RATE_BPS = 250.0;        //!< Galileo E1-B symbol rate [bits/second]
+const int32_t Galileo_E1_B_SAMPLES_PER_SYMBOL = 1;        //!< (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS) / Galileo_E1_B_SYMBOL_RATE_BPS
 const int32_t Galileo_E1_C_SECONDARY_CODE_LENGTH = 25;    //!< Galileo E1-C secondary code length [chips]
 const int32_t Galileo_E1_NUMBER_OF_CODES = 50;
 
@@ -70,10 +71,7 @@ const int32_t GALILEO_E1_HISTORY_DEEP = 100;
 
 // Galileo INAV Telemetry structure
 
-#define GALILEO_INAV_PREAMBLE        \
-    {                                \
-        0, 1, 0, 1, 1, 0, 0, 0, 0, 0 \
-    }
+const std::string GALILEO_INAV_PREAMBLE = {"0101100000"};
 
 const int32_t GALILEO_INAV_PREAMBLE_LENGTH_BITS = 10;
 const double GALILEO_INAV_PAGE_PART_WITH_PREABLE_SECONDS = 2.0 + GALILEO_INAV_PREAMBLE_LENGTH_BITS * Galileo_E1_CODE_PERIOD;

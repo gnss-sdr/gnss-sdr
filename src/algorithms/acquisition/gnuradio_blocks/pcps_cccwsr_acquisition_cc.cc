@@ -165,10 +165,10 @@ void pcps_cccwsr_acquisition_cc::init()
     d_gnss_synchro->Flag_valid_symbol_output = false;
     d_gnss_synchro->Flag_valid_pseudorange = false;
     d_gnss_synchro->Flag_valid_word = false;
-
+    d_gnss_synchro->Acq_doppler_step = 0U;
     d_gnss_synchro->Acq_delay_samples = 0.0;
     d_gnss_synchro->Acq_doppler_hz = 0.0;
-    d_gnss_synchro->Acq_samplestamp_samples = 0;
+    d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
     d_mag = 0.0;
     d_input_power = 0.0;
 
@@ -203,7 +203,8 @@ void pcps_cccwsr_acquisition_cc::set_state(int state)
         {
             d_gnss_synchro->Acq_delay_samples = 0.0;
             d_gnss_synchro->Acq_doppler_hz = 0.0;
-            d_gnss_synchro->Acq_samplestamp_samples = 0;
+            d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
+            d_gnss_synchro->Acq_doppler_step = 0U;
             d_well_count = 0;
             d_mag = 0.0;
             d_input_power = 0.0;
@@ -234,7 +235,8 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
                         //restart acquisition variables
                         d_gnss_synchro->Acq_delay_samples = 0.0;
                         d_gnss_synchro->Acq_doppler_hz = 0.0;
-                        d_gnss_synchro->Acq_samplestamp_samples = 0;
+                        d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
+                        d_gnss_synchro->Acq_doppler_step = 0U;
                         d_well_count = 0;
                         d_mag = 0.0;
                         d_input_power = 0.0;
@@ -354,6 +356,7 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
                                 d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
                                 d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
                                 d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
+                                d_gnss_synchro->Acq_doppler_step = d_doppler_step;
                             }
 
                         // Record results to file if required

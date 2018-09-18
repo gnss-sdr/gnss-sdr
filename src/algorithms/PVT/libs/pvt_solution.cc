@@ -73,16 +73,9 @@ arma::vec Pvt_Solution::rotateSatellite(double const traveltime, const arma::vec
     omegatau = OMEGA_EARTH_DOT * traveltime;
 
     //--- Build a rotation matrix ----------------------------------------------
-    arma::mat R3 = arma::zeros(3, 3);
-    R3(0, 0) = cos(omegatau);
-    R3(0, 1) = sin(omegatau);
-    R3(0, 2) = 0.0;
-    R3(1, 0) = -sin(omegatau);
-    R3(1, 1) = cos(omegatau);
-    R3(1, 2) = 0.0;
-    R3(2, 0) = 0.0;
-    R3(2, 1) = 0.0;
-    R3(2, 2) = 1;
+    arma::mat R3 = {{cos(omegatau), sin(omegatau), 0.0},
+        {-sin(omegatau), cos(omegatau), 0.0},
+        {0.0, 0.0, 1.0}};
 
     //--- Do the rotation ------------------------------------------------------
     arma::vec X_sat_rot;
@@ -394,19 +387,9 @@ int Pvt_Solution::topocent(double *Az, double *El, double *D, const arma::vec &x
     double cb = cos(phi * dtr);
     double sb = sin(phi * dtr);
 
-    arma::mat F = arma::zeros(3, 3);
-
-    F(0, 0) = -sl;
-    F(0, 1) = -sb * cl;
-    F(0, 2) = cb * cl;
-
-    F(1, 0) = cl;
-    F(1, 1) = -sb * sl;
-    F(1, 2) = cb * sl;
-
-    F(2, 0) = 0;
-    F(2, 1) = cb;
-    F(2, 2) = sb;
+    arma::mat F = {{-sl, -sb * cl, cb * cl},
+        {cl, -sb * sl, cb * sl},
+        {0, 0, cb, sb}};
 
     arma::vec local_vector;
 

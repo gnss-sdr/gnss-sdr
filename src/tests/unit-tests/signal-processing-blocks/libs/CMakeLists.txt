@@ -19,6 +19,7 @@
 
 set(SIGNAL_PROCESSING_TESTING_LIB_SOURCES
     acquisition_dump_reader.cc
+    acquisition_msg_rx.cc
     tracking_dump_reader.cc
     tlm_dump_reader.cc  
     observables_dump_reader.cc    
@@ -31,6 +32,7 @@ include_directories(
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${MATIO_INCLUDE_DIRS}
+     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
 
@@ -40,5 +42,7 @@ add_library(signal_processing_testing_lib ${SIGNAL_PROCESSING_TESTING_LIB_SOURCE
 source_group(Headers FILES ${SIGNAL_PROCESSING_TESTING_LIB_HEADERS})
 
 if(NOT MATIO_FOUND)
-   add_dependencies(signal_processing_testing_lib matio-${GNSSSDR_MATIO_LOCAL_VERSION})
+   add_dependencies(signal_processing_testing_lib matio-${GNSSSDR_MATIO_LOCAL_VERSION} glog-${glog_RELEASE})
+else(NOT MATIO_FOUND)
+   add_dependencies(signal_processing_testing_lib glog-${glog_RELEASE})
 endif(NOT MATIO_FOUND)

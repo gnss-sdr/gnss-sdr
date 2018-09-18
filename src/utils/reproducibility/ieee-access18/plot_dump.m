@@ -62,26 +62,46 @@ ylabel('Navigation data bits','fontname','Times','fontsize', fontsize)
 grid on
 
 
-fileID   = fopen('data/PVT_ls_pvt.dat', 'r');
-dinfo    = dir('data/PVT_ls_pvt.dat');
+fileID   = fopen('data/access18_pvt.dat', 'r');
+dinfo    = dir('data/access18_pvt.dat');
 filesize = dinfo.bytes;
 aux = 1;
 while ne(ftell(fileID), filesize)
-    navsol.RX_time(aux)    = fread(fileID, 1, 'double');
-    navsol.X(aux)          = fread(fileID, 1, 'double');
-    navsol.Y(aux)          = fread(fileID, 1, 'double');
-    navsol.Z(aux)          = fread(fileID, 1, 'double');
-    navsol.user_clock(aux) = fread(fileID, 1, 'double');
-    navsol.lat(aux)        = fread(fileID, 1, 'double');
-    navsol.long(aux)       = fread(fileID, 1, 'double');
-    navsol.height(aux)     = fread(fileID, 1, 'double');
+    navsol.TOW_at_current_symbol_ms(aux) = fread(fileID, 1, 'uint32');
+    navsol.week(aux) = fread(fileID, 1, 'uint32');
+    navsol.RX_time(aux) = fread(fileID, 1, 'double');
+    navsol.user_clock_offset(aux) = fread(fileID, 1, 'double');
+    navsol.X(aux) = fread(fileID, 1, 'double');
+    navsol.Y(aux) = fread(fileID, 1, 'double');
+    navsol.Z(aux) = fread(fileID, 1, 'double');
+    navsol.VX(aux) = fread(fileID, 1, 'double');
+    navsol.VY(aux) = fread(fileID, 1, 'double');
+    navsol.VZ(aux) = fread(fileID, 1, 'double');
+    navsol.varXX(aux) = fread(fileID, 1, 'double');
+    navsol.varYY(aux) = fread(fileID, 1, 'double');
+    navsol.varZZ(aux) = fread(fileID, 1, 'double');
+    navsol.varXY(aux) = fread(fileID, 1, 'double');
+    navsol.varYZ(aux) = fread(fileID, 1, 'double');
+    navsol.varZX(aux) = fread(fileID, 1, 'double');
+    navsol.latitude(aux) = fread(fileID, 1, 'double');
+    navsol.longitude(aux) = fread(fileID, 1, 'double');
+    navsol.height(aux) = fread(fileID, 1, 'double');
+    navsol.number_sats(aux) = fread(fileID, 1, 'uint8');
+    navsol.solution_status(aux) = fread(fileID, 1, 'uint8');
+    navsol.solution_type(aux) = fread(fileID, 1, 'uint8');
+    navsol.AR_ratio_factor(aux) = fread(fileID, 1, 'float');
+    navsol.AR_ratio_threshold(aux) = fread(fileID, 1, 'float');
+    navsol.GDOP(aux) = fread(fileID, 1, 'double');
+    navsol.PDOP(aux) = fread(fileID, 1, 'double');
+    navsol.HDOP(aux) = fread(fileID, 1, 'double');
+    navsol.VDOP(aux) = fread(fileID, 1, 'double');
     aux = aux + 1;
 end
 fclose(fileID);
 
 
-mean_Latitude = mean(navsol.lat);
-mean_Longitude = mean(navsol.long);
+mean_Latitude = mean(navsol.latitude);
+mean_Longitude = mean(navsol.longitude);
 mean_h = mean(navsol.height);
 utmZone = findUtmZone(mean_Latitude, mean_Longitude);
 [ref_X_cart, ref_Y_cart, ref_Z_cart] = geo2cart(dms2mat(deg2dms(mean_Latitude)), dms2mat(deg2dms(mean_Longitude)), mean_h, 5);

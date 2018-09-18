@@ -236,10 +236,10 @@ uint64_t Glonass_Gnav_Navigation_Message::read_navigation_unsigned(std::bitset<G
         {
             for (int32_t j = 0; j < parameter[i].second; j++)
                 {
-                    value <<= 1;  //shift left
+                    value <<= 1;  // shift left
                     if (bits[GLONASS_GNAV_STRING_BITS - parameter[i].first - j] == 1)
                         {
-                            value += 1;  // insert the bit
+                            value += 1ULL;  // insert the bit
                         }
                 }
         }
@@ -255,20 +255,20 @@ int64_t Glonass_Gnav_Navigation_Message::read_navigation_signed(std::bitset<GLON
     // read the MSB and perform the sign extension
     if (bits[GLONASS_GNAV_STRING_BITS - parameter[0].first] == 1)
         {
-            sign = -1;
+            sign = -1LL;
         }
     else
         {
-            sign = 1;
+            sign = 1LL;
         }
     for (int32_t i = 0; i < num_of_slices; i++)
         {
             for (int32_t j = 1; j < parameter[i].second; j++)
                 {
-                    value <<= 1;  //shift left
+                    value <<= 1;  // shift left
                     if (bits[GLONASS_GNAV_STRING_BITS - parameter[i].first - j] == 1)
                         {
-                            value += 1;  // insert the bit
+                            value += 1LL;  // insert the bit
                         }
                 }
         }
@@ -278,32 +278,32 @@ int64_t Glonass_Gnav_Navigation_Message::read_navigation_signed(std::bitset<GLON
 
 uint32_t Glonass_Gnav_Navigation_Message::get_frame_number(uint32_t satellite_slot_number)
 {
-    uint32_t frame_ID = 0;
+    uint32_t frame_ID = 0U;
 
     if (satellite_slot_number >= 1 and satellite_slot_number <= 5)
         {
-            frame_ID = 1;
+            frame_ID = 1U;
         }
     else if (satellite_slot_number >= 6 and satellite_slot_number <= 10)
         {
-            frame_ID = 2;
+            frame_ID = 2U;
         }
     else if (satellite_slot_number >= 11 and satellite_slot_number <= 15)
         {
-            frame_ID = 3;
+            frame_ID = 3U;
         }
     else if (satellite_slot_number >= 16 and satellite_slot_number <= 20)
         {
-            frame_ID = 4;
+            frame_ID = 4U;
         }
     else if (satellite_slot_number >= 21 and satellite_slot_number <= 24)
         {
-            frame_ID = 5;
+            frame_ID = 5U;
         }
     else
         {
             LOG(WARNING) << "GLONASS GNAV: Invalid Satellite Slot Number";
-            frame_ID = 0;
+            frame_ID = 0U;
         }
 
     return frame_ID;
@@ -313,8 +313,8 @@ uint32_t Glonass_Gnav_Navigation_Message::get_frame_number(uint32_t satellite_sl
 int32_t Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
 {
     int32_t J = 0;
-    d_string_ID = 0;
-    d_frame_ID = 0;
+    d_string_ID = 0U;
+    d_frame_ID = 0U;
 
     // Unpack bytes to bits
     std::bitset<GLONASS_GNAV_STRING_BITS> string_bits(frame_string);

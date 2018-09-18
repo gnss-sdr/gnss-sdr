@@ -1,5 +1,5 @@
 /*!
- * \file volk_gnsssdr_32f_xn_fast_resampler_32f_xn.h
+ * \file volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn.h
  * \brief VOLK_GNSSSDR kernel: Resamples 1 complex 32-bit float vectors using zero hold resample algorithm
  * and produces the delayed replicas by copying and rotating the resulting resampled signal.
  * \authors <ul>
@@ -38,7 +38,7 @@
  */
 
 /*!
- * \page volk_gnsssdr_32f_xn_fast_resampler_32f_xn
+ * \page volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn
  *
  * \b Overview
  *
@@ -46,7 +46,7 @@
  *
  * <b>Dispatcher Prototype</b>
  * \code
- * void volk_gnsssdr_32f_xn_fast_resampler_32f_xn(float** result, const float* local_code, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
+ * void volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn(float** result, const float* local_code, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
  * \endcode
  *
  * \b Inputs
@@ -64,8 +64,8 @@
  *
  */
 
-#ifndef INCLUDED_volk_gnsssdr_32f_xn_fast_resampler_32f_xn_H
-#define INCLUDED_volk_gnsssdr_32f_xn_fast_resampler_32f_xn_H
+#ifndef INCLUDED_volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_H
+#define INCLUDED_volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_H
 
 #include <assert.h>
 #include <math.h>
@@ -78,7 +78,7 @@
 
 #ifdef LV_HAVE_GENERIC
 
-static inline void volk_gnsssdr_32f_xn_fast_resampler_32f_xn_generic(float** result, const float* local_code, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
+static inline void volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_generic(float** result, const float* local_code, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
 {
     int local_code_chip_index;
     int current_correlator_tap;
@@ -109,7 +109,7 @@ static inline void volk_gnsssdr_32f_xn_fast_resampler_32f_xn_generic(float** res
 
 #ifdef LV_HAVE_SSE3
 #include <pmmintrin.h>
-static inline void volk_gnsssdr_32f_xn_fast_resampler_32f_xn_a_sse3(float** result, const float* local_code, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
+static inline void volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_a_sse3(float** result, const float* local_code, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
 {
     float** _result = result;
     const unsigned int quarterPoints = num_points / 4;
@@ -194,7 +194,7 @@ static inline void volk_gnsssdr_32f_xn_fast_resampler_32f_xn_a_sse3(float** resu
 
 #ifdef LV_HAVE_SSE3
 #include <pmmintrin.h>
-static inline void volk_gnsssdr_32f_xn_fast_resampler_32f_xn_u_sse3(float** result, const float* local_code, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
+static inline void volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_u_sse3(float** result, const float* local_code, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
 {
     float** _result = result;
     const unsigned int quarterPoints = num_points / 4;
@@ -280,7 +280,7 @@ static inline void volk_gnsssdr_32f_xn_fast_resampler_32f_xn_u_sse3(float** resu
 
 #ifdef LV_HAVE_SSE4_1
 #include <smmintrin.h>
-static inline void volk_gnsssdr_32f_xn_fast_resampler_32f_xn_a_sse4_1(float** result, const float* local_code, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
+static inline void volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_a_sse4_1(float** result, const float* local_code, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
 {
     float** _result = result;
     const unsigned int quarterPoints = num_points / 4;
@@ -362,7 +362,7 @@ static inline void volk_gnsssdr_32f_xn_fast_resampler_32f_xn_a_sse4_1(float** re
 
 #ifdef LV_HAVE_SSE4_1
 #include <smmintrin.h>
-static inline void volk_gnsssdr_32f_xn_fast_resampler_32f_xn_u_sse4_1(float** result, const float* local_code, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
+static inline void volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_u_sse4_1(float** result, const float* local_code, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
 {
     float** _result = result;
     const unsigned int quarterPoints = num_points / 4;
@@ -444,7 +444,7 @@ static inline void volk_gnsssdr_32f_xn_fast_resampler_32f_xn_u_sse4_1(float** re
 
 #ifdef LV_HAVE_AVX
 #include <immintrin.h>
-static inline void volk_gnsssdr_32f_xn_fast_resampler_32f_xn_a_avx(float** result, const float* local_code, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
+static inline void volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_a_avx(float** result, const float* local_code, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
 {
     float** _result = result;
     const unsigned int avx_iters = num_points / 8;
@@ -532,7 +532,7 @@ static inline void volk_gnsssdr_32f_xn_fast_resampler_32f_xn_a_avx(float** resul
 
 #ifdef LV_HAVE_AVX
 #include <immintrin.h>
-static inline void volk_gnsssdr_32f_xn_fast_resampler_32f_xn_u_avx(float** result, const float* local_code, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
+static inline void volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_u_avx(float** result, const float* local_code, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
 {
     float** _result = result;
     const unsigned int avx_iters = num_points / 8;
@@ -621,7 +621,7 @@ static inline void volk_gnsssdr_32f_xn_fast_resampler_32f_xn_u_avx(float** resul
 //#ifdef LV_HAVE_NEONV7
 //#include <arm_neon.h>
 //
-//static inline void volk_gnsssdr_32f_xn_fast_resampler_32f_xn_neon(float** result, const float* local_code, float rem_code_phase_chips, float code_phase_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
+//static inline void volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_neon(float** result, const float* local_code, float rem_code_phase_chips, float code_phase_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
 //{
 //    float** _result = result;
 //    const unsigned int neon_iters = num_points / 4;
@@ -704,4 +704,4 @@ static inline void volk_gnsssdr_32f_xn_fast_resampler_32f_xn_u_avx(float** resul
 //
 //#endif
 
-#endif /*INCLUDED_volk_gnsssdr_32f_xn_fast_resampler_32f_xn_H*/
+#endif /*INCLUDED_volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_H*/

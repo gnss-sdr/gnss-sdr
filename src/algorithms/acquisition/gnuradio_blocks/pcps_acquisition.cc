@@ -261,7 +261,7 @@ void pcps_acquisition::init()
     d_gnss_synchro->Flag_valid_symbol_output = false;
     d_gnss_synchro->Flag_valid_pseudorange = false;
     d_gnss_synchro->Flag_valid_word = false;
-
+    d_gnss_synchro->Acq_doppler_step = 0U;
     d_gnss_synchro->Acq_delay_samples = 0.0;
     d_gnss_synchro->Acq_doppler_hz = 0.0;
     d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
@@ -271,8 +271,8 @@ void pcps_acquisition::init()
     d_num_doppler_bins = static_cast<uint32_t>(std::ceil(static_cast<double>(static_cast<int32_t>(acq_parameters.doppler_max) - static_cast<int32_t>(-acq_parameters.doppler_max)) / static_cast<double>(d_doppler_step)));
 
     // Create the carrier Doppler wipeoff signals
-    d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
-    if (acq_parameters.make_2_steps)
+    if (d_grid_doppler_wipeoffs == nullptr) d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
+    if (acq_parameters.make_2_steps && (d_grid_doppler_wipeoffs_step_two == nullptr))
         {
             d_grid_doppler_wipeoffs_step_two = new gr_complex*[d_num_doppler_bins_step2];
             for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins_step2; doppler_index++)
@@ -281,11 +281,18 @@ void pcps_acquisition::init()
                 }
         }
 
-    d_magnitude_grid = new float*[d_num_doppler_bins];
+    if (d_magnitude_grid == nullptr)
+        {
+            d_magnitude_grid = new float*[d_num_doppler_bins];
+            for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+                {
+                    d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+                    d_magnitude_grid[doppler_index] = static_cast<float*>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
+                }
+        }
+
     for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
-            d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-            d_magnitude_grid[doppler_index] = static_cast<float*>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
             for (uint32_t k = 0; k < d_fft_size; k++)
                 {
                     d_magnitude_grid[doppler_index][k] = 0.0;
@@ -334,6 +341,7 @@ void pcps_acquisition::set_state(int32_t state)
             d_gnss_synchro->Acq_delay_samples = 0.0;
             d_gnss_synchro->Acq_doppler_hz = 0.0;
             d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
+            d_gnss_synchro->Acq_doppler_step = 0U;
             d_mag = 0.0;
             d_input_power = 0.0;
             d_test_statistics = 0.0;
@@ -725,6 +733,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
             d_gnss_synchro->Acq_delay_samples = static_cast<double>(std::fmod(static_cast<float>(indext), acq_parameters.samples_per_code));
             d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
             d_gnss_synchro->Acq_samplestamp_samples = samp_count;
+            d_gnss_synchro->Acq_doppler_step = acq_parameters.doppler_step2;
         }
 
     lk.lock();
@@ -865,6 +874,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                 d_gnss_synchro->Acq_delay_samples = 0.0;
                 d_gnss_synchro->Acq_doppler_hz = 0.0;
                 d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
+                d_gnss_synchro->Acq_doppler_step = 0U;
                 d_mag = 0.0;
                 d_input_power = 0.0;
                 d_test_statistics = 0.0;

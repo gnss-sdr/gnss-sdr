@@ -65,14 +65,14 @@ void hex_to_binary_converter(int32_t* _dest, char _from);
  * \brief This function resamples a sequence of float values.
  *
  */
-void resampler(float* _from, float* _dest,
+void resampler(const float* _from, float* _dest,
     float _fs_in, float _fs_out, uint32_t _length_in,
     uint32_t _length_out);
 /*!
  * \brief This function resamples a sequence of complex values.
  *
  */
-void resampler(std::complex<float>* _from, std::complex<float>* _dest,
+void resampler(const std::complex<float>* _from, std::complex<float>* _dest,
     float _fs_in, float _fs_out, uint32_t _length_in,
     uint32_t _length_out);
 

@@ -1,6 +1,6 @@
 /*!
  * \file cpu_multicorrelator_real_codes.cc
- * \brief High optimized CPU vector multiTAP correlator class with real-valued local codes
+ * \brief Highly optimized CPU vector multiTAP correlator class with real-valued local codes
  * \authors <ul>
  *          <li> Javier Arribas, 2015. jarribas(at)cttc.es
  *          <li> Cillian O'Driscoll, 2017. cillian.odriscoll(at)gmail.com
@@ -46,7 +46,7 @@ cpu_multicorrelator_real_codes::cpu_multicorrelator_real_codes()
     d_local_codes_resampled = nullptr;
     d_code_length_chips = 0;
     d_n_correlators = 0;
-    d_use_fast_resampler = true;
+    d_use_high_dynamics_resampler = true;
 }
 
 
@@ -100,9 +100,9 @@ bool cpu_multicorrelator_real_codes::set_input_output_vectors(std::complex<float
 
 void cpu_multicorrelator_real_codes::update_local_code(int correlator_length_samples, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips)
 {
-    if (d_use_fast_resampler)
+    if (d_use_high_dynamics_resampler)
         {
-            volk_gnsssdr_32f_xn_fast_resampler_32f_xn(d_local_codes_resampled,
+            volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn(d_local_codes_resampled,
                 d_local_code_in,
                 rem_code_phase_chips,
                 code_phase_step_chips,
@@ -131,9 +131,10 @@ bool cpu_multicorrelator_real_codes::Carrier_wipeoff_multicorrelator_resampler(
     float phase_step_rad,
     float rem_code_phase_chips,
     float code_phase_step_chips,
+    float code_phase_rate_step_chips,
     int signal_length_samples)
 {
-    update_local_code(signal_length_samples, rem_code_phase_chips, code_phase_step_chips);
+    update_local_code(signal_length_samples, rem_code_phase_chips, code_phase_step_chips, code_phase_rate_step_chips);
     // Regenerate phase at each call in order to avoid numerical issues
     lv_32fc_t phase_offset_as_complex[1];
     phase_offset_as_complex[0] = lv_cmake(std::cos(rem_carrier_phase_in_rad), -std::sin(rem_carrier_phase_in_rad));
@@ -158,8 +159,9 @@ bool cpu_multicorrelator_real_codes::free()
     return true;
 }
 
-void cpu_multicorrelator_real_codes::set_fast_resampler(
-    bool use_fast_resampler)
+
+void cpu_multicorrelator_real_codes::set_high_dynamics_resampler(
+    bool use_high_dynamics_resampler)
 {
-    d_use_fast_resampler = use_fast_resampler;
+    d_use_high_dynamics_resampler = use_high_dynamics_resampler;
 }

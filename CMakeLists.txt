@@ -45,7 +45,7 @@ endif(NOT CMAKE_PREFIX_PATH)
 ########################################################################
 # Support of optional RF front-ends
 option(ENABLE_UHD "Enable the use of UHD (driver for all USRP devices)" ON)
-option(ENABLE_OSMOSDR "Enable the use of OsmoSDR and other front-ends (RTL-based dongles, HackRF, bladeRF, etc.) as signal source (experimental)" OFF)
+option(ENABLE_OSMOSDR "Enable the use of OsmoSDR and other front-ends (RTL-based dongles, HackRF, bladeRF, etc.) as signal source" OFF)
 option(ENABLE_FLEXIBAND "Enable the use of the signal source adater for the Teleorbit Flexiband GNURadio driver" OFF)
 option(ENABLE_ARRAY "Enable the use of CTTC's antenna array front-end as signal source (experimental)" OFF)
 option(ENABLE_GN3S "Enable the use of the GN3S dongle as signal source (experimental)" OFF)
@@ -341,7 +341,7 @@ set(GNSSSDR_MATIO_MIN_VERSION "1.5.3")
 ################################################################################
 set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.1")
 set(GNSSSDR_GLOG_LOCAL_VERSION "0.3.5")
-set(GNSSSDR_ARMADILLO_LOCAL_VERSION "unstable")
+set(GNSSSDR_ARMADILLO_LOCAL_VERSION "9.200.x")
 set(GNSSSDR_GTEST_LOCAL_VERSION "1.8.1")
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
 set(GNSSSDR_GPSTK_LOCAL_VERSION "2.10.6")

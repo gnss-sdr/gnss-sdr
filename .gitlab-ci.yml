@@ -220,7 +220,24 @@ fedora-rawhide:
 
 
 opensuse42.3:
-  image: opensuse:42.3
+  image: opensuse/leap:42.3
+  stage: build
+  before_script:
+    - pwd
+  script:
+    - zypper -n up
+    - zypper -n install cmake git gcc-c++ boost-devel log4cpp-devel gnuradio-devel libpcap-devel armadillo-devel libtool automake hdf5-devel openssl-devel python-Mako python-six
+    - cd build
+    - cmake -DENABLE_PACKAGING=ON -DENABLE_RAW_UDP=ON ..
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
+    - make check
+    - make install
+  allow_failure: true
+
+
+opensuse-leap15.0:
+  image: opensuse/leap:15.0
   stage: build
   before_script:
     - pwd
@@ -237,12 +254,12 @@ opensuse42.3:
 
 
 opensuse-tumbleweed:
-  image: opensuse:tumbleweed
+  image: opensuse/tumbleweed
   stage: build
   before_script:
     - pwd
   script:
-    - zypper -n up
+    - zypper -n dup
     - zypper -n install cmake git gcc-c++ boost-devel libboost_system-devel libboost_filesystem-devel libboost_date_time-devel libboost_thread-devel libboost_chrono-devel libboost_serialization-devel log4cpp-devel gtest gnuradio-devel libpcap-devel armadillo-devel libtool automake hdf5-devel openssl-devel python-Mako python-six
     - cd build
     - cmake -DENABLE_RAW_UDP=ON ..

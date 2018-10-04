@@ -317,6 +317,20 @@ ubuntu18.04:
     - make -j$(($NPROC+1))
     - make check
     - make install
+
+
+ubuntu18.10:
+  image: ubuntu:cosmic
+  stage: build
+  script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
+    - cd build
+    - cmake -DENABLE_OSMOSDR=ON -DENABLE_RAW_UDP=ON ..
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
+    - make check
+    - make install
   allow_failure: true
 
 
@@ -490,7 +504,7 @@ docker-gnsssdr:
     - docker:dind
   script:
     - wget https://raw.githubusercontent.com/carlesfernandez/docker-gnsssdr/master/Dockerfile
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD"
+    - docker login -u "$DOCKER_HUB_USER" -p "$DOCKER_HUB_PASSWORD"
     - mkdir docker-build
     - cd docker-build
     - cp ../Dockerfile .
@@ -508,7 +522,7 @@ docker-gnsssdr-v0.0.10:
     - docker:dind
   script:
     - wget https://raw.githubusercontent.com/carlesfernandez/docker-gnsssdr/v0.0.10/Dockerfile
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD"
+    - docker login -u "$DOCKER_HUB_USER" -p "$DOCKER_HUB_PASSWORD"
     - mkdir docker-build
     - cd docker-build
     - cp ../Dockerfile .
@@ -527,7 +541,7 @@ docker-pybombs-gnsssdr:
     - docker:dind
   script:
     - wget https://raw.githubusercontent.com/carlesfernandez/docker-pybombs-gnsssdr/master/Dockerfile
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD"
+    - docker login -u "$DOCKER_HUB_USER" -p "$DOCKER_HUB_PASSWORD"
     - mkdir docker-build
     - cd docker-build
     - cp ../Dockerfile .

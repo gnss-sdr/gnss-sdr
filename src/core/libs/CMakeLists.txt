@@ -23,10 +23,17 @@ if(OPENSSL_FOUND)
 endif(OPENSSL_FOUND)
 
 set(CORE_LIBS_SOURCES 
-    ini.cc 
-    INIReader.cc 
+    ini.cc
+    INIReader.cc
     string_converter.cc
     gnss_sdr_supl_client.cc
+)
+
+set(CORE_LIBS_HEADERS 
+    ini.h
+    INIReader.h
+    string_converter.h
+    gnss_sdr_supl_client.h
 )
 	
 include_directories(
@@ -40,8 +47,9 @@ include_directories(
     ${Boost_INCLUDE_DIRS}
 )
 
-file(GLOB CORE_LIBS_HEADERS "*.h")
 list(SORT CORE_LIBS_HEADERS)
+list(SORT CORE_LIBS_SOURCES)
+
 add_library(rx_core_lib ${CORE_LIBS_SOURCES} ${CORE_LIBS_HEADERS})
 source_group(Headers FILES ${CORE_LIBS_HEADERS})
 target_link_libraries(rx_core_lib supl_library) 

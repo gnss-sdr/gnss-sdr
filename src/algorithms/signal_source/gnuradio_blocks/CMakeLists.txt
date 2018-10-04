@@ -26,7 +26,9 @@ if(ENABLE_RAW_UDP)
     set(OPT_LIBRARIES ${OPT_LIBRARIES} ${PCAP_LIBRARIES})
     set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${PCAP_INCLUDE_DIRS})
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} gr_complex_ip_packet_source.cc)
+    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} gr_complex_ip_packet_source.h)
 endif(ENABLE_RAW_UDP)
+
 
 set(SIGNAL_SOURCE_GR_BLOCKS_SOURCES
      unpack_byte_2bit_samples.cc
@@ -40,6 +42,19 @@ set(SIGNAL_SOURCE_GR_BLOCKS_SOURCES
      ${OPT_DRIVER_SOURCES}
 )
 
+set(SIGNAL_SOURCE_GR_BLOCKS_HEADERS
+     unpack_byte_2bit_samples.h
+     unpack_byte_2bit_cpx_samples.h
+     unpack_byte_4bit_samples.h
+     unpack_intspir_1bit_samples.h
+     rtl_tcp_signal_source_c.h
+     unpack_2bit_samples.h
+     unpack_spir_gss6450_samples.h
+     labsat23_source.h
+     ${OPT_DRIVER_HEADERS}
+)
+
+
 include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/libs
@@ -50,8 +65,9 @@ include_directories(
      ${OPT_DRIVER_INCLUDE_DIRS}
 )
 
-file(GLOB SIGNAL_SOURCE_GR_BLOCKS_HEADERS "*.h")
 list(SORT SIGNAL_SOURCE_GR_BLOCKS_HEADERS)
+list(SORT SIGNAL_SOURCE_GR_BLOCKS_SOURCES)
+
 add_library(signal_source_gr_blocks ${SIGNAL_SOURCE_GR_BLOCKS_SOURCES} ${SIGNAL_SOURCE_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${SIGNAL_SOURCE_GR_BLOCKS_HEADERS})
 target_link_libraries(signal_source_gr_blocks 

@@ -25,6 +25,10 @@ set(PVT_ADAPTER_SOURCES
 	rtklib_pvt.cc
 )
 
+set(PVT_ADAPTER_HEADERS
+	rtklib_pvt.h
+)
+
 include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
@@ -41,8 +45,6 @@ include_directories(
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
-file(GLOB PVT_ADAPTER_HEADERS "*.h")
-list(SORT PVT_ADAPTER_HEADERS)
 add_library(pvt_adapters ${PVT_ADAPTER_SOURCES} ${PVT_ADAPTER_HEADERS})
 source_group(Headers FILES ${PVT_ADAPTER_HEADERS})
 target_link_libraries(pvt_adapters pvt_gr_blocks ${ARMADILLO_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES})

@@ -23,6 +23,12 @@ set(RESAMPLER_GR_BLOCKS_SOURCES
      direct_resampler_conditioner_cb.cc
 )
 
+set(RESAMPLER_GR_BLOCKS_HEADERS 
+     direct_resampler_conditioner_cc.h
+     direct_resampler_conditioner_cs.h
+     direct_resampler_conditioner_cb.h
+)
+
 include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}
      ${GLOG_INCLUDE_DIRS}
@@ -31,8 +37,9 @@ include_directories(
      ${VOLK_INCLUDE_DIRS}
 )
 
-file(GLOB RESAMPLER_GR_BLOCKS_HEADERS "*.h")
 list(SORT RESAMPLER_GR_BLOCKS_HEADERS)
+list(SORT RESAMPLER_GR_BLOCKS_SOURCES)
+
 add_library(resampler_gr_blocks ${RESAMPLER_GR_BLOCKS_SOURCES} ${RESAMPLER_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${RESAMPLER_GR_BLOCKS_HEADERS})
 add_dependencies(resampler_gr_blocks glog-${glog_RELEASE})

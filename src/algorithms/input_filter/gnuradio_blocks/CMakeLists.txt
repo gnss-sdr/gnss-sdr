@@ -24,6 +24,13 @@ set(INPUT_FILTER_GR_BLOCKS_SOURCES
      notch_lite_cc.cc
 )
 
+set(INPUT_FILTER_GR_BLOCKS_HEADERS
+     beamformer.h
+     pulse_blanking_cc.h
+     notch_cc.h
+     notch_lite_cc.h
+)
+
 include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
@@ -33,8 +40,9 @@ include_directories(
      ${GFlags_INCLUDE_DIRS}
 )
 
-file(GLOB INPUT_FILTER_GR_BLOCKS_HEADERS "*.h")
 list(SORT INPUT_FILTER_GR_BLOCKS_HEADERS)
+list(SORT INPUT_FILTER_GR_BLOCKS_SOURCES)
+
 add_library(input_filter_gr_blocks ${INPUT_FILTER_GR_BLOCKS_SOURCES} ${INPUT_FILTER_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${INPUT_FILTER_GR_BLOCKS_HEADERS})
 

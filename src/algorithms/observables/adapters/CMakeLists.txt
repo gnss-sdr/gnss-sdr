@@ -20,6 +20,10 @@ set(OBS_ADAPTER_SOURCES
 	hybrid_observables.cc
 )
 
+set(OBS_ADAPTER_HEADERS
+	hybrid_observables.h
+)
+
 include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
@@ -33,8 +37,6 @@ include_directories(
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
-file(GLOB OBS_ADAPTER_HEADERS "*.h")
-list(SORT OBS_ADAPTER_HEADERS)
 add_library(obs_adapters ${OBS_ADAPTER_SOURCES} ${OBS_ADAPTER_HEADERS})
 source_group(Headers FILES ${OBS_ADAPTER_HEADERS})
 target_link_libraries(obs_adapters obs_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES})

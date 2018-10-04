@@ -63,21 +63,23 @@ include_directories(
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${OPT_DRIVER_INCLUDE_DIRS}
-     )
+)
 
 set(SIGNAL_SOURCE_LIB_SOURCES
      rtl_tcp_commands.cc
      rtl_tcp_dongle_info.cc
      ${OPT_SIGNAL_SOURCE_LIB_SOURCES}
-     )
+)
  
 set(SIGNAL_SOURCE_LIB_HEADERS
      rtl_tcp_commands.h
      rtl_tcp_dongle_info.h
      ${OPT_SIGNAL_SOURCE_LIB_HEADERS}
-     )
+)
 
 list(SORT SIGNAL_SOURCE_LIB_HEADERS)
+list(SORT SIGNAL_SOURCE_LIB_SOURCES)
+
 add_library(signal_source_lib ${SIGNAL_SOURCE_LIB_SOURCES} ${SIGNAL_SOURCE_LIB_HEADERS})
 source_group(Headers FILES ${SIGNAL_SOURCE_LIB_HEADERS})
 target_link_libraries(signal_source_lib ${OPT_LIBRARIES})

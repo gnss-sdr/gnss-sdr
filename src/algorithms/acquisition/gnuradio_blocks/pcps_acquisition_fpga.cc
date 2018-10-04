@@ -75,8 +75,10 @@ pcps_acquisition_fpga::pcps_acquisition_fpga(pcpsconf_fpga_t conf_) : gr::block(
     d_test_statistics = 0.0;
     d_channel = 0U;
     d_gnss_synchro = 0;
+    d_single_doppler_flag = false;
 
     d_downsampling_factor = acq_parameters.downsampling_factor;
+    printf("downsampling_factor = %f\n", d_downsampling_factor);
     d_select_queue_Fpga = acq_parameters.select_queue_Fpga;
     //printf("zzzz acq_parameters.code_length = %d\n", acq_parameters.code_length);
     //printf("zzzz acq_parameters.samples_per_ms = %d\n", acq_parameters.samples_per_ms);
@@ -300,9 +302,20 @@ void pcps_acquisition_fpga::set_active(bool active)
     //  temp_d_input_power = d_input_power;
 
     d_input_power = (d_input_power - d_mag) / (d_fft_size - 1);
-    int32_t doppler = -static_cast<int32_t>(acq_parameters.doppler_max) + d_doppler_step * (d_doppler_index - 1);
+    int32_t doppler;
+	if (d_single_doppler_flag == false)
+	{
+		doppler = -static_cast<int32_t>(acq_parameters.doppler_max) + d_doppler_step * (d_doppler_index - 1);
+		//doppler = -static_cast<int32_t>(acq_parameters.doppler_max) + d_doppler_step * (d_doppler_index); // this is the wrong one
+	}
+	else
+	{
+		doppler = static_cast<int32_t>(acq_parameters.doppler_max);
+	}
     //d_gnss_synchro->Acq_delay_samples = static_cast<double>(2*(indext % (2*acq_parameters.samples_per_code)));
 
+
+    //printf("acq gnuradioblock doppler = %d\n", doppler);
 
     d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
     d_sample_counter = initial_sample;
@@ -311,13 +324,21 @@ void pcps_acquisition_fpga::set_active(bool active)
     {
     	if (d_downsampling_factor > 1)
     	{
+    		//printf("yes here\n");
     		d_gnss_synchro->Acq_delay_samples = static_cast<double>(d_downsampling_factor*(indext % acq_parameters.samples_per_code));
-    		d_gnss_synchro->Acq_samplestamp_samples = d_downsampling_factor*d_sample_counter - 81*0.5*d_downsampling_factor; // delay due to the downsampling filter in the acquisition
+    		d_gnss_synchro->Acq_samplestamp_samples = d_downsampling_factor*d_sample_counter - 81*0.25*d_downsampling_factor; // delay due to the downsampling filter in the acquisition
+    		//d_gnss_synchro->Acq_delay_samples = static_cast<double>(2*(indext % acq_parameters.samples_per_code));
+    		//d_gnss_synchro->Acq_delay_samples = static_cast<double>(2*(indext));
+    		//d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter*2 - 81;
+        	//d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % acq_parameters.samples_per_code);
+        	//d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
     	}
     	else
     	{
         	d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % acq_parameters.samples_per_code);
         	d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;  // delay due to the downsampling filter in the acquisition
+        	//d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter - 40;  // delay due to the downsampling filter in the acquisition
+        	//d_gnss_synchro->Acq_samplestamp_samples = d_downsampling_factor*d_sample_counter - 81*0.5*d_downsampling_factor;
         }
     }
     else
@@ -364,6 +385,10 @@ void pcps_acquisition_fpga::set_active(bool active)
             //            printf("##### debug_doppler_index = %d\n",debug_doppler_index);
             send_positive_acquisition();
             d_state = 0;  // Positive acquisition
+
+            //printf("acq d_gnss_synchro->Acq_delay_samples = %f\n: ",d_gnss_synchro->Acq_delay_samples);
+            //printf("acq d_gnss_synchro->Acq_samplestamp_samples = %d\n", (unsigned int) d_gnss_synchro->Acq_samplestamp_samples);
+
         }
     else
         {
@@ -390,6 +415,7 @@ int pcps_acquisition_fpga::general_work(int noutput_items __attribute__((unused)
 void pcps_acquisition_fpga::set_single_doppler_flag(unsigned int single_doppler_flag)
 {
 	acquisition_fpga->set_single_doppler_flag(single_doppler_flag);
+	d_single_doppler_flag = true;
 }
 
 // this function is only used for the unit tests

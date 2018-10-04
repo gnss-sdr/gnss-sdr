@@ -1258,10 +1258,10 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                 {
                 	// normal operation
                     uint32_t num_frames = ceil((counter_value - current_synchro_data.Acq_samplestamp_samples - current_synchro_data.Acq_delay_samples) / d_correlation_length_samples);
-                    //uint32_t num_frames = ceil((counter_value - current_synchro_data.Acq_samplestamp_samples*2 - current_synchro_data.Acq_delay_samples*2) / d_correlation_length_samples);
+                    //uint32_t num_frames = ceil((counter_value - current_synchro_data.Acq_samplestamp_samples*2 - current_synchro_data.Acq_delay_samples*2 + 40) / d_correlation_length_samples);
                     //printf("333333 num_frames = %d\n", num_frames);
                     absolute_samples_offset = static_cast<uint64_t>(current_synchro_data.Acq_delay_samples + current_synchro_data.Acq_samplestamp_samples + num_frames * d_correlation_length_samples);
-                    //uint64_t absolute_samples_offset = static_cast<uint64_t>(current_synchro_data.Acq_delay_samples*2 + current_synchro_data.Acq_samplestamp_samples*2 + num_frames * d_correlation_length_samples);
+                    //absolute_samples_offset = static_cast<uint64_t>(current_synchro_data.Acq_delay_samples*2 + current_synchro_data.Acq_samplestamp_samples*2 -40 + num_frames * d_correlation_length_samples);
                     //printf("333333 absolute_samples_offset = %llu\n", absolute_samples_offset);
                 }
                 else

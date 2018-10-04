@@ -1102,6 +1102,8 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 			float max_magnitude = 0.0;
 			uint64_t initial_sample = 0;
 			float power_sum = 0;
+			float peak_to_power = 0;
+			float test_statistics;
 			uint32_t doppler_index = 0;
 
 			if (show_results_table == 1)
@@ -1118,14 +1120,17 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 						fw_fft_scaling_factor = result_table[PRN][doppler_num][3];
 						doppler_num = doppler_num + 1;
 
-						std::cout << "Doppler shift " << doppler_shift << std::endl;
+						std::cout << "==================== Doppler shift " << doppler_shift << std::endl;
 						std::cout << "Max magnitude = " << max_magnitude << "Power sum = " << power_sum << std::endl;
 						std::cout << "FFT total scaling factor = " << total_fft_scaling_factor << " FW FFT scaling factor = " << fw_fft_scaling_factor << std::endl;
+						peak_to_power = max_magnitude/power_sum;
 						power_sum = (power_sum - max_magnitude) / (fft_size - 1);
-						float test_statistics = (max_magnitude / power_sum);
-						std::cout << "test_statistics = " << test_statistics << std::endl;
-
+						test_statistics = (max_magnitude / power_sum);
+						std::cout << "peak to power = " << peak_to_power << " test_statistics = " << test_statistics << std::endl;
 					}
+					int dummy_val;
+					std::cout << "Enter a value to continue";
+					std::cin >> dummy_val;
 				}
 			}
 

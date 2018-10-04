@@ -327,7 +327,7 @@ void fpga_acquisition::set_doppler_sweep(uint32_t num_sweeps)
 	    d_map_base[3] = phase_step_rad_int;
 
 	    // repeat the calculation with the doppler step
-	    doppler = 0;
+	    doppler = static_cast<int32_t>(d_doppler_step);
 	    phase_step_rad = GPS_TWO_PI * (doppler) / static_cast<float>(d_fs_in);
 	    phase_step_rad_real = phase_step_rad / (GPS_TWO_PI / 2);
 	    //printf("AAA  phase_step_rad_real for doppler step = %f\n", phase_step_rad_real);

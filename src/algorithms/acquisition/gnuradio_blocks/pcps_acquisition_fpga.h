@@ -126,7 +126,7 @@ private:
 
     float d_downsampling_factor;
     uint32_t d_select_queue_Fpga;
-
+    bool d_single_doppler_flag;
 
 
 public:

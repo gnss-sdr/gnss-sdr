@@ -76,6 +76,7 @@ public:
     {
     	//printf("acq lib set doppler max called\n");
         d_doppler_max = doppler_max;
+        //printf("set acq lib d_doppler_max = %d\n", (int) d_doppler_max);
     }
 
     /*!
@@ -86,6 +87,7 @@ public:
     {
     	//printf("acq lib set doppler step called\n");
         d_doppler_step = doppler_step;
+        //printf("set acq lib d_doppler_step = %d\n", (int) d_doppler_step);
     }
 
     /*!

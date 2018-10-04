@@ -622,7 +622,7 @@ if(NOT VOLK_GNSSSDR_FOUND)
         if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
             set(STRIP_VOLK_GNSSSDR_PROFILE "-DENABLE_STRIP=ON -DCMAKE_VERBOSE_MAKEFILE=ON")
         endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
-        set(READ_ENVIRO ${CMAKE_COMMAND} -E environment)
+        set(READ_ENVIRO echo CI_ >> forbidden.txt && ${CMAKE_COMMAND} -E environment >> input.txt && grep -v -F -f forbidden.txt input.txt)
     endif(ENABLE_PACKAGING)
 
     set(VOLK_GNSSSDR_BUILD_COMMAND "${CMAKE_MAKE_PROGRAM}")

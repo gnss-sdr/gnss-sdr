@@ -324,7 +324,7 @@ ubuntu18.10:
   stage: build
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
+    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev libgtest-dev
     - cd build
     - cmake -DENABLE_OSMOSDR=ON -DENABLE_RAW_UDP=ON ..
     - NPROC=$(grep -c ^processor /proc/cpuinfo)

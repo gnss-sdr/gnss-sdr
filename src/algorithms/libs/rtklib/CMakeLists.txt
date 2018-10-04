@@ -38,6 +38,27 @@ set(RTKLIB_LIB_SOURCES
      rtklib_rtcm3.cc
 )
 
+set(RTKLIB_LIB_HEADERS
+     rtklib_rtkcmn.h
+     rtklib_ephemeris.h
+     rtklib_preceph.h
+     rtklib_sbas.h
+     rtklib_ionex.h
+     rtklib_pntpos.h
+     rtklib_ppp.h
+     rtklib_tides.h
+     rtklib_lambda.h
+     rtklib_rtkpos.h
+     rtklib_conversions.h
+     rtklib_stream.h
+     rtklib_rtksvr.h
+     rtklib_solution.h
+     rtklib_rtcm.h
+     rtklib_rtcm2.h
+     rtklib_rtcm3.h
+     rtklib.h
+)
+
 include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
@@ -48,8 +69,10 @@ include_directories(
      ${GLOG_INCLUDE_DIRS}
 )
 
-file(GLOB RTKLIB_LIB_HEADERS "*.h")
+
 list(SORT RTKLIB_LIB_HEADERS)
+list(SORT RTKLIB_LIB_SOURCES)
+
 add_library(rtklib_lib ${RTKLIB_LIB_SOURCES} ${RTKLIB_LIB_HEADERS})
 source_group(Headers FILES ${RTKLIB_LIB_HEADERS})
 add_dependencies(rtklib_lib glog-${glog_RELEASE})

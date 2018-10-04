@@ -26,6 +26,17 @@ set(GNSS_RECEIVER_SOURCES
      in_memory_configuration.cc
 )
 
+set(GNSS_RECEIVER_HEADERS
+     control_thread.h
+     control_message_factory.h
+     file_configuration.h
+     gnss_block_factory.h
+     gnss_flowgraph.h
+     in_memory_configuration.h
+     concurrent_map.h
+     concurrent_queue.h
+     control_message.h
+)
 
 if(PC_GNURADIO_RUNTIME_VERSION VERSION_GREATER 3.7.3)
      add_definitions(-DMODERN_GNURADIO=1)
@@ -149,10 +160,21 @@ include_directories(
      ${VOLK_GNSSSDR_INCLUDE_DIRS}
 )
 
-file(GLOB GNSS_RECEIVER_HEADERS "*.h")
 list(SORT GNSS_RECEIVER_HEADERS)
-file(GLOB GNSS_RECEIVER_INTERFACE_HEADERS "../interfaces/*.h")
+list(SORT GNSS_RECEIVER_SOURCES)
+
+set(GNSS_RECEIVER_INTERFACE_HEADERS ../interfaces/acquisition_interface.h
+                                    ../interfaces/channel_interface.h
+                                    ../interfaces/configuration_interface.h
+                                    ../interfaces/gnss_block_interface.h
+                                    ../interfaces/observables_interface.h
+                                    ../interfaces/pvt_interface.h
+                                    ../interfaces/telemetry_decoder_interface.h
+                                    ../interfaces/tracking_interface.h
+)
+
 list(SORT GNSS_RECEIVER_INTERFACE_HEADERS)
+
 add_library(gnss_rx ${GNSS_RECEIVER_SOURCES} ${GNSS_RECEIVER_HEADERS} ${GNSS_RECEIVER_INTERFACE_HEADERS})
 source_group(Headers FILES ${GNSS_RECEIVER_HEADERS} ${GNSS_RECEIVER_INTERFACE_HEADERS})
 

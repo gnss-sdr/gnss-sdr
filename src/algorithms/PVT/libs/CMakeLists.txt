@@ -31,6 +31,20 @@ set(PVT_LIB_SOURCES
      rtklib_solver.cc
 )
 
+set(PVT_LIB_HEADERS 
+     pvt_solution.h
+     ls_pvt.h
+     hybrid_ls_pvt.h
+     kml_printer.h
+     gpx_printer.h
+     rinex_printer.h
+     nmea_printer.h  
+     rtcm_printer.h
+     geojson_printer.h
+     rtklib_solver.h
+)
+
+
 include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
@@ -45,8 +59,9 @@ include_directories(
      ${GLOG_INCLUDE_DIRS}
 )
 
-file(GLOB PVT_LIB_HEADERS "*.h")
 list(SORT PVT_LIB_HEADERS)
+list(SORT PVT_LIB_SOURCES)
+
 add_library(pvt_lib ${PVT_LIB_SOURCES} ${PVT_LIB_HEADERS})
 source_group(Headers FILES ${PVT_LIB_HEADERS})
 add_dependencies(pvt_lib rtklib_lib armadillo-${armadillo_RELEASE} glog-${glog_RELEASE})
@@ -60,5 +75,4 @@ target_link_libraries(
     ${ARMADILLO_LIBRARIES}
     ${BLAS}
     ${LAPACK}
-    )
-    
+)

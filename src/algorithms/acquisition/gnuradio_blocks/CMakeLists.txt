@@ -26,14 +26,27 @@ set(ACQ_GR_BLOCKS_SOURCES
     pcps_quicksync_acquisition_cc.cc
     galileo_pcps_8ms_acquisition_cc.cc
     galileo_e5a_noncoherent_iq_acquisition_caf_cc.cc
+)
+
+set(ACQ_GR_BLOCKS_HEADERS
+    pcps_acquisition.h
+    pcps_assisted_acquisition_cc.h
+    pcps_acquisition_fine_doppler_cc.h
+    pcps_tong_acquisition_cc.h
+    pcps_cccwsr_acquisition_cc.h
+    pcps_quicksync_acquisition_cc.h
+    galileo_pcps_8ms_acquisition_cc.h
+    galileo_e5a_noncoherent_iq_acquisition_caf_cc.h
 ) 
 
 if(ENABLE_FPGA)
     set(ACQ_GR_BLOCKS_SOURCES ${ACQ_GR_BLOCKS_SOURCES} pcps_acquisition_fpga.cc)
+    set(ACQ_GR_BLOCKS_HEADERS ${ACQ_GR_BLOCKS_HEADERS} pcps_acquisition_fpga.h)
 endif(ENABLE_FPGA)
     
 if(OPENCL_FOUND)
     set(ACQ_GR_BLOCKS_SOURCES ${ACQ_GR_BLOCKS_SOURCES} pcps_opencl_acquisition_cc.cc)
+    set(ACQ_GR_BLOCKS_HEADERS ${ACQ_GR_BLOCKS_HEADERS} pcps_opencl_acquisition_cc.h)
 endif(OPENCL_FOUND)
 
 include_directories(
@@ -61,8 +74,8 @@ if(OPENCL_FOUND)
     endif(OS_IS_MACOSX)
 endif(OPENCL_FOUND)
 
-file(GLOB ACQ_GR_BLOCKS_HEADERS "*.h")
 list(SORT ACQ_GR_BLOCKS_HEADERS)
+list(SORT ACQ_GR_BLOCKS_SOURCES)
 add_library(acq_gr_blocks ${ACQ_GR_BLOCKS_SOURCES} ${ACQ_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${ACQ_GR_BLOCKS_HEADERS})
 

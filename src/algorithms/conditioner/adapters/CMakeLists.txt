@@ -22,6 +22,11 @@ set(COND_ADAPTER_SOURCES
 	array_signal_conditioner.cc
 )
 
+set(COND_ADAPTER_HEADERS 
+	signal_conditioner.h
+	array_signal_conditioner.h
+)
+
 include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
@@ -34,8 +39,9 @@ include_directories(
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
-file(GLOB COND_ADAPTER_HEADERS "*.h")
 list(SORT COND_ADAPTER_HEADERS)
+list(SORT COND_ADAPTER_SOURCES)
+
 add_library(conditioner_adapters ${COND_ADAPTER_SOURCES} ${COND_ADAPTER_HEADERS})
 source_group(Headers FILES ${COND_ADAPTER_HEADERS})
 add_dependencies(conditioner_adapters glog-${glog_RELEASE})

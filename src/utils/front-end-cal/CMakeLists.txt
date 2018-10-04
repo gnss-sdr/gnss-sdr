@@ -22,6 +22,8 @@ if(OPENSSL_FOUND)
 endif(OPENSSL_FOUND)
 
 set(FRONT_END_CAL_SOURCES front_end_cal.cc)
+set(FRONT_END_CAL_HEADERS front_end_cal.h)
+
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
@@ -44,8 +46,6 @@ include_directories(
     ${VOLK_GNSSSDR_INCLUDE_DIRS}
 )
 
-file(GLOB FRONT_END_CAL_HEADERS "*.h")
-list(SORT FRONT_END_CAL_HEADERS)
 add_library(front_end_cal_lib ${FRONT_END_CAL_SOURCES} ${FRONT_END_CAL_HEADERS})
 source_group(Headers FILES ${FRONT_END_CAL_HEADERS})
 
@@ -114,5 +114,3 @@ if(NOT GZIP_NOTFOUND)
 
     install(FILES ${CMAKE_BINARY_DIR}/front-end-cal.1.gz DESTINATION share/man/man1)
 endif(NOT GZIP_NOTFOUND)
-
-

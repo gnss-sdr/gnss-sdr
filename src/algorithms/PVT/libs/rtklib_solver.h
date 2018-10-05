@@ -76,12 +76,13 @@ private:
     rtk_t rtk_;
     std::string d_dump_filename;
     std::ofstream d_dump_file;
-    sol_t pvt_sol;
+
     bool d_flag_dump_enabled;
     int d_nchannels;  // Number of available channels for positioning
     double dop_[4];
 
 public:
+    sol_t pvt_sol;
     rtklib_solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, rtk_t& rtk);
     ~rtklib_solver();
 

@@ -161,6 +161,7 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/pvt/rtcm_printer_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/rinex_printer_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/nmea_printer_test.cc"
+#include "unit-tests/signal-processing-blocks/pvt/rtklib_solver_test.cc"
 
 
 #if EXTRA_TESTS

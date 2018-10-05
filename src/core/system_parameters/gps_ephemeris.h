@@ -153,7 +153,7 @@ public:
         archive& make_nvp("d_Cus", d_Cus);                        //!< Amplitude of the Sine Harmonic Correction Term to the Argument of Latitude [rad]
         archive& make_nvp("d_sqrt_A", d_sqrt_A);                  //!< Square Root of the Semi-Major Axis [sqrt(m)]
         archive& make_nvp("d_Toe", d_Toe);                        //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
-        archive& make_nvp("d_Toc", d_Toe);                        //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200E) [s]
+        archive& make_nvp("d_Toc", d_Toc);                        //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200E) [s]
         archive& make_nvp("d_Cic", d_Cic);                        //!< Amplitude of the Cosine Harmonic Correction Term to the Angle of Inclination [rad]
         archive& make_nvp("d_OMEGA0", d_OMEGA0);                  //!< Longitude of Ascending Node of Orbit Plane at Weekly Epoch [semi-circles]
         archive& make_nvp("d_Cis", d_Cis);                        //!< Amplitude of the Sine Harmonic Correction Term to the Angle of Inclination [rad]

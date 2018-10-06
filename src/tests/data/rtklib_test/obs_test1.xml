@@ -355,3 +355,4 @@
 		</second>
 	</item>
 </GNSS-SDR_gnss_synchro_map>
+</boost_serialization>

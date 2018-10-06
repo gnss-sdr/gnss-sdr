@@ -318,6 +318,8 @@ rtk_t configure_rtklib_options()
     rtkinit(&rtk, &rtklib_configuration_options);
     return rtk;
 }
+
+
 //todo: add test cases for Galileo E1, E5 and GPS L5
 TEST(RTKLibSolverTest, test1)
 {
@@ -371,20 +373,21 @@ TEST(RTKLibSolverTest, test1)
 
     //load from xml (boost serialize)
     std::string file_name = path + "data/rtklib_test/obs_test1.xml";
+
+    std::ifstream ifs;
     try
         {
-            std::ifstream ifs(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
+            ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
             boost::archive::xml_iarchive xml(ifs);
             gnss_synchro_map.clear();
             xml >> boost::serialization::make_nvp("GNSS-SDR_gnss_synchro_map", gnss_synchro_map);
-            ifs.close();
             std::cout << "Loaded gnss_synchro map data with " << gnss_synchro_map.size() << " pseudoranges" << std::endl;
         }
     catch (std::exception& e)
         {
             std::cout << e.what() << "File: " << file_name;
         }
-
+    ifs.close();
 
     // solve
     bool pvt_valid = false;

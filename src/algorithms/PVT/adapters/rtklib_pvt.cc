@@ -506,12 +506,12 @@ bool RtklibPvt::save_assistance_to_XML()
 
     if (eph_map.empty() == false)
         {
+            std::ofstream ofs;
             try
                 {
                     std::ofstream ofs(eph_xml_filename_.c_str(), std::ofstream::trunc | std::ofstream::out);
                     boost::archive::xml_oarchive xml(ofs);
                     xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", eph_map);
-                    ofs.close();
                     LOG(INFO) << "Saved GPS L1 Ephemeris map data";
                 }
             catch (const std::exception& e)
@@ -519,13 +519,13 @@ bool RtklibPvt::save_assistance_to_XML()
                     LOG(WARNING) << e.what();
                     return false;
                 }
-            return true;  // return variable (true == succeeded)
         }
     else
         {
             LOG(WARNING) << "Failed to save Ephemeris, map is empty";
             return false;
         }
+    return true;  // return variable (true == succeeded)
 }
 
 

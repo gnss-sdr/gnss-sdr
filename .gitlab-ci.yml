@@ -187,8 +187,23 @@ fedora26:
     - make install
 
 
-fedora27:
-  image: fedora:27
+fedora28:
+  image: fedora:28
+  stage: build
+  before_script:
+    - source ~/.bash_profile
+  script:
+    - yum install -y make automake gcc gcc-c++ kernel-devel cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel libpcap-devel blas-devel lapack-devel armadillo-devel gflags-devel glog-devel openssl-devel python-mako python-six matio-devel
+    - cd build
+    - cmake -DENABLE_OSMOSDR=ON -DENABLE_RAW_UDP=ON ..
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
+    - make check
+    - make install
+
+
+fedora29:
+  image: fedora:29
   stage: build
   before_script:
     - source ~/.bash_profile

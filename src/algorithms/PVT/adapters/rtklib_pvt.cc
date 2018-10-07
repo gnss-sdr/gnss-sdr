@@ -509,7 +509,7 @@ bool RtklibPvt::save_assistance_to_XML()
             std::ofstream ofs;
             try
                 {
-                    std::ofstream ofs(eph_xml_filename_.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    ofs.open(eph_xml_filename_.c_str(), std::ofstream::trunc | std::ofstream::out);
                     boost::archive::xml_oarchive xml(ofs);
                     xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", eph_map);
                     LOG(INFO) << "Saved GPS L1 Ephemeris map data";

@@ -208,7 +208,7 @@ fedora29:
   before_script:
     - source ~/.bash_profile
   script:
-    - yum install -y make automake gcc gcc-c++ kernel-devel cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel libpcap-devel blas-devel lapack-devel armadillo-devel gflags-devel glog-devel openssl-devel python3-mako python3-six matio-devel
+    - yum install -y make gcc gcc-c++ kernel-devel cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel libpcap-devel blas-devel lapack-devel armadillo-devel gflags-devel glog-devel openssl-devel python3-mako python3-six matio-devel
     - cd build
     - cmake -DENABLE_RAW_UDP=ON ..
     - NPROC=$(grep -c ^processor /proc/cpuinfo)

@@ -63,7 +63,8 @@
 #include "gps_l1_ca_dll_pll_tracking_fpga.h"
 #include "hybrid_observables.h"
 #include "signal_generator_flags.h"
-#include "gnss_sdr_sample_counter.h"
+//#include "gnss_sdr_sample_counter.h"
+#include "gnss_sdr_fpga_sample_counter.h"
 #include "test_flags.h"
 #include "tracking_tests_flags.h"
 #include "observable_tests_flags.h"
@@ -518,10 +519,10 @@ bool HybridObservablesTestFpga::acquire_signal()
 
     std::string System_and_Signal;
     //create the correspondign acquisition block according to the desired tracking signal
-    printf("AAAAAAAAAAAAAAAAAAAAA\n");
+    //printf("AAAAAAAAAAAAAAAAAAAAA\n");
     if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
         {
-    		printf("AAAAAAAAAAAAAAAAAAAAA2222\n");
+    		//printf("AAAAAAAAAAAAAAAAAAAAA2222\n");
             tmp_gnss_synchro.System = 'G';
             std::string signal = "1C";
             signal.copy(tmp_gnss_synchro.Signal, 2, 0);
@@ -616,7 +617,7 @@ bool HybridObservablesTestFpga::acquire_signal()
             throw(std::exception());
         }
 
-    printf("BBBBBBBBBBBBBBBBBBBBBBBBBB\n");
+    //printf("BBBBBBBBBBBBBBBBBBBBBBBBBB\n");
     //acquisition->set_gnss_synchro(&tmp_gnss_synchro);
     //acquisition->set_channel(0);
     //acquisition->set_doppler_max(config->property("Acquisition.doppler_max", FLAGS_external_signal_acquisition_doppler_max_hz));
@@ -657,7 +658,7 @@ bool HybridObservablesTestFpga::acquire_signal()
 
     if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
     {
-    	printf("BBBBBBBBBBBBBBBBBBBBBBBBBB2222222222\n");
+    	//printf("BBBBBBBBBBBBBBBBBBBBBBBBBB2222222222\n");
     	top_block->msg_connect(acquisition_GpsL1Ca_Fpga->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }
     else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
@@ -698,7 +699,7 @@ bool HybridObservablesTestFpga::acquire_signal()
         }
 
     setup_fpga_switch_obs_test();
-    printf("CCCCCCCCCCCCCCCCCCCCCCCCCCCC\n");
+    //printf("CCCCCCCCCCCCCCCCCCCCCCCCCCCC\n");
     if (test_observables_doppler_control_in_sw == 0)
     	{
 
@@ -848,11 +849,11 @@ bool HybridObservablesTestFpga::acquire_signal()
     	}
     else
     	{
-    		printf("DDDDDDDDDDDDDDDDDDDDDDDDD\n");
+    		//printf("DDDDDDDDDDDDDDDDDDDDDDDDD\n");
 			unsigned int code_length;
 			if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
 			{
-				printf("DDDDDDDDDDDDDDDDDDDDDDDDD22222222222\n");
+				//printf("DDDDDDDDDDDDDDDDDDDDDDDDD22222222222\n");
 				code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
 			}
 			else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
@@ -869,17 +870,17 @@ bool HybridObservablesTestFpga::acquire_signal()
 				code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L5i_CODE_RATE_HZ / static_cast<double>(GPS_L5i_CODE_LENGTH_CHIPS))));
 			}
 
-			printf("DDDDDDD3 code_length = %d\n", code_length);
+			//printf("DDDDDDD3 code_length = %d\n", code_length);
 			float nbits = ceilf(log2f((float)code_length));
 			unsigned int fft_size = pow(2, nbits);
 			unsigned int nsamples_total = fft_size;
-			printf("EEEEEEEEEEEEEEEEEEEEE nbits = %f nsamples_total = %d\n", nbits, fft_size);
+			//printf("EEEEEEEEEEEEEEEEEEEEE nbits = %f nsamples_total = %d\n", nbits, fft_size);
 
 
 
 			if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
 			{
-				printf("EEEEEEEEEEEEEEEEEEEEEEE2\n");
+				//printf("EEEEEEEEEEEEEEEEEEEEEEE2\n");
 				acquisition_GpsL1Ca_Fpga->set_single_doppler_flag(1);
 			}
 			else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
@@ -1903,6 +1904,10 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
         {
             generate_signal();
         }
+    else
+    {
+    	//printf("PATH IS OK 0 \n");
+    }
 
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
@@ -1910,6 +1915,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
     // use generator or use an external capture file
     if (FLAGS_enable_external_signal_file)
         {
+    		//printf("PATH IS OK 1 \n");
             //create and configure an acquisition block and perform an acquisition to obtain the synchronization parameters
             ASSERT_EQ(acquire_signal(), true);
         }
@@ -1930,19 +1936,20 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
                 }
         }
 
-    printf("@@@@@@@@@@@@@@@@@@@@@@@@@@ Signal Acquired\n");
+    //printf("@@@@@@@@@@@@@@@@@@@@@@@@@@ Signal Acquired\n");
     configure_receiver(FLAGS_PLL_bw_hz_start,
         FLAGS_DLL_bw_hz_start,
         FLAGS_PLL_narrow_bw_hz,
         FLAGS_DLL_narrow_bw_hz,
         FLAGS_extend_correlation_symbols);
-
+    //printf("@@@@@@@@@@@@@@@@@@@@@@@@@@ Receiver Configured\n");
 
     for (unsigned int n = 0; n < gnss_synchro_vec.size(); n++)
         {
             //setup the signal synchronization, simulating an acquisition
             if (!FLAGS_enable_external_signal_file)
                 {
+            		//printf("HERE\n");
                     //based on true observables metadata (for custom sdr generator)
                     //open true observables log file written by the simulator or based on provided RINEX obs
                     std::vector<std::shared_ptr<tracking_true_obs_reader>> true_reader_vec;
@@ -1978,6 +1985,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
                 }
             else
                 {
+            		//printf("OR THERE\n");
                     //based on the signal acquisition process
                     std::cout << "Estimated Initial Doppler " << gnss_synchro_vec.at(n).Acq_doppler_hz
                               << " [Hz], estimated Initial code delay " << gnss_synchro_vec.at(n).Acq_delay_samples << " [Samples]"
@@ -1986,11 +1994,13 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
                 }
         }
 
+    //printf("@@@@@@@@@@@@@@@@@@@@@@@@@@ First part is done\n");
+
    	unsigned int code_length;
 	if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
 	{
 		code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
-		printf("000000000000 code_length = %d\n", code_length);
+		//printf("000000000000 code_length = %d\n", code_length);
 	}
 	else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
 	{
@@ -2008,8 +2018,8 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
 
 	float nbits = ceilf(log2f((float)code_length));
 	unsigned int fft_size = pow(2, nbits);
-	printf("000000000000 nbits = %f\n", nbits);
-	printf("000000000000 fft_size = %d\n", fft_size);
+	//printf("000000000000 nbits = %f\n", nbits);
+	//printf("000000000000 fft_size = %d\n", fft_size);
 
     std::vector<std::shared_ptr<TrackingInterface>> tracking_ch_vec;
     std::vector<std::shared_ptr<TelemetryDecoderInterface>> tlm_ch_vec;
@@ -2086,9 +2096,16 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
         //gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(int8_t), file_name, false);
         //gr::blocks::interleaved_char_to_complex::sptr gr_interleaved_char_to_complex = gr::blocks::interleaved_char_to_complex::make();
         int observable_interval_ms = 20;
-        gnss_sdr_sample_counter_sptr samp_counter = gnss_sdr_make_sample_counter(static_cast<double>(baseband_sampling_freq), observable_interval_ms, sizeof(gr_complex));
+        //gnss_sdr_sample_counter_sptr samp_counter = gnss_sdr_make_sample_counter(static_cast<double>(baseband_sampling_freq), observable_interval_ms, sizeof(gr_complex));
         //top_block->connect(file_source, 0, gr_interleaved_char_to_complex, 0);
         //top_block->connect(gr_interleaved_char_to_complex, 0, samp_counter, 0);
+
+        double fs = static_cast<double>(config->property("GNSS-SDR.internal_fs_sps", 0));
+
+        gnss_sdr_fpga_sample_counter_sptr ch_out_fpga_sample_counter;
+        ch_out_fpga_sample_counter = gnss_sdr_make_fpga_sample_counter(fs, observable_interval_ms);
+
+
 
         for (unsigned int n = 0; n < tracking_ch_vec.size(); n++)
             {
@@ -2100,6 +2117,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
             }
         //connect sample counter and timmer to the last channel in observables block (extra channel)
         //top_block->connect(samp_counter, 0, observables->get_left_block(), tracking_ch_vec.size());
+        top_block->connect(ch_out_fpga_sample_counter, 0, observables->get_left_block(), tracking_ch_vec.size());  //extra port for the sample counter pulse
 
         //file_source->seek(2 * FLAGS_skip_samples, 0);  //skip head. ibyte, two bytes per complex sample
     }) << "Failure connecting the blocks.";
@@ -2107,7 +2125,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
     // create acquisition class such that a global Reset is produced for all the HW and the sample counters are reset to 0
     if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
     {
-    	printf("111111111111\n");
+    	//printf("111111111111\n");
     	std::shared_ptr<GpsL1CaPcpsAcquisitionFpga> acquisition_Fpga;
     	acquisition_Fpga = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
     }
@@ -2145,7 +2163,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
     	args.skip_used_samples = 0;
     //}
 
-    printf("2222222222222 CREATE PROCES\n");
+    //printf("2222222222222 CREATE PROCES\n");
     printf("%s\n", file.c_str());
     if (pthread_create(&thread_DMA, NULL, handler_DMA_obs_test, (void *)&args) < 0)
 	{
@@ -2157,13 +2175,13 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
         {
             tracking_ch_vec.at(n)->start_tracking();
         }
-    printf("222222222222222222 bis\n");
+    //printf("222222222222222222 bis\n");
     pthread_mutex_lock(&mutex_obs_test);
     send_samples_start_obs_test = 1;
     pthread_mutex_unlock(&mutex_obs_test);
 
     top_block->start();
-    printf("33333333333333333333 top block started\n");
+    //printf("33333333333333333333 top block started\n");
 
 
 
@@ -2177,11 +2195,11 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
 	// wait for the child DMA process to finish
 	pthread_join(thread_DMA, NULL);
 
-	printf("444444444444 CHILD PROCESS FINISHED\n");
+	//printf("444444444444 CHILD PROCESS FINISHED\n");
 
 	top_block->stop();
 
-	printf("55555555555 TOP BLOCK STOPPED\n");
+	//printf("55555555555 TOP BLOCK STOPPED\n");
 
 	// send more samples to unblock the tracking process in case it was waiting for samples
     args.file = file;
@@ -2195,13 +2213,13 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
     //	args.skip_used_samples = 0;
     //}
     args.nsamples_tx = TEST_OBS_NSAMPLES_FINAL;
-    printf("666666666 CREATE PROCESS TO SEND EXTRA SAMPLES\n");
+    //printf("666666666 CREATE PROCESS TO SEND EXTRA SAMPLES\n");
     if (pthread_create(&thread_DMA, NULL, handler_DMA_obs_test, (void *)&args) < 0)
 	{
 		printf("ERROR cannot create DMA Process\n");
 	}
 	pthread_join(thread_DMA, NULL);
-	printf("777777777 PROCESS FINISHED \n");
+	//printf("777777777 PROCESS FINISHED \n");
 
 	pthread_mutex_lock(&mutex_obs_test);
 	send_samples_start_obs_test = 0;
@@ -2385,7 +2403,6 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
             std::vector<double> tmp_vector_y4(measured_obs_vec.at(n).col(2).colptr(0),
                 measured_obs_vec.at(n).col(2).colptr(0) + measured_obs_vec.at(n).col(2).n_rows);
             save_mat_xy(tmp_vector_x4, tmp_vector_y4, std::string("measured_doppler_ch_" + std::to_string(n)));
-
 
             if (epoch_counters_vec.at(n) > 10)  //discard non-valid channels
                 {

@@ -119,7 +119,7 @@ int main(int argc, char** argv)
                                       << std::endl;
                             boost::system::error_code ec;
                             boost::filesystem::create_directory(p, ec);
-                            if(ec != 0)
+                            if(ec)
                                 {
                                     std::cout << "Could not create the " << FLAGS_log_dir << " folder. GNSS-SDR program ended." << std::endl;
                                     google::ShutDownCommandLineFlags();

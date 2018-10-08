@@ -190,7 +190,7 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
 
                     // Compute UTC time and print PVT solution
                     double secondsperweek = 604800.0; // number of seconds in one week (7*24*60*60)
-                    boost::posix_time::time_duration t = boost::posix_time::seconds(utc + secondsperweek * static_cast<double>(GPS_week));
+                    boost::posix_time::time_duration t = boost::posix_time::seconds(static_cast<int64_t>(utc + secondsperweek * static_cast<double>(GPS_week)));
                     // 22 August 1999 last GPS time roll over
                     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
                     d_position_UTC_time = p_time;

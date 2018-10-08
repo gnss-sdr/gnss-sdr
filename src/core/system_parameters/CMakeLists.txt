@@ -45,6 +45,47 @@ set(SYSTEM_PARAMETERS_SOURCES
      glonass_gnav_navigation_message.cc
 )
 
+set(SYSTEM_PARAMETERS_HEADERS
+     gnss_satellite.h
+     gnss_signal.h
+     gps_navigation_message.h
+     gps_ephemeris.h
+     gps_iono.h
+     gps_almanac.h
+     gps_utc_model.h
+     gps_acq_assist.h
+     gps_ref_time.h
+     gps_ref_location.h
+     galileo_utc_model.h
+     galileo_ephemeris.h
+     galileo_almanac.h
+     galileo_iono.h
+     galileo_navigation_message.h
+     sbas_ephemeris.h
+     galileo_fnav_message.h
+     gps_cnav_ephemeris.h
+     gps_cnav_navigation_message.h
+     gps_cnav_iono.h
+     gps_cnav_utc_model.h
+     rtcm.h
+     glonass_gnav_ephemeris.h
+     glonass_gnav_almanac.h
+     glonass_gnav_utc_model.h
+     glonass_gnav_navigation_message.h
+     display.h
+     Galileo_E1.h
+     Galileo_E5a.h
+     GLONASS_L1_L2_CA.h
+     gnss_frequencies.h
+     gnss_obs_codes.h
+     gnss_synchro.h
+     GPS_CNAV.h
+     GPS_L1_CA.h
+     GPS_L2C.h
+     GPS_L5.h
+     MATH_CONSTANTS.h     
+)
+
 
 include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}
@@ -57,8 +98,10 @@ include_directories(
 )
 
 link_directories(${Boost_LIBRARY_DIR})
-file(GLOB SYSTEM_PARAMETERS_HEADERS "*.h")
+
 list(SORT SYSTEM_PARAMETERS_HEADERS)
+list(SORT SYSTEM_PARAMETERS_SOURCES)
+
 add_library(gnss_system_parameters ${SYSTEM_PARAMETERS_SOURCES} ${SYSTEM_PARAMETERS_HEADERS})
 source_group(Headers FILES ${SYSTEM_PARAMETERS_HEADERS})
 add_dependencies(gnss_system_parameters rtklib_lib glog-${glog_RELEASE})

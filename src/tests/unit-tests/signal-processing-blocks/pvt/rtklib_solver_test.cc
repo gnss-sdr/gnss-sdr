@@ -1,7 +1,7 @@
 /*!
- * \file rtklib_pvt.cc
- * \brief Interface of a Position Velocity and Time computation block
- * \author Javier Arribas, 2017. jarribas(at)cttc.es
+ * \file rtklib_solver_test.cc
+ * \brief Implements Unit Test for the rtklib PVT solver class.
+ * \author Javier Arribas, 2018. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
@@ -28,203 +28,30 @@
  * -------------------------------------------------------------------------
  */
 
-
-#include "rtklib_pvt.h"
-#include "configuration_interface.h"
-#include "gnss_sdr_flags.h"
+#include <gtest/gtest.h>
+#include <string>
+#include <iomanip>
+#include <iostream>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/serialization/map.hpp>
-#include <glog/logging.h>
-#if OLD_BOOST
-#include <boost/math/common_factor_rt.hpp>
-namespace bc = boost::math;
-#else
-#include <boost/integer/common_factor_rt.hpp>
-namespace bc = boost::integer;
-#endif
+#include "rtklib_solver.h"
+#include "in_memory_configuration.h"
+#include "gnss_sdr_supl_client.h"
 
 
-using google::LogMessage;
-
-RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
-    std::string role,
-    unsigned int in_streams,
-    unsigned int out_streams) : role_(role),
-                                in_streams_(in_streams),
-                                out_streams_(out_streams)
+rtk_t configure_rtklib_options()
 {
-    // dump parameters
-    std::string default_dump_filename = "./pvt.dat";
-    std::string default_nmea_dump_filename = "./nmea_pvt.nmea";
-    std::string default_nmea_dump_devname = "/dev/tty1";
-    std::string default_rtcm_dump_devname = "/dev/pts/1";
-    DLOG(INFO) << "role " << role;
-    dump_ = configuration->property(role + ".dump", false);
-    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
-
-    // output rate
-    int output_rate_ms = configuration->property(role + ".output_rate_ms", 500);
-
-    // display rate
-    int display_rate_ms = configuration->property(role + ".display_rate_ms", 500);
-
-    // NMEA Printer settings
-    bool flag_nmea_tty_port = configuration->property(role + ".flag_nmea_tty_port", false);
-    std::string nmea_dump_filename = configuration->property(role + ".nmea_dump_filename", default_nmea_dump_filename);
-    std::string nmea_dump_devname = configuration->property(role + ".nmea_dump_devname", default_nmea_dump_devname);
-
-    // RINEX version
-    int rinex_version = configuration->property(role + ".rinex_version", 3);
-    if (FLAGS_RINEX_version.compare("3.01") == 0)
-        {
-            rinex_version = 3;
-        }
-    else if (FLAGS_RINEX_version.compare("3.02") == 0)
-        {
-            rinex_version = 3;
-        }
-    else if (FLAGS_RINEX_version.compare("3") == 0)
-        {
-            rinex_version = 3;
-        }
-    else if (FLAGS_RINEX_version.compare("2.11") == 0)
-        {
-            rinex_version = 2;
-        }
-    else if (FLAGS_RINEX_version.compare("2.10") == 0)
-        {
-            rinex_version = 2;
-        }
-    else if (FLAGS_RINEX_version.compare("2") == 0)
-        {
-            rinex_version = 2;
-        }
-    int rinexobs_rate_ms = bc::lcm(configuration->property(role + ".rinexobs_rate_ms", 1000), output_rate_ms);
-    int rinexnav_rate_ms = bc::lcm(configuration->property(role + ".rinexnav_rate_ms", 6000), output_rate_ms);
-
-    // RTCM Printer settings
-    bool flag_rtcm_tty_port = configuration->property(role + ".flag_rtcm_tty_port", false);
-    std::string rtcm_dump_devname = configuration->property(role + ".rtcm_dump_devname", default_rtcm_dump_devname);
-    bool flag_rtcm_server = configuration->property(role + ".flag_rtcm_server", false);
-    unsigned short rtcm_tcp_port = configuration->property(role + ".rtcm_tcp_port", 2101);
-    unsigned short rtcm_station_id = configuration->property(role + ".rtcm_station_id", 1234);
-    // RTCM message rates: least common multiple with output_rate_ms
-    int rtcm_MT1019_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1019_rate_ms", 5000), output_rate_ms);
-    int rtcm_MT1020_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1020_rate_ms", 5000), output_rate_ms);
-    int rtcm_MT1045_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1045_rate_ms", 5000), output_rate_ms);
-    int rtcm_MSM_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MSM_rate_ms", 1000), output_rate_ms);
-    int rtcm_MT1077_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1077_rate_ms", rtcm_MSM_rate_ms), output_rate_ms);
-    int rtcm_MT1087_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1087_rate_ms", rtcm_MSM_rate_ms), output_rate_ms);
-    int rtcm_MT1097_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1097_rate_ms", rtcm_MSM_rate_ms), output_rate_ms);
-    std::map<int, int> rtcm_msg_rate_ms;
-    rtcm_msg_rate_ms[1019] = rtcm_MT1019_rate_ms;
-    rtcm_msg_rate_ms[1020] = rtcm_MT1020_rate_ms;
-    rtcm_msg_rate_ms[1045] = rtcm_MT1045_rate_ms;
-    for (int k = 1071; k < 1078; k++)  // All GPS MSM
-        {
-            rtcm_msg_rate_ms[k] = rtcm_MT1077_rate_ms;
-        }
-    for (int k = 1081; k < 1088; k++)  // All GLONASS MSM
-        {
-            rtcm_msg_rate_ms[k] = rtcm_MT1087_rate_ms;
-        }
-    for (int k = 1091; k < 1098; k++)  // All Galileo MSM
-        {
-            rtcm_msg_rate_ms[k] = rtcm_MT1097_rate_ms;
-        }
-    // getting names from the config file, if available
-    // default filename for assistance data
-    const std::string eph_default_xml_filename = "./gps_ephemeris.xml";
-    const std::string utc_default_xml_filename = "./gps_utc_model.xml";
-    const std::string iono_default_xml_filename = "./gps_iono.xml";
-    const std::string ref_time_default_xml_filename = "./gps_ref_time.xml";
-    const std::string ref_location_default_xml_filename = "./gps_ref_location.xml";
-    eph_xml_filename_ = configuration->property("GNSS-SDR.SUPL_gps_ephemeris_xml", eph_default_xml_filename);
-    //std::string utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_utc_model.xml", utc_default_xml_filename);
-    //std::string iono_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_iono_xml", iono_default_xml_filename);
-    //std::string ref_time_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_time_xml", ref_time_default_xml_filename);
-    //std::string ref_location_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_location_xml", ref_location_default_xml_filename);
-
-    // Infer the type of receiver
-    /*
-     *   TYPE  |  RECEIVER
-     *     0   |  Unknown
-     *     1   |  GPS L1 C/A
-     *     2   |  GPS L2C
-     *     3   |  GPS L5
-     *     4   |  Galileo E1B
-     *     5   |  Galileo E5a
-     *     6   |  Galileo E5b
-     *     7   |  GPS L1 C/A + GPS L2C
-     *     8   |  GPS L1 C/A + GPS L5
-     *     9   |  GPS L1 C/A + Galileo E1B
-     *    10   |  GPS L1 C/A + Galileo E5a
-     *    11   |  GPS L1 C/A + Galileo E5b
-     *    12   |  Galileo E1B + GPS L2C
-     *    13   |  Galileo E1B + GPS L5
-     *    14   |  Galileo E1B + Galileo E5a
-     *    15   |  Galileo E1B + Galileo E5b
-     *    16   |  GPS L2C + GPS L5
-     *    17   |  GPS L2C + Galileo E5a
-     *    18   |  GPS L2C + Galileo E5b
-     *    19   |  GPS L5 + Galileo E5a
-     *    20   |  GPS L5 + Galileo E5b
-     *    21   |  GPS L1 C/A + Galileo E1B + GPS L2C
-     *    22   |  GPS L1 C/A + Galileo E1B + GPS L5
-     *    23   |  GLONASS L1 C/A
-     *    24   |  GLONASS L2 C/A
-     *    25   |  GLONASS L1 C/A + GLONASS L2 C/A
-     *    26   |  GPS L1 C/A + GLONASS L1 C/A
-     *    27   |  Galileo E1B + GLONASS L1 C/A
-     *    28   |  GPS L2C + GLONASS L1 C/A
-     */
-    int gps_1C_count = configuration->property("Channels_1C.count", 0);
-    int gps_2S_count = configuration->property("Channels_2S.count", 0);
-    int gps_L5_count = configuration->property("Channels_L5.count", 0);
-    int gal_1B_count = configuration->property("Channels_1B.count", 0);
-    int gal_E5a_count = configuration->property("Channels_5X.count", 0);
-    int gal_E5b_count = configuration->property("Channels_7X.count", 0);
-    int glo_1G_count = configuration->property("Channels_1G.count", 0);
-    int glo_2G_count = configuration->property("Channels_2G.count", 0);
-
-    unsigned int type_of_receiver = 0;
-
-    // *******************WARNING!!!!!!!***********
-    // GPS L5 only configurable for single frequency, single system at the moment!!!!!!
-    if ((gps_1C_count != 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) type_of_receiver = 1;
-    if ((gps_1C_count == 0) && (gps_2S_count != 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) type_of_receiver = 2;
-    if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count != 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) type_of_receiver = 3;
-    if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) type_of_receiver = 4;
-    if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count != 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) type_of_receiver = 5;
-    if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count != 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) type_of_receiver = 6;
-
-    if ((gps_1C_count != 0) && (gps_2S_count != 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) type_of_receiver = 7;
-    //if( (gps_1C_count != 0) && (gps_2S_count == 0)  && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0)) type_of_receiver = 8;
-    if ((gps_1C_count != 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) type_of_receiver = 9;
-    if ((gps_1C_count != 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count != 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) type_of_receiver = 10;
-    if ((gps_1C_count != 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count != 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) type_of_receiver = 11;
-    if ((gps_1C_count == 0) && (gps_2S_count != 0) && (gps_L5_count == 0) && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) type_of_receiver = 12;
-    //if( (gps_1C_count == 0) && (gps_2S_count == 0)  && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0)) type_of_receiver = 13;
-    if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count != 0) && (gal_E5a_count != 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) type_of_receiver = 14;
-    if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count != 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) type_of_receiver = 15;
-    //if( (gps_1C_count == 0) && (gps_2S_count == 0)  && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0)) type_of_receiver = 16;
-    if ((gps_1C_count == 0) && (gps_2S_count != 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count != 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) type_of_receiver = 17;
-    if ((gps_1C_count == 0) && (gps_2S_count != 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count != 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) type_of_receiver = 18;
-    //if( (gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0)) type_of_receiver = 19;
-    //if( (gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0)) type_of_receiver = 20;
-    if ((gps_1C_count != 0) && (gps_2S_count != 0) && (gps_L5_count == 0) && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) type_of_receiver = 21;
-    //if( (gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count = 0)) type_of_receiver = 22;
-    if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count != 0)) type_of_receiver = 23;
-    if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count != 0)) type_of_receiver = 24;
-    if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count != 0) && (glo_2G_count != 0)) type_of_receiver = 25;
-    if ((gps_1C_count != 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count != 0) && (glo_2G_count == 0)) type_of_receiver = 26;
-    if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count != 0) && (glo_2G_count == 0)) type_of_receiver = 27;
-    if ((gps_1C_count == 0) && (gps_2S_count != 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count != 0) && (glo_2G_count == 0)) type_of_receiver = 28;
-    if ((gps_1C_count != 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count != 0)) type_of_receiver = 29;
-    if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count != 0)) type_of_receiver = 30;
-    if ((gps_1C_count == 0) && (gps_2S_count != 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count != 0)) type_of_receiver = 31;
+    std::shared_ptr<InMemoryConfiguration> configuration;
+    configuration = std::make_shared<InMemoryConfiguration>();
+    std::string role = "rtklib_solver";
+    // custom options
+    configuration->set_property("rtklib_solver.positioning_mode", "Single");
+    configuration->set_property("rtklib_solver.elevation_mask", "0");
+    configuration->set_property("rtklib_solver.iono_model", "OFF");
+    configuration->set_property("rtklib_solver.trop_model", "OFF");
     //RTKLIB PVT solver options
+
     // Settings 1
     int positioning_mode = -1;
     std::string default_pos_mode("Single");
@@ -245,12 +72,12 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
             positioning_mode = PMODE_SINGLE;
         }
 
-    int num_bands = 0;
+    int num_bands = 1;
 
-    if ((gps_1C_count > 0) || (gal_1B_count > 0) || (glo_1G_count > 0)) num_bands = 1;
-    if (((gps_1C_count > 0) || (gal_1B_count > 0) || (glo_1G_count > 0)) && ((gps_2S_count > 0) || (glo_2G_count > 0))) num_bands = 2;
-    if (((gps_1C_count > 0) || (gal_1B_count > 0) || (glo_1G_count > 0)) && ((gal_E5a_count > 0) || (gal_E5b_count > 0) || (gps_L5_count > 0))) num_bands = 2;
-    if (((gps_1C_count > 0) || (gal_1B_count > 0) || (glo_1G_count > 0)) && ((gps_2S_count > 0) || (glo_2G_count > 0)) && ((gal_E5a_count > 0) || (gal_E5b_count > 0) || (gps_L5_count > 0))) num_bands = 3;
+    //    if ((gps_1C_count > 0) || (gal_1B_count > 0) || (glo_1G_count > 0)) num_bands = 1;
+    //    if (((gps_1C_count > 0) || (gal_1B_count > 0) || (glo_1G_count > 0)) && ((gps_2S_count > 0) || (glo_2G_count > 0))) num_bands = 2;
+    //    if (((gps_1C_count > 0) || (gal_1B_count > 0) || (glo_1G_count > 0)) && ((gal_E5a_count > 0) || (gal_E5b_count > 0) || (gps_L5_count > 0))) num_bands = 2;
+    //    if (((gps_1C_count > 0) || (gal_1B_count > 0) || (glo_1G_count > 0)) && ((gps_2S_count > 0) || (glo_2G_count > 0)) && ((gal_E5a_count > 0) || (gal_E5b_count > 0) || (gps_L5_count > 0))) num_bands = 3;
 
     int number_of_frequencies = configuration->property(role + ".num_bands", num_bands); /* (1:L1, 2:L1+L2, 3:L1+L2+L5) */
     if ((number_of_frequencies < 1) || (number_of_frequencies > 3))
@@ -330,10 +157,10 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
 
     int earth_tide = configuration->property(role + ".earth_tide", 0);
 
-    int nsys = 0;
-    if ((gps_1C_count > 0) || (gps_2S_count > 0) || (gps_L5_count > 0)) nsys += SYS_GPS;
-    if ((gal_1B_count > 0) || (gal_E5a_count > 0) || (gal_E5b_count > 0)) nsys += SYS_GAL;
-    if ((glo_1G_count > 0) || (glo_2G_count > 0)) nsys += SYS_GLO;
+    int nsys = SYS_GPS;
+    //    if ((gps_1C_count > 0) || (gps_2S_count > 0) || (gps_L5_count > 0)) nsys += SYS_GPS;
+    //    if ((gal_1B_count > 0) || (gal_E5a_count > 0) || (gal_E5b_count > 0)) nsys += SYS_GAL;
+    //    if ((glo_1G_count > 0) || (glo_2G_count > 0)) nsys += SYS_GLO;
     int navigation_system = configuration->property(role + ".navigation_system", nsys); /* (SYS_XXX) see src/algorithms/libs/rtklib/rtklib.h */
     if ((navigation_system < 1) || (navigation_system > 255))                           /* GPS: 1   SBAS: 2   GPS+SBAS: 3 Galileo: 8  Galileo+GPS: 9 GPS+SBAS+Galileo: 11 All: 255 */
         {
@@ -487,81 +314,130 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
         {}                                                                                 /* char pppopt[256]   ppp option   "-GAP_RESION="  default gap to reset iono parameters (ep) */
     };
 
+    rtk_t rtk;
     rtkinit(&rtk, &rtklib_configuration_options);
-
-    // make PVT object
-    pvt_ = rtklib_make_pvt_cc(in_streams_, dump_, dump_filename_, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, rinex_version, rinexobs_rate_ms, rinexnav_rate_ms, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_msg_rate_ms, rtcm_dump_devname, type_of_receiver, rtk);
-    DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
-    if (out_streams_ > 0)
-        {
-            LOG(ERROR) << "The PVT block does not have an output stream";
-        }
+    return rtk;
 }
 
 
-bool RtklibPvt::save_assistance_to_XML()
+//todo: add test cases for Galileo E1, E5 and GPS L5
+TEST(RTKLibSolverTest, test1)
 {
-    LOG(INFO) << "SUPL: Try to save GPS ephemeris to XML file " << eph_xml_filename_;
-    std::map<int, Gps_Ephemeris> eph_map = pvt_->get_GPS_L1_ephemeris_map();
+    //test case #1: GPS L1 CA simulated with gnss-sim
+    std::string path = std::string(TEST_PATH);
+    int nchannels = 8;
+    std::string dump_filename = ".rtklib_solver_dump.dat";
+    bool flag_dump_to_file = false;
+    rtk_t rtk = configure_rtklib_options();
 
-    if (eph_map.empty() == false)
+    std::unique_ptr<rtklib_solver> d_ls_pvt(new rtklib_solver(nchannels, dump_filename, flag_dump_to_file, rtk));
+    d_ls_pvt->set_averaging_depth(1);
+
+    // load ephemeris
+    std::string eph_xml_filename = path + "data/rtklib_test/eph_GPS_L1CA_test1.xml";
+    gnss_sdr_supl_client supl_client_ephemeris_;
+
+    std::cout << "SUPL: Try read GPS ephemeris from XML file " << eph_xml_filename << std::endl;
+    if (supl_client_ephemeris_.load_ephemeris_xml(eph_xml_filename) == true)
         {
-            std::ofstream ofs;
-            try
+            std::map<int, Gps_Ephemeris>::const_iterator gps_eph_iter;
+            for (gps_eph_iter = supl_client_ephemeris_.gps_ephemeris_map.cbegin();
+                 gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.cend();
+                 gps_eph_iter++)
                 {
-                    ofs.open(eph_xml_filename_.c_str(), std::ofstream::trunc | std::ofstream::out);
-                    boost::archive::xml_oarchive xml(ofs);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", eph_map);
-                    LOG(INFO) << "Saved GPS L1 Ephemeris map data";
-                }
-            catch (const std::exception& e)
-                {
-                    LOG(WARNING) << e.what();
-                    return false;
+                    std::cout << "SUPL: Read XML Ephemeris for GPS SV " << gps_eph_iter->first << std::endl;
+                    std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(gps_eph_iter->second);
+                    // update/insert new ephemeris record to the global ephemeris map
+                    d_ls_pvt->gps_ephemeris_map[gps_eph_iter->first] = *tmp_obj;
                 }
         }
     else
         {
-            LOG(WARNING) << "Failed to save Ephemeris, map is empty";
-            return false;
+            std::cout << "ERROR: SUPL client error reading XML" << std::endl;
         }
-    return true;  // return variable (true == succeeded)
-}
+
+    // insert observables epoch
+    std::map<int, Gnss_Synchro> gnss_synchro_map;
+    //    Gnss_Synchro tmp_obs;
+    //    tmp_obs.System = 'G';
+    //    std::string signal = "1C";
+    //    const char* str = signal.c_str();                         // get a C style null terminated string
+    //    std::memcpy(static_cast<void*>(tmp_obs.Signal), str, 3);  // copy string into synchro char array: 2 char + null
+    //
+    //    gnss_synchro_map[0] = tmp_obs;
+    //    gnss_synchro_map[0].PRN = 1;
+    //    gnss_synchro_map[0].RX_time = 518449.000000;
+    //    gnss_synchro_map[0].Pseudorange_m = 22816591.664859;
+    //    gnss_synchro_map[0].Carrier_Doppler_hz = -2579.334343;
+    //    gnss_synchro_map[0].Carrier_phase_rads = 794858.014183;
+
+    //load from xml (boost serialize)
+    std::string file_name = path + "data/rtklib_test/obs_test1.xml";
+
+    std::ifstream ifs;
+    try
+        {
+            ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
+            boost::archive::xml_iarchive xml(ifs);
+            gnss_synchro_map.clear();
+            xml >> boost::serialization::make_nvp("GNSS-SDR_gnss_synchro_map", gnss_synchro_map);
+            std::cout << "Loaded gnss_synchro map data with " << gnss_synchro_map.size() << " pseudoranges" << std::endl;
+        }
+    catch (std::exception& e)
+        {
+            std::cout << e.what() << "File: " << file_name;
+        }
+    ifs.close();
+
+    // solve
+    bool pvt_valid = false;
+    if (d_ls_pvt->get_PVT(gnss_synchro_map, false))
+        {
+            // DEBUG MESSAGE: Display position in console output
+            if (d_ls_pvt->is_valid_position())
+                {
+                    std::streamsize ss = std::cout.precision();  // save current precision
+                    std::cout.setf(std::ios::fixed, std::ios::floatfield);
+
+                    auto facet = new boost::posix_time::time_facet("%Y-%b-%d %H:%M:%S.%f %z");
+                    std::cout.imbue(std::locale(std::cout.getloc(), facet));
+
+                    std::cout << "Position at " << d_ls_pvt->get_position_UTC_time()
+                              << " UTC using " << d_ls_pvt->get_num_valid_observations()
+                              << std::fixed << std::setprecision(9)
+                              << " observations is Lat = " << d_ls_pvt->get_latitude() << " [deg], Long = " << d_ls_pvt->get_longitude()
+                              << std::fixed << std::setprecision(3)
+                              << " [deg], Height = " << d_ls_pvt->get_height() << " [m]" << std::endl;
+                    std::cout << std::setprecision(ss);
+                    std::cout << "RX clock offset: " << d_ls_pvt->get_time_offset_s() << "[s]" << std::endl;
+
+                    // boost::posix_time::ptime p_time;
+                    // gtime_t rtklib_utc_time = gpst2time(adjgpsweek(d_ls_pvt->gps_ephemeris_map.cbegin()->second.i_GPS_week), d_rx_time);
+                    // p_time = boost::posix_time::from_time_t(rtklib_utc_time.time);
+                    // p_time += boost::posix_time::microseconds(round(rtklib_utc_time.sec * 1e6));
+                    // std::cout << TEXT_MAGENTA << "Observable RX time (GPST) " << boost::posix_time::to_simple_string(p_time) << TEXT_RESET << std::endl;
+
+                    std::cout << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->get_position_UTC_time())
+                              << " UTC using " << d_ls_pvt->get_num_valid_observations() << " observations is Lat = " << d_ls_pvt->get_latitude() << " [deg], Long = " << d_ls_pvt->get_longitude()
+                              << " [deg], Height = " << d_ls_pvt->get_height() << " [m]" << std::endl;
+
+                    std::cout << "RTKLIB Position at RX TOW = " << gnss_synchro_map.begin()->second.RX_time
+                              << " in ECEF (X,Y,Z,t[meters]) = " << std::fixed << std::setprecision(16)
+                              << d_ls_pvt->pvt_sol.rr[0] << ","
+                              << d_ls_pvt->pvt_sol.rr[1] << ","
+                              << d_ls_pvt->pvt_sol.rr[2] << std::endl;
+                    /* std::cout << "Dilution of Precision at " << boost::posix_time::to_simple_string(d_ls_pvt->get_position_UTC_time())
+                             << " UTC using "<< d_ls_pvt->get_num_valid_observations() <<" observations is HDOP = " << d_ls_pvt->get_hdop() << " VDOP = "
+                             << d_ls_pvt->get_vdop()
+                             << " GDOP = " << d_ls_pvt->get_gdop() << std::endl; */
+
+                    //todo: check here the positioning error against the reference position generated with gnss-sim
+                    //reference position on in WGS84: Lat (deg), Long (deg) , H (m): 30.286502,120.032669,100
 
 
-RtklibPvt::~RtklibPvt()
-{
-    rtkfree(&rtk);
-    save_assistance_to_XML();
-}
+                    pvt_valid = true;
+                }
+        }
 
-
-void RtklibPvt::connect(gr::top_block_sptr top_block)
-{
-    if (top_block)
-        { /* top_block is not null */
-        };
-    // Nothing to connect internally
-    DLOG(INFO) << "nothing to connect internally";
-}
-
-
-void RtklibPvt::disconnect(gr::top_block_sptr top_block)
-{
-    if (top_block)
-        { /* top_block is not null */
-        };
-    // Nothing to disconnect
-}
-
-
-gr::basic_block_sptr RtklibPvt::get_left_block()
-{
-    return pvt_;
-}
-
-
-gr::basic_block_sptr RtklibPvt::get_right_block()
-{
-    return pvt_;  // this is a sink, nothing downstream
+    EXPECT_EQ(true, pvt_valid);
 }

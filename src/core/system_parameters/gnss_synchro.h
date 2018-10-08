@@ -33,6 +33,7 @@
 #ifndef GNSS_SDR_GNSS_SYNCHRO_H_
 #define GNSS_SDR_GNSS_SYNCHRO_H_
 
+#include <boost/serialization/nvp.hpp>
 #include "gnss_signal.h"
 #include <cstdint>
 
@@ -83,41 +84,42 @@ public:
      * Gnss_Synchro objects from a byte stream.
      */
     template <class Archive>
+
     void serialize(Archive& ar, const unsigned int version)
     {
         if (version)
             {
             };
         // Satellite and signal info
-        ar& System;
-        ar& Signal;
-        ar& PRN;
-        ar& Channel_ID;
+        ar& BOOST_SERIALIZATION_NVP(System);
+        ar& BOOST_SERIALIZATION_NVP(Signal);
+        ar& BOOST_SERIALIZATION_NVP(PRN);
+        ar& BOOST_SERIALIZATION_NVP(Channel_ID);
         // Acquisition
-        ar& Acq_delay_samples;
-        ar& Acq_doppler_hz;
-        ar& Acq_samplestamp_samples;
-        ar& Acq_doppler_step;
-        ar& Flag_valid_acquisition;
+        ar& BOOST_SERIALIZATION_NVP(Acq_delay_samples);
+        ar& BOOST_SERIALIZATION_NVP(Acq_doppler_hz);
+        ar& BOOST_SERIALIZATION_NVP(Acq_samplestamp_samples);
+        ar& BOOST_SERIALIZATION_NVP(Acq_doppler_step);
+        ar& BOOST_SERIALIZATION_NVP(Flag_valid_acquisition);
         // Tracking
-        ar& fs;
-        ar& Prompt_I;
-        ar& Prompt_Q;
-        ar& CN0_dB_hz;
-        ar& Carrier_Doppler_hz;
-        ar& Carrier_phase_rads;
-        ar& Code_phase_samples;
-        ar& Tracking_sample_counter;
-        ar& Flag_valid_symbol_output;
-        ar& correlation_length_ms;
+        ar& BOOST_SERIALIZATION_NVP(fs);
+        ar& BOOST_SERIALIZATION_NVP(Prompt_I);
+        ar& BOOST_SERIALIZATION_NVP(Prompt_Q);
+        ar& BOOST_SERIALIZATION_NVP(CN0_dB_hz);
+        ar& BOOST_SERIALIZATION_NVP(Carrier_Doppler_hz);
+        ar& BOOST_SERIALIZATION_NVP(Carrier_phase_rads);
+        ar& BOOST_SERIALIZATION_NVP(Code_phase_samples);
+        ar& BOOST_SERIALIZATION_NVP(Tracking_sample_counter);
+        ar& BOOST_SERIALIZATION_NVP(Flag_valid_symbol_output);
+        ar& BOOST_SERIALIZATION_NVP(correlation_length_ms);
         // Telemetry Decoder
-        ar& Flag_valid_word;
-        ar& TOW_at_current_symbol_ms;
+        ar& BOOST_SERIALIZATION_NVP(Flag_valid_word);
+        ar& BOOST_SERIALIZATION_NVP(TOW_at_current_symbol_ms);
         // Observables
-        ar& Pseudorange_m;
-        ar& RX_time;
-        ar& Flag_valid_pseudorange;
-        ar& interp_TOW_ms;
+        ar& BOOST_SERIALIZATION_NVP(Pseudorange_m);
+        ar& BOOST_SERIALIZATION_NVP(RX_time);
+        ar& BOOST_SERIALIZATION_NVP(Flag_valid_pseudorange);
+        ar& BOOST_SERIALIZATION_NVP(interp_TOW_ms);
     }
 };
 

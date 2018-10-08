@@ -78,7 +78,7 @@ pcps_acquisition_fpga::pcps_acquisition_fpga(pcpsconf_fpga_t conf_) : gr::block(
     d_single_doppler_flag = false;
 
     d_downsampling_factor = acq_parameters.downsampling_factor;
-    //printf("downsampling_factor = %f\n", d_downsampling_factor);
+    //printf("AAAAAAAAAA downsampling_factor = %f\n", d_downsampling_factor);
     d_select_queue_Fpga = acq_parameters.select_queue_Fpga;
     //printf("zzzz acq_parameters.code_length = %d\n", acq_parameters.code_length);
     //printf("zzzz acq_parameters.samples_per_ms = %d\n", acq_parameters.samples_per_ms);

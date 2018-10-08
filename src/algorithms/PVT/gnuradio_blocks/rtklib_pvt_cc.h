@@ -152,6 +152,10 @@ private:
     bool send_sys_v_ttff_msg(ttff_msgbuf ttff);
     std::chrono::time_point<std::chrono::system_clock> start, end;
 
+    bool save_gnss_synchro_map_xml(const std::string file_name);  //debug helper function
+
+    bool load_gnss_synchro_map_xml(const std::string file_name);  //debug helper function
+
 public:
     rtklib_pvt_cc(uint32_t nchannels,
         bool dump, std::string dump_filename,

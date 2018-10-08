@@ -22,6 +22,11 @@ set(TELEMETRY_DECODER_LIB_SOURCES
      viterbi_decoder.cc
 )
 
+set(TELEMETRY_DECODER_LIB_HEADERS
+     viterbi_decoder.h
+     convolutional.h
+)
+
 include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
@@ -33,9 +38,9 @@ include_directories(
      ${GFlags_INCLUDE_DIRS}
 )
 
-file(GLOB TELEMETRY_DECODER_LIB_HEADERS "*.h")
-
 list(SORT TELEMETRY_DECODER_LIB_HEADERS)
+list(SORT TELEMETRY_DECODER_LIB_SOURCES)
+
 add_library(telemetry_decoder_lib ${TELEMETRY_DECODER_LIB_SOURCES} ${TELEMETRY_DECODER_LIB_HEADERS})
 source_group(Headers FILES ${TELEMETRY_DECODER_LIB_HEADERS})
 target_link_libraries(telemetry_decoder_lib gnss_system_parameters)

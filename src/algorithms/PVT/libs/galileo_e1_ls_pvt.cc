@@ -184,7 +184,7 @@ bool galileo_e1_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map
                     // Compute Gregorian time
                     utc = galileo_utc_model.GST_to_UTC_time(GST, Galileo_week_number);
                     // get time string Gregorian calendar
-                    boost::posix_time::time_duration t = boost::posix_time::seconds(utc);
+                    boost::posix_time::time_duration t = boost::posix_time::seconds(static_cast<int64_t>(utc));
                     // 22 August 1999 00:00 last Galileo start GST epoch (ICD sec 5.1.2)
                     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
                     d_position_UTC_time = p_time;

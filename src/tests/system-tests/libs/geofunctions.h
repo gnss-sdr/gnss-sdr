@@ -151,4 +151,10 @@ void Geo_to_ECEF(const arma::vec &LLH, const arma::vec &v_eb_n, const arma::mat 
  */
 void pv_Geo_to_ECEF(double L_b, double lambda_b, double h_b, const arma::vec &v_eb_n, arma::vec &r_eb_e, arma::vec &v_eb_e);
 
+/*!
+ * \brief The Haversine formula determines the great-circle distance between two points on a sphere given their longitudes and latitudes.
+ */
+double great_circle_distance(double lat1, double lon1, double lat2, double lon2);
+
+
 #endif

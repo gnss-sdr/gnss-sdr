@@ -38,6 +38,8 @@
 #include "rtklib_solver.h"
 #include "in_memory_configuration.h"
 #include "gnss_sdr_supl_client.h"
+#include "geofunctions.h"
+#include <armadillo>
 
 
 rtk_t configure_rtklib_options()
@@ -366,10 +368,6 @@ TEST(RTKLibSolverTest, test1)
     //
     //    gnss_synchro_map[0] = tmp_obs;
     //    gnss_synchro_map[0].PRN = 1;
-    //    gnss_synchro_map[0].RX_time = 518449.000000;
-    //    gnss_synchro_map[0].Pseudorange_m = 22816591.664859;
-    //    gnss_synchro_map[0].Carrier_Doppler_hz = -2579.334343;
-    //    gnss_synchro_map[0].Carrier_phase_rads = 794858.014183;
 
     //load from xml (boost serialize)
     std::string file_name = path + "data/rtklib_test/obs_test1.xml";
@@ -417,10 +415,6 @@ TEST(RTKLibSolverTest, test1)
                     // p_time += boost::posix_time::microseconds(round(rtklib_utc_time.sec * 1e6));
                     // std::cout << TEXT_MAGENTA << "Observable RX time (GPST) " << boost::posix_time::to_simple_string(p_time) << TEXT_RESET << std::endl;
 
-                    std::cout << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->get_position_UTC_time())
-                              << " UTC using " << d_ls_pvt->get_num_valid_observations() << " observations is Lat = " << d_ls_pvt->get_latitude() << " [deg], Long = " << d_ls_pvt->get_longitude()
-                              << " [deg], Height = " << d_ls_pvt->get_height() << " [m]" << std::endl;
-
                     std::cout << "RTKLIB Position at RX TOW = " << gnss_synchro_map.begin()->second.RX_time
                               << " in ECEF (X,Y,Z,t[meters]) = " << std::fixed << std::setprecision(16)
                               << d_ls_pvt->pvt_sol.rr[0] << ","
@@ -433,8 +427,32 @@ TEST(RTKLibSolverTest, test1)
 
                     //todo: check here the positioning error against the reference position generated with gnss-sim
                     //reference position on in WGS84: Lat (deg), Long (deg) , H (m): 30.286502,120.032669,100
+                    arma::vec LLH = {30.286502, 120.032669, 100};  //ref position for this scenario
 
+                    double error_LLH_m = great_circle_distance(LLH(0), LLH(1), d_ls_pvt->get_latitude(), d_ls_pvt->get_longitude());
+                    std::cout << "Lat, Long, H error: " << d_ls_pvt->get_latitude() - LLH(0)
+                              << "," << d_ls_pvt->get_longitude() - LLH(1)
+                              << "," << d_ls_pvt->get_height() - LLH(2) << " [deg,deg,meters]" << std::endl;
 
+                    std::cout << "Haversine Great Circle error LLH distance: " << error_LLH_m << " [meters]" << std::endl;
+
+                    arma::vec v_eb_n = {0.0, 0.0, 0.0};
+                    arma::vec true_r_eb_e;
+                    arma::vec true_v_eb_e;
+                    pv_Geo_to_ECEF(degtorad(LLH(0)), degtorad(LLH(1)), LLH(2), v_eb_n, true_r_eb_e, true_v_eb_e);
+
+                    arma::vec measured_r_eb_e = {d_ls_pvt->pvt_sol.rr[0], d_ls_pvt->pvt_sol.rr[1], d_ls_pvt->pvt_sol.rr[2]};
+
+                    arma::vec error_r_eb_e = measured_r_eb_e - true_r_eb_e;
+
+                    std::cout << "ECEF position error vector: " << error_r_eb_e << " [meters]" << std::endl;
+
+                    double error_3d_m = arma::norm(error_r_eb_e, 2);
+
+                    std::cout << "3D positioning error: " << error_3d_m << " [meters]" << std::endl;
+
+                    //check results against the test tolerance
+                    ASSERT_LT(error_3d_m, 1.0);
                     pvt_valid = true;
                 }
         }

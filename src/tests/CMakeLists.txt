@@ -403,6 +403,7 @@ if(ENABLE_UNIT_TESTING)
                                 signal_generator_adapters
                                 pvt_gr_blocks
                                 signal_processing_testing_lib
+                                system_testing_lib
                                 ${VOLK_GNSSSDR_LIBRARIES}
                                 ${MATIO_LIBRARIES}
                                 ${GNSS_SDR_TEST_OPTIONAL_LIBS}

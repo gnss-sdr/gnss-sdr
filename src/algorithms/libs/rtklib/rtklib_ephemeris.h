@@ -58,6 +58,7 @@
 
 
 double var_uraeph(int ura);
+double var_sisaeph(int ura);
 double var_urassr(int ura);
 void alm2pos(gtime_t time, const alm_t *alm, double *rs, double *dts);
 double eph2clk(gtime_t time, const eph_t *eph);

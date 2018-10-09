@@ -28,6 +28,17 @@ set(TELEMETRY_DECODER_ADAPTER_SOURCES
     glonass_l2_ca_telemetry_decoder.cc 
 )
 
+set(TELEMETRY_DECODER_ADAPTER_HEADERS
+    gps_l1_ca_telemetry_decoder.h
+    gps_l2c_telemetry_decoder.h
+    gps_l5_telemetry_decoder.h 
+    galileo_e1b_telemetry_decoder.h
+    sbas_l1_telemetry_decoder.h
+    galileo_e5a_telemetry_decoder.h
+    glonass_l1_ca_telemetry_decoder.h
+    glonass_l2_ca_telemetry_decoder.h 
+)
+
 include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
@@ -42,8 +53,9 @@ include_directories(
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
-file(GLOB TELEMETRY_DECODER_ADAPTER_HEADERS "*.h")
 list(SORT TELEMETRY_DECODER_ADAPTER_HEADERS)
+list(SORT TELEMETRY_DECODER_ADAPTER_SOURCES)
+
 add_library(telemetry_decoder_adapters ${TELEMETRY_DECODER_ADAPTER_SOURCES} ${TELEMETRY_DECODER_ADAPTER_HEADERS})
 source_group(Headers FILES ${TELEMETRY_DECODER_ADAPTER_HEADERS})
 target_link_libraries(telemetry_decoder_adapters telemetry_decoder_gr_blocks gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES})

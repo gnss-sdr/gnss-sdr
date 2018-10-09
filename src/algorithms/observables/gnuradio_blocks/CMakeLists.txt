@@ -20,6 +20,10 @@ set(OBS_GR_BLOCKS_SOURCES
 	hybrid_observables_cc.cc
 )
 
+set(OBS_GR_BLOCKS_HEADERS 
+	hybrid_observables_cc.h
+)
+
 include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
@@ -34,8 +38,6 @@ include_directories(
      ${MATIO_INCLUDE_DIRS}
 )
 
-file(GLOB OBS_GR_BLOCKS_HEADERS "*.h")
-list(SORT OBS_GR_BLOCKS_HEADERS)
 add_library(obs_gr_blocks ${OBS_GR_BLOCKS_SOURCES} ${OBS_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${OBS_GR_BLOCKS_HEADERS})
 if(MATIO_FOUND)

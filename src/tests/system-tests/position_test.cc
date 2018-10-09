@@ -354,6 +354,7 @@ int PositionSystemTest::configure_receiver()
             config->set_property("Acquisition_1C.dump", "false");
             config->set_property("Acquisition_1C.dump_filename", "./acquisition");
             config->set_property("Acquisition_1C.dump_channel", "1");
+            config->set_property("Acquisition_1C.blocking", "true");
 
             // Set Tracking
             config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");

@@ -18,14 +18,12 @@
 
 add_subdirectory(rtklib)
 
-if(ENABLE_FPGA)
-    set(GNSS_SPLIBS_SOURCES
+set(GNSS_SPLIBS_SOURCES
         gps_l2c_signal.cc
         gps_l5_signal.cc
         galileo_e1_signal_processing.cc
         gnss_sdr_valve.cc
         gnss_sdr_sample_counter.cc
-        gnss_sdr_time_counter.cc
         gnss_signal_processing.cc
         gps_sdr_signal_processing.cc
         glonass_l1_signal_processing.cc
@@ -40,30 +38,43 @@ if(ENABLE_FPGA)
         conjugate_cc.cc
         conjugate_sc.cc
         conjugate_ic.cc
+)
+
+set(GNSS_SPLIBS_HEADERS
+        gps_l2c_signal.h
+        gps_l5_signal.h
+        galileo_e1_signal_processing.h
+        gnss_sdr_valve.h
+        gnss_sdr_sample_counter.h
+        gnss_signal_processing.h
+        gps_sdr_signal_processing.h
+        glonass_l1_signal_processing.h
+        glonass_l2_signal_processing.h
+        pass_through.h
+        galileo_e5_signal_processing.h
+        complex_byte_to_float_x2.h
+        byte_x2_to_complex_byte.h
+        cshort_to_float_x2.h
+        short_x2_to_cshort.h
+        complex_float_to_complex_byte.h
+        conjugate_cc.h
+        conjugate_sc.h
+        conjugate_ic.h
+        gnss_circular_deque.h
+)
+
+
+if(ENABLE_FPGA)
+    set(GNSS_SPLIBS_SOURCES ${GNSS_SPLIBS_SOURCES}
+        gnss_sdr_time_counter.cc
         gnss_sdr_fpga_sample_counter.cc
 	)
-else(ENABLE_FPGA)
-    set(GNSS_SPLIBS_SOURCES
-        gps_l2c_signal.cc
-        gps_l5_signal.cc
-        galileo_e1_signal_processing.cc
-        gnss_sdr_valve.cc
-        gnss_sdr_sample_counter.cc
-        gnss_signal_processing.cc
-        gps_sdr_signal_processing.cc
-        glonass_l1_signal_processing.cc
-        glonass_l2_signal_processing.cc
-        pass_through.cc
-        galileo_e5_signal_processing.cc
-        complex_byte_to_float_x2.cc
-        byte_x2_to_complex_byte.cc
-        cshort_to_float_x2.cc
-        short_x2_to_cshort.cc
-        complex_float_to_complex_byte.cc
-        conjugate_cc.cc
-        conjugate_sc.cc
-        conjugate_ic.cc
-    )
+
+    set(GNSS_SPLIBS_HEADERS ${GNSS_SPLIBS_HEADERS}
+        gnss_sdr_time_counter.h
+        gnss_sdr_fpga_sample_counter.h
+	)
+	
 endif(ENABLE_FPGA)
 
 if(OPENCL_FOUND)
@@ -71,7 +82,13 @@ if(OPENCL_FOUND)
                             opencl/fft_execute.cc # Needs OpenCL
                             opencl/fft_setup.cc # Needs OpenCL
                             opencl/fft_kernelstring.cc # Needs OpenCL
-       )
+    )
+       
+    set(GNSS_SPLIBS_HEADERS ${GNSS_SPLIBS_HEADERS}
+                            opencl/fft_execute.h # Needs OpenCL
+                            opencl/fft_setup.h # Needs OpenCL
+                            opencl/fft_kernelstring.h # Needs OpenCL
+    )       
 endif(OPENCL_FOUND)
 
 include_directories(
@@ -99,9 +116,9 @@ endif(OPENCL_FOUND)
 
 add_definitions(-DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}")
 
-file(GLOB GNSS_SPLIBS_HEADERS "*.h")
-list(REMOVE_ITEM GNSS_SPLIBS_HEADERS gnss_sdr_flags.h)
 list(SORT GNSS_SPLIBS_HEADERS)
+list(SORT GNSS_SPLIBS_SOURCES)
+
 add_library(gnss_sp_libs ${GNSS_SPLIBS_SOURCES} ${GNSS_SPLIBS_HEADERS})
 source_group(Headers FILES ${GNSS_SPLIBS_HEADERS})
 

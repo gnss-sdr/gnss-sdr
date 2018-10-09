@@ -50,6 +50,10 @@ namespace bc = boost::math;
 namespace bc = boost::integer;
 #endif
 
+//includes used by the observables serializarion (export observables for rtklib unit test)
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/serialization/map.hpp>
 
 using google::LogMessage;
 
@@ -396,12 +400,12 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
 
     if (d_ls_pvt->gps_cnav_ephemeris_map.empty() == false)
         {
+            std::ofstream ofs;
             try
                 {
-                    std::ofstream ofs(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
                     boost::archive::xml_oarchive xml(ofs);
                     xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", d_ls_pvt->gps_cnav_ephemeris_map);
-                    ofs.close();
                     LOG(INFO) << "Saved GPS L2CM or L5 Ephemeris map data";
                 }
             catch (std::exception& e)
@@ -419,12 +423,12 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
 
     if (d_ls_pvt->gps_ephemeris_map.empty() == false)
         {
+            std::ofstream ofs;
             try
                 {
-                    std::ofstream ofs(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
                     boost::archive::xml_oarchive xml(ofs);
                     xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", d_ls_pvt->gps_ephemeris_map);
-                    ofs.close();
                     LOG(INFO) << "Saved GPS L1 CA Ephemeris map data";
                 }
             catch (const std::exception& e)
@@ -442,12 +446,12 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
 
     if (d_ls_pvt->galileo_ephemeris_map.empty() == false)
         {
+            std::ofstream ofs;
             try
                 {
-                    std::ofstream ofs(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
                     boost::archive::xml_oarchive xml(ofs);
                     xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", d_ls_pvt->galileo_ephemeris_map);
-                    ofs.close();
                     LOG(INFO) << "Saved Galileo E1 Ephemeris map data";
                 }
             catch (const std::exception& e)
@@ -465,12 +469,12 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
 
     if (d_ls_pvt->glonass_gnav_ephemeris_map.empty() == false)
         {
+            std::ofstream ofs;
             try
                 {
-                    std::ofstream ofs(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
                     boost::archive::xml_oarchive xml(ofs);
                     xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", d_ls_pvt->glonass_gnav_ephemeris_map);
-                    ofs.close();
                     LOG(INFO) << "Saved GLONASS GNAV Ephemeris map data";
                 }
             catch (std::exception& e)
@@ -507,6 +511,54 @@ bool rtklib_pvt_cc::send_sys_v_ttff_msg(ttff_msgbuf ttff)
 }
 
 
+bool rtklib_pvt_cc::save_gnss_synchro_map_xml(const std::string file_name)
+{
+    if (gnss_observables_map.empty() == false)
+        {
+            std::ofstream ofs;
+            try
+                {
+                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_gnss_synchro_map", gnss_observables_map);
+                    LOG(INFO) << "Saved gnss_sychro map data";
+                }
+            catch (std::exception& e)
+                {
+                    LOG(WARNING) << e.what();
+                    return false;
+                }
+            return true;
+        }
+    else
+        {
+            LOG(WARNING) << "Failed to save gnss_synchro, map is empty";
+            return false;
+        }
+}
+
+
+bool rtklib_pvt_cc::load_gnss_synchro_map_xml(const std::string file_name)
+{
+    // load from xml (boost serialize)
+    std::ifstream ifs;
+    try
+        {
+            ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
+            boost::archive::xml_iarchive xml(ifs);
+            gnss_observables_map.clear();
+            xml >> boost::serialization::make_nvp("GNSS-SDR_gnss_synchro_map", gnss_observables_map);
+            //std::cout << "Loaded gnss_synchro map data with " << gnss_synchro_map.size() << " pseudoranges" << std::endl;
+        }
+    catch (std::exception& e)
+        {
+            std::cout << e.what() << "File: " << file_name;
+            return false;
+        }
+    return true;
+}
+
+
 int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items __attribute__((unused)))
 {
@@ -526,7 +578,6 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
 
             gnss_observables_map.clear();
             const Gnss_Synchro** in = reinterpret_cast<const Gnss_Synchro**>(&input_items[0]);  // Get the input buffer pointer
-
             // ############ 1. READ PSEUDORANGES ####
             for (uint32_t i = 0; i < d_nchannels; i++)
                 {
@@ -610,8 +661,15 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                             //        it->second.Pseudorange_m = it->second.Pseudorange_m - d_ls_pvt->get_time_offset_s() * GPS_C_m_s;
                             //    }
 
+
                             if (d_ls_pvt->get_PVT(gnss_observables_map, false))
                                 {
+                                    //Optional debug code: export observables snapshot for rtklib unit testing
+                                    //std::cout << "step 1: save gnss_synchro map" << std::endl;
+                                    //save_gnss_synchro_map_xml("./gnss_synchro_map.xml");
+                                    //getchar(); //stop the execution
+                                    //end debug
+
                                     if (current_RX_time_ms % d_display_rate_ms == 0)
                                         {
                                             flag_display_pvt = true;
@@ -2060,7 +2118,6 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                         {
                             std::streamsize ss = std::cout.precision();  // save current precision
                             std::cout.setf(std::ios::fixed, std::ios::floatfield);
-
                             auto facet = new boost::posix_time::time_facet("%Y-%b-%d %H:%M:%S.%f %z");
                             std::cout.imbue(std::locale(std::cout.getloc(), facet));
 

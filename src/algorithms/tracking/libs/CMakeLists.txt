@@ -30,7 +30,6 @@ if(ENABLE_CUDA)
 endif(ENABLE_CUDA)
 
 
-
 set(TRACKING_LIB_SOURCES
      cpu_multicorrelator.cc
      cpu_multicorrelator_real_codes.cc
@@ -47,8 +46,25 @@ set(TRACKING_LIB_SOURCES
      bayesian_estimation.cc
 )
 
+set(TRACKING_LIB_HEADERS
+     cpu_multicorrelator.h
+     cpu_multicorrelator_real_codes.h
+     cpu_multicorrelator_16sc.h
+     lock_detectors.h
+     tcp_communication.h
+     tcp_packet_data.h
+     tracking_2nd_DLL_filter.h
+     tracking_2nd_PLL_filter.h
+     tracking_discriminators.h
+     tracking_FLL_PLL_filter.h
+     tracking_loop_filter.h
+     dll_pll_conf.h
+     bayesian_estimation.h
+)
+
 if(ENABLE_FPGA)
-    SET(TRACKING_LIB_SOURCES ${TRACKING_LIB_SOURCES} fpga_multicorrelator.cc dll_pll_conf_fpga.cc)
+    set(TRACKING_LIB_SOURCES ${TRACKING_LIB_SOURCES} fpga_multicorrelator.cc dll_pll_conf_fpga.cc)
+    set(TRACKING_LIB_HEADERS ${TRACKING_LIB_HEADERS} fpga_multicorrelator.h dll_pll_conf_fpga.h)
 endif(ENABLE_FPGA)
 
 include_directories(
@@ -74,8 +90,9 @@ if (SSE3_AVAILABLE)
 endif(SSE3_AVAILABLE)
 
 
-file(GLOB TRACKING_LIB_HEADERS "*.h")
 list(SORT TRACKING_LIB_HEADERS)
+list(SORT TRACKING_LIB_SOURCES)
+
 add_library(tracking_lib ${TRACKING_LIB_SOURCES} ${TRACKING_LIB_HEADERS})
 source_group(Headers FILES ${TRACKING_LIB_HEADERS})
 target_link_libraries(tracking_lib ${OPT_TRACKING_LIBRARIES} ${VOLK_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${Boost_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES})

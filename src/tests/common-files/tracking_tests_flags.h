@@ -41,7 +41,7 @@ DEFINE_bool(enable_external_signal_file, false, "Use an external signal file cap
 DEFINE_double(external_signal_acquisition_threshold, 2.5, "Threshold for satellite acquisition when external file is used");
 DEFINE_int32(external_signal_acquisition_dwells, 5, "Maximum dwells count for satellite acquisition when external file is used");
 DEFINE_double(external_signal_acquisition_doppler_max_hz, 5000.0, "Doppler max for satellite acquisition when external file is used");
-DEFINE_double(external_signal_acquisition_doppler_step_hz, 125, "Doppler step for satellite acquisition when external file is used");
+DEFINE_double(external_signal_acquisition_doppler_step_hz, 125.0, "Doppler step for satellite acquisition when external file is used");
 
 DEFINE_string(signal_file, std::string("signal_out.bin"), "Path of the external signal capture file");
 DEFINE_double(CN0_dBHz_start, std::numeric_limits<double>::infinity(), "Enable noise generator and set the CN0 start sweep value [dB-Hz]");
@@ -77,6 +77,8 @@ DEFINE_double(skip_trk_transitory_s, 1.0, "Skip the initial tracking output sign
 
 //Tracking configuration
 DEFINE_int32(extend_correlation_symbols, 1, "Set the tracking coherent correlation to N symbols (up to 20 for GPS L1 C/A)");
+DEFINE_uint32(smoother_length, 10, "Set the moving average size for the carrier phase and code phase in case of high dynamics");
+DEFINE_bool(high_dyn, false, "Activates the code resampler and NCO generator for high dynamics");
 
 //Test output configuration
 DEFINE_bool(plot_gps_l1_tracking_test, false, "Plots results of GpsL1CADllPllTrackingTest with gnuplot");

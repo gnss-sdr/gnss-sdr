@@ -228,7 +228,9 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
    find_package(GPSTK)
    if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
       message(STATUS "GPSTk v${GNSSSDR_GPSTK_LOCAL_VERSION} will be automatically downloaded and built when doing 'make'.")
-
+         if ("${TOOLCHAIN_ARG}" STREQUAL "")
+            set(${TOOLCHAIN_ARG} "-DCMAKE_CXX_FLAGS=\"-Wno-deprecated\"")
+         endif("${TOOLCHAIN_ARG}" STREQUAL "")
  #     if(NOT ENABLE_FPGA)
           if(CMAKE_VERSION VERSION_LESS 3.2)
            ExternalProject_Add(
@@ -322,7 +324,7 @@ else(ENABLE_INSTALL_TESTS)
    file(COPY ${CMAKE_SOURCE_DIR}/src/tests/signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat DESTINATION ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples)
    file(COPY ${CMAKE_SOURCE_DIR}/src/tests/signal_samples/NT1065_GLONASS_L1_20160831_fs6625e6_if0e3_4ms.bin DESTINATION ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples)
    file(COPY ${CMAKE_SOURCE_DIR}/src/tests/data/rtklib_test/obs_test1.xml DESTINATION ${CMAKE_SOURCE_DIR}/thirdparty/data/rtklib_test)
-   file(COPY ${CMAKE_SOURCE_DIR}/src/tests/data/rtklib_test/eph_GPS_L1CA_test1.xml DESTINATION ${CMAKE_SOURCE_DIR}/thirdparty/data/rtklib_test)  
+   file(COPY ${CMAKE_SOURCE_DIR}/src/tests/data/rtklib_test/eph_GPS_L1CA_test1.xml DESTINATION ${CMAKE_SOURCE_DIR}/thirdparty/data/rtklib_test)
    add_definitions(-DTEST_PATH="${CMAKE_SOURCE_DIR}/thirdparty/")
 endif(ENABLE_INSTALL_TESTS)
 
@@ -512,7 +514,7 @@ if(ENABLE_SYSTEM_TESTING)
                       ${GTEST_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES}
                       ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES}
                       ${GNURADIO_ANALOG_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES}
-                      gnss_sp_libs gnss_rx gnss_system_parameters 
+                      gnss_sp_libs gnss_rx gnss_system_parameters
                       system_testing_lib)
 
         add_system_test(position_test)

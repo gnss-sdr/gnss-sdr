@@ -96,7 +96,7 @@ serial_t *openserial(const char *path, int mode, char *msg)
 
     if (!(serial = (serial_t *)malloc(sizeof(serial_t)))) return NULL;
 
-    if ((p = const_cast<char *>(strchr((char *)path, ':'))))
+    if ((p = strchr((char *)path, ':')))
         {
             strncpy(port, path, p - path);
             port[p - path] = '\0';
@@ -1589,7 +1589,7 @@ void *ftpthread(void *arg)
     /* proxy settings for wget (ref [2]) */
     if (*proxyaddr)
         {
-            proto = const_cast<char *>(ftp->proto ? (char *)"http" : (char *)"ftp");
+            proto = ftp->proto ? (char *)"http" : (char *)"ftp";
             sprintf(env, "set %s_proxy=http://%s & ", proto, proxyaddr);
             proxyopt = (char *)"--proxy=on ";
         }

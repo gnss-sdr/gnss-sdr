@@ -84,7 +84,6 @@ const double STD_BRDCCLK = 30.0;                 /* error of broadcast clock (m)
 
 const int MAX_ITER_KEPLER = 30; /* max number of iteration of Kelpler */
 
-int galmessagetype;
 
 /* variance by ura ephemeris (ref [1] 20.3.3.3.1.1) --------------------------*/
 double var_uraeph(int ura)
@@ -95,15 +94,6 @@ double var_uraeph(int ura)
     return ura < 0 || 14 < ura ? std::pow(6144.0, 2.0) : std::pow(ura_value[ura], 2.0);
 }
 
-/* variance by sisa ephemeris (ref [7] Issue 1.3 5.1.11) --------------------------*/
-double var_sisaeph(int ura)
-{
-    if (ura < 50) return std::pow(ura * 0.01, 2.0);
-    if (ura < 75) return std::pow(0.50 + (ura - 50) * 0.02, 2.0);
-    if (ura < 100) return std::pow(1.0 + (ura - 75) * 0.04, 2.0);
-    if (ura <= 125) return std::pow(2.0 + (ura - 100) * 0.16, 2.0);
-    return -1.0;
-}
 
 /* variance by ura ssr (ref [4]) ---------------------------------------------*/
 double var_urassr(int ura)
@@ -299,14 +289,7 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
     *dts -= 2.0 * sqrt(mu * eph->A) * eph->e * sinE / std::pow(SPEED_OF_LIGHT, 2.0);
 
     /* position and clock error variance */
-    if (sys == SYS_GAL)
-        {
-            *var = var_sisaeph(eph->sva);
-        }
-    else
-        {
-            *var = var_uraeph(eph->sva);
-        }
+    *var = var_uraeph(eph->sva);
 }
 
 
@@ -471,18 +454,16 @@ eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav)
 {
     double t, tmax, tmin;
     int i, j = -1;
-    int sys;
 
     trace(4, "seleph  : time=%s sat=%2d iode=%d\n", time_str(time, 3), sat, iode);
 
-    sys = satsys(sat, NULL);
-    switch (sys)
+    switch (satsys(sat, NULL))
         {
         case SYS_QZS:
             tmax = MAXDTOE_QZS + 1.0;
             break;
         case SYS_GAL:
-            tmax = MAXDTOE_GAL;
+            tmax = MAXDTOE_GAL + 1.0;
             break;
         case SYS_BDS:
             tmax = MAXDTOE_BDS + 1.0;
@@ -497,25 +478,7 @@ eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav)
         {
             if (nav->eph[i].sat != sat) continue;
             if (iode >= 0 && nav->eph[i].iode != iode) continue;
-            if (sys == SYS_GAL)
-                {
-                    if (galmessagetype == GALMESS_FNAV)
-                        {
-                            /* Check if F/NAV ephemeris */
-                            if (!(nav->eph[i].code & 0x02)) continue;
-                        }
-                    else
-                        {
-                            /* Check if I/NAV ephemeris */
-                            if (!(nav->eph[i].code & 0x05)) continue;
-                        }
-                    if ((t = timediff(time, nav->eph[i].toe)) > tmax) continue;
-                    if (t < 0) continue;
-                }
-            else
-                {
-                    if ((t = fabs(timediff(nav->eph[i].toe, time))) > tmax) continue;
-                }
+            if ((t = fabs(timediff(nav->eph[i].toe, time))) > tmax) continue;
             if (iode >= 0) return nav->eph + i;
             if (t <= tmin)
                 {

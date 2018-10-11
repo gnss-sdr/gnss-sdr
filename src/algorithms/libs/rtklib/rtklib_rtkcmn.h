@@ -121,7 +121,7 @@ int satno(int sys, int prn);
 int satsys(int sat, int *prn);
 int satid2no(const char *id);
 void satno2id(int sat, char *id);
-int satexclude(int sat, int svh, const int sva, const prcopt_t *opt);
+int satexclude(int sat, int svh, const prcopt_t *opt);
 int testsnr(int base, int freq, double el, double snr, const snrmask_t *mask);
 unsigned char obs2code(const char *obs, int *freq);
 char *code2obs(unsigned char code, int *freq);

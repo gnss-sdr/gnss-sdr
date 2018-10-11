@@ -274,7 +274,7 @@ const int MAXRCV = 64;               //!<    max receiver number (1 to MAXRCV)
 const int MAXOBSTYPE = 64;           //!<    max number of obs type in RINEX
 const double MAXDTOE = 7200.0;       //!<    max time difference to GPS Toe (s)
 const double MAXDTOE_QZS = 7200.0;   //!<    max time difference to QZSS Toe (s)
-const double MAXDTOE_GAL = 14400.0;  //!<    max time difference to Galileo Toe (s)
+const double MAXDTOE_GAL = 10800.0;  //!<    max time difference to Galileo Toe (s)
 const double MAXDTOE_BDS = 21600.0;  //!<    max time difference to BeiDou Toe (s)
 const double MAXDTOE_GLO = 1800.0;   //!<    max time difference to GLONASS Toe (s)
 const double MAXDTOE_SBS = 360.0;    //!<    max time difference to SBAS Toe (s)
@@ -298,9 +298,6 @@ const int IONOOPT_TEC = 5;   //!<    ionosphere option: IONEX TEC model
 const int IONOOPT_QZS = 6;   //!<    ionosphere option: QZSS broadcast model
 const int IONOOPT_LEX = 7;   //!<    ionosphere option: QZSS LEX ionospehre
 const int IONOOPT_STEC = 8;  //!<    ionosphere option: SLANT TEC model
-
-const int GALMESS_INAV = 0;  //!<    Galileo message type: FNAV */
-const int GALMESS_FNAV = 1;  //!<    Galileo message type: INAV */
 
 const int TROPOPT_OFF = 0;   //!<    troposphere option: correction off
 const int TROPOPT_SAAS = 1;  //!<    troposphere option: Saastamoinen model
@@ -1213,7 +1210,7 @@ typedef struct
     char local[1024]; /* local file path */
     int topts[4];     /* time options {poff,tint,toff,tretry} (s) */
     gtime_t tnext;    /* next retry time (gpst) */
-    pthread_t thread; /* download thread */
+    pthread_t thread;  /* download thread */
 } ftp_t;
 
 
@@ -1286,7 +1283,7 @@ typedef struct
     stream_t stream[8];         /* streams {rov,base,corr,sol1,sol2,logr,logb,logc} */
     stream_t *moni;             /* monitor stream */
     unsigned int tick;          /* start tick */
-    pthread_t thread;           /* server thread */
+    pthread_t thread;            /* server thread */
     int cputime;                /* CPU time (ms) for a processing cycle */
     int prcout;                 /* missing observation data count */
     lock_t lock;                /* lock flag */

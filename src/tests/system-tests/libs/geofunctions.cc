@@ -458,3 +458,18 @@ void pv_Geo_to_ECEF(double L_b, double lambda_b, double h_b, const arma::vec &v_
     // Transform velocity using (2.73)
     v_eb_e = C_e_n.t() * v_eb_n;
 }
+
+double great_circle_distance(double lat1, double lon1, double lat2, double lon2)
+{
+    //The Haversine formula determines the great-circle distance between two points on a sphere given their longitudes and latitudes.
+    // generally used geo measurement function
+    double R = 6378.137;  // Radius of earth in KM
+    double dLat = lat2 * STRP_PI / 180.0 - lat1 * STRP_PI / 180.0;
+    double dLon = lon2 * STRP_PI / 180.0 - lon1 * STRP_PI / 180.0;
+    double a = sin(dLat / 2.0) * sin(dLat / 2.0) +
+               cos(lat1 * STRP_PI / 180.0) * cos(lat2 * STRP_PI / 180.0) *
+                   sin(dLon / 2) * sin(dLon / 2.0);
+    double c = 2.0 * atan2(sqrt(a), sqrt(1.0 - a));
+    double d = R * c;
+    return d * 1000.0;  // meters
+}

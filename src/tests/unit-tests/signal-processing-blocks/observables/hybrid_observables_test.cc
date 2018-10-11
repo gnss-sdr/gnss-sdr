@@ -260,7 +260,9 @@ public:
         double DLL_wide_bw_hz,
         double PLL_narrow_bw_hz,
         double DLL_narrow_bw_hz,
-        int extend_correlation_symbols);
+        int extend_correlation_symbols,
+        uint32_t smoother_length,
+        bool high_dyn);
 
     gr::top_block_sptr top_block;
     std::shared_ptr<GNSSBlockFactory> factory;
@@ -540,10 +542,17 @@ void HybridObservablesTest::configure_receiver(
     double DLL_wide_bw_hz,
     double PLL_narrow_bw_hz,
     double DLL_narrow_bw_hz,
-    int extend_correlation_symbols)
+    int extend_correlation_symbols,
+    uint32_t smoother_length,
+    bool high_dyn)
 {
     config = std::make_shared<InMemoryConfiguration>();
     config->set_property("Tracking.dump", "true");
+    if (high_dyn)
+        config->set_property("Tracking.high_dyn", "true");
+    else
+        config->set_property("Tracking.high_dyn", "false");
+    config->set_property("Tracking.smoother_length", std::to_string(smoother_length));
     config->set_property("Tracking.dump_filename", "./tracking_ch_");
     config->set_property("Tracking.implementation", implementation);
     config->set_property("Tracking.item_type", "gr_complex");
@@ -650,6 +659,8 @@ void HybridObservablesTest::configure_receiver(
     std::cout << "pll_bw_narrow_hz: " << config->property("Tracking.pll_bw_narrow_hz", 0.0) << " Hz\n";
     std::cout << "dll_bw_narrow_hz: " << config->property("Tracking.dll_bw_narrow_hz", 0.0) << " Hz\n";
     std::cout << "extend_correlation_symbols: " << config->property("Tracking.extend_correlation_symbols", 0) << " Symbols\n";
+    std::cout << "high_dyn: " << config->property("Tracking.high_dyn", false) << "\n";
+    std::cout << "smoother_length: " << config->property("Tracking.smoother_length", 0) << "\n";
     std::cout << "*****************************************\n";
     std::cout << "*****************************************\n";
 }
@@ -1499,7 +1510,9 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
         FLAGS_DLL_bw_hz_start,
         FLAGS_PLL_narrow_bw_hz,
         FLAGS_DLL_narrow_bw_hz,
-        FLAGS_extend_correlation_symbols);
+        FLAGS_extend_correlation_symbols,
+        FLAGS_smoother_length,
+        FLAGS_high_dyn);
 
 
     for (unsigned int n = 0; n < gnss_synchro_vec.size(); n++)
@@ -1882,6 +1895,18 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                     std::vector<double> tmp_vector_y4(measured_obs_vec.at(n).col(2).colptr(0),
                         measured_obs_vec.at(n).col(2).colptr(0) + measured_obs_vec.at(n).col(2).n_rows);
                     save_mat_xy(tmp_vector_x4, tmp_vector_y4, std::string("measured_doppler_ch_" + std::to_string(n)));
+
+                    std::vector<double> tmp_vector_x5(true_obs_vec.at(n).col(0).colptr(0),
+                        true_obs_vec.at(n).col(0).colptr(0) + true_obs_vec.at(n).col(0).n_rows);
+                    std::vector<double> tmp_vector_y5(true_obs_vec.at(n).col(3).colptr(0),
+                        true_obs_vec.at(n).col(3).colptr(0) + true_obs_vec.at(n).col(3).n_rows);
+                    save_mat_xy(tmp_vector_x5, tmp_vector_y5, std::string("true_cp_ch_" + std::to_string(n)));
+
+                    std::vector<double> tmp_vector_x6(measured_obs_vec.at(n).col(0).colptr(0),
+                        measured_obs_vec.at(n).col(0).colptr(0) + measured_obs_vec.at(n).col(0).n_rows);
+                    std::vector<double> tmp_vector_y6(measured_obs_vec.at(n).col(3).colptr(0),
+                        measured_obs_vec.at(n).col(3).colptr(0) + measured_obs_vec.at(n).col(3).n_rows);
+                    save_mat_xy(tmp_vector_x6, tmp_vector_y6, std::string("measured_cp_ch_" + std::to_string(n)));
 
 
                     if (epoch_counters_vec.at(n) > 10)  //discard non-valid channels

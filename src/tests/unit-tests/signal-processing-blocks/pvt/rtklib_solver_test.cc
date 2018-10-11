@@ -452,7 +452,7 @@ TEST(RTKLibSolverTest, test1)
                     std::cout << "3D positioning error: " << error_3d_m << " [meters]" << std::endl;
 
                     //check results against the test tolerance
-                    ASSERT_LT(error_3d_m, 1.0);
+                    ASSERT_LT(error_3d_m, 0.2);
                     pvt_valid = true;
                 }
         }

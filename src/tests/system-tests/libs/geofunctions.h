@@ -156,5 +156,30 @@ void pv_Geo_to_ECEF(double L_b, double lambda_b, double h_b, const arma::vec &v_
  */
 double great_circle_distance(double lat1, double lon1, double lat2, double lon2);
 
+/*!
+ * \brief Transformation of ECEF (X,Y,Z) to (E,N,U) in UTM, zone 'zone'.
+ */
+
+void cart2utm(arma::vec r_eb_e, int zone, arma::vec &r_enu);
+
+/*!
+ * \brief Function finds the UTM zone number for given longitude and latitude.
+ */
+
+int findUtmZone(double latitude_deg, double longitude_deg);
+
+/*!
+ * \brief Clenshaw summation of sinus of argument.
+ */
+
+double clsin(arma::colvec ar, int degree, double argument);
+
+
+/*!
+ * \brief Clenshaw summation of sinus with complex argument.
+ */
+
+
+void clksin(arma::colvec ar, int degree, double arg_real, double arg_imag, double *re, double *im);
 
 #endif

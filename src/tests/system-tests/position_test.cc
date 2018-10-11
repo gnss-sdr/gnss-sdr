@@ -32,6 +32,7 @@
  * -------------------------------------------------------------------------
  */
 
+#include "geofunctions.h"
 #include "position_test_flags.h"
 #include "rtklib_solver_dump_reader.h"
 #include "spirent_motion_csv_dump_reader.h"
@@ -54,6 +55,7 @@
 #include <fstream>
 #include <numeric>
 #include <thread>
+#include <armadillo>
 
 // For GPS NAVIGATION (L1)
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
@@ -82,116 +84,11 @@ private:
     std::string filename_rinex_obs = FLAGS_filename_rinex_obs;
     std::string filename_raw_data = FLAGS_filename_raw_data;
 
-    void print_results(const std::vector<double>& east,
-        const std::vector<double>& north,
-        const std::vector<double>& up);
-
-    double compute_stdev_precision(const std::vector<double>& vec);
-    double compute_stdev_accuracy(const std::vector<double>& vec, double ref);
-
-    void geodetic2Enu(const double latitude, const double longitude, const double altitude,
-        double* east, double* north, double* up);
-
-    void geodetic2Ecef(const double latitude, const double longitude, const double altitude,
-        double* x, double* y, double* z);
-
+    void print_results(arma::mat R_eb_enu);
     std::shared_ptr<InMemoryConfiguration> config;
     std::shared_ptr<FileConfiguration> config_f;
     std::string generated_kml_file;
 };
-
-
-void PositionSystemTest::geodetic2Ecef(const double latitude, const double longitude, const double altitude,
-    double* x, double* y, double* z)
-{
-    const double a = 6378137.0;       // WGS84
-    const double b = 6356752.314245;  // WGS84
-
-    double aux_x, aux_y, aux_z;
-
-    // Convert to ECEF (See https://en.wikipedia.org/wiki/Geographic_coordinate_conversion#From_geodetic_to_ECEF_coordinates )
-    const double cLat = cos(latitude);
-    const double cLon = cos(longitude);
-    const double sLon = sin(longitude);
-    const double sLat = sin(latitude);
-    double N = std::pow(a, 2.0) / sqrt(std::pow(a, 2.0) * std::pow(cLat, 2.0) + std::pow(b, 2.0) * std::pow(sLat, 2.0));
-
-    aux_x = (N + altitude) * cLat * cLon;
-    aux_y = (N + altitude) * cLat * sLon;
-    aux_z = ((std::pow(b, 2.0) / std::pow(a, 2.0)) * N + altitude) * sLat;
-
-    *x = aux_x;
-    *y = aux_y;
-    *z = aux_z;
-}
-
-
-void PositionSystemTest::geodetic2Enu(double latitude, double longitude, double altitude,
-    double* east, double* north, double* up)
-{
-    double x, y, z;
-    const double d2r = PI / 180.0;
-
-    geodetic2Ecef(latitude * d2r, longitude * d2r, altitude, &x, &y, &z);
-
-    double aux_north, aux_east, aux_down;
-
-    std::istringstream iss2(FLAGS_static_position);
-    std::string str_aux;
-    std::getline(iss2, str_aux, ',');
-    double ref_long = std::stod(str_aux);
-    std::getline(iss2, str_aux, ',');
-    double ref_lat = std::stod(str_aux);
-    std::getline(iss2, str_aux, '\n');
-    double ref_h = std::stod(str_aux);
-    double ref_x, ref_y, ref_z;
-
-    geodetic2Ecef(ref_lat * d2r, ref_long * d2r, ref_h, &ref_x, &ref_y, &ref_z);
-
-    double aux_x = x;  // - ref_x;
-    double aux_y = y;  // - ref_y;
-    double aux_z = z;  // - ref_z;
-
-    // ECEF to NED matrix
-    double phiP = atan2(ref_z, sqrt(std::pow(ref_x, 2.0) + std::pow(ref_y, 2.0)));
-    const double sLat = sin(phiP);
-    const double sLon = sin(ref_long * d2r);
-    const double cLat = cos(phiP);
-    const double cLon = cos(ref_long * d2r);
-
-    aux_north = -aux_x * sLat * cLon - aux_y * sLon + aux_z * cLat * cLon;
-    aux_east = -aux_x * sLat * sLon + aux_y * cLon + aux_z * cLat * sLon;
-    aux_down = aux_x * cLat + aux_z * sLat;
-
-    *east = aux_east;
-    *north = aux_north;
-    *up = -aux_down;
-}
-
-
-double PositionSystemTest::compute_stdev_precision(const std::vector<double>& vec)
-{
-    double sum__ = std::accumulate(vec.begin(), vec.end(), 0.0);
-    double mean__ = sum__ / vec.size();
-    double accum__ = 0.0;
-    std::for_each(std::begin(vec), std::end(vec), [&](const double d) {
-        accum__ += (d - mean__) * (d - mean__);
-    });
-    double stdev__ = std::sqrt(accum__ / (vec.size() - 1));
-    return stdev__;
-}
-
-
-double PositionSystemTest::compute_stdev_accuracy(const std::vector<double>& vec, const double ref)
-{
-    const double mean__ = ref;
-    double accum__ = 0.0;
-    std::for_each(std::begin(vec), std::end(vec), [&](const double d) {
-        accum__ += (d - mean__) * (d - mean__);
-    });
-    double stdev__ = std::sqrt(accum__ / (vec.size() - 1));
-    return stdev__;
-}
 
 
 int PositionSystemTest::configure_generator()
@@ -261,23 +158,23 @@ int PositionSystemTest::configure_receiver()
             const int grid_density = 16;
 
             const float zero = 0.0;
-            const int number_of_channels = 12;
+            const int number_of_channels = 11;
             const int in_acquisition = 1;
 
-            const float threshold = 0.01;
-            const float doppler_max = 8000.0;
-            const float doppler_step = 500.0;
-            const int max_dwells = 1;
+            const float threshold = 2.5;
+            const float doppler_max = 5000.0;
+            const float doppler_step = 250.0;
+            const int max_dwells = 10;
             const int tong_init_val = 2;
             const int tong_max_val = 10;
             const int tong_max_dwells = 30;
             const int coherent_integration_time_ms = 1;
 
-            const float pll_bw_hz = 30.0;
-            const float dll_bw_hz = 4.0;
+            const float pll_bw_hz = 35.0;
+            const float dll_bw_hz = 1.5;
             const float early_late_space_chips = 0.5;
-            const float pll_bw_narrow_hz = 20.0;
-            const float dll_bw_narrow_hz = 2.0;
+            const float pll_bw_narrow_hz = 1.0;
+            const float dll_bw_narrow_hz = 0.1;
             const int extend_correlation_ms = 1;
 
             const int display_rate_ms = 500;
@@ -307,7 +204,7 @@ int PositionSystemTest::configure_receiver()
             // Set the Signal Conditioner
             config->set_property("SignalConditioner.implementation", "Signal_Conditioner");
             config->set_property("DataTypeAdapter.implementation", "Ibyte_To_Complex");
-            config->set_property("InputFilter.implementation", "Fir_Filter");
+            config->set_property("InputFilter.implementation", "Freq_Xlating_Fir_Filter");
             config->set_property("InputFilter.dump", "false");
             config->set_property("InputFilter.input_item_type", "gr_complex");
             config->set_property("InputFilter.output_item_type", "gr_complex");
@@ -324,7 +221,7 @@ int PositionSystemTest::configure_receiver()
             config->set_property("InputFilter.ampl2_end", std::to_string(ampl2_end));
             config->set_property("InputFilter.band1_error", std::to_string(band1_error));
             config->set_property("InputFilter.band2_error", std::to_string(band2_error));
-            config->set_property("InputFilter.filter_type", "bandpass");
+            config->set_property("InputFilter.filter_type", "lowpass");
             config->set_property("InputFilter.grid_density", std::to_string(grid_density));
             config->set_property("InputFilter.sampling_frequency", std::to_string(sampling_rate_internal));
             config->set_property("InputFilter.IF", std::to_string(zero));
@@ -358,7 +255,6 @@ int PositionSystemTest::configure_receiver()
 
             // Set Tracking
             config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
-            //config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_C_Aid_Tracking");
             config->set_property("Tracking_1C.item_type", "gr_complex");
             config->set_property("Tracking_1C.dump", "false");
             config->set_property("Tracking_1C.dump_filename", "./tracking_ch_");
@@ -460,13 +356,10 @@ int PositionSystemTest::run_receiver()
 
 void PositionSystemTest::check_results()
 {
-    std::vector<double> pos_e;
-    std::vector<double> pos_n;
-    std::vector<double> pos_u;
-
-    arma::mat R_eb_e;  //ECEF position (x,y,z) estimation in the Earth frame (Nx3)
-    arma::mat V_eb_e;  //ECEF velocity (x,y,z) estimation in the Earth frame (Nx3)
-    arma::mat LLH;     //Geodetic coordinates (latitude, longitude, height) estimation in WGS84 datum
+    arma::mat R_eb_e;    //ECEF position (x,y,z) estimation in the Earth frame (Nx3)
+    arma::mat R_eb_enu;  //ENU position (N,E,U) estimation in UTM (Nx3)
+    arma::mat V_eb_e;    //ECEF velocity (x,y,z) estimation in the Earth frame (Nx3)
+    arma::mat LLH;       //Geodetic coordinates (latitude, longitude, height) estimation in WGS84 datum
     arma::vec receiver_time_s;
 
     arma::mat ref_R_eb_e;  //ECEF position (x,y,z) reference in the Earth frame (Nx3)
@@ -482,10 +375,15 @@ void PositionSystemTest::check_results()
     double ref_long = std::stod(str_aux);
     std::getline(iss2, str_aux, '\n');
     double ref_h = std::stod(str_aux);
-    double ref_e, ref_n, ref_u;
-    geodetic2Enu(ref_lat, ref_long, ref_h,
-        &ref_e, &ref_n, &ref_u);
+    int utm_zone = findUtmZone(ref_lat, ref_long);
 
+    arma::vec v_eb_n = {0.0, 0.0, 0.0};
+    arma::vec true_r_eb_e = {0.0, 0.0, 0.0};
+    arma::vec true_v_eb_e = {0.0, 0.0, 0.0};
+    pv_Geo_to_ECEF(degtorad(ref_lat), degtorad(ref_long), ref_h, v_eb_n, true_r_eb_e, true_v_eb_e);
+    ref_R_eb_e.insert_cols(0, true_r_eb_e);
+    arma::vec ref_r_enu = {0, 0, 0};
+    cart2utm(true_r_eb_e, utm_zone, ref_r_enu);
     if (!FLAGS_use_pvt_solver_dump)
         {
             //fall back to read receiver KML output (position only)
@@ -503,8 +401,8 @@ void PositionSystemTest::check_results()
                     if (found != std::string::npos) is_header = false;
                 }
             bool is_data = true;
-
             //read data
+            int64_t current_epoch = 0;
             while (is_data)
                 {
                     if (!std::getline(myfile, line))
@@ -532,18 +430,20 @@ void PositionSystemTest::check_results()
                                     if (i == 2) h = value;
                                 }
 
-                            double north, east, up;
-                            geodetic2Enu(lat, longitude, h, &east, &north, &up);
+                            arma::vec tmp_v_ecef;
+                            arma::vec tmp_r_ecef;
+                            pv_Geo_to_ECEF(degtorad(lat), degtorad(longitude), h, arma::vec{0, 0, 0}, tmp_r_ecef, tmp_v_ecef);
+                            R_eb_e.insert_cols(current_epoch, tmp_r_ecef);
+                            arma::vec tmp_r_enu = {0, 0, 0};
+                            cart2utm(tmp_r_ecef, utm_zone, tmp_r_enu);
+                            R_eb_enu.insert_cols(current_epoch, tmp_r_enu);
                             //                            std::cout << "lat = " << lat << ", longitude = " << longitude << "  h = " << h << std::endl;
                             //                            std::cout << "E = " << east << ", N = " << north << " U = " << up << std::endl;
-                            pos_e.push_back(east);
-                            pos_n.push_back(north);
-                            pos_u.push_back(up);
                             //                            getchar();
                         }
                 }
             myfile.close();
-            ASSERT_FALSE(pos_e.size() == 0) << "KML file is empty";
+            ASSERT_FALSE(R_eb_e.n_cols == 0) << "KML file is empty";
         }
     else
         {
@@ -558,16 +458,6 @@ void PositionSystemTest::check_results()
             int64_t current_epoch = 0;
             while (pvt_reader.read_binary_obs())
                 {
-                    double north, east, up;
-                    geodetic2Enu(pvt_reader.latitude, pvt_reader.longitude, pvt_reader.height, &east, &north, &up);
-                    //                    std::cout << "lat = " << pvt_reader.latitude << ", longitude = " << pvt_reader.longitude << "  h = " << pvt_reader.height << std::endl;
-                    //                    std::cout << "E = " << east << ", N = " << north << " U = " << up << std::endl;
-                    pos_e.push_back(east);
-                    pos_n.push_back(north);
-                    pos_u.push_back(up);
-                    //                    getchar();
-
-                    //                    receiver_time_s(current_epoch) = static_cast<double>(pvt_reader.TOW_at_current_symbol_ms) / 1000.0;
                     receiver_time_s(current_epoch) = pvt_reader.RX_time - pvt_reader.clk_offset_s;
                     R_eb_e(current_epoch, 0) = pvt_reader.rr[0];
                     R_eb_e(current_epoch, 1) = pvt_reader.rr[1];
@@ -578,6 +468,9 @@ void PositionSystemTest::check_results()
                     LLH(current_epoch, 0) = pvt_reader.latitude;
                     LLH(current_epoch, 1) = pvt_reader.longitude;
                     LLH(current_epoch, 2) = pvt_reader.height;
+                    arma::vec tmp_r_enu;
+                    cart2utm(R_eb_e.col(current_epoch), utm_zone, tmp_r_enu);
+                    R_eb_enu.insert_cols(current_epoch, tmp_r_enu);
 
                     //debug check
                     //                    std::cout << "t1: " << pvt_reader.RX_time << std::endl;
@@ -593,20 +486,21 @@ void PositionSystemTest::check_results()
 
     if (FLAGS_static_scenario)
         {
-            double sigma_E_2_precision = std::pow(compute_stdev_precision(pos_e), 2.0);
-            double sigma_N_2_precision = std::pow(compute_stdev_precision(pos_n), 2.0);
-            double sigma_U_2_precision = std::pow(compute_stdev_precision(pos_u), 2.0);
+            double sigma_E_2_precision = arma::var(R_eb_enu.row(0));
+            double sigma_N_2_precision = arma::var(R_eb_enu.row(1));
+            double sigma_U_2_precision = arma::var(R_eb_enu.row(2));
 
-            double sigma_E_2_accuracy = std::pow(compute_stdev_accuracy(pos_e, ref_e), 2.0);
-            double sigma_N_2_accuracy = std::pow(compute_stdev_accuracy(pos_n, ref_n), 2.0);
-            double sigma_U_2_accuracy = std::pow(compute_stdev_accuracy(pos_u, ref_u), 2.0);
+            arma::rowvec tmp_vec;
+            tmp_vec = R_eb_enu.row(0) - ref_r_enu(0);
+            double sigma_E_2_accuracy = sqrt(arma::sum(arma::square(tmp_vec)) / tmp_vec.n_cols);
+            tmp_vec = R_eb_enu.row(1) - ref_r_enu(1);
+            double sigma_N_2_accuracy = sqrt(arma::sum(arma::square(tmp_vec)) / tmp_vec.n_cols);
+            tmp_vec = R_eb_enu.row(2) - ref_r_enu(2);
+            double sigma_U_2_accuracy = sqrt(arma::sum(arma::square(tmp_vec)) / tmp_vec.n_cols);
 
-            double sum__e = std::accumulate(pos_e.begin(), pos_e.end(), 0.0);
-            double mean__e = sum__e / pos_e.size();
-            double sum__n = std::accumulate(pos_n.begin(), pos_n.end(), 0.0);
-            double mean__n = sum__n / pos_n.size();
-            double sum__u = std::accumulate(pos_u.begin(), pos_u.end(), 0.0);
-            double mean__u = sum__u / pos_u.size();
+            double mean__e = arma::mean(R_eb_enu.row(0));
+            double mean__n = arma::mean(R_eb_enu.row(1));
+            double mean__u = arma::mean(R_eb_enu.row(2));
 
             std::stringstream stm;
             std::ofstream position_test_file;
@@ -619,20 +513,20 @@ void PositionSystemTest::check_results()
                     stm << "---- ACCURACY ----" << std::endl;
                     stm << "2DRMS = " << 2 * sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]" << std::endl;
                     stm << "DRMS = " << sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]" << std::endl;
-                    stm << "CEP = " << 0.62 * compute_stdev_accuracy(pos_n, ref_n) + 0.56 * compute_stdev_accuracy(pos_e, ref_e) << " [m]" << std::endl;
+                    stm << "CEP = " << 0.62 * sqrt(sigma_N_2_accuracy) + 0.56 * sqrt(sigma_E_2_accuracy) << " [m]" << std::endl;
                     stm << "99% SAS = " << 1.122 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
                     stm << "90% SAS = " << 0.833 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
                     stm << "MRSE = " << sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
                     stm << "SEP = " << 0.51 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
-                    stm << "Bias 2D = " << sqrt(std::pow(abs(mean__e - ref_e), 2.0) + std::pow(abs(mean__n - ref_n), 2.0)) << " [m]" << std::endl;
-                    stm << "Bias 3D = " << sqrt(std::pow(abs(mean__e - ref_e), 2.0) + std::pow(abs(mean__n - ref_n), 2.0) + std::pow(abs(mean__u - ref_u), 2.0)) << " [m]" << std::endl;
+                    stm << "Bias 2D = " << sqrt(std::pow(fabs(mean__e - ref_r_enu(0)), 2.0) + std::pow(fabs(mean__n - ref_r_enu(1)), 2.0)) << " [m]" << std::endl;
+                    stm << "Bias 3D = " << sqrt(std::pow(fabs(mean__e - ref_r_enu(0)), 2.0) + std::pow(fabs(mean__n - ref_r_enu(1)), 2.0) + std::pow(fabs(mean__u - ref_r_enu(2)), 2.0)) << " [m]" << std::endl;
                     stm << std::endl;
                 }
 
             stm << "---- PRECISION ----" << std::endl;
             stm << "2DRMS = " << 2 * sqrt(sigma_E_2_precision + sigma_N_2_precision) << " [m]" << std::endl;
             stm << "DRMS = " << sqrt(sigma_E_2_precision + sigma_N_2_precision) << " [m]" << std::endl;
-            stm << "CEP = " << 0.62 * compute_stdev_precision(pos_n) + 0.56 * compute_stdev_precision(pos_e) << " [m]" << std::endl;
+            stm << "CEP = " << 0.62 * sqrt(sigma_N_2_precision) + 0.56 * sqrt(sigma_E_2_precision) << " [m]" << std::endl;
             stm << "99% SAS = " << 1.122 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]" << std::endl;
             stm << "90% SAS = " << 0.833 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]" << std::endl;
             stm << "MRSE = " << sqrt(sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision) << " [m]" << std::endl;
@@ -649,11 +543,11 @@ void PositionSystemTest::check_results()
 
             // Sanity Check
             double precision_SEP = 0.51 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision);
-            ASSERT_LT(precision_SEP, 20.0);
+            ASSERT_LT(precision_SEP, 1.0);
 
             if (FLAGS_plot_position_test == true)
                 {
-                    print_results(pos_e, pos_n, pos_u);
+                    print_results(R_eb_enu);
                 }
         }
     else
@@ -844,9 +738,7 @@ void PositionSystemTest::check_results()
 }
 
 
-void PositionSystemTest::print_results(const std::vector<double>& east,
-    const std::vector<double>& north,
-    const std::vector<double>& up)
+void PositionSystemTest::print_results(arma::mat R_eb_enu)
 {
     const std::string gnuplot_executable(FLAGS_gnuplot_executable);
     if (gnuplot_executable.empty())
@@ -857,29 +749,40 @@ void PositionSystemTest::print_results(const std::vector<double>& east,
         }
     else
         {
-            double sigma_E_2_precision = std::pow(compute_stdev_precision(east), 2.0);
-            double sigma_N_2_precision = std::pow(compute_stdev_precision(north), 2.0);
-            double sigma_U_2_precision = std::pow(compute_stdev_precision(up), 2.0);
+            double sigma_E_2_precision = arma::var(R_eb_enu.row(0));
+            double sigma_N_2_precision = arma::var(R_eb_enu.row(1));
+            double sigma_U_2_precision = arma::var(R_eb_enu.row(2));
 
-            double mean_east = std::accumulate(east.begin(), east.end(), 0.0) / east.size();
-            double mean_north = std::accumulate(north.begin(), north.end(), 0.0) / north.size();
+            double mean_east = arma::mean(R_eb_enu.row(0));
+            double mean_north = arma::mean(R_eb_enu.row(1));
+            double mean_up = arma::mean(R_eb_enu.row(2));
 
-            auto it_max_east = std::max_element(std::begin(east), std::end(east));
-            auto it_min_east = std::min_element(std::begin(east), std::end(east));
-            auto it_max_north = std::max_element(std::begin(north), std::end(north));
-            auto it_min_north = std::min_element(std::begin(north), std::end(north));
-            auto it_max_up = std::max_element(std::begin(up), std::end(up));
-            auto it_min_up = std::min_element(std::begin(up), std::end(up));
+            double it_max_east = arma::max(R_eb_enu.row(0) - mean_east);
+            double it_min_east = arma::min(R_eb_enu.row(0) - mean_east);
 
-            auto east_range = std::max(*it_max_east, std::abs(*it_min_east));
-            auto north_range = std::max(*it_max_north, std::abs(*it_min_north));
-            auto up_range = std::max(*it_max_up, std::abs(*it_min_up));
+            double it_max_north = arma::max(R_eb_enu.row(1) - mean_north);
+            double it_min_north = arma::min(R_eb_enu.row(1) - mean_north);
+
+            double it_max_up = arma::max(R_eb_enu.row(2) - mean_up);
+            double it_min_up = arma::min(R_eb_enu.row(2) - mean_up);
+
+            double east_range = std::max(it_max_east, std::abs(it_min_east));
+            double north_range = std::max(it_max_north, std::abs(it_min_north));
+            double up_range = std::max(it_max_up, std::abs(it_min_up));
 
             double range = std::max(east_range, north_range) * 1.1;
             double range_3d = std::max(std::max(east_range, north_range), up_range) * 1.1;
 
             double two_drms = 2 * sqrt(sigma_E_2_precision + sigma_N_2_precision);
             double ninty_sas = 0.833 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision);
+            arma::rowvec arma_east = R_eb_enu.row(0) - mean_east;
+            arma::rowvec arma_north = R_eb_enu.row(1) - mean_north;
+            arma::rowvec arma_up = R_eb_enu.row(2) - mean_up;
+
+            std::vector<double> east(arma_east.colptr(0), arma_east.row(0).colptr(0) + arma_east.row(0).n_cols);
+            std::vector<double> north(arma_north.colptr(0), arma_north.colptr(0) + arma_north.n_cols);
+            std::vector<double> up(arma_up.colptr(0), arma_up.colptr(0) + arma_up.n_cols);
+
             try
                 {
                     boost::filesystem::path p(gnuplot_executable);
@@ -902,6 +805,7 @@ void PositionSystemTest::print_results(const std::vector<double>& east,
                     g1.cmd("set size ratio -1");
                     g1.cmd("set xrange [-" + std::to_string(range) + ":" + std::to_string(range) + "]");
                     g1.cmd("set yrange [-" + std::to_string(range) + ":" + std::to_string(range) + "]");
+
 
                     g1.plot_xy(east, north, "2D Position Fixes");
                     g1.set_style("lines").plot_circle(mean_east, mean_north, two_drms, "2DRMS");

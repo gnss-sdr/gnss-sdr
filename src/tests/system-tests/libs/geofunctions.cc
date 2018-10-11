@@ -29,6 +29,7 @@
  * -------------------------------------------------------------------------
  */
 #include "geofunctions.h"
+#include <iomanip>
 
 const double STRP_G_SI = 9.80665;
 const double STRP_PI = 3.1415926535898;  //!< Pi as defined in IS-GPS-200E
@@ -363,7 +364,7 @@ arma::vec cart2geo(const arma::vec &XYZ, int elipsoid_selection)
                     break;
                 }
         }
-    while (std::abs(h - oldh) > 1.0e-12);
+    while (std::fabs(h - oldh) > 1.0e-12);
 
     arma::vec LLH = {{phi, lambda, h}};  //radians
     return LLH;
@@ -472,4 +473,341 @@ double great_circle_distance(double lat1, double lon1, double lat2, double lon2)
     double c = 2.0 * atan2(sqrt(a), sqrt(1.0 - a));
     double d = R * c;
     return d * 1000.0;  // meters
+}
+
+void cart2utm(arma::vec r_eb_e, int zone, arma::vec &r_enu)
+{
+    //%CART2UTM  Transformation of (X,Y,Z) to (E,N,U) in UTM, zone 'zone'.
+    //%
+    //%[E, N, U] = cart2utm(X, Y, Z, zone);
+    //%
+    //%   Inputs:
+    //%       X,Y,Z       - Cartesian coordinates. Coordinates are referenced
+    //%                   with respect to the International Terrestrial Reference
+    //%                   Frame 1996 (ITRF96)
+    //%       zone        - UTM zone of the given position
+    //%
+    //%   Outputs:
+    //%      E, N, U      - UTM coordinates (Easting, Northing, Uping)
+    //
+    //%Kai Borre -11-1994
+    //%Copyright (c) by Kai Borre
+    //%
+    //% CVS record:
+    //% $Id: cart2utm.m,v 1.1.1.1.2.6 2007/01/30 09:45:12 dpl Exp $
+    //
+    //%This implementation is based upon
+    //%O. Andersson & K. Poder (1981) Koordinattransformationer
+    //%  ved Geod\ae{}tisk Institut. Landinspekt\oe{}ren
+    //%  Vol. 30: 552--571 and Vol. 31: 76
+    //%
+    //%An excellent, general reference (KW) is
+    //%R. Koenig & K.H. Weise (1951) Mathematische Grundlagen der
+    //%  h\"oheren Geod\"asie und Kartographie.
+    //%  Erster Band, Springer Verlag
+    //
+    //% Explanation of variables used:
+    //% f	   flattening of ellipsoid
+    //% a	   semi major axis in m
+    //% m0	   1 - scale at central meridian; for UTM 0.0004
+    //% Q_n	   normalized meridian quadrant
+    //% E0	   Easting of central meridian
+    //% L0	   Longitude of central meridian
+    //% bg	   constants for ellipsoidal geogr. to spherical geogr.
+    //% gb	   constants for spherical geogr. to ellipsoidal geogr.
+    //% gtu	   constants for ellipsoidal N, E to spherical N, E
+    //% utg	   constants for spherical N, E to ellipoidal N, E
+    //% tolutm	tolerance for utm, 1.2E-10*meridian quadrant
+    //% tolgeo	tolerance for geographical, 0.00040 second of arc
+    //
+    //% B, L refer to latitude and longitude. Southern latitude is negative
+    //% International ellipsoid of 1924, valid for ED50
+
+    double a = 6378388.0;
+    double f = 1.0 / 297.0;
+    double ex2 = (2.0 - f) * f / ((1.0 - f) * (1.0 - f));
+    double c = a * sqrt(1.0 + ex2);
+    arma::vec vec = r_eb_e;
+    vec(2) = vec(2) - 4.5;
+    double alpha = 0.756e-6;
+    arma::mat R = {{1.0, -alpha, 0.0}, {alpha, 1.0, 0.0}, {0.0, 0.0, 1.0}};
+    arma::vec trans = {89.5, 93.8, 127.6};
+    double scale = 0.9999988;
+    arma::vec v = scale * R * vec + trans;  // coordinate vector in ED50
+    double L = atan2(v(1), v(0));
+    double N1 = 6395000;                                                                 // preliminary value
+    double B = atan2(v(2) / ((1 - f) * (1 - f) * N1), arma::norm(v.subvec(0, 1)) / N1);  // preliminary value
+    double U = 0.1;
+    double oldU = 0;
+    int iterations = 0;
+    while (fabs(U - oldU) > 1.0E-4)
+        {
+            oldU = U;
+            N1 = c / sqrt(1.0 + ex2 * (cos(B) * cos(B)));
+            B = atan2(v(2) / ((1.0 - f) * (1.0 - f) * N1 + U), arma::norm(v.subvec(0, 1)) / (N1 + U));
+            U = arma::norm(v.subvec(0, 1)) / cos(B) - N1;
+            iterations = iterations + 1;
+            if (iterations > 100)
+                {
+                    std::cout << "Failed to approximate U with desired precision. U-oldU:" << U - oldU << std::endl;
+                    break;
+                }
+        }
+    //%Normalized meridian quadrant, KW p. 50 (96), p. 19 (38b), p. 5 (21)
+    double m0 = 0.0004;
+    double n = f / (2.0 - f);
+    double m = n * n * (1 / 4 + n * n / 64);
+    double w = (a * (-n - m0 + m * (1 - m0))) / (1 + n);
+    double Q_n = a + w;
+
+    //%Easting and longitude of central meridian
+    double E0 = 500000;
+    double L0 = (zone - 30.0) * 6.0 - 3.0;
+
+    //%Check tolerance for reverse transformation
+    //double tolutm = STRP_PI / 2.0 * 1.2e-10 * Q_n;
+    //double tolgeo = 0.000040;
+    //    % Coefficients of trigonometric series
+
+    //        % ellipsoidal to spherical geographical, KW p .186 --187, (51) - (52)
+    //    % bg[1] = n * (-2 + n * (2 / 3 + n * (4 / 3 + n * (-82 / 45))));
+    //    % bg[2] = n ^ 2 * (5 / 3 + n * (-16 / 15 + n * (-13 / 9)));
+    //    % bg[3] = n ^ 3 * (-26 / 15 + n * 34 / 21);
+    //    % bg[4] = n ^ 4 * 1237 / 630;
+    //
+    //    % spherical to ellipsoidal geographical, KW p.190 --191, (61) - (62) % gb[1] = n * (2 + n * (-2 / 3 + n * (-2 + n * 116 / 45)));
+    //    % gb[2] = n ^ 2 * (7 / 3 + n * (-8 / 5 + n * (-227 / 45)));
+    //    % gb[3] = n ^ 3 * (56 / 15 + n * (-136 / 35));
+    //    % gb[4] = n ^ 4 * 4279 / 630;
+    //
+    //    % spherical to ellipsoidal N, E, KW p.196, (69) % gtu[1] = n * (1 / 2 + n * (-2 / 3 + n * (5 / 16 + n * 41 / 180)));
+    //    % gtu[2] = n ^ 2 * (13 / 48 + n * (-3 / 5 + n * 557 / 1440));
+    //    % gtu[3] = n ^ 3 * (61 / 240 + n * (-103 / 140));
+    //    % gtu[4] = n ^ 4 * 49561 / 161280;
+    //
+    //    % ellipsoidal to spherical N, E, KW p.194, (65) % utg[1] = n * (-1 / 2 + n * (2 / 3 + n * (-37 / 96 + n * 1 / 360)));
+    //    % utg[2] = n ^ 2 * (-1 / 48 + n * (-1 / 15 + n * 437 / 1440));
+    //    % utg[3] = n ^ 3 * (-17 / 480 + n * 37 / 840);
+    //    % utg[4] = n ^ 4 * (-4397 / 161280);
+
+    //    % With f = 1 / 297 we get
+
+    arma::colvec bg = {-3.37077907e-3,
+        4.73444769e-6,
+        -8.29914570e-9,
+        1.58785330e-11};
+
+    arma::colvec gb = {3.37077588e-3,
+        6.62769080e-6,
+        1.78718601e-8,
+        5.49266312e-11};
+
+    arma::colvec gtu = {8.41275991e-4,
+        7.67306686e-7,
+        1.21291230e-9,
+        2.48508228e-12};
+
+    arma::colvec utg = {-8.41276339e-4,
+        -5.95619298e-8,
+        -1.69485209e-10,
+        -2.20473896e-13};
+
+    //    % Ellipsoidal latitude, longitude to spherical latitude, longitude
+    bool neg_geo = false;
+
+    if (B < 0) neg_geo = true;
+
+    double Bg_r = fabs(B);
+    double res_clensin = clsin(bg, 4, 2 * Bg_r);
+    Bg_r = Bg_r + res_clensin;
+    L0 = L0 * STRP_PI / 180.0;
+    double Lg_r = L - L0;
+
+    //    % Spherical latitude, longitude to complementary spherical latitude % i.e.spherical N, E
+    double cos_BN = cos(Bg_r);
+    double Np = atan2(sin(Bg_r), cos(Lg_r) * cos_BN);
+    double Ep = atanh(sin(Lg_r) * cos_BN);
+
+    //    % Spherical normalized N, E to ellipsoidal N, E
+    Np = 2.0 * Np;
+    Ep = 2.0 * Ep;
+
+    double dN;
+    double dE;
+    clksin(gtu, 4, Np, Ep, &dN, &dE);
+    Np = Np / 2.0;
+    Ep = Ep / 2.0;
+    Np = Np + dN;
+    Ep = Ep + dE;
+    double N = Q_n * Np;
+    double E = Q_n * Ep + E0;
+    if (neg_geo)
+        {
+            N = -N + 20000000.0;
+        }
+    r_enu(0) = E;
+    r_enu(1) = N;
+    r_enu(2) = U;
+}
+
+
+double clsin(arma::colvec ar, int degree, double argument)
+{
+    //%Clenshaw summation of sinus of argument.
+    //%
+    //%result = clsin(ar, degree, argument);
+    //
+    //% Written by Kai Borre
+    //% December 20, 1995
+    //%
+    //% See also WGS2UTM or CART2UTM
+    //%
+    //% CVS record:
+    //% $Id: clsin.m,v 1.1.1.1.2.4 2006/08/22 13:45:59 dpl Exp $
+    //%==========================================================================
+
+    double cos_arg = 2.0 * cos(argument);
+    double hr1 = 0;
+    double hr = 0;
+    double hr2;
+    for (int t = degree; t > 0; t--)
+        {
+            hr2 = hr1;
+            hr1 = hr;
+            hr = ar(t - 1) + cos_arg * hr1 - hr2;
+        }
+
+    return (hr * sin(argument));
+}
+
+
+void clksin(arma::colvec ar, int degree, double arg_real, double arg_imag, double *re, double *im)
+{
+    //%Clenshaw summation of sinus with complex argument
+    //%[re, im] = clksin(ar, degree, arg_real, arg_imag);
+    //
+    //% Written by Kai Borre
+    //% December 20, 1995
+    //%
+    //% See also WGS2UTM or CART2UTM
+    //%
+    //% CVS record:
+    //% $Id: clksin.m,v 1.1.1.1.2.4 2006/08/22 13:45:59 dpl Exp $
+    //%==========================================================================
+
+    double sin_arg_r = sin(arg_real);
+    double cos_arg_r = cos(arg_real);
+    double sinh_arg_i = sinh(arg_imag);
+    double cosh_arg_i = cosh(arg_imag);
+
+    double r = 2 * cos_arg_r * cosh_arg_i;
+    double i = -2 * sin_arg_r * sinh_arg_i;
+
+    double hr1 = 0;
+    double hr = 0;
+    double hi1 = 0;
+    double hi = 0;
+    double hi2;
+    double hr2;
+    for (int t = degree; t > 0; t--)
+        {
+            hr2 = hr1;
+            hr1 = hr;
+            hi2 = hi1;
+            hi1 = hi;
+            double z = ar(t - 1) + r * hr1 - i * hi - hr2;
+            hi = i * hr1 + r * hi1 - hi2;
+            hr = z;
+        }
+
+    r = sin_arg_r * cosh_arg_i;
+    i = cos_arg_r * sinh_arg_i;
+
+    *re = r * hr - i * hi;
+    *im = r * hi + i * hr;
+}
+
+int findUtmZone(double latitude_deg, double longitude_deg)
+{
+    //%Function finds the UTM zone number for given longitude and latitude.
+    //%The longitude value must be between -180 (180 degree West) and 180 (180
+    //%degree East) degree. The latitude must be within -80 (80 degree South) and
+    //%84 (84 degree North).
+    //%
+    //%utmZone = findUtmZone(latitude, longitude);
+    //%
+    //%Latitude and longitude must be in decimal degrees (e.g. 15.5 degrees not
+    //%15 deg 30 min).
+    //
+    //%--------------------------------------------------------------------------
+    //%                           SoftGNSS v3.0
+    //%
+    //% Copyright (C) Darius Plausinaitis
+    //% Written by Darius Plausinaitis
+    //%--------------------------------------------------------------------------
+    //%This program is free software; you can redistribute it and/or
+    //%modify it under the terms of the GNU General Public License
+    //%as published by the Free Software Foundation; either version 2
+    //%of the License, or (at your option) any later version.
+    //%
+    //%This program is distributed in the hope that it will be useful,
+    //%but WITHOUT ANY WARRANTY; without even the implied warranty of
+    //%MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    //%GNU General Public License for more details.
+    //%
+    //%You should have received a copy of the GNU General Public License
+    //%along with this program; if not, write to the Free Software
+    //%Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+    //%USA.
+    //%==========================================================================
+    //
+    //%CVS record:
+    //%$Id: findUtmZone.m,v 1.1.2.2 2006/08/22 13:45:59 dpl Exp $
+    //
+    //    % % Check value bounds == == == == == == == == == == == == == == == == == == == == == == == == == == =
+
+    if ((longitude_deg > 180) || (longitude_deg < -180))
+        std::cout << "Longitude value exceeds limits (-180:180).\n";
+
+
+    if ((latitude_deg > 84) || (latitude_deg < -80))
+        std::cout << "Latitude value exceeds limits (-80:84).\n";
+
+    //
+    //    % % Find zone ==
+    //        == == == == == == == == == == == == == == == == == == == == == == == == == == == == == ==
+
+    //    % Start at 180 deg west = -180 deg
+
+    int utmZone = floor((180 + longitude_deg) / 6) + 1;
+
+    //%% Correct zone numbers for particular areas ==============================
+
+    if (latitude_deg > 72)
+        {
+            //    % Corrections for zones 31 33 35 37
+            if ((longitude_deg >= 0) && (longitude_deg < 9))
+                {
+                    utmZone = 31;
+                }
+            else if ((longitude_deg >= 9) && (longitude_deg < 21))
+                {
+                    utmZone = 33;
+                }
+            else if ((longitude_deg >= 21) && (longitude_deg < 33))
+                {
+                    utmZone = 35;
+                }
+            else if ((longitude_deg >= 33) && (longitude_deg < 42))
+                {
+                    utmZone = 37;
+                }
+        }
+    else if ((latitude_deg >= 56) && (latitude_deg < 64))
+        {
+            //    % Correction for zone 32
+            if ((longitude_deg >= 3) && (longitude_deg < 12))
+                utmZone = 32;
+        }
+    return utmZone;
 }

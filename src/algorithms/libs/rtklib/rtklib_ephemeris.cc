@@ -499,15 +499,6 @@ eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav)
             if (iode >= 0 && nav->eph[i].iode != iode) continue;
             if (sys == SYS_GAL)
                 {
-                    if (nav->eph[i].sat > (NSATGPS + NSATGLO))
-                        {
-                            galmessagetype = GALMESS_INAV;
-                        }
-                    else
-                        {
-                            galmessagetype = GALMESS_FNAV;
-                        }
-
                     if (galmessagetype == GALMESS_FNAV)
                         {
                             /* Check if F/NAV ephemeris */

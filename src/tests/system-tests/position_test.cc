@@ -451,24 +451,25 @@ void PositionSystemTest::check_results()
             rtklib_solver_dump_reader pvt_reader;
             pvt_reader.open_obs_file(FLAGS_pvt_solver_dump_filename);
             int64_t n_epochs = pvt_reader.num_epochs();
-            R_eb_e = arma::zeros(n_epochs, 3);
-            V_eb_e = arma::zeros(n_epochs, 3);
-            LLH = arma::zeros(n_epochs, 3);
+            R_eb_e = arma::zeros(3, n_epochs);
+            V_eb_e = arma::zeros(3, n_epochs);
+            LLH = arma::zeros(3, n_epochs);
             receiver_time_s = arma::zeros(n_epochs, 1);
             int64_t current_epoch = 0;
             while (pvt_reader.read_binary_obs())
                 {
                     receiver_time_s(current_epoch) = pvt_reader.RX_time - pvt_reader.clk_offset_s;
-                    R_eb_e(current_epoch, 0) = pvt_reader.rr[0];
-                    R_eb_e(current_epoch, 1) = pvt_reader.rr[1];
-                    R_eb_e(current_epoch, 2) = pvt_reader.rr[2];
-                    V_eb_e(current_epoch, 0) = pvt_reader.rr[3];
-                    V_eb_e(current_epoch, 1) = pvt_reader.rr[4];
-                    V_eb_e(current_epoch, 2) = pvt_reader.rr[5];
-                    LLH(current_epoch, 0) = pvt_reader.latitude;
-                    LLH(current_epoch, 1) = pvt_reader.longitude;
-                    LLH(current_epoch, 2) = pvt_reader.height;
-                    arma::vec tmp_r_enu;
+                    R_eb_e(0, current_epoch) = pvt_reader.rr[0];
+                    R_eb_e(1, current_epoch) = pvt_reader.rr[1];
+                    R_eb_e(2, current_epoch) = pvt_reader.rr[2];
+                    V_eb_e(0, current_epoch) = pvt_reader.rr[3];
+                    V_eb_e(1, current_epoch) = pvt_reader.rr[4];
+                    V_eb_e(2, current_epoch) = pvt_reader.rr[5];
+                    LLH(0, current_epoch) = pvt_reader.latitude;
+                    LLH(1, current_epoch) = pvt_reader.longitude;
+                    LLH(2, current_epoch) = pvt_reader.height;
+
+                    arma::vec tmp_r_enu = {0, 0, 0};
                     cart2utm(R_eb_e.col(current_epoch), utm_zone, tmp_r_enu);
                     R_eb_enu.insert_cols(current_epoch, tmp_r_enu);
 
@@ -508,20 +509,18 @@ void PositionSystemTest::check_results()
                 {
                     stm << "Configuration file: " << FLAGS_config_file_ptest << std::endl;
                 }
-            if (FLAGS_static_scenario)
-                {
-                    stm << "---- ACCURACY ----" << std::endl;
-                    stm << "2DRMS = " << 2 * sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]" << std::endl;
-                    stm << "DRMS = " << sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]" << std::endl;
-                    stm << "CEP = " << 0.62 * sqrt(sigma_N_2_accuracy) + 0.56 * sqrt(sigma_E_2_accuracy) << " [m]" << std::endl;
-                    stm << "99% SAS = " << 1.122 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
-                    stm << "90% SAS = " << 0.833 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
-                    stm << "MRSE = " << sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
-                    stm << "SEP = " << 0.51 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
-                    stm << "Bias 2D = " << sqrt(std::pow(fabs(mean__e - ref_r_enu(0)), 2.0) + std::pow(fabs(mean__n - ref_r_enu(1)), 2.0)) << " [m]" << std::endl;
-                    stm << "Bias 3D = " << sqrt(std::pow(fabs(mean__e - ref_r_enu(0)), 2.0) + std::pow(fabs(mean__n - ref_r_enu(1)), 2.0) + std::pow(fabs(mean__u - ref_r_enu(2)), 2.0)) << " [m]" << std::endl;
-                    stm << std::endl;
-                }
+
+            stm << "---- ACCURACY ----" << std::endl;
+            stm << "2DRMS = " << 2 * sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]" << std::endl;
+            stm << "DRMS = " << sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]" << std::endl;
+            stm << "CEP = " << 0.62 * sqrt(sigma_N_2_accuracy) + 0.56 * sqrt(sigma_E_2_accuracy) << " [m]" << std::endl;
+            stm << "99% SAS = " << 1.122 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
+            stm << "90% SAS = " << 0.833 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
+            stm << "MRSE = " << sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
+            stm << "SEP = " << 0.51 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
+            stm << "Bias 2D = " << sqrt(std::pow(fabs(mean__e - ref_r_enu(0)), 2.0) + std::pow(fabs(mean__n - ref_r_enu(1)), 2.0)) << " [m]" << std::endl;
+            stm << "Bias 3D = " << sqrt(std::pow(fabs(mean__e - ref_r_enu(0)), 2.0) + std::pow(fabs(mean__n - ref_r_enu(1)), 2.0) + std::pow(fabs(mean__u - ref_r_enu(2)), 2.0)) << " [m]" << std::endl;
+            stm << std::endl;
 
             stm << "---- PRECISION ----" << std::endl;
             stm << "2DRMS = " << 2 * sqrt(sigma_E_2_precision + sigma_N_2_precision) << " [m]" << std::endl;
@@ -556,56 +555,55 @@ void PositionSystemTest::check_results()
             spirent_motion_csv_dump_reader ref_reader;
             ref_reader.open_obs_file(FLAGS_ref_motion_filename);
             int64_t n_epochs = ref_reader.num_epochs();
-            ref_R_eb_e = arma::zeros(n_epochs, 3);
-            ref_V_eb_e = arma::zeros(n_epochs, 3);
-            ref_LLH = arma::zeros(n_epochs, 3);
+            ref_R_eb_e = arma::zeros(3, n_epochs);
+            ref_V_eb_e = arma::zeros(3, n_epochs);
+            ref_LLH = arma::zeros(3, n_epochs);
             ref_time_s = arma::zeros(n_epochs, 1);
             int64_t current_epoch = 0;
             while (ref_reader.read_csv_obs())
                 {
                     ref_time_s(current_epoch) = ref_reader.TOW_ms / 1000.0;
-                    ref_R_eb_e(current_epoch, 0) = ref_reader.Pos_X;
-                    ref_R_eb_e(current_epoch, 1) = ref_reader.Pos_Y;
-                    ref_R_eb_e(current_epoch, 2) = ref_reader.Pos_Z;
-                    ref_V_eb_e(current_epoch, 0) = ref_reader.Vel_X;
-                    ref_V_eb_e(current_epoch, 1) = ref_reader.Vel_Y;
-                    ref_V_eb_e(current_epoch, 2) = ref_reader.Vel_Z;
-                    ref_LLH(current_epoch, 0) = ref_reader.Lat;
-                    ref_LLH(current_epoch, 1) = ref_reader.Long;
-                    ref_LLH(current_epoch, 2) = ref_reader.Height;
+                    ref_R_eb_e(0, current_epoch) = ref_reader.Pos_X;
+                    ref_R_eb_e(1, current_epoch) = ref_reader.Pos_Y;
+                    ref_R_eb_e(2, current_epoch) = ref_reader.Pos_Z;
+                    ref_V_eb_e(0, current_epoch) = ref_reader.Vel_X;
+                    ref_V_eb_e(1, current_epoch) = ref_reader.Vel_Y;
+                    ref_V_eb_e(2, current_epoch) = ref_reader.Vel_Z;
+                    ref_LLH(0, current_epoch) = ref_reader.Lat;
+                    ref_LLH(1, current_epoch) = ref_reader.Long;
+                    ref_LLH(2, current_epoch) = ref_reader.Height;
                     current_epoch++;
                 }
-
             //interpolation of reference data to receiver epochs timestamps
-            arma::mat ref_interp_R_eb_e = arma::zeros(R_eb_e.n_rows, 3);
-            arma::mat ref_interp_V_eb_e = arma::zeros(V_eb_e.n_rows, 3);
-            arma::mat ref_interp_LLH = arma::zeros(LLH.n_rows, 3);
+            arma::mat ref_interp_R_eb_e = arma::zeros(3, R_eb_e.n_cols);
+            arma::mat ref_interp_V_eb_e = arma::zeros(3, V_eb_e.n_cols);
+            arma::mat ref_interp_LLH = arma::zeros(3, LLH.n_cols);
             arma::vec tmp_vector;
             for (int n = 0; n < 3; n++)
                 {
-                    arma::interp1(ref_time_s, ref_R_eb_e.col(n), receiver_time_s, tmp_vector);
-                    ref_interp_R_eb_e.col(n) = tmp_vector;
-                    arma::interp1(ref_time_s, ref_V_eb_e.col(n), receiver_time_s, tmp_vector);
-                    ref_interp_V_eb_e.col(n) = tmp_vector;
-                    arma::interp1(ref_time_s, ref_LLH.col(n), receiver_time_s, tmp_vector);
-                    ref_interp_LLH.col(n) = tmp_vector;
+                    arma::interp1(ref_time_s, ref_R_eb_e.row(n), receiver_time_s, tmp_vector);
+                    ref_interp_R_eb_e.row(n) = tmp_vector.t();
+                    arma::interp1(ref_time_s, ref_V_eb_e.row(n), receiver_time_s, tmp_vector);
+                    ref_interp_V_eb_e.row(n) = tmp_vector.t();
+                    arma::interp1(ref_time_s, ref_LLH.row(n), receiver_time_s, tmp_vector);
+                    ref_interp_LLH.row(n) = tmp_vector.t();
                 }
 
             //compute error vectors
-
-            arma::mat error_R_eb_e = arma::zeros(R_eb_e.n_rows, 3);
-            arma::mat error_V_eb_e = arma::zeros(V_eb_e.n_rows, 3);
-            arma::mat error_LLH = arma::zeros(LLH.n_rows, 3);
+            arma::mat error_R_eb_e = arma::zeros(3, R_eb_e.n_cols);
+            arma::mat error_V_eb_e = arma::zeros(3, V_eb_e.n_cols);
+            arma::mat error_LLH = arma::zeros(3, LLH.n_cols);
             error_R_eb_e = R_eb_e - ref_interp_R_eb_e;
             error_V_eb_e = V_eb_e - ref_interp_V_eb_e;
             error_LLH = LLH - ref_interp_LLH;
-            arma::vec error_module_R_eb_e = arma::zeros(R_eb_e.n_rows, 1);
-            arma::vec error_module_V_eb_e = arma::zeros(V_eb_e.n_rows, 1);
-            for (uint64_t n = 0; n < R_eb_e.n_rows; n++)
+            arma::vec error_module_R_eb_e = arma::zeros(R_eb_e.n_cols, 1);
+            arma::vec error_module_V_eb_e = arma::zeros(V_eb_e.n_cols, 1);
+            for (uint64_t n = 0; n < R_eb_e.n_cols; n++)
                 {
-                    error_module_R_eb_e(n) = arma::norm(error_R_eb_e.row(n));
-                    error_module_V_eb_e(n) = arma::norm(error_V_eb_e.row(n));
+                    error_module_R_eb_e(n) = arma::norm(error_R_eb_e.col(n));
+                    error_module_V_eb_e(n) = arma::norm(error_V_eb_e.col(n));
                 }
+
             //Error statistics
             arma::vec tmp_vec;
             //RMSE, Mean, Variance and peaks
@@ -657,9 +655,13 @@ void PositionSystemTest::check_results()
             g1.set_title("3D ECEF error coordinates");
             g1.set_grid();
             //conversion between arma::vec and std:vector
-            std::vector<double> X(error_R_eb_e.colptr(0), error_R_eb_e.colptr(0) + error_R_eb_e.n_rows);
-            std::vector<double> Y(error_R_eb_e.colptr(1), error_R_eb_e.colptr(1) + error_R_eb_e.n_rows);
-            std::vector<double> Z(error_R_eb_e.colptr(2), error_R_eb_e.colptr(2) + error_R_eb_e.n_rows);
+            arma::rowvec arma_vec_error_x = error_R_eb_e.row(0);
+            arma::rowvec arma_vec_error_y = error_R_eb_e.row(1);
+            arma::rowvec arma_vec_error_z = error_R_eb_e.row(2);
+
+            std::vector<double> X(arma_vec_error_x.colptr(0), arma_vec_error_x.colptr(0) + arma_vec_error_x.n_rows);
+            std::vector<double> Y(arma_vec_error_y.colptr(0), arma_vec_error_y.colptr(0) + arma_vec_error_y.n_rows);
+            std::vector<double> Z(arma_vec_error_z.colptr(0), arma_vec_error_z.colptr(0) + arma_vec_error_z.n_rows);
 
             g1.cmd("set key box opaque");
             g1.plot_xyz(X, Y, Z, "ECEF 3D error");

@@ -77,7 +77,7 @@ DEFINE_double(skip_trk_transitory_s, 1.0, "Skip the initial tracking output sign
 
 //Tracking configuration
 DEFINE_int32(extend_correlation_symbols, 1, "Set the tracking coherent correlation to N symbols (up to 20 for GPS L1 C/A)");
-DEFINE_uint32(smoother_length, 10, "Set the moving average size for the carrier phase and code phase in case of high dynamics");
+DEFINE_int32(smoother_length, 10, "Set the moving average size for the carrier phase and code phase in case of high dynamics");
 DEFINE_bool(high_dyn, false, "Activates the code resampler and NCO generator for high dynamics");
 
 //Test output configuration

@@ -265,7 +265,8 @@ int PositionSystemTest::configure_receiver()
             config->set_property("Tracking_1C.pll_bw_narrow_hz", std::to_string(pll_bw_narrow_hz));
             config->set_property("Tracking_1C.dll_bw_narrow_hz", std::to_string(dll_bw_narrow_hz));
             config->set_property("Tracking_1C.extend_correlation_symbols", std::to_string(extend_correlation_ms));
-
+            config->set_property("Tracking_1C.high_dyn", "true");
+            config->set_property("Tracking_1C.smoother_length", "200");
             // Set Telemetry
             config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
             config->set_property("TelemetryDecoder_1C.dump", "false");
@@ -277,7 +278,7 @@ int PositionSystemTest::configure_receiver()
 
             // Set PVT
             config->set_property("PVT.implementation", "RTKLIB_PVT");
-            config->set_property("PVT.positioning_mode", "Single");
+            config->set_property("PVT.positioning_mode", "PPP_Static");
             config->set_property("PVT.output_rate_ms", std::to_string(output_rate_ms));
             config->set_property("PVT.display_rate_ms", std::to_string(display_rate_ms));
             config->set_property("PVT.dump_filename", "./PVT");
@@ -642,99 +643,106 @@ void PositionSystemTest::check_results()
                       << " [m/s]" << std::endl;
             std::cout.precision(ss);
 
-            //plots
-            Gnuplot g1("points");
-            if (FLAGS_show_plots)
+            // plots
+            if (FLAGS_plot_position_test == true)
                 {
-                    g1.showonscreen();  // window output
-                }
-            else
-                {
-                    g1.disablescreen();
-                }
-            g1.set_title("3D ECEF error coordinates");
-            g1.set_grid();
-            //conversion between arma::vec and std:vector
-            arma::rowvec arma_vec_error_x = error_R_eb_e.row(0);
-            arma::rowvec arma_vec_error_y = error_R_eb_e.row(1);
-            arma::rowvec arma_vec_error_z = error_R_eb_e.row(2);
+                    const std::string gnuplot_executable(FLAGS_gnuplot_executable);
+                    if (!gnuplot_executable.empty())
+                        {
+                            Gnuplot g1("points");
+                            if (FLAGS_show_plots)
+                                {
+                                    g1.showonscreen();  // window output
+                                }
+                            else
+                                {
+                                    g1.disablescreen();
+                                }
+                            g1.set_title("3D ECEF error coordinates");
+                            g1.set_grid();
+                            //conversion between arma::vec and std:vector
+                            arma::rowvec arma_vec_error_x = error_R_eb_e.row(0);
+                            arma::rowvec arma_vec_error_y = error_R_eb_e.row(1);
+                            arma::rowvec arma_vec_error_z = error_R_eb_e.row(2);
 
-            std::vector<double> X(arma_vec_error_x.colptr(0), arma_vec_error_x.colptr(0) + arma_vec_error_x.n_rows);
-            std::vector<double> Y(arma_vec_error_y.colptr(0), arma_vec_error_y.colptr(0) + arma_vec_error_y.n_rows);
-            std::vector<double> Z(arma_vec_error_z.colptr(0), arma_vec_error_z.colptr(0) + arma_vec_error_z.n_rows);
+                            std::vector<double> X(arma_vec_error_x.colptr(0), arma_vec_error_x.colptr(0) + arma_vec_error_x.n_rows);
+                            std::vector<double> Y(arma_vec_error_y.colptr(0), arma_vec_error_y.colptr(0) + arma_vec_error_y.n_rows);
+                            std::vector<double> Z(arma_vec_error_z.colptr(0), arma_vec_error_z.colptr(0) + arma_vec_error_z.n_rows);
 
-            g1.cmd("set key box opaque");
-            g1.plot_xyz(X, Y, Z, "ECEF 3D error");
-            g1.set_legend();
-            if (FLAGS_config_file_ptest.empty())
-                {
-                    g1.savetops("ECEF_3d_error");
-                }
-            else
-                {
-                    g1.savetops("ECEF_3d_error_" + config_filename_no_extension);
-                }
-            arma::vec time_vector_from_start_s = receiver_time_s - receiver_time_s(0);
-            Gnuplot g3("linespoints");
-            if (FLAGS_show_plots)
-                {
-                    g3.showonscreen();  // window output
-                }
-            else
-                {
-                    g3.disablescreen();
-                }
-            g3.set_title("3D Position estimation error module [m]");
-            g3.set_grid();
-            g3.set_xlabel("Receiver epoch time from first valid PVT [s]");
-            g3.set_ylabel("3D Position error [m]");
-            //conversion between arma::vec and std:vector
-            std::vector<double> error_vec(error_module_R_eb_e.colptr(0), error_module_R_eb_e.colptr(0) + error_module_R_eb_e.n_rows);
-            g3.cmd("set key box opaque");
-            g3.plot_xy(time_vector_from_start_s, error_vec, "Position 3D error");
-            double mean3d = std::accumulate(error_vec.begin(), error_vec.end(), 0.0) / error_vec.size();
-            std::vector<double> error_mean(error_module_R_eb_e.n_rows, mean3d);
-            g3.set_style("lines");
-            g3.plot_xy(time_vector_from_start_s, error_mean, "Mean");
-            g3.set_legend();
-            if (FLAGS_config_file_ptest.empty())
-                {
-                    g3.savetops("Position_3d_error");
-                }
-            else
-                {
-                    g3.savetops("Position_3d_error_" + config_filename_no_extension);
-                }
+                            g1.cmd("set key box opaque");
+                            g1.plot_xyz(X, Y, Z, "ECEF 3D error");
+                            g1.set_legend();
+                            if (FLAGS_config_file_ptest.empty())
+                                {
+                                    g1.savetops("ECEF_3d_error");
+                                }
+                            else
+                                {
+                                    g1.savetops("ECEF_3d_error_" + config_filename_no_extension);
+                                }
+                            arma::vec time_vector_from_start_s = receiver_time_s - receiver_time_s(0);
+                            Gnuplot g3("linespoints");
+                            if (FLAGS_show_plots)
+                                {
+                                    g3.showonscreen();  // window output
+                                }
+                            else
+                                {
+                                    g3.disablescreen();
+                                }
+                            g3.set_title("3D Position estimation error module [m]");
+                            g3.set_grid();
+                            g3.set_xlabel("Receiver epoch time from first valid PVT [s]");
+                            g3.set_ylabel("3D Position error [m]");
+                            //conversion between arma::vec and std:vector
+                            std::vector<double> error_vec(error_module_R_eb_e.colptr(0), error_module_R_eb_e.colptr(0) + error_module_R_eb_e.n_rows);
+                            g3.cmd("set key box opaque");
+                            g3.plot_xy(time_vector_from_start_s, error_vec, "Position 3D error");
+                            double mean3d = std::accumulate(error_vec.begin(), error_vec.end(), 0.0) / error_vec.size();
+                            std::vector<double> error_mean(error_module_R_eb_e.n_rows, mean3d);
+                            g3.set_style("lines");
+                            g3.plot_xy(time_vector_from_start_s, error_mean, "Mean");
+                            g3.set_legend();
+                            if (FLAGS_config_file_ptest.empty())
+                                {
+                                    g3.savetops("Position_3d_error");
+                                }
+                            else
+                                {
+                                    g3.savetops("Position_3d_error_" + config_filename_no_extension);
+                                }
 
-            Gnuplot g4("linespoints");
-            if (FLAGS_show_plots)
-                {
-                    g4.showonscreen();  // window output
-                }
-            else
-                {
-                    g4.disablescreen();
-                }
-            g4.set_title("3D Velocity estimation error module [m/s]");
-            g4.set_grid();
-            g4.set_xlabel("Receiver epoch time from first valid PVT [s]");
-            g4.set_ylabel("3D Velocity error [m/s]");
-            //conversion between arma::vec and std:vector
-            std::vector<double> error_vec2(error_module_V_eb_e.colptr(0), error_module_V_eb_e.colptr(0) + error_module_V_eb_e.n_rows);
-            g4.cmd("set key box opaque");
-            g4.plot_xy(time_vector_from_start_s, error_vec2, "Velocity 3D error");
-            double mean3dv = std::accumulate(error_vec2.begin(), error_vec2.end(), 0.0) / error_vec2.size();
-            std::vector<double> error_mean_v(error_module_V_eb_e.n_rows, mean3dv);
-            g4.set_style("lines");
-            g4.plot_xy(time_vector_from_start_s, error_mean_v, "Mean");
-            g4.set_legend();
-            if (FLAGS_config_file_ptest.empty())
-                {
-                    g4.savetops("Velocity_3d_error");
-                }
-            else
-                {
-                    g4.savetops("Velocity_3d_error_" + config_filename_no_extension);
+                            Gnuplot g4("linespoints");
+                            if (FLAGS_show_plots)
+                                {
+                                    g4.showonscreen();  // window output
+                                }
+                            else
+                                {
+                                    g4.disablescreen();
+                                }
+                            g4.set_title("3D Velocity estimation error module [m/s]");
+                            g4.set_grid();
+                            g4.set_xlabel("Receiver epoch time from first valid PVT [s]");
+                            g4.set_ylabel("3D Velocity error [m/s]");
+                            //conversion between arma::vec and std:vector
+                            std::vector<double> error_vec2(error_module_V_eb_e.colptr(0), error_module_V_eb_e.colptr(0) + error_module_V_eb_e.n_rows);
+                            g4.cmd("set key box opaque");
+                            g4.plot_xy(time_vector_from_start_s, error_vec2, "Velocity 3D error");
+                            double mean3dv = std::accumulate(error_vec2.begin(), error_vec2.end(), 0.0) / error_vec2.size();
+                            std::vector<double> error_mean_v(error_module_V_eb_e.n_rows, mean3dv);
+                            g4.set_style("lines");
+                            g4.plot_xy(time_vector_from_start_s, error_mean_v, "Mean");
+                            g4.set_legend();
+                            if (FLAGS_config_file_ptest.empty())
+                                {
+                                    g4.savetops("Velocity_3d_error");
+                                }
+                            else
+                                {
+                                    g4.savetops("Velocity_3d_error_" + config_filename_no_extension);
+                                }
+                        }
                 }
         }
 }

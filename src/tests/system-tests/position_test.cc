@@ -265,8 +265,9 @@ int PositionSystemTest::configure_receiver()
             config->set_property("Tracking_1C.pll_bw_narrow_hz", std::to_string(pll_bw_narrow_hz));
             config->set_property("Tracking_1C.dll_bw_narrow_hz", std::to_string(dll_bw_narrow_hz));
             config->set_property("Tracking_1C.extend_correlation_symbols", std::to_string(extend_correlation_ms));
-            config->set_property("Tracking_1C.high_dyn", "true");
-            config->set_property("Tracking_1C.smoother_length", "200");
+            //config->set_property("Tracking_1C.high_dyn", "true");
+            //config->set_property("Tracking_1C.smoother_length", "200");
+
             // Set Telemetry
             config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
             config->set_property("TelemetryDecoder_1C.dump", "false");

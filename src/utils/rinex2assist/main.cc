@@ -29,7 +29,7 @@
  * -------------------------------------------------------------------------
  */
 
-//#include "gnss_sdr_flags.h"
+
 #include "gps_ephemeris.h"
 #include "galileo_ephemeris.h"
 #include <gflags/gflags.h>
@@ -38,6 +38,8 @@
 #include <gpstk/Rinex3NavStream.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/serialization/map.hpp>
+#include <iostream>
+
 
 int main(int argc, char** argv)
 {
@@ -67,7 +69,7 @@ int main(int argc, char** argv)
         {
             xml_filename = argv[2];
         }
-    //std::string filename_rinex_nav = FLAGS_filename_rinex_nav;
+
     std::map<int, Gps_Ephemeris> eph_map;
     std::map<int, Galileo_Ephemeris> eph_gal_map;
 
@@ -80,21 +82,23 @@ int main(int argc, char** argv)
             gpstk::Rinex3NavData rne;
             gpstk::Rinex3NavHeader hdr;
 
-            // read header
+            // Read header
             rnffs >> hdr;
 
             // Check that it really is a RINEX navigation file
             if (hdr.fileType.substr(0, 1).compare("N") != 0)
                 {
-                    std::cout << "This is not a valid RINEX navigation file" << std::endl;
+                    std::cerr << "This is not a valid RINEX navigation file, or file not found." << std::endl;
+                    std::cerr << "No XML file will be created." << std::endl;
                     return 1;
                 }
 
+            // Read navigation data
             while (rnffs >> rne)
                 {
                     if (rne.satSys.compare("G") == 0 or rne.satSys.empty())
                         {
-                            // Fill ephemeris object
+                            // Fill GPS ephemeris object
                             Gps_Ephemeris eph;
                             eph.i_satellite_PRN = rne.PRNID;
                             eph.d_TOW = rne.xmitTime;
@@ -117,7 +121,7 @@ int main(int argc, char** argv)
                             eph.d_OMEGA = rne.w;
                             eph.d_OMEGA_DOT = rne.OMEGAdot;
                             eph.d_IDOT = rne.idot;
-                            eph.i_code_on_L2 = rne.codeflgs;  //!< If 1, P code ON in L2;  if 2, C/A code ON in L2;
+                            eph.i_code_on_L2 = rne.codeflgs;  //
                             eph.i_GPS_week = rne.weeknum;
                             eph.b_L2_P_data_flag = rne.L2Pdata;
                             eph.i_SV_accuracy = rne.accuracy;
@@ -139,7 +143,7 @@ int main(int argc, char** argv)
                         }
                     if (rne.satSys.compare("E") == 0)
                         {
-                            // Read Galileo ephemeris
+                            // Fill Galileo ephemeris object
                             Galileo_Ephemeris eph;
                             eph.i_satellite_PRN = rne.PRNID;
                             eph.M0_1 = rne.M0;
@@ -168,14 +172,15 @@ int main(int argc, char** argv)
         }
     catch (std::exception& e)
         {
-            std::cout << "Error reading the RINEX file: " << e.what() << std::endl;
+            std::cerr << "Error reading the RINEX file: " << e.what() << std::endl;
+            std::cerr << "No XML file will be created." << std::endl;
             google::ShutDownCommandLineFlags();
             return 1;
         }
 
     if (i == 0 and j == 0)
         {
-            std::cout << "No data found in the RINEX file. No XML file will be created." << std::endl;
+            std::cerr << "No navigation data found in the RINEX file. No XML file will be created." << std::endl;
             google::ShutDownCommandLineFlags();
             return 1;
         }
@@ -196,7 +201,7 @@ int main(int argc, char** argv)
                 }
             catch (std::exception& e)
                 {
-                    std::cout << "Problem creating the XML file: " << e.what() << std::endl;
+                    std::cerr << "Problem creating the XML file: " << e.what() << std::endl;
                     google::ShutDownCommandLineFlags();
                     return 1;
                 }
@@ -216,7 +221,7 @@ int main(int argc, char** argv)
                 }
             catch (std::exception& e)
                 {
-                    std::cout << "Problem creating the XML file: " << e.what() << std::endl;
+                    std::cerr << "Problem creating the XML file: " << e.what() << std::endl;
                     google::ShutDownCommandLineFlags();
                     return 1;
                 }

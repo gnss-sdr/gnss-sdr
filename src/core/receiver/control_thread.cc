@@ -203,6 +203,8 @@ bool ControlThread::read_assistance_from_XML()
     std::string iono_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_iono_xml", iono_default_xml_filename);
     std::string ref_time_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_time_xml", ref_time_default_xml_filename);
     std::string ref_location_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_location_xml", ref_location_default_xml_filename);
+    std::string eph_gal_xml_filename = configuration_->property("GNSS-SDR.SUPL_gal_ephemeris_xml", eph_gal_default_xml_filename);
+    std::string eph_cnav_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_cnav_ephemeris_xml", eph_cnav_default_xml_filename);
 
     std::cout << "SUPL: Try read GNSS ephemeris from XML file " << eph_xml_filename << std::endl;
     if (supl_client_ephemeris_.load_ephemeris_xml(eph_xml_filename) == true)
@@ -218,7 +220,7 @@ bool ControlThread::read_assistance_from_XML()
                 }
             ret = true;
         }
-    else if (supl_client_ephemeris_.load_ephemeris_xml(eph_xml_filename) == true)
+    else if (supl_client_ephemeris_.load_gal_ephemeris_xml(eph_gal_xml_filename) == true)
         {
             std::map<int, Galileo_Ephemeris>::const_iterator gal_eph_iter;
             for (gal_eph_iter = supl_client_ephemeris_.gal_ephemeris_map.cbegin();
@@ -231,7 +233,19 @@ bool ControlThread::read_assistance_from_XML()
                 }
             ret = true;
         }
-
+    else if (supl_client_ephemeris_.load_cnav_ephemeris_xml(eph_cnav_xml_filename) == true)
+        {
+            std::map<int, Gps_CNAV_Ephemeris>::const_iterator gps_cnav_eph_iter;
+            for (gps_cnav_eph_iter = supl_client_ephemeris_.gps_cnav_ephemeris_map.cbegin();
+                 gps_cnav_eph_iter != supl_client_ephemeris_.gps_cnav_ephemeris_map.cend();
+                 gps_cnav_eph_iter++)
+                {
+                    std::cout << "SUPL: Read XML CNAV Ephemeris for GPS SV " << gps_cnav_eph_iter->first << std::endl;
+                    std::shared_ptr<Gps_CNAV_Ephemeris> tmp_obj = std::make_shared<Gps_CNAV_Ephemeris>(gps_cnav_eph_iter->second);
+                    flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+                }
+            ret = true;
+        }
     else
         {
             std::cout << "ERROR: SUPL client error reading XML" << std::endl;

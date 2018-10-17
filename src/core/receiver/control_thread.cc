@@ -205,8 +205,13 @@ bool ControlThread::read_assistance_from_XML()
     std::string ref_location_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_location_xml", ref_location_default_xml_filename);
     std::string eph_gal_xml_filename = configuration_->property("GNSS-SDR.SUPL_gal_ephemeris_xml", eph_gal_default_xml_filename);
     std::string eph_cnav_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_cnav_ephemeris_xml", eph_cnav_default_xml_filename);
-
-    std::cout << "SUPL: Try read GNSS ephemeris from XML file " << eph_xml_filename << std::endl;
+    // clang-format off
+    std::cout << "Trying to read GNSS ephemeris from XML file(s): "
+              << ((eph_xml_filename.compare(eph_default_xml_filename) != 0) ? eph_xml_filename + " " : "")
+              << ((eph_gal_xml_filename.compare(eph_gal_default_xml_filename) != 0) ? eph_gal_xml_filename +  " " : "")
+              << ((eph_cnav_xml_filename.compare(eph_cnav_default_xml_filename) != 0) ? eph_gal_xml_filename : "")
+              << std::endl;
+    // clang-format on
     if (supl_client_ephemeris_.load_ephemeris_xml(eph_xml_filename) == true)
         {
             std::map<int, Gps_Ephemeris>::const_iterator gps_eph_iter;
@@ -214,39 +219,41 @@ bool ControlThread::read_assistance_from_XML()
                  gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.cend();
                  gps_eph_iter++)
                 {
-                    std::cout << "SUPL: Read XML Ephemeris for GPS SV " << gps_eph_iter->first << std::endl;
+                    std::cout << "From XML file: Read NAV ephemeris for GPS SV " << Gnss_Satellite("GPS", gps_eph_iter->first) << std::endl;
                     std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(gps_eph_iter->second);
                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                 }
             ret = true;
         }
-    else if (supl_client_ephemeris_.load_gal_ephemeris_xml(eph_gal_xml_filename) == true)
+
+    if (supl_client_ephemeris_.load_gal_ephemeris_xml(eph_gal_xml_filename) == true)
         {
             std::map<int, Galileo_Ephemeris>::const_iterator gal_eph_iter;
             for (gal_eph_iter = supl_client_ephemeris_.gal_ephemeris_map.cbegin();
                  gal_eph_iter != supl_client_ephemeris_.gal_ephemeris_map.cend();
                  gal_eph_iter++)
                 {
-                    std::cout << "SUPL: Read XML Ephemeris for Galileo SV " << gal_eph_iter->first << std::endl;
+                    std::cout << "From XML file: Read ephemeris for Galileo SV " << Gnss_Satellite("Galileo", gal_eph_iter->first) << std::endl;
                     std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(gal_eph_iter->second);
                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                 }
             ret = true;
         }
-    else if (supl_client_ephemeris_.load_cnav_ephemeris_xml(eph_cnav_xml_filename) == true)
+
+    if (supl_client_ephemeris_.load_cnav_ephemeris_xml(eph_cnav_xml_filename) == true)
         {
             std::map<int, Gps_CNAV_Ephemeris>::const_iterator gps_cnav_eph_iter;
             for (gps_cnav_eph_iter = supl_client_ephemeris_.gps_cnav_ephemeris_map.cbegin();
                  gps_cnav_eph_iter != supl_client_ephemeris_.gps_cnav_ephemeris_map.cend();
                  gps_cnav_eph_iter++)
                 {
-                    std::cout << "SUPL: Read XML CNAV Ephemeris for GPS SV " << gps_cnav_eph_iter->first << std::endl;
+                    std::cout << "From XML file: Read CNAV ephemeris for GPS SV " << Gnss_Satellite("GPS", gps_cnav_eph_iter->first) << std::endl;
                     std::shared_ptr<Gps_CNAV_Ephemeris> tmp_obj = std::make_shared<Gps_CNAV_Ephemeris>(gps_cnav_eph_iter->second);
                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                 }
             ret = true;
         }
-    else
+    if (ret == false)
         {
             std::cout << "ERROR: SUPL client error reading XML" << std::endl;
             std::cout << "Disabling SUPL assistance..." << std::endl;

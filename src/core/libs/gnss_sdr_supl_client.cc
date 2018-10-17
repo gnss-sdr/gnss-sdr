@@ -393,7 +393,6 @@ bool gnss_sdr_supl_client::load_gal_ephemeris_xml(const std::string file_name)
     std::ifstream ifs;
     try
         {
-            ifs.close();
             ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
             boost::archive::xml_iarchive xml(ifs);
             gal_ephemeris_map.clear();
@@ -414,7 +413,6 @@ bool gnss_sdr_supl_client::load_cnav_ephemeris_xml(const std::string file_name)
     std::ifstream ifs;
     try
         {
-            ifs.close();
             ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
             boost::archive::xml_iarchive xml(ifs);
             gps_cnav_ephemeris_map.clear();
@@ -428,6 +426,7 @@ bool gnss_sdr_supl_client::load_cnav_ephemeris_xml(const std::string file_name)
         }
     return true;
 }
+
 
 bool gnss_sdr_supl_client::save_ephemeris_map_xml(const std::string file_name, std::map<int, Gps_Ephemeris> eph_map)
 {

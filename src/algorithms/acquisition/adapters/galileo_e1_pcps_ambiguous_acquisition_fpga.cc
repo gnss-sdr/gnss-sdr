@@ -59,7 +59,7 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
     long fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
 
-    float downsampling_factor = configuration_->property("GNSS-SDR.downsampling_factor", 2.0);
+    float downsampling_factor = configuration_->property("GNSS-SDR.downsampling_factor", 4.0);
     acq_parameters.downsampling_factor = downsampling_factor;
 
     //fs_in = fs_in/2.0; // downampling filter

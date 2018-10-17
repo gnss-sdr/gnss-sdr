@@ -430,6 +430,10 @@ void dll_pll_veml_tracking_fpga::start_tracking()
     d_acq_carrier_doppler_hz = d_acquisition_gnss_synchro->Acq_doppler_hz;
     d_acq_sample_stamp = d_acquisition_gnss_synchro->Acq_samplestamp_samples;
 
+    //printf("start tracking Acq_delay_samples = %d\n", (unsigned int) d_acq_code_phase_samples);
+    //printf("start tracking Acq_samplestamp_samples = %d\n", (unsigned int) d_acq_sample_stamp);
+    //printf("start tracking Acq_doppler_hz = %f\n", d_acq_carrier_doppler_hz);
+    //printf("PRN = %d\n", (unsigned int) d_acquisition_gnss_synchro->PRN);
     double acq_trk_diff_seconds = 0;  // when using the FPGA we don't use the global sample counter
     // Doppler effect Fd = (C / (C + Vr)) * F
     double radial_velocity = (d_signal_carrier_freq + d_acq_carrier_doppler_hz) / d_signal_carrier_freq;
@@ -659,6 +663,8 @@ bool dll_pll_veml_tracking_fpga::acquire_secondary()
 bool dll_pll_veml_tracking_fpga::cn0_and_tracking_lock_status(double coh_integration_time_s)
 {
     //printf("kkkkkkkkkkkkk d_cn0_estimation_counter = %d\n", d_cn0_estimation_counter);
+    //printf("trk_parameters.cn0_samples = %d\n", trk_parameters.cn0_samples);
+
     // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
     if (d_cn0_estimation_counter < trk_parameters.cn0_samples)
         {
@@ -676,6 +682,12 @@ bool dll_pll_veml_tracking_fpga::cn0_and_tracking_lock_status(double coh_integra
             // Carrier lock indicator
             d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, trk_parameters.cn0_samples);
             // Loss of lock detection
+            //printf("d_carrier_lock_test = %f\n", d_carrier_lock_test);
+            //printf("d_carrier_lock_threshold = %f\n", d_carrier_lock_threshold);
+            //printf("d_CN0_SNV_dB_Hz = %f\n", d_CN0_SNV_dB_Hz);
+            //printf("trk_parameters.cn0_min = %f\n", trk_parameters.cn0_min);
+            //printf("d_carrier_lock_fail_counter = %d\n", d_carrier_lock_fail_counter);
+            //printf("trk_parameters.max_lock_fail = %d\n", trk_parameters.max_lock_fail);
             if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < trk_parameters.cn0_min)
                 {
                     d_carrier_lock_fail_counter++;
@@ -1257,6 +1269,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                 if (counter_value > (current_synchro_data.Acq_samplestamp_samples + current_synchro_data.Acq_delay_samples))
                 {
                 	// normal operation
+                	//printf("normal operation\n");
                     uint32_t num_frames = ceil((counter_value - current_synchro_data.Acq_samplestamp_samples - current_synchro_data.Acq_delay_samples) / d_correlation_length_samples);
                     //uint32_t num_frames = ceil((counter_value - current_synchro_data.Acq_samplestamp_samples*2 - current_synchro_data.Acq_delay_samples*2 + 40) / d_correlation_length_samples);
                     //printf("333333 num_frames = %d\n", num_frames);
@@ -1266,6 +1279,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                 }
                 else
                 {
+                	printf("test operation\n");
                 	// during the unit tests the counter value may be reset after the acquisition process. We have to take this into account
                 	absolute_samples_offset = static_cast<uint64_t>(current_synchro_data.Acq_delay_samples + current_synchro_data.Acq_samplestamp_samples);
                 	//printf("333333 absolute_samples_offset = %llu\n", absolute_samples_offset);
@@ -1299,10 +1313,22 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                     {
                         d_VE_accu = *d_Very_Early;
                         d_VL_accu = *d_Very_Late;
+                        //printf("very early real = %f\n", d_VE_accu.real());
+                        //printf("very early imag = %f\n", d_VE_accu.imag());
+                        //printf("very late real = %f\n", d_VL_accu.real());
+                        //printf("very late imag = %f\n", d_VL_accu.imag());
                     }
                 d_E_accu = *d_Early;
                 d_P_accu = *d_Prompt;
                 d_L_accu = *d_Late;
+                //printf("early real = %f\n", d_E_accu.real());
+                //printf("early imag = %f\n", d_E_accu.imag());
+                //printf("prompt real = %f\n", d_P_accu.real());
+                //printf("prompt imag = %f\n", d_P_accu.imag());
+                //printf("late real = %f\n", d_L_accu.real());
+                //printf("late imag = %f\n", d_L_accu.imag());
+
+                //printf("d_code_period = %f\n", d_code_period);
 
                 if (!cn0_and_tracking_lock_status(d_code_period))
                     {
@@ -1635,6 +1661,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
         }
     if (current_synchro_data.Flag_valid_symbol_output)
         {
+    		//printf("tracking sending synchro data\n");
             current_synchro_data.fs = static_cast<int64_t>(trk_parameters.fs_in);
             current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(d_current_prn_length_samples);
             *out[0] = current_synchro_data;

@@ -70,16 +70,16 @@
 #define MAX_INPUT_COMPLEX_SAMPLES_TOTAL 8192 	// maximum DMA sample block size in complex samples
 #define COMPLEX_SAMPLE_SIZE 2					// sample size in bytes
 #define NUM_QUEUES 2							// number of queues (1 for GPS L1/Galileo E1, and 1 for GPS L5/Galileo E5)
-#define NSAMPLES_TRACKING 90000000				// number of samples during which we test the tracking module
+#define NSAMPLES_TRACKING 200000000				// number of samples during which we test the tracking module
 #define NSAMPLES_FINAL 50000					// number of samples sent after running tracking to unblock the SW if it is waiting for an interrupt of the tracking module
 #define NSAMPLES_ACQ_DOPPLER_SWEEP 50000000		// number of samples sent to the acquisition module when running acquisition when the HW controls the doppler loop
 
 // HW related options
 bool doppler_control_in_sw = 1;		// 1 => doppler sweep controlled by the SW test code , 0 => doppler sweep controlled by the HW
 bool show_results_table = 0;		// 1 => show matrix of (doppler, (max value, power sum)) results (only if doppler_control_in_sw = 1), 0=> do not show it
-bool skip_samples_already_used = 1;	// if doppler_control_in_sw = 1 and skip_samples_already_used = 1 => for each PRN loop skip the samples used in the previous PRN loops
+bool skip_samples_already_used = 0;	// if doppler_control_in_sw = 1 and skip_samples_already_used = 1 => for each PRN loop skip the samples used in the previous PRN loops
 									// (exactly in the same way as the SW)
-									// if doppler_control_in_sw = 1 and skip_samples_already_used = 0 => the sampe samples are used for each PRN loop
+									// if doppler_control_in_sw = 1 and skip_samples_already_used = 0 => the sampe samples are used for each doppler sweep
 									// if doppler_control_in_sw = 0 => skip_samples_already_used is not applicable
 
 
@@ -441,6 +441,7 @@ struct DMA_handler_args {
 
 void *handler_DMA(void *arguments)
 {
+	//printf("in handler DMA NO tracking\n");
 	// DMA process that configures the DMA to send the samples to the acquisition engine
 	int tx_fd; 															// DMA descriptor
 	FILE *rx_signal_file_id;											// Input file descriptor
@@ -483,6 +484,13 @@ void *handler_DMA(void *arguments)
 
 	fseek( rx_signal_file_id, (skip_samples + skip_used_samples)*2, SEEK_SET );
 
+	//printf("\n dma skip_samples = %d\n", skip_samples);
+	//printf("\n dma skip used samples = %d\n", skip_used_samples);
+	//printf("dma skip_samples = %d\n", skip_samples);
+	//printf("dma skip used samples = %d\n", skip_used_samples);
+	//printf("dma file_completed = %d\n", file_completed);
+	//printf("dma nsamples = %d\n", nsamples);
+	//printf("dma nsamples_tx = %d\n", nsamples_tx);
 	usleep(50000); // wait some time to give time to the main thread to start the acquisition module
 
 	while (file_completed == false)
@@ -549,6 +557,134 @@ void *handler_DMA(void *arguments)
 
 	return NULL;
 }
+
+
+
+
+void *handler_DMA_tracking(void *arguments)
+{
+	//printf("in handler DMA NO tracking\n");
+	// DMA process that configures the DMA to send the samples to the acquisition engine
+	int tx_fd; 															// DMA descriptor
+	FILE *rx_signal_file_id;											// Input file descriptor
+	bool file_completed = false;										// flag to indicate if the file is completed
+	unsigned int nsamples_block;										// number of samples to send in the next DMA block of samples
+	unsigned int nread_elements;										// number of elements effectively read from the input file
+	unsigned int nsamples = 0;											// number of complex samples effectively transferred
+	unsigned int index0, dma_index = 0;									// counters used for putting the samples in the order expected by the DMA
+	unsigned int num_bytes_to_transfer;									// DMA transfer block size in bytes
+
+	unsigned int nsamples_transmitted;
+
+	struct DMA_handler_args *args = (struct DMA_handler_args *) arguments;
+
+	unsigned int nsamples_tx = args->nsamples_tx;
+	std::string file = args->file; // input filename
+	unsigned int skip_used_samples = args->skip_used_samples;
+
+	// open DMA device
+	tx_fd = open("/dev/loop_tx", O_WRONLY);
+	if ( tx_fd < 0 )
+	{
+		printf("DMA can't open loop device\n");
+		exit(1);
+	}
+	else
+
+	// open input file
+	rx_signal_file_id = fopen(file.c_str(), "rb");
+	if (rx_signal_file_id < 0)
+	{
+		printf("DMA can't open input file\n");
+		exit(1);
+	}
+
+	while(send_samples_start == 0); // wait until acquisition starts
+
+	// skip initial samples
+	int skip_samples = (int) FLAGS_skip_samples;
+
+
+	fseek( rx_signal_file_id, (skip_samples + skip_used_samples)*2, SEEK_SET );
+	printf("\n dma skip_samples = %d\n", skip_samples);
+	printf("\n dma skip used samples = %d\n", skip_used_samples);
+	//printf("dma file_completed = %d\n", file_completed);
+	//printf("dma nsamples = %d\n", nsamples);
+	//printf("dma nsamples_tx = %d\n", nsamples_tx);
+	usleep(50000); // wait some time to give time to the main thread to start the acquisition module
+
+	while (file_completed == false)
+	{
+
+		if (nsamples_tx - nsamples > MAX_INPUT_COMPLEX_SAMPLES_TOTAL)
+		{
+			nsamples_block = MAX_INPUT_COMPLEX_SAMPLES_TOTAL;
+		}
+		else
+		{
+			nsamples_block = nsamples_tx - nsamples; // remaining samples to be sent
+			file_completed = true;
+		}
+
+		nread_elements = fread(input_samples, sizeof(int8_t), nsamples_block*COMPLEX_SAMPLE_SIZE, rx_signal_file_id);
+
+		if (nread_elements != nsamples_block * COMPLEX_SAMPLE_SIZE)
+		{
+			printf("could not read the desired number of samples from the input file\n");
+			file_completed = true;
+		}
+
+		nsamples+=(nread_elements/COMPLEX_SAMPLE_SIZE);
+
+		if (nread_elements > 0)
+		{
+			// for the 32-BIT DMA
+			dma_index = 0;
+			for (index0 = 0;index0 < (nread_elements);index0+=COMPLEX_SAMPLE_SIZE)
+			{
+				if (args->freq_band == 0)
+				{
+					// channel 1 (queue 1) -> E5/L5
+					input_samples_dma[dma_index] = 0;
+					input_samples_dma[dma_index+1] = 0;
+					// channel 0 (queue 0) -> E1/L1
+					input_samples_dma[dma_index+2] = input_samples[index0];
+					input_samples_dma[dma_index+3] = input_samples[index0+1];
+				}
+				else
+				{
+					// channel 1 (queue 1) -> E5/L5
+					input_samples_dma[dma_index] = input_samples[index0];
+					input_samples_dma[dma_index+1] = input_samples[index0+1];
+					// channel 0 (queue 0) -> E1/L1
+					input_samples_dma[dma_index+2] = 0;
+					input_samples_dma[dma_index+3] = 0;
+				}
+				dma_index += 4;
+			}
+
+			nsamples_transmitted = write(tx_fd, &input_samples_dma[0], nread_elements*NUM_QUEUES);
+
+			if (nsamples_transmitted != nread_elements*NUM_QUEUES)
+			{
+				std::cout << "Error : DMA could not send all the requested samples" << std::endl;
+			}
+		}
+	}
+
+	close(tx_fd);
+	fclose(rx_signal_file_id);
+
+	return NULL;
+}
+
+
+
+
+
+
+
+
 
 
 bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
@@ -715,6 +851,9 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
             MAX_PRN_IDX = 33;
         }
 
+    // debug
+    //MAX_PRN_IDX = 10;
+
     setup_fpga_switch();
 
     if (doppler_control_in_sw == 0)
@@ -789,6 +928,7 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 			    }
 
 				// create DMA child process
+			    //printf("|||||||| args freq_band = %d\n", args.freq_band);
 				if (pthread_create(&thread_DMA, NULL, handler_DMA, (void *)&args) < 0)
 				{
 					printf("ERROR cannot create DMA Process\n");
@@ -989,6 +1129,7 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 			        }
 
 					// create DMA child process
+			        //printf("||||||||1 args freq_band = %d\n", args.freq_band);
 					if (pthread_create(&thread_DMA, NULL, handler_DMA, (void *)&args) < 0)
 					{
 						printf("ERROR cannot create DMA Process\n");
@@ -1306,38 +1447,51 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                 {
                     for (unsigned int current_acq_code_error_idx = 0; current_acq_code_error_idx < acq_delay_error_chips_values.at(current_acq_doppler_error_idx).size(); current_acq_code_error_idx++)
                         {
+                    		// DEBUG TEST THE RESULTS OF THE SW
+                    		//acq_samplestamp_samples = 108856983;
+                    		//true_acq_doppler_hz = 3250;
+                    		//true_acq_delay_samples = 836;
+
                             gnss_synchro.Acq_samplestamp_samples = acq_samplestamp_samples;
                             //simulate a Doppler error in acquisition
                             gnss_synchro.Acq_doppler_hz = true_acq_doppler_hz + acq_doppler_error_hz_values.at(current_acq_doppler_error_idx);
                             //simulate Code Delay error in acquisition
                             gnss_synchro.Acq_delay_samples = true_acq_delay_samples + (acq_delay_error_chips_values.at(current_acq_doppler_error_idx).at(current_acq_code_error_idx) / GPS_L1_CA_CODE_RATE_HZ) * static_cast<double>(baseband_sampling_freq);
 
+
+
+
+
                             //create flowgraph
                             top_block = gr::make_top_block("Tracking test");
                             std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking", config->property("Tracking.implementation", std::string("undefined")), 1, 1);
                             std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
                             boost::shared_ptr<TrackingPullInTestFpga_msg_rx> msg_rx = TrackingPullInTestFpga_msg_rx_make();
-                            printf("loop part b2\n");
+                            //printf("loop part b2\n");
 
                             if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
                             {
                             	std::shared_ptr<GpsL1CaPcpsAcquisitionFpga> acquisition_Fpga;
                             	acquisition_Fpga = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+                            	args.freq_band = 0;
                             }
                             else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
                             {
                             	std::shared_ptr<GalileoE1PcpsAmbiguousAcquisitionFpga> acquisition_Fpga;
                             	acquisition_Fpga = std::make_shared<GalileoE1PcpsAmbiguousAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+                            	args.freq_band = 0;
                             }
                             else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
                             {
                             	std::shared_ptr<GalileoE5aPcpsAcquisitionFpga> acquisition_Fpga;
                             	acquisition_Fpga = std::make_shared<GalileoE5aPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+                            	args.freq_band = 1;
                             }
                             else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
                             {
                             	std::shared_ptr<GpsL5iPcpsAcquisitionFpga> acquisition_Fpga;
                             	acquisition_Fpga = std::make_shared<GpsL5iPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+                            	args.freq_band = 1;
                             }
                             else
                             {
@@ -1382,8 +1536,10 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                             {
                             	args.skip_used_samples = 0;
                             }
+                            //args.skip_used_samples = 0;
 
-                            if (pthread_create(&thread_DMA, NULL, handler_DMA, (void *)&args) < 0)
+                            //printf("||||||||1 args freq_band = %d\n", args.freq_band);
+                            if (pthread_create(&thread_DMA, NULL, handler_DMA_tracking, (void *)&args) < 0)
                         	{
                         		printf("ERROR cannot create DMA Process\n");
                         	}
@@ -1415,6 +1571,7 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                             	args.skip_used_samples = 0;
                             }
                             args.nsamples_tx = NSAMPLES_FINAL;
+                            //printf("||||||||1 args freq_band = %d\n", args.freq_band);
                             if (pthread_create(&thread_DMA, NULL, handler_DMA, (void *)&args) < 0)
                         	{
                         		printf("ERROR cannot create DMA Process\n");

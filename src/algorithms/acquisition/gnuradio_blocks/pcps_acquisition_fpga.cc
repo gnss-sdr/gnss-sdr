@@ -326,7 +326,9 @@ void pcps_acquisition_fpga::set_active(bool active)
     	{
     		//printf("yes here\n");
     		d_gnss_synchro->Acq_delay_samples = static_cast<double>(d_downsampling_factor*(indext % acq_parameters.samples_per_code));
-    		d_gnss_synchro->Acq_samplestamp_samples = d_downsampling_factor*d_sample_counter - 81*0.25*d_downsampling_factor; // delay due to the downsampling filter in the acquisition
+    		//d_gnss_synchro->Acq_samplestamp_samples = d_downsampling_factor*d_sample_counter - 81*0.25*d_downsampling_factor; // delay due to the downsampling filter in the acquisition
+    		d_gnss_synchro->Acq_samplestamp_samples = d_downsampling_factor*d_sample_counter - 81*0.5; // delay due to the downsampling filter in the acquisition
+    		//d_gnss_synchro->Acq_samplestamp_samples = d_downsampling_factor*d_sample_counter - 81/d_downsampling_factor; // delay due to the downsampling filter in the acquisition
     		//d_gnss_synchro->Acq_delay_samples = static_cast<double>(2*(indext % acq_parameters.samples_per_code));
     		//d_gnss_synchro->Acq_delay_samples = static_cast<double>(2*(indext));
     		//d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter*2 - 81;
@@ -335,6 +337,7 @@ void pcps_acquisition_fpga::set_active(bool active)
     	}
     	else
     	{
+    		//printf("xxxxxxxxxxxxxxxx no here\n");
         	d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % acq_parameters.samples_per_code);
         	d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;  // delay due to the downsampling filter in the acquisition
         	//d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter - 40;  // delay due to the downsampling filter in the acquisition

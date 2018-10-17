@@ -24,10 +24,10 @@
 # also defined, but not for general use are
 #  GPSTK_LIBRARY, where to find the GPSTK library.
 
-FIND_PATH(GPSTK_INCLUDE_DIR Rinex3ObsBase.hpp
-          HINTS /usr/include/gpstk
-                /usr/local/include/gpstk
-                /opt/local/include/gpstk )
+FIND_PATH(GPSTK_INCLUDE_DIR gpstk/Rinex3ObsBase.hpp
+          HINTS /usr/include
+                /usr/local/include
+                /opt/local/include )
 
 SET(GPSTK_NAMES ${GPSTK_NAMES} gpstk libgpstk)
 FIND_LIBRARY(GPSTK_LIBRARY NAMES ${GPSTK_NAMES}

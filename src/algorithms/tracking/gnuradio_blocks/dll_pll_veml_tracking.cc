@@ -58,6 +58,7 @@
 #include <cmath>
 #include <iostream>
 #include <sstream>
+#include <numeric>
 
 using google::LogMessage;
 
@@ -355,6 +356,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
         {
             // Extra correlator for the data component
             correlator_data_cpu.init(2 * trk_parameters.vector_length, 1);
+            correlator_data_cpu.set_high_dynamics_resampler(trk_parameters.high_dyn);
             d_data_code = static_cast<float *>(volk_gnsssdr_malloc(2 * d_code_length_chips * sizeof(float), volk_gnsssdr_get_alignment()));
         }
     else
@@ -363,7 +365,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
         }
 
     // --- Initializations ---
-    multicorrelator_cpu.set_high_dynamics_resampler(trk_parameters.use_high_dynamics_resampler);
+    multicorrelator_cpu.set_high_dynamics_resampler(trk_parameters.high_dyn);
     // Initial code frequency basis of NCO
     d_code_freq_chips = d_code_chip_rate;
     // Residual code phase (in chips)
@@ -397,12 +399,22 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     d_code_phase_step_chips = 0.0;
     d_code_phase_rate_step_chips = 0.0;
     d_carrier_phase_step_rad = 0.0;
+    d_carrier_phase_rate_step_rad = 0.0;
     d_rem_code_phase_chips = 0.0;
-    d_K_blk_samples = 0.0;
     d_code_phase_samples = 0.0;
     d_last_prompt = gr_complex(0.0, 0.0);
     d_state = 0;  // initial state: standby
     clear_tracking_vars();
+    if (trk_parameters.smoother_length > 0)
+        {
+            d_carr_ph_history.resize(trk_parameters.smoother_length * 2);
+            d_code_ph_history.resize(trk_parameters.smoother_length * 2);
+        }
+    else
+        {
+            d_carr_ph_history.resize(1);
+            d_code_ph_history.resize(1);
+        }
 }
 
 
@@ -424,6 +436,7 @@ void dll_pll_veml_tracking::start_tracking()
     // new chip and PRN sequence periods based on acq Doppler
     d_code_freq_chips = radial_velocity * d_code_chip_rate;
     d_code_phase_step_chips = d_code_freq_chips / trk_parameters.fs_in;
+    d_code_phase_rate_step_chips = 0.0;
     double T_chip_mod_seconds = 1.0 / d_code_freq_chips;
     double T_prn_mod_seconds = T_chip_mod_seconds * static_cast<double>(d_code_length_chips);
     double T_prn_mod_samples = T_prn_mod_seconds * trk_parameters.fs_in;
@@ -446,7 +459,9 @@ void dll_pll_veml_tracking::start_tracking()
 
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
     d_carrier_phase_step_rad = PI_2 * d_carrier_doppler_hz / trk_parameters.fs_in;
-
+    d_carrier_phase_rate_step_rad = 0.0;
+    d_carr_ph_history.clear();
+    d_code_ph_history.clear();
     // DLL/PLL filter initialization
     d_carrier_loop_filter.initialize();  // initialize the carrier filter
     d_code_loop_filter.initialize();     // initialize the code filter
@@ -706,7 +721,7 @@ void dll_pll_veml_tracking::do_correlation_step(const gr_complex *input_samples)
     multicorrelator_cpu.set_input_output_vectors(d_correlator_outs, input_samples);
     multicorrelator_cpu.Carrier_wipeoff_multicorrelator_resampler(
         d_rem_carr_phase_rad,
-        d_carrier_phase_step_rad,
+        d_carrier_phase_step_rad, d_carrier_phase_rate_step_rad,
         static_cast<float>(d_rem_code_phase_chips) * static_cast<float>(d_code_samples_per_chip),
         static_cast<float>(d_code_phase_step_chips) * static_cast<float>(d_code_samples_per_chip),
         static_cast<float>(d_code_phase_rate_step_chips) * static_cast<float>(d_code_samples_per_chip),
@@ -718,7 +733,7 @@ void dll_pll_veml_tracking::do_correlation_step(const gr_complex *input_samples)
             correlator_data_cpu.set_input_output_vectors(d_Prompt_Data, input_samples);
             correlator_data_cpu.Carrier_wipeoff_multicorrelator_resampler(
                 d_rem_carr_phase_rad,
-                d_carrier_phase_step_rad,
+                d_carrier_phase_step_rad, d_carrier_phase_rate_step_rad,
                 static_cast<float>(d_rem_code_phase_chips) * static_cast<float>(d_code_samples_per_chip),
                 static_cast<float>(d_code_phase_step_chips) * static_cast<float>(d_code_samples_per_chip),
                 static_cast<float>(d_code_phase_rate_step_chips) * static_cast<float>(d_code_samples_per_chip),
@@ -777,6 +792,10 @@ void dll_pll_veml_tracking::clear_tracking_vars()
     d_current_symbol = 0;
     d_Prompt_buffer_deque.clear();
     d_last_prompt = gr_complex(0.0, 0.0);
+    d_carrier_phase_rate_step_rad = 0.0;
+    d_code_phase_rate_step_chips = 0.0;
+    d_carr_ph_history.clear();
+    d_code_ph_history.clear();
 }
 
 
@@ -796,15 +815,60 @@ void dll_pll_veml_tracking::update_tracking_vars()
     //################### PLL COMMANDS #################################################
     // carrier phase step (NCO phase increment per sample) [rads/sample]
     d_carrier_phase_step_rad = PI_2 * d_carrier_doppler_hz / trk_parameters.fs_in;
+    // carrier phase rate step (NCO phase increment rate per sample) [rads/sample^2]
+    if (trk_parameters.high_dyn)
+        {
+            d_carr_ph_history.push_back(std::pair<double, double>(d_carrier_phase_step_rad, static_cast<double>(d_current_prn_length_samples)));
+            if (d_carr_ph_history.full())
+                {
+                    double tmp_cp1 = 0.0;
+                    double tmp_cp2 = 0.0;
+                    double tmp_samples = 0.0;
+                    for (unsigned int k = 0; k < trk_parameters.smoother_length; k++)
+                        {
+                            tmp_cp1 += d_carr_ph_history.at(k).first;
+                            tmp_cp2 += d_carr_ph_history.at(trk_parameters.smoother_length * 2 - k - 1).first;
+                            tmp_samples += d_carr_ph_history.at(trk_parameters.smoother_length * 2 - k - 1).second;
+                        }
+                    tmp_cp1 /= static_cast<double>(trk_parameters.smoother_length);
+                    tmp_cp2 /= static_cast<double>(trk_parameters.smoother_length);
+                    d_carrier_phase_rate_step_rad = (tmp_cp2 - tmp_cp1) / tmp_samples;
+                }
+        }
+    //std::cout << d_carrier_phase_rate_step_rad * trk_parameters.fs_in * trk_parameters.fs_in / PI_2 << std::endl;
     // remnant carrier phase to prevent overflow in the code NCO
-    d_rem_carr_phase_rad += d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples);
+    d_rem_carr_phase_rad += static_cast<float>(d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples) + 0.5 * d_carrier_phase_rate_step_rad * static_cast<double>(d_current_prn_length_samples) * static_cast<double>(d_current_prn_length_samples));
     d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, PI_2);
+
+
     // carrier phase accumulator
-    d_acc_carrier_phase_rad -= d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples);
+    //double a = d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples);
+    //double b = 0.5 * d_carrier_phase_rate_step_rad * static_cast<double>(d_current_prn_length_samples) * static_cast<double>(d_current_prn_length_samples);
+    //std::cout << fmod(b, PI_2) / fmod(a, PI_2) << std::endl;
+    d_acc_carrier_phase_rad -= (d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples) + 0.5 * d_carrier_phase_rate_step_rad * static_cast<double>(d_current_prn_length_samples) * static_cast<double>(d_current_prn_length_samples));
 
     //################### DLL COMMANDS #################################################
     // code phase step (Code resampler phase increment per sample) [chips/sample]
     d_code_phase_step_chips = d_code_freq_chips / trk_parameters.fs_in;
+    if (trk_parameters.high_dyn)
+        {
+            d_code_ph_history.push_back(std::pair<double, double>(d_code_phase_step_chips, static_cast<double>(d_current_prn_length_samples)));
+            if (d_code_ph_history.full())
+                {
+                    double tmp_cp1 = 0.0;
+                    double tmp_cp2 = 0.0;
+                    double tmp_samples = 0.0;
+                    for (unsigned int k = 0; k < trk_parameters.smoother_length; k++)
+                        {
+                            tmp_cp1 += d_code_ph_history.at(k).first;
+                            tmp_cp2 += d_code_ph_history.at(trk_parameters.smoother_length * 2 - k - 1).first;
+                            tmp_samples += d_code_ph_history.at(trk_parameters.smoother_length * 2 - k - 1).second;
+                        }
+                    tmp_cp1 /= static_cast<double>(trk_parameters.smoother_length);
+                    tmp_cp2 /= static_cast<double>(trk_parameters.smoother_length);
+                    d_code_phase_rate_step_chips = (tmp_cp2 - tmp_cp1) / tmp_samples;
+                }
+        }
     // remnant code phase [chips]
     d_rem_code_phase_samples = K_blk_samples - static_cast<double>(d_current_prn_length_samples);  // rounding error < 1 sample
     d_rem_code_phase_chips = d_code_freq_chips * d_rem_code_phase_samples / trk_parameters.fs_in;
@@ -947,7 +1011,13 @@ void dll_pll_veml_tracking::log_data(bool integrating)
                     // carrier and code frequency
                     tmp_float = d_carrier_doppler_hz;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    // carrier phase rate [Hz/s]
+                    tmp_float = d_carrier_phase_rate_step_rad * trk_parameters.fs_in * trk_parameters.fs_in / PI_2;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     tmp_float = d_code_freq_chips;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    // code phase rate [chips/s^2]
+                    tmp_float = d_code_phase_rate_step_chips * trk_parameters.fs_in * trk_parameters.fs_in;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
                     // PLL commands
                     tmp_float = d_carr_error_hz;
@@ -986,7 +1056,7 @@ int32_t dll_pll_veml_tracking::save_matfile()
     // READ DUMP FILE
     std::ifstream::pos_type size;
     int32_t number_of_double_vars = 1;
-    int32_t number_of_float_vars = 17;
+    int32_t number_of_float_vars = 19;
     int32_t epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
                                sizeof(float) * number_of_float_vars + sizeof(uint32_t);
     std::ifstream dump_file;
@@ -1022,7 +1092,9 @@ int32_t dll_pll_veml_tracking::save_matfile()
     uint64_t *PRN_start_sample_count = new uint64_t[num_epoch];
     float *acc_carrier_phase_rad = new float[num_epoch];
     float *carrier_doppler_hz = new float[num_epoch];
+    float *carrier_doppler_rate_hz = new float[num_epoch];
     float *code_freq_chips = new float[num_epoch];
+    float *code_freq_rate_chips = new float[num_epoch];
     float *carr_error_hz = new float[num_epoch];
     float *carr_error_filt_hz = new float[num_epoch];
     float *code_error_chips = new float[num_epoch];
@@ -1049,7 +1121,9 @@ int32_t dll_pll_veml_tracking::save_matfile()
                             dump_file.read(reinterpret_cast<char *>(&PRN_start_sample_count[i]), sizeof(uint64_t));
                             dump_file.read(reinterpret_cast<char *>(&acc_carrier_phase_rad[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&carrier_doppler_hz[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&carrier_doppler_rate_hz[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&code_freq_chips[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&code_freq_rate_chips[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&carr_error_hz[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&carr_error_filt_hz[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&code_error_chips[i]), sizeof(float));
@@ -1076,7 +1150,9 @@ int32_t dll_pll_veml_tracking::save_matfile()
             delete[] PRN_start_sample_count;
             delete[] acc_carrier_phase_rad;
             delete[] carrier_doppler_hz;
+            delete[] carrier_doppler_rate_hz;
             delete[] code_freq_chips;
+            delete[] code_freq_rate_chips;
             delete[] carr_error_hz;
             delete[] carr_error_filt_hz;
             delete[] code_error_chips;
@@ -1139,7 +1215,15 @@ int32_t dll_pll_veml_tracking::save_matfile()
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
+            matvar = Mat_VarCreate("carrier_doppler_rate_hz", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, carrier_doppler_rate_hz, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
             matvar = Mat_VarCreate("code_freq_chips", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, code_freq_chips, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("code_freq_rate_chips", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, code_freq_rate_chips, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
@@ -1190,7 +1274,9 @@ int32_t dll_pll_veml_tracking::save_matfile()
     delete[] PRN_start_sample_count;
     delete[] acc_carrier_phase_rad;
     delete[] carrier_doppler_hz;
+    delete[] carrier_doppler_rate_hz;
     delete[] code_freq_chips;
+    delete[] code_freq_rate_chips;
     delete[] carr_error_hz;
     delete[] carr_error_filt_hz;
     delete[] code_error_chips;

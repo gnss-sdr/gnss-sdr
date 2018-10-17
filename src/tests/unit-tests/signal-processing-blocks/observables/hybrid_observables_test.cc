@@ -239,6 +239,7 @@ public:
     void check_results_duplicated_satellite(
         arma::mat& measured_sat1,
         arma::mat& measured_sat2,
+        int ch_id,
         std::string data_title);
 
     HybridObservablesTest()
@@ -260,7 +261,9 @@ public:
         double DLL_wide_bw_hz,
         double PLL_narrow_bw_hz,
         double DLL_narrow_bw_hz,
-        int extend_correlation_symbols);
+        int extend_correlation_symbols,
+        uint32_t smoother_length,
+        bool high_dyn);
 
     gr::top_block_sptr top_block;
     std::shared_ptr<GNSSBlockFactory> factory;
@@ -540,10 +543,17 @@ void HybridObservablesTest::configure_receiver(
     double DLL_wide_bw_hz,
     double PLL_narrow_bw_hz,
     double DLL_narrow_bw_hz,
-    int extend_correlation_symbols)
+    int extend_correlation_symbols,
+    uint32_t smoother_length,
+    bool high_dyn)
 {
     config = std::make_shared<InMemoryConfiguration>();
     config->set_property("Tracking.dump", "true");
+    if (high_dyn)
+        config->set_property("Tracking.high_dyn", "true");
+    else
+        config->set_property("Tracking.high_dyn", "false");
+    config->set_property("Tracking.smoother_length", std::to_string(smoother_length));
     config->set_property("Tracking.dump_filename", "./tracking_ch_");
     config->set_property("Tracking.implementation", implementation);
     config->set_property("Tracking.item_type", "gr_complex");
@@ -650,6 +660,8 @@ void HybridObservablesTest::configure_receiver(
     std::cout << "pll_bw_narrow_hz: " << config->property("Tracking.pll_bw_narrow_hz", 0.0) << " Hz\n";
     std::cout << "dll_bw_narrow_hz: " << config->property("Tracking.dll_bw_narrow_hz", 0.0) << " Hz\n";
     std::cout << "extend_correlation_symbols: " << config->property("Tracking.extend_correlation_symbols", 0) << " Symbols\n";
+    std::cout << "high_dyn: " << config->property("Tracking.high_dyn", false) << "\n";
+    std::cout << "smoother_length: " << config->property("Tracking.smoother_length", 0) << "\n";
     std::cout << "*****************************************\n";
     std::cout << "*****************************************\n";
 }
@@ -995,13 +1007,40 @@ void HybridObservablesTest::check_results_carrier_doppler(
 void HybridObservablesTest::check_results_duplicated_satellite(
     arma::mat& measured_sat1,
     arma::mat& measured_sat2,
+    int ch_id,
     std::string data_title)
 {
     //1. True value interpolation to match the measurement times
 
-    double t0 = measured_sat1(0, 0);
+    //define the common measured time interval
+    double t0_sat1 = measured_sat1(0, 0);
     int size1 = measured_sat1.col(0).n_rows;
-    double t1 = measured_sat1(size1 - 1, 0);
+    double t1_sat1 = measured_sat1(size1 - 1, 0);
+
+    double t0_sat2 = measured_sat2(0, 0);
+    int size2 = measured_sat2.col(0).n_rows;
+    double t1_sat2 = measured_sat2(size2 - 1, 0);
+
+    double t0;
+    double t1;
+    if (t0_sat1 > t0_sat2)
+        {
+            t0 = t0_sat1;
+        }
+    else
+        {
+            t0 = t0_sat2;
+        }
+
+    if (t1_sat1 > t1_sat2)
+        {
+            t1 = t1_sat2;
+        }
+    else
+        {
+            t1 = t1_sat1;
+        }
+
     arma::vec t = arma::linspace<arma::vec>(t0, t1, floor((t1 - t0) * 1e3));
     //conversion between arma::vec and std:vector
     arma::vec t_from_start = arma::linspace<arma::vec>(0, t1 - t0, floor((t1 - t0) * 1e3));
@@ -1037,6 +1076,15 @@ void HybridObservablesTest::check_results_duplicated_satellite(
     //compute error
     err_ch0_hz = meas_sat1_doppler_interp - meas_sat2_doppler_interp;
 
+    //save matlab file for further analysis
+    std::vector<double> tmp_vector_common_time_s(t.colptr(0),
+        t.colptr(0) + t.n_rows);
+
+    std::vector<double> tmp_vector_err_ch0_hz(err_ch0_hz.colptr(0),
+        err_ch0_hz.colptr(0) + err_ch0_hz.n_rows);
+    save_mat_xy(tmp_vector_common_time_s, tmp_vector_err_ch0_hz, std::string("measured_doppler_error_ch_" + std::to_string(ch_id)));
+
+    //compute statistics
     arma::vec err2_ch0 = arma::square(err_ch0_hz);
     double rmse_ch0 = sqrt(arma::mean(err2_ch0));
 
@@ -1078,19 +1126,26 @@ void HybridObservablesTest::check_results_duplicated_satellite(
         }
 
     //check results against the test tolerance
-    ASSERT_LT(error_mean_ch0, 5);
-    ASSERT_GT(error_mean_ch0, -5);
+    EXPECT_LT(error_mean_ch0, 5);
+    EXPECT_GT(error_mean_ch0, -5);
     //assuming PLL BW=35
-    ASSERT_LT(error_var_ch0, 250);
-    ASSERT_LT(max_error_ch0, 100);
-    ASSERT_GT(min_error_ch0, -100);
-    ASSERT_LT(rmse_ch0, 30);
+    EXPECT_LT(error_var_ch0, 250);
+    EXPECT_LT(max_error_ch0, 100);
+    EXPECT_GT(min_error_ch0, -100);
+    EXPECT_LT(rmse_ch0, 30);
 
     //Carrier Phase error
     //2. RMSE
     arma::vec err_carrier_phase;
 
     err_carrier_phase = delta_measured_carrier_phase_cycles;
+
+    //save matlab file for further analysis
+    std::vector<double> tmp_vector_err_carrier_phase(err_carrier_phase.colptr(0),
+        err_carrier_phase.colptr(0) + err_carrier_phase.n_rows);
+    save_mat_xy(tmp_vector_common_time_s, tmp_vector_err_carrier_phase, std::string("measured_carrier_phase_error_ch_" + std::to_string(ch_id)));
+
+
     arma::vec err2_carrier_phase = arma::square(err_carrier_phase);
     double rmse_carrier_phase = sqrt(arma::mean(err2_carrier_phase));
 
@@ -1132,18 +1187,24 @@ void HybridObservablesTest::check_results_duplicated_satellite(
         }
 
     //check results against the test tolerance
-    ASSERT_LT(rmse_carrier_phase, 0.25);
-    ASSERT_LT(error_mean_carrier_phase, 0.2);
-    ASSERT_GT(error_mean_carrier_phase, -0.2);
-    ASSERT_LT(error_var_carrier_phase, 0.5);
-    ASSERT_LT(max_error_carrier_phase, 0.5);
-    ASSERT_GT(min_error_carrier_phase, -0.5);
+    EXPECT_LT(rmse_carrier_phase, 0.25);
+    EXPECT_LT(error_mean_carrier_phase, 0.2);
+    EXPECT_GT(error_mean_carrier_phase, -0.2);
+    EXPECT_LT(error_var_carrier_phase, 0.5);
+    EXPECT_LT(max_error_carrier_phase, 0.5);
+    EXPECT_GT(min_error_carrier_phase, -0.5);
 
     //Pseudorange error
     //2. RMSE
     arma::vec err_pseudorange;
 
     err_pseudorange = delta_measured_dist_m;
+
+    //save matlab file for further analysis
+    std::vector<double> tmp_vector_err_pseudorange(err_pseudorange.colptr(0),
+        err_pseudorange.colptr(0) + err_pseudorange.n_rows);
+    save_mat_xy(tmp_vector_common_time_s, tmp_vector_err_pseudorange, std::string("measured_pr_error_ch_" + std::to_string(ch_id)));
+
     arma::vec err2_pseudorange = arma::square(err_pseudorange);
     double rmse_pseudorange = sqrt(arma::mean(err2_pseudorange));
 
@@ -1185,12 +1246,12 @@ void HybridObservablesTest::check_results_duplicated_satellite(
         }
 
     //check results against the test tolerance
-    ASSERT_LT(rmse_pseudorange, 3.0);
-    ASSERT_LT(error_mean_pseudorange, 1.0);
-    ASSERT_GT(error_mean_pseudorange, -1.0);
-    ASSERT_LT(error_var_pseudorange, 10.0);
-    ASSERT_LT(max_error_pseudorange, 10.0);
-    ASSERT_GT(min_error_pseudorange, -10.0);
+    EXPECT_LT(rmse_pseudorange, 3.0);
+    EXPECT_LT(error_mean_pseudorange, 1.0);
+    EXPECT_GT(error_mean_pseudorange, -1.0);
+    EXPECT_LT(error_var_pseudorange, 10.0);
+    EXPECT_LT(max_error_pseudorange, 10.0);
+    EXPECT_GT(min_error_pseudorange, -10.0);
 }
 
 bool HybridObservablesTest::save_mat_xy(std::vector<double>& x, std::vector<double>& y, std::string filename)
@@ -1499,7 +1560,9 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
         FLAGS_DLL_bw_hz_start,
         FLAGS_PLL_narrow_bw_hz,
         FLAGS_DLL_narrow_bw_hz,
-        FLAGS_extend_correlation_symbols);
+        FLAGS_extend_correlation_symbols,
+        FLAGS_smoother_length,
+        FLAGS_high_dyn);
 
 
     for (unsigned int n = 0; n < gnss_synchro_vec.size(); n++)
@@ -1814,6 +1877,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                                     check_results_duplicated_satellite(
                                         measured_obs_vec.at(sat1_ch_id),
                                         measured_obs_vec.at(sat2_ch_id),
+                                        sat1_ch_id,
                                         "Duplicated sat [CH " + std::to_string(sat1_ch_id) + "," + std::to_string(sat2_ch_id) + "] PRNs " + std::to_string(gnss_synchro_vec.at(sat1_ch_id).PRN) + "," + std::to_string(gnss_synchro_vec.at(sat2_ch_id).PRN) + " ");
                                 }
                             else
@@ -1882,6 +1946,18 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                     std::vector<double> tmp_vector_y4(measured_obs_vec.at(n).col(2).colptr(0),
                         measured_obs_vec.at(n).col(2).colptr(0) + measured_obs_vec.at(n).col(2).n_rows);
                     save_mat_xy(tmp_vector_x4, tmp_vector_y4, std::string("measured_doppler_ch_" + std::to_string(n)));
+
+                    std::vector<double> tmp_vector_x5(true_obs_vec.at(n).col(0).colptr(0),
+                        true_obs_vec.at(n).col(0).colptr(0) + true_obs_vec.at(n).col(0).n_rows);
+                    std::vector<double> tmp_vector_y5(true_obs_vec.at(n).col(3).colptr(0),
+                        true_obs_vec.at(n).col(3).colptr(0) + true_obs_vec.at(n).col(3).n_rows);
+                    save_mat_xy(tmp_vector_x5, tmp_vector_y5, std::string("true_cp_ch_" + std::to_string(n)));
+
+                    std::vector<double> tmp_vector_x6(measured_obs_vec.at(n).col(0).colptr(0),
+                        measured_obs_vec.at(n).col(0).colptr(0) + measured_obs_vec.at(n).col(0).n_rows);
+                    std::vector<double> tmp_vector_y6(measured_obs_vec.at(n).col(3).colptr(0),
+                        measured_obs_vec.at(n).col(3).colptr(0) + measured_obs_vec.at(n).col(3).n_rows);
+                    save_mat_xy(tmp_vector_x6, tmp_vector_y6, std::string("measured_cp_ch_" + std::to_string(n)));
 
 
                     if (epoch_counters_vec.at(n) > 10)  //discard non-valid channels

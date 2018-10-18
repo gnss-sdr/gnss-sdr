@@ -32,6 +32,10 @@
 
 #include "gps_ephemeris.h"
 #include "galileo_ephemeris.h"
+#include "gps_utc_model.h"
+#include "gps_iono.h"
+#include "galileo_utc_model.h"
+#include "galileo_iono.h"
 #include <gflags/gflags.h>
 #include <gpstk/Rinex3NavHeader.hpp>
 #include <gpstk/Rinex3NavData.hpp>
@@ -49,29 +53,30 @@ int main(int argc, char** argv)
         "This program comes with ABSOLUTELY NO WARRANTY;\n" +
         "See COPYING file to see a copy of the General Public License.\n \n" +
         "Usage: \n" +
-        "   rinex2assist <RINEX Nav file input>  [<XML file output>]");
+        "   rinex2assist <RINEX Nav file input>");
 
     google::SetUsageMessage(intro_help);
     google::SetVersionString("1.0");
     google::ParseCommandLineFlags(&argc, &argv, true);
 
-    if ((argc < 2) or (argc > 3))
+    if ((argc != 2))
         {
             std::cerr << "Usage:" << std::endl;
             std::cerr << "   " << argv[0]
-                      << " <RINEX Nav file input>  [<XML file output>]"
+                      << " <RINEX Nav file input>"
                       << std::endl;
             google::ShutDownCommandLineFlags();
             return 1;
         }
     std::string xml_filename;
-    if (argc == 3)
-        {
-            xml_filename = argv[2];
-        }
 
     std::map<int, Gps_Ephemeris> eph_map;
     std::map<int, Galileo_Ephemeris> eph_gal_map;
+
+    Gps_Utc_Model gps_utc_model;
+    Gps_Iono gps_iono;
+    Galileo_Utc_Model gal_utc_model;
+    Galileo_Iono gal_iono;
 
     int i = 0;
     int j = 0;
@@ -91,6 +96,52 @@ int main(int argc, char** argv)
                     std::cerr << "This is not a valid RINEX navigation file, or file not found." << std::endl;
                     std::cerr << "No XML file will be created." << std::endl;
                     return 1;
+                }
+
+            // Collect UTC parameters from RINEX header
+            if (hdr.fileSys.compare("G: (GPS)") == 0 || hdr.fileSys.compare("MIXED") == 0)
+                {
+                    gps_utc_model.valid = (hdr.valid > 2147483648) ? true : false;
+                    gps_utc_model.d_A1 = hdr.mapTimeCorr["GPUT"].A0;
+                    gps_utc_model.d_A0 = hdr.mapTimeCorr["GPUT"].A1;
+                    gps_utc_model.d_t_OT = hdr.mapTimeCorr["GPUT"].refSOW;
+                    gps_utc_model.i_WN_T = hdr.mapTimeCorr["GPUT"].refWeek;
+                    gps_utc_model.d_DeltaT_LS = hdr.leapSeconds;
+                    gps_utc_model.i_WN_LSF = hdr.leapWeek;
+                    gps_utc_model.i_DN = hdr.leapDay;
+                    gps_utc_model.d_DeltaT_LSF = hdr.leapDelta;
+
+                    // Collect iono parameters from RINEX header
+                    gps_iono.valid = (hdr.mapIonoCorr["GPSA"].param[0] == 0) ? false : true;
+                    gps_iono.d_alpha0 = hdr.mapIonoCorr["GPSA"].param[0];
+                    gps_iono.d_alpha1 = hdr.mapIonoCorr["GPSA"].param[1];
+                    gps_iono.d_alpha2 = hdr.mapIonoCorr["GPSA"].param[2];
+                    gps_iono.d_alpha3 = hdr.mapIonoCorr["GPSA"].param[3];
+                    gps_iono.d_beta0 = hdr.mapIonoCorr["GPSB"].param[0];
+                    gps_iono.d_beta1 = hdr.mapIonoCorr["GPSB"].param[1];
+                    gps_iono.d_beta2 = hdr.mapIonoCorr["GPSB"].param[2];
+                    gps_iono.d_beta3 = hdr.mapIonoCorr["GPSB"].param[3];
+                }
+            if (hdr.fileSys.compare("E: (GAL)") == 0 || hdr.fileSys.compare("MIXED") == 0)
+                {
+                    gal_utc_model.A0_6 = hdr.mapTimeCorr["GAUT"].A0;
+                    gal_utc_model.A1_6 = hdr.mapTimeCorr["GAUT"].A1;
+                    gal_utc_model.Delta_tLS_6 = hdr.leapSeconds;
+                    gal_utc_model.t0t_6 = hdr.mapTimeCorr["GAUT"].refSOW;
+                    gal_utc_model.WNot_6 = hdr.mapTimeCorr["GAUT"].refWeek;
+                    gal_utc_model.WN_LSF_6 = hdr.leapWeek;
+                    gal_utc_model.DN_6 = hdr.leapDay;
+                    gal_utc_model.Delta_tLSF_6 = hdr.leapDelta;
+                    gal_iono.ai0_5 = hdr.mapIonoCorr["GAL"].param[0];
+                    gal_iono.ai1_5 = hdr.mapIonoCorr["GAL"].param[1];
+                    gal_iono.ai2_5 = hdr.mapIonoCorr["GAL"].param[2];
+                    gal_iono.Region1_flag_5 = false;
+                    gal_iono.Region2_flag_5 = false;
+                    gal_iono.Region3_flag_5 = false;
+                    gal_iono.Region4_flag_5 = false;
+                    gal_iono.Region5_flag_5 = false;
+                    gal_iono.TOW_5 = 0.0;
+                    gal_iono.WN_5 = 0.0;
                 }
 
             // Read navigation data
@@ -185,7 +236,7 @@ int main(int argc, char** argv)
             return 1;
         }
 
-    // Write XML
+    // Write XML ephemeris
     if (i != 0)
         {
             std::ofstream ofs;
@@ -201,10 +252,11 @@ int main(int argc, char** argv)
                 }
             catch (std::exception& e)
                 {
-                    std::cerr << "Problem creating the XML file: " << e.what() << std::endl;
+                    std::cerr << "Problem creating the XML file " << xml_filename << ": " << e.what() << std::endl;
                     google::ShutDownCommandLineFlags();
                     return 1;
                 }
+            std::cout << "Generated file: " << xml_filename << std::endl;
         }
     if (j != 0)
         {
@@ -218,10 +270,88 @@ int main(int argc, char** argv)
                 }
             catch (std::exception& e)
                 {
-                    std::cerr << "Problem creating the XML file: " << e.what() << std::endl;
+                    std::cerr << "Problem creating the XML file " << xml_filename << ": " << e.what() << std::endl;
                     google::ShutDownCommandLineFlags();
                     return 1;
                 }
+            std::cout << "Generated file: " << xml_filename << std::endl;
+        }
+
+    // Write XML UTC
+    if (gps_utc_model.valid)
+        {
+            std::ofstream ofs3;
+            xml_filename = "gps_UTC.xml";
+            try
+                {
+                    ofs3.open(xml_filename.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs3);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_gps_utc", gps_utc_model);
+                }
+            catch (std::exception& e)
+                {
+                    std::cerr << "Problem creating the XML file " << xml_filename << ": " << e.what() << std::endl;
+                    google::ShutDownCommandLineFlags();
+                    return 1;
+                }
+            std::cout << "Generated file: " << xml_filename << std::endl;
+        }
+
+    // Write XML iono
+    if (gps_iono.valid)
+        {
+            std::ofstream ofs4;
+            xml_filename = "gps_iono.xml";
+            try
+                {
+                    ofs4.open(xml_filename.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs4);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_gps_iono", gps_iono);
+                }
+            catch (std::exception& e)
+                {
+                    std::cerr << "Problem creating the XML file " << xml_filename << ": " << e.what() << std::endl;
+                    google::ShutDownCommandLineFlags();
+                    return 1;
+                }
+            std::cout << "Generated file: " << xml_filename << std::endl;
+        }
+
+    if (gal_utc_model.A0_6 != 0)
+        {
+            std::ofstream ofs5;
+            xml_filename = "gal_utc.xml";
+            try
+                {
+                    ofs5.open(xml_filename.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs5);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_utc", gal_utc_model);
+                }
+            catch (std::exception& e)
+                {
+                    std::cerr << "Problem creating the XML file " << xml_filename << ": " << e.what() << std::endl;
+                    google::ShutDownCommandLineFlags();
+                    return 1;
+                }
+            std::cout << "Generated file: " << xml_filename << std::endl;
+        }
+    if (gal_iono.ai0_5 != 0)
+        {
+            std::ofstream ofs7;
+            xml_filename = "gal_iono.xml";
+            try
+                {
+                    ofs7.open(xml_filename.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs7);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_iono", gal_iono);
+                }
+            catch (std::exception& e)
+                {
+                    std::cerr << "Problem creating the XML file " << xml_filename << ": " << e.what() << std::endl;
+                    google::ShutDownCommandLineFlags();
+                    return 1;
+                }
+            std::cout << "Generated file: " << xml_filename << std::endl;
         }
     google::ShutDownCommandLineFlags();
     return 0;

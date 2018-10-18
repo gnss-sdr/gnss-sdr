@@ -33,6 +33,7 @@
 #ifndef GNSS_SDR_GALILEO_UTC_MODEL_H_
 #define GNSS_SDR_GALILEO_UTC_MODEL_H_
 
+#include <boost/serialization/nvp.hpp>
 
 /*!
  * \brief This class is a storage for the GALILEO UTC MODEL data as described in Galileo ICD
@@ -58,6 +59,28 @@ public:
      * Default constructor
      */
     Galileo_Utc_Model();
+
+    template <class Archive>
+
+    /*!
+     * \brief Serialize is a boost standard method to be called by the boost XML serialization.
+     Here is used to save the UTC data on disk file.
+     */
+    inline void serialize(Archive& archive, const unsigned int version)
+    {
+        using boost::serialization::make_nvp;
+        if (version)
+            {
+            };
+        archive& make_nvp("A0_6", A0_6);
+        archive& make_nvp("A1_6", A1_6);
+        archive& make_nvp("Delta_tLS_6", Delta_tLS_6);
+        archive& make_nvp("t0t_6", t0t_6);
+        archive& make_nvp("WNot_6", WNot_6);
+        archive& make_nvp("WN_LSF_6", WN_LSF_6);
+        archive& make_nvp("DN_6", DN_6);
+        archive& make_nvp("Delta_tLSF_6", Delta_tLSF_6);
+    }
 };
 
 #endif

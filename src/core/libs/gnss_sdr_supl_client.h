@@ -48,6 +48,8 @@ extern "C"
 #include "gps_ref_location.h"
 #include "gps_cnav_ephemeris.h"
 #include "galileo_ephemeris.h"
+#include "galileo_utc_model.h"
+#include "galileo_iono.h"
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/serialization/map.hpp>
@@ -86,10 +88,12 @@ public:
 
     // ionospheric model
     Gps_Iono gps_iono;
+    Galileo_Iono gal_iono;
     // reference time
     Gps_Ref_Time gps_time;
     // UTC model
     Gps_Utc_Model gps_utc;
+    Galileo_Utc_Model gal_utc;
     // reference location
     Gps_Ref_Location gps_ref_loc;
     // Acquisition Assistance map
@@ -132,9 +136,14 @@ public:
         std::map<int, Gps_Ephemeris> eph_map);
 
     /*!
-     * \brief Read utc model from XML file
+     * \brief Read GPS utc model from XML file
      */
     bool load_utc_xml(const std::string file_name);
+
+    /*!
+     * \brief Read Galileo utc model from XML file
+     */
+    bool load_gal_utc_xml(const std::string file_name);
 
     /*!
      * \brief Save utc model map to XML file
@@ -147,6 +156,11 @@ public:
      * \brief Read iono from XML file
      */
     bool load_iono_xml(const std::string file_name);
+
+    /*!
+     * \brief Read Galileo iono from XML file
+     */
+    bool load_gal_iono_xml(const std::string file_name);
 
     /*!
      * \brief Save iono map to XML file

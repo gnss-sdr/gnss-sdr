@@ -34,6 +34,8 @@
 #include "galileo_ephemeris.h"
 #include "gps_utc_model.h"
 #include "gps_iono.h"
+#include "galileo_utc_model.h"
+#include "galileo_iono.h"
 #include <gflags/gflags.h>
 #include <gpstk/Rinex3NavHeader.hpp>
 #include <gpstk/Rinex3NavData.hpp>
@@ -73,6 +75,8 @@ int main(int argc, char** argv)
 
     Gps_Utc_Model gps_utc_model;
     Gps_Iono gps_iono;
+    Galileo_Utc_Model gal_utc_model;
+    Galileo_Iono gal_iono;
 
     int i = 0;
     int j = 0;
@@ -117,6 +121,27 @@ int main(int argc, char** argv)
                     gps_iono.d_beta1 = hdr.mapIonoCorr["GPSB"].param[1];
                     gps_iono.d_beta2 = hdr.mapIonoCorr["GPSB"].param[2];
                     gps_iono.d_beta3 = hdr.mapIonoCorr["GPSB"].param[3];
+                }
+            if (hdr.fileSys.compare("E: (GAL)") == 0 || hdr.fileSys.compare("MIXED") == 0)
+                {
+                    gal_utc_model.A0_6 = hdr.mapTimeCorr["GAUT"].A0;
+                    gal_utc_model.A1_6 = hdr.mapTimeCorr["GAUT"].A1;
+                    gal_utc_model.Delta_tLS_6 = hdr.leapSeconds;
+                    gal_utc_model.t0t_6 = hdr.mapTimeCorr["GAUT"].refSOW;
+                    gal_utc_model.WNot_6 = hdr.mapTimeCorr["GAUT"].refWeek;
+                    gal_utc_model.WN_LSF_6 = hdr.leapWeek;
+                    gal_utc_model.DN_6 = hdr.leapDay;
+                    gal_utc_model.Delta_tLSF_6 = hdr.leapDelta;
+                    gal_iono.ai0_5 = hdr.mapIonoCorr["GAL"].param[0];
+                    gal_iono.ai1_5 = hdr.mapIonoCorr["GAL"].param[1];
+                    gal_iono.ai2_5 = hdr.mapIonoCorr["GAL"].param[2];
+                    gal_iono.Region1_flag_5 = false;
+                    gal_iono.Region2_flag_5 = false;
+                    gal_iono.Region3_flag_5 = false;
+                    gal_iono.Region4_flag_5 = false;
+                    gal_iono.Region5_flag_5 = false;
+                    gal_iono.TOW_5 = 0.0;
+                    gal_iono.WN_5 = 0.0;
                 }
 
             // Read navigation data
@@ -292,6 +317,42 @@ int main(int argc, char** argv)
             std::cout << "Generated file: " << xml_filename << std::endl;
         }
 
+    if (gal_utc_model.A0_6 != 0)
+        {
+            std::ofstream ofs5;
+            xml_filename = "gal_utc.xml";
+            try
+                {
+                    ofs5.open(xml_filename.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs5);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_utc", gal_utc_model);
+                }
+            catch (std::exception& e)
+                {
+                    std::cerr << "Problem creating the XML file " << xml_filename << ": " << e.what() << std::endl;
+                    google::ShutDownCommandLineFlags();
+                    return 1;
+                }
+            std::cout << "Generated file: " << xml_filename << std::endl;
+        }
+    if (gal_iono.ai0_5 != 0)
+        {
+            std::ofstream ofs7;
+            xml_filename = "gal_iono.xml";
+            try
+                {
+                    ofs7.open(xml_filename.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs7);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_iono", gal_iono);
+                }
+            catch (std::exception& e)
+                {
+                    std::cerr << "Problem creating the XML file " << xml_filename << ": " << e.what() << std::endl;
+                    google::ShutDownCommandLineFlags();
+                    return 1;
+                }
+            std::cout << "Generated file: " << xml_filename << std::endl;
+        }
     google::ShutDownCommandLineFlags();
     return 0;
 }

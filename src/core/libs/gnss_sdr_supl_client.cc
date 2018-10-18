@@ -474,6 +474,25 @@ bool gnss_sdr_supl_client::load_utc_xml(const std::string file_name)
 }
 
 
+bool gnss_sdr_supl_client::load_gal_utc_xml(const std::string file_name)
+{
+    std::ifstream ifs;
+    try
+        {
+            ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
+            boost::archive::xml_iarchive xml(ifs);
+            xml >> boost::serialization::make_nvp("GNSS-SDR_gal_utc_map", this->gal_utc);
+            LOG(INFO) << "Loaded Galileo UTC model data";
+        }
+    catch (std::exception& e)
+        {
+            LOG(WARNING) << e.what() << "File: " << file_name;
+            return false;
+        }
+    return true;
+}
+
+
 bool gnss_sdr_supl_client::save_utc_map_xml(const std::string file_name, std::map<int, Gps_Utc_Model> utc_map)
 {
     if (utc_map.empty() == false)
@@ -510,6 +529,25 @@ bool gnss_sdr_supl_client::load_iono_xml(const std::string file_name)
             boost::archive::xml_iarchive xml(ifs);
             xml >> boost::serialization::make_nvp("GNSS-SDR_iono_map", this->gps_iono);
             LOG(INFO) << "Loaded IONO model data";
+        }
+    catch (std::exception& e)
+        {
+            LOG(WARNING) << e.what() << "File: " << file_name;
+            return false;
+        }
+    return true;
+}
+
+
+bool gnss_sdr_supl_client::load_gal_iono_xml(const std::string file_name)
+{
+    std::ifstream ifs;
+    try
+        {
+            ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
+            boost::archive::xml_iarchive xml(ifs);
+            xml >> boost::serialization::make_nvp("GNSS-SDR_iono_gal_map", this->gal_iono);
+            LOG(INFO) << "Loaded Galileo IONO model data";
         }
     catch (std::exception& e)
         {

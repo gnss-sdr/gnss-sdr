@@ -634,10 +634,10 @@ void PositionSystemTest::check_results()
             double accuracy_CEP = 0.62 * sqrt(sigma_N_2_accuracy) + 0.56 * sqrt(sigma_E_2_accuracy);
             double precision_SEP = 0.51 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision);
 
-            EXPECT_LT(static_2D_error_m, 2.0);
-            EXPECT_LT(static_2D_error_m, 5.0);
-            ASSERT_LT(accuracy_CEP, 2.0);
-            ASSERT_LT(precision_SEP, 5.0);
+            EXPECT_LT(static_2D_error_m, FLAGS_static_2D_error_m);
+            EXPECT_LT(static_2D_error_m, FLAGS_static_2D_error_m);
+            ASSERT_LT(accuracy_CEP, FLAGS_accuracy_CEP);
+            ASSERT_LT(precision_SEP, FLAGS_precision_SEP);
 
             if (FLAGS_plot_position_test == true)
                 {
@@ -841,8 +841,8 @@ void PositionSystemTest::check_results()
 
             //ERROR CHECK
             //todo: reduce the error tolerance or enable the option to pass the error tolerance by parameter
-            EXPECT_LT(rmse_R_eb_e, 10.0);  //3D RMS positioning error less than 10 meters
-            EXPECT_LT(rmse_V_eb_e, 5.0);   //3D RMS speed error less than 5 meters/s (18 km/h)
+            EXPECT_LT(rmse_R_eb_e, FLAGS_dynamic_3D_position_RMSE);  //3D RMS positioning error less than 10 meters
+            EXPECT_LT(rmse_V_eb_e, FLAGS_dynamic_3D_velocity_RMSE);  //3D RMS speed error less than 5 meters/s (18 km/h)
         }
 }
 

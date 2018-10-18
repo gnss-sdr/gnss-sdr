@@ -46,6 +46,8 @@ extern "C"
 #include "gps_acq_assist.h"
 #include "gps_ref_time.h"
 #include "gps_ref_location.h"
+#include "gps_cnav_ephemeris.h"
+#include "galileo_ephemeris.h"
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/serialization/map.hpp>
@@ -77,6 +79,8 @@ public:
     int request;
     // ephemeris map
     std::map<int, Gps_Ephemeris> gps_ephemeris_map;
+    std::map<int, Galileo_Ephemeris> gal_ephemeris_map;
+    std::map<int, Gps_CNAV_Ephemeris> gps_cnav_ephemeris_map;
     // almanac map
     std::map<int, Gps_Almanac> gps_almanac_map;
 
@@ -107,9 +111,19 @@ public:
     void read_supl_data();
 
     /*!
-     * \brief Read ephemeris map from XML file
+     * \brief Read GPS NAV ephemeris map from XML file
      */
     bool load_ephemeris_xml(const std::string file_name);
+
+    /*!
+     * \brief Read GPS CNAV ephemeris map from XML file
+     */
+    bool load_cnav_ephemeris_xml(const std::string file_name);
+
+    /*!
+     * \brief Read Galileo ephemeris map from XML file
+     */
+    bool load_gal_ephemeris_xml(const std::string file_name);
 
     /*!
      * \brief Save ephemeris map to XML file.

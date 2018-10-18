@@ -209,10 +209,7 @@ int main(int argc, char** argv)
     if (j != 0)
         {
             std::ofstream ofs2;
-            if (xml_filename.empty())
-                {
-                    xml_filename = "eph_Galileo_E1.xml";
-                }
+            xml_filename = "eph_Galileo_E1.xml";
             try
                 {
                     ofs2.open(xml_filename.c_str(), std::ofstream::trunc | std::ofstream::out);

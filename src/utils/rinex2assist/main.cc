@@ -281,7 +281,7 @@ int main(int argc, char** argv)
     if (gps_utc_model.valid)
         {
             std::ofstream ofs3;
-            xml_filename = "gps_UTC.xml";
+            xml_filename = "gps_utc.xml";
             try
                 {
                     ofs3.open(xml_filename.c_str(), std::ofstream::trunc | std::ofstream::out);

@@ -205,13 +205,13 @@ bool ControlThread::read_assistance_from_XML()
     std::string ref_location_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_location_xml", ref_location_default_xml_filename);
     std::string eph_gal_xml_filename = configuration_->property("GNSS-SDR.SUPL_gal_ephemeris_xml", eph_gal_default_xml_filename);
     std::string eph_cnav_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_cnav_ephemeris_xml", eph_cnav_default_xml_filename);
-    // clang-format off
+
     std::cout << "Trying to read GNSS ephemeris from XML file(s): "
               << ((eph_xml_filename.compare(eph_default_xml_filename) != 0) ? eph_xml_filename + " " : "")
-              << ((eph_gal_xml_filename.compare(eph_gal_default_xml_filename) != 0) ? eph_gal_xml_filename +  " " : "")
+              << ((eph_gal_xml_filename.compare(eph_gal_default_xml_filename) != 0) ? eph_gal_xml_filename + " " : "")
               << ((eph_cnav_xml_filename.compare(eph_cnav_default_xml_filename) != 0) ? eph_gal_xml_filename : "")
               << std::endl;
-    // clang-format on
+
     if (supl_client_ephemeris_.load_ephemeris_xml(eph_xml_filename) == true)
         {
             std::map<int, Gps_Ephemeris>::const_iterator gps_eph_iter;
@@ -219,7 +219,7 @@ bool ControlThread::read_assistance_from_XML()
                  gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.cend();
                  gps_eph_iter++)
                 {
-                    std::cout << "From XML file: Read NAV ephemeris for GPS SV " << Gnss_Satellite("GPS", gps_eph_iter->first) << std::endl;
+                    std::cout << "From XML file: Read NAV ephemeris for satellite " << Gnss_Satellite("GPS", gps_eph_iter->first) << std::endl;
                     std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(gps_eph_iter->second);
                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                 }
@@ -233,7 +233,7 @@ bool ControlThread::read_assistance_from_XML()
                  gal_eph_iter != supl_client_ephemeris_.gal_ephemeris_map.cend();
                  gal_eph_iter++)
                 {
-                    std::cout << "From XML file: Read ephemeris for Galileo SV " << Gnss_Satellite("Galileo", gal_eph_iter->first) << std::endl;
+                    std::cout << "From XML file: Read ephemeris for satellite " << Gnss_Satellite("Galileo", gal_eph_iter->first) << std::endl;
                     std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(gal_eph_iter->second);
                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                 }
@@ -247,7 +247,7 @@ bool ControlThread::read_assistance_from_XML()
                  gps_cnav_eph_iter != supl_client_ephemeris_.gps_cnav_ephemeris_map.cend();
                  gps_cnav_eph_iter++)
                 {
-                    std::cout << "From XML file: Read CNAV ephemeris for GPS SV " << Gnss_Satellite("GPS", gps_cnav_eph_iter->first) << std::endl;
+                    std::cout << "From XML file: Read CNAV ephemeris for satellite " << Gnss_Satellite("GPS", gps_cnav_eph_iter->first) << std::endl;
                     std::shared_ptr<Gps_CNAV_Ephemeris> tmp_obj = std::make_shared<Gps_CNAV_Ephemeris>(gps_cnav_eph_iter->second);
                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                 }
@@ -359,7 +359,7 @@ void ControlThread::assist_GNSS()
                     // read assistance from file
                     if (read_assistance_from_XML())
                         {
-                            std::cout << "GPS assistance data loaded from local XML file." << std::endl;
+                            std::cout << "GNSS assistance data loaded from local XML file(s)." << std::endl;
                         }
                 }
             else

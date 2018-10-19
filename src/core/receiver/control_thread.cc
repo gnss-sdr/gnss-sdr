@@ -98,6 +98,12 @@ ControlThread::~ControlThread()
 }
 
 
+void ControlThread::telecommand_listener()
+{
+    int tcp_cmd_port = configuration_->property("Channel.telecontrol_tcp_port", 3333);
+    cmd_interface_.run_cmd_server(tcp_cmd_port);
+}
+
 /*
  * Runs the control thread that manages the receiver control plane
  *
@@ -146,8 +152,11 @@ void ControlThread::run()
     keyboard_thread_ = boost::thread(&ControlThread::keyboard_listener, this);
     sysv_queue_thread_ = boost::thread(&ControlThread::sysv_queue_listener, this);
 
-    bool enable_FPGA = configuration_->property("Channel.enable_FPGA", false);
+    //start the telecommand listener thread
+    cmd_interface_thread_ = boost::thread(&ControlThread::telecommand_listener, this);
 
+
+    bool enable_FPGA = configuration_->property("Channel.enable_FPGA", false);
     if (enable_FPGA == true)
         {
             flowgraph_->start_acquisition_helper();
@@ -165,14 +174,16 @@ void ControlThread::run()
     stop_ = true;
     flowgraph_->disconnect();
 
-    //Join keyboard thread
+//Join keyboard thread
 #ifdef OLD_BOOST
     keyboard_thread_.timed_join(boost::posix_time::seconds(1));
     sysv_queue_thread_.timed_join(boost::posix_time::seconds(1));
+    cmd_interface_thread_.timed_join(boost::posix_time::seconds(1));
 #endif
 #ifndef OLD_BOOST
     keyboard_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
     sysv_queue_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
+    cmd_interface_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
 #endif
 
     LOG(INFO) << "Flowgraph stopped";

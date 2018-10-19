@@ -80,6 +80,7 @@ public:
         archive& make_nvp("WN_LSF_6", WN_LSF_6);
         archive& make_nvp("DN_6", DN_6);
         archive& make_nvp("Delta_tLSF_6", Delta_tLSF_6);
+        archive& make_nvp("flag_utc_model", flag_utc_model);
     }
 };
 

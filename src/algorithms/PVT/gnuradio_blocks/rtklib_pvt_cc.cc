@@ -396,8 +396,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
     msgctl(sysv_msqid, IPC_RMID, NULL);
 
     // save GPS L2CM ephemeris to XML file
-    std::string file_name = "eph_GPS_CNAV.xml";
-
+    std::string file_name = "gps_cnav_ephemeris.xml";
     if (d_ls_pvt->gps_cnav_ephemeris_map.empty() == false)
         {
             std::ofstream ofs;
@@ -405,7 +404,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                 {
                     ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
                     boost::archive::xml_oarchive xml(ofs);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", d_ls_pvt->gps_cnav_ephemeris_map);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_cnav_ephemeris_map", d_ls_pvt->gps_cnav_ephemeris_map);
                     LOG(INFO) << "Saved GPS L2CM or L5 Ephemeris map data";
                 }
             catch (std::exception& e)
@@ -419,8 +418,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
         }
 
     // save GPS L1 CA ephemeris to XML file
-    file_name = "eph_GPS_L1CA.xml";
-
+    file_name = "gps_ephemeris.xml";
     if (d_ls_pvt->gps_ephemeris_map.empty() == false)
         {
             std::ofstream ofs;
@@ -442,8 +440,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
         }
 
     // save Galileo E1 ephemeris to XML file
-    file_name = "eph_Galileo_E1.xml";
-
+    file_name = "gal_ephemeris.xml";
     if (d_ls_pvt->galileo_ephemeris_map.empty() == false)
         {
             std::ofstream ofs;
@@ -451,7 +448,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                 {
                     ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
                     boost::archive::xml_oarchive xml(ofs);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", d_ls_pvt->galileo_ephemeris_map);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_ephemeris_map", d_ls_pvt->galileo_ephemeris_map);
                     LOG(INFO) << "Saved Galileo E1 Ephemeris map data";
                 }
             catch (const std::exception& e)
@@ -466,7 +463,6 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
 
     // save GLONASS GNAV ephemeris to XML file
     file_name = "eph_GLONASS_GNAV.xml";
-
     if (d_ls_pvt->glonass_gnav_ephemeris_map.empty() == false)
         {
             std::ofstream ofs;
@@ -474,7 +470,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                 {
                     ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
                     boost::archive::xml_oarchive xml(ofs);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", d_ls_pvt->glonass_gnav_ephemeris_map);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_gnav_ephemeris_map", d_ls_pvt->glonass_gnav_ephemeris_map);
                     LOG(INFO) << "Saved GLONASS GNAV Ephemeris map data";
                 }
             catch (std::exception& e)
@@ -485,6 +481,50 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
     else
         {
             LOG(WARNING) << "Failed to save GLONASS GNAV Ephemeris, map is empty";
+        }
+
+    // Save GPS UTC model parameters
+    file_name = "gps_utc_model.xml";
+    if (d_ls_pvt->gps_utc_model.valid)
+        {
+            std::ofstream ofs;
+            try
+                {
+                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_utc_model", d_ls_pvt->gps_utc_model);
+                    LOG(INFO) << "Saved GPS UTC model parameters";
+                }
+            catch (std::exception& e)
+                {
+                    LOG(WARNING) << e.what();
+                }
+        }
+    else
+        {
+            LOG(WARNING) << "Failed to save GPS UTC model parameters, not valid data";
+        }
+
+    // Save Galileo UTC model parameters
+    file_name = "gal_utc_model.xml";
+    if (d_ls_pvt->galileo_utc_model.A0_6 != 0.0)
+        {
+            std::ofstream ofs;
+            try
+                {
+                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_utc_model", d_ls_pvt->galileo_utc_model);
+                    LOG(INFO) << "Saved Galileo UTC model parameters";
+                }
+            catch (std::exception& e)
+                {
+                    LOG(WARNING) << e.what();
+                }
+        }
+    else
+        {
+            LOG(WARNING) << "Failed to save Galileo UTC model parameters, not valid data";
         }
 }
 

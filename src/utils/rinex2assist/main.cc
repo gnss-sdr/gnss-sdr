@@ -132,6 +132,7 @@ int main(int argc, char** argv)
                     gal_utc_model.WN_LSF_6 = hdr.leapWeek;
                     gal_utc_model.DN_6 = hdr.leapDay;
                     gal_utc_model.Delta_tLSF_6 = hdr.leapDelta;
+                    gal_utc_model.flag_utc_model = (hdr.mapTimeCorr["GAUT"].A0 == 0.0);
                     gal_iono.ai0_5 = hdr.mapIonoCorr["GAL"].param[0];
                     gal_iono.ai1_5 = hdr.mapIonoCorr["GAL"].param[1];
                     gal_iono.ai2_5 = hdr.mapIonoCorr["GAL"].param[2];
@@ -242,7 +243,7 @@ int main(int argc, char** argv)
             std::ofstream ofs;
             if (xml_filename.empty())
                 {
-                    xml_filename = "eph_GPS_L1CA.xml";
+                    xml_filename = "gps_ephemeris.xml";
                 }
             try
                 {
@@ -261,12 +262,12 @@ int main(int argc, char** argv)
     if (j != 0)
         {
             std::ofstream ofs2;
-            xml_filename = "eph_Galileo_E1.xml";
+            xml_filename = "gal_ephemeris.xml";
             try
                 {
                     ofs2.open(xml_filename.c_str(), std::ofstream::trunc | std::ofstream::out);
                     boost::archive::xml_oarchive xml(ofs2);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", eph_gal_map);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_ephemeris_map", eph_gal_map);
                 }
             catch (std::exception& e)
                 {
@@ -281,12 +282,12 @@ int main(int argc, char** argv)
     if (gps_utc_model.valid)
         {
             std::ofstream ofs3;
-            xml_filename = "gps_utc.xml";
+            xml_filename = "gps_utc_model.xml";
             try
                 {
                     ofs3.open(xml_filename.c_str(), std::ofstream::trunc | std::ofstream::out);
                     boost::archive::xml_oarchive xml(ofs3);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_gps_utc", gps_utc_model);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_utc_model", gps_utc_model);
                 }
             catch (std::exception& e)
                 {
@@ -306,7 +307,7 @@ int main(int argc, char** argv)
                 {
                     ofs4.open(xml_filename.c_str(), std::ofstream::trunc | std::ofstream::out);
                     boost::archive::xml_oarchive xml(ofs4);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_gps_iono", gps_iono);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_iono_model", gps_iono);
                 }
             catch (std::exception& e)
                 {
@@ -320,12 +321,12 @@ int main(int argc, char** argv)
     if (gal_utc_model.A0_6 != 0)
         {
             std::ofstream ofs5;
-            xml_filename = "gal_utc.xml";
+            xml_filename = "gal_utc_model.xml";
             try
                 {
                     ofs5.open(xml_filename.c_str(), std::ofstream::trunc | std::ofstream::out);
                     boost::archive::xml_oarchive xml(ofs5);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_utc", gal_utc_model);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_utc_model", gal_utc_model);
                 }
             catch (std::exception& e)
                 {
@@ -343,7 +344,7 @@ int main(int argc, char** argv)
                 {
                     ofs7.open(xml_filename.c_str(), std::ofstream::trunc | std::ofstream::out);
                     boost::archive::xml_oarchive xml(ofs7);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_iono", gal_iono);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_iono_model", gal_iono);
                 }
             catch (std::exception& e)
                 {

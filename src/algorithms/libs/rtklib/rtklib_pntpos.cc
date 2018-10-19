@@ -739,6 +739,7 @@ int resdop(const obsd_t *obs, int n, const double *rs, const double *dts,
 {
     double lam, rate, pos[3], E[9], a[3], e[3], vs[3], cosel;
     int i, j, nv = 0;
+    int band = 0;
 
     trace(3, "resdop  : n=%d\n", n);
 
@@ -747,9 +748,12 @@ int resdop(const obsd_t *obs, int n, const double *rs, const double *dts,
 
     for (i = 0; i < n && i < MAXOBS; i++)
         {
-            lam = nav->lam[obs[i].sat - 1][0];
+            if (obs[i].code[0] != CODE_NONE) band = 0;
+            if (obs[i].code[1] != CODE_NONE) band = 1;
+            if (obs[i].code[2] != CODE_NONE) band = 2;
+            lam = nav->lam[obs[i].sat - 1][band];
 
-            if (obs[i].D[0] == 0.0 || lam == 0.0 || !vsat[i] || norm_rtk(rs + 3 + i * 6, 3) <= 0.0)
+            if (obs[i].D[band] == 0.0 || lam == 0.0 || !vsat[i] || norm_rtk(rs + 3 + i * 6, 3) <= 0.0)
                 {
                     continue;
                 }
@@ -767,7 +771,7 @@ int resdop(const obsd_t *obs, int n, const double *rs, const double *dts,
             rate = dot(vs, e, 3) + DEFAULT_OMEGA_EARTH_DOT / SPEED_OF_LIGHT * (rs[4 + i * 6] * rr[0] + rs[1 + i * 6] * x[0] - rs[3 + i * 6] * rr[1] - rs[i * 6] * x[1]);
 
             /* doppler residual */
-            v[nv] = -lam * obs[i].D[0] - (rate + x[3] - SPEED_OF_LIGHT * dts[1 + i * 2]);
+            v[nv] = -lam * obs[i].D[band] - (rate + x[3] - SPEED_OF_LIGHT * dts[1 + i * 2]);
 
             /* design matrix */
             for (j = 0; j < 4; j++) H[j + nv * 4] = j < 3 ? -e[j] : 1.0;

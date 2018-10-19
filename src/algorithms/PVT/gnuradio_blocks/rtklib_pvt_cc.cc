@@ -414,7 +414,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
         }
     else
         {
-            LOG(WARNING) << "Failed to save GPS L2CM or L5 Ephemeris, map is empty";
+            LOG(INFO) << "Failed to save GPS L2CM or L5 Ephemeris, map is empty";
         }
 
     // save GPS L1 CA ephemeris to XML file
@@ -436,7 +436,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
         }
     else
         {
-            LOG(WARNING) << "Failed to save GPS L1 CA Ephemeris, map is empty";
+            LOG(INFO) << "Failed to save GPS L1 CA Ephemeris, map is empty";
         }
 
     // save Galileo E1 ephemeris to XML file
@@ -458,7 +458,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
         }
     else
         {
-            LOG(WARNING) << "Failed to save Galileo E1 Ephemeris, map is empty";
+            LOG(INFO) << "Failed to save Galileo E1 Ephemeris, map is empty";
         }
 
     // save GLONASS GNAV ephemeris to XML file
@@ -480,7 +480,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
         }
     else
         {
-            LOG(WARNING) << "Failed to save GLONASS GNAV Ephemeris, map is empty";
+            LOG(INFO) << "Failed to save GLONASS GNAV Ephemeris, map is empty";
         }
 
     // Save GPS UTC model parameters
@@ -502,7 +502,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
         }
     else
         {
-            LOG(WARNING) << "Failed to save GPS UTC model parameters, not valid data";
+            LOG(INFO) << "Failed to save GPS UTC model parameters, not valid data";
         }
 
     // Save Galileo UTC model parameters
@@ -524,7 +524,29 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
         }
     else
         {
-            LOG(WARNING) << "Failed to save Galileo UTC model parameters, not valid data";
+            LOG(INFO) << "Failed to save Galileo UTC model parameters, not valid data";
+        }
+
+    // Save GPS CNAV UTC model parameters
+    file_name = "gps_cnav_utc_model.xml";
+    if (d_ls_pvt->gps_cnav_utc_model.valid)
+        {
+            std::ofstream ofs;
+            try
+                {
+                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_cnav_utc_model", d_ls_pvt->gps_cnav_utc_model);
+                    LOG(INFO) << "Saved GPS CNAV UTC model parameters";
+                }
+            catch (std::exception& e)
+                {
+                    LOG(WARNING) << e.what();
+                }
+        }
+    else
+        {
+            LOG(INFO) << "Failed to save GPS CNAV UTC model parameters, not valid data";
         }
 }
 

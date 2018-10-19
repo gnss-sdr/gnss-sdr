@@ -555,6 +555,52 @@ bool gnss_sdr_supl_client::save_utc_xml(const std::string file_name, Gps_Utc_Mod
 }
 
 
+bool gnss_sdr_supl_client::load_cnav_utc_xml(const std::string file_name)
+{
+    std::ifstream ifs;
+    try
+        {
+            ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
+            boost::archive::xml_iarchive xml(ifs);
+            xml >> boost::serialization::make_nvp("GNSS-SDR_cnav_utc_model", this->gps_cnav_utc);
+            LOG(INFO) << "Loaded CNAV UTC model data";
+        }
+    catch (std::exception& e)
+        {
+            LOG(WARNING) << e.what() << "File: " << file_name;
+            return false;
+        }
+    return true;
+}
+
+
+bool gnss_sdr_supl_client::save_cnav_utc_xml(const std::string file_name, Gps_CNAV_Utc_Model& utc)
+{
+    if (utc.valid)
+        {
+            std::ofstream ofs;
+            try
+                {
+                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_cnav_utc_model", utc);
+                    LOG(INFO) << "Saved GPS CNAV UTC model data";
+                }
+            catch (std::exception& e)
+                {
+                    LOG(WARNING) << e.what();
+                    return false;
+                }
+        }
+    else
+        {
+            LOG(WARNING) << "Failed to save GPS CNAV UTC model, no valid data";
+            return false;
+        }
+    return true;
+}
+
+
 bool gnss_sdr_supl_client::load_gal_utc_xml(const std::string file_name)
 {
     std::ifstream ifs;

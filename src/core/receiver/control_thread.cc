@@ -207,11 +207,9 @@ bool ControlThread::read_assistance_from_XML()
     std::string eph_gal_xml_filename = configuration_->property("GNSS-SDR.SUPL_gal_ephemeris_xml", eph_gal_default_xml_filename);
     std::string eph_cnav_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_cnav_ephemeris_xml", eph_cnav_default_xml_filename);
     std::string gal_utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_gal_utc_model.xml", gal_utc_default_xml_filename);
+    std::string cnav_utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_cnav_utc_model.xml", cnav_utc_default_xml_filename);
 
-    std::cout << "Trying to read GNSS ephemeris from XML file(s): "
-              << ((eph_xml_filename.compare(eph_default_xml_filename) != 0) ? eph_xml_filename + " " : "")
-              << ((eph_gal_xml_filename.compare(eph_gal_default_xml_filename) != 0) ? eph_gal_xml_filename + " " : "")
-              << ((eph_cnav_xml_filename.compare(eph_cnav_default_xml_filename) != 0) ? eph_gal_xml_filename : "")
+    std::cout << "Trying to read GNSS ephemeris from XML file(s)..."
               << std::endl;
 
     if (supl_client_ephemeris_.load_ephemeris_xml(eph_xml_filename) == true)
@@ -285,6 +283,14 @@ bool ControlThread::read_assistance_from_XML()
             std::shared_ptr<Galileo_Utc_Model> tmp_obj = std::make_shared<Galileo_Utc_Model>(supl_client_acquisition_.gal_utc);
             flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
             std::cout << "From XML file: Read Galileo UTC parameters." << std::endl;
+            ret = true;
+        }
+
+    if (supl_client_acquisition_.load_cnav_utc_xml(cnav_utc_xml_filename) == true)
+        {
+            std::shared_ptr<Gps_CNAV_Utc_Model> tmp_obj = std::make_shared<Gps_CNAV_Utc_Model>(supl_client_acquisition_.gps_cnav_utc);
+            flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+            std::cout << "From XML file: Read GPS CNAV UTC parameters." << std::endl;
             ret = true;
         }
 

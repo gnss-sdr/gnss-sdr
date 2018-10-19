@@ -43,6 +43,7 @@ extern "C"
 #include "gps_iono.h"
 #include "gps_almanac.h"
 #include "gps_utc_model.h"
+#include "gps_cnav_utc_model.h"
 #include "gps_acq_assist.h"
 #include "gps_ref_time.h"
 #include "gps_ref_location.h"
@@ -94,6 +95,7 @@ public:
     // UTC model
     Gps_Utc_Model gps_utc;
     Galileo_Utc_Model gal_utc;
+    Gps_CNAV_Utc_Model gps_cnav_utc;
     // reference location
     Gps_Ref_Location gps_ref_loc;
     // Acquisition Assistance map
@@ -157,6 +159,17 @@ public:
      * To be called by ControlThread::gps_utc_model_data_write_to_XML()
      */
     bool save_utc_xml(const std::string file_name, Gps_Utc_Model& utc);
+
+    /*!
+     * \brief Read CNAV GPS utc model from XML file
+     */
+    bool load_cnav_utc_xml(const std::string file_name);
+
+    /*!
+     * \brief Save CNAV UTC model map to XML file
+     * To be called by ControlThread::gps_utc_model_data_write_to_XML()
+     */
+    bool save_cnav_utc_xml(const std::string file_name, Gps_CNAV_Utc_Model& utc);
 
     /*!
      * \brief Read Galileo utc model from XML file

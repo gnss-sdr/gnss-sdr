@@ -129,21 +129,6 @@ int pppamb(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav, const double 
 /* functions originally included in RTKLIB/src/ppp.c v2.4.2 */
 void pppoutsolstat(rtk_t *rtk, int level, FILE *fp);
 
-void tide_pl(const double *eu, const double *rp, double GMp, const double *pos, double *dr);
-
-void tide_solid(const double *rsun, const double *rmoon,
-    const double *pos, const double *E, double gmst, int opt,
-    double *dr);
-
-void tide_oload(gtime_t tut, const double *odisp, double *denu);
-
-void iers_mean_pole(gtime_t tut, double *xp_bar, double *yp_bar);
-
-void tide_pole(gtime_t tut, const double *pos, const double *erpv, double *denu);
-
-void tidedisp(gtime_t tutc, const double *rr, int opt, const erp_t *erp,
-    const double *odisp, double *dr);
-
 void testeclipse(const obsd_t *obs, int n, const nav_t *nav, double *rs);
 
 double varerr(int sat, int sys, double el, int type, const prcopt_t *opt);

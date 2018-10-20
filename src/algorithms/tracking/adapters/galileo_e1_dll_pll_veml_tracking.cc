@@ -59,6 +59,16 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     trk_param.fs_in = fs_in;
     bool dump = configuration->property(role + ".dump", false);
     trk_param.dump = dump;
+    trk_param.high_dyn = configuration->property(role + ".high_dyn", false);
+    if (configuration->property(role + ".smoother_length", 10) < 1)
+        {
+            trk_param.smoother_length = 1;
+            std::cout << TEXT_RED << "WARNING: Gal. E1. smoother_length must be bigger than 0. It has been set to 1" << TEXT_RESET << std::endl;
+        }
+    else
+        {
+            trk_param.smoother_length = configuration->property(role + ".smoother_length", 10);
+        }
     float pll_bw_hz = configuration->property(role + ".pll_bw_hz", 5.0);
     if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
     trk_param.pll_bw_hz = pll_bw_hz;

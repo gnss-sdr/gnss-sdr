@@ -41,6 +41,7 @@
 #include <string>
 #include <map>
 #include <queue>
+#include <utility>
 #include <boost/circular_buffer.hpp>
 
 class dll_pll_veml_tracking;
@@ -146,10 +147,13 @@ private:
 
     double d_code_phase_step_chips;
     double d_code_phase_rate_step_chips;
+    boost::circular_buffer<std::pair<double, double>> d_code_ph_history;
     double d_carrier_phase_step_rad;
+    double d_carrier_phase_rate_step_rad;
+    boost::circular_buffer<std::pair<double, double>> d_carr_ph_history;
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;
-    double d_rem_carr_phase_rad;
+    float d_rem_carr_phase_rad;
 
     // PLL and DLL filter library
     Tracking_2nd_DLL_filter d_code_loop_filter;
@@ -164,7 +168,6 @@ private:
     double d_carr_error_filt_hz;
     double d_code_error_chips;
     double d_code_error_filt_chips;
-    double d_K_blk_samples;
     double d_code_freq_chips;
     double d_carrier_doppler_hz;
     double d_acc_carrier_phase_rad;

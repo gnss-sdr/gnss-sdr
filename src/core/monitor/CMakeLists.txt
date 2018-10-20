@@ -21,7 +21,13 @@ set(CORE_MONITOR_LIBS_SOURCES
 	gnss_synchro_monitor.cc
 	gnss_synchro_udp_sink.cc
 )
-	
+
+set(CORE_MONITOR_LIBS_HEADERS 
+	gnss_synchro_monitor.h
+	gnss_synchro_udp_sink.h
+)
+
+
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
@@ -31,8 +37,9 @@ include_directories(
     ${Boost_INCLUDE_DIRS}
 )
 
-file(GLOB CORE_MONITOR_LIBS_HEADERS "*.h")
 list(SORT CORE_MONITOR_LIBS_HEADERS)
+list(SORT CORE_MONITOR_LIBS_SOURCES)
+
 add_library(core_monitor_lib ${CORE_MONITOR_LIBS_SOURCES} ${CORE_MONITOR_LIBS_HEADERS})
 source_group(Headers FILES ${CORE_MONITOR_LIBS_HEADERS})
 target_link_libraries(core_monitor_lib ${Boost_LIBRARIES}) 

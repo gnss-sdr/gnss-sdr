@@ -236,6 +236,12 @@ public:
         arma::mat& measured_ch1,
         std::string data_title);
 
+    void check_results_duplicated_satellite(
+        arma::mat& measured_sat1,
+        arma::mat& measured_sat2,
+        int ch_id,
+        std::string data_title);
+
     HybridObservablesTest()
     {
         factory = std::make_shared<GNSSBlockFactory>();
@@ -255,7 +261,9 @@ public:
         double DLL_wide_bw_hz,
         double PLL_narrow_bw_hz,
         double DLL_narrow_bw_hz,
-        int extend_correlation_symbols);
+        int extend_correlation_symbols,
+        uint32_t smoother_length,
+        bool high_dyn);
 
     gr::top_block_sptr top_block;
     std::shared_ptr<GNSSBlockFactory> factory;
@@ -535,10 +543,17 @@ void HybridObservablesTest::configure_receiver(
     double DLL_wide_bw_hz,
     double PLL_narrow_bw_hz,
     double DLL_narrow_bw_hz,
-    int extend_correlation_symbols)
+    int extend_correlation_symbols,
+    uint32_t smoother_length,
+    bool high_dyn)
 {
     config = std::make_shared<InMemoryConfiguration>();
     config->set_property("Tracking.dump", "true");
+    if (high_dyn)
+        config->set_property("Tracking.high_dyn", "true");
+    else
+        config->set_property("Tracking.high_dyn", "false");
+    config->set_property("Tracking.smoother_length", std::to_string(smoother_length));
     config->set_property("Tracking.dump_filename", "./tracking_ch_");
     config->set_property("Tracking.implementation", implementation);
     config->set_property("Tracking.item_type", "gr_complex");
@@ -645,6 +660,8 @@ void HybridObservablesTest::configure_receiver(
     std::cout << "pll_bw_narrow_hz: " << config->property("Tracking.pll_bw_narrow_hz", 0.0) << " Hz\n";
     std::cout << "dll_bw_narrow_hz: " << config->property("Tracking.dll_bw_narrow_hz", 0.0) << " Hz\n";
     std::cout << "extend_correlation_symbols: " << config->property("Tracking.extend_correlation_symbols", 0) << " Symbols\n";
+    std::cout << "high_dyn: " << config->property("Tracking.high_dyn", false) << "\n";
+    std::cout << "smoother_length: " << config->property("Tracking.smoother_length", 0) << "\n";
     std::cout << "*****************************************\n";
     std::cout << "*****************************************\n";
 }
@@ -987,6 +1004,256 @@ void HybridObservablesTest::check_results_carrier_doppler(
     ASSERT_LT(rmse_ch0, 30);
 }
 
+void HybridObservablesTest::check_results_duplicated_satellite(
+    arma::mat& measured_sat1,
+    arma::mat& measured_sat2,
+    int ch_id,
+    std::string data_title)
+{
+    //1. True value interpolation to match the measurement times
+
+    //define the common measured time interval
+    double t0_sat1 = measured_sat1(0, 0);
+    int size1 = measured_sat1.col(0).n_rows;
+    double t1_sat1 = measured_sat1(size1 - 1, 0);
+
+    double t0_sat2 = measured_sat2(0, 0);
+    int size2 = measured_sat2.col(0).n_rows;
+    double t1_sat2 = measured_sat2(size2 - 1, 0);
+
+    double t0;
+    double t1;
+    if (t0_sat1 > t0_sat2)
+        {
+            t0 = t0_sat1;
+        }
+    else
+        {
+            t0 = t0_sat2;
+        }
+
+    if (t1_sat1 > t1_sat2)
+        {
+            t1 = t1_sat2;
+        }
+    else
+        {
+            t1 = t1_sat1;
+        }
+
+    arma::vec t = arma::linspace<arma::vec>(t0, t1, floor((t1 - t0) * 1e3));
+    //conversion between arma::vec and std:vector
+    arma::vec t_from_start = arma::linspace<arma::vec>(0, t1 - t0, floor((t1 - t0) * 1e3));
+    std::vector<double> time_vector(t_from_start.colptr(0), t_from_start.colptr(0) + t_from_start.n_rows);
+    //Doppler
+    arma::vec meas_sat1_doppler_interp;
+    arma::interp1(measured_sat1.col(0), measured_sat1.col(2), t, meas_sat1_doppler_interp);
+    arma::vec meas_sat2_doppler_interp;
+    arma::interp1(measured_sat2.col(0), measured_sat2.col(2), t, meas_sat2_doppler_interp);
+
+    //Carrier Phase
+    arma::vec meas_sat1_carrier_phase_interp;
+    arma::vec meas_sat2_carrier_phase_interp;
+    arma::interp1(measured_sat1.col(0), measured_sat1.col(3), t, meas_sat1_carrier_phase_interp);
+    arma::interp1(measured_sat2.col(0), measured_sat2.col(3), t, meas_sat2_carrier_phase_interp);
+
+    // generate double difference accumulated carrier phases
+    //compute error without the accumulated carrier phase offsets (which depends on the receiver starting time)
+    arma::vec delta_measured_carrier_phase_cycles = (meas_sat1_carrier_phase_interp - meas_sat1_carrier_phase_interp(0)) - (meas_sat2_carrier_phase_interp - meas_sat2_carrier_phase_interp(0));
+
+    //Pseudoranges
+    arma::vec meas_sat1_dist_interp;
+    arma::vec meas_sat2_dist_interp;
+    arma::interp1(measured_sat1.col(0), measured_sat1.col(4), t, meas_sat1_dist_interp);
+    arma::interp1(measured_sat2.col(0), measured_sat2.col(4), t, meas_sat2_dist_interp);
+    // generate delta pseudoranges
+    arma::vec delta_measured_dist_m = meas_sat1_dist_interp - meas_sat2_dist_interp;
+
+    //Carrier Doppler error
+    //2. RMSE
+    arma::vec err_ch0_hz;
+
+    //compute error
+    err_ch0_hz = meas_sat1_doppler_interp - meas_sat2_doppler_interp;
+
+    //save matlab file for further analysis
+    std::vector<double> tmp_vector_common_time_s(t.colptr(0),
+        t.colptr(0) + t.n_rows);
+
+    std::vector<double> tmp_vector_err_ch0_hz(err_ch0_hz.colptr(0),
+        err_ch0_hz.colptr(0) + err_ch0_hz.n_rows);
+    save_mat_xy(tmp_vector_common_time_s, tmp_vector_err_ch0_hz, std::string("measured_doppler_error_ch_" + std::to_string(ch_id)));
+
+    //compute statistics
+    arma::vec err2_ch0 = arma::square(err_ch0_hz);
+    double rmse_ch0 = sqrt(arma::mean(err2_ch0));
+
+    //3. Mean err and variance
+    double error_mean_ch0 = arma::mean(err_ch0_hz);
+    double error_var_ch0 = arma::var(err_ch0_hz);
+
+    // 4. Peaks
+    double max_error_ch0 = arma::max(err_ch0_hz);
+    double min_error_ch0 = arma::min(err_ch0_hz);
+
+    //5. report
+    std::streamsize ss = std::cout.precision();
+    std::cout << std::setprecision(10) << data_title << "Carrier Doppler RMSE = "
+              << rmse_ch0 << ", mean = " << error_mean_ch0
+              << ", stdev = " << sqrt(error_var_ch0)
+              << " (max,min) = " << max_error_ch0
+              << "," << min_error_ch0
+              << " [Hz]" << std::endl;
+    std::cout.precision(ss);
+
+    //plots
+    if (FLAGS_show_plots)
+        {
+            Gnuplot g3("linespoints");
+            g3.set_title(data_title + "Carrier Doppler error [Hz]");
+            g3.set_grid();
+            g3.set_xlabel("Time [s]");
+            g3.set_ylabel("Carrier Doppler error [Hz]");
+            //conversion between arma::vec and std:vector
+            std::vector<double> error_vec(err_ch0_hz.colptr(0), err_ch0_hz.colptr(0) + err_ch0_hz.n_rows);
+            g3.cmd("set key box opaque");
+            g3.plot_xy(time_vector, error_vec,
+                "Carrier Doppler error");
+            g3.set_legend();
+            g3.savetops(data_title + "Carrier_doppler_error");
+
+            g3.showonscreen();  // window output
+        }
+
+    //check results against the test tolerance
+    EXPECT_LT(error_mean_ch0, 5);
+    EXPECT_GT(error_mean_ch0, -5);
+    //assuming PLL BW=35
+    EXPECT_LT(error_var_ch0, 250);
+    EXPECT_LT(max_error_ch0, 100);
+    EXPECT_GT(min_error_ch0, -100);
+    EXPECT_LT(rmse_ch0, 30);
+
+    //Carrier Phase error
+    //2. RMSE
+    arma::vec err_carrier_phase;
+
+    err_carrier_phase = delta_measured_carrier_phase_cycles;
+
+    //save matlab file for further analysis
+    std::vector<double> tmp_vector_err_carrier_phase(err_carrier_phase.colptr(0),
+        err_carrier_phase.colptr(0) + err_carrier_phase.n_rows);
+    save_mat_xy(tmp_vector_common_time_s, tmp_vector_err_carrier_phase, std::string("measured_carrier_phase_error_ch_" + std::to_string(ch_id)));
+
+
+    arma::vec err2_carrier_phase = arma::square(err_carrier_phase);
+    double rmse_carrier_phase = sqrt(arma::mean(err2_carrier_phase));
+
+    //3. Mean err and variance
+    double error_mean_carrier_phase = arma::mean(err_carrier_phase);
+    double error_var_carrier_phase = arma::var(err_carrier_phase);
+
+    // 4. Peaks
+    double max_error_carrier_phase = arma::max(err_carrier_phase);
+    double min_error_carrier_phase = arma::min(err_carrier_phase);
+
+    //5. report
+    ss = std::cout.precision();
+    std::cout << std::setprecision(10) << data_title << "Carrier Phase RMSE = "
+              << rmse_carrier_phase << ", mean = " << error_mean_carrier_phase
+              << ", stdev = " << sqrt(error_var_carrier_phase)
+              << " (max,min) = " << max_error_carrier_phase
+              << "," << min_error_carrier_phase
+              << " [Cycles]" << std::endl;
+    std::cout.precision(ss);
+
+    //plots
+    if (FLAGS_show_plots)
+        {
+            Gnuplot g3("linespoints");
+            g3.set_title(data_title + "Carrier Phase error [Cycles]");
+            g3.set_grid();
+            g3.set_xlabel("Time [s]");
+            g3.set_ylabel("Carrier Phase error [Cycles]");
+            //conversion between arma::vec and std:vector
+            std::vector<double> range_error_m(err_carrier_phase.colptr(0), err_carrier_phase.colptr(0) + err_carrier_phase.n_rows);
+            g3.cmd("set key box opaque");
+            g3.plot_xy(time_vector, range_error_m,
+                "Carrier Phase error");
+            g3.set_legend();
+            g3.savetops(data_title + "duplicated_satellite_carrier_phase_error");
+
+            g3.showonscreen();  // window output
+        }
+
+    //check results against the test tolerance
+    EXPECT_LT(rmse_carrier_phase, 0.25);
+    EXPECT_LT(error_mean_carrier_phase, 0.2);
+    EXPECT_GT(error_mean_carrier_phase, -0.2);
+    EXPECT_LT(error_var_carrier_phase, 0.5);
+    EXPECT_LT(max_error_carrier_phase, 0.5);
+    EXPECT_GT(min_error_carrier_phase, -0.5);
+
+    //Pseudorange error
+    //2. RMSE
+    arma::vec err_pseudorange;
+
+    err_pseudorange = delta_measured_dist_m;
+
+    //save matlab file for further analysis
+    std::vector<double> tmp_vector_err_pseudorange(err_pseudorange.colptr(0),
+        err_pseudorange.colptr(0) + err_pseudorange.n_rows);
+    save_mat_xy(tmp_vector_common_time_s, tmp_vector_err_pseudorange, std::string("measured_pr_error_ch_" + std::to_string(ch_id)));
+
+    arma::vec err2_pseudorange = arma::square(err_pseudorange);
+    double rmse_pseudorange = sqrt(arma::mean(err2_pseudorange));
+
+    //3. Mean err and variance
+    double error_mean_pseudorange = arma::mean(err_pseudorange);
+    double error_var_pseudorange = arma::var(err_pseudorange);
+
+    // 4. Peaks
+    double max_error_pseudorange = arma::max(err_pseudorange);
+    double min_error_pseudorange = arma::min(err_pseudorange);
+
+    //5. report
+    ss = std::cout.precision();
+    std::cout << std::setprecision(10) << data_title << "Pseudorange RMSE = "
+              << rmse_pseudorange << ", mean = " << error_mean_pseudorange
+              << ", stdev = " << sqrt(error_var_pseudorange)
+              << " (max,min) = " << max_error_pseudorange
+              << "," << min_error_pseudorange
+              << " [meters]" << std::endl;
+    std::cout.precision(ss);
+
+    //plots
+    if (FLAGS_show_plots)
+        {
+            Gnuplot g3("linespoints");
+            g3.set_title(data_title + "Pseudorange error [m]");
+            g3.set_grid();
+            g3.set_xlabel("Time [s]");
+            g3.set_ylabel("Pseudorange error [m]");
+            //conversion between arma::vec and std:vector
+            std::vector<double> range_error_m(err_pseudorange.colptr(0), err_pseudorange.colptr(0) + err_pseudorange.n_rows);
+            g3.cmd("set key box opaque");
+            g3.plot_xy(time_vector, range_error_m,
+                "Pseudorrange error");
+            g3.set_legend();
+            g3.savetops(data_title + "duplicated_satellite_pseudorrange_error");
+
+            g3.showonscreen();  // window output
+        }
+
+    //check results against the test tolerance
+    EXPECT_LT(rmse_pseudorange, 3.0);
+    EXPECT_LT(error_mean_pseudorange, 1.0);
+    EXPECT_GT(error_mean_pseudorange, -1.0);
+    EXPECT_LT(error_var_pseudorange, 10.0);
+    EXPECT_LT(max_error_pseudorange, 10.0);
+    EXPECT_GT(min_error_pseudorange, -10.0);
+}
+
 bool HybridObservablesTest::save_mat_xy(std::vector<double>& x, std::vector<double>& y, std::string filename)
 {
     try
@@ -1293,7 +1560,9 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
         FLAGS_DLL_bw_hz_start,
         FLAGS_PLL_narrow_bw_hz,
         FLAGS_DLL_narrow_bw_hz,
-        FLAGS_extend_correlation_symbols);
+        FLAGS_extend_correlation_symbols,
+        FLAGS_smoother_length,
+        FLAGS_high_dyn);
 
 
     for (unsigned int n = 0; n < gnss_synchro_vec.size(); n++)
@@ -1535,7 +1804,6 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                 }
         }
 
-
     //Cut measurement tail zeros
     arma::uvec index;
     for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
@@ -1548,9 +1816,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
         }
 
     //Cut measurement initial transitory of the measurements
-
     double initial_transitory_s = FLAGS_skip_obs_transitory_s;
-
     for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
         {
             index = arma::find(measured_obs_vec.at(n).col(0) >= (measured_obs_vec.at(n)(0, 0) + initial_transitory_s), 1, "first");
@@ -1567,83 +1833,141 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
         }
 
 
-    //Correct the clock error using true values (it is not possible for a receiver to correct
-    //the receiver clock offset error at the observables level because it is required the
-    //decoding of the ephemeris data and solve the PVT equations)
-
-    //Find the reference satellite (the nearest) and compute the receiver time offset at observable level
-    double min_pr = std::numeric_limits<double>::max();
-    unsigned int min_pr_ch_id = 0;
-    for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
+    if (FLAGS_duplicated_satellites_test)
         {
-            if (epoch_counters_vec.at(n) > 10)  //discard non-valid channels
+            //special test mode for duplicated satellites
+            std::vector<int> prn_pairs;
+            std::stringstream ss(FLAGS_duplicated_satellites_prns);
+            int i;
+            while (ss >> i)
                 {
-                    {
-                        if (measured_obs_vec.at(n)(0, 4) < min_pr)
-                            {
-                                min_pr = measured_obs_vec.at(n)(0, 4);
-                                min_pr_ch_id = n;
-                            }
-                    }
+                    prn_pairs.push_back(i);
+                    if (ss.peek() == ',')
+                        ss.ignore();
+                }
+
+            if (prn_pairs.size() % 2 != 0)
+                {
+                    std::cout << "Test settings error: duplicated_satellites_prns are even\n";
                 }
             else
                 {
-                    std::cout << "PRN " << gnss_synchro_vec.at(n).PRN << " has NO observations!\n";
+                    for (unsigned int n = 0; n < prn_pairs.size(); n = n + 2)
+                        {
+                            int sat1_ch_id = -1;
+                            int sat2_ch_id = -1;
+                            for (unsigned int ch = 0; ch < measured_obs_vec.size(); ch++)
+                                {
+                                    if (epoch_counters_vec.at(ch) > 10)  //discard non-valid channels
+                                        {
+                                            if (gnss_synchro_vec.at(ch).PRN == prn_pairs.at(n))
+                                                {
+                                                    sat1_ch_id = ch;
+                                                }
+                                            if (gnss_synchro_vec.at(ch).PRN == prn_pairs.at(n + 1))
+                                                {
+                                                    sat2_ch_id = ch;
+                                                }
+                                        }
+                                }
+                            if (sat1_ch_id != -1 and sat2_ch_id != -1)
+                                {
+                                    //compute single differences for the duplicated satellite
+
+                                    check_results_duplicated_satellite(
+                                        measured_obs_vec.at(sat1_ch_id),
+                                        measured_obs_vec.at(sat2_ch_id),
+                                        sat1_ch_id,
+                                        "Duplicated sat [CH " + std::to_string(sat1_ch_id) + "," + std::to_string(sat2_ch_id) + "] PRNs " + std::to_string(gnss_synchro_vec.at(sat1_ch_id).PRN) + "," + std::to_string(gnss_synchro_vec.at(sat2_ch_id).PRN) + " ");
+                                }
+                            else
+                                {
+                                    std::cout << "Satellites PRNs " << prn_pairs.at(n) << "and " << prn_pairs.at(n) << " not found\n";
+                                }
+                        }
                 }
         }
-
-    arma::vec receiver_time_offset_ref_channel_s;
-    receiver_time_offset_ref_channel_s = (true_obs_vec.at(min_pr_ch_id).col(1)(0) - measured_obs_vec.at(min_pr_ch_id).col(4)(0)) / GPS_C_m_s;
-    std::cout << "Ref. channel initial Receiver time offset " << receiver_time_offset_ref_channel_s(0) * 1e3 << " [ms]" << std::endl;
-
-    for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
+    else
         {
-            //debug save to .mat
-            std::vector<double> tmp_vector_x(true_obs_vec.at(n).col(0).colptr(0),
-                true_obs_vec.at(n).col(0).colptr(0) + true_obs_vec.at(n).col(0).n_rows);
-            std::vector<double> tmp_vector_y(true_obs_vec.at(n).col(1).colptr(0),
-                true_obs_vec.at(n).col(1).colptr(0) + true_obs_vec.at(n).col(1).n_rows);
-            save_mat_xy(tmp_vector_x, tmp_vector_y, std::string("true_pr_ch_" + std::to_string(n)));
+            //normal mode
 
-            std::vector<double> tmp_vector_x2(measured_obs_vec.at(n).col(0).colptr(0),
-                measured_obs_vec.at(n).col(0).colptr(0) + measured_obs_vec.at(n).col(0).n_rows);
-            std::vector<double> tmp_vector_y2(measured_obs_vec.at(n).col(4).colptr(0),
-                measured_obs_vec.at(n).col(4).colptr(0) + measured_obs_vec.at(n).col(4).n_rows);
-            save_mat_xy(tmp_vector_x2, tmp_vector_y2, std::string("measured_pr_ch_" + std::to_string(n)));
+            //Correct the clock error using true values (it is not possible for a receiver to correct
+            //the receiver clock offset error at the observables level because it is required the
+            //decoding of the ephemeris data and solve the PVT equations)
 
-            std::vector<double> tmp_vector_x3(true_obs_vec.at(n).col(0).colptr(0),
-                true_obs_vec.at(n).col(0).colptr(0) + true_obs_vec.at(n).col(0).n_rows);
-            std::vector<double> tmp_vector_y3(true_obs_vec.at(n).col(2).colptr(0),
-                true_obs_vec.at(n).col(2).colptr(0) + true_obs_vec.at(n).col(2).n_rows);
-            save_mat_xy(tmp_vector_x3, tmp_vector_y3, std::string("true_doppler_ch_" + std::to_string(n)));
-
-            std::vector<double> tmp_vector_x4(measured_obs_vec.at(n).col(0).colptr(0),
-                measured_obs_vec.at(n).col(0).colptr(0) + measured_obs_vec.at(n).col(0).n_rows);
-            std::vector<double> tmp_vector_y4(measured_obs_vec.at(n).col(2).colptr(0),
-                measured_obs_vec.at(n).col(2).colptr(0) + measured_obs_vec.at(n).col(2).n_rows);
-            save_mat_xy(tmp_vector_x4, tmp_vector_y4, std::string("measured_doppler_ch_" + std::to_string(n)));
-
-
-            if (epoch_counters_vec.at(n) > 10)  //discard non-valid channels
+            //Find the reference satellite (the nearest) and compute the receiver time offset at observable level
+            double min_pr = std::numeric_limits<double>::max();
+            unsigned int min_pr_ch_id = 0;
+            for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
                 {
-                    arma::vec true_TOW_ref_ch_s = true_obs_vec.at(min_pr_ch_id).col(0) - receiver_time_offset_ref_channel_s(0);
-                    arma::vec true_TOW_ch_s = true_obs_vec.at(n).col(0) - receiver_time_offset_ref_channel_s(0);
-                    //Compare measured observables
-                    if (min_pr_ch_id != n)
+                    if (epoch_counters_vec.at(n) > 10)  //discard non-valid channels
                         {
-                            check_results_code_pseudorange(true_obs_vec.at(n),
-                                true_obs_vec.at(min_pr_ch_id),
-                                true_TOW_ch_s,
-                                true_TOW_ref_ch_s,
-                                measured_obs_vec.at(n),
-                                measured_obs_vec.at(min_pr_ch_id),
-                                "[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
+                            {
+                                if (measured_obs_vec.at(n)(0, 4) < min_pr)
+                                    {
+                                        min_pr = measured_obs_vec.at(n)(0, 4);
+                                        min_pr_ch_id = n;
+                                    }
+                            }
+                        }
+                    else
+                        {
+                            std::cout << "PRN " << gnss_synchro_vec.at(n).PRN << " has NO observations!\n";
+                        }
+                }
 
-                            //Do not compare E5a with E5 RINEX due to the Doppler frequency discrepancy caused by the different center frequencies
-                            //E5a_fc=1176.45e6, E5b_fc=1207.14e6, E5_fc=1191.795e6;
-                            if (strcmp("5X\0", gnss_synchro_vec.at(n).Signal) != 0 or FLAGS_compare_with_5X)
+            arma::vec receiver_time_offset_ref_channel_s;
+            receiver_time_offset_ref_channel_s = (true_obs_vec.at(min_pr_ch_id).col(1)(0) - measured_obs_vec.at(min_pr_ch_id).col(4)(0)) / GPS_C_m_s;
+            std::cout << "Ref. channel initial Receiver time offset " << receiver_time_offset_ref_channel_s(0) * 1e3 << " [ms]" << std::endl;
+
+            for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
+                {
+                    //debug save to .mat
+                    std::vector<double> tmp_vector_x(true_obs_vec.at(n).col(0).colptr(0),
+                        true_obs_vec.at(n).col(0).colptr(0) + true_obs_vec.at(n).col(0).n_rows);
+                    std::vector<double> tmp_vector_y(true_obs_vec.at(n).col(1).colptr(0),
+                        true_obs_vec.at(n).col(1).colptr(0) + true_obs_vec.at(n).col(1).n_rows);
+                    save_mat_xy(tmp_vector_x, tmp_vector_y, std::string("true_pr_ch_" + std::to_string(n)));
+
+                    std::vector<double> tmp_vector_x2(measured_obs_vec.at(n).col(0).colptr(0),
+                        measured_obs_vec.at(n).col(0).colptr(0) + measured_obs_vec.at(n).col(0).n_rows);
+                    std::vector<double> tmp_vector_y2(measured_obs_vec.at(n).col(4).colptr(0),
+                        measured_obs_vec.at(n).col(4).colptr(0) + measured_obs_vec.at(n).col(4).n_rows);
+                    save_mat_xy(tmp_vector_x2, tmp_vector_y2, std::string("measured_pr_ch_" + std::to_string(n)));
+
+                    std::vector<double> tmp_vector_x3(true_obs_vec.at(n).col(0).colptr(0),
+                        true_obs_vec.at(n).col(0).colptr(0) + true_obs_vec.at(n).col(0).n_rows);
+                    std::vector<double> tmp_vector_y3(true_obs_vec.at(n).col(2).colptr(0),
+                        true_obs_vec.at(n).col(2).colptr(0) + true_obs_vec.at(n).col(2).n_rows);
+                    save_mat_xy(tmp_vector_x3, tmp_vector_y3, std::string("true_doppler_ch_" + std::to_string(n)));
+
+                    std::vector<double> tmp_vector_x4(measured_obs_vec.at(n).col(0).colptr(0),
+                        measured_obs_vec.at(n).col(0).colptr(0) + measured_obs_vec.at(n).col(0).n_rows);
+                    std::vector<double> tmp_vector_y4(measured_obs_vec.at(n).col(2).colptr(0),
+                        measured_obs_vec.at(n).col(2).colptr(0) + measured_obs_vec.at(n).col(2).n_rows);
+                    save_mat_xy(tmp_vector_x4, tmp_vector_y4, std::string("measured_doppler_ch_" + std::to_string(n)));
+
+                    std::vector<double> tmp_vector_x5(true_obs_vec.at(n).col(0).colptr(0),
+                        true_obs_vec.at(n).col(0).colptr(0) + true_obs_vec.at(n).col(0).n_rows);
+                    std::vector<double> tmp_vector_y5(true_obs_vec.at(n).col(3).colptr(0),
+                        true_obs_vec.at(n).col(3).colptr(0) + true_obs_vec.at(n).col(3).n_rows);
+                    save_mat_xy(tmp_vector_x5, tmp_vector_y5, std::string("true_cp_ch_" + std::to_string(n)));
+
+                    std::vector<double> tmp_vector_x6(measured_obs_vec.at(n).col(0).colptr(0),
+                        measured_obs_vec.at(n).col(0).colptr(0) + measured_obs_vec.at(n).col(0).n_rows);
+                    std::vector<double> tmp_vector_y6(measured_obs_vec.at(n).col(3).colptr(0),
+                        measured_obs_vec.at(n).col(3).colptr(0) + measured_obs_vec.at(n).col(3).n_rows);
+                    save_mat_xy(tmp_vector_x6, tmp_vector_y6, std::string("measured_cp_ch_" + std::to_string(n)));
+
+
+                    if (epoch_counters_vec.at(n) > 10)  //discard non-valid channels
+                        {
+                            arma::vec true_TOW_ref_ch_s = true_obs_vec.at(min_pr_ch_id).col(0) - receiver_time_offset_ref_channel_s(0);
+                            arma::vec true_TOW_ch_s = true_obs_vec.at(n).col(0) - receiver_time_offset_ref_channel_s(0);
+                            //Compare measured observables
+                            if (min_pr_ch_id != n)
                                 {
-                                    check_results_carrier_phase_double_diff(true_obs_vec.at(n),
+                                    check_results_code_pseudorange(true_obs_vec.at(n),
                                         true_obs_vec.at(min_pr_ch_id),
                                         true_TOW_ch_s,
                                         true_TOW_ref_ch_s,
@@ -1651,34 +1975,47 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                                         measured_obs_vec.at(min_pr_ch_id),
                                         "[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
 
-                                    check_results_carrier_doppler_double_diff(true_obs_vec.at(n),
-                                        true_obs_vec.at(min_pr_ch_id),
+                                    //Do not compare E5a with E5 RINEX due to the Doppler frequency discrepancy caused by the different center frequencies
+                                    //E5a_fc=1176.45e6, E5b_fc=1207.14e6, E5_fc=1191.795e6;
+                                    if (strcmp("5X\0", gnss_synchro_vec.at(n).Signal) != 0 or FLAGS_compare_with_5X)
+                                        {
+                                            check_results_carrier_phase_double_diff(true_obs_vec.at(n),
+                                                true_obs_vec.at(min_pr_ch_id),
+                                                true_TOW_ch_s,
+                                                true_TOW_ref_ch_s,
+                                                measured_obs_vec.at(n),
+                                                measured_obs_vec.at(min_pr_ch_id),
+                                                "[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
+
+                                            check_results_carrier_doppler_double_diff(true_obs_vec.at(n),
+                                                true_obs_vec.at(min_pr_ch_id),
+                                                true_TOW_ch_s,
+                                                true_TOW_ref_ch_s,
+                                                measured_obs_vec.at(n),
+                                                measured_obs_vec.at(min_pr_ch_id),
+                                                "[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
+                                        }
+                                }
+                            else
+                                {
+                                    std::cout << "[CH " << std::to_string(n) << "] PRN " << std::to_string(gnss_synchro_vec.at(n).PRN) << " is the reference satellite" << std::endl;
+                                }
+                            if (FLAGS_compute_single_diffs)
+                                {
+                                    check_results_carrier_phase(true_obs_vec.at(n),
                                         true_TOW_ch_s,
-                                        true_TOW_ref_ch_s,
                                         measured_obs_vec.at(n),
-                                        measured_obs_vec.at(min_pr_ch_id),
+                                        "[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
+                                    check_results_carrier_doppler(true_obs_vec.at(n),
+                                        true_TOW_ch_s,
+                                        measured_obs_vec.at(n),
                                         "[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
                                 }
                         }
                     else
                         {
-                            std::cout << "[CH " << std::to_string(n) << "] PRN " << std::to_string(gnss_synchro_vec.at(n).PRN) << " is the reference satellite" << std::endl;
+                            std::cout << "PRN " << gnss_synchro_vec.at(n).PRN << " has NO observations!\n";
                         }
-                    if (FLAGS_compute_single_diffs)
-                        {
-                            check_results_carrier_phase(true_obs_vec.at(n),
-                                true_TOW_ch_s,
-                                measured_obs_vec.at(n),
-                                "[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
-                            check_results_carrier_doppler(true_obs_vec.at(n),
-                                true_TOW_ch_s,
-                                measured_obs_vec.at(n),
-                                "[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
-                        }
-                }
-            else
-                {
-                    std::cout << "PRN " << gnss_synchro_vec.at(n).PRN << " has NO observations!\n";
                 }
         }
     std::cout << "Test completed in " << elapsed_seconds.count() << " [s]" << std::endl;

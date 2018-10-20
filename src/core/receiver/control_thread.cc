@@ -201,10 +201,17 @@ bool ControlThread::read_assistance_from_XML()
     std::string eph_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_xml", eph_default_xml_filename);
     std::string utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_utc_model.xml", utc_default_xml_filename);
     std::string iono_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_iono_xml", iono_default_xml_filename);
+    std::string gal_iono_xml_filename = configuration_->property("GNSS-SDR.SUPL_gal_iono_xml", gal_iono_default_xml_filename);
     std::string ref_time_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_time_xml", ref_time_default_xml_filename);
     std::string ref_location_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_location_xml", ref_location_default_xml_filename);
+    std::string eph_gal_xml_filename = configuration_->property("GNSS-SDR.SUPL_gal_ephemeris_xml", eph_gal_default_xml_filename);
+    std::string eph_cnav_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_cnav_ephemeris_xml", eph_cnav_default_xml_filename);
+    std::string gal_utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_gal_utc_model.xml", gal_utc_default_xml_filename);
+    std::string cnav_utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_cnav_utc_model.xml", cnav_utc_default_xml_filename);
 
-    std::cout << "SUPL: Try read GPS ephemeris from XML file " << eph_xml_filename << std::endl;
+    std::cout << "Trying to read GNSS ephemeris from XML file(s)..."
+              << std::endl;
+
     if (supl_client_ephemeris_.load_ephemeris_xml(eph_xml_filename) == true)
         {
             std::map<int, Gps_Ephemeris>::const_iterator gps_eph_iter;
@@ -212,45 +219,91 @@ bool ControlThread::read_assistance_from_XML()
                  gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.cend();
                  gps_eph_iter++)
                 {
-                    std::cout << "SUPL: Read XML Ephemeris for GPS SV " << gps_eph_iter->first << std::endl;
+                    std::cout << "From XML file: Read NAV ephemeris for satellite " << Gnss_Satellite("GPS", gps_eph_iter->second.i_satellite_PRN) << std::endl;
                     std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(gps_eph_iter->second);
                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                 }
             ret = true;
         }
-    else
+
+    if (supl_client_ephemeris_.load_gal_ephemeris_xml(eph_gal_xml_filename) == true)
+        {
+            std::map<int, Galileo_Ephemeris>::const_iterator gal_eph_iter;
+            for (gal_eph_iter = supl_client_ephemeris_.gal_ephemeris_map.cbegin();
+                 gal_eph_iter != supl_client_ephemeris_.gal_ephemeris_map.cend();
+                 gal_eph_iter++)
+                {
+                    std::cout << "From XML file: Read ephemeris for satellite " << Gnss_Satellite("Galileo", gal_eph_iter->second.i_satellite_PRN) << std::endl;
+                    std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(gal_eph_iter->second);
+                    flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+                }
+            ret = true;
+        }
+
+    if (supl_client_ephemeris_.load_cnav_ephemeris_xml(eph_cnav_xml_filename) == true)
+        {
+            std::map<int, Gps_CNAV_Ephemeris>::const_iterator gps_cnav_eph_iter;
+            for (gps_cnav_eph_iter = supl_client_ephemeris_.gps_cnav_ephemeris_map.cbegin();
+                 gps_cnav_eph_iter != supl_client_ephemeris_.gps_cnav_ephemeris_map.cend();
+                 gps_cnav_eph_iter++)
+                {
+                    std::cout << "From XML file: Read CNAV ephemeris for satellite " << Gnss_Satellite("GPS", gps_cnav_eph_iter->second.i_satellite_PRN) << std::endl;
+                    std::shared_ptr<Gps_CNAV_Ephemeris> tmp_obj = std::make_shared<Gps_CNAV_Ephemeris>(gps_cnav_eph_iter->second);
+                    flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+                }
+            ret = true;
+        }
+
+    if (supl_client_acquisition_.load_utc_xml(utc_xml_filename) == true)
+        {
+            std::shared_ptr<Gps_Utc_Model> tmp_obj = std::make_shared<Gps_Utc_Model>(supl_client_acquisition_.gps_utc);
+            flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+            std::cout << "From XML file: Read GPS UTC parameters." << std::endl;
+            ret = true;
+        }
+
+    if (supl_client_acquisition_.load_iono_xml(iono_xml_filename) == true)
+        {
+            std::shared_ptr<Gps_Iono> tmp_obj = std::make_shared<Gps_Iono>(supl_client_acquisition_.gps_iono);
+            flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+            std::cout << "From XML file: Read GPS iono parameters." << std::endl;
+            ret = true;
+        }
+
+    if (supl_client_acquisition_.load_gal_iono_xml(gal_iono_xml_filename) == true)
+        {
+            std::shared_ptr<Galileo_Iono> tmp_obj = std::make_shared<Galileo_Iono>(supl_client_acquisition_.gal_iono);
+            flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+            std::cout << "From XML file: Read Galileo iono parameters." << std::endl;
+            ret = true;
+        }
+
+    if (supl_client_acquisition_.load_gal_utc_xml(gal_utc_xml_filename) == true)
+        {
+            std::shared_ptr<Galileo_Utc_Model> tmp_obj = std::make_shared<Galileo_Utc_Model>(supl_client_acquisition_.gal_utc);
+            flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+            std::cout << "From XML file: Read Galileo UTC parameters." << std::endl;
+            ret = true;
+        }
+
+    if (supl_client_acquisition_.load_cnav_utc_xml(cnav_utc_xml_filename) == true)
+        {
+            std::shared_ptr<Gps_CNAV_Utc_Model> tmp_obj = std::make_shared<Gps_CNAV_Utc_Model>(supl_client_acquisition_.gps_cnav_utc);
+            flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+            std::cout << "From XML file: Read GPS CNAV UTC parameters." << std::endl;
+            ret = true;
+        }
+
+    if (ret == false)
         {
             std::cout << "ERROR: SUPL client error reading XML" << std::endl;
             std::cout << "Disabling SUPL assistance..." << std::endl;
         }
-    // Only look for {utc, iono, ref time, ref location} if SUPL is enabled
+
+    // Only look for {ref time, ref location} if SUPL is enabled
     bool enable_gps_supl_assistance = configuration_->property("GNSS-SDR.SUPL_gps_enabled", false);
     if (enable_gps_supl_assistance == true)
         {
-            // Try to read UTC model from XML
-            if (supl_client_acquisition_.load_utc_xml(utc_xml_filename) == true)
-                {
-                    LOG(INFO) << "SUPL: Read XML UTC model";
-                    std::shared_ptr<Gps_Utc_Model> tmp_obj = std::make_shared<Gps_Utc_Model>(supl_client_acquisition_.gps_utc);
-                    flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
-                }
-            else
-                {
-                    LOG(INFO) << "SUPL: couldn't read UTC model XML";
-                }
-
-            // Try to read Iono model from XML
-            if (supl_client_acquisition_.load_iono_xml(iono_xml_filename) == true)
-                {
-                    LOG(INFO) << "SUPL: Read XML IONO model";
-                    std::shared_ptr<Gps_Iono> tmp_obj = std::make_shared<Gps_Iono>(supl_client_acquisition_.gps_iono);
-                    flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
-                }
-            else
-                {
-                    LOG(INFO) << "SUPL: couldn't read IONO model XML";
-                }
-
             // Try to read Ref Time from XML
             if (supl_client_acquisition_.load_ref_time_xml(ref_time_xml_filename) == true)
                 {
@@ -324,7 +377,7 @@ void ControlThread::assist_GNSS()
                     // read assistance from file
                     if (read_assistance_from_XML())
                         {
-                            std::cout << "GPS assistance data loaded from local XML file." << std::endl;
+                            std::cout << "GNSS assistance data loaded from local XML file(s)." << std::endl;
                         }
                 }
             else

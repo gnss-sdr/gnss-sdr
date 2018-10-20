@@ -25,6 +25,10 @@ set(PVT_GR_BLOCKS_SOURCES
 	rtklib_pvt_cc.cc
 )
 
+set(PVT_GR_BLOCKS_HEADERS
+	rtklib_pvt_cc.h
+)
+
 include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
@@ -39,8 +43,6 @@ include_directories(
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
-file(GLOB PVT_GR_BLOCKS_HEADERS "*.h")
-list(SORT PVT_GR_BLOCKS_HEADERS)
 add_library(pvt_gr_blocks ${PVT_GR_BLOCKS_SOURCES} ${PVT_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${PVT_GR_BLOCKS_HEADERS})
 target_link_libraries(pvt_gr_blocks pvt_lib ${ARMADILLO_LIBRARIES})

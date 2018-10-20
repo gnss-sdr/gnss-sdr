@@ -94,7 +94,7 @@ arma::mat Gravity_ECEF(const arma::vec &r_eb_e);  //!< Calculates acceleration d
  */
 arma::vec cart2geo(const arma::vec &XYZ, int elipsoid_selection);
 
-arma::vec LLH_to_deg(arma::vec &LLH);
+arma::vec LLH_to_deg(const arma::vec &LLH);
 
 double degtorad(double angleInDegrees);
 
@@ -104,7 +104,7 @@ double mstoknotsh(double MetersPerSeconds);
 
 double mstokph(double Kph);
 
-arma::vec CTM_to_Euler(arma::mat &C);
+arma::vec CTM_to_Euler(const arma::mat &C);
 
 arma::mat Euler_to_CTM(const arma::vec &eul);
 
@@ -150,5 +150,35 @@ void Geo_to_ECEF(const arma::vec &LLH, const arma::vec &v_eb_n, const arma::mat 
  *                  ECEF-frame axes (m/s)
  */
 void pv_Geo_to_ECEF(double L_b, double lambda_b, double h_b, const arma::vec &v_eb_n, arma::vec &r_eb_e, arma::vec &v_eb_e);
+
+
+/*!
+ * \brief The Haversine formula determines the great-circle distance between two points on a sphere given their longitudes and latitudes.
+ */
+double great_circle_distance(double lat1, double lon1, double lat2, double lon2);
+
+
+/*!
+ * \brief Transformation of ECEF (X,Y,Z) to (E,N,U) in UTM, zone 'zone'.
+ */
+void cart2utm(const arma::vec &r_eb_e, int zone, arma::vec &r_enu);
+
+
+/*!
+ * \brief Function finds the UTM zone number for given longitude and latitude.
+ */
+int findUtmZone(double latitude_deg, double longitude_deg);
+
+
+/*!
+ * \brief Clenshaw summation of sinus of argument.
+ */
+double clsin(const arma::colvec &ar, int degree, double argument);
+
+
+/*!
+ * \brief Clenshaw summation of sinus with complex argument.
+ */
+void clksin(const arma::colvec &ar, int degree, double arg_real, double arg_imag, double *re, double *im);
 
 #endif

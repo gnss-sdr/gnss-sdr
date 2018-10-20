@@ -391,5 +391,6 @@ bool Gps_CNAV_Navigation_Message::have_new_utc_model()  // Check if we have a ne
 
 Gps_CNAV_Utc_Model Gps_CNAV_Navigation_Message::get_utc_model()
 {
+    utc_model_record.valid = true;
     return utc_model_record;
 }

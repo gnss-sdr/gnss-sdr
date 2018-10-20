@@ -167,6 +167,11 @@ private:
     const std::string iono_default_xml_filename = "./gps_iono.xml";
     const std::string ref_time_default_xml_filename = "./gps_ref_time.xml";
     const std::string ref_location_default_xml_filename = "./gps_ref_location.xml";
+    const std::string eph_gal_default_xml_filename = "./gal_ephemeris.xml";
+    const std::string eph_cnav_default_xml_filename = "./gps_cnav_ephemeris.xml";
+    const std::string gal_iono_default_xml_filename = "./gal_iono.xml";
+    const std::string gal_utc_default_xml_filename = "./gal_utc_model.xml";
+    const std::string cnav_utc_default_xml_filename = "./gps_cnav_utc_model.xml";
 };
 
 #endif /*GNSS_SDR_CONTROL_THREAD_H_*/

@@ -18,6 +18,7 @@
 
 if(ENABLE_FPGA)
    set(ACQUISITION_LIB_SOURCES fpga_acquisition.cc )
+   set(ACQUISITION_LIB_HEADERS fpga_acquisition.h )
    include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
@@ -29,14 +30,13 @@ if(ENABLE_FPGA)
      ${GFlags_INCLUDE_DIRS}
      ${VOLK_GNSSSDR_INCLUDE_DIRS}
    )
-
-   file(GLOB ACQUISITION_LIB_HEADERS "*.h")
 endif(ENABLE_FPGA)
 
 set(ACQUISITION_LIB_HEADERS ${ACQUISITION_LIB_HEADERS} acq_conf.h)
-list(SORT ACQUISITION_LIB_HEADERS)
-
 set(ACQUISITION_LIB_SOURCES ${ACQUISITION_LIB_SOURCES} acq_conf.cc)
+
+list(SORT ACQUISITION_LIB_HEADERS)
+list(SORT ACQUISITION_LIB_SOURCES)
 
 add_library(acquisition_lib ${ACQUISITION_LIB_SOURCES} ${ACQUISITION_LIB_HEADERS})
 source_group(Headers FILES ${ACQUISITION_LIB_HEADERS})

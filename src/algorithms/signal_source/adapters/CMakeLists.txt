@@ -16,8 +16,6 @@
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
-file(GLOB SIGNAL_SOURCE_ADAPTER_HEADERS "*.h")
-list(SORT SIGNAL_SOURCE_ADAPTER_HEADERS)
 
 # Optional drivers
 
@@ -30,6 +28,7 @@ if(ENABLE_RAW_UDP)
     set(OPT_LIBRARIES ${OPT_LIBRARIES} ${PCAP_LIBRARIES})
     set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${PCAP_INCLUDE_DIRS})
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} custom_udp_signal_source.cc)
+    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} custom_udp_signal_source.h)
 endif(ENABLE_RAW_UDP)
 
 if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
@@ -67,6 +66,7 @@ if(ENABLE_PLUTOSDR)
     ##############################################
     if(IIO_FOUND)
         set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} plutosdr_signal_source.cc)
+        set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} plutosdr_signal_source.h)
     endif(IIO_FOUND)
 endif(ENABLE_PLUTOSDR)
 
@@ -77,6 +77,7 @@ if(ENABLE_FMCOMMS2)
     ###############################################
     if(IIO_FOUND)
         set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} fmcomms2_signal_source.cc)
+        set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} fmcomms2_signal_source.h)
     endif(IIO_FOUND)
 endif(ENABLE_FMCOMMS2)
 
@@ -86,6 +87,7 @@ if(ENABLE_AD9361)
     ###############################################
     if(LIBIIO_FOUND)
         set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} ad9361_fpga_signal_source.cc)
+        set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} ad9361_fpga_signal_source.h)
     endif(LIBIIO_FOUND)
 endif(ENABLE_AD9361)
 
@@ -103,6 +105,7 @@ if(ENABLE_GN3S)
      set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GR_GN3S_LIBRARIES})
      set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${GR_GN3S_INCLUDE_DIRS})
      set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} gn3s_signal_source.cc)
+     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} gn3s_signal_source.h)
 endif(ENABLE_GN3S)
 
 
@@ -123,6 +126,7 @@ if(ENABLE_FLEXIBAND)
      set(OPT_LIBRARIES ${OPT_LIBRARIES} ${TELEORBIT_LIBRARIES})
      set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${FLEXIBAND_DRIVER_INCLUDE_DIRS})
      set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} flexiband_signal_source.cc)
+     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} flexiband_signal_source.h)
 endif(ENABLE_FLEXIBAND)
 
 
@@ -138,6 +142,7 @@ if(ENABLE_ARRAY)
      set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GR_DBFCTTC_LIBRARIES})
      set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${GR_DBFCTTC_INCLUDE_DIRS})
      set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} raw_array_signal_source.cc)
+     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} raw_array_signal_source.h)
 endif(ENABLE_ARRAY)
 
 
@@ -154,8 +159,9 @@ if(ENABLE_OSMOSDR)
         set(OSMO_DRIVER_INCLUDE_DIRS
             ${OPT_DRIVER_INCLUDE_DIRS}
             ${GROSMOSDR_INCLUDE_DIR}/osmosdr
-           )
+        )
         set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} osmosdr_signal_source.cc)
+        set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} osmosdr_signal_source.h)
         set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GROSMOSDR_LIBRARIES})
         set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${OSMO_DRIVER_INCLUDE_DIRS})
     endif(NOT GROSMOSDR_FOUND)
@@ -163,10 +169,9 @@ endif(ENABLE_OSMOSDR)
 
 if(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} uhd_signal_source.cc)
+    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} uhd_signal_source.h)
     set(OPT_LIBRARIES ${OPT_LIBRARIES} ${UHD_LIBRARIES} ${GNURADIO_UHD_LIBRARIES})
     set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${UHD_INCLUDE_DIRS})
-else(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
-    list(REMOVE_ITEM SIGNAL_SOURCE_ADAPTER_HEADERS ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/adapters/uhd_signal_source.h)
 endif(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
 
 
@@ -180,10 +185,24 @@ set(SIGNAL_SOURCE_ADAPTER_SOURCES file_signal_source.cc
                                   ${OPT_DRIVER_SOURCES}
 )
 
+set(SIGNAL_SOURCE_ADAPTER_HEADERS file_signal_source.h
+                                  gen_signal_source.h
+                                  nsr_file_signal_source.h
+                                  spir_file_signal_source.h
+                                  spir_gss6450_file_signal_source.h
+                                  rtl_tcp_signal_source.h
+                                  labsat_signal_source.h
+                                  ${OPT_DRIVER_HEADERS}
+)
+
+
 if(PC_GNURADIO_RUNTIME_VERSION VERSION_GREATER 3.7.3)
      set(SIGNAL_SOURCE_ADAPTER_SOURCES ${SIGNAL_SOURCE_ADAPTER_SOURCES}
          two_bit_cpx_file_signal_source.cc
          two_bit_packed_file_signal_source.cc )
+     set(SIGNAL_SOURCE_ADAPTER_HEADERS ${SIGNAL_SOURCE_ADAPTER_HEADERS}
+         two_bit_cpx_file_signal_source.h
+         two_bit_packed_file_signal_source.h )         
 endif(PC_GNURADIO_RUNTIME_VERSION VERSION_GREATER 3.7.3)
 
 include_directories(
@@ -206,6 +225,9 @@ if(ARCH_64BITS)
 endif(ARCH_64BITS)
 
 add_definitions(-DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}")
+
+list(SORT SIGNAL_SOURCE_ADAPTER_HEADERS)
+list(SORT SIGNAL_SOURCE_ADAPTER_SOURCES)
 
 add_library(signal_source_adapters ${SIGNAL_SOURCE_ADAPTER_SOURCES} ${SIGNAL_SOURCE_ADAPTER_HEADERS})
 source_group(Headers FILES ${SIGNAL_SOURCE_ADAPTER_HEADERS})

@@ -179,6 +179,7 @@ endif(ENABLE_UNIT_TESTING_MINIMAL)
 ################################################################################
 # Optional generator
 ################################################################################
+option(ENABLE_GNSS_SIM_INSTALL "Enable the installation of gnss_sim on the fly" ON)
 if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
    if(ENABLE_FPGA)
       set(CROSS_INSTALL_DIR "-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}")
@@ -188,31 +189,38 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
    else(ENABLE_FPGA)
       set(CROSS_INSTALL_DIR "")
    endif(ENABLE_FPGA)
-   ExternalProject_Add(
-      gnss-sim
-      GIT_REPOSITORY https://bitbucket.org/jarribas/gnss-simulator
-      GIT_TAG ${GNSSSDR_GNSS_SIM_LOCAL_VERSION}
-      SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gnss-sim
-      BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gnss-sim
-      CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} ${CROSS_INSTALL_DIR}
-      UPDATE_COMMAND ""
-      PATCH_COMMAND ""
-      INSTALL_COMMAND ""
-   )
-   if(ENABLE_INSTALL_TESTS)
-      install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/../../gnss-sim/gnss_sim DESTINATION bin)
-      install(FILES ${CMAKE_CURRENT_BINARY_DIR}/../../../thirdparty/gnss-sim/brdc3540.14n DESTINATION share/gnss-sim)
-      install(FILES ${CMAKE_CURRENT_BINARY_DIR}/../../../thirdparty/gnss-sim/circle.csv DESTINATION share/gnss-sim)
-      set(SW_GENERATOR_BIN ${CMAKE_INSTALL_PREFIX}/bin/gnss_sim)
+   find_package(GnssSimulator QUIET)
+   if(GNSS-SIMULATOR_FOUND OR NOT ENABLE_GNSS_SIM_INSTALL)
       add_definitions(-DSW_GENERATOR_BIN="${SW_GENERATOR_BIN}")
       add_definitions(-DDEFAULT_RINEX_NAV="${CMAKE_INSTALL_PREFIX}/share/gnss-sim/brdc3540.14n")
       add_definitions(-DDEFAULT_POSITION_FILE="${CMAKE_INSTALL_PREFIX}/share/gnss-sim/circle.csv")
-   else(ENABLE_INSTALL_TESTS)
-      set(SW_GENERATOR_BIN ${CMAKE_CURRENT_BINARY_DIR}/../../gnss-sim/gnss_sim)
-      add_definitions(-DSW_GENERATOR_BIN="${SW_GENERATOR_BIN}")
-      add_definitions(-DDEFAULT_RINEX_NAV="${CMAKE_CURRENT_BINARY_DIR}/../../../thirdparty/gnss-sim/brdc3540.14n")
-      add_definitions(-DDEFAULT_POSITION_FILE="${CMAKE_CURRENT_BINARY_DIR}/../../../thirdparty/gnss-sim/circle.csv")
-   endif(ENABLE_INSTALL_TESTS)
+   else(GNSS-SIMULATOR_FOUND OR NOT ENABLE_GNSS_SIM_INSTALL)
+      ExternalProject_Add(
+         gnss-sim
+         GIT_REPOSITORY https://bitbucket.org/jarribas/gnss-simulator
+         GIT_TAG ${GNSSSDR_GNSS_SIM_LOCAL_VERSION}
+         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gnss-sim
+         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gnss-sim
+         CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} ${CROSS_INSTALL_DIR}
+         UPDATE_COMMAND ""
+         PATCH_COMMAND ""
+         INSTALL_COMMAND ""
+      )
+      if(ENABLE_INSTALL_TESTS)
+         install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/../../gnss-sim/gnss_sim DESTINATION bin)
+         install(FILES ${CMAKE_CURRENT_BINARY_DIR}/../../../thirdparty/gnss-sim/brdc3540.14n DESTINATION share/gnss-sim)
+         install(FILES ${CMAKE_CURRENT_BINARY_DIR}/../../../thirdparty/gnss-sim/circle.csv DESTINATION share/gnss-sim)
+         set(SW_GENERATOR_BIN ${CMAKE_INSTALL_PREFIX}/bin/gnss_sim)
+         add_definitions(-DSW_GENERATOR_BIN="${SW_GENERATOR_BIN}")
+         add_definitions(-DDEFAULT_RINEX_NAV="${CMAKE_INSTALL_PREFIX}/share/gnss-sim/brdc3540.14n")
+         add_definitions(-DDEFAULT_POSITION_FILE="${CMAKE_INSTALL_PREFIX}/share/gnss-sim/circle.csv")
+      else(ENABLE_INSTALL_TESTS)
+         set(SW_GENERATOR_BIN ${CMAKE_CURRENT_BINARY_DIR}/../../gnss-sim/gnss_sim)
+         add_definitions(-DSW_GENERATOR_BIN="${SW_GENERATOR_BIN}")
+         add_definitions(-DDEFAULT_RINEX_NAV="${CMAKE_CURRENT_BINARY_DIR}/../../../thirdparty/gnss-sim/brdc3540.14n")
+         add_definitions(-DDEFAULT_POSITION_FILE="${CMAKE_CURRENT_BINARY_DIR}/../../../thirdparty/gnss-sim/circle.csv")
+      endif(ENABLE_INSTALL_TESTS)
+   endif(GNSS-SIMULATOR_FOUND OR NOT ENABLE_GNSS_SIM_INSTALL)
 
    ################################################################################
    # Local installation of GPSTk http://www.gpstk.org/
@@ -220,7 +228,10 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
    find_package(GPSTK)
    if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
       message(STATUS "GPSTk v${GNSSSDR_GPSTK_LOCAL_VERSION} will be automatically downloaded and built when doing 'make'.")
-
+         if ("${TOOLCHAIN_ARG}" STREQUAL "")
+            set(TOOLCHAIN_ARG "-DCMAKE_CXX_FLAGS=\"-Wno-deprecated\"")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")     
+         endif("${TOOLCHAIN_ARG}" STREQUAL "")
  #     if(NOT ENABLE_FPGA)
           if(CMAKE_VERSION VERSION_LESS 3.2)
            ExternalProject_Add(
@@ -305,12 +316,16 @@ if(ENABLE_INSTALL_TESTS)
    install(FILES ${CMAKE_SOURCE_DIR}/src/tests/signal_samples/Galileo_E1_ID_1_Fs_4Msps_8ms.dat DESTINATION share/gnss-sdr/signal_samples)
    install(FILES ${CMAKE_SOURCE_DIR}/src/tests/signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat DESTINATION share/gnss-sdr/signal_samples)
    install(FILES ${CMAKE_SOURCE_DIR}/src/tests/signal_samples/NT1065_GLONASS_L1_20160831_fs6625e6_if0e3_4ms.bin DESTINATION share/gnss-sdr/signal_samples)
+   install(FILES ${CMAKE_SOURCE_DIR}/src/tests/data/rtklib_test/obs_test1.xml DESTINATION share/gnss-sdr/data/rtklib_test)
+   install(FILES ${CMAKE_SOURCE_DIR}/src/tests/data/rtklib_test/eph_GPS_L1CA_test1.xml DESTINATION share/gnss-sdr/data/rtklib_test)
    add_definitions(-DTEST_PATH="${CMAKE_INSTALL_PREFIX}/share/gnss-sdr/")
 else(ENABLE_INSTALL_TESTS)
    file(COPY ${CMAKE_SOURCE_DIR}/src/tests/signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat DESTINATION ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples)
    file(COPY ${CMAKE_SOURCE_DIR}/src/tests/signal_samples/Galileo_E1_ID_1_Fs_4Msps_8ms.dat DESTINATION ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples)
    file(COPY ${CMAKE_SOURCE_DIR}/src/tests/signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat DESTINATION ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples)
    file(COPY ${CMAKE_SOURCE_DIR}/src/tests/signal_samples/NT1065_GLONASS_L1_20160831_fs6625e6_if0e3_4ms.bin DESTINATION ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples)
+   file(COPY ${CMAKE_SOURCE_DIR}/src/tests/data/rtklib_test/obs_test1.xml DESTINATION ${CMAKE_SOURCE_DIR}/thirdparty/data/rtklib_test)
+   file(COPY ${CMAKE_SOURCE_DIR}/src/tests/data/rtklib_test/eph_GPS_L1CA_test1.xml DESTINATION ${CMAKE_SOURCE_DIR}/thirdparty/data/rtklib_test)
    add_definitions(-DTEST_PATH="${CMAKE_SOURCE_DIR}/thirdparty/")
 endif(ENABLE_INSTALL_TESTS)
 
@@ -391,6 +406,7 @@ if(ENABLE_UNIT_TESTING)
                                 signal_generator_adapters
                                 pvt_gr_blocks
                                 signal_processing_testing_lib
+                                system_testing_lib
                                 ${VOLK_GNSSSDR_LIBRARIES}
                                 ${MATIO_LIBRARIES}
                                 ${GNSS_SDR_TEST_OPTIONAL_LIBS}
@@ -499,7 +515,7 @@ if(ENABLE_SYSTEM_TESTING)
                       ${GTEST_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES}
                       ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES}
                       ${GNURADIO_ANALOG_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES}
-                      gnss_sp_libs gnss_rx gnss_system_parameters 
+                      gnss_sp_libs gnss_rx gnss_system_parameters
                       system_testing_lib)
 
         add_system_test(position_test)

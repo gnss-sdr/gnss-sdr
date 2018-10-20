@@ -24,7 +24,16 @@ set(DATATYPE_ADAPTER_SOURCES
     ibyte_to_cshort.cc
     ishort_to_cshort.cc
 	ishort_to_complex.cc 
-	 )
+)
+	 
+set(DATATYPE_ADAPTER_HEADERS 
+    byte_to_short.h
+    ibyte_to_cbyte.h
+    ibyte_to_complex.h
+    ibyte_to_cshort.h
+    ishort_to_cshort.h
+	ishort_to_complex.h 
+)	 
 
 include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}
@@ -38,10 +47,10 @@ include_directories(
      ${VOLK_INCLUDE_DIRS}
 )
 
-file(GLOB DATATYPE_ADAPTER_HEADERS "*.h")
 list(SORT DATATYPE_ADAPTER_HEADERS)
+list(SORT DATATYPE_ADAPTER_SOURCES)
+
 add_library(datatype_adapters ${DATATYPE_ADAPTER_SOURCES} ${DATATYPE_ADAPTER_HEADERS})
 source_group(Headers FILES ${DATATYPE_ADAPTER_HEADERS})
 add_dependencies(datatype_adapters glog-${glog_RELEASE})
 target_link_libraries(datatype_adapters data_type_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES})
-

@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2011-2018 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -14,10 +14,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
-#
 
-add_subdirectory(front-end-cal)
 
-if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
-    add_subdirectory(rinex2assist)
-endif(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
+find_program(SW_GENERATOR_BIN gnss_sim
+             PATHS /usr/bin
+                   /usr/local/bin
+                   /opt/local/bin
+                   ${CMAKE_INSTALL_PREFIX}/bin
+             PATH_SUFFIXES bin )
+
+INCLUDE(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(GNSS-SIMULATOR  DEFAULT_MSG  SW_GENERATOR_BIN)
+MARK_AS_ADVANCED(SW_GENERATOR_BIN)

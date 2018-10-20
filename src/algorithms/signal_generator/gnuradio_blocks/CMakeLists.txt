@@ -17,6 +17,7 @@
 #
 
 set(SIGNAL_GENERATOR_BLOCK_SOURCES signal_generator_c.cc)
+set(SIGNAL_GENERATOR_BLOCK_HEADERS signal_generator_c.h)
 
 include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}
@@ -30,8 +31,6 @@ include_directories(
      ${VOLK_GNSSSDR_INCLUDE_DIRS}
 )
 
-file(GLOB SIGNAL_GENERATOR_BLOCK_HEADERS "*.h")
-list(SORT SIGNAL_GENERATOR_BLOCK_HEADERS)
 add_library(signal_generator_blocks ${SIGNAL_GENERATOR_BLOCK_SOURCES} ${SIGNAL_GENERATOR_BLOCK_HEADERS})
 source_group(Headers FILES ${SIGNAL_GENERATOR_BLOCK_HEADERS})
 target_link_libraries(signal_generator_blocks gnss_system_parameters gnss_sp_libs
@@ -44,4 +43,4 @@ if(VOLK_GNSSSDR_FOUND)
     # add_dependencies(signal_generator_blocks glog-${glog_RELEASE})
 else(VOLK_GNSSSDR_FOUND)
     add_dependencies(signal_generator_blocks volk_gnsssdr_module)
-endif()
+endif(VOLK_GNSSSDR_FOUND)

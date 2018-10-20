@@ -21,6 +21,12 @@ set(RESAMPLER_ADAPTER_SOURCES
         mmse_resampler_conditioner.cc
 )
 
+
+set(RESAMPLER_ADAPTER_HEADERS
+        direct_resampler_conditioner.h
+        mmse_resampler_conditioner.h
+)
+
 include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
@@ -36,9 +42,9 @@ if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13.4" )
      add_definitions( -DGR_GREATER_38=1 )
 endif(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13.4" )
 
-
-file(GLOB RESAMPLER_ADAPTER_HEADERS "*.h")
 list(SORT RESAMPLER_ADAPTER_HEADERS)
+list(SORT RESAMPLER_ADAPTER_SOURCES)
+
 add_library(resampler_adapters ${RESAMPLER_ADAPTER_SOURCES} ${RESAMPLER_ADAPTER_HEADERS})
 source_group(Headers FILES ${RESAMPLER_ADAPTER_HEADERS})
 target_link_libraries(resampler_adapters resampler_gr_blocks)

@@ -17,13 +17,15 @@
 #
 
 if(ENABLE_CUDA)
-     set(OPT_TRACKING_BLOCKS ${OPT_TRACKING_BLOCKS} gps_l1_ca_dll_pll_tracking_gpu_cc.cc)
+     set(OPT_TRACKING_BLOCKS_SOURCES ${OPT_TRACKING_BLOCKS_SOURCES} gps_l1_ca_dll_pll_tracking_gpu_cc.cc)
+     set(OPT_TRACKING_BLOCKS_HEADERS ${OPT_TRACKING_BLOCKS_HEADERS} gps_l1_ca_dll_pll_tracking_gpu_cc.h)
      set(OPT_TRACKING_INCLUDES ${OPT_TRACKING_INCLUDES} ${CUDA_INCLUDE_DIRS})
      set(OPT_TRACKING_LIBRARIES ${OPT_TRACKING_LIBRARIES} ${CUDA_LIBRARIES})
 endif(ENABLE_CUDA)
 
 if(ENABLE_FPGA)
-     set(OPT_TRACKING_BLOCKS ${OPT_TRACKING_BLOCKS} dll_pll_veml_tracking_fpga.cc)
+     set(OPT_TRACKING_BLOCKS_SOURCES ${OPT_TRACKING_BLOCKS_SOURCES} dll_pll_veml_tracking_fpga.cc)
+     set(OPT_TRACKING_BLOCKS_HEADERS ${OPT_TRACKING_BLOCKS_HEADERS} dll_pll_veml_tracking_fpga.h)
 endif(ENABLE_FPGA)
 
 set(TRACKING_GR_BLOCKS_SOURCES
@@ -39,7 +41,23 @@ set(TRACKING_GR_BLOCKS_SOURCES
      glonass_l2_ca_dll_pll_c_aid_tracking_cc.cc
      glonass_l2_ca_dll_pll_c_aid_tracking_sc.cc
      dll_pll_veml_tracking.cc
-     ${OPT_TRACKING_BLOCKS}
+     ${OPT_TRACKING_BLOCKS_SOURCES}
+)
+
+set(TRACKING_GR_BLOCKS_HEADERS
+     galileo_e1_tcp_connector_tracking_cc.h
+     gps_l1_ca_tcp_connector_tracking_cc.h
+     gps_l1_ca_dll_pll_c_aid_tracking_cc.h
+     gps_l1_ca_dll_pll_c_aid_tracking_sc.h
+     glonass_l1_ca_dll_pll_tracking_cc.h
+     glonass_l1_ca_dll_pll_c_aid_tracking_cc.h
+     glonass_l1_ca_dll_pll_c_aid_tracking_sc.h
+     gps_l1_ca_kf_tracking_cc.h  
+     glonass_l2_ca_dll_pll_tracking_cc.h
+     glonass_l2_ca_dll_pll_c_aid_tracking_cc.h
+     glonass_l2_ca_dll_pll_c_aid_tracking_sc.h
+     dll_pll_veml_tracking.h
+     ${OPT_TRACKING_BLOCKS_HEADERS}
 )
 
 include_directories(
@@ -63,8 +81,9 @@ if(ENABLE_GENERIC_ARCH)
     add_definitions( -DGENERIC_ARCH=1 )
 endif(ENABLE_GENERIC_ARCH)
 
-file(GLOB TRACKING_GR_BLOCKS_HEADERS "*.h")
 list(SORT TRACKING_GR_BLOCKS_HEADERS)
+list(SORT TRACKING_GR_BLOCKS_SOURCES)
+
 add_library(tracking_gr_blocks ${TRACKING_GR_BLOCKS_SOURCES} ${TRACKING_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${TRACKING_GR_BLOCKS_HEADERS})
 

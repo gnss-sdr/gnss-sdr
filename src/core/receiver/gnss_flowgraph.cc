@@ -801,8 +801,8 @@ void GNSSFlowgraph::wait()
 
 bool GNSSFlowgraph::send_telemetry_msg(pmt::pmt_t msg)
 {
-    //push ephemeris to PVT telemetry msg in port using a channel out port
-    // it uses the first channel as a message produces (it is already connected to PVT)
+    // Push ephemeris to PVT telemetry msg in port using a channel out port
+    // it uses the first channel as a message producer (it is already connected to PVT)
     channels_.at(0)->get_right_block()->message_port_pub(pmt::mp("telemetry"), msg);
     return true;
 }
@@ -816,6 +816,7 @@ bool GNSSFlowgraph::send_telemetry_msg(pmt::pmt_t msg)
  */
 void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
 {
+    std::lock_guard<std::mutex> lock(signal_list_mutex);
     DLOG(INFO) << "Received " << what << " from " << who << ". Number of applied actions = " << applied_actions_;
     unsigned int sat = 0;
     try
@@ -826,7 +827,6 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
         {
             LOG(WARNING) << e.what();
         }
-    std::lock_guard<std::mutex> lock(signal_list_mutex);
     switch (what)
         {
         case 0:
@@ -1336,8 +1336,8 @@ void GNSSFlowgraph::set_signals_list()
     if (configuration_->property("Channels_1G.count", 0) > 0)
         {
             // Loop to create the list of GLONASS L1 C/A signals
-            for (available_gnss_prn_iter = available_glonass_prn.begin();
-                 available_gnss_prn_iter != available_glonass_prn.end();
+            for (available_gnss_prn_iter = available_glonass_prn.cbegin();
+                 available_gnss_prn_iter != available_glonass_prn.cend();
                  available_gnss_prn_iter++)
                 {
                     available_GLO_1G_signals_.push_back(Gnss_Signal(
@@ -1349,8 +1349,8 @@ void GNSSFlowgraph::set_signals_list()
     if (configuration_->property("Channels_2G.count", 0) > 0)
         {
             // Loop to create the list of GLONASS L2 C/A signals
-            for (available_gnss_prn_iter = available_glonass_prn.begin();
-                 available_gnss_prn_iter != available_glonass_prn.end();
+            for (available_gnss_prn_iter = available_glonass_prn.cbegin();
+                 available_gnss_prn_iter != available_glonass_prn.cend();
                  available_gnss_prn_iter++)
                 {
                     available_GLO_2G_signals_.push_back(Gnss_Signal(
@@ -1363,6 +1363,7 @@ void GNSSFlowgraph::set_signals_list()
 
 void GNSSFlowgraph::set_channels_state()
 {
+    std::lock_guard<std::mutex> lock(signal_list_mutex);
     max_acq_channels_ = configuration_->property("Channels.in_acquisition", channels_count_);
     if (max_acq_channels_ > channels_count_)
         {
@@ -1382,7 +1383,6 @@ void GNSSFlowgraph::set_channels_state()
                 }
             DLOG(INFO) << "Channel " << i << " in state " << channels_state_[i];
         }
-    std::lock_guard<std::mutex> lock(signal_list_mutex);
     acq_channels_count_ = max_acq_channels_;
     DLOG(INFO) << acq_channels_count_ << " channels in acquisition state";
 }
@@ -1599,16 +1599,16 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(std::string searched_signal, bool 
     return result;
 }
 
-std::vector<std::string> GNSSFlowgraph::split_string(const std::string &s, char delim)
+std::vector<std::string> GNSSFlowgraph::split_string(const std::string& s, char delim)
 {
     std::vector<std::string> v;
     std::stringstream ss(s);
     std::string item;
 
     while (std::getline(ss, item, delim))
-    {
-        *(std::back_inserter(v)++) = item;
-    }
+        {
+            *(std::back_inserter(v)++) = item;
+        }
 
     return v;
 }

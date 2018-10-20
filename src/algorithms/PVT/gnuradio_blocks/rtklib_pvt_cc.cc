@@ -548,6 +548,50 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
         {
             LOG(INFO) << "Failed to save GPS CNAV UTC model parameters, not valid data";
         }
+
+    // save GLONASS GNAV ephemeris to XML file
+    file_name = "glo_gnav_ephemeris.xml";
+    if (d_ls_pvt->glonass_gnav_ephemeris_map.empty() == false)
+        {
+            std::ofstream ofs;
+            try
+                {
+                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_gnav_ephemeris_map", d_ls_pvt->glonass_gnav_ephemeris_map);
+                    LOG(INFO) << "Saved GLONASS GNAV ephemeris map data";
+                }
+            catch (std::exception& e)
+                {
+                    LOG(WARNING) << e.what();
+                }
+        }
+    else
+        {
+            LOG(INFO) << "Failed to save GLONASS GNAV ephemeris, map is empty";
+        }
+
+    // save GLONASS UTC model parameters to XML file
+    file_name = "glo_utc_model.xml";
+    if (d_ls_pvt->glonass_gnav_utc_model.valid)
+        {
+            std::ofstream ofs;
+            try
+                {
+                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_gnav_utc_model", d_ls_pvt->glonass_gnav_utc_model);
+                    LOG(INFO) << "Saved GLONASS UTC model parameters";
+                }
+            catch (std::exception& e)
+                {
+                    LOG(WARNING) << e.what();
+                }
+        }
+    else
+        {
+            LOG(INFO) << "Failed to save GLONASS GNAV ephemeris, not valid data";
+        }
 }
 
 

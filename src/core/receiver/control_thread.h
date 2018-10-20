@@ -172,6 +172,8 @@ private:
     const std::string gal_iono_default_xml_filename = "./gal_iono.xml";
     const std::string gal_utc_default_xml_filename = "./gal_utc_model.xml";
     const std::string cnav_utc_default_xml_filename = "./gps_cnav_utc_model.xml";
+    const std::string eph_glo_gnav_default_xml_filename = "./glo_gnav_ephemeris.xml";
+    const std::string glo_utc_default_xml_filename = "./glo_utc_model.xml";
 };
 
 #endif /*GNSS_SDR_CONTROL_THREAD_H_*/

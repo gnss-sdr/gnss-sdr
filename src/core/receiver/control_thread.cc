@@ -47,6 +47,8 @@
 #include "gps_iono.h"
 #include "gps_utc_model.h"
 #include "gps_almanac.h"
+#include "glonass_gnav_ephemeris.h"
+#include "glonass_gnav_utc_model.h"
 #include <boost/lexical_cast.hpp>
 #include <boost/chrono.hpp>
 #include <glog/logging.h>
@@ -208,6 +210,8 @@ bool ControlThread::read_assistance_from_XML()
     std::string eph_cnav_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_cnav_ephemeris_xml", eph_cnav_default_xml_filename);
     std::string gal_utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_gal_utc_model.xml", gal_utc_default_xml_filename);
     std::string cnav_utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_cnav_utc_model.xml", cnav_utc_default_xml_filename);
+    std::string eph_glo_xml_filename = configuration_->property("GNSS-SDR.SUPL_glo_ephemeris_xml", eph_glo_gnav_default_xml_filename);
+    std::string glo_utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_glo_utc_model.xml", glo_utc_default_xml_filename);
 
     std::cout << "Trying to read GNSS ephemeris from XML file(s)..." << std::endl;
 
@@ -298,6 +302,31 @@ bool ControlThread::read_assistance_from_XML()
                     std::shared_ptr<Gps_CNAV_Utc_Model> tmp_obj = std::make_shared<Gps_CNAV_Utc_Model>(supl_client_acquisition_.gps_cnav_utc);
                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                     std::cout << "From XML file: Read GPS CNAV UTC parameters." << std::endl;
+                    ret = true;
+                }
+        }
+
+    if ((configuration_->property("Channels_1G.count", 0) > 0) or (configuration_->property("Channels_2G.count", 0) > 0))
+        {
+            if (supl_client_ephemeris_.load_gnav_ephemeris_xml(eph_glo_xml_filename) == true)
+                {
+                    std::map<int, Glonass_Gnav_Ephemeris>::const_iterator glo_gnav_eph_iter;
+                    for (glo_gnav_eph_iter = supl_client_ephemeris_.glonass_gnav_ephemeris_map.cbegin();
+                         glo_gnav_eph_iter != supl_client_ephemeris_.glonass_gnav_ephemeris_map.cend();
+                         glo_gnav_eph_iter++)
+                        {
+                            std::cout << "From XML file: Read GLONASS GNAV ephemeris for satellite " << Gnss_Satellite("GLONASS", glo_gnav_eph_iter->second.i_satellite_PRN) << std::endl;
+                            std::shared_ptr<Glonass_Gnav_Ephemeris> tmp_obj = std::make_shared<Glonass_Gnav_Ephemeris>(glo_gnav_eph_iter->second);
+                            flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+                        }
+                    ret = true;
+                }
+
+            if (supl_client_acquisition_.load_glo_utc_xml(glo_utc_xml_filename) == true)
+                {
+                    std::shared_ptr<Glonass_Gnav_Utc_Model> tmp_obj = std::make_shared<Glonass_Gnav_Utc_Model>(supl_client_acquisition_.glo_gnav_utc);
+                    flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+                    std::cout << "From XML file: Read GLONASS UTC parameters." << std::endl;
                     ret = true;
                 }
         }

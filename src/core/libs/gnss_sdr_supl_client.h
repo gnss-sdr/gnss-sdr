@@ -51,6 +51,8 @@ extern "C"
 #include "galileo_ephemeris.h"
 #include "galileo_utc_model.h"
 #include "galileo_iono.h"
+#include "glonass_gnav_ephemeris.h"
+#include "glonass_gnav_utc_model.h"
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/serialization/map.hpp>
@@ -84,6 +86,8 @@ public:
     std::map<int, Gps_Ephemeris> gps_ephemeris_map;
     std::map<int, Galileo_Ephemeris> gal_ephemeris_map;
     std::map<int, Gps_CNAV_Ephemeris> gps_cnav_ephemeris_map;
+    std::map<int, Glonass_Gnav_Ephemeris> glonass_gnav_ephemeris_map;
+
     // almanac map
     std::map<int, Gps_Almanac> gps_almanac_map;
 
@@ -96,6 +100,7 @@ public:
     Gps_Utc_Model gps_utc;
     Galileo_Utc_Model gal_utc;
     Gps_CNAV_Utc_Model gps_cnav_utc;
+    Glonass_Gnav_Utc_Model glo_gnav_utc;
     // reference location
     Gps_Ref_Location gps_ref_loc;
     // Acquisition Assistance map
@@ -150,6 +155,17 @@ public:
         std::map<int, Galileo_Ephemeris> eph_map);
 
     /*!
+     * \brief Read GLONASS GNAV ephemeris map from XML file
+     */
+    bool load_gnav_ephemeris_xml(const std::string file_name);
+
+    /*!
+     * \brief Save GLONASS GNAV ephemeris map to XML file.
+     */
+    bool save_gnav_ephemeris_map_xml(const std::string file_name,
+        std::map<int, Glonass_Gnav_Ephemeris> eph_map);
+
+    /*!
      * \brief Read GPS utc model from XML file
      */
     bool load_utc_xml(const std::string file_name);
@@ -201,6 +217,16 @@ public:
      * \brief Save Galileo iono map to XML file
      */
     bool save_gal_iono_xml(const std::string file_name, Galileo_Iono& iono);
+
+    /*!
+     * \brief Read Glonass utc model from XML file
+     */
+    bool load_glo_utc_xml(const std::string file_name);
+
+    /*!
+     * \brief Save Glonass UTC model map to XML file
+     */
+    bool save_glo_utc_xml(const std::string file_name, Glonass_Gnav_Utc_Model& utc);
 
     /*!
      * \brief Read ref time from XML file

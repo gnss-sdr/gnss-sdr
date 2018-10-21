@@ -201,32 +201,32 @@ bool ControlThread::read_assistance_from_XML()
     bool ret = false;
     // getting names from the config file, if available
     std::string eph_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_xml", eph_default_xml_filename);
-    std::string utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_utc_model.xml", utc_default_xml_filename);
+    std::string utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_utc_model_xml", utc_default_xml_filename);
     std::string iono_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_iono_xml", iono_default_xml_filename);
     std::string gal_iono_xml_filename = configuration_->property("GNSS-SDR.SUPL_gal_iono_xml", gal_iono_default_xml_filename);
     std::string ref_time_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_time_xml", ref_time_default_xml_filename);
     std::string ref_location_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_location_xml", ref_location_default_xml_filename);
     std::string eph_gal_xml_filename = configuration_->property("GNSS-SDR.SUPL_gal_ephemeris_xml", eph_gal_default_xml_filename);
     std::string eph_cnav_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_cnav_ephemeris_xml", eph_cnav_default_xml_filename);
-    std::string gal_utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_gal_utc_model.xml", gal_utc_default_xml_filename);
-    std::string cnav_utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_cnav_utc_model.xml", cnav_utc_default_xml_filename);
+    std::string gal_utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_gal_utc_model_xml", gal_utc_default_xml_filename);
+    std::string cnav_utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_cnav_utc_model_xml", cnav_utc_default_xml_filename);
     std::string eph_glo_xml_filename = configuration_->property("GNSS-SDR.SUPL_glo_ephemeris_xml", eph_glo_gnav_default_xml_filename);
-    std::string glo_utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_glo_utc_model.xml", glo_utc_default_xml_filename);
+    std::string glo_utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_glo_utc_model_xml", glo_utc_default_xml_filename);
 
     if (configuration_->property("GNSS-SDR.AGNSS_XML_enabled", false) == true)
         {
             eph_xml_filename = configuration_->property("GNSS-SDR.AGNSS_gps_ephemeris_xml", eph_default_xml_filename);
-            utc_xml_filename = configuration_->property("GNSS-SDR.AGNSS_gps_utc_model.xml", utc_default_xml_filename);
+            utc_xml_filename = configuration_->property("GNSS-SDR.AGNSS_gps_utc_model_xml", utc_default_xml_filename);
             iono_xml_filename = configuration_->property("GNSS-SDR.AGNSS_gps_iono_xml", iono_default_xml_filename);
             gal_iono_xml_filename = configuration_->property("GNSS-SDR.AGNSS_gal_iono_xml", gal_iono_default_xml_filename);
             ref_time_xml_filename = configuration_->property("GNSS-SDR.AGNSS_gps_ref_time_xml", ref_time_default_xml_filename);
             ref_location_xml_filename = configuration_->property("GNSS-SDR.AGNSS_gps_ref_location_xml", ref_location_default_xml_filename);
             eph_gal_xml_filename = configuration_->property("GNSS-SDR.AGNSS_gal_ephemeris_xml", eph_gal_default_xml_filename);
             eph_cnav_xml_filename = configuration_->property("GNSS-SDR.AGNSS_gps_cnav_ephemeris_xml", eph_cnav_default_xml_filename);
-            gal_utc_xml_filename = configuration_->property("GNSS-SDR.AGNSS_gal_utc_model.xml", gal_utc_default_xml_filename);
-            cnav_utc_xml_filename = configuration_->property("GNSS-SDR.AGNSS_cnav_utc_model.xml", cnav_utc_default_xml_filename);
+            gal_utc_xml_filename = configuration_->property("GNSS-SDR.AGNSS_gal_utc_model_xml", gal_utc_default_xml_filename);
+            cnav_utc_xml_filename = configuration_->property("GNSS-SDR.AGNSS_cnav_utc_model_xml", cnav_utc_default_xml_filename);
             eph_glo_xml_filename = configuration_->property("GNSS-SDR.AGNSS_glo_ephemeris_xml", eph_glo_gnav_default_xml_filename);
-            glo_utc_xml_filename = configuration_->property("GNSS-SDR.AGNSS_glo_utc_model.xml", glo_utc_default_xml_filename);
+            glo_utc_xml_filename = configuration_->property("GNSS-SDR.AGNSS_glo_utc_model_xml", glo_utc_default_xml_filename);
         }
 
     std::cout << "Trying to read GNSS ephemeris from XML file(s)..." << std::endl;
@@ -511,7 +511,7 @@ void ControlThread::assist_GNSS()
                                 {
                                     std::cout << "SUPL: Failed to create Iono data file" << std::endl;
                                 }
-                            std::string utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_utc_model.xml", utc_default_xml_filename);
+                            std::string utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_utc_model_xml", utc_default_xml_filename);
                             if (supl_client_ephemeris_.save_utc_xml(utc_xml_filename, supl_client_ephemeris_.gps_utc) == true)
                                 {
                                     std::cout << "SUPL: UTC model data file created" << std::endl;

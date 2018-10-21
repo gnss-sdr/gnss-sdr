@@ -37,6 +37,7 @@
 
 #include "control_message_factory.h"
 #include "gnss_sdr_supl_client.h"
+#include "tcp_cmd_interface.h"
 #include <boost/thread.hpp>
 #include <gnuradio/msg_queue.h>
 #include <memory>
@@ -113,6 +114,10 @@ public:
     }
 
 private:
+    //Telecommand TCP interface
+    TcpCmdInterface cmd_interface_;
+    void telecommand_listener();
+    boost::thread cmd_interface_thread_;
     //SUPL assistance classes
     gnss_sdr_supl_client supl_client_acquisition_;
     gnss_sdr_supl_client supl_client_ephemeris_;

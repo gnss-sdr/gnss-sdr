@@ -25,6 +25,7 @@ set(SYSTEM_TESTING_LIB_SOURCES
 
 include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}
+     ${Boost_INCLUDE_DIRS}
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${MATIO_INCLUDE_DIRS}

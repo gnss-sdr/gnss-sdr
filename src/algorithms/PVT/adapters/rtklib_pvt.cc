@@ -133,18 +133,6 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
         {
             rtcm_msg_rate_ms[k] = rtcm_MT1097_rate_ms;
         }
-    // getting names from the config file, if available
-    // default filename for assistance data
-    const std::string eph_default_xml_filename = "./gps_ephemeris.xml";
-    const std::string utc_default_xml_filename = "./gps_utc_model.xml";
-    const std::string iono_default_xml_filename = "./gps_iono.xml";
-    const std::string ref_time_default_xml_filename = "./gps_ref_time.xml";
-    const std::string ref_location_default_xml_filename = "./gps_ref_location.xml";
-    eph_xml_filename_ = configuration->property("GNSS-SDR.SUPL_gps_ephemeris_xml", eph_default_xml_filename);
-    //std::string utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_utc_model.xml", utc_default_xml_filename);
-    //std::string iono_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_iono_xml", iono_default_xml_filename);
-    //std::string ref_time_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_time_xml", ref_time_default_xml_filename);
-    //std::string ref_location_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_location_xml", ref_location_default_xml_filename);
 
     // Infer the type of receiver
     /*
@@ -499,40 +487,9 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
 }
 
 
-bool RtklibPvt::save_assistance_to_XML()
-{
-    LOG(INFO) << "SUPL: Try to save GPS ephemeris to XML file " << eph_xml_filename_;
-    std::map<int, Gps_Ephemeris> eph_map = pvt_->get_GPS_L1_ephemeris_map();
-
-    if (eph_map.empty() == false)
-        {
-            std::ofstream ofs;
-            try
-                {
-                    ofs.open(eph_xml_filename_.c_str(), std::ofstream::trunc | std::ofstream::out);
-                    boost::archive::xml_oarchive xml(ofs);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", eph_map);
-                    LOG(INFO) << "Saved GPS L1 Ephemeris map data";
-                }
-            catch (const std::exception& e)
-                {
-                    LOG(WARNING) << e.what();
-                    return false;
-                }
-        }
-    else
-        {
-            LOG(WARNING) << "Failed to save Ephemeris, map is empty";
-            return false;
-        }
-    return true;  // return variable (true == succeeded)
-}
-
-
 RtklibPvt::~RtklibPvt()
 {
     rtkfree(&rtk);
-    save_assistance_to_XML();
 }
 
 

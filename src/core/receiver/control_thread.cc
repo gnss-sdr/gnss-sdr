@@ -447,7 +447,7 @@ void ControlThread::assist_GNSS()
                                  gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.cend();
                                  gps_eph_iter++)
                                 {
-                                    std::cout << "SUPL: Received Ephemeris for GPS satellite " << Gnss_Satellite("GPS", gps_eph_iter->second.i_satellite_PRN) << std::endl;
+                                    std::cout << "SUPL: Received Ephemeris for satellite " << Gnss_Satellite("GPS", gps_eph_iter->second.i_satellite_PRN) << std::endl;
                                     std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(gps_eph_iter->second);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                                 }
@@ -484,7 +484,7 @@ void ControlThread::assist_GNSS()
                                  gps_alm_iter != supl_client_ephemeris_.gps_almanac_map.cend();
                                  gps_alm_iter++)
                                 {
-                                    std::cout << "SUPL: Received Almanac for GPS satellite " << Gnss_Satellite("GPS", gps_alm_iter->second.i_satellite_PRN) << std::endl;
+                                    std::cout << "SUPL: Received Almanac for satellite " << Gnss_Satellite("GPS", gps_alm_iter->second.i_satellite_PRN) << std::endl;
                                     std::shared_ptr<Gps_Almanac> tmp_obj = std::make_shared<Gps_Almanac>(gps_alm_iter->second);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                                 }
@@ -538,7 +538,7 @@ void ControlThread::assist_GNSS()
                                  gps_acq_iter != supl_client_acquisition_.gps_acq_map.cend();
                                  gps_acq_iter++)
                                 {
-                                    std::cout << "SUPL: Received Acquisition assistance for GPS satellite " << Gnss_Satellite("GPS", gps_acq_iter->second.i_satellite_PRN) << std::endl;
+                                    std::cout << "SUPL: Received Acquisition assistance for satellite " << Gnss_Satellite("GPS", gps_acq_iter->second.i_satellite_PRN) << std::endl;
                                     global_gps_acq_assist_map.write(gps_acq_iter->second.i_satellite_PRN, gps_acq_iter->second);
                                 }
                             if (supl_client_acquisition_.gps_ref_loc.valid == true)

@@ -507,7 +507,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
 
     // Save Galileo UTC model parameters
     file_name = "gal_utc_model.xml";
-    if (d_ls_pvt->galileo_utc_model.A0_6 != 0.0)
+    if (d_ls_pvt->galileo_utc_model.Delta_tLS_6 != 0.0)
         {
             std::ofstream ofs;
             try

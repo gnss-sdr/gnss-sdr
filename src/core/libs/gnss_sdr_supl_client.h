@@ -172,7 +172,6 @@ public:
 
     /*!
      * \brief Save UTC model map to XML file
-     * To be called by ControlThread::gps_utc_model_data_write_to_XML()
      */
     bool save_utc_xml(const std::string file_name, Gps_Utc_Model& utc);
 
@@ -183,7 +182,6 @@ public:
 
     /*!
      * \brief Save CNAV UTC model map to XML file
-     * To be called by ControlThread::gps_utc_model_data_write_to_XML()
      */
     bool save_cnav_utc_xml(const std::string file_name, Gps_CNAV_Utc_Model& utc);
 
@@ -194,7 +192,6 @@ public:
 
     /*!
      * \brief Save Galileo UTC model map to XML file
-     * To be called by ControlThread::gal_utc_model_data_write_to_XML()
      */
     bool save_gal_utc_xml(const std::string file_name, Galileo_Utc_Model& utc);
 
@@ -254,6 +251,7 @@ public:
      * Prints SUPL data to std::cout. Use it for debug purposes only.
      */
     void print_assistance();
+
     gnss_sdr_supl_client();
     ~gnss_sdr_supl_client();
 };

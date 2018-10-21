@@ -251,7 +251,7 @@ bool ControlThread::read_assistance_from_XML()
                 {
                     std::shared_ptr<Gps_Utc_Model> tmp_obj = std::make_shared<Gps_Utc_Model>(supl_client_acquisition_.gps_utc);
                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
-                    std::cout << "From XML file: Read GPS UTC parameters." << std::endl;
+                    std::cout << "From XML file: Read GPS UTC model parameters." << std::endl;
                     ret = true;
                 }
 
@@ -259,7 +259,7 @@ bool ControlThread::read_assistance_from_XML()
                 {
                     std::shared_ptr<Gps_Iono> tmp_obj = std::make_shared<Gps_Iono>(supl_client_acquisition_.gps_iono);
                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
-                    std::cout << "From XML file: Read GPS iono parameters." << std::endl;
+                    std::cout << "From XML file: Read GPS ionosphere model parameters." << std::endl;
                     ret = true;
                 }
         }
@@ -284,7 +284,7 @@ bool ControlThread::read_assistance_from_XML()
                 {
                     std::shared_ptr<Galileo_Iono> tmp_obj = std::make_shared<Galileo_Iono>(supl_client_acquisition_.gal_iono);
                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
-                    std::cout << "From XML file: Read Galileo iono parameters." << std::endl;
+                    std::cout << "From XML file: Read Galileo ionosphere model parameters." << std::endl;
                     ret = true;
                 }
 
@@ -292,7 +292,7 @@ bool ControlThread::read_assistance_from_XML()
                 {
                     std::shared_ptr<Galileo_Utc_Model> tmp_obj = std::make_shared<Galileo_Utc_Model>(supl_client_acquisition_.gal_utc);
                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
-                    std::cout << "From XML file: Read Galileo UTC parameters." << std::endl;
+                    std::cout << "From XML file: Read Galileo UTC model parameters." << std::endl;
                     ret = true;
                 }
         }
@@ -317,7 +317,7 @@ bool ControlThread::read_assistance_from_XML()
                 {
                     std::shared_ptr<Gps_CNAV_Utc_Model> tmp_obj = std::make_shared<Gps_CNAV_Utc_Model>(supl_client_acquisition_.gps_cnav_utc);
                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
-                    std::cout << "From XML file: Read GPS CNAV UTC parameters." << std::endl;
+                    std::cout << "From XML file: Read GPS CNAV UTC model parameters." << std::endl;
                     ret = true;
                 }
         }
@@ -342,7 +342,7 @@ bool ControlThread::read_assistance_from_XML()
                 {
                     std::shared_ptr<Glonass_Gnav_Utc_Model> tmp_obj = std::make_shared<Glonass_Gnav_Utc_Model>(supl_client_acquisition_.glo_gnav_utc);
                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
-                    std::cout << "From XML file: Read GLONASS UTC parameters." << std::endl;
+                    std::cout << "From XML file: Read GLONASS UTC model parameters." << std::endl;
                     ret = true;
                 }
         }
@@ -366,7 +366,7 @@ bool ControlThread::read_assistance_from_XML()
                 }
             else
                 {
-                    LOG(INFO) << "SUPL: couldn't read Ref Time XML";
+                    LOG(INFO) << "SUPL: could not read Ref Time XML";
                 }
 
             // Try to read Ref Location from XML
@@ -378,7 +378,7 @@ bool ControlThread::read_assistance_from_XML()
                 }
             else
                 {
-                    LOG(INFO) << "SUPL: couldn't read Ref Location XML";
+                    LOG(INFO) << "SUPL: could not read Ref Location XML";
                 }
         }
 
@@ -391,8 +391,8 @@ void ControlThread::assist_GNSS()
     //######### GNSS Assistance #################################
     // GNSS Assistance configuration
     bool enable_gps_supl_assistance = configuration_->property("GNSS-SDR.SUPL_gps_enabled", false);
-    bool enable_xml_agnss_enabled = configuration_->property("GNSS-SDR.AGNSS_XML_enabled", false);
-    if ((enable_gps_supl_assistance == true) and (enable_xml_agnss_enabled == false))
+    bool enable_agnss_xml = configuration_->property("GNSS-SDR.AGNSS_XML_enabled", false);
+    if ((enable_gps_supl_assistance == true) and (enable_agnss_xml == false))
         {
             std::cout << "SUPL RRLP GPS assistance enabled!" << std::endl;
             std::string default_acq_server = "supl.google.com";
@@ -431,6 +431,7 @@ void ControlThread::assist_GNSS()
                     if (read_assistance_from_XML())
                         {
                             std::cout << "GNSS assistance data loaded from local XML file(s)." << std::endl;
+                            std::cout << "No SUPL request has been performed." << std::endl;
                         }
                 }
             else
@@ -438,7 +439,7 @@ void ControlThread::assist_GNSS()
                     // Request ephemeris from SUPL server
                     int error;
                     supl_client_ephemeris_.request = 1;
-                    std::cout << "SUPL: Try to read GPS ephemeris from SUPL server..." << std::endl;
+                    std::cout << "SUPL: Try to read GPS ephemeris data from SUPL server..." << std::endl;
                     error = supl_client_ephemeris_.get_assistance(supl_mcc, supl_mns, supl_lac, supl_ci);
                     if (error == 0)
                         {
@@ -447,7 +448,7 @@ void ControlThread::assist_GNSS()
                                  gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.cend();
                                  gps_eph_iter++)
                                 {
-                                    std::cout << "SUPL: Received Ephemeris for satellite " << Gnss_Satellite("GPS", gps_eph_iter->second.i_satellite_PRN) << std::endl;
+                                    std::cout << "SUPL: Received ephemeris data for satellite " << Gnss_Satellite("GPS", gps_eph_iter->second.i_satellite_PRN) << std::endl;
                                     std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(gps_eph_iter->second);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                                 }
@@ -455,27 +456,27 @@ void ControlThread::assist_GNSS()
                             std::string eph_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_xml", eph_default_xml_filename);
                             if (supl_client_ephemeris_.save_ephemeris_map_xml(eph_xml_filename, supl_client_ephemeris_.gps_ephemeris_map) == true)
                                 {
-                                    std::cout << "SUPL: XML Ephemeris file created" << std::endl;
+                                    std::cout << "SUPL: XML ephemeris data file created" << std::endl;
                                 }
                             else
                                 {
-                                    std::cout << "SUPL: Failed to create XML Ephemeris file" << std::endl;
+                                    std::cout << "SUPL: Failed to create XML ephemeris data file" << std::endl;
                                 }
                         }
                     else
                         {
-                            std::cout << "ERROR: SUPL client for Ephemeris returned " << error << std::endl;
-                            std::cout << "Please check internet connection and SUPL server configuration" << std::endl;
-                            std::cout << "Trying to read ephemeris from XML file" << std::endl;
+                            std::cout << "ERROR: SUPL client request for ephemeris data returned " << error << std::endl;
+                            std::cout << "Please check your network connectivity and SUPL server configuration" << std::endl;
+                            std::cout << "Trying to read AGNSS data from local XML file(s)..." << std::endl;
                             if (read_assistance_from_XML() == false)
                                 {
-                                    std::cout << "ERROR: Could not read Ephemeris file: Disabling SUPL assistance." << std::endl;
+                                    std::cout << "ERROR: Could not read XML files: Disabling SUPL assistance." << std::endl;
                                 }
                         }
 
                     // Request almanac, IONO and UTC Model data
                     supl_client_ephemeris_.request = 0;
-                    std::cout << "SUPL: Try read Almanac, Iono, Utc Model, Ref Time and Ref Location from SUPL server..." << std::endl;
+                    std::cout << "SUPL: Try to read Almanac, Iono, Utc Model, Ref Time and Ref Location data from SUPL server..." << std::endl;
                     error = supl_client_ephemeris_.get_assistance(supl_mcc, supl_mns, supl_lac, supl_ci);
                     if (error == 0)
                         {
@@ -484,19 +485,19 @@ void ControlThread::assist_GNSS()
                                  gps_alm_iter != supl_client_ephemeris_.gps_almanac_map.cend();
                                  gps_alm_iter++)
                                 {
-                                    std::cout << "SUPL: Received Almanac for satellite " << Gnss_Satellite("GPS", gps_alm_iter->second.i_satellite_PRN) << std::endl;
+                                    std::cout << "SUPL: Received almanac data for satellite " << Gnss_Satellite("GPS", gps_alm_iter->second.i_satellite_PRN) << std::endl;
                                     std::shared_ptr<Gps_Almanac> tmp_obj = std::make_shared<Gps_Almanac>(gps_alm_iter->second);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                                 }
                             if (supl_client_ephemeris_.gps_iono.valid == true)
                                 {
-                                    std::cout << "SUPL: Received GPS Iono" << std::endl;
+                                    std::cout << "SUPL: Received GPS Ionosphere model parameters" << std::endl;
                                     std::shared_ptr<Gps_Iono> tmp_obj = std::make_shared<Gps_Iono>(supl_client_ephemeris_.gps_iono);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                                 }
                             if (supl_client_ephemeris_.gps_utc.valid == true)
                                 {
-                                    std::cout << "SUPL: Received GPS UTC Model" << std::endl;
+                                    std::cout << "SUPL: Received GPS UTC model parameters" << std::endl;
                                     std::shared_ptr<Gps_Utc_Model> tmp_obj = std::make_shared<Gps_Utc_Model>(supl_client_ephemeris_.gps_utc);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                                 }
@@ -513,23 +514,22 @@ void ControlThread::assist_GNSS()
                             std::string utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_utc_model.xml", utc_default_xml_filename);
                             if (supl_client_ephemeris_.save_utc_xml(utc_xml_filename, supl_client_ephemeris_.gps_utc) == true)
                                 {
-                                    std::cout << "SUPL: UTC model file created" << std::endl;
+                                    std::cout << "SUPL: UTC model data file created" << std::endl;
                                 }
                             else
                                 {
-                                    std::cout << "SUPL: Failed to create XML UTC model file" << std::endl;
+                                    std::cout << "SUPL: Failed to create UTC model data file" << std::endl;
                                 }
                         }
                     else
                         {
-                            std::cout << "ERROR: SUPL client for Almanac returned " << error << std::endl;
-                            std::cout << "Please check internet connection and SUPL server configuration" << std::endl;
-                            std::cout << "Disabling SUPL assistance." << std::endl;
+                            std::cout << "ERROR: SUPL client for almanac data returned " << error << std::endl;
+                            std::cout << "Please check your network connectivity and SUPL server configuration" << std::endl;
                         }
 
                     // Request acquisition assistance
                     supl_client_acquisition_.request = 2;
-                    std::cout << "SUPL: Try read Acquisition assistance from SUPL server..." << std::endl;
+                    std::cout << "SUPL: Try to read acquisition assistance data from SUPL server..." << std::endl;
                     error = supl_client_acquisition_.get_assistance(supl_mcc, supl_mns, supl_lac, supl_ci);
                     if (error == 0)
                         {
@@ -538,31 +538,32 @@ void ControlThread::assist_GNSS()
                                  gps_acq_iter != supl_client_acquisition_.gps_acq_map.cend();
                                  gps_acq_iter++)
                                 {
-                                    std::cout << "SUPL: Received Acquisition assistance for satellite " << Gnss_Satellite("GPS", gps_acq_iter->second.i_satellite_PRN) << std::endl;
+                                    std::cout << "SUPL: Received acquisition assistance data for satellite " << Gnss_Satellite("GPS", gps_acq_iter->second.i_satellite_PRN) << std::endl;
                                     global_gps_acq_assist_map.write(gps_acq_iter->second.i_satellite_PRN, gps_acq_iter->second);
                                 }
                             if (supl_client_acquisition_.gps_ref_loc.valid == true)
                                 {
-                                    std::cout << "SUPL: Received Ref Location (Acquisition Assistance)" << std::endl;
+                                    std::cout << "SUPL: Received Ref Location data (Acquisition Assistance)" << std::endl;
                                     std::shared_ptr<Gps_Ref_Location> tmp_obj = std::make_shared<Gps_Ref_Location>(supl_client_acquisition_.gps_ref_loc);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                                 }
                             if (supl_client_acquisition_.gps_time.valid == true)
                                 {
-                                    std::cout << "SUPL: Received Ref Time (Acquisition Assistance)" << std::endl;
+                                    std::cout << "SUPL: Received Ref Time data (Acquisition Assistance)" << std::endl;
                                     std::shared_ptr<Gps_Ref_Time> tmp_obj = std::make_shared<Gps_Ref_Time>(supl_client_acquisition_.gps_time);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                                 }
                         }
                     else
                         {
-                            std::cout << "ERROR: SUPL client for Acquisition assistance returned " << error << std::endl;
-                            std::cout << "Please check internet connection and SUPL server configuration" << std::endl;
-                            std::cout << "Disabling SUPL assistance.." << std::endl;
+                            std::cout << "ERROR: SUPL client for acquisition assistance returned " << error << std::endl;
+                            std::cout << "Please check your network connectivity and SUPL server configuration" << std::endl;
+                            std::cout << "Disabling SUPL acquisition assistance." << std::endl;
                         }
                 }
         }
-    if ((enable_gps_supl_assistance == false) and (enable_xml_agnss_enabled == true))
+
+    if ((enable_gps_supl_assistance == false) and (enable_agnss_xml == true))
         {
             // read assistance from file
             if (read_assistance_from_XML())

@@ -103,80 +103,91 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
 
     // Socket and acceptor
     boost::asio::io_service service;
-    boost::asio::ip::tcp::acceptor acceptor(service, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port));
-
-    bool keep_running = true;
-    while (keep_running)
+    try
         {
-            try
+            boost::asio::ip::tcp::acceptor acceptor(service, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port));
+            bool keep_running = true;
+            while (keep_running)
                 {
-                    std::cout << "Telecommand TCP interface listening on port " << tcp_port << std::endl;
-                    boost::asio::ip::tcp::socket socket(service);
-                    acceptor.accept(socket, not_throw);
-                    if (not_throw)
+                    try
                         {
-                            std::cerr << "Error when binding the port in the socket" << std::endl;
-                            continue;
-                        }
+                            std::cout << "Telecommand TCP interface listening on port " << tcp_port << std::endl;
 
-                    // Read a message
-                    boost::system::error_code error = boost::asio::error::eof;
-                    do
-                        {
-                            std::string response;
-                            boost::asio::streambuf b;
-                            boost::asio::read_until(socket, b, '\n');
-                            std::istream is(&b);
-                            std::string line;
-                            std::getline(is, line);
-                            std::cout << "received command: " << line << std::endl;
-
-                            std::istringstream iss(line);
-                            std::vector<std::string> cmd_vector(std::istream_iterator<std::string>{iss},
-                                std::istream_iterator<std::string>());
-
-                            if (cmd_vector.size() > 0)
+                            boost::asio::ip::tcp::socket socket(service);
+                            acceptor.accept(socket, not_throw);
+                            if (not_throw)
                                 {
-                                    try
+                                    std::cerr << "Error when binding the port in the socket" << std::endl;
+                                    continue;
+                                }
+
+                            // Read a message
+                            boost::system::error_code error = boost::asio::error::eof;
+                            do
+                                {
+                                    std::string response;
+                                    boost::asio::streambuf b;
+                                    boost::asio::read_until(socket, b, '\n');
+                                    std::istream is(&b);
+                                    std::string line;
+                                    std::getline(is, line);
+                                    std::cout << "received command: " << line << std::endl;
+
+                                    std::istringstream iss(line);
+                                    std::vector<std::string> cmd_vector(std::istream_iterator<std::string>{iss},
+                                        std::istream_iterator<std::string>());
+
+                                    if (cmd_vector.size() > 0)
                                         {
-                                            response = functions[cmd_vector.at(0)](cmd_vector);
+                                            try
+                                                {
+                                                    response = functions[cmd_vector.at(0)](cmd_vector);
+                                                }
+                                            catch (const std::exception &ex)
+                                                {
+                                                    response = "ERROR: command execution error: " + std::string(ex.what()) + "\n";
+                                                }
                                         }
-                                    catch (const std::exception &ex)
+                                    else
                                         {
-                                            response = "ERROR: command execution error: " + std::string(ex.what()) + "\n";
+                                            response = "ERROR: empty command\n";
                                         }
+
+                                    //send cmd response
+                                    socket.write_some(boost::asio::buffer(response), not_throw);
+                                    if (not_throw)
+                                        {
+                                            std::cerr << "Error sending(" << not_throw.value() << "): " << not_throw.message() << std::endl;
+                                            break;
+                                        }
+                                }
+                            while (!error);  // && error != boost::asio::error::eof);
+
+                            if (error == boost::asio::error::eof)
+                                {
+                                    std::cout << "EOF detected\n";
                                 }
                             else
                                 {
-                                    response = "ERROR: empty command\n";
+                                    std::cout << "error: " << error << std::endl;
                                 }
 
-                            //send cmd response
-                            socket.write_some(boost::asio::buffer(response), not_throw);
-                            if (not_throw)
-                                {
-                                    std::cerr << "Error sending(" << not_throw.value() << "): " << not_throw.message() << std::endl;
-                                    break;
-                                }
+                            // Close socket
+                            socket.close();
                         }
-                    while (error > 0);  // && error != boost::asio::error::eof);
-
-                    if (error == boost::asio::error::eof)
+                    catch (const boost::exception &e)
                         {
-                            std::cout << "EOF detected\n";
+                            std::cout << "Boost exception " << std::endl;
                         }
-                    else
+                    catch (const std::exception &ex)
                         {
-                            std::cout << "error: " << error << std::endl;
+                            std::cout << "Exception " << ex.what() << std::endl;
                         }
-
-                    // Close socket
-                    socket.close();
                 }
-            catch (const std::exception &ex)
-                {
-                    std::cout << "Exception " << ex.what() << std::endl;
-                }
+        }
+    catch (const boost::exception &e)
+        {
+            std::cout << "TCP Command Interface exception: address already in use" << std::endl;
         }
 }
 

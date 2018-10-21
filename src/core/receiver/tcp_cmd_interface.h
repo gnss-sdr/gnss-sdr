@@ -28,8 +28,8 @@
  *
  * -------------------------------------------------------------------------
  */
-#ifndef TCPCMDINTERFACE_H_
-#define TCPCMDINTERFACE_H_
+#ifndef GNSS_SDR_TCPCMDINTERFACE_H_
+#define GNSS_SDR_TCPCMDINTERFACE_H_
 
 #include <functional>
 #include <iostream>
@@ -38,7 +38,7 @@
 #include <unordered_map>
 #include <algorithm>
 #include <boost/asio.hpp>
-#include <stdint.h>
+#include <cstdint>
 
 
 class TcpCmdInterface
@@ -61,4 +61,4 @@ private:
     void register_functions();
 };
 
-#endif /* TCPCMDINTERFACE_H_ */
+#endif /* GNSS_SDR_TCPCMDINTERFACE_H_ */

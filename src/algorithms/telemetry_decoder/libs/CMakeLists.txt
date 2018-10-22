@@ -18,13 +18,15 @@
 
 add_subdirectory(libswiftcnav)
 
-set(TELEMETRY_DECODER_LIB_SOURCES
+set(TELEMETRY_DECODER_LIB_SOURCES 
+     beidou_b1i_subframe_fsm.cc 
      viterbi_decoder.cc
 )
 
 set(TELEMETRY_DECODER_LIB_HEADERS
      viterbi_decoder.h
      convolutional.h
+     beidou_b1i_subframe_fsm.h
 )
 
 include_directories(

@@ -65,6 +65,7 @@
 #include <fstream>
 #include <map>
 #include <string>
+#include "../../../core/system_parameters/beidou_dnav_navigation_message.h"
 
 
 /*!
@@ -96,6 +97,7 @@ public:
     std::map<int, Gps_Ephemeris> gps_ephemeris_map;                    //!< Map storing new GPS_Ephemeris
     std::map<int, Gps_CNAV_Ephemeris> gps_cnav_ephemeris_map;          //!< Map storing new GPS_CNAV_Ephemeris
     std::map<int, Glonass_Gnav_Ephemeris> glonass_gnav_ephemeris_map;  //!< Map storing new GLONASS GNAV Ephmeris
+    std::map<int, Beidou_Ephemeris> beidou_ephemeris_map;  //!< Map storing new GLONASS GNAV Ephmeris
 
     Galileo_Utc_Model galileo_utc_model;
     Galileo_Iono galileo_iono;
@@ -109,6 +111,10 @@ public:
 
     Glonass_Gnav_Utc_Model glonass_gnav_utc_model;  //!< Map storing GLONASS GNAV UTC Model
     Glonass_Gnav_Almanac glonass_gnav_almanac;      //!< Map storing GLONASS GNAV Almanac Model
+
+    Beidou_Utc_Model beidou_utc_model;
+    Beidou_Iono beidou_iono;
+    Beidou_Almanac beidou_almanac;
 
     int count_valid_position;
 };

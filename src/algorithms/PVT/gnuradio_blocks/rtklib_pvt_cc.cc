@@ -231,6 +231,37 @@ void rtklib_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                     DLOG(INFO) << "New GLONASS GNAV Almanac has arrived "
                                << ", GLONASS GNAV Slot Number =" << glonass_gnav_almanac->d_n_A;
                 }
+            // ************* BEIDOU telemetry *****************
+            if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Ephemeris>))
+                {
+                    // ### BEIDOU EPHEMERIS ###
+                    std::shared_ptr<Beidou_Ephemeris> beidou_eph;
+                    beidou_eph = boost::any_cast<std::shared_ptr<Beidou_Ephemeris>>(pmt::any_ref(msg));
+                    DLOG(INFO) << "Ephemeris record has arrived from SAT ID "
+                               << beidou_eph->i_satellite_PRN << " (Block "
+                               << beidou_eph->satelliteBlock[beidou_eph->i_satellite_PRN] << ")"
+                               << "inserted with Toe=" << beidou_eph->d_Toe << " and BEIDOU Week="
+                               << beidou_eph->i_BEIDOU_week;
+                    // update/insert new ephemeris record to the global ephemeris map
+                    d_ls_pvt->beidou_ephemeris_map[beidou_eph->i_satellite_PRN] = *beidou_eph;
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Iono>))
+                {
+                    // ### BEIDOU IONO ###
+                    std::shared_ptr<Beidou_Iono> beidou_iono;
+                    beidou_iono = boost::any_cast<std::shared_ptr<Beidou_Iono>>(pmt::any_ref(msg));
+                    d_ls_pvt->beidou_iono = *beidou_iono;
+                    DLOG(INFO) << "New IONO record has arrived ";
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Utc_Model>))
+                {
+                    // ### BEIDOU UTC MODEL ###
+                    std::shared_ptr<Beidou_Utc_Model> beidou_utc_model;
+                    beidou_utc_model = boost::any_cast<std::shared_ptr<Beidou_Utc_Model>>(pmt::any_ref(msg));
+                    d_ls_pvt->beidou_utc_model = *beidou_utc_model;
+                    DLOG(INFO) << "New UTC record has arrived ";
+                }
+
             else
                 {
                     LOG(WARNING) << "msg_handler_telemetry unknown object type!";
@@ -482,6 +513,28 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
         {
             LOG(INFO) << "Failed to save GLONASS GNAV Ephemeris, map is empty";
         }
+    // save Beidou B1I ephemeris to XML file
+    file_name = "eph_BEIDOU_b1I.xml";
+
+    if (d_ls_pvt->beidou_ephemeris_map.size() > 0)
+        {
+            try
+                {
+                    std::ofstream ofs(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", d_ls_pvt->beidou_ephemeris_map);
+                    ofs.close();
+                    LOG(INFO) << "Saved BEIDOU Ephemeris map data";
+                }
+            catch (std::exception& e)
+                {
+                    LOG(WARNING) << e.what();
+                }
+        }
+    else
+        {
+            LOG(WARNING) << "Failed to save BEIDOU Ephemeris, map is empty";
+        }
 
     // Save GPS UTC model parameters
     file_name = "gps_utc_model.xml";
@@ -728,6 +781,14 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                     d_rtcm_printer->lock_time(d_ls_pvt->glonass_gnav_ephemeris_map.find(in[i][epoch].PRN)->second, in[i][epoch].RX_time, in[i][epoch]);  // keep track of locking time
                                                 }
                                         }
+/*                                    if (d_ls_pvt->beidou_ephemeris_map.size() > 0)
+                                        {
+                                            if (tmp_eph_iter_bds != d_ls_pvt->beidou_ephemeris_map.end())
+                                                {
+                                                    d_rtcm_printer->lock_time(d_ls_pvt->beidou_ephemeris_map.find(in[i][epoch].PRN)->second, in[i][epoch].RX_time, in[i][epoch]);  // keep track of locking time
+                                                }
+                                        }
+*/
                                 }
                             catch (const boost::exception& ex)
                                 {
@@ -872,6 +933,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                      *    29   |  GPS L1 C/A + GLONASS L2 C/A
                                      *    30   |  Galileo E1B + GLONASS L2 C/A
                                      *    31   |  GPS L2C + GLONASS L2 C/A
+                                     *    32   |  Beidou B1I
                                      */
 
                                     // ####################### RINEX FILES #################
@@ -880,6 +942,8 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                     std::map<int, Gps_Ephemeris>::const_iterator gps_ephemeris_iter;
                                     std::map<int, Gps_CNAV_Ephemeris>::const_iterator gps_cnav_ephemeris_iter;
                                     std::map<int, Glonass_Gnav_Ephemeris>::const_iterator glonass_gnav_ephemeris_iter;
+                                    std::map<int, Beidou_Ephemeris>::const_iterator beidou_ephemeris_iter;
+
                                     std::map<int, Gnss_Synchro>::const_iterator gnss_observables_iter;
 
                                     if (!b_rinex_header_written)  //  & we have utc data in nav message!
@@ -888,6 +952,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                             gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.cbegin();
                                             gps_cnav_ephemeris_iter = d_ls_pvt->gps_cnav_ephemeris_map.cbegin();
                                             glonass_gnav_ephemeris_iter = d_ls_pvt->glonass_gnav_ephemeris_map.cbegin();
+                                            beidou_ephemeris_iter = d_ls_pvt->beidou_ephemeris_map.cbegin();
 
                                             if (type_of_rx == 1)  // GPS L1 C/A only
                                                 {
@@ -1110,6 +1175,17 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                             b_rinex_header_written = true;  // do not write header anymore
                                                         }
                                                 }
+/*                                            if (type_of_rx == 32)  // Beidou B1I only
+                                                {
+                                                    if (beidou_ephemeris_iter != d_ls_pvt->beidou_ephemeris_map.cend())
+                                                        {
+                                                            rp->rinex_obs_header(rp->obsFile, beidou_ephemeris_iter->second, d_rx_time);
+                                                            rp->rinex_nav_header(rp->navFile, d_ls_pvt->beidou_iono, d_ls_pvt->beidou_utc_model);
+                                                            b_rinex_header_written = true;  // do not write header anymore
+                                                        }
+                                                }
+*/
+
                                         }
                                     if (b_rinex_header_written)  // The header is already written, we can now log the navigation message data
                                         {
@@ -1183,11 +1259,17 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                         {
                                                             rp->log_rinex_nav(rp->navMixFile, d_ls_pvt->gps_cnav_ephemeris_map, d_ls_pvt->glonass_gnav_ephemeris_map);
                                                         }
+/*                                                    if (type_of_rx == 32)  // GPS L1 C/A only
+                                                        {
+                                                            rp->log_rinex_nav(rp->navFile, d_ls_pvt->beidou_ephemeris_map);
+                                                        }
+*/
                                                 }
                                             galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.cbegin();
                                             gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.cbegin();
                                             gps_cnav_ephemeris_iter = d_ls_pvt->gps_cnav_ephemeris_map.cbegin();
                                             glonass_gnav_ephemeris_iter = d_ls_pvt->glonass_gnav_ephemeris_map.cbegin();
+                                            beidou_ephemeris_iter = d_ls_pvt->beidou_ephemeris_map.cbegin();
 
                                             // Log observables into the RINEX file
                                             if (flag_write_RINEX_obs_output)
@@ -1439,6 +1521,21 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     b_rinex_header_updated = true;  // do not write header anymore
                                                                 }
                                                         }
+/*                                                    if (type_of_rx == 32)  // Beidou
+                                                        {
+                                                            if (beidou_ephemeris_iter != d_ls_pvt->beidou_ephemeris_map.end())
+                                                                {
+                                                                    rp->log_rinex_obs(rp->obsFile, beidou_ephemeris_iter->second, d_rx_time, gnss_observables_map);
+                                                                }
+                                                            if (!b_rinex_header_updated and (d_ls_pvt->beidou_utc_model.d_A0 != 0))
+                                                                {
+                                                                    rp->update_obs_header(rp->obsFile, d_ls_pvt->beidou_utc_model);
+                                                                    rp->update_nav_header(rp->navFile, d_ls_pvt->beidou_utc_model, d_ls_pvt->beidou_iono);
+                                                                    b_rinex_header_updated = true;
+                                                                }
+                                                        }
+*/
+
                                                 }
                                         }
 
@@ -2244,8 +2341,8 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                             // std::cout << TEXT_MAGENTA << "Observable RX time (GPST) " << boost::posix_time::to_simple_string(p_time) << TEXT_RESET << std::endl;
 
                             DLOG(INFO) << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->get_position_UTC_time())
-                                       << " UTC using " << d_ls_pvt->get_num_valid_observations() << " observations is Lat = " << d_ls_pvt->get_latitude() << " [deg], Long = " << d_ls_pvt->get_longitude()
-                                       << " [deg], Height = " << d_ls_pvt->get_height() << " [m]";
+                                      << " UTC using " << d_ls_pvt->get_num_valid_observations() << " observations is Lat = " << d_ls_pvt->get_latitude() << " [deg], Long = " << d_ls_pvt->get_longitude()
+                                      << " [deg], Height = " << d_ls_pvt->get_height() << " [m]";
 
                             /* std::cout << "Dilution of Precision at " << boost::posix_time::to_simple_string(d_ls_pvt->get_position_UTC_time())
                                          << " UTC using "<< d_ls_pvt->get_num_valid_observations() <<" observations is HDOP = " << d_ls_pvt->get_hdop() << " VDOP = "

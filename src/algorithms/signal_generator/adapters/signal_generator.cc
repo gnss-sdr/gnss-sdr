@@ -37,6 +37,7 @@
 #include "Galileo_E5a.h"
 #include "GLONASS_L1_L2_CA.h"
 #include <glog/logging.h>
+#include "../../../core/system_parameters/Beidou_B1I.h"
 
 
 using google::LogMessage;
@@ -109,6 +110,12 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
                     vector_length = round((float)fs_in / (GLONASS_L2_CA_CODE_RATE_HZ / GLONASS_L2_CA_CODE_LENGTH_CHIPS));
                 }
         }
+
+    else if (std::find(system.begin(), system.end(), "B") != system.end())
+        {
+            vector_length = round(static_cast<float>(fs_in) / (BEIDOU_B1I_CODE_RATE_HZ / BEIDOU_B1I_CODE_LENGTH_CHIPS));
+        }
+
 
     if (item_type_.compare("gr_complex") == 0)
         {

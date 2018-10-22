@@ -65,6 +65,9 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs, const Gnss_Synchro& gnss_synchro
         case 'R':
             rtklib_obs.sat = gnss_synchro.PRN + NSATGPS;
             break;
+        case 'C':
+            rtklib_obs.sat = gnss_synchro.PRN + NSATGPS + NSATGLO + NSATGAL;
+            break;
 
         default:
             rtklib_obs.sat = gnss_synchro.PRN;
@@ -226,6 +229,62 @@ eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph)
 
     return rtklib_sat;
 }
+
+eph_t eph_to_rtklib(const Beidou_Ephemeris& bei_eph)
+{
+    eph_t rtklib_sat = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0 };
+    rtklib_sat.sat = bei_eph.i_satellite_PRN;
+    rtklib_sat.A = bei_eph.d_sqrt_A * bei_eph.d_sqrt_A;
+    rtklib_sat.M0 = bei_eph.d_M_0;
+    rtklib_sat.deln = bei_eph.d_Delta_n;
+    rtklib_sat.OMG0 = bei_eph.d_OMEGA0;
+    rtklib_sat.OMGd = bei_eph.d_OMEGA_DOT;
+    rtklib_sat.omg = bei_eph.d_OMEGA;
+    rtklib_sat.i0 = bei_eph.d_i_0;
+    rtklib_sat.idot = bei_eph.d_IDOT;
+    rtklib_sat.e = bei_eph.d_e_eccentricity;
+    rtklib_sat.Adot = 0;  //only in CNAV;
+    rtklib_sat.ndot = 0;  //only in CNAV;
+
+    rtklib_sat.week = adjgpsweek(bei_eph.i_BEIDOU_week); /* week of tow */
+    rtklib_sat.cic = bei_eph.d_Cic;
+    rtklib_sat.cis = bei_eph.d_Cis;
+    rtklib_sat.cuc = bei_eph.d_Cuc;
+    rtklib_sat.cus = bei_eph.d_Cus;
+    rtklib_sat.crc = bei_eph.d_Crc;
+    rtklib_sat.crs = bei_eph.d_Crs;
+    rtklib_sat.f0 = bei_eph.d_A_f0;
+    rtklib_sat.f1 = bei_eph.d_A_f1;
+    rtklib_sat.f2 = bei_eph.d_A_f2;
+    rtklib_sat.tgd[0] = bei_eph.d_TGD1;
+    rtklib_sat.tgd[1] = 0.0;
+    rtklib_sat.tgd[2] = 0.0;
+    rtklib_sat.tgd[3] = 0.0;
+    rtklib_sat.toes = bei_eph.d_Toe;
+    rtklib_sat.toc = gpst2time(rtklib_sat.week, bei_eph.d_Toc);
+    rtklib_sat.ttr = gpst2time(rtklib_sat.week, bei_eph.d_TOW);
+    /* adjustment for week handover */
+    double tow, toc;
+    tow = time2gpst(rtklib_sat.ttr, &rtklib_sat.week);
+    toc = time2gpst(rtklib_sat.toc, NULL);
+    if (rtklib_sat.toes < tow - 302400.0)
+        {
+            rtklib_sat.week++;
+            tow -= 604800.0;
+        }
+    else if (rtklib_sat.toes > tow + 302400.0)
+        {
+            rtklib_sat.week--;
+            tow += 604800.0;
+        }
+    rtklib_sat.toe = gpst2time(rtklib_sat.week, rtklib_sat.toes);
+    rtklib_sat.toc = gpst2time(rtklib_sat.week, toc);
+    rtklib_sat.ttr = gpst2time(rtklib_sat.week, tow);
+
+    return rtklib_sat;
+}
+
 
 
 eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph)

@@ -226,6 +226,19 @@ void Gnss_Satellite::set_PRN(uint32_t PRN_)
                     PRN = PRN_;
                 }
         }
+    else if (system.compare("Beidou") == 0)
+        {
+            if (PRN_ < 1 or PRN_ > 36)
+                {
+                    DLOG(INFO) << "This PRN is not defined";
+                    PRN = 0;
+                }
+            else
+                {
+                    PRN = PRN_;
+                }
+        }
+
     else
         {
             DLOG(INFO) << "System " << system << " is not defined";
@@ -603,6 +616,99 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
                     break;
                 default:
                     block_ = std::string("Unknown(Simulated)");
+                }
+        }
+    if (system_.compare("Beidou") == 0)
+        {
+            // Check https://en.wikipedia.org/wiki/List_of_BeiDou_satellites
+            switch ( PRN_ )
+            {
+            case 1:
+                block_ = std::string("Compass-G1");
+                break;
+            case 2:
+                block_ = std::string("Compass-G6");
+                break;
+            case 3:
+                block_ = std::string("Compass-G3");
+                break;
+            case 4:
+                block_ = std::string("Compass-G4");
+                break;
+            case 5:
+                block_ = std::string("Compass-G5");
+                break;
+            case 6:
+                block_ = std::string("Compass-IGSO1");
+                break;
+            case 7:
+                block_ = std::string("Compass-IGSO2");
+                break;
+            case 8:
+                block_ = std::string("Compass-IGSO3");
+                break;
+            case 9:
+                block_ = std::string("Compass-IGSO4");
+                break;
+            case 10:
+                block_ = std::string("Compass-IGSO5");
+                break;
+            case 11:
+                block_ = std::string("Compass-M3");
+                break;
+            case 12:
+                block_ = std::string("Compass-M4");
+                break;
+            case 13:
+                block_ = std::string("Compass-M2");
+                break;
+            case 14:
+                block_ = std::string("Compass-M5");
+                break;
+            case 17:
+                block_ = std::string("Compass-G7");
+                break;
+            case 19:
+                block_ = std::string("BeiDou-3 M1");
+                break;
+            case 20:
+                block_ = std::string("BeiDou-3 M2");
+                break;
+            case 21:
+                block_ = std::string("BeiDou-3 M3");
+                break;
+            case 22:
+                block_ = std::string("BeiDou-3 M4");
+                break;
+            case 27:
+                block_ = std::string("BeiDou-3 M7");
+                break;
+            case 28:
+                block_ = std::string("BeiDou-3 M8");
+                break;
+            case 29:
+                block_ = std::string("BeiDou-3 M9");
+                break;
+            case 30:
+                block_ = std::string("BeiDou-3 M10");
+                break;
+            case 31:
+                block_ = std::string("BDS I1-S");
+                break;
+            case 32:
+                block_ = std::string("BDS I2-S");
+                break;
+            case 33:
+                block_ = std::string("BDS M1-S");
+                break;
+            case 34:
+                block_ = std::string("BDS M2-S");
+                break;
+            case 35:
+                block_ = std::string("BDS M3-S");
+                break;
+            default:
+                block_ = std::string("Unknown(Simulated)");
                 }
         }
     return block_;

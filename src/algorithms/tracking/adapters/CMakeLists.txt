@@ -52,6 +52,7 @@ set(TRACKING_ADAPTER_SOURCES
      gps_l5_dll_pll_tracking.cc
      glonass_l2_ca_dll_pll_tracking.cc
      glonass_l2_ca_dll_pll_c_aid_tracking.cc
+     beidou_b1i_dll_pll_tracking.cc
      ${OPT_TRACKING_ADAPTERS_SOURCES}
 )
 
@@ -69,6 +70,7 @@ set(TRACKING_ADAPTER_HEADERS
      gps_l5_dll_pll_tracking.h
      glonass_l2_ca_dll_pll_tracking.h
      glonass_l2_ca_dll_pll_c_aid_tracking.h
+     beidou_b1i_dll_pll_tracking.h
      ${OPT_TRACKING_ADAPTERS_HEADERS}
 )
 

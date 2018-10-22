@@ -32,6 +32,11 @@ set(SYSTEM_PARAMETERS_SOURCES
      galileo_almanac.cc
      galileo_iono.cc
      galileo_navigation_message.cc
+     beidou_dnav_navigation_message.cc
+     beidou_dnav_ephemeris.cc
+     beidou_dnav_iono.cc
+     beidou_dnav_almanac.cc
+     beidou_dnav_utc_model.cc
      sbas_ephemeris.cc
      galileo_fnav_message.cc
      gps_cnav_ephemeris.cc
@@ -72,6 +77,11 @@ set(SYSTEM_PARAMETERS_HEADERS
      glonass_gnav_almanac.h
      glonass_gnav_utc_model.h
      glonass_gnav_navigation_message.h
+     beidou_dnav_navigation_message.h
+     beidou_dnav_ephemeris.h
+     beidou_dnav_iono.h
+     beidou_dnav_almanac.h
+     beidou_dnav_utc_model.h
      display.h
      Galileo_E1.h
      Galileo_E5a.h
@@ -83,6 +93,7 @@ set(SYSTEM_PARAMETERS_HEADERS
      GPS_L1_CA.h
      GPS_L2C.h
      GPS_L5.h
+     Beidou_B1I.h
      MATH_CONSTANTS.h     
 )
 

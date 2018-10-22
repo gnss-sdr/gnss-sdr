@@ -417,20 +417,33 @@ void ControlThread::assist_GNSS()
 
             std::string default_lac = "0x59e2";
             std::string default_ci = "0x31b0";
+            std::string supl_lac_s = configuration_->property("GNSS-SDR.SUPL_LAC", default_lac);
+            std::string supl_ci_s = configuration_->property("GNSS-SDR.SUPL_CI", default_ci);
             try
                 {
-                    supl_lac = boost::lexical_cast<int>(configuration_->property("GNSS-SDR.SUPL_LAC", default_lac));
+                    supl_lac = std::stoi(supl_lac_s, nullptr, 0);
                 }
-            catch (boost::bad_lexical_cast &)
+            catch (const std::invalid_argument &ia)
+                {
+                    std::cerr << "Invalid argument for SUPL LAC: " << ia.what() << '\n';
+                    supl_lac = -1;
+                }
+            try
+                {
+                    supl_ci = std::stoi(supl_ci_s, nullptr, 0);
+                }
+            catch (const std::invalid_argument &ia)
+                {
+                    std::cerr << "Invalid argument for SUPL CI: " << ia.what() << '\n';
+                    supl_ci = -1;
+                }
+
+            if (supl_lac < 0 or supl_lac > 65535)
                 {
                     supl_lac = 0x59e2;
                 }
 
-            try
-                {
-                    supl_ci = boost::lexical_cast<int>(configuration_->property("GNSS-SDR.SUPL_CI", default_ci));
-                }
-            catch (boost::bad_lexical_cast &)
+            if (supl_ci < 0 or supl_ci > 268435455)  // 2^16 for GSM and CDMA, 2^28 for UMTS and LTE networks
                 {
                     supl_ci = 0x31b0;
                 }

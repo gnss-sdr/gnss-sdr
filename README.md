@@ -64,10 +64,10 @@ $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time
        libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev \
        libboost-serialization-dev liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr \
        libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev \
-       libgnutls-openssl-dev libpcap-dev python-mako python-six libmatio-dev googletest
+       libgnutls-openssl-dev libpcap-dev python-mako python-six libmatio-dev libgtest-dev
 ~~~~~~
 
-Please note that `googletest` was named `libgtest-dev` in distributions older than Debian 9 "stretch" and Ubuntu 17.04 "zesty".
+Please note that the required files from `libgtest-dev` were moved to `googletest` in Debian 9 "stretch" and Ubuntu 18.04 "bionic", and moved back again to `libgtest-dev` in Debian 10 "buster" and Ubuntu 18.10 "cosmic".
 
 **Note for Ubuntu 14.04 LTS "trusty" users:** you will need to build from source and install GNU Radio manually, as explained below, since GNSS-SDR requires `gnuradio-dev` >= 3.7.3, and Ubuntu 14.04 came with 3.7.2. Install all the packages above BUT EXCEPT `libuhd-dev`, `gnuradio-dev` and `gr-osmosdr` (and remove them if they are already installed in your machine), and install those dependencies using PyBOMBS. The same applies to `libmatio-dev`: Ubuntu 14.04 came with 1.5.2 and the minimum required version is 1.5.3. Please do not install the `libmatio-dev` package and install `libtool`, `automake` and `libhdf5-dev` instead. A recent version of the library will be downloaded and built automatically if CMake does not find it installed.
 
@@ -516,10 +516,7 @@ More details can be found in our tutorial about [GNSS-SDR configuration options 
 <a name="macosx">macOS and Mac OS X</a>
 ---------
 
-
-### macOS 10.13 (High Sierra) and 10.12 (Sierra), Mac OS X 10.11 (El Capitan), 10.10 (Yosemite) and 10.9 (Mavericks).
-
-If you still have not installed [Xcode](https://developer.apple.com/xcode/ "Xcode"), do it now from the App Store (it's free). You will also need the Xcode Command Line Tools. Launch the Terminal, found in /Applications/Utilities/, and type:
+GNSS-SDR can be built on MacOS or Mac OS X, starting from 10.9 (Mavericks) and including 10.14 (Mojave). If you still have not installed [Xcode](https://developer.apple.com/xcode/ "Xcode"), do it now from the App Store (it's free). You will also need the Xcode Command Line Tools. Launch the Terminal, found in /Applications/Utilities/, and type:
 
 ~~~~~~
 $ xcode-select --install
@@ -558,7 +555,7 @@ You also might need to activate a Python installation. The list of installed ver
 $ port select list python
 ~~~~~~
 
-and you can activate a certain version (2.7 works well) by typing:
+and you can activate a certain version by typing:
 
 ~~~~~~
 $ sudo port select --set python python27

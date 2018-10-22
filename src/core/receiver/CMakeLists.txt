@@ -24,6 +24,7 @@ set(GNSS_RECEIVER_SOURCES
      gnss_block_factory.cc
      gnss_flowgraph.cc
      in_memory_configuration.cc
+     tcp_cmd_interface.cc
 )
 
 set(GNSS_RECEIVER_HEADERS

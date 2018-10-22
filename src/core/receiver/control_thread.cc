@@ -413,7 +413,7 @@ void ControlThread::assist_GNSS()
             supl_client_ephemeris_.server_port = configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_port", 7275);
             supl_client_acquisition_.server_port = configuration_->property("GNSS-SDR.SUPL_gps_acquisition_port", 7275);
             supl_mcc = configuration_->property("GNSS-SDR.SUPL_MCC", 244);
-            supl_mns = configuration_->property("GNSS-SDR.SUPL_MNS", 5);
+            supl_mns = configuration_->property("GNSS-SDR.SUPL_MNC ", 5);
 
             std::string default_lac = "0x59e2";
             std::string default_ci = "0x31b0";

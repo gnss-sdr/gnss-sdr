@@ -193,7 +193,7 @@ int PositionSystemTest::configure_receiver()
             config->set_property("GNSS-SDR.SUPL_gps_acquisition_server", "supl.google.com");
             config->set_property("GNSS-SDR.SUPL_gps_acquisition_port", std::to_string(7275));
             config->set_property("GNSS-SDR.SUPL_MCC", std::to_string(244));
-            config->set_property("GNSS-SDR.SUPL_MNS", std::to_string(5));
+            config->set_property("GNSS-SDR.SUPL_MNC", std::to_string(5));
             config->set_property("GNSS-SDR.SUPL_LAC", "0x59e2");
             config->set_property("GNSS-SDR.SUPL_CI", "0x31b0");
 

@@ -43,7 +43,7 @@
 eph_t eph_to_rtklib(const Galileo_Ephemeris& gal_eph);
 eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph);
 eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph);
-eph_t eph_to_rtklib(const Beidou_Ephemeris& bei_eph);
+eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph);
 
 /*!
  * \brief Transforms a Glonass_Gnav_Ephemeris to its RTKLIB counterpart

@@ -105,7 +105,7 @@ private:
     int d_word_number;
 
     // navigation message vars
-    Beidou_Navigation_Message_D1 d_nav;
+    Beidou_Dnav_Navigation_Message d_nav;
     BeidouB1iSubframeFsm d_BEIDOU_FSM;
 
     bool d_dump;

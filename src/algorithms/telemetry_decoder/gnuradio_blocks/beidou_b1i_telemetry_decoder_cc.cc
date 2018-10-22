@@ -463,7 +463,7 @@ int beidou_b1i_telemetry_decoder_cc::general_work(int noutput_items __attribute_
                                                 {
 
                                                     // get ephemeris object for this SV (mandatory)
-                                                    std::shared_ptr<Beidou_Ephemeris> tmp_obj = std::make_shared<Beidou_Ephemeris>(d_BEIDOU_FSM.d_nav.get_ephemeris());
+                                                    std::shared_ptr<Beidou_Dnav_Ephemeris> tmp_obj = std::make_shared<Beidou_Dnav_Ephemeris>(d_BEIDOU_FSM.d_nav.get_ephemeris());
                                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                                                 }
 /*                                            break;
@@ -471,14 +471,14 @@ int beidou_b1i_telemetry_decoder_cc::general_work(int noutput_items __attribute_
  */                                           if (d_BEIDOU_FSM.d_nav.flag_iono_valid == true)
                                                 {
 
-                                                    std::shared_ptr<Beidou_Iono> tmp_obj = std::make_shared<Beidou_Iono>(d_BEIDOU_FSM.d_nav.get_iono());
+                                                    std::shared_ptr<Beidou_Dnav_Iono> tmp_obj = std::make_shared<Beidou_Dnav_Iono>(d_BEIDOU_FSM.d_nav.get_iono());
                                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                                                 }
                                             if (d_BEIDOU_FSM.d_nav.flag_utc_model_valid == true)
                                                 {
 std::cout << " we have a new set of utc data for the current SV "<< std::endl;
 
-                                                    std::shared_ptr<Beidou_Utc_Model> tmp_obj = std::make_shared<Beidou_Utc_Model>(d_BEIDOU_FSM.d_nav.get_utc_model());
+                                                    std::shared_ptr<Beidou_Dnav_Utc_Model> tmp_obj = std::make_shared<Beidou_Dnav_Utc_Model>(d_BEIDOU_FSM.d_nav.get_utc_model());
                                                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                                                 }
 /*                                            break;

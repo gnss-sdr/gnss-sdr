@@ -33,7 +33,7 @@
 #include <cmath>
 
 
-Beidou_Utc_Model::Beidou_Utc_Model()
+Beidou_Dnav_Utc_Model::Beidou_Dnav_Utc_Model()
 {
     valid = false;
     d_A1 = 0;
@@ -46,7 +46,7 @@ Beidou_Utc_Model::Beidou_Utc_Model()
     d_DeltaT_LSF = 0;
 }
 
-double Beidou_Utc_Model::utc_time(double beidoutime_corrected, int i_BEIDOU_week)
+double Beidou_Dnav_Utc_Model::utc_time(double beidoutime_corrected, int i_BEIDOU_week)
 {
     double t_utc;
     double t_utc_daytime;

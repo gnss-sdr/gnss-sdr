@@ -49,7 +49,6 @@
 #include "gps_l2c_signal.h"
 #include "GPS_L5.h"
 #include "gps_l5_signal.h"
-#include "beidou_b1I_signal_processing.h"
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
@@ -61,6 +60,7 @@
 #include <sstream>
 #include <numeric>
 #include "../../../core/system_parameters/Beidou_B1I.h"
+#include "../../libs/beidou_b1i_signal_processing.h"
 
 using google::LogMessage;
 

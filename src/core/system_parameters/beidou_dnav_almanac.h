@@ -1,7 +1,9 @@
 /*!
- * \file gps_almanac.h
- * \brief  Interface of a GPS ALMANAC storage
- * \author Javier Arribas, 2013. jarribas(at)cttc.es
+ * \file beidou_dnav_almanac.h
+ * \brief  Interface of a Beidou DNAV Almanac storage
+ *
+ * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
+ * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.com
  *
  * -------------------------------------------------------------------------
  *
@@ -38,7 +40,7 @@
  *
  * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
  */
-class Beidou_Almanac
+class Beidou_Dnav_Almanac
 {
 public:
     unsigned int i_satellite_PRN;  //!< SV PRN NUMBER
@@ -57,7 +59,7 @@ public:
     /*!
      * Default constructor
      */
-    Beidou_Almanac();
+    Beidou_Dnav_Almanac();
 };
 
 #endif

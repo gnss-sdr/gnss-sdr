@@ -29,8 +29,8 @@
  */
 
 
-#ifndef GNSS_SDR_BEIDOU_NAVIGATION_MESSAGE_H_
-#define GNSS_SDR_BEIDOU_NAVIGATION_MESSAGE_H_
+#ifndef GNSS_SDR_BEIDOU_DNAV_NAVIGATION_MESSAGE_H_
+#define GNSS_SDR_BEIDOU_DNAV_NAVIGATION_MESSAGE_H_
 
 
 #include <bitset>
@@ -51,7 +51,7 @@
  *
  * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
  */
-class Beidou_Navigation_Message_D1
+class Beidou_Dnav_Navigation_Message
 {
 private:
     unsigned long int read_navigation_unsigned(std::bitset<BEIDOU_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter);
@@ -224,17 +224,17 @@ public:
     /*!
      * \brief Obtain a GPS SV Ephemeris class filled with current SV data
      */
-    Beidou_Ephemeris get_ephemeris();
+    Beidou_Dnav_Ephemeris get_ephemeris();
 
     /*!
      * \brief Obtain a GPS ionospheric correction parameters class filled with current SV data
      */
-    Beidou_Iono get_iono();
+    Beidou_Dnav_Iono get_iono();
 
     /*!
      * \brief Obtain a GPS UTC model parameters class filled with current SV data
      */
-    Beidou_Utc_Model get_utc_model();
+    Beidou_Dnav_Utc_Model get_utc_model();
 
 
     /*!
@@ -266,7 +266,7 @@ public:
     /*!
      * Default constructor
      */
-    Beidou_Navigation_Message_D1();
+    Beidou_Dnav_Navigation_Message();
 };
 
 #endif

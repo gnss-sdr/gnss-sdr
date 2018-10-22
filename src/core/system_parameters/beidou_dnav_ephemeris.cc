@@ -36,7 +36,7 @@
 #include "Beidou_B1I.h"
 #include "gnss_satellite.h"
 
-Beidou_Ephemeris::Beidou_Ephemeris()
+Beidou_Dnav_Ephemeris::Beidou_Dnav_Ephemeris()
 {
     i_satellite_PRN = 0;
     d_TOW = 0;
@@ -96,7 +96,7 @@ Beidou_Ephemeris::Beidou_Ephemeris()
 }
 
 
-double Beidou_Ephemeris::check_t(double time)
+double Beidou_Dnav_Ephemeris::check_t(double time)
 {
     double corrTime;
     double half_week = 302400.0;     // seconds
@@ -114,7 +114,7 @@ double Beidou_Ephemeris::check_t(double time)
 
 
 // 20.3.3.3.3.1 User Algorithm for SV Clock Correction.
-double Beidou_Ephemeris::sv_clock_drift(double transmitTime)
+double Beidou_Dnav_Ephemeris::sv_clock_drift(double transmitTime)
 {
     double dt;
     dt = check_t(transmitTime - d_Toc);
@@ -130,7 +130,7 @@ double Beidou_Ephemeris::sv_clock_drift(double transmitTime)
 
 
 // compute the relativistic correction term
-double Beidou_Ephemeris::sv_clock_relativistic_term(double transmitTime)
+double Beidou_Dnav_Ephemeris::sv_clock_relativistic_term(double transmitTime)
 {
     double tk;
     double a;
@@ -179,7 +179,7 @@ double Beidou_Ephemeris::sv_clock_relativistic_term(double transmitTime)
 }
 
 
-double Beidou_Ephemeris::satellitePosition(double transmitTime)
+double Beidou_Dnav_Ephemeris::satellitePosition(double transmitTime)
 {
     double tk;
     double a;

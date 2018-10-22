@@ -70,13 +70,13 @@ public:
     int i_channel_ID;              //!< Channel id
     unsigned int i_satellite_PRN;  //!< Satellite PRN number
 
-    Beidou_Navigation_Message_D1 d_nav;  //!< GPS L1 C/A navigation message object
+    Beidou_Dnav_Navigation_Message d_nav;  //!< GPS L1 C/A navigation message object
 
     // GPS SV and System parameters
-    Beidou_Ephemeris ephemeris;  //!< Object that handles GPS ephemeris parameters
-    Beidou_Almanac almanac;      //!< Object that handles GPS almanac data
-    Beidou_Utc_Model utc_model;  //!< Object that handles UTM model parameters
-    Beidou_Iono iono;            //!< Object that handles ionospheric parameters
+    Beidou_Dnav_Ephemeris ephemeris;  //!< Object that handles GPS ephemeris parameters
+    Beidou_Dnav_Almanac almanac;      //!< Object that handles GPS almanac data
+    Beidou_Dnav_Utc_Model utc_model;  //!< Object that handles UTM model parameters
+    Beidou_Dnav_Iono iono;            //!< Object that handles ionospheric parameters
 
     char d_subframe[BEIDOU_SUBFRAME_LENGTH];
     int d_subframe_ID;

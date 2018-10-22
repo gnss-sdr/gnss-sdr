@@ -29,8 +29,8 @@
  */
 
 
-#ifndef GNSS_SDR_BEIDOU_UTC_MODEL_H_
-#define GNSS_SDR_BEIDOU_UTC_MODEL_H_
+#ifndef GNSS_SDR_BEIDOU_DNAV_UTC_MODEL_H_
+#define GNSS_SDR_BEIDOU_DNAV_UTC_MODEL_H_
 
 #include <boost/assign.hpp>
 #include <boost/serialization/nvp.hpp>
@@ -41,7 +41,7 @@
  *
  * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
  */
-class Beidou_Utc_Model
+class Beidou_Dnav_Utc_Model
 {
 public:
     bool valid;
@@ -58,7 +58,7 @@ public:
     /*!
      * Default constructor
      */
-    Beidou_Utc_Model();
+    Beidou_Dnav_Utc_Model();
 
     template <class Archive>
     /*

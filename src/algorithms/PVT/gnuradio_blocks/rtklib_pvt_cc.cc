@@ -232,11 +232,11 @@ void rtklib_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                                << ", GLONASS GNAV Slot Number =" << glonass_gnav_almanac->d_n_A;
                 }
             // ************* BEIDOU telemetry *****************
-            if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Ephemeris>))
+            if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Dnav_Ephemeris>))
                 {
                     // ### BEIDOU EPHEMERIS ###
-                    std::shared_ptr<Beidou_Ephemeris> beidou_eph;
-                    beidou_eph = boost::any_cast<std::shared_ptr<Beidou_Ephemeris>>(pmt::any_ref(msg));
+                    std::shared_ptr<Beidou_Dnav_Ephemeris> beidou_eph;
+                    beidou_eph = boost::any_cast<std::shared_ptr<Beidou_Dnav_Ephemeris>>(pmt::any_ref(msg));
                     DLOG(INFO) << "Ephemeris record has arrived from SAT ID "
                                << beidou_eph->i_satellite_PRN << " (Block "
                                << beidou_eph->satelliteBlock[beidou_eph->i_satellite_PRN] << ")"
@@ -245,19 +245,19 @@ void rtklib_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                     // update/insert new ephemeris record to the global ephemeris map
                     d_ls_pvt->beidou_ephemeris_map[beidou_eph->i_satellite_PRN] = *beidou_eph;
                 }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Iono>))
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Dnav_Iono>))
                 {
                     // ### BEIDOU IONO ###
-                    std::shared_ptr<Beidou_Iono> beidou_iono;
-                    beidou_iono = boost::any_cast<std::shared_ptr<Beidou_Iono>>(pmt::any_ref(msg));
+                    std::shared_ptr<Beidou_Dnav_Iono> beidou_iono;
+                    beidou_iono = boost::any_cast<std::shared_ptr<Beidou_Dnav_Iono>>(pmt::any_ref(msg));
                     d_ls_pvt->beidou_iono = *beidou_iono;
                     DLOG(INFO) << "New IONO record has arrived ";
                 }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Utc_Model>))
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Dnav_Utc_Model>))
                 {
                     // ### BEIDOU UTC MODEL ###
-                    std::shared_ptr<Beidou_Utc_Model> beidou_utc_model;
-                    beidou_utc_model = boost::any_cast<std::shared_ptr<Beidou_Utc_Model>>(pmt::any_ref(msg));
+                    std::shared_ptr<Beidou_Dnav_Utc_Model> beidou_utc_model;
+                    beidou_utc_model = boost::any_cast<std::shared_ptr<Beidou_Dnav_Utc_Model>>(pmt::any_ref(msg));
                     d_ls_pvt->beidou_utc_model = *beidou_utc_model;
                     DLOG(INFO) << "New UTC record has arrived ";
                 }
@@ -942,7 +942,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                     std::map<int, Gps_Ephemeris>::const_iterator gps_ephemeris_iter;
                                     std::map<int, Gps_CNAV_Ephemeris>::const_iterator gps_cnav_ephemeris_iter;
                                     std::map<int, Glonass_Gnav_Ephemeris>::const_iterator glonass_gnav_ephemeris_iter;
-                                    std::map<int, Beidou_Ephemeris>::const_iterator beidou_ephemeris_iter;
+                                    std::map<int, Beidou_Dnav_Ephemeris>::const_iterator beidou_ephemeris_iter;
 
                                     std::map<int, Gnss_Synchro>::const_iterator gnss_observables_iter;
 

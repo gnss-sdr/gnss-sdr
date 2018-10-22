@@ -1,5 +1,5 @@
 /*!
- * \file beidou_b1I_signal_processing.cc
+ * \file beidou_b1i_signal_processing.cc
  * \brief This class implements various functions for BeiDou B1I signal
  * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.com
  *
@@ -30,7 +30,7 @@
  * -------------------------------------------------------------------------
  */
 
-#include "beidou_b1I_signal_processing.h"
+#include "beidou_b1i_signal_processing.h"
 
 auto auxCeil = [](float x) { return static_cast<int>(static_cast<long>((x) + 1)); };
 

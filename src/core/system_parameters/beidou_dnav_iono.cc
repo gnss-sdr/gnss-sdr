@@ -31,7 +31,7 @@
 
 #include "beidou_dnav_iono.h"
 
-Beidou_Iono::Beidou_Iono()
+Beidou_Dnav_Iono::Beidou_Dnav_Iono()
 {
     valid = false;
     d_alpha0 = 0.0;

@@ -29,8 +29,8 @@
  */
 
 
-#ifndef GNSS_SDR_BEIDOU_EPHEMERIS_H_
-#define GNSS_SDR_BEIDOU_EPHEMERIS_H_
+#ifndef GNSS_SDR_BEIDOU_DNAV_EPHEMERIS_H_
+#define GNSS_SDR_BEIDOU_DNAV_EPHEMERIS_H_
 
 
 #include <map>
@@ -45,7 +45,7 @@
  *
  * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
  */
-class Beidou_Ephemeris
+class Beidou_Dnav_Ephemeris
 {
 private:
     /*
@@ -199,7 +199,7 @@ public:
     /*!
      * Default constructor
      */
-    Beidou_Ephemeris();
+    Beidou_Dnav_Ephemeris();
 };
 
 #endif

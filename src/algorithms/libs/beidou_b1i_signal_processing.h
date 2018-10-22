@@ -1,5 +1,5 @@
 /*!
- * \file beidou_b1I_signal_processing.h
+ * \file beidou_b1i_signal_processing.h
  * \brief This class implements various functions for BeiDou B1I signals
  * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.com
  *

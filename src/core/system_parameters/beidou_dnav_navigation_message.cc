@@ -36,7 +36,7 @@ m * \file beidou_navigation_message.cc
 #include <gnss_satellite.h>
 
 
-void Beidou_Navigation_Message_D1::reset()
+void Beidou_Dnav_Navigation_Message::reset()
 {
     b_valid_ephemeris_set_flag = false;
     d_SOW = 0;
@@ -167,14 +167,14 @@ void Beidou_Navigation_Message_D1::reset()
 
 
 
-Beidou_Navigation_Message_D1::Beidou_Navigation_Message_D1()
+Beidou_Dnav_Navigation_Message::Beidou_Dnav_Navigation_Message()
 {
     reset();
 }
 
 
 
-void Beidou_Navigation_Message_D1::print_beidou_word_bytes(unsigned int BEIDOU_word)
+void Beidou_Dnav_Navigation_Message::print_beidou_word_bytes(unsigned int BEIDOU_word)
 {
     std::cout << " Word =";
     std::cout << std::bitset<32>(BEIDOU_word);
@@ -183,7 +183,7 @@ void Beidou_Navigation_Message_D1::print_beidou_word_bytes(unsigned int BEIDOU_w
 
 
 
-bool Beidou_Navigation_Message_D1::read_navigation_bool(std::bitset<BEIDOU_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter)
+bool Beidou_Dnav_Navigation_Message::read_navigation_bool(std::bitset<BEIDOU_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter)
 {
     bool value;
 
@@ -199,7 +199,7 @@ bool Beidou_Navigation_Message_D1::read_navigation_bool(std::bitset<BEIDOU_SUBFR
 }
 
 
-unsigned long int Beidou_Navigation_Message_D1::read_navigation_unsigned(std::bitset<BEIDOU_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter)
+unsigned long int Beidou_Dnav_Navigation_Message::read_navigation_unsigned(std::bitset<BEIDOU_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter)
 {
     unsigned long int value = 0;
     int num_of_slices = parameter.size();
@@ -217,7 +217,7 @@ unsigned long int Beidou_Navigation_Message_D1::read_navigation_unsigned(std::bi
     return value;
 }
 
-signed long int Beidou_Navigation_Message_D1::read_navigation_signed(std::bitset<BEIDOU_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter)
+signed long int Beidou_Dnav_Navigation_Message::read_navigation_signed(std::bitset<BEIDOU_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter)
 {
     signed long int value = 0;
     int num_of_slices = parameter.size();
@@ -276,7 +276,7 @@ signed long int Beidou_Navigation_Message_D1::read_navigation_signed(std::bitset
     return value;
 }
 
-double Beidou_Navigation_Message_D1::check_t(double time)
+double Beidou_Dnav_Navigation_Message::check_t(double time)
 {
     double corrTime;
     double half_week = 302400;     // seconds
@@ -293,7 +293,7 @@ double Beidou_Navigation_Message_D1::check_t(double time)
 }
 
 // User Algorithm for SV Clock Correction.
-double Beidou_Navigation_Message_D1::sv_clock_correction(double transmitTime)
+double Beidou_Dnav_Navigation_Message::sv_clock_correction(double transmitTime)
 {
     double dt;
     dt = check_t(transmitTime - d_Toc);
@@ -302,7 +302,7 @@ double Beidou_Navigation_Message_D1::sv_clock_correction(double transmitTime)
     return correctedTime;
 }
 
-void Beidou_Navigation_Message_D1::satellitePosition(double transmitTime)
+void Beidou_Dnav_Navigation_Message::satellitePosition(double transmitTime)
 {
     double tk;
     double a;
@@ -400,7 +400,7 @@ void Beidou_Navigation_Message_D1::satellitePosition(double transmitTime)
 
 
 
-int Beidou_Navigation_Message_D1::subframe_decoder(char *subframe)
+int Beidou_Dnav_Navigation_Message::subframe_decoder(char *subframe)
 {
     int subframe_ID = 0;
     std::bitset<BEIDOU_SUBFRAME_BITS> mysubframe_bits;
@@ -789,7 +789,7 @@ int Beidou_Navigation_Message_D1::subframe_decoder(char *subframe)
 
 
 
-double Beidou_Navigation_Message_D1::utc_time(const double beidoutime_corrected) const
+double Beidou_Dnav_Navigation_Message::utc_time(const double beidoutime_corrected) const
 {
     double t_utc;
     double t_utc_daytime;
@@ -838,9 +838,9 @@ double Beidou_Navigation_Message_D1::utc_time(const double beidoutime_corrected)
 
 
 
-Beidou_Ephemeris Beidou_Navigation_Message_D1::get_ephemeris()
+Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris()
 {
-    Beidou_Ephemeris ephemeris;
+    Beidou_Dnav_Ephemeris ephemeris;
     ephemeris.i_satellite_PRN = i_satellite_PRN;
     ephemeris.d_TOW = d_SOW;
     ephemeris.d_Crs = d_Crs;
@@ -890,9 +890,9 @@ Beidou_Ephemeris Beidou_Navigation_Message_D1::get_ephemeris()
 }
 
 
-Beidou_Iono Beidou_Navigation_Message_D1::get_iono()
+Beidou_Dnav_Iono Beidou_Dnav_Navigation_Message::get_iono()
 {
-    Beidou_Iono iono;
+    Beidou_Dnav_Iono iono;
     iono.d_alpha0 = d_alpha0;
     iono.d_alpha1 = d_alpha1;
     iono.d_alpha2 = d_alpha2;
@@ -908,9 +908,9 @@ Beidou_Iono Beidou_Navigation_Message_D1::get_iono()
 }
 
 
-Beidou_Utc_Model Beidou_Navigation_Message_D1::get_utc_model()
+Beidou_Dnav_Utc_Model Beidou_Dnav_Navigation_Message::get_utc_model()
 {
-    Beidou_Utc_Model utc_model;
+    Beidou_Dnav_Utc_Model utc_model;
     utc_model.valid = flag_utc_model_valid;
     // UTC parameters
     utc_model.d_A1 = d_A1UTC;
@@ -927,7 +927,7 @@ Beidou_Utc_Model Beidou_Navigation_Message_D1::get_utc_model()
 }
 
 
-bool Beidou_Navigation_Message_D1::satellite_validation()
+bool Beidou_Dnav_Navigation_Message::satellite_validation()
 {
     bool flag_data_valid = false;
     b_valid_ephemeris_set_flag = false;

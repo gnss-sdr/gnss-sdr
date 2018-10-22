@@ -33,11 +33,12 @@
 
 #include "beidou_b1i_pcps_acquisition.h"
 #include "configuration_interface.h"
-#include "beidou_b1I_signal_processing.h"
 #include "gnss_sdr_flags.h"
 #include "acq_conf.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
+
+#include "../../libs/beidou_b1i_signal_processing.h"
 #include "Beidou_B1I.h"
 
 

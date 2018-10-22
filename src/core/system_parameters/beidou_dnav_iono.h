@@ -29,8 +29,8 @@
  */
 
 
-#ifndef GNSS_SDR_BEIDOU_IONO_H_
-#define GNSS_SDR_BEIDOU_IONO_H_
+#ifndef GNSS_SDR_BEIDOU_DNAV_IONO_H_
+#define GNSS_SDR_BEIDOU_DNAV_IONO_H_
 
 
 #include "boost/assign.hpp"
@@ -41,7 +41,7 @@
  * \brief This class is a storage for the BEIDOU IONOSPHERIC data as described in ICD v2.1
  *
  */
-class Beidou_Iono
+class Beidou_Dnav_Iono
 {
 public:
     bool valid;           //!< Valid flag
@@ -55,7 +55,7 @@ public:
     double d_beta2;       //!< Coefficient 2 of a cubic equation representing the period of the model [s(semi-circle)^2]
     double d_beta3;       //!< Coefficient 3 of a cubic equation representing the period of the model [s(semi-circle)^3]
 
-    Beidou_Iono();           //!< Default constructor
+    Beidou_Dnav_Iono();           //!< Default constructor
 
     template<class Archive>
 

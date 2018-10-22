@@ -1,6 +1,6 @@
 /*!
- * \file gps_almanac.cc
- * \brief  Interface of a BEIDOU ALMANAC storage
+ * \file beidou_dnav_almanac.cc
+ * \brief  Interface of a Beidou DNAV Almanac storage
  *
  * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
  * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.com
@@ -32,7 +32,7 @@
 
 #include "beidou_dnav_almanac.h"
 
-Beidou_Almanac::Beidou_Almanac()
+Beidou_Dnav_Almanac::Beidou_Dnav_Almanac()
 {
     i_satellite_PRN = 0;
     d_Delta_i = 0.0;

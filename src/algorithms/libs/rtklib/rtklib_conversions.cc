@@ -230,7 +230,7 @@ eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph)
     return rtklib_sat;
 }
 
-eph_t eph_to_rtklib(const Beidou_Ephemeris& bei_eph)
+eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph)
 {
     eph_t rtklib_sat = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0 };

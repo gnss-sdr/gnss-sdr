@@ -457,6 +457,35 @@ observables-test-180417100529:
       - build64/*.xml
 
 
+observables-test-180417120737:
+  image: ubuntu:bionic
+  stage: test
+  tags:
+    - kepler
+  when: manual
+  script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends build-essential cmake ca-certificates git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest gnuplot
+    - mkdir build-test
+    - mkdir build64
+    - cd build-test
+    - cmake -DENABLE_UNIT_TESTING_EXTRA=ON -DENABLE_SYSTEM_TESTING_EXTRA=ON ..
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
+    # Execute Unit Tests
+    - export DISPLAY=unknown
+    - echo "Running HybridObservablesTest for GPS L1 CA..."
+    - ../install/run_tests --gtest_filter=HybridObservablesTest*  -PLL_bw_hz_start=30.0  --DLL_bw_hz_start=1.0 --disable_generator=1 --enable_external_signal_file=1 --show_plots=true --fs_gen_sps=12500000 --skip_samples=125000000 --external_signal_acquisition_threshold=2.5 --trk_test_implementation=GPS_L1_CA_DLL_PLL_Tracking --external_signal_acquisition_dwells=5 --external_signal_acquisition_doppler_step_hz=50  --show_plots=0 --signal_file=/captures/gitlab_test_signals/dynamic/180417120737.A_L1E1_12500000Hz_ichar.dat --filename_rinex_obs=/captures/gitlab_test_signals/dynamic/leo_pvt_test/2018_04_17_12_44_39/rinex_obs/rinex-obs_V1_A1-spacecraft.txt skip_trk_transitory_s=20 --external_signal_acquisition_doppler_max_hz=50000 --gtest_output=xml:test_results.xml
+    - echo "Running HybridObservablesTest for Galileo E1..."
+    - ../../install/run_tests --gtest_filter=HybridObservablesTest*  -PLL_bw_hz_start=15 --DLL_bw_hz_start=0.5 --disable_generator=1 --enable_external_signal_file=1 --show_plots=true --fs_gen_sps=12500000 --skip_samples=125000000 --external_signal_acquisition_threshold=2.5 --trk_test_implementation=Galileo_E1_DLL_PLL_VEML_Tracking --external_signal_acquisition_dwells=1 --external_signal_acquisition_doppler_step_hz=50  --show_plots=0 --signal_file=/captures/gitlab_test_signals/dynamic/180417120737.A_L1E1_12500000Hz_ichar.dat --filename_rinex_obs=/captures/gitlab_test_signals/dynamic/leo_pvt_test/2018_04_17_12_44_39/rinex_obs/rinex-obs_V1_A1-spacecraft.txt skip_trk_transitory_s=5 --external_signal_acquisition_doppler_max_hz=50000 --gtest_output=xml:test_results.xml
+    - mv *.xml ../build64/
+    - cd ..
+    - rm -rf build-test
+  artifacts:
+    paths:
+      - build64/*.xml
+
+
 position-test-180417100529:
   image: ubuntu:bionic
   stage: test

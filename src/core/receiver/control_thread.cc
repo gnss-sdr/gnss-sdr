@@ -80,6 +80,7 @@ ControlThread::ControlThread()
             configuration_ = std::make_shared<FileConfiguration>(FLAGS_c);
         }
     delete_configuration_ = false;
+    restart_ = false;
     init();
 }
 
@@ -115,7 +116,7 @@ void ControlThread::telecommand_listener()
  *    while (flowgraph_->running() && !stop)_{
  * 3- Read control messages and process them }
  */
-void ControlThread::run()
+int ControlThread::run()
 {
     // Connect the flowgraph
     try
@@ -125,7 +126,7 @@ void ControlThread::run()
     catch (const std::exception &e)
         {
             LOG(ERROR) << e.what();
-            return;
+            return 0;
         }
     if (flowgraph_->connected())
         {
@@ -134,7 +135,7 @@ void ControlThread::run()
     else
         {
             LOG(ERROR) << "Unable to connect flowgraph";
-            return;
+            return 0;
         }
     // Start the flowgraph
     flowgraph_->start();
@@ -145,7 +146,7 @@ void ControlThread::run()
     else
         {
             LOG(ERROR) << "Unable to start flowgraph";
-            return;
+            return 0;
         }
 
     //launch GNSS assistance process AFTER the flowgraph is running because the GNURadio asynchronous queues must be already running to transport msgs
@@ -189,6 +190,15 @@ void ControlThread::run()
 #endif
 
     LOG(INFO) << "Flowgraph stopped";
+
+    if (restart_)
+        {
+            return 42;  //signal the gnss-sdr-harness.sh to restart the receiver program
+        }
+    else
+        {
+            return 0;  //normal shutdown
+        }
 }
 
 
@@ -200,6 +210,7 @@ void ControlThread::set_control_queue(gr::msg_queue::sptr control_queue)
             return;
         }
     control_queue_ = control_queue;
+    cmd_interface_.set_msg_queue(control_queue_);
 }
 
 
@@ -602,6 +613,7 @@ void ControlThread::init()
 {
     // Instantiates a control queue, a GNSS flowgraph, and a control message factory
     control_queue_ = gr::msg_queue::make(0);
+    cmd_interface_.set_msg_queue(control_queue_);  //set also the queue pointer for the telecommand thread
     try
         {
             flowgraph_ = std::make_shared<GNSSFlowgraph>(configuration_, control_queue_);
@@ -666,6 +678,12 @@ void ControlThread::apply_action(unsigned int what)
         case 0:
             DLOG(INFO) << "Received action STOP";
             stop_ = true;
+            applied_actions_++;
+            break;
+        case 1:
+            DLOG(INFO) << "Received action RESTART";
+            stop_ = true;
+            restart_ = true;
             applied_actions_++;
             break;
         default:

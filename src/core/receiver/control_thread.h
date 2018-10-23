@@ -83,7 +83,7 @@ public:
      *
      *  - Read control messages and process them; }
      */
-    void run();
+    int run();
 
     /*!
      * \brief Sets the control_queue
@@ -155,6 +155,7 @@ private:
     std::shared_ptr<ControlMessageFactory> control_message_factory_;
     std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>> control_messages_;
     bool stop_;
+    bool restart_;
     bool delete_configuration_;
     unsigned int processed_control_messages_;
     unsigned int applied_actions_;

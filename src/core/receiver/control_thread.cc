@@ -80,6 +80,7 @@ ControlThread::ControlThread()
             configuration_ = std::make_shared<FileConfiguration>(FLAGS_c);
         }
     delete_configuration_ = false;
+    restart_ = false;
     init();
 }
 
@@ -115,7 +116,7 @@ void ControlThread::telecommand_listener()
  *    while (flowgraph_->running() && !stop)_{
  * 3- Read control messages and process them }
  */
-void ControlThread::run()
+int ControlThread::run()
 {
     // Connect the flowgraph
     try
@@ -125,7 +126,7 @@ void ControlThread::run()
     catch (const std::exception &e)
         {
             LOG(ERROR) << e.what();
-            return;
+            return 0;
         }
     if (flowgraph_->connected())
         {
@@ -134,7 +135,7 @@ void ControlThread::run()
     else
         {
             LOG(ERROR) << "Unable to connect flowgraph";
-            return;
+            return 0;
         }
     // Start the flowgraph
     flowgraph_->start();
@@ -145,7 +146,7 @@ void ControlThread::run()
     else
         {
             LOG(ERROR) << "Unable to start flowgraph";
-            return;
+            return 0;
         }
 
     //launch GNSS assistance process AFTER the flowgraph is running because the GNURadio asynchronous queues must be already running to transport msgs
@@ -189,6 +190,15 @@ void ControlThread::run()
 #endif
 
     LOG(INFO) << "Flowgraph stopped";
+
+    if (restart_)
+        {
+            return 42;  //signal the gnss-sdr-harness.sh to restart the receiver program
+        }
+    else
+        {
+            return 0;  //normal shutdown
+        }
 }
 
 
@@ -200,6 +210,7 @@ void ControlThread::set_control_queue(gr::msg_queue::sptr control_queue)
             return;
         }
     control_queue_ = control_queue;
+    cmd_interface_.set_msg_queue(control_queue_);
 }
 
 
@@ -413,24 +424,37 @@ void ControlThread::assist_GNSS()
             supl_client_ephemeris_.server_port = configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_port", 7275);
             supl_client_acquisition_.server_port = configuration_->property("GNSS-SDR.SUPL_gps_acquisition_port", 7275);
             supl_mcc = configuration_->property("GNSS-SDR.SUPL_MCC", 244);
-            supl_mns = configuration_->property("GNSS-SDR.SUPL_MNS", 5);
+            supl_mns = configuration_->property("GNSS-SDR.SUPL_MNC ", 5);
 
             std::string default_lac = "0x59e2";
             std::string default_ci = "0x31b0";
+            std::string supl_lac_s = configuration_->property("GNSS-SDR.SUPL_LAC", default_lac);
+            std::string supl_ci_s = configuration_->property("GNSS-SDR.SUPL_CI", default_ci);
             try
                 {
-                    supl_lac = boost::lexical_cast<int>(configuration_->property("GNSS-SDR.SUPL_LAC", default_lac));
+                    supl_lac = std::stoi(supl_lac_s, nullptr, 0);
                 }
-            catch (boost::bad_lexical_cast &)
+            catch (const std::invalid_argument &ia)
+                {
+                    std::cerr << "Invalid argument for SUPL LAC: " << ia.what() << '\n';
+                    supl_lac = -1;
+                }
+            try
+                {
+                    supl_ci = std::stoi(supl_ci_s, nullptr, 0);
+                }
+            catch (const std::invalid_argument &ia)
+                {
+                    std::cerr << "Invalid argument for SUPL CI: " << ia.what() << '\n';
+                    supl_ci = -1;
+                }
+
+            if (supl_lac < 0 or supl_lac > 65535)
                 {
                     supl_lac = 0x59e2;
                 }
 
-            try
-                {
-                    supl_ci = boost::lexical_cast<int>(configuration_->property("GNSS-SDR.SUPL_CI", default_ci));
-                }
-            catch (boost::bad_lexical_cast &)
+            if (supl_ci < 0 or supl_ci > 268435455)  // 2^16 for GSM and CDMA, 2^28 for UMTS and LTE networks
                 {
                     supl_ci = 0x31b0;
                 }
@@ -589,6 +613,7 @@ void ControlThread::init()
 {
     // Instantiates a control queue, a GNSS flowgraph, and a control message factory
     control_queue_ = gr::msg_queue::make(0);
+    cmd_interface_.set_msg_queue(control_queue_);  //set also the queue pointer for the telecommand thread
     try
         {
             flowgraph_ = std::make_shared<GNSSFlowgraph>(configuration_, control_queue_);
@@ -653,6 +678,12 @@ void ControlThread::apply_action(unsigned int what)
         case 0:
             DLOG(INFO) << "Received action STOP";
             stop_ = true;
+            applied_actions_++;
+            break;
+        case 1:
+            DLOG(INFO) << "Received action RESTART";
+            stop_ = true;
+            restart_ = true;
             applied_actions_++;
             break;
         default:

@@ -786,6 +786,53 @@ bool gnss_sdr_supl_client::save_gal_iono_xml(const std::string file_name, Galile
 }
 
 
+bool gnss_sdr_supl_client::load_gal_almanac_xml(const std::string file_name)
+{
+    std::ifstream ifs;
+    try
+        {
+            ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
+            boost::archive::xml_iarchive xml(ifs);
+            gal_almanac_map.clear();
+            xml >> boost::serialization::make_nvp("GNSS-SDR_gal_almanac_map", this->gal_almanac_map);
+            LOG(INFO) << "Loaded Galileo almanac map data with " << this->gal_almanac_map.size() << " satellites";
+        }
+    catch (std::exception& e)
+        {
+            LOG(WARNING) << e.what() << "File: " << file_name;
+            return false;
+        }
+    return true;
+}
+
+
+bool gnss_sdr_supl_client::save_gal_almanac_xml(const std::string file_name, std::map<int, Galileo_Almanac> gal_almanac_map)
+{
+    if (gal_almanac_map.empty() == false)
+        {
+            std::ofstream ofs;
+            try
+                {
+                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_almanac_map", gal_almanac_map);
+                    LOG(INFO) << "Saved Galileo almanac data";
+                }
+            catch (std::exception& e)
+                {
+                    LOG(WARNING) << e.what();
+                    return false;
+                }
+        }
+    else
+        {
+            LOG(WARNING) << "Failed to save Galileo almanac, map is empty";
+            return false;
+        }
+    return true;
+}
+
+
 bool gnss_sdr_supl_client::load_glo_utc_xml(const std::string file_name)
 {
     std::ifstream ifs;

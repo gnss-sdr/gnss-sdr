@@ -30,7 +30,26 @@
  */
 
 #include "tcp_cmd_interface.h"
+#include "control_message_factory.h"
+#include <functional>
 
+
+std::string TcpCmdInterface::reset(const std::vector<std::string> &commandLine)
+{
+    std::string response;
+    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
+    if (control_queue_ != nullptr)
+        {
+            control_queue_->handle(cmf->GetQueueMessage(200, 1));  //send the restart message (who=200,what=1)
+            response = "OK\n";
+        }
+    else
+        {
+            response = "ERROR\n";
+        }
+
+    return response;
+}
 
 std::string TcpCmdInterface::stop(const std::vector<std::string> &commandLine)
 {
@@ -78,21 +97,28 @@ std::string TcpCmdInterface::set_ch_satellite(const std::vector<std::string> &co
 
 void TcpCmdInterface::register_functions()
 {
-    functions["status"] = status;
-    functions["stop"] = stop;
-    functions["assistedstart"] = assistedstart;
-    functions["warmstart"] = warmstart;
-    functions["coldstart"] = coldstart;
-    functions["set_ch_satellite"] = set_ch_satellite;
+    functions["status"] = std::bind(&TcpCmdInterface::status, this, std::placeholders::_1);
+    functions["stop"] = std::bind(&TcpCmdInterface::stop, this, std::placeholders::_1);
+    functions["reset"] = std::bind(&TcpCmdInterface::reset, this, std::placeholders::_1);
+    functions["assistedstart"] = std::bind(&TcpCmdInterface::assistedstart, this, std::placeholders::_1);
+    functions["warmstart"] = std::bind(&TcpCmdInterface::warmstart, this, std::placeholders::_1);
+    functions["coldstart"] = std::bind(&TcpCmdInterface::coldstart, this, std::placeholders::_1);
+    functions["set_ch_satellite"] = std::bind(&TcpCmdInterface::set_ch_satellite, this, std::placeholders::_1);
 }
 
 
 TcpCmdInterface::TcpCmdInterface()
 {
     register_functions();
+    keep_running_ = true;
+    control_queue_ = nullptr;
 }
 
 
+void TcpCmdInterface::set_msg_queue(gr::msg_queue::sptr control_queue)
+{
+    control_queue_ = control_queue;
+}
 void TcpCmdInterface::run_cmd_server(int tcp_port)
 {
     // Get the port from the parameters
@@ -106,18 +132,18 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
     try
         {
             boost::asio::ip::tcp::acceptor acceptor(service, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port));
-            bool keep_running = true;
-            while (keep_running)
+
+            while (keep_running_)
                 {
                     try
                         {
-                            std::cout << "Telecommand TCP interface listening on port " << tcp_port << std::endl;
+                            std::cout << "TcpCmdInterface: Telecommand TCP interface listening on port " << tcp_port << std::endl;
 
                             boost::asio::ip::tcp::socket socket(service);
                             acceptor.accept(socket, not_throw);
                             if (not_throw)
                                 {
-                                    std::cerr << "Error when binding the port in the socket" << std::endl;
+                                    std::cout << "TcpCmdInterface: Error when binding the port in the socket" << std::endl;
                                     continue;
                                 }
 
@@ -127,12 +153,10 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
                                 {
                                     std::string response;
                                     boost::asio::streambuf b;
-                                    boost::asio::read_until(socket, b, '\n');
+                                    boost::asio::read_until(socket, b, '\n', error);
                                     std::istream is(&b);
                                     std::string line;
                                     std::getline(is, line);
-                                    std::cout << "received command: " << line << std::endl;
-
                                     std::istringstream iss(line);
                                     std::vector<std::string> cmd_vector(std::istream_iterator<std::string>{iss},
                                         std::istream_iterator<std::string>());
@@ -141,7 +165,14 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
                                         {
                                             try
                                                 {
-                                                    response = functions[cmd_vector.at(0)](cmd_vector);
+                                                    if (cmd_vector.at(0).compare("exit") == 0)
+                                                        {
+                                                            error = boost::asio::error::eof;
+                                                        }
+                                                    else
+                                                        {
+                                                            response = functions[cmd_vector.at(0)](cmd_vector);
+                                                        }
                                                 }
                                             catch (const std::exception &ex)
                                                 {
@@ -157,19 +188,19 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
                                     socket.write_some(boost::asio::buffer(response), not_throw);
                                     if (not_throw)
                                         {
-                                            std::cerr << "Error sending(" << not_throw.value() << "): " << not_throw.message() << std::endl;
+                                            std::cout << "Error sending(" << not_throw.value() << "): " << not_throw.message() << std::endl;
                                             break;
                                         }
                                 }
-                            while (!error);  // && error != boost::asio::error::eof);
+                            while (error != boost::asio::error::eof);
 
                             if (error == boost::asio::error::eof)
                                 {
-                                    std::cout << "EOF detected\n";
+                                    std::cout << "TcpCmdInterface: EOF detected\n";
                                 }
                             else
                                 {
-                                    std::cout << "error: " << error << std::endl;
+                                    std::cout << "TcpCmdInterface unexpected error: " << error << std::endl;
                                 }
 
                             // Close socket
@@ -177,11 +208,11 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
                         }
                     catch (const boost::exception &e)
                         {
-                            std::cout << "Boost exception " << std::endl;
+                            std::cout << "TcpCmdInterface: Boost exception " << std::endl;
                         }
                     catch (const std::exception &ex)
                         {
-                            std::cout << "Exception " << ex.what() << std::endl;
+                            std::cout << "TcpCmdInterface: Exception " << ex.what() << std::endl;
                         }
                 }
         }

@@ -725,13 +725,13 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_CNAV_Iono& gps
 }
 
 
-void Rinex_Printer::rinex_nav_header(std::fstream& out, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& galileo_utc_model, const Galileo_Almanac& galileo_almanac, const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model, const Glonass_Gnav_Almanac& glonass_gnav_almanac)
+void Rinex_Printer::rinex_nav_header(std::fstream& out, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& galileo_utc_model, const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model, const Glonass_Gnav_Almanac& glonass_gnav_almanac)
 {
     if (glonass_gnav_almanac.i_satellite_freq_channel)
         {
         }  //Avoid compiler warning
     //Avoid compiler warning, there is not time system correction between Galileo and GLONASS
-    if (galileo_almanac.A_0G_10)
+    if (galileo_utc_model.A_0G_10)
         {
         }
     std::string line;
@@ -839,7 +839,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Galileo_Iono& gali
 }
 
 
-void Rinex_Printer::rinex_nav_header(std::fstream& out, const Galileo_Iono& iono, const Galileo_Utc_Model& utc_model, const Galileo_Almanac& galileo_almanac)
+void Rinex_Printer::rinex_nav_header(std::fstream& out, const Galileo_Iono& iono, const Galileo_Utc_Model& utc_model)
 {
     std::string line;
 
@@ -915,10 +915,10 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Galileo_Iono& iono
     // -------- Line system time correction 2
     line.clear();
     line += std::string("GPGA");
-    line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_almanac.A_0G_10, 16, 2), 18);
-    line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_almanac.A_1G_10, 15, 2), 16);
-    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(galileo_almanac.t_0G_10), 7);
-    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(galileo_almanac.WN_0G_10), 5);
+    line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.A_0G_10, 16, 2), 18);
+    line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.A_1G_10, 15, 2), 16);
+    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.t_0G_10), 7);
+    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.WN_0G_10), 5);
     line += std::string(10, ' ');
     line += Rinex_Printer::leftJustify("TIME SYSTEM CORR", 20);
     Rinex_Printer::lengthCheck(line);
@@ -1238,7 +1238,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& iono, co
 }
 
 
-void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono, const Gps_Utc_Model& gps_utc_model, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& galileo_utc_model, const Galileo_Almanac& galileo_almanac)
+void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono, const Gps_Utc_Model& gps_utc_model, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& galileo_utc_model)
 {
     std::string line;
 
@@ -1327,10 +1327,10 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono
     // -------- Line system time correction 2
     line.clear();
     line += std::string("GPGA");
-    line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_almanac.A_0G_10, 16, 2), 18);
-    line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_almanac.A_1G_10, 15, 2), 16);
-    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(galileo_almanac.t_0G_10), 7);
-    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(galileo_almanac.WN_0G_10), 5);
+    line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_utc_model.A_0G_10, 16, 2), 18);
+    line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_utc_model.A_1G_10, 15, 2), 16);
+    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(galileo_utc_model.t_0G_10), 7);
+    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(galileo_utc_model.WN_0G_10), 5);
     line += std::string(10, ' ');
     line += Rinex_Printer::leftJustify("TIME SYSTEM CORR", 20);
     Rinex_Printer::lengthCheck(line);
@@ -1552,7 +1552,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Glonass_Gnav_Utc_
 }
 
 
-void Rinex_Printer::update_nav_header(std::fstream& out, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& utc_model, const Galileo_Almanac& galileo_almanac)
+void Rinex_Printer::update_nav_header(std::fstream& out, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& utc_model)
 {
     std::vector<std::string> data;
     std::string line_aux;
@@ -1599,10 +1599,10 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Galileo_Iono& gal
                     else if ((line_str.find("GPGA", 0) != std::string::npos) && (line_str.find("TIME SYSTEM CORR", 59) != std::string::npos))
                         {
                             line_aux += std::string("GPGA");
-                            line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_almanac.A_0G_10, 16, 2), 18);
-                            line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_almanac.A_1G_10, 15, 2), 16);
-                            line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(galileo_almanac.t_0G_10), 7);
-                            line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(galileo_almanac.WN_0G_10), 5);
+                            line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.A_0G_10, 16, 2), 18);
+                            line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.A_1G_10, 15, 2), 16);
+                            line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.t_0G_10), 7);
+                            line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.WN_0G_10), 5);
                             line_aux += std::string(10, ' ');
                             line_aux += Rinex_Printer::leftJustify("TIME SYSTEM CORR", 20);
                             data.push_back(line_aux);
@@ -1893,7 +1893,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_CNAV_Utc_Mode
 }
 
 
-void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Iono& gps_iono, const Gps_Utc_Model& gps_utc_model, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& galileo_utc_model, const Galileo_Almanac& galileo_almanac)
+void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Iono& gps_iono, const Gps_Utc_Model& gps_utc_model, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& galileo_utc_model)
 {
     std::vector<std::string> data;
     std::string line_aux;
@@ -1975,10 +1975,10 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Iono& gps_ion
                     else if ((line_str.find("GPGA", 0) != std::string::npos) && (line_str.find("TIME SYSTEM CORR", 59) != std::string::npos))
                         {
                             line_aux += std::string("GPGA");
-                            line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_almanac.A_0G_10, 16, 2), 18);
-                            line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_almanac.A_1G_10, 15, 2), 16);
-                            line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(galileo_almanac.t_0G_10), 7);
-                            line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(galileo_almanac.WN_0G_10), 5);
+                            line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_utc_model.A_0G_10, 16, 2), 18);
+                            line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_utc_model.A_1G_10, 15, 2), 16);
+                            line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(galileo_utc_model.t_0G_10), 7);
+                            line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(galileo_utc_model.WN_0G_10), 5);
                             line_aux += std::string(10, ' ');
                             line_aux += Rinex_Printer::leftJustify("TIME SYSTEM CORR", 20);
                             data.push_back(line_aux);
@@ -2239,13 +2239,13 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_CNAV_Iono& gp
 }
 
 
-void Rinex_Printer::update_nav_header(std::fstream& out, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& galileo_utc_model, const Galileo_Almanac& galileo_almanac, const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model, const Glonass_Gnav_Almanac& glonass_gnav_almanac)
+void Rinex_Printer::update_nav_header(std::fstream& out, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& galileo_utc_model, const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model, const Glonass_Gnav_Almanac& glonass_gnav_almanac)
 {
     if (glonass_gnav_almanac.i_satellite_freq_channel)
         {
         }  //Avoid compiler warning
     //Avoid compiler warning, there is not time system correction between Galileo and GLONASS
-    if (galileo_almanac.A_0G_10)
+    if (galileo_utc_model.A_0G_10)
         {
         }
     std::vector<std::string> data;

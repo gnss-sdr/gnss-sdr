@@ -53,6 +53,13 @@ public:
     double DN_6;
     double Delta_tLSF_6;
     bool flag_utc_model;
+
+    // GPS to Galileo GST conversion parameters
+    double A_0G_10;
+    double A_1G_10;
+    double t_0G_10;
+    double WN_0G_10;
+
     //double TOW_6;
     double GST_to_UTC_time(double t_e, int WN);  //!< GST-UTC Conversion Algorithm and Parameters
     /*!

@@ -38,7 +38,7 @@
 #include "galileo_navigation_message.h"
 #include "galileo_fnav_message.h"
 #include "galileo_ephemeris.h"
-#include "galileo_almanac.h"
+#include "galileo_almanac_helper.h"
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
 #include "gnss_satellite.h"

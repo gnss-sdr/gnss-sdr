@@ -457,7 +457,7 @@ observables-test-180417100529:
       - build64/*.xml
 
 
-observables-test-180417120737:
+leo-observables-test-180417120737:
   image: ubuntu:bionic
   stage: test
   tags:
@@ -522,7 +522,50 @@ position-test-180417100529:
       - build64/*.xml
       - build64/*.ps
   allow_failure: true
-  
+
+
+leo-position-test-180417120737:
+  image: ubuntu:bionic
+  stage: test
+  when: manual
+  tags:
+    - kepler
+  script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends build-essential cmake ca-certificates git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest gnuplot
+    - mkdir build-test
+    - mkdir leo_position
+    - cd build-test
+    - cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON ..
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
+    # Execute System Tests
+    - export DISPLAY=unknown
+    - mkdir gpsL1 && cd gpsL1
+    - ../../install/position_test --config_file_ptest=/captures/gitlab_test_signals/dynamic/gnss-sdr_180417120737.A_L1.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/dynamic/leo_pvt_test/2018_04_17_12_44_39/motion_V1.csv --pvt_solver_dump_filename=./PVT_pvt.dat --plot_position_test=1 --show_plots=0
+    - cd .. && cp -r gpsL1 /../leo_position
+    - mkdir galE1 && cd galE1
+    - ../../install/position_test --config_file_ptest=/captures/gitlab_test_signals/dynamic/gnss-sdr_180417120737.A_E1.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/dynamic/leo_pvt_test/2018_04_17_12_44_39/motion_V1.csv --pvt_solver_dump_filename=./PVT_pvt.dat --plot_position_test=1 --show_plots=0
+    - cd .. && cp -r galE1 /../leo_position
+    - mkdir gpsL1galE1 && cd gpsL1galE1
+    - ../../install/position_test --config_file_ptest=/captures/gitlab_test_signals/dynamic/gnss-sdr_180417120737.A_L1E1.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/dynamic/leo_pvt_test/2018_04_17_12_44_39/motion_V1.csv --pvt_solver_dump_filename=./PVT_pvt.dat --plot_position_test=1 --show_plots=0
+    - cd .. && cp -r gpsL1galE1 /../leo_position
+    - mkdir gpsL5 && cd gpsL5
+    - ../../install/position_test --config_file_ptest=/captures/gitlab_test_signals/dynamic/gnss-sdr_180417120737.A_L5.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/dynamic/leo_pvt_test/2018_04_17_12_44_39/motion_V1.csv --pvt_solver_dump_filename=./PVT_pvt.dat --plot_position_test=1 --show_plots=0
+    - cd .. && cp -r gpsL5 /../leo_position
+    - mkdir galE5a && cd galE5a
+    - ../../install/position_test --config_file_ptest=/captures/gitlab_test_signals/dynamic/gnss-sdr_180417120737.A_E5.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/dynamic/leo_pvt_test/2018_04_17_12_44_39/motion_V1.csv --pvt_solver_dump_filename=./PVT_pvt.dat --plot_position_test --show_plots=0
+    - cd .. && cp -r galE5a /../leo_position
+    - mkdir galE5a && cd galE5a
+    - ../../install/position_test --config_file_ptest=/captures/gitlab_test_signals/dynamic/gnss-sdr_180417120737.A_L5E5.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/dynamic/leo_pvt_test/2018_04_17_12_44_39/motion_V1.csv --pvt_solver_dump_filename=./PVT_pvt.dat --plot_position_test --show_plots=0
+    - cd .. && cp -r galE5a /../leo_position
+  artifacts:
+    paths:
+      - leo_position/*
+  allow_failure: true
+
+
+
 
 run-tests-armhf:
   image: carlesfernandez/gnsssdr-dev-arm32v7:rocko

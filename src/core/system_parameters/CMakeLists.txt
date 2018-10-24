@@ -30,6 +30,7 @@ set(SYSTEM_PARAMETERS_SOURCES
      galileo_utc_model.cc
      galileo_ephemeris.cc
      galileo_almanac.cc
+     galileo_almanac_helper.cc
      galileo_iono.cc
      galileo_navigation_message.cc
      sbas_ephemeris.cc
@@ -59,6 +60,7 @@ set(SYSTEM_PARAMETERS_HEADERS
      galileo_utc_model.h
      galileo_ephemeris.h
      galileo_almanac.h
+     galileo_almanac_helper.h
      galileo_iono.h
      galileo_navigation_message.h
      sbas_ephemeris.h
@@ -83,7 +85,7 @@ set(SYSTEM_PARAMETERS_HEADERS
      GPS_L1_CA.h
      GPS_L2C.h
      GPS_L5.h
-     MATH_CONSTANTS.h     
+     MATH_CONSTANTS.h
 )
 
 

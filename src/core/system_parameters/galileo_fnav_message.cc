@@ -630,9 +630,9 @@ Galileo_Utc_Model Galileo_Fnav_Message::get_utc_model()
 }
 
 
-Galileo_Almanac Galileo_Fnav_Message::get_almanac()
+Galileo_Almanac_Helper Galileo_Fnav_Message::get_almanac()
 {
-    Galileo_Almanac almanac;
+    Galileo_Almanac_Helper almanac;
     // FNAV equivalent of INAV Word type 7: Almanac for SVID1 (1/2), almanac reference time and almanac reference week number
     almanac.IOD_a_7 = FNAV_IODa_5;
     almanac.WN_a_7 = FNAV_WNa_5;

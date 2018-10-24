@@ -201,6 +201,14 @@ void rtklib_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                     if (sv3.i_satellite_PRN != 0) d_ls_pvt->galileo_almanac_map[sv3.i_satellite_PRN] = sv3;
                     DLOG(INFO) << "New Galileo Almanac data have arrived ";
                 }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Almanac>))
+                {
+                    // ### Galileo Almanac ###
+                    std::shared_ptr<Galileo_Almanac> galileo_alm;
+                    galileo_alm = boost::any_cast<std::shared_ptr<Galileo_Almanac>>(pmt::any_ref(msg));
+                    // update/insert new almanac record to the global almanac map
+                    d_ls_pvt->galileo_almanac_map[galileo_alm->i_satellite_PRN] = *galileo_alm;
+                }
 
             // **************** GLONASS GNAV Telemetry **************************
             else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Glonass_Gnav_Ephemeris>))

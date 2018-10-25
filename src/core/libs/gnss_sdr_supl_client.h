@@ -208,6 +208,16 @@ public:
     bool save_gal_almanac_xml(const std::string file_name, std::map<int, Galileo_Almanac> gal_almanac);
 
     /*!
+     * \brief Read GPS almanac map from XML file
+     */
+    bool load_gps_almanac_xml(const std::string file_name);
+
+    /*!
+     * \brief Save GPS almanac map to XML file
+     */
+    bool save_gps_almanac_xml(const std::string file_name, std::map<int, Gps_Almanac> gps_almanac_map);
+
+    /*!
      * \brief Read iono from XML file
      */
     bool load_iono_xml(const std::string file_name);

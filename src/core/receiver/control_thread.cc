@@ -235,6 +235,7 @@ bool ControlThread::read_assistance_from_XML()
     std::string eph_glo_xml_filename = configuration_->property("GNSS-SDR.SUPL_glo_ephemeris_xml", eph_glo_gnav_default_xml_filename);
     std::string glo_utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_glo_utc_model_xml", glo_utc_default_xml_filename);
     std::string gal_almanac_xml_filename = configuration_->property("GNSS-SDR.SUPL_gal_almanacl_xml", gal_almanac_default_xml_filename);
+    std::string gps_almanac_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_almanacl_xml", gps_almanac_default_xml_filename);
 
     if (configuration_->property("GNSS-SDR.AGNSS_XML_enabled", false) == true)
         {
@@ -284,6 +285,20 @@ bool ControlThread::read_assistance_from_XML()
                     std::shared_ptr<Gps_Iono> tmp_obj = std::make_shared<Gps_Iono>(supl_client_acquisition_.gps_iono);
                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                     std::cout << "From XML file: Read GPS ionosphere model parameters." << std::endl;
+                    ret = true;
+                }
+
+            if (supl_client_ephemeris_.load_gps_almanac_xml(gps_almanac_xml_filename) == true)
+                {
+                    std::map<int, Gps_Almanac>::const_iterator gps_alm_iter;
+                    for (gps_alm_iter = supl_client_ephemeris_.gps_almanac_map.cbegin();
+                         gps_alm_iter != supl_client_ephemeris_.gps_almanac_map.cend();
+                         gps_alm_iter++)
+                        {
+                            std::cout << "From XML file: Read GPS almanac for satellite " << Gnss_Satellite("GPS", gps_alm_iter->second.i_satellite_PRN) << std::endl;
+                            std::shared_ptr<Gps_Almanac> tmp_obj = std::make_shared<Gps_Almanac>(gps_alm_iter->second);
+                            flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+                        }
                     ret = true;
                 }
         }

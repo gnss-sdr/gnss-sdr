@@ -104,6 +104,7 @@ public:
 
     Gps_Utc_Model gps_utc_model;
     Gps_Iono gps_iono;
+    std::map<int, Gps_Almanac> gps_almanac_map;
 
     Gps_CNAV_Iono gps_cnav_iono;
     Gps_CNAV_Utc_Model gps_cnav_utc_model;

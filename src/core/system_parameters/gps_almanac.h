@@ -32,6 +32,7 @@
 #ifndef GNSS_SDR_GPS_ALMANAC_H_
 #define GNSS_SDR_GPS_ALMANAC_H_
 
+#include <boost/serialization/nvp.hpp>
 #include <cstdint>
 
 /*!
@@ -59,6 +60,27 @@ public:
      * Default constructor
      */
     Gps_Almanac();
+
+    template <class Archive>
+
+    void serialize(Archive& ar, const unsigned int version)
+    {
+        if (version)
+            {
+            };
+        ar& BOOST_SERIALIZATION_NVP(i_satellite_PRN);
+        ar& BOOST_SERIALIZATION_NVP(d_Delta_i);
+        ar& BOOST_SERIALIZATION_NVP(d_Toa);
+        ar& BOOST_SERIALIZATION_NVP(d_M_0);
+        ar& BOOST_SERIALIZATION_NVP(d_e_eccentricity);
+        ar& BOOST_SERIALIZATION_NVP(d_sqrt_A);
+        ar& BOOST_SERIALIZATION_NVP(d_OMEGA0);
+        ar& BOOST_SERIALIZATION_NVP(d_OMEGA);
+        ar& BOOST_SERIALIZATION_NVP(d_OMEGA_DOT);
+        ar& BOOST_SERIALIZATION_NVP(i_SV_health);
+        ar& BOOST_SERIALIZATION_NVP(d_A_f0);
+        ar& BOOST_SERIALIZATION_NVP(d_A_f1);
+    }
 };
 
 #endif

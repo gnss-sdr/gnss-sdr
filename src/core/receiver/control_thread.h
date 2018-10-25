@@ -181,6 +181,7 @@ private:
     const std::string eph_glo_gnav_default_xml_filename = "./glo_gnav_ephemeris.xml";
     const std::string glo_utc_default_xml_filename = "./glo_utc_model.xml";
     const std::string gal_almanac_default_xml_filename = "./gal_almanac.xml";
+    const std::string gps_almanac_default_xml_filename = "./gps_almanac.xml";
 };
 
 #endif /*GNSS_SDR_CONTROL_THREAD_H_*/

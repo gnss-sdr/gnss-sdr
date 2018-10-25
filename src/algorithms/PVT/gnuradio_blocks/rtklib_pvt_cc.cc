@@ -157,6 +157,15 @@ void rtklib_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                     DLOG(INFO) << "New CNAV UTC record has arrived ";
                 }
 
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Almanac>))
+                {
+                    // ### GPS ALMANAC ###
+                    std::shared_ptr<Gps_Almanac> gps_almanac;
+                    gps_almanac = boost::any_cast<std::shared_ptr<Gps_Almanac>>(pmt::any_ref(msg));
+                    d_ls_pvt->gps_almanac_map[gps_almanac->i_satellite_PRN] = *gps_almanac;
+                    DLOG(INFO) << "New GPS almanac record has arrived ";
+                }
+
             // **************** Galileo telemetry ********************
             else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Ephemeris>))
                 {

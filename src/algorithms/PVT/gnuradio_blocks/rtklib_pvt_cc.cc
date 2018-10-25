@@ -29,6 +29,8 @@
  */
 
 #include "rtklib_pvt_cc.h"
+#include "galileo_almanac.h"
+#include "galileo_almanac_helper.h"
 #include "display.h"
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
@@ -49,11 +51,6 @@ namespace bc = boost::math;
 #include <boost/integer/common_factor_rt.hpp>
 namespace bc = boost::integer;
 #endif
-
-//includes used by the observables serializarion (export observables for rtklib unit test)
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/serialization/map.hpp>
 
 using google::LogMessage;
 
@@ -160,6 +157,15 @@ void rtklib_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                     DLOG(INFO) << "New CNAV UTC record has arrived ";
                 }
 
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Almanac>))
+                {
+                    // ### GPS ALMANAC ###
+                    std::shared_ptr<Gps_Almanac> gps_almanac;
+                    gps_almanac = boost::any_cast<std::shared_ptr<Gps_Almanac>>(pmt::any_ref(msg));
+                    d_ls_pvt->gps_almanac_map[gps_almanac->i_satellite_PRN] = *gps_almanac;
+                    DLOG(INFO) << "New GPS almanac record has arrived ";
+                }
+
             // **************** Galileo telemetry ********************
             else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Ephemeris>))
                 {
@@ -189,14 +195,28 @@ void rtklib_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                     d_ls_pvt->galileo_utc_model = *galileo_utc_model;
                     DLOG(INFO) << "New UTC record has arrived ";
                 }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Almanac_Helper>))
+                {
+                    // ### Galileo Almanac ###
+                    std::shared_ptr<Galileo_Almanac_Helper> galileo_almanac_helper;
+                    galileo_almanac_helper = boost::any_cast<std::shared_ptr<Galileo_Almanac_Helper>>(pmt::any_ref(msg));
+
+                    Galileo_Almanac sv1 = galileo_almanac_helper->get_almanac(1);
+                    Galileo_Almanac sv2 = galileo_almanac_helper->get_almanac(2);
+                    Galileo_Almanac sv3 = galileo_almanac_helper->get_almanac(3);
+
+                    if (sv1.i_satellite_PRN != 0) d_ls_pvt->galileo_almanac_map[sv1.i_satellite_PRN] = sv1;
+                    if (sv2.i_satellite_PRN != 0) d_ls_pvt->galileo_almanac_map[sv2.i_satellite_PRN] = sv2;
+                    if (sv3.i_satellite_PRN != 0) d_ls_pvt->galileo_almanac_map[sv3.i_satellite_PRN] = sv3;
+                    DLOG(INFO) << "New Galileo Almanac data have arrived ";
+                }
             else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Almanac>))
                 {
                     // ### Galileo Almanac ###
-                    std::shared_ptr<Galileo_Almanac> galileo_almanac;
-                    galileo_almanac = boost::any_cast<std::shared_ptr<Galileo_Almanac>>(pmt::any_ref(msg));
-                    // update/insert new ephemeris record to the global ephemeris map
-                    d_ls_pvt->galileo_almanac = *galileo_almanac;
-                    DLOG(INFO) << "New Galileo Almanac has arrived ";
+                    std::shared_ptr<Galileo_Almanac> galileo_alm;
+                    galileo_alm = boost::any_cast<std::shared_ptr<Galileo_Almanac>>(pmt::any_ref(msg));
+                    // update/insert new almanac record to the global almanac map
+                    d_ls_pvt->galileo_almanac_map[galileo_alm->i_satellite_PRN] = *galileo_alm;
                 }
 
             // **************** GLONASS GNAV Telemetry **************************
@@ -525,6 +545,50 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
     else
         {
             LOG(INFO) << "Failed to save Galileo UTC model parameters, not valid data";
+        }
+
+    // save GPS almanac to XML file
+    file_name = "gps_almanac.xml";
+    if (d_ls_pvt->gps_almanac_map.empty() == false)
+        {
+            std::ofstream ofs;
+            try
+                {
+                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_gps_almanac_map", d_ls_pvt->gps_almanac_map);
+                    LOG(INFO) << "Saved GPS almanac map data";
+                }
+            catch (const std::exception& e)
+                {
+                    LOG(WARNING) << e.what();
+                }
+        }
+    else
+        {
+            LOG(INFO) << "Failed to save GPS almanac, map is empty";
+        }
+
+    // Save Galileo almanac
+    file_name = "gal_almanac.xml";
+    if (d_ls_pvt->galileo_almanac_map.empty() == false)
+        {
+            std::ofstream ofs;
+            try
+                {
+                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_almanac_map", d_ls_pvt->galileo_almanac_map);
+                    LOG(INFO) << "Saved Galileo almanac data";
+                }
+            catch (std::exception& e)
+                {
+                    LOG(WARNING) << e.what();
+                }
+        }
+    else
+        {
+            LOG(INFO) << "Failed to save Galileo almanac, not valid data";
         }
 
     // Save GPS CNAV UTC model parameters
@@ -921,7 +985,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                     if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.cend())
                                                         {
                                                             rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time);
-                                                            rp->rinex_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac);
+                                                            rp->rinex_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
                                                             b_rinex_header_written = true;  // do not write header anymore
                                                         }
                                                 }
@@ -931,7 +995,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                     if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.cend())
                                                         {
                                                             rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, signal);
-                                                            rp->rinex_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac);
+                                                            rp->rinex_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
                                                             b_rinex_header_written = true;  // do not write header anymore
                                                         }
                                                 }
@@ -941,7 +1005,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                     if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.cend())
                                                         {
                                                             rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, signal);
-                                                            rp->rinex_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac);
+                                                            rp->rinex_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
                                                             b_rinex_header_written = true;  // do not write header anymore
                                                         }
                                                 }
@@ -961,7 +1025,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                         {
                                                             std::string gal_signal("1B");
                                                             rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, d_rx_time, gal_signal);
-                                                            rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac);
+                                                            rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
                                                             b_rinex_header_written = true;  // do not write header anymore
                                                         }
                                                 }
@@ -971,7 +1035,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                         {
                                                             std::string gal_signal("5X");
                                                             rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, d_rx_time, gal_signal);
-                                                            rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac);
+                                                            rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
                                                             b_rinex_header_written = true;  // do not write header anymore
                                                         }
                                                 }
@@ -981,7 +1045,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                         {
                                                             std::string gal_signal("7X");
                                                             rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, d_rx_time, gal_signal);
-                                                            rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac);
+                                                            rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
                                                             b_rinex_header_written = true;  // do not write header anymore
                                                         }
                                                 }
@@ -991,7 +1055,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                         {
                                                             std::string gal_signal("1B 5X");
                                                             rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gal_signal);
-                                                            rp->rinex_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac);
+                                                            rp->rinex_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
                                                             b_rinex_header_written = true;  // do not write header anymore
                                                         }
                                                 }
@@ -1001,7 +1065,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                         {
                                                             std::string gal_signal("1B 7X");
                                                             rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gal_signal);
-                                                            rp->rinex_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac);
+                                                            rp->rinex_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
                                                             b_rinex_header_written = true;  // do not write header anymore
                                                         }
                                                 }
@@ -1059,7 +1123,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                             std::string glo_signal("1G");
                                                             std::string gal_signal("1B");
                                                             rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, glo_signal, gal_signal);
-                                                            rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
+                                                            rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
                                                             b_rinex_header_written = true;  // do not write header anymore
                                                         }
                                                 }
@@ -1096,7 +1160,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                             std::string glo_signal("2G");
                                                             std::string gal_signal("1B");
                                                             rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, glo_signal, gal_signal);
-                                                            rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
+                                                            rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
                                                             b_rinex_header_written = true;  // do not write header anymore
                                                         }
                                                 }
@@ -1239,7 +1303,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 }
                                                             if (!b_rinex_header_updated and (d_ls_pvt->galileo_utc_model.A0_6 != 0))
                                                                 {
-                                                                    rp->update_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac);
+                                                                    rp->update_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
                                                                     rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
                                                                     b_rinex_header_updated = true;
                                                                 }
@@ -1252,7 +1316,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 }
                                                             if (!b_rinex_header_updated and (d_ls_pvt->galileo_utc_model.A0_6 != 0))
                                                                 {
-                                                                    rp->update_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac);
+                                                                    rp->update_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
                                                                     rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
                                                                     b_rinex_header_updated = true;
                                                                 }
@@ -1265,7 +1329,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 }
                                                             if (!b_rinex_header_updated and (d_ls_pvt->galileo_utc_model.A0_6 != 0))
                                                                 {
-                                                                    rp->update_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac);
+                                                                    rp->update_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
                                                                     rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
                                                                     b_rinex_header_updated = true;
                                                                 }
@@ -1292,7 +1356,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                             if (!b_rinex_header_updated and (d_ls_pvt->gps_utc_model.d_A0 != 0))
                                                                 {
                                                                     rp->update_obs_header(rp->obsFile, d_ls_pvt->gps_utc_model);
-                                                                    rp->update_nav_header(rp->navMixFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac);
+                                                                    rp->update_nav_header(rp->navMixFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
                                                                     b_rinex_header_updated = true;
                                                                 }
                                                         }
@@ -1304,7 +1368,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 }
                                                             if (!b_rinex_header_updated and (d_ls_pvt->galileo_utc_model.A0_6 != 0))
                                                                 {
-                                                                    rp->update_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac);
+                                                                    rp->update_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
                                                                     rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
                                                                     b_rinex_header_updated = true;
                                                                 }
@@ -1317,7 +1381,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 }
                                                             if (!b_rinex_header_updated and (d_ls_pvt->galileo_utc_model.A0_6 != 0))
                                                                 {
-                                                                    rp->update_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac);
+                                                                    rp->update_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
                                                                     rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
                                                                     b_rinex_header_updated = true;
                                                                 }
@@ -1383,7 +1447,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                             if (!b_rinex_header_updated and (d_ls_pvt->galileo_utc_model.A0_6 != 0))
                                                                 {
                                                                     rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
-                                                                    rp->update_nav_header(rp->navMixFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
+                                                                    rp->update_nav_header(rp->navMixFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
                                                                     b_rinex_header_updated = true;  // do not write header anymore
                                                                 }
                                                         }
@@ -1422,7 +1486,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                             if (!b_rinex_header_updated && (d_ls_pvt->galileo_utc_model.A0_6 != 0))
                                                                 {
                                                                     rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
-                                                                    rp->update_nav_header(rp->navMixFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
+                                                                    rp->update_nav_header(rp->navMixFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
                                                                     b_rinex_header_updated = true;  // do not write header anymore
                                                                 }
                                                         }

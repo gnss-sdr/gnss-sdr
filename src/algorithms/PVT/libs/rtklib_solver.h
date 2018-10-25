@@ -60,6 +60,7 @@
 #include "gps_navigation_message.h"
 #include "gps_cnav_navigation_message.h"
 #include "glonass_gnav_navigation_message.h"
+#include "galileo_almanac.h"
 #include "gnss_synchro.h"
 #include "pvt_solution.h"
 #include <fstream>
@@ -99,10 +100,11 @@ public:
 
     Galileo_Utc_Model galileo_utc_model;
     Galileo_Iono galileo_iono;
-    Galileo_Almanac galileo_almanac;
+    std::map<int, Galileo_Almanac> galileo_almanac_map;
 
     Gps_Utc_Model gps_utc_model;
     Gps_Iono gps_iono;
+    std::map<int, Gps_Almanac> gps_almanac_map;
 
     Gps_CNAV_Iono gps_cnav_iono;
     Gps_CNAV_Utc_Model gps_cnav_utc_model;

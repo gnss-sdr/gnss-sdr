@@ -20,9 +20,10 @@ GPS L2C and L5
  - [cnav_ephemeris_map.xsd](./cnav_ephemeris_map.xsd)
  
  
-Galileo OS
-----------
+Galileo
+-------
 
  - [gal_ephemeris_map.xsd](./gal_ephemeris_map.xsd)
  - [gal_utc_model.xsd](./gal_utc_model.xsd)
+ - [gal_iono_model.xsd](./gal_iono_model.xsd)
  - [gal_almanac_map.xsd](./gal_almanac_map.xsd)

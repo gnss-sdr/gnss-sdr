@@ -833,34 +833,42 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             DLOG(INFO) << "Channel " << who << " ACQ FAILED satellite " << channels_[who]->get_signal().get_satellite() << ", Signal " << channels_[who]->get_signal().get_signal_str();
             if (sat == 0)
                 {
-                    switch (mapStringValues_[channels_[who]->get_signal().get_signal_str()])
+                    Gnss_Signal gs = channels_[who]->get_signal();
+                    switch (mapStringValues_[gs.get_signal_str()])
                         {
                         case evGPS_1C:
-                            available_GPS_1C_signals_.push_back(channels_[who]->get_signal());
+                            available_GPS_1C_signals_.remove(gs);
+                            available_GPS_1C_signals_.push_back(gs);
                             break;
 
                         case evGPS_2S:
-                            available_GPS_2S_signals_.push_back(channels_[who]->get_signal());
+                            available_GPS_2S_signals_.remove(gs);
+                            available_GPS_2S_signals_.push_back(gs);
                             break;
 
                         case evGPS_L5:
-                            available_GPS_L5_signals_.push_back(channels_[who]->get_signal());
+                            available_GPS_L5_signals_.remove(gs);
+                            available_GPS_L5_signals_.push_back(gs);
                             break;
 
                         case evGAL_1B:
-                            available_GAL_1B_signals_.push_back(channels_[who]->get_signal());
+                            available_GAL_1B_signals_.remove(gs);
+                            available_GAL_1B_signals_.push_back(gs);
                             break;
 
                         case evGAL_5X:
-                            available_GAL_5X_signals_.push_back(channels_[who]->get_signal());
+                            available_GAL_5X_signals_.remove(gs);
+                            available_GAL_5X_signals_.push_back(gs);
                             break;
 
                         case evGLO_1G:
-                            available_GLO_1G_signals_.push_back(channels_[who]->get_signal());
+                            available_GLO_1G_signals_.remove(gs);
+                            available_GLO_1G_signals_.push_back(gs);
                             break;
 
                         case evGLO_2G:
-                            available_GLO_2G_signals_.push_back(channels_[who]->get_signal());
+                            available_GLO_2G_signals_.remove(gs);
+                            available_GLO_2G_signals_.push_back(gs);
                             break;
 
                         default:

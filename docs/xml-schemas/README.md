@@ -8,22 +8,22 @@ GNSS-SDR can read assistance data from [Extensible Markup Language (XML)](https:
 GPS L1 C/A
 ----------
 
- - [ephemeris_map.xsd](./ephemeris_map.xsd)
- - [iono_model.xsd](./iono_model.xsd)
- - [utc_model.xsd](./utc_model.xsd)
- - [gps_almanac_map.xsd](./gps_almanac_map.xsd)
+ - [ephemeris_map.xsd](./ephemeris_map.xsd) - GPS NAV message ephemeris parameters.
+ - [iono_model.xsd](./iono_model.xsd) - GPS NAV message ionospheric model parameters.
+ - [utc_model.xsd](./utc_model.xsd) - GPS NAV message UTC model parameters.
+ - [gps_almanac_map.xsd](./gps_almanac_map.xsd) - GPS NAV messsage almanac.
  
  
 GPS L2C and L5
 --------------
  
- - [cnav_ephemeris_map.xsd](./cnav_ephemeris_map.xsd)
+ - [cnav_ephemeris_map.xsd](./cnav_ephemeris_map.xsd) - GPS CNAV message ephemeris parameters.
  
  
 Galileo
 -------
 
- - [gal_ephemeris_map.xsd](./gal_ephemeris_map.xsd)
- - [gal_iono_model.xsd](./gal_iono_model.xsd)
- - [gal_utc_model.xsd](./gal_utc_model.xsd)
- - [gal_almanac_map.xsd](./gal_almanac_map.xsd)
+ - [gal_ephemeris_map.xsd](./gal_ephemeris_map.xsd) - Galileo ephemeris parameters.
+ - [gal_iono_model.xsd](./gal_iono_model.xsd) - Galileo ionospheric model parameters.
+ - [gal_utc_model.xsd](./gal_utc_model.xsd) - Galileo UTC model parameters.
+ - [gal_almanac_map.xsd](./gal_almanac_map.xsd) - Galileo almanac.

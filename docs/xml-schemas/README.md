@@ -30,5 +30,5 @@ Galileo
 
 -------
 
-Please check [https//gnss-sdr.org/sp-blocks/global-parameters/](https//gnss-sdr.org/sp-blocks/global-parameters/) for more information about the usage of XML files in GNSS-SDR.
+Please check https://gnss-sdr.org/sp-blocks/global-parameters/ for more information about the usage of XML files in GNSS-SDR.
  

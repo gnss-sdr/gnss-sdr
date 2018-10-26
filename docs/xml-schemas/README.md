@@ -27,3 +27,8 @@ Galileo
  - [gal_iono_model.xsd](./gal_iono_model.xsd) - Galileo ionospheric model parameters.
  - [gal_utc_model.xsd](./gal_utc_model.xsd) - Galileo UTC model parameters.
  - [gal_almanac_map.xsd](./gal_almanac_map.xsd) - Galileo almanac.
+
+-------
+
+ Please check https//gnss-sdr.org/sp-blocks/global-parameters/ for more information about the usage of XML files in GNSS-SDR.
+ 

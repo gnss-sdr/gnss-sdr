@@ -102,8 +102,8 @@ crosscompile:
   script:
     - apt-get update
     - apt-get install -y build-essential xz-utils curl gawk wget git-core diffstat unzip texinfo gcc-multilib chrpath socat cpio python python3 python3-pip python3-pexpect debianutils iputils-ping
-    - curl https://sites.cttc.es/gnss_files/SDK/Rocko/oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh --output oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh
-    - echo "fb26ff0b84f67006e19266154c36173b  oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh" > sdk.md5
+    - curl https://sites.cttc.es/gnss_files/SDK/Sumo/oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh --output oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh
+    - echo "d25313709bc8c13eba01f7f9a589d8c6  oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh" > sdk.md5
     - md5sum -c sdk.md5
     - chmod +x ./oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh
     - sh ./oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh -y

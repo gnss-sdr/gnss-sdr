@@ -77,12 +77,12 @@ class Rinex_Printer
 {
 public:
     /*!
-     * \brief Default constructor. Creates GPS Navigation and Observables RINEX files and their headers
+     * \brief Default constructor. Creates GNSS Navigation and Observables RINEX files and their headers
      */
-    Rinex_Printer(int version = 0);
+    Rinex_Printer(int version = 0, const std::string& base_path = ".");
 
     /*!
-     * \brief Default destructor. Closes GPS Navigation and Observables RINEX files
+     * \brief Default destructor. Closes GNSS Navigation and Observables RINEX files
      */
     ~Rinex_Printer();
 

@@ -31,6 +31,7 @@
 #include "rtklib_pvt_cc.h"
 #include "galileo_almanac.h"
 #include "galileo_almanac_helper.h"
+#include "pvt_conf.h"
 #include "display.h"
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
@@ -56,43 +57,11 @@ using google::LogMessage;
 
 
 rtklib_pvt_cc_sptr rtklib_make_pvt_cc(uint32_t nchannels,
-    bool dump,
-    std::string dump_filename,
-    int32_t output_rate_ms,
-    int32_t display_rate_ms,
-    bool flag_nmea_tty_port,
-    std::string nmea_dump_filename,
-    std::string nmea_dump_devname,
-    int32_t rinex_version,
-    int32_t rinexobs_rate_ms,
-    int32_t rinexnav_rate_ms,
-    bool flag_rtcm_server,
-    bool flag_rtcm_tty_port,
-    uint16_t rtcm_tcp_port,
-    uint16_t rtcm_station_id,
-    std::map<int, int> rtcm_msg_rate_ms,
-    std::string rtcm_dump_devname,
-    const uint32_t type_of_receiver,
+    const Pvt_Conf& conf_,
     rtk_t& rtk)
 {
     return rtklib_pvt_cc_sptr(new rtklib_pvt_cc(nchannels,
-        dump,
-        dump_filename,
-        output_rate_ms,
-        display_rate_ms,
-        flag_nmea_tty_port,
-        nmea_dump_filename,
-        nmea_dump_devname,
-        rinex_version,
-        rinexobs_rate_ms,
-        rinexnav_rate_ms,
-        flag_rtcm_server,
-        flag_rtcm_tty_port,
-        rtcm_tcp_port,
-        rtcm_station_id,
-        rtcm_msg_rate_ms,
-        rtcm_dump_devname,
-        type_of_receiver,
+        conf_,
         rtk));
 }
 
@@ -270,34 +239,18 @@ std::map<int, Gps_Ephemeris> rtklib_pvt_cc::get_GPS_L1_ephemeris_map()
 
 
 rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
-    bool dump,
-    std::string dump_filename,
-    int32_t output_rate_ms,
-    int32_t display_rate_ms,
-    bool flag_nmea_tty_port,
-    std::string nmea_dump_filename,
-    std::string nmea_dump_devname,
-    int32_t rinex_version,
-    int32_t rinexobs_rate_ms,
-    int32_t rinexnav_rate_ms,
-    bool flag_rtcm_server,
-    bool flag_rtcm_tty_port,
-    uint16_t rtcm_tcp_port,
-    uint16_t rtcm_station_id,
-    std::map<int, int> rtcm_msg_rate_ms,
-    std::string rtcm_dump_devname,
-    const uint32_t type_of_receiver,
+    const Pvt_Conf& conf_,
     rtk_t& rtk) : gr::sync_block("rtklib_pvt_cc",
                       gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
                       gr::io_signature::make(0, 0, 0))
 {
-    d_output_rate_ms = output_rate_ms;
-    d_display_rate_ms = display_rate_ms;
-    d_dump = dump;
+    d_output_rate_ms = conf_.output_rate_ms;
+    d_display_rate_ms = conf_.display_rate_ms;
+    d_dump = conf_.dump;
     d_nchannels = nchannels;
-    d_dump_filename = dump_filename;
-    std::string dump_ls_pvt_filename = dump_filename;
-    type_of_rx = type_of_receiver;
+    d_dump_filename = conf_.dump_filename;
+    std::string dump_ls_pvt_filename = conf_.dump_filename;
+    type_of_rx = conf_.type_of_receiver;
 
     // GPS Ephemeris data message port in
     this->message_port_register_in(pmt::mp("telemetry"));
@@ -306,28 +259,54 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
     // initialize kml_printer
     std::string kml_dump_filename;
     kml_dump_filename = d_dump_filename;
-    d_kml_dump = std::make_shared<Kml_Printer>();
-    d_kml_dump->set_headers(kml_dump_filename);
+    d_kml_output_enabled = conf_.kml_output_enabled;
+    if (d_kml_output_enabled)
+        {
+            d_kml_dump = std::make_shared<Kml_Printer>(conf_.kml_output_path);
+            d_kml_dump->set_headers(kml_dump_filename);
+        }
+    else
+        {
+            d_kml_dump = nullptr;
+        }
 
     // initialize gpx_printer
     std::string gpx_dump_filename;
     gpx_dump_filename = d_dump_filename;
-    d_gpx_dump = std::make_shared<Gpx_Printer>();
-    d_gpx_dump->set_headers(gpx_dump_filename);
+    d_gpx_output_enabled = conf_.gpx_output_enabled;
+    if (d_gpx_output_enabled)
+        {
+            d_gpx_dump = std::make_shared<Gpx_Printer>(conf_.gpx_output_path);
+            d_gpx_dump->set_headers(gpx_dump_filename);
+        }
+    else
+        {
+            d_gpx_dump = nullptr;
+        }
 
     // initialize geojson_printer
     std::string geojson_dump_filename;
     geojson_dump_filename = d_dump_filename;
-    d_geojson_printer = std::make_shared<GeoJSON_Printer>();
-    d_geojson_printer->set_headers(geojson_dump_filename);
+
+    d_geojson_output_enabled = conf_.geojson_output_enabled;
+    if (d_geojson_output_enabled)
+        {
+            d_geojson_printer = std::make_shared<GeoJSON_Printer>(conf_.geojson_output_path);
+            d_geojson_printer->set_headers(geojson_dump_filename);
+        }
+    else
+        {
+            d_geojson_printer = nullptr;
+        }
 
     // initialize nmea_printer
-    d_nmea_printer = std::make_shared<Nmea_Printer>(nmea_dump_filename, flag_nmea_tty_port, nmea_dump_devname);
+    d_nmea_printer = std::make_shared<Nmea_Printer>(conf_.nmea_dump_filename, conf_.nmea_output_file_enabled, conf_.flag_nmea_tty_port, conf_.nmea_dump_devname, conf_.nmea_output_file_path);
 
     // initialize rtcm_printer
     std::string rtcm_dump_filename;
     rtcm_dump_filename = d_dump_filename;
-    d_rtcm_printer = std::make_shared<Rtcm_Printer>(rtcm_dump_filename, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_dump_devname);
+    d_rtcm_printer = std::make_shared<Rtcm_Printer>(rtcm_dump_filename, conf_.rtcm_output_file_enabled, conf_.flag_rtcm_server, conf_.flag_rtcm_tty_port, conf_.rtcm_tcp_port, conf_.rtcm_station_id, conf_.rtcm_dump_devname, true, conf_.rtcm_output_file_path);
+    std::map<int, int> rtcm_msg_rate_ms = conf_.rtcm_msg_rate_ms;
     if (rtcm_msg_rate_ms.find(1019) != rtcm_msg_rate_ms.end())
         {
             d_rtcm_MT1019_rate_ms = rtcm_msg_rate_ms[1019];
@@ -383,10 +362,55 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
     // initialize RINEX printer
     b_rinex_header_written = false;
     b_rinex_header_updated = false;
-    d_rinex_version = rinex_version;
-    rp = std::make_shared<Rinex_Printer>(d_rinex_version);
-    d_rinexobs_rate_ms = rinexobs_rate_ms;
-    d_rinexnav_rate_ms = rinexnav_rate_ms;
+    b_rinex_output_enabled = conf_.rinex_output_enabled;
+    d_rinex_version = conf_.rinex_version;
+    if (b_rinex_output_enabled)
+        {
+            rp = std::make_shared<Rinex_Printer>(d_rinex_version, conf_.rinex_output_path);
+        }
+    else
+        {
+            rp = nullptr;
+        }
+    d_rinexobs_rate_ms = conf_.rinexobs_rate_ms;
+    d_rinexnav_rate_ms = conf_.rinexnav_rate_ms;
+
+    // XML printer
+    d_xml_storage = conf_.xml_output_enabled;
+    if (d_xml_storage)
+        {
+            xml_base_path = conf_.xml_output_path;
+            boost::filesystem::path full_path(boost::filesystem::current_path());
+            const boost::filesystem::path p(xml_base_path);
+            if (!boost::filesystem::exists(p))
+                {
+                    std::string new_folder;
+                    for (auto& folder : boost::filesystem::path(xml_base_path))
+                        {
+                            new_folder += folder.string();
+                            boost::system::error_code ec;
+                            if (!boost::filesystem::exists(new_folder))
+                                {
+                                    if (!boost::filesystem::create_directory(new_folder, ec))
+                                        {
+                                            std::cout << "Could not create the " << new_folder << " folder." << std::endl;
+                                            xml_base_path = full_path.string();
+                                        }
+                                }
+                            new_folder += boost::filesystem::path::preferred_separator;
+                        }
+                }
+            else
+                {
+                    xml_base_path = p.string();
+                }
+            if (xml_base_path.compare(".") != 0)
+                {
+                    std::cout << "XML files will be stored at " << xml_base_path << std::endl;
+                }
+
+            xml_base_path = xml_base_path + boost::filesystem::path::preferred_separator;
+        }
 
     dump_ls_pvt_filename.append("_pvt.dat");
 
@@ -396,7 +420,6 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
     d_rx_time = 0.0;
 
     d_last_status_print_seg = 0;
-
 
     // Create Sys V message queue
     first_fix = true;
@@ -414,247 +437,316 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
 rtklib_pvt_cc::~rtklib_pvt_cc()
 {
     msgctl(sysv_msqid, IPC_RMID, NULL);
+    if (d_xml_storage)
+        {
+            // save GPS L2CM ephemeris to XML file
+            std::string file_name = xml_base_path + "gps_cnav_ephemeris.xml";
+            if (d_ls_pvt->gps_cnav_ephemeris_map.empty() == false)
+                {
+                    std::ofstream ofs;
+                    try
+                        {
+                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                            boost::archive::xml_oarchive xml(ofs);
+                            xml << boost::serialization::make_nvp("GNSS-SDR_cnav_ephemeris_map", d_ls_pvt->gps_cnav_ephemeris_map);
+                            LOG(INFO) << "Saved GPS L2CM or L5 Ephemeris map data";
+                        }
+                    catch (std::exception& e)
+                        {
+                            LOG(WARNING) << e.what();
+                        }
+                }
+            else
+                {
+                    LOG(INFO) << "Failed to save GPS L2CM or L5 Ephemeris, map is empty";
+                }
 
-    // save GPS L2CM ephemeris to XML file
-    std::string file_name = "gps_cnav_ephemeris.xml";
-    if (d_ls_pvt->gps_cnav_ephemeris_map.empty() == false)
-        {
-            std::ofstream ofs;
-            try
+            // save GPS L1 CA ephemeris to XML file
+            file_name = xml_base_path + "gps_ephemeris.xml";
+            if (d_ls_pvt->gps_ephemeris_map.empty() == false)
                 {
-                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                    boost::archive::xml_oarchive xml(ofs);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_cnav_ephemeris_map", d_ls_pvt->gps_cnav_ephemeris_map);
-                    LOG(INFO) << "Saved GPS L2CM or L5 Ephemeris map data";
+                    std::ofstream ofs;
+                    try
+                        {
+                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                            boost::archive::xml_oarchive xml(ofs);
+                            xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", d_ls_pvt->gps_ephemeris_map);
+                            LOG(INFO) << "Saved GPS L1 CA Ephemeris map data";
+                        }
+                    catch (const std::exception& e)
+                        {
+                            LOG(WARNING) << e.what();
+                        }
                 }
-            catch (std::exception& e)
+            else
                 {
-                    LOG(WARNING) << e.what();
+                    LOG(INFO) << "Failed to save GPS L1 CA Ephemeris, map is empty";
                 }
-        }
-    else
-        {
-            LOG(INFO) << "Failed to save GPS L2CM or L5 Ephemeris, map is empty";
-        }
 
-    // save GPS L1 CA ephemeris to XML file
-    file_name = "gps_ephemeris.xml";
-    if (d_ls_pvt->gps_ephemeris_map.empty() == false)
-        {
-            std::ofstream ofs;
-            try
+            // save Galileo E1 ephemeris to XML file
+            file_name = xml_base_path + "gal_ephemeris.xml";
+            if (d_ls_pvt->galileo_ephemeris_map.empty() == false)
                 {
-                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                    boost::archive::xml_oarchive xml(ofs);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", d_ls_pvt->gps_ephemeris_map);
-                    LOG(INFO) << "Saved GPS L1 CA Ephemeris map data";
+                    std::ofstream ofs;
+                    try
+                        {
+                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                            boost::archive::xml_oarchive xml(ofs);
+                            xml << boost::serialization::make_nvp("GNSS-SDR_gal_ephemeris_map", d_ls_pvt->galileo_ephemeris_map);
+                            LOG(INFO) << "Saved Galileo E1 Ephemeris map data";
+                        }
+                    catch (const std::exception& e)
+                        {
+                            LOG(WARNING) << e.what();
+                        }
                 }
-            catch (const std::exception& e)
+            else
                 {
-                    LOG(WARNING) << e.what();
+                    LOG(INFO) << "Failed to save Galileo E1 Ephemeris, map is empty";
                 }
-        }
-    else
-        {
-            LOG(INFO) << "Failed to save GPS L1 CA Ephemeris, map is empty";
-        }
 
-    // save Galileo E1 ephemeris to XML file
-    file_name = "gal_ephemeris.xml";
-    if (d_ls_pvt->galileo_ephemeris_map.empty() == false)
-        {
-            std::ofstream ofs;
-            try
+            // save GLONASS GNAV ephemeris to XML file
+            file_name = xml_base_path + "eph_GLONASS_GNAV.xml";
+            if (d_ls_pvt->glonass_gnav_ephemeris_map.empty() == false)
                 {
-                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                    boost::archive::xml_oarchive xml(ofs);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_ephemeris_map", d_ls_pvt->galileo_ephemeris_map);
-                    LOG(INFO) << "Saved Galileo E1 Ephemeris map data";
+                    std::ofstream ofs;
+                    try
+                        {
+                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                            boost::archive::xml_oarchive xml(ofs);
+                            xml << boost::serialization::make_nvp("GNSS-SDR_gnav_ephemeris_map", d_ls_pvt->glonass_gnav_ephemeris_map);
+                            LOG(INFO) << "Saved GLONASS GNAV Ephemeris map data";
+                        }
+                    catch (std::exception& e)
+                        {
+                            LOG(WARNING) << e.what();
+                        }
                 }
-            catch (const std::exception& e)
+            else
                 {
-                    LOG(WARNING) << e.what();
+                    LOG(INFO) << "Failed to save GLONASS GNAV Ephemeris, map is empty";
                 }
-        }
-    else
-        {
-            LOG(INFO) << "Failed to save Galileo E1 Ephemeris, map is empty";
-        }
 
-    // save GLONASS GNAV ephemeris to XML file
-    file_name = "eph_GLONASS_GNAV.xml";
-    if (d_ls_pvt->glonass_gnav_ephemeris_map.empty() == false)
-        {
-            std::ofstream ofs;
-            try
+            // Save GPS UTC model parameters
+            file_name = xml_base_path + "gps_utc_model.xml";
+            if (d_ls_pvt->gps_utc_model.valid)
                 {
-                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                    boost::archive::xml_oarchive xml(ofs);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_gnav_ephemeris_map", d_ls_pvt->glonass_gnav_ephemeris_map);
-                    LOG(INFO) << "Saved GLONASS GNAV Ephemeris map data";
+                    std::ofstream ofs;
+                    try
+                        {
+                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                            boost::archive::xml_oarchive xml(ofs);
+                            xml << boost::serialization::make_nvp("GNSS-SDR_utc_model", d_ls_pvt->gps_utc_model);
+                            LOG(INFO) << "Saved GPS UTC model parameters";
+                        }
+                    catch (std::exception& e)
+                        {
+                            LOG(WARNING) << e.what();
+                        }
                 }
-            catch (std::exception& e)
+            else
                 {
-                    LOG(WARNING) << e.what();
+                    LOG(INFO) << "Failed to save GPS UTC model parameters, not valid data";
                 }
-        }
-    else
-        {
-            LOG(INFO) << "Failed to save GLONASS GNAV Ephemeris, map is empty";
-        }
 
-    // Save GPS UTC model parameters
-    file_name = "gps_utc_model.xml";
-    if (d_ls_pvt->gps_utc_model.valid)
-        {
-            std::ofstream ofs;
-            try
+            // Save Galileo UTC model parameters
+            file_name = xml_base_path + "gal_utc_model.xml";
+            if (d_ls_pvt->galileo_utc_model.Delta_tLS_6 != 0.0)
                 {
-                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                    boost::archive::xml_oarchive xml(ofs);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_utc_model", d_ls_pvt->gps_utc_model);
-                    LOG(INFO) << "Saved GPS UTC model parameters";
+                    std::ofstream ofs;
+                    try
+                        {
+                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                            boost::archive::xml_oarchive xml(ofs);
+                            xml << boost::serialization::make_nvp("GNSS-SDR_gal_utc_model", d_ls_pvt->galileo_utc_model);
+                            LOG(INFO) << "Saved Galileo UTC model parameters";
+                        }
+                    catch (std::exception& e)
+                        {
+                            LOG(WARNING) << e.what();
+                        }
                 }
-            catch (std::exception& e)
+            else
                 {
-                    LOG(WARNING) << e.what();
+                    LOG(INFO) << "Failed to save Galileo UTC model parameters, not valid data";
                 }
-        }
-    else
-        {
-            LOG(INFO) << "Failed to save GPS UTC model parameters, not valid data";
-        }
 
-    // Save Galileo UTC model parameters
-    file_name = "gal_utc_model.xml";
-    if (d_ls_pvt->galileo_utc_model.Delta_tLS_6 != 0.0)
-        {
-            std::ofstream ofs;
-            try
+            // Save GPS iono parameters
+            file_name = xml_base_path + "gps_iono.xml";
+            if (d_ls_pvt->gps_iono.valid == true)
                 {
-                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                    boost::archive::xml_oarchive xml(ofs);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_utc_model", d_ls_pvt->galileo_utc_model);
-                    LOG(INFO) << "Saved Galileo UTC model parameters";
+                    std::ofstream ofs;
+                    try
+                        {
+                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                            boost::archive::xml_oarchive xml(ofs);
+                            xml << boost::serialization::make_nvp("GNSS-SDR_iono_model", d_ls_pvt->gps_iono);
+                            LOG(INFO) << "Saved GPS ionospheric model parameters";
+                        }
+                    catch (std::exception& e)
+                        {
+                            LOG(WARNING) << e.what();
+                        }
                 }
-            catch (std::exception& e)
+            else
                 {
-                    LOG(WARNING) << e.what();
+                    LOG(INFO) << "Failed to save GPS ionospheric model parameters, not valid data";
                 }
-        }
-    else
-        {
-            LOG(INFO) << "Failed to save Galileo UTC model parameters, not valid data";
-        }
 
-    // save GPS almanac to XML file
-    file_name = "gps_almanac.xml";
-    if (d_ls_pvt->gps_almanac_map.empty() == false)
-        {
-            std::ofstream ofs;
-            try
+            // Save GPS CNAV iono parameters
+            file_name = xml_base_path + "gps_iono.xml";
+            if (d_ls_pvt->gps_iono.valid == true)
                 {
-                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                    boost::archive::xml_oarchive xml(ofs);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_gps_almanac_map", d_ls_pvt->gps_almanac_map);
-                    LOG(INFO) << "Saved GPS almanac map data";
+                    std::ofstream ofs;
+                    try
+                        {
+                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                            boost::archive::xml_oarchive xml(ofs);
+                            xml << boost::serialization::make_nvp("GNSS-SDR_iono_model", d_ls_pvt->gps_iono);
+                            LOG(INFO) << "Saved GPS ionospheric model parameters";
+                        }
+                    catch (std::exception& e)
+                        {
+                            LOG(WARNING) << e.what();
+                        }
                 }
-            catch (const std::exception& e)
+            else
                 {
-                    LOG(WARNING) << e.what();
+                    LOG(INFO) << "Failed to save GPS ionospheric model parameters, not valid data";
                 }
-        }
-    else
-        {
-            LOG(INFO) << "Failed to save GPS almanac, map is empty";
-        }
 
-    // Save Galileo almanac
-    file_name = "gal_almanac.xml";
-    if (d_ls_pvt->galileo_almanac_map.empty() == false)
-        {
-            std::ofstream ofs;
-            try
-                {
-                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                    boost::archive::xml_oarchive xml(ofs);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_almanac_map", d_ls_pvt->galileo_almanac_map);
-                    LOG(INFO) << "Saved Galileo almanac data";
-                }
-            catch (std::exception& e)
-                {
-                    LOG(WARNING) << e.what();
-                }
-        }
-    else
-        {
-            LOG(INFO) << "Failed to save Galileo almanac, not valid data";
-        }
 
-    // Save GPS CNAV UTC model parameters
-    file_name = "gps_cnav_utc_model.xml";
-    if (d_ls_pvt->gps_cnav_utc_model.valid)
-        {
-            std::ofstream ofs;
-            try
+            // Save Galileo iono parameters
+            file_name = xml_base_path + "gal_iono.xml";
+            if (d_ls_pvt->galileo_iono.ai0_5 != 0.0)
                 {
-                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                    boost::archive::xml_oarchive xml(ofs);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_cnav_utc_model", d_ls_pvt->gps_cnav_utc_model);
-                    LOG(INFO) << "Saved GPS CNAV UTC model parameters";
+                    std::ofstream ofs;
+                    try
+                        {
+                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                            boost::archive::xml_oarchive xml(ofs);
+                            xml << boost::serialization::make_nvp("GNSS-SDR_gal_iono_model", d_ls_pvt->galileo_iono);
+                            LOG(INFO) << "Saved Galileo ionospheric model parameters";
+                        }
+                    catch (std::exception& e)
+                        {
+                            LOG(WARNING) << e.what();
+                        }
                 }
-            catch (std::exception& e)
+            else
                 {
-                    LOG(WARNING) << e.what();
+                    LOG(INFO) << "Failed to save Galileo ionospheric model parameters, not valid data";
                 }
-        }
-    else
-        {
-            LOG(INFO) << "Failed to save GPS CNAV UTC model parameters, not valid data";
-        }
 
-    // save GLONASS GNAV ephemeris to XML file
-    file_name = "glo_gnav_ephemeris.xml";
-    if (d_ls_pvt->glonass_gnav_ephemeris_map.empty() == false)
-        {
-            std::ofstream ofs;
-            try
+            // save GPS almanac to XML file
+            file_name = xml_base_path + "gps_almanac.xml";
+            if (d_ls_pvt->gps_almanac_map.empty() == false)
                 {
-                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                    boost::archive::xml_oarchive xml(ofs);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_gnav_ephemeris_map", d_ls_pvt->glonass_gnav_ephemeris_map);
-                    LOG(INFO) << "Saved GLONASS GNAV ephemeris map data";
+                    std::ofstream ofs;
+                    try
+                        {
+                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                            boost::archive::xml_oarchive xml(ofs);
+                            xml << boost::serialization::make_nvp("GNSS-SDR_gps_almanac_map", d_ls_pvt->gps_almanac_map);
+                            LOG(INFO) << "Saved GPS almanac map data";
+                        }
+                    catch (const std::exception& e)
+                        {
+                            LOG(WARNING) << e.what();
+                        }
                 }
-            catch (std::exception& e)
+            else
                 {
-                    LOG(WARNING) << e.what();
+                    LOG(INFO) << "Failed to save GPS almanac, map is empty";
                 }
-        }
-    else
-        {
-            LOG(INFO) << "Failed to save GLONASS GNAV ephemeris, map is empty";
-        }
 
-    // save GLONASS UTC model parameters to XML file
-    file_name = "glo_utc_model.xml";
-    if (d_ls_pvt->glonass_gnav_utc_model.valid)
-        {
-            std::ofstream ofs;
-            try
+            // Save Galileo almanac
+            file_name = xml_base_path + "gal_almanac.xml";
+            if (d_ls_pvt->galileo_almanac_map.empty() == false)
                 {
-                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                    boost::archive::xml_oarchive xml(ofs);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_gnav_utc_model", d_ls_pvt->glonass_gnav_utc_model);
-                    LOG(INFO) << "Saved GLONASS UTC model parameters";
+                    std::ofstream ofs;
+                    try
+                        {
+                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                            boost::archive::xml_oarchive xml(ofs);
+                            xml << boost::serialization::make_nvp("GNSS-SDR_gal_almanac_map", d_ls_pvt->galileo_almanac_map);
+                            LOG(INFO) << "Saved Galileo almanac data";
+                        }
+                    catch (std::exception& e)
+                        {
+                            LOG(WARNING) << e.what();
+                        }
                 }
-            catch (std::exception& e)
+            else
                 {
-                    LOG(WARNING) << e.what();
+                    LOG(INFO) << "Failed to save Galileo almanac, not valid data";
                 }
-        }
-    else
-        {
-            LOG(INFO) << "Failed to save GLONASS GNAV ephemeris, not valid data";
+
+            // Save GPS CNAV UTC model parameters
+            file_name = xml_base_path + "gps_cnav_utc_model.xml";
+            if (d_ls_pvt->gps_cnav_utc_model.valid)
+                {
+                    std::ofstream ofs;
+                    try
+                        {
+                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                            boost::archive::xml_oarchive xml(ofs);
+                            xml << boost::serialization::make_nvp("GNSS-SDR_cnav_utc_model", d_ls_pvt->gps_cnav_utc_model);
+                            LOG(INFO) << "Saved GPS CNAV UTC model parameters";
+                        }
+                    catch (std::exception& e)
+                        {
+                            LOG(WARNING) << e.what();
+                        }
+                }
+            else
+                {
+                    LOG(INFO) << "Failed to save GPS CNAV UTC model parameters, not valid data";
+                }
+
+            // save GLONASS GNAV ephemeris to XML file
+            file_name = xml_base_path + "glo_gnav_ephemeris.xml";
+            if (d_ls_pvt->glonass_gnav_ephemeris_map.empty() == false)
+                {
+                    std::ofstream ofs;
+                    try
+                        {
+                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                            boost::archive::xml_oarchive xml(ofs);
+                            xml << boost::serialization::make_nvp("GNSS-SDR_gnav_ephemeris_map", d_ls_pvt->glonass_gnav_ephemeris_map);
+                            LOG(INFO) << "Saved GLONASS GNAV ephemeris map data";
+                        }
+                    catch (std::exception& e)
+                        {
+                            LOG(WARNING) << e.what();
+                        }
+                }
+            else
+                {
+                    LOG(INFO) << "Failed to save GLONASS GNAV ephemeris, map is empty";
+                }
+
+            // save GLONASS UTC model parameters to XML file
+            file_name = xml_base_path + "glo_utc_model.xml";
+            if (d_ls_pvt->glonass_gnav_utc_model.valid)
+                {
+                    std::ofstream ofs;
+                    try
+                        {
+                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                            boost::archive::xml_oarchive xml(ofs);
+                            xml << boost::serialization::make_nvp("GNSS-SDR_gnav_utc_model", d_ls_pvt->glonass_gnav_utc_model);
+                            LOG(INFO) << "Saved GLONASS UTC model parameters";
+                        }
+                    catch (std::exception& e)
+                        {
+                            LOG(WARNING) << e.what();
+                        }
+                }
+            else
+                {
+                    LOG(INFO) << "Failed to save GLONASS GNAV ephemeris, not valid data";
+                }
         }
 }
 
@@ -897,9 +989,9 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                             send_sys_v_ttff_msg(ttff);
                                             first_fix = false;
                                         }
-                                    d_kml_dump->print_position(d_ls_pvt, false);
-                                    d_gpx_dump->print_position(d_ls_pvt, false);
-                                    d_geojson_printer->print_position(d_ls_pvt, false);
+                                    if (d_kml_output_enabled) d_kml_dump->print_position(d_ls_pvt, false);
+                                    if (d_gpx_output_enabled) d_gpx_dump->print_position(d_ls_pvt, false);
+                                    if (d_geojson_output_enabled) d_geojson_printer->print_position(d_ls_pvt, false);
                                     d_nmea_printer->Print_Nmea_Line(d_ls_pvt, false);
 
                                     /*
@@ -937,575 +1029,577 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                      *    30   |  Galileo E1B + GLONASS L2 C/A
                                      *    31   |  GPS L2C + GLONASS L2 C/A
                                      */
-
-                                    // ####################### RINEX FILES #################
-
                                     std::map<int, Galileo_Ephemeris>::const_iterator galileo_ephemeris_iter;
                                     std::map<int, Gps_Ephemeris>::const_iterator gps_ephemeris_iter;
                                     std::map<int, Gps_CNAV_Ephemeris>::const_iterator gps_cnav_ephemeris_iter;
                                     std::map<int, Glonass_Gnav_Ephemeris>::const_iterator glonass_gnav_ephemeris_iter;
                                     std::map<int, Gnss_Synchro>::const_iterator gnss_observables_iter;
 
-                                    if (!b_rinex_header_written)  //  & we have utc data in nav message!
+                                    // ####################### RINEX FILES #################
+                                    if (b_rinex_output_enabled)
                                         {
-                                            galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.cbegin();
-                                            gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.cbegin();
-                                            gps_cnav_ephemeris_iter = d_ls_pvt->gps_cnav_ephemeris_map.cbegin();
-                                            glonass_gnav_ephemeris_iter = d_ls_pvt->glonass_gnav_ephemeris_map.cbegin();
+                                            if (!b_rinex_header_written)  //  & we have utc data in nav message!
+                                                {
+                                                    galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.cbegin();
+                                                    gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.cbegin();
+                                                    gps_cnav_ephemeris_iter = d_ls_pvt->gps_cnav_ephemeris_map.cbegin();
+                                                    glonass_gnav_ephemeris_iter = d_ls_pvt->glonass_gnav_ephemeris_map.cbegin();
 
-                                            if (type_of_rx == 1)  // GPS L1 C/A only
-                                                {
-                                                    if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.cend())
-                                                        {
-                                                            rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, d_rx_time);
-                                                            rp->rinex_nav_header(rp->navFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model);
-                                                            b_rinex_header_written = true;  // do not write header anymore
-                                                        }
-                                                }
-                                            if (type_of_rx == 2)  // GPS L2C only
-                                                {
-                                                    if (gps_cnav_ephemeris_iter != d_ls_pvt->gps_cnav_ephemeris_map.cend())
-                                                        {
-                                                            rp->rinex_obs_header(rp->obsFile, gps_cnav_ephemeris_iter->second, d_rx_time);
-                                                            rp->rinex_nav_header(rp->navFile, d_ls_pvt->gps_cnav_iono, d_ls_pvt->gps_cnav_utc_model);
-                                                            b_rinex_header_written = true;  // do not write header anymore
-                                                        }
-                                                }
-                                            if (type_of_rx == 3)  // GPS L5 only
-                                                {
-                                                    if (gps_cnav_ephemeris_iter != d_ls_pvt->gps_cnav_ephemeris_map.cend())
-                                                        {
-                                                            rp->rinex_obs_header(rp->obsFile, gps_cnav_ephemeris_iter->second, d_rx_time);
-                                                            rp->rinex_nav_header(rp->navFile, d_ls_pvt->gps_cnav_iono, d_ls_pvt->gps_cnav_utc_model);
-                                                            b_rinex_header_written = true;  // do not write header anymore
-                                                        }
-                                                }
-                                            if (type_of_rx == 4)  // Galileo E1B only
-                                                {
-                                                    if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.cend())
-                                                        {
-                                                            rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time);
-                                                            rp->rinex_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
-                                                            b_rinex_header_written = true;  // do not write header anymore
-                                                        }
-                                                }
-                                            if (type_of_rx == 5)  // Galileo E5a only
-                                                {
-                                                    std::string signal("5X");
-                                                    if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.cend())
-                                                        {
-                                                            rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, signal);
-                                                            rp->rinex_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
-                                                            b_rinex_header_written = true;  // do not write header anymore
-                                                        }
-                                                }
-                                            if (type_of_rx == 6)  // Galileo E5b only
-                                                {
-                                                    std::string signal("7X");
-                                                    if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.cend())
-                                                        {
-                                                            rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, signal);
-                                                            rp->rinex_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
-                                                            b_rinex_header_written = true;  // do not write header anymore
-                                                        }
-                                                }
-                                            if (type_of_rx == 7)  // GPS L1 C/A + GPS L2C
-                                                {
-                                                    if ((gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.cend()) and (gps_cnav_ephemeris_iter != d_ls_pvt->gps_cnav_ephemeris_map.cend()))
-                                                        {
-                                                            rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, d_rx_time);
-                                                            rp->rinex_nav_header(rp->navFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model);
-                                                            b_rinex_header_written = true;  // do not write header anymore
-                                                        }
-                                                }
-
-                                            if (type_of_rx == 9)  // GPS L1 C/A + Galileo E1B
-                                                {
-                                                    if ((galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.cend()) and (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.cend()))
-                                                        {
-                                                            std::string gal_signal("1B");
-                                                            rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, d_rx_time, gal_signal);
-                                                            rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
-                                                            b_rinex_header_written = true;  // do not write header anymore
-                                                        }
-                                                }
-                                            if (type_of_rx == 10)  //  GPS L1 C/A + Galileo E5a
-                                                {
-                                                    if ((galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.cend()) and (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.cend()))
-                                                        {
-                                                            std::string gal_signal("5X");
-                                                            rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, d_rx_time, gal_signal);
-                                                            rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
-                                                            b_rinex_header_written = true;  // do not write header anymore
-                                                        }
-                                                }
-                                            if (type_of_rx == 11)  //  GPS L1 C/A + Galileo E5b
-                                                {
-                                                    if ((galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.cend()) and (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.cend()))
-                                                        {
-                                                            std::string gal_signal("7X");
-                                                            rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, d_rx_time, gal_signal);
-                                                            rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
-                                                            b_rinex_header_written = true;  // do not write header anymore
-                                                        }
-                                                }
-                                            if (type_of_rx == 14)  //  Galileo E1B + Galileo E5a
-                                                {
-                                                    if ((galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.cend()))
-                                                        {
-                                                            std::string gal_signal("1B 5X");
-                                                            rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gal_signal);
-                                                            rp->rinex_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
-                                                            b_rinex_header_written = true;  // do not write header anymore
-                                                        }
-                                                }
-                                            if (type_of_rx == 15)  //  Galileo E1B + Galileo E5b
-                                                {
-                                                    if ((galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.cend()))
-                                                        {
-                                                            std::string gal_signal("1B 7X");
-                                                            rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gal_signal);
-                                                            rp->rinex_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
-                                                            b_rinex_header_written = true;  // do not write header anymore
-                                                        }
-                                                }
-                                            if (type_of_rx == 23)  // GLONASS L1 C/A only
-                                                {
-                                                    std::string signal("1G");
-                                                    if (glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.cend())
-                                                        {
-                                                            rp->rinex_obs_header(rp->obsFile, glonass_gnav_ephemeris_iter->second, d_rx_time, signal);
-                                                            rp->rinex_nav_header(rp->navGloFile, d_ls_pvt->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second);
-                                                            b_rinex_header_written = true;  // do not write header anymore
-                                                        }
-                                                }
-                                            if (type_of_rx == 24)  // GLONASS L2 C/A only
-                                                {
-                                                    std::string signal("2G");
-                                                    if (glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.cend())
-                                                        {
-                                                            rp->rinex_obs_header(rp->obsFile, glonass_gnav_ephemeris_iter->second, d_rx_time, signal);
-                                                            rp->rinex_nav_header(rp->navGloFile, d_ls_pvt->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second);
-                                                            b_rinex_header_written = true;  // do not write header anymore
-                                                        }
-                                                }
-                                            if (type_of_rx == 25)  // GLONASS L1 C/A + GLONASS L2 C/A
-                                                {
-                                                    std::string signal("1G 2G");
-                                                    if (glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.cend())
-                                                        {
-                                                            rp->rinex_obs_header(rp->obsFile, glonass_gnav_ephemeris_iter->second, d_rx_time, signal);
-                                                            rp->rinex_nav_header(rp->navGloFile, d_ls_pvt->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second);
-                                                            b_rinex_header_written = true;  // do not write header anymore
-                                                        }
-                                                }
-
-                                            if (type_of_rx == 26)  // GPS L1 C/A + GLONASS L1 C/A
-                                                {
-                                                    if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.cend()) and (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.cend()))
-                                                        {
-                                                            std::string glo_signal("1G");
-                                                            rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, glo_signal);
-                                                            if (d_rinex_version == 3)
-                                                                rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
-                                                            if (d_rinex_version == 2)
-                                                                {
-                                                                    rp->rinex_nav_header(rp->navFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model);
-                                                                    rp->rinex_nav_header(rp->navGloFile, d_ls_pvt->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second);
-                                                                }
-                                                            b_rinex_header_written = true;  // do not write header anymore
-                                                        }
-                                                }
-                                            if (type_of_rx == 27)  //  Galileo E1B + GLONASS L1 C/A
-                                                {
-                                                    if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.cend()) and (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.cend()))
-                                                        {
-                                                            std::string glo_signal("1G");
-                                                            std::string gal_signal("1B");
-                                                            rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, glo_signal, gal_signal);
-                                                            rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
-                                                            b_rinex_header_written = true;  // do not write header anymore
-                                                        }
-                                                }
-                                            if (type_of_rx == 28)  // GPS L2C + GLONASS L1 C/A
-                                                {
-                                                    if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.cend()) and (gps_cnav_ephemeris_iter != d_ls_pvt->gps_cnav_ephemeris_map.cend()))
-                                                        {
-                                                            std::string glo_signal("1G");
-                                                            rp->rinex_obs_header(rp->obsFile, gps_cnav_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, glo_signal);
-                                                            rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->gps_cnav_iono, d_ls_pvt->gps_cnav_utc_model, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
-                                                            b_rinex_header_written = true;  // do not write header anymore
-                                                        }
-                                                }
-                                            if (type_of_rx == 29)  // GPS L1 C/A + GLONASS L2 C/A
-                                                {
-                                                    if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.cend()) && (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.cend()))
-                                                        {
-                                                            std::string glo_signal("2G");
-                                                            rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, glo_signal);
-                                                            if (d_rinex_version == 3)
-                                                                rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
-                                                            if (d_rinex_version == 2)
-                                                                {
-                                                                    rp->rinex_nav_header(rp->navFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model);
-                                                                    rp->rinex_nav_header(rp->navGloFile, d_ls_pvt->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second);
-                                                                }
-                                                            b_rinex_header_written = true;  // do not write header anymore
-                                                        }
-                                                }
-                                            if (type_of_rx == 30)  //  Galileo E1B + GLONASS L2 C/A
-                                                {
-                                                    if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.cend()) && (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.cend()))
-                                                        {
-                                                            std::string glo_signal("2G");
-                                                            std::string gal_signal("1B");
-                                                            rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, glo_signal, gal_signal);
-                                                            rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
-                                                            b_rinex_header_written = true;  // do not write header anymore
-                                                        }
-                                                }
-                                            if (type_of_rx == 31)  // GPS L2C + GLONASS L2 C/A
-                                                {
-                                                    if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.cend()) && (gps_cnav_ephemeris_iter != d_ls_pvt->gps_cnav_ephemeris_map.cend()))
-                                                        {
-                                                            std::string glo_signal("2G");
-                                                            rp->rinex_obs_header(rp->obsFile, gps_cnav_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, glo_signal);
-                                                            rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->gps_cnav_iono, d_ls_pvt->gps_cnav_utc_model, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
-                                                            b_rinex_header_written = true;  // do not write header anymore
-                                                        }
-                                                }
-                                        }
-                                    if (b_rinex_header_written)  // The header is already written, we can now log the navigation message data
-                                        {
-                                            if (flag_write_RINEX_nav_output)
-                                                {
                                                     if (type_of_rx == 1)  // GPS L1 C/A only
                                                         {
-                                                            rp->log_rinex_nav(rp->navFile, d_ls_pvt->gps_ephemeris_map);
+                                                            if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.cend())
+                                                                {
+                                                                    rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, d_rx_time);
+                                                                    rp->rinex_nav_header(rp->navFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model);
+                                                                    b_rinex_header_written = true;  // do not write header anymore
+                                                                }
                                                         }
                                                     if (type_of_rx == 2)  // GPS L2C only
                                                         {
-                                                            rp->log_rinex_nav(rp->navFile, d_ls_pvt->gps_cnav_ephemeris_map);
+                                                            if (gps_cnav_ephemeris_iter != d_ls_pvt->gps_cnav_ephemeris_map.cend())
+                                                                {
+                                                                    rp->rinex_obs_header(rp->obsFile, gps_cnav_ephemeris_iter->second, d_rx_time);
+                                                                    rp->rinex_nav_header(rp->navFile, d_ls_pvt->gps_cnav_iono, d_ls_pvt->gps_cnav_utc_model);
+                                                                    b_rinex_header_written = true;  // do not write header anymore
+                                                                }
                                                         }
                                                     if (type_of_rx == 3)  // GPS L5 only
                                                         {
-                                                            rp->log_rinex_nav(rp->navFile, d_ls_pvt->gps_cnav_ephemeris_map);
-                                                        }
-                                                    if ((type_of_rx == 4) or (type_of_rx == 5) or (type_of_rx == 6))  // Galileo
-                                                        {
-                                                            rp->log_rinex_nav(rp->navGalFile, d_ls_pvt->galileo_ephemeris_map);
-                                                        }
-                                                    if (type_of_rx == 7)  // GPS L1 C/A + GPS L2C
-                                                        {
-                                                            rp->log_rinex_nav(rp->navFile, d_ls_pvt->gps_cnav_ephemeris_map);
-                                                        }
-                                                    if ((type_of_rx == 9) or (type_of_rx == 10) or (type_of_rx == 11))  // GPS L1 C/A + Galileo
-                                                        {
-                                                            rp->log_rinex_nav(rp->navMixFile, d_ls_pvt->gps_ephemeris_map, d_ls_pvt->galileo_ephemeris_map);
-                                                        }
-                                                    if ((type_of_rx == 14) or (type_of_rx == 15))  //  Galileo E1B + Galileo E5a
-                                                        {
-                                                            rp->log_rinex_nav(rp->navGalFile, d_ls_pvt->galileo_ephemeris_map);
-                                                        }
-                                                    if ((type_of_rx == 23) or (type_of_rx == 24) or (type_of_rx == 25))  //  GLONASS L1 C/A, GLONASS L2 C/A
-                                                        {
-                                                            rp->log_rinex_nav(rp->navGloFile, d_ls_pvt->glonass_gnav_ephemeris_map);
-                                                        }
-                                                    if (type_of_rx == 26)  //  GPS L1 C/A + GLONASS L1 C/A
-                                                        {
-                                                            if (d_rinex_version == 3)
-                                                                rp->log_rinex_nav(rp->navMixFile, d_ls_pvt->gps_ephemeris_map, d_ls_pvt->glonass_gnav_ephemeris_map);
-                                                            if (d_rinex_version == 2)
+                                                            if (gps_cnav_ephemeris_iter != d_ls_pvt->gps_cnav_ephemeris_map.cend())
                                                                 {
-                                                                    rp->log_rinex_nav(rp->navFile, d_ls_pvt->gps_ephemeris_map);
-                                                                    rp->log_rinex_nav(rp->navGloFile, d_ls_pvt->glonass_gnav_ephemeris_map);
-                                                                }
-                                                        }
-                                                    if (type_of_rx == 27)  //  Galileo E1B + GLONASS L1 C/A
-                                                        {
-                                                            rp->log_rinex_nav(rp->navMixFile, d_ls_pvt->galileo_ephemeris_map, d_ls_pvt->glonass_gnav_ephemeris_map);
-                                                        }
-                                                    if (type_of_rx == 28)  //  GPS L2C + GLONASS L1 C/A
-                                                        {
-                                                            rp->log_rinex_nav(rp->navMixFile, d_ls_pvt->gps_cnav_ephemeris_map, d_ls_pvt->glonass_gnav_ephemeris_map);
-                                                        }
-                                                    if (type_of_rx == 29)  //  GPS L1 C/A + GLONASS L2 C/A
-                                                        {
-                                                            if (d_rinex_version == 3)
-                                                                rp->log_rinex_nav(rp->navMixFile, d_ls_pvt->gps_ephemeris_map, d_ls_pvt->glonass_gnav_ephemeris_map);
-                                                            if (d_rinex_version == 2)
-                                                                {
-                                                                    rp->log_rinex_nav(rp->navFile, d_ls_pvt->gps_ephemeris_map);
-                                                                    rp->log_rinex_nav(rp->navGloFile, d_ls_pvt->glonass_gnav_ephemeris_map);
-                                                                }
-                                                        }
-                                                    if (type_of_rx == 30)  //  Galileo E1B + GLONASS L2 C/A
-                                                        {
-                                                            rp->log_rinex_nav(rp->navMixFile, d_ls_pvt->galileo_ephemeris_map, d_ls_pvt->glonass_gnav_ephemeris_map);
-                                                        }
-                                                    if (type_of_rx == 31)  //  GPS L2C + GLONASS L2 C/A
-                                                        {
-                                                            rp->log_rinex_nav(rp->navMixFile, d_ls_pvt->gps_cnav_ephemeris_map, d_ls_pvt->glonass_gnav_ephemeris_map);
-                                                        }
-                                                }
-                                            galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.cbegin();
-                                            gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.cbegin();
-                                            gps_cnav_ephemeris_iter = d_ls_pvt->gps_cnav_ephemeris_map.cbegin();
-                                            glonass_gnav_ephemeris_iter = d_ls_pvt->glonass_gnav_ephemeris_map.cbegin();
-
-                                            // Log observables into the RINEX file
-                                            if (flag_write_RINEX_obs_output)
-                                                {
-                                                    if (type_of_rx == 1)  // GPS L1 C/A only
-                                                        {
-                                                            if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
-                                                                {
-                                                                    rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, d_rx_time, gnss_observables_map);
-                                                                }
-                                                            if (!b_rinex_header_updated and (d_ls_pvt->gps_utc_model.d_A0 != 0))
-                                                                {
-                                                                    rp->update_obs_header(rp->obsFile, d_ls_pvt->gps_utc_model);
-                                                                    rp->update_nav_header(rp->navFile, d_ls_pvt->gps_utc_model, d_ls_pvt->gps_iono);
-                                                                    b_rinex_header_updated = true;
-                                                                }
-                                                        }
-                                                    if (type_of_rx == 2)  // GPS L2C only
-                                                        {
-                                                            if (gps_cnav_ephemeris_iter != d_ls_pvt->gps_cnav_ephemeris_map.end())
-                                                                {
-                                                                    rp->log_rinex_obs(rp->obsFile, gps_cnav_ephemeris_iter->second, d_rx_time, gnss_observables_map);
-                                                                }
-                                                            if (!b_rinex_header_updated and (d_ls_pvt->gps_cnav_utc_model.d_A0 != 0))
-                                                                {
-                                                                    rp->update_obs_header(rp->obsFile, d_ls_pvt->gps_cnav_utc_model);
-                                                                    rp->update_nav_header(rp->navFile, d_ls_pvt->gps_cnav_utc_model, d_ls_pvt->gps_cnav_iono);
-                                                                    b_rinex_header_updated = true;
-                                                                }
-                                                        }
-                                                    if (type_of_rx == 3)  // GPS L5
-                                                        {
-                                                            if (gps_cnav_ephemeris_iter != d_ls_pvt->gps_cnav_ephemeris_map.end())
-                                                                {
-                                                                    rp->log_rinex_obs(rp->obsFile, gps_cnav_ephemeris_iter->second, d_rx_time, gnss_observables_map);
-                                                                }
-                                                            if (!b_rinex_header_updated and (d_ls_pvt->gps_cnav_utc_model.d_A0 != 0))
-                                                                {
-                                                                    rp->update_obs_header(rp->obsFile, d_ls_pvt->gps_cnav_utc_model);
-                                                                    rp->update_nav_header(rp->navFile, d_ls_pvt->gps_cnav_utc_model, d_ls_pvt->gps_cnav_iono);
-                                                                    b_rinex_header_updated = true;
+                                                                    rp->rinex_obs_header(rp->obsFile, gps_cnav_ephemeris_iter->second, d_rx_time);
+                                                                    rp->rinex_nav_header(rp->navFile, d_ls_pvt->gps_cnav_iono, d_ls_pvt->gps_cnav_utc_model);
+                                                                    b_rinex_header_written = true;  // do not write header anymore
                                                                 }
                                                         }
                                                     if (type_of_rx == 4)  // Galileo E1B only
                                                         {
-                                                            if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                                            if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.cend())
                                                                 {
-                                                                    rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gnss_observables_map, "1B");
-                                                                }
-                                                            if (!b_rinex_header_updated and (d_ls_pvt->galileo_utc_model.A0_6 != 0))
-                                                                {
-                                                                    rp->update_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
-                                                                    rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
-                                                                    b_rinex_header_updated = true;
+                                                                    rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time);
+                                                                    rp->rinex_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
+                                                                    b_rinex_header_written = true;  // do not write header anymore
                                                                 }
                                                         }
                                                     if (type_of_rx == 5)  // Galileo E5a only
                                                         {
-                                                            if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                                            std::string signal("5X");
+                                                            if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.cend())
                                                                 {
-                                                                    rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gnss_observables_map, "5X");
-                                                                }
-                                                            if (!b_rinex_header_updated and (d_ls_pvt->galileo_utc_model.A0_6 != 0))
-                                                                {
-                                                                    rp->update_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
-                                                                    rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
-                                                                    b_rinex_header_updated = true;
+                                                                    rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, signal);
+                                                                    rp->rinex_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
+                                                                    b_rinex_header_written = true;  // do not write header anymore
                                                                 }
                                                         }
                                                     if (type_of_rx == 6)  // Galileo E5b only
                                                         {
-                                                            if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                                            std::string signal("7X");
+                                                            if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.cend())
                                                                 {
-                                                                    rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gnss_observables_map, "7X");
-                                                                }
-                                                            if (!b_rinex_header_updated and (d_ls_pvt->galileo_utc_model.A0_6 != 0))
-                                                                {
-                                                                    rp->update_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
-                                                                    rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
-                                                                    b_rinex_header_updated = true;
+                                                                    rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, signal);
+                                                                    rp->rinex_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
+                                                                    b_rinex_header_written = true;  // do not write header anymore
                                                                 }
                                                         }
                                                     if (type_of_rx == 7)  // GPS L1 C/A + GPS L2C
                                                         {
-                                                            if ((gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end()) and (gps_cnav_ephemeris_iter != d_ls_pvt->gps_cnav_ephemeris_map.end()))
+                                                            if ((gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.cend()) and (gps_cnav_ephemeris_iter != d_ls_pvt->gps_cnav_ephemeris_map.cend()))
                                                                 {
-                                                                    rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, d_rx_time, gnss_observables_map);
-                                                                }
-                                                            if (!b_rinex_header_updated and (d_ls_pvt->gps_utc_model.d_A0 != 0))
-                                                                {
-                                                                    rp->update_obs_header(rp->obsFile, d_ls_pvt->gps_utc_model);
-                                                                    rp->update_nav_header(rp->navFile, d_ls_pvt->gps_utc_model, d_ls_pvt->gps_iono);
-                                                                    b_rinex_header_updated = true;
+                                                                    rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, d_rx_time);
+                                                                    rp->rinex_nav_header(rp->navFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model);
+                                                                    b_rinex_header_written = true;  // do not write header anymore
                                                                 }
                                                         }
+
                                                     if (type_of_rx == 9)  // GPS L1 C/A + Galileo E1B
                                                         {
-                                                            if ((galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end()) and (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end()))
+                                                            if ((galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.cend()) and (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.cend()))
                                                                 {
-                                                                    rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, d_rx_time, gnss_observables_map);
-                                                                }
-                                                            if (!b_rinex_header_updated and (d_ls_pvt->gps_utc_model.d_A0 != 0))
-                                                                {
-                                                                    rp->update_obs_header(rp->obsFile, d_ls_pvt->gps_utc_model);
-                                                                    rp->update_nav_header(rp->navMixFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
-                                                                    b_rinex_header_updated = true;
+                                                                    std::string gal_signal("1B");
+                                                                    rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, d_rx_time, gal_signal);
+                                                                    rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
+                                                                    b_rinex_header_written = true;  // do not write header anymore
                                                                 }
                                                         }
-                                                    if (type_of_rx == 14)  // Galileo E1B + Galileo E5a
+                                                    if (type_of_rx == 10)  //  GPS L1 C/A + Galileo E5a
                                                         {
-                                                            if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                                            if ((galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.cend()) and (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.cend()))
                                                                 {
-                                                                    rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gnss_observables_map, "1B 5X");
-                                                                }
-                                                            if (!b_rinex_header_updated and (d_ls_pvt->galileo_utc_model.A0_6 != 0))
-                                                                {
-                                                                    rp->update_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
-                                                                    rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
-                                                                    b_rinex_header_updated = true;
+                                                                    std::string gal_signal("5X");
+                                                                    rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, d_rx_time, gal_signal);
+                                                                    rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
+                                                                    b_rinex_header_written = true;  // do not write header anymore
                                                                 }
                                                         }
-                                                    if (type_of_rx == 15)  // Galileo E1B + Galileo E5b
+                                                    if (type_of_rx == 11)  //  GPS L1 C/A + Galileo E5b
                                                         {
-                                                            if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                                            if ((galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.cend()) and (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.cend()))
                                                                 {
-                                                                    rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gnss_observables_map, "1B 7X");
+                                                                    std::string gal_signal("7X");
+                                                                    rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, d_rx_time, gal_signal);
+                                                                    rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
+                                                                    b_rinex_header_written = true;  // do not write header anymore
                                                                 }
-                                                            if (!b_rinex_header_updated and (d_ls_pvt->galileo_utc_model.A0_6 != 0))
+                                                        }
+                                                    if (type_of_rx == 14)  //  Galileo E1B + Galileo E5a
+                                                        {
+                                                            if ((galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.cend()))
                                                                 {
-                                                                    rp->update_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
-                                                                    rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
-                                                                    b_rinex_header_updated = true;
+                                                                    std::string gal_signal("1B 5X");
+                                                                    rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gal_signal);
+                                                                    rp->rinex_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
+                                                                    b_rinex_header_written = true;  // do not write header anymore
+                                                                }
+                                                        }
+                                                    if (type_of_rx == 15)  //  Galileo E1B + Galileo E5b
+                                                        {
+                                                            if ((galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.cend()))
+                                                                {
+                                                                    std::string gal_signal("1B 7X");
+                                                                    rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gal_signal);
+                                                                    rp->rinex_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
+                                                                    b_rinex_header_written = true;  // do not write header anymore
                                                                 }
                                                         }
                                                     if (type_of_rx == 23)  // GLONASS L1 C/A only
                                                         {
-                                                            if (glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.end())
+                                                            std::string signal("1G");
+                                                            if (glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.cend())
                                                                 {
-                                                                    rp->log_rinex_obs(rp->obsFile, glonass_gnav_ephemeris_iter->second, d_rx_time, gnss_observables_map, "1C");
-                                                                }
-                                                            if (!b_rinex_header_updated and (d_ls_pvt->glonass_gnav_utc_model.d_tau_c != 0))
-                                                                {
-                                                                    rp->update_nav_header(rp->navGloFile, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
-                                                                    rp->update_obs_header(rp->obsFile, d_ls_pvt->glonass_gnav_utc_model);
-                                                                    b_rinex_header_updated = true;
+                                                                    rp->rinex_obs_header(rp->obsFile, glonass_gnav_ephemeris_iter->second, d_rx_time, signal);
+                                                                    rp->rinex_nav_header(rp->navGloFile, d_ls_pvt->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second);
+                                                                    b_rinex_header_written = true;  // do not write header anymore
                                                                 }
                                                         }
                                                     if (type_of_rx == 24)  // GLONASS L2 C/A only
                                                         {
-                                                            if (glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.end())
+                                                            std::string signal("2G");
+                                                            if (glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.cend())
                                                                 {
-                                                                    rp->log_rinex_obs(rp->obsFile, glonass_gnav_ephemeris_iter->second, d_rx_time, gnss_observables_map, "2C");
-                                                                }
-                                                            if (!b_rinex_header_updated and (d_ls_pvt->glonass_gnav_utc_model.d_tau_c != 0))
-                                                                {
-                                                                    rp->update_nav_header(rp->navGloFile, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
-                                                                    rp->update_obs_header(rp->obsFile, d_ls_pvt->glonass_gnav_utc_model);
-                                                                    b_rinex_header_updated = true;
+                                                                    rp->rinex_obs_header(rp->obsFile, glonass_gnav_ephemeris_iter->second, d_rx_time, signal);
+                                                                    rp->rinex_nav_header(rp->navGloFile, d_ls_pvt->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second);
+                                                                    b_rinex_header_written = true;  // do not write header anymore
                                                                 }
                                                         }
                                                     if (type_of_rx == 25)  // GLONASS L1 C/A + GLONASS L2 C/A
                                                         {
-                                                            if (glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.end())
+                                                            std::string signal("1G 2G");
+                                                            if (glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.cend())
                                                                 {
-                                                                    rp->log_rinex_obs(rp->obsFile, glonass_gnav_ephemeris_iter->second, d_rx_time, gnss_observables_map, "1C 2C");
-                                                                }
-                                                            if (!b_rinex_header_updated and (d_ls_pvt->glonass_gnav_utc_model.d_tau_c != 0))
-                                                                {
-                                                                    rp->update_nav_header(rp->navMixFile, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
-                                                                    rp->update_obs_header(rp->obsFile, d_ls_pvt->glonass_gnav_utc_model);
-                                                                    b_rinex_header_updated = true;
+                                                                    rp->rinex_obs_header(rp->obsFile, glonass_gnav_ephemeris_iter->second, d_rx_time, signal);
+                                                                    rp->rinex_nav_header(rp->navGloFile, d_ls_pvt->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second);
+                                                                    b_rinex_header_written = true;  // do not write header anymore
                                                                 }
                                                         }
+
                                                     if (type_of_rx == 26)  // GPS L1 C/A + GLONASS L1 C/A
                                                         {
-                                                            if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.end()) and (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end()))
+                                                            if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.cend()) and (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.cend()))
                                                                 {
-                                                                    rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, gnss_observables_map);
-                                                                }
-                                                            if (!b_rinex_header_updated and (d_ls_pvt->gps_utc_model.d_A0 != 0))
-                                                                {
-                                                                    rp->update_obs_header(rp->obsFile, d_ls_pvt->gps_utc_model);
-                                                                    rp->update_nav_header(rp->navMixFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
-                                                                    b_rinex_header_updated = true;  // do not write header anymore
+                                                                    std::string glo_signal("1G");
+                                                                    rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, glo_signal);
+                                                                    if (d_rinex_version == 3)
+                                                                        rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
+                                                                    if (d_rinex_version == 2)
+                                                                        {
+                                                                            rp->rinex_nav_header(rp->navFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model);
+                                                                            rp->rinex_nav_header(rp->navGloFile, d_ls_pvt->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second);
+                                                                        }
+                                                                    b_rinex_header_written = true;  // do not write header anymore
                                                                 }
                                                         }
-                                                    if (type_of_rx == 27)  // Galileo E1B + GLONASS L1 C/A
+                                                    if (type_of_rx == 27)  //  Galileo E1B + GLONASS L1 C/A
                                                         {
-                                                            if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.end()) and (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end()))
+                                                            if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.cend()) and (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.cend()))
                                                                 {
-                                                                    rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, gnss_observables_map);
-                                                                }
-                                                            if (!b_rinex_header_updated and (d_ls_pvt->galileo_utc_model.A0_6 != 0))
-                                                                {
-                                                                    rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
-                                                                    rp->update_nav_header(rp->navMixFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
-                                                                    b_rinex_header_updated = true;  // do not write header anymore
+                                                                    std::string glo_signal("1G");
+                                                                    std::string gal_signal("1B");
+                                                                    rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, glo_signal, gal_signal);
+                                                                    rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
+                                                                    b_rinex_header_written = true;  // do not write header anymore
                                                                 }
                                                         }
                                                     if (type_of_rx == 28)  // GPS L2C + GLONASS L1 C/A
                                                         {
-                                                            if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.end()) and (gps_cnav_ephemeris_iter != d_ls_pvt->gps_cnav_ephemeris_map.end()))
+                                                            if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.cend()) and (gps_cnav_ephemeris_iter != d_ls_pvt->gps_cnav_ephemeris_map.cend()))
                                                                 {
-                                                                    rp->log_rinex_obs(rp->obsFile, gps_cnav_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, gnss_observables_map);
-                                                                }
-                                                            if (!b_rinex_header_updated and (d_ls_pvt->gps_cnav_utc_model.d_A0 != 0))
-                                                                {
-                                                                    rp->update_obs_header(rp->obsFile, d_ls_pvt->gps_cnav_utc_model);
-                                                                    rp->update_nav_header(rp->navMixFile, d_ls_pvt->gps_cnav_iono, d_ls_pvt->gps_cnav_utc_model, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
-                                                                    b_rinex_header_updated = true;  // do not write header anymore
+                                                                    std::string glo_signal("1G");
+                                                                    rp->rinex_obs_header(rp->obsFile, gps_cnav_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, glo_signal);
+                                                                    rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->gps_cnav_iono, d_ls_pvt->gps_cnav_utc_model, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
+                                                                    b_rinex_header_written = true;  // do not write header anymore
                                                                 }
                                                         }
                                                     if (type_of_rx == 29)  // GPS L1 C/A + GLONASS L2 C/A
                                                         {
-                                                            if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.end()) && (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end()))
+                                                            if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.cend()) && (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.cend()))
                                                                 {
-                                                                    rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, gnss_observables_map);
-                                                                }
-                                                            if (!b_rinex_header_updated && (d_ls_pvt->gps_utc_model.d_A0 != 0))
-                                                                {
-                                                                    rp->update_obs_header(rp->obsFile, d_ls_pvt->gps_utc_model);
-                                                                    rp->update_nav_header(rp->navMixFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
-                                                                    b_rinex_header_updated = true;  // do not write header anymore
+                                                                    std::string glo_signal("2G");
+                                                                    rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, glo_signal);
+                                                                    if (d_rinex_version == 3)
+                                                                        rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
+                                                                    if (d_rinex_version == 2)
+                                                                        {
+                                                                            rp->rinex_nav_header(rp->navFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model);
+                                                                            rp->rinex_nav_header(rp->navGloFile, d_ls_pvt->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second);
+                                                                        }
+                                                                    b_rinex_header_written = true;  // do not write header anymore
                                                                 }
                                                         }
-                                                    if (type_of_rx == 30)  // Galileo E1B + GLONASS L2 C/A
+                                                    if (type_of_rx == 30)  //  Galileo E1B + GLONASS L2 C/A
                                                         {
-                                                            if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.end()) && (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end()))
+                                                            if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.cend()) && (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.cend()))
                                                                 {
-                                                                    rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, gnss_observables_map);
-                                                                }
-                                                            if (!b_rinex_header_updated && (d_ls_pvt->galileo_utc_model.A0_6 != 0))
-                                                                {
-                                                                    rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
-                                                                    rp->update_nav_header(rp->navMixFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
-                                                                    b_rinex_header_updated = true;  // do not write header anymore
+                                                                    std::string glo_signal("2G");
+                                                                    std::string gal_signal("1B");
+                                                                    rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, glo_signal, gal_signal);
+                                                                    rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
+                                                                    b_rinex_header_written = true;  // do not write header anymore
                                                                 }
                                                         }
                                                     if (type_of_rx == 31)  // GPS L2C + GLONASS L2 C/A
                                                         {
-                                                            if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.end()) && (gps_cnav_ephemeris_iter != d_ls_pvt->gps_cnav_ephemeris_map.end()))
+                                                            if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.cend()) && (gps_cnav_ephemeris_iter != d_ls_pvt->gps_cnav_ephemeris_map.cend()))
                                                                 {
-                                                                    rp->log_rinex_obs(rp->obsFile, gps_cnav_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, gnss_observables_map);
+                                                                    std::string glo_signal("2G");
+                                                                    rp->rinex_obs_header(rp->obsFile, gps_cnav_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, glo_signal);
+                                                                    rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->gps_cnav_iono, d_ls_pvt->gps_cnav_utc_model, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
+                                                                    b_rinex_header_written = true;  // do not write header anymore
                                                                 }
-                                                            if (!b_rinex_header_updated && (d_ls_pvt->gps_cnav_utc_model.d_A0 != 0))
+                                                        }
+                                                }
+
+
+                                            if (b_rinex_header_written)  // The header is already written, we can now log the navigation message data
+                                                {
+                                                    if (flag_write_RINEX_nav_output)
+                                                        {
+                                                            if (type_of_rx == 1)  // GPS L1 C/A only
                                                                 {
-                                                                    rp->update_obs_header(rp->obsFile, d_ls_pvt->gps_cnav_utc_model);
-                                                                    rp->update_nav_header(rp->navMixFile, d_ls_pvt->gps_cnav_iono, d_ls_pvt->gps_cnav_utc_model, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
-                                                                    b_rinex_header_updated = true;  // do not write header anymore
+                                                                    rp->log_rinex_nav(rp->navFile, d_ls_pvt->gps_ephemeris_map);
+                                                                }
+                                                            if (type_of_rx == 2)  // GPS L2C only
+                                                                {
+                                                                    rp->log_rinex_nav(rp->navFile, d_ls_pvt->gps_cnav_ephemeris_map);
+                                                                }
+                                                            if (type_of_rx == 3)  // GPS L5 only
+                                                                {
+                                                                    rp->log_rinex_nav(rp->navFile, d_ls_pvt->gps_cnav_ephemeris_map);
+                                                                }
+                                                            if ((type_of_rx == 4) or (type_of_rx == 5) or (type_of_rx == 6))  // Galileo
+                                                                {
+                                                                    rp->log_rinex_nav(rp->navGalFile, d_ls_pvt->galileo_ephemeris_map);
+                                                                }
+                                                            if (type_of_rx == 7)  // GPS L1 C/A + GPS L2C
+                                                                {
+                                                                    rp->log_rinex_nav(rp->navFile, d_ls_pvt->gps_cnav_ephemeris_map);
+                                                                }
+                                                            if ((type_of_rx == 9) or (type_of_rx == 10) or (type_of_rx == 11))  // GPS L1 C/A + Galileo
+                                                                {
+                                                                    rp->log_rinex_nav(rp->navMixFile, d_ls_pvt->gps_ephemeris_map, d_ls_pvt->galileo_ephemeris_map);
+                                                                }
+                                                            if ((type_of_rx == 14) or (type_of_rx == 15))  //  Galileo E1B + Galileo E5a
+                                                                {
+                                                                    rp->log_rinex_nav(rp->navGalFile, d_ls_pvt->galileo_ephemeris_map);
+                                                                }
+                                                            if ((type_of_rx == 23) or (type_of_rx == 24) or (type_of_rx == 25))  //  GLONASS L1 C/A, GLONASS L2 C/A
+                                                                {
+                                                                    rp->log_rinex_nav(rp->navGloFile, d_ls_pvt->glonass_gnav_ephemeris_map);
+                                                                }
+                                                            if (type_of_rx == 26)  //  GPS L1 C/A + GLONASS L1 C/A
+                                                                {
+                                                                    if (d_rinex_version == 3)
+                                                                        rp->log_rinex_nav(rp->navMixFile, d_ls_pvt->gps_ephemeris_map, d_ls_pvt->glonass_gnav_ephemeris_map);
+                                                                    if (d_rinex_version == 2)
+                                                                        {
+                                                                            rp->log_rinex_nav(rp->navFile, d_ls_pvt->gps_ephemeris_map);
+                                                                            rp->log_rinex_nav(rp->navGloFile, d_ls_pvt->glonass_gnav_ephemeris_map);
+                                                                        }
+                                                                }
+                                                            if (type_of_rx == 27)  //  Galileo E1B + GLONASS L1 C/A
+                                                                {
+                                                                    rp->log_rinex_nav(rp->navMixFile, d_ls_pvt->galileo_ephemeris_map, d_ls_pvt->glonass_gnav_ephemeris_map);
+                                                                }
+                                                            if (type_of_rx == 28)  //  GPS L2C + GLONASS L1 C/A
+                                                                {
+                                                                    rp->log_rinex_nav(rp->navMixFile, d_ls_pvt->gps_cnav_ephemeris_map, d_ls_pvt->glonass_gnav_ephemeris_map);
+                                                                }
+                                                            if (type_of_rx == 29)  //  GPS L1 C/A + GLONASS L2 C/A
+                                                                {
+                                                                    if (d_rinex_version == 3)
+                                                                        rp->log_rinex_nav(rp->navMixFile, d_ls_pvt->gps_ephemeris_map, d_ls_pvt->glonass_gnav_ephemeris_map);
+                                                                    if (d_rinex_version == 2)
+                                                                        {
+                                                                            rp->log_rinex_nav(rp->navFile, d_ls_pvt->gps_ephemeris_map);
+                                                                            rp->log_rinex_nav(rp->navGloFile, d_ls_pvt->glonass_gnav_ephemeris_map);
+                                                                        }
+                                                                }
+                                                            if (type_of_rx == 30)  //  Galileo E1B + GLONASS L2 C/A
+                                                                {
+                                                                    rp->log_rinex_nav(rp->navMixFile, d_ls_pvt->galileo_ephemeris_map, d_ls_pvt->glonass_gnav_ephemeris_map);
+                                                                }
+                                                            if (type_of_rx == 31)  //  GPS L2C + GLONASS L2 C/A
+                                                                {
+                                                                    rp->log_rinex_nav(rp->navMixFile, d_ls_pvt->gps_cnav_ephemeris_map, d_ls_pvt->glonass_gnav_ephemeris_map);
+                                                                }
+                                                        }
+                                                    galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.cbegin();
+                                                    gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.cbegin();
+                                                    gps_cnav_ephemeris_iter = d_ls_pvt->gps_cnav_ephemeris_map.cbegin();
+                                                    glonass_gnav_ephemeris_iter = d_ls_pvt->glonass_gnav_ephemeris_map.cbegin();
+
+                                                    // Log observables into the RINEX file
+                                                    if (flag_write_RINEX_obs_output)
+                                                        {
+                                                            if (type_of_rx == 1)  // GPS L1 C/A only
+                                                                {
+                                                                    if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
+                                                                        {
+                                                                            rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, d_rx_time, gnss_observables_map);
+                                                                        }
+                                                                    if (!b_rinex_header_updated and (d_ls_pvt->gps_utc_model.d_A0 != 0))
+                                                                        {
+                                                                            rp->update_obs_header(rp->obsFile, d_ls_pvt->gps_utc_model);
+                                                                            rp->update_nav_header(rp->navFile, d_ls_pvt->gps_utc_model, d_ls_pvt->gps_iono);
+                                                                            b_rinex_header_updated = true;
+                                                                        }
+                                                                }
+                                                            if (type_of_rx == 2)  // GPS L2C only
+                                                                {
+                                                                    if (gps_cnav_ephemeris_iter != d_ls_pvt->gps_cnav_ephemeris_map.end())
+                                                                        {
+                                                                            rp->log_rinex_obs(rp->obsFile, gps_cnav_ephemeris_iter->second, d_rx_time, gnss_observables_map);
+                                                                        }
+                                                                    if (!b_rinex_header_updated and (d_ls_pvt->gps_cnav_utc_model.d_A0 != 0))
+                                                                        {
+                                                                            rp->update_obs_header(rp->obsFile, d_ls_pvt->gps_cnav_utc_model);
+                                                                            rp->update_nav_header(rp->navFile, d_ls_pvt->gps_cnav_utc_model, d_ls_pvt->gps_cnav_iono);
+                                                                            b_rinex_header_updated = true;
+                                                                        }
+                                                                }
+                                                            if (type_of_rx == 3)  // GPS L5
+                                                                {
+                                                                    if (gps_cnav_ephemeris_iter != d_ls_pvt->gps_cnav_ephemeris_map.end())
+                                                                        {
+                                                                            rp->log_rinex_obs(rp->obsFile, gps_cnav_ephemeris_iter->second, d_rx_time, gnss_observables_map);
+                                                                        }
+                                                                    if (!b_rinex_header_updated and (d_ls_pvt->gps_cnav_utc_model.d_A0 != 0))
+                                                                        {
+                                                                            rp->update_obs_header(rp->obsFile, d_ls_pvt->gps_cnav_utc_model);
+                                                                            rp->update_nav_header(rp->navFile, d_ls_pvt->gps_cnav_utc_model, d_ls_pvt->gps_cnav_iono);
+                                                                            b_rinex_header_updated = true;
+                                                                        }
+                                                                }
+                                                            if (type_of_rx == 4)  // Galileo E1B only
+                                                                {
+                                                                    if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                                                        {
+                                                                            rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gnss_observables_map, "1B");
+                                                                        }
+                                                                    if (!b_rinex_header_updated and (d_ls_pvt->galileo_utc_model.A0_6 != 0))
+                                                                        {
+                                                                            rp->update_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
+                                                                            rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
+                                                                            b_rinex_header_updated = true;
+                                                                        }
+                                                                }
+                                                            if (type_of_rx == 5)  // Galileo E5a only
+                                                                {
+                                                                    if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                                                        {
+                                                                            rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gnss_observables_map, "5X");
+                                                                        }
+                                                                    if (!b_rinex_header_updated and (d_ls_pvt->galileo_utc_model.A0_6 != 0))
+                                                                        {
+                                                                            rp->update_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
+                                                                            rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
+                                                                            b_rinex_header_updated = true;
+                                                                        }
+                                                                }
+                                                            if (type_of_rx == 6)  // Galileo E5b only
+                                                                {
+                                                                    if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                                                        {
+                                                                            rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gnss_observables_map, "7X");
+                                                                        }
+                                                                    if (!b_rinex_header_updated and (d_ls_pvt->galileo_utc_model.A0_6 != 0))
+                                                                        {
+                                                                            rp->update_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
+                                                                            rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
+                                                                            b_rinex_header_updated = true;
+                                                                        }
+                                                                }
+                                                            if (type_of_rx == 7)  // GPS L1 C/A + GPS L2C
+                                                                {
+                                                                    if ((gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end()) and (gps_cnav_ephemeris_iter != d_ls_pvt->gps_cnav_ephemeris_map.end()))
+                                                                        {
+                                                                            rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, d_rx_time, gnss_observables_map);
+                                                                        }
+                                                                    if (!b_rinex_header_updated and (d_ls_pvt->gps_utc_model.d_A0 != 0))
+                                                                        {
+                                                                            rp->update_obs_header(rp->obsFile, d_ls_pvt->gps_utc_model);
+                                                                            rp->update_nav_header(rp->navFile, d_ls_pvt->gps_utc_model, d_ls_pvt->gps_iono);
+                                                                            b_rinex_header_updated = true;
+                                                                        }
+                                                                }
+                                                            if (type_of_rx == 9)  // GPS L1 C/A + Galileo E1B
+                                                                {
+                                                                    if ((galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end()) and (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end()))
+                                                                        {
+                                                                            rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, d_rx_time, gnss_observables_map);
+                                                                        }
+                                                                    if (!b_rinex_header_updated and (d_ls_pvt->gps_utc_model.d_A0 != 0))
+                                                                        {
+                                                                            rp->update_obs_header(rp->obsFile, d_ls_pvt->gps_utc_model);
+                                                                            rp->update_nav_header(rp->navMixFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
+                                                                            b_rinex_header_updated = true;
+                                                                        }
+                                                                }
+                                                            if (type_of_rx == 14)  // Galileo E1B + Galileo E5a
+                                                                {
+                                                                    if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                                                        {
+                                                                            rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gnss_observables_map, "1B 5X");
+                                                                        }
+                                                                    if (!b_rinex_header_updated and (d_ls_pvt->galileo_utc_model.A0_6 != 0))
+                                                                        {
+                                                                            rp->update_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
+                                                                            rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
+                                                                            b_rinex_header_updated = true;
+                                                                        }
+                                                                }
+                                                            if (type_of_rx == 15)  // Galileo E1B + Galileo E5b
+                                                                {
+                                                                    if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                                                        {
+                                                                            rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gnss_observables_map, "1B 7X");
+                                                                        }
+                                                                    if (!b_rinex_header_updated and (d_ls_pvt->galileo_utc_model.A0_6 != 0))
+                                                                        {
+                                                                            rp->update_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
+                                                                            rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
+                                                                            b_rinex_header_updated = true;
+                                                                        }
+                                                                }
+                                                            if (type_of_rx == 23)  // GLONASS L1 C/A only
+                                                                {
+                                                                    if (glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.end())
+                                                                        {
+                                                                            rp->log_rinex_obs(rp->obsFile, glonass_gnav_ephemeris_iter->second, d_rx_time, gnss_observables_map, "1C");
+                                                                        }
+                                                                    if (!b_rinex_header_updated and (d_ls_pvt->glonass_gnav_utc_model.d_tau_c != 0))
+                                                                        {
+                                                                            rp->update_nav_header(rp->navGloFile, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
+                                                                            rp->update_obs_header(rp->obsFile, d_ls_pvt->glonass_gnav_utc_model);
+                                                                            b_rinex_header_updated = true;
+                                                                        }
+                                                                }
+                                                            if (type_of_rx == 24)  // GLONASS L2 C/A only
+                                                                {
+                                                                    if (glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.end())
+                                                                        {
+                                                                            rp->log_rinex_obs(rp->obsFile, glonass_gnav_ephemeris_iter->second, d_rx_time, gnss_observables_map, "2C");
+                                                                        }
+                                                                    if (!b_rinex_header_updated and (d_ls_pvt->glonass_gnav_utc_model.d_tau_c != 0))
+                                                                        {
+                                                                            rp->update_nav_header(rp->navGloFile, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
+                                                                            rp->update_obs_header(rp->obsFile, d_ls_pvt->glonass_gnav_utc_model);
+                                                                            b_rinex_header_updated = true;
+                                                                        }
+                                                                }
+                                                            if (type_of_rx == 25)  // GLONASS L1 C/A + GLONASS L2 C/A
+                                                                {
+                                                                    if (glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.end())
+                                                                        {
+                                                                            rp->log_rinex_obs(rp->obsFile, glonass_gnav_ephemeris_iter->second, d_rx_time, gnss_observables_map, "1C 2C");
+                                                                        }
+                                                                    if (!b_rinex_header_updated and (d_ls_pvt->glonass_gnav_utc_model.d_tau_c != 0))
+                                                                        {
+                                                                            rp->update_nav_header(rp->navMixFile, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
+                                                                            rp->update_obs_header(rp->obsFile, d_ls_pvt->glonass_gnav_utc_model);
+                                                                            b_rinex_header_updated = true;
+                                                                        }
+                                                                }
+                                                            if (type_of_rx == 26)  // GPS L1 C/A + GLONASS L1 C/A
+                                                                {
+                                                                    if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.end()) and (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end()))
+                                                                        {
+                                                                            rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, gnss_observables_map);
+                                                                        }
+                                                                    if (!b_rinex_header_updated and (d_ls_pvt->gps_utc_model.d_A0 != 0))
+                                                                        {
+                                                                            rp->update_obs_header(rp->obsFile, d_ls_pvt->gps_utc_model);
+                                                                            rp->update_nav_header(rp->navMixFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
+                                                                            b_rinex_header_updated = true;  // do not write header anymore
+                                                                        }
+                                                                }
+                                                            if (type_of_rx == 27)  // Galileo E1B + GLONASS L1 C/A
+                                                                {
+                                                                    if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.end()) and (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end()))
+                                                                        {
+                                                                            rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, gnss_observables_map);
+                                                                        }
+                                                                    if (!b_rinex_header_updated and (d_ls_pvt->galileo_utc_model.A0_6 != 0))
+                                                                        {
+                                                                            rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
+                                                                            rp->update_nav_header(rp->navMixFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
+                                                                            b_rinex_header_updated = true;  // do not write header anymore
+                                                                        }
+                                                                }
+                                                            if (type_of_rx == 28)  // GPS L2C + GLONASS L1 C/A
+                                                                {
+                                                                    if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.end()) and (gps_cnav_ephemeris_iter != d_ls_pvt->gps_cnav_ephemeris_map.end()))
+                                                                        {
+                                                                            rp->log_rinex_obs(rp->obsFile, gps_cnav_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, gnss_observables_map);
+                                                                        }
+                                                                    if (!b_rinex_header_updated and (d_ls_pvt->gps_cnav_utc_model.d_A0 != 0))
+                                                                        {
+                                                                            rp->update_obs_header(rp->obsFile, d_ls_pvt->gps_cnav_utc_model);
+                                                                            rp->update_nav_header(rp->navMixFile, d_ls_pvt->gps_cnav_iono, d_ls_pvt->gps_cnav_utc_model, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
+                                                                            b_rinex_header_updated = true;  // do not write header anymore
+                                                                        }
+                                                                }
+                                                            if (type_of_rx == 29)  // GPS L1 C/A + GLONASS L2 C/A
+                                                                {
+                                                                    if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.end()) && (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end()))
+                                                                        {
+                                                                            rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, gnss_observables_map);
+                                                                        }
+                                                                    if (!b_rinex_header_updated && (d_ls_pvt->gps_utc_model.d_A0 != 0))
+                                                                        {
+                                                                            rp->update_obs_header(rp->obsFile, d_ls_pvt->gps_utc_model);
+                                                                            rp->update_nav_header(rp->navMixFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
+                                                                            b_rinex_header_updated = true;  // do not write header anymore
+                                                                        }
+                                                                }
+                                                            if (type_of_rx == 30)  // Galileo E1B + GLONASS L2 C/A
+                                                                {
+                                                                    if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.end()) && (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end()))
+                                                                        {
+                                                                            rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, gnss_observables_map);
+                                                                        }
+                                                                    if (!b_rinex_header_updated && (d_ls_pvt->galileo_utc_model.A0_6 != 0))
+                                                                        {
+                                                                            rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
+                                                                            rp->update_nav_header(rp->navMixFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
+                                                                            b_rinex_header_updated = true;  // do not write header anymore
+                                                                        }
+                                                                }
+                                                            if (type_of_rx == 31)  // GPS L2C + GLONASS L2 C/A
+                                                                {
+                                                                    if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.end()) && (gps_cnav_ephemeris_iter != d_ls_pvt->gps_cnav_ephemeris_map.end()))
+                                                                        {
+                                                                            rp->log_rinex_obs(rp->obsFile, gps_cnav_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, gnss_observables_map);
+                                                                        }
+                                                                    if (!b_rinex_header_updated && (d_ls_pvt->gps_cnav_utc_model.d_A0 != 0))
+                                                                        {
+                                                                            rp->update_obs_header(rp->obsFile, d_ls_pvt->gps_cnav_utc_model);
+                                                                            rp->update_nav_header(rp->navMixFile, d_ls_pvt->gps_cnav_iono, d_ls_pvt->gps_cnav_utc_model, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
+                                                                            b_rinex_header_updated = true;  // do not write header anymore
+                                                                        }
                                                                 }
                                                         }
                                                 }
                                         }
-
                                     // ####################### RTCM MESSAGES #################
                                     try
                                         {

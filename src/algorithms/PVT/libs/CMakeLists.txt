@@ -29,6 +29,7 @@ set(PVT_LIB_SOURCES
      rtcm_printer.cc
      geojson_printer.cc
      rtklib_solver.cc
+     pvt_conf.cc
 )
 
 set(PVT_LIB_HEADERS 
@@ -42,6 +43,7 @@ set(PVT_LIB_HEADERS
      rtcm_printer.h
      geojson_printer.h
      rtklib_solver.h
+     pvt_conf.h
 )
 
 

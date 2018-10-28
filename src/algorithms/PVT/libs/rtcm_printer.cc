@@ -135,6 +135,10 @@ Rtcm_Printer::Rtcm_Printer(std::string filename, bool flag_rtcm_file_dump, bool 
                 {
                     DLOG(INFO) << "RTCM printer writing on " << rtcm_filename.c_str();
                 }
+            else
+                {
+                    std::cout << "File " << rtcm_filename << "cannot be saved. Wrong permissions?" << std::endl;
+                }
         }
 
     rtcm_devname = rtcm_dump_devname;

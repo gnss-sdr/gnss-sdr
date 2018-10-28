@@ -97,6 +97,13 @@ Rinex_Printer::Rinex_Printer(int32_t conf_version, const std::string& base_path)
     Rinex_Printer::navMixFile.open(navMixfilename, std::ios::out | std::ios::in | std::ios::app);
     Rinex_Printer::navGloFile.open(navGlofilename, std::ios::out | std::ios::in | std::ios::app);
 
+    if (!Rinex_Printer::navFile.is_open() or !Rinex_Printer::obsFile.is_open() or
+        !Rinex_Printer::sbsFile.is_open() or !Rinex_Printer::navGalFile.is_open() or
+        !Rinex_Printer::navMixFile.is_open() or !Rinex_Printer::navGloFile.is_open())
+        {
+            std::cout << "RINEX files cannot be saved. Wrong permissions?" << std::endl;
+        }
+
     // RINEX v3.02 codes
     satelliteSystem["GPS"] = "G";
     satelliteSystem["GLONASS"] = "R";

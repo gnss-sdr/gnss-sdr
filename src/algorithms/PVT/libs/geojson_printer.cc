@@ -159,6 +159,7 @@ bool GeoJSON_Printer::set_headers(std::string filename, bool time_tag_name)
         }
     else
         {
+            std::cout << "File " << filename_ << " cannot be saved. Wrong permissions?" << std::endl;
             return false;
         }
 }

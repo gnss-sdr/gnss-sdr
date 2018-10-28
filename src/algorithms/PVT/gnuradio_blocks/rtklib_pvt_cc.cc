@@ -594,16 +594,16 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                 }
 
             // Save GPS CNAV iono parameters
-            file_name = xml_base_path + "gps_iono.xml";
-            if (d_ls_pvt->gps_iono.valid == true)
+            file_name = xml_base_path + "gps_cnav_iono.xml";
+            if (d_ls_pvt->gps_cnav_iono.valid == true)
                 {
                     std::ofstream ofs;
                     try
                         {
                             ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
                             boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_iono_model", d_ls_pvt->gps_iono);
-                            LOG(INFO) << "Saved GPS ionospheric model parameters";
+                            xml << boost::serialization::make_nvp("GNSS-SDR_cnav_iono_model", d_ls_pvt->gps_cnav_iono);
+                            LOG(INFO) << "Saved GPS CNAV ionospheric model parameters";
                         }
                     catch (std::exception& e)
                         {
@@ -612,9 +612,8 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                 }
             else
                 {
-                    LOG(INFO) << "Failed to save GPS ionospheric model parameters, not valid data";
+                    LOG(INFO) << "Failed to save GPS CNAV ionospheric model parameters, not valid data";
                 }
-
 
             // Save Galileo iono parameters
             file_name = xml_base_path + "gal_iono.xml";

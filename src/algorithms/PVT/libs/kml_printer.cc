@@ -161,6 +161,7 @@ bool Kml_Printer::set_headers(std::string filename, bool time_tag_name)
         }
     else
         {
+            std::cout << "File " << kml_filename << " cannot be saved. Wrong permissions?" << std::endl;
             return false;
         }
 }

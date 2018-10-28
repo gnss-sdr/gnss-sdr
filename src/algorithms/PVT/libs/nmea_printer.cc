@@ -92,6 +92,10 @@ Nmea_Printer::Nmea_Printer(std::string filename, bool flag_nmea_output_file, boo
                 {
                     DLOG(INFO) << "NMEA printer writing on " << nmea_filename.c_str();
                 }
+            else
+                {
+                    std::cout << "File " << nmea_filename << " cannot be saved. Wrong permissions?" << std::endl;
+                }
         }
 
     nmea_devname = nmea_dump_devname;

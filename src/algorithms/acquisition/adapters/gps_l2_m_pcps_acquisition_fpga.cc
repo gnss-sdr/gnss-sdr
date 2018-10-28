@@ -43,6 +43,10 @@
 
 using google::LogMessage;
 
+void GpsL2MPcpsAcquisitionFpga::stop_acquisition()
+{
+}
+
 GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
@@ -93,7 +97,7 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     std::string default_device_name = "/dev/uio0";
     std::string device_name = configuration_->property(role + ".devicename", default_device_name);
     acq_parameters.device_name = device_name;
-    acq_parameters.samples_per_ms = nsamples_total/acq_parameters.sampled_ms;
+    acq_parameters.samples_per_ms = nsamples_total / acq_parameters.sampled_ms;
     //acq_parameters.samples_per_ms = static_cast<int>(std::round(static_cast<double>(fs_in_) * 0.001));
     acq_parameters.samples_per_code = nsamples_total;
 
@@ -111,10 +115,10 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
             // fill in zero padding
             for (int s = code_length; s < nsamples_total; s++)
                 {
-                    code[s] = std::complex<float>(static_cast<float>(0,0));
+                    code[s] = std::complex<float>(static_cast<float>(0, 0));
                     //code[s] = 0;
                 }
-            memcpy(fft_if->get_inbuf(), code, sizeof(gr_complex) * nsamples_total);   // copy to FFT buffer
+            memcpy(fft_if->get_inbuf(), code, sizeof(gr_complex) * nsamples_total);            // copy to FFT buffer
             fft_if->execute();                                                                 // Run the FFT of local code
             volk_32fc_conjugate_32fc(fft_codes_padded, fft_if->get_outbuf(), nsamples_total);  // conjugate values
             max = 0;                                                                           // initialize maximum value
@@ -134,7 +138,6 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
                     d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 7) - 1) / max)),
                         static_cast<int>(floor(fft_codes_padded[i].imag() * (pow(2, 7) - 1) / max)));
                 }
-
         }
 
     //acq_parameters
@@ -153,26 +156,23 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     gnss_synchro_ = 0;
 
 
+    //    vector_length_ = code_length_;
+    //
+    //    if (bit_transition_flag_)
+    //        {
+    //            vector_length_ *= 2;
+    //        }
 
-
-
-//    vector_length_ = code_length_;
-//
-//    if (bit_transition_flag_)
-//        {
-//            vector_length_ *= 2;
-//        }
-
-//    code_ = new gr_complex[vector_length_];
-//
-//    if (item_type_.compare("cshort") == 0)
-//        {
-//            item_size_ = sizeof(lv_16sc_t);
-//        }
-//    else
-//        {
-//            item_size_ = sizeof(gr_complex);
-//        }
+    //    code_ = new gr_complex[vector_length_];
+    //
+    //    if (item_type_.compare("cshort") == 0)
+    //        {
+    //            item_size_ = sizeof(lv_16sc_t);
+    //        }
+    //    else
+    //        {
+    //            item_size_ = sizeof(gr_complex);
+    //        }
     //acq_parameters.samples_per_ms = static_cast<int>(std::round(static_cast<double>(fs_in_) * 0.001));
     //acq_parameters.samples_per_code = code_length_;
     //acq_parameters.it_size = item_size_;
@@ -183,19 +183,19 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     //acquisition_ = pcps_make_acquisition(acq_parameters);
     DLOG(INFO) << "acquisition(" << acquisition_fpga_->unique_id() << ")";
 
-//    stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
-//    DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id() << ")";
-//
-//    if (item_type_.compare("cbyte") == 0)
-//        {
-//            cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
-//            float_to_complex_ = gr::blocks::float_to_complex::make();
-//        }
+    //    stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
+    //    DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id() << ")";
+    //
+    //    if (item_type_.compare("cbyte") == 0)
+    //        {
+    //            cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
+    //            float_to_complex_ = gr::blocks::float_to_complex::make();
+    //        }
 
-//    channel_ = 0;
+    //    channel_ = 0;
     threshold_ = 0.0;
-//    doppler_step_ = 0;
-//    gnss_synchro_ = 0;
+    //    doppler_step_ = 0;
+    //    gnss_synchro_ = 0;
 }
 
 
@@ -215,20 +215,20 @@ void GpsL2MPcpsAcquisitionFpga::set_channel(unsigned int channel)
 
 void GpsL2MPcpsAcquisitionFpga::set_threshold(float threshold)
 {
-//    float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
-//
-//    if (pfa == 0.0)
-//        {
-//            pfa = configuration_->property(role_ + ".pfa", 0.0);
-//        }
-//    if (pfa == 0.0)
-//        {
-//            threshold_ = threshold;
-//        }
-//    else
-//        {
-//            threshold_ = calculate_threshold(pfa);
-//        }
+    //    float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
+    //
+    //    if (pfa == 0.0)
+    //        {
+    //            pfa = configuration_->property(role_ + ".pfa", 0.0);
+    //        }
+    //    if (pfa == 0.0)
+    //        {
+    //            threshold_ = threshold;
+    //        }
+    //    else
+    //        {
+    //            threshold_ = calculate_threshold(pfa);
+    //        }
 
     DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold_;
 
@@ -317,25 +317,25 @@ void GpsL2MPcpsAcquisitionFpga::set_state(int state)
 
 void GpsL2MPcpsAcquisitionFpga::connect(gr::top_block_sptr top_block)
 {
-//    if (item_type_.compare("gr_complex") == 0)
-//        {
-//            top_block->connect(stream_to_vector_, 0, acquisition_, 0);
-//        }
-//    else if (item_type_.compare("cshort") == 0)
-//        {
-//            top_block->connect(stream_to_vector_, 0, acquisition_, 0);
-//        }
-//    else if (item_type_.compare("cbyte") == 0)
-//        {
-//            top_block->connect(cbyte_to_float_x2_, 0, float_to_complex_, 0);
-//            top_block->connect(cbyte_to_float_x2_, 1, float_to_complex_, 1);
-//            top_block->connect(float_to_complex_, 0, stream_to_vector_, 0);
-//            top_block->connect(stream_to_vector_, 0, acquisition_, 0);
-//        }
-//    else
-//        {
-//            LOG(WARNING) << item_type_ << " unknown acquisition item type";
-//        }
+    //    if (item_type_.compare("gr_complex") == 0)
+    //        {
+    //            top_block->connect(stream_to_vector_, 0, acquisition_, 0);
+    //        }
+    //    else if (item_type_.compare("cshort") == 0)
+    //        {
+    //            top_block->connect(stream_to_vector_, 0, acquisition_, 0);
+    //        }
+    //    else if (item_type_.compare("cbyte") == 0)
+    //        {
+    //            top_block->connect(cbyte_to_float_x2_, 0, float_to_complex_, 0);
+    //            top_block->connect(cbyte_to_float_x2_, 1, float_to_complex_, 1);
+    //            top_block->connect(float_to_complex_, 0, stream_to_vector_, 0);
+    //            top_block->connect(stream_to_vector_, 0, acquisition_, 0);
+    //        }
+    //    else
+    //        {
+    //            LOG(WARNING) << item_type_ << " unknown acquisition item type";
+    //        }
 
     // nothing to connect
 }
@@ -343,27 +343,27 @@ void GpsL2MPcpsAcquisitionFpga::connect(gr::top_block_sptr top_block)
 
 void GpsL2MPcpsAcquisitionFpga::disconnect(gr::top_block_sptr top_block)
 {
-//    if (item_type_.compare("gr_complex") == 0)
-//        {
-//            top_block->disconnect(stream_to_vector_, 0, acquisition_, 0);
-//        }
-//    else if (item_type_.compare("cshort") == 0)
-//        {
-//            top_block->disconnect(stream_to_vector_, 0, acquisition_, 0);
-//        }
-//    else if (item_type_.compare("cbyte") == 0)
-//        {
-//            // Since a byte-based acq implementation is not available,
-//            // we just convert cshorts to gr_complex
-//            top_block->disconnect(cbyte_to_float_x2_, 0, float_to_complex_, 0);
-//            top_block->disconnect(cbyte_to_float_x2_, 1, float_to_complex_, 1);
-//            top_block->disconnect(float_to_complex_, 0, stream_to_vector_, 0);
-//            top_block->disconnect(stream_to_vector_, 0, acquisition_, 0);
-//        }
-//    else
-//        {
-//            LOG(WARNING) << item_type_ << " unknown acquisition item type";
-//        }
+    //    if (item_type_.compare("gr_complex") == 0)
+    //        {
+    //            top_block->disconnect(stream_to_vector_, 0, acquisition_, 0);
+    //        }
+    //    else if (item_type_.compare("cshort") == 0)
+    //        {
+    //            top_block->disconnect(stream_to_vector_, 0, acquisition_, 0);
+    //        }
+    //    else if (item_type_.compare("cbyte") == 0)
+    //        {
+    //            // Since a byte-based acq implementation is not available,
+    //            // we just convert cshorts to gr_complex
+    //            top_block->disconnect(cbyte_to_float_x2_, 0, float_to_complex_, 0);
+    //            top_block->disconnect(cbyte_to_float_x2_, 1, float_to_complex_, 1);
+    //            top_block->disconnect(float_to_complex_, 0, stream_to_vector_, 0);
+    //            top_block->disconnect(stream_to_vector_, 0, acquisition_, 0);
+    //        }
+    //    else
+    //        {
+    //            LOG(WARNING) << item_type_ << " unknown acquisition item type";
+    //        }
 
     // nothing to disconnect
 }
@@ -371,23 +371,23 @@ void GpsL2MPcpsAcquisitionFpga::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr GpsL2MPcpsAcquisitionFpga::get_left_block()
 {
-//    if (item_type_.compare("gr_complex") == 0)
-//        {
-//            return stream_to_vector_;
-//        }
-//    else if (item_type_.compare("cshort") == 0)
-//        {
-//            return stream_to_vector_;
-//        }
-//    else if (item_type_.compare("cbyte") == 0)
-//        {
-//            return cbyte_to_float_x2_;
-//        }
-//    else
-//        {
-//            LOG(WARNING) << item_type_ << " unknown acquisition item type";
-//            return nullptr;
-//        }
+    //    if (item_type_.compare("gr_complex") == 0)
+    //        {
+    //            return stream_to_vector_;
+    //        }
+    //    else if (item_type_.compare("cshort") == 0)
+    //        {
+    //            return stream_to_vector_;
+    //        }
+    //    else if (item_type_.compare("cbyte") == 0)
+    //        {
+    //            return cbyte_to_float_x2_;
+    //        }
+    //    else
+    //        {
+    //            LOG(WARNING) << item_type_ << " unknown acquisition item type";
+    //            return nullptr;
+    //        }
     return nullptr;
 }
 

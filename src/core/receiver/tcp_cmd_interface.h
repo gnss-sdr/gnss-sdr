@@ -58,8 +58,8 @@ private:
         functions;
     std::string status(const std::vector<std::string> &commandLine);
     std::string reset(const std::vector<std::string> &commandLine);
-    std::string stop(const std::vector<std::string> &commandLine);
-    std::string assistedstart(const std::vector<std::string> &commandLine);
+    std::string standby(const std::vector<std::string> &commandLine);
+    std::string hotstart(const std::vector<std::string> &commandLine);
     std::string warmstart(const std::vector<std::string> &commandLine);
     std::string coldstart(const std::vector<std::string> &commandLine);
     std::string set_ch_satellite(const std::vector<std::string> &commandLine);

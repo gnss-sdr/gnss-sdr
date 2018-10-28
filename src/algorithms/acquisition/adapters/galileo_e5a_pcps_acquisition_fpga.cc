@@ -39,15 +39,16 @@
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
 
 
-
-
-
 using google::LogMessage;
+
+void GalileoE5aPcpsAcquisitionFpga::stop_acquisition()
+{
+}
 
 GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterface* configuration,
     std::string role, unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
-	//printf("creating the E5A acquisition");
+    //printf("creating the E5A acquisition");
     pcpsconf_fpga_t acq_parameters;
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
@@ -100,7 +101,7 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     std::string default_device_name = "/dev/uio0";
     std::string device_name = configuration_->property(role + ".devicename", default_device_name);
     acq_parameters.device_name = device_name;
-    acq_parameters.samples_per_ms = nsamples_total/sampled_ms;
+    acq_parameters.samples_per_ms = nsamples_total / sampled_ms;
     acq_parameters.samples_per_code = nsamples_total;
 
     //vector_length_ = code_length_ * sampled_ms_;
@@ -108,10 +109,10 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     // compute all the GALILEO E5 PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
     gr::fft::fft_complex* fft_if = new gr::fft::fft_complex(nsamples_total, true);  // Direct FFT
-    std::complex<float>* code = new std::complex<float>[nsamples_total];  // buffer for the local code
+    std::complex<float>* code = new std::complex<float>[nsamples_total];            // buffer for the local code
     gr_complex* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     d_all_fft_codes_ = new lv_16sc_t[nsamples_total * Galileo_E5a_NUMBER_OF_CODES];  // memory containing all the possible fft codes for PRN 0 to 32
-    float max;                                                        // temporary maxima search
+    float max;                                                                       // temporary maxima search
 
     //printf("creating the E5A acquisition CONT");
     //printf("nsamples_total = %d\n", nsamples_total);
@@ -140,16 +141,16 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
             // fill in zero padding
             for (int s = code_length; s < nsamples_total; s++)
                 {
-                    code[s] = std::complex<float>(static_cast<float>(0,0));
+                    code[s] = std::complex<float>(static_cast<float>(0, 0));
                     //code[s] = 0;
                 }
 
-            memcpy(fft_if->get_inbuf(), code, sizeof(gr_complex) * nsamples_total);   // copy to FFT buffer
+            memcpy(fft_if->get_inbuf(), code, sizeof(gr_complex) * nsamples_total);            // copy to FFT buffer
             fft_if->execute();                                                                 // Run the FFT of local code
             volk_32fc_conjugate_32fc(fft_codes_padded, fft_if->get_outbuf(), nsamples_total);  // conjugate values
 
-            max = 0;                                                                           // initialize maximum value
-            for (unsigned int i = 0; i < nsamples_total; i++)                                  // search for maxima
+            max = 0;                                           // initialize maximum value
+            for (unsigned int i = 0; i < nsamples_total; i++)  // search for maxima
                 {
                     if (std::abs(fft_codes_padded[i].real()) > max)
                         {
@@ -165,7 +166,6 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
                     d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 15) - 1) / max)),
                         static_cast<int>(floor(fft_codes_padded[i].imag() * (pow(2, 15) - 1) / max)));
                 }
-
         }
 
 
@@ -178,19 +178,19 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
 
     //code_ = new gr_complex[vector_length_];
 
-//    if (item_type_.compare("gr_complex") == 0)
-//        {
-//            item_size_ = sizeof(gr_complex);
-//        }
-//    else if (item_type_.compare("cshort") == 0)
-//        {
-//            item_size_ = sizeof(lv_16sc_t);
-//        }
-//    else
-//        {
-//            item_size_ = sizeof(gr_complex);
-//            LOG(WARNING) << item_type_ << " unknown acquisition item type";
-//        }
+    //    if (item_type_.compare("gr_complex") == 0)
+    //        {
+    //            item_size_ = sizeof(gr_complex);
+    //        }
+    //    else if (item_type_.compare("cshort") == 0)
+    //        {
+    //            item_size_ = sizeof(lv_16sc_t);
+    //        }
+    //    else
+    //        {
+    //            item_size_ = sizeof(gr_complex);
+    //            LOG(WARNING) << item_type_ << " unknown acquisition item type";
+    //        }
     //acq_parameters.it_size = item_size_;
     //acq_parameters.samples_per_code = code_length_;
     //acq_parameters.samples_per_ms = code_length_;
@@ -231,22 +231,22 @@ void GalileoE5aPcpsAcquisitionFpga::set_channel(unsigned int channel)
 
 void GalileoE5aPcpsAcquisitionFpga::set_threshold(float threshold)
 {
-//    float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
-//
-//    if (pfa == 0.0)
-//        {
-//            pfa = configuration_->property(role_ + ".pfa", 0.0);
-//        }
-//
-//    if (pfa == 0.0)
-//        {
-//            threshold_ = threshold;
-//        }
-//
-//    else
-//        {
-//            threshold_ = calculate_threshold(pfa);
-//        }
+    //    float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
+    //
+    //    if (pfa == 0.0)
+    //        {
+    //            pfa = configuration_->property(role_ + ".pfa", 0.0);
+    //        }
+    //
+    //    if (pfa == 0.0)
+    //        {
+    //            threshold_ = threshold;
+    //        }
+    //
+    //    else
+    //        {
+    //            threshold_ = calculate_threshold(pfa);
+    //        }
 
     DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold;
 
@@ -295,32 +295,32 @@ void GalileoE5aPcpsAcquisitionFpga::init()
 
 void GalileoE5aPcpsAcquisitionFpga::set_local_code()
 {
-//    gr_complex* code = new gr_complex[code_length_];
-//    char signal_[3];
-//
-//    if (acq_iq_)
-//        {
-//            strcpy(signal_, "5X");
-//        }
-//    else if (acq_pilot_)
-//        {
-//            strcpy(signal_, "5Q");
-//        }
-//    else
-//        {
-//            strcpy(signal_, "5I");
-//        }
-//
-//    galileo_e5_a_code_gen_complex_sampled(code, signal_, gnss_synchro_->PRN, fs_in_, 0);
-//
-//    for (unsigned int i = 0; i < sampled_ms_; i++)
-//        {
-//            memcpy(code_ + (i * code_length_), code, sizeof(gr_complex) * code_length_);
-//        }
+    //    gr_complex* code = new gr_complex[code_length_];
+    //    char signal_[3];
+    //
+    //    if (acq_iq_)
+    //        {
+    //            strcpy(signal_, "5X");
+    //        }
+    //    else if (acq_pilot_)
+    //        {
+    //            strcpy(signal_, "5Q");
+    //        }
+    //    else
+    //        {
+    //            strcpy(signal_, "5I");
+    //        }
+    //
+    //    galileo_e5_a_code_gen_complex_sampled(code, signal_, gnss_synchro_->PRN, fs_in_, 0);
+    //
+    //    for (unsigned int i = 0; i < sampled_ms_; i++)
+    //        {
+    //            memcpy(code_ + (i * code_length_), code, sizeof(gr_complex) * code_length_);
+    //        }
 
     //acquisition_->set_local_code(code_);
     acquisition_fpga_->set_local_code();
-//    delete[] code;
+    //    delete[] code;
 }
 
 
@@ -359,35 +359,35 @@ void GalileoE5aPcpsAcquisitionFpga::set_state(int state)
 
 void GalileoE5aPcpsAcquisitionFpga::connect(gr::top_block_sptr top_block)
 {
-//    if (item_type_.compare("gr_complex") == 0)
-//        {
-//            top_block->connect(stream_to_vector_, 0, acquisition_, 0);
-//        }
-//    else if (item_type_.compare("cshort") == 0)
-//        {
-//            top_block->connect(stream_to_vector_, 0, acquisition_, 0);
-//        }
-//    else
-//        {
-//            LOG(WARNING) << item_type_ << " unknown acquisition item type";
-//        }
+    //    if (item_type_.compare("gr_complex") == 0)
+    //        {
+    //            top_block->connect(stream_to_vector_, 0, acquisition_, 0);
+    //        }
+    //    else if (item_type_.compare("cshort") == 0)
+    //        {
+    //            top_block->connect(stream_to_vector_, 0, acquisition_, 0);
+    //        }
+    //    else
+    //        {
+    //            LOG(WARNING) << item_type_ << " unknown acquisition item type";
+    //        }
 }
 
 
 void GalileoE5aPcpsAcquisitionFpga::disconnect(gr::top_block_sptr top_block)
 {
-//    if (item_type_.compare("gr_complex") == 0)
-//        {
-//            top_block->disconnect(stream_to_vector_, 0, acquisition_, 0);
-//        }
-//    else if (item_type_.compare("cshort") == 0)
-//        {
-//            top_block->disconnect(stream_to_vector_, 0, acquisition_, 0);
-//        }
-//    else
-//        {
-//            LOG(WARNING) << item_type_ << " unknown acquisition item type";
-//        }
+    //    if (item_type_.compare("gr_complex") == 0)
+    //        {
+    //            top_block->disconnect(stream_to_vector_, 0, acquisition_, 0);
+    //        }
+    //    else if (item_type_.compare("cshort") == 0)
+    //        {
+    //            top_block->disconnect(stream_to_vector_, 0, acquisition_, 0);
+    //        }
+    //    else
+    //        {
+    //            LOG(WARNING) << item_type_ << " unknown acquisition item type";
+    //        }
 }
 
 

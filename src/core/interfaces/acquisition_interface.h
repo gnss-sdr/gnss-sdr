@@ -64,6 +64,7 @@ public:
     virtual void set_state(int state) = 0;
     virtual signed int mag() = 0;
     virtual void reset() = 0;
+    virtual void stop_acquisition() = 0;
 };
 
 #endif /* GNSS_SDR_ACQUISITION_INTERFACE */

@@ -45,6 +45,10 @@
 
 using google::LogMessage;
 
+void GpsL2MDllPllTracking::stop_tracking()
+{
+}
+
 GpsL2MDllPllTracking::GpsL2MDllPllTracking(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)

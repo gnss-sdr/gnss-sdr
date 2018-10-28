@@ -45,6 +45,10 @@
 
 using google::LogMessage;
 
+void GalileoE1DllPllVemlTracking::stop_tracking()
+{
+}
+
 GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)

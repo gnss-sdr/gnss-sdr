@@ -5,6 +5,7 @@
  *         Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *         Carles Fernandez-Prades, 2014. cfernandez(at)cttc.es
  *         Álvaro Cebrián Juan, 2018. acebrianjuan(at)gmail.com
+ *         Javier Arribas, 2018. javiarribas(at)gmail.com
  *
  * -------------------------------------------------------------------------
  *
@@ -811,21 +812,40 @@ bool GNSSFlowgraph::send_telemetry_msg(pmt::pmt_t msg)
 /*
  * Applies an action to the flow graph
  *
- * \param[in] who   Who generated the action
- * \param[in] what  What is the action 0: acquisition failed
+ * \param[in] who   Who generated the action:
+ *  -> 0-199 are the channels IDs
+ *  -> 200 is the control_thread dispatched by the control_thread apply_action
+ *  -> 300 is the telecommand system (TC) for receiver control
+ *  -> 400 - 599 is the TC channel control for channels 0-199
+ * \param[in] what  What is the action:
+ * --- actions from channels ---
+ * -> 0 acquisition failed
+ * -> 1 acquisition succesfull
+ * -> 2 tracking lost
+ * --- actions from TC receiver control ---
+ * -> 10 TC request standby mode
+ * -> 11 TC request coldstart
+ * -> 12 TC request hotstart
+ * -> 13 TC request warmstart
+ * --- actions from TC channel control ---
+ * -> 20 stop channel
+ * -> 21 start channel
  */
 void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
 {
     std::lock_guard<std::mutex> lock(signal_list_mutex);
     DLOG(INFO) << "Received " << what << " from " << who << ". Number of applied actions = " << applied_actions_;
     unsigned int sat = 0;
-    try
+    if (who < 200)
         {
-            sat = configuration_->property("Channel" + std::to_string(who) + ".satellite", 0);
-        }
-    catch (const std::exception& e)
-        {
-            LOG(WARNING) << e.what();
+            try
+                {
+                    sat = configuration_->property("Channel" + std::to_string(who) + ".satellite", 0);
+                }
+            catch (const std::exception& e)
+                {
+                    LOG(WARNING) << e.what();
+                }
         }
     switch (what)
         {
@@ -1026,7 +1046,162 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                         }
                 }
             break;
+        case 10:  //request stanby mode
+            LOG(INFO) << "TC request stanby mode";
+            for (size_t n = 0; n < channels_.size(); n++)
+                {
+                    if (channels_state_[n] == 1 or channels_state_[n] == 2)  //channel in acquisition or in tracking
+                        {
+                            //recover the satellite assigned
 
+                            Gnss_Signal gs = channels_[n]->get_signal();
+                            switch (mapStringValues_[gs.get_signal_str()])
+                                {
+                                case evGPS_1C:
+                                    available_GPS_1C_signals_.remove(gs);
+                                    available_GPS_1C_signals_.push_back(gs);
+                                    break;
+
+                                case evGPS_2S:
+                                    available_GPS_2S_signals_.remove(gs);
+                                    available_GPS_2S_signals_.push_back(gs);
+                                    break;
+
+                                case evGPS_L5:
+                                    available_GPS_L5_signals_.remove(gs);
+                                    available_GPS_L5_signals_.push_back(gs);
+                                    break;
+
+                                case evGAL_1B:
+                                    available_GAL_1B_signals_.remove(gs);
+                                    available_GAL_1B_signals_.push_back(gs);
+                                    break;
+
+                                case evGAL_5X:
+                                    available_GAL_5X_signals_.remove(gs);
+                                    available_GAL_5X_signals_.push_back(gs);
+                                    break;
+
+                                case evGLO_1G:
+                                    available_GLO_1G_signals_.remove(gs);
+                                    available_GLO_1G_signals_.push_back(gs);
+                                    break;
+
+                                case evGLO_2G:
+                                    available_GLO_2G_signals_.remove(gs);
+                                    available_GLO_2G_signals_.push_back(gs);
+                                    break;
+
+                                default:
+                                    LOG(ERROR) << "This should not happen :-(";
+                                    break;
+                                }
+                            channels_[n]->stop_channel();  //stop the acquisition or tracking operation
+                            channels_state_[n] = 0;
+                        }
+                }
+            acq_channels_count_ = 0;  //all channels are in stanby now
+            break;
+        case 11:  //request coldstart mode
+            LOG(INFO) << "TC request coldstart";
+            //todo: delete all ephemeris and almanac information from maps (also the PVT map queue)
+            //todo: reorder the satellite queues to the receiver default startup order.
+            //This is required to allow repeatability. Otherwise the satellite search order will depend on the last tracked satellites
+
+            //start again the satellite acquisitions
+            for (unsigned int i = 0; i < channels_count_; i++)
+                {
+                    unsigned int ch_index = (who + i + 1) % channels_count_;
+                    unsigned int sat_ = 0;
+                    try
+                        {
+                            sat_ = configuration_->property("Channel" + std::to_string(ch_index) + ".satellite", 0);
+                        }
+                    catch (const std::exception& e)
+                        {
+                            LOG(WARNING) << e.what();
+                        }
+                    if ((acq_channels_count_ < max_acq_channels_) && (channels_state_[ch_index] == 0))
+                        {
+                            channels_state_[ch_index] = 1;
+                            if (sat_ == 0)
+                                {
+                                    channels_[ch_index]->set_signal(search_next_signal(channels_[ch_index]->get_signal().get_signal_str(), true));
+                                }
+                            acq_channels_count_++;
+                            DLOG(INFO) << "Channel " << ch_index << " Starting acquisition " << channels_[ch_index]->get_signal().get_satellite() << ", Signal " << channels_[ch_index]->get_signal().get_signal_str();
+                            channels_[ch_index]->start_acquisition();
+                        }
+                    DLOG(INFO) << "Channel " << ch_index << " in state " << channels_state_[ch_index];
+                }
+            break;
+        case 12:  //request hotstart mode
+            LOG(INFO) << "TC request hotstart";
+            //todo: call here the function that computes the set of visible satellites and its elevation
+            //for the date and time specified by the hotstart command and the last available PVT
+            //todo: reorder the satellite queue to acquire first those visible satellites
+            //start again the satellite acquisitions
+            for (unsigned int i = 0; i < channels_count_; i++)
+                {
+                    unsigned int ch_index = (who + i + 1) % channels_count_;
+                    unsigned int sat_ = 0;
+                    try
+                        {
+                            sat_ = configuration_->property("Channel" + std::to_string(ch_index) + ".satellite", 0);
+                        }
+                    catch (const std::exception& e)
+                        {
+                            LOG(WARNING) << e.what();
+                        }
+                    if ((acq_channels_count_ < max_acq_channels_) && (channels_state_[ch_index] == 0))
+                        {
+                            channels_state_[ch_index] = 1;
+                            if (sat_ == 0)
+                                {
+                                    channels_[ch_index]->set_signal(search_next_signal(channels_[ch_index]->get_signal().get_signal_str(), true));
+                                }
+                            acq_channels_count_++;
+                            DLOG(INFO) << "Channel " << ch_index << " Starting acquisition " << channels_[ch_index]->get_signal().get_satellite() << ", Signal " << channels_[ch_index]->get_signal().get_signal_str();
+                            channels_[ch_index]->start_acquisition();
+                        }
+                    DLOG(INFO) << "Channel " << ch_index << " in state " << channels_state_[ch_index];
+                }
+            break;
+        case 13:  //request warmstart mode
+            LOG(INFO) << "TC request warmstart";
+            //todo: delete all ephemeris and almanac information from maps (also the PVT map queue)
+            //todo: load the ephemeris and the almanac from XML files (receiver assistance)
+            //todo: call here the function that computes the set of visible satellites and its elevation
+            //for the date and time specified by the warmstart command and the assisted position
+            //todo: reorder the satellite queue to acquire first those visible satellites
+
+            //start again the satellite acquisitions
+            for (unsigned int i = 0; i < channels_count_; i++)
+                {
+                    unsigned int ch_index = (who + i + 1) % channels_count_;
+                    unsigned int sat_ = 0;
+                    try
+                        {
+                            sat_ = configuration_->property("Channel" + std::to_string(ch_index) + ".satellite", 0);
+                        }
+                    catch (const std::exception& e)
+                        {
+                            LOG(WARNING) << e.what();
+                        }
+                    if ((acq_channels_count_ < max_acq_channels_) && (channels_state_[ch_index] == 0))
+                        {
+                            channels_state_[ch_index] = 1;
+                            if (sat_ == 0)
+                                {
+                                    channels_[ch_index]->set_signal(search_next_signal(channels_[ch_index]->get_signal().get_signal_str(), true));
+                                }
+                            acq_channels_count_++;
+                            DLOG(INFO) << "Channel " << ch_index << " Starting acquisition " << channels_[ch_index]->get_signal().get_satellite() << ", Signal " << channels_[ch_index]->get_signal().get_signal_str();
+                            channels_[ch_index]->start_acquisition();
+                        }
+                    DLOG(INFO) << "Channel " << ch_index << " in state " << channels_state_[ch_index];
+                }
+            break;
         default:
             break;
         }

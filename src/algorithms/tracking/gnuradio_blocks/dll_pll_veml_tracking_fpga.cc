@@ -1214,10 +1214,16 @@ void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
     d_acquisition_gnss_synchro = p_gnss_synchro;
 }
 
+void dll_pll_veml_tracking_fpga::stop_tracking()
+{
+    gr::thread::scoped_lock l(d_setlock);
+    d_state = 0;
+}
 
 int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
+    gr::thread::scoped_lock l(d_setlock);
     // Block input data and block output stream pointers
     Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
 

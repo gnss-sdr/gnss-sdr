@@ -1324,6 +1324,12 @@ void dll_pll_veml_tracking::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
 }
 
 
+void dll_pll_veml_tracking::stop_tracking()
+{
+    gr::thread::scoped_lock l(d_setlock);
+    d_state = 0;
+}
+
 int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items,
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {

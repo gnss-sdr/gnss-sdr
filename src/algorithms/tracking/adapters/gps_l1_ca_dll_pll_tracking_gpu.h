@@ -91,6 +91,11 @@ public:
 
     void start_tracking() override;
 
+    /*!
+     * \brief Stop running tracking
+     */
+    void stop_tracking() override;
+
 private:
     gps_l1_ca_dll_pll_tracking_gpu_cc_sptr tracking_;
     size_t item_size_;

@@ -42,6 +42,10 @@
 
 using google::LogMessage;
 
+void GlonassL2CaPcpsAcquisition::stop_acquisition()
+{
+}
+
 GlonassL2CaPcpsAcquisition::GlonassL2CaPcpsAcquisition(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)

@@ -51,31 +51,63 @@ std::string TcpCmdInterface::reset(const std::vector<std::string> &commandLine)
     return response;
 }
 
-std::string TcpCmdInterface::stop(const std::vector<std::string> &commandLine)
+std::string TcpCmdInterface::standby(const std::vector<std::string> &commandLine)
 {
     std::string response;
-    response = "Not implemented\n";
+    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
+    if (control_queue_ != nullptr)
+        {
+            control_queue_->handle(cmf->GetQueueMessage(300, 10));  //send the standby message (who=300,what=10)
+            response = "OK\n";
+        }
+    else
+        {
+            response = "ERROR\n";
+        }
     return response;
 }
 
 std::string TcpCmdInterface::status(const std::vector<std::string> &commandLine)
 {
     std::string response;
+    //todo: implement the receiver status report
     response = "Not implemented\n";
     return response;
 }
 
-std::string TcpCmdInterface::assistedstart(const std::vector<std::string> &commandLine)
+std::string TcpCmdInterface::hotstart(const std::vector<std::string> &commandLine)
 {
     std::string response;
-    response = "Not implemented\n";
+    //todo: read and parse the command line parameter: dd/mm/yyyy HH:MM:SS
+    //todo: store it in a member variable
+    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
+    if (control_queue_ != nullptr)
+        {
+            control_queue_->handle(cmf->GetQueueMessage(300, 12));  //send the standby message (who=300,what=12)
+            response = "OK\n";
+        }
+    else
+        {
+            response = "ERROR\n";
+        }
     return response;
 }
 
 std::string TcpCmdInterface::warmstart(const std::vector<std::string> &commandLine)
 {
     std::string response;
-    response = "Not implemented\n";
+    //todo: read and parse the command line parameter: dd/mm/yyyy HH:MM:SS
+    //todo: store it in a member variable
+    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
+    if (control_queue_ != nullptr)
+        {
+            control_queue_->handle(cmf->GetQueueMessage(300, 13));  //send the standby message (who=300,what=13)
+            response = "OK\n";
+        }
+    else
+        {
+            response = "ERROR\n";
+        }
     return response;
 }
 
@@ -83,13 +115,23 @@ std::string TcpCmdInterface::warmstart(const std::vector<std::string> &commandLi
 std::string TcpCmdInterface::coldstart(const std::vector<std::string> &commandLine)
 {
     std::string response;
-    response = "Not implemented\n";
+    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
+    if (control_queue_ != nullptr)
+        {
+            control_queue_->handle(cmf->GetQueueMessage(300, 11));  //send the standby message (who=300,what=11)
+            response = "OK\n";
+        }
+    else
+        {
+            response = "ERROR\n";
+        }
     return response;
 }
 
 std::string TcpCmdInterface::set_ch_satellite(const std::vector<std::string> &commandLine)
 {
     std::string response;
+    //todo: implement the set satellite command
     response = "Not implemented\n";
     return response;
 }
@@ -98,9 +140,9 @@ std::string TcpCmdInterface::set_ch_satellite(const std::vector<std::string> &co
 void TcpCmdInterface::register_functions()
 {
     functions["status"] = std::bind(&TcpCmdInterface::status, this, std::placeholders::_1);
-    functions["stop"] = std::bind(&TcpCmdInterface::stop, this, std::placeholders::_1);
+    functions["standby"] = std::bind(&TcpCmdInterface::standby, this, std::placeholders::_1);
     functions["reset"] = std::bind(&TcpCmdInterface::reset, this, std::placeholders::_1);
-    functions["assistedstart"] = std::bind(&TcpCmdInterface::assistedstart, this, std::placeholders::_1);
+    functions["hotstart"] = std::bind(&TcpCmdInterface::hotstart, this, std::placeholders::_1);
     functions["warmstart"] = std::bind(&TcpCmdInterface::warmstart, this, std::placeholders::_1);
     functions["coldstart"] = std::bind(&TcpCmdInterface::coldstart, this, std::placeholders::_1);
     functions["set_ch_satellite"] = std::bind(&TcpCmdInterface::set_ch_satellite, this, std::placeholders::_1);
@@ -168,6 +210,8 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
                                                     if (cmd_vector.at(0).compare("exit") == 0)
                                                         {
                                                             error = boost::asio::error::eof;
+                                                            //send cmd response
+                                                            socket.write_some(boost::asio::buffer("OK\n"), not_throw);
                                                         }
                                                     else
                                                         {

@@ -126,6 +126,11 @@ public:
      */
     void set_state(int state) override;
 
+    /*!
+     * \brief Stop running acquisition
+     */
+    void stop_acquisition() override;
+
 private:
     pcps_acquisition_fine_doppler_cc_sptr acquisition_cc_;
     size_t item_size_;

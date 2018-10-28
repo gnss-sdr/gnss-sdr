@@ -53,6 +53,7 @@ class ChannelInterface : public GNSSBlockInterface
 public:
     virtual Gnss_Signal get_signal() const = 0;
     virtual void start_acquisition() = 0;
+    virtual void stop_channel() = 0;
     virtual void set_signal(const Gnss_Signal&) = 0;
 };
 

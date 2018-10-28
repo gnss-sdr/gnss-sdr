@@ -38,6 +38,7 @@
 #include "geojson_printer.h"
 #include "rinex_printer.h"
 #include "rtcm_printer.h"
+#include "pvt_conf.h"
 #include "rtklib_solver.h"
 #include <gnuradio/sync_block.h>
 #include <sys/types.h>
@@ -55,23 +56,7 @@ class rtklib_pvt_cc;
 typedef boost::shared_ptr<rtklib_pvt_cc> rtklib_pvt_cc_sptr;
 
 rtklib_pvt_cc_sptr rtklib_make_pvt_cc(uint32_t n_channels,
-    bool dump,
-    std::string dump_filename,
-    int32_t output_rate_ms,
-    int32_t display_rate_ms,
-    bool flag_nmea_tty_port,
-    std::string nmea_dump_filename,
-    std::string nmea_dump_devname,
-    int32_t rinex_version,
-    int32_t rinexobs_rate_ms,
-    int32_t rinexnav_rate_ms,
-    bool flag_rtcm_server,
-    bool flag_rtcm_tty_port,
-    uint16_t rtcm_tcp_port,
-    uint16_t rtcm_station_id,
-    std::map<int, int> rtcm_msg_rate_ms,
-    std::string rtcm_dump_devname,
-    const uint32_t type_of_receiver,
+    const Pvt_Conf& conf_,
     rtk_t& rtk);
 
 /*!
@@ -81,28 +66,13 @@ class rtklib_pvt_cc : public gr::sync_block
 {
 private:
     friend rtklib_pvt_cc_sptr rtklib_make_pvt_cc(uint32_t nchannels,
-        bool dump,
-        std::string dump_filename,
-        int32_t output_rate_ms,
-        int32_t display_rate_ms,
-        bool flag_nmea_tty_port,
-        std::string nmea_dump_filename,
-        std::string nmea_dump_devname,
-        int32_t rinex_version,
-        int32_t rinexobs_rate_ms,
-        int32_t rinexnav_rate_ms,
-        bool flag_rtcm_server,
-        bool flag_rtcm_tty_port,
-        uint16_t rtcm_tcp_port,
-        uint16_t rtcm_station_id,
-        std::map<int, int> rtcm_msg_rate_ms,
-        std::string rtcm_dump_devname,
-        const uint32_t type_of_receiver,
+        const Pvt_Conf& conf_,
         rtk_t& rtk);
 
     void msg_handler_telemetry(pmt::pmt_t msg);
 
     bool d_dump;
+    bool b_rinex_output_enabled;
     bool b_rinex_header_written;
     bool b_rinex_header_updated;
     double d_rinex_version;
@@ -134,6 +104,10 @@ private:
     std::shared_ptr<Rtcm_Printer> d_rtcm_printer;
     double d_rx_time;
 
+    bool d_geojson_output_enabled;
+    bool d_gpx_output_enabled;
+    bool d_kml_output_enabled;
+
     std::shared_ptr<rtklib_solver> d_ls_pvt;
 
     std::map<int, Gnss_Synchro> gnss_observables_map;
@@ -156,24 +130,13 @@ private:
 
     bool load_gnss_synchro_map_xml(const std::string file_name);  //debug helper function
 
+    bool d_xml_storage;
+    std::string xml_base_path;
+
+
 public:
     rtklib_pvt_cc(uint32_t nchannels,
-        bool dump, std::string dump_filename,
-        int32_t output_rate_ms,
-        int32_t display_rate_ms,
-        bool flag_nmea_tty_port,
-        std::string nmea_dump_filename,
-        std::string nmea_dump_devname,
-        int32_t rinex_version,
-        int32_t rinexobs_rate_ms,
-        int32_t rinexnav_rate_ms,
-        bool flag_rtcm_server,
-        bool flag_rtcm_tty_port,
-        uint16_t rtcm_tcp_port,
-        uint16_t rtcm_station_id,
-        std::map<int, int> rtcm_msg_rate_ms,
-        std::string rtcm_dump_devname,
-        const uint32_t type_of_receiver,
+        const Pvt_Conf& conf_,
         rtk_t& rtk);
 
     /*!

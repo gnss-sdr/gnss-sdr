@@ -33,6 +33,9 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/local_time/local_time.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/filesystem/operations.hpp>   // for create_directories, exists
+#include <boost/filesystem/path.hpp>         // for path, operator<<
+#include <boost/filesystem/path_traits.hpp>  // for filesystem
 #include <glog/logging.h>
 #include <unistd.h>   // for getlogin_r()
 #include <algorithm>  // for min and max
@@ -48,14 +51,44 @@
 using google::LogMessage;
 
 
-Rinex_Printer::Rinex_Printer(int32_t conf_version)
+Rinex_Printer::Rinex_Printer(int32_t conf_version, const std::string& base_path)
 {
-    navfilename = Rinex_Printer::createFilename("RINEX_FILE_TYPE_GPS_NAV");
-    obsfilename = Rinex_Printer::createFilename("RINEX_FILE_TYPE_OBS");
-    sbsfilename = Rinex_Printer::createFilename("RINEX_FILE_TYPE_SBAS");
-    navGalfilename = Rinex_Printer::createFilename("RINEX_FILE_TYPE_GAL_NAV");
-    navMixfilename = Rinex_Printer::createFilename("RINEX_FILE_TYPE_MIXED_NAV");
-    navGlofilename = Rinex_Printer::createFilename("RINEX_FILE_TYPE_GLO_NAV");
+    std::string base_rinex_path = base_path;
+    boost::filesystem::path full_path(boost::filesystem::current_path());
+    const boost::filesystem::path p(base_rinex_path);
+    if (!boost::filesystem::exists(p))
+        {
+            std::string new_folder;
+            for (auto& folder : boost::filesystem::path(base_rinex_path))
+                {
+                    new_folder += folder.string();
+                    boost::system::error_code ec;
+                    if (!boost::filesystem::exists(new_folder))
+                        {
+                            if (!boost::filesystem::create_directory(new_folder, ec))
+                                {
+                                    std::cout << "Could not create the " << new_folder << " folder." << std::endl;
+                                    base_rinex_path = full_path.string();
+                                }
+                        }
+                    new_folder += boost::filesystem::path::preferred_separator;
+                }
+        }
+    else
+        {
+            base_rinex_path = p.string();
+        }
+    if (base_rinex_path.compare(".") != 0)
+        {
+            std::cout << "RINEX files will be stored at " << base_rinex_path << std::endl;
+        }
+
+    navfilename = base_rinex_path + boost::filesystem::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_GPS_NAV");
+    obsfilename = base_rinex_path + boost::filesystem::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_OBS");
+    sbsfilename = base_rinex_path + boost::filesystem::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_SBAS");
+    navGalfilename = base_rinex_path + boost::filesystem::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_GAL_NAV");
+    navMixfilename = base_rinex_path + boost::filesystem::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_MIXED_NAV");
+    navGlofilename = base_rinex_path + boost::filesystem::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_GLO_NAV");
 
     Rinex_Printer::navFile.open(navfilename, std::ios::out | std::ios::in | std::ios::app);
     Rinex_Printer::obsFile.open(obsfilename, std::ios::out | std::ios::in | std::ios::app);
@@ -63,6 +96,13 @@ Rinex_Printer::Rinex_Printer(int32_t conf_version)
     Rinex_Printer::navGalFile.open(navGalfilename, std::ios::out | std::ios::in | std::ios::app);
     Rinex_Printer::navMixFile.open(navMixfilename, std::ios::out | std::ios::in | std::ios::app);
     Rinex_Printer::navGloFile.open(navGlofilename, std::ios::out | std::ios::in | std::ios::app);
+
+    if (!Rinex_Printer::navFile.is_open() or !Rinex_Printer::obsFile.is_open() or
+        !Rinex_Printer::sbsFile.is_open() or !Rinex_Printer::navGalFile.is_open() or
+        !Rinex_Printer::navMixFile.is_open() or !Rinex_Printer::navGloFile.is_open())
+        {
+            std::cout << "RINEX files cannot be saved. Wrong permissions?" << std::endl;
+        }
 
     // RINEX v3.02 codes
     satelliteSystem["GPS"] = "G";

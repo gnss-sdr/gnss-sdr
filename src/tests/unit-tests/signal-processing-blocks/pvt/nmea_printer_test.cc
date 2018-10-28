@@ -168,8 +168,9 @@ TEST_F(NmeaPrinterTest, PrintLine)
 
     pvt_solution->set_valid_position(true);
 
+    bool flag_nmea_output_file = true;
     ASSERT_NO_THROW({
-        std::shared_ptr<Nmea_Printer> nmea_printer = std::make_shared<Nmea_Printer>(filename, false, "");
+        std::shared_ptr<Nmea_Printer> nmea_printer = std::make_shared<Nmea_Printer>(filename, flag_nmea_output_file, false, "");
         nmea_printer->Print_Nmea_Line(pvt_solution, false);
     }) << "Failure printing NMEA messages.";
 
@@ -206,8 +207,9 @@ TEST_F(NmeaPrinterTest, PrintLineLessthan10min)
 
     pvt_solution->set_valid_position(true);
 
+    bool flag_nmea_output_file = true;
     ASSERT_NO_THROW({
-        std::shared_ptr<Nmea_Printer> nmea_printer = std::make_shared<Nmea_Printer>(filename, false, "");
+        std::shared_ptr<Nmea_Printer> nmea_printer = std::make_shared<Nmea_Printer>(filename, flag_nmea_output_file, false, "");
         nmea_printer->Print_Nmea_Line(pvt_solution, false);
     }) << "Failure printing NMEA messages.";
 

@@ -65,6 +65,11 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     trk_param_fpga.fs_in = fs_in;
     bool dump = configuration->property(role + ".dump", false);
     trk_param_fpga.dump = dump;
+    std::string default_dump_filename = "./track_ch";
+    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
+    trk_param_fpga.dump_filename = dump_filename;
+    bool dump_mat = configuration->property(role + ".dump_mat", true);
+    trk_param_fpga.dump_mat = dump_mat;
     float pll_bw_hz = configuration->property(role + ".pll_bw_hz", 5.0);
     if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
     trk_param_fpga.pll_bw_hz = pll_bw_hz;
@@ -102,9 +107,6 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     trk_param_fpga.track_pilot = track_pilot;
     d_track_pilot = track_pilot;
     trk_param_fpga.extend_correlation_symbols = extend_correlation_symbols;
-    std::string default_dump_filename = "./track_ch";
-    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
-    trk_param_fpga.dump_filename = dump_filename;
     int vector_length = std::round(fs_in / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS));
     trk_param_fpga.vector_length = vector_length;
     trk_param_fpga.system = 'E';

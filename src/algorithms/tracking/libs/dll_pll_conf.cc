@@ -41,7 +41,8 @@ Dll_Pll_Conf::Dll_Pll_Conf()
     fs_in = 0.0;
     vector_length = 0U;
     dump = false;
-    dump_filename = "./dll_pll_dump.dat";
+    dump_mat = true;
+    dump_filename = std::string("./dll_pll_dump.dat");
     pll_pull_in_bw_hz = 50.0;
     dll_pull_in_bw_hz = 3.0;
     pll_bw_hz = 35.0;

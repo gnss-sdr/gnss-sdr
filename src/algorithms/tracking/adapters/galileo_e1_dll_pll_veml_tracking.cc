@@ -63,6 +63,11 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     trk_param.fs_in = fs_in;
     bool dump = configuration->property(role + ".dump", false);
     trk_param.dump = dump;
+    std::string default_dump_filename = "./track_ch";
+    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
+    trk_param.dump_filename = dump_filename;
+    bool dump_mat = configuration->property(role + ".dump_mat", true);
+    trk_param.dump_mat = dump_mat;
     trk_param.high_dyn = configuration->property(role + ".high_dyn", false);
     if (configuration->property(role + ".smoother_length", 10) < 1)
         {
@@ -109,9 +114,6 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
         }
     trk_param.track_pilot = track_pilot;
     trk_param.extend_correlation_symbols = extend_correlation_symbols;
-    std::string default_dump_filename = "./track_ch";
-    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
-    trk_param.dump_filename = dump_filename;
     int vector_length = std::round(fs_in / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS));
     trk_param.vector_length = vector_length;
     trk_param.system = 'E';

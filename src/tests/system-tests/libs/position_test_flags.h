@@ -41,7 +41,7 @@ DEFINE_bool(use_pvt_solver_dump, false, "Use PVT solver binary dump or fall back
 DEFINE_bool(use_ref_motion_file, false, "Enable or disable the use of a reference file containing the true receiver position, velocity and acceleration.");
 DEFINE_int32(ref_motion_file_type, 1, "Type of reference motion file: 1- Spirent CSV motion file");
 DEFINE_string(ref_motion_filename, std::string("motion.csv"), "Path and filename for the reference motion file");
-DEFINE_string(pvt_solver_dump_filename, std::string("PVT_pvt.dat"), "Path and filename for the PVT solver binary dump file");
+DEFINE_string(pvt_solver_dump_filename, std::string("PVT.dat"), "Path and filename for the PVT solver binary dump file");
 DEFINE_double(static_2D_error_m, 2.0, "Static scenario 2D (East, North) positioning error threshold [meters]");
 DEFINE_double(static_3D_error_m, 5.0, "Static scenario 3D (East, North, Up) positioning error threshold [meters]");
 DEFINE_double(accuracy_CEP, 2.0, "Static scenario 2D (East, North) accuracy Circular Error Position (CEP) threshold [meters]");

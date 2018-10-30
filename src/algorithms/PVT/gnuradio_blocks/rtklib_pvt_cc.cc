@@ -33,10 +33,12 @@
 #include "galileo_almanac_helper.h"
 #include "pvt_conf.h"
 #include "display.h"
+#include "gnss_sdr_create_directory.h"
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/exception/all.hpp>
+#include <boost/filesystem/path.hpp>
 #include <boost/serialization/map.hpp>
 #include <glog/logging.h>
 #include <gnuradio/gr_complex.h>
@@ -247,9 +249,43 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
     d_output_rate_ms = conf_.output_rate_ms;
     d_display_rate_ms = conf_.display_rate_ms;
     d_dump = conf_.dump;
-    d_nchannels = nchannels;
     d_dump_filename = conf_.dump_filename;
     std::string dump_ls_pvt_filename = conf_.dump_filename;
+    if (d_dump)
+        {
+            std::string dump_path;
+            // Get path
+            if (d_dump_filename.find_last_of("/") != std::string::npos)
+                {
+                    std::string dump_filename_ = d_dump_filename.substr(d_dump_filename.find_last_of("/") + 1);
+                    dump_path = d_dump_filename.substr(0, d_dump_filename.find_last_of("/"));
+                    d_dump_filename = dump_filename_;
+                }
+            else
+                {
+                    dump_path = std::string(".");
+                }
+            if (d_dump_filename.empty())
+                {
+                    d_dump_filename = "pvt";
+                }
+            // remove extension if any
+            if (d_dump_filename.substr(1).find_last_of(".") != std::string::npos)
+                {
+                    d_dump_filename = d_dump_filename.substr(0, d_dump_filename.find_last_of("."));
+                }
+            dump_ls_pvt_filename = dump_path + boost::filesystem::path::preferred_separator + d_dump_filename;
+            dump_ls_pvt_filename.append(".dat");
+            // create directory
+            if (!gnss_sdr_create_directory(dump_path))
+                {
+                    std::cerr << "GNSS-SDR cannot create dump file for the PVT block. Wrong permissions?" << std::endl;
+                    d_dump = false;
+                }
+        }
+
+    d_nchannels = nchannels;
+
     type_of_rx = conf_.type_of_receiver;
 
     // GPS Ephemeris data message port in
@@ -411,8 +447,6 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
 
             xml_base_path = xml_base_path + boost::filesystem::path::preferred_separator;
         }
-
-    dump_ls_pvt_filename.append("_pvt.dat");
 
     d_ls_pvt = std::make_shared<rtklib_solver>(static_cast<int32_t>(nchannels), dump_ls_pvt_filename, d_dump, rtk);
     d_ls_pvt->set_averaging_depth(1);

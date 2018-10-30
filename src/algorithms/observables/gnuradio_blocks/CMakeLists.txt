@@ -16,11 +16,11 @@
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
-set(OBS_GR_BLOCKS_SOURCES 
+set(OBS_GR_BLOCKS_SOURCES
 	hybrid_observables_cc.cc
 )
 
-set(OBS_GR_BLOCKS_HEADERS 
+set(OBS_GR_BLOCKS_HEADERS
 	hybrid_observables_cc.h
 )
 

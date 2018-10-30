@@ -32,6 +32,7 @@
 #include "hybrid_observables_cc.h"
 #include "display.h"
 #include "GPS_L1_CA.h"
+#include "gnss_sdr_create_directory.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <matio.h>
@@ -45,42 +46,70 @@
 using google::LogMessage;
 
 
-hybrid_observables_cc_sptr hybrid_make_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename)
+hybrid_observables_cc_sptr hybrid_make_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, bool dump_mat, std::string dump_filename)
 {
-    return hybrid_observables_cc_sptr(new hybrid_observables_cc(nchannels_in, nchannels_out, dump, dump_filename));
+    return hybrid_observables_cc_sptr(new hybrid_observables_cc(nchannels_in, nchannels_out, dump, dump_mat, dump_filename));
 }
 
 
 hybrid_observables_cc::hybrid_observables_cc(uint32_t nchannels_in,
     uint32_t nchannels_out,
     bool dump,
+    bool dump_mat,
     std::string dump_filename) : gr::block("hybrid_observables_cc",
                                      gr::io_signature::make(nchannels_in, nchannels_in, sizeof(Gnss_Synchro)),
                                      gr::io_signature::make(nchannels_out, nchannels_out, sizeof(Gnss_Synchro)))
 {
     d_dump = dump;
+    d_dump_mat = dump_mat and d_dump;
+    d_dump_filename = dump_filename;
     d_nchannels_out = nchannels_out;
     d_nchannels_in = nchannels_in;
-    d_dump_filename = dump_filename;
     T_rx_clock_step_samples = 0U;
     d_gnss_synchro_history = new Gnss_circular_deque<Gnss_Synchro>(500, d_nchannels_out);
 
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump)
         {
-            if (!d_dump_file.is_open())
+            std::string dump_path;
+            // Get path
+            if (d_dump_filename.find_last_of("/") != std::string::npos)
                 {
-                    try
-                        {
-                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-                            d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            LOG(INFO) << "Observables dump enabled Log file: " << d_dump_filename.c_str();
-                        }
-                    catch (const std::ifstream::failure &e)
-                        {
-                            LOG(WARNING) << "Exception opening observables dump file " << e.what();
-                            d_dump = false;
-                        }
+                    std::string dump_filename_ = d_dump_filename.substr(d_dump_filename.find_last_of("/") + 1);
+                    dump_path = d_dump_filename.substr(0, d_dump_filename.find_last_of("/"));
+                    d_dump_filename = dump_filename_;
+                }
+            else
+                {
+                    dump_path = std::string(".");
+                }
+            if (d_dump_filename.empty())
+                {
+                    d_dump_filename = "observables.dat";
+                }
+            // remove extension if any
+            if (d_dump_filename.substr(1).find_last_of(".") != std::string::npos)
+                {
+                    d_dump_filename = d_dump_filename.substr(0, d_dump_filename.find_last_of("."));
+                }
+            d_dump_filename.append(".dat");
+            d_dump_filename = dump_path + boost::filesystem::path::preferred_separator + d_dump_filename;
+            // create directory
+            if (!gnss_sdr_create_directory(dump_path))
+                {
+                    std::cerr << "GNSS-SDR cannot create dump file for the Observables block. Wrong permissions?" << std::endl;
+                    d_dump = false;
+                }
+            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+            try
+                {
+                    d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
+                    LOG(INFO) << "Observables dump enabled Log file: " << d_dump_filename.c_str();
+                }
+            catch (const std::ifstream::failure &e)
+                {
+                    LOG(WARNING) << "Exception opening observables dump file " << e.what();
+                    d_dump = false;
                 }
         }
     T_rx_TOW_ms = 0U;
@@ -107,11 +136,9 @@ hybrid_observables_cc::~hybrid_observables_cc()
                     LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
                 }
         }
-    if (d_dump)
+    if (d_dump_mat)
         {
-            std::cout << "Writing observables .mat files ...";
             save_matfile();
-            std::cout << " done." << std::endl;
         }
 }
 
@@ -119,14 +146,16 @@ hybrid_observables_cc::~hybrid_observables_cc()
 int32_t hybrid_observables_cc::save_matfile()
 {
     // READ DUMP FILE
+    std::string dump_filename = d_dump_filename;
     std::ifstream::pos_type size;
     int32_t number_of_double_vars = 7;
     int32_t epoch_size_bytes = sizeof(double) * number_of_double_vars * d_nchannels_out;
     std::ifstream dump_file;
+    std::cout << "Generating .mat file for " << dump_filename << std::endl;
     dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try
         {
-            dump_file.open(d_dump_filename.c_str(), std::ios::binary | std::ios::ate);
+            dump_file.open(dump_filename.c_str(), std::ios::binary | std::ios::ate);
         }
     catch (const std::ifstream::failure &e)
         {
@@ -553,7 +582,6 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
                 {
                     out[n][0] = epoch_data.at(n);
                 }
-
             if (d_dump)
                 {
                     // MULTIPLEXED FILE RECORDING - Record results to file

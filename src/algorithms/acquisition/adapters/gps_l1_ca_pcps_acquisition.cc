@@ -56,7 +56,7 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     Acq_Conf acq_parameters = Acq_Conf();
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
-    std::string default_dump_filename = "./data/acquisition.dat";
+    std::string default_dump_filename = "./acquisition.mat";
 
     DLOG(INFO) << "role " << role;
 

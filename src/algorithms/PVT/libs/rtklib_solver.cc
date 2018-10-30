@@ -493,7 +493,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
                     unsigned int used_sats = 0;
                     for (unsigned int i = 0; i < MAXSAT; i++)
                         {
-                            if (rtk_.ssat[i].vsat[0] == 1) used_sats++;
+                            if (rtk_.ssat[i].vs == 1) used_sats++;
                         }
 
                     std::vector<double> azel;
@@ -501,7 +501,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
                     unsigned int index_aux = 0;
                     for (unsigned int i = 0; i < MAXSAT; i++)
                         {
-                            if (rtk_.ssat[i].vsat[0] == 1)
+                            if (rtk_.ssat[i].vs == 1)
                                 {
                                     azel[2 * index_aux] = rtk_.ssat[i].azel[0];
                                     azel[2 * index_aux + 1] = rtk_.ssat[i].azel[1];

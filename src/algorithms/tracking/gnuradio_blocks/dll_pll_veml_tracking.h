@@ -196,6 +196,9 @@ private:
 
     // file dump
     std::ofstream d_dump_file;
+    std::string d_dump_filename;
+    bool d_dump;
+    bool d_dump_mat;
 };
 
 #endif  // GNSS_SDR_DLL_PLL_VEML_TRACKING_H

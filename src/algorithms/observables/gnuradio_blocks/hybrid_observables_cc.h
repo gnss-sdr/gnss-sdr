@@ -48,7 +48,7 @@ class hybrid_observables_cc;
 typedef boost::shared_ptr<hybrid_observables_cc> hybrid_observables_cc_sptr;
 
 hybrid_observables_cc_sptr
-hybrid_make_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename);
+hybrid_make_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, bool dump_mat, std::string dump_filename);
 
 /*!
  * \brief This class implements a block that computes observables
@@ -63,8 +63,8 @@ public:
 
 private:
     friend hybrid_observables_cc_sptr
-    hybrid_make_observables_cc(uint32_t nchannels_in, uint32_t nchannels_out, bool dump, std::string dump_filename);
-    hybrid_observables_cc(uint32_t nchannels_in, uint32_t nchannels_out, bool dump, std::string dump_filename);
+    hybrid_make_observables_cc(uint32_t nchannels_in, uint32_t nchannels_out, bool dump, bool dump_mat, std::string dump_filename);
+    hybrid_observables_cc(uint32_t nchannels_in, uint32_t nchannels_out, bool dump, bool dump_mat, std::string dump_filename);
     bool interpolate_data(Gnss_Synchro& out, const uint32_t& ch, const double& ti);
     bool interp_trk_obs(Gnss_Synchro& interpolated_obs, const uint32_t& ch, const uint64_t& rx_clock);
     double compute_T_rx_s(const Gnss_Synchro& a);
@@ -82,6 +82,7 @@ private:
     uint32_t T_rx_TOW_ms;
     uint32_t T_rx_TOW_offset_ms;
     bool d_dump;
+    bool d_dump_mat;
     uint32_t d_nchannels_in;
     uint32_t d_nchannels_out;
     std::string d_dump_filename;

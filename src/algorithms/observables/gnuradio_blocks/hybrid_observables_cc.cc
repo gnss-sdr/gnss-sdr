@@ -33,6 +33,7 @@
 #include "display.h"
 #include "GPS_L1_CA.h"
 #include "gnss_sdr_create_directory.h"
+#include <boost/filesystem/path.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <matio.h>

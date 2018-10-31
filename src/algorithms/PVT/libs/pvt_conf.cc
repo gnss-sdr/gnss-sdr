@@ -41,6 +41,7 @@ Pvt_Conf::Pvt_Conf()
     rinexnav_rate_ms = 0;
 
     dump = false;
+    dump_mat = true;
 
     flag_nmea_tty_port = false;
 

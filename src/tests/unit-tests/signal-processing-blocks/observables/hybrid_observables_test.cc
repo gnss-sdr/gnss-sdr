@@ -1836,9 +1836,9 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
     if (FLAGS_duplicated_satellites_test)
         {
             //special test mode for duplicated satellites
-            std::vector<int> prn_pairs;
+            std::vector<unsigned int> prn_pairs;
             std::stringstream ss(FLAGS_duplicated_satellites_prns);
-            int i;
+            unsigned int i;
             while (ss >> i)
                 {
                     prn_pairs.push_back(i);

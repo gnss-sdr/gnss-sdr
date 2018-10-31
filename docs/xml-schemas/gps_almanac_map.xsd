@@ -17,6 +17,7 @@
                           <xs:element type="xs:byte" name="i_satellite_PRN"/>
                           <xs:element type="xs:float" name="d_Delta_i"/>
                           <xs:element type="xs:float" name="d_Toa"/>
+                          <xs:element type="xs:byte" name="i_WNa"/>
                           <xs:element type="xs:float" name="d_M_0"/>
                           <xs:element type="xs:float" name="d_e_eccentricity"/>
                           <xs:element type="xs:float" name="d_sqrt_A"/>
@@ -24,6 +25,7 @@
                           <xs:element type="xs:float" name="d_OMEGA"/>
                           <xs:element type="xs:float" name="d_OMEGA_DOT"/>
                           <xs:element type="xs:byte" name="i_SV_health"/>
+                          <xs:element type="xs:byte" name="i_AS_status"/>
                           <xs:element type="xs:float" name="d_A_f0"/>
                           <xs:element type="xs:float" name="d_A_f1"/>
                         </xs:sequence>

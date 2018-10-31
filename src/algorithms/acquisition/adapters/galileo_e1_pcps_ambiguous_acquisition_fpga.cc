@@ -113,7 +113,7 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     //printf("acq adapter code_length = %d\n", code_length);
     acq_parameters.code_length = code_length;
     // The FPGA can only use FFT lengths that are a power of two.
-    float nbits = ceilf(log2f((float)code_length));
+    float nbits = ceilf(log2f((float)code_length*2));
     unsigned int nsamples_total = pow(2, nbits);
     unsigned int vector_length = nsamples_total;
     //printf("acq adapter nsamples_total (= vector_length) = %d\n", vector_length);
@@ -124,6 +124,7 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     acq_parameters.device_name = device_name;
     acq_parameters.samples_per_ms = nsamples_total/sampled_ms;
     acq_parameters.samples_per_code = nsamples_total;
+    acq_parameters.excludelimit = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / Galileo_E1_CODE_CHIP_RATE_HZ));
 
     // compute all the GALILEO E1 PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
@@ -178,9 +179,15 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
 //                    }
 //                fclose(fid);
 
+        for (int s = code_length; s < 2*code_length; s++)
+            {
+                code[s] = code[s - code_length];
+                //code[s] = 0;
+            }
+
 
 //        // fill in zero padding
-        for (int s = code_length; s < nsamples_total; s++)
+        for (int s = 2*code_length; s < nsamples_total; s++)
             {
                 code[s] = std::complex<float>(static_cast<float>(0,0));
                 //code[s] = 0;
@@ -226,8 +233,8 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
  //                   static_cast<int>(floor(256*fft_codes_padded[i].imag() * (pow(2, 7) - 1) / max)));
 //                d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int>(floor(16*fft_codes_padded[i].real() * (pow(2, 11) - 1) / max)),
 //                    static_cast<int>(floor(16*fft_codes_padded[i].imag() * (pow(2, 11) - 1) / max)));
-                d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 15) - 1) / max)),
-                    static_cast<int>(floor(fft_codes_padded[i].imag() * (pow(2, 15) - 1) / max)));
+                d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 5) - 1) / max)),
+                    static_cast<int>(floor(fft_codes_padded[i].imag() * (pow(2, 5) - 1) / max)));
 
 //                tmp_re = static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 7) - 1) / max));
 //                tmp_im = static_cast<int>(floor(fft_codes_padded[i].imag() * (pow(2, 7) - 1) / max));
@@ -291,6 +298,8 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     delete[] code;
     delete fft_if;
     delete[] fft_codes_padded;
+
+    acq_parameters.total_block_exp = 11;
 
     acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters);
     DLOG(INFO) << "acquisition(" << acquisition_fpga_->unique_id() << ")";

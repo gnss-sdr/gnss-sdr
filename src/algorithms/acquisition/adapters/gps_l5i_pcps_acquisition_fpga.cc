@@ -59,6 +59,12 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
 
     long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     long fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+
+    float downsampling_factor = configuration_->property("GNSS-SDR.downsampling_factor", 1.0);
+    acq_parameters.downsampling_factor = downsampling_factor;
+
+    fs_in = fs_in/downsampling_factor;
+
     acq_parameters.fs_in = fs_in;
     //if_ = configuration_->property(role + ".if", 0);
     //acq_parameters.freq = if_;

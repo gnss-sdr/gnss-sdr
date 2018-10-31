@@ -41,6 +41,9 @@
 #include <fcntl.h>     // libraries used by the GIPO
 #include <sys/mman.h>  // libraries used by the GIPO
 
+#include <unistd.h> // for the usleep function only (debug)
+
+
 
 #define PAGE_SIZE 0x10000                     // default page size for the multicorrelator memory map
 #define MAX_PHASE_STEP_RAD 0.999999999534339  // 1 - pow(2,-31);
@@ -72,7 +75,7 @@ bool fpga_acquisition::init()
 {
 	//printf("acq lib init called\n");
     // configure the acquisition with the main initialization values
-    fpga_acquisition::configure_acquisition();
+    //fpga_acquisition::configure_acquisition();
     return true;
 }
 
@@ -81,8 +84,11 @@ bool fpga_acquisition::set_local_code(uint32_t PRN)
 {
 	//printf("acq lib set_local_code_called\n");
     // select the code with the chosen PRN
-    fpga_acquisition::fpga_configure_acquisition_local_code(
-        &d_all_fft_codes[d_nsamples_total * (PRN - 1)]);
+	d_PRN = PRN;
+//	printf("#### ACQ: WRITING LOCAL CODE for PRN %d\n", (int) PRN);
+//
+//    fpga_acquisition::fpga_configure_acquisition_local_code(
+//        &d_all_fft_codes[d_nsamples_total * (PRN - 1)]);
 
     //fpga_acquisition::fpga_configure_acquisition_local_code(
     //    &d_all_fft_codes[0]);
@@ -91,12 +97,22 @@ bool fpga_acquisition::set_local_code(uint32_t PRN)
 }
 
 
+void fpga_acquisition::write_local_code()
+{
+	//printf("#### ACQ: WRITING LOCAL CODE for PRN %d\n", (int) d_PRN);
+
+    fpga_acquisition::fpga_configure_acquisition_local_code(
+        &d_all_fft_codes[d_nsamples_total * (d_PRN - 1)]);
+
+}
+
 fpga_acquisition::fpga_acquisition(std::string device_name,
     uint32_t nsamples,
     uint32_t doppler_max,
     uint32_t nsamples_total, int64_t fs_in,
     uint32_t sampled_ms, uint32_t select_queue,
-    lv_16sc_t *all_fft_codes)
+    lv_16sc_t *all_fft_codes,
+	uint32_t excludelimit)
 {
 	//printf("acq lib constructor called\n");
     //printf("AAA- sampled_ms = %d\n ", sampled_ms);
@@ -109,6 +125,7 @@ fpga_acquisition::fpga_acquisition(std::string device_name,
     //d_freq = freq;
     d_fs_in = fs_in;
     d_vector_length = vector_length;
+    d_excludelimit = excludelimit;
     d_nsamples = nsamples;  // number of samples not including padding
     d_select_queue = select_queue;
     d_nsamples_total = nsamples_total;
@@ -160,6 +177,7 @@ fpga_acquisition::fpga_acquisition(std::string device_name,
     // flag used for testing purposes
     d_single_doppler_flag = 0;
 
+    d_PRN = 0;
     DLOG(INFO) << "Acquisition FPGA class created";
 
 }
@@ -228,26 +246,46 @@ void fpga_acquisition::fpga_configure_acquisition_local_code(lv_16sc_t fft_local
 
 void fpga_acquisition::run_acquisition(void)
 {
+
 	//printf("acq lib run_acqisition called\n");
     // enable interrupts
-    int32_t reenable = 1;
-    write(d_fd, reinterpret_cast<void *>(&reenable), sizeof(int32_t));
+    //int32_t reenable = 1;
+    //reenable = 1;
+    //write(d_fd, reinterpret_cast<void *>(&reenable), sizeof(int32_t));
+
     // launch the acquisition process
     //printf("acq lib launchin acquisition ...\n");
     d_map_base[8] = LAUNCH_ACQUISITION;  // writing a 1 to reg 8 launches the acquisition process
     //printf("acq lib waiting for interrupt ...\n");
     int32_t irq_count;
     ssize_t nb;
+
+    uint32_t result_valid = 0;
+
+    usleep(50);
+    while(result_valid == 0)
+    {
+    	read_result_valid(&result_valid); // polling
+    }
     // wait for interrupt
-    nb = read(d_fd, &irq_count, sizeof(irq_count));
+    //nb = read(d_fd, &irq_count, sizeof(irq_count));
+    //usleep(500000); // debug
     //printf("interrupt received\n");
-    if (nb != sizeof(irq_count))
-        {
-            printf("acquisition module Read failed to retrieve 4 bytes!\n");
-            printf("acquisition module Interrupt number %d\n", irq_count);
-        }
+    //if (nb != sizeof(irq_count))
+    //    {
+    //        printf("acquisition module Read failed to retrieve 4 bytes!\n");
+    //        printf("acquisition module Interrupt number %d\n", irq_count);
+    //    }
+
+
+
 }
 
+void fpga_acquisition::set_block_exp(uint32_t total_block_exp)
+{
+	//printf("******* acq writing total exponent = %d\n", (int) total_block_exp);
+	d_map_base[11] = total_block_exp;
+}
 
 void fpga_acquisition::set_doppler_sweep(uint32_t num_sweeps)
 {
@@ -292,7 +330,7 @@ void fpga_acquisition::set_doppler_sweep(uint32_t num_sweeps)
 	    //printf("AAA  phase_step_rad_real for doppler step after checking = %f\n", phase_step_rad_real);
 	    phase_step_rad_int_temp = phase_step_rad_real * POW_2_2;                          // * 2^2
 	    phase_step_rad_int = static_cast<int32_t>(phase_step_rad_int_temp * (POW_2_29));  // * 2^29 (in total it makes x2^31 in two steps to avoid the warnings
-	    //printf("AAA writing phase_step_rad_int for doppler step = %d to d map base 4\n", phase_step_rad_int);
+	    //printf("AAA writing phase_step_incr for doppler step = %d to d map base 4\n", phase_step_rad_int);
 	    d_map_base[4] = phase_step_rad_int;
 	    //printf("AAA writing num sweeps to d map base 5 = %d\n", num_sweeps);
 	    d_map_base[5] = num_sweeps;
@@ -406,6 +444,9 @@ void fpga_acquisition::configure_acquisition()
     d_map_base[2] = d_nsamples;
     //printf("AAA writing LOG2 d_vector_length = %d to d map base 7\n ", (int)log2((float)d_vector_length));
     d_map_base[7] = static_cast<int32_t>(log2(static_cast<float>(d_vector_length)));  // log2 FFTlength
+    //printf("AAA writing excludelimit = %d to d map base 12\n", (int) d_excludelimit);
+    d_map_base[12] = d_excludelimit;
+
     //printf("acquisition debug vector length = %d\n", d_vector_length);
     //printf("acquisition debug vector length = %d\n", (int)log2((float)d_vector_length));
 }
@@ -435,39 +476,65 @@ void fpga_acquisition::set_phase_step(uint32_t doppler_index)
     //printf("AAA+ phase_step_rad_real after checking = %f\n", phase_step_rad_real);
     phase_step_rad_int_temp = phase_step_rad_real * POW_2_2;                          // * 2^2
     phase_step_rad_int = static_cast<int32_t>(phase_step_rad_int_temp * (POW_2_29));  // * 2^29 (in total it makes x2^31 in two steps to avoid the warnings
-    //printf("writing phase_step_rad_int = %d to d_map_base 3\n", phase_step_rad_int);
+    //printf("writing phase_step_rad_int = %d to d_map_base 3 THE SECOND FUNCTION\n", phase_step_rad_int);
     d_map_base[3] = phase_step_rad_int;
 }
 
 
 void fpga_acquisition::read_acquisition_results(uint32_t *max_index,
-    float *max_magnitude, uint64_t *initial_sample, float *power_sum, uint32_t *doppler_index)
+    float *firstpeak, float *secondpeak, uint64_t *initial_sample, float *power_sum, uint32_t *doppler_index, uint32_t *total_blk_exp)
 {
+
+
+
 	//printf("acq lib read_acquisition_results_called\n");
     uint64_t initial_sample_tmp = 0;
 
     uint32_t readval = 0;
     uint64_t readval_long = 0;
     uint64_t readval_long_shifted = 0;
+
+
+
     readval = d_map_base[1];
     initial_sample_tmp = readval;
+
     readval_long = d_map_base[2];
     readval_long_shifted = readval_long << 32;                       // 2^32
+
     initial_sample_tmp = initial_sample_tmp + readval_long_shifted;  // 2^32
-    //printf("----------------------------------------------------------------> acq initial sample TOTAL = %llu\n", initial_sample_tmp);
     *initial_sample = initial_sample_tmp;
-    readval = d_map_base[6];
-    *max_magnitude = static_cast<float>(readval);
-    //printf("acq lib read max_magnitude dmap 2 = %d = %f\n", readval, *max_magnitude);
-    readval = d_map_base[4];
-    *power_sum = static_cast<float>(readval);
-    //printf("acq lib read power sum dmap 4 = %d = %f\n", readval, *power_sum);
-    readval = d_map_base[5];  // read doppler index
-    *doppler_index = readval;
-    //printf("read doppler_index dmap 5 = %d\n", readval);
+    //printf("-------> acq initial sample TOTAL = %llu\n", *initial_sample);
+
     readval = d_map_base[3];
+    *firstpeak = static_cast<float>(readval);
+    //printf("-------> read first peak = %f\n", *firstpeak);
+
+    readval = d_map_base[4];
+    *secondpeak = static_cast<float>(readval);
+    //printf("-------> read second peak = %f\n", *secondpeak);
+
+    readval = d_map_base[5];
     *max_index = readval;
-    //printf("read max index dmap 3 = %d\n", readval);
+    //printf("-------> read max index = %d\n", (int) *max_index);
+
+    //printf("acq lib read max_magnitude dmap 2 = %d = %f\n", readval, *max_magnitude);
+    //readval = d_map_base[4];
+    *power_sum = 0;
+    //printf("acq lib read power sum dmap 4 = %d = %f\n", readval, *power_sum);
+
+
+
+    readval = d_map_base[8];
+    *total_blk_exp = readval;
+    //printf("---------> read total block exponent = %d\n", (int) *total_blk_exp);
+
+    readval = d_map_base[7];  // read doppler index -- this read releases the interrupt line
+    *doppler_index = readval;
+    //printf("---------> read doppler_index = %d\n", (int) *doppler_index );
+
+    readval = d_map_base[15]; // read dummy
+
 }
 
 
@@ -513,8 +580,16 @@ void fpga_acquisition::set_single_doppler_flag(unsigned int single_doppler_flag)
 void fpga_acquisition::read_fpga_total_scale_factor(uint32_t *total_scale_factor, uint32_t *fw_scale_factor)
 {
 	uint32_t readval = 0;
-	readval = d_map_base[7];
-	*total_scale_factor = readval;
 	readval = d_map_base[8];
-	*fw_scale_factor = readval;
+	*total_scale_factor = readval;
+
+	//readval = d_map_base[8];
+	*fw_scale_factor = 0;
+}
+
+void fpga_acquisition::read_result_valid(uint32_t *result_valid)
+{
+	uint32_t readval = 0;
+	readval = d_map_base[0];
+	*result_valid = readval;
 }

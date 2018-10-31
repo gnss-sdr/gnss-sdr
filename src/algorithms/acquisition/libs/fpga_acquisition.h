@@ -53,7 +53,8 @@ public:
         int64_t fs_in,
         uint32_t sampled_ms,
         uint32_t select_queue,
-        lv_16sc_t *all_fft_codes);
+        lv_16sc_t *all_fft_codes,
+		uint32_t excludelimit);
 
     ~fpga_acquisition();
     bool init();
@@ -63,8 +64,11 @@ public:
     //void set_doppler_sweep_debug(uint32_t num_sweeps, uint32_t doppler_index);
     void run_acquisition(void);
     void set_phase_step(uint32_t doppler_index);
-    void read_acquisition_results(uint32_t *max_index, float *max_magnitude,
-        uint64_t *initial_sample, float *power_sum, uint32_t *doppler_index);
+    //void read_acquisition_results(uint32_t *max_index, float *max_magnitude,
+    //    uint64_t *initial_sample, float *power_sum, uint32_t *doppler_index);
+    void read_acquisition_results(uint32_t *max_index, float *firstpeak, float *secondpeak, uint64_t *initial_sample, float *power_sum, uint32_t *doppler_index, uint32_t *total_blk_exp);
+
+
     void block_samples();
     void unblock_samples();
 
@@ -105,6 +109,14 @@ public:
      */
     void read_fpga_total_scale_factor(uint32_t *total_scale_factor, uint32_t *fw_scale_factor);
 
+    void set_block_exp(uint32_t total_block_exp);
+
+    void write_local_code(void);
+
+    void configure_acquisition(void);
+
+
+
 private:
     int64_t d_fs_in;
     // data related to the hardware module and the driver
@@ -112,17 +124,21 @@ private:
     volatile uint32_t *d_map_base;  // driver memory map
     lv_16sc_t *d_all_fft_codes;     // memory that contains all the code ffts
     uint32_t d_vector_length;       // number of samples incluing padding and number of ms
+    uint32_t d_excludelimit;
     uint32_t d_nsamples_total;      // number of samples including padding
     uint32_t d_nsamples;            // number of samples not including padding
     uint32_t d_select_queue;        // queue selection
     std::string d_device_name;      // HW device name
     uint32_t d_doppler_max;         // max doppler
     uint32_t d_doppler_step;        // doppler step
+    uint32_t d_PRN;					// PRN
     // FPGA private functions
     uint32_t fpga_acquisition_test_register(uint32_t writeval);
     void fpga_configure_acquisition_local_code(lv_16sc_t fft_local_code[]);
-    void configure_acquisition();
+    //void configure_acquisition();
     void close_device();
+
+    void read_result_valid(uint32_t *result_valid);
 
     // test parameters
     unsigned int d_single_doppler_flag; // this flag is only used for testing purposes

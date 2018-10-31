@@ -43,6 +43,7 @@
 #include <gnuradio/io_signature.h>
 #include "pcps_acquisition_fpga.h"
 
+#include <unistd.h> // for the usleep function only (debug)
 
 #define AQ_DOWNSAMPLING_DELAY 40  // delay due to the downsampling filter in the acquisition
 
@@ -89,13 +90,17 @@ pcps_acquisition_fpga::pcps_acquisition_fpga(pcpsconf_fpga_t conf_) : gr::block(
     //          (acq_parameters.device_name, acq_parameters.code_length, acq_parameters.doppler_max, acq_parameters.samples_per_ms,
     //                  acq_parameters.fs_in, acq_parameters.freq, acq_parameters.sampled_ms, acq_parameters.select_queue_Fpga, acq_parameters.all_fft_codes);
 
+
+    d_total_block_exp = acq_parameters.total_block_exp;
+
     // this one is the one it should be but it doesn't work
     acquisition_fpga = std::make_shared<fpga_acquisition>(acq_parameters.device_name, acq_parameters.code_length, acq_parameters.doppler_max, d_fft_size,
-        acq_parameters.fs_in, acq_parameters.sampled_ms, acq_parameters.select_queue_Fpga, acq_parameters.all_fft_codes);
+        acq_parameters.fs_in, acq_parameters.sampled_ms, acq_parameters.select_queue_Fpga, acq_parameters.all_fft_codes, acq_parameters.excludelimit);
 
     //    acquisition_fpga = std::make_shared <fpga_acquisition>
     //          (acq_parameters.device_name, acq_parameters.samples_per_code, acq_parameters.doppler_max, acq_parameters.samples_per_code,
     //                  acq_parameters.fs_in, acq_parameters.freq, acq_parameters.sampled_ms, acq_parameters.select_queue_Fpga, acq_parameters.all_fft_codes);
+
 
     // debug
     //debug_d_max_absolute = 0.0;
@@ -211,13 +216,16 @@ void pcps_acquisition_fpga::send_negative_acquisition()
 
 void pcps_acquisition_fpga::set_active(bool active)
 {
+
     //   printf("acq set active start\n");
     d_active = active;
 
     // initialize acquisition algorithm
     uint32_t indext = 0U;
-    float magt = 0.0;
-    float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
+    float firstpeak = 0.0;
+    float secondpeak = 0.0;
+    uint32_t total_block_exp;
+    //float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
 
     d_input_power = 0.0;
     d_mag = 0.0;
@@ -236,73 +244,60 @@ void pcps_acquisition_fpga::set_active(bool active)
 
     float temp_d_input_power;
 
-    // loop through acquisition
-    /*
-    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
-        {
-            // doppler search steps
-            int32_t doppler = -static_cast<int32_t>(acq_parameters.doppler_max) + d_doppler_step * doppler_index;
-
-            //acquisition_fpga->set_phase_step(doppler_index);
-            acquisition_fpga->set_doppler_sweep_debug(1, doppler_index);
-            acquisition_fpga->run_acquisition(); // runs acquisition and waits until it is finished
-            acquisition_fpga->read_acquisition_results(&indext, &magt,
-                    &initial_sample, &d_input_power, &d_doppler_index);
-            d_sample_counter = initial_sample;
-
-            if (d_mag < magt)
-                {
-                    d_mag = magt;
-
-                    temp_d_input_power = d_input_power;
-
-                    input_power_all = d_input_power / (d_fft_size - 1);
-                    input_power_computed = (d_input_power - d_mag) / (d_fft_size - 1);
-                    d_input_power = (d_input_power - d_mag) / (d_fft_size - 1);
-
-                    d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % acq_parameters.samples_per_code);
-                    d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
-                    d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
-
-                    d_test_statistics = (d_mag / d_input_power); //* correction_factor;
-                }
-
-            // In the case of the FPGA the option of dumping the results of the acquisition to a file is not available
-            // because the IFFT vector is not available
-        }
-*/
-
     // debug
     //acquisition_fpga->block_samples();
+
+
+   // while(1)
+   //{
+
+
 
     // run loop in hw
     //printf("LAUNCH ACQ\n");
     //printf("acq lib d_num_doppler_bins = %d\n", d_num_doppler_bins);
+    //printf("writing config for channel %d -----------------------------------------\n", (int) d_channel);
+    acquisition_fpga->configure_acquisition();
     acquisition_fpga->set_doppler_sweep(d_num_doppler_bins);
+
+    acquisition_fpga->write_local_code();
+
     //acquisition_fpga->set_doppler_sweep(2);
     //printf("acq lib going to launch acquisition\n");
+    acquisition_fpga->set_block_exp(d_total_block_exp);
+
+    //printf("running acq for channel %d\n", (int) d_channel);
+
     acquisition_fpga->run_acquisition();
     //printf("acq lib going to read the acquisition results\n");
-    acquisition_fpga->read_acquisition_results(&indext, &magt,
-        &initial_sample, &d_input_power, &d_doppler_index);
+    //read_acquisition_results(&indext, &firstpeak, &secondpeak, &initial_sample, &d_input_power, &d_doppler_index);
+
+    //printf("reading results for channel %d\n", (int) d_channel);
+    acquisition_fpga->read_acquisition_results(&indext, &firstpeak, &secondpeak, &initial_sample, &d_input_power, &d_doppler_index, &total_block_exp);
+
+    //printf("gnuradio block : d_total_block_exp = %d total_block_exp = %d\n", (int) d_total_block_exp, (int) total_block_exp);
+
+    if (total_block_exp > d_total_block_exp)
+    {
+    	printf("changing blk exp..... d_total_block_exp = %d total_block_exp = %d chan = %d\n", d_total_block_exp, total_block_exp, d_channel);
+    	d_total_block_exp = total_block_exp;
+
+    }
+
+    //printf("end channel %d -----------------------------------------------------\n", (int) d_channel);
     //printf("READ ACQ RESULTS\n");
 
     // debug
     //acquisition_fpga->unblock_samples();
 
-    d_mag = magt;
 
+    //usleep(5000000);
+    //} // end while test
 
-    // debug
-    //debug_d_max_absolute = magt;
-    //debug_d_input_power_absolute = d_input_power;
-    //debug_indext = indext;
-    //debug_doppler_index = d_doppler_index;
-
-    //  temp_d_input_power = d_input_power;
-
-    d_input_power = (d_input_power - d_mag) / (d_fft_size - 1);
     int32_t doppler;
+
+    // NEW SATELLITE DETECTION ALGORITHM STARTS HERE ----------------------------------------------------
+
 	if (d_single_doppler_flag == false)
 	{
 		doppler = -static_cast<int32_t>(acq_parameters.doppler_max) + d_doppler_step * (d_doppler_index - 1);
@@ -312,10 +307,46 @@ void pcps_acquisition_fpga::set_active(bool active)
 	{
 		doppler = static_cast<int32_t>(acq_parameters.doppler_max);
 	}
-    //d_gnss_synchro->Acq_delay_samples = static_cast<double>(2*(indext % (2*acq_parameters.samples_per_code)));
 
+	if (secondpeak > 0)
+	{
+		d_test_statistics = firstpeak/secondpeak;
+	}
+	else
+	{
+		d_test_statistics = 0.0;
+	}
 
-    //printf("acq gnuradioblock doppler = %d\n", doppler);
+//    // OLD SATELLITE DETECTION ALGORITHM STARTS HERE ----------------------------------------------------
+//
+//    d_mag = magt;
+//
+//
+//    // debug
+//    //debug_d_max_absolute = magt;
+//    //debug_d_input_power_absolute = d_input_power;
+//    //debug_indext = indext;
+//    //debug_doppler_index = d_doppler_index;
+//
+//    //  temp_d_input_power = d_input_power;
+//
+//    d_input_power = (d_input_power - d_mag) / (d_fft_size - 1);
+//    //int32_t doppler;
+//	if (d_single_doppler_flag == false)
+//	{
+//		doppler = -static_cast<int32_t>(acq_parameters.doppler_max) + d_doppler_step * (d_doppler_index - 1);
+//		//doppler = -static_cast<int32_t>(acq_parameters.doppler_max) + d_doppler_step * (d_doppler_index); // this is the wrong one
+//	}
+//	else
+//	{
+//		doppler = static_cast<int32_t>(acq_parameters.doppler_max);
+//	}
+//    //d_gnss_synchro->Acq_delay_samples = static_cast<double>(2*(indext % (2*acq_parameters.samples_per_code)));
+//
+//
+//    //printf("acq gnuradioblock doppler = %d\n", doppler);
+//
+//	// END OF OLD SATELLITE ALGORITHM --------------------------------------------------------------------
 
     d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
     d_sample_counter = initial_sample;
@@ -355,7 +386,13 @@ void pcps_acquisition_fpga::set_active(bool active)
     //d_gnss_synchro->Acq_samplestamp_samples = 2*d_sample_counter - 81; // delay due to the downsampling filter in the acquisition
     //d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter - 40; // delay due to the downsampling filter in the acquisition
 
-    d_test_statistics = (d_mag / d_input_power);                 //* correction_factor;
+//    // OLD SATELLITE DETECTION ALGORITHM STARTS HERE AGAIN -----------------------------------------------
+//
+//    d_test_statistics = (d_mag / d_input_power);                 //* correction_factor;
+//
+//    // END OF OLD SATELLITE ALGORITHM AGAIN --------------------------------------------------------------------
+
+
 
     // debug
     //    if (d_gnss_synchro->Acq_delay_samples > acq_parameters.code_length)
@@ -400,6 +437,7 @@ void pcps_acquisition_fpga::set_active(bool active)
             send_negative_acquisition();
         }
 
+
     //printf("acq set active end\n");
 }
 
@@ -425,8 +463,8 @@ void pcps_acquisition_fpga::set_single_doppler_flag(unsigned int single_doppler_
 void pcps_acquisition_fpga::read_acquisition_results(uint32_t *max_index,
     float *max_magnitude, uint64_t *initial_sample, float *power_sum, uint32_t *doppler_index)
 {
-	acquisition_fpga->read_acquisition_results(max_index, max_magnitude,
-	        initial_sample, power_sum, doppler_index);
+//	acquisition_fpga->read_acquisition_results(max_index, max_magnitude,
+//	        initial_sample, power_sum, doppler_index);
 }
 
 // this function is only used for the unit tests
@@ -439,3 +477,6 @@ void pcps_acquisition_fpga::read_fpga_total_scale_factor(uint32_t *total_scale_f
 {
 	acquisition_fpga->read_fpga_total_scale_factor(total_scale_factor, fw_scale_factor);
 }
+
+
+

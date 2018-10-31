@@ -74,6 +74,8 @@ typedef struct
     std::string device_name;
     lv_16sc_t* all_fft_codes;  // memory that contains all the code ffts
     float downsampling_factor;
+    uint32_t total_block_exp;
+    uint32_t excludelimit;
 } pcpsconf_fpga_t;
 
 class pcps_acquisition_fpga;
@@ -102,6 +104,8 @@ private:
 
     void send_positive_acquisition();
 
+    float first_vs_second_peak_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
+
     pcpsconf_fpga_t acq_parameters;
     bool d_active;
     float d_threshold;
@@ -127,6 +131,8 @@ private:
     float d_downsampling_factor;
     uint32_t d_select_queue_Fpga;
     bool d_single_doppler_flag;
+
+    uint32_t d_total_block_exp;
 
 
 public:

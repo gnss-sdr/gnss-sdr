@@ -49,6 +49,7 @@ public:
     std::map<int, int> rtcm_msg_rate_ms;
 
     bool dump;
+    bool dump_mat;
     std::string dump_filename;
 
     bool flag_nmea_tty_port;

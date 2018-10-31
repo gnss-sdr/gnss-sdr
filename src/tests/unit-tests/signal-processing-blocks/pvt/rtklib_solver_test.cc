@@ -330,9 +330,10 @@ TEST(RTKLibSolverTest, test1)
     int nchannels = 8;
     std::string dump_filename = ".rtklib_solver_dump.dat";
     bool flag_dump_to_file = false;
+    bool save_to_mat = false;
     rtk_t rtk = configure_rtklib_options();
 
-    std::unique_ptr<rtklib_solver> d_ls_pvt(new rtklib_solver(nchannels, dump_filename, flag_dump_to_file, rtk));
+    std::unique_ptr<rtklib_solver> d_ls_pvt(new rtklib_solver(nchannels, dump_filename, flag_dump_to_file, save_to_mat, rtk));
     d_ls_pvt->set_averaging_depth(1);
 
     // load ephemeris

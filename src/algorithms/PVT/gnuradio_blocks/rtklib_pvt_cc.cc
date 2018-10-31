@@ -249,6 +249,7 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
     d_output_rate_ms = conf_.output_rate_ms;
     d_display_rate_ms = conf_.display_rate_ms;
     d_dump = conf_.dump;
+    d_dump_mat = conf_.dump_mat and d_dump;
     d_dump_filename = conf_.dump_filename;
     std::string dump_ls_pvt_filename = conf_.dump_filename;
     if (d_dump)
@@ -448,7 +449,7 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
             xml_base_path = xml_base_path + boost::filesystem::path::preferred_separator;
         }
 
-    d_ls_pvt = std::make_shared<rtklib_solver>(static_cast<int32_t>(nchannels), dump_ls_pvt_filename, d_dump, rtk);
+    d_ls_pvt = std::make_shared<rtklib_solver>(static_cast<int32_t>(nchannels), dump_ls_pvt_filename, d_dump, d_dump_mat, rtk);
     d_ls_pvt->set_averaging_depth(1);
 
     d_rx_time = 0.0;

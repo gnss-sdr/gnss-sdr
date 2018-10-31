@@ -64,6 +64,7 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     DLOG(INFO) << "role " << role;
     pvt_output_parameters.dump = configuration->property(role + ".dump", false);
     pvt_output_parameters.dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
+    pvt_output_parameters.dump_mat = configuration->property(role + ".dump_mat", true);
 
     // output rate
     pvt_output_parameters.output_rate_ms = configuration->property(role + ".output_rate_ms", 500);

@@ -77,14 +77,16 @@ private:
     rtk_t rtk_;
     std::string d_dump_filename;
     std::ofstream d_dump_file;
+    bool save_matfile();
 
     bool d_flag_dump_enabled;
+    bool d_flag_dump_mat_enabled;
     int d_nchannels;  // Number of available channels for positioning
     double dop_[4];
 
 public:
     sol_t pvt_sol;
-    rtklib_solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, rtk_t& rtk);
+    rtklib_solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, rtk_t& rtk);
     ~rtklib_solver();
 
     bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, bool flag_averaging);

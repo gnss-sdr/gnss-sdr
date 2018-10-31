@@ -56,17 +56,19 @@
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
 #include "GLONASS_L1_L2_CA.h"
+#include <matio.h>
 #include <glog/logging.h>
 
 
 using google::LogMessage;
 
-rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, rtk_t& rtk)
+rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, rtk_t &rtk)
 {
     // init empty ephemeris for all the available GNSS channels
     d_nchannels = nchannels;
     d_dump_filename = dump_filename;
     d_flag_dump_enabled = flag_dump_to_file;
+    d_flag_dump_mat_enabled = flag_dump_to_mat;
     count_valid_position = 0;
     this->set_averaging_flag(false);
     rtk_ = rtk;
@@ -84,7 +86,7 @@ rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
                             LOG(INFO) << "PVT lib dump enabled Log file: " << d_dump_filename.c_str();
                         }
-                    catch (const std::ifstream::failure& e)
+                    catch (const std::ifstream::failure &e)
                         {
                             LOG(WARNING) << "Exception opening RTKLIB dump file " << e.what();
                         }
@@ -92,6 +94,301 @@ rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag
         }
 }
 
+bool rtklib_solver::save_matfile()
+{
+    // READ DUMP FILE
+    std::string dump_filename = d_dump_filename;
+    std::ifstream::pos_type size;
+    int32_t number_of_double_vars = 21;
+    int32_t number_of_uint32_vars = 2;
+    int32_t number_of_uint8_vars = 3;
+    int32_t number_of_float_vars = 2;
+    int32_t epoch_size_bytes = sizeof(double) * number_of_double_vars +
+                               sizeof(uint32_t) * number_of_uint32_vars +
+                               sizeof(uint8_t) * number_of_uint8_vars +
+                               sizeof(float) * number_of_float_vars;
+    std::ifstream dump_file;
+    std::cout << "Generating .mat file for " << dump_filename << std::endl;
+    dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    try
+        {
+            dump_file.open(dump_filename.c_str(), std::ios::binary | std::ios::ate);
+        }
+    catch (const std::ifstream::failure &e)
+        {
+            std::cerr << "Problem opening dump file:" << e.what() << std::endl;
+            return false;
+        }
+    // count number of epochs and rewind
+    int64_t num_epoch = 0LL;
+    if (dump_file.is_open())
+        {
+            size = dump_file.tellg();
+            num_epoch = static_cast<int64_t>(size) / static_cast<int64_t>(epoch_size_bytes);
+            dump_file.seekg(0, std::ios::beg);
+        }
+    else
+        {
+            return false;
+        }
+
+    uint32_t *TOW_at_current_symbol_ms = new uint32_t[num_epoch];
+    uint32_t *week = new uint32_t[num_epoch];
+    double *RX_time = new double[num_epoch];
+    double *user_clk_offset = new double[num_epoch];
+    double *pos_x = new double[num_epoch];
+    double *pos_y = new double[num_epoch];
+    double *pos_z = new double[num_epoch];
+    double *vel_x = new double[num_epoch];
+    double *vel_y = new double[num_epoch];
+    double *vel_z = new double[num_epoch];
+    double *cov_xx = new double[num_epoch];
+    double *cov_yy = new double[num_epoch];
+    double *cov_zz = new double[num_epoch];
+    double *cov_xy = new double[num_epoch];
+    double *cov_yz = new double[num_epoch];
+    double *cov_zx = new double[num_epoch];
+    double *latitude = new double[num_epoch];
+    double *longitude = new double[num_epoch];
+    double *height = new double[num_epoch];
+    uint8_t *valid_sats = new uint8_t[num_epoch];
+    uint8_t *solution_status = new uint8_t[num_epoch];
+    uint8_t *solution_type = new uint8_t[num_epoch];
+    float *AR_ratio_factor = new float[num_epoch];
+    float *AR_ratio_threshold = new float[num_epoch];
+    double *gdop = new double[num_epoch];
+    double *pdop = new double[num_epoch];
+    double *hdop = new double[num_epoch];
+    double *vdop = new double[num_epoch];
+
+    try
+        {
+            if (dump_file.is_open())
+                {
+                    for (int64_t i = 0; i < num_epoch; i++)
+                        {
+                            dump_file.read(reinterpret_cast<char *>(&TOW_at_current_symbol_ms[i]), sizeof(uint32_t));
+                            dump_file.read(reinterpret_cast<char *>(&week[i]), sizeof(uint32_t));
+                            dump_file.read(reinterpret_cast<char *>(&RX_time[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&user_clk_offset[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&pos_x[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&pos_y[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&pos_z[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&vel_x[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&vel_y[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&vel_z[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_xx[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_yy[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_zz[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_xy[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_yz[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_zx[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&latitude[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&longitude[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&height[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&valid_sats[i]), sizeof(uint8_t));
+                            dump_file.read(reinterpret_cast<char *>(&solution_status[i]), sizeof(uint8_t));
+                            dump_file.read(reinterpret_cast<char *>(&solution_type[i]), sizeof(uint8_t));
+                            dump_file.read(reinterpret_cast<char *>(&AR_ratio_factor[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&AR_ratio_threshold[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&gdop[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&pdop[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&hdop[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&vdop[i]), sizeof(double));
+                        }
+                }
+            dump_file.close();
+        }
+    catch (const std::ifstream::failure &e)
+        {
+            std::cerr << "Problem reading dump file:" << e.what() << std::endl;
+            delete[] TOW_at_current_symbol_ms;
+            delete[] week;
+            delete[] RX_time;
+            delete[] user_clk_offset;
+            delete[] pos_x;
+            delete[] pos_y;
+            delete[] pos_z;
+            delete[] vel_x;
+            delete[] vel_y;
+            delete[] vel_z;
+            delete[] cov_xx;
+            delete[] cov_yy;
+            delete[] cov_zz;
+            delete[] cov_xy;
+            delete[] cov_yz;
+            delete[] cov_zx;
+            delete[] latitude;
+            delete[] longitude;
+            delete[] height;
+            delete[] valid_sats;
+            delete[] solution_status;
+            delete[] solution_type;
+            delete[] AR_ratio_factor;
+            delete[] AR_ratio_threshold;
+            delete[] gdop;
+            delete[] pdop;
+            delete[] hdop;
+            delete[] vdop;
+
+            return false;
+        }
+
+    // WRITE MAT FILE
+    mat_t *matfp;
+    matvar_t *matvar;
+    std::string filename = dump_filename;
+    filename.erase(filename.length() - 4, 4);
+    filename.append(".mat");
+    matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
+    if (reinterpret_cast<int64_t *>(matfp) != NULL)
+        {
+            size_t dims[2] = {1, static_cast<size_t>(num_epoch)};
+            matvar = Mat_VarCreate("TOW_at_current_symbol_ms", MAT_C_UINT32, MAT_T_UINT32, 2, dims, TOW_at_current_symbol_ms, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("week", MAT_C_UINT32, MAT_T_UINT32, 2, dims, week, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("RX_time", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, RX_time, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("user_clk_offset", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, user_clk_offset, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("pos_x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, pos_x, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("pos_y", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, pos_y, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("pos_z", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, pos_z, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("vel_x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, vel_x, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("vel_y", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, vel_y, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("vel_z", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, vel_z, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_xx", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_xx, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_yy", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_yy, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_zz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_zz, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_xy", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_xy, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_yz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_yz, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_zx", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, cov_zx, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("latitude", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, latitude, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("longitude", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, longitude, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("height", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, height, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("valid_sats", MAT_C_UINT8, MAT_T_UINT8, 2, dims, valid_sats, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("solution_status", MAT_C_UINT8, MAT_T_UINT8, 2, dims, solution_status, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("solution_type", MAT_C_UINT8, MAT_T_UINT8, 2, dims, solution_type, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("AR_ratio_factor", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, AR_ratio_factor, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("AR_ratio_threshold", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, AR_ratio_threshold, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("gdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, gdop, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("pdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, pdop, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("hdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, hdop, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("vdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, vdop, 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+        }
+
+    Mat_Close(matfp);
+    delete[] TOW_at_current_symbol_ms;
+    delete[] week;
+    delete[] RX_time;
+    delete[] user_clk_offset;
+    delete[] pos_x;
+    delete[] pos_y;
+    delete[] pos_z;
+    delete[] vel_x;
+    delete[] vel_y;
+    delete[] vel_z;
+    delete[] cov_xx;
+    delete[] cov_yy;
+    delete[] cov_zz;
+    delete[] cov_xy;
+    delete[] cov_yz;
+    delete[] cov_zx;
+    delete[] latitude;
+    delete[] longitude;
+    delete[] height;
+    delete[] valid_sats;
+    delete[] solution_status;
+    delete[] solution_type;
+    delete[] AR_ratio_factor;
+    delete[] AR_ratio_threshold;
+    delete[] gdop;
+    delete[] pdop;
+    delete[] hdop;
+    delete[] vdop;
+
+    return true;
+}
 
 rtklib_solver::~rtklib_solver()
 {
@@ -101,10 +398,14 @@ rtklib_solver::~rtklib_solver()
                 {
                     d_dump_file.close();
                 }
-            catch (const std::exception& ex)
+            catch (const std::exception &ex)
                 {
                     LOG(WARNING) << "Exception in destructor closing the RTKLIB dump file " << ex.what();
                 }
+        }
+    if (d_flag_dump_mat_enabled)
+        {
+            save_matfile();
         }
 }
 
@@ -133,7 +434,7 @@ double rtklib_solver::get_vdop() const
 }
 
 
-bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, bool flag_averaging)
+bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, bool flag_averaging)
 {
     std::map<int, Gnss_Synchro>::const_iterator gnss_observables_iter;
     std::map<int, Galileo_Ephemeris>::const_iterator galileo_ephemeris_iter;
@@ -559,73 +860,73 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_
                                     uint32_t tmp_uint32;
                                     // TOW
                                     tmp_uint32 = gnss_observables_map.begin()->second.TOW_at_current_symbol_ms;
-                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_uint32), sizeof(uint32_t));
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_uint32), sizeof(uint32_t));
                                     // WEEK
                                     tmp_uint32 = adjgpsweek(nav_data.eph[0].week);
-                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_uint32), sizeof(uint32_t));
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_uint32), sizeof(uint32_t));
                                     // PVT GPS time
                                     tmp_double = gnss_observables_map.begin()->second.RX_time;
-                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                     // User clock offset [s]
                                     tmp_double = rx_position_and_time(3);
-                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
 
                                     // ECEF POS X,Y,X [m] + ECEF VEL X,Y,X [m/s] (6 x double)
                                     tmp_double = pvt_sol.rr[0];
-                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                     tmp_double = pvt_sol.rr[1];
-                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                     tmp_double = pvt_sol.rr[2];
-                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                     tmp_double = pvt_sol.rr[3];
-                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                     tmp_double = pvt_sol.rr[4];
-                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                     tmp_double = pvt_sol.rr[5];
-                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
 
                                     // position variance/covariance (m^2) {c_xx,c_yy,c_zz,c_xy,c_yz,c_zx} (6 x double)
                                     tmp_double = pvt_sol.qr[0];
-                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                     tmp_double = pvt_sol.qr[1];
-                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                     tmp_double = pvt_sol.qr[2];
-                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                     tmp_double = pvt_sol.qr[3];
-                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                     tmp_double = pvt_sol.qr[4];
-                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                     tmp_double = pvt_sol.qr[5];
-                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
 
                                     // GEO user position Latitude [deg]
                                     tmp_double = get_latitude();
-                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                     // GEO user position Longitude [deg]
                                     tmp_double = get_longitude();
-                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                     // GEO user position Height [m]
                                     tmp_double = get_height();
-                                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
 
                                     // NUMBER OF VALID SATS
-                                    d_dump_file.write(reinterpret_cast<char*>(&pvt_sol.ns), sizeof(uint8_t));
+                                    d_dump_file.write(reinterpret_cast<char *>(&pvt_sol.ns), sizeof(uint8_t));
                                     // RTKLIB solution status
-                                    d_dump_file.write(reinterpret_cast<char*>(&pvt_sol.stat), sizeof(uint8_t));
+                                    d_dump_file.write(reinterpret_cast<char *>(&pvt_sol.stat), sizeof(uint8_t));
                                     // RTKLIB solution type (0:xyz-ecef,1:enu-baseline)
-                                    d_dump_file.write(reinterpret_cast<char*>(&pvt_sol.type), sizeof(uint8_t));
+                                    d_dump_file.write(reinterpret_cast<char *>(&pvt_sol.type), sizeof(uint8_t));
                                     // AR ratio factor for validation
-                                    d_dump_file.write(reinterpret_cast<char*>(&pvt_sol.ratio), sizeof(float));
+                                    d_dump_file.write(reinterpret_cast<char *>(&pvt_sol.ratio), sizeof(float));
                                     // AR ratio threshold for validation
-                                    d_dump_file.write(reinterpret_cast<char*>(&pvt_sol.thres), sizeof(float));
+                                    d_dump_file.write(reinterpret_cast<char *>(&pvt_sol.thres), sizeof(float));
 
                                     // GDOP / PDOP/ HDOP/ VDOP
-                                    d_dump_file.write(reinterpret_cast<char*>(&dop_[0]), sizeof(double));
-                                    d_dump_file.write(reinterpret_cast<char*>(&dop_[1]), sizeof(double));
-                                    d_dump_file.write(reinterpret_cast<char*>(&dop_[2]), sizeof(double));
-                                    d_dump_file.write(reinterpret_cast<char*>(&dop_[3]), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char *>(&dop_[0]), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char *>(&dop_[1]), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char *>(&dop_[2]), sizeof(double));
+                                    d_dump_file.write(reinterpret_cast<char *>(&dop_[3]), sizeof(double));
                                 }
-                            catch (const std::ifstream::failure& e)
+                            catch (const std::ifstream::failure &e)
                                 {
                                     LOG(WARNING) << "Exception writing RTKLIB dump file " << e.what();
                                 }

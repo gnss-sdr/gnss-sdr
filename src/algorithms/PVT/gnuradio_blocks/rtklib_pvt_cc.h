@@ -72,6 +72,7 @@ private:
     void msg_handler_telemetry(pmt::pmt_t msg);
 
     bool d_dump;
+    bool d_dump_mat;
     bool b_rinex_output_enabled;
     bool b_rinex_header_written;
     bool b_rinex_header_updated;

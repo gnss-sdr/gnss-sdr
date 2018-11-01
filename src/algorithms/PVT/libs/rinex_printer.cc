@@ -5628,6 +5628,14 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
 {
     std::string line;
     version = 3;
+    if (eph_cnav.d_e_eccentricity == 0)
+        {
+            // avoid warning
+        }
+    if (galileo_eph.e_1 == 0)
+        {
+            // avoid warning
+        }
 
     // -------- Line 1
     line = std::string(5, ' ');
@@ -5968,7 +5976,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
 {
     std::string line;
     version = 3;
-
+    if (galileo_eph.e_1 == 0)
+        {
+            // avoid warning
+        }
     // -------- Line 1
     line = std::string(5, ' ');
     line += "3.02";

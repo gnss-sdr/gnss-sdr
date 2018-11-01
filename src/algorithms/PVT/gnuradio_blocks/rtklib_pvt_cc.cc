@@ -1326,13 +1326,13 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
 
                                                     if (type_of_rx == 32)  // L1+E1+L5+E5a
                                                         {
-                                                            if ((gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.cend()) &&
-                                                                (gps_cnav_ephemeris_iter != d_ls_pvt->gps_cnav_ephemeris_map.cend()) &&
+                                                            if ((gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.cend()) and
+                                                                (gps_cnav_ephemeris_iter != d_ls_pvt->gps_cnav_ephemeris_map.cend()) and
                                                                 (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.cend()))
                                                                 {
                                                                     std::string gal_signal("1B 5X");
                                                                     std::string gps_signal("1C L5");
-                                                                    rp->rinex_obs_header(rp->obsFile, gps_cnav_ephemeris_iter->second, galileo_ephemeris_iter->second, d_rx_time, gps_signal, gal_signal);
+                                                                    rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, galileo_ephemeris_iter->second, d_rx_time, gps_signal, gal_signal);
                                                                     rp->rinex_nav_header(rp->navMixFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
                                                                     b_rinex_header_written = true;  // do not write header anymore
                                                                 }
@@ -1564,7 +1564,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                         {
                                                                             rp->log_rinex_obs(rp->obsFile, gps_cnav_ephemeris_iter->second, galileo_ephemeris_iter->second, d_rx_time, gnss_observables_map);
                                                                         }
-                                                                    if (!b_rinex_header_updated && (d_ls_pvt->gps_cnav_utc_model.d_A0 != 0) && (d_ls_pvt->galileo_utc_model.A0_6 != 0))
+                                                                    if (!b_rinex_header_updated and (d_ls_pvt->gps_cnav_utc_model.d_A0 != 0) and (d_ls_pvt->galileo_utc_model.A0_6 != 0))
                                                                         {
                                                                             rp->update_obs_header(rp->obsFile, d_ls_pvt->gps_cnav_utc_model);
                                                                             rp->update_nav_header(rp->navMixFile, d_ls_pvt->gps_cnav_utc_model, d_ls_pvt->gps_cnav_iono, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
@@ -1677,11 +1677,11 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 }
                                                             if (type_of_rx == 29)  // GPS L1 C/A + GLONASS L2 C/A
                                                                 {
-                                                                    if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.end()) && (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end()))
+                                                                    if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.end()) and (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end()))
                                                                         {
                                                                             rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, gnss_observables_map);
                                                                         }
-                                                                    if (!b_rinex_header_updated && (d_ls_pvt->gps_utc_model.d_A0 != 0))
+                                                                    if (!b_rinex_header_updated and (d_ls_pvt->gps_utc_model.d_A0 != 0))
                                                                         {
                                                                             rp->update_obs_header(rp->obsFile, d_ls_pvt->gps_utc_model);
                                                                             rp->update_nav_header(rp->navMixFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model, d_ls_pvt->glonass_gnav_utc_model, d_ls_pvt->glonass_gnav_almanac);
@@ -1690,7 +1690,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 }
                                                             if (type_of_rx == 30)  // Galileo E1B + GLONASS L2 C/A
                                                                 {
-                                                                    if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.end()) && (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end()))
+                                                                    if ((glonass_gnav_ephemeris_iter != d_ls_pvt->glonass_gnav_ephemeris_map.end()) and (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end()))
                                                                         {
                                                                             rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, gnss_observables_map);
                                                                         }

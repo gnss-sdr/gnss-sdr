@@ -520,6 +520,11 @@ position-test-180417100529:
   artifacts:
     paths:
       - position-test/*
+      - position-test/L1/*
+      - position-test/E1/*
+      - position-test/L1E1/*
+      - position-test/L5/*
+      - position-test/L1E1L5E5/*
   allow_failure: true
 
 

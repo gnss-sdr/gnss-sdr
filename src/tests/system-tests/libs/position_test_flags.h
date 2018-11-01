@@ -47,5 +47,5 @@ DEFINE_double(static_3D_error_m, 5.0, "Static scenario 3D (East, North, Up) posi
 DEFINE_double(accuracy_CEP, 2.0, "Static scenario 2D (East, North) accuracy Circular Error Position (CEP) threshold [meters]");
 DEFINE_double(precision_SEP, 10.0, "Static scenario 3D (East, North, Up) precision Spherical Error Position (SEP) threshold [meters]");
 DEFINE_double(dynamic_3D_position_RMSE, 10.0, "Dynamic scenario 3D (ECEF) accuracy RMSE threshold [meters]");
-DEFINE_double(dynamic_3D_velocity_RMSE, 5.0, "Dynamic scenario 3D (ECEF) accuracy RMSE threshold [meters/second]");
+DEFINE_double(dynamic_3D_velocity_RMSE, 5.0, "Dynamic scenario 3D (ECEF) velocity accuracy RMSE threshold [meters/second]");
 #endif

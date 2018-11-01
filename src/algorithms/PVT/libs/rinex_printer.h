@@ -134,8 +134,8 @@ public:
     void rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono, const Gps_Utc_Model& gps_utc_model, const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model, const Glonass_Gnav_Almanac& glonass_gnav_almanac);
 
     /*!
-    *  \brief Generates the Mixed (GPS L2C C/A/GLONASS L1, L2) Navigation Data header
-    */
+     *  \brief Generates the Mixed (GPS L2C C/A/GLONASS L1, L2) Navigation Data header
+     */
     void rinex_nav_header(std::fstream& out, const Gps_CNAV_Iono& gps_iono, const Gps_CNAV_Utc_Model& gps_utc_model, const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model, const Glonass_Gnav_Almanac& glonass_gnav_almanac);
 
     /*!
@@ -255,8 +255,8 @@ public:
     void log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps_Ephemeris>& gps_eph_map, const std::map<int32_t, Galileo_Ephemeris>& galileo_eph_map);
 
     /*!
-         *  \brief Writes data from the Mixed (GPS/Galileo) navigation message into the RINEX file
-         */
+     *  \brief Writes data from the Mixed (GPS/Galileo) navigation message into the RINEX file
+     */
     void log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps_CNAV_Ephemeris>& gps_cnav_eph_map, const std::map<int32_t, Galileo_Ephemeris>& galileo_eph_map);
 
     /*!
@@ -310,8 +310,8 @@ public:
     void log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& eph, const Galileo_Ephemeris& galileo_eph, double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
 
     /*!
-         *  \brief Writes Mixed GPS / Galileo observables into the RINEX file
-         */
+     *  \brief Writes Mixed GPS / Galileo observables into the RINEX file
+     */
     void log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& gps_cnav_eph, const Galileo_Ephemeris& galileo_eph, double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
 
     /*!

@@ -342,59 +342,69 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
     // initialize rtcm_printer
     std::string rtcm_dump_filename;
     rtcm_dump_filename = d_dump_filename;
-    d_rtcm_printer = std::make_shared<Rtcm_Printer>(rtcm_dump_filename, conf_.rtcm_output_file_enabled, conf_.flag_rtcm_server, conf_.flag_rtcm_tty_port, conf_.rtcm_tcp_port, conf_.rtcm_station_id, conf_.rtcm_dump_devname, true, conf_.rtcm_output_file_path);
-    std::map<int, int> rtcm_msg_rate_ms = conf_.rtcm_msg_rate_ms;
-    if (rtcm_msg_rate_ms.find(1019) != rtcm_msg_rate_ms.end())
+    if (conf_.flag_rtcm_server or conf_.flag_rtcm_tty_port or conf_.rtcm_output_file_enabled)
         {
-            d_rtcm_MT1019_rate_ms = rtcm_msg_rate_ms[1019];
+            d_rtcm_printer = std::make_shared<Rtcm_Printer>(rtcm_dump_filename, conf_.rtcm_output_file_enabled, conf_.flag_rtcm_server, conf_.flag_rtcm_tty_port, conf_.rtcm_tcp_port, conf_.rtcm_station_id, conf_.rtcm_dump_devname, true, conf_.rtcm_output_file_path);
+            std::map<int, int> rtcm_msg_rate_ms = conf_.rtcm_msg_rate_ms;
+            if (rtcm_msg_rate_ms.find(1019) != rtcm_msg_rate_ms.end())
+                {
+                    d_rtcm_MT1019_rate_ms = rtcm_msg_rate_ms[1019];
+                }
+            else
+                {
+                    d_rtcm_MT1019_rate_ms = bc::lcm(5000, d_output_rate_ms);  // default value if not set
+                }
+            if (rtcm_msg_rate_ms.find(1020) != rtcm_msg_rate_ms.end())
+                {
+                    d_rtcm_MT1020_rate_ms = rtcm_msg_rate_ms[1020];
+                }
+            else
+                {
+                    d_rtcm_MT1020_rate_ms = bc::lcm(5000, d_output_rate_ms);  // default value if not set
+                }
+            if (rtcm_msg_rate_ms.find(1045) != rtcm_msg_rate_ms.end())
+                {
+                    d_rtcm_MT1045_rate_ms = rtcm_msg_rate_ms[1045];
+                }
+            else
+                {
+                    d_rtcm_MT1045_rate_ms = bc::lcm(5000, d_output_rate_ms);  // default value if not set
+                }
+            if (rtcm_msg_rate_ms.find(1077) != rtcm_msg_rate_ms.end())  // whatever between 1071 and 1077
+                {
+                    d_rtcm_MT1077_rate_ms = rtcm_msg_rate_ms[1077];
+                }
+            else
+                {
+                    d_rtcm_MT1077_rate_ms = bc::lcm(1000, d_output_rate_ms);  // default value if not set
+                }
+            if (rtcm_msg_rate_ms.find(1087) != rtcm_msg_rate_ms.end())  // whatever between 1081 and 1087
+                {
+                    d_rtcm_MT1087_rate_ms = rtcm_msg_rate_ms[1087];
+                }
+            else
+                {
+                    d_rtcm_MT1087_rate_ms = bc::lcm(1000, d_output_rate_ms);  // default value if not set
+                }
+            if (rtcm_msg_rate_ms.find(1097) != rtcm_msg_rate_ms.end())  // whatever between 1091 and 1097
+                {
+                    d_rtcm_MT1097_rate_ms = rtcm_msg_rate_ms[1097];
+                    d_rtcm_MSM_rate_ms = rtcm_msg_rate_ms[1097];
+                }
+            else
+                {
+                    d_rtcm_MT1097_rate_ms = bc::lcm(1000, d_output_rate_ms);  // default value if not set
+                    d_rtcm_MSM_rate_ms = bc::lcm(1000, d_output_rate_ms);     // default value if not set
+                }
+            b_rtcm_writing_started = false;
+            b_rtcm_enabled = true;
         }
     else
         {
-            d_rtcm_MT1019_rate_ms = bc::lcm(5000, d_output_rate_ms);  // default value if not set
+            b_rtcm_enabled = false;
+            b_rtcm_writing_started = false;
+            d_rtcm_printer = nullptr;
         }
-    if (rtcm_msg_rate_ms.find(1020) != rtcm_msg_rate_ms.end())
-        {
-            d_rtcm_MT1020_rate_ms = rtcm_msg_rate_ms[1020];
-        }
-    else
-        {
-            d_rtcm_MT1020_rate_ms = bc::lcm(5000, d_output_rate_ms);  // default value if not set
-        }
-    if (rtcm_msg_rate_ms.find(1045) != rtcm_msg_rate_ms.end())
-        {
-            d_rtcm_MT1045_rate_ms = rtcm_msg_rate_ms[1045];
-        }
-    else
-        {
-            d_rtcm_MT1045_rate_ms = bc::lcm(5000, d_output_rate_ms);  // default value if not set
-        }
-    if (rtcm_msg_rate_ms.find(1077) != rtcm_msg_rate_ms.end())  // whatever between 1071 and 1077
-        {
-            d_rtcm_MT1077_rate_ms = rtcm_msg_rate_ms[1077];
-        }
-    else
-        {
-            d_rtcm_MT1077_rate_ms = bc::lcm(1000, d_output_rate_ms);  // default value if not set
-        }
-    if (rtcm_msg_rate_ms.find(1087) != rtcm_msg_rate_ms.end())  // whatever between 1081 and 1087
-        {
-            d_rtcm_MT1087_rate_ms = rtcm_msg_rate_ms[1087];
-        }
-    else
-        {
-            d_rtcm_MT1087_rate_ms = bc::lcm(1000, d_output_rate_ms);  // default value if not set
-        }
-    if (rtcm_msg_rate_ms.find(1097) != rtcm_msg_rate_ms.end())  // whatever between 1091 and 1097
-        {
-            d_rtcm_MT1097_rate_ms = rtcm_msg_rate_ms[1097];
-            d_rtcm_MSM_rate_ms = rtcm_msg_rate_ms[1097];
-        }
-    else
-        {
-            d_rtcm_MT1097_rate_ms = bc::lcm(1000, d_output_rate_ms);  // default value if not set
-            d_rtcm_MSM_rate_ms = bc::lcm(1000, d_output_rate_ms);     // default value if not set
-        }
-    b_rtcm_writing_started = false;
 
     // initialize RINEX printer
     b_rinex_header_written = false;
@@ -954,7 +964,6 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                             //        it->second.Pseudorange_m = it->second.Pseudorange_m - d_ls_pvt->get_time_offset_s() * GPS_C_m_s;
                             //    }
 
-
                             if (d_ls_pvt->get_PVT(gnss_observables_map, false))
                                 {
                                     //Optional debug code: export observables snapshot for rtklib unit testing
@@ -1001,7 +1010,6 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                         {
                                             flag_write_RINEX_obs_output = true;
                                         }
-
                                     if (current_RX_time_ms % static_cast<uint32_t>(d_rinexnav_rate_ms) == 0)
                                         {
                                             flag_write_RINEX_nav_output = true;
@@ -1059,15 +1067,16 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                      *    29   |  GPS L1 C/A + GLONASS L2 C/A
                                      *    30   |  Galileo E1B + GLONASS L2 C/A
                                      *    31   |  GPS L2C + GLONASS L2 C/A
+                                     *    32   |  GPS L1 C/A + Galileo E1B + GPS L5 + Galileo E5a
                                      */
-                                    std::map<int, Galileo_Ephemeris>::const_iterator galileo_ephemeris_iter;
-                                    std::map<int, Gps_Ephemeris>::const_iterator gps_ephemeris_iter;
-                                    std::map<int, Gps_CNAV_Ephemeris>::const_iterator gps_cnav_ephemeris_iter;
-                                    std::map<int, Glonass_Gnav_Ephemeris>::const_iterator glonass_gnav_ephemeris_iter;
 
                                     // ####################### RINEX FILES #################
                                     if (b_rinex_output_enabled)
                                         {
+                                            std::map<int, Galileo_Ephemeris>::const_iterator galileo_ephemeris_iter;
+                                            std::map<int, Gps_Ephemeris>::const_iterator gps_ephemeris_iter;
+                                            std::map<int, Gps_CNAV_Ephemeris>::const_iterator gps_cnav_ephemeris_iter;
+                                            std::map<int, Glonass_Gnav_Ephemeris>::const_iterator glonass_gnav_ephemeris_iter;
                                             if (!b_rinex_header_written)  //  & we have utc data in nav message!
                                                 {
                                                     galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.cbegin();
@@ -1737,7 +1746,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                     // ####################### RTCM MESSAGES #################
                                     try
                                         {
-                                            if (b_rtcm_writing_started)
+                                            if (b_rtcm_writing_started and b_rtcm_enabled)
                                                 {
                                                     if (type_of_rx == 1)  // GPS L1 C/A
                                                         {
@@ -2219,7 +2228,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                         {
                                                                             d_rtcm_printer->Print_Rtcm_MSM(7, gps_eph_iter->second, {}, {}, {}, d_rx_time, gnss_observables_map, 0, 0, 0, 0, 0);
                                                                         }
-                                                                    if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                                                    if (gal_eph_iter != d_ls_pvt->galileo_ephemeris_map.end())
                                                                         {
                                                                             d_rtcm_printer->Print_Rtcm_MSM(7, {}, {}, gal_eph_iter->second, {}, d_rx_time, gnss_observables_map, 0, 0, 0, 0, 0);
                                                                         }
@@ -2227,7 +2236,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                         }
                                                 }
 
-                                            if (!b_rtcm_writing_started)  // the first time
+                                            if (!b_rtcm_writing_started and b_rtcm_enabled)  // the first time
                                                 {
                                                     if (type_of_rx == 1)  // GPS L1 C/A
                                                         {

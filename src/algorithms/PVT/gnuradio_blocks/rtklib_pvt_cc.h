@@ -81,6 +81,7 @@ private:
     int32_t d_rinexnav_rate_ms;
 
     bool b_rtcm_writing_started;
+    bool b_rtcm_enabled;
     int32_t d_rtcm_MT1045_rate_ms;  //!< Galileo Broadcast Ephemeris
     int32_t d_rtcm_MT1019_rate_ms;  //!< GPS Broadcast Ephemeris (orbits)
     int32_t d_rtcm_MT1020_rate_ms;  //!< GLONASS Broadcast Ephemeris (orbits)

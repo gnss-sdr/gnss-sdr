@@ -401,6 +401,13 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
         }
     else
         {
+            d_rtcm_MT1019_rate_ms = 0;
+            d_rtcm_MT1045_rate_ms = 0;
+            d_rtcm_MT1020_rate_ms = 0;
+            d_rtcm_MT1077_rate_ms = 0;
+            d_rtcm_MT1087_rate_ms = 0;
+            d_rtcm_MT1097_rate_ms = 0;
+            d_rtcm_MSM_rate_ms = 0;
             b_rtcm_enabled = false;
             b_rtcm_writing_started = false;
             d_rtcm_printer = nullptr;
@@ -895,46 +902,49 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                     // store valid observables in a map.
                                     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(i, in[i][epoch]));
                                 }
-                            try
+                            if (b_rtcm_enabled)
                                 {
-                                    if (d_ls_pvt->gps_ephemeris_map.empty() == false)
+                                    try
                                         {
-                                            if (tmp_eph_iter_gps != d_ls_pvt->gps_ephemeris_map.end())
+                                            if (d_ls_pvt->gps_ephemeris_map.empty() == false)
                                                 {
-                                                    d_rtcm_printer->lock_time(d_ls_pvt->gps_ephemeris_map.find(in[i][epoch].PRN)->second, in[i][epoch].RX_time, in[i][epoch]);  // keep track of locking time
+                                                    if (tmp_eph_iter_gps != d_ls_pvt->gps_ephemeris_map.end())
+                                                        {
+                                                            d_rtcm_printer->lock_time(d_ls_pvt->gps_ephemeris_map.find(in[i][epoch].PRN)->second, in[i][epoch].RX_time, in[i][epoch]);  // keep track of locking time
+                                                        }
+                                                }
+                                            if (d_ls_pvt->galileo_ephemeris_map.empty() == false)
+                                                {
+                                                    if (tmp_eph_iter_gal != d_ls_pvt->galileo_ephemeris_map.end())
+                                                        {
+                                                            d_rtcm_printer->lock_time(d_ls_pvt->galileo_ephemeris_map.find(in[i][epoch].PRN)->second, in[i][epoch].RX_time, in[i][epoch]);  // keep track of locking time
+                                                        }
+                                                }
+                                            if (d_ls_pvt->gps_cnav_ephemeris_map.empty() == false)
+                                                {
+                                                    if (tmp_eph_iter_cnav != d_ls_pvt->gps_cnav_ephemeris_map.end())
+                                                        {
+                                                            d_rtcm_printer->lock_time(d_ls_pvt->gps_cnav_ephemeris_map.find(in[i][epoch].PRN)->second, in[i][epoch].RX_time, in[i][epoch]);  // keep track of locking time
+                                                        }
+                                                }
+                                            if (d_ls_pvt->glonass_gnav_ephemeris_map.empty() == false)
+                                                {
+                                                    if (tmp_eph_iter_glo_gnav != d_ls_pvt->glonass_gnav_ephemeris_map.end())
+                                                        {
+                                                            d_rtcm_printer->lock_time(d_ls_pvt->glonass_gnav_ephemeris_map.find(in[i][epoch].PRN)->second, in[i][epoch].RX_time, in[i][epoch]);  // keep track of locking time
+                                                        }
                                                 }
                                         }
-                                    if (d_ls_pvt->galileo_ephemeris_map.empty() == false)
+                                    catch (const boost::exception& ex)
                                         {
-                                            if (tmp_eph_iter_gal != d_ls_pvt->galileo_ephemeris_map.end())
-                                                {
-                                                    d_rtcm_printer->lock_time(d_ls_pvt->galileo_ephemeris_map.find(in[i][epoch].PRN)->second, in[i][epoch].RX_time, in[i][epoch]);  // keep track of locking time
-                                                }
+                                            std::cout << "RTCM boost exception: " << boost::diagnostic_information(ex) << std::endl;
+                                            LOG(ERROR) << "RTCM boost exception: " << boost::diagnostic_information(ex);
                                         }
-                                    if (d_ls_pvt->gps_cnav_ephemeris_map.empty() == false)
+                                    catch (const std::exception& ex)
                                         {
-                                            if (tmp_eph_iter_cnav != d_ls_pvt->gps_cnav_ephemeris_map.end())
-                                                {
-                                                    d_rtcm_printer->lock_time(d_ls_pvt->gps_cnav_ephemeris_map.find(in[i][epoch].PRN)->second, in[i][epoch].RX_time, in[i][epoch]);  // keep track of locking time
-                                                }
+                                            std::cout << "RTCM std exception: " << ex.what() << std::endl;
+                                            LOG(ERROR) << "RTCM std exception: " << ex.what();
                                         }
-                                    if (d_ls_pvt->glonass_gnav_ephemeris_map.empty() == false)
-                                        {
-                                            if (tmp_eph_iter_glo_gnav != d_ls_pvt->glonass_gnav_ephemeris_map.end())
-                                                {
-                                                    d_rtcm_printer->lock_time(d_ls_pvt->glonass_gnav_ephemeris_map.find(in[i][epoch].PRN)->second, in[i][epoch].RX_time, in[i][epoch]);  // keep track of locking time
-                                                }
-                                        }
-                                }
-                            catch (const boost::exception& ex)
-                                {
-                                    std::cout << "RTCM boost exception: " << boost::diagnostic_information(ex) << std::endl;
-                                    LOG(ERROR) << "RTCM boost exception: " << boost::diagnostic_information(ex);
-                                }
-                            catch (const std::exception& ex)
-                                {
-                                    std::cout << "RTCM std exception: " << ex.what() << std::endl;
-                                    LOG(ERROR) << "RTCM std exception: " << ex.what();
                                 }
                         }
                 }
@@ -976,17 +986,26 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                         {
                                             flag_display_pvt = true;
                                         }
-                                    if (current_RX_time_ms % d_rtcm_MT1019_rate_ms == 0 and d_rtcm_MT1019_rate_ms != 0)  // allows deactivating messages by setting rate = 0
+                                    if (d_rtcm_MT1019_rate_ms != 0)  // allows deactivating messages by setting rate = 0
                                         {
-                                            flag_write_RTCM_1019_output = true;
+                                            if (current_RX_time_ms % d_rtcm_MT1019_rate_ms == 0)
+                                                {
+                                                    flag_write_RTCM_1019_output = true;
+                                                }
                                         }
-                                    if (current_RX_time_ms % d_rtcm_MT1020_rate_ms == 0 and d_rtcm_MT1020_rate_ms != 0)  // allows deactivating messages by setting rate = 0
+                                    if (d_rtcm_MT1020_rate_ms != 0)  // allows deactivating messages by setting rate = 0
                                         {
-                                            flag_write_RTCM_1020_output = true;
+                                            if (current_RX_time_ms % d_rtcm_MT1020_rate_ms == 0)
+                                                {
+                                                    flag_write_RTCM_1020_output = true;
+                                                }
                                         }
-                                    if (current_RX_time_ms % d_rtcm_MT1045_rate_ms == 0 and d_rtcm_MT1045_rate_ms != 0)
+                                    if (d_rtcm_MT1045_rate_ms != 0)
                                         {
-                                            flag_write_RTCM_1045_output = true;
+                                            if (current_RX_time_ms % d_rtcm_MT1045_rate_ms == 0)
+                                                {
+                                                    flag_write_RTCM_1045_output = true;
+                                                }
                                         }
                                     // TODO: RTCM 1077, 1087 and 1097 are not used, so, disable the output rates
                                     // if (current_RX_time_ms % d_rtcm_MT1077_rate_ms==0 and d_rtcm_MT1077_rate_ms != 0)
@@ -1001,18 +1020,26 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                     //     {
                                     //         last_RTCM_1097_output_time = current_RX_time;
                                     //     }
-
-                                    if (current_RX_time_ms % d_rtcm_MSM_rate_ms == 0 and d_rtcm_MSM_rate_ms != 0)
+                                    if (d_rtcm_MSM_rate_ms != 0)
                                         {
-                                            flag_write_RTCM_MSM_output = true;
+                                            if (current_RX_time_ms % d_rtcm_MSM_rate_ms == 0)
+                                                {
+                                                    flag_write_RTCM_MSM_output = true;
+                                                }
                                         }
-                                    if (current_RX_time_ms % static_cast<uint32_t>(d_rinexobs_rate_ms) == 0)
+                                    if (d_rinexobs_rate_ms != 0)
                                         {
-                                            flag_write_RINEX_obs_output = true;
+                                            if (current_RX_time_ms % static_cast<uint32_t>(d_rinexobs_rate_ms) == 0)
+                                                {
+                                                    flag_write_RINEX_obs_output = true;
+                                                }
                                         }
-                                    if (current_RX_time_ms % static_cast<uint32_t>(d_rinexnav_rate_ms) == 0)
+                                    if (d_rinexnav_rate_ms != 0)
                                         {
-                                            flag_write_RINEX_nav_output = true;
+                                            if (current_RX_time_ms % static_cast<uint32_t>(d_rinexnav_rate_ms) == 0)
+                                                {
+                                                    flag_write_RINEX_nav_output = true;
+                                                }
                                         }
 
                                     if (first_fix == true)

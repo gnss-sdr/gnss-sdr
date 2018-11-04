@@ -2521,7 +2521,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     int glo_channel = 0;
                                                                     std::map<int, Gnss_Synchro>::const_iterator gnss_observables_iter;
                                                                     std::map<int, Galileo_Ephemeris>::const_iterator gal_eph_iter = d_ls_pvt->galileo_ephemeris_map.cbegin();
-                                                                    std::map<int, Glonass_Gnav_Ephemeris>::const_iterator glonass_gnav_eph_iter = = d_ls_pvt->glonass_gnav_ephemeris_map.cbegin();
+                                                                    std::map<int, Glonass_Gnav_Ephemeris>::const_iterator glonass_gnav_eph_iter = d_ls_pvt->glonass_gnav_ephemeris_map.cbegin();
                                                                     for (gnss_observables_iter = gnss_observables_map.cbegin(); gnss_observables_iter != gnss_observables_map.cend(); gnss_observables_iter++)
                                                                         {
                                                                             std::string system(&gnss_observables_iter->second.System, 1);

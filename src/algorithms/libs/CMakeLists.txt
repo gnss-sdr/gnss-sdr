@@ -64,6 +64,7 @@ set(GNSS_SPLIBS_HEADERS
         conjugate_ic.h
         gnss_sdr_create_directory.h
         gnss_circular_deque.h
+        geofunctions.h
 )
 
 
@@ -102,6 +103,7 @@ include_directories(
     ${Boost_INCLUDE_DIRS}
     ${GLOG_INCLUDE_DIRS}
     ${GFlags_INCLUDE_DIRS}
+    ${ARMADILLO_INCLUDE_DIRS}
     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
     ${GNURADIO_BLOCKS_INCLUDE_DIRS}
     ${VOLK_INCLUDE_DIRS}
@@ -129,6 +131,7 @@ target_link_libraries(gnss_sp_libs ${GNURADIO_RUNTIME_LIBRARIES}
     ${VOLK_LIBRARIES} ${ORC_LIBRARIES}
     ${VOLK_GNSSSDR_LIBRARIES}  ${ORC_LIBRARIES}
     ${GFlags_LIBS}
+    ${ARMADILLO_LIBRARIES}
     ${GNURADIO_BLOCKS_LIBRARIES}
     ${GNURADIO_FFT_LIBRARIES}
     ${GNURADIO_FILTER_LIBRARIES}
@@ -137,7 +140,9 @@ target_link_libraries(gnss_sp_libs ${GNURADIO_RUNTIME_LIBRARIES}
 )
 
 if(NOT VOLK_GNSSSDR_FOUND)
-    add_dependencies(gnss_sp_libs volk_gnsssdr_module)
+    add_dependencies(gnss_sp_libs volk_gnsssdr_module armadillo-${armadillo_RELEASE})
+else(NOT VOLK_GNSSSDR_FOUND)
+    add_dependencies(gnss_sp_libs armadillo-${armadillo_RELEASE})
 endif(NOT VOLK_GNSSSDR_FOUND)
 
 if(${GFLAGS_GREATER_20})

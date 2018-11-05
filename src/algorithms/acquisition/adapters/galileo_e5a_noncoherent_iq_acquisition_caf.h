@@ -131,6 +131,11 @@ public:
      */
     void set_state(int state) override;
 
+    /*!
+     * \brief Stop running acquisition
+     */
+    void stop_acquisition() override;
+
 private:
     ConfigurationInterface* configuration_;
     galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr acquisition_cc_;

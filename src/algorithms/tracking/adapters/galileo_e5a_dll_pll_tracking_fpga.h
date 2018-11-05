@@ -91,6 +91,10 @@ public:
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
     void start_tracking() override;
+    /*!
+     * \brief Stop running tracking
+     */
+    void stop_tracking() override;
 
 private:
     dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
@@ -104,7 +108,6 @@ private:
     int* d_ca_codes;
     int* d_data_codes;
     bool d_track_pilot;
-
 };
 
 #endif /* GNSS_SDR_GALILEO_E5A_DLL_PLL_TRACKING_FPGA_H_ */

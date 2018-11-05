@@ -83,6 +83,7 @@ public:
 private:
     hybrid_observables_cc_sptr observables_;
     bool dump_;
+    bool dump_mat_;
     std::string dump_filename_;
     std::string role_;
     unsigned int in_streams_;

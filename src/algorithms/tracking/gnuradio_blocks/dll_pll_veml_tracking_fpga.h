@@ -52,44 +52,11 @@
 #include <boost/circular_buffer.hpp>
 #include "fpga_multicorrelator.h"
 
-//typedef struct
-//{
-//    /* DLL/PLL tracking configuration */
-//    double fs_in;
-//    uint32_t  vector_length;
-//    bool dump;
-//    std::string dump_filename;
-//    float pll_bw_hz;
-//    float dll_bw_hz;
-//    float pll_bw_narrow_hz;
-//    float dll_bw_narrow_hz;
-//    float early_late_space_chips;
-//    float very_early_late_space_chips;
-//    float early_late_space_narrow_chips;
-//    float very_early_late_space_narrow_chips;
-//    int32_t extend_correlation_symbols;
-//    int32_t cn0_samples;
-//    int32_t cn0_min;
-//    int32_t max_lock_fail;
-//    double carrier_lock_th;
-//    bool track_pilot;
-//    char system;
-//    char signal[3];
-//    std::string device_name;
-//    uint32_t  device_base;
-//    uint32_t  multicorr_type;
-//    uint32_t  code_length_chips;
-//    uint32_t  code_samples_per_chip;
-//    int* ca_codes;
-//    int* data_codes;
-//} dllpllconf_fpga_t;
-
 class dll_pll_veml_tracking_fpga;
 
 typedef boost::shared_ptr<dll_pll_veml_tracking_fpga>
     dll_pll_veml_tracking_fpga_sptr;
 
-//dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(const dllpllconf_fpga_t &conf_);
 dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(const Dll_Pll_Conf_Fpga &conf_);
 
 
@@ -104,7 +71,7 @@ public:
     void set_channel(uint32_t channel);
     void set_gnss_synchro(Gnss_Synchro *p_gnss_synchro);
     void start_tracking();
-
+    void stop_tracking();
     int general_work(int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
@@ -228,6 +195,9 @@ private:
 
     // file dump
     std::ofstream d_dump_file;
+    std::string d_dump_filename;
+    bool d_dump;
+    bool d_dump_mat;
 
     // extra
     int32_t d_correlation_length_samples;

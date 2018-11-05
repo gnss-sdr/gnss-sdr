@@ -37,6 +37,7 @@
 
 #include "control_message_factory.h"
 #include "gnss_sdr_supl_client.h"
+#include "tcp_cmd_interface.h"
 #include <boost/thread.hpp>
 #include <gnuradio/msg_queue.h>
 #include <memory>
@@ -82,7 +83,7 @@ public:
      *
      *  - Read control messages and process them; }
      */
-    void run();
+    int run();
 
     /*!
      * \brief Sets the control_queue
@@ -113,6 +114,10 @@ public:
     }
 
 private:
+    //Telecommand TCP interface
+    TcpCmdInterface cmd_interface_;
+    void telecommand_listener();
+    boost::thread cmd_interface_thread_;
     //SUPL assistance classes
     gnss_sdr_supl_client supl_client_acquisition_;
     gnss_sdr_supl_client supl_client_ephemeris_;
@@ -150,6 +155,7 @@ private:
     std::shared_ptr<ControlMessageFactory> control_message_factory_;
     std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>> control_messages_;
     bool stop_;
+    bool restart_;
     bool delete_configuration_;
     unsigned int processed_control_messages_;
     unsigned int applied_actions_;
@@ -167,6 +173,15 @@ private:
     const std::string iono_default_xml_filename = "./gps_iono.xml";
     const std::string ref_time_default_xml_filename = "./gps_ref_time.xml";
     const std::string ref_location_default_xml_filename = "./gps_ref_location.xml";
+    const std::string eph_gal_default_xml_filename = "./gal_ephemeris.xml";
+    const std::string eph_cnav_default_xml_filename = "./gps_cnav_ephemeris.xml";
+    const std::string gal_iono_default_xml_filename = "./gal_iono.xml";
+    const std::string gal_utc_default_xml_filename = "./gal_utc_model.xml";
+    const std::string cnav_utc_default_xml_filename = "./gps_cnav_utc_model.xml";
+    const std::string eph_glo_gnav_default_xml_filename = "./glo_gnav_ephemeris.xml";
+    const std::string glo_utc_default_xml_filename = "./glo_utc_model.xml";
+    const std::string gal_almanac_default_xml_filename = "./gal_almanac.xml";
+    const std::string gps_almanac_default_xml_filename = "./gps_almanac.xml";
 };
 
 #endif /*GNSS_SDR_CONTROL_THREAD_H_*/

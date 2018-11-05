@@ -35,6 +35,9 @@
 
 #include "nmea_printer.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/filesystem/operations.hpp>   // for create_directories, exists
+#include <boost/filesystem/path.hpp>         // for path, operator<<
+#include <boost/filesystem/path_traits.hpp>  // for filesystem
 #include <glog/logging.h>
 #include <cstdint>
 #include <fcntl.h>
@@ -44,13 +47,55 @@
 using google::LogMessage;
 
 
-Nmea_Printer::Nmea_Printer(std::string filename, bool flag_nmea_tty_port, std::string nmea_dump_devname)
+Nmea_Printer::Nmea_Printer(std::string filename, bool flag_nmea_output_file, bool flag_nmea_tty_port, std::string nmea_dump_devname, const std::string& base_path)
 {
-    nmea_filename = filename;
-    nmea_file_descriptor.open(nmea_filename.c_str(), std::ios::out);
-    if (nmea_file_descriptor.is_open())
+    nmea_base_path = base_path;
+    d_flag_nmea_output_file = flag_nmea_output_file;
+    if (d_flag_nmea_output_file == true)
         {
-            DLOG(INFO) << "NMEA printer writing on " << nmea_filename.c_str();
+            boost::filesystem::path full_path(boost::filesystem::current_path());
+            const boost::filesystem::path p(nmea_base_path);
+            if (!boost::filesystem::exists(p))
+                {
+                    std::string new_folder;
+                    for (auto& folder : boost::filesystem::path(nmea_base_path))
+                        {
+                            new_folder += folder.string();
+                            boost::system::error_code ec;
+                            if (!boost::filesystem::exists(new_folder))
+                                {
+                                    if (!boost::filesystem::create_directory(new_folder, ec))
+                                        {
+                                            std::cout << "Could not create the " << new_folder << " folder." << std::endl;
+                                            nmea_base_path = full_path.string();
+                                        }
+                                }
+                            new_folder += boost::filesystem::path::preferred_separator;
+                        }
+                }
+            else
+                {
+                    nmea_base_path = p.string();
+                }
+
+            if ((nmea_base_path.compare(".") != 0) and (d_flag_nmea_output_file == true))
+                {
+                    std::cout << "NMEA files will be stored at " << nmea_base_path << std::endl;
+                }
+
+            nmea_base_path = nmea_base_path + boost::filesystem::path::preferred_separator;
+
+            nmea_filename = nmea_base_path + filename;
+
+            nmea_file_descriptor.open(nmea_filename.c_str(), std::ios::out);
+            if (nmea_file_descriptor.is_open())
+                {
+                    DLOG(INFO) << "NMEA printer writing on " << nmea_filename.c_str();
+                }
+            else
+                {
+                    std::cout << "File " << nmea_filename << " cannot be saved. Wrong permissions?" << std::endl;
+                }
         }
 
     nmea_devname = nmea_dump_devname;
@@ -94,13 +139,13 @@ int Nmea_Printer::init_serial(std::string serial_device)
     int64_t PARITY;
 
     fd = open(serial_device.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
-    if (fd == -1) return fd;  //failed to open TTY port
+    if (fd == -1) return fd;  // failed to open TTY port
 
     if (fcntl(fd, F_SETFL, 0) == -1) LOG(INFO) << "Error enabling direct I/O";  // clear all flags on descriptor, enable direct I/O
     tcgetattr(fd, &options);                                                    // read serial port options
 
     BAUD = B9600;
-    //BAUD  =  B38400;
+    // BAUD  =  B38400;
     DATABITS = CS8;
     STOPBITS = 0;
     PARITYON = 0;
@@ -108,7 +153,7 @@ int Nmea_Printer::init_serial(std::string serial_device)
 
     options.c_cflag = BAUD | DATABITS | STOPBITS | PARITYON | PARITY | CLOCAL | CREAD;
     // enable receiver, set 8 bit data, ignore control lines
-    //options.c_cflag |= (CLOCAL | CREAD | CS8);
+    // options.c_cflag |= (CLOCAL | CREAD | CS8);
     options.c_iflag = IGNPAR;
 
     // set the new port options
@@ -139,34 +184,36 @@ bool Nmea_Printer::Print_Nmea_Line(const std::shared_ptr<rtklib_solver>& pvt_dat
 
     // generate the NMEA sentences
 
-    //GPRMC
+    // GPRMC
     GPRMC = get_GPRMC();
-    //GPGGA (Global Positioning System Fixed Data)
+    // GPGGA (Global Positioning System Fixed Data)
     GPGGA = get_GPGGA();
-    //GPGSA
+    // GPGSA
     GPGSA = get_GPGSA();
-    //GPGSV
+    // GPGSV
     GPGSV = get_GPGSV();
 
     // write to log file
-    try
+    if (d_flag_nmea_output_file)
         {
-            //GPRMC
-            nmea_file_descriptor << GPRMC;
-            //GPGGA (Global Positioning System Fixed Data)
-            nmea_file_descriptor << GPGGA;
-            //GPGSA
-            nmea_file_descriptor << GPGSA;
-            //GPGSV
-            nmea_file_descriptor << GPGSV;
-        }
-    catch (const std::exception& ex)
-        {
-            DLOG(INFO) << "NMEA printer can not write on output file" << nmea_filename.c_str();
-            ;
+            try
+                {
+                    // GPRMC
+                    nmea_file_descriptor << GPRMC;
+                    // GPGGA (Global Positioning System Fixed Data)
+                    nmea_file_descriptor << GPGGA;
+                    // GPGSA
+                    nmea_file_descriptor << GPGSA;
+                    // GPGSV
+                    nmea_file_descriptor << GPGSV;
+                }
+            catch (const std::exception& ex)
+                {
+                    DLOG(INFO) << "NMEA printer can not write on output file" << nmea_filename.c_str();
+                }
         }
 
-    //write to serial device
+    // write to serial device
     if (nmea_dev_descriptor != -1)
         {
             if (write(nmea_dev_descriptor, GPRMC.c_str(), GPRMC.length()) == -1)
@@ -284,7 +331,7 @@ std::string Nmea_Printer::longitude_to_hm(double longitude)
 
 std::string Nmea_Printer::get_UTC_NMEA_time(boost::posix_time::ptime d_position_UTC_time)
 {
-    //UTC Time: hhmmss.sss
+    // UTC Time: hhmmss.sss
     std::stringstream sentence_str;
 
     boost::posix_time::time_duration td = d_position_UTC_time.time_of_day();
@@ -335,20 +382,19 @@ std::string Nmea_Printer::get_GPRMC()
     double speed_over_ground_knots = 0;
     double course_over_ground_deg = 0;
 
-    //boost::posix_time::ptime d_position_UTC_time=boost::posix_time::microsec_clock::universal_time();
+    // boost::posix_time::ptime d_position_UTC_time=boost::posix_time::microsec_clock::universal_time();
 
     std::stringstream sentence_str;
 
-    //GPRMC (RMC-Recommended,Minimum Specific GNSS Data)
+    // GPRMC (RMC-Recommended,Minimum Specific GNSS Data)
     std::string sentence_header;
     sentence_header = "$GPRMC,";
     sentence_str << sentence_header;
 
-    //UTC Time: hhmmss.sss
+    // UTC Time: hhmmss.sss
     sentence_str << get_UTC_NMEA_time(d_PVT_data->get_position_UTC_time());
 
-    //Status: A: data valid, V: data NOT valid
-
+    // Status: A: data valid, V: data NOT valid
     if (valid_fix == true)
         {
             sentence_str << ",A";
@@ -373,13 +419,13 @@ std::string Nmea_Printer::get_GPRMC()
             sentence_str << "," << longitude_to_hm(d_PVT_data->get_longitude());
         }
 
-    //Speed over ground (knots)
+    // Speed over ground (knots)
     sentence_str << ",";
     sentence_str.setf(std::ios::fixed, std::ios::floatfield);
     sentence_str.precision(2);
     sentence_str << speed_over_ground_knots;
 
-    //course over ground (degrees)
+    // course over ground (degrees)
     sentence_str << ",";
     sentence_str.setf(std::ios::fixed, std::ios::floatfield);
     sentence_str.precision(2);
@@ -403,11 +449,11 @@ std::string Nmea_Printer::get_GPRMC()
     year_strs << std::dec << year;
     sentence_str << std::dec << year_strs.str().substr(2);
 
-    //Magnetic Variation (degrees)
+    // Magnetic Variation (degrees)
     // ToDo: Implement magnetic compass
     sentence_str << ",";
 
-    //Magnetic Variation (E or W)
+    // Magnetic Variation (E or W)
     // ToDo: Implement magnetic compass
     sentence_str << ",";
 
@@ -429,7 +475,7 @@ std::string Nmea_Printer::get_GPRMC()
 
 std::string Nmea_Printer::get_GPGSA()
 {
-    //$GPGSA,A,3,07,02,26,27,09,04,15, , , , , ,1.8,1.0,1.5*33
+    // $GPGSA,A,3,07,02,26,27,09,04,15, , , , , ,1.8,1.0,1.5*33
     // GSA-GNSS DOP and Active Satellites
     bool valid_fix = d_PVT_data->is_valid_position();
     int n_sats_used = d_PVT_data->get_num_valid_observations();
@@ -480,14 +526,14 @@ std::string Nmea_Printer::get_GPGSA()
     sentence_str.precision(1);
     sentence_str.fill('0');
     sentence_str << pdop;
-    //HDOP
+    // HDOP
     sentence_str << ",";
     sentence_str.setf(std::ios::fixed, std::ios::floatfield);
     sentence_str.width(2);
     sentence_str.precision(1);
     sentence_str.fill('0');
     sentence_str << hdop;
-    //VDOP
+    // VDOP
     sentence_str << ",";
     sentence_str.setf(std::ios::fixed, std::ios::floatfield);
     sentence_str.width(2);
@@ -548,7 +594,7 @@ std::string Nmea_Printer::get_GPGSV()
             frame_str.fill('0');
             frame_str << std::dec << n_sats_used;
 
-            //satellites info
+            // satellites info
             for (int j = 0; j < 4; j++)
                 {
                     // write satellite info
@@ -595,13 +641,13 @@ std::string Nmea_Printer::get_GPGSV()
             sentence_str << frame_str.str();
         }
     return sentence_str.str();
-    //$GPGSV,2,1,07,07,79,048,42,02,51,062,43,26,36,256,42,27,27,138,42*71
+    // $GPGSV,2,1,07,07,79,048,42,02,51,062,43,26,36,256,42,27,27,138,42*71
 }
 
 
 std::string Nmea_Printer::get_GPGGA()
 {
-    //boost::posix_time::ptime d_position_UTC_time=boost::posix_time::microsec_clock::universal_time();
+    // boost::posix_time::ptime d_position_UTC_time=boost::posix_time::microsec_clock::universal_time();
     bool valid_fix = d_PVT_data->is_valid_position();
     int n_channels = d_PVT_data->get_num_valid_observations();  //d_nchannels
     double hdop = d_PVT_data->get_hdop();
@@ -618,12 +664,12 @@ std::string Nmea_Printer::get_GPGGA()
 
     std::stringstream sentence_str;
 
-    //GPGGA (Global Positioning System Fixed Data)
+    // GPGGA (Global Positioning System Fixed Data)
     std::string sentence_header;
     sentence_header = "$GPGGA,";
     sentence_str << sentence_header;
 
-    //UTC Time: hhmmss.sss
+    // UTC Time: hhmmss.sss
     sentence_str << get_UTC_NMEA_time(d_PVT_data->get_position_UTC_time());
 
     if (d_PVT_data->is_averaging() == true)
@@ -708,5 +754,5 @@ std::string Nmea_Printer::get_GPGGA()
     // end NMEA sentence
     sentence_str << "\r\n";
     return sentence_str.str();
-    //$GPGGA,104427.591,5920.7009,N,01803.2938,E,1,05,3.3,78.2,M,23.2,M,0.0,0000*4A
+    // $GPGGA,104427.591,5920.7009,N,01803.2938,E,1,05,3.3,78.2,M,23.2,M,0.0,0000*4A
 }

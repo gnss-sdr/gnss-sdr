@@ -34,6 +34,8 @@
 #include "gps_sdr_signal_processing.h"
 #include "control_message_factory.h"
 #include "GPS_L1_CA.h"
+#include "gnss_sdr_create_directory.h"
+#include <boost/filesystem/path.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
@@ -84,6 +86,38 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Con
     // For dumping samples into a file
     d_dump = conf_.dump;
     d_dump_filename = conf_.dump_filename;
+
+    if (d_dump)
+        {
+            std::string dump_path;
+            // Get path
+            if (d_dump_filename.find_last_of("/") != std::string::npos)
+                {
+                    std::string dump_filename_ = d_dump_filename.substr(d_dump_filename.find_last_of("/") + 1);
+                    dump_path = d_dump_filename.substr(0, d_dump_filename.find_last_of("/"));
+                    d_dump_filename = dump_filename_;
+                }
+            else
+                {
+                    dump_path = std::string(".");
+                }
+            if (d_dump_filename.empty())
+                {
+                    d_dump_filename = "acquisition";
+                }
+            // remove extension if any
+            if (d_dump_filename.substr(1).find_last_of(".") != std::string::npos)
+                {
+                    d_dump_filename = d_dump_filename.substr(0, d_dump_filename.find_last_of("."));
+                }
+            d_dump_filename = dump_path + boost::filesystem::path::preferred_separator + d_dump_filename;
+            // create directory
+            if (!gnss_sdr_create_directory(dump_path))
+                {
+                    std::cerr << "GNSS-SDR cannot create dump file for the Acquisition block. Wrong permissions?" << std::endl;
+                    d_dump = false;
+                }
+        }
 
     d_n_samples_in_buffer = 0;
     d_threshold = 0;

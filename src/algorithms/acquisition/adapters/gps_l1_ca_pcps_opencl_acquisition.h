@@ -124,6 +124,11 @@ public:
     void reset() override;
     void set_state(int state __attribute__((unused))) override{};
 
+    /*!
+     * \brief Stop running acquisition
+     */
+    void stop_acquisition() override;
+
 private:
     ConfigurationInterface* configuration_;
     pcps_opencl_acquisition_cc_sptr acquisition_cc_;

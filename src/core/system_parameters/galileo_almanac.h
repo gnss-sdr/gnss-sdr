@@ -1,8 +1,8 @@
 /*!
  * \file galileo_almanac.h
  * \brief  Interface of a Galileo ALMANAC storage
- * \author Javier Arribas, 2013. jarribas(at)cttc.es
- * \author Mara Branzanti 2013. mara.branzanti(at)gmail.com
+ * \author Carles Fernandez, 2018. cfernandez(at)cttc.cat
+ *
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
@@ -28,81 +28,65 @@
  * -------------------------------------------------------------------------
  */
 
+
 #ifndef GNSS_SDR_GALILEO_ALMANAC_H_
 #define GNSS_SDR_GALILEO_ALMANAC_H_
 
+#include <boost/serialization/nvp.hpp>
 #include <cstdint>
 
 /*!
- * \brief This class is a storage for the GALILEO ALMANAC data as described in GALILEO ICD
- *
- * See https://www.gsc-europa.eu/system/files/galileo_documents/Galileo_OS_SIS_ICD.pdf paragraph 5.1.10
+ * \brief This class is a storage for the Galileo SV ALMANAC data
  */
 class Galileo_Almanac
 {
 public:
-    // Word type 7: Almanac for SVID1 (1/2), almanac reference time and almanac reference week number
-    int32_t IOD_a_7;
-    double WN_a_7;
-    double t0a_7;
-    int32_t SVID1_7;
-    double DELTA_A_7;
-    double e_7;
-    double omega_7;
-    double delta_i_7;
-    double Omega0_7;
-    double Omega_dot_7;
-    double M0_7;
+    uint32_t i_satellite_PRN;  //!< SV PRN NUMBER
+    double d_Toa;
+    double d_WNa;
+    double d_IODa;
+    double d_Delta_i;
+    double d_M_0;             //!< Mean Anomaly at Reference Time [semi-circles]
+    double d_e_eccentricity;  //!< Eccentricity [dimensionless]
+    double d_Delta_sqrt_A;    //!< Square Root of the Semi-Major Axis [sqrt(m)]
+    double d_OMEGA0;          //!< Longitude of Ascending Node of Orbit Plane at Weekly Epoch [semi-circles]
+    double d_OMEGA;           //!< Argument of Perigee [semi-cicles]
+    double d_OMEGA_DOT;       //!< Rate of Right Ascension [semi-circles/s]
+    double d_A_f0;            //!< Coefficient 0 of code phase offset model [s]
+    double d_A_f1;            //!< Coefficient 1 of code phase offset model [s/s]
+    double E5b_HS;
+    double E1B_HS;
+    double E5a_HS;
 
-    // Word type 8: Almanac for SVID1 (2/2) and SVID2 (1/2)
-    int32_t IOD_a_8;
-    double af0_8;
-    double af1_8;
-    double E5b_HS_8;
-    double E1B_HS_8;
-    double E5a_HS_8;
-    int32_t SVID2_8;
-    double DELTA_A_8;
-    double e_8;
-    double omega_8;
-    double delta_i_8;
-    double Omega0_8;
-    double Omega_dot_8;
+    /*!
+     * Default constructor
+     */
+    Galileo_Almanac();
 
-    // Word type 9: Almanac for SVID2 (2/2) and SVID3 (1/2)
-    int32_t IOD_a_9;
-    double WN_a_9;
-    double t0a_9;
-    double M0_9;
-    double af0_9;
-    double af1_9;
-    double E5b_HS_9;
-    double E1B_HS_9;
-    double E5a_HS_9;
-    int32_t SVID3_9;
-    double DELTA_A_9;
-    double e_9;
-    double omega_9;
-    double delta_i_9;
+    template <class Archive>
 
-    // Word type 10: Almanac for SVID3 (2/2)
-    int32_t IOD_a_10;
-    double Omega0_10;
-    double Omega_dot_10;
-    double M0_10;
-    double af0_10;
-    double af1_10;
-    double E5b_HS_10;
-    double E1B_HS_10;
-    double E5a_HS_10;
-
-    // GPS to Galileo GST conversion parameters
-    double A_0G_10;
-    double A_1G_10;
-    double t_0G_10;
-    double WN_0G_10;
-
-    Galileo_Almanac();  //!< Default constructor
+    void serialize(Archive& ar, const unsigned int version)
+    {
+        if (version)
+            {
+            };
+        ar& BOOST_SERIALIZATION_NVP(i_satellite_PRN);
+        ar& BOOST_SERIALIZATION_NVP(d_Toa);
+        ar& BOOST_SERIALIZATION_NVP(d_WNa);
+        ar& BOOST_SERIALIZATION_NVP(d_IODa);
+        ar& BOOST_SERIALIZATION_NVP(d_Delta_i);
+        ar& BOOST_SERIALIZATION_NVP(d_M_0);
+        ar& BOOST_SERIALIZATION_NVP(d_e_eccentricity);
+        ar& BOOST_SERIALIZATION_NVP(d_Delta_sqrt_A);
+        ar& BOOST_SERIALIZATION_NVP(d_OMEGA0);
+        ar& BOOST_SERIALIZATION_NVP(d_OMEGA);
+        ar& BOOST_SERIALIZATION_NVP(d_OMEGA_DOT);
+        ar& BOOST_SERIALIZATION_NVP(d_A_f0);
+        ar& BOOST_SERIALIZATION_NVP(d_A_f1);
+        ar& BOOST_SERIALIZATION_NVP(E5b_HS);
+        ar& BOOST_SERIALIZATION_NVP(E1B_HS);
+        ar& BOOST_SERIALIZATION_NVP(E5a_HS);
+    }
 };
 
 #endif

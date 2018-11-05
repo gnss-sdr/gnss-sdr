@@ -48,6 +48,10 @@
 
 using google::LogMessage;
 
+void GpsL1CaPcpsAcquisitionFpga::stop_acquisition()
+{
+}
+
 GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)

@@ -47,6 +47,8 @@
 #include "gps_iono.h"
 #include "gps_utc_model.h"
 #include "gps_almanac.h"
+#include "glonass_gnav_ephemeris.h"
+#include "glonass_gnav_utc_model.h"
 #include <boost/lexical_cast.hpp>
 #include <boost/chrono.hpp>
 #include <glog/logging.h>
@@ -78,6 +80,7 @@ ControlThread::ControlThread()
             configuration_ = std::make_shared<FileConfiguration>(FLAGS_c);
         }
     delete_configuration_ = false;
+    restart_ = false;
     init();
 }
 
@@ -98,6 +101,12 @@ ControlThread::~ControlThread()
 }
 
 
+void ControlThread::telecommand_listener()
+{
+    int tcp_cmd_port = configuration_->property("Channel.telecontrol_tcp_port", 3333);
+    cmd_interface_.run_cmd_server(tcp_cmd_port);
+}
+
 /*
  * Runs the control thread that manages the receiver control plane
  *
@@ -107,7 +116,7 @@ ControlThread::~ControlThread()
  *    while (flowgraph_->running() && !stop)_{
  * 3- Read control messages and process them }
  */
-void ControlThread::run()
+int ControlThread::run()
 {
     // Connect the flowgraph
     try
@@ -117,7 +126,7 @@ void ControlThread::run()
     catch (const std::exception &e)
         {
             LOG(ERROR) << e.what();
-            return;
+            return 0;
         }
     if (flowgraph_->connected())
         {
@@ -126,7 +135,7 @@ void ControlThread::run()
     else
         {
             LOG(ERROR) << "Unable to connect flowgraph";
-            return;
+            return 0;
         }
     // Start the flowgraph
     flowgraph_->start();
@@ -137,7 +146,7 @@ void ControlThread::run()
     else
         {
             LOG(ERROR) << "Unable to start flowgraph";
-            return;
+            return 0;
         }
 
     //launch GNSS assistance process AFTER the flowgraph is running because the GNURadio asynchronous queues must be already running to transport msgs
@@ -146,8 +155,11 @@ void ControlThread::run()
     keyboard_thread_ = boost::thread(&ControlThread::keyboard_listener, this);
     sysv_queue_thread_ = boost::thread(&ControlThread::sysv_queue_listener, this);
 
-    bool enable_FPGA = configuration_->property("Channel.enable_FPGA", false);
+    //start the telecommand listener thread
+    cmd_interface_thread_ = boost::thread(&ControlThread::telecommand_listener, this);
 
+
+    bool enable_FPGA = configuration_->property("Channel.enable_FPGA", false);
     if (enable_FPGA == true)
         {
             flowgraph_->start_acquisition_helper();
@@ -165,17 +177,28 @@ void ControlThread::run()
     stop_ = true;
     flowgraph_->disconnect();
 
-    //Join keyboard thread
+//Join keyboard thread
 #ifdef OLD_BOOST
     keyboard_thread_.timed_join(boost::posix_time::seconds(1));
     sysv_queue_thread_.timed_join(boost::posix_time::seconds(1));
+    cmd_interface_thread_.timed_join(boost::posix_time::seconds(1));
 #endif
 #ifndef OLD_BOOST
     keyboard_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
     sysv_queue_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
+    cmd_interface_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
 #endif
 
     LOG(INFO) << "Flowgraph stopped";
+
+    if (restart_)
+        {
+            return 42;  //signal the gnss-sdr-harness.sh to restart the receiver program
+        }
+    else
+        {
+            return 0;  //normal shutdown
+        }
 }
 
 
@@ -187,6 +210,7 @@ void ControlThread::set_control_queue(gr::msg_queue::sptr control_queue)
             return;
         }
     control_queue_ = control_queue;
+    cmd_interface_.set_msg_queue(control_queue_);
 }
 
 
@@ -199,58 +223,193 @@ bool ControlThread::read_assistance_from_XML()
     bool ret = false;
     // getting names from the config file, if available
     std::string eph_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_xml", eph_default_xml_filename);
-    std::string utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_utc_model.xml", utc_default_xml_filename);
+    std::string utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_utc_model_xml", utc_default_xml_filename);
     std::string iono_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_iono_xml", iono_default_xml_filename);
+    std::string gal_iono_xml_filename = configuration_->property("GNSS-SDR.SUPL_gal_iono_xml", gal_iono_default_xml_filename);
     std::string ref_time_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_time_xml", ref_time_default_xml_filename);
     std::string ref_location_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_location_xml", ref_location_default_xml_filename);
+    std::string eph_gal_xml_filename = configuration_->property("GNSS-SDR.SUPL_gal_ephemeris_xml", eph_gal_default_xml_filename);
+    std::string eph_cnav_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_cnav_ephemeris_xml", eph_cnav_default_xml_filename);
+    std::string gal_utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_gal_utc_model_xml", gal_utc_default_xml_filename);
+    std::string cnav_utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_cnav_utc_model_xml", cnav_utc_default_xml_filename);
+    std::string eph_glo_xml_filename = configuration_->property("GNSS-SDR.SUPL_glo_ephemeris_xml", eph_glo_gnav_default_xml_filename);
+    std::string glo_utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_glo_utc_model_xml", glo_utc_default_xml_filename);
+    std::string gal_almanac_xml_filename = configuration_->property("GNSS-SDR.SUPL_gal_almanacl_xml", gal_almanac_default_xml_filename);
+    std::string gps_almanac_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_almanacl_xml", gps_almanac_default_xml_filename);
 
-    std::cout << "SUPL: Try read GPS ephemeris from XML file " << eph_xml_filename << std::endl;
-    if (supl_client_ephemeris_.load_ephemeris_xml(eph_xml_filename) == true)
+    if (configuration_->property("GNSS-SDR.AGNSS_XML_enabled", false) == true)
         {
-            std::map<int, Gps_Ephemeris>::const_iterator gps_eph_iter;
-            for (gps_eph_iter = supl_client_ephemeris_.gps_ephemeris_map.cbegin();
-                 gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.cend();
-                 gps_eph_iter++)
+            eph_xml_filename = configuration_->property("GNSS-SDR.AGNSS_gps_ephemeris_xml", eph_default_xml_filename);
+            utc_xml_filename = configuration_->property("GNSS-SDR.AGNSS_gps_utc_model_xml", utc_default_xml_filename);
+            iono_xml_filename = configuration_->property("GNSS-SDR.AGNSS_gps_iono_xml", iono_default_xml_filename);
+            gal_iono_xml_filename = configuration_->property("GNSS-SDR.AGNSS_gal_iono_xml", gal_iono_default_xml_filename);
+            ref_time_xml_filename = configuration_->property("GNSS-SDR.AGNSS_gps_ref_time_xml", ref_time_default_xml_filename);
+            ref_location_xml_filename = configuration_->property("GNSS-SDR.AGNSS_gps_ref_location_xml", ref_location_default_xml_filename);
+            eph_gal_xml_filename = configuration_->property("GNSS-SDR.AGNSS_gal_ephemeris_xml", eph_gal_default_xml_filename);
+            eph_cnav_xml_filename = configuration_->property("GNSS-SDR.AGNSS_gps_cnav_ephemeris_xml", eph_cnav_default_xml_filename);
+            gal_utc_xml_filename = configuration_->property("GNSS-SDR.AGNSS_gal_utc_model_xml", gal_utc_default_xml_filename);
+            cnav_utc_xml_filename = configuration_->property("GNSS-SDR.AGNSS_cnav_utc_model_xml", cnav_utc_default_xml_filename);
+            eph_glo_xml_filename = configuration_->property("GNSS-SDR.AGNSS_glo_ephemeris_xml", eph_glo_gnav_default_xml_filename);
+            glo_utc_xml_filename = configuration_->property("GNSS-SDR.AGNSS_glo_utc_model_xml", glo_utc_default_xml_filename);
+            gal_almanac_xml_filename = configuration_->property("GNSS-SDR.AGNSS_gal_almanacl_xml", gal_almanac_default_xml_filename);
+        }
+
+    std::cout << "Trying to read GNSS ephemeris from XML file(s)..." << std::endl;
+
+    if (configuration_->property("Channels_1C.count", 0) > 0)
+        {
+            if (supl_client_ephemeris_.load_ephemeris_xml(eph_xml_filename) == true)
                 {
-                    std::cout << "SUPL: Read XML Ephemeris for GPS SV " << gps_eph_iter->first << std::endl;
-                    std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(gps_eph_iter->second);
-                    flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+                    std::map<int, Gps_Ephemeris>::const_iterator gps_eph_iter;
+                    for (gps_eph_iter = supl_client_ephemeris_.gps_ephemeris_map.cbegin();
+                         gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.cend();
+                         gps_eph_iter++)
+                        {
+                            std::cout << "From XML file: Read NAV ephemeris for satellite " << Gnss_Satellite("GPS", gps_eph_iter->second.i_satellite_PRN) << std::endl;
+                            std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(gps_eph_iter->second);
+                            flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+                        }
+                    ret = true;
                 }
-            ret = true;
+
+            if (supl_client_acquisition_.load_utc_xml(utc_xml_filename) == true)
+                {
+                    std::shared_ptr<Gps_Utc_Model> tmp_obj = std::make_shared<Gps_Utc_Model>(supl_client_acquisition_.gps_utc);
+                    flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+                    std::cout << "From XML file: Read GPS UTC model parameters." << std::endl;
+                    ret = true;
+                }
+
+            if (supl_client_acquisition_.load_iono_xml(iono_xml_filename) == true)
+                {
+                    std::shared_ptr<Gps_Iono> tmp_obj = std::make_shared<Gps_Iono>(supl_client_acquisition_.gps_iono);
+                    flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+                    std::cout << "From XML file: Read GPS ionosphere model parameters." << std::endl;
+                    ret = true;
+                }
+
+            if (supl_client_ephemeris_.load_gps_almanac_xml(gps_almanac_xml_filename) == true)
+                {
+                    std::map<int, Gps_Almanac>::const_iterator gps_alm_iter;
+                    for (gps_alm_iter = supl_client_ephemeris_.gps_almanac_map.cbegin();
+                         gps_alm_iter != supl_client_ephemeris_.gps_almanac_map.cend();
+                         gps_alm_iter++)
+                        {
+                            std::cout << "From XML file: Read GPS almanac for satellite " << Gnss_Satellite("GPS", gps_alm_iter->second.i_satellite_PRN) << std::endl;
+                            std::shared_ptr<Gps_Almanac> tmp_obj = std::make_shared<Gps_Almanac>(gps_alm_iter->second);
+                            flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+                        }
+                    ret = true;
+                }
         }
-    else
+
+    if ((configuration_->property("Channels_1B.count", 0) > 0) or (configuration_->property("Channels_5X.count", 0) > 0))
         {
-            std::cout << "ERROR: SUPL client error reading XML" << std::endl;
-            std::cout << "Disabling SUPL assistance..." << std::endl;
+            if (supl_client_ephemeris_.load_gal_ephemeris_xml(eph_gal_xml_filename) == true)
+                {
+                    std::map<int, Galileo_Ephemeris>::const_iterator gal_eph_iter;
+                    for (gal_eph_iter = supl_client_ephemeris_.gal_ephemeris_map.cbegin();
+                         gal_eph_iter != supl_client_ephemeris_.gal_ephemeris_map.cend();
+                         gal_eph_iter++)
+                        {
+                            std::cout << "From XML file: Read ephemeris for satellite " << Gnss_Satellite("Galileo", gal_eph_iter->second.i_satellite_PRN) << std::endl;
+                            std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(gal_eph_iter->second);
+                            flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+                        }
+                    ret = true;
+                }
+
+            if (supl_client_acquisition_.load_gal_iono_xml(gal_iono_xml_filename) == true)
+                {
+                    std::shared_ptr<Galileo_Iono> tmp_obj = std::make_shared<Galileo_Iono>(supl_client_acquisition_.gal_iono);
+                    flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+                    std::cout << "From XML file: Read Galileo ionosphere model parameters." << std::endl;
+                    ret = true;
+                }
+
+            if (supl_client_acquisition_.load_gal_utc_xml(gal_utc_xml_filename) == true)
+                {
+                    std::shared_ptr<Galileo_Utc_Model> tmp_obj = std::make_shared<Galileo_Utc_Model>(supl_client_acquisition_.gal_utc);
+                    flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+                    std::cout << "From XML file: Read Galileo UTC model parameters." << std::endl;
+                    ret = true;
+                }
+
+            if (supl_client_ephemeris_.load_gal_almanac_xml(gal_almanac_xml_filename) == true)
+                {
+                    std::map<int, Galileo_Almanac>::const_iterator gal_alm_iter;
+                    for (gal_alm_iter = supl_client_ephemeris_.gal_almanac_map.cbegin();
+                         gal_alm_iter != supl_client_ephemeris_.gal_almanac_map.cend();
+                         gal_alm_iter++)
+                        {
+                            std::cout << "From XML file: Read Galileo almanac for satellite " << Gnss_Satellite("Galileo", gal_alm_iter->second.i_satellite_PRN) << std::endl;
+                            std::shared_ptr<Galileo_Almanac> tmp_obj = std::make_shared<Galileo_Almanac>(gal_alm_iter->second);
+                            flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+                        }
+                    ret = true;
+                }
         }
-    // Only look for {utc, iono, ref time, ref location} if SUPL is enabled
+
+    if ((configuration_->property("Channels_2S.count", 0) > 0) or (configuration_->property("Channels_L5.count", 0) > 0))
+        {
+            if (supl_client_ephemeris_.load_cnav_ephemeris_xml(eph_cnav_xml_filename) == true)
+                {
+                    std::map<int, Gps_CNAV_Ephemeris>::const_iterator gps_cnav_eph_iter;
+                    for (gps_cnav_eph_iter = supl_client_ephemeris_.gps_cnav_ephemeris_map.cbegin();
+                         gps_cnav_eph_iter != supl_client_ephemeris_.gps_cnav_ephemeris_map.cend();
+                         gps_cnav_eph_iter++)
+                        {
+                            std::cout << "From XML file: Read CNAV ephemeris for satellite " << Gnss_Satellite("GPS", gps_cnav_eph_iter->second.i_satellite_PRN) << std::endl;
+                            std::shared_ptr<Gps_CNAV_Ephemeris> tmp_obj = std::make_shared<Gps_CNAV_Ephemeris>(gps_cnav_eph_iter->second);
+                            flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+                        }
+                    ret = true;
+                }
+
+            if (supl_client_acquisition_.load_cnav_utc_xml(cnav_utc_xml_filename) == true)
+                {
+                    std::shared_ptr<Gps_CNAV_Utc_Model> tmp_obj = std::make_shared<Gps_CNAV_Utc_Model>(supl_client_acquisition_.gps_cnav_utc);
+                    flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+                    std::cout << "From XML file: Read GPS CNAV UTC model parameters." << std::endl;
+                    ret = true;
+                }
+        }
+
+    if ((configuration_->property("Channels_1G.count", 0) > 0) or (configuration_->property("Channels_2G.count", 0) > 0))
+        {
+            if (supl_client_ephemeris_.load_gnav_ephemeris_xml(eph_glo_xml_filename) == true)
+                {
+                    std::map<int, Glonass_Gnav_Ephemeris>::const_iterator glo_gnav_eph_iter;
+                    for (glo_gnav_eph_iter = supl_client_ephemeris_.glonass_gnav_ephemeris_map.cbegin();
+                         glo_gnav_eph_iter != supl_client_ephemeris_.glonass_gnav_ephemeris_map.cend();
+                         glo_gnav_eph_iter++)
+                        {
+                            std::cout << "From XML file: Read GLONASS GNAV ephemeris for satellite " << Gnss_Satellite("GLONASS", glo_gnav_eph_iter->second.i_satellite_PRN) << std::endl;
+                            std::shared_ptr<Glonass_Gnav_Ephemeris> tmp_obj = std::make_shared<Glonass_Gnav_Ephemeris>(glo_gnav_eph_iter->second);
+                            flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+                        }
+                    ret = true;
+                }
+
+            if (supl_client_acquisition_.load_glo_utc_xml(glo_utc_xml_filename) == true)
+                {
+                    std::shared_ptr<Glonass_Gnav_Utc_Model> tmp_obj = std::make_shared<Glonass_Gnav_Utc_Model>(supl_client_acquisition_.glo_gnav_utc);
+                    flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+                    std::cout << "From XML file: Read GLONASS UTC model parameters." << std::endl;
+                    ret = true;
+                }
+        }
+
+    if (ret == false)
+        {
+            std::cout << "Error reading XML files" << std::endl;
+            std::cout << "Disabling GNSS assistance..." << std::endl;
+        }
+
+    // Only look for {ref time, ref location} if SUPL is enabled
     bool enable_gps_supl_assistance = configuration_->property("GNSS-SDR.SUPL_gps_enabled", false);
     if (enable_gps_supl_assistance == true)
         {
-            // Try to read UTC model from XML
-            if (supl_client_acquisition_.load_utc_xml(utc_xml_filename) == true)
-                {
-                    LOG(INFO) << "SUPL: Read XML UTC model";
-                    std::shared_ptr<Gps_Utc_Model> tmp_obj = std::make_shared<Gps_Utc_Model>(supl_client_acquisition_.gps_utc);
-                    flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
-                }
-            else
-                {
-                    LOG(INFO) << "SUPL: couldn't read UTC model XML";
-                }
-
-            // Try to read Iono model from XML
-            if (supl_client_acquisition_.load_iono_xml(iono_xml_filename) == true)
-                {
-                    LOG(INFO) << "SUPL: Read XML IONO model";
-                    std::shared_ptr<Gps_Iono> tmp_obj = std::make_shared<Gps_Iono>(supl_client_acquisition_.gps_iono);
-                    flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
-                }
-            else
-                {
-                    LOG(INFO) << "SUPL: couldn't read IONO model XML";
-                }
-
             // Try to read Ref Time from XML
             if (supl_client_acquisition_.load_ref_time_xml(ref_time_xml_filename) == true)
                 {
@@ -260,7 +419,7 @@ bool ControlThread::read_assistance_from_XML()
                 }
             else
                 {
-                    LOG(INFO) << "SUPL: couldn't read Ref Time XML";
+                    LOG(INFO) << "SUPL: could not read Ref Time XML";
                 }
 
             // Try to read Ref Location from XML
@@ -272,7 +431,7 @@ bool ControlThread::read_assistance_from_XML()
                 }
             else
                 {
-                    LOG(INFO) << "SUPL: couldn't read Ref Location XML";
+                    LOG(INFO) << "SUPL: could not read Ref Location XML";
                 }
         }
 
@@ -285,35 +444,48 @@ void ControlThread::assist_GNSS()
     //######### GNSS Assistance #################################
     // GNSS Assistance configuration
     bool enable_gps_supl_assistance = configuration_->property("GNSS-SDR.SUPL_gps_enabled", false);
-    if (enable_gps_supl_assistance == true)
-        //SUPL SERVER TEST. Not operational yet!
+    bool enable_agnss_xml = configuration_->property("GNSS-SDR.AGNSS_XML_enabled", false);
+    if ((enable_gps_supl_assistance == true) and (enable_agnss_xml == false))
         {
             std::cout << "SUPL RRLP GPS assistance enabled!" << std::endl;
-            std::string default_acq_server = "supl.nokia.com";
+            std::string default_acq_server = "supl.google.com";
             std::string default_eph_server = "supl.google.com";
             supl_client_ephemeris_.server_name = configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_server", default_acq_server);
             supl_client_acquisition_.server_name = configuration_->property("GNSS-SDR.SUPL_gps_acquisition_server", default_eph_server);
             supl_client_ephemeris_.server_port = configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_port", 7275);
             supl_client_acquisition_.server_port = configuration_->property("GNSS-SDR.SUPL_gps_acquisition_port", 7275);
             supl_mcc = configuration_->property("GNSS-SDR.SUPL_MCC", 244);
-            supl_mns = configuration_->property("GNSS-SDR.SUPL_MNS", 5);
+            supl_mns = configuration_->property("GNSS-SDR.SUPL_MNC ", 5);
 
             std::string default_lac = "0x59e2";
             std::string default_ci = "0x31b0";
+            std::string supl_lac_s = configuration_->property("GNSS-SDR.SUPL_LAC", default_lac);
+            std::string supl_ci_s = configuration_->property("GNSS-SDR.SUPL_CI", default_ci);
             try
                 {
-                    supl_lac = boost::lexical_cast<int>(configuration_->property("GNSS-SDR.SUPL_LAC", default_lac));
+                    supl_lac = std::stoi(supl_lac_s, nullptr, 0);
                 }
-            catch (boost::bad_lexical_cast &)
+            catch (const std::invalid_argument &ia)
+                {
+                    std::cerr << "Invalid argument for SUPL LAC: " << ia.what() << '\n';
+                    supl_lac = -1;
+                }
+            try
+                {
+                    supl_ci = std::stoi(supl_ci_s, nullptr, 0);
+                }
+            catch (const std::invalid_argument &ia)
+                {
+                    std::cerr << "Invalid argument for SUPL CI: " << ia.what() << '\n';
+                    supl_ci = -1;
+                }
+
+            if (supl_lac < 0 or supl_lac > 65535)
                 {
                     supl_lac = 0x59e2;
                 }
 
-            try
-                {
-                    supl_ci = boost::lexical_cast<int>(configuration_->property("GNSS-SDR.SUPL_CI", default_ci));
-                }
-            catch (boost::bad_lexical_cast &)
+            if (supl_ci < 0 or supl_ci > 268435455)  // 2^16 for GSM and CDMA, 2^28 for UMTS and LTE networks
                 {
                     supl_ci = 0x31b0;
                 }
@@ -324,7 +496,8 @@ void ControlThread::assist_GNSS()
                     // read assistance from file
                     if (read_assistance_from_XML())
                         {
-                            std::cout << "GPS assistance data loaded from local XML file." << std::endl;
+                            std::cout << "GNSS assistance data loaded from local XML file(s)." << std::endl;
+                            std::cout << "No SUPL request has been performed." << std::endl;
                         }
                 }
             else
@@ -332,7 +505,7 @@ void ControlThread::assist_GNSS()
                     // Request ephemeris from SUPL server
                     int error;
                     supl_client_ephemeris_.request = 1;
-                    std::cout << "SUPL: Try to read GPS ephemeris from SUPL server..." << std::endl;
+                    std::cout << "SUPL: Try to read GPS ephemeris data from SUPL server..." << std::endl;
                     error = supl_client_ephemeris_.get_assistance(supl_mcc, supl_mns, supl_lac, supl_ci);
                     if (error == 0)
                         {
@@ -341,35 +514,35 @@ void ControlThread::assist_GNSS()
                                  gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.cend();
                                  gps_eph_iter++)
                                 {
-                                    std::cout << "SUPL: Received Ephemeris for GPS SV " << gps_eph_iter->first << std::endl;
+                                    std::cout << "SUPL: Received ephemeris data for satellite " << Gnss_Satellite("GPS", gps_eph_iter->second.i_satellite_PRN) << std::endl;
                                     std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(gps_eph_iter->second);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                                 }
-                            //Save ephemeris to XML file
+                            // Save ephemeris to XML file
                             std::string eph_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_xml", eph_default_xml_filename);
                             if (supl_client_ephemeris_.save_ephemeris_map_xml(eph_xml_filename, supl_client_ephemeris_.gps_ephemeris_map) == true)
                                 {
-                                    std::cout << "SUPL: XML Ephemeris file created" << std::endl;
+                                    std::cout << "SUPL: XML ephemeris data file created" << std::endl;
                                 }
                             else
                                 {
-                                    std::cout << "SUPL: Failed to create XML Ephemeris file" << std::endl;
+                                    std::cout << "SUPL: Failed to create XML ephemeris data file" << std::endl;
                                 }
                         }
                     else
                         {
-                            std::cout << "ERROR: SUPL client for Ephemeris returned " << error << std::endl;
-                            std::cout << "Please check internet connection and SUPL server configuration" << error << std::endl;
-                            std::cout << "Trying to read ephemeris from XML file" << std::endl;
+                            std::cout << "ERROR: SUPL client request for ephemeris data returned " << error << std::endl;
+                            std::cout << "Please check your network connectivity and SUPL server configuration" << std::endl;
+                            std::cout << "Trying to read AGNSS data from local XML file(s)..." << std::endl;
                             if (read_assistance_from_XML() == false)
                                 {
-                                    std::cout << "ERROR: Could not read Ephemeris file: Disabling SUPL assistance." << std::endl;
+                                    std::cout << "ERROR: Could not read XML files: Disabling SUPL assistance." << std::endl;
                                 }
                         }
 
-                    // Request almanac , IONO and UTC Model
+                    // Request almanac, IONO and UTC Model data
                     supl_client_ephemeris_.request = 0;
-                    std::cout << "SUPL: Try read Almanac, Iono, Utc Model, Ref Time and Ref Location from SUPL server..." << std::endl;
+                    std::cout << "SUPL: Try to read Almanac, Iono, Utc Model, Ref Time and Ref Location data from SUPL server..." << std::endl;
                     error = supl_client_ephemeris_.get_assistance(supl_mcc, supl_mns, supl_lac, supl_ci);
                     if (error == 0)
                         {
@@ -378,33 +551,51 @@ void ControlThread::assist_GNSS()
                                  gps_alm_iter != supl_client_ephemeris_.gps_almanac_map.cend();
                                  gps_alm_iter++)
                                 {
-                                    std::cout << "SUPL: Received Almanac for GPS SV " << gps_alm_iter->first << std::endl;
+                                    std::cout << "SUPL: Received almanac data for satellite " << Gnss_Satellite("GPS", gps_alm_iter->second.i_satellite_PRN) << std::endl;
                                     std::shared_ptr<Gps_Almanac> tmp_obj = std::make_shared<Gps_Almanac>(gps_alm_iter->second);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                                 }
                             if (supl_client_ephemeris_.gps_iono.valid == true)
                                 {
-                                    std::cout << "SUPL: Received GPS Iono" << std::endl;
+                                    std::cout << "SUPL: Received GPS Ionosphere model parameters" << std::endl;
                                     std::shared_ptr<Gps_Iono> tmp_obj = std::make_shared<Gps_Iono>(supl_client_ephemeris_.gps_iono);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                                 }
                             if (supl_client_ephemeris_.gps_utc.valid == true)
                                 {
-                                    std::cout << "SUPL: Received GPS UTC Model" << std::endl;
+                                    std::cout << "SUPL: Received GPS UTC model parameters" << std::endl;
                                     std::shared_ptr<Gps_Utc_Model> tmp_obj = std::make_shared<Gps_Utc_Model>(supl_client_ephemeris_.gps_utc);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+                                }
+                            // Save iono and UTC model data to xml file
+                            std::string iono_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_iono_xml", iono_default_xml_filename);
+                            if (supl_client_ephemeris_.save_iono_xml(iono_xml_filename, supl_client_ephemeris_.gps_iono) == true)
+                                {
+                                    std::cout << "SUPL: Iono data file created" << std::endl;
+                                }
+                            else
+                                {
+                                    std::cout << "SUPL: Failed to create Iono data file" << std::endl;
+                                }
+                            std::string utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_utc_model_xml", utc_default_xml_filename);
+                            if (supl_client_ephemeris_.save_utc_xml(utc_xml_filename, supl_client_ephemeris_.gps_utc) == true)
+                                {
+                                    std::cout << "SUPL: UTC model data file created" << std::endl;
+                                }
+                            else
+                                {
+                                    std::cout << "SUPL: Failed to create UTC model data file" << std::endl;
                                 }
                         }
                     else
                         {
-                            std::cout << "ERROR: SUPL client for Almanac returned " << error << std::endl;
-                            std::cout << "Please check internet connection and SUPL server configuration" << error << std::endl;
-                            std::cout << "Disabling SUPL assistance." << std::endl;
+                            std::cout << "ERROR: SUPL client for almanac data returned " << error << std::endl;
+                            std::cout << "Please check your network connectivity and SUPL server configuration" << std::endl;
                         }
 
                     // Request acquisition assistance
                     supl_client_acquisition_.request = 2;
-                    std::cout << "SUPL: Try read Acquisition assistance from SUPL server..." << std::endl;
+                    std::cout << "SUPL: Try to read acquisition assistance data from SUPL server..." << std::endl;
                     error = supl_client_acquisition_.get_assistance(supl_mcc, supl_mns, supl_lac, supl_ci);
                     if (error == 0)
                         {
@@ -413,28 +604,37 @@ void ControlThread::assist_GNSS()
                                  gps_acq_iter != supl_client_acquisition_.gps_acq_map.cend();
                                  gps_acq_iter++)
                                 {
-                                    std::cout << "SUPL: Received Acquisition assistance for GPS SV " << gps_acq_iter->first << std::endl;
+                                    std::cout << "SUPL: Received acquisition assistance data for satellite " << Gnss_Satellite("GPS", gps_acq_iter->second.i_satellite_PRN) << std::endl;
                                     global_gps_acq_assist_map.write(gps_acq_iter->second.i_satellite_PRN, gps_acq_iter->second);
                                 }
                             if (supl_client_acquisition_.gps_ref_loc.valid == true)
                                 {
-                                    std::cout << "SUPL: Received Ref Location (Acquisition Assistance)" << std::endl;
+                                    std::cout << "SUPL: Received Ref Location data (Acquisition Assistance)" << std::endl;
                                     std::shared_ptr<Gps_Ref_Location> tmp_obj = std::make_shared<Gps_Ref_Location>(supl_client_acquisition_.gps_ref_loc);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                                 }
                             if (supl_client_acquisition_.gps_time.valid == true)
                                 {
-                                    std::cout << "SUPL: Received Ref Time (Acquisition Assistance)" << std::endl;
+                                    std::cout << "SUPL: Received Ref Time data (Acquisition Assistance)" << std::endl;
                                     std::shared_ptr<Gps_Ref_Time> tmp_obj = std::make_shared<Gps_Ref_Time>(supl_client_acquisition_.gps_time);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                                 }
                         }
                     else
                         {
-                            std::cout << "ERROR: SUPL client for Acquisition assistance returned " << error << std::endl;
-                            std::cout << "Please check internet connection and SUPL server configuration" << error << std::endl;
-                            std::cout << "Disabling SUPL assistance.." << std::endl;
+                            std::cout << "ERROR: SUPL client for acquisition assistance returned " << error << std::endl;
+                            std::cout << "Please check your network connectivity and SUPL server configuration" << std::endl;
+                            std::cout << "Disabling SUPL acquisition assistance." << std::endl;
                         }
+                }
+        }
+
+    if ((enable_gps_supl_assistance == false) and (enable_agnss_xml == true))
+        {
+            // read assistance from file
+            if (read_assistance_from_XML())
+                {
+                    std::cout << "GNSS assistance data loaded from local XML file(s)." << std::endl;
                 }
         }
 }
@@ -444,6 +644,7 @@ void ControlThread::init()
 {
     // Instantiates a control queue, a GNSS flowgraph, and a control message factory
     control_queue_ = gr::msg_queue::make(0);
+    cmd_interface_.set_msg_queue(control_queue_);  //set also the queue pointer for the telecommand thread
     try
         {
             flowgraph_ = std::make_shared<GNSSFlowgraph>(configuration_, control_queue_);
@@ -508,6 +709,12 @@ void ControlThread::apply_action(unsigned int what)
         case 0:
             DLOG(INFO) << "Received action STOP";
             stop_ = true;
+            applied_actions_++;
+            break;
+        case 1:
+            DLOG(INFO) << "Received action RESTART";
+            stop_ = true;
+            restart_ = true;
             applied_actions_++;
             break;
         default:

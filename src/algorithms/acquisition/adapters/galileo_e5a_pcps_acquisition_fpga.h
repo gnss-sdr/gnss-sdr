@@ -144,6 +144,11 @@ public:
      */
     void read_fpga_total_scale_factor(uint32_t *total_scale_factor, uint32_t *fw_scale_factor);
 
+    /*!
+     * \brief Stop running acquisition
+     */
+    void stop_acquisition() override;
+
 private:
     //float calculate_threshold(float pfa);
 

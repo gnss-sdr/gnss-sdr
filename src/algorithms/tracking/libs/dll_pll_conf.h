@@ -38,12 +38,12 @@
 
 class Dll_Pll_Conf
 {
-private:
 public:
     /* DLL/PLL tracking configuration */
     double fs_in;
     uint32_t vector_length;
     bool dump;
+    bool dump_mat;
     std::string dump_filename;
     float pll_pull_in_bw_hz;
     float dll_pull_in_bw_hz;

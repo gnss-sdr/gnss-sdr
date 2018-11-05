@@ -1,5 +1,5 @@
 /*!
- * \file glonass_l1_ca_dll_pll_c_aid_tracking_cc.h
+ * \file glonass_l1_ca_dll_pll_c_aid_tracking_cc.cc
  * \brief  Implementation of a code DLL + carrier PLL tracking block
  * \author Gabriel Araujo, 2017. gabriel.araujo.5000(at)gmail.com
  * \author Luis Esteve, 2017. luis(at)epsilon-formacion.com

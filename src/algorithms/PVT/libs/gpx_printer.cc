@@ -32,10 +32,52 @@
 
 #include "gpx_printer.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/filesystem/operations.hpp>   // for create_directories, exists
+#include <boost/filesystem/path.hpp>         // for path, operator<<
+#include <boost/filesystem/path_traits.hpp>  // for filesystem
 #include <glog/logging.h>
 #include <sstream>
 
 using google::LogMessage;
+
+
+Gpx_Printer::Gpx_Printer(const std::string& base_path)
+{
+    positions_printed = false;
+    indent = "  ";
+    gpx_base_path = base_path;
+    boost::filesystem::path full_path(boost::filesystem::current_path());
+    const boost::filesystem::path p(gpx_base_path);
+    if (!boost::filesystem::exists(p))
+        {
+            std::string new_folder;
+            for (auto& folder : boost::filesystem::path(gpx_base_path))
+                {
+                    new_folder += folder.string();
+                    boost::system::error_code ec;
+                    if (!boost::filesystem::exists(new_folder))
+                        {
+                            if (!boost::filesystem::create_directory(new_folder, ec))
+                                {
+                                    std::cout << "Could not create the " << new_folder << " folder." << std::endl;
+                                    gpx_base_path = full_path.string();
+                                }
+                        }
+                    new_folder += boost::filesystem::path::preferred_separator;
+                }
+        }
+    else
+        {
+            gpx_base_path = p.string();
+        }
+    if (gpx_base_path.compare(".") != 0)
+        {
+            std::cout << "GPX files will be stored at " << gpx_base_path << std::endl;
+        }
+
+    gpx_base_path = gpx_base_path + boost::filesystem::path::preferred_separator;
+}
+
 
 bool Gpx_Printer::set_headers(std::string filename, bool time_tag_name)
 {
@@ -84,6 +126,8 @@ bool Gpx_Printer::set_headers(std::string filename, bool time_tag_name)
         {
             gpx_filename = filename + ".gpx";
         }
+
+    gpx_filename = gpx_base_path + gpx_filename;
     gpx_file.open(gpx_filename.c_str());
 
     if (gpx_file.is_open())
@@ -105,6 +149,7 @@ bool Gpx_Printer::set_headers(std::string filename, bool time_tag_name)
         }
     else
         {
+            std::cout << "File " << gpx_filename << " cannot be saved. Wrong permissions?" << std::endl;
             return false;
         }
 }
@@ -168,13 +213,6 @@ bool Gpx_Printer::close_file()
         {
             return false;
         }
-}
-
-
-Gpx_Printer::Gpx_Printer()
-{
-    positions_printed = false;
-    indent = "  ";
 }
 
 

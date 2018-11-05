@@ -62,8 +62,8 @@ ylabel('Navigation data bits','fontname','Times','fontsize', fontsize)
 grid on
 
 
-fileID   = fopen('data/access18_pvt.dat', 'r');
-dinfo    = dir('data/access18_pvt.dat');
+fileID   = fopen('data/access18.dat', 'r');
+dinfo    = dir('data/access18.dat');
 filesize = dinfo.bytes;
 aux = 1;
 while ne(ftell(fileID), filesize)

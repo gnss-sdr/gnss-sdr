@@ -1,0 +1,29 @@
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="boost_serialization">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="GNSS-SDR_gal_iono_model">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element type="xs:float" name="ai0_5"/>
+              <xs:element type="xs:float" name="ai1_5"/>
+              <xs:element type="xs:float" name="ai2_5"/>
+              <xs:element type="xs:byte" name="Region1_flag_5"/>
+              <xs:element type="xs:byte" name="Region2_flag_5"/>
+              <xs:element type="xs:byte" name="Region3_flag_5"/>
+              <xs:element type="xs:byte" name="Region4_flag_5"/>
+              <xs:element type="xs:byte" name="Region5_flag_5"/>
+              <xs:element type="xs:float" name="TOW_5"/>
+              <xs:element type="xs:float" name="WN_5"/>
+            </xs:sequence>
+            <xs:attribute type="xs:byte" name="class_id"/>
+            <xs:attribute type="xs:byte" name="tracking_level"/>
+            <xs:attribute type="xs:byte" name="version"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute type="xs:string" name="signature"/>
+      <xs:attribute type="xs:byte" name="version"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

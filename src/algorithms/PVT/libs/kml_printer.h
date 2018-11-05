@@ -50,9 +50,10 @@ private:
     std::ofstream kml_file;
     bool positions_printed;
     std::string kml_filename;
+    std::string kml_base_path;
 
 public:
-    Kml_Printer();
+    Kml_Printer(const std::string& base_path = std::string("."));
     ~Kml_Printer();
     bool set_headers(std::string filename, bool time_tag_name = true);
     bool print_position(const std::shared_ptr<Pvt_Solution>& position, bool print_average_values);

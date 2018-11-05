@@ -43,12 +43,16 @@
 
 using google::LogMessage;
 
+void GpsL5iPcpsAcquisitionFpga::stop_acquisition()
+{
+}
+
 GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
-	//printf("L5 ACQ CLASS CREATED\n");
-	pcpsconf_fpga_t acq_parameters;
+    //printf("L5 ACQ CLASS CREATED\n");
+    pcpsconf_fpga_t acq_parameters;
     configuration_ = configuration;
     std::string default_item_type = "cshort";
     std::string default_dump_filename = "./data/acquisition.dat";
@@ -120,7 +124,7 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
 
     //printf("L5 ACQ CLASS MID 1 vector_length = %d\n", vector_length);
 
-    float max;                                                    // temporary maxima search
+    float max;  // temporary maxima search
     for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
     {
     	//printf("L5 ACQ CLASS processing PRN = %d\n", PRN);
@@ -180,49 +184,49 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     delete[] code;
     delete fft_if;
     delete[] fft_codes_padded;
-//    vector_length_ = code_length_;
-//
-//    if (bit_transition_flag_)
-//        {
-//            vector_length_ *= 2;
-//        }
-//
-//    code_ = new gr_complex[vector_length_];
-//
-//    if (item_type_.compare("cshort") == 0)
-//        {
-//            item_size_ = sizeof(lv_16sc_t);
-//        }
-//    else
-//        {
-//            item_size_ = sizeof(gr_complex);
-//        }
-//    acq_parameters.samples_per_code = code_length_;
-//    acq_parameters.samples_per_ms = code_length_;
-//    acq_parameters.it_size = item_size_;
+    //    vector_length_ = code_length_;
+    //
+    //    if (bit_transition_flag_)
+    //        {
+    //            vector_length_ *= 2;
+    //        }
+    //
+    //    code_ = new gr_complex[vector_length_];
+    //
+    //    if (item_type_.compare("cshort") == 0)
+    //        {
+    //            item_size_ = sizeof(lv_16sc_t);
+    //        }
+    //    else
+    //        {
+    //            item_size_ = sizeof(gr_complex);
+    //        }
+    //    acq_parameters.samples_per_code = code_length_;
+    //    acq_parameters.samples_per_ms = code_length_;
+    //    acq_parameters.it_size = item_size_;
     //acq_parameters.sampled_ms = 1;
-//    acq_parameters.num_doppler_bins_step2 = configuration_->property(role + ".second_nbins", 4);
-//    acq_parameters.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
-//    acq_parameters.make_2_steps = configuration_->property(role + ".make_two_steps", false);
-//    acquisition_fpga_ = pcps_make_acquisition(acq_parameters);
-//    DLOG(INFO) << "acquisition(" << acquisition_fpga_->unique_id() << ")";
+    //    acq_parameters.num_doppler_bins_step2 = configuration_->property(role + ".second_nbins", 4);
+    //    acq_parameters.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
+    //    acq_parameters.make_2_steps = configuration_->property(role + ".make_two_steps", false);
+    //    acquisition_fpga_ = pcps_make_acquisition(acq_parameters);
+    //    DLOG(INFO) << "acquisition(" << acquisition_fpga_->unique_id() << ")";
 
     acq_parameters.total_block_exp = 9;
 
     acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters);
     DLOG(INFO) << "acquisition(" << acquisition_fpga_->unique_id() << ")";
 
-//    stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
-//    DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id() << ")";
-//
-//    if (item_type_.compare("cbyte") == 0)
-//        {
-//            cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
-//            float_to_complex_ = gr::blocks::float_to_complex::make();
-//        }
+    //    stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
+    //    DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id() << ")";
+    //
+    //    if (item_type_.compare("cbyte") == 0)
+    //        {
+    //            cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
+    //            float_to_complex_ = gr::blocks::float_to_complex::make();
+    //        }
 
     channel_ = 0;
-//    threshold_ = 0.0;
+    //    threshold_ = 0.0;
     doppler_step_ = 0;
     gnss_synchro_ = 0;
     //printf("L5 ACQ CLASS FINISHED\n");
@@ -240,34 +244,32 @@ void GpsL5iPcpsAcquisitionFpga::set_channel(unsigned int channel)
 {
     channel_ = channel;
     acquisition_fpga_->set_channel(channel_);
-
 }
 
 
 void GpsL5iPcpsAcquisitionFpga::set_threshold(float threshold)
 {
-//    float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
-//
-//    if (pfa == 0.0)
-//        {
-//            pfa = configuration_->property(role_ + ".pfa", 0.0);
-//        }
-//    if (pfa == 0.0)
-//        {
-//            threshold_ = threshold;
-//        }
-//    else
-//        {
-//            threshold_ = calculate_threshold(pfa);
-//        }
+    //    float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
+    //
+    //    if (pfa == 0.0)
+    //        {
+    //            pfa = configuration_->property(role_ + ".pfa", 0.0);
+    //        }
+    //    if (pfa == 0.0)
+    //        {
+    //            threshold_ = threshold;
+    //        }
+    //    else
+    //        {
+    //            threshold_ = calculate_threshold(pfa);
+    //        }
 
-//    DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold_;
+    //    DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold_;
 
     // the .pfa parameter and the threshold calculation is only used for the CFAR algorithm.
     // We don't use the CFAR algorithm in the FPGA. Therefore the threshold is set as such.
     DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold;
     acquisition_fpga_->set_threshold(threshold);
-
 }
 
 
@@ -296,18 +298,18 @@ void GpsL5iPcpsAcquisitionFpga::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 
 signed int GpsL5iPcpsAcquisitionFpga::mag()
 {
-	return acquisition_fpga_->mag();
+    return acquisition_fpga_->mag();
 }
 
 
 void GpsL5iPcpsAcquisitionFpga::init()
 {
-	acquisition_fpga_->init();
+    acquisition_fpga_->init();
 }
 
 void GpsL5iPcpsAcquisitionFpga::set_local_code()
 {
-	acquisition_fpga_->set_local_code();
+    acquisition_fpga_->set_local_code();
 }
 
 
@@ -369,75 +371,75 @@ void GpsL5iPcpsAcquisitionFpga::read_fpga_total_scale_factor(uint32_t *total_sca
 
 void GpsL5iPcpsAcquisitionFpga::connect(gr::top_block_sptr top_block)
 {
-//    if (item_type_.compare("gr_complex") == 0)
-//        {
-//            top_block->connect(stream_to_vector_, 0, acquisition_fpga_, 0);
-//        }
-//    else if (item_type_.compare("cshort") == 0)
-//        {
-//            top_block->connect(stream_to_vector_, 0, acquisition_fpga_, 0);
-//        }
-//    else if (item_type_.compare("cbyte") == 0)
-//        {
-//            top_block->connect(cbyte_to_float_x2_, 0, float_to_complex_, 0);
-//            top_block->connect(cbyte_to_float_x2_, 1, float_to_complex_, 1);
-//            top_block->connect(float_to_complex_, 0, stream_to_vector_, 0);
-//            top_block->connect(stream_to_vector_, 0, acquisition_fpga_, 0);
-//        }
-//    else
-//        {
-//            LOG(WARNING) << item_type_ << " unknown acquisition item type";
-//        }
+    //    if (item_type_.compare("gr_complex") == 0)
+    //        {
+    //            top_block->connect(stream_to_vector_, 0, acquisition_fpga_, 0);
+    //        }
+    //    else if (item_type_.compare("cshort") == 0)
+    //        {
+    //            top_block->connect(stream_to_vector_, 0, acquisition_fpga_, 0);
+    //        }
+    //    else if (item_type_.compare("cbyte") == 0)
+    //        {
+    //            top_block->connect(cbyte_to_float_x2_, 0, float_to_complex_, 0);
+    //            top_block->connect(cbyte_to_float_x2_, 1, float_to_complex_, 1);
+    //            top_block->connect(float_to_complex_, 0, stream_to_vector_, 0);
+    //            top_block->connect(stream_to_vector_, 0, acquisition_fpga_, 0);
+    //        }
+    //    else
+    //        {
+    //            LOG(WARNING) << item_type_ << " unknown acquisition item type";
+    //        }
     // nothing to connect
 }
 
 
 void GpsL5iPcpsAcquisitionFpga::disconnect(gr::top_block_sptr top_block)
 {
-//    if (item_type_.compare("gr_complex") == 0)
-//        {
-//            top_block->disconnect(stream_to_vector_, 0, acquisition_fpga_, 0);
-//        }
-//    else if (item_type_.compare("cshort") == 0)
-//        {
-//            top_block->disconnect(stream_to_vector_, 0, acquisition_fpga_, 0);
-//        }
-//    else if (item_type_.compare("cbyte") == 0)
-//        {
-//            // Since a byte-based acq implementation is not available,
-//            // we just convert cshorts to gr_complex
-//            top_block->disconnect(cbyte_to_float_x2_, 0, float_to_complex_, 0);
-//            top_block->disconnect(cbyte_to_float_x2_, 1, float_to_complex_, 1);
-//            top_block->disconnect(float_to_complex_, 0, stream_to_vector_, 0);
-//            top_block->disconnect(stream_to_vector_, 0, acquisition_fpga_, 0);
-//        }
-//    else
-//        {
-//            LOG(WARNING) << item_type_ << " unknown acquisition item type";
-//        }
+    //    if (item_type_.compare("gr_complex") == 0)
+    //        {
+    //            top_block->disconnect(stream_to_vector_, 0, acquisition_fpga_, 0);
+    //        }
+    //    else if (item_type_.compare("cshort") == 0)
+    //        {
+    //            top_block->disconnect(stream_to_vector_, 0, acquisition_fpga_, 0);
+    //        }
+    //    else if (item_type_.compare("cbyte") == 0)
+    //        {
+    //            // Since a byte-based acq implementation is not available,
+    //            // we just convert cshorts to gr_complex
+    //            top_block->disconnect(cbyte_to_float_x2_, 0, float_to_complex_, 0);
+    //            top_block->disconnect(cbyte_to_float_x2_, 1, float_to_complex_, 1);
+    //            top_block->disconnect(float_to_complex_, 0, stream_to_vector_, 0);
+    //            top_block->disconnect(stream_to_vector_, 0, acquisition_fpga_, 0);
+    //        }
+    //    else
+    //        {
+    //            LOG(WARNING) << item_type_ << " unknown acquisition item type";
+    //        }
     // nothing to disconnect
 }
 
 
 gr::basic_block_sptr GpsL5iPcpsAcquisitionFpga::get_left_block()
 {
-//    if (item_type_.compare("gr_complex") == 0)
-//        {
-//            return stream_to_vector_;
-//        }
-//    else if (item_type_.compare("cshort") == 0)
-//        {
-//            return stream_to_vector_;
-//        }
-//    else if (item_type_.compare("cbyte") == 0)
-//        {
-//            return cbyte_to_float_x2_;
-//        }
-//    else
-//        {
-//            LOG(WARNING) << item_type_ << " unknown acquisition item type";
-//            return nullptr;
-//        }
+    //    if (item_type_.compare("gr_complex") == 0)
+    //        {
+    //            return stream_to_vector_;
+    //        }
+    //    else if (item_type_.compare("cshort") == 0)
+    //        {
+    //            return stream_to_vector_;
+    //        }
+    //    else if (item_type_.compare("cbyte") == 0)
+    //        {
+    //            return cbyte_to_float_x2_;
+    //        }
+    //    else
+    //        {
+    //            LOG(WARNING) << item_type_ << " unknown acquisition item type";
+    //            return nullptr;
+    //        }
     return nullptr;
 }
 

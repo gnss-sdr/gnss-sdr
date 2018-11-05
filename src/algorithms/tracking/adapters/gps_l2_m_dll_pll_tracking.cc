@@ -45,6 +45,10 @@
 
 using google::LogMessage;
 
+void GpsL2MDllPllTracking::stop_tracking()
+{
+}
+
 GpsL2MDllPllTracking::GpsL2MDllPllTracking(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
@@ -59,6 +63,11 @@ GpsL2MDllPllTracking::GpsL2MDllPllTracking(
     trk_param.fs_in = fs_in;
     bool dump = configuration->property(role + ".dump", false);
     trk_param.dump = dump;
+    std::string default_dump_filename = "./track_ch";
+    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
+    trk_param.dump_filename = dump_filename;
+    bool dump_mat = configuration->property(role + ".dump_mat", true);
+    trk_param.dump_mat = dump_mat;
     float pll_bw_hz = configuration->property(role + ".pll_bw_hz", 2.0);
     if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
     trk_param.pll_bw_hz = pll_bw_hz;
@@ -68,9 +77,6 @@ GpsL2MDllPllTracking::GpsL2MDllPllTracking(
     float early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     trk_param.early_late_space_chips = early_late_space_chips;
     trk_param.early_late_space_narrow_chips = 0.0;
-    std::string default_dump_filename = "./track_ch";
-    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
-    trk_param.dump_filename = dump_filename;
     int vector_length = std::round(static_cast<double>(fs_in) / (static_cast<double>(GPS_L2_M_CODE_RATE_HZ) / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS)));
     trk_param.vector_length = vector_length;
     int symbols_extended_correlator = configuration->property(role + ".extend_correlation_symbols", 1);

@@ -32,6 +32,8 @@ include_directories(
     ${GPSTK_INCLUDE_DIR}
 )
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
+
 add_executable(rinex2assist ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
 
 target_link_libraries(rinex2assist
@@ -44,7 +46,6 @@ target_link_libraries(rinex2assist
 if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
     add_dependencies(rinex2assist gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION})
 endif(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
-
 
 add_custom_command(TARGET rinex2assist POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:rinex2assist>

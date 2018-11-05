@@ -46,14 +46,18 @@
 
 using google::LogMessage;
 
+void GalileoE5aDllPllTrackingFpga::stop_tracking()
+{
+}
+
 GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
-    ConfigurationInterface* configuration, std::string role,
+    ConfigurationInterface *configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
-	//printf("creating the E5A tracking");
+    //printf("creating the E5A tracking");
 
 
-	Dll_Pll_Conf_Fpga trk_param_fpga = Dll_Pll_Conf_Fpga();
+    Dll_Pll_Conf_Fpga trk_param_fpga = Dll_Pll_Conf_Fpga();
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
     std::string default_item_type = "gr_complex";
@@ -63,6 +67,11 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     trk_param_fpga.fs_in = fs_in;
     bool dump = configuration->property(role + ".dump", false);
     trk_param_fpga.dump = dump;
+    std::string default_dump_filename = "./track_ch";
+    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
+    trk_param_fpga.dump_filename = dump_filename;
+    bool dump_mat = configuration->property(role + ".dump_mat", true);
+    trk_param_fpga.dump_mat = dump_mat;
     float pll_bw_hz = configuration->property(role + ".pll_bw_hz", 20.0);
     if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
     trk_param_fpga.pll_bw_hz = pll_bw_hz;
@@ -75,9 +84,6 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     trk_param_fpga.dll_bw_narrow_hz = dll_bw_narrow_hz;
     float early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     trk_param_fpga.early_late_space_chips = early_late_space_chips;
-    std::string default_dump_filename = "./track_ch";
-    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
-    trk_param_fpga.dump_filename = dump_filename;
     int vector_length = std::round(fs_in / (Galileo_E5a_CODE_CHIP_RATE_HZ / Galileo_E5a_CODE_LENGTH_CHIPS));
     trk_param_fpga.vector_length = vector_length;
     int extend_correlation_symbols = configuration->property(role + ".extend_correlation_symbols", 1);
@@ -126,7 +132,7 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     unsigned int device_base = configuration->property(role + ".device_base", 27);
     trk_param_fpga.device_base = device_base;
     //unsigned int multicorr_type = configuration->property(role + ".multicorr_type", 1);
-    trk_param_fpga.multicorr_type = 1; // 0 -> 3 correlators, 1 -> up to 5+1 correlators
+    trk_param_fpga.multicorr_type = 1;  // 0 -> 3 correlators, 1 -> up to 5+1 correlators
 
     //################# PRE-COMPUTE ALL THE CODES #################
     unsigned int code_samples_per_chip = 1;
@@ -143,7 +149,7 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
         }
     tracking_code = static_cast<float *>(volk_gnsssdr_malloc(code_samples_per_chip * code_length_chips * sizeof(float), volk_gnsssdr_get_alignment()));
 
-    d_ca_codes = static_cast<int*>(volk_gnsssdr_malloc(static_cast<int>(code_length_chips)* code_samples_per_chip * Galileo_E5a_NUMBER_OF_CODES * sizeof(int), volk_gnsssdr_get_alignment()));
+    d_ca_codes = static_cast<int *>(volk_gnsssdr_malloc(static_cast<int>(code_length_chips) * code_samples_per_chip * Galileo_E5a_NUMBER_OF_CODES * sizeof(int), volk_gnsssdr_get_alignment()));
 
     if (trk_param_fpga.track_pilot)
         {
@@ -153,44 +159,36 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
 
     for (unsigned int PRN = 1; PRN <= Galileo_E5a_NUMBER_OF_CODES; PRN++)
         {
+            //galileo_e5_a_code_gen_complex_primary(aux_code, PRN, const_cast<char *>(trk_param_fpga.signal.c_str()));
+            galileo_e5_a_code_gen_complex_primary(aux_code, PRN, const_cast<char *>(sig_));
+            if (trk_param_fpga.track_pilot)
+                {
+                    //d_secondary_code_string = const_cast<std::string *>(&Galileo_E5a_Q_SECONDARY_CODE[PRN - 1]);
+                    for (unsigned int i = 0; i < code_length_chips; i++)
+                        {
+                            tracking_code[i] = aux_code[i].imag();
+                            data_code[i] = aux_code[i].real();
+                        }
+                    for (unsigned int s = 0; s < code_length_chips; s++)
+                        {
+                            d_ca_codes[static_cast<int>(code_length_chips) * (PRN - 1) + s] = static_cast<int>(tracking_code[s]);
+                            d_data_codes[static_cast<int>(code_length_chips) * (PRN - 1) + s] = static_cast<int>(data_code[s]);
+                            //printf("%f %d | ", data_codes_f[s], d_data_codes[static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS)* 2 * (PRN - 1) + s]);
+                        }
+                }
+            else
+                {
+                    for (unsigned int i = 0; i < code_length_chips; i++)
+                        {
+                            tracking_code[i] = aux_code[i].real();
+                        }
 
-
-
-        //galileo_e5_a_code_gen_complex_primary(aux_code, PRN, const_cast<char *>(trk_param_fpga.signal.c_str()));
-        galileo_e5_a_code_gen_complex_primary(aux_code, PRN, const_cast<char *>(sig_));
-        if (trk_param_fpga.track_pilot)
-            {
-                //d_secondary_code_string = const_cast<std::string *>(&Galileo_E5a_Q_SECONDARY_CODE[PRN - 1]);
-                for (unsigned int i = 0; i < code_length_chips; i++)
-                    {
-                        tracking_code[i] = aux_code[i].imag();
-                        data_code[i] = aux_code[i].real();
-                    }
-                for (unsigned int s = 0; s < code_length_chips; s++)
-                    {
-                        d_ca_codes[static_cast<int>(code_length_chips) * (PRN - 1) + s] = static_cast<int>(tracking_code[s]);
-                        d_data_codes[static_cast<int>(code_length_chips) * (PRN - 1) + s] = static_cast<int>(data_code[s]);
-                        //printf("%f %d | ", data_codes_f[s], d_data_codes[static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS)* 2 * (PRN - 1) + s]);
-
-                    }
-
-            }
-        else
-            {
-                for (unsigned int i = 0; i < code_length_chips; i++)
-                    {
-                        tracking_code[i] = aux_code[i].real();
-                    }
-
-                for (unsigned int s = 0; s < code_length_chips; s++)
-                    {
-                        d_ca_codes[static_cast<int>(code_length_chips)* (PRN - 1) + s] = static_cast<int>(tracking_code[s]);
-                        //printf("%f %d | ", ca_codes_f[s], d_ca_codes[static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS)* 2 * (PRN - 1) + s]);
-                    }
-
-            }
-
-
+                    for (unsigned int s = 0; s < code_length_chips; s++)
+                        {
+                            d_ca_codes[static_cast<int>(code_length_chips) * (PRN - 1) + s] = static_cast<int>(tracking_code[s]);
+                            //printf("%f %d | ", ca_codes_f[s], d_ca_codes[static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS)* 2 * (PRN - 1) + s]);
+                        }
+                }
         }
 
     volk_gnsssdr_free(aux_code);
@@ -202,25 +200,23 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     trk_param_fpga.ca_codes = d_ca_codes;
     trk_param_fpga.data_codes = d_data_codes;
     trk_param_fpga.code_length_chips = code_length_chips;
-    trk_param_fpga.code_samples_per_chip = code_samples_per_chip; // 2 sample per chip
+    trk_param_fpga.code_samples_per_chip = code_samples_per_chip;  // 2 sample per chip
     //################# MAKE TRACKING GNURadio object ###################
     tracking_fpga_sc = dll_pll_veml_make_tracking_fpga(trk_param_fpga);
-//    if (item_type.compare("gr_complex") == 0)
-//        {
-//            item_size_ = sizeof(gr_complex);
-//            tracking_ = dll_pll_veml_make_tracking(trk_param_fpga);
-//        }
-//    else
-//        {
-//            item_size_ = sizeof(gr_complex);
-//            LOG(WARNING) << item_type << " unknown tracking item type.";
-//        }
+    //    if (item_type.compare("gr_complex") == 0)
+    //        {
+    //            item_size_ = sizeof(gr_complex);
+    //            tracking_ = dll_pll_veml_make_tracking(trk_param_fpga);
+    //        }
+    //    else
+    //        {
+    //            item_size_ = sizeof(gr_complex);
+    //            LOG(WARNING) << item_type << " unknown tracking item type.";
+    //        }
     channel_ = 0;
 
     //DLOG(INFO) << "tracking(" << tracking_->unique_id() << ")";
     DLOG(INFO) << "tracking(" << tracking_fpga_sc->unique_id() << ")";
-
-
 }
 
 
@@ -230,7 +226,6 @@ GalileoE5aDllPllTrackingFpga::~GalileoE5aDllPllTrackingFpga()
     if (d_track_pilot)
         {
             delete[] d_data_codes;
-
         }
 }
 
@@ -247,14 +242,14 @@ void GalileoE5aDllPllTrackingFpga::start_tracking()
  */
 void GalileoE5aDllPllTrackingFpga::set_channel(unsigned int channel)
 {
-	//printf("blabla channel = %d\n", channel);
+    //printf("blabla channel = %d\n", channel);
     channel_ = channel;
     //tracking_->set_channel(channel);
     tracking_fpga_sc->set_channel(channel);
 }
 
 
-void GalileoE5aDllPllTrackingFpga::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
+void GalileoE5aDllPllTrackingFpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
 {
     //tracking_->set_gnss_synchro(p_gnss_synchro);
     tracking_fpga_sc->set_gnss_synchro(p_gnss_synchro);

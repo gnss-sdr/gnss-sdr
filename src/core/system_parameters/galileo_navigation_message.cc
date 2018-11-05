@@ -578,13 +578,18 @@ Galileo_Utc_Model Galileo_Navigation_Message::get_utc_model()
     utc_model.DN_6 = DN_6;
     utc_model.Delta_tLSF_6 = Delta_tLSF_6;
     utc_model.flag_utc_model = flag_utc_model;
+    // GPS to Galileo GST conversion parameters
+    utc_model.A_0G_10 = A_0G_10;
+    utc_model.A_1G_10 = A_1G_10;
+    utc_model.t_0G_10 = t_0G_10;
+    utc_model.WN_0G_10 = WN_0G_10;
     return utc_model;
 }
 
 
-Galileo_Almanac Galileo_Navigation_Message::get_almanac()
+Galileo_Almanac_Helper Galileo_Navigation_Message::get_almanac()
 {
-    Galileo_Almanac almanac;
+    Galileo_Almanac_Helper almanac;
     // Word type 7: Almanac for SVID1 (1/2), almanac reference time and almanac reference week number
     almanac.IOD_a_7 = IOD_a_7;
     almanac.WN_a_7 = WN_a_7;
@@ -636,12 +641,6 @@ Galileo_Almanac Galileo_Navigation_Message::get_almanac()
     almanac.af1_10 = af1_10;
     almanac.E5b_HS_10 = E5b_HS_10;
     almanac.E1B_HS_10 = E1B_HS_10;
-
-    // GPS to Galileo GST conversion parameters
-    almanac.A_0G_10 = A_0G_10;
-    almanac.A_1G_10 = A_1G_10;
-    almanac.t_0G_10 = t_0G_10;
-    almanac.WN_0G_10 = WN_0G_10;
 
     return almanac;
 }

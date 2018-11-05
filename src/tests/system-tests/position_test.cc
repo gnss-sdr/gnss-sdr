@@ -56,6 +56,7 @@
 #include <numeric>
 #include <thread>
 #include <armadillo>
+#include <matio.h>
 
 // For GPS NAVIGATION (L1)
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
@@ -69,6 +70,8 @@ public:
     int configure_receiver();
     int run_receiver();
     void check_results();
+    bool save_mat_xy(std::vector<double>& x, std::vector<double>& y, std::string filename);
+    bool save_mat_x(std::vector<double>& x, std::string filename);
     std::string config_filename_no_extension;
 
 private:
@@ -190,7 +193,7 @@ int PositionSystemTest::configure_receiver()
             config->set_property("GNSS-SDR.SUPL_gps_acquisition_server", "supl.google.com");
             config->set_property("GNSS-SDR.SUPL_gps_acquisition_port", std::to_string(7275));
             config->set_property("GNSS-SDR.SUPL_MCC", std::to_string(244));
-            config->set_property("GNSS-SDR.SUPL_MNS", std::to_string(5));
+            config->set_property("GNSS-SDR.SUPL_MNC", std::to_string(5));
             config->set_property("GNSS-SDR.SUPL_LAC", "0x59e2");
             config->set_property("GNSS-SDR.SUPL_CI", "0x31b0");
 
@@ -356,6 +359,72 @@ int PositionSystemTest::run_receiver()
 }
 
 
+bool PositionSystemTest::save_mat_xy(std::vector<double>& x, std::vector<double>& y, std::string filename)
+{
+    try
+        {
+            // WRITE MAT FILE
+            mat_t* matfp;
+            matvar_t* matvar;
+            filename.append(".mat");
+            std::cout << "save_mat_xy write " << filename << std::endl;
+            matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT5);
+            if (reinterpret_cast<int64_t*>(matfp) != NULL)
+                {
+                    size_t dims[2] = {1, x.size()};
+                    matvar = Mat_VarCreate("x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, &x[0], 0);
+                    Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+                    Mat_VarFree(matvar);
+
+                    matvar = Mat_VarCreate("y", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, &y[0], 0);
+                    Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+                    Mat_VarFree(matvar);
+                }
+            else
+                {
+                    std::cout << "save_mat_xy: error creating file" << std::endl;
+                }
+            Mat_Close(matfp);
+            return true;
+        }
+    catch (const std::exception& ex)
+        {
+            std::cout << "save_mat_xy: " << ex.what() << std::endl;
+            return false;
+        }
+}
+
+bool PositionSystemTest::save_mat_x(std::vector<double>& x, std::string filename)
+{
+    try
+        {
+            // WRITE MAT FILE
+            mat_t* matfp;
+            matvar_t* matvar;
+            filename.append(".mat");
+            std::cout << "save_mat_x write " << filename << std::endl;
+            matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT5);
+            if (reinterpret_cast<int64_t*>(matfp) != NULL)
+                {
+                    size_t dims[2] = {1, x.size()};
+                    matvar = Mat_VarCreate("x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, &x[0], 0);
+                    Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+                    Mat_VarFree(matvar);
+                }
+            else
+                {
+                    std::cout << "save_mat_x: error creating file" << std::endl;
+                }
+            Mat_Close(matfp);
+            return true;
+        }
+    catch (const std::exception& ex)
+        {
+            std::cout << "save_mat_x: " << ex.what() << std::endl;
+            return false;
+        }
+}
+
 void PositionSystemTest::check_results()
 {
     arma::mat R_eb_e;    //ECEF position (x,y,z) estimation in the Earth frame (Nx3)
@@ -493,17 +562,36 @@ void PositionSystemTest::check_results()
             double sigma_N_2_precision = arma::var(R_eb_enu.row(1));
             double sigma_U_2_precision = arma::var(R_eb_enu.row(2));
 
-            arma::rowvec tmp_vec;
-            tmp_vec = R_eb_enu.row(0) - ref_r_enu(0);
-            double sigma_E_2_accuracy = sqrt(arma::sum(arma::square(tmp_vec)) / tmp_vec.n_cols);
-            tmp_vec = R_eb_enu.row(1) - ref_r_enu(1);
-            double sigma_N_2_accuracy = sqrt(arma::sum(arma::square(tmp_vec)) / tmp_vec.n_cols);
-            tmp_vec = R_eb_enu.row(2) - ref_r_enu(2);
-            double sigma_U_2_accuracy = sqrt(arma::sum(arma::square(tmp_vec)) / tmp_vec.n_cols);
+            arma::rowvec error_east_m;
+            error_east_m = R_eb_enu.row(0) - ref_r_enu(0);
+            double sigma_E_2_accuracy = arma::as_scalar(error_east_m * error_east_m.t());
+            sigma_E_2_accuracy = sigma_E_2_accuracy / error_east_m.n_elem;
 
-            double mean__e = arma::mean(R_eb_enu.row(0));
-            double mean__n = arma::mean(R_eb_enu.row(1));
-            double mean__u = arma::mean(R_eb_enu.row(2));
+            arma::rowvec error_north_m;
+            error_north_m = R_eb_enu.row(1) - ref_r_enu(1);
+            double sigma_N_2_accuracy = arma::as_scalar(error_north_m * error_north_m.t());
+            sigma_N_2_accuracy = sigma_N_2_accuracy / error_north_m.n_elem;
+
+            arma::rowvec error_up_m;
+            error_up_m = R_eb_enu.row(2) - ref_r_enu(2);
+            double sigma_U_2_accuracy = arma::as_scalar(error_up_m * error_up_m.t());
+            sigma_U_2_accuracy = sigma_U_2_accuracy / error_up_m.n_elem;
+
+            //            arma::mat error_enu_mat = arma::zeros(3, error_east_m.n_elem);
+            //            error_enu_mat.row(0) = error_east_m;
+            //            error_enu_mat.row(1) = error_north_m;
+            //            error_enu_mat.row(2) = error_up_m;
+            //
+            //            arma::vec error_2D_m = arma::zeros(error_enu_mat.n_cols, 1);
+            //            arma::vec error_3D_m = arma::zeros(error_enu_mat.n_cols, 1);
+            //            for (uint64_t n = 0; n < error_enu_mat.n_cols; n++)
+            //                {
+            //                    error_2D_m(n) = arma::norm(error_enu_mat.submat(0, n, 1, n));
+            //                    error_3D_m(n) = arma::norm(error_enu_mat.col(n));
+            //                }
+
+            double static_2D_error_m = sqrt(pow(arma::mean(error_east_m), 2.0) + pow(arma::mean(error_north_m), 2.0));
+            double static_3D_error_m = sqrt(pow(arma::mean(error_east_m), 2.0) + pow(arma::mean(error_north_m), 2.0) + pow(arma::mean(error_up_m), 2.0));
 
             std::stringstream stm;
             std::ofstream position_test_file;
@@ -512,7 +600,7 @@ void PositionSystemTest::check_results()
                     stm << "Configuration file: " << FLAGS_config_file_ptest << std::endl;
                 }
 
-            stm << "---- ACCURACY ----" << std::endl;
+            stm << "---- STATIC ACCURACY ----" << std::endl;
             stm << "2DRMS = " << 2 * sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]" << std::endl;
             stm << "DRMS = " << sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]" << std::endl;
             stm << "CEP = " << 0.62 * sqrt(sigma_N_2_accuracy) + 0.56 * sqrt(sigma_E_2_accuracy) << " [m]" << std::endl;
@@ -520,11 +608,11 @@ void PositionSystemTest::check_results()
             stm << "90% SAS = " << 0.833 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
             stm << "MRSE = " << sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
             stm << "SEP = " << 0.51 * (sigma_E_2_accuracy + sigma_N_2_accuracy + sigma_U_2_accuracy) << " [m]" << std::endl;
-            stm << "Bias 2D = " << sqrt(std::pow(fabs(mean__e - ref_r_enu(0)), 2.0) + std::pow(fabs(mean__n - ref_r_enu(1)), 2.0)) << " [m]" << std::endl;
-            stm << "Bias 3D = " << sqrt(std::pow(fabs(mean__e - ref_r_enu(0)), 2.0) + std::pow(fabs(mean__n - ref_r_enu(1)), 2.0) + std::pow(fabs(mean__u - ref_r_enu(2)), 2.0)) << " [m]" << std::endl;
+            stm << "Static Bias 2D = " << static_2D_error_m << " [m]" << std::endl;
+            stm << "Static Bias 3D = " << static_3D_error_m << " [m]" << std::endl;
             stm << std::endl;
 
-            stm << "---- PRECISION ----" << std::endl;
+            stm << "---- STATIC PRECISION ----" << std::endl;
             stm << "2DRMS = " << 2 * sqrt(sigma_E_2_precision + sigma_N_2_precision) << " [m]" << std::endl;
             stm << "DRMS = " << sqrt(sigma_E_2_precision + sigma_N_2_precision) << " [m]" << std::endl;
             stm << "CEP = " << 0.62 * sqrt(sigma_N_2_precision) + 0.56 * sqrt(sigma_E_2_precision) << " [m]" << std::endl;
@@ -543,8 +631,13 @@ void PositionSystemTest::check_results()
                 }
 
             // Sanity Check
+            double accuracy_CEP = 0.62 * sqrt(sigma_N_2_accuracy) + 0.56 * sqrt(sigma_E_2_accuracy);
             double precision_SEP = 0.51 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision);
-            ASSERT_LT(precision_SEP, 1.0);
+
+            EXPECT_LT(static_2D_error_m, FLAGS_static_2D_error_m);
+            EXPECT_LT(static_2D_error_m, FLAGS_static_2D_error_m);
+            ASSERT_LT(accuracy_CEP, FLAGS_accuracy_CEP);
+            ASSERT_LT(precision_SEP, FLAGS_precision_SEP);
 
             if (FLAGS_plot_position_test == true)
                 {
@@ -745,6 +838,11 @@ void PositionSystemTest::check_results()
                                 }
                         }
                 }
+
+            //ERROR CHECK
+            //todo: reduce the error tolerance or enable the option to pass the error tolerance by parameter
+            EXPECT_LT(rmse_R_eb_e, FLAGS_dynamic_3D_position_RMSE);  //3D RMS positioning error less than 10 meters
+            EXPECT_LT(rmse_V_eb_e, FLAGS_dynamic_3D_velocity_RMSE);  //3D RMS speed error less than 5 meters/s (18 km/h)
         }
 }
 

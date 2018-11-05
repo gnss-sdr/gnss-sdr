@@ -154,6 +154,11 @@ public:
      */
     void read_fpga_total_scale_factor(uint32_t *total_scale_factor, uint32_t *fw_scale_factor);
 
+    /*!
+     * \brief Stop running acquisition
+     */
+    void stop_acquisition() override;
+
 private:
     ConfigurationInterface* configuration_;
     pcps_acquisition_fpga_sptr acquisition_fpga_;

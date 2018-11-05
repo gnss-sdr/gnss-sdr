@@ -58,6 +58,7 @@ public:
     //FSM EVENTS
     bool Event_start_acquisition();
     bool Event_valid_acquisition();
+    bool Event_stop_channel();
     bool Event_failed_acquisition_repeat();
     bool Event_failed_acquisition_no_repeat();
     bool Event_failed_tracking_standby();
@@ -65,6 +66,8 @@ public:
 private:
     void start_acquisition();
     void start_tracking();
+    void stop_acquisition();
+    void stop_tracking();
     void request_satellite();
     void notify_stop_tracking();
 

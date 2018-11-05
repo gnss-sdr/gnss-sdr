@@ -35,7 +35,7 @@
 
 #include "galileo_ephemeris.h"
 #include "galileo_iono.h"
-#include "galileo_almanac.h"
+#include "galileo_almanac_helper.h"
 #include "galileo_utc_model.h"
 #include "Galileo_E1.h"
 #include <bitset>
@@ -290,9 +290,9 @@ public:
     Galileo_Utc_Model get_utc_model();
 
     /*
-     * \brief Returns a Galileo_Almanac object filled with the latest navigation data received
+     * \brief Returns a Galileo_Almanac_Helper object filled with the latest navigation data received
      */
-    Galileo_Almanac get_almanac();
+    Galileo_Almanac_Helper get_almanac();
 
     Galileo_Navigation_Message();
 };

@@ -53,7 +53,7 @@ public:
     /*!
      * \brief Default constructor.
      */
-    Nmea_Printer(std::string filename, bool flag_nmea_tty_port, std::string nmea_dump_filename);
+    Nmea_Printer(std::string filename, bool flag_nmea_output_file, bool flag_nmea_tty_port, std::string nmea_dump_filename, const std::string& base_path = ".");
 
     /*!
      * \brief Print NMEA PVT and satellite info to the initialized device
@@ -66,7 +66,8 @@ public:
     ~Nmea_Printer();
 
 private:
-    std::string nmea_filename;           // String with the NMEA log filename
+    std::string nmea_filename;  // String with the NMEA log filename
+    std::string nmea_base_path;
     std::ofstream nmea_file_descriptor;  // Output file stream for NMEA log file
     std::string nmea_devname;
     int nmea_dev_descriptor;  // NMEA serial device descriptor (i.e. COM port)
@@ -82,6 +83,7 @@ private:
     std::string latitude_to_hm(double lat);
     char checkSum(std::string sentence);
     bool print_avg_pos;
+    bool d_flag_nmea_output_file;
 };
 
 #endif

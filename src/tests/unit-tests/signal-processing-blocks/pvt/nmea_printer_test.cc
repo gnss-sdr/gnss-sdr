@@ -157,7 +157,7 @@ void NmeaPrinterTest::conf()
 TEST_F(NmeaPrinterTest, PrintLine)
 {
     std::string filename("nmea_test.nmea");
-    std::shared_ptr<rtklib_solver> pvt_solution = std::make_shared<rtklib_solver>(12, "filename", false, rtk);
+    std::shared_ptr<rtklib_solver> pvt_solution = std::make_shared<rtklib_solver>(12, "filename", false, false, rtk);
 
     boost::posix_time::ptime pt(boost::gregorian::date(1994, boost::date_time::Nov, 19),
         boost::posix_time::hours(22) + boost::posix_time::minutes(54) + boost::posix_time::seconds(46));  // example from http://aprs.gids.nl/nmea/#rmc
@@ -168,8 +168,9 @@ TEST_F(NmeaPrinterTest, PrintLine)
 
     pvt_solution->set_valid_position(true);
 
+    bool flag_nmea_output_file = true;
     ASSERT_NO_THROW({
-        std::shared_ptr<Nmea_Printer> nmea_printer = std::make_shared<Nmea_Printer>(filename, false, "");
+        std::shared_ptr<Nmea_Printer> nmea_printer = std::make_shared<Nmea_Printer>(filename, flag_nmea_output_file, false, "");
         nmea_printer->Print_Nmea_Line(pvt_solution, false);
     }) << "Failure printing NMEA messages.";
 
@@ -195,7 +196,7 @@ TEST_F(NmeaPrinterTest, PrintLine)
 TEST_F(NmeaPrinterTest, PrintLineLessthan10min)
 {
     std::string filename("nmea_test.nmea");
-    std::shared_ptr<rtklib_solver> pvt_solution = std::make_shared<rtklib_solver>(12, "filename", false, rtk);
+    std::shared_ptr<rtklib_solver> pvt_solution = std::make_shared<rtklib_solver>(12, "filename", false, false, rtk);
 
     boost::posix_time::ptime pt(boost::gregorian::date(1994, boost::date_time::Nov, 19),
         boost::posix_time::hours(22) + boost::posix_time::minutes(54) + boost::posix_time::seconds(46));  // example from http://aprs.gids.nl/nmea/#rmc
@@ -206,8 +207,9 @@ TEST_F(NmeaPrinterTest, PrintLineLessthan10min)
 
     pvt_solution->set_valid_position(true);
 
+    bool flag_nmea_output_file = true;
     ASSERT_NO_THROW({
-        std::shared_ptr<Nmea_Printer> nmea_printer = std::make_shared<Nmea_Printer>(filename, false, "");
+        std::shared_ptr<Nmea_Printer> nmea_printer = std::make_shared<Nmea_Printer>(filename, flag_nmea_output_file, false, "");
         nmea_printer->Print_Nmea_Line(pvt_solution, false);
     }) << "Failure printing NMEA messages.";
 

@@ -64,6 +64,7 @@ set(GNSS_SPLIBS_HEADERS
         conjugate_ic.h
         gnss_sdr_create_directory.h
         gnss_circular_deque.h
+        geofunctions.h
 )
 
 

@@ -35,16 +35,17 @@
 #ifndef GNSS_SDR_CONTROL_THREAD_H_
 #define GNSS_SDR_CONTROL_THREAD_H_
 
+#include "gnss_satellite.h"
 #include "control_message_factory.h"
 #include "gnss_sdr_supl_client.h"
 #include "tcp_cmd_interface.h"
+#include "gnss_flowgraph.h"
+#include "configuration_interface.h"
 #include <boost/thread.hpp>
 #include <gnuradio/msg_queue.h>
 #include <memory>
 #include <vector>
-
-class GNSSFlowgraph;
-class ConfigurationInterface;
+#include <armadillo>
 
 
 /*!
@@ -143,6 +144,12 @@ private:
      */
     void gps_acq_assist_data_collector();
 
+    /*
+     * Compute elevations for the specified time and position for all the available satellites in ephemeris and almanac queues
+     * returns a vector filled with the available satellites ordered from high elevation to low elevation angle.
+     */
+
+    std::vector<std::pair<int, Gnss_Satellite>> get_visible_sats(time_t rx_utc_time, arma::vec LLH);
     /*
      * Read initial GNSS assistance from SUPL server or local XML files
      */

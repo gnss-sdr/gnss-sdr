@@ -234,11 +234,32 @@ void rtklib_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
 }
 
 
-std::map<int, Gps_Ephemeris> rtklib_pvt_cc::get_GPS_L1_ephemeris_map()
+std::map<int, Gps_Ephemeris> rtklib_pvt_cc::get_gps_ephemeris_map()
 {
     return d_ls_pvt->gps_ephemeris_map;
 }
 
+std::map<int, Gps_Almanac> rtklib_pvt_cc::get_gps_almanac_map()
+{
+    return d_ls_pvt->gps_almanac_map;
+}
+
+std::map<int, Galileo_Ephemeris> rtklib_pvt_cc::get_galileo_ephemeris_map()
+{
+    return d_ls_pvt->galileo_ephemeris_map;
+}
+std::map<int, Galileo_Almanac> rtklib_pvt_cc::get_galileo_almanac_map()
+{
+    return d_ls_pvt->galileo_almanac_map;
+}
+
+void rtklib_pvt_cc::clear_ephemeris()
+{
+    d_ls_pvt->gps_ephemeris_map.clear();
+    d_ls_pvt->gps_almanac_map.clear();
+    d_ls_pvt->galileo_ephemeris_map.clear();
+    d_ls_pvt->galileo_almanac_map.clear();
+}
 
 rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
     const Pvt_Conf& conf_,

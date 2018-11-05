@@ -31,7 +31,7 @@
 #ifndef GNSS_SDR_RTKLIB_PVT_CC_H
 #define GNSS_SDR_RTKLIB_PVT_CC_H
 
-
+#include "gps_ephemeris.h"
 #include "nmea_printer.h"
 #include "kml_printer.h"
 #include "gpx_printer.h"
@@ -142,11 +142,22 @@ public:
         rtk_t& rtk);
 
     /*!
-     * \brief Get latest set of GPS L1 ephemeris from PVT block
+     * \brief Get latest set of ephemeris from PVT block
      *
-     * It is used to save the assistance data at the receiver shutdown
      */
-    std::map<int, Gps_Ephemeris> get_GPS_L1_ephemeris_map();
+    std::map<int, Gps_Ephemeris> get_gps_ephemeris_map();
+
+    std::map<int, Gps_Almanac> get_gps_almanac_map();
+
+    std::map<int, Galileo_Ephemeris> get_galileo_ephemeris_map();
+
+    std::map<int, Galileo_Almanac> get_galileo_almanac_map();
+
+    /*!
+     * \brief Clear all ephemeris information and the almanacs for GPS and Galileo
+     *
+     */
+    void clear_ephemeris();
 
     ~rtklib_pvt_cc();  //!< Default destructor
 

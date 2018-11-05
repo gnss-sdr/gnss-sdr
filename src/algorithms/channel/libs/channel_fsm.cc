@@ -59,7 +59,6 @@ bool ChannelFsm::Event_stop_channel()
     switch (d_state)
         {
         case 0:  //already in stanby
-            return true;
             break;
         case 1:  //acquisition
             d_state = 0;
@@ -70,8 +69,9 @@ bool ChannelFsm::Event_stop_channel()
             stop_tracking();
             break;
         default:
-            return true;
+            break;
         }
+    return true;
 }
 
 bool ChannelFsm::Event_start_acquisition()

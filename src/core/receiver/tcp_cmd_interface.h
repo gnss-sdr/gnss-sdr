@@ -42,7 +42,8 @@
 #include <cstdint>
 #include <gnuradio/message.h>
 #include <gnuradio/msg_queue.h>
-
+#include <armadillo>
+#include "time.h"
 
 class TcpCmdInterface
 {
@@ -51,6 +52,14 @@ public:
     virtual ~TcpCmdInterface();
     void run_cmd_server(int tcp_port);
     void set_msg_queue(gr::msg_queue::sptr control_queue);
+    /*!
+     * \brief gets the UTC time parsed from the last TC command issued
+     */
+    time_t get_utc_time();
+    /*!
+     * \brief gets the Latitude, Longitude and Altitude vector from the last TC command issued
+     */
+    arma::vec get_LLH();
 
 
 private:
@@ -68,6 +77,12 @@ private:
 
     gr::msg_queue::sptr control_queue_;
     bool keep_running_;
+
+    time_t receiver_utc_time_;
+
+    double rx_latitude_;
+    double rx_longitude_;
+    double rx_altitude_;
 };
 
 #endif /* GNSS_SDR_TCPCMDINTERFACE_H_ */

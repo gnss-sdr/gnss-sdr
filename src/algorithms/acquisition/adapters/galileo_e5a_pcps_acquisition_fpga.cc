@@ -50,7 +50,7 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
 	//printf("creating the E5A acquisition");
     pcpsconf_fpga_t acq_parameters;
     configuration_ = configuration;
-    std::string default_item_type = "gr_complex";
+    std::string default_item_type = "cshort";
     std::string default_dump_filename = "../data/acquisition.dat";
 
     DLOG(INFO) << "Role " << role;
@@ -59,6 +59,12 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
 
     long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 32000000);
     long fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+
+    float downsampling_factor = configuration_->property("GNSS-SDR.downsampling_factor", 1.0);
+    acq_parameters.downsampling_factor = downsampling_factor;
+
+    fs_in = fs_in/downsampling_factor;
+
     acq_parameters.fs_in = fs_in;
     //acq_parameters.freq = 0;
 
@@ -68,7 +74,9 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
     if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
     acq_parameters.doppler_max = doppler_max_;
-    unsigned int sampled_ms = 1;
+
+    unsigned int sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 1);
+    acq_parameters.sampled_ms = sampled_ms;
     //max_dwells_ = configuration_->property(role + ".max_dwells", 1);
     //acq_parameters.max_dwells = max_dwells_;
     //dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
@@ -91,10 +99,11 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     unsigned int code_length = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / Galileo_E5a_CODE_CHIP_RATE_HZ * static_cast<double>(Galileo_E5a_CODE_LENGTH_CHIPS)));
     acq_parameters.code_length = code_length;
     // The FPGA can only use FFT lengths that are a power of two.
-    float nbits = ceilf(log2f((float)code_length));
+    float nbits = ceilf(log2f((float)code_length*2));
     unsigned int nsamples_total = pow(2, nbits);
     unsigned int vector_length = nsamples_total;
     unsigned int select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga", 1);
+    printf("select queue = %d\n", select_queue_Fpga);
     //printf("select_queue_Fpga = %d\n", select_queue_Fpga);
     acq_parameters.select_queue_Fpga = select_queue_Fpga;
     std::string default_device_name = "/dev/uio0";
@@ -137,8 +146,14 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
 
             galileo_e5_a_code_gen_complex_sampled(code, signal_, PRN, fs_in, 0);
 
+            for (int s = code_length; s < 2*code_length; s++)
+                {
+                    code[s] = code[s - code_length];
+                    //code[s] = 0;
+                }
+
             // fill in zero padding
-            for (int s = code_length; s < nsamples_total; s++)
+            for (int s = 2*code_length; s < nsamples_total; s++)
                 {
                     code[s] = std::complex<float>(static_cast<float>(0,0));
                     //code[s] = 0;
@@ -162,8 +177,8 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
                 }
             for (unsigned int i = 0; i < nsamples_total; i++)  // map the FFT to the dynamic range of the fixed point values an copy to buffer containing all FFTs
                 {
-                    d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 15) - 1) / max)),
-                        static_cast<int>(floor(fft_codes_padded[i].imag() * (pow(2, 15) - 1) / max)));
+                    d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 5) - 1) / max)),
+                        static_cast<int>(floor(fft_codes_padded[i].imag() * (pow(2, 5) - 1) / max)));
                 }
 
         }
@@ -201,6 +216,8 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     //acquisition_ = pcps_make_acquisition(acq_parameters);
     //acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters);
     //DLOG(INFO) << "acquisition(" << acquisition_fpga_->unique_id() << ")";
+
+    acq_parameters.total_block_exp = 9;
 
     acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters);
     DLOG(INFO) << "acquisition(" << acquisition_fpga_->unique_id() << ")";

@@ -54,14 +54,15 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
 {
     pcpsconf_fpga_t acq_parameters;
     configuration_ = configuration;
-    std::string default_item_type = "gr_complex";
+    std::string default_item_type = "cshort";
 
     DLOG(INFO) << "role " << role;
 
     long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     long fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
 
-    float downsampling_factor = configuration_->property("GNSS-SDR.downsampling_factor", 4.0);
+    float downsampling_factor = configuration_->property(role + ".downsampling_factor", 4.0);
+    printf("downsampling_factor = %f\n", downsampling_factor);
     acq_parameters.downsampling_factor = downsampling_factor;
     //fs_in = fs_in/2.0; // downampling filter
     //printf("fs_in pre downsampling = %ld\n", fs_in);
@@ -86,6 +87,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     unsigned int vector_length = nsamples_total;
     //printf("acq adapter vector_length = %d\n", vector_length);
     unsigned int select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga", 0);
+    printf("select queue = %d\n", select_queue_Fpga);
     acq_parameters.select_queue_Fpga = select_queue_Fpga;
     std::string default_device_name = "/dev/uio0";
     std::string device_name = configuration_->property(role + ".devicename", default_device_name);
@@ -185,7 +187,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     delete fft_if;
     delete[] fft_codes_padded;
 
-    acq_parameters.total_block_exp = 0;
+    acq_parameters.total_block_exp = 9;
 
     acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters);
     DLOG(INFO) << "acquisition(" << acquisition_fpga_->unique_id() << ")";

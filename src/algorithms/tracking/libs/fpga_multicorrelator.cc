@@ -334,6 +334,8 @@ void fpga_multicorrelator_8sc::set_channel(uint32_t channel)
 
     //printf("ppps opening device %s\n", device_io_name);
 
+    printf("trk device_io_name = %s\n", device_io_name);
+
     if ((d_device_descriptor = open(device_io_name, O_RDWR | O_SYNC)) == -1)
         {
             LOG(WARNING) << "Cannot open deviceio" << device_io_name;

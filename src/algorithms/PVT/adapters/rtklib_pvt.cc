@@ -48,6 +48,12 @@ namespace bc = boost::integer;
 
 using google::LogMessage;
 
+
+void RtklibPvt::clear_ephemeris()
+{
+    pvt_->clear_ephemeris();
+}
+
 RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     std::string role,
     unsigned int in_streams,
@@ -515,6 +521,22 @@ RtklibPvt::~RtklibPvt()
     rtkfree(&rtk);
 }
 
+std::map<int, Gps_Ephemeris> RtklibPvt::get_gps_ephemeris()
+{
+    return pvt_->get_gps_ephemeris_map();
+}
+std::map<int, Galileo_Ephemeris> RtklibPvt::get_galileo_ephemeris()
+{
+    return pvt_->get_galileo_ephemeris_map();
+}
+std::map<int, Gps_Almanac> RtklibPvt::get_gps_almanac()
+{
+    return pvt_->get_gps_almanac_map();
+}
+std::map<int, Galileo_Almanac> RtklibPvt::get_galileo_almanac()
+{
+    return pvt_->get_galileo_almanac_map();
+}
 
 void RtklibPvt::connect(gr::top_block_sptr top_block)
 {

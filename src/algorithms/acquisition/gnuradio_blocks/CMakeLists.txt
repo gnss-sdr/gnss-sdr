@@ -37,13 +37,13 @@ set(ACQ_GR_BLOCKS_HEADERS
     pcps_quicksync_acquisition_cc.h
     galileo_pcps_8ms_acquisition_cc.h
     galileo_e5a_noncoherent_iq_acquisition_caf_cc.h
-) 
+)
 
 if(ENABLE_FPGA)
     set(ACQ_GR_BLOCKS_SOURCES ${ACQ_GR_BLOCKS_SOURCES} pcps_acquisition_fpga.cc)
     set(ACQ_GR_BLOCKS_HEADERS ${ACQ_GR_BLOCKS_HEADERS} pcps_acquisition_fpga.h)
 endif(ENABLE_FPGA)
-    
+
 if(OPENCL_FOUND)
     set(ACQ_GR_BLOCKS_SOURCES ${ACQ_GR_BLOCKS_SOURCES} pcps_opencl_acquisition_cc.cc)
     set(ACQ_GR_BLOCKS_HEADERS ${ACQ_GR_BLOCKS_HEADERS} pcps_opencl_acquisition_cc.h)
@@ -56,6 +56,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/receiver
      ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+     ${Boost_INCLUDE_DIRS}
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${ARMADILLO_INCLUDE_DIRS}

@@ -47,12 +47,16 @@
 
 using google::LogMessage;
 
+void GpsL2MDllPllTrackingFpga::stop_tracking()
+{
+}
+
 GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     //dllpllconf_t trk_param;
-	Dll_Pll_Conf_Fpga trk_param_fpga = Dll_Pll_Conf_Fpga();
+    Dll_Pll_Conf_Fpga trk_param_fpga = Dll_Pll_Conf_Fpga();
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
     //std::string default_item_type = "gr_complex";
@@ -62,6 +66,11 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
     trk_param_fpga.fs_in = fs_in;
     bool dump = configuration->property(role + ".dump", false);
     trk_param_fpga.dump = dump;
+    std::string default_dump_filename = "./track_ch";
+    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
+    trk_param_fpga.dump_filename = dump_filename;
+    bool dump_mat = configuration->property(role + ".dump_mat", true);
+    trk_param_fpga.dump_mat = dump_mat;
     float pll_bw_hz = configuration->property(role + ".pll_bw_hz", 2.0);
     if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
     trk_param_fpga.pll_bw_hz = pll_bw_hz;
@@ -71,9 +80,6 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
     float early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     trk_param_fpga.early_late_space_chips = early_late_space_chips;
     trk_param_fpga.early_late_space_narrow_chips = 0.0;
-    std::string default_dump_filename = "./track_ch";
-    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
-    trk_param_fpga.dump_filename = dump_filename;
     int vector_length = std::round(static_cast<double>(fs_in) / (static_cast<double>(GPS_L2_M_CODE_RATE_HZ) / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS)));
     trk_param_fpga.vector_length = vector_length;
     int symbols_extended_correlator = configuration->property(role + ".extend_correlation_symbols", 1);
@@ -115,43 +121,43 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
     unsigned int device_base = configuration->property(role + ".device_base", 1);
     trk_param_fpga.device_base = device_base;
     //unsigned int multicorr_type = configuration->property(role + ".multicorr_type", 0);
-    trk_param_fpga.multicorr_type = 0; //multicorr_type : 0 -> 3 correlators, 1 -> 5 correlators
+    trk_param_fpga.multicorr_type = 0;  //multicorr_type : 0 -> 3 correlators, 1 -> 5 correlators
 
     //d_tracking_code = static_cast<float *>(volk_gnsssdr_malloc(2 * static_cast<unsigned int>(GPS_L2_M_CODE_LENGTH_CHIPS) * sizeof(float), volk_gnsssdr_get_alignment()));
-    d_ca_codes = static_cast<int*>(volk_gnsssdr_malloc(static_cast<unsigned int>(GPS_L2_M_CODE_LENGTH_CHIPS)* NUM_PRNs * sizeof(int), volk_gnsssdr_get_alignment()));
-    float* ca_codes_f = static_cast<float*>(volk_gnsssdr_malloc(static_cast<unsigned int>(GPS_L2_M_CODE_LENGTH_CHIPS)* sizeof(float), volk_gnsssdr_get_alignment()));
+    d_ca_codes = static_cast<int*>(volk_gnsssdr_malloc(static_cast<unsigned int>(GPS_L2_M_CODE_LENGTH_CHIPS) * NUM_PRNs * sizeof(int), volk_gnsssdr_get_alignment()));
+    float* ca_codes_f = static_cast<float*>(volk_gnsssdr_malloc(static_cast<unsigned int>(GPS_L2_M_CODE_LENGTH_CHIPS) * sizeof(float), volk_gnsssdr_get_alignment()));
 
     //################# PRE-COMPUTE ALL THE CODES #################
-    d_ca_codes = static_cast<int*>(volk_gnsssdr_malloc(static_cast<int>(GPS_L2_M_CODE_LENGTH_CHIPS*NUM_PRNs) * sizeof(int), volk_gnsssdr_get_alignment()));
+    d_ca_codes = static_cast<int*>(volk_gnsssdr_malloc(static_cast<int>(GPS_L2_M_CODE_LENGTH_CHIPS * NUM_PRNs) * sizeof(int), volk_gnsssdr_get_alignment()));
     for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
-    {
-        //gps_l1_ca_code_gen_int(&d_ca_codes[(int(GPS_L1_CA_CODE_LENGTH_CHIPS)) * (PRN - 1)], PRN, 0);
-        gps_l2c_m_code_gen_float(ca_codes_f, PRN);
-        for (unsigned int s = 0; s < 2*static_cast<unsigned int>(GPS_L2_M_CODE_LENGTH_CHIPS); s++)
-            {
-                d_ca_codes[static_cast<int>(GPS_L2_M_CODE_LENGTH_CHIPS)* (PRN - 1) + s] = static_cast<int>(ca_codes_f[s]);
-            }
-    }
+        {
+            //gps_l1_ca_code_gen_int(&d_ca_codes[(int(GPS_L1_CA_CODE_LENGTH_CHIPS)) * (PRN - 1)], PRN, 0);
+            gps_l2c_m_code_gen_float(ca_codes_f, PRN);
+            for (unsigned int s = 0; s < 2 * static_cast<unsigned int>(GPS_L2_M_CODE_LENGTH_CHIPS); s++)
+                {
+                    d_ca_codes[static_cast<int>(GPS_L2_M_CODE_LENGTH_CHIPS) * (PRN - 1) + s] = static_cast<int>(ca_codes_f[s]);
+                }
+        }
 
     delete[] ca_codes_f;
 
     trk_param_fpga.ca_codes = d_ca_codes;
     trk_param_fpga.code_length_chips = GPS_L2_M_CODE_LENGTH_CHIPS;
-    trk_param_fpga.code_samples_per_chip = 1; // 1 sample per chip
+    trk_param_fpga.code_samples_per_chip = 1;  // 1 sample per chip
 
     //################# MAKE TRACKING GNURadio object ###################
 
-//    //################# MAKE TRACKING GNURadio object ###################
-//    if (item_type.compare("gr_complex") == 0)
-//        {
-//            item_size_ = sizeof(gr_complex);
-//            tracking_ = dll_pll_veml_make_tracking(trk_param);
-//        }
-//    else
-//        {
-//            item_size_ = sizeof(gr_complex);
-//            LOG(WARNING) << item_type << " unknown tracking item type.";
-//        }
+    //    //################# MAKE TRACKING GNURadio object ###################
+    //    if (item_type.compare("gr_complex") == 0)
+    //        {
+    //            item_size_ = sizeof(gr_complex);
+    //            tracking_ = dll_pll_veml_make_tracking(trk_param);
+    //        }
+    //    else
+    //        {
+    //            item_size_ = sizeof(gr_complex);
+    //            LOG(WARNING) << item_type << " unknown tracking item type.";
+    //        }
 
     //################# MAKE TRACKING GNURadio object ###################
     tracking_fpga_sc = dll_pll_veml_make_tracking_fpga(trk_param_fpga);

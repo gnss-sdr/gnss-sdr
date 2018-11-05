@@ -51,6 +51,7 @@ extern "C"
 #include "galileo_ephemeris.h"
 #include "galileo_utc_model.h"
 #include "galileo_iono.h"
+#include "galileo_almanac.h"
 #include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_utc_model.h"
 #include <boost/archive/xml_oarchive.hpp>
@@ -90,6 +91,7 @@ public:
 
     // almanac map
     std::map<int, Gps_Almanac> gps_almanac_map;
+    std::map<int, Galileo_Almanac> gal_almanac_map;
 
     // ionospheric model
     Gps_Iono gps_iono;
@@ -194,6 +196,26 @@ public:
      * \brief Save Galileo UTC model map to XML file
      */
     bool save_gal_utc_xml(const std::string file_name, Galileo_Utc_Model& utc);
+
+    /*!
+     * \brief Read Galileo almanac map from XML file
+     */
+    bool load_gal_almanac_xml(const std::string file_name);
+
+    /*!
+     * \brief Save Galileo almanac map to XML file
+     */
+    bool save_gal_almanac_xml(const std::string file_name, std::map<int, Galileo_Almanac> gal_almanac);
+
+    /*!
+     * \brief Read GPS almanac map from XML file
+     */
+    bool load_gps_almanac_xml(const std::string file_name);
+
+    /*!
+     * \brief Save GPS almanac map to XML file
+     */
+    bool save_gps_almanac_xml(const std::string file_name, std::map<int, Gps_Almanac> gps_almanac_map);
 
     /*!
      * \brief Read iono from XML file

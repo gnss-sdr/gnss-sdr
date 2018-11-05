@@ -80,6 +80,7 @@ ControlThread::ControlThread()
             configuration_ = std::make_shared<FileConfiguration>(FLAGS_c);
         }
     delete_configuration_ = false;
+    restart_ = false;
     init();
 }
 
@@ -115,7 +116,7 @@ void ControlThread::telecommand_listener()
  *    while (flowgraph_->running() && !stop)_{
  * 3- Read control messages and process them }
  */
-void ControlThread::run()
+int ControlThread::run()
 {
     // Connect the flowgraph
     try
@@ -125,7 +126,7 @@ void ControlThread::run()
     catch (const std::exception &e)
         {
             LOG(ERROR) << e.what();
-            return;
+            return 0;
         }
     if (flowgraph_->connected())
         {
@@ -134,7 +135,7 @@ void ControlThread::run()
     else
         {
             LOG(ERROR) << "Unable to connect flowgraph";
-            return;
+            return 0;
         }
     // Start the flowgraph
     flowgraph_->start();
@@ -145,7 +146,7 @@ void ControlThread::run()
     else
         {
             LOG(ERROR) << "Unable to start flowgraph";
-            return;
+            return 0;
         }
 
     //launch GNSS assistance process AFTER the flowgraph is running because the GNURadio asynchronous queues must be already running to transport msgs
@@ -189,6 +190,15 @@ void ControlThread::run()
 #endif
 
     LOG(INFO) << "Flowgraph stopped";
+
+    if (restart_)
+        {
+            return 42;  //signal the gnss-sdr-harness.sh to restart the receiver program
+        }
+    else
+        {
+            return 0;  //normal shutdown
+        }
 }
 
 
@@ -200,6 +210,7 @@ void ControlThread::set_control_queue(gr::msg_queue::sptr control_queue)
             return;
         }
     control_queue_ = control_queue;
+    cmd_interface_.set_msg_queue(control_queue_);
 }
 
 
@@ -223,6 +234,8 @@ bool ControlThread::read_assistance_from_XML()
     std::string cnav_utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_cnav_utc_model_xml", cnav_utc_default_xml_filename);
     std::string eph_glo_xml_filename = configuration_->property("GNSS-SDR.SUPL_glo_ephemeris_xml", eph_glo_gnav_default_xml_filename);
     std::string glo_utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_glo_utc_model_xml", glo_utc_default_xml_filename);
+    std::string gal_almanac_xml_filename = configuration_->property("GNSS-SDR.SUPL_gal_almanacl_xml", gal_almanac_default_xml_filename);
+    std::string gps_almanac_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_almanacl_xml", gps_almanac_default_xml_filename);
 
     if (configuration_->property("GNSS-SDR.AGNSS_XML_enabled", false) == true)
         {
@@ -238,6 +251,7 @@ bool ControlThread::read_assistance_from_XML()
             cnav_utc_xml_filename = configuration_->property("GNSS-SDR.AGNSS_cnav_utc_model_xml", cnav_utc_default_xml_filename);
             eph_glo_xml_filename = configuration_->property("GNSS-SDR.AGNSS_glo_ephemeris_xml", eph_glo_gnav_default_xml_filename);
             glo_utc_xml_filename = configuration_->property("GNSS-SDR.AGNSS_glo_utc_model_xml", glo_utc_default_xml_filename);
+            gal_almanac_xml_filename = configuration_->property("GNSS-SDR.AGNSS_gal_almanacl_xml", gal_almanac_default_xml_filename);
         }
 
     std::cout << "Trying to read GNSS ephemeris from XML file(s)..." << std::endl;
@@ -273,6 +287,20 @@ bool ControlThread::read_assistance_from_XML()
                     std::cout << "From XML file: Read GPS ionosphere model parameters." << std::endl;
                     ret = true;
                 }
+
+            if (supl_client_ephemeris_.load_gps_almanac_xml(gps_almanac_xml_filename) == true)
+                {
+                    std::map<int, Gps_Almanac>::const_iterator gps_alm_iter;
+                    for (gps_alm_iter = supl_client_ephemeris_.gps_almanac_map.cbegin();
+                         gps_alm_iter != supl_client_ephemeris_.gps_almanac_map.cend();
+                         gps_alm_iter++)
+                        {
+                            std::cout << "From XML file: Read GPS almanac for satellite " << Gnss_Satellite("GPS", gps_alm_iter->second.i_satellite_PRN) << std::endl;
+                            std::shared_ptr<Gps_Almanac> tmp_obj = std::make_shared<Gps_Almanac>(gps_alm_iter->second);
+                            flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+                        }
+                    ret = true;
+                }
         }
 
     if ((configuration_->property("Channels_1B.count", 0) > 0) or (configuration_->property("Channels_5X.count", 0) > 0))
@@ -304,6 +332,20 @@ bool ControlThread::read_assistance_from_XML()
                     std::shared_ptr<Galileo_Utc_Model> tmp_obj = std::make_shared<Galileo_Utc_Model>(supl_client_acquisition_.gal_utc);
                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                     std::cout << "From XML file: Read Galileo UTC model parameters." << std::endl;
+                    ret = true;
+                }
+
+            if (supl_client_ephemeris_.load_gal_almanac_xml(gal_almanac_xml_filename) == true)
+                {
+                    std::map<int, Galileo_Almanac>::const_iterator gal_alm_iter;
+                    for (gal_alm_iter = supl_client_ephemeris_.gal_almanac_map.cbegin();
+                         gal_alm_iter != supl_client_ephemeris_.gal_almanac_map.cend();
+                         gal_alm_iter++)
+                        {
+                            std::cout << "From XML file: Read Galileo almanac for satellite " << Gnss_Satellite("Galileo", gal_alm_iter->second.i_satellite_PRN) << std::endl;
+                            std::shared_ptr<Galileo_Almanac> tmp_obj = std::make_shared<Galileo_Almanac>(gal_alm_iter->second);
+                            flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+                        }
                     ret = true;
                 }
         }
@@ -413,7 +455,7 @@ void ControlThread::assist_GNSS()
             supl_client_ephemeris_.server_port = configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_port", 7275);
             supl_client_acquisition_.server_port = configuration_->property("GNSS-SDR.SUPL_gps_acquisition_port", 7275);
             supl_mcc = configuration_->property("GNSS-SDR.SUPL_MCC", 244);
-            supl_mns = configuration_->property("GNSS-SDR.SUPL_MNS", 5);
+            supl_mns = configuration_->property("GNSS-SDR.SUPL_MNC ", 5);
 
             std::string default_lac = "0x59e2";
             std::string default_ci = "0x31b0";
@@ -602,6 +644,7 @@ void ControlThread::init()
 {
     // Instantiates a control queue, a GNSS flowgraph, and a control message factory
     control_queue_ = gr::msg_queue::make(0);
+    cmd_interface_.set_msg_queue(control_queue_);  //set also the queue pointer for the telecommand thread
     try
         {
             flowgraph_ = std::make_shared<GNSSFlowgraph>(configuration_, control_queue_);
@@ -666,6 +709,12 @@ void ControlThread::apply_action(unsigned int what)
         case 0:
             DLOG(INFO) << "Received action STOP";
             stop_ = true;
+            applied_actions_++;
+            break;
+        case 1:
+            DLOG(INFO) << "Received action RESTART";
+            stop_ = true;
+            restart_ = true;
             applied_actions_++;
             break;
         default:

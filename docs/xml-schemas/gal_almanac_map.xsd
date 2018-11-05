@@ -1,0 +1,56 @@
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="boost_serialization">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="GNSS-SDR_gal_almanac_map">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element type="xs:byte" name="count"/>
+              <xs:element type="xs:byte" name="item_version"/>
+              <xs:element name="item" maxOccurs="unbounded" minOccurs="0">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element type="xs:byte" name="first"/>
+                    <xs:element name="second">
+                      <xs:complexType mixed="true">
+                        <xs:sequence>
+                          <xs:element type="xs:byte" name="i_satellite_PRN"/>
+                          <xs:element type="xs:float" name="d_Toa"/>
+                          <xs:element type="xs:float" name="d_WNa"/>
+                          <xs:element type="xs:float" name="d_IODa"/>
+                          <xs:element type="xs:float" name="d_Delta_i"/>
+                          <xs:element type="xs:float" name="d_M_0"/>
+                          <xs:element type="xs:float" name="d_e_eccentricity"/>
+                          <xs:element type="xs:float" name="d_Delta_sqrt_A"/>
+                          <xs:element type="xs:float" name="d_OMEGA0"/>
+                          <xs:element type="xs:float" name="d_OMEGA"/>
+                          <xs:element type="xs:float" name="d_OMEGA_DOT"/>
+                          <xs:element type="xs:float" name="d_A_f0"/>
+                          <xs:element type="xs:float" name="d_A_f1"/>
+                          <xs:element type="xs:float" name="E5b_HS"/>
+                          <xs:element type="xs:float" name="E1B_HS"/>
+                          <xs:element type="xs:float" name="E5a_HS"/>
+                        </xs:sequence>
+                        <xs:attribute type="xs:byte" name="class_id" use="optional"/>
+                        <xs:attribute type="xs:byte" name="tracking_level" use="optional"/>
+                        <xs:attribute type="xs:byte" name="version" use="optional"/>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute type="xs:byte" name="class_id" use="optional"/>
+                  <xs:attribute type="xs:byte" name="tracking_level" use="optional"/>
+                  <xs:attribute type="xs:byte" name="version" use="optional"/>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute type="xs:byte" name="class_id"/>
+            <xs:attribute type="xs:byte" name="tracking_level"/>
+            <xs:attribute type="xs:byte" name="version"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute type="xs:string" name="signature"/>
+      <xs:attribute type="xs:byte" name="version"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

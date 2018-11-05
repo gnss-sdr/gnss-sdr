@@ -32,14 +32,48 @@
 
 #include "geojson_printer.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/filesystem/operations.hpp>   // for create_directories, exists
+#include <boost/filesystem/path.hpp>         // for path, operator<<
+#include <boost/filesystem/path_traits.hpp>  // for filesystem
 #include <glog/logging.h>
 #include <iomanip>
 #include <sstream>
 
 
-GeoJSON_Printer::GeoJSON_Printer()
+GeoJSON_Printer::GeoJSON_Printer(const std::string& base_path)
 {
     first_pos = true;
+    geojson_base_path = base_path;
+    boost::filesystem::path full_path(boost::filesystem::current_path());
+    const boost::filesystem::path p(geojson_base_path);
+    if (!boost::filesystem::exists(p))
+        {
+            std::string new_folder;
+            for (auto& folder : boost::filesystem::path(geojson_base_path))
+                {
+                    new_folder += folder.string();
+                    boost::system::error_code ec;
+                    if (!boost::filesystem::exists(new_folder))
+                        {
+                            if (!boost::filesystem::create_directory(new_folder, ec))
+                                {
+                                    std::cout << "Could not create the " << new_folder << " folder." << std::endl;
+                                    geojson_base_path = full_path.string();
+                                }
+                        }
+                    new_folder += boost::filesystem::path::preferred_separator;
+                }
+        }
+    else
+        {
+            geojson_base_path = p.string();
+        }
+    if (geojson_base_path.compare(".") != 0)
+        {
+            std::cout << "GeoJSON files will be stored at " << geojson_base_path << std::endl;
+        }
+
+    geojson_base_path = geojson_base_path + boost::filesystem::path::preferred_separator;
 }
 
 
@@ -96,6 +130,7 @@ bool GeoJSON_Printer::set_headers(std::string filename, bool time_tag_name)
         {
             filename_ = filename + ".geojson";
         }
+    filename_ = geojson_base_path + filename_;
 
     geojson_file.open(filename_.c_str());
 
@@ -124,6 +159,7 @@ bool GeoJSON_Printer::set_headers(std::string filename, bool time_tag_name)
         }
     else
         {
+            std::cout << "File " << filename_ << " cannot be saved. Wrong permissions?" << std::endl;
             return false;
         }
 }

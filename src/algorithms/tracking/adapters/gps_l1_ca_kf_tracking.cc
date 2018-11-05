@@ -47,6 +47,10 @@
 
 using google::LogMessage;
 
+void GpsL1CaKfTracking::stop_tracking()
+{
+}
+
 GpsL1CaKfTracking::GpsL1CaKfTracking(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)

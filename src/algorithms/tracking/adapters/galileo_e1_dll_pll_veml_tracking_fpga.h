@@ -93,6 +93,12 @@ public:
 
     void start_tracking() override;
 
+    /*!
+     * \brief Stop running tracking
+     */
+    void stop_tracking() override;
+
+
 private:
     //dll_pll_veml_tracking_sptr tracking_;
     dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
@@ -104,7 +110,6 @@ private:
     int* d_ca_codes;
     int* d_data_codes;
     bool d_track_pilot;
-
 };
 
 

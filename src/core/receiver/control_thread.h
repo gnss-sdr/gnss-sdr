@@ -83,7 +83,7 @@ public:
      *
      *  - Read control messages and process them; }
      */
-    void run();
+    int run();
 
     /*!
      * \brief Sets the control_queue
@@ -155,6 +155,7 @@ private:
     std::shared_ptr<ControlMessageFactory> control_message_factory_;
     std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>> control_messages_;
     bool stop_;
+    bool restart_;
     bool delete_configuration_;
     unsigned int processed_control_messages_;
     unsigned int applied_actions_;
@@ -179,6 +180,8 @@ private:
     const std::string cnav_utc_default_xml_filename = "./gps_cnav_utc_model.xml";
     const std::string eph_glo_gnav_default_xml_filename = "./glo_gnav_ephemeris.xml";
     const std::string glo_utc_default_xml_filename = "./glo_utc_model.xml";
+    const std::string gal_almanac_default_xml_filename = "./gal_almanac.xml";
+    const std::string gps_almanac_default_xml_filename = "./gps_almanac.xml";
 };
 
 #endif /*GNSS_SDR_CONTROL_THREAD_H_*/

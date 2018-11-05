@@ -46,6 +46,10 @@
 
 using google::LogMessage;
 
+void GlonassL1CaDllPllCAidTracking::stop_tracking()
+{
+}
+
 GlonassL1CaDllPllCAidTracking::GlonassL1CaDllPllCAidTracking(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)

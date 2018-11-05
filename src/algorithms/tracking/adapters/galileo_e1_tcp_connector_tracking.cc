@@ -44,6 +44,10 @@
 
 using google::LogMessage;
 
+void GalileoE1TcpConnectorTracking::stop_tracking()
+{
+}
+
 GalileoE1TcpConnectorTracking::GalileoE1TcpConnectorTracking(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)

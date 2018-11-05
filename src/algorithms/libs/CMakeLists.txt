@@ -38,6 +38,7 @@ set(GNSS_SPLIBS_SOURCES
         conjugate_cc.cc
         conjugate_sc.cc
         conjugate_ic.cc
+        gnss_sdr_create_directory.cc
 )
 
 set(GNSS_SPLIBS_HEADERS
@@ -60,6 +61,7 @@ set(GNSS_SPLIBS_HEADERS
         conjugate_cc.h
         conjugate_sc.h
         conjugate_ic.h
+        gnss_sdr_create_directory.h
         gnss_circular_deque.h
 )
 
@@ -74,7 +76,7 @@ if(ENABLE_FPGA)
         gnss_sdr_time_counter.h
         gnss_sdr_fpga_sample_counter.h
 	)
-	
+
 endif(ENABLE_FPGA)
 
 if(OPENCL_FOUND)
@@ -83,12 +85,12 @@ if(OPENCL_FOUND)
                             opencl/fft_setup.cc # Needs OpenCL
                             opencl/fft_kernelstring.cc # Needs OpenCL
     )
-       
+
     set(GNSS_SPLIBS_HEADERS ${GNSS_SPLIBS_HEADERS}
                             opencl/fft_execute.h # Needs OpenCL
                             opencl/fft_setup.h # Needs OpenCL
                             opencl/fft_kernelstring.h # Needs OpenCL
-    )       
+    )
 endif(OPENCL_FOUND)
 
 include_directories(

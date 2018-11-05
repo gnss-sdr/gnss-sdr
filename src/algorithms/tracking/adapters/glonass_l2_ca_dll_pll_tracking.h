@@ -90,6 +90,10 @@ public:
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
     void start_tracking() override;
+    /*!
+     * \brief Stop running tracking
+     */
+    void stop_tracking() override;
 
 private:
     glonass_l2_ca_dll_pll_tracking_cc_sptr tracking_;

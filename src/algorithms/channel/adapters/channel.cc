@@ -196,6 +196,19 @@ void Channel::set_signal(const Gnss_Signal& gnss_signal)
 }
 
 
+void Channel::stop_channel()
+{
+    std::lock_guard<std::mutex> lk(mx);
+    bool result = channel_fsm_->Event_stop_channel();
+    if (!result)
+        {
+            LOG(WARNING) << "Invalid channel event";
+            return;
+        }
+    DLOG(INFO)
+        << "Channel stop_channel()";
+}
+
 void Channel::start_acquisition()
 {
     std::lock_guard<std::mutex> lk(mx);

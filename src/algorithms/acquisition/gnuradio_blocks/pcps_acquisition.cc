@@ -36,6 +36,8 @@
 #include "pcps_acquisition.h"
 #include "GPS_L1_CA.h"         // for GPS_TWO_PI
 #include "GLONASS_L1_L2_CA.h"  // for GLONASS_TWO_PI"
+#include "gnss_sdr_create_directory.h"
+#include <boost/filesystem/path.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <matio.h>
@@ -136,8 +138,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
     narrow_grid_ = arma::fmat();
     d_step_two = false;
     d_num_doppler_bins_step2 = acq_parameters.num_doppler_bins_step2;
-    d_dump_number = 0LL;
-    d_dump_channel = acq_parameters.dump_channel;
+
     d_samplesPerChip = acq_parameters.samples_per_chip;
     d_buffer_count = 0U;
     // todo: CFAR statistic not available for non-coherent integration
@@ -149,8 +150,42 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
         {
             d_use_CFAR_algorithm_flag = false;
         }
+    d_dump_number = 0LL;
+    d_dump_channel = acq_parameters.dump_channel;
+    d_dump = acq_parameters.dump;
+    d_dump_filename = acq_parameters.dump_filename;
+    if (d_dump)
+        {
+            std::string dump_path;
+            // Get path
+            if (d_dump_filename.find_last_of("/") != std::string::npos)
+                {
+                    std::string dump_filename_ = d_dump_filename.substr(d_dump_filename.find_last_of("/") + 1);
+                    dump_path = d_dump_filename.substr(0, d_dump_filename.find_last_of("/"));
+                    d_dump_filename = dump_filename_;
+                }
+            else
+                {
+                    dump_path = std::string(".");
+                }
+            if (d_dump_filename.empty())
+                {
+                    d_dump_filename = "acquisition";
+                }
+            // remove extension if any
+            if (d_dump_filename.substr(1).find_last_of(".") != std::string::npos)
+                {
+                    d_dump_filename = d_dump_filename.substr(0, d_dump_filename.find_last_of("."));
+                }
+            d_dump_filename = dump_path + boost::filesystem::path::preferred_separator + d_dump_filename;
+            // create directory
+            if (!gnss_sdr_create_directory(dump_path))
+                {
+                    std::cerr << "GNSS-SDR cannot create dump file for the Acquisition block. Wrong permissions?" << std::endl;
+                    d_dump = false;
+                }
+        }
 }
-
 
 pcps_acquisition::~pcps_acquisition()
 {
@@ -303,7 +338,7 @@ void pcps_acquisition::init()
 
     d_worker_active = false;
 
-    if (acq_parameters.dump)
+    if (d_dump)
         {
             uint32_t effective_fft_size = (acq_parameters.bit_transition_flag ? (d_fft_size / 2) : d_fft_size);
             grid_ = arma::fmat(effective_fft_size, d_num_doppler_bins, arma::fill::zeros);
@@ -396,7 +431,7 @@ void pcps_acquisition::send_negative_acquisition()
 void pcps_acquisition::dump_results(int32_t effective_fft_size)
 {
     d_dump_number++;
-    std::string filename = acq_parameters.dump_filename;
+    std::string filename = d_dump_filename;
     filename.append("_");
     filename.append(1, d_gnss_synchro->System);
     filename.append("_");
@@ -414,7 +449,7 @@ void pcps_acquisition::dump_results(int32_t effective_fft_size)
     if (matfp == NULL)
         {
             std::cout << "Unable to create or open Acquisition dump file" << std::endl;
-            acq_parameters.dump = false;
+            //acq_parameters.dump = false;
         }
     else
         {
@@ -669,7 +704,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                             volk_32f_x2_add_32f(d_magnitude_grid[doppler_index], d_magnitude_grid[doppler_index], d_tmp_buffer, effective_fft_size);
                         }
                     // Record results to file if required
-                    if (acq_parameters.dump and d_channel == d_dump_channel)
+                    if (d_dump and d_channel == d_dump_channel)
                         {
                             memcpy(grid_.colptr(doppler_index), d_magnitude_grid[doppler_index], sizeof(float) * effective_fft_size);
                         }
@@ -716,7 +751,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                             volk_32f_x2_add_32f(d_magnitude_grid[doppler_index], d_magnitude_grid[doppler_index], d_tmp_buffer, effective_fft_size);
                         }
                     // Record results to file if required
-                    if (acq_parameters.dump and d_channel == d_dump_channel)
+                    if (d_dump and d_channel == d_dump_channel)
                         {
                             memcpy(narrow_grid_.colptr(doppler_index), d_magnitude_grid[doppler_index], sizeof(float) * effective_fft_size);
                         }
@@ -816,7 +851,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
     if ((d_num_noncoherent_integrations_counter == acq_parameters.max_dwells) or (d_positive_acq == 1))
         {
             // Record results to file if required
-            if (acq_parameters.dump and d_channel == d_dump_channel)
+            if (d_dump and d_channel == d_dump_channel)
                 {
                     pcps_acquisition::dump_results(effective_fft_size);
                 }

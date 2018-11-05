@@ -135,9 +135,10 @@ int main(int argc, char** argv)
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
 
+    int return_code;
     try
         {
-            control_thread->run();
+            return_code = control_thread->run();
         }
     catch (const boost::exception& e)
         {
@@ -189,5 +190,5 @@ int main(int argc, char** argv)
 
     google::ShutDownCommandLineFlags();
     std::cout << "GNSS-SDR program ended." << std::endl;
-    return 0;
+    return return_code;
 }

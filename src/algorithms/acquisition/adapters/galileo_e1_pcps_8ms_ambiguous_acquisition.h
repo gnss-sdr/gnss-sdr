@@ -122,6 +122,12 @@ public:
      * \brief Restart acquisition algorithm
      */
     void reset() override;
+
+    /*!
+     * \brief Stop running acquisition
+     */
+    void stop_acquisition() override;
+
     void set_state(int state __attribute__((unused))) override{};
 
 private:

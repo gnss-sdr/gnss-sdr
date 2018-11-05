@@ -42,12 +42,16 @@
 
 using google::LogMessage;
 
+void GpsL1CaPcpsAcquisitionFineDoppler::stop_acquisition()
+{
+}
+
 GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     std::string default_item_type = "gr_complex";
-    std::string default_dump_filename = "./data/acquisition.dat";
+    std::string default_dump_filename = "./acquisition.mat";
 
     DLOG(INFO) << "role " << role;
     Acq_Conf acq_parameters = Acq_Conf();

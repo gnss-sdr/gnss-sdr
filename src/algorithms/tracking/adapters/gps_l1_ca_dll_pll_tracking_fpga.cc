@@ -48,14 +48,17 @@
 
 using google::LogMessage;
 
-GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
-        ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams) :
-                role_(role), in_streams_(in_streams), out_streams_(out_streams)
+void GpsL1CaDllPllTrackingFpga::stop_tracking()
 {
-	Dll_Pll_Conf_Fpga trk_param_fpga = Dll_Pll_Conf_Fpga();
+}
+
+GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
+    ConfigurationInterface* configuration, std::string role,
+    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+{
+    Dll_Pll_Conf_Fpga trk_param_fpga = Dll_Pll_Conf_Fpga();
     DLOG(INFO) << "role " << role;
-    
+
     //################# CONFIGURATION PARAMETERS ########################
     //std::string default_item_type = "gr_complex";
     //std::string item_type = configuration->property(role + ".item_type", default_item_type);
@@ -64,6 +67,11 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     trk_param_fpga.fs_in = fs_in;
     bool dump = configuration->property(role + ".dump", false);
     trk_param_fpga.dump = dump;
+    std::string default_dump_filename = "./track_ch";
+    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
+    trk_param_fpga.dump_filename = dump_filename;
+    bool dump_mat = configuration->property(role + ".dump_mat", true);
+    trk_param_fpga.dump_mat = dump_mat;
     float pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
     if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
     trk_param_fpga.pll_bw_hz = pll_bw_hz;
@@ -78,9 +86,6 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     trk_param_fpga.early_late_space_chips = early_late_space_chips;
     float early_late_space_narrow_chips = configuration->property(role + ".early_late_space_narrow_chips", 0.5);
     trk_param_fpga.early_late_space_narrow_chips = early_late_space_narrow_chips;
-    std::string default_dump_filename = "./track_ch";
-    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
-    trk_param_fpga.dump_filename = dump_filename;
     int vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
     trk_param_fpga.vector_length = vector_length;
     int symbols_extended_correlator = configuration->property(role + ".extend_correlation_symbols", 1);
@@ -130,23 +135,22 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     unsigned int device_base = configuration->property(role + ".device_base", 1);
     trk_param_fpga.device_base = device_base;
     //unsigned int multicorr_type = configuration->property(role + ".multicorr_type", 0);
-    trk_param_fpga.multicorr_type = 0; //multicorr_type : 0 -> 3 correlators, 1 -> 5 correlators
+    trk_param_fpga.multicorr_type = 0;  //multicorr_type : 0 -> 3 correlators, 1 -> 5 correlators
 
     //################# PRE-COMPUTE ALL THE CODES #################
-    d_ca_codes = static_cast<int*>(volk_gnsssdr_malloc(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS*NUM_PRNs) * sizeof(int), volk_gnsssdr_get_alignment()));
+    d_ca_codes = static_cast<int*>(volk_gnsssdr_malloc(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS * NUM_PRNs) * sizeof(int), volk_gnsssdr_get_alignment()));
     for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
-    {
-        gps_l1_ca_code_gen_int(&d_ca_codes[(int(GPS_L1_CA_CODE_LENGTH_CHIPS)) * (PRN - 1)], PRN, 0);
-    }
+        {
+            gps_l1_ca_code_gen_int(&d_ca_codes[(int(GPS_L1_CA_CODE_LENGTH_CHIPS)) * (PRN - 1)], PRN, 0);
+        }
     trk_param_fpga.ca_codes = d_ca_codes;
     trk_param_fpga.code_length_chips = GPS_L1_CA_CODE_LENGTH_CHIPS;
-    trk_param_fpga.code_samples_per_chip = 1; // 1 sample per chip
+    trk_param_fpga.code_samples_per_chip = 1;  // 1 sample per chip
 
     //################# MAKE TRACKING GNURadio object ###################
     tracking_fpga_sc = dll_pll_veml_make_tracking_fpga(trk_param_fpga);
     channel_ = 0;
     DLOG(INFO) << "tracking(" << tracking_fpga_sc->unique_id() << ")";
-    
 }
 
 GpsL1CaDllPllTrackingFpga::~GpsL1CaDllPllTrackingFpga()
@@ -175,14 +179,18 @@ void GpsL1CaDllPllTrackingFpga::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 
 void GpsL1CaDllPllTrackingFpga::connect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     //nothing to connect
 }
 
 
 void GpsL1CaDllPllTrackingFpga::disconnect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     //nothing to disconnect
 }
 
@@ -197,5 +205,3 @@ gr::basic_block_sptr GpsL1CaDllPllTrackingFpga::get_right_block()
 {
     return tracking_fpga_sc;
 }
-
-

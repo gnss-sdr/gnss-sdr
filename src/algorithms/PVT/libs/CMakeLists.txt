@@ -29,6 +29,7 @@ set(PVT_LIB_SOURCES
      rtcm_printer.cc
      geojson_printer.cc
      rtklib_solver.cc
+     pvt_conf.cc
 )
 
 set(PVT_LIB_HEADERS 
@@ -42,6 +43,7 @@ set(PVT_LIB_HEADERS
      rtcm_printer.h
      geojson_printer.h
      rtklib_solver.h
+     pvt_conf.h
 )
 
 
@@ -57,6 +59,7 @@ include_directories(
      ${ARMADILLO_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${GLOG_INCLUDE_DIRS}
+     ${MATIO_INCLUDE_DIRS}
 )
 
 list(SORT PVT_LIB_HEADERS)
@@ -64,7 +67,12 @@ list(SORT PVT_LIB_SOURCES)
 
 add_library(pvt_lib ${PVT_LIB_SOURCES} ${PVT_LIB_HEADERS})
 source_group(Headers FILES ${PVT_LIB_HEADERS})
-add_dependencies(pvt_lib rtklib_lib armadillo-${armadillo_RELEASE} glog-${glog_RELEASE})
+
+if(MATIO_FOUND)
+    add_dependencies(pvt_lib glog-${glog_RELEASE} armadillo-${armadillo_RELEASE})
+else(MATIO_FOUND)
+    add_dependencies(pvt_lib glog-${glog_RELEASE} armadillo-${armadillo_RELEASE} matio-${GNSSSDR_MATIO_LOCAL_VERSION})
+endif(MATIO_FOUND)
 
 target_link_libraries(
     pvt_lib 
@@ -75,4 +83,5 @@ target_link_libraries(
     ${ARMADILLO_LIBRARIES}
     ${BLAS}
     ${LAPACK}
+    ${MATIO_LIBRARIES}
 )

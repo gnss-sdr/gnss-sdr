@@ -1,0 +1,60 @@
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="boost_serialization">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="GNSS-SDR_gal_ephemeris_map">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element type="xs:byte" name="count"/>
+              <xs:element type="xs:byte" name="item_version"/>
+              <xs:element name="item" maxOccurs="unbounded" minOccurs="0">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element type="xs:byte" name="first"/>
+                    <xs:element name="second">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element type="xs:byte" name="i_satellite_PRN"/>
+                          <xs:element type="xs:float" name="M0_1"/>
+                          <xs:element type="xs:float" name="e_1"/>
+                          <xs:element type="xs:float" name="A_1"/>
+                          <xs:element type="xs:float" name="OMEGA_0_2"/>
+                          <xs:element type="xs:float" name="i_0_2"/>
+                          <xs:element type="xs:float" name="omega_2"/>
+                          <xs:element type="xs:float" name="OMEGA_dot_3"/>
+                          <xs:element type="xs:float" name="iDot_2"/>
+                          <xs:element type="xs:float" name="C_uc_3"/>
+                          <xs:element type="xs:float" name="C_us_3"/>
+                          <xs:element type="xs:float" name="C_rc_3"/>
+                          <xs:element type="xs:float" name="C_rs_3"/>
+                          <xs:element type="xs:float" name="C_ic_4"/>
+                          <xs:element type="xs:float" name="C_is_4"/>
+                          <xs:element type="xs:float" name="t0e_1"/>
+                          <xs:element type="xs:float" name="t0c_4"/>
+                          <xs:element type="xs:float" name="af0_4"/>
+                          <xs:element type="xs:float" name="af1_4"/>
+                          <xs:element type="xs:float" name="af2_4"/>
+                        </xs:sequence>
+                        <xs:attribute type="xs:byte" name="class_id" use="optional"/>
+                        <xs:attribute type="xs:byte" name="tracking_level" use="optional"/>
+                        <xs:attribute type="xs:byte" name="version" use="optional"/>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute type="xs:byte" name="class_id" use="optional"/>
+                  <xs:attribute type="xs:byte" name="tracking_level" use="optional"/>
+                  <xs:attribute type="xs:byte" name="version" use="optional"/>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute type="xs:byte" name="class_id"/>
+            <xs:attribute type="xs:byte" name="tracking_level"/>
+            <xs:attribute type="xs:byte" name="version"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute type="xs:string" name="signature"/>
+      <xs:attribute type="xs:byte" name="version"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

@@ -52,6 +52,28 @@ ChannelFsm::ChannelFsm(std::shared_ptr<AcquisitionInterface> acquisition) : acq_
 }
 
 
+bool ChannelFsm::Event_stop_channel()
+{
+    std::lock_guard<std::mutex> lk(mx);
+    DLOG(INFO) << "CH = " << channel_ << ". Ev stop channel";
+    switch (d_state)
+        {
+        case 0:  //already in stanby
+            return true;
+            break;
+        case 1:  //acquisition
+            d_state = 0;
+            stop_acquisition();
+            break;
+        case 2:  //tracking
+            d_state = 0;
+            stop_tracking();
+            break;
+        default:
+            return true;
+        }
+}
+
 bool ChannelFsm::Event_start_acquisition()
 {
     std::lock_guard<std::mutex> lk(mx);
@@ -162,6 +184,17 @@ void ChannelFsm::set_channel(uint32_t channel)
 {
     std::lock_guard<std::mutex> lk(mx);
     channel_ = channel;
+}
+
+
+void ChannelFsm::stop_acquisition()
+{
+    acq_->stop_acquisition();
+}
+
+void ChannelFsm::stop_tracking()
+{
+    trk_->stop_tracking();
 }
 
 

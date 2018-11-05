@@ -61,6 +61,7 @@ public:
     void set_channel(uint32_t channel);
     void set_gnss_synchro(Gnss_Synchro *p_gnss_synchro);
     void start_tracking();
+    void stop_tracking();
 
     int general_work(int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
@@ -195,6 +196,9 @@ private:
 
     // file dump
     std::ofstream d_dump_file;
+    std::string d_dump_filename;
+    bool d_dump;
+    bool d_dump_mat;
 };
 
 #endif  // GNSS_SDR_DLL_PLL_VEML_TRACKING_H

@@ -818,8 +818,16 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             switch (gnss_observables_iter->second.System)
                                 {
                                 case 'E':
-                                    break;
-
+                                    {
+                                        std::string sig_(gnss_observables_iter->second.Signal);
+                                        if (sig_.compare("1B") == 0)
+                                            {
+                                                unsigned int snr = static_cast<unsigned int>(std::round(gnss_observables_iter->second.CN0_dB_hz / 0.25));
+                                                rtk_.ssat[gnss_observables_iter->second.PRN - 1].snr[0] = snr;
+                                                pvt_ssat[gnss_observables_iter->second.PRN - 1] = &rtk_.ssat[gnss_observables_iter->second.PRN - 1];
+                                            }
+                                        break;
+                                    }
                                 case 'G':
                                     {
                                         // GPS L1
@@ -827,7 +835,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         if (sig_.compare("1C") == 0)
                                             {
                                                 unsigned int snr = static_cast<unsigned int>(std::round(gnss_observables_iter->second.CN0_dB_hz / 0.25));
-                                                rtk_.ssat[gnss_observables_iter->second.PRN - 1].snr[0] = snr;  //newobs.SNR[0];
+                                                rtk_.ssat[gnss_observables_iter->second.PRN - 1].snr[0] = snr;
                                                 pvt_ssat[gnss_observables_iter->second.PRN - 1] = &rtk_.ssat[gnss_observables_iter->second.PRN - 1];
                                             }
                                         // GPS L2

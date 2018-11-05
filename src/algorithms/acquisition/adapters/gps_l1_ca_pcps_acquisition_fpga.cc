@@ -283,10 +283,11 @@ void GpsL1CaPcpsAcquisitionFpga::set_single_doppler_flag(unsigned int single_dop
 }
 // this function is only used for the unit tests
 void GpsL1CaPcpsAcquisitionFpga::read_acquisition_results(uint32_t *max_index,
-    float *max_magnitude, uint64_t *initial_sample, float *power_sum, uint32_t *doppler_index)
+    float *max_magnitude, float *second_magnitude, uint64_t *initial_sample, uint32_t *doppler_index, uint32_t *total_fft_scaling_factor)
+
 {
-	acquisition_fpga_->read_acquisition_results(max_index, max_magnitude,
-	        initial_sample, power_sum, doppler_index);
+	acquisition_fpga_->read_acquisition_results(max_index, max_magnitude, second_magnitude,
+	        initial_sample, doppler_index, total_fft_scaling_factor);
 }
 
 // this function is only used for the unit tests

@@ -461,8 +461,12 @@ void pcps_acquisition_fpga::set_single_doppler_flag(unsigned int single_doppler_
 
 // this function is only used for the unit tests
 void pcps_acquisition_fpga::read_acquisition_results(uint32_t *max_index,
-    float *max_magnitude, uint64_t *initial_sample, float *power_sum, uint32_t *doppler_index)
+    float *max_magnitude, float *second_magnitude, uint64_t *initial_sample, uint32_t *doppler_index, uint32_t *total_fft_scaling_factor)
 {
+	float input_power; // not used
+    acquisition_fpga->read_acquisition_results(max_index, max_magnitude, second_magnitude, initial_sample, &input_power, doppler_index, total_fft_scaling_factor);
+
+
 //	acquisition_fpga->read_acquisition_results(max_index, max_magnitude,
 //	        initial_sample, power_sum, doppler_index);
 }

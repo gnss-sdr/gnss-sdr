@@ -142,7 +142,8 @@ public:
      * \brief This function is only used in the unit tests
      */
     void read_acquisition_results(uint32_t *max_index,
-        float *max_magnitude, uint64_t *initial_sample, float *power_sum, uint32_t *doppler_index);
+        float *max_magnitude, float *second_magnitude, uint64_t *initial_sample, uint32_t *doppler_index, uint32_t *total_fft_scaling_factor);
+
 
     /*!
      * \brief This function is only used in the unit tests

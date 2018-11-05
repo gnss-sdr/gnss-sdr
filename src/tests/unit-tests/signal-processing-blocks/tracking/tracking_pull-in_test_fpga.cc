@@ -1041,26 +1041,29 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 
         int num_doppler_steps = (2*acq_doppler_max)/acq_doppler_step + 1;
 
-        float result_table[MAX_PRN_IDX][num_doppler_steps][4];
+        float result_table[MAX_PRN_IDX][num_doppler_steps][3];
 
         for (unsigned int PRN = 1; PRN < MAX_PRN_IDX; PRN++)
 			{
 
         	uint32_t max_index = 0;
 	        float max_magnitude = 0.0;
+	        float second_magnitude = 0.0;
 	        uint64_t initial_sample = 0;
-	        float power_sum = 0;
+	        //float power_sum = 0;
 	        uint32_t doppler_index = 0;
 
 	        uint32_t max_index_iteration;
 	        uint32_t total_fft_scaling_factor;
 	        uint32_t fw_fft_scaling_factor;
 	        float max_magnitude_iteration;
+	        float second_magnitude_iteration;
 	        uint64_t initial_sample_iteration;
-	        float power_sum_iteration;
+	        //float power_sum_iteration;
 	        uint32_t doppler_index_iteration;
 	        int doppler_shift_selected;
 	        int doppler_num = 0;
+
 
 			for (int doppler_shift = -acq_doppler_max;doppler_shift <= acq_doppler_max;doppler_shift = doppler_shift + acq_doppler_step)
 				{
@@ -1181,45 +1184,45 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 
 				    if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
 				    {
-				    	acquisition_GpsL1Ca_Fpga->read_acquisition_results(&max_index_iteration, &max_magnitude_iteration,&initial_sample_iteration, &power_sum_iteration, &doppler_index_iteration);
-				    	acquisition_GpsL1Ca_Fpga->read_fpga_total_scale_factor(&total_fft_scaling_factor, &fw_fft_scaling_factor);
+				    	acquisition_GpsL1Ca_Fpga->read_acquisition_results(&max_index_iteration, &max_magnitude_iteration, &second_magnitude_iteration, &initial_sample_iteration, &doppler_index_iteration, &total_fft_scaling_factor);
+				    	//acquisition_GpsL1Ca_Fpga->read_fpga_total_scale_factor(&total_fft_scaling_factor, &fw_fft_scaling_factor);
 				    }
 				    else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
 				    {
-				    	acquisition_GpsE1_Fpga->read_acquisition_results(&max_index_iteration, &max_magnitude_iteration,&initial_sample_iteration, &power_sum_iteration, &doppler_index_iteration);
-				    	acquisition_GpsE1_Fpga->read_fpga_total_scale_factor(&total_fft_scaling_factor, &fw_fft_scaling_factor);
+				    	acquisition_GpsE1_Fpga->read_acquisition_results(&max_index_iteration, &max_magnitude_iteration, &second_magnitude_iteration, &initial_sample_iteration, &doppler_index_iteration, &total_fft_scaling_factor);
+				    	//acquisition_GpsE1_Fpga->read_fpga_total_scale_factor(&total_fft_scaling_factor, &fw_fft_scaling_factor);
 				    }
 				    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
 				    {
-				    	acquisition_GpsE5a_Fpga->read_acquisition_results(&max_index_iteration, &max_magnitude_iteration,&initial_sample_iteration, &power_sum_iteration, &doppler_index_iteration);
-				    	acquisition_GpsE5a_Fpga->read_fpga_total_scale_factor(&total_fft_scaling_factor, &fw_fft_scaling_factor);
+				    	acquisition_GpsE5a_Fpga->read_acquisition_results(&max_index_iteration, &max_magnitude_iteration, &second_magnitude_iteration, &initial_sample_iteration, &doppler_index_iteration, &total_fft_scaling_factor);
+				    	//acquisition_GpsE5a_Fpga->read_fpga_total_scale_factor(&total_fft_scaling_factor, &fw_fft_scaling_factor);
 				    }
 				    else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
 				    {
-				    	acquisition_GpsL5_Fpga->read_acquisition_results(&max_index_iteration, &max_magnitude_iteration,&initial_sample_iteration, &power_sum_iteration, &doppler_index_iteration);
-				    	acquisition_GpsL5_Fpga->read_fpga_total_scale_factor(&total_fft_scaling_factor, &fw_fft_scaling_factor);
+				    	acquisition_GpsL5_Fpga->read_acquisition_results(&max_index_iteration, &max_magnitude_iteration, &second_magnitude_iteration, &initial_sample_iteration, &doppler_index_iteration, &total_fft_scaling_factor);
+				    	//acquisition_GpsL5_Fpga->read_fpga_total_scale_factor(&total_fft_scaling_factor, &fw_fft_scaling_factor);
 				    }
 
 					result_table[PRN][doppler_num][0] = max_magnitude_iteration;
-					result_table[PRN][doppler_num][1] = power_sum_iteration;
+					result_table[PRN][doppler_num][1] = second_magnitude_iteration;
 					result_table[PRN][doppler_num][2] = total_fft_scaling_factor;
-					result_table[PRN][doppler_num][3] = fw_fft_scaling_factor;
 					doppler_num = doppler_num + 1;
 
 					if (max_magnitude_iteration > max_magnitude)
 					{
 				        max_index = max_index_iteration;
 				        max_magnitude = max_magnitude_iteration;
+				        second_magnitude = second_magnitude_iteration;
 				        initial_sample = initial_sample_iteration;
-				        power_sum = power_sum_iteration;
 				        doppler_index = doppler_index_iteration;
 				        doppler_shift_selected = doppler_shift;
 					}
 					top_block->stop();
 				}
 
-		        power_sum = (power_sum - max_magnitude) / (fft_size - 1);
-				float test_statistics = (max_magnitude / power_sum);
+		        //power_sum = (power_sum - max_magnitude) / (fft_size - 1);
+				//float test_statistics = (max_magnitude / power_sum);
+				float test_statistics = max_magnitude/second_magnitude;
 				float threshold = config->property("Acquisition.threshold", FLAGS_external_signal_acquisition_threshold);
 				if (test_statistics > threshold)
 					{
@@ -1239,10 +1242,10 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 
 			uint32_t max_index = 0;
 			uint32_t total_fft_scaling_factor;
-			uint32_t fw_fft_scaling_factor;
+			//uint32_t fw_fft_scaling_factor;
 			float max_magnitude = 0.0;
 			uint64_t initial_sample = 0;
-			float power_sum = 0;
+			float second_magnitude = 0;
 			float peak_to_power = 0;
 			float test_statistics;
 			uint32_t doppler_index = 0;
@@ -1256,18 +1259,19 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 					for (int doppler_shift = -acq_doppler_max;doppler_shift <= acq_doppler_max;doppler_shift = doppler_shift + acq_doppler_step)
 					{
 						max_magnitude = result_table[PRN][doppler_num][0];
-						power_sum = result_table[PRN][doppler_num][1];
+						second_magnitude = result_table[PRN][doppler_num][1];
 						total_fft_scaling_factor = result_table[PRN][doppler_num][2];
-						fw_fft_scaling_factor = result_table[PRN][doppler_num][3];
+						//fw_fft_scaling_factor = result_table[PRN][doppler_num][3];
 						doppler_num = doppler_num + 1;
 
 						std::cout << "==================== Doppler shift " << doppler_shift << std::endl;
-						std::cout << "Max magnitude = " << max_magnitude << "Power sum = " << power_sum << std::endl;
-						std::cout << "FFT total scaling factor = " << total_fft_scaling_factor << " FW FFT scaling factor = " << fw_fft_scaling_factor << std::endl;
-						peak_to_power = max_magnitude/power_sum;
-						power_sum = (power_sum - max_magnitude) / (fft_size - 1);
-						test_statistics = (max_magnitude / power_sum);
-						std::cout << "peak to power = " << peak_to_power << " test_statistics = " << test_statistics << std::endl;
+						std::cout << "Max magnitude = " << max_magnitude << std::endl;
+						std::cout << "Second magnitude = " << second_magnitude << std::endl;
+						std::cout << "FFT total scaling factor = " << total_fft_scaling_factor << std::endl;
+						//peak_to_power = max_magnitude/power_sum;
+						//power_sum = (power_sum - max_magnitude) / (fft_size - 1);
+						test_statistics = (max_magnitude / second_magnitude);
+						std::cout << " test_statistics = " << test_statistics << std::endl;
 					}
 					int dummy_val;
 					std::cout << "Enter a value to continue";

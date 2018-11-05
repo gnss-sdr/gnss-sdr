@@ -1051,19 +1051,23 @@ bool HybridObservablesTestFpga::acquire_signal()
 
 						if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
 						{
-							acquisition_GpsL1Ca_Fpga->read_acquisition_results(&max_index_iteration, &max_magnitude_iteration,&initial_sample_iteration, &power_sum_iteration, &doppler_index_iteration);
+							// UPDATE!
+							//acquisition_GpsL1Ca_Fpga->read_acquisition_results(&max_index_iteration, &max_magnitude_iteration,&initial_sample_iteration, &power_sum_iteration, &doppler_index_iteration);
 						}
 						else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
 						{
-							acquisition_GpsE1_Fpga->read_acquisition_results(&max_index_iteration, &max_magnitude_iteration,&initial_sample_iteration, &power_sum_iteration, &doppler_index_iteration);
+							// UPDATE!
+							//acquisition_GpsE1_Fpga->read_acquisition_results(&max_index_iteration, &max_magnitude_iteration,&initial_sample_iteration, &power_sum_iteration, &doppler_index_iteration);
 						}
 						else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
 						{
-							acquisition_GpsE5a_Fpga->read_acquisition_results(&max_index_iteration, &max_magnitude_iteration,&initial_sample_iteration, &power_sum_iteration, &doppler_index_iteration);
+							// UPDATE!
+							//acquisition_GpsE5a_Fpga->read_acquisition_results(&max_index_iteration, &max_magnitude_iteration,&initial_sample_iteration, &power_sum_iteration, &doppler_index_iteration);
 						}
 						else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
 						{
-							acquisition_GpsL5_Fpga->read_acquisition_results(&max_index_iteration, &max_magnitude_iteration,&initial_sample_iteration, &power_sum_iteration, &doppler_index_iteration);
+							// UPDATE!
+							//acquisition_GpsL5_Fpga->read_acquisition_results(&max_index_iteration, &max_magnitude_iteration,&initial_sample_iteration, &power_sum_iteration, &doppler_index_iteration);
 						}
 
 						result_table[PRN][doppler_num][0] = max_magnitude_iteration;

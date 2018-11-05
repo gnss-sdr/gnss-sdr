@@ -63,6 +63,13 @@ public:
         return "RTKLIB_PVT";
     }
 
+    void clear_ephemeris();
+    std::map<int, Gps_Ephemeris> get_gps_ephemeris();
+    std::map<int, Galileo_Ephemeris> get_galileo_ephemeris();
+    std::map<int, Gps_Almanac> get_gps_almanac();
+    std::map<int, Galileo_Almanac> get_galileo_almanac();
+
+
     void connect(gr::top_block_sptr top_block) override;
     void disconnect(gr::top_block_sptr top_block) override;
     gr::basic_block_sptr get_left_block() override;

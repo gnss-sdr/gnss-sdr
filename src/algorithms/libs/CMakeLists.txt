@@ -39,6 +39,7 @@ set(GNSS_SPLIBS_SOURCES
         conjugate_sc.cc
         conjugate_ic.cc
         gnss_sdr_create_directory.cc
+        geofunctions.cc
 )
 
 set(GNSS_SPLIBS_HEADERS

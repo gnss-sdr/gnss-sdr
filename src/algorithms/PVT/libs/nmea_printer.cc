@@ -34,6 +34,7 @@
  */
 
 #include "nmea_printer.h"
+#include "rtklib_solution.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem/operations.hpp>   // for create_directories, exists
 #include <boost/filesystem/path.hpp>         // for path, operator<<
@@ -560,88 +561,13 @@ std::string Nmea_Printer::get_GPGSA()
 std::string Nmea_Printer::get_GPGSV()
 {
     // GSV-GNSS Satellites in View
-    // Notice that NMEA 2.1 only supports 12 channels
-    int n_sats_used = d_PVT_data->get_num_valid_observations();
-    std::stringstream sentence_str;
-    std::stringstream frame_str;
-    std::string sentence_header;
-    sentence_header = "$GPGSV,";
-    char checksum;
-    std::string tmpstr;
-
-    // 1st step: How many GPGSV frames we need? (up to 3)
-    // Each frame contains up to 4 satellites
-    int n_frames;
-    n_frames = std::ceil((static_cast<double>(n_sats_used)) / 4.0);
-
-    // generate the frames
-    int current_satellite = 0;
-    for (int i = 1; i < (n_frames + 1); i++)
-        {
-            frame_str.str("");
-            frame_str << sentence_header;
-
-            // number of messages
-            frame_str << n_frames;
-
-            // message number
-            frame_str << ",";
-            frame_str << i;
-
-            // total number of satellites in view
-            frame_str << ",";
-            frame_str.width(2);
-            frame_str.fill('0');
-            frame_str << std::dec << n_sats_used;
-
-            // satellites info
-            for (int j = 0; j < 4; j++)
-                {
-                    // write satellite info
-                    frame_str << ",";
-                    frame_str.width(2);
-                    frame_str.fill('0');
-                    frame_str << std::dec << d_PVT_data->get_visible_satellites_ID(current_satellite);
-
-                    frame_str << ",";
-                    frame_str.width(2);
-                    frame_str.fill('0');
-                    frame_str << std::dec << static_cast<int>(d_PVT_data->get_visible_satellites_El(current_satellite));
-
-                    frame_str << ",";
-                    frame_str.width(3);
-                    frame_str.fill('0');
-                    frame_str << std::dec << static_cast<int>(d_PVT_data->get_visible_satellites_Az(current_satellite));
-
-                    frame_str << ",";
-                    frame_str.width(2);
-                    frame_str.fill('0');
-                    frame_str << std::dec << static_cast<int>(d_PVT_data->get_visible_satellites_CN0_dB(current_satellite));
-
-                    current_satellite++;
-
-                    if (current_satellite == n_sats_used)
-                        {
-                            break;
-                        }
-                }
-
-            // frame checksum
-            tmpstr = frame_str.str();
-            checksum = checkSum(tmpstr.substr(1));
-            frame_str << "*";
-            frame_str.width(2);
-            frame_str.fill('0');
-            frame_str << std::hex << static_cast<int>(checksum);
-
-            // end NMEA sentence
-            frame_str << "\r\n";
-
-            //add frame to sentence
-            sentence_str << frame_str.str();
-        }
-    return sentence_str.str();
     // $GPGSV,2,1,07,07,79,048,42,02,51,062,43,26,36,256,42,27,27,138,42*71
+    // Notice that NMEA 2.1 only supports 12 channels
+    std::stringstream sentence_str;
+    unsigned char buff[200];
+    outnmea_gsv(buff, &d_PVT_data->pvt_sol, *d_PVT_data->pvt_ssat);
+    sentence_str << buff;
+    return sentence_str.str();
 }
 
 

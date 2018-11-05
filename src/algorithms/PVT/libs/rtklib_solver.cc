@@ -53,6 +53,7 @@
 
 #include "rtklib_solver.h"
 #include "rtklib_conversions.h"
+#include "rtklib_solution.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
 #include "GLONASS_L1_L2_CA.h"
@@ -809,8 +810,55 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     index_aux++;
                                 }
                         }
-                    if (index_aux > 0) dops(index_aux, azel.data(), 0.0, dop_);
 
+                    for (gnss_observables_iter = gnss_observables_map.cbegin();
+                         gnss_observables_iter != gnss_observables_map.cend();
+                         ++gnss_observables_iter)  // CHECK INCONSISTENCY when combining GLONASS + other system
+                        {
+                            switch (gnss_observables_iter->second.System)
+                                {
+                                case 'E':
+                                    break;
+
+                                case 'G':
+                                    {
+                                        // GPS L1
+                                        std::string sig_(gnss_observables_iter->second.Signal);
+                                        if (sig_.compare("1C") == 0)
+                                            {
+                                                unsigned int snr = static_cast<unsigned int>(std::round(gnss_observables_iter->second.CN0_dB_hz / 0.25));
+                                                rtk_.ssat[gnss_observables_iter->second.PRN - 1].snr[0] = snr;  //newobs.SNR[0];
+                                                pvt_ssat[gnss_observables_iter->second.PRN - 1] = &rtk_.ssat[gnss_observables_iter->second.PRN - 1];
+                                            }
+                                        // GPS L2
+                                        if (sig_.compare("2S") == 0)
+                                            {
+                                            }
+                                        // GPS L5
+                                        if (sig_.compare("L5") == 0)
+                                            {
+                                            }
+                                        break;
+                                    }
+                                case 'R':
+                                    {
+                                        std::string sig_(gnss_observables_iter->second.Signal);
+                                        // GLONASS GNAV L1
+                                        if (sig_.compare("1G") == 0)
+                                            {
+                                            }
+                                        // GLONASS GNAV L2
+                                        if (sig_.compare("2G") == 0)
+                                            {
+                                            }
+                                        break;
+                                    }
+                                default:
+                                    break;
+                                }
+                        }
+
+                    if (index_aux > 0) dops(index_aux, azel.data(), 0.0, dop_);
                     this->set_valid_position(true);
                     arma::vec rx_position_and_time(4);
                     rx_position_and_time(0) = pvt_sol.rr[0];  // [m]

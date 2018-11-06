@@ -1103,11 +1103,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             acq_channels_count_ = 0;  //all channels are in stanby now
             break;
         case 11:  //request coldstart mode
-            LOG(INFO) << "TC request coldstart";
-            //todo: delete all ephemeris and almanac information from maps (also the PVT map queue)
-            //todo: reorder the satellite queues to the receiver default startup order.
-            //This is required to allow repeatability. Otherwise the satellite search order will depend on the last tracked satellites
-
+            LOG(INFO) << "TC request flowgraph coldstart";
             //start again the satellite acquisitions
             for (unsigned int i = 0; i < channels_count_; i++)
                 {
@@ -1136,7 +1132,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                 }
             break;
         case 12:  //request hotstart mode
-            LOG(INFO) << "TC request hotstart";
+            LOG(INFO) << "TC request flowgraph hotstart";
             for (unsigned int i = 0; i < channels_count_; i++)
                 {
                     unsigned int ch_index = (who + i + 1) % channels_count_;
@@ -1164,7 +1160,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                 }
             break;
         case 13:  //request warmstart mode
-            LOG(INFO) << "TC request warmstart";
+            LOG(INFO) << "TC request flowgraph warmstart";
             //start again the satellite acquisitions
             for (unsigned int i = 0; i < channels_count_; i++)
                 {

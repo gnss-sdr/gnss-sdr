@@ -31,6 +31,7 @@
 #ifndef GNSS_SDR_TCPCMDINTERFACE_H_
 #define GNSS_SDR_TCPCMDINTERFACE_H_
 
+#include "pvt_interface.h"
 #include <functional>
 #include <iostream>
 #include <string>
@@ -43,7 +44,7 @@
 #include <gnuradio/message.h>
 #include <gnuradio/msg_queue.h>
 #include <armadillo>
-#include "time.h"
+#include <time.h>
 
 class TcpCmdInterface
 {
@@ -61,6 +62,7 @@ public:
      */
     arma::vec get_LLH();
 
+    void set_pvt(std::shared_ptr<PvtInterface> PVT_sptr);
 
 private:
     std::unordered_map<std::string, std::function<std::string(const std::vector<std::string> &)>>
@@ -83,6 +85,8 @@ private:
     double rx_latitude_;
     double rx_longitude_;
     double rx_altitude_;
+
+    std::shared_ptr<PvtInterface> PVT_sptr_;
 };
 
 #endif /* GNSS_SDR_TCPCMDINTERFACE_H_ */

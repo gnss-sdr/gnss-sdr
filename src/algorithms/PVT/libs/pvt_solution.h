@@ -49,9 +49,11 @@ class Pvt_Solution
 private:
     double d_rx_dt_s;  // RX time offset [s]
 
-    double d_latitude_d;   // RX position Latitude WGS84 [deg]
-    double d_longitude_d;  // RX position Longitude WGS84 [deg]
-    double d_height_m;     // RX position height WGS84 [m]
+    double d_latitude_d;             // RX position Latitude WGS84 [deg]
+    double d_longitude_d;            // RX position Longitude WGS84 [deg]
+    double d_height_m;               // RX position height WGS84 [m]
+    double d_speed_over_ground_m_s;  // RX speed over ground [m/s]
+    double d_course_over_ground_d;   // RX course over ground [deg]
 
     double d_avg_latitude_d;   // Averaged latitude in degrees
     double d_avg_longitude_d;  // Averaged longitude in degrees
@@ -85,6 +87,12 @@ public:
     double get_latitude() const;   //!< Get RX position Latitude WGS84 [deg]
     double get_longitude() const;  //!< Get RX position Longitude WGS84 [deg]
     double get_height() const;     //!< Get RX position height WGS84 [m]
+
+    double get_speed_over_ground() const;          //!< Get RX speed over ground [m/s]
+    void set_speed_over_ground(double speed_m_s);  //!< Set RX speed over ground [m/s]
+
+    double get_course_over_ground() const;        //!< Get RX course over ground [deg]
+    void set_course_over_ground(double cog_deg);  //!< Set RX course over ground [deg]
 
     double get_avg_latitude() const;   //!< Get RX position averaged Latitude WGS84 [deg]
     double get_avg_longitude() const;  //!< Get RX position averaged Longitude WGS84 [deg]

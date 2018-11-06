@@ -161,6 +161,7 @@ int ControlThread::run()
     sysv_queue_thread_ = boost::thread(&ControlThread::sysv_queue_listener, this);
 
     //start the telecommand listener thread
+    cmd_interface_.set_pvt(flowgraph_->get_pvt());
     cmd_interface_thread_ = boost::thread(&ControlThread::telecommand_listener, this);
 
 
@@ -718,25 +719,33 @@ void ControlThread::apply_action(unsigned int what)
     switch (what)
         {
         case 0:
-            DLOG(INFO) << "Received action STOP";
+            LOG(INFO) << "Received action STOP";
             stop_ = true;
             applied_actions_++;
             break;
         case 1:
-            DLOG(INFO) << "Received action RESTART";
+            LOG(INFO) << "Received action RESTART";
             stop_ = true;
             restart_ = true;
             applied_actions_++;
             break;
+        case 11:
+            LOG(INFO) << "Receiver action COLDSTART";
+            //delete all ephemeris and almanac information from maps (also the PVT map queue)
+            pvt_ptr = flowgraph_->get_pvt();
+            pvt_ptr->clear_ephemeris();
+            //todo: reorder the satellite queues to the receiver default startup order.
+            //This is required to allow repeatability. Otherwise the satellite search order will depend on the last tracked satellites
+            break;
         case 12:
-            DLOG(INFO) << "Receiver action HOTSTART";
+            LOG(INFO) << "Receiver action HOTSTART";
             visible_satellites = get_visible_sats(cmd_interface_.get_utc_time(), cmd_interface_.get_LLH());
             //reorder the satellite queue to acquire first those visible satellites
             flowgraph_->priorize_satellites(visible_satellites);
             //start again the satellite acquisitions (done in chained applyaction to flowgraph)
             break;
         case 13:
-            DLOG(INFO) << "Receiver action WARMSTART";
+            LOG(INFO) << "Receiver action WARMSTART";
             //delete all ephemeris and almanac information from maps (also the PVT map queue)
             pvt_ptr = flowgraph_->get_pvt();
             pvt_ptr->clear_ephemeris();
@@ -750,7 +759,7 @@ void ControlThread::apply_action(unsigned int what)
             //start again the satellite acquisitions (done in chained applyaction to flowgraph)
             break;
         default:
-            DLOG(INFO) << "Unrecognized action.";
+            LOG(INFO) << "Unrecognized action.";
             break;
         }
 }
@@ -775,6 +784,13 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
     std::vector<std::pair<int, Gnss_Satellite>> available_satellites;
 
     std::shared_ptr<PvtInterface> pvt_ptr = flowgraph_->get_pvt();
+    struct tm tstruct;
+    char buf[80];
+    tstruct = *gmtime(&rx_utc_time);
+    strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S ", &tstruct);
+    std::string str_time = std::string(buf);
+    std::cout << "Get visible satellites at " << str_time
+              << " UTC, assuming RX position " << LLH(0) << " [deg], " << LLH(1) << " [deg], " << LLH(2) << " [m]" << std::endl;
 
     std::map<int, Gps_Ephemeris> gps_eph_map = pvt_ptr->get_gps_ephemeris();
     for (std::map<int, Gps_Ephemeris>::iterator it = gps_eph_map.begin(); it != gps_eph_map.end(); ++it)
@@ -789,10 +805,10 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
             arma::vec r_sat_eb_e = arma::vec{r_sat[0], r_sat[1], r_sat[2]};
             arma::vec dx = r_sat_eb_e - r_eb_e;
             topocent(&Az, &El, &dist_m, r_eb_e, dx);
-            std::cout << "Using GPS Ephemeris: Sat " << it->second.i_satellite_PRN << " Az: " << Az << " El: " << El << std::endl;
             //push sat
             if (El > 0)
                 {
+                    std::cout << "Using GPS Ephemeris: Sat " << it->second.i_satellite_PRN << " Az: " << Az << " El: " << El << std::endl;
                     available_satellites.push_back(std::pair<int, Gnss_Satellite>(floor(El),
                         (Gnss_Satellite(std::string("GPS"), it->second.i_satellite_PRN))));
                 }
@@ -811,10 +827,10 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
             arma::vec r_sat_eb_e = arma::vec{r_sat[0], r_sat[1], r_sat[2]};
             arma::vec dx = r_sat_eb_e - r_eb_e;
             topocent(&Az, &El, &dist_m, r_eb_e, dx);
-            std::cout << "Using Galileo Ephemeris: Sat " << it->second.i_satellite_PRN << " Az: " << Az << " El: " << El << std::endl;
             //push sat
             if (El > 0)
                 {
+                    std::cout << "Using Galileo Ephemeris: Sat " << it->second.i_satellite_PRN << " Az: " << Az << " El: " << El << std::endl;
                     available_satellites.push_back(std::pair<int, Gnss_Satellite>(floor(El),
                         (Gnss_Satellite(std::string("Galileo"), it->second.i_satellite_PRN))));
                 }
@@ -832,10 +848,10 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
             arma::vec r_sat_eb_e = arma::vec{r_sat[0], r_sat[1], r_sat[2]};
             arma::vec dx = r_sat_eb_e - r_eb_e;
             topocent(&Az, &El, &dist_m, r_eb_e, dx);
-            std::cout << "Using GPS Almanac:  Sat " << it->second.i_satellite_PRN << " Az: " << Az << " El: " << El << std::endl;
             //push sat
             if (El > 0)
                 {
+                    std::cout << "Using GPS Almanac:  Sat " << it->second.i_satellite_PRN << " Az: " << Az << " El: " << El << std::endl;
                     available_satellites.push_back(std::pair<int, Gnss_Satellite>(floor(El),
                         (Gnss_Satellite(std::string("GPS"), it->second.i_satellite_PRN))));
                 }
@@ -857,6 +873,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
             //push sat
             if (El > 0)
                 {
+                    std::cout << "Using GPS Almanac:  Sat " << it->second.i_satellite_PRN << " Az: " << Az << " El: " << El << std::endl;
                     available_satellites.push_back(std::pair<int, Gnss_Satellite>(floor(El),
                         (Gnss_Satellite(std::string("Galileo"), it->second.i_satellite_PRN))));
                 }

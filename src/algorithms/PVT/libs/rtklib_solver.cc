@@ -827,6 +827,22 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             rx_position_and_time(3) = pvt_sol.dtr[0] / GPS_C_m_s;  // the receiver clock offset is expressed in [meters], so we convert it into [s]
                         }
                     this->set_rx_pos(rx_position_and_time.rows(0, 2));  // save ECEF position for the next iteration
+
+                    //compute Ground speed and COG
+                    double ground_speed_ms = 0.0;
+                    double pos[3];
+                    double enuv[3];
+                    ecef2pos(pvt_sol.rr, pos);
+                    ecef2enu(pos, &pvt_sol.rr[3], enuv);
+                    this->set_speed_over_ground(norm_rtk(enuv, 2));
+                    double new_cog;
+                    if (ground_speed_ms >= 1.0)
+                        {
+                            new_cog = atan2(enuv[0], enuv[1]) * R2D;
+                            if (new_cog < 0.0) new_cog += 360.0;
+                            this->set_course_over_ground(new_cog);
+                        }
+
                     //observable fix:
                     //double offset_s = this->get_time_offset_s();
                     //this->set_time_offset_s(offset_s + (rx_position_and_time(3) / GPS_C_m_s));  // accumulate the rx time error for the next iteration [meters]->[seconds]

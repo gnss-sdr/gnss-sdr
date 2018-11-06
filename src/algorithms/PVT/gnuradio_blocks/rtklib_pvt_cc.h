@@ -60,7 +60,7 @@ rtklib_pvt_cc_sptr rtklib_make_pvt_cc(uint32_t n_channels,
     rtk_t& rtk);
 
 /*!
- * \brief This class implements a block that computes the PVT solution with Galileo E1 signals
+ * \brief This class implements a block that computes the PVT solution using the RTKLIB integrated library
  */
 class rtklib_pvt_cc : public gr::sync_block
 {
@@ -158,6 +158,17 @@ public:
      *
      */
     void clear_ephemeris();
+
+
+    /*!
+     * \brief Get the latest Position WGS84 [deg], Ground Velocity, Course over Ground, and UTC Time, if available
+     */
+    bool get_latest_PVT(double* longitude_deg,
+        double* latitude_deg,
+        double* height_m,
+        double* ground_speed_kmh,
+        double* course_over_ground_deg,
+        time_t* UTC_time);
 
     ~rtklib_pvt_cc();  //!< Default destructor
 

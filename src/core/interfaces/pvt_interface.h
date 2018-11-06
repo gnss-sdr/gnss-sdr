@@ -61,6 +61,13 @@ public:
     virtual std::map<int, Galileo_Ephemeris> get_galileo_ephemeris() = 0;
     virtual std::map<int, Gps_Almanac> get_gps_almanac() = 0;
     virtual std::map<int, Galileo_Almanac> get_galileo_almanac() = 0;
+
+    virtual bool get_latest_PVT(double* longitude_deg,
+        double* latitude_deg,
+        double* height_m,
+        double* ground_speed_kmh,
+        double* course_over_ground_deg,
+        time_t* UTC_time) = 0;
 };
 
 #endif /* GNSS_SDR_PVT_INTERFACE_H_ */

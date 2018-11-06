@@ -138,13 +138,15 @@ bool Gpx_Printer::set_headers(std::string filename, bool time_tag_name)
             gpx_file << std::setprecision(14);
             gpx_file << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl
                      << "<gpx version=\"1.1\" creator=\"GNSS-SDR\"" << std::endl
-                     << "xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd\"" << std::endl
-                     << "xmlns=\"http://www.topografix.com/GPX/1/1\"" << std::endl
-                     << "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">" << std::endl
-                     << "<trk>" << std::endl
-                     << indent << "<name>Position fixes computed by GNSS-SDR v" << GNSS_SDR_VERSION << "</name>" << std::endl
-                     << indent << "<desc>GNSS-SDR position log generated at " << pt << " (local time)</desc>" << std::endl
-                     << indent << "<trkseg>" << std::endl;
+                     << indent << "xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v2 http://www.garmin.com/xmlschemas/TrackPointExtensionv2.xsd\"" << std::endl
+                     << indent << "xmlns=\"http://www.topografix.com/GPX/1/1\"" << std::endl
+                     << indent << "xmlns:gpxx=\"http://www.garmin.com/xmlschemas/GpxExtensions/v3\"" << std::endl
+                     << indent << "xmlns:gpxtpx=\"http://www.garmin.com/xmlschemas/TrackPointExtension/v2\"" << std::endl
+                     << indent << "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">" << std::endl
+                     << indent << "<trk>" << std::endl
+                     << indent << indent << "<name>Position fixes computed by GNSS-SDR v" << GNSS_SDR_VERSION << "</name>" << std::endl
+                     << indent << indent << "<desc>GNSS-SDR position log generated at " << pt << " (local time)</desc>" << std::endl
+                     << indent << indent << "<trkseg>" << std::endl;
             return true;
         }
     else
@@ -163,6 +165,9 @@ bool Gpx_Printer::print_position(const std::shared_ptr<rtklib_solver>& position,
 
     positions_printed = true;
     std::shared_ptr<rtklib_solver> position_ = position;
+
+    double speed_over_ground = position_->get_speed_over_ground();    // expressed in m/s
+    double course_over_ground = position_->get_course_over_ground();  // expressed in deg
 
     double hdop = position_->get_hdop();
     double vdop = position_->get_vdop();
@@ -187,9 +192,13 @@ bool Gpx_Printer::print_position(const std::shared_ptr<rtklib_solver>& position,
 
     if (gpx_file.is_open())
         {
-            gpx_file << indent << indent << "<trkpt lon=\"" << longitude << "\" lat=\"" << latitude << "\"><ele>" << height << "</ele>"
+            gpx_file << indent << indent << indent << "<trkpt lon=\"" << longitude << "\" lat=\"" << latitude << "\"><ele>" << height << "</ele>"
                      << "<time>" << utc_time << "</time>"
-                     << "<hdop>" << hdop << "</hdop><vdop>" << vdop << "</vdop><pdop>" << pdop << "</pdop></trkpt>" << std::endl;
+                     << "<hdop>" << hdop << "</hdop><vdop>" << vdop << "</vdop><pdop>" << pdop << "</pdop>"
+                     << "<extensions><gpxtpx:TrackPointExtension>"
+                     << "<gpxtpx:speed>" << speed_over_ground << "</gpxtpx:speed>"
+                     << "<gpxtpx:course>" << course_over_ground << "</gpxtpx:course>"
+                     << "</gpxtpx:TrackPointExtension></extensions></trkpt>" << std::endl;
             return true;
         }
     else
@@ -203,8 +212,8 @@ bool Gpx_Printer::close_file()
 {
     if (gpx_file.is_open())
         {
-            gpx_file << indent << "</trkseg>" << std::endl
-                     << "</trk>" << std::endl
+            gpx_file << indent << indent << "</trkseg>" << std::endl
+                     << indent << "</trk>" << std::endl
                      << "</gpx>";
             gpx_file.close();
             return true;

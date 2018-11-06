@@ -49,6 +49,21 @@ namespace bc = boost::integer;
 using google::LogMessage;
 
 
+bool RtklibPvt::get_latest_PVT(double* longitude_deg,
+    double* latitude_deg,
+    double* height_m,
+    double* ground_speed_kmh,
+    double* course_over_ground_deg,
+    time_t* UTC_time)
+{
+    return pvt_->get_latest_PVT(longitude_deg,
+        latitude_deg,
+        height_m,
+        ground_speed_kmh,
+        course_over_ground_deg,
+        UTC_time);
+}
+
 void RtklibPvt::clear_ephemeris()
 {
     pvt_->clear_ephemeris();

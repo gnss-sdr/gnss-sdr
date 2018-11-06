@@ -86,6 +86,13 @@ public:
         return sizeof(gr_complex);
     }
 
+    bool get_latest_PVT(double* longitude_deg,
+        double* latitude_deg,
+        double* height_m,
+        double* ground_speed_kmh,
+        double* course_over_ground_deg,
+        time_t* UTC_time);
+
 private:
     rtklib_pvt_cc_sptr pvt_;
     rtk_t rtk;

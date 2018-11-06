@@ -47,6 +47,7 @@
 #include <iostream>
 #include <map>
 #include <exception>
+#include <boost/date_time/posix_time/conversion.hpp>
 #if OLD_BOOST
 #include <boost/math/common_factor_rt.hpp>
 namespace bc = boost::math;
@@ -893,9 +894,36 @@ bool rtklib_pvt_cc::load_gnss_synchro_map_xml(const std::string file_name)
 }
 
 
+bool rtklib_pvt_cc::get_latest_PVT(double* longitude_deg,
+    double* latitude_deg,
+    double* height_m,
+    double* ground_speed_kmh,
+    double* course_over_ground_deg,
+    time_t* UTC_time)
+{
+    gr::thread::scoped_lock lock(d_setlock);
+    if (d_ls_pvt->is_valid_position())
+        {
+            *latitude_deg = d_ls_pvt->get_latitude();
+            *longitude_deg = d_ls_pvt->get_longitude();
+            *height_m = d_ls_pvt->get_height();
+            *ground_speed_kmh = d_ls_pvt->get_speed_over_ground() * 3600.0 / 1000.0;
+            *course_over_ground_deg = d_ls_pvt->get_course_over_ground();
+            *UTC_time = boost::posix_time::to_time_t(d_ls_pvt->get_position_UTC_time());
+
+            return true;
+        }
+    else
+        {
+            return false;
+        }
+}
+
 int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items __attribute__((unused)))
 {
+    gr::thread::scoped_lock l(d_setlock);
+
     for (int32_t epoch = 0; epoch < noutput_items; epoch++)
         {
             bool flag_display_pvt = false;

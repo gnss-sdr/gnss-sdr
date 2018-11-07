@@ -777,9 +777,9 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
 
             for (int i = 0; i < MAXSAT; i++)
                 {
-                    nav_data.lam[i][0] = SPEED_OF_LIGHT / FREQ1; /* L1/E1 */
-                    nav_data.lam[i][1] = SPEED_OF_LIGHT / FREQ2; /* L2 */
-                    nav_data.lam[i][2] = SPEED_OF_LIGHT / FREQ5; /* L5/E5 */
+                    nav_data.lam[i][0] = SPEED_OF_LIGHT / FREQ1;  // L1/E1
+                    nav_data.lam[i][1] = SPEED_OF_LIGHT / FREQ2;  // L2
+                    nav_data.lam[i][2] = SPEED_OF_LIGHT / FREQ5;  // L5/E5
                 }
 
             result = rtkpos(&rtk_, obs_data, valid_obs + glo_valid_obs, &nav_data);
@@ -788,20 +788,20 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                 {
                     LOG(INFO) << "RTKLIB rtkpos error";
                     DLOG(INFO) << "RTKLIB rtkpos error message: " << rtk_.errbuf;
-                    this->set_time_offset_s(0.0);  //reset rx time estimation
+                    this->set_time_offset_s(0.0);  // reset rx time estimation
                     this->set_num_valid_observations(0);
                 }
             else
                 {
-                    this->set_num_valid_observations(rtk_.sol.ns);  //record the number of valid satellites used by the PVT solver
+                    this->set_num_valid_observations(rtk_.sol.ns);  // record the number of valid satellites used by the PVT solver
                     pvt_sol = rtk_.sol;
                     // DOP computation
                     unsigned int used_sats = 0;
                     for (unsigned int i = 0; i < MAXSAT; i++)
                         {
+                            pvt_ssat[i] = rtk_.ssat[i];
                             if (rtk_.ssat[i].vs == 1)
                                 {
-                                    pvt_ssat[i] = rtk_.ssat[i];
                                     used_sats++;
                                 }
                         }

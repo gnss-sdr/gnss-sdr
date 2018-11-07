@@ -57,18 +57,17 @@ public:
         return role_;
     }
 
-    //!  Returns "RTKLIB_Pvt"
+    //!  Returns "RTKLIB_PVT"
     inline std::string implementation() override
     {
         return "RTKLIB_PVT";
     }
 
-    void clear_ephemeris();
-    std::map<int, Gps_Ephemeris> get_gps_ephemeris();
-    std::map<int, Galileo_Ephemeris> get_galileo_ephemeris();
-    std::map<int, Gps_Almanac> get_gps_almanac();
-    std::map<int, Galileo_Almanac> get_galileo_almanac();
-
+    void clear_ephemeris() override;
+    std::map<int, Gps_Ephemeris> get_gps_ephemeris() override;
+    std::map<int, Galileo_Ephemeris> get_galileo_ephemeris() override;
+    std::map<int, Gps_Almanac> get_gps_almanac() override;
+    std::map<int, Galileo_Almanac> get_galileo_almanac() override;
 
     void connect(gr::top_block_sptr top_block) override;
     void disconnect(gr::top_block_sptr top_block) override;
@@ -91,7 +90,7 @@ public:
         double* height_m,
         double* ground_speed_kmh,
         double* course_over_ground_deg,
-        time_t* UTC_time);
+        time_t* UTC_time) override;
 
 private:
     rtklib_pvt_cc_sptr pvt_;

@@ -565,7 +565,7 @@ std::string Nmea_Printer::get_GPGSV()
     // Notice that NMEA 2.1 only supports 12 channels
     std::stringstream sentence_str;
     unsigned char buff[200];
-    outnmea_gsv(buff, &d_PVT_data->pvt_sol, *d_PVT_data->pvt_ssat);
+    outnmea_gsv(buff, &d_PVT_data->pvt_sol, d_PVT_data->pvt_ssat);
     sentence_str << buff;
     return sentence_str.str();
 }

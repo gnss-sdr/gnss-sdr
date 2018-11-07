@@ -75,7 +75,11 @@ rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag
     rtk_ = rtk;
     for (unsigned int i = 0; i < 4; i++) dop_[i] = 0.0;
     pvt_sol = {{0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, '0', '0', '0', 0, 0, 0};
-
+    ssat_t ssat0 = {0, 0, {0.0}, {0.0}, {0.0}, {'0'}, {'0'}, {'0'}, {'0'}, {'0'}, {}, {}, {}, {}, 0.0, 0.0, 0.0, 0.0, {{{0, 0}}, {{0, 0}}}, {{}, {}}};
+    for (unsigned int i = 0; i < MAXSAT; i++)
+        {
+            pvt_ssat[i] = ssat0;
+        }
     // ############# ENABLE DATA FILE LOG #################
     if (d_flag_dump_enabled == true)
         {
@@ -795,7 +799,11 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     unsigned int used_sats = 0;
                     for (unsigned int i = 0; i < MAXSAT; i++)
                         {
-                            if (rtk_.ssat[i].vs == 1) used_sats++;
+                            if (rtk_.ssat[i].vs == 1)
+                                {
+                                    pvt_ssat[i] = rtk_.ssat[i];
+                                    used_sats++;
+                                }
                         }
 
                     std::vector<double> azel;
@@ -808,61 +816,6 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     azel[2 * index_aux] = rtk_.ssat[i].azel[0];
                                     azel[2 * index_aux + 1] = rtk_.ssat[i].azel[1];
                                     index_aux++;
-                                }
-                        }
-
-                    for (gnss_observables_iter = gnss_observables_map.cbegin();
-                         gnss_observables_iter != gnss_observables_map.cend();
-                         ++gnss_observables_iter)  // CHECK INCONSISTENCY when combining GLONASS + other system
-                        {
-                            switch (gnss_observables_iter->second.System)
-                                {
-                                case 'E':
-                                    {
-                                        std::string sig_(gnss_observables_iter->second.Signal);
-                                        if (sig_.compare("1B") == 0)
-                                            {
-                                                unsigned int snr = static_cast<unsigned int>(std::round(gnss_observables_iter->second.CN0_dB_hz / 0.25));
-                                                rtk_.ssat[gnss_observables_iter->second.PRN - 1].snr[0] = snr;
-                                                pvt_ssat[gnss_observables_iter->second.PRN - 1] = &rtk_.ssat[gnss_observables_iter->second.PRN - 1];
-                                            }
-                                        break;
-                                    }
-                                case 'G':
-                                    {
-                                        // GPS L1
-                                        std::string sig_(gnss_observables_iter->second.Signal);
-                                        if (sig_.compare("1C") == 0)
-                                            {
-                                                unsigned int snr = static_cast<unsigned int>(std::round(gnss_observables_iter->second.CN0_dB_hz / 0.25));
-                                                rtk_.ssat[gnss_observables_iter->second.PRN - 1].snr[0] = snr;
-                                                pvt_ssat[gnss_observables_iter->second.PRN - 1] = &rtk_.ssat[gnss_observables_iter->second.PRN - 1];
-                                            }
-                                        // GPS L2
-                                        if (sig_.compare("2S") == 0)
-                                            {
-                                            }
-                                        // GPS L5
-                                        if (sig_.compare("L5") == 0)
-                                            {
-                                            }
-                                        break;
-                                    }
-                                case 'R':
-                                    {
-                                        std::string sig_(gnss_observables_iter->second.Signal);
-                                        // GLONASS GNAV L1
-                                        if (sig_.compare("1G") == 0)
-                                            {
-                                            }
-                                        // GLONASS GNAV L2
-                                        if (sig_.compare("2G") == 0)
-                                            {
-                                            }
-                                        break;
-                                    }
-                                default:
-                                    break;
                                 }
                         }
 

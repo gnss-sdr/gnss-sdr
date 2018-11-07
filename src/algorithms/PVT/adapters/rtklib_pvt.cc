@@ -48,6 +48,27 @@ namespace bc = boost::integer;
 
 using google::LogMessage;
 
+
+bool RtklibPvt::get_latest_PVT(double* longitude_deg,
+    double* latitude_deg,
+    double* height_m,
+    double* ground_speed_kmh,
+    double* course_over_ground_deg,
+    time_t* UTC_time)
+{
+    return pvt_->get_latest_PVT(longitude_deg,
+        latitude_deg,
+        height_m,
+        ground_speed_kmh,
+        course_over_ground_deg,
+        UTC_time);
+}
+
+void RtklibPvt::clear_ephemeris()
+{
+    pvt_->clear_ephemeris();
+}
+
 RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     std::string role,
     unsigned int in_streams,
@@ -64,6 +85,7 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     DLOG(INFO) << "role " << role;
     pvt_output_parameters.dump = configuration->property(role + ".dump", false);
     pvt_output_parameters.dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
+    pvt_output_parameters.dump_mat = configuration->property(role + ".dump_mat", true);
 
     // output rate
     pvt_output_parameters.output_rate_ms = configuration->property(role + ".output_rate_ms", 500);
@@ -178,24 +200,20 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     int glo_1G_count = configuration->property("Channels_1G.count", 0);
     int glo_2G_count = configuration->property("Channels_2G.count", 0);
 
-    //unsigned int type_of_receiver = 0;
-
-    // *******************WARNING!!!!!!!***********
-    // GPS L5 only configurable for single frequency, single system at the moment!!!!!!
-    if ((gps_1C_count != 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) pvt_output_parameters.type_of_receiver = 1;
+    if ((gps_1C_count != 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) pvt_output_parameters.type_of_receiver = 1;  // L1
     if ((gps_1C_count == 0) && (gps_2S_count != 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) pvt_output_parameters.type_of_receiver = 2;
-    if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count != 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) pvt_output_parameters.type_of_receiver = 3;
-    if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) pvt_output_parameters.type_of_receiver = 4;
-    if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count != 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) pvt_output_parameters.type_of_receiver = 5;
+    if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count != 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) pvt_output_parameters.type_of_receiver = 3;  // L5
+    if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) pvt_output_parameters.type_of_receiver = 4;  // E1
+    if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count != 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) pvt_output_parameters.type_of_receiver = 5;  // E5a
     if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count != 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) pvt_output_parameters.type_of_receiver = 6;
 
     if ((gps_1C_count != 0) && (gps_2S_count != 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) pvt_output_parameters.type_of_receiver = 7;
-    //if( (gps_1C_count != 0) && (gps_2S_count == 0)  && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0)) pvt_output_parameters.type_of_receiver = 8;
-    if ((gps_1C_count != 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) pvt_output_parameters.type_of_receiver = 9;
+    if ((gps_1C_count != 0) && (gps_2S_count == 0) && (gps_L5_count != 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) pvt_output_parameters.type_of_receiver = 8;  // L1+L5
+    if ((gps_1C_count != 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) pvt_output_parameters.type_of_receiver = 9;  // L1+E1
     if ((gps_1C_count != 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count != 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) pvt_output_parameters.type_of_receiver = 10;
     if ((gps_1C_count != 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count != 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) pvt_output_parameters.type_of_receiver = 11;
     if ((gps_1C_count == 0) && (gps_2S_count != 0) && (gps_L5_count == 0) && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) pvt_output_parameters.type_of_receiver = 12;
-    //if( (gps_1C_count == 0) && (gps_2S_count == 0)  && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0)) pvt_output_parameters.type_of_receiver = 13;
+    if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count != 0) && (gal_1B_count == 0) && (gal_E5a_count != 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) pvt_output_parameters.type_of_receiver = 13;  // L5+E5a
     if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count != 0) && (gal_E5a_count != 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) pvt_output_parameters.type_of_receiver = 14;
     if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count != 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) pvt_output_parameters.type_of_receiver = 15;
     //if( (gps_1C_count == 0) && (gps_2S_count == 0)  && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0)) pvt_output_parameters.type_of_receiver = 16;
@@ -214,11 +232,14 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     if ((gps_1C_count != 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count != 0)) pvt_output_parameters.type_of_receiver = 29;
     if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count != 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count != 0)) pvt_output_parameters.type_of_receiver = 30;
     if ((gps_1C_count == 0) && (gps_2S_count != 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count != 0)) pvt_output_parameters.type_of_receiver = 31;
-    //RTKLIB PVT solver options
+
+    if ((gps_1C_count != 0) && (gps_2S_count == 0) && (gps_L5_count != 0) && (gal_1B_count != 0) && (gal_E5a_count != 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) pvt_output_parameters.type_of_receiver = 32;  // L1+E1+L5+E5a
+
+    // RTKLIB PVT solver options
     // Settings 1
     int positioning_mode = -1;
     std::string default_pos_mode("Single");
-    std::string positioning_mode_str = configuration->property(role + ".positioning_mode", default_pos_mode); /* (PMODE_XXX) see src/algorithms/libs/rtklib/rtklib.h */
+    std::string positioning_mode_str = configuration->property(role + ".positioning_mode", default_pos_mode);  //  (PMODE_XXX) see src/algorithms/libs/rtklib/rtklib.h
     if (positioning_mode_str.compare("Single") == 0) positioning_mode = PMODE_SINGLE;
     if (positioning_mode_str.compare("Static") == 0) positioning_mode = PMODE_STATIC;
     if (positioning_mode_str.compare("Kinematic") == 0) positioning_mode = PMODE_KINEMA;
@@ -515,6 +536,22 @@ RtklibPvt::~RtklibPvt()
     rtkfree(&rtk);
 }
 
+std::map<int, Gps_Ephemeris> RtklibPvt::get_gps_ephemeris()
+{
+    return pvt_->get_gps_ephemeris_map();
+}
+std::map<int, Galileo_Ephemeris> RtklibPvt::get_galileo_ephemeris()
+{
+    return pvt_->get_galileo_ephemeris_map();
+}
+std::map<int, Gps_Almanac> RtklibPvt::get_gps_almanac()
+{
+    return pvt_->get_gps_almanac_map();
+}
+std::map<int, Galileo_Almanac> RtklibPvt::get_galileo_almanac()
+{
+    return pvt_->get_galileo_almanac_map();
+}
 
 void RtklibPvt::connect(gr::top_block_sptr top_block)
 {

@@ -63,6 +63,13 @@ public:
         return "RTKLIB_PVT";
     }
 
+    void clear_ephemeris();
+    std::map<int, Gps_Ephemeris> get_gps_ephemeris();
+    std::map<int, Galileo_Ephemeris> get_galileo_ephemeris();
+    std::map<int, Gps_Almanac> get_gps_almanac();
+    std::map<int, Galileo_Almanac> get_galileo_almanac();
+
+
     void connect(gr::top_block_sptr top_block) override;
     void disconnect(gr::top_block_sptr top_block) override;
     gr::basic_block_sptr get_left_block() override;
@@ -78,6 +85,13 @@ public:
     {
         return sizeof(gr_complex);
     }
+
+    bool get_latest_PVT(double* longitude_deg,
+        double* latitude_deg,
+        double* height_m,
+        double* ground_speed_kmh,
+        double* course_over_ground_deg,
+        time_t* UTC_time);
 
 private:
     rtklib_pvt_cc_sptr pvt_;

@@ -18,7 +18,6 @@
 
 
 set(SYSTEM_TESTING_LIB_SOURCES
-    geofunctions.cc
     spirent_motion_csv_dump_reader.cc
     rtklib_solver_dump_reader.cc
 )

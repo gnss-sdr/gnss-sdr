@@ -31,7 +31,7 @@
 #ifndef GNSS_SDR_RTKLIB_PVT_CC_H
 #define GNSS_SDR_RTKLIB_PVT_CC_H
 
-
+#include "gps_ephemeris.h"
 #include "nmea_printer.h"
 #include "kml_printer.h"
 #include "gpx_printer.h"
@@ -60,7 +60,7 @@ rtklib_pvt_cc_sptr rtklib_make_pvt_cc(uint32_t n_channels,
     rtk_t& rtk);
 
 /*!
- * \brief This class implements a block that computes the PVT solution with Galileo E1 signals
+ * \brief This class implements a block that computes the PVT solution using the RTKLIB integrated library
  */
 class rtklib_pvt_cc : public gr::sync_block
 {
@@ -72,6 +72,7 @@ private:
     void msg_handler_telemetry(pmt::pmt_t msg);
 
     bool d_dump;
+    bool d_dump_mat;
     bool b_rinex_output_enabled;
     bool b_rinex_header_written;
     bool b_rinex_header_updated;
@@ -80,6 +81,7 @@ private:
     int32_t d_rinexnav_rate_ms;
 
     bool b_rtcm_writing_started;
+    bool b_rtcm_enabled;
     int32_t d_rtcm_MT1045_rate_ms;  //!< Galileo Broadcast Ephemeris
     int32_t d_rtcm_MT1019_rate_ms;  //!< GPS Broadcast Ephemeris (orbits)
     int32_t d_rtcm_MT1020_rate_ms;  //!< GLONASS Broadcast Ephemeris (orbits)
@@ -140,11 +142,33 @@ public:
         rtk_t& rtk);
 
     /*!
-     * \brief Get latest set of GPS L1 ephemeris from PVT block
+     * \brief Get latest set of ephemeris from PVT block
      *
-     * It is used to save the assistance data at the receiver shutdown
      */
-    std::map<int, Gps_Ephemeris> get_GPS_L1_ephemeris_map();
+    std::map<int, Gps_Ephemeris> get_gps_ephemeris_map();
+
+    std::map<int, Gps_Almanac> get_gps_almanac_map();
+
+    std::map<int, Galileo_Ephemeris> get_galileo_ephemeris_map();
+
+    std::map<int, Galileo_Almanac> get_galileo_almanac_map();
+
+    /*!
+     * \brief Clear all ephemeris information and the almanacs for GPS and Galileo
+     *
+     */
+    void clear_ephemeris();
+
+
+    /*!
+     * \brief Get the latest Position WGS84 [deg], Ground Velocity, Course over Ground, and UTC Time, if available
+     */
+    bool get_latest_PVT(double* longitude_deg,
+        double* latitude_deg,
+        double* height_m,
+        double* ground_speed_kmh,
+        double* course_over_ground_deg,
+        time_t* UTC_time);
 
     ~rtklib_pvt_cc();  //!< Default destructor
 

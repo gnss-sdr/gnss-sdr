@@ -53,6 +53,7 @@
 
 #include "rtklib_solver.h"
 #include "rtklib_conversions.h"
+#include "rtklib_solution.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
 #include "GLONASS_L1_L2_CA.h"
@@ -74,7 +75,11 @@ rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag
     rtk_ = rtk;
     for (unsigned int i = 0; i < 4; i++) dop_[i] = 0.0;
     pvt_sol = {{0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, '0', '0', '0', 0, 0, 0};
-
+    ssat_t ssat0 = {0, 0, {0.0}, {0.0}, {0.0}, {'0'}, {'0'}, {'0'}, {'0'}, {'0'}, {}, {}, {}, {}, 0.0, 0.0, 0.0, 0.0, {{{0, 0}}, {{0, 0}}}, {{}, {}}};
+    for (unsigned int i = 0; i < MAXSAT; i++)
+        {
+            pvt_ssat[i] = ssat0;
+        }
     // ############# ENABLE DATA FILE LOG #################
     if (d_flag_dump_enabled == true)
         {
@@ -794,7 +799,11 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     unsigned int used_sats = 0;
                     for (unsigned int i = 0; i < MAXSAT; i++)
                         {
-                            if (rtk_.ssat[i].vs == 1) used_sats++;
+                            if (rtk_.ssat[i].vs == 1)
+                                {
+                                    pvt_ssat[i] = rtk_.ssat[i];
+                                    used_sats++;
+                                }
                         }
 
                     std::vector<double> azel;
@@ -809,8 +818,8 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     index_aux++;
                                 }
                         }
-                    if (index_aux > 0) dops(index_aux, azel.data(), 0.0, dop_);
 
+                    if (index_aux > 0) dops(index_aux, azel.data(), 0.0, dop_);
                     this->set_valid_position(true);
                     arma::vec rx_position_and_time(4);
                     rx_position_and_time(0) = pvt_sol.rr[0];  // [m]

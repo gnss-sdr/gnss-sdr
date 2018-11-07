@@ -36,7 +36,7 @@ Gps_Almanac::Gps_Almanac()
 {
     i_satellite_PRN = 0U;
     d_Delta_i = 0.0;
-    d_Toa = 0.0;
+    i_Toa = 0.0;
     i_WNa = 0;
     d_M_0 = 0.0;
     d_e_eccentricity = 0.0;

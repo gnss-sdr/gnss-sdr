@@ -302,7 +302,7 @@ alm_t alm_to_rtklib(const Gps_Almanac& gps_alm)
     rtklib_alm.svh = gps_alm.i_SV_health;
     rtklib_alm.svconf = gps_alm.i_AS_status;
     rtklib_alm.week = gps_alm.i_WNa;
-    rtklib_alm.toa = gpst2time(gps_alm.i_WNa, gps_alm.d_Toa);
+    rtklib_alm.toa = gpst2time(gps_alm.i_WNa, gps_alm.i_Toa);
     rtklib_alm.A = gps_alm.d_sqrt_A * gps_alm.d_sqrt_A;
     rtklib_alm.e = gps_alm.d_e_eccentricity;
     rtklib_alm.i0 = gps_alm.d_Delta_i + 0.3;
@@ -312,7 +312,7 @@ alm_t alm_to_rtklib(const Gps_Almanac& gps_alm)
     rtklib_alm.M0 = gps_alm.d_M_0;
     rtklib_alm.f0 = gps_alm.d_A_f0;
     rtklib_alm.f1 = gps_alm.d_A_f1;
-    rtklib_alm.toas = gps_alm.d_Toa;
+    rtklib_alm.toas = gps_alm.i_Toa;
 
 
     return rtklib_alm;
@@ -326,8 +326,8 @@ alm_t alm_to_rtklib(const Galileo_Almanac& gal_alm)
     rtklib_alm.sat = gal_alm.i_satellite_PRN;
     rtklib_alm.svh = gal_alm.E1B_HS;
     rtklib_alm.svconf = gal_alm.E1B_HS;
-    rtklib_alm.week = gal_alm.d_WNa;
-    rtklib_alm.toa = gpst2time(gal_alm.d_WNa, gal_alm.d_Toa);
+    rtklib_alm.week = gal_alm.i_WNa;
+    rtklib_alm.toa = gpst2time(gal_alm.i_WNa, gal_alm.i_Toa);
     rtklib_alm.A = 5440.588203494 + gal_alm.d_Delta_sqrt_A;
     rtklib_alm.A = rtklib_alm.A * rtklib_alm.A;
     rtklib_alm.e = gal_alm.d_e_eccentricity;
@@ -338,7 +338,7 @@ alm_t alm_to_rtklib(const Galileo_Almanac& gal_alm)
     rtklib_alm.M0 = gal_alm.d_M_0;
     rtklib_alm.f0 = gal_alm.d_A_f0;
     rtklib_alm.f1 = gal_alm.d_A_f1;
-    rtklib_alm.toas = gal_alm.d_Toa;
+    rtklib_alm.toas = gal_alm.i_Toa;
 
 
     return rtklib_alm;

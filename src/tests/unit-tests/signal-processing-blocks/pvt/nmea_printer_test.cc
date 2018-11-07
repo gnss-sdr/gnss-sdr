@@ -160,52 +160,20 @@ TEST_F(NmeaPrinterTest, PrintLine)
     std::shared_ptr<rtklib_solver> pvt_solution = std::make_shared<rtklib_solver>(12, "filename", false, false, rtk);
 
     boost::posix_time::ptime pt(boost::gregorian::date(1994, boost::date_time::Nov, 19),
-        boost::posix_time::hours(22) + boost::posix_time::minutes(54) + boost::posix_time::seconds(46));  // example from http://aprs.gids.nl/nmea/#rmc
-    pvt_solution->set_position_UTC_time(pt);
+        boost::posix_time::hours(22) + boost::posix_time::minutes(54) + boost::posix_time::seconds(46));
+    std::time_t tim = (pt - boost::posix_time::ptime(boost::gregorian::date(1970, 1, 1))).total_seconds();
+    gtime_t gtime;
+    gtime.time = tim;
+    gtime.sec = 0.0;
 
-    arma::vec pos = {49.27416667, -123.18533333, 0};
-    pvt_solution->set_rx_pos(pos);
-
-    pvt_solution->set_valid_position(true);
-
-    bool flag_nmea_output_file = true;
-    ASSERT_NO_THROW({
-        std::shared_ptr<Nmea_Printer> nmea_printer = std::make_shared<Nmea_Printer>(filename, flag_nmea_output_file, false, "");
-        nmea_printer->Print_Nmea_Line(pvt_solution, false);
-    }) << "Failure printing NMEA messages.";
-
-    std::ifstream test_file(filename);
-    std::string line;
-    std::string GPRMC("$GPRMC");
-    if (test_file.is_open())
-        {
-            while (getline(test_file, line))
-                {
-                    std::size_t found = line.find(GPRMC);
-                    if (found != std::string::npos)
-                        {
-                            EXPECT_EQ(line, "$GPRMC,225446.000,A,4916.4500,N,12311.1199,W,0.00,0.00,191194,,*1c\r");
-                        }
-                }
-            test_file.close();
-        }
-    EXPECT_EQ(0, remove(filename.c_str())) << "Failure deleting a temporary file.";
-}
-
-
-TEST_F(NmeaPrinterTest, PrintLineLessthan10min)
-{
-    std::string filename("nmea_test.nmea");
-    std::shared_ptr<rtklib_solver> pvt_solution = std::make_shared<rtklib_solver>(12, "filename", false, false, rtk);
-
-    boost::posix_time::ptime pt(boost::gregorian::date(1994, boost::date_time::Nov, 19),
-        boost::posix_time::hours(22) + boost::posix_time::minutes(54) + boost::posix_time::seconds(46));  // example from http://aprs.gids.nl/nmea/#rmc
-    pvt_solution->set_position_UTC_time(pt);
-
-    arma::vec pos = {49.07416667, -123.02527778, 0};
-    pvt_solution->set_rx_pos(pos);
-
-    pvt_solution->set_valid_position(true);
+    pvt_solution->pvt_sol.rr[0] = -2282104.0;  //49.27416667;
+    pvt_solution->pvt_sol.rr[1] = -3489369.0;  //-123.18533333;
+    pvt_solution->pvt_sol.rr[2] = 4810507.0;   // 0
+    pvt_solution->pvt_sol.rr[3] = 0.0;
+    pvt_solution->pvt_sol.rr[4] = 0.0;
+    pvt_solution->pvt_sol.rr[5] = 0.0;
+    pvt_solution->pvt_sol.stat = 1;  // SOLQ_FIX
+    pvt_solution->pvt_sol.time = gtime;
 
     bool flag_nmea_output_file = true;
     ASSERT_NO_THROW({
@@ -223,7 +191,7 @@ TEST_F(NmeaPrinterTest, PrintLineLessthan10min)
                     std::size_t found = line.find(GPRMC);
                     if (found != std::string::npos)
                         {
-                            EXPECT_EQ(line, "$GPRMC,225446.000,A,4904.4500,N,12301.5166,W,0.00,0.00,191194,,*1a\r");
+                            EXPECT_EQ(line, "$GPRMC,225436.00,A,4916.4497617,N,12311.1202744,W,0.00,0.00,191194,0.0,E,D*21\r");
                         }
                 }
             test_file.close();

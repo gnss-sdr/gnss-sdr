@@ -267,7 +267,7 @@ void gnss_sdr_supl_client::read_supl_data()
                     gps_almanac_iterator->second.d_OMEGA0 = static_cast<double>(a->OMEGA_0) * pow(2.0, -23);
                     gps_almanac_iterator->second.d_sqrt_A = static_cast<double>(a->A_sqrt) * pow(2.0, -11);
                     gps_almanac_iterator->second.d_OMEGA_DOT = static_cast<double>(a->OMEGA_dot) * pow(2.0, -38);
-                    gps_almanac_iterator->second.d_Toa = static_cast<double>(a->toa) * pow(2.0, 12);
+                    gps_almanac_iterator->second.i_Toa = static_cast<int32_t>(a->toa) * pow(2.0, 12);
                     gps_almanac_iterator->second.d_e_eccentricity = static_cast<double>(a->e) * pow(2.0, -21);
                     gps_almanac_iterator->second.d_M_0 = static_cast<double>(a->M0) * pow(2.0, -23);
                 }

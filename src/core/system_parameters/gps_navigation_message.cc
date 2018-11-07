@@ -125,7 +125,7 @@ void Gps_Navigation_Message::reset()
     d_DeltaT_LSF = 0.0;
 
     // Almanac
-    d_Toa = 0.0;
+    i_Toa = 0;
     i_WN_A = 0;
     for (int32_t i = 1; i < 32; i++)
         {
@@ -433,8 +433,8 @@ int32_t Gps_Navigation_Message::subframe_decoder(char *subframe)
                 }
             if (SV_page_5 == 51)  // Page 25 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200H, page 110)
                 {
-                    d_Toa = static_cast<double>(read_navigation_unsigned(subframe_bits, T_OA));
-                    d_Toa = d_Toa * T_OA_LSB;
+                    i_Toa = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, T_OA));
+                    i_Toa = i_Toa * T_OA_LSB;
                     i_WN_A = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, WN_A));
                     almanacHealth[1] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV1));
                     almanacHealth[2] = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, HEALTH_SV2));

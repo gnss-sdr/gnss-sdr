@@ -495,7 +495,7 @@ position-test-180417100529:
     - apt-get update
     - apt-get install -y --no-install-recommends build-essential cmake ca-certificates git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest gnuplot
     - mkdir build-test
-    - mkdir build64
+    - mkdir position-test
     - cd build-test
     - cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON ..
     - NPROC=$(grep -c ^processor /proc/cpuinfo)
@@ -503,23 +503,28 @@ position-test-180417100529:
     # Execute System Tests
     - export DISPLAY=unknown
     - ../install/position_test --config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L1.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0
-    - rm PVT_*.* && mv *.ps ../build64/ && mv GSDR.* ../build64/
+    - mkdir ../position-test/L1 && rm PVT_*.* && mv *.ps ../position-test/L1/ && mv GSDR* ../position-test/L1/
     - ../install/position_test --config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_E1.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0
-    - rm PVT_*.* && mv *.ps ../build64/ && mv GSDR.* ../build64/
+    - mkdir ../position-test/E1 && rm PVT_*.* && mv *.ps ../position-test/E1 && mv GSDR* ../position-test/E1
     - ../install/position_test -config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L1E1.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0
-    - rm PVT_*.* && mv *.ps ../build64/ && mv GSDR.* ../build64/
+    - mkdir ../position-test/L1E1 && rm PVT_*.* && mv *.ps ../position-test/L1E1/ && mv GSDR* ../position-test/L1E1/
     - ../install/position_test --config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L5.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --dynamic_3D_velocity_RMSE=6 --plot_position_test --show_plots=0
-    - rm PVT_*.* && mv *.ps ../build64/ && mv GSDR.* ../build64/
+    - mkdir ../position-test/L5 && rm PVT_*.* && mv *.ps ../position-test/L5/ && mv GSDR* ../position-test/L5/
     - ../install/position_test --config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_E5.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --dynamic_3D_velocity_RMSE=6 --plot_position_test --show_plots=0
-    - rm PVT_*.* && mv *.ps ../build64/ && mv GSDR.* ../build64/
+    - mkdir ../position-test/E5 && rm PVT_*.* && mv *.ps ../position-test/E5 && mv GSDR* ../position-test/E5
     - ../install/position_test --config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L1E1L5E5.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --dynamic_3D_velocity_RMSE=6 --plot_position_test --show_plots=0
-    - rm PVT_*.* && mv *.ps ../build64/ && mv GSDR.* ../build64/
-    - mv *.xml ../build64/
+    - mkdir ../position-test/L1E1L5E5 && rm PVT_*.* && mv *.ps ../position-test/L1E1L5E5 && [ -f GSDR* ] && mv GSDR* ../position-test/L1E1L5E5
+    - mv *.xml ../position-test/
     - cd ..
     - rm -rf build-test
   artifacts:
     paths:
-      - build64/*
+      - position-test/*
+      - position-test/L1/*
+      - position-test/E1/*
+      - position-test/L1E1/*
+      - position-test/L5/*
+      - position-test/L1E1L5E5/*
   allow_failure: true
 
 

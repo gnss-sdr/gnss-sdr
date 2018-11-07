@@ -137,8 +137,16 @@ void pcps_acquisition_fpga::init()
     d_gnss_synchro->Acq_samplestamp_samples = 0;
     d_mag = 0.0;
     d_input_power = 0.0;
-    d_num_doppler_bins = static_cast<uint32_t>(std::ceil(static_cast<double>(static_cast<int32_t>(acq_parameters.doppler_max) - static_cast<int32_t>(-acq_parameters.doppler_max)) / static_cast<double>(d_doppler_step))) + 1;
-    //printf("acq gnuradioblock doppler_max = %lu\n", (unsigned long) static_cast<int32_t>(acq_parameters.doppler_max));
+
+    if (d_single_doppler_flag == 1)
+    {
+    	d_num_doppler_bins = 1;
+    }
+    else
+    {
+    	d_num_doppler_bins = static_cast<uint32_t>(std::ceil(static_cast<double>(static_cast<int32_t>(acq_parameters.doppler_max) - static_cast<int32_t>(-acq_parameters.doppler_max)) / static_cast<double>(d_doppler_step))) + 1;
+    }
+    	//printf("acq gnuradioblock doppler_max = %lu\n", (unsigned long) static_cast<int32_t>(acq_parameters.doppler_max));
     //printf("acq gnuradioblock doppler_step = %lu\n", (unsigned long) d_doppler_step);
     //printf("acq gnuradioblock d_num_doppler_bins = %lu\n", (unsigned long) d_num_doppler_bins);
     acquisition_fpga->init();
@@ -251,7 +259,7 @@ void pcps_acquisition_fpga::set_active(bool active)
    // while(1)
    //{
 
-
+    //printf("######### acq ENTERING SET ACTIVE\n");
 
     // run loop in hw
     //printf("LAUNCH ACQ\n");
@@ -260,6 +268,7 @@ void pcps_acquisition_fpga::set_active(bool active)
     acquisition_fpga->configure_acquisition();
     acquisition_fpga->set_doppler_sweep(d_num_doppler_bins);
 
+    //printf("d_num_doppler_bins = %d\n", (int) d_num_doppler_bins);
     acquisition_fpga->write_local_code();
 
     //acquisition_fpga->set_doppler_sweep(2);
@@ -274,6 +283,8 @@ void pcps_acquisition_fpga::set_active(bool active)
 
     //printf("reading results for channel %d\n", (int) d_channel);
     acquisition_fpga->read_acquisition_results(&indext, &firstpeak, &secondpeak, &initial_sample, &d_input_power, &d_doppler_index, &total_block_exp);
+
+    //printf("returned d_doppler_index = %d\n", d_doppler_index);
 
     //printf("gnuradio block : d_total_block_exp = %d total_block_exp = %d\n", (int) d_total_block_exp, (int) total_block_exp);
 
@@ -358,13 +369,14 @@ void pcps_acquisition_fpga::set_active(bool active)
     		//printf("yes here\n");
     		d_gnss_synchro->Acq_delay_samples = static_cast<double>(d_downsampling_factor*(indext % acq_parameters.samples_per_code));
     		//d_gnss_synchro->Acq_samplestamp_samples = d_downsampling_factor*d_sample_counter - 81*0.25*d_downsampling_factor; // delay due to the downsampling filter in the acquisition
-    		d_gnss_synchro->Acq_samplestamp_samples = d_downsampling_factor*d_sample_counter - 81*0.5; // delay due to the downsampling filter in the acquisition
+    		d_gnss_synchro->Acq_samplestamp_samples = d_downsampling_factor*d_sample_counter - 33; //41; //+ 81*0.5; // delay due to the downsampling filter in the acquisition
     		//d_gnss_synchro->Acq_samplestamp_samples = d_downsampling_factor*d_sample_counter - 81/d_downsampling_factor; // delay due to the downsampling filter in the acquisition
     		//d_gnss_synchro->Acq_delay_samples = static_cast<double>(2*(indext % acq_parameters.samples_per_code));
     		//d_gnss_synchro->Acq_delay_samples = static_cast<double>(2*(indext));
     		//d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter*2 - 81;
         	//d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % acq_parameters.samples_per_code);
         	//d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
+
     	}
     	else
     	{
@@ -428,7 +440,8 @@ void pcps_acquisition_fpga::set_active(bool active)
 
             //printf("acq d_gnss_synchro->Acq_delay_samples = %f\n: ",d_gnss_synchro->Acq_delay_samples);
             //printf("acq d_gnss_synchro->Acq_samplestamp_samples = %d\n", (unsigned int) d_gnss_synchro->Acq_samplestamp_samples);
-
+            //printf("acq d_gnss_synchro->Acq_doppler_hz = %f\n", d_gnss_synchro->Acq_doppler_hz);
+            //printf("acq d_gnss_synchro->PRN = %d\n", (int) d_gnss_synchro->PRN);
         }
     else
         {
@@ -437,7 +450,7 @@ void pcps_acquisition_fpga::set_active(bool active)
             send_negative_acquisition();
         }
 
-
+    //printf("######### acq LEAVING SET ACTIVE\n");
     //printf("acq set active end\n");
 }
 

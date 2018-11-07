@@ -255,6 +255,7 @@ void fpga_acquisition::run_acquisition(void)
 
     // launch the acquisition process
     //printf("acq lib launchin acquisition ...\n");
+	//printf("acq lib launch acquisition\n");
     d_map_base[8] = LAUNCH_ACQUISITION;  // writing a 1 to reg 8 launches the acquisition process
     //printf("acq lib waiting for interrupt ...\n");
     int32_t irq_count;
@@ -263,6 +264,7 @@ void fpga_acquisition::run_acquisition(void)
     uint32_t result_valid = 0;
 
     usleep(50);
+    //printf("acq lib waiting for result valid\n");
     while(result_valid == 0)
     {
     	read_result_valid(&result_valid); // polling
@@ -342,6 +344,7 @@ void fpga_acquisition::set_doppler_sweep(uint32_t num_sweeps)
 	    float phase_step_rad_int_temp;
 	    int32_t phase_step_rad_int;
 	    //int32_t doppler = static_cast<int32_t>(-d_doppler_max) + d_doppler_step * doppler_index;
+	    //printf("executing with doppler = %d\n", (int) d_doppler_max);
 	    int32_t doppler = static_cast<int32_t>(d_doppler_max);
 	    //float phase_step_rad = GPS_TWO_PI * (d_freq + doppler) / static_cast<float>(d_fs_in);
 	    float phase_step_rad = GPS_TWO_PI * (doppler) / static_cast<float>(d_fs_in);
@@ -364,6 +367,7 @@ void fpga_acquisition::set_doppler_sweep(uint32_t num_sweeps)
 	    //printf("AAA writing phase_step_rad_int for initial doppler = %d to d map base 3\n", phase_step_rad_int);
 	    d_map_base[3] = phase_step_rad_int;
 
+	    //printf("executing with doppler step = %d\n", (int) d_doppler_step);
 	    // repeat the calculation with the doppler step
 	    doppler = static_cast<int32_t>(d_doppler_step);
 	    phase_step_rad = GPS_TWO_PI * (doppler) / static_cast<float>(d_fs_in);

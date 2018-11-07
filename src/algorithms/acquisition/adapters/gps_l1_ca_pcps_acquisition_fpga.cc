@@ -69,10 +69,10 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     printf("downsampling_factor = %f\n", downsampling_factor);
     acq_parameters.downsampling_factor = downsampling_factor;
     //fs_in = fs_in/2.0; // downampling filter
-    //printf("fs_in pre downsampling = %ld\n", fs_in);
+    printf("fs_in pre downsampling = %ld\n", fs_in);
 
     fs_in = fs_in/downsampling_factor;
-    //printf("fs_in post downsampling = %ld\n", fs_in);
+    printf("fs_in post downsampling = %ld\n", fs_in);
 
     //printf("####### DEBUG Acq: fs_in = %d\n", fs_in);
     acq_parameters.fs_in = fs_in;
@@ -89,7 +89,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     float nbits = ceilf(log2f((float)code_length*2));
     unsigned int nsamples_total = pow(2, nbits);
     unsigned int vector_length = nsamples_total;
-    //printf("acq adapter vector_length = %d\n", vector_length);
+    printf("acq adapter vector_length = %d\n", vector_length);
     unsigned int select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga", 0);
     printf("select queue = %d\n", select_queue_Fpga);
     acq_parameters.select_queue_Fpga = select_queue_Fpga;
@@ -265,6 +265,7 @@ void GpsL1CaPcpsAcquisitionFpga::set_local_code()
 
 void GpsL1CaPcpsAcquisitionFpga::reset()
 {
+	//printf("######### acq RESET called\n");
     acquisition_fpga_->set_active(true);
     //printf("acq reset end dddsss\n");
 }

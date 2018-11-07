@@ -40,6 +40,8 @@
 #include "rtcm_printer.h"
 #include "pvt_conf.h"
 #include "rtklib_solver.h"
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 #include <gnuradio/sync_block.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -134,6 +136,11 @@ private:
 
     bool d_xml_storage;
     std::string xml_base_path;
+
+    inline std::time_t to_time_t(boost::posix_time::ptime pt)
+    {
+        return (pt - boost::posix_time::ptime(boost::gregorian::date(1970, 1, 1))).total_seconds();
+    }
 
 
 public:

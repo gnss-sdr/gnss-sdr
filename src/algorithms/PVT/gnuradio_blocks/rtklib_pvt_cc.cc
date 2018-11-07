@@ -36,7 +36,6 @@
 #include "gnss_sdr_create_directory.h"
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/exception/all.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/serialization/map.hpp>
@@ -47,7 +46,6 @@
 #include <iostream>
 #include <map>
 #include <exception>
-#include <boost/date_time/posix_time/conversion.hpp>
 #if OLD_BOOST
 #include <boost/math/common_factor_rt.hpp>
 namespace bc = boost::math;
@@ -909,7 +907,7 @@ bool rtklib_pvt_cc::get_latest_PVT(double* longitude_deg,
             *height_m = d_ls_pvt->get_height();
             *ground_speed_kmh = d_ls_pvt->get_speed_over_ground() * 3600.0 / 1000.0;
             *course_over_ground_deg = d_ls_pvt->get_course_over_ground();
-            *UTC_time = boost::posix_time::to_time_t(d_ls_pvt->get_position_UTC_time());
+            *UTC_time = to_time_t(d_ls_pvt->get_position_UTC_time());
 
             return true;
         }
@@ -918,6 +916,7 @@ bool rtklib_pvt_cc::get_latest_PVT(double* longitude_deg,
             return false;
         }
 }
+
 
 int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items __attribute__((unused)))

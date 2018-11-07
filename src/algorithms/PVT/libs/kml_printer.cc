@@ -43,6 +43,7 @@ using google::LogMessage;
 Kml_Printer::Kml_Printer(const std::string& base_path)
 {
     positions_printed = false;
+    indent = "  ";
     kml_base_path = base_path;
     boost::filesystem::path full_path(boost::filesystem::current_path());
     const boost::filesystem::path p(kml_base_path);
@@ -135,28 +136,27 @@ bool Kml_Printer::set_headers(std::string filename, bool time_tag_name)
             kml_file << std::setprecision(14);
             kml_file << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl
                      << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << std::endl
-                     << "    <Document>" << std::endl
-                     << "    <name>GNSS Track</name>" << std::endl
-                     << "    <description>GNSS-SDR Receiver position log file created at " << pt
-                     << "    </description>" << std::endl
-                     << "<Style id=\"yellowLineGreenPoly\">" << std::endl
-                     << " <LineStyle>" << std::endl
-                     << "     <color>7f00ffff</color>" << std::endl
-                     << "        <width>1</width>" << std::endl
-                     << "    </LineStyle>" << std::endl
-                     << "<PolyStyle>" << std::endl
-                     << "    <color>7f00ff00</color>" << std::endl
-                     << "</PolyStyle>" << std::endl
-                     << "</Style>" << std::endl
-                     << "<Placemark>" << std::endl
-                     << "<name>GNSS-SDR PVT</name>" << std::endl
-                     << "<description>GNSS-SDR position log</description>" << std::endl
-                     << "<styleUrl>#yellowLineGreenPoly</styleUrl>" << std::endl
-                     << "<LineString>" << std::endl
-                     << "<extrude>0</extrude>" << std::endl
-                     << "<tessellate>1</tessellate>" << std::endl
-                     << "<altitudeMode>absolute</altitudeMode>" << std::endl
-                     << "<coordinates>" << std::endl;
+                     << indent << "<Document>" << std::endl
+                     << indent << indent << "<name>GNSS Track</name>" << std::endl
+                     << indent << indent << "<description>GNSS-SDR Receiver position log file created at " << pt << "</description>" << std::endl
+                     << indent << indent << "<Style id=\"yellowLineGreenPoly\">" << std::endl
+                     << indent << indent << indent << "<LineStyle>" << std::endl
+                     << indent << indent << indent << indent << "<color>7f00ffff</color>" << std::endl
+                     << indent << indent << indent << indent << "<width>1</width>" << std::endl
+                     << indent << indent << indent << "</LineStyle>" << std::endl
+                     << indent << indent << indent << "<PolyStyle>" << std::endl
+                     << indent << indent << indent << indent << "<color>7f00ff00</color>" << std::endl
+                     << indent << indent << indent << "</PolyStyle>" << std::endl
+                     << indent << indent << "</Style>" << std::endl
+                     << indent << indent << "<Placemark>" << std::endl
+                     << indent << indent << indent << "<name>GNSS-SDR PVT</name>" << std::endl
+                     << indent << indent << indent << "<description>GNSS-SDR position log</description>" << std::endl
+                     << indent << indent << indent << "<styleUrl>#yellowLineGreenPoly</styleUrl>" << std::endl
+                     << indent << indent << indent << "<LineString>" << std::endl
+                     << indent << indent << indent << indent << "<extrude>0</extrude>" << std::endl
+                     << indent << indent << indent << indent << "<tessellate>1</tessellate>" << std::endl
+                     << indent << indent << indent << indent << "<altitudeMode>absolute</altitudeMode>" << std::endl
+                     << indent << indent << indent << indent << "<coordinates>" << std::endl;
             return true;
         }
     else
@@ -192,7 +192,8 @@ bool Kml_Printer::print_position(const std::shared_ptr<Pvt_Solution>& position, 
 
     if (kml_file.is_open())
         {
-            kml_file << longitude << "," << latitude << "," << height << std::endl;
+            kml_file << indent << indent << indent << indent << indent
+                     << longitude << "," << latitude << "," << height << std::endl;
             return true;
         }
     else
@@ -206,10 +207,10 @@ bool Kml_Printer::close_file()
 {
     if (kml_file.is_open())
         {
-            kml_file << "</coordinates>" << std::endl
-                     << "</LineString>" << std::endl
-                     << "</Placemark>" << std::endl
-                     << "</Document>" << std::endl
+            kml_file << indent << indent << indent << indent << "</coordinates>" << std::endl
+                     << indent << indent << indent << "</LineString>" << std::endl
+                     << indent << indent << "</Placemark>" << std::endl
+                     << indent << "</Document>" << std::endl
                      << "</kml>";
             kml_file.close();
             return true;

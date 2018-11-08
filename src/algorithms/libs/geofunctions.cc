@@ -301,7 +301,7 @@ double mstokph(double MetersPerSeconds)
 arma::vec CTM_to_Euler(const arma::mat &C)
 {
     // Calculate Euler angles using (2.23)
-    arma::mat CTM = C;
+    arma::mat CTM(C);
     arma::vec eul = arma::zeros(3, 1);
     eul(0) = atan2(CTM(1, 2), CTM(2, 2));  // roll
     if (CTM(0, 2) < -1.0) CTM(0, 2) = -1.0;

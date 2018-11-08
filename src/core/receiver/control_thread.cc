@@ -94,6 +94,7 @@ ControlThread::ControlThread(std::shared_ptr<ConfigurationInterface> configurati
 {
     configuration_ = configuration;
     delete_configuration_ = false;
+    restart_ = false;
     init();
 }
 
@@ -111,6 +112,7 @@ void ControlThread::telecommand_listener()
     int tcp_cmd_port = configuration_->property("Channel.telecontrol_tcp_port", 3333);
     cmd_interface_.run_cmd_server(tcp_cmd_port);
 }
+
 
 /*
  * Runs the control thread that manages the receiver control plane
@@ -154,16 +156,15 @@ int ControlThread::run()
             return 0;
         }
 
-    //launch GNSS assistance process AFTER the flowgraph is running because the GNURadio asynchronous queues must be already running to transport msgs
+    // launch GNSS assistance process AFTER the flowgraph is running because the GNU Radio asynchronous queues must be already running to transport msgs
     assist_GNSS();
     // start the keyboard_listener thread
     keyboard_thread_ = boost::thread(&ControlThread::keyboard_listener, this);
     sysv_queue_thread_ = boost::thread(&ControlThread::sysv_queue_listener, this);
 
-    //start the telecommand listener thread
+    // start the telecommand listener thread
     cmd_interface_.set_pvt(flowgraph_->get_pvt());
     cmd_interface_thread_ = boost::thread(&ControlThread::telecommand_listener, this);
-
 
     bool enable_FPGA = configuration_->property("Channel.enable_FPGA", false);
     if (enable_FPGA == true)
@@ -764,22 +765,23 @@ void ControlThread::apply_action(unsigned int what)
         }
 }
 
-std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time_t rx_utc_time, arma::vec LLH)
+
+std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time_t rx_utc_time, const arma::vec &LLH)
 {
-    //1. Compute rx ECEF position from LLH WGS84
+    // 1. Compute rx ECEF position from LLH WGS84
     arma::vec LLH_rad = arma::vec{degtorad(LLH(0)), degtorad(LLH(1)), LLH(2)};
     arma::mat C_tmp = arma::zeros(3, 3);
     arma::vec r_eb_e = arma::zeros(3, 1);
     arma::vec v_eb_e = arma::zeros(3, 1);
     Geo_to_ECEF(LLH_rad, arma::vec{0, 0, 0}, C_tmp, r_eb_e, v_eb_e, C_tmp);
 
-    //2. Compute rx GPS time from UTC time
+    // 2. Compute rx GPS time from UTC time
     gtime_t utc_gtime;
     utc_gtime.time = rx_utc_time;
     utc_gtime.sec = 0;
     gtime_t gps_gtime = utc2gpst(utc_gtime);
 
-    //2. loop throught all the available ephemeris or almanac and compute satellite positions and elevations
+    // 3. loop through all the available ephemeris or almanac and compute satellite positions and elevations
     // store visible satellites in a vector of pairs <int,Gnss_Satellite> to associate an elevation to the each satellite
     std::vector<std::pair<int, Gnss_Satellite>> available_satellites;
 
@@ -805,7 +807,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
             arma::vec r_sat_eb_e = arma::vec{r_sat[0], r_sat[1], r_sat[2]};
             arma::vec dx = r_sat_eb_e - r_eb_e;
             topocent(&Az, &El, &dist_m, r_eb_e, dx);
-            //push sat
+            // push sat
             if (El > 0)
                 {
                     std::cout << "Using GPS Ephemeris: Sat " << it->second.i_satellite_PRN << " Az: " << Az << " El: " << El << std::endl;
@@ -827,7 +829,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
             arma::vec r_sat_eb_e = arma::vec{r_sat[0], r_sat[1], r_sat[2]};
             arma::vec dx = r_sat_eb_e - r_eb_e;
             topocent(&Az, &El, &dist_m, r_eb_e, dx);
-            //push sat
+            // push sat
             if (El > 0)
                 {
                     std::cout << "Using Galileo Ephemeris: Sat " << it->second.i_satellite_PRN << " Az: " << Az << " El: " << El << std::endl;
@@ -848,7 +850,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
             arma::vec r_sat_eb_e = arma::vec{r_sat[0], r_sat[1], r_sat[2]};
             arma::vec dx = r_sat_eb_e - r_eb_e;
             topocent(&Az, &El, &dist_m, r_eb_e, dx);
-            //push sat
+            // push sat
             if (El > 0)
                 {
                     std::cout << "Using GPS Almanac:  Sat " << it->second.i_satellite_PRN << " Az: " << Az << " El: " << El << std::endl;
@@ -870,7 +872,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
             arma::vec dx = r_sat_eb_e - r_eb_e;
             topocent(&Az, &El, &dist_m, r_eb_e, dx);
             std::cout << "Using Galileo Almanac:  Sat " << it->second.i_satellite_PRN << " Az: " << Az << " El: " << El << std::endl;
-            //push sat
+            // push sat
             if (El > 0)
                 {
                     std::cout << "Using GPS Almanac:  Sat " << it->second.i_satellite_PRN << " Az: " << Az << " El: " << El << std::endl;
@@ -879,11 +881,11 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
                 }
         }
 
-    //sort the visible satellites in ascending order of elevation
+    // sort the visible satellites in ascending order of elevation
     std::sort(available_satellites.begin(), available_satellites.end(), [](const std::pair<int, Gnss_Satellite> &a, const std::pair<int, Gnss_Satellite> &b) {  // use lambda. Cleaner and easier to read
         return a.first < b.first;
     });
-    //std::reverse(available_satellites.begin(), available_satellites.end());
+    // std::reverse(available_satellites.begin(), available_satellites.end());
     return available_satellites;
 }
 

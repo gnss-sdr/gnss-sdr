@@ -31,6 +31,7 @@
 
 #include "ls_pvt.h"
 #include "GPS_L1_CA.h"
+#include "geofunctions.h"
 #include <glog/logging.h>
 #include <exception>
 #include <stdexcept>
@@ -235,12 +236,12 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat& satpos, const arma::vec& obs, 
                             double* azim = 0;
                             double* elev = 0;
                             double* dist = 0;
-                            Ls_Pvt::topocent(azim, elev, dist, pos.subvec(0, 2), Rot_X - pos.subvec(0, 2));
+                            topocent(azim, elev, dist, pos.subvec(0, 2), Rot_X - pos.subvec(0, 2));
 
                             if (traveltime < 0.1 && nmbOfSatellites > 3)
                                 {
                                     //--- Find receiver's height
-                                    Ls_Pvt::togeod(&dphi, &dlambda, &h, 6378137.0, 298.257223563, pos(0), pos(1), pos(2));
+                                    togeod(&dphi, &dlambda, &h, 6378137.0, 298.257223563, pos(0), pos(1), pos(2));
                                     // Add troposphere correction if the receiver is below the troposphere
                                     if (h > 15000)
                                         {

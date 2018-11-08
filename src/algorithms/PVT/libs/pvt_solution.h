@@ -130,41 +130,6 @@ public:
     int cart2geo(double X, double Y, double Z, int elipsoid_selection);
 
     /*!
-      * \brief Transformation of vector dx into topocentric coordinate system with origin at x
-      *
-      * \param[in] x    Vector origin coordinates (in ECEF system [X; Y; Z;])
-      * \param[in] dx   Vector ([dX; dY; dZ;]).
-      *
-      * \param[out] D   Vector length. Units like the input
-      * \param[out] Az  Azimuth from north positive clockwise, degrees
-      * \param[out] El  Elevation angle, degrees
-      *
-      * Based on a Matlab function by Kai Borre
-      */
-    int topocent(double *Az, double *El, double *D, const arma::vec &x, const arma::vec &dx);
-
-    /*!
-      * \brief Subroutine to calculate geodetic coordinates latitude, longitude,
-      * height given Cartesian coordinates X,Y,Z, and reference ellipsoid
-      * values semi-major axis (a) and the inverse of flattening (finv).
-      *
-      *  The output units of angular quantities will be in decimal degrees
-      *  (15.5 degrees not 15 deg 30 min). The output units of h will be the
-      *  same as the units of X,Y,Z,a.
-      *
-      *  \param[in] a           - semi-major axis of the reference ellipsoid
-      *  \param[in] finv        - inverse of flattening of the reference ellipsoid
-      *  \param[in] X,Y,Z       - Cartesian coordinates
-      *
-      *  \param[out] dphi        - latitude
-      *  \param[out] dlambda     - longitude
-      *  \param[out] h           - height above reference ellipsoid
-      *
-      * Based in a Matlab function by Kai Borre
-      */
-    int togeod(double *dphi, double *dlambda, double *h, double a, double finv, double X, double Y, double Z);
-
-    /*!
       * \brief Tropospheric correction
       *
       *  \param[in] sinel     - sin of elevation angle of satellite

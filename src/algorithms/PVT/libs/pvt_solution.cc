@@ -87,13 +87,49 @@ arma::vec Pvt_Solution::rotateSatellite(double const traveltime, const arma::vec
 }
 
 
-int Pvt_Solution::cart_to_geo(double X, double Y, double Z, int elipsoid_selection)
+int Pvt_Solution::cart2geo(double X, double Y, double Z, int elipsoid_selection)
 {
-    arma::vec XYZ = {X, Y, Z};
-    arma::vec LLH = cart2geo(XYZ, elipsoid_selection);
-    d_latitude_d = LLH(0) * 180.0 / GPS_PI;
-    d_longitude_d = LLH(1) * 180.0 / GPS_PI;
-    d_height_m = LLH(2);
+    /* Conversion of Cartesian coordinates (X,Y,Z) to geographical
+     coordinates (latitude, longitude, h) on a selected reference ellipsoid.
+
+       Choices of Reference Ellipsoid for Geographical Coordinates
+                 0. International Ellipsoid 1924
+                 1. International Ellipsoid 1967
+                 2. World Geodetic System 1972
+                 3. Geodetic Reference System 1980
+                 4. World Geodetic System 1984
+     */
+
+    const double a[5] = {6378388.0, 6378160.0, 6378135.0, 6378137.0, 6378137.0};
+    const double f[5] = {1.0 / 297.0, 1.0 / 298.247, 1.0 / 298.26, 1.0 / 298.257222101, 1.0 / 298.257223563};
+
+    double lambda = atan2(Y, X);
+    double ex2 = (2.0 - f[elipsoid_selection]) * f[elipsoid_selection] / ((1.0 - f[elipsoid_selection]) * (1.0 - f[elipsoid_selection]));
+    double c = a[elipsoid_selection] * sqrt(1.0 + ex2);
+    double phi = atan(Z / ((sqrt(X * X + Y * Y) * (1.0 - (2.0 - f[elipsoid_selection])) * f[elipsoid_selection])));
+
+    double h = 0.1;
+    double oldh = 0.0;
+    double N;
+    int iterations = 0;
+    do
+        {
+            oldh = h;
+            N = c / sqrt(1 + ex2 * (cos(phi) * cos(phi)));
+            phi = atan(Z / ((sqrt(X * X + Y * Y) * (1.0 - (2.0 - f[elipsoid_selection]) * f[elipsoid_selection] * N / (N + h)))));
+            h = sqrt(X * X + Y * Y) / cos(phi) - N;
+            iterations = iterations + 1;
+            if (iterations > 100)
+                {
+                    DLOG(WARNING) << "Failed to approximate h with desired precision. h-oldh= " << h - oldh;
+                    break;
+                }
+        }
+    while (std::abs(h - oldh) > 1.0e-12);
+    d_latitude_d = phi * 180.0 / GPS_PI;
+    d_longitude_d = lambda * 180.0 / GPS_PI;
+    d_height_m = h;
+    //todo: refactor this class. Mix of duplicated functions, use either RTKLIB geodetic functions or geofunctions.h
     return 0;
 }
 

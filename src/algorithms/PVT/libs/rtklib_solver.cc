@@ -99,7 +99,6 @@ rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag
         }
 }
 
-
 bool rtklib_solver::save_matfile()
 {
     // READ DUMP FILE
@@ -395,7 +394,6 @@ bool rtklib_solver::save_matfile()
 
     return true;
 }
-
 
 rtklib_solver::~rtklib_solver()
 {
@@ -870,7 +868,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     p_time = boost::posix_time::from_time_t(rtklib_utc_time.time);
                     p_time += boost::posix_time::microseconds(static_cast<long>(round(rtklib_utc_time.sec * 1e6)));
                     this->set_position_UTC_time(p_time);
-                    cart_to_geo(static_cast<double>(rx_position_and_time(0)), static_cast<double>(rx_position_and_time(1)), static_cast<double>(rx_position_and_time(2)), 4);
+                    cart2geo(static_cast<double>(rx_position_and_time(0)), static_cast<double>(rx_position_and_time(1)), static_cast<double>(rx_position_and_time(2)), 4);
 
                     DLOG(INFO) << "RTKLIB Position at " << boost::posix_time::to_simple_string(p_time)
                                << " is Lat = " << this->get_latitude() << " [deg], Long = " << this->get_longitude()

@@ -127,7 +127,7 @@ public:
       * 4 - World Geodetic System 1984.
       *
       */
-    int cart_to_geo(double X, double Y, double Z, int elipsoid_selection);
+    int cart2geo(double X, double Y, double Z, int elipsoid_selection);
 
     /*!
       * \brief Tropospheric correction

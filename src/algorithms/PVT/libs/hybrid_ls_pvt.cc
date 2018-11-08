@@ -338,7 +338,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
                     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
                     this->set_position_UTC_time(p_time);
 
-                    cart_to_geo(static_cast<double>(rx_position_and_time(0)), static_cast<double>(rx_position_and_time(1)), static_cast<double>(rx_position_and_time(2)), 4);
+                    cart2geo(static_cast<double>(rx_position_and_time(0)), static_cast<double>(rx_position_and_time(1)), static_cast<double>(rx_position_and_time(2)), 4);
 
                     DLOG(INFO) << "Hybrid Position at " << boost::posix_time::to_simple_string(p_time)
                                << " is Lat = " << this->get_latitude() << " [deg], Long = " << this->get_longitude()

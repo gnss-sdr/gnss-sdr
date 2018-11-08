@@ -357,7 +357,15 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
         }
 
     // initialize nmea_printer
-    d_nmea_printer = std::make_shared<Nmea_Printer>(conf_.nmea_dump_filename, conf_.nmea_output_file_enabled, conf_.flag_nmea_tty_port, conf_.nmea_dump_devname, conf_.nmea_output_file_path);
+    d_nmea_output_file_enabled = (conf_.nmea_output_file_enabled or conf_.flag_nmea_tty_port);
+    if (d_nmea_output_file_enabled)
+        {
+            d_nmea_printer = std::make_shared<Nmea_Printer>(conf_.nmea_dump_filename, conf_.nmea_output_file_enabled, conf_.flag_nmea_tty_port, conf_.nmea_dump_devname, conf_.nmea_output_file_path);
+        }
+    else
+        {
+            d_nmea_printer = nullptr;
+        }
 
     // initialize rtcm_printer
     std::string rtcm_dump_filename;
@@ -1029,10 +1037,12 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                     //save_gnss_synchro_map_xml("./gnss_synchro_map.xml");
                                     //getchar(); //stop the execution
                                     //end debug
-
-                                    if (current_RX_time_ms % d_display_rate_ms == 0)
+                                    if (d_display_rate_ms != 0)
                                         {
-                                            flag_display_pvt = true;
+                                            if (current_RX_time_ms % d_display_rate_ms == 0)
+                                                {
+                                                    flag_display_pvt = true;
+                                                }
                                         }
                                     if (d_rtcm_MT1019_rate_ms != 0)  // allows deactivating messages by setting rate = 0
                                         {
@@ -1106,7 +1116,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                     if (d_kml_output_enabled) d_kml_dump->print_position(d_ls_pvt, false);
                                     if (d_gpx_output_enabled) d_gpx_dump->print_position(d_ls_pvt, false);
                                     if (d_geojson_output_enabled) d_geojson_printer->print_position(d_ls_pvt, false);
-                                    d_nmea_printer->Print_Nmea_Line(d_ls_pvt, false);
+                                    if (d_nmea_output_file_enabled) d_nmea_printer->Print_Nmea_Line(d_ls_pvt, false);
 
                                     /*
                                      *   TYPE  |  RECEIVER

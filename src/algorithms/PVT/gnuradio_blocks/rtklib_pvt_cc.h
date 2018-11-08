@@ -111,6 +111,7 @@ private:
     bool d_geojson_output_enabled;
     bool d_gpx_output_enabled;
     bool d_kml_output_enabled;
+    bool d_nmea_output_file_enabled;
 
     std::shared_ptr<rtklib_solver> d_ls_pvt;
 

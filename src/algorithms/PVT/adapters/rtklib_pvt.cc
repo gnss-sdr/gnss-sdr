@@ -536,22 +536,30 @@ RtklibPvt::~RtklibPvt()
     rtkfree(&rtk);
 }
 
-std::map<int, Gps_Ephemeris> RtklibPvt::get_gps_ephemeris()
+
+std::map<int, Gps_Ephemeris> RtklibPvt::get_gps_ephemeris() const
 {
     return pvt_->get_gps_ephemeris_map();
 }
-std::map<int, Galileo_Ephemeris> RtklibPvt::get_galileo_ephemeris()
+
+
+std::map<int, Galileo_Ephemeris> RtklibPvt::get_galileo_ephemeris() const
 {
     return pvt_->get_galileo_ephemeris_map();
 }
-std::map<int, Gps_Almanac> RtklibPvt::get_gps_almanac()
+
+
+std::map<int, Gps_Almanac> RtklibPvt::get_gps_almanac() const
 {
     return pvt_->get_gps_almanac_map();
 }
-std::map<int, Galileo_Almanac> RtklibPvt::get_galileo_almanac()
+
+
+std::map<int, Galileo_Almanac> RtklibPvt::get_galileo_almanac() const
 {
     return pvt_->get_galileo_almanac_map();
 }
+
 
 void RtklibPvt::connect(gr::top_block_sptr top_block)
 {

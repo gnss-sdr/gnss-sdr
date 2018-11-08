@@ -148,8 +148,8 @@ private:
      * Compute elevations for the specified time and position for all the available satellites in ephemeris and almanac queues
      * returns a vector filled with the available satellites ordered from high elevation to low elevation angle.
      */
+    std::vector<std::pair<int, Gnss_Satellite>> get_visible_sats(time_t rx_utc_time, const arma::vec& LLH);
 
-    std::vector<std::pair<int, Gnss_Satellite>> get_visible_sats(time_t rx_utc_time, arma::vec LLH);
     /*
      * Read initial GNSS assistance from SUPL server or local XML files
      */

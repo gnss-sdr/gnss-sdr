@@ -111,8 +111,9 @@ private:
     bool d_geojson_output_enabled;
     bool d_gpx_output_enabled;
     bool d_kml_output_enabled;
+    bool d_nmea_output_file_enabled;
 
-    std::shared_ptr<rtklib_solver> d_ls_pvt;
+    std::shared_ptr<rtklib_solver> d_pvt_solver;
 
     std::map<int, Gnss_Synchro> gnss_observables_map;
     bool observables_pairCompare_min(const std::pair<int, Gnss_Synchro>& a, const std::pair<int, Gnss_Synchro>& b);
@@ -152,20 +153,19 @@ public:
      * \brief Get latest set of ephemeris from PVT block
      *
      */
-    std::map<int, Gps_Ephemeris> get_gps_ephemeris_map();
+    std::map<int, Gps_Ephemeris> get_gps_ephemeris_map() const;
 
-    std::map<int, Gps_Almanac> get_gps_almanac_map();
+    std::map<int, Gps_Almanac> get_gps_almanac_map() const;
 
-    std::map<int, Galileo_Ephemeris> get_galileo_ephemeris_map();
+    std::map<int, Galileo_Ephemeris> get_galileo_ephemeris_map() const;
 
-    std::map<int, Galileo_Almanac> get_galileo_almanac_map();
+    std::map<int, Galileo_Almanac> get_galileo_almanac_map() const;
 
     /*!
      * \brief Clear all ephemeris information and the almanacs for GPS and Galileo
      *
      */
     void clear_ephemeris();
-
 
     /*!
      * \brief Get the latest Position WGS84 [deg], Ground Velocity, Course over Ground, and UTC Time, if available

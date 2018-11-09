@@ -502,17 +502,17 @@ position-test-180417100529:
     - make -j$(($NPROC+1))
     # Execute System Tests
     - export DISPLAY=unknown
-    - ../install/position_test --config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L1.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0
+    - ../install/position_test --config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L1.conf --static_scenario=0 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0
     - mkdir ../position-test/L1 && rm PVT_*.* && mv *.ps ../position-test/L1/ && mv GSDR* ../position-test/L1/
-    - ../install/position_test --config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_E1.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0
+    - ../install/position_test --config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_E1.conf --static_scenario=0 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0
     - mkdir ../position-test/E1 && rm PVT_*.* && mv *.ps ../position-test/E1 && mv GSDR* ../position-test/E1
-    - ../install/position_test -config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L1E1.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0
+    - ../install/position_test -config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L1E1.conf --static_scenario=0 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0
     - mkdir ../position-test/L1E1 && rm PVT_*.* && mv *.ps ../position-test/L1E1/ && mv GSDR* ../position-test/L1E1/
-    - ../install/position_test --config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L5.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --dynamic_3D_velocity_RMSE=6 --plot_position_test --show_plots=0
+    - ../install/position_test --config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L5.conf --static_scenario=0 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --dynamic_3D_velocity_RMSE=6 --plot_position_test --show_plots=0
     - mkdir ../position-test/L5 && rm PVT_*.* && mv *.ps ../position-test/L5/ && mv GSDR* ../position-test/L5/
-    - ../install/position_test --config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_E5.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --dynamic_3D_velocity_RMSE=6 --plot_position_test --show_plots=0
+    - ../install/position_test --config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_E5.conf --static_scenario=0 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --dynamic_3D_velocity_RMSE=6 --plot_position_test --show_plots=0
     - mkdir ../position-test/E5 && rm PVT_*.* && mv *.ps ../position-test/E5 && mv GSDR* ../position-test/E5
-    - ../install/position_test --config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L1E1L5E5.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --dynamic_3D_velocity_RMSE=6 --plot_position_test --show_plots=0
+    - ../install/position_test --config_file_ptest=/captures/gitlab_test_signals/static/gnss-sdr_180417100529.A_L1E1L5E5.conf --static_scenario=0 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/static/true_data_180417100529/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --dynamic_3D_velocity_RMSE=6 --plot_position_test --show_plots=0
     - mkdir ../position-test/L1E1L5E5 && rm PVT_*.* && mv *.ps ../position-test/L1E1L5E5 && [ -f GSDR* ] && mv GSDR* ../position-test/L1E1L5E5
     - mv *.xml ../position-test/
     - cd ..
@@ -546,22 +546,22 @@ leo-position-test-180417120737:
     # Execute System Tests
     - export DISPLAY=unknown
     - mkdir gpsL1 && cd gpsL1
-    - ../../install/position_test --config_file_ptest=/captures/gitlab_test_signals/dynamic/gnss-sdr_180417120737.A_L1.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/dynamic/leo_pvt_test/2018_04_17_12_44_39/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test=1 --show_plots=0
+    - ../../install/position_test --config_file_ptest=/captures/gitlab_test_signals/dynamic/gnss-sdr_180417120737.A_L1.conf --static_scenario=0 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/dynamic/leo_pvt_test/2018_04_17_12_44_39/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test=1 --show_plots=0
     - cd .. && cp -r gpsL1 /../leo_position
     - mkdir galE1 && cd galE1
-    - ../../install/position_test --config_file_ptest=/captures/gitlab_test_signals/dynamic/gnss-sdr_180417120737.A_E1.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/dynamic/leo_pvt_test/2018_04_17_12_44_39/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test=1 --show_plots=0
+    - ../../install/position_test --config_file_ptest=/captures/gitlab_test_signals/dynamic/gnss-sdr_180417120737.A_E1.conf --static_scenario=0 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/dynamic/leo_pvt_test/2018_04_17_12_44_39/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test=1 --show_plots=0
     - cd .. && cp -r galE1 /../leo_position
     - mkdir gpsL1galE1 && cd gpsL1galE1
-    - ../../install/position_test --config_file_ptest=/captures/gitlab_test_signals/dynamic/gnss-sdr_180417120737.A_L1E1.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/dynamic/leo_pvt_test/2018_04_17_12_44_39/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test=1 --show_plots=0
+    - ../../install/position_test --config_file_ptest=/captures/gitlab_test_signals/dynamic/gnss-sdr_180417120737.A_L1E1.conf --static_scenario=0 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/dynamic/leo_pvt_test/2018_04_17_12_44_39/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test=1 --show_plots=0
     - cd .. && cp -r gpsL1galE1 /../leo_position
     - mkdir gpsL5 && cd gpsL5
-    - ../../install/position_test --config_file_ptest=/captures/gitlab_test_signals/dynamic/gnss-sdr_180417120737.A_L5.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/dynamic/leo_pvt_test/2018_04_17_12_44_39/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test=1 --show_plots=0
+    - ../../install/position_test --config_file_ptest=/captures/gitlab_test_signals/dynamic/gnss-sdr_180417120737.A_L5.conf --static_scenario=0 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/dynamic/leo_pvt_test/2018_04_17_12_44_39/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test=1 --show_plots=0
     - cd .. && cp -r gpsL5 /../leo_position
     - mkdir galE5a && cd galE5a
-    - ../../install/position_test --config_file_ptest=/captures/gitlab_test_signals/dynamic/gnss-sdr_180417120737.A_E5.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/dynamic/leo_pvt_test/2018_04_17_12_44_39/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0
+    - ../../install/position_test --config_file_ptest=/captures/gitlab_test_signals/dynamic/gnss-sdr_180417120737.A_E5.conf --static_scenario=0 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/dynamic/leo_pvt_test/2018_04_17_12_44_39/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0
     - cd .. && cp -r galE5a /../leo_position
     - mkdir galE5a && cd galE5a
-    - ../../install/position_test --config_file_ptest=/captures/gitlab_test_signals/dynamic/gnss-sdr_180417120737.A_L5E5.conf --static_scenario=0 --use_pvt_solver_dump=1 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/dynamic/leo_pvt_test/2018_04_17_12_44_39/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0
+    - ../../install/position_test --config_file_ptest=/captures/gitlab_test_signals/dynamic/gnss-sdr_180417120737.A_L5E5.conf --static_scenario=0 --use_ref_motion_file=1 --ref_motion_filename=/captures/gitlab_test_signals/dynamic/leo_pvt_test/2018_04_17_12_44_39/motion_V1.csv --pvt_solver_dump_filename=./PVT.dat --plot_position_test --show_plots=0
     - cd .. && cp -r galE5a /../leo_position
   artifacts:
     paths:

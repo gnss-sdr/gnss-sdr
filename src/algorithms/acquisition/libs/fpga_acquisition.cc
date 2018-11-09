@@ -135,6 +135,7 @@ fpga_acquisition::fpga_acquisition(std::string device_name,
     d_map_base = nullptr;  // driver memory map
     d_all_fft_codes = all_fft_codes;
 
+    //printf("acq internal device name = %s\n", d_device_name.c_str());
     // open communication with HW accelerator
     if ((d_fd = open(d_device_name.c_str(), O_RDWR | O_SYNC)) == -1)
         {
@@ -239,7 +240,7 @@ void fpga_acquisition::fpga_configure_acquisition_local_code(lv_16sc_t fft_local
             //printf("debug local code %d real = %d imag = %d local_code = %d fft_data = %d\n", k, tmp, tmp2, local_code, fft_data);
             //printf("debug local code %d real = 0x%08X imag = 0x%08X local_code = 0x%08X fft_data = 0x%08X\n", k, tmp, tmp2, local_code, fft_data);
         }
-    //printf("d_vector_length = %d\n", d_vector_length);
+    //printf("acq d_vector_length = %d\n", d_vector_length);
     //while(1);
 }
 
@@ -269,6 +270,7 @@ void fpga_acquisition::run_acquisition(void)
     {
     	read_result_valid(&result_valid); // polling
     }
+    //printf("result valid\n");
     // wait for interrupt
     //nb = read(d_fd, &irq_count, sizeof(irq_count));
     //usleep(500000); // debug
@@ -382,7 +384,7 @@ void fpga_acquisition::set_doppler_sweep(uint32_t num_sweeps)
 	    phase_step_rad_int = static_cast<int32_t>(phase_step_rad_int_temp * (POW_2_29));  // * 2^29 (in total it makes x2^31 in two steps to avoid the warnings
 	    //printf("AAA writing phase_step_rad_int for doppler step = %d to d map base 4\n", phase_step_rad_int);
 	    d_map_base[4] = phase_step_rad_int;
-	    //printf("AAA writing num sweeps to d map base 5 = %d\n", num_sweeps);
+	    //printf("AAA writing num sweeps to d map base 5 = 1\n");
 	    d_map_base[5] = 1;  // 1 sweep
 
 	}
@@ -442,9 +444,9 @@ void fpga_acquisition::configure_acquisition()
 	//printf("acq lib configure acquisition called\n");
     //printf("AAA d_select_queue = %d\n", d_select_queue);
     d_map_base[0] = d_select_queue;
-    //printf("AAA writing d_vector_length = %d to d map base 1\n ", d_vector_length);
+    //printf("acq internal writing d_vector_length = %d to d map base 1\n ", d_vector_length);
     d_map_base[1] = d_vector_length;
-    //printf("AAA writing d_nsamples = %d to d map base 2\n ", d_nsamples);
+    //printf("acq interal writing d_nsamples = %d to d map base 2\n ", d_nsamples);
     d_map_base[2] = d_nsamples;
     //printf("AAA writing LOG2 d_vector_length = %d to d map base 7\n ", (int)log2((float)d_vector_length));
     d_map_base[7] = static_cast<int32_t>(log2(static_cast<float>(d_vector_length)));  // log2 FFTlength

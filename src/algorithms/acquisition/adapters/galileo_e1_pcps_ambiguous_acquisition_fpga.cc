@@ -69,8 +69,12 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
 
     //fs_in = fs_in/2.0; // downampling filter
     //printf("fs_in pre downsampling = %ld\n", fs_in);
+    printf("fs_in pre downsampling = %ld\n", fs_in);
 
     fs_in = fs_in/downsampling_factor;
+
+    printf("fs_in post downsampling = %ld\n", fs_in);
+
     //printf("fs_in post downsampling = %ld\n", fs_in);
 
 
@@ -121,8 +125,11 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     float nbits = ceilf(log2f((float)code_length*2));
     unsigned int nsamples_total = pow(2, nbits);
     unsigned int vector_length = nsamples_total;
+    printf("acq adapter vector_length = %d\n", vector_length);
     //printf("acq adapter nsamples_total (= vector_length) = %d\n", vector_length);
     unsigned int select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga", 0);
+    printf("select queue = %d\n", select_queue_Fpga);
+
     acq_parameters.select_queue_Fpga = select_queue_Fpga;
     std::string default_device_name = "/dev/uio0";
     std::string device_name = configuration_->property(role + ".devicename", default_device_name);

@@ -37,7 +37,6 @@
 DEFINE_string(config_file_ptest, std::string(""), "File containing the configuration parameters for the position test.");
 DEFINE_bool(plot_position_test, false, "Plots results of with gnuplot");
 DEFINE_bool(static_scenario, true, "Compute figures of merit for static user position (DRMS, CEP, etc..)");
-DEFINE_bool(use_pvt_solver_dump, false, "Use PVT solver binary dump or fall back to KML PVT file (contains only position information)");
 DEFINE_bool(use_ref_motion_file, false, "Enable or disable the use of a reference file containing the true receiver position, velocity and acceleration.");
 DEFINE_int32(ref_motion_file_type, 1, "Type of reference motion file: 1- Spirent CSV motion file");
 DEFINE_string(ref_motion_filename, std::string("motion.csv"), "Path and filename for the reference motion file");

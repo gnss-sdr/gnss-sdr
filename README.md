@@ -588,6 +588,7 @@ $ brew install armadillo
 $ brew install glog gflags gnutls
 $ brew install gnuradio
 $ brew install libmatio
+$ brew install pugixml
 $ pip install mako
 $ pip install six
 ~~~~~~

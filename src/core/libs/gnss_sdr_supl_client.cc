@@ -905,6 +905,10 @@ bool gnss_sdr_supl_client::read_gal_almanac_from_gsa(const std::string file_name
         }
     return true;
 #else
+    if (file_name.empty())
+        {
+            // avoid warning
+        }
     return false;
 #endif
 }

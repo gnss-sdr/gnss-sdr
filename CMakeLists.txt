@@ -1220,6 +1220,9 @@ endif(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_V
 # PugiXML - https://pugixml.org/
 ################################################################################
 find_package(PugiXML QUIET)
+if(PugiXML_FOUND)
+    message(STATUS "PugiXML has been found. Reading of GSA Galileo almanac XML files enabled.")
+endif(PugiXML_FOUND)
 
 
 ################################################################################

@@ -37,7 +37,6 @@ set(CORE_LIBS_HEADERS
 )
 
 if(PugiXML_FOUND)
-    message(STATUS "PugiXML has been found. Reading of GSA Galileo almanac XML files enabled.")
     add_definitions( -DPUGIXML_FOUND=1 )
 else(PugiXML_FOUND)
     set(PUGIXML_INCLUDE_DIR "")

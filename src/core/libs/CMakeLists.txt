@@ -35,6 +35,14 @@ set(CORE_LIBS_HEADERS
     string_converter.h
     gnss_sdr_supl_client.h
 )
+
+if(PugiXML_FOUND)
+    message(STATUS "PugiXML has been found. Reading of GSA Galileo almanac XML files enabled.")
+    add_definitions( -DPUGIXML_FOUND=1 )
+else(PugiXML_FOUND)
+    set(PUGIXML_INCLUDE_DIR "")
+    set(PUGIXML_LIBRARIES "")
+endif(PugiXML_FOUND)
 	
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -45,6 +53,7 @@ include_directories(
     ${GLOG_INCLUDE_DIRS}
     ${GFlags_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
+    ${PUGIXML_INCLUDE_DIR}
 )
 
 list(SORT CORE_LIBS_HEADERS)
@@ -52,4 +61,4 @@ list(SORT CORE_LIBS_SOURCES)
 
 add_library(rx_core_lib ${CORE_LIBS_SOURCES} ${CORE_LIBS_HEADERS})
 source_group(Headers FILES ${CORE_LIBS_HEADERS})
-target_link_libraries(rx_core_lib supl_library) 
+target_link_libraries(rx_core_lib supl_library ${PUGIXML_LIBRARIES})

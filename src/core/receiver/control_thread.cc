@@ -241,8 +241,8 @@ bool ControlThread::read_assistance_from_XML()
     std::string cnav_utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_cnav_utc_model_xml", cnav_utc_default_xml_filename);
     std::string eph_glo_xml_filename = configuration_->property("GNSS-SDR.SUPL_glo_ephemeris_xml", eph_glo_gnav_default_xml_filename);
     std::string glo_utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_glo_utc_model_xml", glo_utc_default_xml_filename);
-    std::string gal_almanac_xml_filename = configuration_->property("GNSS-SDR.SUPL_gal_almanacl_xml", gal_almanac_default_xml_filename);
-    std::string gps_almanac_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_almanacl_xml", gps_almanac_default_xml_filename);
+    std::string gal_almanac_xml_filename = configuration_->property("GNSS-SDR.SUPL_gal_almanac_xml", gal_almanac_default_xml_filename);
+    std::string gps_almanac_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_almanac_xml", gps_almanac_default_xml_filename);
 
     if (configuration_->property("GNSS-SDR.AGNSS_XML_enabled", false) == true)
         {
@@ -258,7 +258,8 @@ bool ControlThread::read_assistance_from_XML()
             cnav_utc_xml_filename = configuration_->property("GNSS-SDR.AGNSS_cnav_utc_model_xml", cnav_utc_default_xml_filename);
             eph_glo_xml_filename = configuration_->property("GNSS-SDR.AGNSS_glo_ephemeris_xml", eph_glo_gnav_default_xml_filename);
             glo_utc_xml_filename = configuration_->property("GNSS-SDR.AGNSS_glo_utc_model_xml", glo_utc_default_xml_filename);
-            gal_almanac_xml_filename = configuration_->property("GNSS-SDR.AGNSS_gal_almanacl_xml", gal_almanac_default_xml_filename);
+            gal_almanac_xml_filename = configuration_->property("GNSS-SDR.AGNSS_gal_almanac_xml", gal_almanac_default_xml_filename);
+            gps_almanac_xml_filename = configuration_->property("GNSS-SDR.AGNSS_gps_almanac_xml", gps_almanac_default_xml_filename);
         }
 
     std::cout << "Trying to read GNSS ephemeris from XML file(s)..." << std::endl;

@@ -1216,6 +1216,11 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
 endif(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERSION})
 
 
+################################################################################
+# PugiXML - https://pugixml.org/
+################################################################################
+find_package(PugiXML QUIET)
+
 
 ################################################################################
 # USRP Hardware Driver (UHD) - OPTIONAL

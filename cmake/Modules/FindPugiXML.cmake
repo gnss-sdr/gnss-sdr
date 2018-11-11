@@ -47,7 +47,9 @@ find_library (PUGIXML_LIBRARY
               /usr/lib/s390x-linux-gnu
               /usr/local/lib
               /opt/local/lib
-              /usr/lib )
+              /usr/lib
+              /usr/lib64
+              /usr/local/lib64 )
 
 # Support the REQUIRED and QUIET arguments, and set PUGIXML_FOUND if found.
 include (FindPackageHandleStandardArgs)

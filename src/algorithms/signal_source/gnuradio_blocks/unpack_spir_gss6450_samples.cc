@@ -40,7 +40,7 @@ unpack_spir_gss6450_samples_sptr make_unpack_spir_gss6450_samples(unsigned int a
 
 
 unpack_spir_gss6450_samples::unpack_spir_gss6450_samples(unsigned int adc_nbit) : gr::sync_interpolator("unpack_spir_gss6450_samples",
-                                                                                      gr::io_signature::make(1, 1, sizeof(int)),
+                                                                                      gr::io_signature::make(1, 1, sizeof(int32_t)),
                                                                                       gr::io_signature::make(1, 1, sizeof(gr_complex)), 16 / adc_nbit)
 {
     adc_bits = adc_nbit;

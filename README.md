@@ -64,7 +64,8 @@ $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time
        libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev \
        libboost-serialization-dev liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr \
        libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev \
-       libgnutls-openssl-dev libpcap-dev python-mako python-six libmatio-dev libgtest-dev
+       libgnutls-openssl-dev libpcap-dev python-mako python-six libmatio-dev libpugixml-dev \
+       libgtest-dev
 ~~~~~~
 
 Please note that the required files from `libgtest-dev` were moved to `googletest` in Debian 9 "stretch" and Ubuntu 18.04 "bionic", and moved back again to `libgtest-dev` in Debian 10 "buster" and Ubuntu 18.10 "cosmic".
@@ -85,7 +86,7 @@ $ sudo yum install make automake gcc gcc-c++ kernel-devel cmake git boost-devel 
        boost-date-time boost-system boost-filesystem boost-thread boost-chrono \
        boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel \
        blas-devel lapack-devel matio-devel armadillo-devel gflags-devel \
-       glog-devel openssl-devel libpcap-devel python-mako python-six
+       glog-devel openssl-devel libpcap-devel python-mako python-six pugixml-devel
 ~~~~~~
 
 Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
@@ -102,7 +103,7 @@ $ sudo yum install make automake gcc gcc-c++ kernel-devel libtool \
        hdf5-devel cmake git boost-devel boost-date-time boost-system \
        boost-filesystem boost-thread boost-chrono boost-serialization \
        log4cpp-devel gnuradio-devel gr-osmosdr-devel blas-devel lapack-devel \
-       armadillo-devel openssl-devel libpcap-devel python-mako python-six
+       armadillo-devel openssl-devel libpcap-devel python-mako python-six pugixml-devel
 ~~~~~~
 
 Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
@@ -113,7 +114,7 @@ If you are using Arch Linux (with base-devel group installed):
 
 ~~~~~~
 $ pacman -S cmake git boost boost-libs log4cpp libvolk gnuradio gnuradio-osmosdr \
-       blas lapack gflags google-glog openssl python2-mako python2-six \
+       blas lapack gflags google-glog openssl pugixml python2-mako python2-six \
        libmatio libpcap gtest
 ~~~~~~
 
@@ -547,6 +548,7 @@ $ sudo port install google-glog +gflags
 $ sudo port install py27-mako
 $ sudo port install py27-six
 $ sudo port install matio
+$ sudo port install pugixml
 ~~~~~~
 
 You also might need to activate a Python installation. The list of installed versions can be retrieved with:
@@ -586,6 +588,7 @@ $ brew install armadillo
 $ brew install glog gflags gnutls
 $ brew install gnuradio
 $ brew install libmatio
+$ brew install pugixml
 $ pip install mako
 $ pip install six
 ~~~~~~

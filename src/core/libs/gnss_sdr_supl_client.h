@@ -77,6 +77,7 @@ private:
     supl_ctx_t ctx;
     // assistance data
     supl_assist_t assist;
+    bool read_gal_almanac_from_gsa(const std::string file_name);
 
 public:
     // SUPL SERVER INFO

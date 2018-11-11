@@ -1233,7 +1233,7 @@ else(PugiXML_FOUND)
     if(CMAKE_VERSION VERSION_LESS 3.2)
         ExternalProject_Add(
             pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}
-            PREFIX ${CMAKE_CURRENT_BINARY_DIR}/pugixml
+            PREFIX ${CMAKE_CURRENT_BINARY_DIR}/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}
             GIT_REPOSITORY https://github.com/zeux/pugixml
             GIT_TAG v${GNSSSDR_PUGIXML_LOCAL_VERSION}
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/pugixml/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}
@@ -1246,7 +1246,7 @@ else(PugiXML_FOUND)
     else(CMAKE_VERSION VERSION_LESS 3.2)
         ExternalProject_Add(
             pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}
-            PREFIX ${CMAKE_CURRENT_BINARY_DIR}/pugixml
+            PREFIX ${CMAKE_CURRENT_BINARY_DIR}/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}
             GIT_REPOSITORY https://github.com/zeux/pugixml
             GIT_TAG v${GNSSSDR_PUGIXML_LOCAL_VERSION}
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/pugixml/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}

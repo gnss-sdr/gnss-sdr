@@ -32,9 +32,7 @@
  */
 
 #include "gnss_sdr_supl_client.h"
-#ifdef PUGIXML_FOUND
 #include <pugixml.hpp>
-#endif
 #include <cmath>
 #include <utility>
 
@@ -858,7 +856,6 @@ bool gnss_sdr_supl_client::load_gal_almanac_xml(const std::string file_name)
 
 bool gnss_sdr_supl_client::read_gal_almanac_from_gsa(const std::string file_name)
 {
-#ifdef PUGIXML_FOUND
     pugi::xml_document doc;
     pugi::xml_parse_result result = doc.load_file(file_name.c_str());
     if (!result)
@@ -904,13 +901,6 @@ bool gnss_sdr_supl_client::read_gal_almanac_from_gsa(const std::string file_name
             return false;
         }
     return true;
-#else
-    if (file_name.empty())
-        {
-            // avoid warning
-        }
-    return false;
-#endif
 }
 
 

@@ -74,8 +74,8 @@
 #define NSAMPLES_FINAL 50000					// number of samples sent after running tracking to unblock the SW if it is waiting for an interrupt of the tracking module
 #define NSAMPLES_ACQ_DOPPLER_SWEEP 50000000		// number of samples sent to the acquisition module when running acquisition when the HW controls the doppler loop
 #define DOWNAMPLING_FILTER_INIT_SAMPLES 100		// some samples to initialize the state of the downsampling filter
-#define DOWNSAMPLING_FILTER_DELAY 11
-
+#define DOWNSAMPLING_FILTER_DELAY 48
+#define DOWNSAMPLING_FILTER_OFFSET_SAMPLES 0
 // HW related options
 bool doppler_control_in_sw = 1;		// 1 => doppler sweep controlled by the SW test code , 0 => doppler sweep controlled by the HW
 bool show_results_table = 0;		// 1 => show matrix of (doppler, (max value, power sum)) results (only if doppler_control_in_sw = 1), 0=> do not show it
@@ -341,9 +341,14 @@ void TrackingPullInTestFpga::configure_receiver(
             signal.copy(gnss_synchro.Signal, 2, 0);
             config->set_property("Tracking.early_late_space_chips", "0.15");
             config->set_property("Tracking.very_early_late_space_chips", "0.6");
-            config->set_property("Tracking.early_late_space_narrow_chips", "0.15");
-            config->set_property("Tracking.very_early_late_space_narrow_chips", "0.6");
+            //config->set_property("Tracking.early_late_space_narrow_chips", "0.15");
+            //config->set_property("Tracking.very_early_late_space_narrow_chips", "0.6");
             config->set_property("Tracking.track_pilot", "true");
+
+            // added by me
+            config->set_property("Tracking.if", "0");
+            config->set_property("Tracking.devicename", "/dev/uio");
+            config->set_property("Tracking.device_base", "15");
         }
 
     else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0) // or implementation.compare("Galileo_E5a_DLL_PLL_Tracking_b") == 0)
@@ -736,6 +741,16 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
     config->set_property("Acquisition.dump_filename", "./data/acquisition.dat");
     config->set_property("Acquisition.use_CFAR_algorithm", "false");
 
+    config->set_property("Acquisition.item_type", "cshort");
+    config->set_property("Acquisition.if", "0");
+    config->set_property("Acquisition.sampled_ms", "4");
+    config->set_property("Acquisition.select_queue_Fpga", "0");
+    config->set_property("Acquisition.devicename", "/dev/uio0");
+
+    if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
+    {
+    	config->set_property("Acquisition.acquire_pilot", "false");
+    }
     std::shared_ptr<GpsL1CaPcpsAcquisitionFpga> acquisition_GpsL1Ca_Fpga;
     std::shared_ptr<GalileoE1PcpsAmbiguousAcquisitionFpga> acquisition_GpsE1_Fpga;
     std::shared_ptr<GalileoE5aPcpsAcquisitionFpga> acquisition_GpsE5a_Fpga;
@@ -1088,8 +1103,8 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
         uint32_t index_debug[MAX_PRN_IDX];
         uint32_t samplestamp_debug[MAX_PRN_IDX];
 
-        //for (unsigned int PRN = 1; PRN < MAX_PRN_IDX; PRN++)
-      	for (unsigned int PRN = 0; PRN < 17; PRN++)
+        for (unsigned int PRN = 1; PRN < MAX_PRN_IDX; PRN++)
+      	//for (unsigned int PRN = 0; PRN < 17; PRN++)
 			{
 
         	uint32_t max_index = 0;
@@ -1186,7 +1201,7 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 						{
 							args.skip_used_samples = - DOWNAMPLING_FILTER_INIT_SAMPLES; // set the counter 2000 samples before
 						}
-						args.nsamples_tx = DOWNAMPLING_FILTER_INIT_SAMPLES + DOWNSAMPLING_FILTER_DELAY; //50000;		// max size of the FFT
+						args.nsamples_tx = DOWNAMPLING_FILTER_INIT_SAMPLES + DOWNSAMPLING_FILTER_DELAY + DOWNSAMPLING_FILTER_OFFSET_SAMPLES; //50000;		// max size of the FFT
 						//printf("sending pre init %d\n", args.nsamples_tx);
 
 						if (pthread_create(&thread_DMA, NULL, handler_DMA, (void *)&args) < 0)
@@ -1206,11 +1221,11 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 
 				        if (skip_samples_already_used == 1)
 				        {
-				        	args.skip_used_samples = (PRN -1)*fft_size + DOWNSAMPLING_FILTER_DELAY;
+				        	args.skip_used_samples = (PRN -1)*fft_size + DOWNSAMPLING_FILTER_DELAY + DOWNSAMPLING_FILTER_OFFSET_SAMPLES;
 				        }
 				        else
 				        {
-				        	args.skip_used_samples = DOWNSAMPLING_FILTER_DELAY;
+				        	args.skip_used_samples = DOWNSAMPLING_FILTER_DELAY + DOWNSAMPLING_FILTER_OFFSET_SAMPLES;
 				        }
 			        }
 			        else
@@ -1324,7 +1339,7 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 						{
 							int interpolation_factor = 4;
 							index_debug[PRN - 1] = max_index_iteration;
-							max_index = max_index_iteration - interpolation_factor*(DOWNSAMPLING_FILTER_DELAY - 1);
+							max_index = max_index_iteration; // - interpolation_factor*(DOWNSAMPLING_FILTER_DELAY - 1);
 							max_magnitude = max_magnitude_iteration;
 							second_magnitude = second_magnitude_iteration;
 							samplestamp_debug[PRN - 1] = initial_sample_iteration;

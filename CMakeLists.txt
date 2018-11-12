@@ -345,7 +345,7 @@ set(GNSSSDR_MATIO_MIN_VERSION "1.5.3")
 ################################################################################
 # Versions to download and build (but not installed) if not found
 ################################################################################
-set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.1")
+set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.2")
 set(GNSSSDR_GLOG_LOCAL_VERSION "0.3.5")
 set(GNSSSDR_ARMADILLO_LOCAL_VERSION "9.200.x")
 set(GNSSSDR_GTEST_LOCAL_VERSION "1.8.1")

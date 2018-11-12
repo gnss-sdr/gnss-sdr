@@ -202,9 +202,9 @@ The full stop separated from ```cmake``` by a space is important. [CMake](https:
 #### Install [Gflags](https://github.com/gflags/gflags "Gflags' Homepage"), a commandline flags processing module for C++:
 
 ~~~~~~
-$ wget https://github.com/gflags/gflags/archive/v2.2.1.tar.gz
-$ tar xvfz v2.2.1.tar.gz
-$ cd gflags-2.2.1
+$ wget https://github.com/gflags/gflags/archive/v2.2.2.tar.gz
+$ tar xvfz v2.2.2.tar.gz
+$ cd gflags-2.2.2
 $ cmake -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DBUILD_gflags_nothreads_LIB=OFF .
 $ make
 $ sudo make install

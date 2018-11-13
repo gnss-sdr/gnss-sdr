@@ -234,6 +234,7 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     if ((gps_1C_count == 0) && (gps_2S_count != 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count != 0)) pvt_output_parameters.type_of_receiver = 31;
 
     if ((gps_1C_count != 0) && (gps_2S_count == 0) && (gps_L5_count != 0) && (gal_1B_count != 0) && (gal_E5a_count != 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) pvt_output_parameters.type_of_receiver = 32;  // L1+E1+L5+E5a
+    if ((gps_1C_count != 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count != 0) && (gal_E5a_count != 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) pvt_output_parameters.type_of_receiver = 32;  // L1+E1+E5a
 
     // RTKLIB PVT solver options
     // Settings 1

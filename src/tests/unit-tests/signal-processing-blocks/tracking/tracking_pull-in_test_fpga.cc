@@ -662,7 +662,7 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
             acquisition_GpsE1_Fpga->set_channel(0);
             acquisition_GpsE1_Fpga->set_threshold(config->property("Acquisition.threshold", FLAGS_external_signal_acquisition_threshold));
             acquisition_GpsE1_Fpga->connect(top_block);
-            printf(" bbbbbbbb baseband_sampling_freq_acquisition = %d\n", baseband_sampling_freq_acquisition);
+            //printf(" bbbbbbbb baseband_sampling_freq_acquisition = %d\n", baseband_sampling_freq_acquisition);
         }
     else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
         {
@@ -730,7 +730,7 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
     else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
     {
     	top_block->msg_connect(acquisition_GpsE1_Fpga->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    	printf(" cccccc baseband_sampling_freq_acquisition = %d\n", baseband_sampling_freq_acquisition);
+    	//printf(" cccccc baseband_sampling_freq_acquisition = %d\n", baseband_sampling_freq_acquisition);
     }
     else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
     {
@@ -784,7 +784,7 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 	    {
 	        code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq_acquisition) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
 	    	nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
-	    	printf("dddddd code_length = %d nsamples_to_transfer = %d\n", code_length, nsamples_to_transfer);
+	    	//printf("dddddd code_length = %d nsamples_to_transfer = %d\n", code_length, nsamples_to_transfer);
 	    }
 	    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
 	    {
@@ -809,7 +809,7 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 	    else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
 	    {
 	    	acquisition_GpsE1_Fpga->set_single_doppler_flag(1);
-	    	printf("eeeeeee just set doppler flag\n");
+	    	//printf("eeeeeee just set doppler flag\n");
 	    }
 	    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
 	    {

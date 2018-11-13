@@ -79,7 +79,7 @@
 #define TEST_OBS_MAX_INPUT_COMPLEX_SAMPLES_TOTAL 8192 	// maximum DMA sample block size in complex samples
 #define TEST_OBS_COMPLEX_SAMPLE_SIZE 2					// sample size in bytes
 #define TEST_OBS_NUM_QUEUES 2							// number of queues (1 for GPS L1/Galileo E1, and 1 for GPS L5/Galileo E5)
-#define TEST_OBS_NSAMPLES_TRACKING 500000000				// number of samples during which we test the tracking module
+#define TEST_OBS_NSAMPLES_TRACKING 1000000000				// number of samples during which we test the tracking module
 #define TEST_OBS_NSAMPLES_FINAL 50000					// number of samples sent after running tracking to unblock the SW if it is waiting for an interrupt of the tracking module
 #define TEST_OBS_NSAMPLES_ACQ_DOPPLER_SWEEP 50000000		// number of samples sent to the acquisition module when running acquisition when the HW controls the doppler loop
 #define DOWNAMPLING_FILTER_INIT_SAMPLES 100		// some samples to initialize the state of the downsampling filter
@@ -519,12 +519,12 @@ bool HybridObservablesTestFpga::acquire_signal()
 	if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
 	{
 		baseband_sampling_freq_acquisition = baseband_sampling_freq/4;	// downsampling filter in L1/E1
-		printf(" aaaaaa baseband_sampling_freq_acquisition = %d\n", baseband_sampling_freq_acquisition);
+		//printf(" aaaaaa baseband_sampling_freq_acquisition = %d\n", baseband_sampling_freq_acquisition);
 	}
 	else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
 	{
 		baseband_sampling_freq_acquisition = baseband_sampling_freq/4;  // downsampling filter in L1/E1
-		printf(" aaaaaa baseband_sampling_freq_acquisition = %d\n", baseband_sampling_freq_acquisition);
+		//printf(" aaaaaa baseband_sampling_freq_acquisition = %d\n", baseband_sampling_freq_acquisition);
 	}
 
     // 1. Setup GNU Radio flowgraph (file_source -> Acquisition_10m)
@@ -566,7 +566,7 @@ bool HybridObservablesTestFpga::acquire_signal()
     //printf("AAAAAAAAAAAAAAAAAAAAA\n");
     if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
         {
-    		printf("AAAAAAAAAAAAAAAAAAAAA2222\n");
+    		//printf("AAAAAAAAAAAAAAAAAAAAA2222\n");
             tmp_gnss_synchro.System = 'G';
             std::string signal = "1C";
             signal.copy(tmp_gnss_synchro.Signal, 2, 0);
@@ -663,7 +663,7 @@ bool HybridObservablesTestFpga::acquire_signal()
             throw(std::exception());
         }
 
-    printf("BBBBBBBBBBBBBBBBBBBBBBBBBB\n");
+    //printf("BBBBBBBBBBBBBBBBBBBBBBBBBB\n");
 
 
     //gr::blocks::file_source::sptr file_source;
@@ -744,13 +744,13 @@ bool HybridObservablesTestFpga::acquire_signal()
     	    {
     	    	code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq_acquisition) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
     	    	nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
-    	    	printf("dddddd code_length = %d nsamples_to_transfer = %d\n", code_length, nsamples_to_transfer);
+    	    	//printf("dddddd code_length = %d nsamples_to_transfer = %d\n", code_length, nsamples_to_transfer);
     	    }
     	    else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
     	    {
     	        code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq_acquisition) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
     	    	nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
-    	    	printf("dddddd code_length = %d nsamples_to_transfer = %d\n", code_length, nsamples_to_transfer);
+    	    	//printf("dddddd code_length = %d nsamples_to_transfer = %d\n", code_length, nsamples_to_transfer);
     	    }
     	    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
     	    {
@@ -1979,7 +1979,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
                 }
         }
 
-    printf("@@@@@@@@@@@@@@@@@@@@@@@@@@ First part is done\n");
+    //printf("@@@@@@@@@@@@@@@@@@@@@@@@@@ First part is done\n");
 
     unsigned int code_length;
 	//unsigned int nsamples_to_transfer;
@@ -2158,7 +2158,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
     	args.skip_used_samples = 0;
     //}
 
-    printf("2222222222222 CREATE PROCES\n");
+    //printf("2222222222222 CREATE PROCES\n");
     printf("%s\n", file.c_str());
     if (pthread_create(&thread_DMA, NULL, handler_DMA_obs_test, (void *)&args) < 0)
 	{
@@ -2176,7 +2176,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
     pthread_mutex_unlock(&mutex_obs_test);
 
     top_block->start();
-    printf("33333333333333333333 top block started\n");
+    //printf("33333333333333333333 top block started\n");
 
 
 
@@ -2190,11 +2190,11 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
 	// wait for the child DMA process to finish
 	pthread_join(thread_DMA, NULL);
 
-	printf("444444444444 CHILD PROCESS FINISHED\n");
+	//printf("444444444444 CHILD PROCESS FINISHED\n");
 
 	top_block->stop();
 
-	printf("55555555555 TOP BLOCK STOPPED\n");
+	//printf("55555555555 TOP BLOCK STOPPED\n");
 
 	// send more samples to unblock the tracking process in case it was waiting for samples
     args.file = file;
@@ -2214,7 +2214,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
 		printf("ERROR cannot create DMA Process\n");
 	}
 	pthread_join(thread_DMA, NULL);
-	printf("777777777 PROCESS FINISHED \n");
+	//printf("777777777 PROCESS FINISHED \n");
 
 	pthread_mutex_lock(&mutex_obs_test);
 	send_samples_start_obs_test = 0;

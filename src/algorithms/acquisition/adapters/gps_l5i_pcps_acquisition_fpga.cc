@@ -167,8 +167,8 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
                 //    static_cast<int>(16*floor(fft_codes_padded[i].imag() * (pow(2, 11) - 1) / max)));
                 //d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 15) - 1) / max)),
                 //    static_cast<int>(floor(fft_codes_padded[i].imag() * (pow(2, 15) - 1) / max)));
-                d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 5) - 1) / max)),
-                    static_cast<int>(floor(fft_codes_padded[i].imag() * (pow(2, 5) - 1) / max)));
+                d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 9) - 1) / max)),
+                    static_cast<int>(floor(fft_codes_padded[i].imag() * (pow(2, 9) - 1) / max)));
             }
 
 
@@ -211,7 +211,7 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     //    acquisition_fpga_ = pcps_make_acquisition(acq_parameters);
     //    DLOG(INFO) << "acquisition(" << acquisition_fpga_->unique_id() << ")";
 
-    acq_parameters.total_block_exp = 9;
+    acq_parameters.total_block_exp = 10;
 
     acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters);
     DLOG(INFO) << "acquisition(" << acquisition_fpga_->unique_id() << ")";

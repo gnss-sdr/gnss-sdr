@@ -1322,7 +1322,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                 }
                 else
                 {
-                	printf("test operation\n");
+                	//printf("test operation\n");
                 	// during the unit tests the counter value may be reset after the acquisition process. We have to take this into account
                 	absolute_samples_offset = static_cast<uint64_t>(current_synchro_data.Acq_delay_samples + current_synchro_data.Acq_samplestamp_samples);
                 	//printf("333333 absolute_samples_offset = %llu\n", absolute_samples_offset);
@@ -1704,7 +1704,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
         }
     if (current_synchro_data.Flag_valid_symbol_output)
         {
-    		//printf("tracking sending synchro data\n");
+    		//printf("tracking sending synchro data ");
             current_synchro_data.fs = static_cast<int64_t>(trk_parameters.fs_in);
             current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(d_current_prn_length_samples);
             *out[0] = current_synchro_data;

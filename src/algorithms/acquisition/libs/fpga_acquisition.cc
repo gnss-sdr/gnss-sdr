@@ -65,10 +65,10 @@
 //#define SELECT_24_BITS 0x00FFFFFF
 //#define SHL_12_BITS 4096
 // 16-bits
-#define SELECT_LSBits 0x0FFFF
-#define SELECT_MSBbits 0xFFFF0000
-#define SELECT_32_BITS 0xFFFFFFFF
-#define SHL_16_BITS 65536
+#define SELECT_LSBits 0x000003FF
+#define SELECT_MSBbits 0x000FFC00
+#define SELECT_ALL_CODE_BITS 0x000FFFFF
+#define SHL_CODE_BITS 1024
 
 
 bool fpga_acquisition::init()
@@ -231,9 +231,9 @@ void fpga_acquisition::fpga_configure_acquisition_local_code(lv_16sc_t fft_local
             //local_code = (tmp & SELECT_LSB) | ((tmp2 * SHL_8_BITS) & SELECT_MSB);  // put together the real part and the imaginary part
             //fft_data = MEM_LOCAL_CODE_WR_ENABLE | (local_code & SELECT_16_BITS);
             //local_code = (tmp & SELECT_LSBits) | ((tmp2 * SHL_12_BITS) & SELECT_MSBbits);  // put together the real part and the imaginary part
-            local_code = (tmp & SELECT_LSBits) | ((tmp2 * SHL_16_BITS) & SELECT_MSBbits);  // put together the real part and the imaginary part
+            local_code = (tmp & SELECT_LSBits) | ((tmp2 * SHL_CODE_BITS) & SELECT_MSBbits);  // put together the real part and the imaginary part
             //fft_data = MEM_LOCAL_CODE_WR_ENABLE | (local_code & SELECT_24_BITS);
-            fft_data = local_code & SELECT_32_BITS;
+            fft_data = local_code & SELECT_ALL_CODE_BITS;
             d_map_base[6] = fft_data;
 
 

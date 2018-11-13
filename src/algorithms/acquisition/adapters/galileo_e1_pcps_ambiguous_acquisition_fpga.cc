@@ -246,8 +246,8 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
  //                   static_cast<int>(floor(256*fft_codes_padded[i].imag() * (pow(2, 7) - 1) / max)));
 //                d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int>(floor(16*fft_codes_padded[i].real() * (pow(2, 11) - 1) / max)),
 //                    static_cast<int>(floor(16*fft_codes_padded[i].imag() * (pow(2, 11) - 1) / max)));
-                d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 5) - 1) / max)),
-                    static_cast<int>(floor(fft_codes_padded[i].imag() * (pow(2, 5) - 1) / max)));
+                d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 9) - 1) / max)),
+                    static_cast<int>(floor(fft_codes_padded[i].imag() * (pow(2, 9) - 1) / max)));
 
 //                tmp_re = static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 7) - 1) / max));
 //                tmp_im = static_cast<int>(floor(fft_codes_padded[i].imag() * (pow(2, 7) - 1) / max));
@@ -313,7 +313,7 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     delete fft_if;
     delete[] fft_codes_padded;
 
-    acq_parameters.total_block_exp = 11;
+    acq_parameters.total_block_exp = 12;
 
     acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters);
     DLOG(INFO) << "acquisition(" << acquisition_fpga_->unique_id() << ")";

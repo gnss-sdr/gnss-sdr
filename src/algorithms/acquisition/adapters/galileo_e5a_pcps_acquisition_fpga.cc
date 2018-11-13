@@ -178,8 +178,8 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
                 }
             for (unsigned int i = 0; i < nsamples_total; i++)  // map the FFT to the dynamic range of the fixed point values an copy to buffer containing all FFTs
                 {
-                    d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 5) - 1) / max)),
-                        static_cast<int>(floor(fft_codes_padded[i].imag() * (pow(2, 5) - 1) / max)));
+                    d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 9) - 1) / max)),
+                        static_cast<int>(floor(fft_codes_padded[i].imag() * (pow(2, 9) - 1) / max)));
                 }
         }
 

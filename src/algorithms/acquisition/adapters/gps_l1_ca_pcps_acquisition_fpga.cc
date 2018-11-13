@@ -69,10 +69,10 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     printf("downsampling_factor = %f\n", downsampling_factor);
     acq_parameters.downsampling_factor = downsampling_factor;
     //fs_in = fs_in/2.0; // downampling filter
-    printf("fs_in pre downsampling = %ld\n", fs_in);
+    //printf("fs_in pre downsampling = %ld\n", fs_in);
 
     fs_in = fs_in/downsampling_factor;
-    printf("fs_in post downsampling = %ld\n", fs_in);
+    //printf("fs_in post downsampling = %ld\n", fs_in);
 
     //printf("####### DEBUG Acq: fs_in = %d\n", fs_in);
     acq_parameters.fs_in = fs_in;
@@ -89,9 +89,9 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     float nbits = ceilf(log2f((float)code_length*2));
     unsigned int nsamples_total = pow(2, nbits);
     unsigned int vector_length = nsamples_total;
-    printf("acq adapter vector_length = %d\n", vector_length);
+    //printf("acq adapter vector_length = %d\n", vector_length);
     unsigned int select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga", 0);
-    printf("select queue = %d\n", select_queue_Fpga);
+    //printf("select queue = %d\n", select_queue_Fpga);
     acq_parameters.select_queue_Fpga = select_queue_Fpga;
     std::string default_device_name = "/dev/uio0";
     std::string device_name = configuration_->property(role + ".devicename", default_device_name);
@@ -165,8 +165,8 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
                     //    static_cast<int>(16*floor(fft_codes_padded[i].imag() * (pow(2, 11) - 1) / max)));
                     //d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 15) - 1) / max)),
                     //    static_cast<int>(floor(fft_codes_padded[i].imag() * (pow(2, 15) - 1) / max)));
-                    d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 5) - 1) / max)),
-                        static_cast<int>(floor(fft_codes_padded[i].imag() * (pow(2, 5) - 1) / max)));
+                    d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 9) - 1) / max)),
+                        static_cast<int>(floor(fft_codes_padded[i].imag() * (pow(2, 9) - 1) / max)));
                 }
 
 
@@ -191,7 +191,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     delete fft_if;
     delete[] fft_codes_padded;
 
-    acq_parameters.total_block_exp = 9;
+    acq_parameters.total_block_exp = 10;
 
     acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters);
     DLOG(INFO) << "acquisition(" << acquisition_fpga_->unique_id() << ")";

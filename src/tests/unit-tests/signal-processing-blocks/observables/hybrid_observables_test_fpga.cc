@@ -79,7 +79,7 @@
 #define TEST_OBS_MAX_INPUT_COMPLEX_SAMPLES_TOTAL 8192 	// maximum DMA sample block size in complex samples
 #define TEST_OBS_COMPLEX_SAMPLE_SIZE 2					// sample size in bytes
 #define TEST_OBS_NUM_QUEUES 2							// number of queues (1 for GPS L1/Galileo E1, and 1 for GPS L5/Galileo E5)
-#define TEST_OBS_NSAMPLES_TRACKING 1000000000				// number of samples during which we test the tracking module
+#define TEST_OBS_NSAMPLES_TRACKING 850000000				// number of samples during which we test the tracking module
 #define TEST_OBS_NSAMPLES_FINAL 50000					// number of samples sent after running tracking to unblock the SW if it is waiting for an interrupt of the tracking module
 #define TEST_OBS_NSAMPLES_ACQ_DOPPLER_SWEEP 50000000		// number of samples sent to the acquisition module when running acquisition when the HW controls the doppler loop
 #define DOWNAMPLING_FILTER_INIT_SAMPLES 100		// some samples to initialize the state of the downsampling filter
@@ -802,7 +802,7 @@ bool HybridObservablesTestFpga::acquire_signal()
 	        uint32_t samplestamp_debug[MAX_PRN_IDX];
 
 			for (unsigned int PRN = 1; PRN < MAX_PRN_IDX; PRN++)
-			//for (unsigned int PRN = 1; PRN < 2; PRN++)
+			//for (unsigned int PRN = 6; PRN < 8; PRN++)
 				{
 				//printf("PRN %d\n", PRN);
 	        	uint32_t max_index = 0;
@@ -2123,21 +2123,25 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
     	//printf("111111111111\n");
     	std::shared_ptr<GpsL1CaPcpsAcquisitionFpga> acquisition_Fpga;
     	acquisition_Fpga = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+    	args.freq_band = 0;
     }
     else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
     {
     	std::shared_ptr<GalileoE1PcpsAmbiguousAcquisitionFpga> acquisition_Fpga;
     	acquisition_Fpga = std::make_shared<GalileoE1PcpsAmbiguousAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+    	args.freq_band = 0;
     }
     else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
     {
     	std::shared_ptr<GalileoE5aPcpsAcquisitionFpga> acquisition_Fpga;
     	acquisition_Fpga = std::make_shared<GalileoE5aPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+    	args.freq_band = 1;
     }
     else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
     {
     	std::shared_ptr<GpsL5iPcpsAcquisitionFpga> acquisition_Fpga;
     	acquisition_Fpga = std::make_shared<GpsL5iPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+    	args.freq_band = 1;
     }
     else
     {
@@ -2295,12 +2299,18 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
         }
 
     estimated_observables.restart();
+    //printf("Observables : ............................\n");
     while (estimated_observables.read_binary_obs())
         {
             for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
                 {
                     if (static_cast<bool>(estimated_observables.valid[n]))
                         {
+                    		//printf("estimated_observables.RX_time[%d] = %d\n", n, estimated_observables.RX_time[n]);
+                    		//printf("estimated_observables.TOW_at_current_symbol_s[%d] = %d\n", n, estimated_observables.TOW_at_current_symbol_s[n]);
+                    		//printf("estimated_observables.Carrier_Doppler_hz[%d] = %d\n", n, estimated_observables.Carrier_Doppler_hz[n]);
+                    		//printf("estimated_observables.Acc_carrier_phase_hz[%d] = %d\n", n, estimated_observables.Acc_carrier_phase_hz[n]);
+                    		//printf("estimated_observables.Pseudorange_m[%d] = %d\n", n, estimated_observables.Pseudorange_m[n]);
                             measured_obs_vec.at(n)(epoch_counters_vec.at(n), 0) = estimated_observables.RX_time[n];
                             measured_obs_vec.at(n)(epoch_counters_vec.at(n), 1) = estimated_observables.TOW_at_current_symbol_s[n];
                             measured_obs_vec.at(n)(epoch_counters_vec.at(n), 2) = estimated_observables.Carrier_Doppler_hz[n];

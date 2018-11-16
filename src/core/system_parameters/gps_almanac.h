@@ -45,7 +45,7 @@ class Gps_Almanac
 public:
     uint32_t i_satellite_PRN;  //!< SV PRN NUMBER
     double d_Delta_i;          //!< Inclination Angle at Reference Time (relative to i_0 = 0.30 semi-circles)
-    double d_Toa;              //!< Almanac data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
+    int32_t i_Toa;             //!< Almanac data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
     int32_t i_WNa;             //!< Almanac week number
     double d_M_0;              //!< Mean Anomaly at Reference Time [semi-circles]
     double d_e_eccentricity;   //!< Eccentricity [dimensionless]
@@ -72,7 +72,7 @@ public:
             };
         ar& BOOST_SERIALIZATION_NVP(i_satellite_PRN);
         ar& BOOST_SERIALIZATION_NVP(d_Delta_i);
-        ar& BOOST_SERIALIZATION_NVP(d_Toa);
+        ar& BOOST_SERIALIZATION_NVP(i_Toa);
         ar& BOOST_SERIALIZATION_NVP(i_WNa);
         ar& BOOST_SERIALIZATION_NVP(d_M_0);
         ar& BOOST_SERIALIZATION_NVP(d_e_eccentricity);

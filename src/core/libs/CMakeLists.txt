@@ -45,6 +45,7 @@ include_directories(
     ${GLOG_INCLUDE_DIRS}
     ${GFlags_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
+    ${PUGIXML_INCLUDE_DIR}
 )
 
 list(SORT CORE_LIBS_HEADERS)
@@ -52,4 +53,8 @@ list(SORT CORE_LIBS_SOURCES)
 
 add_library(rx_core_lib ${CORE_LIBS_SOURCES} ${CORE_LIBS_HEADERS})
 source_group(Headers FILES ${CORE_LIBS_HEADERS})
-target_link_libraries(rx_core_lib supl_library) 
+target_link_libraries(rx_core_lib supl_library ${PUGIXML_LIBRARY})
+
+if(PUGIXML_LOCAL)
+    add_dependencies(rx_core_lib pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION})
+endif(PUGIXML_LOCAL)

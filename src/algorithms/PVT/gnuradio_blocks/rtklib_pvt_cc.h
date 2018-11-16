@@ -31,7 +31,7 @@
 #ifndef GNSS_SDR_RTKLIB_PVT_CC_H
 #define GNSS_SDR_RTKLIB_PVT_CC_H
 
-
+#include "gps_ephemeris.h"
 #include "nmea_printer.h"
 #include "kml_printer.h"
 #include "gpx_printer.h"
@@ -40,6 +40,8 @@
 #include "rtcm_printer.h"
 #include "pvt_conf.h"
 #include "rtklib_solver.h"
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 #include <gnuradio/sync_block.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -60,7 +62,7 @@ rtklib_pvt_cc_sptr rtklib_make_pvt_cc(uint32_t n_channels,
     rtk_t& rtk);
 
 /*!
- * \brief This class implements a block that computes the PVT solution with Galileo E1 signals
+ * \brief This class implements a block that computes the PVT solution using the RTKLIB integrated library
  */
 class rtklib_pvt_cc : public gr::sync_block
 {
@@ -109,8 +111,9 @@ private:
     bool d_geojson_output_enabled;
     bool d_gpx_output_enabled;
     bool d_kml_output_enabled;
+    bool d_nmea_output_file_enabled;
 
-    std::shared_ptr<rtklib_solver> d_ls_pvt;
+    std::shared_ptr<rtklib_solver> d_pvt_solver;
 
     std::map<int, Gnss_Synchro> gnss_observables_map;
     bool observables_pairCompare_min(const std::pair<int, Gnss_Synchro>& a, const std::pair<int, Gnss_Synchro>& b);
@@ -135,6 +138,11 @@ private:
     bool d_xml_storage;
     std::string xml_base_path;
 
+    inline std::time_t to_time_t(boost::posix_time::ptime pt)
+    {
+        return (pt - boost::posix_time::ptime(boost::gregorian::date(1970, 1, 1))).total_seconds();
+    }
+
 
 public:
     rtklib_pvt_cc(uint32_t nchannels,
@@ -142,11 +150,32 @@ public:
         rtk_t& rtk);
 
     /*!
-     * \brief Get latest set of GPS L1 ephemeris from PVT block
+     * \brief Get latest set of ephemeris from PVT block
      *
-     * It is used to save the assistance data at the receiver shutdown
      */
-    std::map<int, Gps_Ephemeris> get_GPS_L1_ephemeris_map();
+    std::map<int, Gps_Ephemeris> get_gps_ephemeris_map() const;
+
+    std::map<int, Gps_Almanac> get_gps_almanac_map() const;
+
+    std::map<int, Galileo_Ephemeris> get_galileo_ephemeris_map() const;
+
+    std::map<int, Galileo_Almanac> get_galileo_almanac_map() const;
+
+    /*!
+     * \brief Clear all ephemeris information and the almanacs for GPS and Galileo
+     *
+     */
+    void clear_ephemeris();
+
+    /*!
+     * \brief Get the latest Position WGS84 [deg], Ground Velocity, Course over Ground, and UTC Time, if available
+     */
+    bool get_latest_PVT(double* longitude_deg,
+        double* latitude_deg,
+        double* height_m,
+        double* ground_speed_kmh,
+        double* course_over_ground_deg,
+        time_t* UTC_time);
 
     ~rtklib_pvt_cc();  //!< Default destructor
 

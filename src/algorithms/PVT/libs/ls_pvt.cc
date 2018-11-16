@@ -31,6 +31,7 @@
 
 #include "ls_pvt.h"
 #include "GPS_L1_CA.h"
+#include "geofunctions.h"
 #include <glog/logging.h>
 #include <exception>
 #include <stdexcept>
@@ -235,15 +236,12 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat& satpos, const arma::vec& obs, 
                             double* azim = 0;
                             double* elev = 0;
                             double* dist = 0;
-                            Ls_Pvt::topocent(azim, elev, dist, pos.subvec(0, 2), Rot_X - pos.subvec(0, 2));
-                            this->set_visible_satellites_Az(i, *azim);
-                            this->set_visible_satellites_El(i, *elev);
-                            this->set_visible_satellites_Distance(i, *dist);
+                            topocent(azim, elev, dist, pos.subvec(0, 2), Rot_X - pos.subvec(0, 2));
 
                             if (traveltime < 0.1 && nmbOfSatellites > 3)
                                 {
                                     //--- Find receiver's height
-                                    Ls_Pvt::togeod(&dphi, &dlambda, &h, 6378137.0, 298.257223563, pos(0), pos(1), pos(2));
+                                    togeod(&dphi, &dlambda, &h, 6378137.0, 298.257223563, pos(0), pos(1), pos(2));
                                     // Add troposphere correction if the receiver is below the troposphere
                                     if (h > 15000)
                                         {
@@ -253,7 +251,7 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat& satpos, const arma::vec& obs, 
                                     else
                                         {
                                             //--- Find delay due to troposphere (in meters)
-                                            Ls_Pvt::tropo(&trop, sin(this->get_visible_satellites_El(i) * GPS_PI / 180.0), h / 1000.0, 1013.0, 293.0, 50.0, 0.0, 0.0, 0.0);
+                                            Ls_Pvt::tropo(&trop, sin(*elev * GPS_PI / 180.0), h / 1000.0, 1013.0, 293.0, 50.0, 0.0, 0.0, 0.0);
                                             if (trop > 5.0) trop = 0.0;  //check for erratic values
                                         }
                                 }
@@ -279,9 +277,6 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat& satpos, const arma::vec& obs, 
                     break;  // exit the loop because we assume that the LS algorithm has converged (err < 0.1 cm)
                 }
         }
-
-    //-- compute the Dilution Of Precision values
-    //this->set_Q(arma::inv(arma::htrans(A) * A));
 
     // check the consistency of the PVT solution
     if (((fabs(pos(3)) * 1000.0) / GPS_C_m_s) > GPS_STARTOFFSET_ms * 2)

@@ -16,7 +16,7 @@
                         <xs:sequence>
                           <xs:element type="xs:byte" name="i_satellite_PRN"/>
                           <xs:element type="xs:float" name="d_Delta_i"/>
-                          <xs:element type="xs:float" name="d_Toa"/>
+                          <xs:element type="xs:byte" name="i_Toa"/>
                           <xs:element type="xs:byte" name="i_WNa"/>
                           <xs:element type="xs:float" name="d_M_0"/>
                           <xs:element type="xs:float" name="d_e_eccentricity"/>

@@ -109,8 +109,8 @@ public:
     double d_A_f2;  //!< Coefficient 2 of code phase offset model [s/s^2]
 
     // Almanac
-    double d_Toa;                              //!< Almanac reference time [s]
-    int32_t i_WN_A;                            //!< Modulo 256 of the GPS week number to which the almanac reference time (d_Toa) is referenced
+    int32_t i_Toa;                             //!< Almanac reference time [s]
+    int32_t i_WN_A;                            //!< Modulo 256 of the GPS week number to which the almanac reference time (i_Toa) is referenced
     std::map<int32_t, int32_t> almanacHealth;  //!< Map that stores the health information stored in the almanac
 
     std::map<int32_t, std::string> satelliteBlock;  //!< Map that stores to which block the PRN belongs http://www.navcen.uscg.gov/?Do=constellationStatus

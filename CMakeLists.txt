@@ -345,14 +345,14 @@ set(GNSSSDR_MATIO_MIN_VERSION "1.5.3")
 ################################################################################
 # Versions to download and build (but not installed) if not found
 ################################################################################
-set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.1")
+set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.2")
 set(GNSSSDR_GLOG_LOCAL_VERSION "0.3.5")
 set(GNSSSDR_ARMADILLO_LOCAL_VERSION "9.200.x")
 set(GNSSSDR_GTEST_LOCAL_VERSION "1.8.1")
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
 set(GNSSSDR_GPSTK_LOCAL_VERSION "2.10.6")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.13")
-
+set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.9")
 
 
 ################################################################################
@@ -1215,6 +1215,53 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
     endif(ZLIB_FOUND)
 endif(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERSION})
 
+
+################################################################################
+# PugiXML - https://pugixml.org/
+################################################################################
+find_package(PugiXML QUIET)
+if(PugiXML_FOUND)
+    message(STATUS "PugiXML has been found. Reading of GSA Galileo almanac XML files enabled.")
+else(PugiXML_FOUND)
+    message(STATUS " PugiXML v${GNSSSDR_PUGIXML_LOCAL_VERSION} will be downloaded and built automatically when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'.")
+    set(PUGIXML_COMPILER -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER})
+    set(TOOLCHAIN_ARG "")
+    if(EXISTS $ENV{OECORE_TARGET_SYSROOT})
+        set(PUGIXML_COMPILER "")
+        set(TOOLCHAIN_ARG "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_CURRENT_SOURCE_DIR}/cmake/Toolchains/oe-sdk_cross.cmake")
+    endif(EXISTS $ENV{OECORE_TARGET_SYSROOT})
+    if(CMAKE_VERSION VERSION_LESS 3.2)
+        ExternalProject_Add(
+            pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}
+            PREFIX ${CMAKE_CURRENT_BINARY_DIR}/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}
+            GIT_REPOSITORY https://github.com/zeux/pugixml
+            GIT_TAG v${GNSSSDR_PUGIXML_LOCAL_VERSION}
+            SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/pugixml/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}
+            BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}
+            CMAKE_ARGS ${PUGIXML_COMPILER} ${TOOLCHAIN_ARG}
+            UPDATE_COMMAND ""
+            PATCH_COMMAND ""
+            INSTALL_COMMAND ""
+        )
+    else(CMAKE_VERSION VERSION_LESS 3.2)
+        ExternalProject_Add(
+            pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}
+            PREFIX ${CMAKE_CURRENT_BINARY_DIR}/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}
+            GIT_REPOSITORY https://github.com/zeux/pugixml
+            GIT_TAG v${GNSSSDR_PUGIXML_LOCAL_VERSION}
+            SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/pugixml/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}
+            BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}
+            CMAKE_ARGS ${PUGIXML_COMPILER} ${TOOLCHAIN_ARG}
+            UPDATE_COMMAND ""
+            PATCH_COMMAND ""
+            BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}pugixml${CMAKE_STATIC_LIBRARY_SUFFIX}
+            INSTALL_COMMAND ""
+        )
+    endif(CMAKE_VERSION VERSION_LESS 3.2)
+    set(PUGIXML_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}pugixml${CMAKE_STATIC_LIBRARY_SUFFIX} )
+    set(PUGIXML_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/pugixml/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}/src )
+    set(PUGIXML_LOCAL true)
+endif(PugiXML_FOUND)
 
 
 ################################################################################

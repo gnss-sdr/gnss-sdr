@@ -38,10 +38,16 @@
 #include "gps_cnav_ephemeris.h"
 #include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_utc_model.h"
+#include "gps_almanac.h"
+#include "galileo_almanac.h"
 
 eph_t eph_to_rtklib(const Galileo_Ephemeris& gal_eph);
 eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph);
 eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph);
+
+alm_t alm_to_rtklib(const Gps_Almanac& gps_alm);
+alm_t alm_to_rtklib(const Galileo_Almanac& gal_alm);
+
 /*!
  * \brief Transforms a Glonass_Gnav_Ephemeris to its RTKLIB counterpart
  * \param glonass_gnav_eph GLONASS GNAV Ephemeris structure

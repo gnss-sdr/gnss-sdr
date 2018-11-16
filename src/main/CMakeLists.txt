@@ -50,6 +50,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/core/receiver
+     ${CMAKE_SOURCE_DIR}/src/core/monitor
      ${CMAKE_SOURCE_DIR}/src/core/libs
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
@@ -60,6 +61,7 @@ include_directories(
      ${ARMADILLO_INCLUDE_DIRS}
      ${Boost_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+     ${PUGIXML_INCLUDE_DIR}
      ${GNSS_SDR_OPTIONAL_HEADERS}
      ${VOLK_GNSSSDR_INCLUDE_DIRS}
      ${OPT_GNSSSDR_INCLUDE_DIRS}

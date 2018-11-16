@@ -49,9 +49,11 @@ class Pvt_Solution
 private:
     double d_rx_dt_s;  // RX time offset [s]
 
-    double d_latitude_d;   // RX position Latitude WGS84 [deg]
-    double d_longitude_d;  // RX position Longitude WGS84 [deg]
-    double d_height_m;     // RX position height WGS84 [m]
+    double d_latitude_d;             // RX position Latitude WGS84 [deg]
+    double d_longitude_d;            // RX position Longitude WGS84 [deg]
+    double d_height_m;               // RX position height WGS84 [m]
+    double d_speed_over_ground_m_s;  // RX speed over ground [m/s]
+    double d_course_over_ground_d;   // RX course over ground [deg]
 
     double d_avg_latitude_d;   // Averaged latitude in degrees
     double d_avg_longitude_d;  // Averaged longitude in degrees
@@ -70,12 +72,6 @@ private:
     boost::posix_time::ptime d_position_UTC_time;
     int d_valid_observations;
 
-    int d_visible_satellites_IDs[PVT_MAX_CHANNELS] = {};          // Array with the IDs of the valid satellites
-    double d_visible_satellites_El[PVT_MAX_CHANNELS] = {};        // Array with the LOS Elevation of the valid satellites
-    double d_visible_satellites_Az[PVT_MAX_CHANNELS] = {};        // Array with the LOS Azimuth of the valid satellites
-    double d_visible_satellites_Distance[PVT_MAX_CHANNELS] = {};  // Array with the LOS Distance of the valid satellites
-    double d_visible_satellites_CN0_dB[PVT_MAX_CHANNELS] = {};    // Array with the IDs of the valid satellites
-
 public:
     Pvt_Solution();
 
@@ -85,6 +81,12 @@ public:
     double get_latitude() const;   //!< Get RX position Latitude WGS84 [deg]
     double get_longitude() const;  //!< Get RX position Longitude WGS84 [deg]
     double get_height() const;     //!< Get RX position height WGS84 [m]
+
+    double get_speed_over_ground() const;          //!< Get RX speed over ground [m/s]
+    void set_speed_over_ground(double speed_m_s);  //!< Set RX speed over ground [m/s]
+
+    double get_course_over_ground() const;        //!< Get RX course over ground [deg]
+    void set_course_over_ground(double cog_deg);  //!< Set RX course over ground [deg]
 
     double get_avg_latitude() const;   //!< Get RX position averaged Latitude WGS84 [deg]
     double get_avg_longitude() const;  //!< Get RX position averaged Longitude WGS84 [deg]
@@ -101,21 +103,6 @@ public:
 
     int get_num_valid_observations() const;    //!< Get the number of valid pseudorange observations (valid satellites)
     void set_num_valid_observations(int num);  //!< Set the number of valid pseudorange observations (valid satellites)
-
-    bool set_visible_satellites_ID(size_t index, unsigned int prn);  //!< Set the ID of the visible satellite index channel
-    unsigned int get_visible_satellites_ID(size_t index) const;      //!< Get the ID of the visible satellite index channel
-
-    bool set_visible_satellites_El(size_t index, double el);  //!< Set the LOS Elevation, in degrees, of the visible satellite index channel
-    double get_visible_satellites_El(size_t index) const;     //!< Get the LOS Elevation, in degrees, of the visible satellite index channel
-
-    bool set_visible_satellites_Az(size_t index, double az);  //!< Set the LOS Azimuth, in degrees, of the visible satellite index channel
-    double get_visible_satellites_Az(size_t index) const;     //!< Get the LOS Azimuth, in degrees, of the visible satellite index channel
-
-    bool set_visible_satellites_Distance(size_t index, double dist);  //!< Set the LOS Distance of the visible satellite index channel
-    double get_visible_satellites_Distance(size_t index) const;       //!< Get the LOS Distance of the visible satellite index channel
-
-    bool set_visible_satellites_CN0_dB(size_t index, double cn0);  //!< Set the CN0 in dB of the visible satellite index channel
-    double get_visible_satellites_CN0_dB(size_t index) const;      //!< Get the CN0 in dB of the visible satellite index channel
 
     //averaging
     void perform_pos_averaging();
@@ -141,41 +128,6 @@ public:
       *
       */
     int cart2geo(double X, double Y, double Z, int elipsoid_selection);
-
-    /*!
-      * \brief Transformation of vector dx into topocentric coordinate system with origin at x
-      *
-      * \param[in] x    Vector origin coordinates (in ECEF system [X; Y; Z;])
-      * \param[in] dx   Vector ([dX; dY; dZ;]).
-      *
-      * \param[out] D   Vector length. Units like the input
-      * \param[out] Az  Azimuth from north positive clockwise, degrees
-      * \param[out] El  Elevation angle, degrees
-      *
-      * Based on a Matlab function by Kai Borre
-      */
-    int topocent(double *Az, double *El, double *D, const arma::vec &x, const arma::vec &dx);
-
-    /*!
-      * \brief Subroutine to calculate geodetic coordinates latitude, longitude,
-      * height given Cartesian coordinates X,Y,Z, and reference ellipsoid
-      * values semi-major axis (a) and the inverse of flattening (finv).
-      *
-      *  The output units of angular quantities will be in decimal degrees
-      *  (15.5 degrees not 15 deg 30 min). The output units of h will be the
-      *  same as the units of X,Y,Z,a.
-      *
-      *  \param[in] a           - semi-major axis of the reference ellipsoid
-      *  \param[in] finv        - inverse of flattening of the reference ellipsoid
-      *  \param[in] X,Y,Z       - Cartesian coordinates
-      *
-      *  \param[out] dphi        - latitude
-      *  \param[out] dlambda     - longitude
-      *  \param[out] h           - height above reference ellipsoid
-      *
-      * Based in a Matlab function by Kai Borre
-      */
-    int togeod(double *dphi, double *dlambda, double *h, double a, double finv, double X, double Y, double Z);
 
     /*!
       * \brief Tropospheric correction

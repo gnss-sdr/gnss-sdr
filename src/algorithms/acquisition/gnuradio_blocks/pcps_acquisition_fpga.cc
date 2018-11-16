@@ -430,11 +430,11 @@ void pcps_acquisition_fpga::set_active(bool active)
     if (d_test_statistics > d_threshold)
         {
             d_active = false;
-            //            printf("##### d_test_statistics = %f\n", d_test_statistics);
-            //            printf("##### debug_d_max_absolute =%f\n",debug_d_max_absolute);
-            //            printf("##### debug_d_input_power_absolute =%f\n",debug_d_input_power_absolute);
-            //            printf("##### initial_sample = %llu\n",initial_sample);
-            //            printf("##### debug_doppler_index = %d\n",debug_doppler_index);
+//                        printf("##### d_test_statistics = %f\n", d_test_statistics);
+//                        printf("##### firstpeak =%f\n",firstpeak);
+//                        printf("##### secondpeak =%f\n",secondpeak);
+//                        printf("##### d_gnss_synchro->Acq_delay_samples = %d\n",(int) d_gnss_synchro->Acq_delay_samples);
+//                        printf("##### d_gnss_synchro->Acq_samplestamp_samples = %d\n",(int) d_gnss_synchro->Acq_samplestamp_samples);
             send_positive_acquisition();
             d_state = 0;  // Positive acquisition
 

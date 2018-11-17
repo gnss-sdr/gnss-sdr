@@ -354,6 +354,9 @@ set(GNSSSDR_GPSTK_LOCAL_VERSION "2.10.6")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.13")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.9")
 
+if(CMAKE_VERSION VERSION_LESS "3.0.2")
+   set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.1")
+endif(CMAKE_VERSION VERSION_LESS "3.0.2")
 
 ################################################################################
 # Check cmake version

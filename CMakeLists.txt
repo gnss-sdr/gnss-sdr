@@ -433,7 +433,7 @@ endif(NOT ENABLE_GENERIC_ARCH)
 ################################################################################
 if(CMAKE_VERSION VERSION_LESS 3.1)
     find_package(Threads REQUIRED)
-    link_libraries(${CMAKE_THREAD_LIBS_INIT})
+    set(THREAD_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
 else(CMAKE_VERSION VERSION_LESS 3.1)
     set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
     if(CMAKE_CROSSCOMPILING)
@@ -442,7 +442,7 @@ else(CMAKE_VERSION VERSION_LESS 3.1)
         set(THREADS_PREFER_PTHREAD_FLAG TRUE)
     endif(CMAKE_CROSSCOMPILING)
     find_package(Threads REQUIRED)
-    link_libraries(Threads::Threads)
+    set(THREAD_LIBRARIES Threads::Threads)
 endif(CMAKE_VERSION VERSION_LESS 3.1)
 
 

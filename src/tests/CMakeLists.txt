@@ -95,7 +95,7 @@ if(NOT ${GTEST_DIR_LOCAL})
      set(GTEST_LIBRARIES
           ${binary_dir}/googletest/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
           ${binary_dir}/googletest/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
-     )
+          ${THREAD_LIBRARIES} )
      set(GTEST_LIB_DIR "${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/googletest")
 else(NOT ${GTEST_DIR_LOCAL})
      if(GTEST_INCLUDE_DIRS)
@@ -109,6 +109,7 @@ else(NOT ${GTEST_DIR_LOCAL})
           add_library(gtest ${GTEST_DIR}/src/gtest-all.cc ${GTEST_DIR}/src/gtest_main.cc)
           set(GTEST_LIBRARIES gtest)
      endif(GTEST_INCLUDE_DIRS)
+     target_link_libraries(gtest ${THREAD_LIBRARIES})
 endif(NOT ${GTEST_DIR_LOCAL})
 
 
@@ -495,6 +496,7 @@ if(ENABLE_SYSTEM_TESTING)
     if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
         set(HOST_SYSTEM "GNU/Linux ${LINUX_DISTRIBUTION} ${LINUX_VER} ${ARCH_}")
         string(REPLACE "\n" "" HOST_SYSTEM "${HOST_SYSTEM}")
+        string(REPLACE "\"" "" HOST_SYSTEM "${HOST_SYSTEM}")
     endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
         set(HOST_SYSTEM "MacOS")
@@ -502,7 +504,7 @@ if(ENABLE_SYSTEM_TESTING)
     add_definitions(-DHOST_SYSTEM="${HOST_SYSTEM}")
 
     #### TTFF
-    set(OPT_LIBS_ ${Boost_LIBRARIES} ${GFlags_LIBS} ${GLOG_LIBRARIES}
+    set(OPT_LIBS_ ${Boost_LIBRARIES} ${THREAD_LIBRARIES} ${GFlags_LIBS} ${GLOG_LIBRARIES}
                   ${GNURADIO_RUNTIME_LIBRARIES} ${GTEST_LIBRARIES}
                   ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES}
                   ${GNURADIO_ANALOG_LIBRARIES} gnss_sp_libs
@@ -512,7 +514,7 @@ if(ENABLE_SYSTEM_TESTING)
 
     if(ENABLE_SYSTEM_TESTING_EXTRA)
         #### POSITION_TEST
-        set(OPT_LIBS_ ${Boost_LIBRARIES} ${GFlags_LIBS} ${GLOG_LIBRARIES}
+        set(OPT_LIBS_ ${Boost_LIBRARIES} ${THREAD_LIBRARIES} ${GFlags_LIBS} ${GLOG_LIBRARIES}
                       ${GTEST_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES}
                       ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES}
                       ${GNURADIO_ANALOG_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES}
@@ -601,6 +603,7 @@ if(NOT ${GTEST_DIR_LOCAL})
 else(NOT ${GTEST_DIR_LOCAL})
     add_dependencies(gnss_block_test gtest)
 endif(NOT ${GTEST_DIR_LOCAL})
+set_property(TEST gnss_block_test PROPERTY TIMEOUT 60)
 
 #########################################################
 

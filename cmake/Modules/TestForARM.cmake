@@ -41,7 +41,7 @@ message(STATUS "Checking for ARM")
 set (IS_ARM NO)
 set (ARM_VERSION "")
 
-if (CMAKE_COMPILER_IS_GNUCXX)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   execute_process(COMMAND echo "int main(){}"
                   COMMAND ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} -dM -E -
                   OUTPUT_VARIABLE TEST_FOR_ARM_RESULTS)
@@ -94,11 +94,11 @@ if (CMAKE_COMPILER_IS_GNUCXX)
     message(STATUS "System is not ARM")  
   endif(NOT ARM_FOUND STREQUAL "")
 
-else (CMAKE_COMPILE_IS_GNUCXX)
+else (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   # TODO: Other compilers
   message(STATUS "Not detecting ARM on non-GNUCXX compiler. Defaulting to false")
   message(STATUS "If you are compiling for ARM, set IS_ARM=ON manually")
-endif(CMAKE_COMPILER_IS_GNUCXX)
+endif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 
 set(IS_ARM ${IS_ARM} CACHE BOOL "Compiling for ARM")
 set(ARM_VERSION ${ARM_VERSION} CACHE STRING "ARM version")

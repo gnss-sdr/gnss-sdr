@@ -359,7 +359,7 @@ set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.9")
 # Check cmake version
 ################################################################################
 if(CMAKE_VERSION VERSION_LESS ${GNSSSDR_CMAKE_MIN_VERSION})
-      message(STATUS "Your CMake version is too old and does not support some features required by GNSS-SDR. CMake version must be at least ${GNSSSDR_CMAKE_MIN_VERSION}. For more information check https://github.com/joakimkarlsson/bandit/issues/40")
+      message(STATUS "Your CMake version is too old and does not support some features required by GNSS-SDR. CMake version must be at least ${GNSSSDR_CMAKE_MIN_VERSION}.") # For more information check https://github.com/joakimkarlsson/bandit/issues/40
       message(FATAL_ERROR "Fatal error: CMake >= ${GNSSSDR_CMAKE_MIN_VERSION} required.")
 endif(CMAKE_VERSION VERSION_LESS ${GNSSSDR_CMAKE_MIN_VERSION})
 
@@ -371,11 +371,6 @@ endif(CMAKE_VERSION VERSION_LESS ${GNSSSDR_CMAKE_MIN_VERSION})
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
       if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${GNSSSDR_GCC_MIN_VERSION})
           message(STATUS "Your GCC version is too old and does not support some C++ features required by GNSS-SDR. GCC version must be at least ${GNSSSDR_GCC_MIN_VERSION}")
-          if(${LINUX_DISTRIBUTION} MATCHES "Ubuntu")
-              if(${LINUX_VER} MATCHES "12.04")
-                  message(STATUS "For instructions on how to upgrade GCC, check https://askubuntu.com/a/271561")
-              endif(${LINUX_VER} MATCHES "12.04")
-          endif(${LINUX_DISTRIBUTION} MATCHES "Ubuntu")
           message(FATAL_ERROR "Fatal error: GCC >= ${GNSSSDR_GCC_MIN_VERSION} required.")
       endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${GNSSSDR_GCC_MIN_VERSION})
 endif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -625,9 +620,9 @@ if(NOT VOLK_GNSSSDR_FOUND)
 
     set(READ_ENVIRO "")
     if(ENABLE_PACKAGING)
-        if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+        if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
             set(STRIP_VOLK_GNSSSDR_PROFILE "-DENABLE_STRIP=ON -DCMAKE_VERBOSE_MAKEFILE=ON")
-        endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+        endif((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
         if(NOT DEFINED ENV{PROTECT_PASSWORDS})
             set(READ_ENVIRO ${CMAKE_COMMAND} -E environment)
         endif(NOT DEFINED ENV{PROTECT_PASSWORDS})
@@ -1512,9 +1507,9 @@ if(ENABLE_GPERFTOOLS)
     # Set GPerftools related flags if it is available
     # See https://github.com/gperftools/gperftools/blob/master/README
     if(GPERFTOOLS_FOUND)
-        if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+        if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
             set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free")
-        endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+        endif((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
         if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
             set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -fno-builtin")
         endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -1527,11 +1522,11 @@ endif(ENABLE_GPERFTOOLS)
 # GNU gprof (OPTIONAL) - https://sourceware.org/binutils/docs/gprof/
 ########################################################################
 if(ENABLE_GPROF)
-    #if(CMAKE_COMPILER_IS_GNUCXX)
+    #if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -pg")
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
         set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pg")
-    #endif(CMAKE_COMPILER_IS_GNUCXX)
+    #endif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif(ENABLE_GPROF)
 
 
@@ -1541,7 +1536,7 @@ endif(ENABLE_GPROF)
 # Support of C++17 is still not possible due to pm_remez.h (solved in GNU Radio 3.8)
 # Enable C++14 support in GCC >= 6.1.1
 # Fallback to C++11 when using GCC < 6.1.1
-if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
     if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
         set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
     else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
@@ -1552,7 +1547,7 @@ if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
         # endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
     endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
     set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wall -Wextra")  #Add warning flags: For "-Wall" see https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
-endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+endif((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
 
 # Support of C++17 is still not possible due to pm_remez.h (solved in GNU Radio 3.8)
 # Enable C++14 support in Clang >= 3.5.0 or AppleClang >= 600
@@ -1586,17 +1581,17 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     endif(OS_IS_MACOSX)
 endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
-if(NOT (CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32) AND NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
+if(NOT ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang")) AND NOT WIN32)
     if(NOT (CMAKE_VERSION VERSION_LESS "3.1"))
         set(CMAKE_C_STANDARD 11)
         set(CMAKE_CXX_STANDARD 14)
     endif(NOT (CMAKE_VERSION VERSION_LESS "3.1"))
-endif(NOT (CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32) AND NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
+endif(NOT ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang")) AND NOT WIN32)
 
 # Processor-architecture related flags
 # See https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
 if (NOT ARCH_COMPILER_FLAGS)
-    if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+    if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
         if(OS_IS_MACOSX)
             set(ARCH_COMPILER_FLAGS "-march=corei7 -mfpmath=sse")
         else(OS_IS_MACOSX)
@@ -1615,16 +1610,16 @@ if (NOT ARCH_COMPILER_FLAGS)
 	            endif(IS_ARM)
             endif(NOT ${ENABLE_GENERIC_ARCH})
         endif(OS_IS_MACOSX)
-    endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+    endif((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
 endif (NOT ARCH_COMPILER_FLAGS)
 set(MY_CXX_FLAGS "${MY_CXX_FLAGS} ${ARCH_COMPILER_FLAGS}")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MY_CXX_FLAGS}")
 
-if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+if((CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
     # https://gcc.gnu.org/wiki/Visibility
     add_definitions(-fvisibility=hidden)
-endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+endif((CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
 
 
 

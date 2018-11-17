@@ -75,10 +75,10 @@ endif(ENABLE_STATIC_LIBS)
 
 
 if(ENABLE_STRIP)
-    if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+    if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
         set_target_properties(volk_gnsssdr_profile
                               PROPERTIES LINK_FLAGS "-s")
-    endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+    endif((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
 endif(ENABLE_STRIP)
 
 
@@ -99,10 +99,10 @@ else(ENABLE_STATIC_LIBS)
 endif(ENABLE_STATIC_LIBS)
 
 if(ENABLE_STRIP)
-    if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+    if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
         set_target_properties(volk_gnsssdr-config-info
                               PROPERTIES LINK_FLAGS "-s")
-    endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+    endif((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
 endif(ENABLE_STRIP)
 
 install(

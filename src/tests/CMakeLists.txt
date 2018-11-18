@@ -229,13 +229,13 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
    find_package(GPSTK)
    if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
       message(STATUS "GPSTk v${GNSSSDR_GPSTK_LOCAL_VERSION} will be automatically downloaded and built when doing 'make'.")
-         if ("${TOOLCHAIN_ARG}" STREQUAL "")
-            set(TOOLCHAIN_ARG "-DCMAKE_CXX_FLAGS=\"-Wno-deprecated\"")
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")     
-         endif("${TOOLCHAIN_ARG}" STREQUAL "")
- #     if(NOT ENABLE_FPGA)
-          if(CMAKE_VERSION VERSION_LESS 3.2)
-           ExternalProject_Add(
+      if ("${TOOLCHAIN_ARG}" STREQUAL "")
+         set(TOOLCHAIN_ARG "-DCMAKE_CXX_FLAGS=\"-Wno-deprecated\"")
+         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
+      endif("${TOOLCHAIN_ARG}" STREQUAL "")
+      include(GNUInstallDirs)
+      if(CMAKE_VERSION VERSION_LESS 3.2)
+         ExternalProject_Add(
              gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
              GIT_REPOSITORY https://github.com/SGL-UT/GPSTk
              GIT_TAG v${GNSSSDR_GPSTK_LOCAL_VERSION}
@@ -244,34 +244,29 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
              CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install -DBUILD_EXT=OFF -DBUILD_PYTHON=OFF
              UPDATE_COMMAND ""
              PATCH_COMMAND ""
-           )
-          else(CMAKE_VERSION VERSION_LESS 3.2)
-           ExternalProject_Add(
+         )
+      else(CMAKE_VERSION VERSION_LESS 3.2)
+         ExternalProject_Add(
              gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
              GIT_REPOSITORY https://github.com/SGL-UT/GPSTk
              GIT_TAG v${GNSSSDR_GPSTK_LOCAL_VERSION}
              SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
              BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
              CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install -DBUILD_EXT=OFF -DBUILD_PYTHON=OFF
-             BUILD_BYPRODUCTS ${CMAKE_SOURCE_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX}
+             BUILD_BYPRODUCTS ${CMAKE_SOURCE_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX}
              UPDATE_COMMAND ""
              PATCH_COMMAND ""
-           )
-          endif(CMAKE_VERSION VERSION_LESS 3.2)
-
-          set(GPSTK_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/include CACHE PATH "Local GPSTK headers")
-          set(GPSTK_BINDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/bin/ )
-          add_definitions(-DGPSTK_BINDIR="${GPSTK_BINDIR}")
-          set(GPSTK_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
-          set(OWN_GPSTK True)
-#      else(NOT ENABLE_FPGA)
-#          message(STATUS "GPSTk has not been found, try to install it on target.")
-#          message(STATUS "Some extra tests requiring GPSTk will not be built.")
-#      endif(NOT ENABLE_FPGA)
+         )
+      endif(CMAKE_VERSION VERSION_LESS 3.2)
+      set(GPSTK_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/include CACHE PATH "Local GPSTK headers")
+      set(GPSTK_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
+      set(GPSTK_BINDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/bin/ )
+      add_definitions(-DGPSTK_BINDIR="${GPSTK_BINDIR}")
+      set(OWN_GPSTK True)
    else(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
-       set(GPSTK_INCLUDE_DIRS ${GPSTK_INCLUDE_DIR})
-       set(GPSTK_BINDIR ${GPSTK_LIBRARY}/../bin/ )
-       add_definitions(-DGPSTK_BINDIR="${GPSTK_BINDIR}")
+      set(GPSTK_INCLUDE_DIRS ${GPSTK_INCLUDE_DIR})
+      set(GPSTK_BINDIR ${GPSTK_LIBRARY}/../bin/ )
+      add_definitions(-DGPSTK_BINDIR="${GPSTK_BINDIR}")
    endif(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
 endif(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
 

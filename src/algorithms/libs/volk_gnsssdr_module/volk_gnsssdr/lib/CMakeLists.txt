@@ -213,7 +213,7 @@ if(CPU_IS_x86)
     endif(CMAKE_SIZEOF_VOID_P EQUAL 4)
 
     # Disable SSE4a if Clang is less than version 3.2
-    if("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
+    if("${CMAKE_C_COMPILER_ID}" MATCHES "Clang")
       # Figure out the version of Clang
       if(CMAKE_VERSION VERSION_LESS "2.8.10")
         # Exctract the Clang version from the --version string.
@@ -227,7 +227,7 @@ if(CPU_IS_x86)
       if(CMAKE_C_COMPILER_VERSION VERSION_LESS "3.2")
         OVERRULE_ARCH(sse4_a "Clang >= 3.2 required for SSE4a")
       endif(CMAKE_C_COMPILER_VERSION VERSION_LESS "3.2")
-    endif("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
+    endif("${CMAKE_C_COMPILER_ID}" MATCHES "Clang")
 
 endif(CPU_IS_x86)
 

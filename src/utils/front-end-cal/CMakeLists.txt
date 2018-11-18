@@ -32,7 +32,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/core/libs
     ${CMAKE_SOURCE_DIR}/src/core/libs/supl
     ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
-	${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
+    ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
     ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/adapters
     ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/gnuradio_blocks
     ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/libs
@@ -51,6 +51,7 @@ add_library(front_end_cal_lib ${FRONT_END_CAL_SOURCES} ${FRONT_END_CAL_HEADERS})
 source_group(Headers FILES ${FRONT_END_CAL_HEADERS})
 
 target_link_libraries(front_end_cal_lib ${MAC_LIBRARIES}
+                                        ${THREAD_LIBRARIES}
                                         ${Boost_LIBRARIES}
                                         ${GNURADIO_RUNTIME_LIBRARIES}
                                         ${GNURADIO_BLOCKS_LIBRARIES}

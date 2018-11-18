@@ -82,6 +82,7 @@ add_custom_command(TARGET gnss-sdr POST_BUILD
                            ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:gnss-sdr> )
 
 target_link_libraries(gnss-sdr ${MAC_LIBRARIES}
+                               ${THREAD_LIBRARIES}
                                ${Boost_LIBRARIES}
                                ${GNURADIO_RUNTIME_LIBRARIES}
                                ${GNURADIO_BLOCKS_LIBRARIES}

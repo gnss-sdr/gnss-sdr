@@ -33,7 +33,9 @@
 
 #include "GPS_L1_CA.h"
 #include "gnss_block_factory.h"
+#include "control_message_factory.h"
 #include "tracking_interface.h"
+#include "gnss_sdr_valve.h"
 #include "gps_l2_m_pcps_acquisition.h"
 #include "gps_l1_ca_pcps_acquisition.h"
 #include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
@@ -56,6 +58,7 @@
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/skiphead.h>
 #include <gnuradio/blocks/head.h>
+#include <gnuradio/msg_queue.h>
 #include <gtest/gtest.h>
 #include <chrono>
 #include <cstdint>
@@ -186,6 +189,8 @@ public:
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
+
+    gr::msg_queue::sptr queue;
 };
 
 
@@ -658,6 +663,18 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                       << " [Hz], estimated Initial code delay " << true_acq_delay_samples << " [Samples]"
                       << " Acquisition SampleStamp is " << acq_samplestamp_map.find(FLAGS_test_satellite_PRN)->second << std::endl;
         }
+
+    // create the msg queue for valve
+
+    queue = gr::msg_queue::make(0);
+    boost::shared_ptr<gnss_sdr_valve> reseteable_valve;
+    long long int acq_to_trk_delay_samples = ceil(static_cast<double>(FLAGS_fs_gen_sps) * FLAGS_acq_to_trk_delay_s);
+    boost::shared_ptr<gnss_sdr_valve> resetable_valve_(new gnss_sdr_valve(sizeof(gr_complex), acq_to_trk_delay_samples, queue, false));
+
+    std::shared_ptr<ControlMessageFactory> control_message_factory_;
+    std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>> control_messages_;
+
+
     //CN0 LOOP
     std::vector<std::vector<double>> pull_in_results_v_v;
 
@@ -710,7 +727,15 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                 gr::blocks::head::sptr head_samples = gr::blocks::head::make(sizeof(gr_complex), baseband_sampling_freq * FLAGS_duration);
                                 top_block->connect(file_source, 0, gr_interleaved_char_to_complex, 0);
                                 top_block->connect(gr_interleaved_char_to_complex, 0, head_samples, 0);
-                                top_block->connect(head_samples, 0, tracking->get_left_block(), 0);
+                                if (acq_to_trk_delay_samples > 0)
+                                    {
+                                        top_block->connect(head_samples, 0, resetable_valve_, 0);
+                                        top_block->connect(resetable_valve_, 0, tracking->get_left_block(), 0);
+                                    }
+                                else
+                                    {
+                                        top_block->connect(head_samples, 0, tracking->get_left_block(), 0);
+                                    }
                                 top_block->connect(tracking->get_right_block(), 0, sink, 0);
                                 top_block->msg_connect(tracking->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
                                 file_source->seek(2 * FLAGS_skip_samples, 0);  //skip head. ibyte, two bytes per complex sample
@@ -721,17 +746,45 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                             //***** STEP 5: Perform the signal tracking and read the results *****
                             //********************************************************************
                             std::cout << "--- START TRACKING WITH PULL-IN ERROR: " << acq_doppler_error_hz_values.at(current_acq_doppler_error_idx) << " [Hz] and " << acq_delay_error_chips_values.at(current_acq_doppler_error_idx).at(current_acq_code_error_idx) << " [Chips] ---" << std::endl;
-                            tracking->start_tracking();
                             std::chrono::time_point<std::chrono::system_clock> start, end;
-                            EXPECT_NO_THROW({
-                                start = std::chrono::system_clock::now();
-                                top_block->run();  // Start threads and wait
-                                end = std::chrono::system_clock::now();
-                            }) << "Failure running the top_block.";
+                            if (acq_to_trk_delay_samples > 0)
+                                {
+                                    EXPECT_NO_THROW({
+                                        start = std::chrono::system_clock::now();
+                                        std::cout << "--- SIMULATING A PULL-IN DELAY OF " << FLAGS_acq_to_trk_delay_s << " SECONDS ---\n";
+                                        top_block->start();
+                                        std::cout << " Waiting for valve...\n";
+                                        //wait the valve message indicating the circulation of the amount of samples of the delay
+                                        gr::message::sptr queue_message = queue->delete_head();
+                                        if (queue_message != 0)
+                                            {
+                                                control_messages_ = control_message_factory_->GetControlMessages(queue_message);
+                                            }
+                                        else
+                                            {
+                                                control_messages_->clear();
+                                            }
+                                        std::cout << " Starting tracking...\n";
+                                        tracking->start_tracking();
+                                        resetable_valve_->open_valve();
+                                        std::cout << " Waiting flowgraph..\n";
+                                        top_block->wait();
+                                        end = std::chrono::system_clock::now();
+                                    }) << "Failure running the top_block.";
+                                }
+                            else
+                                {
+                                    tracking->start_tracking();
+                                    std::chrono::time_point<std::chrono::system_clock> start, end;
+                                    EXPECT_NO_THROW({
+                                        start = std::chrono::system_clock::now();
+                                        top_block->run();  // Start threads and wait
+                                        end = std::chrono::system_clock::now();
+                                    }) << "Failure running the top_block.";
+                                }
 
                             std::chrono::duration<double> elapsed_seconds = end - start;
                             std::cout << "Signal tracking completed in " << elapsed_seconds.count() << " seconds" << std::endl;
-
 
                             pull_in_results_v.push_back(msg_rx->rx_message != 3);  //save last asynchronous tracking message in order to detect a loss of lock
 

@@ -36,7 +36,7 @@
 
 if(NOT GROSMOSDR_FOUND)
   pkg_check_modules (GROSMOSDR_PKG gnuradio-osmosdr)
-  find_path(GROSMOSDR_INCLUDE_DIR 
+  find_path(GROSMOSDR_INCLUDE_DIR
     NAMES osmosdr/source.h
 	  osmosdr/api.h
     PATHS
@@ -45,7 +45,7 @@ if(NOT GROSMOSDR_FOUND)
     /usr/local/include
   )
 
- find_library(GROSMOSDR_LIBRARIES 
+ find_library(GROSMOSDR_LIBRARIES
     NAMES gnuradio-osmosdr
     PATHS
     ${GROSMOSDR_PKG_LIBRARY_DIRS}

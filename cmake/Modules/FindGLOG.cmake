@@ -41,7 +41,7 @@ endif(MSVC)
 macro(_FIND_GLOG_LIBRARIES _var)
      find_library(${_var}
           NAMES  ${ARGN}
-          PATHS ${LIB_PATHS} 
+          PATHS ${LIB_PATHS}
                 /usr/local/lib
                 /usr/lib/x86_64-linux-gnu
                 /usr/lib/i386-linux-gnu

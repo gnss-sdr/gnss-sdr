@@ -37,16 +37,16 @@
 # Find the PCAP includes and library
 # http://www.tcpdump.org/
 #
-# The environment variable PCAPDIR allows to specficy where to find 
+# The environment variable PCAPDIR allows to specficy where to find
 # libpcap in non standard location.
-#  
+#
 #  PCAP_INCLUDE_DIRS - where to find pcap.h, etc.
 #  PCAP_LIBRARIES   - List of libraries when using pcap.
 #  PCAP_FOUND       - True if pcap found.
 
 
 IF(EXISTS $ENV{PCAPDIR})
-  FIND_PATH(PCAP_INCLUDE_DIR 
+  FIND_PATH(PCAP_INCLUDE_DIR
     NAMES
     pcap/pcap.h
     pcap.h
@@ -54,28 +54,28 @@ IF(EXISTS $ENV{PCAPDIR})
       $ENV{PCAPDIR}
     NO_DEFAULT_PATH
   )
-  
+
   FIND_LIBRARY(PCAP_LIBRARY
-    NAMES 
+    NAMES
       pcap
     PATHS
       $ENV{PCAPDIR}
     NO_DEFAULT_PATH
   )
-  
+
 
 ELSE(EXISTS $ENV{PCAPDIR})
-  FIND_PATH(PCAP_INCLUDE_DIR 
+  FIND_PATH(PCAP_INCLUDE_DIR
     NAMES
     pcap/pcap.h
     pcap.h
   )
-  
+
   FIND_LIBRARY(PCAP_LIBRARY
-    NAMES 
+    NAMES
       pcap
   )
-  
+
 ENDIF(EXISTS $ENV{PCAPDIR})
 
 SET(PCAP_INCLUDE_DIRS ${PCAP_INCLUDE_DIR})

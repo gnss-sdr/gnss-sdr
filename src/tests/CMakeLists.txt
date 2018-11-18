@@ -627,6 +627,7 @@ if(NOT ${GTEST_DIR_LOCAL})
 else(NOT ${GTEST_DIR_LOCAL})
     add_dependencies(gnuradio_block_test gtest)
 endif(NOT ${GTEST_DIR_LOCAL})
+set_property(TEST gnuradio_block_test PROPERTY TIMEOUT 30)
 
 #########################################################
 
@@ -653,6 +654,7 @@ else(NOT ${GTEST_DIR_LOCAL})
         add_dependencies(matio_test gtest matio-${GNSSSDR_MATIO_LOCAL_VERSION})
     endif(MATIO_FOUND)
 endif(NOT ${GTEST_DIR_LOCAL})
+set_property(TEST matio_test PROPERTY TIMEOUT 30)
 
 #########################################################
 
@@ -679,6 +681,7 @@ if(NOT ${GTEST_DIR_LOCAL})
 else(NOT ${GTEST_DIR_LOCAL})
     add_dependencies(acq_test acq_test gtest)
 endif(NOT ${GTEST_DIR_LOCAL})
+set_property(TEST acq_test PROPERTY TIMEOUT 30)
 
 #########################################################
 
@@ -707,6 +710,8 @@ if(NOT ${GTEST_DIR_LOCAL})
 else(NOT ${GTEST_DIR_LOCAL})
     add_dependencies(trk_test gtest)
 endif(NOT ${GTEST_DIR_LOCAL})
+set_property(TEST trk_test PROPERTY TIMEOUT 30)
+
 
 #########################################################
 

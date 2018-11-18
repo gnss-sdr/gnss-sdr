@@ -40,13 +40,14 @@
 
 gnss_sdr_valve::gnss_sdr_valve(size_t sizeof_stream_item,
     unsigned long long nitems,
-    gr::msg_queue::sptr queue, bool stop_flowgraph) : gr::sync_block("valve",
-                                                          gr::io_signature::make(1, 1, sizeof_stream_item),
-                                                          gr::io_signature::make(1, 1, sizeof_stream_item)),
-                                                      d_nitems(nitems),
-                                                      d_ncopied_items(0),
-                                                      d_queue(queue),
-                                                      d_stop_flowgraph(stop_flowgraph)
+    gr::msg_queue::sptr queue,
+    bool stop_flowgraph) : gr::sync_block("valve",
+                               gr::io_signature::make(1, 1, sizeof_stream_item),
+                               gr::io_signature::make(1, 1, sizeof_stream_item)),
+                           d_nitems(nitems),
+                           d_ncopied_items(0),
+                           d_queue(queue),
+                           d_stop_flowgraph(stop_flowgraph)
 {
     d_open_valve = false;
 }
@@ -58,16 +59,20 @@ boost::shared_ptr<gr::block> gnss_sdr_make_valve(size_t sizeof_stream_item, unsi
     return valve_;
 }
 
+
 boost::shared_ptr<gr::block> gnss_sdr_make_valve(size_t sizeof_stream_item, unsigned long long nitems, gr::msg_queue::sptr queue)
 {
-    boost::shared_ptr<gnss_sdr_valve> valve_(new gnss_sdr_valve(sizeof_stream_item, nitems, queue, false));
+    boost::shared_ptr<gnss_sdr_valve> valve_(new gnss_sdr_valve(sizeof_stream_item, nitems, queue, true));
     return valve_;
 }
+
 
 void gnss_sdr_valve::open_valve()
 {
     d_open_valve = true;
 }
+
+
 int gnss_sdr_valve::work(int noutput_items,
     gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items)
@@ -87,7 +92,7 @@ int gnss_sdr_valve::work(int noutput_items,
                     else
                         {
                             usleep(1000000);
-                            return 0;  //do not produce or consume
+                            return 0;  // do not produce or consume
                         }
                 }
             unsigned long long n = std::min(d_nitems - d_ncopied_items, static_cast<long long unsigned int>(noutput_items));

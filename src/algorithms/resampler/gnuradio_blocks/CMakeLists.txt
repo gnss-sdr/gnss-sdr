@@ -17,13 +17,13 @@
 #
 
 
-set(RESAMPLER_GR_BLOCKS_SOURCES 
+set(RESAMPLER_GR_BLOCKS_SOURCES
      direct_resampler_conditioner_cc.cc
      direct_resampler_conditioner_cs.cc
      direct_resampler_conditioner_cb.cc
 )
 
-set(RESAMPLER_GR_BLOCKS_HEADERS 
+set(RESAMPLER_GR_BLOCKS_HEADERS
      direct_resampler_conditioner_cc.h
      direct_resampler_conditioner_cs.h
      direct_resampler_conditioner_cb.h

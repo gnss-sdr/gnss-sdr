@@ -18,28 +18,28 @@
 
 add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
 
-set(PVT_LIB_SOURCES 
+set(PVT_LIB_SOURCES
      pvt_solution.cc
      ls_pvt.cc
      hybrid_ls_pvt.cc
      kml_printer.cc
      gpx_printer.cc
      rinex_printer.cc
-     nmea_printer.cc  
+     nmea_printer.cc
      rtcm_printer.cc
      geojson_printer.cc
      rtklib_solver.cc
      pvt_conf.cc
 )
 
-set(PVT_LIB_HEADERS 
+set(PVT_LIB_HEADERS
      pvt_solution.h
      ls_pvt.h
      hybrid_ls_pvt.h
      kml_printer.h
      gpx_printer.h
      rinex_printer.h
-     nmea_printer.h  
+     nmea_printer.h
      rtcm_printer.h
      geojson_printer.h
      rtklib_solver.h
@@ -75,11 +75,12 @@ else(MATIO_FOUND)
 endif(MATIO_FOUND)
 
 target_link_libraries(
-    pvt_lib 
+    pvt_lib
     rtklib_lib
     gnss_sdr_flags
-    ${Boost_LIBRARIES} 
-    ${GLOG_LIBRARIES} 
+    gnss_sp_libs
+    ${Boost_LIBRARIES}
+    ${GLOG_LIBRARIES}
     ${ARMADILLO_LIBRARIES}
     ${BLAS}
     ${LAPACK}

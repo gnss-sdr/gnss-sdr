@@ -20,23 +20,23 @@
 set(TELEMETRY_DECODER_ADAPTER_SOURCES
     gps_l1_ca_telemetry_decoder.cc
     gps_l2c_telemetry_decoder.cc
-    gps_l5_telemetry_decoder.cc 
+    gps_l5_telemetry_decoder.cc
     galileo_e1b_telemetry_decoder.cc
     sbas_l1_telemetry_decoder.cc
     galileo_e5a_telemetry_decoder.cc
     glonass_l1_ca_telemetry_decoder.cc
-    glonass_l2_ca_telemetry_decoder.cc 
+    glonass_l2_ca_telemetry_decoder.cc
 )
 
 set(TELEMETRY_DECODER_ADAPTER_HEADERS
     gps_l1_ca_telemetry_decoder.h
     gps_l2c_telemetry_decoder.h
-    gps_l5_telemetry_decoder.h 
+    gps_l5_telemetry_decoder.h
     galileo_e1b_telemetry_decoder.h
     sbas_l1_telemetry_decoder.h
     galileo_e5a_telemetry_decoder.h
     glonass_l1_ca_telemetry_decoder.h
-    glonass_l2_ca_telemetry_decoder.h 
+    glonass_l2_ca_telemetry_decoder.h
 )
 
 include_directories(

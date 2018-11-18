@@ -17,12 +17,12 @@
 #
 
 
-set(CORE_MONITOR_LIBS_SOURCES 
+set(CORE_MONITOR_LIBS_SOURCES
 	gnss_synchro_monitor.cc
 	gnss_synchro_udp_sink.cc
 )
 
-set(CORE_MONITOR_LIBS_HEADERS 
+set(CORE_MONITOR_LIBS_HEADERS
 	gnss_synchro_monitor.h
 	gnss_synchro_udp_sink.h
 )
@@ -42,5 +42,5 @@ list(SORT CORE_MONITOR_LIBS_SOURCES)
 
 add_library(core_monitor_lib ${CORE_MONITOR_LIBS_SOURCES} ${CORE_MONITOR_LIBS_HEADERS})
 source_group(Headers FILES ${CORE_MONITOR_LIBS_HEADERS})
-target_link_libraries(core_monitor_lib ${Boost_LIBRARIES}) 
+target_link_libraries(core_monitor_lib ${Boost_LIBRARIES})
 add_dependencies(core_monitor_lib glog-${glog_RELEASE})

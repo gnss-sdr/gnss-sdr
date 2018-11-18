@@ -16,7 +16,7 @@
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
-set(INPUT_FILTER_ADAPTER_SOURCES 
+set(INPUT_FILTER_ADAPTER_SOURCES
      fir_filter.cc
      freq_xlating_fir_filter.cc
      beamformer_filter.cc
@@ -25,7 +25,7 @@ set(INPUT_FILTER_ADAPTER_SOURCES
      notch_filter_lite.cc
 )
 
-set(INPUT_FILTER_ADAPTER_HEADERS 
+set(INPUT_FILTER_ADAPTER_HEADERS
      fir_filter.h
      freq_xlating_fir_filter.h
      beamformer_filter.h

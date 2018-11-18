@@ -354,15 +354,17 @@ set(GNSSSDR_GPSTK_LOCAL_VERSION "2.10.6")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.13")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.9")
 
-if(CMAKE_VERSION VERSION_LESS "3.0.2")
+if(CMAKE_VERSION VERSION_LESS "3.0.2") # Fix for CentOS 7
    set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.1")
 endif(CMAKE_VERSION VERSION_LESS "3.0.2")
 
+
+
 ################################################################################
-# Check cmake version
+# Check CMake version
 ################################################################################
 if(CMAKE_VERSION VERSION_LESS ${GNSSSDR_CMAKE_MIN_VERSION})
-      message(STATUS "Your CMake version is too old and does not support some features required by GNSS-SDR. CMake version must be at least ${GNSSSDR_CMAKE_MIN_VERSION}.") # For more information check https://github.com/joakimkarlsson/bandit/issues/40
+      message(STATUS "Your CMake version is too old and does not support some features required by GNSS-SDR. CMake version must be at least ${GNSSSDR_CMAKE_MIN_VERSION}.")
       message(FATAL_ERROR "Fatal error: CMake >= ${GNSSSDR_CMAKE_MIN_VERSION} required.")
 endif(CMAKE_VERSION VERSION_LESS ${GNSSSDR_CMAKE_MIN_VERSION})
 

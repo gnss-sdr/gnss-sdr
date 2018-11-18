@@ -70,7 +70,7 @@ set(SIGNAL_SOURCE_LIB_SOURCES
      rtl_tcp_dongle_info.cc
      ${OPT_SIGNAL_SOURCE_LIB_SOURCES}
 )
- 
+
 set(SIGNAL_SOURCE_LIB_HEADERS
      rtl_tcp_commands.h
      rtl_tcp_dongle_info.h

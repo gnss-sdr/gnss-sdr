@@ -16,7 +16,7 @@
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 
 ##############################################################################
-# check if the compiler defines the architecture as ARM  and set the 
+# check if the compiler defines the architecture as ARM  and set the
 # version, if found.
 #
 # - Anthony Arnold
@@ -89,9 +89,9 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     else (ARM_VERSION STREQUAL "")
       message(STATUS "ARM version ${ARM_VERSION} detected")
     endif (ARM_VERSION STREQUAL "")
-    
+
   else (NOT ARM_FOUND STREQUAL "")
-    message(STATUS "System is not ARM")  
+    message(STATUS "System is not ARM")
   endif(NOT ARM_FOUND STREQUAL "")
 
 else (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

@@ -17,12 +17,12 @@
 #
 
 
-set(COND_ADAPTER_SOURCES 
+set(COND_ADAPTER_SOURCES
 	signal_conditioner.cc
 	array_signal_conditioner.cc
 )
 
-set(COND_ADAPTER_HEADERS 
+set(COND_ADAPTER_HEADERS
 	signal_conditioner.h
 	array_signal_conditioner.h
 )

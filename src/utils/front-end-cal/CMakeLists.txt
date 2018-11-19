@@ -67,7 +67,7 @@ target_link_libraries(front_end_cal_lib ${MAC_LIBRARIES}
                                         gnss_rx
                                         channel_fsm
 )
-    
+
 add_dependencies(front_end_cal_lib glog-${glog_RELEASE} armadillo-${armadillo_RELEASE})
 
 add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
@@ -96,7 +96,7 @@ target_link_libraries(front-end-cal    ${MAC_LIBRARIES}
                                        front_end_cal_lib
 )
 
-                               
+
 install(TARGETS front-end-cal
         RUNTIME DESTINATION bin
         COMPONENT "front-end-cal"

@@ -25,7 +25,7 @@
 # Variables defined by this module:
 #
 # LIBOSMOSDR_FOUND System has libosmosdr libs/headers
-# LIBOSMOSDR_LIBRARIES The libosmosdr libraries 
+# LIBOSMOSDR_LIBRARIES The libosmosdr libraries
 # LIBOSMOSDR_INCLUDE_DIR The location of libosmosdr headers
 
 

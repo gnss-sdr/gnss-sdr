@@ -25,26 +25,26 @@
 #  MATIO_LIBRARIES	- MATIO libraries.
 #  MATIO_INCLUDE_DIRS - where to find matio.h, etc..
 #  MATIO_VERSION_STRING - version number as a string (e.g.: "1.3.4")
-# 
+#
 #=============================================================================
 # Copyright 2015 Avtech Scientific <http://avtechscientific.com>
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
 # are met:
-# 
+#
 # * Redistributions of source code must retain the above copyright
 #   notice, this list of conditions and the following disclaimer.
-# 
+#
 # * Redistributions in binary form must reproduce the above copyright
 #   notice, this list of conditions and the following disclaimer in the
 #   documentation and/or other materials provided with the distribution.
-# 
+#
 # * Neither the names of Kitware, Inc., the Insight Software Consortium,
 #   nor the names of their contributors may be used to endorse or promote
 #   products derived from this software without specific prior written
 #   permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 # "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 # LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -103,7 +103,7 @@ endif ()
 
 mark_as_advanced(MATIO_INCLUDE_DIR MATIO_LIBRARY)
 
-# handle the QUIETLY and REQUIRED arguments and set MATIO_FOUND to TRUE if 
+# handle the QUIETLY and REQUIRED arguments and set MATIO_FOUND to TRUE if
 # all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(MATIO REQUIRED_VARS MATIO_LIBRARY MATIO_INCLUDE_DIR VERSION_VAR MATIO_VERSION_STRING)

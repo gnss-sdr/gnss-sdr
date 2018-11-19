@@ -70,9 +70,9 @@ list(SORT SIGNAL_SOURCE_GR_BLOCKS_SOURCES)
 
 add_library(signal_source_gr_blocks ${SIGNAL_SOURCE_GR_BLOCKS_SOURCES} ${SIGNAL_SOURCE_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${SIGNAL_SOURCE_GR_BLOCKS_HEADERS})
-target_link_libraries(signal_source_gr_blocks 
-    signal_source_lib 
-    ${GNURADIO_RUNTIME_LIBRARIES} 
+target_link_libraries(signal_source_gr_blocks
+    signal_source_lib
+    ${GNURADIO_RUNTIME_LIBRARIES}
     ${Boost_LIBRARIES}
     ${OPT_LIBRARIES}
 )

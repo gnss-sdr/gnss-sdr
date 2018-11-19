@@ -16,19 +16,19 @@
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
-set(TELEMETRY_DECODER_LIBSWIFTCNAV_SOURCES 
+set(TELEMETRY_DECODER_LIBSWIFTCNAV_SOURCES
      cnav_msg.c
      bits.c
      edc.c
-     viterbi27.c   
+     viterbi27.c
 )
 
-set(TELEMETRY_DECODER_LIBSWIFTCNAV_HEADERS 
+set(TELEMETRY_DECODER_LIBSWIFTCNAV_HEADERS
      cnav_msg.h
      bits.h
      edc.h
-     swift_common.h  
-     fec.h 
+     swift_common.h
+     fec.h
 )
 
 include_directories(

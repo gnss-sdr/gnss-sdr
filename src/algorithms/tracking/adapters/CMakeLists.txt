@@ -23,19 +23,19 @@ if(ENABLE_CUDA)
 endif(ENABLE_CUDA)
 
 if(ENABLE_FPGA)
-     set(OPT_TRACKING_ADAPTERS_SOURCES ${OPT_TRACKING_ADAPTERS_SOURCES} 
+     set(OPT_TRACKING_ADAPTERS_SOURCES ${OPT_TRACKING_ADAPTERS_SOURCES}
                                        gps_l1_ca_dll_pll_tracking_fpga.cc
                                        gps_l2_m_dll_pll_tracking_fpga.cc
                                        galileo_e1_dll_pll_veml_tracking_fpga.cc
                                        galileo_e5a_dll_pll_tracking_fpga.cc
                                        gps_l5_dll_pll_tracking_fpga.cc)
 
-     set(OPT_TRACKING_ADAPTERS_HEADERS ${OPT_TRACKING_ADAPTERS_HEADERS} 
+     set(OPT_TRACKING_ADAPTERS_HEADERS ${OPT_TRACKING_ADAPTERS_HEADERS}
                                        gps_l1_ca_dll_pll_tracking_fpga.h
                                        gps_l2_m_dll_pll_tracking_fpga.h
                                        galileo_e1_dll_pll_veml_tracking_fpga.h
                                        galileo_e5a_dll_pll_tracking_fpga.h
-                                       gps_l5_dll_pll_tracking_fpga.h)                       
+                                       gps_l5_dll_pll_tracking_fpga.h)
 endif(ENABLE_FPGA)
 
 set(TRACKING_ADAPTER_SOURCES

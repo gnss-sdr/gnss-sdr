@@ -35,7 +35,7 @@ FIND_LIBRARY(GPSTK_LIBRARY NAMES ${GPSTK_NAMES}
                    /usr/local/lib
                    /opt/local/lib )
 
-# handle the QUIETLY and REQUIRED arguments and set GPSTK_FOUND to TRUE if 
+# handle the QUIETLY and REQUIRED arguments and set GPSTK_FOUND to TRUE if
 # all listed variables are TRUE
 INCLUDE(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(GPSTK  DEFAULT_MSG  GPSTK_LIBRARY  GPSTK_INCLUDE_DIR)

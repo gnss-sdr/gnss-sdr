@@ -33,9 +33,9 @@ include_directories(
 
 add_library(signal_generator_adapters ${SIGNAL_GENERATOR_ADAPTER_SOURCES} ${SIGNAL_GENERATOR_ADAPTER_HEADERS})
 source_group(Headers FILES ${SIGNAL_GENERATOR_ADAPTER_HEADERS})
-target_link_libraries(signal_generator_adapters gnss_sp_libs 
-                                                signal_generator_blocks 
-                                                ${GNURADIO_RUNTIME_LIBRARIES} 
-                                                ${GNURADIO_BLOCKS_LIBRARIES} 
+target_link_libraries(signal_generator_adapters gnss_sp_libs
+                                                signal_generator_blocks
+                                                ${GNURADIO_RUNTIME_LIBRARIES}
+                                                ${GNURADIO_BLOCKS_LIBRARIES}
                                                 ${GNURADIO_FILTER_LIBRARIES}
 )

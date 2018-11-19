@@ -28,7 +28,7 @@ FIND_PATH(
     HINTS $ENV{GR_DBFCTTC_DIR}/include
           ${PC_GR_DBFCTTC_INCLUDEDIR}
     PATHS ${CMAKE_INSTALL_PREFIX}/include
-          /usr/include 
+          /usr/include
           /usr/local/include
 )
 

@@ -99,4 +99,3 @@ ELSE(GFlags_ROOT_DIR)
      MESSAGE(STATUS "Cannot find gflags")
      SET(GFlags_FOUND false)
 ENDIF(GFlags_ROOT_DIR)
-

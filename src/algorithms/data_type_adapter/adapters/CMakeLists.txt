@@ -17,23 +17,23 @@
 #
 
 
-set(DATATYPE_ADAPTER_SOURCES 
+set(DATATYPE_ADAPTER_SOURCES
     byte_to_short.cc
     ibyte_to_cbyte.cc
     ibyte_to_complex.cc
     ibyte_to_cshort.cc
     ishort_to_cshort.cc
-	ishort_to_complex.cc 
+	ishort_to_complex.cc
 )
-	 
-set(DATATYPE_ADAPTER_HEADERS 
+
+set(DATATYPE_ADAPTER_HEADERS
     byte_to_short.h
     ibyte_to_cbyte.h
     ibyte_to_complex.h
     ibyte_to_cshort.h
     ishort_to_cshort.h
-	ishort_to_complex.h 
-)	 
+	ishort_to_complex.h
+)
 
 include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}

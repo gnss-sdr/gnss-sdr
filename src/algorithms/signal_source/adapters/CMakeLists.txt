@@ -202,7 +202,7 @@ if(PC_GNURADIO_RUNTIME_VERSION VERSION_GREATER 3.7.3)
          two_bit_packed_file_signal_source.cc )
      set(SIGNAL_SOURCE_ADAPTER_HEADERS ${SIGNAL_SOURCE_ADAPTER_HEADERS}
          two_bit_cpx_file_signal_source.h
-         two_bit_packed_file_signal_source.h )         
+         two_bit_packed_file_signal_source.h )
 endif(PC_GNURADIO_RUNTIME_VERSION VERSION_GREATER 3.7.3)
 
 include_directories(

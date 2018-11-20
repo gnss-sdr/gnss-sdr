@@ -619,7 +619,7 @@ void ControlThread::assist_GNSS()
                                 {
                                     std::cout << "SUPL: Received Ref Location data (Acquisition Assistance)" << std::endl;
                                     agnss_ref_location_ = supl_client_acquisition_.gps_ref_loc;
-                                    std::shared_ptr<Agnss_Ref_Location> tmp_obj = std::make_shared<Agnss_Ref_Location>(supl_client_acquisition_.gps_ref_loc);
+                                    std::shared_ptr<Agnss_Ref_Location> tmp_obj = std::make_shared<Agnss_Ref_Location>(agnss_ref_location_);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                                     supl_client_acquisition_.save_ref_location_xml("agnss_ref_location.xml", agnss_ref_location_);
                                 }
@@ -627,7 +627,7 @@ void ControlThread::assist_GNSS()
                                 {
                                     std::cout << "SUPL: Received Ref Time data (Acquisition Assistance)" << std::endl;
                                     agnss_ref_time_ = supl_client_acquisition_.gps_time;
-                                    std::shared_ptr<Agnss_Ref_Time> tmp_obj = std::make_shared<Agnss_Ref_Time>(supl_client_acquisition_.gps_time);
+                                    std::shared_ptr<Agnss_Ref_Time> tmp_obj = std::make_shared<Agnss_Ref_Time>(agnss_ref_time_);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                                     supl_client_acquisition_.save_ref_time_xml("agnss_ref_time.xml", agnss_ref_time_);
                                 }
@@ -653,20 +653,23 @@ void ControlThread::assist_GNSS()
     // If we have enough AGNSS data, make use of it
     if (agnss_ref_location_.valid == true)  // and agnss_ref_time_.valid == true  and we have AGNSS data
         {
-            // Set the receiver in Standby mode
-            flowgraph_->apply_action(0, 10);
             // Get the list of visible satellites
-            arma::vec ref_LLH = arma::zeros(1, 3);
+            arma::vec ref_LLH = arma::zeros(3, 1);
             ref_LLH(0) = agnss_ref_location_.lat;
             ref_LLH(1) = agnss_ref_location_.lon;
             time_t ref_rx_utc_time = 0;
+            if (agnss_ref_time_.valid == true)
+                {
+                    ref_rx_utc_time = agnss_ref_time_.d_tv_sec;
+                }
+
             std::vector<std::pair<int, Gnss_Satellite>> visible_sats = get_visible_sats(ref_rx_utc_time, ref_LLH);
             // Set the receiver in Standby mode
             flowgraph_->apply_action(0, 10);
             // Give priority to visible satellites in the search list
             flowgraph_->priorize_satellites(visible_sats);
-            // Warm Start
-            flowgraph_->apply_action(0, 13);
+            // Hot Start
+            flowgraph_->apply_action(0, 12);
         }
 }
 
@@ -701,20 +704,34 @@ void ControlThread::init()
     std::string ref_time_str = configuration_->property("GNSS-SDR.AGNSS_ref_utc_time", empty_string);
     if (ref_location_str.compare(empty_string) != 0)
         {
+            std::vector<double> vect;
+            std::stringstream ss(ref_location_str);
+            double d;
+            while (ss >> d)
+                {
+                    vect.push_back(d);
+                    if (ss.peek() == ',')
+                        ss.ignore();
+                }
             // fill agnss_ref_location_
-            agnss_ref_location_.lat = 0.0;  // fill
-            agnss_ref_location_.lon = 0.0;  // fill
-            agnss_ref_location_.valid = true;
+            if (vect.size() >= 2)
+                {
+                    agnss_ref_location_.lat = vect[0];
+                    agnss_ref_location_.lon = vect[1];
+                    agnss_ref_location_.valid = true;
+                }
         }
     if (ref_time_str.compare(empty_string) == 0)
         {
-            // Make and educated guess with local system time? Implies timezones, etc.
+            // Make an educated guess
+            time_t rawtime;
+            time(&rawtime);
+            agnss_ref_time_.d_tv_sec = rawtime;
+            agnss_ref_time_.valid = true;
         }
     else
         {
             // fill agnss_ref_time_
-            agnss_ref_time_.d_TOW = 0.0;   // fill
-            agnss_ref_time_.d_Week = 0;    // fill
             agnss_ref_time_.d_tv_sec = 0;  // fill
             agnss_ref_time_.valid = true;
         }

@@ -422,7 +422,7 @@ bool ControlThread::read_assistance_from_XML()
             if (supl_client_acquisition_.load_ref_time_xml(ref_time_xml_filename) == true)
                 {
                     LOG(INFO) << "SUPL: Read XML Ref Time";
-                    std::shared_ptr<Gps_Ref_Time> tmp_obj = std::make_shared<Gps_Ref_Time>(supl_client_acquisition_.gps_time);
+                    std::shared_ptr<Agnss_Ref_Time> tmp_obj = std::make_shared<Agnss_Ref_Time>(supl_client_acquisition_.gps_time);
                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                 }
             else
@@ -434,7 +434,7 @@ bool ControlThread::read_assistance_from_XML()
             if (supl_client_acquisition_.load_ref_location_xml(ref_location_xml_filename) == true)
                 {
                     LOG(INFO) << "SUPL: Read XML Ref Location";
-                    std::shared_ptr<Gps_Ref_Location> tmp_obj = std::make_shared<Gps_Ref_Location>(supl_client_acquisition_.gps_ref_loc);
+                    std::shared_ptr<Agnss_Ref_Location> tmp_obj = std::make_shared<Agnss_Ref_Location>(supl_client_acquisition_.gps_ref_loc);
                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                 }
             else
@@ -618,13 +618,15 @@ void ControlThread::assist_GNSS()
                             if (supl_client_acquisition_.gps_ref_loc.valid == true)
                                 {
                                     std::cout << "SUPL: Received Ref Location data (Acquisition Assistance)" << std::endl;
-                                    std::shared_ptr<Gps_Ref_Location> tmp_obj = std::make_shared<Gps_Ref_Location>(supl_client_acquisition_.gps_ref_loc);
+                                    agnss_ref_location_ = supl_client_acquisition_.gps_ref_loc;
+                                    std::shared_ptr<Agnss_Ref_Location> tmp_obj = std::make_shared<Agnss_Ref_Location>(supl_client_acquisition_.gps_ref_loc);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                                 }
                             if (supl_client_acquisition_.gps_time.valid == true)
                                 {
                                     std::cout << "SUPL: Received Ref Time data (Acquisition Assistance)" << std::endl;
-                                    std::shared_ptr<Gps_Ref_Time> tmp_obj = std::make_shared<Gps_Ref_Time>(supl_client_acquisition_.gps_time);
+                                    agnss_ref_time_ = supl_client_acquisition_.gps_time;
+                                    std::shared_ptr<Agnss_Ref_Time> tmp_obj = std::make_shared<Agnss_Ref_Time>(supl_client_acquisition_.gps_time);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                                 }
                         }
@@ -644,6 +646,25 @@ void ControlThread::assist_GNSS()
                 {
                     std::cout << "GNSS assistance data loaded from local XML file(s)." << std::endl;
                 }
+        }
+
+    // If we have enough AGNSS data, make use of it
+    if (agnss_ref_location_.valid == true)  // and agnss_ref_time_.valid == true  and we have AGNSS data
+        {
+            // Set the receiver in Standby mode
+            flowgraph_->apply_action(0, 10);
+            // Get the list of visible satellites
+            arma::vec ref_LLH = arma::zeros(1, 3);
+            ref_LLH(0) = agnss_ref_location_.lat;
+            ref_LLH(1) = agnss_ref_location_.lon;
+            time_t ref_rx_utc_time = 0;
+            std::vector<std::pair<int, Gnss_Satellite>> visible_sats = get_visible_sats(ref_rx_utc_time, ref_LLH);
+            // Set the receiver in Standby mode
+            flowgraph_->apply_action(0, 10);
+            // Give priority to visible satellites in the search list
+            flowgraph_->priorize_satellites(visible_sats);
+            // Warm Start
+            flowgraph_->apply_action(0, 13);
         }
 }
 
@@ -670,6 +691,31 @@ void ControlThread::init()
     supl_lac = 0;
     supl_ci = 0;
     msqid = -1;
+    agnss_ref_location_ = Agnss_Ref_Location();
+    agnss_ref_time_ = Agnss_Ref_Time();
+
+    std::string empty_string = "";
+    std::string ref_location_str = configuration_->property("GNSS-SDR.AGNSS_ref_location", empty_string);
+    std::string ref_time_str = configuration_->property("GNSS-SDR.AGNSS_ref_utc_time", empty_string);
+    if (ref_location_str.compare(empty_string) != 0)
+        {
+            // fill agnss_ref_location_
+            agnss_ref_location_.lat = 0.0;  // fill
+            agnss_ref_location_.lon = 0.0;  // fill
+            agnss_ref_location_.valid = true;
+        }
+    if (ref_time_str.compare(empty_string) == 0)
+        {
+            // Make and educated guess with local system time? Implies timezones, etc.
+        }
+    else
+        {
+            // fill agnss_ref_time_
+            agnss_ref_time_.d_TOW = 0.0;   // fill
+            agnss_ref_time_.d_Week = 0;    // fill
+            agnss_ref_time_.d_tv_sec = 0;  // fill
+            agnss_ref_time_.valid = true;
+        }
 }
 
 
@@ -744,7 +790,7 @@ void ControlThread::apply_action(unsigned int what)
             visible_satellites = get_visible_sats(cmd_interface_.get_utc_time(), cmd_interface_.get_LLH());
             //reorder the satellite queue to acquire first those visible satellites
             flowgraph_->priorize_satellites(visible_satellites);
-            //start again the satellite acquisitions (done in chained applyaction to flowgraph)
+            //start again the satellite acquisitions (done in chained apply_action to flowgraph)
             break;
         case 13:
             LOG(INFO) << "Receiver action WARMSTART";
@@ -754,11 +800,11 @@ void ControlThread::apply_action(unsigned int what)
             //load the ephemeris and the almanac from XML files (receiver assistance)
             read_assistance_from_XML();
             //call here the function that computes the set of visible satellites and its elevation
-            //for the date and time specified by the warmstart command and the assisted position
+            //for the date and time specified by the warm start command and the assisted position
             get_visible_sats(cmd_interface_.get_utc_time(), cmd_interface_.get_LLH());
             //reorder the satellite queue to acquire first those visible satellites
             flowgraph_->priorize_satellites(visible_satellites);
-            //start again the satellite acquisitions (done in chained applyaction to flowgraph)
+            //start again the satellite acquisitions (done in chained apply_action to flowgraph)
             break;
         default:
             LOG(INFO) << "Unrecognized action.";

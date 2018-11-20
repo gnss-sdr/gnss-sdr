@@ -38,6 +38,8 @@ extern "C"
 {
 #include "supl.h"
 }
+#include "agnss_ref_location.h"
+#include "agnss_ref_time.h"
 #include "GPS_L1_CA.h"
 #include "gps_ephemeris.h"
 #include "gps_iono.h"
@@ -45,8 +47,6 @@ extern "C"
 #include "gps_utc_model.h"
 #include "gps_cnav_utc_model.h"
 #include "gps_acq_assist.h"
-#include "gps_ref_time.h"
-#include "gps_ref_location.h"
 #include "gps_cnav_ephemeris.h"
 #include "galileo_ephemeris.h"
 #include "galileo_utc_model.h"
@@ -98,14 +98,14 @@ public:
     Gps_Iono gps_iono;
     Galileo_Iono gal_iono;
     // reference time
-    Gps_Ref_Time gps_time;
+    Agnss_Ref_Time gps_time;
     // UTC model
     Gps_Utc_Model gps_utc;
     Galileo_Utc_Model gal_utc;
     Gps_CNAV_Utc_Model gps_cnav_utc;
     Glonass_Gnav_Utc_Model glo_gnav_utc;
     // reference location
-    Gps_Ref_Location gps_ref_loc;
+    Agnss_Ref_Location gps_ref_loc;
     // Acquisition Assistance map
     std::map<int, Gps_Acq_Assist> gps_acq_map;
 
@@ -257,7 +257,7 @@ public:
      * \brief Save ref time map to XML file
      */
     bool save_ref_time_map_xml(const std::string file_name,
-        std::map<int, Gps_Ref_Time> ref_time_map);
+        std::map<int, Agnss_Ref_Time> ref_time_map);
 
     /*!
      * \brief Read ref location from XML file
@@ -268,7 +268,7 @@ public:
      * \brief Save ref location map to XML file
      */
     bool save_ref_location_map_xml(std::string file_name,
-        std::map<int, Gps_Ref_Location> ref_location_map);
+        std::map<int, Agnss_Ref_Location> ref_location_map);
 
     /*
      * Prints SUPL data to std::cout. Use it for debug purposes only.

@@ -996,7 +996,7 @@ bool gnss_sdr_supl_client::load_ref_time_xml(const std::string file_name)
 }
 
 
-bool gnss_sdr_supl_client::save_ref_time_map_xml(const std::string file_name, std::map<int, Gps_Ref_Time> ref_time_map)
+bool gnss_sdr_supl_client::save_ref_time_map_xml(const std::string file_name, std::map<int, Agnss_Ref_Time> ref_time_map)
 {
     if (ref_time_map.empty() == false)
         {
@@ -1043,7 +1043,7 @@ bool gnss_sdr_supl_client::load_ref_location_xml(const std::string file_name)
 }
 
 
-bool gnss_sdr_supl_client::save_ref_location_map_xml(const std::string file_name, std::map<int, Gps_Ref_Location> ref_location_map)
+bool gnss_sdr_supl_client::save_ref_location_map_xml(const std::string file_name, std::map<int, Agnss_Ref_Location> ref_location_map)
 {
     if (ref_location_map.empty() == false)
         {

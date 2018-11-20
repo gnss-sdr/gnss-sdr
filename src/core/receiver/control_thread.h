@@ -41,6 +41,8 @@
 #include "tcp_cmd_interface.h"
 #include "gnss_flowgraph.h"
 #include "configuration_interface.h"
+#include "agnss_ref_location.h"
+#include "agnss_ref_time.h"
 #include <boost/thread.hpp>
 #include <gnuradio/msg_queue.h>
 #include <memory>
@@ -189,6 +191,9 @@ private:
     const std::string glo_utc_default_xml_filename = "./glo_utc_model.xml";
     const std::string gal_almanac_default_xml_filename = "./gal_almanac.xml";
     const std::string gps_almanac_default_xml_filename = "./gps_almanac.xml";
+
+    Agnss_Ref_Location agnss_ref_location_;
+    Agnss_Ref_Time agnss_ref_time_;
 };
 
 #endif /*GNSS_SDR_CONTROL_THREAD_H_*/

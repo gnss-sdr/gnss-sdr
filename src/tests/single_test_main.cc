@@ -29,6 +29,8 @@
  * -------------------------------------------------------------------------
  */
 
+#include "agnss_ref_location.h"
+#include "agnss_ref_time.h"
 #include "concurrent_queue.h"
 #include "concurrent_map.h"
 #include "gps_navigation_message.h"
@@ -36,8 +38,6 @@
 #include "gps_cnav_ephemeris.h"
 #include "gps_cnav_iono.h"
 #include "gps_acq_assist.h"
-#include "gps_ref_location.h"
-#include "gps_ref_time.h"
 #include "galileo_navigation_message.h"
 #include <boost/thread.hpp>
 #include <boost/filesystem.hpp>

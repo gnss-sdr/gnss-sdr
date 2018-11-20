@@ -877,7 +877,7 @@ bool gnss_sdr_supl_client::read_gal_almanac_from_gsa(const std::string file_name
                     gal_alm.i_WNa = std::stoi(almanac.child("almanac").child_value("wna"));
                     gal_alm.i_IODa = std::stoi(almanac.child("almanac").child_value("iod"));
                     gal_alm.d_Delta_i = std::stod(almanac.child("almanac").child_value("deltai"));
-                    gal_alm.d_M_0 = std::stod(almanac.child("almanac").child_value("deltai"));
+                    gal_alm.d_M_0 = std::stod(almanac.child("almanac").child_value("m0"));
                     gal_alm.d_e_eccentricity = std::stod(almanac.child("almanac").child_value("ecc"));
                     gal_alm.d_Delta_sqrt_A = std::stod(almanac.child("almanac").child_value("aSqRoot"));
                     gal_alm.d_OMEGA0 = std::stod(almanac.child("almanac").child_value("omega0"));

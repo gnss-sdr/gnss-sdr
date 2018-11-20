@@ -621,6 +621,7 @@ void ControlThread::assist_GNSS()
                                     agnss_ref_location_ = supl_client_acquisition_.gps_ref_loc;
                                     std::shared_ptr<Agnss_Ref_Location> tmp_obj = std::make_shared<Agnss_Ref_Location>(supl_client_acquisition_.gps_ref_loc);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+                                    supl_client_acquisition_.save_ref_location_xml("agnss_ref_location.xml", agnss_ref_location_);
                                 }
                             if (supl_client_acquisition_.gps_time.valid == true)
                                 {
@@ -628,6 +629,7 @@ void ControlThread::assist_GNSS()
                                     agnss_ref_time_ = supl_client_acquisition_.gps_time;
                                     std::shared_ptr<Agnss_Ref_Time> tmp_obj = std::make_shared<Agnss_Ref_Time>(supl_client_acquisition_.gps_time);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+                                    supl_client_acquisition_.save_ref_time_xml("agnss_ref_time.xml", agnss_ref_time_);
                                 }
                         }
                     else

@@ -256,8 +256,8 @@ public:
     /*!
      * \brief Save ref time map to XML file
      */
-    bool save_ref_time_map_xml(const std::string file_name,
-        std::map<int, Agnss_Ref_Time> ref_time_map);
+    bool save_ref_time_xml(const std::string file_name,
+        Agnss_Ref_Time& ref_time_map);
 
     /*!
      * \brief Read ref location from XML file
@@ -267,8 +267,8 @@ public:
     /*!
      * \brief Save ref location map to XML file
      */
-    bool save_ref_location_map_xml(std::string file_name,
-        std::map<int, Agnss_Ref_Location> ref_location_map);
+    bool save_ref_location_xml(std::string file_name,
+        Agnss_Ref_Location& ref_location);
 
     /*
      * Prints SUPL data to std::cout. Use it for debug purposes only.

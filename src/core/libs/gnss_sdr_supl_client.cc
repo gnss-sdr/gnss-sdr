@@ -984,7 +984,7 @@ bool gnss_sdr_supl_client::load_ref_time_xml(const std::string file_name)
         {
             ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
             boost::archive::xml_iarchive xml(ifs);
-            xml >> boost::serialization::make_nvp("GNSS-SDR_ref_time_map", this->gps_time);
+            xml >> boost::serialization::make_nvp("GNSS-SDR_ref_time", this->gps_time);
             LOG(INFO) << "Loaded Ref Time data";
         }
     catch (std::exception& e)
@@ -996,17 +996,16 @@ bool gnss_sdr_supl_client::load_ref_time_xml(const std::string file_name)
 }
 
 
-bool gnss_sdr_supl_client::save_ref_time_map_xml(const std::string file_name, std::map<int, Agnss_Ref_Time> ref_time_map)
+bool gnss_sdr_supl_client::save_ref_time_xml(const std::string file_name, Agnss_Ref_Time& ref_time)
 {
-    if (ref_time_map.empty() == false)
+    if (ref_time.valid == true)
         {
             std::ofstream ofs;
             try
                 {
                     ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
                     boost::archive::xml_oarchive xml(ofs);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_ref_time_map", ref_time_map);
-
+                    xml << boost::serialization::make_nvp("GNSS-SDR_ref_time", ref_time);
                     LOG(INFO) << "Saved Ref Time data";
                 }
             catch (std::exception& e)
@@ -1017,7 +1016,7 @@ bool gnss_sdr_supl_client::save_ref_time_map_xml(const std::string file_name, st
         }
     else
         {
-            LOG(WARNING) << "Failed to save Ref Time, map is empty";
+            LOG(WARNING) << "Failed to save Ref Time";
             return false;
         }
     return true;
@@ -1031,7 +1030,7 @@ bool gnss_sdr_supl_client::load_ref_location_xml(const std::string file_name)
         {
             ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
             boost::archive::xml_iarchive xml(ifs);
-            xml >> boost::serialization::make_nvp("GNSS-SDR_ref_location_map", this->gps_ref_loc);
+            xml >> boost::serialization::make_nvp("GNSS-SDR_ref_location", this->gps_ref_loc);
             LOG(INFO) << "Loaded Ref Location data";
         }
     catch (std::exception& e)
@@ -1043,16 +1042,16 @@ bool gnss_sdr_supl_client::load_ref_location_xml(const std::string file_name)
 }
 
 
-bool gnss_sdr_supl_client::save_ref_location_map_xml(const std::string file_name, std::map<int, Agnss_Ref_Location> ref_location_map)
+bool gnss_sdr_supl_client::save_ref_location_xml(const std::string file_name, Agnss_Ref_Location& ref_location)
 {
-    if (ref_location_map.empty() == false)
+    if (ref_location.valid == true)
         {
             std::ofstream ofs;
             try
                 {
                     ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
                     boost::archive::xml_oarchive xml(ofs);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_ref_location_map", ref_location_map);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_ref_location", ref_location);
                     LOG(INFO) << "Saved Ref Location data";
                 }
             catch (std::exception& e)
@@ -1063,7 +1062,7 @@ bool gnss_sdr_supl_client::save_ref_location_map_xml(const std::string file_name
         }
     else
         {
-            LOG(WARNING) << "Failed to save Ref Location, map is empty";
+            LOG(WARNING) << "Failed to save Ref Location";
             return false;
         }
     return true;

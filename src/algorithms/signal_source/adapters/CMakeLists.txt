@@ -81,6 +81,7 @@ if(ENABLE_FMCOMMS2)
     endif(GRIIO_FOUND)
 endif(ENABLE_FMCOMMS2)
 
+
 if(ENABLE_AD9361)
     ###############################################
     # AD9361 DIRECT TO FPGA Hardware
@@ -92,57 +93,55 @@ if(ENABLE_AD9361)
 endif(ENABLE_AD9361)
 
 
-
 if(ENABLE_GN3S)
-     ##############################################
-     # GN3S (USB dongle)
-     ##############################################
-     find_package(GRGN3S REQUIRED)
-     if(NOT GRGN3S_FOUND)
-         message(" gr-gn3s not found, install it from https://github.com/gnss-sdr/gr-gn3s ")
-         message(FATAL_ERROR "gr-gn3s required for building gnss-sdr with this option enabled")
-     endif(NOT GRGN3S_FOUND)
-     set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GR_GN3S_LIBRARIES})
-     set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${GR_GN3S_INCLUDE_DIRS})
-     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} gn3s_signal_source.cc)
-     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} gn3s_signal_source.h)
+    ##############################################
+    # GN3S (USB dongle)
+    ##############################################
+    find_package(GRGN3S REQUIRED)
+    if(NOT GRGN3S_FOUND)
+        message(" gr-gn3s not found, install it from https://github.com/gnss-sdr/gr-gn3s ")
+        message(FATAL_ERROR "gr-gn3s required for building gnss-sdr with this option enabled")
+    endif(NOT GRGN3S_FOUND)
+    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GR_GN3S_LIBRARIES})
+    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${GR_GN3S_INCLUDE_DIRS})
+    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} gn3s_signal_source.cc)
+    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} gn3s_signal_source.h)
 endif(ENABLE_GN3S)
 
 
 if(ENABLE_FLEXIBAND)
-     ##############################################
-     # TELEORBIT FLEXIBAND FRONTEND ADAPTER
-     ##############################################
-     find_package(TELEORBIT REQUIRED)
-     if(NOT TELEORBIT_FOUND)
-         message(FATAL_ERROR "Teleorbit Flexiband GNU Radio driver required to build gnss-sdr with the optional FLEXIBAND adapter")
-     endif(NOT TELEORBIT_FOUND)
-
-     # Set up variables
-     set(FLEXIBAND_DRIVER_INCLUDE_DIRS
-         ${OPT_DRIVER_INCLUDE_DIRS}
-         ${TELEORBIT_INCLUDE_DIR}/teleorbit
-     )
-     set(OPT_LIBRARIES ${OPT_LIBRARIES} ${TELEORBIT_LIBRARIES})
-     set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${FLEXIBAND_DRIVER_INCLUDE_DIRS})
-     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} flexiband_signal_source.cc)
-     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} flexiband_signal_source.h)
+    ##############################################
+    # TELEORBIT FLEXIBAND FRONTEND ADAPTER
+    ##############################################
+    find_package(TELEORBIT REQUIRED)
+    if(NOT TELEORBIT_FOUND)
+        message(FATAL_ERROR "Teleorbit Flexiband GNU Radio driver required to build gnss-sdr with the optional FLEXIBAND adapter")
+    endif(NOT TELEORBIT_FOUND)
+    # Set up variables
+    set(FLEXIBAND_DRIVER_INCLUDE_DIRS
+        ${OPT_DRIVER_INCLUDE_DIRS}
+        ${TELEORBIT_INCLUDE_DIR}/teleorbit
+    )
+    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${TELEORBIT_LIBRARIES})
+    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${FLEXIBAND_DRIVER_INCLUDE_DIRS})
+    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} flexiband_signal_source.cc)
+    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} flexiband_signal_source.h)
 endif(ENABLE_FLEXIBAND)
 
 
 if(ENABLE_ARRAY)
-     ##############################################
-     # DBFCTTC GNSS EXPERIMENTAL ARRAY PROTOTYPE
-     ##############################################
-     find_package(GRDBFCTTC REQUIRED)
-     if(NOT GRDBFCTTC_FOUND)
-         message(" gr-dbfcttc not found, install it from https://github.com/gnss-sdr/gr-dbfcttc ")
-         message(FATAL_ERROR "gr-dbfcttc required for building gnss-sdr with this option enabled")
-     endif(NOT GRDBFCTTC_FOUND)
-     set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GR_DBFCTTC_LIBRARIES})
-     set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${GR_DBFCTTC_INCLUDE_DIRS})
-     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} raw_array_signal_source.cc)
-     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} raw_array_signal_source.h)
+    ##############################################
+    # DBFCTTC GNSS EXPERIMENTAL ARRAY PROTOTYPE
+    ##############################################
+    find_package(GRDBFCTTC REQUIRED)
+    if(NOT GRDBFCTTC_FOUND)
+        message(" gr-dbfcttc not found, install it from https://github.com/gnss-sdr/gr-dbfcttc ")
+        message(FATAL_ERROR "gr-dbfcttc required for building gnss-sdr with this option enabled")
+    endif(NOT GRDBFCTTC_FOUND)
+    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GR_DBFCTTC_LIBRARIES})
+    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${GR_DBFCTTC_INCLUDE_DIRS})
+    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} raw_array_signal_source.cc)
+    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} raw_array_signal_source.h)
 endif(ENABLE_ARRAY)
 
 
@@ -166,6 +165,7 @@ if(ENABLE_OSMOSDR)
         set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${OSMO_DRIVER_INCLUDE_DIRS})
     endif(NOT GROSMOSDR_FOUND)
 endif(ENABLE_OSMOSDR)
+
 
 if(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} uhd_signal_source.cc)
@@ -197,27 +197,27 @@ set(SIGNAL_SOURCE_ADAPTER_HEADERS file_signal_source.h
 
 
 if(PC_GNURADIO_RUNTIME_VERSION VERSION_GREATER 3.7.3)
-     set(SIGNAL_SOURCE_ADAPTER_SOURCES ${SIGNAL_SOURCE_ADAPTER_SOURCES}
-         two_bit_cpx_file_signal_source.cc
-         two_bit_packed_file_signal_source.cc )
-     set(SIGNAL_SOURCE_ADAPTER_HEADERS ${SIGNAL_SOURCE_ADAPTER_HEADERS}
-         two_bit_cpx_file_signal_source.h
-         two_bit_packed_file_signal_source.h )
+    set(SIGNAL_SOURCE_ADAPTER_SOURCES ${SIGNAL_SOURCE_ADAPTER_SOURCES}
+        two_bit_cpx_file_signal_source.cc
+        two_bit_packed_file_signal_source.cc)
+    set(SIGNAL_SOURCE_ADAPTER_HEADERS ${SIGNAL_SOURCE_ADAPTER_HEADERS}
+        two_bit_cpx_file_signal_source.h
+        two_bit_packed_file_signal_source.h)
 endif(PC_GNURADIO_RUNTIME_VERSION VERSION_GREATER 3.7.3)
 
 include_directories(
-     ${CMAKE_CURRENT_SOURCE_DIR}
-     ${OPT_DRIVER_INCLUDE_DIRS}
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/libs
-     ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/gnuradio_blocks
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${Boost_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-     ${VOLK_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${OPT_DRIVER_INCLUDE_DIRS}
+    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+    ${CMAKE_SOURCE_DIR}/src/core/interfaces
+    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+    ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/libs
+    ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/gnuradio_blocks
+    ${GLOG_INCLUDE_DIRS}
+    ${GFlags_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
+    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+    ${VOLK_INCLUDE_DIRS}
 )
 
 if(ARCH_64BITS)
@@ -232,9 +232,9 @@ list(SORT SIGNAL_SOURCE_ADAPTER_SOURCES)
 add_library(signal_source_adapters ${SIGNAL_SOURCE_ADAPTER_SOURCES} ${SIGNAL_SOURCE_ADAPTER_HEADERS})
 source_group(Headers FILES ${SIGNAL_SOURCE_ADAPTER_HEADERS})
 target_link_libraries(signal_source_adapters signal_source_gr_blocks
-                                             ${Boost_LIBRARIES}
-                                             ${GNURADIO_PMT_LIBRARIES}
-                                             ${GNURADIO_BLOCKS_LIBRARIES}
-                                             ${OPT_LIBRARIES}
-                                             gnss_sp_libs
+    ${Boost_LIBRARIES}
+    ${GNURADIO_PMT_LIBRARIES}
+    ${GNURADIO_BLOCKS_LIBRARIES}
+    ${OPT_LIBRARIES}
+    gnss_sp_libs
 )

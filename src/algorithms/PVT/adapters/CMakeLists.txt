@@ -18,33 +18,39 @@
 
 
 if(Boost_VERSION LESS 105800)
-     add_definitions(-DOLD_BOOST=1)
+    add_definitions(-DOLD_BOOST=1)
 endif(Boost_VERSION LESS 105800)
 
 set(PVT_ADAPTER_SOURCES
-	rtklib_pvt.cc
+    rtklib_pvt.cc
 )
 
 set(PVT_ADAPTER_HEADERS
-	rtklib_pvt.h
+    rtklib_pvt.h
 )
 
 include_directories(
-     ${CMAKE_CURRENT_SOURCE_DIR}
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/gnuradio_blocks
-     ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${ARMADILLO_INCLUDE_DIRS}
-     ${Boost_INCLUDE_DIRS}
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+    ${CMAKE_SOURCE_DIR}/src/core/interfaces
+    ${CMAKE_SOURCE_DIR}/src/core/receiver
+    ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/gnuradio_blocks
+    ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
+    ${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib
+    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+    ${ARMADILLO_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
+    ${GLOG_INCLUDE_DIRS}
+    ${GFlags_INCLUDE_DIRS}
+    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
 add_library(pvt_adapters ${PVT_ADAPTER_SOURCES} ${PVT_ADAPTER_HEADERS})
+
 source_group(Headers FILES ${PVT_ADAPTER_HEADERS})
-target_link_libraries(pvt_adapters pvt_gr_blocks ${ARMADILLO_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES})
+
+target_link_libraries(pvt_adapters
+    pvt_gr_blocks
+    ${ARMADILLO_LIBRARIES}
+    ${GNURADIO_RUNTIME_LIBRARIES}
+)

@@ -20,8 +20,8 @@ find_package(GPSTK QUIET)
 if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
     include(GNUInstallDirs)
     string(REGEX REPLACE /[^/]*$ "" LIBDIR ${CMAKE_INSTALL_LIBDIR})
-    set(GPSTK_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/../../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX} )
-    set(GPSTK_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/include )
+    set(GPSTK_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/../../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
+    set(GPSTK_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/include)
 endif(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
 
 set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${GPSTK_INCLUDE_DIR}/gpstk)
@@ -43,17 +43,19 @@ target_link_libraries(rinex2assist
     ${GPSTK_LIBRARY}
     ${GFlags_LIBS}
     gnss_sp_libs
-    gnss_rx)
+    gnss_rx
+)
 
 if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
     add_dependencies(rinex2assist gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION})
 endif(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
 
 add_custom_command(TARGET rinex2assist POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:rinex2assist>
-                   ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:rinex2assist>)
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:rinex2assist>
+    ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:rinex2assist>
+)
 
 install(TARGETS rinex2assist
-                RUNTIME DESTINATION bin
-                COMPONENT "rinex2assist"
+    RUNTIME DESTINATION bin
+    COMPONENT "rinex2assist"
 )

@@ -55,45 +55,60 @@ set(ACQ_ADAPTER_HEADERS
     glonass_l2_ca_pcps_acquisition.h
 )
 
-
 if(ENABLE_FPGA)
-    set(ACQ_ADAPTER_SOURCES ${ACQ_ADAPTER_SOURCES} gps_l1_ca_pcps_acquisition_fpga.cc
-                                                   gps_l2_m_pcps_acquisition_fpga.cc
-                                                   galileo_e1_pcps_ambiguous_acquisition_fpga.cc
-                                                   galileo_e5a_pcps_acquisition_fpga.cc
-                                                   gps_l5i_pcps_acquisition_fpga.cc)
-
-    set(ACQ_ADAPTER_HEADERS ${ACQ_ADAPTER_HEADERS} gps_l1_ca_pcps_acquisition_fpga.h
-                                                   gps_l2_m_pcps_acquisition_fpga.h
-                                                   galileo_e1_pcps_ambiguous_acquisition_fpga.h
-                                                   galileo_e5a_pcps_acquisition_fpga.h
-                                                   gps_l5i_pcps_acquisition_fpga.h)
+    set(ACQ_ADAPTER_SOURCES ${ACQ_ADAPTER_SOURCES}
+        gps_l1_ca_pcps_acquisition_fpga.cc
+        gps_l2_m_pcps_acquisition_fpga.cc
+        galileo_e1_pcps_ambiguous_acquisition_fpga.cc
+        galileo_e5a_pcps_acquisition_fpga.cc
+        gps_l5i_pcps_acquisition_fpga.cc
+    )
+    set(ACQ_ADAPTER_HEADERS ${ACQ_ADAPTER_HEADERS}
+        gps_l1_ca_pcps_acquisition_fpga.h
+        gps_l2_m_pcps_acquisition_fpga.h
+        galileo_e1_pcps_ambiguous_acquisition_fpga.h
+        galileo_e5a_pcps_acquisition_fpga.h
+        gps_l5i_pcps_acquisition_fpga.h
+    )
 endif(ENABLE_FPGA)
 
 if(OPENCL_FOUND)
-    set(ACQ_ADAPTER_SOURCES ${ACQ_ADAPTER_SOURCES} gps_l1_ca_pcps_opencl_acquisition.cc)
-    set(ACQ_ADAPTER_HEADERS ${ACQ_ADAPTER_HEADERS} gps_l1_ca_pcps_opencl_acquisition.h)
+    set(ACQ_ADAPTER_SOURCES
+        ${ACQ_ADAPTER_SOURCES}
+        gps_l1_ca_pcps_opencl_acquisition.cc
+    )
+    set(ACQ_ADAPTER_HEADERS ${ACQ_ADAPTER_HEADERS}
+        gps_l1_ca_pcps_opencl_acquisition.h
+    )
 endif(OPENCL_FOUND)
 
 include_directories(
-     ${CMAKE_CURRENT_SOURCE_DIR}
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/gnuradio_blocks
-     ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/libs
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${Boost_INCLUDE_DIRS}
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${ARMADILLO_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-     ${GNURADIO_BLOCKS_INCLUDE_DIRS}
-     ${VOLK_GNSSSDR_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+    ${CMAKE_SOURCE_DIR}/src/core/interfaces
+    ${CMAKE_SOURCE_DIR}/src/core/receiver
+    ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/gnuradio_blocks
+    ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/libs
+    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+    ${Boost_INCLUDE_DIRS}
+    ${GLOG_INCLUDE_DIRS}
+    ${GFlags_INCLUDE_DIRS}
+    ${ARMADILLO_INCLUDE_DIRS}
+    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+    ${GNURADIO_BLOCKS_INCLUDE_DIRS}
+    ${VOLK_GNSSSDR_INCLUDE_DIRS}
 )
 
 list(SORT ACQ_ADAPTER_HEADERS)
 list(SORT ACQ_ADAPTER_SOURCES)
 add_library(acq_adapters ${ACQ_ADAPTER_SOURCES} ${ACQ_ADAPTER_HEADERS})
 source_group(Headers FILES ${ACQ_ADAPTER_HEADERS})
-target_link_libraries(acq_adapters acquisition_lib gnss_sp_libs gnss_sdr_flags acq_gr_blocks ${Boost_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES})
+target_link_libraries(acq_adapters
+    acquisition_lib
+    gnss_sp_libs
+    gnss_sdr_flags
+    acq_gr_blocks
+    ${Boost_LIBRARIES}
+    ${GNURADIO_RUNTIME_LIBRARIES}
+    ${GNURADIO_BLOCKS_LIBRARIES}
+)

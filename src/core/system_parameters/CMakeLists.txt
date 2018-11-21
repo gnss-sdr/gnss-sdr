@@ -25,8 +25,8 @@ set(SYSTEM_PARAMETERS_SOURCES
      gps_almanac.cc
      gps_utc_model.cc
      gps_acq_assist.cc
-     gps_ref_time.cc
-     gps_ref_location.cc
+     agnss_ref_time.cc
+     agnss_ref_location.cc
      galileo_utc_model.cc
      galileo_ephemeris.cc
      galileo_almanac.cc
@@ -55,8 +55,8 @@ set(SYSTEM_PARAMETERS_HEADERS
      gps_almanac.h
      gps_utc_model.h
      gps_acq_assist.h
-     gps_ref_time.h
-     gps_ref_location.h
+     agnss_ref_time.h
+     agnss_ref_location.h
      galileo_utc_model.h
      galileo_ephemeris.h
      galileo_almanac.h

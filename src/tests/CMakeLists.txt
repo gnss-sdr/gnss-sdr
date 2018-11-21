@@ -190,12 +190,12 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
     else(ENABLE_FPGA)
       set(CROSS_INSTALL_DIR "")
     endif(ENABLE_FPGA)
-    find_package(GnssSimulator QUIET)
-    if(GNSS-SIMULATOR_FOUND OR NOT ENABLE_GNSS_SIM_INSTALL)
+    find_package(GNSSSIMULATOR QUIET)
+    if(GNSSSIMULATOR_FOUND OR NOT ENABLE_GNSS_SIM_INSTALL)
       add_definitions(-DSW_GENERATOR_BIN="${SW_GENERATOR_BIN}")
       add_definitions(-DDEFAULT_RINEX_NAV="${CMAKE_INSTALL_PREFIX}/share/gnss-sim/brdc3540.14n")
       add_definitions(-DDEFAULT_POSITION_FILE="${CMAKE_INSTALL_PREFIX}/share/gnss-sim/circle.csv")
-    else(GNSS-SIMULATOR_FOUND OR NOT ENABLE_GNSS_SIM_INSTALL)
+    else(GNSSSIMULATOR_FOUND OR NOT ENABLE_GNSS_SIM_INSTALL)
       ExternalProject_Add(
           gnss-sim
           GIT_REPOSITORY https://bitbucket.org/jarribas/gnss-simulator
@@ -221,7 +221,7 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
           add_definitions(-DDEFAULT_RINEX_NAV="${CMAKE_CURRENT_BINARY_DIR}/../../../thirdparty/gnss-sim/brdc3540.14n")
           add_definitions(-DDEFAULT_POSITION_FILE="${CMAKE_CURRENT_BINARY_DIR}/../../../thirdparty/gnss-sim/circle.csv")
       endif(ENABLE_INSTALL_TESTS)
-    endif(GNSS-SIMULATOR_FOUND OR NOT ENABLE_GNSS_SIM_INSTALL)
+    endif(GNSSSIMULATOR_FOUND OR NOT ENABLE_GNSS_SIM_INSTALL)
 
     ################################################################################
     # Local installation of GPSTk http://www.gpstk.org/

@@ -19,10 +19,10 @@
 # Find  GR-GN3S Module
 ########################################################################
 
-INCLUDE(FindPkgConfig)
-PKG_CHECK_MODULES(PC_GR_GN3S gr-gn3s)
+include(FindPkgConfig)
+pkg_check_modules(PC_GR_GN3S gr-gn3s)
 
-FIND_PATH(
+find_path(
     GR_GN3S_INCLUDE_DIRS
     NAMES gn3s/gn3s_api.h
     HINTS $ENV{GR_GN3S_DIR}/include
@@ -32,7 +32,7 @@ FIND_PATH(
           /usr/include
 )
 
-FIND_LIBRARY(
+find_library(
     GR_GN3S_LIBRARIES
     NAMES gr-gn3s
     HINTS $ENV{GR_GN3S_DIR}/lib
@@ -45,6 +45,6 @@ FIND_LIBRARY(
           /usr/lib64
 )
 
-INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(GR_GN3S DEFAULT_MSG GR_GN3S_LIBRARIES GR_GN3S_INCLUDE_DIRS)
-MARK_AS_ADVANCED(GR_GN3S_LIBRARIES GR_GN3S_INCLUDE_DIRS)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(GRGN3S DEFAULT_MSG GR_GN3S_LIBRARIES GR_GN3S_INCLUDE_DIRS)
+mark_as_advanced(GR_GN3S_LIBRARIES GR_GN3S_INCLUDE_DIRS)

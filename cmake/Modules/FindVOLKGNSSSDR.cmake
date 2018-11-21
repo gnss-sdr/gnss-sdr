@@ -19,10 +19,10 @@
 # Find VOLK (Vector-Optimized Library of Kernels) GNSS-SDR library
 ########################################################################
 
-INCLUDE(FindPkgConfig)
-PKG_CHECK_MODULES(PC_VOLK_GNSSSDR volk_gnsssdr)
+include(FindPkgConfig)
+pkg_check_modules(PC_VOLK_GNSSSDR volk_gnsssdr)
 
-FIND_PATH(
+find_path(
     VOLK_GNSSSDR_INCLUDE_DIRS
     NAMES volk_gnsssdr/volk_gnsssdr.h
     HINTS $ENV{VOLK_GNSSSDR_DIR}/include
@@ -32,7 +32,7 @@ FIND_PATH(
           ${GNURADIO_INSTALL_PREFIX}/include
 )
 
-FIND_LIBRARY(
+find_library(
     VOLK_GNSSSDR_LIBRARIES
     NAMES volk_gnsssdr
     HINTS $ENV{VOLK_GNSSSDR_DIR}/lib
@@ -44,6 +44,6 @@ FIND_LIBRARY(
           ${GNURADIO_INSTALL_PREFIX}/lib
 )
 
-INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(VOLK_GNSSSDR DEFAULT_MSG VOLK_GNSSSDR_LIBRARIES VOLK_GNSSSDR_INCLUDE_DIRS)
-MARK_AS_ADVANCED(VOLK_GNSSSDR_LIBRARIES VOLK_GNSSSDR_INCLUDE_DIRS)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(VOLKGNSSSDR DEFAULT_MSG VOLK_GNSSSDR_LIBRARIES VOLK_GNSSSDR_INCLUDE_DIRS)
+mark_as_advanced(VOLK_GNSSSDR_LIBRARIES VOLK_GNSSSDR_INCLUDE_DIRS)

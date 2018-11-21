@@ -422,7 +422,7 @@ bool ControlThread::read_assistance_from_XML()
             if (supl_client_acquisition_.load_ref_time_xml(ref_time_xml_filename) == true)
                 {
                     LOG(INFO) << "SUPL: Read XML Ref Time";
-                    std::shared_ptr<Gps_Ref_Time> tmp_obj = std::make_shared<Gps_Ref_Time>(supl_client_acquisition_.gps_time);
+                    std::shared_ptr<Agnss_Ref_Time> tmp_obj = std::make_shared<Agnss_Ref_Time>(supl_client_acquisition_.gps_time);
                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                 }
             else
@@ -434,7 +434,7 @@ bool ControlThread::read_assistance_from_XML()
             if (supl_client_acquisition_.load_ref_location_xml(ref_location_xml_filename) == true)
                 {
                     LOG(INFO) << "SUPL: Read XML Ref Location";
-                    std::shared_ptr<Gps_Ref_Location> tmp_obj = std::make_shared<Gps_Ref_Location>(supl_client_acquisition_.gps_ref_loc);
+                    std::shared_ptr<Agnss_Ref_Location> tmp_obj = std::make_shared<Agnss_Ref_Location>(supl_client_acquisition_.gps_ref_loc);
                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                 }
             else
@@ -563,6 +563,7 @@ void ControlThread::assist_GNSS()
                                     std::shared_ptr<Gps_Almanac> tmp_obj = std::make_shared<Gps_Almanac>(gps_alm_iter->second);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                                 }
+                            supl_client_ephemeris_.save_gps_almanac_xml("gps_almanac_map.xml", supl_client_ephemeris_.gps_almanac_map);
                             if (supl_client_ephemeris_.gps_iono.valid == true)
                                 {
                                     std::cout << "SUPL: Received GPS Ionosphere model parameters" << std::endl;
@@ -618,14 +619,18 @@ void ControlThread::assist_GNSS()
                             if (supl_client_acquisition_.gps_ref_loc.valid == true)
                                 {
                                     std::cout << "SUPL: Received Ref Location data (Acquisition Assistance)" << std::endl;
-                                    std::shared_ptr<Gps_Ref_Location> tmp_obj = std::make_shared<Gps_Ref_Location>(supl_client_acquisition_.gps_ref_loc);
+                                    agnss_ref_location_ = supl_client_acquisition_.gps_ref_loc;
+                                    std::shared_ptr<Agnss_Ref_Location> tmp_obj = std::make_shared<Agnss_Ref_Location>(agnss_ref_location_);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+                                    supl_client_acquisition_.save_ref_location_xml("agnss_ref_location.xml", agnss_ref_location_);
                                 }
                             if (supl_client_acquisition_.gps_time.valid == true)
                                 {
                                     std::cout << "SUPL: Received Ref Time data (Acquisition Assistance)" << std::endl;
-                                    std::shared_ptr<Gps_Ref_Time> tmp_obj = std::make_shared<Gps_Ref_Time>(supl_client_acquisition_.gps_time);
+                                    agnss_ref_time_ = supl_client_acquisition_.gps_time;
+                                    std::shared_ptr<Agnss_Ref_Time> tmp_obj = std::make_shared<Agnss_Ref_Time>(agnss_ref_time_);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
+                                    supl_client_acquisition_.save_ref_time_xml("agnss_ref_time.xml", agnss_ref_time_);
                                 }
                         }
                     else
@@ -644,6 +649,28 @@ void ControlThread::assist_GNSS()
                 {
                     std::cout << "GNSS assistance data loaded from local XML file(s)." << std::endl;
                 }
+        }
+
+    // If we have enough AGNSS data, make use of it
+    if (agnss_ref_location_.valid == true)  // and agnss_ref_time_.valid == true  and we have AGNSS data
+        {
+            // Get the list of visible satellites
+            arma::vec ref_LLH = arma::zeros(3, 1);
+            ref_LLH(0) = agnss_ref_location_.lat;
+            ref_LLH(1) = agnss_ref_location_.lon;
+            time_t ref_rx_utc_time = 0;
+            if (agnss_ref_time_.valid == true)
+                {
+                    ref_rx_utc_time = agnss_ref_time_.d_tv_sec;
+                }
+
+            std::vector<std::pair<int, Gnss_Satellite>> visible_sats = get_visible_sats(ref_rx_utc_time, ref_LLH);
+            // Set the receiver in Standby mode
+            flowgraph_->apply_action(0, 10);
+            // Give priority to visible satellites in the search list
+            flowgraph_->priorize_satellites(visible_sats);
+            // Hot Start
+            flowgraph_->apply_action(0, 12);
         }
 }
 
@@ -670,6 +697,45 @@ void ControlThread::init()
     supl_lac = 0;
     supl_ci = 0;
     msqid = -1;
+    agnss_ref_location_ = Agnss_Ref_Location();
+    agnss_ref_time_ = Agnss_Ref_Time();
+
+    std::string empty_string = "";
+    std::string ref_location_str = configuration_->property("GNSS-SDR.AGNSS_ref_location", empty_string);
+    std::string ref_time_str = configuration_->property("GNSS-SDR.AGNSS_ref_utc_time", empty_string);
+    if (ref_location_str.compare(empty_string) != 0)
+        {
+            std::vector<double> vect;
+            std::stringstream ss(ref_location_str);
+            double d;
+            while (ss >> d)
+                {
+                    vect.push_back(d);
+                    if (ss.peek() == ',')
+                        ss.ignore();
+                }
+            // fill agnss_ref_location_
+            if (vect.size() >= 2)
+                {
+                    agnss_ref_location_.lat = vect[0];
+                    agnss_ref_location_.lon = vect[1];
+                    agnss_ref_location_.valid = true;
+                }
+        }
+    if (ref_time_str.compare(empty_string) == 0)
+        {
+            // Make an educated guess
+            time_t rawtime;
+            time(&rawtime);
+            agnss_ref_time_.d_tv_sec = rawtime;
+            agnss_ref_time_.valid = true;
+        }
+    else
+        {
+            // fill agnss_ref_time_
+            agnss_ref_time_.d_tv_sec = 0;  // fill
+            agnss_ref_time_.valid = true;
+        }
 }
 
 
@@ -744,7 +810,7 @@ void ControlThread::apply_action(unsigned int what)
             visible_satellites = get_visible_sats(cmd_interface_.get_utc_time(), cmd_interface_.get_LLH());
             //reorder the satellite queue to acquire first those visible satellites
             flowgraph_->priorize_satellites(visible_satellites);
-            //start again the satellite acquisitions (done in chained applyaction to flowgraph)
+            //start again the satellite acquisitions (done in chained apply_action to flowgraph)
             break;
         case 13:
             LOG(INFO) << "Receiver action WARMSTART";
@@ -754,11 +820,11 @@ void ControlThread::apply_action(unsigned int what)
             //load the ephemeris and the almanac from XML files (receiver assistance)
             read_assistance_from_XML();
             //call here the function that computes the set of visible satellites and its elevation
-            //for the date and time specified by the warmstart command and the assisted position
+            //for the date and time specified by the warm start command and the assisted position
             get_visible_sats(cmd_interface_.get_utc_time(), cmd_interface_.get_LLH());
             //reorder the satellite queue to acquire first those visible satellites
             flowgraph_->priorize_satellites(visible_satellites);
-            //start again the satellite acquisitions (done in chained applyaction to flowgraph)
+            //start again the satellite acquisitions (done in chained apply_action to flowgraph)
             break;
         default:
             LOG(INFO) << "Unrecognized action.";
@@ -872,11 +938,10 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
             arma::vec r_sat_eb_e = arma::vec{r_sat[0], r_sat[1], r_sat[2]};
             arma::vec dx = r_sat_eb_e - r_eb_e;
             topocent(&Az, &El, &dist_m, r_eb_e, dx);
-            std::cout << "Using Galileo Almanac:  Sat " << it->second.i_satellite_PRN << " Az: " << Az << " El: " << El << std::endl;
             // push sat
             if (El > 0)
                 {
-                    std::cout << "Using GPS Almanac:  Sat " << it->second.i_satellite_PRN << " Az: " << Az << " El: " << El << std::endl;
+                    std::cout << "Using Galileo Almanac:  Sat " << it->second.i_satellite_PRN << " Az: " << Az << " El: " << El << std::endl;
                     available_satellites.push_back(std::pair<int, Gnss_Satellite>(floor(El),
                         (Gnss_Satellite(std::string("Galileo"), it->second.i_satellite_PRN))));
                 }

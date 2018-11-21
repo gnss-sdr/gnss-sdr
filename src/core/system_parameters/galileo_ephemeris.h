@@ -119,30 +119,54 @@ public:
      */
     inline void serialize(Archive& archive, const uint32_t version)
     {
-        using boost::serialization::make_nvp;
         if (version)
             {
             };
-        archive& make_nvp("i_satellite_PRN", i_satellite_PRN);
-        archive& make_nvp("M0_1", M0_1);
-        archive& make_nvp("e_1", e_1);
-        archive& make_nvp("A_1", A_1);
-        archive& make_nvp("OMEGA_0_2", OMEGA_0_2);
-        archive& make_nvp("i_0_2", i_0_2);
-        archive& make_nvp("omega_2", omega_2);
-        archive& make_nvp("OMEGA_dot_3", OMEGA_dot_3);
-        archive& make_nvp("iDot_2", iDot_2);
-        archive& make_nvp("C_uc_3", C_uc_3);
-        archive& make_nvp("C_us_3", C_us_3);
-        archive& make_nvp("C_rc_3", C_rc_3);
-        archive& make_nvp("C_rs_3", C_rs_3);
-        archive& make_nvp("C_ic_4", C_ic_4);
-        archive& make_nvp("C_is_4", C_is_4);
-        archive& make_nvp("t0e_1", t0e_1);
-        archive& make_nvp("t0c_4", t0c_4);
-        archive& make_nvp("af0_4", af0_4);
-        archive& make_nvp("af1_4", af1_4);
-        archive& make_nvp("af2_4", af2_4);
+
+        archive& BOOST_SERIALIZATION_NVP(flag_all_ephemeris);
+        archive& BOOST_SERIALIZATION_NVP(IOD_ephemeris);
+        archive& BOOST_SERIALIZATION_NVP(IOD_nav_1);
+        archive& BOOST_SERIALIZATION_NVP(SV_ID_PRN_4);
+
+        archive& BOOST_SERIALIZATION_NVP(M0_1);
+        archive& BOOST_SERIALIZATION_NVP(delta_n_3);
+        archive& BOOST_SERIALIZATION_NVP(e_1);
+        archive& BOOST_SERIALIZATION_NVP(A_1);
+        archive& BOOST_SERIALIZATION_NVP(OMEGA_0_2);
+        archive& BOOST_SERIALIZATION_NVP(i_0_2);
+        archive& BOOST_SERIALIZATION_NVP(omega_2);
+        archive& BOOST_SERIALIZATION_NVP(OMEGA_dot_3);
+        archive& BOOST_SERIALIZATION_NVP(iDot_2);
+        archive& BOOST_SERIALIZATION_NVP(C_uc_3);
+        archive& BOOST_SERIALIZATION_NVP(C_us_3);
+        archive& BOOST_SERIALIZATION_NVP(C_rc_3);
+        archive& BOOST_SERIALIZATION_NVP(C_rs_3);
+        archive& BOOST_SERIALIZATION_NVP(C_ic_4);
+        archive& BOOST_SERIALIZATION_NVP(C_is_4);
+        archive& BOOST_SERIALIZATION_NVP(t0e_1);
+
+        archive& BOOST_SERIALIZATION_NVP(t0c_4);
+        archive& BOOST_SERIALIZATION_NVP(af0_4);
+        archive& BOOST_SERIALIZATION_NVP(af1_4);
+        archive& BOOST_SERIALIZATION_NVP(af2_4);
+
+        archive& BOOST_SERIALIZATION_NVP(WN_5);
+        archive& BOOST_SERIALIZATION_NVP(TOW_5);
+        archive& BOOST_SERIALIZATION_NVP(Galileo_satClkDrift);
+        archive& BOOST_SERIALIZATION_NVP(Galileo_dtr);
+
+        archive& BOOST_SERIALIZATION_NVP(SISA_3);
+        archive& BOOST_SERIALIZATION_NVP(E5a_HS);
+        archive& BOOST_SERIALIZATION_NVP(E5b_HS_5);
+        archive& BOOST_SERIALIZATION_NVP(E1B_HS_5);
+        archive& BOOST_SERIALIZATION_NVP(E5a_DVS);
+        archive& BOOST_SERIALIZATION_NVP(E5b_DVS_5);
+        archive& BOOST_SERIALIZATION_NVP(E1B_DVS_5);
+
+        archive& BOOST_SERIALIZATION_NVP(BGD_E1E5a_5);
+        archive& BOOST_SERIALIZATION_NVP(BGD_E1E5b_5);
+
+        archive& BOOST_SERIALIZATION_NVP(i_satellite_PRN);
     }
 };
 

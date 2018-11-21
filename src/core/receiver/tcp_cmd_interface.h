@@ -44,7 +44,7 @@
 #include <gnuradio/message.h>
 #include <gnuradio/msg_queue.h>
 #include <armadillo>
-#include <time.h>
+#include <ctime>
 
 class TcpCmdInterface
 {

@@ -15,32 +15,39 @@
 # You should have received a copy of the GNU General Public License
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 
-# Tries to find libosmosdr.
+# Tries to find gr-osmosdr.
 #
 # Usage of this module as follows:
 #
-# find_package(LibOsmoSDR)
+# find_package(GROSMOSDR)
 #
+# Variables used by this module, they can change the default behaviour and need
+# to be set before calling find_package:
+#
+# GrOsmoSDR_ROOT_DIR Set this variable to the root installation of
+# gr-osmosdr if the module has problems finding
+# the proper installation path.
 #
 # Variables defined by this module:
 #
-# LIBOSMOSDR_FOUND System has libosmosdr libs/headers
-# LIBOSMOSDR_LIBRARIES The libosmosdr libraries
-# LIBOSMOSDR_INCLUDE_DIR The location of libosmosdr headers
+# GROSMOSDR_FOUND System has gr-osmosdr libs/headers
+# GROSMOSDR_LIBRARIES The gr-osmosdr libraries (gnuradio-osmosdr)
+# GROSMOSDR_INCLUDE_DIR The location of gr-osmosdr headers
 
+pkg_check_modules(GROSMOSDR_PKG gnuradio-osmosdr)
+find_path(GROSMOSDR_INCLUDE_DIR
+  NAMES osmosdr/source.h
+    osmosdr/api.h
+  PATHS
+  ${GROSMOSDR_PKG_INCLUDE_DIRS}
+  /usr/include
+  /usr/local/include
+)
 
-if(NOT LIBOSMOSDR_FOUND)
-  pkg_check_modules (LIBOSMOSDR_PKG libosmosdr)
-  find_path(LIBOSMOSDR_INCLUDE_DIR NAMES osmosdr.h
-    PATHS
-    ${LIBOSMOSDR_PKG_INCLUDE_DIRS}
-    /usr/include
-    /usr/local/include
-  )
-
- find_library(LIBOSMOSDR_LIBRARIES NAMES osmosdr
-    PATHS
-    ${LIBOSMOSDR_PKG_LIBRARY_DIRS}
+find_library(GROSMOSDR_LIBRARIES
+  NAMES gnuradio-osmosdr
+  PATHS
+    ${GROSMOSDR_PKG_LIBRARY_DIRS}
     /usr/lib
     /usr/local/lib
     /usr/lib/x86_64-linux-gnu
@@ -67,16 +74,8 @@ if(NOT LIBOSMOSDR_FOUND)
     /usr/lib/x86_64-linux-gnux32
     /usr/lib/alpha-linux-gnu
     /usr/lib64
-  )
+)
 
-  if(LIBOSMOSDR_INCLUDE_DIR AND LIBOSMOSDR_LIBRARIES)
-    set(LIBOSMOSDR_FOUND TRUE CACHE INTERNAL "libosmosdr found")
-    message(STATUS "Found libosmosdr: ${LIBOSMOSDR_INCLUDE_DIR}, ${LIBOSMOSDR_LIBRARIES}")
-  else(LIBOSMOSDR_INCLUDE_DIR AND LIBOSMOSDR_LIBRARIES)
-    set(LIBOSMOSDR_FOUND FALSE CACHE INTERNAL "libosmosdr found")
-    message(STATUS "libosmosdr not found.")
-  endif(LIBOSMOSDR_INCLUDE_DIR AND LIBOSMOSDR_LIBRARIES)
-
-mark_as_advanced(LIBOSMOSDR_INCLUDE_DIR LIBOSMOSDR_LIBRARIES)
-
-endif(NOT LIBOSMOSDR_FOUND)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(GROSMOSDR DEFAULT_MSG GROSMOSDR_LIBRARIES GROSMOSDR_INCLUDE_DIR)
+mark_as_advanced(GROSMOSDR_LIBRARIES GROSMOSDR_INCLUDE_DIR)

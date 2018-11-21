@@ -15,40 +15,30 @@
 # You should have received a copy of the GNU General Public License
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 
-# Tries to find gr-osmosdr.
+# Tries to find libosmosdr.
 #
 # Usage of this module as follows:
 #
-# find_package(GrOsmoSDR)
+# find_package(LIBOSMOSDR)
 #
-# Variables used by this module, they can change the default behaviour and need
-# to be set before calling find_package:
-#
-# GrOsmoSDR_ROOT_DIR Set this variable to the root installation of
-# gr-osmosdr if the module has problems finding
-# the proper installation path.
 #
 # Variables defined by this module:
 #
-# GROSMOSDR_FOUND System has gr-osmosdr libs/headers
-# GROSMOSDR_LIBRARIES The gr-osmosdr libraries (gnuradio-osmosdr)
-# GROSMOSDR_INCLUDE_DIR The location of gr-osmosdr headers
+# LIBOSMOSDR_FOUND System has libosmosdr libs/headers
+# LIBOSMOSDR_LIBRARIES The libosmosdr libraries
+# LIBOSMOSDR_INCLUDE_DIR The location of libosmosdr headers
 
-if(NOT GROSMOSDR_FOUND)
-  pkg_check_modules (GROSMOSDR_PKG gnuradio-osmosdr)
-  find_path(GROSMOSDR_INCLUDE_DIR
-    NAMES osmosdr/source.h
-	  osmosdr/api.h
-    PATHS
-    ${GROSMOSDR_PKG_INCLUDE_DIRS}
-    /usr/include
-    /usr/local/include
-  )
+pkg_check_modules(LIBOSMOSDR_PKG libosmosdr)
+find_path(LIBOSMOSDR_INCLUDE_DIR NAMES osmosdr.h
+  PATHS
+  ${LIBOSMOSDR_PKG_INCLUDE_DIRS}
+  /usr/include
+  /usr/local/include
+)
 
- find_library(GROSMOSDR_LIBRARIES
-    NAMES gnuradio-osmosdr
-    PATHS
-    ${GROSMOSDR_PKG_LIBRARY_DIRS}
+find_library(LIBOSMOSDR_LIBRARIES NAMES osmosdr
+  PATHS
+    ${LIBOSMOSDR_PKG_LIBRARY_DIRS}
     /usr/lib
     /usr/local/lib
     /usr/lib/x86_64-linux-gnu
@@ -77,14 +67,6 @@ if(NOT GROSMOSDR_FOUND)
     /usr/lib64
   )
 
-  if(GROSMOSDR_INCLUDE_DIR AND GROSMOSDR_LIBRARIES)
-    set(GROSMOSDR_FOUND TRUE CACHE INTERNAL "gnuradio-osmosdr found")
-    message(STATUS "Found gnuradio-osmosdr: ${GROSMOSDR_INCLUDE_DIR}, ${GROSMOSDR_LIBRARIES}")
-  else(GROSMOSDR_INCLUDE_DIR AND GROSMOSDR_LIBRARIES)
-    set(GROSMOSDR_FOUND FALSE CACHE INTERNAL "gnuradio-osmosdr found")
-    message(STATUS "gnuradio-osmosdr not found.")
-  endif(GROSMOSDR_INCLUDE_DIR AND GROSMOSDR_LIBRARIES)
-
-mark_as_advanced(GROSMOSDR_INCLUDE_DIR GROSMOSDR_LIBRARIES)
-
-endif(NOT GROSMOSDR_FOUND)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(LIBOSMOSDR DEFAULT_MSG LIBOSMOSDR_INCLUDE_DIR LIBOSMOSDR_LIBRARIES)
+mark_as_advanced(LIBOSMOSDR_INCLUDE_DIR LIBOSMOSDR_LIBRARIES)

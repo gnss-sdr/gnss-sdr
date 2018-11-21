@@ -22,8 +22,8 @@
 # - Anthony Arnold
 ##############################################################################
 
-if (__TEST_FOR_ARM_INCLUDED)
-  return ()
+if(__TEST_FOR_ARM_INCLUDED)
+  return()
 endif()
 set(__TEST_FOR_ARM_INCLUDED TRUE)
 
@@ -31,27 +31,27 @@ set(__TEST_FOR_ARM_INCLUDED TRUE)
 # output variable if found.
 function(check_arm_version ppdef input_string version output_var)
   string(REGEX MATCH "${ppdef}"  _VERSION_MATCH "${input_string}")
-  if (NOT _VERSION_MATCH STREQUAL "")
+  if(NOT _VERSION_MATCH STREQUAL "")
     set(${output_var} "${version}" PARENT_SCOPE)
-  endif(NOT _VERSION_MATCH STREQUAL "")
+  endif()
 endfunction()
 
 message(STATUS "Checking for ARM")
 
-set (IS_ARM NO)
-set (ARM_VERSION "")
+set(IS_ARM NO)
+set(ARM_VERSION "")
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   execute_process(COMMAND echo "int main(){}"
                   COMMAND ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} -dM -E -
                   OUTPUT_VARIABLE TEST_FOR_ARM_RESULTS)
 
   string(REGEX MATCH "__arm" ARM_FOUND "${TEST_FOR_ARM_RESULTS}")
   if(ARM_FOUND STREQUAL "")
-     string(REGEX MATCH "__aarch64" ARM_FOUND "${TEST_FOR_ARM_RESULTS}")
-  endif(ARM_FOUND STREQUAL "")
+    string(REGEX MATCH "__aarch64" ARM_FOUND "${TEST_FOR_ARM_RESULTS}")
+  endif()
 
-  if (NOT ARM_FOUND STREQUAL "")
+  if(NOT ARM_FOUND STREQUAL "")
     set(IS_ARM YES)
     message(STATUS "ARM system detected")
 
@@ -83,22 +83,21 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     check_arm_version("__ARM_ARCH_8A" ${TEST_FOR_ARM_RESULTS} "armv8-a" ARM_VERSION)
 
     # anything else just define as arm
-    if (ARM_VERSION STREQUAL "")
+    if(ARM_VERSION STREQUAL "")
       message(STATUS "Couldn't detect ARM version. Setting to 'arm'")
       set(ARM_VERSION "arm")
-    else (ARM_VERSION STREQUAL "")
+    else()
       message(STATUS "ARM version ${ARM_VERSION} detected")
-    endif (ARM_VERSION STREQUAL "")
-
-  else (NOT ARM_FOUND STREQUAL "")
+    endif()
+  else()
     message(STATUS "System is not ARM")
-  endif(NOT ARM_FOUND STREQUAL "")
+  endif()
 
-else (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+else()
   # TODO: Other compilers
   message(STATUS "Not detecting ARM on non-GNUCXX compiler. Defaulting to false")
   message(STATUS "If you are compiling for ARM, set IS_ARM=ON manually")
-endif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+endif()
 
 set(IS_ARM ${IS_ARM} CACHE BOOL "Compiling for ARM")
 set(ARM_VERSION ${ARM_VERSION} CACHE STRING "ARM version")

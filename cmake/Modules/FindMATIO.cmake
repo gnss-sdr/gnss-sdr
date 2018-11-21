@@ -21,8 +21,8 @@
 #
 # Once done this will define:
 #
-#  MATIO_FOUND		- True if MATIO found.
-#  MATIO_LIBRARIES	- MATIO libraries.
+#  MATIO_FOUND - True if MATIO found.
+#  MATIO_LIBRARIES - MATIO libraries.
 #  MATIO_INCLUDE_DIRS - where to find matio.h, etc..
 #  MATIO_VERSION_STRING - version number as a string (e.g.: "1.3.4")
 #
@@ -66,52 +66,50 @@ find_path(MATIO_INCLUDE_DIR NAMES matio.h DOC "The MATIO include directory")
 find_library(MATIO_LIBRARY NAMES matio DOC "The MATIO library")
 
 if(MATIO_INCLUDE_DIR)
-	# ---------------------------------------------------
-	#  Extract version information from MATIO
-	# ---------------------------------------------------
+    # ---------------------------------------------------
+    #  Extract version information from MATIO
+    # ---------------------------------------------------
 
-	# If the file is missing, set all values to 0
-	set(MATIO_MAJOR_VERSION 0)
-	set(MATIO_MINOR_VERSION 0)
-	set(MATIO_RELEASE_LEVEL 0)
+    # If the file is missing, set all values to 0
+    set(MATIO_MAJOR_VERSION 0)
+    set(MATIO_MINOR_VERSION 0)
+    set(MATIO_RELEASE_LEVEL 0)
 
-	# new versions of MATIO have `matio_pubconf.h`
-	if(EXISTS ${MATIO_INCLUDE_DIR}/matio_pubconf.h)
-		set(MATIO_CONFIG_FILE "matio_pubconf.h")
-	else()
-		set(MATIO_CONFIG_FILE "matioConfig.h")
-	endif()
+    # new versions of MATIO have `matio_pubconf.h`
+    if(EXISTS ${MATIO_INCLUDE_DIR}/matio_pubconf.h)
+        set(MATIO_CONFIG_FILE "matio_pubconf.h")
+    else()
+        set(MATIO_CONFIG_FILE "matioConfig.h")
+    endif()
 
-	if(MATIO_CONFIG_FILE)
+    if(MATIO_CONFIG_FILE)
 
-		# Read and parse MATIO config header file for version number
-		file(STRINGS "${MATIO_INCLUDE_DIR}/${MATIO_CONFIG_FILE}" _matio_HEADER_CONTENTS REGEX "#define MATIO_((MAJOR|MINOR)_VERSION)|(RELEASE_LEVEL) ")
+        # Read and parse MATIO config header file for version number
+        file(STRINGS "${MATIO_INCLUDE_DIR}/${MATIO_CONFIG_FILE}" _matio_HEADER_CONTENTS REGEX "#define MATIO_((MAJOR|MINOR)_VERSION)|(RELEASE_LEVEL) ")
 
-		foreach(line ${_matio_HEADER_CONTENTS})
-			if(line MATCHES "#define ([A-Z_]+) ([0-9]+)")
-				set("${CMAKE_MATCH_1}" "${CMAKE_MATCH_2}")
-			endif()
-		endforeach()
+        foreach(line ${_matio_HEADER_CONTENTS})
+            if(line MATCHES "#define ([A-Z_]+) ([0-9]+)")
+                set("${CMAKE_MATCH_1}" "${CMAKE_MATCH_2}")
+            endif()
+        endforeach()
 
-		unset(_matio_HEADER_CONTENTS)
-	endif()
+        unset(_matio_HEADER_CONTENTS)
+    endif()
 
-	set(MATIO_VERSION_STRING "${MATIO_MAJOR_VERSION}.${MATIO_MINOR_VERSION}.${MATIO_RELEASE_LEVEL}")
-endif ()
-
-#==================
+    set(MATIO_VERSION_STRING "${MATIO_MAJOR_VERSION}.${MATIO_MINOR_VERSION}.${MATIO_RELEASE_LEVEL}")
+endif()
 
 mark_as_advanced(MATIO_INCLUDE_DIR MATIO_LIBRARY)
 
 # handle the QUIETLY and REQUIRED arguments and set MATIO_FOUND to TRUE if
 # all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(MATIO REQUIRED_VARS MATIO_LIBRARY MATIO_INCLUDE_DIR VERSION_VAR MATIO_VERSION_STRING)
+find_package_handle_standard_args(MATIO REQUIRED_VARS MATIO_LIBRARY MATIO_INCLUDE_DIR VERSION_VAR MATIO_VERSION_STRING)
 
 if(MATIO_FOUND)
   set(MATIO_LIBRARIES ${MATIO_LIBRARY})
   set(MATIO_INCLUDE_DIRS ${MATIO_INCLUDE_DIR})
-else(MATIO_FOUND)
+else()
   set(MATIO_LIBRARIES)
   set(MATIO_INCLUDE_DIRS)
-endif(MATIO_FOUND)
+endif()

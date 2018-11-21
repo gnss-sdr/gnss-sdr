@@ -15,36 +15,32 @@
 # You should have received a copy of the GNU General Public License
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 
-########################################################################
-# Find  GR-DBFCTTC Module
-########################################################################
+include(FindPkgConfig)
+pkg_check_modules(PC_TELEORBIT teleorbit)
 
-INCLUDE(FindPkgConfig)
-PKG_CHECK_MODULES(PC_GR_DBFCTTC gr-dbfcttc)
-
-FIND_PATH(
-    GR_DBFCTTC_INCLUDE_DIRS
-    NAMES dbfcttc/api.h
-    HINTS $ENV{GR_DBFCTTC_DIR}/include
-          ${PC_GR_DBFCTTC_INCLUDEDIR}
+find_path(
+    TELEORBIT_INCLUDE_DIRS
+    NAMES teleorbit/api.h
+    HINTS $ENV{TELEORBIT_DIR}/include
+        ${PC_TELEORBIT_INCLUDEDIR}
     PATHS ${CMAKE_INSTALL_PREFIX}/include
-          /usr/include
           /usr/local/include
+          /usr/include
 )
 
-FIND_LIBRARY(
-    GR_DBFCTTC_LIBRARIES
-    NAMES gnuradio-dbfcttc
-    HINTS $ENV{GR_DBFCTTC_DIR}/lib
-          ${PC_GR_DBFCTTC_LIBDIR}
+find_library(
+    TELEORBIT_LIBRARIES
+    NAMES gnuradio-teleorbit
+    HINTS $ENV{TELEORBIT_DIR}/lib
+        ${PC_TELEORBIT_LIBDIR}
     PATHS ${CMAKE_INSTALL_PREFIX}/lib
           ${CMAKE_INSTALL_PREFIX}/lib64
-          /usr/lib
-          /usr/lib64
           /usr/local/lib
           /usr/local/lib64
+          /usr/lib
+          /usr/lib64
 )
 
-INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(GR_DBFCTTC DEFAULT_MSG GR_DBFCTTC_LIBRARIES GR_DBFCTTC_INCLUDE_DIRS)
-MARK_AS_ADVANCED(GR_DBFCTTC_LIBRARIES GR_DBFCTTC_INCLUDE_DIRS)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(TELEORBIT DEFAULT_MSG TELEORBIT_LIBRARIES TELEORBIT_INCLUDE_DIRS)
+mark_as_advanced(TELEORBIT_LIBRARIES TELEORBIT_INCLUDE_DIRS)

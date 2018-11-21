@@ -32,21 +32,21 @@ if(ENABLE_RAW_UDP)
 endif(ENABLE_RAW_UDP)
 
 if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
-    find_package(Griio REQUIRED)
-    if(NOT IIO_FOUND)
+    find_package(GRIIO REQUIRED)
+    if(NOT GRIIO_FOUND)
         message(STATUS "gnuradio-iio not found, its installation is required.")
         message(STATUS "Please build and install the following projects:")
         message(STATUS " * libiio from https://github.com/analogdevicesinc/libiio")
         message(STATUS " * libad9361-iio from https://github.com/analogdevicesinc/libad9361-iio")
         message(STATUS " * gnuradio-iio from https://github.com/analogdevicesinc/gr-iio")
         message(FATAL_ERROR "gnuradio-iio is required for building gnss-sdr with this option enabled.")
-    endif(NOT IIO_FOUND)
+    endif(NOT GRIIO_FOUND)
     set(OPT_LIBRARIES ${OPT_LIBRARIES} ${IIO_LIBRARIES})
     set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS})
 endif(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
 
 if(ENABLE_AD9361)
-    find_package(libiio REQUIRED)
+    find_package(LIBIIO REQUIRED)
     if(NOT LIBIIO_FOUND)
         message(STATUS "libiio not found, its installation is required.")
         message(STATUS "Please build and install the following projects:")
@@ -64,10 +64,10 @@ if(ENABLE_PLUTOSDR)
     ##############################################
     # ADALM-PLUTO (Analog Devices Inc.)
     ##############################################
-    if(IIO_FOUND)
+    if(GRIIO_FOUND)
         set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} plutosdr_signal_source.cc)
         set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} plutosdr_signal_source.h)
-    endif(IIO_FOUND)
+    endif(GRIIO_FOUND)
 endif(ENABLE_PLUTOSDR)
 
 
@@ -75,10 +75,10 @@ if(ENABLE_FMCOMMS2)
     ###############################################
     # FMCOMMS2 based SDR Hardware
     ###############################################
-    if(IIO_FOUND)
+    if(GRIIO_FOUND)
         set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} fmcomms2_signal_source.cc)
         set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} fmcomms2_signal_source.h)
-    endif(IIO_FOUND)
+    endif(GRIIO_FOUND)
 endif(ENABLE_FMCOMMS2)
 
 if(ENABLE_AD9361)
@@ -97,11 +97,11 @@ if(ENABLE_GN3S)
      ##############################################
      # GN3S (USB dongle)
      ##############################################
-     find_package(GrGN3S REQUIRED)
-     if(NOT GR_GN3S_FOUND)
+     find_package(GRGN3S REQUIRED)
+     if(NOT GRGN3S_FOUND)
          message(" gr-gn3s not found, install it from https://github.com/gnss-sdr/gr-gn3s ")
          message(FATAL_ERROR "gr-gn3s required for building gnss-sdr with this option enabled")
-     endif(NOT GR_GN3S_FOUND)
+     endif(NOT GRGN3S_FOUND)
      set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GR_GN3S_LIBRARIES})
      set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${GR_GN3S_INCLUDE_DIRS})
      set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} gn3s_signal_source.cc)
@@ -113,7 +113,7 @@ if(ENABLE_FLEXIBAND)
      ##############################################
      # TELEORBIT FLEXIBAND FRONTEND ADAPTER
      ##############################################
-     find_package(Teleorbit REQUIRED)
+     find_package(TELEORBIT REQUIRED)
      if(NOT TELEORBIT_FOUND)
          message(FATAL_ERROR "Teleorbit Flexiband GNU Radio driver required to build gnss-sdr with the optional FLEXIBAND adapter")
      endif(NOT TELEORBIT_FOUND)
@@ -134,11 +134,11 @@ if(ENABLE_ARRAY)
      ##############################################
      # DBFCTTC GNSS EXPERIMENTAL ARRAY PROTOTYPE
      ##############################################
-     find_package(GrDbfcttc REQUIRED)
-     if(NOT GR_DBFCTTC_FOUND)
+     find_package(GRDBFCTTC REQUIRED)
+     if(NOT GRDBFCTTC_FOUND)
          message(" gr-dbfcttc not found, install it from https://github.com/gnss-sdr/gr-dbfcttc ")
          message(FATAL_ERROR "gr-dbfcttc required for building gnss-sdr with this option enabled")
-     endif(NOT GR_DBFCTTC_FOUND)
+     endif(NOT GRDBFCTTC_FOUND)
      set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GR_DBFCTTC_LIBRARIES})
      set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${GR_DBFCTTC_INCLUDE_DIRS})
      set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} raw_array_signal_source.cc)

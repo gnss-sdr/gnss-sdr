@@ -509,7 +509,7 @@ endif(NOT Boost_FOUND)
 # GNU Radio - https://gnuradio.org
 ################################################################################
 set(GR_REQUIRED_COMPONENTS RUNTIME ANALOG BLOCKS FFT FILTER PMT)
-find_package(Gnuradio)
+find_package(GNURADIO)
 if(PC_GNURADIO_RUNTIME_VERSION)
     if(PC_GNURADIO_RUNTIME_VERSION VERSION_LESS ${GNSSSDR_GNURADIO_MIN_VERSION})
         set(GNURADIO_RUNTIME_FOUND)
@@ -553,7 +553,7 @@ endif()
 ################################################################################
 # VOLK - Vector-Optimized Library of Kernels
 ################################################################################
-find_package(Volk)
+find_package(VOLK)
 if(NOT VOLK_FOUND)
     message(FATAL_ERROR "*** VOLK is required to build gnss-sdr")
 endif()
@@ -563,7 +563,7 @@ endif()
 ################################################################################
 # Log4cpp - http://log4cpp.sourceforge.net/
 ################################################################################
-find_package(Log4cpp)
+find_package(LOG4CPP)
 if(NOT LOG4CPP_FOUND)
     message(FATAL_ERROR "*** Log4cpp is required to build gnss-sdr")
 endif()
@@ -573,9 +573,9 @@ endif()
 ################################################################################
 # volk_gnsssdr module - GNSS-SDR's own VOLK library
 ################################################################################
-find_package(VolkGnssSdr)
+find_package(VOLKGNSSSDR)
 
-if(NOT VOLK_GNSSSDR_FOUND)
+if(NOT VOLKGNSSSDR_FOUND)
     message(STATUS " volk_gnsssdr will be built along with gnss-sdr when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'")
     ###############################
     # Find Python required modules
@@ -710,7 +710,7 @@ if(NOT VOLK_GNSSSDR_FOUND)
     add_custom_command(TARGET volk_gnsssdr_module POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr-config-info
         ${CMAKE_SOURCE_DIR}/install/volk_gnsssdr-config-info)
-endif(NOT VOLK_GNSSSDR_FOUND)
+endif(NOT VOLKGNSSSDR_FOUND)
 
 
 
@@ -718,8 +718,8 @@ endif(NOT VOLK_GNSSSDR_FOUND)
 # gflags - https://github.com/gflags/gflags
 ################################################################################
 set(LOCAL_GFLAGS false)
-find_package(GFlags)
-if(NOT GFlags_FOUND)
+find_package(GFLAGS)
+if(NOT GFLAGS_FOUND)
     message(STATUS " gflags library has not been found.")
     message(STATUS " gflags v${GNSSSDR_GFLAGS_LOCAL_VERSION} will be downloaded and built automatically ")
     message(STATUS " when doing 'make'. ")
@@ -770,7 +770,7 @@ if(NOT GFlags_FOUND)
     set(GFlags_lib ${GFlags_LIBS} CACHE FILEPATH "Local Gflags library")
     set(GFlags_LIBRARY_PATH ${GFlags_LIBS})
     set(LOCAL_GFLAGS true CACHE STRING "GFlags downloaded and built automatically" FORCE)
-endif(NOT GFlags_FOUND)
+endif(NOT GFLAGS_FOUND)
 
 
 
@@ -786,9 +786,9 @@ endif(NOT ${ENABLE_OWN_GLOG})
 set(glog_RELEASE ${GNSSSDR_GLOG_LOCAL_VERSION})
 if(NOT GLOG_FOUND OR ${LOCAL_GFLAGS})
     message(STATUS " glog library has not been found")
-    if(NOT GFlags_FOUND)
+    if(NOT GFLAGS_FOUND)
         message(STATUS " or it is likely not linked to gflags.")
-    endif(NOT GFlags_FOUND)
+    endif(NOT GFLAGS_FOUND)
     message(STATUS " glog v${GNSSSDR_GLOG_LOCAL_VERSION} will be downloaded and built automatically ")
     message(STATUS " when doing 'make'. ")
     if(NOT ${LOCAL_GFLAGS})
@@ -1215,10 +1215,10 @@ endif(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_V
 ################################################################################
 # PugiXML - https://pugixml.org/
 ################################################################################
-find_package(PugiXML QUIET)
-if(PugiXML_FOUND)
+find_package(PUGIXML QUIET)
+if(PUGIXML_FOUND)
     message(STATUS "PugiXML has been found. Reading of GSA Galileo almanac XML files enabled.")
-else(PugiXML_FOUND)
+else(PUGIXML_FOUND)
     message(STATUS " PugiXML v${GNSSSDR_PUGIXML_LOCAL_VERSION} will be downloaded and built automatically when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'.")
     set(PUGIXML_COMPILER -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER})
     set(TOOLCHAIN_ARG "")
@@ -1257,7 +1257,7 @@ else(PugiXML_FOUND)
     set(PUGIXML_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}pugixml${CMAKE_STATIC_LIBRARY_SUFFIX})
     set(PUGIXML_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/pugixml/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}/src)
     set(PUGIXML_LOCAL true)
-endif(PugiXML_FOUND)
+endif(PUGIXML_FOUND)
 
 
 ################################################################################
@@ -1345,7 +1345,7 @@ endif(DOXYGEN_FOUND)
 # OpenCL (OPTIONAL)
 ###############################################################################
 if(ENABLE_OPENCL)
-    find_package(OpenCL)
+    find_package(OPENCL)
     if($ENV{DISABLE_OPENCL})
         set(DISABLE_OPENCL TRUE)
     endif($ENV{DISABLE_OPENCL})
@@ -1455,7 +1455,7 @@ if($ENV{RTLSDR_DRIVER})
 endif($ENV{RTLSDR_DRIVER})
 
 if(ENABLE_OSMOSDR)
-    find_package(GrOsmoSDR)
+    find_package(GROSMOSDR)
     if(GROSMOSDR_FOUND)
         message(STATUS "The driver for OsmoSDR and other front-ends (HackRF, bladeRF, Realtek's RTL2832U-based dongles, etc.) will be compiled.")
         message(STATUS "You can disable it with 'cmake -DENABLE_OSMOSDR=OFF ../'")
@@ -1494,7 +1494,7 @@ endif(ENABLE_FLEXIBAND)
 # GPerftools - https://github.com/gperftools/gperftools (OPTIONAL)
 ################################################################################
 if(ENABLE_GPERFTOOLS)
-    find_package(Gperftools)
+    find_package(GPERFTOOLS)
     if(NOT GPERFTOOLS_FOUND)
         message(STATUS "Although ENABLE_GPERFTOOLS has been set to ON, GPerftools has not been found.")
         message(STATUS "Binaries will be compiled without 'tcmalloc' and 'profiler' libraries.")

@@ -20,22 +20,28 @@ set(SIGNAL_GENERATOR_ADAPTER_SOURCES signal_generator.cc)
 set(SIGNAL_GENERATOR_ADAPTER_HEADERS signal_generator.h)
 
 include_directories(
-     ${CMAKE_CURRENT_SOURCE_DIR}
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/signal_generator/gnuradio_blocks
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+    ${CMAKE_SOURCE_DIR}/src/core/interfaces
+    ${CMAKE_SOURCE_DIR}/src/core/receiver
+    ${CMAKE_SOURCE_DIR}/src/algorithms/signal_generator/gnuradio_blocks
+    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+    ${GLOG_INCLUDE_DIRS}
+    ${GFlags_INCLUDE_DIRS}
+    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
-add_library(signal_generator_adapters ${SIGNAL_GENERATOR_ADAPTER_SOURCES} ${SIGNAL_GENERATOR_ADAPTER_HEADERS})
+add_library(signal_generator_adapters
+    ${SIGNAL_GENERATOR_ADAPTER_SOURCES}
+    ${SIGNAL_GENERATOR_ADAPTER_HEADERS}
+)
+
 source_group(Headers FILES ${SIGNAL_GENERATOR_ADAPTER_HEADERS})
-target_link_libraries(signal_generator_adapters gnss_sp_libs
-                                                signal_generator_blocks
-                                                ${GNURADIO_RUNTIME_LIBRARIES}
-                                                ${GNURADIO_BLOCKS_LIBRARIES}
-                                                ${GNURADIO_FILTER_LIBRARIES}
+
+target_link_libraries(signal_generator_adapters
+    gnss_sp_libs
+    signal_generator_blocks
+    ${GNURADIO_RUNTIME_LIBRARIES}
+    ${GNURADIO_BLOCKS_LIBRARIES}
+    ${GNURADIO_FILTER_LIBRARIES}
 )

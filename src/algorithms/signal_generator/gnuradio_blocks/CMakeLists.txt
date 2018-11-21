@@ -20,23 +20,31 @@ set(SIGNAL_GENERATOR_BLOCK_SOURCES signal_generator_c.cc)
 set(SIGNAL_GENERATOR_BLOCK_HEADERS signal_generator_c.h)
 
 include_directories(
-     ${CMAKE_CURRENT_SOURCE_DIR}
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-     ${VOLK_GNSSSDR_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+    ${CMAKE_SOURCE_DIR}/src/core/interfaces
+    ${CMAKE_SOURCE_DIR}/src/core/receiver
+    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+    ${GLOG_INCLUDE_DIRS}
+    ${GFlags_INCLUDE_DIRS}
+    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+    ${VOLK_GNSSSDR_INCLUDE_DIRS}
 )
 
-add_library(signal_generator_blocks ${SIGNAL_GENERATOR_BLOCK_SOURCES} ${SIGNAL_GENERATOR_BLOCK_HEADERS})
+add_library(signal_generator_blocks
+    ${SIGNAL_GENERATOR_BLOCK_SOURCES}
+    ${SIGNAL_GENERATOR_BLOCK_HEADERS}
+)
+
 source_group(Headers FILES ${SIGNAL_GENERATOR_BLOCK_HEADERS})
-target_link_libraries(signal_generator_blocks gnss_system_parameters gnss_sp_libs
-                                              ${GNURADIO_RUNTIME_LIBRARIES}
-                                              ${GNURADIO_FFT_LIBRARIES}
-                                              ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
+
+target_link_libraries(signal_generator_blocks
+    gnss_system_parameters
+    gnss_sp_libs
+    ${GNURADIO_RUNTIME_LIBRARIES}
+    ${GNURADIO_FFT_LIBRARIES}
+    ${VOLK_GNSSSDR_LIBRARIES}
+    ${ORC_LIBRARIES}
 )
 
 if(VOLK_GNSSSDR_FOUND)

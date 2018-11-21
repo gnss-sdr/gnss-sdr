@@ -18,12 +18,11 @@
 
 
 if(OPENSSL_FOUND)
-    add_definitions( -DUSE_OPENSSL_FALLBACK=1 )
+    add_definitions(-DUSE_OPENSSL_FALLBACK=1)
 endif(OPENSSL_FOUND)
 
 set(FRONT_END_CAL_SOURCES front_end_cal.cc)
 set(FRONT_END_CAL_HEADERS front_end_cal.h)
-
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
@@ -50,69 +49,69 @@ include_directories(
 add_library(front_end_cal_lib ${FRONT_END_CAL_SOURCES} ${FRONT_END_CAL_HEADERS})
 source_group(Headers FILES ${FRONT_END_CAL_HEADERS})
 
-target_link_libraries(front_end_cal_lib ${MAC_LIBRARIES}
-                                        ${THREAD_LIBRARIES}
-                                        ${Boost_LIBRARIES}
-                                        ${GNURADIO_RUNTIME_LIBRARIES}
-                                        ${GNURADIO_BLOCKS_LIBRARIES}
-                                        ${GNURADIO_FFT_LIBRARIES}
-                                        ${GNURADIO_FILTER_LIBRARIES}
-                                        ${GFlags_LIBS}
-                                        ${GLOG_LIBRARIES}
-                                        ${ARMADILLO_LIBRARIES}
-                                        ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
-                                        ${GNSS_SDR_OPTIONAL_LIBS}
-                                        rx_core_lib
-                                        gnss_sdr_flags
-                                        gnss_rx
-                                        channel_fsm
+target_link_libraries(front_end_cal_lib
+    ${MAC_LIBRARIES}
+    ${THREAD_LIBRARIES}
+    ${Boost_LIBRARIES}
+    ${GNURADIO_RUNTIME_LIBRARIES}
+    ${GNURADIO_BLOCKS_LIBRARIES}
+    ${GNURADIO_FFT_LIBRARIES}
+    ${GNURADIO_FILTER_LIBRARIES}
+    ${GFlags_LIBS}
+    ${GLOG_LIBRARIES}
+    ${ARMADILLO_LIBRARIES}
+    ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
+    ${GNSS_SDR_OPTIONAL_LIBS}
+    rx_core_lib
+    gnss_sdr_flags
+    gnss_rx
+    channel_fsm
 )
 
 add_dependencies(front_end_cal_lib glog-${glog_RELEASE} armadillo-${armadillo_RELEASE})
 
-add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
-add_definitions( -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}" )
+add_definitions(-DGNSS_SDR_VERSION="${VERSION}")
+add_definitions(-DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}")
 
 add_executable(front-end-cal ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
 
 add_custom_command(TARGET front-end-cal POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:front-end-cal>
-                                   ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:front-end-cal>)
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:front-end-cal>
+        ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:front-end-cal>)
 
-
-target_link_libraries(front-end-cal    ${MAC_LIBRARIES}
-                                       ${Boost_LIBRARIES}
-                                       ${GNURADIO_RUNTIME_LIBRARIES}
-                                       ${GNURADIO_BLOCKS_LIBRARIES}
-                                       ${GNURADIO_FFT_LIBRARIES}
-                                       ${GNURADIO_FILTER_LIBRARIES}
-                                       ${GFlags_LIBS}
-                                       ${GLOG_LIBRARIES}
-                                       ${ARMADILLO_LIBRARIES}
-                                       ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
-                                       ${GNSS_SDR_OPTIONAL_LIBS}
-                                       rx_core_lib
-                                       gnss_rx
-                                       front_end_cal_lib
+target_link_libraries(front-end-cal
+    ${MAC_LIBRARIES}
+    ${Boost_LIBRARIES}
+    ${GNURADIO_RUNTIME_LIBRARIES}
+    ${GNURADIO_BLOCKS_LIBRARIES}
+    ${GNURADIO_FFT_LIBRARIES}
+    ${GNURADIO_FILTER_LIBRARIES}
+    ${GFlags_LIBS}
+    ${GLOG_LIBRARIES}
+    ${ARMADILLO_LIBRARIES}
+    ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
+    ${GNSS_SDR_OPTIONAL_LIBS}
+    rx_core_lib
+    gnss_rx
+    front_end_cal_lib
 )
 
-
 install(TARGETS front-end-cal
-        RUNTIME DESTINATION bin
-        COMPONENT "front-end-cal"
+    RUNTIME DESTINATION bin
+    COMPONENT "front-end-cal"
 )
 
 find_program(GZIP gzip
-                 /bin
-                 /usr/bin
-                 /usr/local/bin
-                 /opt/local/bin
-                 /sbin
-                 )
+    /bin
+    /usr/bin
+    /usr/local/bin
+    /opt/local/bin
+    /sbin
+)
 
 if(NOT GZIP_NOTFOUND)
     execute_process(COMMAND gzip -9 -c ${CMAKE_SOURCE_DIR}/docs/manpage/front-end-cal-manpage
-                    WORKING_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_FILE "${CMAKE_BINARY_DIR}/front-end-cal.1.gz")
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_FILE "${CMAKE_BINARY_DIR}/front-end-cal.1.gz")
 
     install(FILES ${CMAKE_BINARY_DIR}/front-end-cal.1.gz DESTINATION share/man/man1)
 endif(NOT GZIP_NOTFOUND)

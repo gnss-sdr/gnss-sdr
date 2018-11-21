@@ -17,32 +17,49 @@
 #
 
 set(OBS_GR_BLOCKS_SOURCES
-	hybrid_observables_cc.cc
+    hybrid_observables_cc.cc
 )
 
 set(OBS_GR_BLOCKS_HEADERS
-	hybrid_observables_cc.h
+    hybrid_observables_cc.h
 )
 
 include_directories(
-     ${CMAKE_CURRENT_SOURCE_DIR}
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-     ${ARMADILLO_INCLUDE_DIRS}
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${MATIO_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+    ${CMAKE_SOURCE_DIR}/src/core/interfaces
+    ${CMAKE_SOURCE_DIR}/src/core/receiver
+    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+    ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
+    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+    ${ARMADILLO_INCLUDE_DIRS}
+    ${GLOG_INCLUDE_DIRS}
+    ${GFlags_INCLUDE_DIRS}
+    ${MATIO_INCLUDE_DIRS}
 )
 
 add_library(obs_gr_blocks ${OBS_GR_BLOCKS_SOURCES} ${OBS_GR_BLOCKS_HEADERS})
+
 source_group(Headers FILES ${OBS_GR_BLOCKS_HEADERS})
+
 if(MATIO_FOUND)
-    add_dependencies(obs_gr_blocks gnss_sp_libs glog-${glog_RELEASE} armadillo-${armadillo_RELEASE})
+    add_dependencies(obs_gr_blocks
+        gnss_sp_libs
+        glog-${glog_RELEASE}
+        armadillo-${armadillo_RELEASE}
+    )
 else(MATIO_FOUND)
-    add_dependencies(obs_gr_blocks gnss_sp_libs glog-${glog_RELEASE} armadillo-${armadillo_RELEASE} matio-${GNSSSDR_MATIO_LOCAL_VERSION})
+    add_dependencies(obs_gr_blocks
+        gnss_sp_libs
+        glog-${glog_RELEASE}
+        armadillo-${armadillo_RELEASE}
+        matio-${GNSSSDR_MATIO_LOCAL_VERSION}
+    )
 endif(MATIO_FOUND)
-target_link_libraries(obs_gr_blocks gnss_sp_libs ${GNURADIO_RUNTIME_LIBRARIES} ${ARMADILLO_LIBRARIES} ${MATIO_LIBRARIES})
+
+target_link_libraries(obs_gr_blocks
+    gnss_sp_libs
+    ${GNURADIO_RUNTIME_LIBRARIES}
+    ${ARMADILLO_LIBRARIES}
+    ${MATIO_LIBRARIES}
+)

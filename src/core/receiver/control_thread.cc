@@ -61,6 +61,7 @@
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <limits>
@@ -851,7 +852,8 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
     // 3. loop through all the available ephemeris or almanac and compute satellite positions and elevations
     // store visible satellites in a vector of pairs <int,Gnss_Satellite> to associate an elevation to the each satellite
     std::vector<std::pair<int, Gnss_Satellite>> available_satellites;
-
+    std::vector<unsigned int> visible_gps;
+    std::vector<unsigned int> visible_gal;
     std::shared_ptr<PvtInterface> pvt_ptr = flowgraph_->get_pvt();
     struct tm tstruct;
     char buf[80];
@@ -880,6 +882,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
                     std::cout << "Using GPS Ephemeris: Sat " << it->second.i_satellite_PRN << " Az: " << Az << " El: " << El << std::endl;
                     available_satellites.push_back(std::pair<int, Gnss_Satellite>(floor(El),
                         (Gnss_Satellite(std::string("GPS"), it->second.i_satellite_PRN))));
+                    visible_gps.push_back(it->second.i_satellite_PRN);
                 }
         }
 
@@ -902,6 +905,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
                     std::cout << "Using Galileo Ephemeris: Sat " << it->second.i_satellite_PRN << " Az: " << Az << " El: " << El << std::endl;
                     available_satellites.push_back(std::pair<int, Gnss_Satellite>(floor(El),
                         (Gnss_Satellite(std::string("Galileo"), it->second.i_satellite_PRN))));
+                    visible_gal.push_back(it->second.i_satellite_PRN);
                 }
         }
 
@@ -911,17 +915,23 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
             alm_t rtklib_alm = alm_to_rtklib(it->second);
             double r_sat[3];
             double clock_bias_s;
+            gps_gtime.time = fmod(utc2gpst(gps_gtime).time, 604800);
             alm2pos(gps_gtime, &rtklib_alm, &r_sat[0], &clock_bias_s);
             double Az, El, dist_m;
             arma::vec r_sat_eb_e = arma::vec{r_sat[0], r_sat[1], r_sat[2]};
             arma::vec dx = r_sat_eb_e - r_eb_e;
             topocent(&Az, &El, &dist_m, r_eb_e, dx);
             // push sat
+            std::vector<unsigned int>::iterator it2;
             if (El > 0)
                 {
-                    std::cout << "Using GPS Almanac:  Sat " << it->second.i_satellite_PRN << " Az: " << Az << " El: " << El << std::endl;
-                    available_satellites.push_back(std::pair<int, Gnss_Satellite>(floor(El),
-                        (Gnss_Satellite(std::string("GPS"), it->second.i_satellite_PRN))));
+                    it2 = std::find(visible_gps.begin(), visible_gps.end(), it->second.i_satellite_PRN);
+                    if (it2 == visible_gps.end())
+                        {
+                            std::cout << "Using GPS Almanac:  Sat " << it->second.i_satellite_PRN << " Az: " << Az << " El: " << El << std::endl;
+                            available_satellites.push_back(std::pair<int, Gnss_Satellite>(floor(El),
+                                (Gnss_Satellite(std::string("GPS"), it->second.i_satellite_PRN))));
+                        }
                 }
         }
 
@@ -939,11 +949,16 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
             arma::vec dx = r_sat_eb_e - r_eb_e;
             topocent(&Az, &El, &dist_m, r_eb_e, dx);
             // push sat
+            std::vector<unsigned int>::iterator it2;
             if (El > 0)
                 {
-                    std::cout << "Using Galileo Almanac:  Sat " << it->second.i_satellite_PRN << " Az: " << Az << " El: " << El << std::endl;
-                    available_satellites.push_back(std::pair<int, Gnss_Satellite>(floor(El),
-                        (Gnss_Satellite(std::string("Galileo"), it->second.i_satellite_PRN))));
+                    it2 = std::find(visible_gal.begin(), visible_gal.end(), it->second.i_satellite_PRN);
+                    if (it2 == visible_gal.end())
+                        {
+                            std::cout << "Using Galileo Almanac:  Sat " << it->second.i_satellite_PRN << " Az: " << Az << " El: " << El << std::endl;
+                            available_satellites.push_back(std::pair<int, Gnss_Satellite>(floor(El),
+                                (Gnss_Satellite(std::string("Galileo"), it->second.i_satellite_PRN))));
+                        }
                 }
         }
 
@@ -951,7 +966,8 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
     std::sort(available_satellites.begin(), available_satellites.end(), [](const std::pair<int, Gnss_Satellite> &a, const std::pair<int, Gnss_Satellite> &b) {  // use lambda. Cleaner and easier to read
         return a.first < b.first;
     });
-    // std::reverse(available_satellites.begin(), available_satellites.end());
+    // provide list starting from satellites with higher elevation
+    std::reverse(available_satellites.begin(), available_satellites.end());
     return available_satellites;
 }
 

@@ -734,7 +734,9 @@ void ControlThread::init()
     else
         {
             // fill agnss_ref_time_
-            agnss_ref_time_.d_tv_sec = 0;  // fill
+            struct tm tm;
+            strptime(ref_time_str.c_str(), "%d/%m/%Y %H:%M:%S", &tm);
+            agnss_ref_time_.d_tv_sec = timegm(&tm);
             agnss_ref_time_.valid = true;
         }
 }
@@ -861,7 +863,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
     strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S ", &tstruct);
     std::string str_time = std::string(buf);
     std::cout << "Get visible satellites at " << str_time
-              << " UTC, assuming RX position " << LLH(0) << " [deg], " << LLH(1) << " [deg], " << LLH(2) << " [m]" << std::endl;
+              << "UTC, assuming RX position " << LLH(0) << " [deg], " << LLH(1) << " [deg], " << LLH(2) << " [m]" << std::endl;
 
     std::map<int, Gps_Ephemeris> gps_eph_map = pvt_ptr->get_gps_ephemeris();
     for (std::map<int, Gps_Ephemeris>::iterator it = gps_eph_map.begin(); it != gps_eph_map.end(); ++it)
@@ -915,8 +917,9 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
             alm_t rtklib_alm = alm_to_rtklib(it->second);
             double r_sat[3];
             double clock_bias_s;
-            gps_gtime.time = fmod(utc2gpst(gps_gtime).time, 604800);
-            alm2pos(gps_gtime, &rtklib_alm, &r_sat[0], &clock_bias_s);
+            gtime_t aux_gtime;
+            aux_gtime.time = fmod(utc2gpst(gps_gtime).time + 345600, 604800);
+            alm2pos(aux_gtime, &rtklib_alm, &r_sat[0], &clock_bias_s);
             double Az, El, dist_m;
             arma::vec r_sat_eb_e = arma::vec{r_sat[0], r_sat[1], r_sat[2]};
             arma::vec dx = r_sat_eb_e - r_eb_e;

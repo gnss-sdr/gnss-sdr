@@ -314,32 +314,34 @@ alm_t alm_to_rtklib(const Gps_Almanac& gps_alm)
     rtklib_alm.f1 = gps_alm.d_A_f1;
     rtklib_alm.toas = gps_alm.i_Toa;
 
-
     return rtklib_alm;
 }
+
+
 alm_t alm_to_rtklib(const Galileo_Almanac& gal_alm)
 {
     alm_t rtklib_alm;
 
     rtklib_alm = {0, 0, 0, 0, {0, 0}, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-    rtklib_alm.sat = gal_alm.i_satellite_PRN;
+    rtklib_alm.sat = gal_alm.i_satellite_PRN + NSATGPS + NSATGLO;
     rtklib_alm.svh = gal_alm.E1B_HS;
     rtklib_alm.svconf = gal_alm.E1B_HS;
     rtklib_alm.week = gal_alm.i_WNa;
-    rtklib_alm.toa = gpst2time(gal_alm.i_WNa, gal_alm.i_Toa);
+    gtime_t toa;
+    toa.time = gal_alm.i_Toa;
+    rtklib_alm.toa = toa;
     rtklib_alm.A = 5440.588203494 + gal_alm.d_Delta_sqrt_A;
     rtklib_alm.A = rtklib_alm.A * rtklib_alm.A;
     rtklib_alm.e = gal_alm.d_e_eccentricity;
-    rtklib_alm.i0 = gal_alm.d_Delta_i + 0.31111;
-    rtklib_alm.OMG0 = gal_alm.d_OMEGA0;
-    rtklib_alm.OMGd = gal_alm.d_OMEGA_DOT;
-    rtklib_alm.omg = gal_alm.d_OMEGA;
-    rtklib_alm.M0 = gal_alm.d_M_0;
+    rtklib_alm.i0 = (gal_alm.d_Delta_i + 56.0 / 180.0) * PI;
+    rtklib_alm.OMG0 = gal_alm.d_OMEGA0 * PI;
+    rtklib_alm.OMGd = gal_alm.d_OMEGA_DOT * PI;
+    rtklib_alm.omg = gal_alm.d_OMEGA * PI;
+    rtklib_alm.M0 = gal_alm.d_M_0 * PI;
     rtklib_alm.f0 = gal_alm.d_A_f0;
     rtklib_alm.f1 = gal_alm.d_A_f1;
     rtklib_alm.toas = gal_alm.i_Toa;
-
 
     return rtklib_alm;
 }

@@ -931,7 +931,9 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
             alm_t rtklib_alm = alm_to_rtklib(it->second);
             double r_sat[3];
             double clock_bias_s;
-            alm2pos(gps_gtime, &rtklib_alm, &r_sat[0], &clock_bias_s);
+            gtime_t gal_gtime;
+            gal_gtime.time = fmod(utc2gpst(gps_gtime).time + 345600, 604800);
+            alm2pos(gal_gtime, &rtklib_alm, &r_sat[0], &clock_bias_s);
             double Az, El, dist_m;
             arma::vec r_sat_eb_e = arma::vec{r_sat[0], r_sat[1], r_sat[2]};
             arma::vec dx = r_sat_eb_e - r_eb_e;

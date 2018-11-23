@@ -306,7 +306,7 @@ int64_t Galileo_Navigation_Message::read_navigation_signed(std::bitset<GALILEO_D
     // read the MSB and perform the sign extension
     if (bits[GALILEO_DATA_JK_BITS - parameter[0].first] == 1)
         {
-            value ^= 0xFFFFFFFFFFFFFFFFLL;  // 64 bits variable
+            value ^= 0x0FFFFFFFFFFFFFFFLL;  // 64 bits variable
         }
     else
         {

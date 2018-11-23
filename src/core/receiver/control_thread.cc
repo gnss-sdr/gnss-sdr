@@ -100,6 +100,94 @@ ControlThread::ControlThread(std::shared_ptr<ConfigurationInterface> configurati
 }
 
 
+void ControlThread::init()
+{
+    // Instantiates a control queue, a GNSS flowgraph, and a control message factory
+    control_queue_ = gr::msg_queue::make(0);
+    cmd_interface_.set_msg_queue(control_queue_);  //set also the queue pointer for the telecommand thread
+    try
+        {
+            flowgraph_ = std::make_shared<GNSSFlowgraph>(configuration_, control_queue_);
+        }
+    catch (const boost::bad_lexical_cast &e)
+        {
+            std::cout << "Caught bad lexical cast with error " << e.what() << std::endl;
+        }
+    control_message_factory_ = std::make_shared<ControlMessageFactory>();
+    stop_ = false;
+    processed_control_messages_ = 0;
+    applied_actions_ = 0;
+    supl_mcc = 0;
+    supl_mns = 0;
+    supl_lac = 0;
+    supl_ci = 0;
+    msqid = -1;
+    agnss_ref_location_ = Agnss_Ref_Location();
+    agnss_ref_time_ = Agnss_Ref_Time();
+
+    std::string empty_string = "";
+    std::string ref_location_str = configuration_->property("GNSS-SDR.AGNSS_ref_location", empty_string);
+    std::string ref_time_str = configuration_->property("GNSS-SDR.AGNSS_ref_utc_time", empty_string);
+    if (ref_location_str.compare(empty_string) != 0)
+        {
+            std::vector<double> vect;
+            std::stringstream ss(ref_location_str);
+            double d;
+            while (ss >> d)
+                {
+                    vect.push_back(d);
+                    if ((ss.peek() == ',') or (ss.peek() == ' '))
+                        ss.ignore();
+                }
+            // fill agnss_ref_location_
+            if (vect.size() >= 2)
+                {
+                    if ((vect[0] < 90.0) and (vect[0] > -90) and (vect[1] < 180.0) and (vect[1] > -180.0))
+                        {
+                            agnss_ref_location_.lat = vect[0];
+                            agnss_ref_location_.lon = vect[1];
+                            agnss_ref_location_.valid = true;
+                        }
+                    else
+                        {
+                            std::cerr << "GNSS-SDR.AGNSS_ref_location=" << ref_location_str << " is not a valid position." << std::endl;
+                            agnss_ref_location_.valid = false;
+                        }
+                }
+        }
+    if (ref_time_str.compare(empty_string) == 0)
+        {
+            // Make an educated guess
+            time_t rawtime;
+            time(&rawtime);
+            agnss_ref_time_.d_tv_sec = rawtime;
+            agnss_ref_time_.valid = true;
+        }
+    else
+        {
+            // fill agnss_ref_time_
+            struct tm tm;
+            if (strptime(ref_time_str.c_str(), "%d/%m/%Y %H:%M:%S", &tm) != nullptr)
+                {
+                    agnss_ref_time_.d_tv_sec = timegm(&tm);
+                    if (agnss_ref_time_.d_tv_sec > 0)
+                        {
+                            agnss_ref_time_.valid = true;
+                        }
+                    else
+                        {
+                            std::cerr << "GNSS-SDR.AGNSS_ref_utc_time=" << ref_time_str << " is not well-formed. Please use four digits for the year: DD/MM/YYYY HH:MM:SS" << std::endl;
+                        }
+                }
+            else
+                {
+                    std::cerr << "GNSS-SDR.AGNSS_ref_utc_time=" << ref_time_str << " is not well-formed. Should be DD/MM/YYYY HH:MM:SS in UTC" << std::endl;
+                    agnss_ref_location_.valid = false;
+                }
+        }
+}
+
+
 ControlThread::~ControlThread()
 {
     // save navigation data to files
@@ -110,7 +198,7 @@ ControlThread::~ControlThread()
 
 void ControlThread::telecommand_listener()
 {
-    int tcp_cmd_port = configuration_->property("Channel.telecontrol_tcp_port", 3333);
+    int tcp_cmd_port = configuration_->property("GNSS-SDR.telecontrol_tcp_port", 3333);
     cmd_interface_.run_cmd_server(tcp_cmd_port);
 }
 
@@ -653,7 +741,7 @@ void ControlThread::assist_GNSS()
         }
 
     // If we have enough AGNSS data, make use of it
-    if (agnss_ref_location_.valid == true)  // and agnss_ref_time_.valid == true  and we have AGNSS data
+    if ((agnss_ref_location_.valid == true) and ((enable_gps_supl_assistance == true) or (enable_agnss_xml == true)))
         {
             // Get the list of visible satellites
             arma::vec ref_LLH = arma::zeros(3, 1);
@@ -672,72 +760,6 @@ void ControlThread::assist_GNSS()
             flowgraph_->priorize_satellites(visible_sats);
             // Hot Start
             flowgraph_->apply_action(0, 12);
-        }
-}
-
-
-void ControlThread::init()
-{
-    // Instantiates a control queue, a GNSS flowgraph, and a control message factory
-    control_queue_ = gr::msg_queue::make(0);
-    cmd_interface_.set_msg_queue(control_queue_);  //set also the queue pointer for the telecommand thread
-    try
-        {
-            flowgraph_ = std::make_shared<GNSSFlowgraph>(configuration_, control_queue_);
-        }
-    catch (const boost::bad_lexical_cast &e)
-        {
-            std::cout << "Caught bad lexical cast with error " << e.what() << std::endl;
-        }
-    control_message_factory_ = std::make_shared<ControlMessageFactory>();
-    stop_ = false;
-    processed_control_messages_ = 0;
-    applied_actions_ = 0;
-    supl_mcc = 0;
-    supl_mns = 0;
-    supl_lac = 0;
-    supl_ci = 0;
-    msqid = -1;
-    agnss_ref_location_ = Agnss_Ref_Location();
-    agnss_ref_time_ = Agnss_Ref_Time();
-
-    std::string empty_string = "";
-    std::string ref_location_str = configuration_->property("GNSS-SDR.AGNSS_ref_location", empty_string);
-    std::string ref_time_str = configuration_->property("GNSS-SDR.AGNSS_ref_utc_time", empty_string);
-    if (ref_location_str.compare(empty_string) != 0)
-        {
-            std::vector<double> vect;
-            std::stringstream ss(ref_location_str);
-            double d;
-            while (ss >> d)
-                {
-                    vect.push_back(d);
-                    if (ss.peek() == ',')
-                        ss.ignore();
-                }
-            // fill agnss_ref_location_
-            if (vect.size() >= 2)
-                {
-                    agnss_ref_location_.lat = vect[0];
-                    agnss_ref_location_.lon = vect[1];
-                    agnss_ref_location_.valid = true;
-                }
-        }
-    if (ref_time_str.compare(empty_string) == 0)
-        {
-            // Make an educated guess
-            time_t rawtime;
-            time(&rawtime);
-            agnss_ref_time_.d_tv_sec = rawtime;
-            agnss_ref_time_.valid = true;
-        }
-    else
-        {
-            // fill agnss_ref_time_
-            struct tm tm;
-            strptime(ref_time_str.c_str(), "%d/%m/%Y %H:%M:%S", &tm);
-            agnss_ref_time_.d_tv_sec = timegm(&tm);
-            agnss_ref_time_.valid = true;
         }
 }
 

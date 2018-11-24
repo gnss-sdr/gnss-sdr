@@ -203,7 +203,7 @@ int64_t Gps_Navigation_Message::read_navigation_signed(std::bitset<GPS_SUBFRAME_
     // read the MSB and perform the sign extension
     if (bits[GPS_SUBFRAME_BITS - parameter[0].first] == 1)
         {
-            value ^= 0x0FFFFFFFFFFFFFFFLL;  // 64 bits variable
+            value ^= 0x3FFFFFFFFFFFFFFFLL;  // 64 bits variable
         }
     else
         {

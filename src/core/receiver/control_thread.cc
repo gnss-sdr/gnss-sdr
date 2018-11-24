@@ -182,7 +182,7 @@ void ControlThread::init()
             else
                 {
                     std::cerr << "GNSS-SDR.AGNSS_ref_utc_time=" << ref_time_str << " is not well-formed. Should be DD/MM/YYYY HH:MM:SS in UTC" << std::endl;
-                    agnss_ref_location_.valid = false;
+                    agnss_ref_time_.valid = false;
                 }
         }
 }
@@ -273,7 +273,7 @@ int ControlThread::run()
     stop_ = true;
     flowgraph_->disconnect();
 
-//Join keyboard thread
+// Join keyboard thread
 #ifdef OLD_BOOST
     keyboard_thread_.timed_join(boost::posix_time::seconds(1));
     sysv_queue_thread_.timed_join(boost::posix_time::seconds(1));
@@ -289,11 +289,11 @@ int ControlThread::run()
 
     if (restart_)
         {
-            return 42;  //signal the gnss-sdr-harness.sh to restart the receiver program
+            return 42;  // signal the gnss-sdr-harness.sh to restart the receiver program
         }
     else
         {
-            return 0;  //normal shutdown
+            return 0;  // normal shutdown
         }
 }
 
@@ -590,7 +590,7 @@ void ControlThread::assist_GNSS()
             bool SUPL_read_gps_assistance_xml = configuration_->property("GNSS-SDR.SUPL_read_gps_assistance_xml", false);
             if (SUPL_read_gps_assistance_xml == true)
                 {
-                    // read assistance from file
+                    // Read assistance from file
                     if (read_assistance_from_XML())
                         {
                             std::cout << "GNSS assistance data loaded from local XML file(s)." << std::endl;
@@ -740,7 +740,7 @@ void ControlThread::assist_GNSS()
                 }
         }
 
-    // If we have enough AGNSS data, make use of it
+    // If AGNSS is enabled, make use of it
     if ((agnss_ref_location_.valid == true) and ((enable_gps_supl_assistance == true) or (enable_agnss_xml == true)))
         {
             // Get the list of visible satellites
@@ -780,7 +780,6 @@ void ControlThread::read_control_messages()
 
 
 // Apply the corresponding control actions
-// TODO:  May be it is better to move the apply_action state machine to the control_thread
 void ControlThread::process_control_messages()
 {
     for (unsigned int i = 0; i < control_messages_->size(); i++)
@@ -792,7 +791,7 @@ void ControlThread::process_control_messages()
                 }
             else
                 {
-                    if (control_messages_->at(i)->who == 300)  //some TC commands require also actions from controlthread
+                    if (control_messages_->at(i)->who == 300)  // some TC commands require also actions from control_thread
                         {
                             apply_action(control_messages_->at(i)->what);
                         }
@@ -824,32 +823,32 @@ void ControlThread::apply_action(unsigned int what)
             break;
         case 11:
             LOG(INFO) << "Receiver action COLDSTART";
-            //delete all ephemeris and almanac information from maps (also the PVT map queue)
+            // delete all ephemeris and almanac information from maps (also the PVT map queue)
             pvt_ptr = flowgraph_->get_pvt();
             pvt_ptr->clear_ephemeris();
-            //todo: reorder the satellite queues to the receiver default startup order.
-            //This is required to allow repeatability. Otherwise the satellite search order will depend on the last tracked satellites
+            // todo: reorder the satellite queues to the receiver default startup order.
+            // This is required to allow repeatability. Otherwise the satellite search order will depend on the last tracked satellites
             break;
         case 12:
             LOG(INFO) << "Receiver action HOTSTART";
             visible_satellites = get_visible_sats(cmd_interface_.get_utc_time(), cmd_interface_.get_LLH());
-            //reorder the satellite queue to acquire first those visible satellites
+            // reorder the satellite queue to acquire first those visible satellites
             flowgraph_->priorize_satellites(visible_satellites);
-            //start again the satellite acquisitions (done in chained apply_action to flowgraph)
+            // start again the satellite acquisitions (done in chained apply_action to flowgraph)
             break;
         case 13:
             LOG(INFO) << "Receiver action WARMSTART";
-            //delete all ephemeris and almanac information from maps (also the PVT map queue)
+            // delete all ephemeris and almanac information from maps (also the PVT map queue)
             pvt_ptr = flowgraph_->get_pvt();
             pvt_ptr->clear_ephemeris();
-            //load the ephemeris and the almanac from XML files (receiver assistance)
+            // load the ephemeris and the almanac from XML files (receiver assistance)
             read_assistance_from_XML();
-            //call here the function that computes the set of visible satellites and its elevation
-            //for the date and time specified by the warm start command and the assisted position
+            // call here the function that computes the set of visible satellites and its elevation
+            // for the date and time specified by the warm start command and the assisted position
             get_visible_sats(cmd_interface_.get_utc_time(), cmd_interface_.get_LLH());
-            //reorder the satellite queue to acquire first those visible satellites
+            // reorder the satellite queue to acquire first those visible satellites
             flowgraph_->priorize_satellites(visible_satellites);
-            //start again the satellite acquisitions (done in chained apply_action to flowgraph)
+            // start again the satellite acquisitions (done in chained apply_action to flowgraph)
             break;
         default:
             LOG(INFO) << "Unrecognized action.";

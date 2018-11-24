@@ -205,6 +205,7 @@ int main(int argc, char** argv)
                             eph.i_0_2 = rne.i0;
                             eph.omega_2 = rne.w;
                             eph.OMEGA_dot_3 = rne.OMEGAdot;
+                            eph.delta_n_3 = rne.dn;
                             eph.iDot_2 = rne.idot;
                             eph.C_uc_3 = rne.Cuc;
                             eph.C_us_3 = rne.Cus;

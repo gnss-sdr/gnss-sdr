@@ -35,6 +35,35 @@
 #include <sstream>
 
 
+TcpCmdInterface::TcpCmdInterface()
+{
+    register_functions();
+    keep_running_ = true;
+    control_queue_ = nullptr;
+    rx_latitude_ = 0;
+    rx_longitude_ = 0;
+    rx_altitude_ = 0;
+    receiver_utc_time_ = 0;
+}
+
+
+TcpCmdInterface::~TcpCmdInterface()
+{
+}
+
+
+void TcpCmdInterface::register_functions()
+{
+    functions["status"] = std::bind(&TcpCmdInterface::status, this, std::placeholders::_1);
+    functions["standby"] = std::bind(&TcpCmdInterface::standby, this, std::placeholders::_1);
+    functions["reset"] = std::bind(&TcpCmdInterface::reset, this, std::placeholders::_1);
+    functions["hotstart"] = std::bind(&TcpCmdInterface::hotstart, this, std::placeholders::_1);
+    functions["warmstart"] = std::bind(&TcpCmdInterface::warmstart, this, std::placeholders::_1);
+    functions["coldstart"] = std::bind(&TcpCmdInterface::coldstart, this, std::placeholders::_1);
+    functions["set_ch_satellite"] = std::bind(&TcpCmdInterface::set_ch_satellite, this, std::placeholders::_1);
+}
+
+
 void TcpCmdInterface::set_pvt(std::shared_ptr<PvtInterface> PVT_sptr)
 {
     PVT_sptr_ = PVT_sptr;
@@ -145,7 +174,11 @@ std::string TcpCmdInterface::hotstart(const std::vector<std::string> &commandLin
         {
             // Read commandline time parameter
             struct tm tm;
-            strptime(commandLine.at(1).c_str(), "%d/%m/%Y %H:%M:%S", &tm);
+            if (strptime(commandLine.at(1).c_str(), "%d/%m/%Y %H:%M:%S", &tm) == nullptr)
+                {
+                    response = "ERROR: time parameter malformed\n";
+                    return response;
+                }
             receiver_utc_time_ = timegm(&tm);
 
             // Read latitude, longitude, and height
@@ -188,7 +221,11 @@ std::string TcpCmdInterface::warmstart(const std::vector<std::string> &commandLi
             // Read commandline time parameter
             struct tm tm;
             tmp_str = commandLine.at(1) + commandLine.at(2);
-            strptime(tmp_str.c_str(), "%d/%m/%Y %H:%M:%S", &tm);
+            if (strptime(commandLine.at(1).c_str(), "%d/%m/%Y %H:%M:%S", &tm) == nullptr)
+                {
+                    response = "ERROR: time parameter malformed\n";
+                    return response;
+                }
             receiver_utc_time_ = timegm(&tm);
 
             // Read latitude, longitude, and height
@@ -244,30 +281,6 @@ std::string TcpCmdInterface::set_ch_satellite(const std::vector<std::string> &co
     //todo: implement the set satellite command
     response = "Not implemented\n";
     return response;
-}
-
-
-void TcpCmdInterface::register_functions()
-{
-    functions["status"] = std::bind(&TcpCmdInterface::status, this, std::placeholders::_1);
-    functions["standby"] = std::bind(&TcpCmdInterface::standby, this, std::placeholders::_1);
-    functions["reset"] = std::bind(&TcpCmdInterface::reset, this, std::placeholders::_1);
-    functions["hotstart"] = std::bind(&TcpCmdInterface::hotstart, this, std::placeholders::_1);
-    functions["warmstart"] = std::bind(&TcpCmdInterface::warmstart, this, std::placeholders::_1);
-    functions["coldstart"] = std::bind(&TcpCmdInterface::coldstart, this, std::placeholders::_1);
-    functions["set_ch_satellite"] = std::bind(&TcpCmdInterface::set_ch_satellite, this, std::placeholders::_1);
-}
-
-
-TcpCmdInterface::TcpCmdInterface()
-{
-    register_functions();
-    keep_running_ = true;
-    control_queue_ = nullptr;
-    rx_latitude_ = 0;
-    rx_longitude_ = 0;
-    rx_altitude_ = 0;
-    receiver_utc_time_ = 0;
 }
 
 
@@ -384,10 +397,4 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
         {
             std::cout << "TCP Command Interface exception: address already in use" << std::endl;
         }
-}
-
-
-TcpCmdInterface::~TcpCmdInterface()
-{
-    // TODO Auto-generated destructor stub
 }

@@ -30,7 +30,7 @@ if(ENABLE_CUDA)
         ${OPT_TRACKING_INCLUDE_DIRS}
         ${CUDA_INCLUDE_DIRS}
     )
-endif(ENABLE_CUDA)
+endif()
 
 if(ENABLE_FPGA)
     set(OPT_TRACKING_ADAPTERS_SOURCES
@@ -41,7 +41,6 @@ if(ENABLE_FPGA)
         galileo_e5a_dll_pll_tracking_fpga.cc
         gps_l5_dll_pll_tracking_fpga.cc
     )
-
     set(OPT_TRACKING_ADAPTERS_HEADERS
         ${OPT_TRACKING_ADAPTERS_HEADERS}
         gps_l1_ca_dll_pll_tracking_fpga.h
@@ -50,7 +49,7 @@ if(ENABLE_FPGA)
         galileo_e5a_dll_pll_tracking_fpga.h
         gps_l5_dll_pll_tracking_fpga.h
     )
-endif(ENABLE_FPGA)
+endif()
 
 set(TRACKING_ADAPTER_SOURCES
     galileo_e1_dll_pll_veml_tracking.cc

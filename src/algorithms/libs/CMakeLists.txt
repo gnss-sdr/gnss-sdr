@@ -78,7 +78,7 @@ if(ENABLE_FPGA)
         gnss_sdr_time_counter.h
         gnss_sdr_fpga_sample_counter.h
     )
-endif(ENABLE_FPGA)
+endif()
 
 if(OPENCL_FOUND)
     set(GNSS_SPLIBS_SOURCES ${GNSS_SPLIBS_SOURCES}
@@ -91,7 +91,7 @@ if(OPENCL_FOUND)
         opencl/fft_setup.h # Needs OpenCL
         opencl/fft_kernelstring.h # Needs OpenCL
     )
-endif(OPENCL_FOUND)
+endif()
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -112,10 +112,10 @@ if(OPENCL_FOUND)
     include_directories(${OPENCL_INCLUDE_DIRS})
     if(OS_IS_MACOSX)
         set(OPT_LIBRARIES ${OPT_LIBRARIES} "-framework OpenCL")
-    else(OS_IS_MACOSX)
+    else()
         set(OPT_LIBRARIES ${OPT_LIBRARIES} ${OPENCL_LIBRARIES})
-    endif(OS_IS_MACOSX)
-endif(OPENCL_FOUND)
+    endif()
+endif()
 
 add_definitions(-DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}")
 
@@ -138,16 +138,16 @@ target_link_libraries(gnss_sp_libs
     gnss_rx
 )
 
-if(NOT VOLK_GNSSSDR_FOUND)
+if(NOT VOLKGNSSSDR_FOUND)
     add_dependencies(gnss_sp_libs volk_gnsssdr_module
         armadillo-${armadillo_RELEASE})
-else(NOT VOLK_GNSSSDR_FOUND)
+else()
     add_dependencies(gnss_sp_libs armadillo-${armadillo_RELEASE})
-endif(NOT VOLK_GNSSSDR_FOUND)
+endif()
 
 if(${GFLAGS_GREATER_20})
     add_definitions(-DGFLAGS_GREATER_2_0=1)
-endif(${GFLAGS_GREATER_20})
+endif()
 
 add_library(gnss_sdr_flags gnss_sdr_flags.cc gnss_sdr_flags.h)
 source_group(Headers FILES gnss_sdr_flags.h)

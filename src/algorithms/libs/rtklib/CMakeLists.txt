@@ -78,7 +78,7 @@ add_dependencies(rtklib_lib glog-${glog_RELEASE})
 
 if(OS_IS_MACOSX)
     set(MAC_LIBRARIES "-framework Accelerate")
-endif(OS_IS_MACOSX)
+endif()
 
 target_link_libraries(
     rtklib_lib

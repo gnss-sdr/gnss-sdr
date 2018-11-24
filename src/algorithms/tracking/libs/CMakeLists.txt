@@ -27,7 +27,7 @@ if(ENABLE_CUDA)
     cuda_add_library(CUDA_CORRELATOR_LIB ${LIB_TYPE} cuda_multicorrelator.h cuda_multicorrelator.cu)
     set(OPT_TRACKING_LIBRARIES ${OPT_TRACKING_LIBRARIES} CUDA_CORRELATOR_LIB)
     set(OPT_TRACKING_INCLUDES ${OPT_TRACKING_INCLUDES} ${CUDA_INCLUDE_DIRS})
-endif(ENABLE_CUDA)
+endif()
 
 set(TRACKING_LIB_SOURCES
     cpu_multicorrelator.cc
@@ -64,7 +64,7 @@ set(TRACKING_LIB_HEADERS
 if(ENABLE_FPGA)
     set(TRACKING_LIB_SOURCES ${TRACKING_LIB_SOURCES} fpga_multicorrelator.cc dll_pll_conf_fpga.cc)
     set(TRACKING_LIB_HEADERS ${TRACKING_LIB_HEADERS} fpga_multicorrelator.h dll_pll_conf_fpga.h)
-endif(ENABLE_FPGA)
+endif()
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -82,11 +82,11 @@ include_directories(
 
 if(ENABLE_GENERIC_ARCH)
     add_definitions(-DGENERIC_ARCH=1)
-endif(ENABLE_GENERIC_ARCH)
+endif()
 
 if(SSE3_AVAILABLE)
     add_definitions(-DHAVE_SSE3=1)
-endif(SSE3_AVAILABLE)
+endif()
 
 list(SORT TRACKING_LIB_HEADERS)
 list(SORT TRACKING_LIB_SOURCES)
@@ -103,8 +103,8 @@ target_link_libraries(tracking_lib
     ${GNURADIO_RUNTIME_LIBRARIES}
 )
 
-if(VOLK_GNSSSDR_FOUND)
+if(VOLKGNSSSDR_FOUND)
     add_dependencies(tracking_lib glog-${glog_RELEASE})
-else(VOLK_GNSSSDR_FOUND)
+else()
     add_dependencies(tracking_lib glog-${glog_RELEASE} volk_gnsssdr_module)
 endif()

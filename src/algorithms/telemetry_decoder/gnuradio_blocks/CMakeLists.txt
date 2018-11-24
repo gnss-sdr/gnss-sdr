@@ -67,6 +67,6 @@ target_link_libraries(telemetry_decoder_gr_blocks
     ${VOLK_GNSSSDR_LIBRARIES}
 )
 
-if(NOT VOLK_GNSSSDR_FOUND)
+if(NOT VOLKGNSSSDR_FOUND)
     add_dependencies(telemetry_decoder_gr_blocks volk_gnsssdr_module)
-endif(NOT VOLK_GNSSSDR_FOUND)
+endif()

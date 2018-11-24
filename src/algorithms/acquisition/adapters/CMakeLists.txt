@@ -70,7 +70,7 @@ if(ENABLE_FPGA)
         galileo_e5a_pcps_acquisition_fpga.h
         gps_l5i_pcps_acquisition_fpga.h
     )
-endif(ENABLE_FPGA)
+endif()
 
 if(OPENCL_FOUND)
     set(ACQ_ADAPTER_SOURCES
@@ -80,7 +80,7 @@ if(OPENCL_FOUND)
     set(ACQ_ADAPTER_HEADERS ${ACQ_ADAPTER_HEADERS}
         gps_l1_ca_pcps_opencl_acquisition.h
     )
-endif(OPENCL_FOUND)
+endif()
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}

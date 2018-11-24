@@ -16,7 +16,7 @@
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
-add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
+add_definitions(-DGNSS_SDR_VERSION="${VERSION}")
 
 set(PVT_LIB_SOURCES
     pvt_solution.cc
@@ -72,13 +72,13 @@ if(MATIO_FOUND)
         glog-${glog_RELEASE}
         armadillo-${armadillo_RELEASE}
     )
-else(MATIO_FOUND)
+else()
     add_dependencies(pvt_lib
         glog-${glog_RELEASE}
         armadillo-${armadillo_RELEASE}
         matio-${GNSSSDR_MATIO_LOCAL_VERSION}
     )
-endif(MATIO_FOUND)
+endif()
 
 target_link_libraries(
     pvt_lib

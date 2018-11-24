@@ -23,13 +23,13 @@ if(ENABLE_RAW_UDP)
     find_package(PCAP)
     if(NOT PCAP_FOUND)
         message(FATAL_ERROR "PCAP required to compile custom UDP packet sample source (ENABLE_RAW_UDP)")
-    endif(NOT PCAP_FOUND)
+    endif()
     get_filename_component(PCAP_LIBRARY_DIRS ${PCAP_LIBRARY} DIRECTORY CACHE)
     set(OPT_LIBRARIES ${OPT_LIBRARIES} ${PCAP_LIBRARIES})
     set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${PCAP_INCLUDE_DIRS})
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} custom_udp_signal_source.cc)
     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} custom_udp_signal_source.h)
-endif(ENABLE_RAW_UDP)
+endif()
 
 if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
     find_package(GRIIO REQUIRED)
@@ -40,10 +40,10 @@ if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
         message(STATUS " * libad9361-iio from https://github.com/analogdevicesinc/libad9361-iio")
         message(STATUS " * gnuradio-iio from https://github.com/analogdevicesinc/gr-iio")
         message(FATAL_ERROR "gnuradio-iio is required for building gnss-sdr with this option enabled.")
-    endif(NOT GRIIO_FOUND)
+    endif()
     set(OPT_LIBRARIES ${OPT_LIBRARIES} ${IIO_LIBRARIES})
     set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS})
-endif(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
+endif()
 
 if(ENABLE_AD9361)
     find_package(LIBIIO REQUIRED)
@@ -54,10 +54,10 @@ if(ENABLE_AD9361)
         message(STATUS " * libad9361-iio from https://github.com/analogdevicesinc/libad9361-iio")
         message(STATUS " * gnuradio-iio from https://github.com/analogdevicesinc/gr-iio")
         message(FATAL_ERROR "libiio is required for building gnss-sdr with this option enabled.")
-    endif(NOT LIBIIO_FOUND)
+    endif()
     set(OPT_LIBRARIES ${OPT_LIBRARIES} ${LIBIIO_LIBRARIES})
     set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${LIBIIO_INCLUDE_DIRS})
-endif(ENABLE_AD9361)
+endif()
 
 
 if(ENABLE_PLUTOSDR)
@@ -67,8 +67,8 @@ if(ENABLE_PLUTOSDR)
     if(GRIIO_FOUND)
         set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} plutosdr_signal_source.cc)
         set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} plutosdr_signal_source.h)
-    endif(GRIIO_FOUND)
-endif(ENABLE_PLUTOSDR)
+    endif()
+endif()
 
 
 if(ENABLE_FMCOMMS2)
@@ -78,8 +78,8 @@ if(ENABLE_FMCOMMS2)
     if(GRIIO_FOUND)
         set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} fmcomms2_signal_source.cc)
         set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} fmcomms2_signal_source.h)
-    endif(GRIIO_FOUND)
-endif(ENABLE_FMCOMMS2)
+    endif()
+endif()
 
 
 if(ENABLE_AD9361)
@@ -89,8 +89,8 @@ if(ENABLE_AD9361)
     if(LIBIIO_FOUND)
         set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} ad9361_fpga_signal_source.cc)
         set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} ad9361_fpga_signal_source.h)
-    endif(LIBIIO_FOUND)
-endif(ENABLE_AD9361)
+    endif()
+endif()
 
 
 if(ENABLE_GN3S)
@@ -101,12 +101,12 @@ if(ENABLE_GN3S)
     if(NOT GRGN3S_FOUND)
         message(" gr-gn3s not found, install it from https://github.com/gnss-sdr/gr-gn3s ")
         message(FATAL_ERROR "gr-gn3s required for building gnss-sdr with this option enabled")
-    endif(NOT GRGN3S_FOUND)
+    endif()
     set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GR_GN3S_LIBRARIES})
     set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${GR_GN3S_INCLUDE_DIRS})
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} gn3s_signal_source.cc)
     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} gn3s_signal_source.h)
-endif(ENABLE_GN3S)
+endif()
 
 
 if(ENABLE_FLEXIBAND)
@@ -116,7 +116,7 @@ if(ENABLE_FLEXIBAND)
     find_package(TELEORBIT REQUIRED)
     if(NOT TELEORBIT_FOUND)
         message(FATAL_ERROR "Teleorbit Flexiband GNU Radio driver required to build gnss-sdr with the optional FLEXIBAND adapter")
-    endif(NOT TELEORBIT_FOUND)
+    endif()
     # Set up variables
     set(FLEXIBAND_DRIVER_INCLUDE_DIRS
         ${OPT_DRIVER_INCLUDE_DIRS}
@@ -126,7 +126,7 @@ if(ENABLE_FLEXIBAND)
     set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${FLEXIBAND_DRIVER_INCLUDE_DIRS})
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} flexiband_signal_source.cc)
     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} flexiband_signal_source.h)
-endif(ENABLE_FLEXIBAND)
+endif()
 
 
 if(ENABLE_ARRAY)
@@ -137,12 +137,12 @@ if(ENABLE_ARRAY)
     if(NOT GRDBFCTTC_FOUND)
         message(" gr-dbfcttc not found, install it from https://github.com/gnss-sdr/gr-dbfcttc ")
         message(FATAL_ERROR "gr-dbfcttc required for building gnss-sdr with this option enabled")
-    endif(NOT GRDBFCTTC_FOUND)
+    endif()
     set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GR_DBFCTTC_LIBRARIES})
     set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${GR_DBFCTTC_INCLUDE_DIRS})
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} raw_array_signal_source.cc)
     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} raw_array_signal_source.h)
-endif(ENABLE_ARRAY)
+endif()
 
 
 if(ENABLE_OSMOSDR)
@@ -152,8 +152,8 @@ if(ENABLE_OSMOSDR)
     if(NOT GROSMOSDR_FOUND)
         if(ENABLE_PACKAGING)
             list(REMOVE_ITEM SIGNAL_SOURCE_ADAPTER_HEADERS ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/adapters/osmosdr_signal_source.h)
-        endif(ENABLE_PACKAGING)
-    else(NOT GROSMOSDR_FOUND)
+        endif()
+    else()
         # set OSMO include dirs
         set(OSMO_DRIVER_INCLUDE_DIRS
             ${OPT_DRIVER_INCLUDE_DIRS}
@@ -163,8 +163,8 @@ if(ENABLE_OSMOSDR)
         set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} osmosdr_signal_source.h)
         set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GROSMOSDR_LIBRARIES})
         set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${OSMO_DRIVER_INCLUDE_DIRS})
-    endif(NOT GROSMOSDR_FOUND)
-endif(ENABLE_OSMOSDR)
+    endif()
+endif()
 
 
 if(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
@@ -172,27 +172,29 @@ if(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} uhd_signal_source.h)
     set(OPT_LIBRARIES ${OPT_LIBRARIES} ${UHD_LIBRARIES} ${GNURADIO_UHD_LIBRARIES})
     set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${UHD_INCLUDE_DIRS})
-endif(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
+endif()
 
 
-set(SIGNAL_SOURCE_ADAPTER_SOURCES file_signal_source.cc
-                                  gen_signal_source.cc
-                                  nsr_file_signal_source.cc
-                                  spir_file_signal_source.cc
-                                  spir_gss6450_file_signal_source.cc
-                                  rtl_tcp_signal_source.cc
-                                  labsat_signal_source.cc
-                                  ${OPT_DRIVER_SOURCES}
+set(SIGNAL_SOURCE_ADAPTER_SOURCES
+    file_signal_source.cc
+    gen_signal_source.cc
+    nsr_file_signal_source.cc
+    spir_file_signal_source.cc
+    spir_gss6450_file_signal_source.cc
+    rtl_tcp_signal_source.cc
+    labsat_signal_source.cc
+    ${OPT_DRIVER_SOURCES}
 )
 
-set(SIGNAL_SOURCE_ADAPTER_HEADERS file_signal_source.h
-                                  gen_signal_source.h
-                                  nsr_file_signal_source.h
-                                  spir_file_signal_source.h
-                                  spir_gss6450_file_signal_source.h
-                                  rtl_tcp_signal_source.h
-                                  labsat_signal_source.h
-                                  ${OPT_DRIVER_HEADERS}
+set(SIGNAL_SOURCE_ADAPTER_HEADERS
+    file_signal_source.h
+    gen_signal_source.h
+    nsr_file_signal_source.h
+    spir_file_signal_source.h
+    spir_gss6450_file_signal_source.h
+    rtl_tcp_signal_source.h
+    labsat_signal_source.h
+    ${OPT_DRIVER_HEADERS}
 )
 
 
@@ -203,7 +205,7 @@ if(PC_GNURADIO_RUNTIME_VERSION VERSION_GREATER 3.7.3)
     set(SIGNAL_SOURCE_ADAPTER_HEADERS ${SIGNAL_SOURCE_ADAPTER_HEADERS}
         two_bit_cpx_file_signal_source.h
         two_bit_packed_file_signal_source.h)
-endif(PC_GNURADIO_RUNTIME_VERSION VERSION_GREATER 3.7.3)
+endif()
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -222,7 +224,7 @@ include_directories(
 
 if(ARCH_64BITS)
     add_definitions(-DARCH_64BITS=1)
-endif(ARCH_64BITS)
+endif()
 
 add_definitions(-DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}")
 

@@ -99,8 +99,6 @@ include_directories(
     ${GFlags_INCLUDE_DIRS}
 )
 
-link_directories(${Boost_LIBRARY_DIR})
-
 list(SORT SYSTEM_PARAMETERS_HEADERS)
 list(SORT SYSTEM_PARAMETERS_SOURCES)
 

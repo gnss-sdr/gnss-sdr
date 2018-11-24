@@ -54,8 +54,8 @@ target_link_libraries(input_filter_gr_blocks
     ${VOLK_GNSSSDR_LIBRARIES}
     ${LOG4CPP_LIBRARIES})
 
-if(NOT VOLK_GNSSSDR_FOUND)
+if(NOT VOLKGNSSSDR_FOUND)
     add_dependencies(input_filter_gr_blocks volk_gnsssdr_module glog-${glog_RELEASE})
-else(NOT VOLK_GNSSSDR_FOUND)
+else()
     add_dependencies(input_filter_gr_blocks glog-${glog_RELEASE})
-endif(NOT VOLK_GNSSSDR_FOUND)
+endif()

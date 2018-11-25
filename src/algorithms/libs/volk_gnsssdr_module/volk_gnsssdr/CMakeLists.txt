@@ -44,20 +44,20 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
             # retrieve the compiler's version from it
             string(REGEX MATCH "clang version [0-9.]+" CLANG_OTHER_VERSION ${_err})
             string(REGEX MATCH "[0-9.]+" CLANG_VERSION ${CLANG_OTHER_VERSION})
-        else("${IS_APPLE}" STREQUAL "")
+        else()
             set(MIN_VERSION ${GNSSSDR_APPLECLANG_MIN_VERSION})
             set(APPLE_STR "Apple ")
             # retrieve the compiler's version from it
             string(REGEX MATCH "(clang-[0-9.]+)" CLANG_APPLE_VERSION ${_err})
             string(REGEX MATCH "[0-9.]+" CLANG_VERSION ${CLANG_APPLE_VERSION})
-        endif("${IS_APPLE}" STREQUAL "")
+        endif()
         if(${CLANG_VERSION} VERSION_LESS "${MIN_VERSION}")
             message(WARNING "\nThe compiler selected to build VOLK-GNSSSDR (${APPLE_STR}Clang version ${CLANG_VERSION} : ${CMAKE_CXX_COMPILER}) is older than that officially supported (${MIN_VERSION} minimum). This build may or not work. We highly recommend using Apple Clang version ${APPLECLANG_MIN_VERSION} or more recent, or Clang version ${CLANG_MIN_VERSION} or more recent.")
-        endif(${CLANG_VERSION} VERSION_LESS "${MIN_VERSION}")
-    else(${_res} STREQUAL "0")
+        endif()
+    else()
         message(WARNING "\nCannot determine the version of the compiler selected to build VOLK-GNSSSDR (${APPLE_STR}Clang : ${CMAKE_CXX_COMPILER}). This build may or not work. We highly recommend using Apple Clang version ${APPLECLANG_MIN_VERSION} or more recent, or Clang version ${CLANG_MIN_VERSION} or more recent.")
-    endif(${_res} STREQUAL "0")
-endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    endif()
+endif()
 
 # Enable C++17 support in GCC >= 8.0.0
 # Enable C++14 support in 8.0.0 > GCC >= 6.1.1
@@ -66,15 +66,15 @@ endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
     if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
         set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
-    else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
+    else()
         if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
             set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
-        else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
+        else()
             set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++17")
-        endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
-    endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
+        endif()
+    endif()
     set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wall -Wextra")  #Add warning flags: For "-Wall" see http://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
-endif((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
+endif()
 
 # Enable C++17 support in Clang >= 6.0.0
 # Enable C++14 support in 6.0.0 > Clang >= 3.5.0 or AppleClang >= 600
@@ -84,28 +84,28 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         # See https://trac.macports.org/wiki/XcodeVersionInfo for Apple Clang version equivalences
         if(CLANG_VERSION VERSION_LESS "600")
             set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
-        else(CLANG_VERSION VERSION_LESS "600")
+        else()
             set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
-        endif(CLANG_VERSION VERSION_LESS "600")
-    else(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+        endif()
+    else()
         if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
             set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
-        else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
+        else()
             if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.0.0")
                 set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
-            else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.0.0")
+            else()
                 set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++17")
-            endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.0.0")
-        endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
-    endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
-endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+            endif()
+        endif()
+    endif()
+endif()
 
 if(NOT ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32) AND NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
     if(NOT (CMAKE_VERSION VERSION_LESS "3.1"))
         set(CMAKE_C_STANDARD 11)
         set(CMAKE_CXX_STANDARD 11)
-    endif(NOT (CMAKE_VERSION VERSION_LESS "3.1"))
-endif(NOT ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32) AND NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
+    endif()
+endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MY_CXX_FLAGS} -Wall")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
@@ -113,9 +113,9 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 if(CMAKE_VERSION VERSION_GREATER "3.0")
     cmake_policy(SET CMP0042 NEW)
     if(CMAKE_VERSION VERSION_GREATER "3.9")
-         cmake_policy(SET CMP0068 NEW)
-    endif(CMAKE_VERSION VERSION_GREATER "3.9")
-endif(CMAKE_VERSION VERSION_GREATER "3.0")
+        cmake_policy(SET CMP0068 NEW)
+    endif()
+endif()
 
 option(ENABLE_STRIP "Create a stripped volk_gnsssdr_profile binary (without shared libraries)" OFF)
 
@@ -129,7 +129,7 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
     message(STATUS "Build type not specified: defaulting to release.")
 endif()
-VOLK_CHECK_BUILD_TYPE(${CMAKE_BUILD_TYPE})
+volk_check_build_type(${CMAKE_BUILD_TYPE})
 set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
 message(STATUS "Build type set to ${CMAKE_BUILD_TYPE}.")
 
@@ -144,14 +144,14 @@ include(VolkVersion) #setup version info
 ########################################################################
 # Environment setup
 ########################################################################
-IF(NOT DEFINED BOOST_ROOT AND NOT DEFINED ENV{BOOST_ROOT})
-    SET(BOOST_ROOT ${CMAKE_INSTALL_PREFIX})
-ENDIF()
+if(NOT DEFINED BOOST_ROOT AND NOT DEFINED ENV{BOOST_ROOT})
+    set(BOOST_ROOT ${CMAKE_INSTALL_PREFIX})
+endif()
 
-IF(NOT DEFINED CROSSCOMPILE_MULTILIB)
-    SET(CROSSCOMPILE_MULTILIB "")
-ENDIF()
-SET(CROSSCOMPILE_MULTILIB ${CROSSCOMPILE_MULTILIB} CACHE STRING "Define \"true\" if you have and want to use multiple C development libs installed for cross compile")
+if(NOT DEFINED CROSSCOMPILE_MULTILIB)
+    set(CROSSCOMPILE_MULTILIB "")
+endif()
+set(CROSSCOMPILE_MULTILIB ${CROSSCOMPILE_MULTILIB} CACHE STRING "Define \"true\" if you have and want to use multiple C development libs installed for cross compile")
 
 if(MSVC)
     add_definitions(-D_USE_MATH_DEFINES) #enables math constants on all supported versions of MSVC
@@ -160,16 +160,16 @@ if(MSVC)
     add_compile_options(/wd4752)
     add_compile_options(/wo4273)
     add_compile_options(/wo4838)
-endif(MSVC)
+endif()
 
 # allow 'large' files in 32 bit builds
 if(UNIX)
-    add_definitions( -D_LARGEFILE_SOURCE
-                     -D_FILE_OFFSET_BITS=64
-                     -D_LARGE_FILES
-                     -D_FORTIFY_SOURCE=2
-                   )
-endif(UNIX)
+    add_definitions(-D_LARGEFILE_SOURCE
+        -D_FILE_OFFSET_BITS=64
+        -D_LARGE_FILES
+        -D_FORTIFY_SOURCE=2
+    )
+endif()
 
 
 ########################################################################
@@ -178,9 +178,9 @@ endif(UNIX)
 
 # Python
 include(VolkPython) #sets PYTHON_EXECUTABLE and PYTHON_DASH_B
-VOLK_PYTHON_CHECK_MODULE("python >= 2.7" sys "sys.version.split()[0] >= '2.7'" PYTHON_MIN_VER_FOUND)
-VOLK_PYTHON_CHECK_MODULE("mako >= 0.4.2" mako "mako.__version__ >= '0.4.2'" MAKO_FOUND)
-VOLK_PYTHON_CHECK_MODULE("six - python 2 and 3 compatibility library" six "True" SIX_FOUND)
+volk_python_check_module("python >= 2.7" sys "sys.version.split()[0] >= '2.7'" PYTHON_MIN_VER_FOUND)
+volk_python_check_module("mako >= 0.4.2" mako "mako.__version__ >= '0.4.2'" MAKO_FOUND)
+volk_python_check_module("six - python 2 and 3 compatibility library" six "True" SIX_FOUND)
 
 
 if(NOT PYTHON_MIN_VER_FOUND)
@@ -199,16 +199,16 @@ endif()
 
 # Boost
 if(MSVC)
-    if (NOT DEFINED BOOST_ALL_DYN_LINK)
+    if(NOT DEFINED BOOST_ALL_DYN_LINK)
         set(BOOST_ALL_DYN_LINK TRUE)
     endif()
     set(BOOST_ALL_DYN_LINK "${BOOST_ALL_DYN_LINK}" CACHE BOOL "boost enable dynamic linking")
     if(BOOST_ALL_DYN_LINK)
         add_definitions(-DBOOST_ALL_DYN_LINK) #setup boost auto-linking in msvc
-    else(BOOST_ALL_DYN_LINK)
+    else()
         unset(BOOST_REQUIRED_COMPONENTS) #empty components list for static link
-    endif(BOOST_ALL_DYN_LINK)
-endif(MSVC)
+    endif()
+endif()
 
 include(VolkBoost)
 
@@ -220,9 +220,9 @@ endif()
 option(ENABLE_ORC "Enable Orc" True)
 if(ENABLE_ORC)
   find_package(ORC)
-else(ENABLE_ORC)
+else()
   message(STATUS "Disabling use of ORC")
-endif(ENABLE_ORC)
+endif()
 
 
 ########################################################################
@@ -240,7 +240,7 @@ if(DOXYGEN_FOUND)
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         COMMENT "Generating documentation with Doxygen" VERBATIM
     )
-endif(DOXYGEN_FOUND)
+endif()
 
 
 ########################################################################
@@ -255,7 +255,8 @@ set(includedir "\${prefix}/include")
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/volk_gnsssdr.pc.in
     ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr.pc
-@ONLY)
+    @ONLY
+)
 
 install(
     FILES ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr.pc
@@ -304,17 +305,17 @@ if(APPLE)
         set(CMAKE_INSTALL_NAME_DIR
             ${CMAKE_INSTALL_PREFIX}/${VOLK_LIBRARY_DIR} CACHE
             PATH "Library Install Name Destination Directory" FORCE)
-    endif(NOT CMAKE_INSTALL_NAME_DIR)
+    endif()
     if(NOT CMAKE_INSTALL_RPATH)
         set(CMAKE_INSTALL_RPATH
             ${CMAKE_INSTALL_PREFIX}/${VOLK_LIBRARY_DIR} CACHE
             PATH "Library Install RPath" FORCE)
-    endif(NOT CMAKE_INSTALL_RPATH)
+    endif()
     if(NOT CMAKE_BUILD_WITH_INSTALL_RPATH)
         set(CMAKE_BUILD_WITH_INSTALL_RPATH ON CACHE
             BOOL "Do Build Using Library Install RPath" FORCE)
-    endif(NOT CMAKE_BUILD_WITH_INSTALL_RPATH)
-endif(APPLE)
+    endif()
+endif()
 
 
 ########################################################################
@@ -358,7 +359,7 @@ configure_file(
 
 if(NOT CMAKE_MODULES_DIR)
     set(CMAKE_MODULES_DIR lib${LIB_SUFFIX}/cmake)
-endif(NOT CMAKE_MODULES_DIR)
+endif()
 
 install(
     FILES
@@ -371,7 +372,7 @@ install(
 ########################################################################
 # Option to enable QA testing, on by default
 ########################################################################
-OPTION(ENABLE_TESTING "Enable QA testing" ON)
+option(ENABLE_TESTING "Enable QA testing" ON)
 if(ENABLE_TESTING)
   message(STATUS "QA Testing is enabled.")
 else()
@@ -383,7 +384,7 @@ message(STATUS "  Modify using: -DENABLE_TESTING=ON/OFF")
 ########################################################################
 # Option to enable post-build profiling using volk_profile, off by default
 ########################################################################
-OPTION(ENABLE_PROFILING "Launch system profiler after build" OFF)
+option(ENABLE_PROFILING "Launch system profiler after build" OFF)
 if(ENABLE_PROFILING)
   set(ENABLE_STATIC_LIBS ON)
   if(DEFINED VOLK_CONFIGPATH)

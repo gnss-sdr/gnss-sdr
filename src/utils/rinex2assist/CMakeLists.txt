@@ -26,38 +26,43 @@ endif()
 
 set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${GPSTK_INCLUDE_DIR}/gpstk)
 
-find_package(Boost COMPONENTS iostreams serialization REQUIRED)
+find_package(Boost COMPONENTS iostreams serialization QUIET)
 
-include_directories(
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${GFlags_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
-    ${GPSTK_INCLUDE_DIR}/gpstk
-    ${GPSTK_INCLUDE_DIR}
-)
+if(Boost_FOUND)
+    include_directories(
+        ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+        ${GFlags_INCLUDE_DIRS}
+        ${Boost_INCLUDE_DIRS}
+        ${GPSTK_INCLUDE_DIR}/gpstk
+        ${GPSTK_INCLUDE_DIR}
+    )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
 
-add_executable(rinex2assist ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
+    add_executable(rinex2assist ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
 
-target_link_libraries(rinex2assist
-    ${Boost_LIBRARIES}
-    ${GPSTK_LIBRARY}
-    ${GFlags_LIBS}
-    gnss_sp_libs
-    gnss_rx
-)
+    target_link_libraries(rinex2assist
+        ${Boost_LIBRARIES}
+        ${GPSTK_LIBRARY}
+        ${GFlags_LIBS}
+        gnss_sp_libs
+        gnss_rx
+    )
 
-if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
-    add_dependencies(rinex2assist gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION})
+    if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
+        add_dependencies(rinex2assist gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION})
+    endif()
+
+    add_custom_command(TARGET rinex2assist POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:rinex2assist>
+            ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:rinex2assist>
+    )
+
+    install(TARGETS rinex2assist
+        RUNTIME DESTINATION bin
+        COMPONENT "rinex2assist"
+    )
+else()
+    message(STATUS "Boost Iostreams library not found.")
+    message(STATUS "rinex2assist will not be built.")
 endif()
-
-add_custom_command(TARGET rinex2assist POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:rinex2assist>
-        ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:rinex2assist>
-)
-
-install(TARGETS rinex2assist
-    RUNTIME DESTINATION bin
-    COMPONENT "rinex2assist"
-)

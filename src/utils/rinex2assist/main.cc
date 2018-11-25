@@ -45,6 +45,7 @@
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
+#include <cstdlib>
 #include <iostream>
 
 
@@ -80,8 +81,12 @@ int main(int argc, char** argv)
         {
             if ((rinex_filename.substr(found + 1, found + 3).compare("gz") == 0))
                 {
-                    std::cerr << "Hello" << std::endl;
                     std::ifstream file(rinex_filename, std::ios_base::in | std::ios_base::binary);
+                    if (file.fail())
+                        {
+                            std::cerr << "Could not open file " << rinex_filename << std::endl;
+                            return 1;
+                        }
                     boost::iostreams::filtering_streambuf<boost::iostreams::input> in;
                     try
                         {
@@ -97,6 +102,24 @@ int main(int argc, char** argv)
                     std::ofstream output_file(rinex_filename_unzipped.c_str(), std::ios_base::out | std::ios_base::binary);
                     boost::iostreams::copy(in, output_file);
                     rinex_filename = rinex_filename_unzipped;
+                }
+            if ((rinex_filename.substr(found + 1, found + 2).compare("Z") == 0))
+                {
+                    std::ifstream file(rinex_filename, std::ios_base::in | std::ios_base::binary);
+                    if (file.fail())
+                        {
+                            std::cerr << "Could not open file" << rinex_filename << std::endl;
+                            return 1;
+                        }
+                    file.close();
+                    // option k is not always available, so we save a copy of the original file
+                    std::string argum = std::string("/bin/cp " + rinex_filename + " " + rinex_filename + ".aux");
+                    std::system(argum.c_str());
+                    std::string argum2 = std::string("/usr/bin/uncompress -f " + rinex_filename);
+                    std::system(argum2.c_str());
+                    std::string argum3 = std::string("/bin/mv " + rinex_filename + +".aux" + " " + rinex_filename);
+                    std::system(argum3.c_str());
+                    rinex_filename = rinex_filename.substr(0, found);
                 }
         }
 

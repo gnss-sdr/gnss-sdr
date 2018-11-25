@@ -63,6 +63,6 @@ if(Boost_FOUND)
         COMPONENT "rinex2assist"
     )
 else()
-    message(STATUS "Boost iostrems library not found.")
+    message(STATUS "Boost Iostreams library not found.")
     message(STATUS "rinex2assist will not be built.")
 endif()

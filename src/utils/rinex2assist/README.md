@@ -15,7 +15,7 @@ There are some servers available for downloading RINEX navigation files. For ins
 
 Just make sure to pick up a [station near you](http://www.igs.org/network).
 
-The program accepts either versions 2.xx or 3.xx for the RINEX navigation data file, as well as compressed files (ending in `.gz`).
+The program accepts either versions 2.xx or 3.xx for the RINEX navigation data file, as well as compressed files (ending in `.gz` or `.Z`).
 
 Examples:
 

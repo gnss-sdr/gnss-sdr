@@ -80,7 +80,6 @@ int main(int argc, char** argv)
         {
             if ((rinex_filename.substr(found + 1, found + 3).compare("gz") == 0))
                 {
-                    std::cerr << "Hello" << std::endl;
                     std::ifstream file(rinex_filename, std::ios_base::in | std::ios_base::binary);
                     boost::iostreams::filtering_streambuf<boost::iostreams::input> in;
                     try

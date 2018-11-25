@@ -1,7 +1,7 @@
 Rinex2assist
 ------------
 
-This program generates ephemeris XML files from RINEX navigation data files. The usage is as follows:
+This program reads data from RINEX navigation files and generates XML files that can be read by GNSS-SDR as Assisted GNSS data. The usage is as follows:
 
 ```
 $ rinex2assist /path/to/RINEX_nav_file 
@@ -9,16 +9,34 @@ $ rinex2assist /path/to/RINEX_nav_file
 
 The argument is mandatory (the name of the RINEX navigation file). The name `gps_ephemeris.xml` is given to the output if GPS NAV data is fould. If the RINEX file contains Galileo data, the corresponding `gal_ephemeris.xml` file will be generated. The program is also able to extract parameters of the UTC and the Ionospheric models from the RINEX header, if available. They will be called `gps_utc_model.xml`, `gps_iono.xml`, `gal_utc_model.xml` and `gal_iono.xml`.
 
-
-The program accepts either versions 2.xx or 3.xx for the RINEX navigation data file.
-
 There are some servers available for downloading RINEX navigation files. For instance:
   * NASA: [ftp://cddis.gsfc.nasa.gov/pub/gnss/data/hourly/](ftp://gssc.esa.int/gnss/data/hourly/)
   * ESA: [ftp://gssc.esa.int/gnss/data/hourly/](ftp://gssc.esa.int/gnss/data/hourly/)
 
 Just make sure to pick up a [station near you](http://gpspp.sakura.ne.jp/gmap/igsnet.htm).
 
-An example of GNSS-SDR configuration using ephemeris and UTC and ionospheric model parameters for GPS L1 and Galileo signals is shown below:
+The program accepts either versions 2.xx or 3.xx for the RINEX navigation data file, as well as compressed files (ending in `.gz`).
+
+Examples:
+
+```
+$ rinex2assist EBRE00ESP_R_20183290400_01H_GN.rnx.gz
+Generated file: gps_ephemeris.xml
+Generated file: gps_utc_model.xml
+Generated file: gps_iono.xml
+```
+
+and
+
+```
+$ rinex2assist EBRE00ESP_R_20183290000_01H_EN.rnx.gz
+Generated file: gal_ephemeris.xml
+Generated file: gal_utc_model.xml
+Generated file: gal_iono.xml
+```
+
+
+An example of GNSS-SDR configuration using ephemeris, UTC and ionospheric model parameters for GPS L1 and Galileo signals is shown below:
 
 ```
 GNSS-SDR.AGNSS_XML_enabled=true

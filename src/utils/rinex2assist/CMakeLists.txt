@@ -26,6 +26,8 @@ endif()
 
 set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${GPSTK_INCLUDE_DIR}/gpstk)
 
+find_package(Boost COMPONENTS iostreams serialization REQUIRED)
+
 include_directories(
     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
     ${GFlags_INCLUDE_DIRS}

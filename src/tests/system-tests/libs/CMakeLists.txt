@@ -23,22 +23,29 @@ set(SYSTEM_TESTING_LIB_SOURCES
 )
 
 include_directories(
-     ${CMAKE_CURRENT_SOURCE_DIR}
-     ${Boost_INCLUDE_DIRS}
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${MATIO_INCLUDE_DIRS}
-     ${ARMADILLO_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${Boost_INCLUDE_DIRS}
+    ${GLOG_INCLUDE_DIRS}
+    ${GFlags_INCLUDE_DIRS}
+    ${MATIO_INCLUDE_DIRS}
+    ${ARMADILLO_INCLUDE_DIRS}
 )
-
 
 file(GLOB SYSTEM_TESTING_LIB_HEADERS "*.h")
 list(SORT SYSTEM_TESTING_LIB_HEADERS)
-add_library(system_testing_lib ${SYSTEM_TESTING_LIB_SOURCES} ${SYSTEM_TESTING_LIB_HEADERS})
+
+add_library(system_testing_lib
+    ${SYSTEM_TESTING_LIB_SOURCES}
+    ${SYSTEM_TESTING_LIB_HEADERS}
+)
+
 source_group(Headers FILES ${SYSTEM_TESTING_LIB_HEADERS})
 
 if(NOT MATIO_FOUND)
-   add_dependencies(system_testing_lib armadillo-${armadillo_RELEASE} matio-${GNSSSDR_MATIO_LOCAL_VERSION})
-else(NOT MATIO_FOUND)
-   add_dependencies(system_testing_lib armadillo-${armadillo_RELEASE})
-endif(NOT MATIO_FOUND)
+    add_dependencies(system_testing_lib
+        armadillo-${armadillo_RELEASE}
+        matio-${GNSSSDR_MATIO_LOCAL_VERSION}
+    )
+else()
+    add_dependencies(system_testing_lib armadillo-${armadillo_RELEASE})
+endif()

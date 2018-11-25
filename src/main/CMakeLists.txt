@@ -23,28 +23,28 @@ if(ENABLE_GPERFTOOLS)
     if(GPERFTOOLS_FOUND)
         set(GNSS_SDR_OPTIONAL_LIBS "${GNSS_SDR_OPTIONAL_LIBS};${GPERFTOOLS_PROFILER};${GPERFTOOLS_TCMALLOC}")
         set(GNSS_SDR_OPTIONAL_HEADERS "${GNSS_SDR_OPTIONAL_HEADERS};${GPERFTOOLS_INCLUDE_DIR}")
-    endif(GPERFTOOLS_FOUND)
-endif(ENABLE_GPERFTOOLS)
+    endif()
+endif()
 
 if(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
     set(GNSS_SDR_OPTIONAL_LIBS ${GNSS_SDR_OPTIONAL_LIBS} ${UHD_LIBRARIES} ${GNURADIO_UHD_LIBRARIES})
     set(GNSS_SDR_OPTIONAL_HEADERS ${GNSS_SDR_OPTIONAL_HEADERS} ${UHD_INCLUDE_DIRS})
-endif(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
+endif()
 
 if(OPENSSL_FOUND)
     add_definitions(-DUSE_OPENSSL_FALLBACK=1)
-endif(OPENSSL_FOUND)
+endif()
 
 if(ENABLE_CUDA)
     add_definitions(-DCUDA_GPU_ACCEL=1)
     set(GNSS_SDR_OPTIONAL_LIBS ${GNSS_SDR_OPTIONAL_LIBS} ${CUDA_LIBRARIES})
     set(GNSS_SDR_OPTIONAL_HEADERS ${GNSS_SDR_OPTIONAL_HEADERS} ${CUDA_INCLUDE_DIRS})
-endif(ENABLE_CUDA)
+endif()
 
 if(ORC_FOUND)
     set(GNSS_SDR_OPTIONAL_LIBS ${GNSS_SDR_OPTIONAL_LIBS} ${ORC_LIBRARIES})
     set(GNSS_SDR_OPTIONAL_HEADERS ${GNSS_SDR_OPTIONAL_HEADERS} ${ORC_INCLUDE_DIRS})
-endif(ORC_FOUND)
+endif()
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
@@ -72,8 +72,8 @@ add_definitions(-DGNSS_SDR_VERSION="${VERSION}")
 if(OS_IS_MACOSX)
     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         set(MAC_LIBRARIES "-framework Accelerate -lc++")
-    endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-endif(OS_IS_MACOSX)
+    endif()
+endif()
 
 add_executable(gnss-sdr ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
 
@@ -110,10 +110,10 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/conf DESTINATION share/gnss-sdr
 install(FILES ${CMAKE_SOURCE_DIR}/conf/gnss-sdr.conf DESTINATION share/gnss-sdr/conf
     RENAME default.conf)
 
-if(NOT VOLK_GNSSSDR_FOUND)
+if(NOT VOLKGNSSSDR_FOUND)
     install(PROGRAMS ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/build/apps/volk_gnsssdr_profile DESTINATION bin COMPONENT "volk_gnsssdr")
     install(PROGRAMS ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/build/apps/volk_gnsssdr-config-info DESTINATION bin COMPONENT "volk_gnsssdr")
-endif(NOT VOLK_GNSSSDR_FOUND)
+endif()
 
 find_program(GZIP
     gzip
@@ -135,12 +135,12 @@ if(NOT GZIP_NOTFOUND)
 
     install(FILES ${CMAKE_BINARY_DIR}/changelog.gz DESTINATION share/doc/gnss-sdr)
 
-    if(NOT VOLK_GNSSSDR_FOUND)
+    if(NOT VOLKGNSSSDR_FOUND)
         execute_process(COMMAND gzip -9 -c ${CMAKE_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/cmake/Packaging/volk_gnsssdr_profile-manpage
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_FILE "${CMAKE_BINARY_DIR}/volk_gnsssdr_profile.1.gz")
         execute_process(COMMAND gzip -9 -c ${CMAKE_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/cmake/Packaging/volk_gnsssdr-config-info-manpage
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_FILE "${CMAKE_BINARY_DIR}/volk_gnsssdr-config-info.1.gz")
         install(FILES ${CMAKE_BINARY_DIR}/volk_gnsssdr_profile.1.gz DESTINATION share/man/man1)
         install(FILES ${CMAKE_BINARY_DIR}/volk_gnsssdr-config-info.1.gz DESTINATION share/man/man1)
-    endif(NOT VOLK_GNSSSDR_FOUND)
-endif(NOT GZIP_NOTFOUND)
+    endif()
+endif()

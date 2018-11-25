@@ -30,7 +30,7 @@ if(ENABLE_FPGA)
         ${GFlags_INCLUDE_DIRS}
         ${VOLK_GNSSSDR_INCLUDE_DIRS}
     )
-endif(ENABLE_FPGA)
+endif()
 
 set(ACQUISITION_LIB_HEADERS ${ACQUISITION_LIB_HEADERS} acq_conf.h)
 set(ACQUISITION_LIB_SOURCES ${ACQUISITION_LIB_SOURCES} acq_conf.cc)
@@ -51,8 +51,8 @@ target_link_libraries(acquisition_lib
     ${GNURADIO_RUNTIME_LIBRARIES}
 )
 
-if(VOLK_GNSSSDR_FOUND)
+if(VOLKGNSSSDR_FOUND)
     add_dependencies(acquisition_lib glog-${glog_RELEASE})
-else(VOLK_GNSSSDR_FOUND)
+else()
     add_dependencies(acquisition_lib glog-${glog_RELEASE} volk_gnsssdr_module)
 endif()

@@ -33,7 +33,7 @@ if(ENABLE_CUDA)
         ${OPT_TRACKING_LIBRARIES}
         ${CUDA_LIBRARIES}
     )
-endif(ENABLE_CUDA)
+endif()
 
 if(ENABLE_FPGA)
     set(OPT_TRACKING_BLOCKS_SOURCES
@@ -44,7 +44,7 @@ if(ENABLE_FPGA)
         ${OPT_TRACKING_BLOCKS_HEADERS}
         dll_pll_veml_tracking_fpga.h
     )
-endif(ENABLE_FPGA)
+endif()
 
 set(TRACKING_GR_BLOCKS_SOURCES
     galileo_e1_tcp_connector_tracking_cc.cc
@@ -97,12 +97,15 @@ include_directories(
 
 if(ENABLE_GENERIC_ARCH)
     add_definitions(-DGENERIC_ARCH=1)
-endif(ENABLE_GENERIC_ARCH)
+endif()
 
 list(SORT TRACKING_GR_BLOCKS_HEADERS)
 list(SORT TRACKING_GR_BLOCKS_SOURCES)
 
-add_library(tracking_gr_blocks ${TRACKING_GR_BLOCKS_SOURCES} ${TRACKING_GR_BLOCKS_HEADERS})
+add_library(tracking_gr_blocks
+    ${TRACKING_GR_BLOCKS_SOURCES}
+    ${TRACKING_GR_BLOCKS_HEADERS}
+)
 
 source_group(Headers FILES ${TRACKING_GR_BLOCKS_HEADERS})
 
@@ -116,14 +119,18 @@ target_link_libraries(tracking_gr_blocks
     ${OPT_TRACKING_LIBRARIES}
 )
 
-if(NOT VOLK_GNSSSDR_FOUND)
+if(NOT VOLKGNSSSDR_FOUND)
     if(MATIO_FOUND)
         add_dependencies(tracking_gr_blocks volk_gnsssdr_module)
-    else(MATIO_FOUND)
-        add_dependencies(tracking_gr_blocks volk_gnsssdr_module matio-${GNSSSDR_MATIO_LOCAL_VERSION})
-    endif(MATIO_FOUND)
-else(NOT VOLK_GNSSSDR_FOUND)
+    else()
+        add_dependencies(tracking_gr_blocks volk_gnsssdr_module
+            matio-${GNSSSDR_MATIO_LOCAL_VERSION}
+        )
+    endif()
+else()
     if(NOT MATIO_FOUND)
-        add_dependencies(tracking_gr_blocks matio-${GNSSSDR_MATIO_LOCAL_VERSION})
-    endif(NOT MATIO_FOUND)
-endif(NOT VOLK_GNSSSDR_FOUND)
+        add_dependencies(tracking_gr_blocks
+            matio-${GNSSSDR_MATIO_LOCAL_VERSION}
+        )
+    endif()
+endif()

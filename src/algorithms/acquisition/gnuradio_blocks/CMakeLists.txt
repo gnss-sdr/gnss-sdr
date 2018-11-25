@@ -42,12 +42,12 @@ set(ACQ_GR_BLOCKS_HEADERS
 if(ENABLE_FPGA)
     set(ACQ_GR_BLOCKS_SOURCES ${ACQ_GR_BLOCKS_SOURCES} pcps_acquisition_fpga.cc)
     set(ACQ_GR_BLOCKS_HEADERS ${ACQ_GR_BLOCKS_HEADERS} pcps_acquisition_fpga.h)
-endif(ENABLE_FPGA)
+endif()
 
 if(OPENCL_FOUND)
     set(ACQ_GR_BLOCKS_SOURCES ${ACQ_GR_BLOCKS_SOURCES} pcps_opencl_acquisition_cc.cc)
     set(ACQ_GR_BLOCKS_HEADERS ${ACQ_GR_BLOCKS_HEADERS} pcps_opencl_acquisition_cc.h)
-endif(OPENCL_FOUND)
+endif()
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -69,10 +69,10 @@ if(OPENCL_FOUND)
     include_directories(${OPENCL_INCLUDE_DIRS})
     if(OS_IS_MACOSX)
         set(OPT_LIBRARIES ${OPT_LIBRARIES} "-framework OpenCL")
-    else(OS_IS_MACOSX)
+    else()
         set(OPT_LIBRARIES ${OPT_LIBRARIES} ${OPENCL_LIBRARIES})
-    endif(OS_IS_MACOSX)
-endif(OPENCL_FOUND)
+    endif()
+endif()
 
 list(SORT ACQ_GR_BLOCKS_HEADERS)
 list(SORT ACQ_GR_BLOCKS_SOURCES)
@@ -91,7 +91,7 @@ if(ENABLE_FPGA)
         ${OPT_LIBRARIES}
         ${OPT_ACQUISITION_LIBRARIES}
     )
-else(ENABLE_FPGA)
+else()
     target_link_libraries(acq_gr_blocks
         gnss_sp_libs
         gnss_system_parameters
@@ -103,8 +103,8 @@ else(ENABLE_FPGA)
         ${MATIO_LIBRARIES}
         ${OPT_ACQUISITION_LIBRARIES}
     )
-endif(ENABLE_FPGA)
+endif()
 
-if(NOT VOLK_GNSSSDR_FOUND)
+if(NOT VOLKGNSSSDR_FOUND)
     add_dependencies(acq_gr_blocks volk_gnsssdr_module)
-endif(NOT VOLK_GNSSSDR_FOUND)
+endif()

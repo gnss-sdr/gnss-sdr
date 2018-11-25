@@ -48,14 +48,14 @@ if(MATIO_FOUND)
         glog-${glog_RELEASE}
         armadillo-${armadillo_RELEASE}
     )
-else(MATIO_FOUND)
+else()
     add_dependencies(obs_gr_blocks
         gnss_sp_libs
         glog-${glog_RELEASE}
         armadillo-${armadillo_RELEASE}
         matio-${GNSSSDR_MATIO_LOCAL_VERSION}
     )
-endif(MATIO_FOUND)
+endif()
 
 target_link_libraries(obs_gr_blocks
     gnss_sp_libs

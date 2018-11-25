@@ -34,6 +34,7 @@ set(GNSS_RECEIVER_HEADERS
     gnss_block_factory.h
     gnss_flowgraph.h
     in_memory_configuration.h
+    tcp_cmd_interface.h
     concurrent_map.h
     concurrent_queue.h
     control_message.h
@@ -41,78 +42,86 @@ set(GNSS_RECEIVER_HEADERS
 
 if(PC_GNURADIO_RUNTIME_VERSION VERSION_GREATER 3.7.3)
     add_definitions(-DMODERN_GNURADIO=1)
-endif(PC_GNURADIO_RUNTIME_VERSION VERSION_GREATER 3.7.3)
+endif()
 
 if(ENABLE_CUDA)
     add_definitions(-DCUDA_GPU_ACCEL=1)
-    set(OPT_RECEIVER_INCLUDE_DIRS ${OPT_RECEIVER_INCLUDE_DIRS} ${CUDA_INCLUDE_DIRS})
-endif(ENABLE_CUDA)
+    set(OPT_RECEIVER_INCLUDE_DIRS
+        ${OPT_RECEIVER_INCLUDE_DIRS} ${CUDA_INCLUDE_DIRS}
+    )
+endif()
 
 if(ENABLE_FPGA)
     add_definitions(-DENABLE_FPGA=1)
-endif(ENABLE_FPGA)
+endif()
 
 if(ENABLE_RAW_UDP)
     add_definitions(-DRAW_UDP=1)
-endif(ENABLE_RAW_UDP)
+endif()
 
 if(Boost_VERSION LESS 105000)
     add_definitions(-DOLD_BOOST=1)
-endif(Boost_VERSION LESS 105000)
+endif()
 
 if(OPENSSL_FOUND)
-    add_definitions( -DUSE_OPENSSL_FALLBACK=1 )
-endif(OPENSSL_FOUND)
+    add_definitions(-DUSE_OPENSSL_FALLBACK=1)
+endif()
 
 if(ENABLE_GN3S)
     add_definitions(-DGN3S_DRIVER=1)
-endif(ENABLE_GN3S)
+endif()
 
 if(ENABLE_ARRAY)
     add_definitions(-DRAW_ARRAY_DRIVER=1)
-endif(ENABLE_ARRAY)
+endif()
 
 if(ENABLE_FLEXIBAND)
     add_definitions(-DFLEXIBAND_DRIVER=1)
-endif(ENABLE_FLEXIBAND)
+endif()
 
 if(ENABLE_OSMOSDR)
     if(GROSMOSDR_FOUND)
         add_definitions(-DOSMOSDR_DRIVER=1)
-    endif(GROSMOSDR_FOUND)
-endif(ENABLE_OSMOSDR)
+    endif()
+endif()
 
 if(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
     add_definitions(-DUHD_DRIVER=1)
-endif(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
+endif()
 
 #Enable OpenCL if found in the system
 if(OPENCL_FOUND)
     message(STATUS "Adding processing blocks implemented using OpenCL")
     add_definitions(-DOPENCL_BLOCKS=1)
-else(OPENCL_FOUND)
+else()
     add_definitions(-DOPENCL_BLOCKS=0)
-endif(OPENCL_FOUND)
+endif()
 
 #enable SDR Hardware based on fmcomms2
 if(ENABLE_PLUTOSDR)
     add_definitions(-DPLUTOSDR_DRIVER=1)
-    set(OPT_RECEIVER_INCLUDE_DIRS ${OPT_RECEIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS})
-endif(ENABLE_PLUTOSDR)
+    set(OPT_RECEIVER_INCLUDE_DIRS
+        ${OPT_RECEIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS}
+    )
+endif()
 
 if(ENABLE_FMCOMMS2)
     add_definitions(-DFMCOMMS2_DRIVER=1)
-    set(OPT_RECEIVER_INCLUDE_DIRS ${OPT_RECEIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS})
-endif(ENABLE_FMCOMMS2)
+    set(OPT_RECEIVER_INCLUDE_DIRS
+        ${OPT_RECEIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS}
+    )
+endif()
 
 if(ENABLE_AD9361)
     add_definitions(-DAD9361_DRIVER=1)
-    set(OPT_RECEIVER_INCLUDE_DIRS ${OPT_RECEIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS})
-endif(ENABLE_AD9361)
+    set(OPT_RECEIVER_INCLUDE_DIRS
+        ${OPT_RECEIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS}
+    )
+endif()
 
 if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13.4")
-    add_definitions( -DGR_GREATER_38=1 )
-endif(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13.4")
+    add_definitions(-DGR_GREATER_38=1)
+endif()
 
 
 include_directories(
@@ -184,7 +193,8 @@ add_library(gnss_rx
     ${GNSS_RECEIVER_INTERFACE_HEADERS}
 )
 
-source_group(Headers FILES ${GNSS_RECEIVER_HEADERS} ${GNSS_RECEIVER_INTERFACE_HEADERS})
+source_group(Headers FILES ${GNSS_RECEIVER_HEADERS}
+    ${GNSS_RECEIVER_INTERFACE_HEADERS})
 
 target_link_libraries(gnss_rx
     ${Boost_LIBRARIES}

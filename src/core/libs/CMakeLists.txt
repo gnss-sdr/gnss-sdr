@@ -20,7 +20,7 @@ add_subdirectory(supl)
 
 if(OPENSSL_FOUND)
     add_definitions(-DUSE_OPENSSL_FALLBACK=1)
-endif(OPENSSL_FOUND)
+endif()
 
 set(CORE_LIBS_SOURCES
     ini.cc
@@ -57,4 +57,4 @@ target_link_libraries(rx_core_lib supl_library ${PUGIXML_LIBRARY})
 
 if(PUGIXML_LOCAL)
     add_dependencies(rx_core_lib pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION})
-endif(PUGIXML_LOCAL)
+endif()

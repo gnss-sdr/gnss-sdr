@@ -42,6 +42,9 @@
 #include <gpstk/Rinex3NavStream.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/serialization/map.hpp>
+#include <boost/iostreams/filtering_streambuf.hpp>
+#include <boost/iostreams/copy.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
 #include <iostream>
 
 
@@ -70,6 +73,33 @@ int main(int argc, char** argv)
         }
     std::string xml_filename;
 
+    // Uncompress if RINEX file is gzipped
+    std::string rinex_filename(argv[1]);
+    std::size_t found = rinex_filename.find_last_of(".");
+    if (found != std::string::npos)
+        {
+            if ((rinex_filename.substr(found + 1, found + 3).compare("gz") == 0))
+                {
+                    std::cerr << "Hello" << std::endl;
+                    std::ifstream file(rinex_filename, std::ios_base::in | std::ios_base::binary);
+                    boost::iostreams::filtering_streambuf<boost::iostreams::input> in;
+                    try
+                        {
+                            in.push(boost::iostreams::gzip_decompressor());
+                        }
+                    catch (const boost::exception& e)
+                        {
+                            std::cerr << "Could not decompress file " << rinex_filename << std::endl;
+                            return 1;
+                        }
+                    in.push(file);
+                    std::string rinex_filename_unzipped = rinex_filename.substr(0, found);
+                    std::ofstream output_file(rinex_filename_unzipped.c_str(), std::ios_base::out | std::ios_base::binary);
+                    boost::iostreams::copy(in, output_file);
+                    rinex_filename = rinex_filename_unzipped;
+                }
+        }
+
     std::map<int, Gps_Ephemeris> eph_map;
     std::map<int, Galileo_Ephemeris> eph_gal_map;
 
@@ -83,7 +113,7 @@ int main(int argc, char** argv)
     try
         {
             // Read nav file
-            gpstk::Rinex3NavStream rnffs(argv[1]);  // Open navigation data file
+            gpstk::Rinex3NavStream rnffs(rinex_filename.c_str());  // Open navigation data file
             gpstk::Rinex3NavData rne;
             gpstk::Rinex3NavHeader hdr;
 
@@ -205,6 +235,7 @@ int main(int argc, char** argv)
                             eph.i_0_2 = rne.i0;
                             eph.omega_2 = rne.w;
                             eph.OMEGA_dot_3 = rne.OMEGAdot;
+                            eph.delta_n_3 = rne.dn;
                             eph.iDot_2 = rne.idot;
                             eph.C_uc_3 = rne.Cuc;
                             eph.C_us_3 = rne.Cus;

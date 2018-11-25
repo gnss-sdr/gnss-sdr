@@ -19,7 +19,7 @@
 
 if(OPENSSL_FOUND)
     add_definitions(-DUSE_OPENSSL_FALLBACK=1)
-endif(OPENSSL_FOUND)
+endif()
 
 set(FRONT_END_CAL_SOURCES front_end_cal.cc)
 set(FRONT_END_CAL_HEADERS front_end_cal.h)
@@ -112,6 +112,5 @@ find_program(GZIP gzip
 if(NOT GZIP_NOTFOUND)
     execute_process(COMMAND gzip -9 -c ${CMAKE_SOURCE_DIR}/docs/manpage/front-end-cal-manpage
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_FILE "${CMAKE_BINARY_DIR}/front-end-cal.1.gz")
-
     install(FILES ${CMAKE_BINARY_DIR}/front-end-cal.1.gz DESTINATION share/man/man1)
-endif(NOT GZIP_NOTFOUND)
+endif()

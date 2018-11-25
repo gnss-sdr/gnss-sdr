@@ -47,8 +47,8 @@ target_link_libraries(signal_generator_blocks
     ${ORC_LIBRARIES}
 )
 
-if(VOLK_GNSSSDR_FOUND)
+if(VOLKGNSSSDR_FOUND)
     # add_dependencies(signal_generator_blocks glog-${glog_RELEASE})
-else(VOLK_GNSSSDR_FOUND)
+else()
     add_dependencies(signal_generator_blocks volk_gnsssdr_module)
-endif(VOLK_GNSSSDR_FOUND)
+endif()

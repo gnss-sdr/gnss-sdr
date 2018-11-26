@@ -291,6 +291,7 @@ int main(int argc, char** argv)
                             eph.af0_4 = rne.af0;
                             eph.af1_4 = rne.af1;
                             eph.af2_4 = rne.af2;
+                            eph.WN_5 = rne.weeknum;
                             eph_gal_map[j] = eph;
                             j++;
                         }

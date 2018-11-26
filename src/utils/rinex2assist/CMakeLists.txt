@@ -28,6 +28,18 @@ set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${GPSTK_INCLUDE_DIR}/gpstk)
 
 find_package(Boost COMPONENTS iostreams serialization QUIET)
 
+find_program(UNCOMPRESS_EXECUTABLE uncompress
+    PATHS /bin
+    /usr/bin
+    /usr/sbin
+)
+
+if(NOT UNCOMPRESS_EXECUTABLE-NOTFOUND)
+    add_definitions(-DUNCOMPRESS_EXECUTABLE="${UNCOMPRESS_EXECUTABLE}")
+else()
+    add_definitions(-DUNCOMPRESS_EXECUTABLE="")
+endif()
+
 if(Boost_FOUND)
     include_directories(
         ${CMAKE_SOURCE_DIR}/src/core/system_parameters

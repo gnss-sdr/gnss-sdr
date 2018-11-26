@@ -123,12 +123,17 @@ int main(int argc, char** argv)
                         {
                             // option k is not always available, so we save a copy of the original file
                             std::string argum = std::string("/bin/cp " + rinex_filename + " " + rinex_filename + ".aux");
-                            std::system(argum.c_str());
+                            int s1 = std::system(argum.c_str());
                             std::string argum2 = std::string(uncompress_executable + " -f " + rinex_filename);
-                            std::system(argum2.c_str());
+                            int s2 = std::system(argum2.c_str());
                             std::string argum3 = std::string("/bin/mv " + rinex_filename + +".aux" + " " + rinex_filename);
-                            std::system(argum3.c_str());
+                            int s3 = std::system(argum3.c_str());
                             input_filename = rinex_filename.substr(0, found);
+                            if ((s1 != 0) or (s2 != 0) or (s3 != 0))
+                                {
+                                    std::cerr << "Failure uncompressing file." << std::endl;
+                                    return 1;
+                                }
                         }
                     else
                         {

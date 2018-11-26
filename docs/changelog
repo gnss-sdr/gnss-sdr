@@ -58,7 +58,8 @@ Next release will have several improvements in different dimensions, addition of
 - Improvements in the RTCM server stability.
 - Improvements in the correctness of generated RINEX files.
 - The receiver can read and make use of Galileo almanac XML files published by the European GNSS Service Centre at https://www.gsc-europa.eu/system-status/almanac-data
-- Added program rinex2assist to convert RINEX navigation files into XML files usable for AGNSS. Only available building from source. See https://github.com/gnss-sdr/gnss-sdr/tree/next/src/utils/rinex2assist
+- Own-defined XML schemas for navigation data published at https://github.com/gnss-sdr/gnss-sdr/tree/next/docs/xml-schemas
+- Added program rinex2assist to convert RINEX navigation files into XML files usable for Assisted GNSS. Only available building from source. See https://github.com/gnss-sdr/gnss-sdr/tree/next/src/utils/rinex2assist
 
 
 ### Improvements in Maintainability:

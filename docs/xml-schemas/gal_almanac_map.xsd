@@ -15,9 +15,9 @@
                       <xs:complexType mixed="true">
                         <xs:sequence>
                           <xs:element type="xs:byte" name="i_satellite_PRN"/>
-                          <xs:element type="xs:float" name="d_Toa"/>
-                          <xs:element type="xs:float" name="d_WNa"/>
-                          <xs:element type="xs:float" name="d_IODa"/>
+                          <xs:element type="xs:byte" name="i_Toa"/>
+                          <xs:element type="xs:byte" name="i_WNa"/>
+                          <xs:element type="xs:byte" name="i_IODa"/>
                           <xs:element type="xs:float" name="d_Delta_i"/>
                           <xs:element type="xs:float" name="d_M_0"/>
                           <xs:element type="xs:float" name="d_e_eccentricity"/>
@@ -27,9 +27,9 @@
                           <xs:element type="xs:float" name="d_OMEGA_DOT"/>
                           <xs:element type="xs:float" name="d_A_f0"/>
                           <xs:element type="xs:float" name="d_A_f1"/>
-                          <xs:element type="xs:float" name="E5b_HS"/>
-                          <xs:element type="xs:float" name="E1B_HS"/>
-                          <xs:element type="xs:float" name="E5a_HS"/>
+                          <xs:element type="xs:byte" name="E5b_HS"/>
+                          <xs:element type="xs:byte" name="E1B_HS"/>
+                          <xs:element type="xs:byte" name="E5a_HS"/>
                         </xs:sequence>
                         <xs:attribute type="xs:byte" name="class_id" use="optional"/>
                         <xs:attribute type="xs:byte" name="tracking_level" use="optional"/>

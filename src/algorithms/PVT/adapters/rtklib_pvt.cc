@@ -48,6 +48,27 @@ namespace bc = boost::integer;
 
 using google::LogMessage;
 
+
+bool RtklibPvt::get_latest_PVT(double* longitude_deg,
+    double* latitude_deg,
+    double* height_m,
+    double* ground_speed_kmh,
+    double* course_over_ground_deg,
+    time_t* UTC_time)
+{
+    return pvt_->get_latest_PVT(longitude_deg,
+        latitude_deg,
+        height_m,
+        ground_speed_kmh,
+        course_over_ground_deg,
+        UTC_time);
+}
+
+void RtklibPvt::clear_ephemeris()
+{
+    pvt_->clear_ephemeris();
+}
+
 RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     std::string role,
     unsigned int in_streams,
@@ -513,6 +534,30 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
 RtklibPvt::~RtklibPvt()
 {
     rtkfree(&rtk);
+}
+
+
+std::map<int, Gps_Ephemeris> RtklibPvt::get_gps_ephemeris() const
+{
+    return pvt_->get_gps_ephemeris_map();
+}
+
+
+std::map<int, Galileo_Ephemeris> RtklibPvt::get_galileo_ephemeris() const
+{
+    return pvt_->get_galileo_ephemeris_map();
+}
+
+
+std::map<int, Gps_Almanac> RtklibPvt::get_gps_almanac() const
+{
+    return pvt_->get_gps_almanac_map();
+}
+
+
+std::map<int, Galileo_Almanac> RtklibPvt::get_galileo_almanac() const
+{
+    return pvt_->get_galileo_almanac_map();
 }
 
 

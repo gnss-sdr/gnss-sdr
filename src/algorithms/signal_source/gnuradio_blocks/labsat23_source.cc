@@ -236,8 +236,8 @@ int labsat23_source::general_work(int noutput_items,
                     //std::cout << "Section ID: " << (int)section_id << std::endl;
                     byte_counter += 2;
 
-                    uint8_t section_lenght_bytes = 0;
-                    section_lenght_bytes += memblock[byte_counter] | (memblock[byte_counter + 1] << 8) | (memblock[byte_counter + 2] << 16) | (memblock[byte_counter + 3] << 24);
+                    //uint8_t section_lenght_bytes = 0;
+                    //section_lenght_bytes += memblock[byte_counter] | (memblock[byte_counter + 1] << 8) | (memblock[byte_counter + 2] << 16) | (memblock[byte_counter + 3] << 24);
                     //std::cout << "section_lenght_bytes=" << (int)section_lenght_bytes << std::endl;
 
                     byte_counter += 4;

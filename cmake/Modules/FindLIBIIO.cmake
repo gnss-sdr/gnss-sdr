@@ -15,10 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 
-INCLUDE(FindPkgConfig)
-PKG_CHECK_MODULES(PC_LIBIIO libiio)
+include(FindPkgConfig)
+pkg_check_modules(PC_LIBIIO libiio)
 
-FIND_PATH(
+find_path(
     LIBIIO_INCLUDE_DIRS
     NAMES iio.h
     HINTS $ENV{LIBIIO_DIR}/include
@@ -29,7 +29,7 @@ FIND_PATH(
           /opt/local/include
 )
 
-FIND_LIBRARY(
+find_library(
     LIBIIO_LIBRARIES
     NAMES iio libiio.so.0
     HINTS $ENV{LIBIIO_DIR}/lib
@@ -65,6 +65,6 @@ FIND_LIBRARY(
           /Library/Frameworks/iio.framework/
 )
 
-INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(LIBIIO DEFAULT_MSG LIBIIO_LIBRARIES LIBIIO_INCLUDE_DIRS)
-MARK_AS_ADVANCED(LIBIIO_LIBRARIES LIBIIO_INCLUDE_DIRS)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(LIBIIO DEFAULT_MSG LIBIIO_LIBRARIES LIBIIO_INCLUDE_DIRS)
+mark_as_advanced(LIBIIO_LIBRARIES LIBIIO_INCLUDE_DIRS)

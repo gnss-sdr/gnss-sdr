@@ -19,14 +19,13 @@
 # Find GNU Radio
 ########################################################################
 
-INCLUDE(FindPkgConfig)
-INCLUDE(FindPackageHandleStandardArgs)
+include(FindPkgConfig)
+include(FindPackageHandleStandardArgs)
 
 # if GR_REQUIRED_COMPONENTS is not defined, it will be set to the following list
 if(NOT GR_REQUIRED_COMPONENTS)
   set(GR_REQUIRED_COMPONENTS RUNTIME ANALOG BLOCKS DIGITAL FFT FILTER PMT FEC TRELLIS UHD)
 endif()
-
 
 # Allows us to use all .cmake files in this directory
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_LIST_DIR})
@@ -35,18 +34,17 @@ list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_LIST_DIR})
 set(GNURADIO_ALL_LIBRARIES "")
 set(GNURADIO_ALL_INCLUDE_DIRS "")
 
-MACRO(LIST_CONTAINS var value)
-  SET(${var})
-  FOREACH(value2 ${ARGN})
-    IF (${value} STREQUAL ${value2})
-      SET(${var} TRUE)
-    ENDIF(${value} STREQUAL ${value2})
-  ENDFOREACH(value2)
-ENDMACRO(LIST_CONTAINS)
+macro(LIST_CONTAINS var value)
+  set(${var})
+  foreach(value2 ${ARGN})
+    if(${value} STREQUAL ${value2})
+      set(${var} TRUE)
+    endif()
+  endforeach()
+endmacro()
 
 function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
-
-    LIST_CONTAINS(REQUIRED_MODULE ${EXTVAR} ${GR_REQUIRED_COMPONENTS})
+    list_contains(REQUIRED_MODULE ${EXTVAR} ${GR_REQUIRED_COMPONENTS})
     if(NOT REQUIRED_MODULE)
         #message("Ignoring GNU Radio Module ${EXTVAR}")
         return()
@@ -55,7 +53,7 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
     message(STATUS "Checking for GNU Radio Module: ${EXTVAR}")
 
     # check for .pc hints
-    PKG_CHECK_MODULES(PC_GNURADIO_${EXTVAR} ${PCNAME})
+    pkg_check_modules(PC_GNURADIO_${EXTVAR} ${PCNAME})
 
     if(NOT PC_GNURADIO_${EXTVAR}_FOUND)
         set(PC_GNURADIO_${EXTVAR}_LIBRARIES ${LIBFILE})
@@ -67,7 +65,7 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
     set(PC_LIBDIR ${PC_GNURADIO_${EXTVAR}_LIBDIR})
 
     # look for include files
-    FIND_PATH(
+    find_path(
         ${INCVAR_NAME}
         NAMES ${INCFILE}
         HINTS $ENV{GNURADIO_RUNTIME_DIR}/include
@@ -81,7 +79,7 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
 
     # look for libs
     foreach(libname ${PC_GNURADIO_${EXTVAR}_LIBRARIES})
-        FIND_LIBRARY(
+        find_library(
             ${LIBVAR_NAME}_${libname}
             NAMES ${libname} ${libname}-${PC_GNURADIO_RUNTIME_VERSION}
             HINTS $ENV{GNURADIO_RUNTIME_DIR}/lib
@@ -118,8 +116,8 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
                   /usr/lib
                   ${GNURADIO_INSTALL_PREFIX}/lib
         )
-	list(APPEND ${LIBVAR_NAME} ${${LIBVAR_NAME}_${libname}})
-    endforeach(libname)
+        list(APPEND ${LIBVAR_NAME} ${${LIBVAR_NAME}_${libname}})
+    endforeach()
 
     set(${LIBVAR_NAME} ${${LIBVAR_NAME}} PARENT_SCOPE)
 
@@ -131,43 +129,42 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
     set(GNURADIO_ALL_INCLUDE_DIRS ${GNURADIO_ALL_INCLUDE_DIRS} ${GNURADIO_${EXTVAR}_INCLUDE_DIRS} PARENT_SCOPE)
     set(GNURADIO_ALL_LIBRARIES    ${GNURADIO_ALL_LIBRARIES}    ${GNURADIO_${EXTVAR}_LIBRARIES}    PARENT_SCOPE)
 
-    FIND_PACKAGE_HANDLE_STANDARD_ARGS(GNURADIO_${EXTVAR} DEFAULT_MSG GNURADIO_${EXTVAR}_LIBRARIES GNURADIO_${EXTVAR}_INCLUDE_DIRS)
+    find_package_handle_standard_args(GNURADIO_${EXTVAR} DEFAULT_MSG GNURADIO_${EXTVAR}_LIBRARIES GNURADIO_${EXTVAR}_INCLUDE_DIRS)
     message(STATUS "GNURADIO_${EXTVAR}_FOUND = ${GNURADIO_${EXTVAR}_FOUND}")
     set(GNURADIO_${EXTVAR}_FOUND ${GNURADIO_${EXTVAR}_FOUND} PARENT_SCOPE)
 
     # generate an error if the module is missing
     if(NOT GNURADIO_${EXTVAR}_FOUND)
-       message(STATUS "Required GNU Radio Component: ${EXTVAR} missing!")
+        message(STATUS "Required GNU Radio Component: ${EXTVAR} missing!")
     endif()
 
-    MARK_AS_ADVANCED(GNURADIO_${EXTVAR}_LIBRARIES GNURADIO_${EXTVAR}_INCLUDE_DIRS)
-
+    mark_as_advanced(GNURADIO_${EXTVAR}_LIBRARIES GNURADIO_${EXTVAR}_INCLUDE_DIRS)
 endfunction()
 
-GR_MODULE(RUNTIME gnuradio-runtime gnuradio/top_block.h gnuradio-runtime)
-GR_MODULE(ANALOG gnuradio-analog gnuradio/analog/api.h gnuradio-analog)
-GR_MODULE(AUDIO gnuradio-audio gnuradio/audio/api.h gnuradio-audio)
-GR_MODULE(BLOCKS gnuradio-blocks gnuradio/blocks/api.h gnuradio-blocks)
-GR_MODULE(CHANNELS gnuradio-channels gnuradio/channels/api.h gnuradio-channels)
-GR_MODULE(DIGITAL gnuradio-digital gnuradio/digital/api.h gnuradio-digital)
-GR_MODULE(FCD gnuradio-fcd gnuradio/fcd_api.h gnuradio-fcd)
-GR_MODULE(FEC gnuradio-fec gnuradio/fec/api.h gnuradio-fec)
-GR_MODULE(FFT gnuradio-fft gnuradio/fft/api.h gnuradio-fft)
-GR_MODULE(FILTER gnuradio-filter gnuradio/filter/api.h gnuradio-filter)
-GR_MODULE(NOAA gnuradio-noaa gnuradio/noaa/api.h gnuradio-noaa)
-GR_MODULE(PAGER gnuradio-pager gnuradio/pager/api.h gnuradio-pager)
-GR_MODULE(QTGUI gnuradio-qtgui gnuradio/qtgui/api.h gnuradio-qtgui)
-GR_MODULE(TRELLIS gnuradio-trellis gnuradio/trellis/api.h gnuradio-trellis)
-GR_MODULE(UHD gnuradio-uhd gnuradio/uhd/api.h gnuradio-uhd)
-GR_MODULE(VOCODER gnuradio-vocoder gnuradio/vocoder/api.h gnuradio-vocoder)
-GR_MODULE(WAVELET gnuradio-wavelet gnuradio/wavelet/api.h gnuradio-wavelet)
-GR_MODULE(WXGUI gnuradio-wxgui gnuradio/wxgui/api.h gnuradio-wxgui)
-GR_MODULE(PMT gnuradio-runtime pmt/pmt.h gnuradio-pmt)
+gr_module(RUNTIME gnuradio-runtime gnuradio/top_block.h gnuradio-runtime)
+gr_module(ANALOG gnuradio-analog gnuradio/analog/api.h gnuradio-analog)
+gr_module(AUDIO gnuradio-audio gnuradio/audio/api.h gnuradio-audio)
+gr_module(BLOCKS gnuradio-blocks gnuradio/blocks/api.h gnuradio-blocks)
+gr_module(CHANNELS gnuradio-channels gnuradio/channels/api.h gnuradio-channels)
+gr_module(DIGITAL gnuradio-digital gnuradio/digital/api.h gnuradio-digital)
+gr_module(FCD gnuradio-fcd gnuradio/fcd_api.h gnuradio-fcd)
+gr_module(FEC gnuradio-fec gnuradio/fec/api.h gnuradio-fec)
+gr_module(FFT gnuradio-fft gnuradio/fft/api.h gnuradio-fft)
+gr_module(FILTER gnuradio-filter gnuradio/filter/api.h gnuradio-filter)
+gr_module(NOAA gnuradio-noaa gnuradio/noaa/api.h gnuradio-noaa)
+gr_module(PAGER gnuradio-pager gnuradio/pager/api.h gnuradio-pager)
+gr_module(QTGUI gnuradio-qtgui gnuradio/qtgui/api.h gnuradio-qtgui)
+gr_module(TRELLIS gnuradio-trellis gnuradio/trellis/api.h gnuradio-trellis)
+gr_module(UHD gnuradio-uhd gnuradio/uhd/api.h gnuradio-uhd)
+gr_module(VOCODER gnuradio-vocoder gnuradio/vocoder/api.h gnuradio-vocoder)
+gr_module(WAVELET gnuradio-wavelet gnuradio/wavelet/api.h gnuradio-wavelet)
+gr_module(WXGUI gnuradio-wxgui gnuradio/wxgui/api.h gnuradio-wxgui)
+gr_module(PMT gnuradio-runtime pmt/pmt.h gnuradio-pmt)
 
 list(REMOVE_DUPLICATES GNURADIO_ALL_INCLUDE_DIRS)
 list(REMOVE_DUPLICATES GNURADIO_ALL_LIBRARIES)
 
- # Trick to find out that GNU Radio is >= 3.7.4 if pkgconfig is not present
+# Trick to find out that GNU Radio is >= 3.7.4 if pkgconfig is not present
 if(NOT PC_GNURADIO_RUNTIME_VERSION)
     find_file(GNURADIO_VERSION_GREATER_THAN_373
               NAMES gnuradio/blocks/tsb_vector_sink_f.h
@@ -178,20 +175,20 @@ if(NOT PC_GNURADIO_RUNTIME_VERSION)
                     /usr/include
                     ${GNURADIO_INSTALL_PREFIX}/include
               )
-     if(GNURADIO_VERSION_GREATER_THAN_373)
-         set(PC_GNURADIO_RUNTIME_VERSION "3.7.4+")
-     endif(GNURADIO_VERSION_GREATER_THAN_373)
+    if(GNURADIO_VERSION_GREATER_THAN_373)
+        set(PC_GNURADIO_RUNTIME_VERSION "3.7.4+")
+    endif()
 
-     find_file(GNURADIO_VERSION_GREATER_THAN_38
-               NAMES gnuradio/filter/mmse_resampler_cc.h
-               HINTS $ENV{GNURADIO_RUNTIME_DIR}/include
-                     ${CMAKE_INSTALL_PREFIX}/include
-                     ${GNURADIO_INSTALL_PREFIX}/include
-               PATHS /usr/local/include
-                     /usr/include
-                     ${GNURADIO_INSTALL_PREFIX}/include
-               )
-     if(GNURADIO_VERSION_GREATER_THAN_38)
-          set(PC_GNURADIO_RUNTIME_VERSION "3.8.0+")
-     endif(GNURADIO_VERSION_GREATER_THAN_38)
-endif(NOT PC_GNURADIO_RUNTIME_VERSION)
+    find_file(GNURADIO_VERSION_GREATER_THAN_38
+              NAMES gnuradio/filter/mmse_resampler_cc.h
+              HINTS $ENV{GNURADIO_RUNTIME_DIR}/include
+                    ${CMAKE_INSTALL_PREFIX}/include
+                    ${GNURADIO_INSTALL_PREFIX}/include
+              PATHS /usr/local/include
+                    /usr/include
+                    ${GNURADIO_INSTALL_PREFIX}/include
+              )
+    if(GNURADIO_VERSION_GREATER_THAN_38)
+        set(PC_GNURADIO_RUNTIME_VERSION "3.8.0+")
+    endif()
+endif()

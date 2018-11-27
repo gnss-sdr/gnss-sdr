@@ -63,6 +63,17 @@ MmseResamplerConditioner::MmseResamplerConditioner(
     if (item_type_.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
+
+
+            //create a FIR low pass filter
+            std::vector<float> taps = gr::filter::firdes::low_pass(1.0,
+                sample_freq_in_,
+                sample_freq_out_ / 2.1,
+                sample_freq_out_ / 10,
+                gr::filter::firdes::win_type::WIN_HAMMING);
+            std::cout << "Enabled fractional resampler low pass filter with " << taps.size() << " taps" << std::endl;
+            fir_filter_ccf_ = gr::filter::fir_filter_ccf::make(1, taps);
+
 #ifdef GR_GREATER_38
             resampler_ = gr::filter::mmse_resampler_cc::make(0.0, sample_freq_in_ / sample_freq_out_);
 #else
@@ -96,18 +107,17 @@ MmseResamplerConditioner::MmseResamplerConditioner(
 
 
 MmseResamplerConditioner::~MmseResamplerConditioner() {}
-
-
 void MmseResamplerConditioner::connect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
+            top_block->connect(fir_filter_ccf_, 0, resampler_, 0);
             top_block->connect(resampler_, 0, file_sink_, 0);
             DLOG(INFO) << "connected resampler to file sink";
         }
     else
         {
-            DLOG(INFO) << "nothing to connect internally";
+            top_block->connect(fir_filter_ccf_, 0, resampler_, 0);
         }
 }
 
@@ -116,14 +126,19 @@ void MmseResamplerConditioner::disconnect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
+            top_block->disconnect(fir_filter_ccf_, 0, resampler_, 0);
             top_block->disconnect(resampler_, 0, file_sink_, 0);
+        }
+    else
+        {
+            top_block->disconnect(fir_filter_ccf_, 0, resampler_, 0);
         }
 }
 
 
 gr::basic_block_sptr MmseResamplerConditioner::get_left_block()
 {
-    return resampler_;
+    return fir_filter_ccf_;
 }
 
 

@@ -1046,8 +1046,8 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                         }
                 }
             break;
-        case 10:  //request stanby mode
-            LOG(INFO) << "TC request stanby mode";
+        case 10:  // request standby mode
+            LOG(INFO) << "TC request standby mode";
             for (size_t n = 0; n < channels_.size(); n++)
                 {
                     if (channels_state_[n] == 1 or channels_state_[n] == 2)  //channel in acquisition or in tracking
@@ -1100,14 +1100,10 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                             channels_state_[n] = 0;
                         }
                 }
-            acq_channels_count_ = 0;  //all channels are in stanby now
+            acq_channels_count_ = 0;  // all channels are in standby now
             break;
-        case 11:  //request coldstart mode
-            LOG(INFO) << "TC request coldstart";
-            //todo: delete all ephemeris and almanac information from maps (also the PVT map queue)
-            //todo: reorder the satellite queues to the receiver default startup order.
-            //This is required to allow repeatability. Otherwise the satellite search order will depend on the last tracked satellites
-
+        case 11:  // request coldstart mode
+            LOG(INFO) << "TC request flowgraph coldstart";
             //start again the satellite acquisitions
             for (unsigned int i = 0; i < channels_count_; i++)
                 {
@@ -1135,12 +1131,8 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                     DLOG(INFO) << "Channel " << ch_index << " in state " << channels_state_[ch_index];
                 }
             break;
-        case 12:  //request hotstart mode
-            LOG(INFO) << "TC request hotstart";
-            //todo: call here the function that computes the set of visible satellites and its elevation
-            //for the date and time specified by the hotstart command and the last available PVT
-            //todo: reorder the satellite queue to acquire first those visible satellites
-            //start again the satellite acquisitions
+        case 12:  // request hotstart mode
+            LOG(INFO) << "TC request flowgraph hotstart";
             for (unsigned int i = 0; i < channels_count_; i++)
                 {
                     unsigned int ch_index = (who + i + 1) % channels_count_;
@@ -1167,14 +1159,8 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                     DLOG(INFO) << "Channel " << ch_index << " in state " << channels_state_[ch_index];
                 }
             break;
-        case 13:  //request warmstart mode
-            LOG(INFO) << "TC request warmstart";
-            //todo: delete all ephemeris and almanac information from maps (also the PVT map queue)
-            //todo: load the ephemeris and the almanac from XML files (receiver assistance)
-            //todo: call here the function that computes the set of visible satellites and its elevation
-            //for the date and time specified by the warmstart command and the assisted position
-            //todo: reorder the satellite queue to acquire first those visible satellites
-
+        case 13:  // request warmstart mode
+            LOG(INFO) << "TC request flowgraph warmstart";
             //start again the satellite acquisitions
             for (unsigned int i = 0; i < channels_count_; i++)
                 {
@@ -1206,6 +1192,60 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             break;
         }
     applied_actions_++;
+}
+
+
+void GNSSFlowgraph::priorize_satellites(std::vector<std::pair<int, Gnss_Satellite>> visible_satellites)
+{
+    size_t old_size;
+    Gnss_Signal gs;
+    for (std::vector<std::pair<int, Gnss_Satellite>>::iterator it = visible_satellites.begin(); it != visible_satellites.end(); ++it)
+        {
+            if (it->second.get_system() == "GPS")
+                {
+                    gs = Gnss_Signal(it->second, "1C");
+                    old_size = available_GPS_1C_signals_.size();
+                    available_GPS_1C_signals_.remove(gs);
+                    if (old_size > available_GPS_1C_signals_.size())
+                        {
+                            available_GPS_1C_signals_.push_front(gs);
+                        }
+
+                    gs = Gnss_Signal(it->second, "2S");
+                    old_size = available_GPS_2S_signals_.size();
+                    available_GPS_2S_signals_.remove(gs);
+                    if (old_size > available_GPS_2S_signals_.size())
+                        {
+                            available_GPS_2S_signals_.push_front(gs);
+                        }
+
+                    gs = Gnss_Signal(it->second, "L5");
+                    old_size = available_GPS_L5_signals_.size();
+                    available_GPS_L5_signals_.remove(gs);
+                    if (old_size > available_GPS_L5_signals_.size())
+                        {
+                            available_GPS_L5_signals_.push_front(gs);
+                        }
+                }
+            else if (it->second.get_system() == "Galileo")
+                {
+                    gs = Gnss_Signal(it->second, "1B");
+                    old_size = available_GAL_1B_signals_.size();
+                    available_GAL_1B_signals_.remove(gs);
+                    if (old_size > available_GAL_1B_signals_.size())
+                        {
+                            available_GAL_1B_signals_.push_front(gs);
+                        }
+
+                    gs = Gnss_Signal(it->second, "5X");
+                    old_size = available_GAL_5X_signals_.size();
+                    available_GAL_5X_signals_.remove(gs);
+                    if (old_size > available_GAL_5X_signals_.size())
+                        {
+                            available_GAL_5X_signals_.push_front(gs);
+                        }
+                }
+        }
 }
 
 

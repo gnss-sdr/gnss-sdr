@@ -86,6 +86,7 @@ private:
 
 public:
     sol_t pvt_sol;
+    ssat_t pvt_ssat[MAXSAT];
     rtklib_solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, rtk_t& rtk);
     ~rtklib_solver();
 

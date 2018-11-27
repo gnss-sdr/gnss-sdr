@@ -19,10 +19,10 @@
 # Find VOLK (Vector-Optimized Library of Kernels)
 ########################################################################
 
-INCLUDE(FindPkgConfig)
-PKG_CHECK_MODULES(PC_VOLK volk)
+include(FindPkgConfig)
+pkg_check_modules(PC_VOLK volk)
 
-FIND_PATH(
+find_path(
     VOLK_INCLUDE_DIRS
     NAMES volk/volk.h
     HINTS $ENV{VOLK_DIR}/include
@@ -32,7 +32,7 @@ FIND_PATH(
           ${CMAKE_INSTALL_PREFIX}/include
 )
 
-FIND_LIBRARY(
+find_library(
     VOLK_LIBRARIES
     NAMES volk
     HINTS $ENV{VOLK_DIR}/lib
@@ -67,7 +67,6 @@ FIND_LIBRARY(
           ${CMAKE_INSTALL_PREFIX}/lib
 )
 
-
-INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(VOLK DEFAULT_MSG VOLK_LIBRARIES VOLK_INCLUDE_DIRS)
-MARK_AS_ADVANCED(VOLK_LIBRARIES VOLK_INCLUDE_DIRS VOLK_VERSION)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(VOLK DEFAULT_MSG VOLK_LIBRARIES VOLK_INCLUDE_DIRS)
+mark_as_advanced(VOLK_LIBRARIES VOLK_INCLUDE_DIRS VOLK_VERSION)

@@ -53,6 +53,7 @@
 
 #include "rtklib_solver.h"
 #include "rtklib_conversions.h"
+#include "rtklib_solution.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
 #include "GLONASS_L1_L2_CA.h"
@@ -74,7 +75,11 @@ rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag
     rtk_ = rtk;
     for (unsigned int i = 0; i < 4; i++) dop_[i] = 0.0;
     pvt_sol = {{0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, '0', '0', '0', 0, 0, 0};
-
+    ssat_t ssat0 = {0, 0, {0.0}, {0.0}, {0.0}, {'0'}, {'0'}, {'0'}, {'0'}, {'0'}, {}, {}, {}, {}, 0.0, 0.0, 0.0, 0.0, {{{0, 0}}, {{0, 0}}}, {{}, {}}};
+    for (unsigned int i = 0; i < MAXSAT; i++)
+        {
+            pvt_ssat[i] = ssat0;
+        }
     // ############# ENABLE DATA FILE LOG #################
     if (d_flag_dump_enabled == true)
         {
@@ -772,9 +777,9 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
 
             for (int i = 0; i < MAXSAT; i++)
                 {
-                    nav_data.lam[i][0] = SPEED_OF_LIGHT / FREQ1; /* L1/E1 */
-                    nav_data.lam[i][1] = SPEED_OF_LIGHT / FREQ2; /* L2 */
-                    nav_data.lam[i][2] = SPEED_OF_LIGHT / FREQ5; /* L5/E5 */
+                    nav_data.lam[i][0] = SPEED_OF_LIGHT / FREQ1;  // L1/E1
+                    nav_data.lam[i][1] = SPEED_OF_LIGHT / FREQ2;  // L2
+                    nav_data.lam[i][2] = SPEED_OF_LIGHT / FREQ5;  // L5/E5
                 }
 
             result = rtkpos(&rtk_, obs_data, valid_obs + glo_valid_obs, &nav_data);
@@ -783,18 +788,22 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                 {
                     LOG(INFO) << "RTKLIB rtkpos error";
                     DLOG(INFO) << "RTKLIB rtkpos error message: " << rtk_.errbuf;
-                    this->set_time_offset_s(0.0);  //reset rx time estimation
+                    this->set_time_offset_s(0.0);  // reset rx time estimation
                     this->set_num_valid_observations(0);
                 }
             else
                 {
-                    this->set_num_valid_observations(rtk_.sol.ns);  //record the number of valid satellites used by the PVT solver
+                    this->set_num_valid_observations(rtk_.sol.ns);  // record the number of valid satellites used by the PVT solver
                     pvt_sol = rtk_.sol;
                     // DOP computation
                     unsigned int used_sats = 0;
                     for (unsigned int i = 0; i < MAXSAT; i++)
                         {
-                            if (rtk_.ssat[i].vs == 1) used_sats++;
+                            pvt_ssat[i] = rtk_.ssat[i];
+                            if (rtk_.ssat[i].vs == 1)
+                                {
+                                    used_sats++;
+                                }
                         }
 
                     std::vector<double> azel;
@@ -809,8 +818,8 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     index_aux++;
                                 }
                         }
-                    if (index_aux > 0) dops(index_aux, azel.data(), 0.0, dop_);
 
+                    if (index_aux > 0) dops(index_aux, azel.data(), 0.0, dop_);
                     this->set_valid_position(true);
                     arma::vec rx_position_and_time(4);
                     rx_position_and_time(0) = pvt_sol.rr[0];  // [m]
@@ -827,6 +836,22 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             rx_position_and_time(3) = pvt_sol.dtr[0] / GPS_C_m_s;  // the receiver clock offset is expressed in [meters], so we convert it into [s]
                         }
                     this->set_rx_pos(rx_position_and_time.rows(0, 2));  // save ECEF position for the next iteration
+
+                    //compute Ground speed and COG
+                    double ground_speed_ms = 0.0;
+                    double pos[3];
+                    double enuv[3];
+                    ecef2pos(pvt_sol.rr, pos);
+                    ecef2enu(pos, &pvt_sol.rr[3], enuv);
+                    this->set_speed_over_ground(norm_rtk(enuv, 2));
+                    double new_cog;
+                    if (ground_speed_ms >= 1.0)
+                        {
+                            new_cog = atan2(enuv[0], enuv[1]) * R2D;
+                            if (new_cog < 0.0) new_cog += 360.0;
+                            this->set_course_over_ground(new_cog);
+                        }
+
                     //observable fix:
                     //double offset_s = this->get_time_offset_s();
                     //this->set_time_offset_s(offset_s + (rx_position_and_time(3) / GPS_C_m_s));  // accumulate the rx time error for the next iteration [meters]->[seconds]

@@ -42,6 +42,10 @@
 #include <gpstk/Rinex3NavStream.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/serialization/map.hpp>
+#include <boost/iostreams/filtering_streambuf.hpp>
+#include <boost/iostreams/copy.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <cstdlib>
 #include <iostream>
 
 
@@ -70,6 +74,75 @@ int main(int argc, char** argv)
         }
     std::string xml_filename;
 
+    // Uncompress if RINEX file is gzipped
+    std::string rinex_filename(argv[1]);
+    std::string input_filename = rinex_filename;
+    std::size_t found = rinex_filename.find_last_of(".");
+    if (found != std::string::npos)
+        {
+            if ((rinex_filename.substr(found + 1, found + 3).compare("gz") == 0))
+                {
+                    std::ifstream file(rinex_filename, std::ios_base::in | std::ios_base::binary);
+                    if (file.fail())
+                        {
+                            std::cerr << "Could not open file " << rinex_filename << std::endl;
+                            return 1;
+                        }
+                    boost::iostreams::filtering_streambuf<boost::iostreams::input> in;
+                    try
+                        {
+                            in.push(boost::iostreams::gzip_decompressor());
+                        }
+                    catch (const boost::exception& e)
+                        {
+                            std::cerr << "Could not decompress file " << rinex_filename << std::endl;
+                            return 1;
+                        }
+                    in.push(file);
+                    std::string rinex_filename_unzipped = rinex_filename.substr(0, found);
+                    std::ofstream output_file(rinex_filename_unzipped.c_str(), std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+                    if (file.fail())
+                        {
+                            std::cerr << "Could not create file " << rinex_filename_unzipped << std::endl;
+                            return 1;
+                        }
+                    boost::iostreams::copy(in, output_file);
+                    input_filename = rinex_filename_unzipped;
+                }
+            if ((rinex_filename.substr(found + 1, found + 2).compare("Z") == 0))
+                {
+                    std::ifstream file(rinex_filename, std::ios_base::in | std::ios_base::binary);
+                    if (file.fail())
+                        {
+                            std::cerr << "Could not open file" << rinex_filename << std::endl;
+                            return 1;
+                        }
+                    file.close();
+                    std::string uncompress_executable(UNCOMPRESS_EXECUTABLE);
+                    if (!uncompress_executable.empty())
+                        {
+                            // option k is not always available, so we save a copy of the original file
+                            std::string argum = std::string("/bin/cp " + rinex_filename + " " + rinex_filename + ".aux");
+                            int s1 = std::system(argum.c_str());
+                            std::string argum2 = std::string(uncompress_executable + " -f " + rinex_filename);
+                            int s2 = std::system(argum2.c_str());
+                            std::string argum3 = std::string("/bin/mv " + rinex_filename + +".aux" + " " + rinex_filename);
+                            int s3 = std::system(argum3.c_str());
+                            input_filename = rinex_filename.substr(0, found);
+                            if ((s1 != 0) or (s2 != 0) or (s3 != 0))
+                                {
+                                    std::cerr << "Failure uncompressing file." << std::endl;
+                                    return 1;
+                                }
+                        }
+                    else
+                        {
+                            std::cerr << "uncompress program not found." << std::endl;
+                            return 1;
+                        }
+                }
+        }
+
     std::map<int, Gps_Ephemeris> eph_map;
     std::map<int, Galileo_Ephemeris> eph_gal_map;
 
@@ -83,7 +156,7 @@ int main(int argc, char** argv)
     try
         {
             // Read nav file
-            gpstk::Rinex3NavStream rnffs(argv[1]);  // Open navigation data file
+            gpstk::Rinex3NavStream rnffs(input_filename.c_str());  // Open navigation data file
             gpstk::Rinex3NavData rne;
             gpstk::Rinex3NavHeader hdr;
 
@@ -205,6 +278,7 @@ int main(int argc, char** argv)
                             eph.i_0_2 = rne.i0;
                             eph.omega_2 = rne.w;
                             eph.OMEGA_dot_3 = rne.OMEGAdot;
+                            eph.delta_n_3 = rne.dn;
                             eph.iDot_2 = rne.idot;
                             eph.C_uc_3 = rne.Cuc;
                             eph.C_us_3 = rne.Cus;
@@ -217,6 +291,7 @@ int main(int argc, char** argv)
                             eph.af0_4 = rne.af0;
                             eph.af1_4 = rne.af1;
                             eph.af2_4 = rne.af2;
+                            eph.WN_5 = rne.weeknum;
                             eph_gal_map[j] = eph;
                             j++;
                         }

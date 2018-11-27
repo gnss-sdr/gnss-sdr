@@ -455,107 +455,42 @@ void PositionSystemTest::check_results()
     ref_R_eb_e.insert_cols(0, true_r_eb_e);
     arma::vec ref_r_enu = {0, 0, 0};
     cart2utm(true_r_eb_e, utm_zone, ref_r_enu);
-    if (!FLAGS_use_pvt_solver_dump)
+
+    rtklib_solver_dump_reader pvt_reader;
+    pvt_reader.open_obs_file(FLAGS_pvt_solver_dump_filename);
+    int64_t n_epochs = pvt_reader.num_epochs();
+    R_eb_e = arma::zeros(3, n_epochs);
+    V_eb_e = arma::zeros(3, n_epochs);
+    LLH = arma::zeros(3, n_epochs);
+    receiver_time_s = arma::zeros(n_epochs, 1);
+    int64_t current_epoch = 0;
+    while (pvt_reader.read_binary_obs())
         {
-            //fall back to read receiver KML output (position only)
-            std::fstream myfile(PositionSystemTest::generated_kml_file, std::ios_base::in);
-            ASSERT_TRUE(myfile.is_open()) << "No valid kml file could be opened";
-            std::string line;
-            // Skip header
-            std::getline(myfile, line);
-            bool is_header = true;
-            while (is_header)
-                {
-                    std::getline(myfile, line);
-                    ASSERT_FALSE(myfile.eof()) << "No valid kml file found.";
-                    std::size_t found = line.find("<coordinates>");
-                    if (found != std::string::npos) is_header = false;
-                }
-            bool is_data = true;
-            //read data
-            int64_t current_epoch = 0;
-            while (is_data)
-                {
-                    if (!std::getline(myfile, line))
-                        {
-                            is_data = false;
-                            break;
-                        }
-                    std::size_t found = line.find("</coordinates>");
-                    if (found != std::string::npos)
-                        is_data = false;
-                    else
-                        {
-                            std::string str2;
-                            std::istringstream iss(line);
-                            double value;
-                            double lat = 0.0;
-                            double longitude = 0.0;
-                            double h = 0.0;
-                            for (int i = 0; i < 3; i++)
-                                {
-                                    std::getline(iss, str2, ',');
-                                    value = std::stod(str2);
-                                    if (i == 0) longitude = value;
-                                    if (i == 1) lat = value;
-                                    if (i == 2) h = value;
-                                }
+            receiver_time_s(current_epoch) = pvt_reader.RX_time - pvt_reader.clk_offset_s;
+            R_eb_e(0, current_epoch) = pvt_reader.rr[0];
+            R_eb_e(1, current_epoch) = pvt_reader.rr[1];
+            R_eb_e(2, current_epoch) = pvt_reader.rr[2];
+            V_eb_e(0, current_epoch) = pvt_reader.rr[3];
+            V_eb_e(1, current_epoch) = pvt_reader.rr[4];
+            V_eb_e(2, current_epoch) = pvt_reader.rr[5];
+            LLH(0, current_epoch) = pvt_reader.latitude;
+            LLH(1, current_epoch) = pvt_reader.longitude;
+            LLH(2, current_epoch) = pvt_reader.height;
 
-                            arma::vec tmp_v_ecef;
-                            arma::vec tmp_r_ecef;
-                            pv_Geo_to_ECEF(degtorad(lat), degtorad(longitude), h, arma::vec{0, 0, 0}, tmp_r_ecef, tmp_v_ecef);
-                            R_eb_e.insert_cols(current_epoch, tmp_r_ecef);
-                            arma::vec tmp_r_enu = {0, 0, 0};
-                            cart2utm(tmp_r_ecef, utm_zone, tmp_r_enu);
-                            R_eb_enu.insert_cols(current_epoch, tmp_r_enu);
-                            //                            std::cout << "lat = " << lat << ", longitude = " << longitude << "  h = " << h << std::endl;
-                            //                            std::cout << "E = " << east << ", N = " << north << " U = " << up << std::endl;
-                            //                            getchar();
-                        }
-                }
-            myfile.close();
-            ASSERT_FALSE(R_eb_e.n_cols == 0) << "KML file is empty";
+            arma::vec tmp_r_enu = {0, 0, 0};
+            cart2utm(R_eb_e.col(current_epoch), utm_zone, tmp_r_enu);
+            R_eb_enu.insert_cols(current_epoch, tmp_r_enu);
+
+            // debug check
+            // std::cout << "t1: " << pvt_reader.RX_time << std::endl;
+            // std::cout << "t2: " << pvt_reader.TOW_at_current_symbol_ms << std::endl;
+            // std::cout << "offset: " << pvt_reader.clk_offset_s << std::endl;
+            // getchar();
+            current_epoch++;
         }
-    else
-        {
-            //use complete binary dump from pvt solver
-            rtklib_solver_dump_reader pvt_reader;
-            pvt_reader.open_obs_file(FLAGS_pvt_solver_dump_filename);
-            int64_t n_epochs = pvt_reader.num_epochs();
-            R_eb_e = arma::zeros(3, n_epochs);
-            V_eb_e = arma::zeros(3, n_epochs);
-            LLH = arma::zeros(3, n_epochs);
-            receiver_time_s = arma::zeros(n_epochs, 1);
-            int64_t current_epoch = 0;
-            while (pvt_reader.read_binary_obs())
-                {
-                    receiver_time_s(current_epoch) = pvt_reader.RX_time - pvt_reader.clk_offset_s;
-                    R_eb_e(0, current_epoch) = pvt_reader.rr[0];
-                    R_eb_e(1, current_epoch) = pvt_reader.rr[1];
-                    R_eb_e(2, current_epoch) = pvt_reader.rr[2];
-                    V_eb_e(0, current_epoch) = pvt_reader.rr[3];
-                    V_eb_e(1, current_epoch) = pvt_reader.rr[4];
-                    V_eb_e(2, current_epoch) = pvt_reader.rr[5];
-                    LLH(0, current_epoch) = pvt_reader.latitude;
-                    LLH(1, current_epoch) = pvt_reader.longitude;
-                    LLH(2, current_epoch) = pvt_reader.height;
-
-                    arma::vec tmp_r_enu = {0, 0, 0};
-                    cart2utm(R_eb_e.col(current_epoch), utm_zone, tmp_r_enu);
-                    R_eb_enu.insert_cols(current_epoch, tmp_r_enu);
-
-                    //debug check
-                    //                    std::cout << "t1: " << pvt_reader.RX_time << std::endl;
-                    //                    std::cout << "t2: " << pvt_reader.TOW_at_current_symbol_ms << std::endl;
-                    //                    std::cout << "offset: " << pvt_reader.clk_offset_s << std::endl;
-                    //                    getchar();
-                    current_epoch++;
-                }
-            ASSERT_FALSE(current_epoch == 0) << "PVT dump is empty";
-        }
+    ASSERT_FALSE(current_epoch == 0) << "PVT dump is empty";
 
     // compute results
-
     if (FLAGS_static_scenario)
         {
             double sigma_E_2_precision = arma::var(R_eb_enu.row(0));

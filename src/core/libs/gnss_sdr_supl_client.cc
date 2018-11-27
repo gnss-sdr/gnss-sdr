@@ -32,6 +32,7 @@
  */
 
 #include "gnss_sdr_supl_client.h"
+#include <pugixml.hpp>
 #include <cmath>
 #include <utility>
 
@@ -267,7 +268,7 @@ void gnss_sdr_supl_client::read_supl_data()
                     gps_almanac_iterator->second.d_OMEGA0 = static_cast<double>(a->OMEGA_0) * pow(2.0, -23);
                     gps_almanac_iterator->second.d_sqrt_A = static_cast<double>(a->A_sqrt) * pow(2.0, -11);
                     gps_almanac_iterator->second.d_OMEGA_DOT = static_cast<double>(a->OMEGA_dot) * pow(2.0, -38);
-                    gps_almanac_iterator->second.d_Toa = static_cast<double>(a->toa) * pow(2.0, 12);
+                    gps_almanac_iterator->second.i_Toa = static_cast<int32_t>(a->toa) * pow(2.0, 12);
                     gps_almanac_iterator->second.d_e_eccentricity = static_cast<double>(a->e) * pow(2.0, -21);
                     gps_almanac_iterator->second.d_M_0 = static_cast<double>(a->M0) * pow(2.0, -23);
                 }
@@ -842,11 +843,61 @@ bool gnss_sdr_supl_client::load_gal_almanac_xml(const std::string file_name)
             boost::archive::xml_iarchive xml(ifs);
             gal_almanac_map.clear();
             xml >> boost::serialization::make_nvp("GNSS-SDR_gal_almanac_map", this->gal_almanac_map);
-            LOG(INFO) << "Loaded Galileo almanac map data with " << this->gal_almanac_map.size() << " satellites";
         }
     catch (std::exception& e)
         {
-            LOG(WARNING) << e.what() << "File: " << file_name;
+            // Maybe the file is from https://www.gsc-europa.eu/system-status/almanac-data ?
+            return this->read_gal_almanac_from_gsa(file_name);
+        }
+    LOG(INFO) << "Loaded Galileo almanac map data with " << this->gal_almanac_map.size() << " satellites";
+    return true;
+}
+
+
+bool gnss_sdr_supl_client::read_gal_almanac_from_gsa(const std::string file_name)
+{
+    pugi::xml_document doc;
+    pugi::xml_parse_result result = doc.load_file(file_name.c_str());
+    if (!result)
+        {
+            LOG(WARNING) << "Error loading file " << file_name << ":" << result.description();
+            return false;
+        }
+    for (pugi::xml_node almanac : doc.child("signalData")
+                                      .child("body")
+                                      .child("Almanacs")
+                                      .children("svAlmanac"))
+        {
+            Galileo_Almanac gal_alm;
+            try
+                {
+                    uint32_t prn = static_cast<uint32_t>(std::stoi(almanac.child_value("SVID")));
+                    gal_alm.i_satellite_PRN = prn;
+                    gal_alm.i_Toa = std::stoi(almanac.child("almanac").child_value("t0a"));
+                    gal_alm.i_WNa = std::stoi(almanac.child("almanac").child_value("wna"));
+                    gal_alm.i_IODa = std::stoi(almanac.child("almanac").child_value("iod"));
+                    gal_alm.d_Delta_i = std::stod(almanac.child("almanac").child_value("deltai"));
+                    gal_alm.d_M_0 = std::stod(almanac.child("almanac").child_value("m0"));
+                    gal_alm.d_e_eccentricity = std::stod(almanac.child("almanac").child_value("ecc"));
+                    gal_alm.d_Delta_sqrt_A = std::stod(almanac.child("almanac").child_value("aSqRoot"));
+                    gal_alm.d_OMEGA0 = std::stod(almanac.child("almanac").child_value("omega0"));
+                    gal_alm.d_OMEGA = std::stod(almanac.child("almanac").child_value("w"));
+                    gal_alm.d_OMEGA_DOT = std::stod(almanac.child("almanac").child_value("omegaDot"));
+                    gal_alm.d_A_f0 = std::stod(almanac.child("almanac").child_value("af0"));
+                    gal_alm.d_A_f1 = std::stod(almanac.child("almanac").child_value("af1"));
+                    gal_alm.E5b_HS = std::stoi(almanac.child("svINavSignalStatus").child_value("statusE5b"));
+                    gal_alm.E1B_HS = std::stoi(almanac.child("svINavSignalStatus").child_value("statusE1B"));
+                    gal_alm.E5a_HS = std::stoi(almanac.child("svFNavSignalStatus").child_value("statusE5a"));
+
+                    this->gal_almanac_map[static_cast<int>(prn)] = gal_alm;
+                }
+            catch (const std::exception& e)
+                {
+                    std::cerr << e.what() << std::endl;
+                }
+        }
+    if (this->gal_almanac_map.empty())
+        {
             return false;
         }
     return true;
@@ -933,7 +984,7 @@ bool gnss_sdr_supl_client::load_ref_time_xml(const std::string file_name)
         {
             ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
             boost::archive::xml_iarchive xml(ifs);
-            xml >> boost::serialization::make_nvp("GNSS-SDR_ref_time_map", this->gps_time);
+            xml >> boost::serialization::make_nvp("GNSS-SDR_ref_time", this->gps_time);
             LOG(INFO) << "Loaded Ref Time data";
         }
     catch (std::exception& e)
@@ -945,17 +996,16 @@ bool gnss_sdr_supl_client::load_ref_time_xml(const std::string file_name)
 }
 
 
-bool gnss_sdr_supl_client::save_ref_time_map_xml(const std::string file_name, std::map<int, Gps_Ref_Time> ref_time_map)
+bool gnss_sdr_supl_client::save_ref_time_xml(const std::string file_name, Agnss_Ref_Time& ref_time)
 {
-    if (ref_time_map.empty() == false)
+    if (ref_time.valid == true)
         {
             std::ofstream ofs;
             try
                 {
                     ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
                     boost::archive::xml_oarchive xml(ofs);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_ref_time_map", ref_time_map);
-
+                    xml << boost::serialization::make_nvp("GNSS-SDR_ref_time", ref_time);
                     LOG(INFO) << "Saved Ref Time data";
                 }
             catch (std::exception& e)
@@ -966,7 +1016,7 @@ bool gnss_sdr_supl_client::save_ref_time_map_xml(const std::string file_name, st
         }
     else
         {
-            LOG(WARNING) << "Failed to save Ref Time, map is empty";
+            LOG(WARNING) << "Failed to save Ref Time";
             return false;
         }
     return true;
@@ -980,7 +1030,7 @@ bool gnss_sdr_supl_client::load_ref_location_xml(const std::string file_name)
         {
             ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
             boost::archive::xml_iarchive xml(ifs);
-            xml >> boost::serialization::make_nvp("GNSS-SDR_ref_location_map", this->gps_ref_loc);
+            xml >> boost::serialization::make_nvp("GNSS-SDR_ref_location", this->gps_ref_loc);
             LOG(INFO) << "Loaded Ref Location data";
         }
     catch (std::exception& e)
@@ -992,16 +1042,16 @@ bool gnss_sdr_supl_client::load_ref_location_xml(const std::string file_name)
 }
 
 
-bool gnss_sdr_supl_client::save_ref_location_map_xml(const std::string file_name, std::map<int, Gps_Ref_Location> ref_location_map)
+bool gnss_sdr_supl_client::save_ref_location_xml(const std::string file_name, Agnss_Ref_Location& ref_location)
 {
-    if (ref_location_map.empty() == false)
+    if (ref_location.valid == true)
         {
             std::ofstream ofs;
             try
                 {
                     ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
                     boost::archive::xml_oarchive xml(ofs);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_ref_location_map", ref_location_map);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_ref_location", ref_location);
                     LOG(INFO) << "Saved Ref Location data";
                 }
             catch (std::exception& e)
@@ -1012,7 +1062,7 @@ bool gnss_sdr_supl_client::save_ref_location_map_xml(const std::string file_name
         }
     else
         {
-            LOG(WARNING) << "Failed to save Ref Location, map is empty";
+            LOG(WARNING) << "Failed to save Ref Location";
             return false;
         }
     return true;

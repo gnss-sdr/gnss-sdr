@@ -41,6 +41,11 @@
 #include "gnss_signal.h"
 #include "gnss_sdr_sample_counter.h"
 #include "gnss_synchro_monitor.h"
+#include "gnss_block_interface.h"
+#include "pvt_interface.h"
+#include "channel_interface.h"
+#include "configuration_interface.h"
+#include "gnss_block_factory.h"
 #include <gnuradio/top_block.h>
 #include <gnuradio/msg_queue.h>
 #include <list>
@@ -55,10 +60,6 @@
 #include "gnss_sdr_fpga_sample_counter.h"
 #endif
 
-class GNSSBlockInterface;
-class ChannelInterface;
-class ConfigurationInterface;
-class GNSSBlockFactory;
 
 /*! \brief This class represents a GNSS flow graph.
  *
@@ -128,6 +129,19 @@ public:
      * It is used to assist the receiver with external ephemeris data
      */
     bool send_telemetry_msg(pmt::pmt_t msg);
+
+    /*!
+     * \brief Returns a smart pointer to the PVT object
+     */
+    std::shared_ptr<PvtInterface> get_pvt()
+    {
+        return std::dynamic_pointer_cast<PvtInterface>(pvt_);
+    }
+
+    /*!
+     * \brief Priorize visible satellites in the specified vector
+     */
+    void priorize_satellites(std::vector<std::pair<int, Gnss_Satellite>> visible_satellites);
 
 private:
     void init();  // Populates the SV PRN list available for acquisition and tracking

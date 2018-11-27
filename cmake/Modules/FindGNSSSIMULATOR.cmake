@@ -15,14 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 
-
 find_program(SW_GENERATOR_BIN gnss_sim
-             PATHS /usr/bin
-                   /usr/local/bin
-                   /opt/local/bin
-                   ${CMAKE_INSTALL_PREFIX}/bin
-             PATH_SUFFIXES bin )
+    PATHS /usr/bin
+        /usr/local/bin
+        /opt/local/bin
+        ${CMAKE_INSTALL_PREFIX}/bin
+    PATH_SUFFIXES bin)
 
-INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(GNSS-SIMULATOR  DEFAULT_MSG  SW_GENERATOR_BIN)
-MARK_AS_ADVANCED(SW_GENERATOR_BIN)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(GNSSSIMULATOR  DEFAULT_MSG  SW_GENERATOR_BIN)
+mark_as_advanced(SW_GENERATOR_BIN)

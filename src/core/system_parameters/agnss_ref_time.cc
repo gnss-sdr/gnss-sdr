@@ -1,6 +1,6 @@
 /*!
- * \file gps_ref_location.cc
- * \brief  Interface of a GPS REFERENCE LOCATION storage
+ * \file agnss_ref_time.cc
+ * \brief  Interface of an Assisted GNSS REFERENCE TIME storage
  *
  * \author Javier Arribas, 2013. jarribas(at)cttc.es
  *
@@ -29,12 +29,13 @@
  * -------------------------------------------------------------------------
  */
 
-#include "gps_ref_location.h"
+#include "agnss_ref_time.h"
 
-Gps_Ref_Location::Gps_Ref_Location()
+Agnss_Ref_Time::Agnss_Ref_Time()
 {
     valid = false;
-    lat = 0.0;
-    lon = 0.0;
-    uncertainty = 0.0;
+    d_TOW = 0.0;
+    d_Week = 0.0;
+    d_tv_sec = 0.0;
+    d_tv_usec = 0.0;
 }

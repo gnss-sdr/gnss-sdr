@@ -79,6 +79,7 @@ public:
     void connect(gr::top_block_sptr top_block) override;
     void disconnect(gr::top_block_sptr top_block) override;
     gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block(int RF_channel) override;
     gr::basic_block_sptr get_right_block() override;
 
     inline std::string filename() const
@@ -124,12 +125,12 @@ private:
     uint32_t sel_ch_;
     gr::blocks::file_source::sptr file_source_;
     gr::blocks::deinterleave::sptr deint_;
-    gr::blocks::endian_swap::sptr endian_;
+    std::vector<gr::blocks::endian_swap::sptr> endian_vec_;
     std::vector<gr::blocks::null_sink::sptr> null_sinks_;
-    unpack_spir_gss6450_samples_sptr unpack_spir_;
-    boost::shared_ptr<gr::block> valve_;
-    gr::blocks::file_sink::sptr sink_;
-    gr::blocks::throttle::sptr throttle_;
+    std::vector<unpack_spir_gss6450_samples_sptr> unpack_spir_vec_;
+    std::vector<boost::shared_ptr<gr::block>> valve_vec_;
+    std::vector<gr::blocks::file_sink::sptr> sink_vec_;
+    std::vector<gr::blocks::throttle::sptr> throttle_vec_;
     gr::msg_queue::sptr queue_;
     size_t item_size_;
 };

@@ -17,26 +17,26 @@
 #
 
 
-set(COND_ADAPTER_SOURCES 
-	signal_conditioner.cc
-	array_signal_conditioner.cc
+set(COND_ADAPTER_SOURCES
+    signal_conditioner.cc
+    array_signal_conditioner.cc
 )
 
-set(COND_ADAPTER_HEADERS 
-	signal_conditioner.h
-	array_signal_conditioner.h
+set(COND_ADAPTER_HEADERS
+    signal_conditioner.h
+    array_signal_conditioner.h
 )
 
 include_directories(
-     ${CMAKE_CURRENT_SOURCE_DIR}
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/gnuradio_blocks
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+    ${CMAKE_SOURCE_DIR}/src/core/interfaces
+    ${CMAKE_SOURCE_DIR}/src/core/receiver
+    ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/gnuradio_blocks
+    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+    ${GLOG_INCLUDE_DIRS}
+    ${GFlags_INCLUDE_DIRS}
+    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
 list(SORT COND_ADAPTER_HEADERS)

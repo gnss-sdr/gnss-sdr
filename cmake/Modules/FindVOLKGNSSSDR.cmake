@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2018 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2011-2018 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -15,31 +15,33 @@
 # You should have received a copy of the GNU General Public License
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 
+########################################################################
+# Find VOLK (Vector-Optimized Library of Kernels) GNSS-SDR library
+########################################################################
+
 include(FindPkgConfig)
 pkg_check_modules(PC_VOLK_GNSSSDR volk_gnsssdr)
 
 find_path(
     VOLK_GNSSSDR_INCLUDE_DIRS
     NAMES volk_gnsssdr/volk_gnsssdr.h
-    HINTS $ENV{VOLK_DIR}/include
-        ${PC_VOLK_INCLUDEDIR}
+    HINTS $ENV{VOLK_GNSSSDR_DIR}/include
+        ${PC_VOLK_GNSSSDR_INCLUDEDIR}
     PATHS /usr/local/include
-        /usr/include
-        /opt/local/include
-        "@CMAKE_INSTALL_PREFIX@/include"
+          /usr/include
+          ${GNURADIO_INSTALL_PREFIX}/include
 )
 
 find_library(
     VOLK_GNSSSDR_LIBRARIES
     NAMES volk_gnsssdr
-    HINTS $ENV{VOLK_DIR}/lib
-        ${PC_VOLK_LIBDIR}
+    HINTS $ENV{VOLK_GNSSSDR_DIR}/lib
+        ${PC_VOLK_GNSSSDR_LIBDIR}
     PATHS /usr/local/lib
-        /usr/local/lib64
-        /usr/lib
-        /usr/lib64
-        /opt/local/lib
-        "@CMAKE_INSTALL_PREFIX@/lib"
+          /usr/local/lib64
+          /usr/lib
+          /usr/lib64
+          ${GNURADIO_INSTALL_PREFIX}/lib
 )
 
 include(FindPackageHandleStandardArgs)

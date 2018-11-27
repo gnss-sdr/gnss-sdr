@@ -31,6 +31,7 @@
 
 #include "pvt_solution.h"
 #include "GPS_L1_CA.h"
+#include "geofunctions.h"
 #include <glog/logging.h>
 #include <exception>
 
@@ -43,6 +44,8 @@ Pvt_Solution::Pvt_Solution()
     d_latitude_d = 0.0;
     d_longitude_d = 0.0;
     d_height_m = 0.0;
+    d_speed_over_ground_m_s = 0.0;
+    d_course_over_ground_d = 0.0;
     d_avg_latitude_d = 0.0;
     d_avg_longitude_d = 0.0;
     d_avg_height_m = 0.0;
@@ -126,125 +129,7 @@ int Pvt_Solution::cart2geo(double X, double Y, double Z, int elipsoid_selection)
     d_latitude_d = phi * 180.0 / GPS_PI;
     d_longitude_d = lambda * 180.0 / GPS_PI;
     d_height_m = h;
-    return 0;
-}
-
-
-int Pvt_Solution::togeod(double *dphi, double *dlambda, double *h, double a, double finv, double X, double Y, double Z)
-{
-    /* Subroutine to calculate geodetic coordinates latitude, longitude,
-       height given Cartesian coordinates X,Y,Z, and reference ellipsoid
-       values semi-major axis (a) and the inverse of flattening (finv).
-
-       The output units of angular quantities will be in decimal degrees
-       (15.5 degrees not 15 deg 30 min). The output units of h will be the
-       same as the units of X,Y,Z,a.
-
-       Inputs:
-               a           - semi-major axis of the reference ellipsoid
-               finv        - inverse of flattening of the reference ellipsoid
-               X,Y,Z       - Cartesian coordinates
-
-       Outputs:
-               dphi        - latitude
-               dlambda     - longitude
-               h           - height above reference ellipsoid
-
-       Based in a Matlab function by Kai Borre
-     */
-
-    *h = 0;
-    double tolsq = 1.e-10;  // tolerance to accept convergence
-    int maxit = 10;         // max number of iterations
-    double rtd = 180.0 / GPS_PI;
-
-    // compute square of eccentricity
-    double esq;
-    if (finv < 1.0E-20)
-        {
-            esq = 0.0;
-        }
-    else
-        {
-            esq = (2.0 - 1.0 / finv) / finv;
-        }
-
-    // first guess
-    double P = sqrt(X * X + Y * Y);  // P is distance from spin axis
-
-    //direct calculation of longitude
-    if (P > 1.0E-20)
-        {
-            *dlambda = atan2(Y, X) * rtd;
-        }
-    else
-        {
-            *dlambda = 0.0;
-        }
-
-    // correct longitude bound
-    if (*dlambda < 0)
-        {
-            *dlambda = *dlambda + 360.0;
-        }
-
-    double r = sqrt(P * P + Z * Z);  // r is distance from origin (0,0,0)
-
-    double sinphi;
-    if (r > 1.0E-20)
-        {
-            sinphi = Z / r;
-        }
-    else
-        {
-            sinphi = 0.0;
-        }
-    *dphi = asin(sinphi);
-
-    // initial value of height  =  distance from origin minus
-    // approximate distance from origin to surface of ellipsoid
-    if (r < 1.0E-20)
-        {
-            *h = 0;
-            return 1;
-        }
-
-    *h = r - a * (1 - sinphi * sinphi / finv);
-
-    // iterate
-    double cosphi;
-    double N_phi;
-    double dP;
-    double dZ;
-    double oneesq = 1.0 - esq;
-
-    for (int i = 0; i < maxit; i++)
-        {
-            sinphi = sin(*dphi);
-            cosphi = cos(*dphi);
-
-            // compute radius of curvature in prime vertical direction
-            N_phi = a / sqrt(1 - esq * sinphi * sinphi);
-
-            //    compute residuals in P and Z
-            dP = P - (N_phi + (*h)) * cosphi;
-            dZ = Z - (N_phi * oneesq + (*h)) * sinphi;
-
-            //    update height and latitude
-            *h = *h + (sinphi * dZ + cosphi * dP);
-            *dphi = *dphi + (cosphi * dZ - sinphi * dP) / (N_phi + (*h));
-
-            //     test for convergence
-            if ((dP * dP + dZ * dZ) < tolsq)
-                {
-                    break;
-                }
-            if (i == (maxit - 1))
-                {
-                    LOG(WARNING) << "The computation of geodetic coordinates did not converge";
-                }
-        }
-    *dphi = (*dphi) * rtd;
+    //todo: refactor this class. Mix of duplicated functions, use either RTKLIB geodetic functions or geofunctions.h
     return 0;
 }
 
@@ -356,73 +241,6 @@ int Pvt_Solution::tropo(double *ddr_m, double sinel, double hsta_km, double p_mb
 }
 
 
-int Pvt_Solution::topocent(double *Az, double *El, double *D, const arma::vec &x, const arma::vec &dx)
-{
-    /*  Transformation of vector dx into topocentric coordinate
-      system with origin at x
-         Inputs:
-            x           - vector origin coordinates (in ECEF system [X; Y; Z;])
-            dx          - vector ([dX; dY; dZ;]).
-
-         Outputs:
-            D           - vector length. Units like the input
-            Az          - azimuth from north positive clockwise, degrees
-            El          - elevation angle, degrees
-
-            Based on a Matlab function by Kai Borre
-     */
-
-    double lambda;
-    double phi;
-    double h;
-    double dtr = GPS_PI / 180.0;
-    double a = 6378137.0;         // semi-major axis of the reference ellipsoid WGS-84
-    double finv = 298.257223563;  // inverse of flattening of the reference ellipsoid WGS-84
-
-    // Transform x into geodetic coordinates
-    Pvt_Solution::togeod(&phi, &lambda, &h, a, finv, x(0), x(1), x(2));
-
-    double cl = cos(lambda * dtr);
-    double sl = sin(lambda * dtr);
-    double cb = cos(phi * dtr);
-    double sb = sin(phi * dtr);
-
-    arma::mat F = {{-sl, -sb * cl, cb * cl},
-        {cl, -sb * sl, cb * sl},
-        {0, 0, cb, sb}};
-
-    arma::vec local_vector;
-
-    local_vector = arma::htrans(F) * dx;
-
-    double E = local_vector(0);
-    double N = local_vector(1);
-    double U = local_vector(2);
-
-    double hor_dis;
-    hor_dis = sqrt(E * E + N * N);
-
-    if (hor_dis < 1.0E-20)
-        {
-            *Az = 0;
-            *El = 90;
-        }
-    else
-        {
-            *Az = atan2(E, N) / dtr;
-            *El = atan2(U, hor_dis) / dtr;
-        }
-
-    if (*Az < 0)
-        {
-            *Az = *Az + 360.0;
-        }
-
-    *D = sqrt(dx(0) * dx(0) + dx(1) * dx(1) + dx(2) * dx(2));
-    return 0;
-}
-
-
 void Pvt_Solution::set_averaging_depth(int depth)
 {
     d_averaging_depth = depth;
@@ -517,6 +335,30 @@ double Pvt_Solution::get_height() const
 }
 
 
+double Pvt_Solution::get_speed_over_ground() const
+{
+    return d_speed_over_ground_m_s;
+}
+
+
+void Pvt_Solution::set_speed_over_ground(double speed_m_s)
+{
+    d_speed_over_ground_m_s = speed_m_s;
+}
+
+
+void Pvt_Solution::set_course_over_ground(double cog_deg)
+{
+    d_course_over_ground_d = cog_deg;
+}
+
+
+double Pvt_Solution::get_course_over_ground() const
+{
+    return d_course_over_ground_d;
+}
+
+
 double Pvt_Solution::get_avg_latitude() const
 {
     return d_avg_latitude_d;
@@ -539,6 +381,7 @@ bool Pvt_Solution::is_averaging() const
 {
     return d_flag_averaging;
 }
+
 
 bool Pvt_Solution::is_valid_position() const
 {
@@ -588,173 +431,4 @@ int Pvt_Solution::get_num_valid_observations() const
 void Pvt_Solution::set_num_valid_observations(int num)
 {
     d_valid_observations = num;
-}
-
-
-bool Pvt_Solution::set_visible_satellites_ID(size_t index, unsigned int prn)
-{
-    if (index >= PVT_MAX_CHANNELS)
-        {
-            LOG(WARNING) << "Setting sat ID to channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
-            return false;
-        }
-    else
-        {
-            if (prn >= PVT_MAX_PRN)
-                {
-                    LOG(WARNING) << "Setting to channel " << index << " a PRN of " << prn << " (the maximum is " << PVT_MAX_PRN << ")";
-                    return false;
-                }
-            else
-                {
-                    d_visible_satellites_IDs[index] = prn;
-                    return true;
-                }
-        }
-}
-
-
-unsigned int Pvt_Solution::get_visible_satellites_ID(size_t index) const
-{
-    if (index >= PVT_MAX_CHANNELS)
-        {
-            LOG(WARNING) << "Getting sat ID for channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
-            return 0;
-        }
-    else
-        {
-            return d_visible_satellites_IDs[index];
-        }
-}
-
-
-bool Pvt_Solution::set_visible_satellites_El(size_t index, double el)
-{
-    if (index >= PVT_MAX_CHANNELS)
-        {
-            LOG(WARNING) << "Setting sat elevation for channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
-            return false;
-        }
-    else
-        {
-            if (el > 90.0)
-                {
-                    LOG(WARNING) << "Setting a sat elevation > 90 [degrees]. Saturating to 90";
-                    d_visible_satellites_El[index] = 90.0;
-                }
-            else
-                {
-                    if (el < -90.0)
-                        {
-                            LOG(WARNING) << "Setting a sat elevation < -90 [degrees]. Saturating to -90";
-                            d_visible_satellites_El[index] = -90.0;
-                        }
-                    else
-                        {
-                            d_visible_satellites_El[index] = el;
-                        }
-                }
-            return true;
-        }
-}
-
-
-double Pvt_Solution::get_visible_satellites_El(size_t index) const
-{
-    if (index >= PVT_MAX_CHANNELS)
-        {
-            LOG(WARNING) << "Getting sat elevation for channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
-            return 0.0;
-        }
-    else
-        {
-            return d_visible_satellites_El[index];
-        }
-}
-
-
-bool Pvt_Solution::set_visible_satellites_Az(size_t index, double az)
-{
-    if (index >= PVT_MAX_CHANNELS)
-        {
-            LOG(WARNING) << "Getting sat azimuth for channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
-            return false;
-        }
-    else
-        {
-            d_visible_satellites_Az[index] = az;
-            return true;
-        }
-}
-
-
-double Pvt_Solution::get_visible_satellites_Az(size_t index) const
-{
-    if (index >= PVT_MAX_CHANNELS)
-        {
-            LOG(WARNING) << "Getting sat azimuth for channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
-            return 0.0;
-        }
-    else
-        {
-            return d_visible_satellites_Az[index];
-        }
-}
-
-
-bool Pvt_Solution::set_visible_satellites_Distance(size_t index, double dist)
-{
-    if (index >= PVT_MAX_CHANNELS)
-        {
-            LOG(WARNING) << "Setting sat distance for channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
-            return false;
-        }
-    else
-        {
-            d_visible_satellites_Distance[index] = dist;
-            return true;
-        }
-}
-
-
-double Pvt_Solution::get_visible_satellites_Distance(size_t index) const
-{
-    if (index >= PVT_MAX_CHANNELS)
-        {
-            LOG(WARNING) << "Getting sat distance for channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
-            return 0.0;
-        }
-    else
-        {
-            return d_visible_satellites_Distance[index];
-        }
-}
-
-
-bool Pvt_Solution::set_visible_satellites_CN0_dB(size_t index, double cn0)
-{
-    if (index >= PVT_MAX_CHANNELS)
-        {
-            LOG(WARNING) << "Setting sat Cn0 for channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
-            return false;
-        }
-    else
-        {
-            d_visible_satellites_CN0_dB[index] = cn0;
-            return true;
-        }
-}
-
-
-double Pvt_Solution::get_visible_satellites_CN0_dB(size_t index) const
-{
-    if (index >= PVT_MAX_CHANNELS)
-        {
-            LOG(WARNING) << "Getting received CN0 for channel " << index << " (the maximum is " << PVT_MAX_CHANNELS << ")";
-            return 0.0;
-        }
-    else
-        {
-            return d_visible_satellites_CN0_dB[index];
-        }
 }

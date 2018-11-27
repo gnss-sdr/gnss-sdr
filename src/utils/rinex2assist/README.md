@@ -1,19 +1,48 @@
 Rinex2assist
 ------------
 
-This program reads data from RINEX navigation files and generates XML files that can be read by GNSS-SDR as Assisted GNSS data. The usage is as follows:
+This program reads data from RINEX navigation files and generates XML files that can be read by GNSS-SDR as Assisted GNSS data.
+
+### Building
+
+This program is built along with GNSS-SDR if the options `ENABLE_UNIT_TESTING_EXTRA` or `ENABLE_SYSTEM_TESTING_EXTRA` are set to `ON` when calling CMake:
 
 ```
-$ rinex2assist /path/to/RINEX_nav_file 
+$ cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON ..
+$ make
+$ sudo make intall
+```
+
+The last step is optional. Without it, you will get the executable at `../install/rinex2assist`.
+
+The building requires two extra dependencies: the Boost Iostreams library and the program `uncompress`:
+
+  * The Boost Iostreams library can be installed through a package:
+     - In Debian / Ubuntu: `sudo apt-get install libboost-iostreams-dev`
+     - In Fedora / CentOS: `sudo yum install boost-iostreams`
+     - In OpenSUSE: `sudo zypper install libboost_iostreams-devel`
+     - In Arch Linux: included in `boost-libs` package.
+     - In MacOS: included in Macports / Homebrew `boost` package.
+  * The program `uncompress` is available by default in most UNIX and GNU/Linux systems.
+     - In Fedora / CentOS: `sudo yum install ncompress`
+     - In OpenSUSE: `sudo zypper install ncompress`
+
+### Usage
+
+The usage is as follows:
+
+```
+$ rinex2assist /path/to/RINEX_nav_file
 ```
 
 The argument is mandatory (the name of the RINEX navigation file). The name `gps_ephemeris.xml` is given to the output if GPS NAV data is fould. If the RINEX file contains Galileo data, the corresponding `gal_ephemeris.xml` file will be generated. The program is also able to extract parameters of the UTC and the Ionospheric models from the RINEX header, if available. They will be called `gps_utc_model.xml`, `gps_iono.xml`, `gal_utc_model.xml` and `gal_iono.xml`.
 
-There are some servers available for downloading RINEX navigation files. For instance:
+There are some servers available for downloading recent RINEX navigation files. For instance:
   * NASA: [ftp://cddis.gsfc.nasa.gov/pub/gnss/data/hourly/](ftp://gssc.esa.int/gnss/data/hourly/)
   * ESA: [ftp://gssc.esa.int/gnss/data/hourly/](ftp://gssc.esa.int/gnss/data/hourly/)
+  * UNAVCO: [ftp://data-out.unavco.org/pub/hourly/rinex/](ftp://data-out.unavco.org/pub/hourly/rinex/)
 
-Just make sure to pick up a [station near you](http://www.igs.org/network).
+Just make sure to pick up a recent file from a [station near you](http://www.igs.org/network).
 
 The program accepts either versions 2.xx or 3.xx for the RINEX navigation data file, as well as compressed files (ending in `.gz` or `.Z`).
 

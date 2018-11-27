@@ -76,6 +76,7 @@ int main(int argc, char** argv)
 
     // Uncompress if RINEX file is gzipped
     std::string rinex_filename(argv[1]);
+    std::string input_filename = rinex_filename;
     std::size_t found = rinex_filename.find_last_of(".");
     if (found != std::string::npos)
         {
@@ -99,9 +100,14 @@ int main(int argc, char** argv)
                         }
                     in.push(file);
                     std::string rinex_filename_unzipped = rinex_filename.substr(0, found);
-                    std::ofstream output_file(rinex_filename_unzipped.c_str(), std::ios_base::out | std::ios_base::binary);
+                    std::ofstream output_file(rinex_filename_unzipped.c_str(), std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+                    if (file.fail())
+                        {
+                            std::cerr << "Could not create file " << rinex_filename_unzipped << std::endl;
+                            return 1;
+                        }
                     boost::iostreams::copy(in, output_file);
-                    rinex_filename = rinex_filename_unzipped;
+                    input_filename = rinex_filename_unzipped;
                 }
             if ((rinex_filename.substr(found + 1, found + 2).compare("Z") == 0))
                 {
@@ -112,14 +118,28 @@ int main(int argc, char** argv)
                             return 1;
                         }
                     file.close();
-                    // option k is not always available, so we save a copy of the original file
-                    std::string argum = std::string("/bin/cp " + rinex_filename + " " + rinex_filename + ".aux");
-                    std::system(argum.c_str());
-                    std::string argum2 = std::string("/usr/bin/uncompress -f " + rinex_filename);
-                    std::system(argum2.c_str());
-                    std::string argum3 = std::string("/bin/mv " + rinex_filename + +".aux" + " " + rinex_filename);
-                    std::system(argum3.c_str());
-                    rinex_filename = rinex_filename.substr(0, found);
+                    std::string uncompress_executable(UNCOMPRESS_EXECUTABLE);
+                    if (!uncompress_executable.empty())
+                        {
+                            // option k is not always available, so we save a copy of the original file
+                            std::string argum = std::string("/bin/cp " + rinex_filename + " " + rinex_filename + ".aux");
+                            int s1 = std::system(argum.c_str());
+                            std::string argum2 = std::string(uncompress_executable + " -f " + rinex_filename);
+                            int s2 = std::system(argum2.c_str());
+                            std::string argum3 = std::string("/bin/mv " + rinex_filename + +".aux" + " " + rinex_filename);
+                            int s3 = std::system(argum3.c_str());
+                            input_filename = rinex_filename.substr(0, found);
+                            if ((s1 != 0) or (s2 != 0) or (s3 != 0))
+                                {
+                                    std::cerr << "Failure uncompressing file." << std::endl;
+                                    return 1;
+                                }
+                        }
+                    else
+                        {
+                            std::cerr << "uncompress program not found." << std::endl;
+                            return 1;
+                        }
                 }
         }
 
@@ -136,7 +156,7 @@ int main(int argc, char** argv)
     try
         {
             // Read nav file
-            gpstk::Rinex3NavStream rnffs(rinex_filename.c_str());  // Open navigation data file
+            gpstk::Rinex3NavStream rnffs(input_filename.c_str());  // Open navigation data file
             gpstk::Rinex3NavData rne;
             gpstk::Rinex3NavHeader hdr;
 
@@ -271,6 +291,7 @@ int main(int argc, char** argv)
                             eph.af0_4 = rne.af0;
                             eph.af1_4 = rne.af1;
                             eph.af2_4 = rne.af2;
+                            eph.WN_5 = rne.weeknum;
                             eph_gal_map[j] = eph;
                             j++;
                         }

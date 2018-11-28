@@ -33,12 +33,12 @@
 #define GNSS_SDR_BEIDOU_B1I_SUBFRAME_FSM_H_
 
 #include <boost/statechart/state_machine.hpp>
-#include "../../../core/system_parameters/beidou_dnav_almanac.h"
-#include "../../../core/system_parameters/beidou_dnav_ephemeris.h"
-#include "../../../core/system_parameters/beidou_dnav_iono.h"
-#include "../../../core/system_parameters/beidou_dnav_navigation_message.h"
-#include "../../../core/system_parameters/beidou_dnav_utc_model.h"
-#include "../../../core/system_parameters/Beidou_B1I.h"
+#include "beidou_dnav_almanac.h"
+#include "beidou_dnav_ephemeris.h"
+#include "beidou_dnav_iono.h"
+#include "beidou_dnav_navigation_message.h"
+#include "beidou_dnav_utc_model.h"
+#include "Beidou_B1I.h"
 
 namespace sc = boost::statechart;
 namespace mpl = boost::mpl;

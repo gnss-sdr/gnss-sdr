@@ -262,12 +262,12 @@ eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph)
     rtklib_sat.tgd[2] = 0.0;
     rtklib_sat.tgd[3] = 0.0;
     rtklib_sat.toes = bei_eph.d_Toe;
-    rtklib_sat.toc = gpst2time(rtklib_sat.week, bei_eph.d_Toc);
-    rtklib_sat.ttr = gpst2time(rtklib_sat.week, bei_eph.d_TOW);
+    rtklib_sat.toc = bdt2time(rtklib_sat.week, bei_eph.d_Toc);
+    rtklib_sat.ttr = bdt2time(rtklib_sat.week, bei_eph.d_TOW);
     /* adjustment for week handover */
     double tow, toc;
-    tow = time2gpst(rtklib_sat.ttr, &rtklib_sat.week);
-    toc = time2gpst(rtklib_sat.toc, NULL);
+    tow = time2bdt(rtklib_sat.ttr, &rtklib_sat.week);
+    toc = time2bdt(rtklib_sat.toc, NULL);
     if (rtklib_sat.toes < tow - 302400.0)
         {
             rtklib_sat.week++;
@@ -278,9 +278,9 @@ eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph)
             rtklib_sat.week--;
             tow += 604800.0;
         }
-    rtklib_sat.toe = gpst2time(rtklib_sat.week, rtklib_sat.toes);
-    rtklib_sat.toc = gpst2time(rtklib_sat.week, toc);
-    rtklib_sat.ttr = gpst2time(rtklib_sat.week, tow);
+    rtklib_sat.toe = bdt2time(rtklib_sat.week, rtklib_sat.toes);
+    rtklib_sat.toc = bdt2time(rtklib_sat.week, toc);
+    rtklib_sat.ttr = bdt2time(rtklib_sat.week, tow);
 
     return rtklib_sat;
 }

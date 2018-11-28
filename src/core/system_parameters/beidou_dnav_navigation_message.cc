@@ -165,14 +165,10 @@ void Beidou_Dnav_Navigation_Message::reset()
         }
 }
 
-
-
 Beidou_Dnav_Navigation_Message::Beidou_Dnav_Navigation_Message()
 {
     reset();
 }
-
-
 
 void Beidou_Dnav_Navigation_Message::print_beidou_word_bytes(unsigned int BEIDOU_word)
 {
@@ -180,8 +176,6 @@ void Beidou_Dnav_Navigation_Message::print_beidou_word_bytes(unsigned int BEIDOU
     std::cout << std::bitset<32>(BEIDOU_word);
     std::cout << std::endl;
 }
-
-
 
 bool Beidou_Dnav_Navigation_Message::read_navigation_bool(std::bitset<BEIDOU_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter)
 {
@@ -197,7 +191,6 @@ bool Beidou_Dnav_Navigation_Message::read_navigation_bool(std::bitset<BEIDOU_SUB
         }
     return value;
 }
-
 
 unsigned long int Beidou_Dnav_Navigation_Message::read_navigation_unsigned(std::bitset<BEIDOU_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter)
 {
@@ -292,7 +285,6 @@ double Beidou_Dnav_Navigation_Message::check_t(double time)
     return corrTime;
 }
 
-// User Algorithm for SV Clock Correction.
 double Beidou_Dnav_Navigation_Message::sv_clock_correction(double transmitTime)
 {
     double dt;
@@ -395,10 +387,6 @@ void Beidou_Dnav_Navigation_Message::satellitePosition(double transmitTime)
     d_satvel_Y = Omega_dot * (cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega)) + d_satpos_X * sin(Omega) + d_satpos_Y * cos(i) * cos(Omega);
     d_satvel_Z = d_satpos_Y * sin(i);
 }
-
-
-
-
 
 int Beidou_Dnav_Navigation_Message::subframe_decoder(char *subframe)
 {
@@ -786,9 +774,6 @@ int Beidou_Dnav_Navigation_Message::subframe_decoder(char *subframe)
     return subframe_ID;
 }
 
-
-
-
 double Beidou_Dnav_Navigation_Message::utc_time(const double beidoutime_corrected) const
 {
     double t_utc;
@@ -835,8 +820,6 @@ double Beidou_Dnav_Navigation_Message::utc_time(const double beidoutime_correcte
     t_utc = secondsOfWeekBeforeToday + t_utc_daytime;
     return t_utc;
 }
-
-
 
 Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris()
 {
@@ -889,7 +872,6 @@ Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris()
     return ephemeris;
 }
 
-
 Beidou_Dnav_Iono Beidou_Dnav_Navigation_Message::get_iono()
 {
     Beidou_Dnav_Iono iono;
@@ -906,7 +888,6 @@ Beidou_Dnav_Iono Beidou_Dnav_Navigation_Message::get_iono()
     flag_iono_valid = false;
     return iono;
 }
-
 
 Beidou_Dnav_Utc_Model Beidou_Dnav_Navigation_Message::get_utc_model()
 {
@@ -925,7 +906,6 @@ Beidou_Dnav_Utc_Model Beidou_Dnav_Navigation_Message::get_utc_model()
     flag_utc_model_valid = false;
     return utc_model;
 }
-
 
 bool Beidou_Dnav_Navigation_Message::satellite_validation()
 {

@@ -335,23 +335,18 @@ void galileo_telemetry_decoder_cc::decode_INAV_word(double *page_part_symbols, i
             std::shared_ptr<Galileo_Utc_Model> tmp_obj = std::make_shared<Galileo_Utc_Model>(d_inav_nav.get_utc_model());
             std::cout << "New Galileo E1 I/NAV message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << std::endl;
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+            delta_t = tmp_obj->A_0G_10 + tmp_obj->A_1G_10 * (static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0 - tmp_obj->t_0G_10 + 604800 * (fmod((d_inav_nav.WN_0 - tmp_obj->WN_0G_10), 64)));
+            DLOG(INFO) << "delta_t=" << delta_t << "[s]";
         }
     if (d_inav_nav.have_new_almanac() == true)
         {
-            std::shared_ptr<Galileo_Almanac> tmp_obj = std::make_shared<Galileo_Almanac>(d_inav_nav.get_almanac());
+            std::shared_ptr<Galileo_Almanac_Helper> tmp_obj = std::make_shared<Galileo_Almanac_Helper>(d_inav_nav.get_almanac());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             //debug
             std::cout << "Galileo E1 I/NAV almanac received in channel " << d_channel << " from satellite " << d_satellite << std::endl;
-            DLOG(INFO) << "GPS_to_Galileo time conversion:";
-            DLOG(INFO) << "A0G=" << tmp_obj->A_0G_10;
-            DLOG(INFO) << "A1G=" << tmp_obj->A_1G_10;
-            DLOG(INFO) << "T0G=" << tmp_obj->t_0G_10;
-            DLOG(INFO) << "WN_0G_10=" << tmp_obj->WN_0G_10;
             DLOG(INFO) << "Current parameters:";
             DLOG(INFO) << "d_TOW_at_current_symbol_ms=" << d_TOW_at_current_symbol_ms;
             DLOG(INFO) << "d_nav.WN_0=" << d_inav_nav.WN_0;
-            delta_t = tmp_obj->A_0G_10 + tmp_obj->A_1G_10 * (static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0 - tmp_obj->t_0G_10 + 604800 * (fmod((d_inav_nav.WN_0 - tmp_obj->WN_0G_10), 64)));
-            DLOG(INFO) << "delta_t=" << delta_t << "[s]";
         }
 }
 

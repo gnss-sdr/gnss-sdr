@@ -459,7 +459,7 @@ int64_t Galileo_Fnav_Message::read_navigation_signed(std::bitset<GALILEO_FNAV_DA
     // read the MSB and perform the sign extension
     if (bits[GALILEO_FNAV_DATA_FRAME_BITS - parameter[0].first] == 1)
         {
-            value ^= 0xFFFFFFFFFFFFFFFF;  //64 bits variable
+            value ^= 0x0FFFFFFFFFFFFFFF;  // 64 bits variable
         }
     else
         {
@@ -630,9 +630,9 @@ Galileo_Utc_Model Galileo_Fnav_Message::get_utc_model()
 }
 
 
-Galileo_Almanac Galileo_Fnav_Message::get_almanac()
+Galileo_Almanac_Helper Galileo_Fnav_Message::get_almanac()
 {
-    Galileo_Almanac almanac;
+    Galileo_Almanac_Helper almanac;
     // FNAV equivalent of INAV Word type 7: Almanac for SVID1 (1/2), almanac reference time and almanac reference week number
     almanac.IOD_a_7 = FNAV_IODa_5;
     almanac.WN_a_7 = FNAV_WNa_5;

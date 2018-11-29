@@ -42,6 +42,10 @@
 
 using google::LogMessage;
 
+void GalileoE1PcpsAmbiguousAcquisition::stop_acquisition()
+{
+}
+
 GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
@@ -49,7 +53,7 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     Acq_Conf acq_parameters;
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
-    std::string default_dump_filename = "./data/acquisition.dat";
+    std::string default_dump_filename = "./acquisition.mat";
 
     DLOG(INFO) << "role " << role;
 

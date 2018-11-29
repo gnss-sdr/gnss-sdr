@@ -1,6 +1,6 @@
 /*!
- * \file gps_ref_time.h
- * \brief  Interface of a GPS REFERENCE TIME storage
+ * \file agnss_ref_location.h
+ * \brief  Interface of an Assisted GNSS REFERENCE LOCATION storage
  * \author Javier Arribas, 2013. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
@@ -29,34 +29,33 @@
  */
 
 
-#ifndef GNSS_SDR_GPS_REF_TIME_H_
-#define GNSS_SDR_GPS_REF_TIME_H_
+#ifndef GNSS_SDR_AGNSS_REF_LOCATION_H_
+#define GNSS_SDR_AGNSS_REF_LOCATION_H_
 
 #include <boost/assign.hpp>
 #include <boost/serialization/nvp.hpp>
 
 
 /*!
- * \brief  Interface of a GPS REFERENCE TIME storage
+ * \brief  Interface of an Assisted GNSS REFERENCE LOCATION storage
  *
  */
-class Gps_Ref_Time
+class Agnss_Ref_Location
 {
 public:
     bool valid;
-    double d_TOW;
-    double d_Week;
-    double d_tv_sec;
-    double d_tv_usec;
+    double lat;
+    double lon;
+    double uncertainty;
     /*!
      * Default constructor
      */
-    Gps_Ref_Time();
+    Agnss_Ref_Location();
 
     template <class Archive>
 
     /*!
-     * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the ref time data on disk file.
+     * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the Ref location on disk file.
      */
     inline void serialize(Archive& archive, const unsigned int version)
     {
@@ -65,10 +64,9 @@ public:
             {
             };
         archive& make_nvp("valid", valid);
-        archive& make_nvp("d_TOW", d_TOW);
-        archive& make_nvp("d_Week", d_Week);
-        archive& make_nvp("d_tv_sec", d_tv_sec);
-        archive& make_nvp("d_tv_usec", d_tv_usec);
+        archive& make_nvp("lat", lat);
+        archive& make_nvp("lon", lon);
+        archive& make_nvp("uncertainty", uncertainty);
     }
 };
 

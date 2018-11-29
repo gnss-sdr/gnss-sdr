@@ -54,10 +54,21 @@ include_directories(
 list(SORT TELEMETRY_DECODER_GR_BLOCKS_HEADERS)
 list(SORT TELEMETRY_DECODER_GR_BLOCKS_SOURCES)
 
-add_library(telemetry_decoder_gr_blocks ${TELEMETRY_DECODER_GR_BLOCKS_SOURCES} ${TELEMETRY_DECODER_GR_BLOCKS_HEADERS})
-source_group(Headers FILES ${TELEMETRY_DECODER_GR_BLOCKS_HEADERS})
-target_link_libraries(telemetry_decoder_gr_blocks telemetry_decoder_libswiftcnav telemetry_decoder_lib gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES})
+add_library(telemetry_decoder_gr_blocks
+    ${TELEMETRY_DECODER_GR_BLOCKS_SOURCES}
+    ${TELEMETRY_DECODER_GR_BLOCKS_HEADERS}
+)
 
-if(NOT VOLK_GNSSSDR_FOUND)
+source_group(Headers FILES ${TELEMETRY_DECODER_GR_BLOCKS_HEADERS})
+
+target_link_libraries(telemetry_decoder_gr_blocks
+    telemetry_decoder_libswiftcnav
+    telemetry_decoder_lib
+    gnss_system_parameters
+    ${GNURADIO_RUNTIME_LIBRARIES}
+    ${VOLK_GNSSSDR_LIBRARIES}
+)
+
+if(NOT VOLKGNSSSDR_FOUND)
      add_dependencies(telemetry_decoder_gr_blocks volk_gnsssdr_module)
-endif(NOT VOLK_GNSSSDR_FOUND)
+endif()

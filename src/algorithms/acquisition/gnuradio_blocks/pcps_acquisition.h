@@ -138,6 +138,8 @@ private:
     int64_t d_dump_number;
     uint32_t d_dump_channel;
     uint32_t d_buffer_count;
+    bool d_dump;
+    std::string d_dump_filename;
 
 public:
     ~pcps_acquisition();

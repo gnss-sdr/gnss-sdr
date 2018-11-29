@@ -46,6 +46,10 @@
 
 using google::LogMessage;
 
+void GalileoE5aNoncoherentIQAcquisitionCaf::stop_acquisition()
+{
+}
+
 GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)

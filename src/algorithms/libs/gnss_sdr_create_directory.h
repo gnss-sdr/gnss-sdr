@@ -1,8 +1,7 @@
 /*!
- * \file gps_ref_time.cc
- * \brief  Interface of a GPS REFERENCE TIME storage
- *
- * \author Javier Arribas, 2013. jarribas(at)cttc.es
+ * \file gnss_sdr_create_directory.h
+ * \brief Create a directory
+ * \author Carles Fernandez-Prades, 2018. cfernandez(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
@@ -29,13 +28,11 @@
  * -------------------------------------------------------------------------
  */
 
-#include "gps_ref_time.h"
+#ifndef GNSS_SDR_GNSS_SDR_CREATE_DIRECTORY_H_
+#define GNSS_SDR_GNSS_SDR_CREATE_DIRECTORY_H_
 
-Gps_Ref_Time::Gps_Ref_Time()
-{
-    valid = false;
-    d_TOW = 0.0;
-    d_Week = 0.0;
-    d_tv_sec = 0.0;
-    d_tv_usec = 0.0;
-}
+#include <string>
+
+bool gnss_sdr_create_directory(const std::string& foldername);
+
+#endif

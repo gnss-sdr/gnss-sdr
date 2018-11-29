@@ -41,6 +41,10 @@
 
 using google::LogMessage;
 
+void GpsL1CaPcpsQuickSyncAcquisition::stop_acquisition()
+{
+}
+
 GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)

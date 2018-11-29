@@ -48,7 +48,7 @@ public:
     /*!
      * \brief Default constructor.
      */
-    Rtcm_Printer(std::string filename, bool flag_rtcm_server, bool flag_rtcm_tty_port, uint16_t rtcm_tcp_port, uint16_t rtcm_station_id, std::string rtcm_dump_filename, bool time_tag_name = true);
+    Rtcm_Printer(std::string filename, bool flag_rtcm_file_dump, bool flag_rtcm_server, bool flag_rtcm_tty_port, uint16_t rtcm_tcp_port, uint16_t rtcm_station_id, std::string rtcm_dump_filename, bool time_tag_name = true, const std::string& base_path = ".");
 
     /*!
      * \brief Default destructor.
@@ -142,7 +142,8 @@ public:
     uint32_t lock_time(const Glonass_Gnav_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);
 
 private:
-    std::string rtcm_filename;           // String with the RTCM log filename
+    std::string rtcm_filename;  // String with the RTCM log filename
+    std::string rtcm_base_path;
     std::ofstream rtcm_file_descriptor;  // Output file stream for RTCM log file
     std::string rtcm_devname;
     uint16_t port;
@@ -152,6 +153,7 @@ private:
     void close_serial();
     std::shared_ptr<Rtcm> rtcm;
     bool Print_Message(const std::string& message);
+    bool d_rtcm_file_dump;
 };
 
 #endif

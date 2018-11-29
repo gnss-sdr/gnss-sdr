@@ -40,7 +40,7 @@
 
 #include "galileo_ephemeris.h"
 #include "galileo_iono.h"
-#include "galileo_almanac.h"
+#include "galileo_almanac_helper.h"
 #include "galileo_utc_model.h"
 #include "Galileo_E5a.h"
 #include <bitset>
@@ -66,7 +66,7 @@ public:
     Galileo_Ephemeris get_ephemeris();
     Galileo_Iono get_iono();
     Galileo_Utc_Model get_utc_model();
-    Galileo_Almanac get_almanac();
+    Galileo_Almanac_Helper get_almanac();
 
     Galileo_Fnav_Message();
 

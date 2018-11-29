@@ -42,13 +42,17 @@
 
 using google::LogMessage;
 
+void GalileoE5aPcpsAcquisition::stop_acquisition()
+{
+}
+
 GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* configuration,
     std::string role, unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     Acq_Conf acq_parameters = Acq_Conf();
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
-    std::string default_dump_filename = "../data/acquisition.dat";
+    std::string default_dump_filename = "./acquisition.mat";
 
     DLOG(INFO) << "Role " << role;
 

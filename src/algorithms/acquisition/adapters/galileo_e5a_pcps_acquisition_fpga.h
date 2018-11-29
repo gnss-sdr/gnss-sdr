@@ -124,6 +124,11 @@ public:
      */
     void set_state(int state) override;
 
+    /*!
+     * \brief Stop running acquisition
+     */
+    void stop_acquisition() override;
+
 private:
     //float calculate_threshold(float pfa);
 

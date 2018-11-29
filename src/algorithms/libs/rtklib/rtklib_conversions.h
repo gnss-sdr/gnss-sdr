@@ -31,7 +31,6 @@
 #ifndef GNSS_SDR_RTKLIB_CONVERSIONS_H_
 #define GNSS_SDR_RTKLIB_CONVERSIONS_H_
 
-#include "../../../core/system_parameters/beidou_dnav_ephemeris.h"
 #include "rtklib.h"
 #include "gnss_synchro.h"
 #include "galileo_ephemeris.h"
@@ -39,11 +38,17 @@
 #include "gps_cnav_ephemeris.h"
 #include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_utc_model.h"
+#include "beidou_dnav_ephemeris.h"
+#include "gps_almanac.h"
+#include "galileo_almanac.h"
 
 eph_t eph_to_rtklib(const Galileo_Ephemeris& gal_eph);
 eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph);
 eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph);
 eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph);
+
+alm_t alm_to_rtklib(const Gps_Almanac& gps_alm);
+alm_t alm_to_rtklib(const Galileo_Almanac& gal_alm);
 
 /*!
  * \brief Transforms a Glonass_Gnav_Ephemeris to its RTKLIB counterpart

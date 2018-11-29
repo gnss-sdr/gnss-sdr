@@ -60,6 +60,7 @@
 #include "gps_navigation_message.h"
 #include "gps_cnav_navigation_message.h"
 #include "glonass_gnav_navigation_message.h"
+#include "galileo_almanac.h"
 #include "gnss_synchro.h"
 #include "pvt_solution.h"
 #include <fstream>
@@ -77,14 +78,17 @@ private:
     rtk_t rtk_;
     std::string d_dump_filename;
     std::ofstream d_dump_file;
+    bool save_matfile();
 
     bool d_flag_dump_enabled;
+    bool d_flag_dump_mat_enabled;
     int d_nchannels;  // Number of available channels for positioning
     double dop_[4];
 
 public:
     sol_t pvt_sol;
-    rtklib_solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, rtk_t& rtk);
+    ssat_t pvt_ssat[MAXSAT];
+    rtklib_solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, rtk_t& rtk);
     ~rtklib_solver();
 
     bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, bool flag_averaging);
@@ -97,14 +101,15 @@ public:
     std::map<int, Gps_Ephemeris> gps_ephemeris_map;                    //!< Map storing new GPS_Ephemeris
     std::map<int, Gps_CNAV_Ephemeris> gps_cnav_ephemeris_map;          //!< Map storing new GPS_CNAV_Ephemeris
     std::map<int, Glonass_Gnav_Ephemeris> glonass_gnav_ephemeris_map;  //!< Map storing new GLONASS GNAV Ephmeris
-    std::map<int, Beidou_Dnav_Ephemeris> beidou_ephemeris_map;  //!< Map storing new GLONASS GNAV Ephmeris
+    std::map<int, Beidou_Dnav_Ephemeris> beidou_dnav_ephemeris_map;  //!< Map storing new GLONASS GNAV Ephmeris
 
     Galileo_Utc_Model galileo_utc_model;
     Galileo_Iono galileo_iono;
-    Galileo_Almanac galileo_almanac;
+    std::map<int, Galileo_Almanac> galileo_almanac_map;
 
     Gps_Utc_Model gps_utc_model;
     Gps_Iono gps_iono;
+    std::map<int, Gps_Almanac> gps_almanac_map;
 
     Gps_CNAV_Iono gps_cnav_iono;
     Gps_CNAV_Utc_Model gps_cnav_utc_model;
@@ -112,9 +117,9 @@ public:
     Glonass_Gnav_Utc_Model glonass_gnav_utc_model;  //!< Map storing GLONASS GNAV UTC Model
     Glonass_Gnav_Almanac glonass_gnav_almanac;      //!< Map storing GLONASS GNAV Almanac Model
 
-    Beidou_Dnav_Utc_Model beidou_utc_model;
-    Beidou_Dnav_Iono beidou_iono;
-    Beidou_Dnav_Almanac beidou_almanac;
+    Beidou_Dnav_Utc_Model beidou_dnav_utc_model;
+    Beidou_Dnav_Iono beidou_dnav_iono;
+    std::map<int, Beidou_Dnav_Almanac> beidou_dnav_almanac_map;
 
     int count_valid_position;
 };

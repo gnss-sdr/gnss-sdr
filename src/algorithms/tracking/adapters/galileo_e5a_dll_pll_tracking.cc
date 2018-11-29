@@ -45,6 +45,10 @@
 
 using google::LogMessage;
 
+void GalileoE5aDllPllTracking::stop_tracking()
+{
+}
+
 GalileoE5aDllPllTracking::GalileoE5aDllPllTracking(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
@@ -59,6 +63,11 @@ GalileoE5aDllPllTracking::GalileoE5aDllPllTracking(
     trk_param.fs_in = fs_in;
     bool dump = configuration->property(role + ".dump", false);
     trk_param.dump = dump;
+    std::string default_dump_filename = "./track_ch";
+    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
+    trk_param.dump_filename = dump_filename;
+    bool dump_mat = configuration->property(role + ".dump_mat", true);
+    trk_param.dump_mat = dump_mat;
     trk_param.high_dyn = configuration->property(role + ".high_dyn", false);
     if (configuration->property(role + ".smoother_length", 10) < 1)
         {
@@ -81,9 +90,6 @@ GalileoE5aDllPllTracking::GalileoE5aDllPllTracking(
     trk_param.dll_bw_narrow_hz = dll_bw_narrow_hz;
     float early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     trk_param.early_late_space_chips = early_late_space_chips;
-    std::string default_dump_filename = "./track_ch";
-    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
-    trk_param.dump_filename = dump_filename;
     int vector_length = std::round(fs_in / (Galileo_E5a_CODE_CHIP_RATE_HZ / Galileo_E5a_CODE_LENGTH_CHIPS));
     trk_param.vector_length = vector_length;
     int extend_correlation_symbols = configuration->property(role + ".extend_correlation_symbols", 1);

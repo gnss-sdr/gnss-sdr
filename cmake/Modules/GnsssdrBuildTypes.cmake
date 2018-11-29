@@ -56,11 +56,11 @@ function(GNSSSDR_CHECK_BUILD_TYPE settype)
     string(TOUPPER ${btype} _btype)
     if(${_settype} STREQUAL ${_btype})
       return() # found it; exit cleanly
-    endif(${_settype} STREQUAL ${_btype})
-  endforeach(btype)
+    endif()
+  endforeach()
   # Build type not found; error out
   message(FATAL_ERROR "Build type '${settype}' not valid, must be one of: ${AVAIL_BUILDTYPES}")
-endfunction(GNSSSDR_CHECK_BUILD_TYPE)
+endfunction()
 
 
 ########################################################################
@@ -86,12 +86,12 @@ if(NOT WIN32)
     "-W" CACHE STRING
     "Flags used by the shared lib linker during Coverage builds." FORCE)
 
-  MARK_AS_ADVANCED(
+  mark_as_advanced(
     CMAKE_CXX_FLAGS_COVERAGE
     CMAKE_C_FLAGS_COVERAGE
     CMAKE_EXE_LINKER_FLAGS_COVERAGE
     CMAKE_SHARED_LINKER_FLAGS_COVERAGE)
-endif(NOT WIN32)
+endif()
 
 
 ########################################################################
@@ -117,12 +117,12 @@ if(NOT WIN32)
     "-W" CACHE STRING
     "Flags used by the shared lib linker during NoOptWithASM builds." FORCE)
 
-  MARK_AS_ADVANCED(
+  mark_as_advanced(
     CMAKE_CXX_FLAGS_NOOPTWITHASM
     CMAKE_C_FLAGS_NOOPTWITHASM
     CMAKE_EXE_LINKER_FLAGS_NOOPTWITHASM
     CMAKE_SHARED_LINKER_FLAGS_NOOPTWITHASM)
-endif(NOT WIN32)
+endif()
 
 
 
@@ -150,12 +150,12 @@ if(NOT WIN32)
     "-W" CACHE STRING
     "Flags used by the shared lib linker during O2WithASM builds." FORCE)
 
-  MARK_AS_ADVANCED(
+  mark_as_advanced(
     CMAKE_CXX_FLAGS_O2WITHASM
     CMAKE_C_FLAGS_O2WITHASM
     CMAKE_EXE_LINKER_FLAGS_O2WITHASM
     CMAKE_SHARED_LINKER_FLAGS_O2WITHASM)
-endif(NOT WIN32)
+endif()
 
 
 ########################################################################
@@ -182,12 +182,12 @@ if(NOT WIN32)
     "-W" CACHE STRING
     "Flags used by the shared lib linker during O3WithASM builds." FORCE)
 
-  MARK_AS_ADVANCED(
+  mark_as_advanced(
     CMAKE_CXX_FLAGS_O3WITHASM
     CMAKE_C_FLAGS_O3WITHASM
     CMAKE_EXE_LINKER_FLAGS_O3WITHASM
     CMAKE_SHARED_LINKER_FLAGS_O3WITHASM)
-endif(NOT WIN32)
+endif()
 
 
 ########################################################################
@@ -211,9 +211,9 @@ if(NOT WIN32)
     "-W" CACHE STRING
     "Flags used by the shared lib linker during Address Sanitized builds." FORCE)
 
-  MARK_AS_ADVANCED(
+  mark_as_advanced(
     CMAKE_CXX_FLAGS_ASAN
     CMAKE_C_FLAGS_ASAN
     CMAKE_EXE_LINKER_FLAGS_ASAN
     CMAKE_SHARED_LINKER_ASAN)
-endif(NOT WIN32)
+endif()

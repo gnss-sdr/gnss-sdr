@@ -36,9 +36,13 @@
 #include "gnss_block_interface.h"
 #ifdef GR_GREATER_38
 #include <gnuradio/filter/mmse_resampler_cc.h>
+#include <gnuradio/filter/fir_filter_blk.h>
 #else
 #include <gnuradio/filter/fractional_resampler_cc.h>
+#include <gnuradio/filter/fir_filter_ccf.h>
 #endif
+
+#include <gnuradio/filter/firdes.h>
 #include <string>
 
 class ConfigurationInterface;
@@ -91,6 +95,7 @@ private:
 #else
     gr::filter::fractional_resampler_cc::sptr resampler_;
 #endif
+    gr::filter::fir_filter_ccf::sptr fir_filter_ccf_;
     gr::block_sptr file_sink_;
 };
 

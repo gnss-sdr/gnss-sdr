@@ -132,7 +132,12 @@ public:
     /*!
      * \brief If state = 1, it forces the block to start acquiring from the first sample
      */
-    void set_state(int state);
+    void set_state(int state) override;
+
+    /*!
+     * \brief Stop running acquisition
+     */
+    void stop_acquisition() override;
 
 private:
     ConfigurationInterface* configuration_;

@@ -38,7 +38,7 @@
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
 
-#include "../../libs/beidou_b1i_signal_processing.h"
+#include "beidou_b1i_signal_processing.h"
 #include "Beidou_B1I.h"
 
 
@@ -136,6 +136,10 @@ BeidouB1iPcpsAcquisition::~BeidouB1iPcpsAcquisition()
     delete[] code_;
 }
 
+
+void BeidouB1iPcpsAcquisition::stop_acquisition()
+{
+}
 
 void BeidouB1iPcpsAcquisition::set_channel(unsigned int channel)
 {

@@ -38,6 +38,8 @@ extern "C"
 {
 #include "supl.h"
 }
+#include "agnss_ref_location.h"
+#include "agnss_ref_time.h"
 #include "GPS_L1_CA.h"
 #include "gps_ephemeris.h"
 #include "gps_iono.h"
@@ -45,12 +47,11 @@ extern "C"
 #include "gps_utc_model.h"
 #include "gps_cnav_utc_model.h"
 #include "gps_acq_assist.h"
-#include "gps_ref_time.h"
-#include "gps_ref_location.h"
 #include "gps_cnav_ephemeris.h"
 #include "galileo_ephemeris.h"
 #include "galileo_utc_model.h"
 #include "galileo_iono.h"
+#include "galileo_almanac.h"
 #include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_utc_model.h"
 #include <boost/archive/xml_oarchive.hpp>
@@ -76,6 +77,7 @@ private:
     supl_ctx_t ctx;
     // assistance data
     supl_assist_t assist;
+    bool read_gal_almanac_from_gsa(const std::string file_name);
 
 public:
     // SUPL SERVER INFO
@@ -90,19 +92,20 @@ public:
 
     // almanac map
     std::map<int, Gps_Almanac> gps_almanac_map;
+    std::map<int, Galileo_Almanac> gal_almanac_map;
 
     // ionospheric model
     Gps_Iono gps_iono;
     Galileo_Iono gal_iono;
     // reference time
-    Gps_Ref_Time gps_time;
+    Agnss_Ref_Time gps_time;
     // UTC model
     Gps_Utc_Model gps_utc;
     Galileo_Utc_Model gal_utc;
     Gps_CNAV_Utc_Model gps_cnav_utc;
     Glonass_Gnav_Utc_Model glo_gnav_utc;
     // reference location
-    Gps_Ref_Location gps_ref_loc;
+    Agnss_Ref_Location gps_ref_loc;
     // Acquisition Assistance map
     std::map<int, Gps_Acq_Assist> gps_acq_map;
 
@@ -196,6 +199,26 @@ public:
     bool save_gal_utc_xml(const std::string file_name, Galileo_Utc_Model& utc);
 
     /*!
+     * \brief Read Galileo almanac map from XML file
+     */
+    bool load_gal_almanac_xml(const std::string file_name);
+
+    /*!
+     * \brief Save Galileo almanac map to XML file
+     */
+    bool save_gal_almanac_xml(const std::string file_name, std::map<int, Galileo_Almanac> gal_almanac);
+
+    /*!
+     * \brief Read GPS almanac map from XML file
+     */
+    bool load_gps_almanac_xml(const std::string file_name);
+
+    /*!
+     * \brief Save GPS almanac map to XML file
+     */
+    bool save_gps_almanac_xml(const std::string file_name, std::map<int, Gps_Almanac> gps_almanac_map);
+
+    /*!
      * \brief Read iono from XML file
      */
     bool load_iono_xml(const std::string file_name);
@@ -233,8 +256,8 @@ public:
     /*!
      * \brief Save ref time map to XML file
      */
-    bool save_ref_time_map_xml(const std::string file_name,
-        std::map<int, Gps_Ref_Time> ref_time_map);
+    bool save_ref_time_xml(const std::string file_name,
+        Agnss_Ref_Time& ref_time_map);
 
     /*!
      * \brief Read ref location from XML file
@@ -244,8 +267,8 @@ public:
     /*!
      * \brief Save ref location map to XML file
      */
-    bool save_ref_location_map_xml(std::string file_name,
-        std::map<int, Gps_Ref_Location> ref_location_map);
+    bool save_ref_location_xml(std::string file_name,
+        Agnss_Ref_Location& ref_location);
 
     /*
      * Prints SUPL data to std::cout. Use it for debug purposes only.

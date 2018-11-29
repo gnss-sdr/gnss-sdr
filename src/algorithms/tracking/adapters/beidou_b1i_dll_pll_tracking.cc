@@ -151,6 +151,11 @@ void BeidouB1iDllPllTracking::start_tracking()
     tracking_->start_tracking();
 }
 
+void BeidouB1iDllPllTracking::stop_tracking()
+{
+    tracking_->stop_tracking();
+}
+
 
 /*
  * Set tracking channel unique ID

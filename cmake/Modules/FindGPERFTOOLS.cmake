@@ -19,7 +19,7 @@
 #
 # Usage of this module as follows:
 #
-# find_package(Gperftools)
+# find_package(GPERFTOOLS)
 #
 # Variables used by this module, they can change the default behaviour and need
 # to be set before calling find_package:
@@ -54,7 +54,7 @@ set(GPERFTOOLS_LIBRARIES ${GPERFTOOLS_TCMALLOC_AND_PROFILER})
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
-  Gperftools
+  GPERFTOOLS
   DEFAULT_MSG
   GPERFTOOLS_LIBRARIES
   GPERFTOOLS_INCLUDE_DIR

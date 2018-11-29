@@ -16,34 +16,35 @@
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 
 ########################################################################
-# Find VOLK (Vector-Optimized Library of Kernels) GNSS-SDR library
+# Find  GR-GN3S Module
 ########################################################################
 
-INCLUDE(FindPkgConfig)
-PKG_CHECK_MODULES(PC_VOLK_GNSSSDR volk_gnsssdr)
+include(FindPkgConfig)
+pkg_check_modules(PC_GR_GN3S gr-gn3s)
 
-FIND_PATH(
-    VOLK_GNSSSDR_INCLUDE_DIRS
-    NAMES volk_gnsssdr/volk_gnsssdr.h
-    HINTS $ENV{VOLK_GNSSSDR_DIR}/include
-        ${PC_VOLK_GNSSSDR_INCLUDEDIR}
-    PATHS /usr/local/include
+find_path(
+    GR_GN3S_INCLUDE_DIRS
+    NAMES gn3s/gn3s_api.h
+    HINTS $ENV{GR_GN3S_DIR}/include
+          ${PC_GR_GN3S_INCLUDEDIR}
+    PATHS ${CMAKE_INSTALL_PREFIX}/include
+          /usr/local/include
           /usr/include
-          ${GNURADIO_INSTALL_PREFIX}/include
 )
 
-FIND_LIBRARY(
-    VOLK_GNSSSDR_LIBRARIES
-    NAMES volk_gnsssdr
-    HINTS $ENV{VOLK_GNSSSDR_DIR}/lib
-        ${PC_VOLK_GNSSSDR_LIBDIR}
-    PATHS /usr/local/lib
+find_library(
+    GR_GN3S_LIBRARIES
+    NAMES gr-gn3s
+    HINTS $ENV{GR_GN3S_DIR}/lib
+          ${PC_GR_GN3S_LIBDIR}
+    PATHS ${CMAKE_INSTALL_PREFIX}/lib
+          ${CMAKE_INSTALL_PREFIX}/lib64
+          /usr/local/lib
           /usr/local/lib64
           /usr/lib
           /usr/lib64
-          ${GNURADIO_INSTALL_PREFIX}/lib
 )
 
-INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(VOLK_GNSSSDR DEFAULT_MSG VOLK_GNSSSDR_LIBRARIES VOLK_GNSSSDR_INCLUDE_DIRS)
-MARK_AS_ADVANCED(VOLK_GNSSSDR_LIBRARIES VOLK_GNSSSDR_INCLUDE_DIRS)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(GRGN3S DEFAULT_MSG GR_GN3S_LIBRARIES GR_GN3S_INCLUDE_DIRS)
+mark_as_advanced(GR_GN3S_LIBRARIES GR_GN3S_INCLUDE_DIRS)

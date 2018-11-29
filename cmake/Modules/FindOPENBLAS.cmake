@@ -17,26 +17,28 @@
 
 # - Try to find OpenBLAS library (not headers!)
 #
-# The following environment variable is optionally searched 
+# The following environment variable is optionally searched
 # OPENBLAS_HOME: Base directory where all OpenBlas components are found
 
-SET(OPEN_BLAS_SEARCH_PATHS  /lib/ 
-                            /lib64/  
-                            /usr/lib 
-                            /usr/lib64 
-                            /usr/local/lib 
-                            /usr/local/lib64 
-                            /opt/OpenBLAS/lib 
-                            /opt/local/lib 
-                            /usr/lib/openblas-base 
-                            $ENV{OPENBLAS_HOME}/lib 
+set(OPEN_BLAS_SEARCH_PATHS  /lib/
+                            /lib64/
+                            /usr/lib
+                            /usr/lib64
+                            /usr/local/lib
+                            /usr/local/lib64
+                            /opt/OpenBLAS/lib
+                            /opt/local/lib
+                            /usr/lib/openblas-base
+                            $ENV{OPENBLAS_HOME}/lib
                             )
-                            
-FIND_LIBRARY(OPENBLAS NAMES openblas PATHS ${OPEN_BLAS_SEARCH_PATHS})
 
-IF (OPENBLAS)
-    SET(OPENBLAS_FOUND ON)
-    MESSAGE(STATUS "Found OpenBLAS")
-ENDIF (OPENBLAS)
+find_library(OPENBLAS NAMES openblas PATHS ${OPEN_BLAS_SEARCH_PATHS})
 
-MARK_AS_ADVANCED(OPENBLAS)
+if(OPENBLAS)
+    set(OPENBLAS_FOUND ON)
+    message(STATUS "Found OpenBLAS")
+endif()
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(OPENBLAS DEFAULT_MSG OPENBLAS)
+mark_as_advanced(OPENBLAS)

@@ -40,6 +40,9 @@
 
 using google::LogMessage;
 
+void GalileoE1Pcps8msAmbiguousAcquisition::stop_acquisition()
+{
+}
 GalileoE1Pcps8msAmbiguousAcquisition::GalileoE1Pcps8msAmbiguousAcquisition(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)

@@ -1763,8 +1763,11 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
         }
     else
         {
-            ASSERT_EQ(ReadRinexObs(&true_obs_vec, gnss_synchro_master), true)
-                << "Failure reading RINEX file";
+            if (!FLAGS_duplicated_satellites_test)
+                {
+                    ASSERT_EQ(ReadRinexObs(&true_obs_vec, gnss_synchro_master), true)
+                        << "Failure reading RINEX file";
+                }
         }
     //read measured values
     observables_dump_reader estimated_observables(tracking_ch_vec.size());
@@ -1825,10 +1828,13 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                     measured_obs_vec.at(n).shed_rows(0, index(0));
                 }
 
-            index = arma::find(measured_obs_vec.at(n).col(0) >= true_obs_vec.at(n)(0, 0), 1, "first");
-            if ((index.size() > 0) and (index(0) > 0))
+            if (!FLAGS_duplicated_satellites_test)
                 {
-                    measured_obs_vec.at(n).shed_rows(0, index(0));
+                    index = arma::find(measured_obs_vec.at(n).col(0) >= true_obs_vec.at(n)(0, 0), 1, "first");
+                    if ((index.size() > 0) and (index(0) > 0))
+                        {
+                            measured_obs_vec.at(n).shed_rows(0, index(0));
+                        }
                 }
         }
 

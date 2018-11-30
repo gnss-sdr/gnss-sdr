@@ -19,23 +19,23 @@
 add_subdirectory(supl)
 
 if(OPENSSL_FOUND)
-    add_definitions( -DUSE_OPENSSL_FALLBACK=1 )
-endif(OPENSSL_FOUND)
+    add_definitions(-DUSE_OPENSSL_FALLBACK=1)
+endif()
 
-set(CORE_LIBS_SOURCES 
+set(CORE_LIBS_SOURCES
     ini.cc
     INIReader.cc
     string_converter.cc
     gnss_sdr_supl_client.cc
 )
 
-set(CORE_LIBS_HEADERS 
+set(CORE_LIBS_HEADERS
     ini.h
     INIReader.h
     string_converter.h
     gnss_sdr_supl_client.h
 )
-	
+
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
@@ -57,4 +57,4 @@ target_link_libraries(rx_core_lib supl_library ${PUGIXML_LIBRARY})
 
 if(PUGIXML_LOCAL)
     add_dependencies(rx_core_lib pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION})
-endif(PUGIXML_LOCAL)
+endif()

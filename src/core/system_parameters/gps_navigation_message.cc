@@ -225,6 +225,7 @@ int64_t Gps_Navigation_Message::read_navigation_signed(std::bitset<GPS_SUBFRAME_
     return value;
 }
 
+
 int32_t Gps_Navigation_Message::subframe_decoder(char *subframe)
 {
     int32_t subframe_ID = 0;

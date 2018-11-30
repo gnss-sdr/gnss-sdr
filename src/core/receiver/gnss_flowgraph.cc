@@ -1046,8 +1046,8 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                         }
                 }
             break;
-        case 10:  //request stanby mode
-            LOG(INFO) << "TC request stanby mode";
+        case 10:  // request standby mode
+            LOG(INFO) << "TC request standby mode";
             for (size_t n = 0; n < channels_.size(); n++)
                 {
                     if (channels_state_[n] == 1 or channels_state_[n] == 2)  //channel in acquisition or in tracking
@@ -1100,9 +1100,9 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                             channels_state_[n] = 0;
                         }
                 }
-            acq_channels_count_ = 0;  //all channels are in stanby now
+            acq_channels_count_ = 0;  // all channels are in standby now
             break;
-        case 11:  //request coldstart mode
+        case 11:  // request coldstart mode
             LOG(INFO) << "TC request flowgraph coldstart";
             //start again the satellite acquisitions
             for (unsigned int i = 0; i < channels_count_; i++)
@@ -1131,7 +1131,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                     DLOG(INFO) << "Channel " << ch_index << " in state " << channels_state_[ch_index];
                 }
             break;
-        case 12:  //request hotstart mode
+        case 12:  // request hotstart mode
             LOG(INFO) << "TC request flowgraph hotstart";
             for (unsigned int i = 0; i < channels_count_; i++)
                 {
@@ -1159,7 +1159,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                     DLOG(INFO) << "Channel " << ch_index << " in state " << channels_state_[ch_index];
                 }
             break;
-        case 13:  //request warmstart mode
+        case 13:  // request warmstart mode
             LOG(INFO) << "TC request flowgraph warmstart";
             //start again the satellite acquisitions
             for (unsigned int i = 0; i < channels_count_; i++)

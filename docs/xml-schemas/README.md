@@ -12,14 +12,14 @@ GPS L1 C/A
  - [iono_model.xsd](./iono_model.xsd) - GPS NAV message ionospheric model parameters.
  - [utc_model.xsd](./utc_model.xsd) - GPS NAV message UTC model parameters.
  - [gps_almanac_map.xsd](./gps_almanac_map.xsd) - GPS NAV message almanac.
- 
- 
+
+
 GPS L2C and L5
 --------------
- 
+
  - [cnav_ephemeris_map.xsd](./cnav_ephemeris_map.xsd) - GPS CNAV message ephemeris parameters.
- 
- 
+
+
 Galileo
 -------
 
@@ -31,4 +31,5 @@ Galileo
 -------
 
 Please check https://gnss-sdr.org/docs/sp-blocks/global-parameters/ for more information about the usage of XML files in GNSS-SDR.
- 
+
+You could find useful the utility program [rinex2assist](https://github.com/gnss-sdr/gnss-sdr/tree/next/src/utils/rinex2assist) for the generation of compatible XML files from recent, publicly available RINEX navigation data files.

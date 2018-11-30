@@ -126,8 +126,8 @@ void galileo_e1_gen_float(float* _dest, int* _prn, char _Signal[3])
     const float alpha = sqrt(10.0 / 11.0);
     const float beta = sqrt(1.0 / 11.0);
 
-    int32_t sinboc_11[12 * 4092];  //  _codeLength not accepted by Clang
-    int32_t sinboc_61[12 * 4092];
+    int32_t sinboc_11[12 * 4092] = {0};  //  _codeLength not accepted by Clang
+    int32_t sinboc_61[12 * 4092] = {0};
 
     galileo_e1_sinboc_11_gen_int(sinboc_11, _prn, _codeLength);  //generate sinboc(1,1) 12 samples per chip
     galileo_e1_sinboc_61_gen_int(sinboc_61, _prn, _codeLength);  //generate sinboc(6,1) 12 samples per chip

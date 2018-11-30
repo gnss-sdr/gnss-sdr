@@ -19,10 +19,10 @@
 # Find the library for the USRP Hardware Driver
 ########################################################################
 
-INCLUDE(FindPkgConfig)
-PKG_CHECK_MODULES(PC_UHD uhd)
+include(FindPkgConfig)
+pkg_check_modules(PC_UHD uhd)
 
-FIND_PATH(
+find_path(
     UHD_INCLUDE_DIRS
     NAMES uhd/config.hpp
     HINTS $ENV{UHD_DIR}/include
@@ -32,7 +32,7 @@ FIND_PATH(
           ${GNURADIO_INSTALL_PREFIX}/include
 )
 
-FIND_LIBRARY(
+find_library(
     UHD_LIBRARIES
     NAMES uhd
     HINTS $ENV{UHD_DIR}/lib
@@ -66,6 +66,6 @@ FIND_LIBRARY(
           ${GNURADIO_INSTALL_PREFIX}/lib
 )
 
-INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(UHD DEFAULT_MSG UHD_LIBRARIES UHD_INCLUDE_DIRS)
-MARK_AS_ADVANCED(UHD_LIBRARIES UHD_INCLUDE_DIRS)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(UHD DEFAULT_MSG UHD_LIBRARIES UHD_INCLUDE_DIRS)
+mark_as_advanced(UHD_LIBRARIES UHD_INCLUDE_DIRS)

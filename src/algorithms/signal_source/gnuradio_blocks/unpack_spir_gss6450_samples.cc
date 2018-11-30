@@ -3,6 +3,7 @@
  *
  * \brief Unpacks SPIR int samples
  * \author Antonio Ramos,  antonio(at)cttc.es
+ * \author Javier Arribas jarribas (at) cttc.es
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
@@ -45,10 +46,6 @@ unpack_spir_gss6450_samples::unpack_spir_gss6450_samples(unsigned int adc_nbit) 
 {
     adc_bits = adc_nbit;
     samples_per_int = 16 / adc_bits;
-    i_data.resize(adc_bits, false);
-    q_data.resize(adc_bits, false);
-    adc_bits_two_pow = static_cast<int>(std::exp2(adc_bits));
-    two_compl_thres = adc_bits_two_pow / 2;
 }
 
 
@@ -56,50 +53,87 @@ unpack_spir_gss6450_samples::~unpack_spir_gss6450_samples()
 {
 }
 
-
-int unpack_spir_gss6450_samples::compute_two_complement(unsigned long data)
+void unpack_spir_gss6450_samples::decode_4bits_word(uint32_t input_uint32, gr_complex* out, int adc_bits)
 {
-    int res = 0;
-    if (static_cast<int>(data) < two_compl_thres)
+    int8_t tmp_char;
+    float Q;
+    float I;
+    switch (adc_bits)
         {
-            res = static_cast<int>(data);
-        }
-    else
-        {
-            res = static_cast<int>(data) - adc_bits_two_pow;
-        }
-    return res;
-}
+        case 2:
+            //four bits per complex sample (2 I + 2 Q), 8 samples per int32[s0,s1,s2,s3,s4,s5,s6,s7]
+            for (int i = 0; i < 8; i++)
+                {
+                    tmp_char = input_uint32 & 3;
 
+                    if (tmp_char >= 2)
+                        {
+                            I = (tmp_char - 4);
+                        }
+                    else
+                        {
+                            I = tmp_char;
+                        }
+                    input_uint32 = input_uint32 >> 2;
+                    tmp_char = input_uint32 & 3;
+                    if (tmp_char >= 2)
+                        {
+                            Q = (tmp_char - 4);
+                        }
+                    else
+                        {
+                            Q = tmp_char;
+                        }
+                    input_uint32 = input_uint32 >> 2;
+
+                    out[7 - i] = gr_complex(I, Q);
+                }
+            break;
+        case 4:
+            //eight bits per complex sample (4 I + 4 Q), 4 samples per int32= [s0,s1,s2,s3]
+            for (int i = 0; i < 4; i++)
+                {
+                    tmp_char = input_uint32 & 0x0F;
+
+                    if (tmp_char >= 8)
+                        {
+                            I = (tmp_char - 16);
+                        }
+                    else
+                        {
+                            I = tmp_char;
+                        }
+                    input_uint32 = input_uint32 >> 4;
+                    tmp_char = input_uint32 & 0x0F;
+                    if (tmp_char >= 8)
+                        {
+                            Q = (tmp_char - 16);
+                        }
+                    else
+                        {
+                            Q = tmp_char;
+                        }
+                    input_uint32 = input_uint32 >> 4;
+
+                    out[3 - i] = gr_complex(I, Q);
+                }
+            break;
+        }
+}
 
 int unpack_spir_gss6450_samples::work(int noutput_items,
     gr_vector_const_void_star& input_items, gr_vector_void_star& output_items)
 {
-    const int* in = reinterpret_cast<const int*>(input_items[0]);
+    const int32_t* in = reinterpret_cast<const int32_t*>(input_items[0]);
     gr_complex* out = reinterpret_cast<gr_complex*>(output_items[0]);
-    unsigned int n_sample = 0;
-    unsigned int in_counter = 0;
-    std::bitset<32> bs;
-    for (int i = 0; i < noutput_items; i++)
+    int n_sample = 0;
+    int in_counter = 0;
+    do
         {
-            bs = in[in_counter];
-            int i_shift = adc_bits * 2 * (samples_per_int - n_sample - 1) + adc_bits;
-            int q_shift = adc_bits * 2 * (samples_per_int - n_sample - 1);
-            for (unsigned int k = 0; k < adc_bits; k++)
-                {
-                    i_data[k] = bs[i_shift + k];
-                    q_data[k] = bs[q_shift + k];
-                }
-            //out[i] = gr_complex(static_cast<float>(compute_two_complement(i_data.to_ulong())) + 0.5,
-            //    static_cast<float>(compute_two_complement(q_data.to_ulong())) + 0.5);
-            out[i] = gr_complex(static_cast<float>(compute_two_complement(q_data.to_ulong())) + 0.5,
-                static_cast<float>(compute_two_complement(i_data.to_ulong())) + 0.5);
-            n_sample++;
-            if (n_sample == samples_per_int)
-                {
-                    n_sample = 0;
-                    in_counter++;
-                }
+            decode_4bits_word(in[in_counter++], &out[n_sample], adc_bits);
+            n_sample += samples_per_int;
         }
+    while (n_sample < noutput_items);
+
     return noutput_items;
 }

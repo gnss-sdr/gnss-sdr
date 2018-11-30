@@ -42,38 +42,37 @@ set(ACQ_GR_BLOCKS_HEADERS
 if(ENABLE_FPGA)
     set(ACQ_GR_BLOCKS_SOURCES ${ACQ_GR_BLOCKS_SOURCES} pcps_acquisition_fpga.cc)
     set(ACQ_GR_BLOCKS_HEADERS ${ACQ_GR_BLOCKS_HEADERS} pcps_acquisition_fpga.h)
-endif(ENABLE_FPGA)
+endif()
 
 if(OPENCL_FOUND)
     set(ACQ_GR_BLOCKS_SOURCES ${ACQ_GR_BLOCKS_SOURCES} pcps_opencl_acquisition_cc.cc)
     set(ACQ_GR_BLOCKS_HEADERS ${ACQ_GR_BLOCKS_HEADERS} pcps_opencl_acquisition_cc.h)
-endif(OPENCL_FOUND)
+endif()
 
 include_directories(
-     ${CMAKE_CURRENT_SOURCE_DIR}
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/libs
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${Boost_INCLUDE_DIRS}
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${ARMADILLO_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-     ${VOLK_GNSSSDR_INCLUDE_DIRS}
-     ${MATIO_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+    ${CMAKE_SOURCE_DIR}/src/core/interfaces
+    ${CMAKE_SOURCE_DIR}/src/core/receiver
+    ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/libs
+    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+    ${Boost_INCLUDE_DIRS}
+    ${GLOG_INCLUDE_DIRS}
+    ${GFlags_INCLUDE_DIRS}
+    ${ARMADILLO_INCLUDE_DIRS}
+    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+    ${VOLK_GNSSSDR_INCLUDE_DIRS}
+    ${MATIO_INCLUDE_DIRS}
 )
 
-
 if(OPENCL_FOUND)
-    include_directories( ${OPENCL_INCLUDE_DIRS} )
+    include_directories(${OPENCL_INCLUDE_DIRS})
     if(OS_IS_MACOSX)
-         set(OPT_LIBRARIES ${OPT_LIBRARIES} "-framework OpenCL")
-    else(OS_IS_MACOSX)
-         set(OPT_LIBRARIES ${OPT_LIBRARIES} ${OPENCL_LIBRARIES})
-    endif(OS_IS_MACOSX)
-endif(OPENCL_FOUND)
+        set(OPT_LIBRARIES ${OPT_LIBRARIES} "-framework OpenCL")
+    else()
+        set(OPT_LIBRARIES ${OPT_LIBRARIES} ${OPENCL_LIBRARIES})
+    endif()
+endif()
 
 list(SORT ACQ_GR_BLOCKS_HEADERS)
 list(SORT ACQ_GR_BLOCKS_SOURCES)
@@ -81,11 +80,31 @@ add_library(acq_gr_blocks ${ACQ_GR_BLOCKS_SOURCES} ${ACQ_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${ACQ_GR_BLOCKS_HEADERS})
 
 if(ENABLE_FPGA)
-	target_link_libraries(acq_gr_blocks acquisition_lib gnss_sp_libs gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${VOLK_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${OPT_LIBRARIES} ${OPT_ACQUISITION_LIBRARIES})
-else(ENABLE_FPGA)
-	target_link_libraries(acq_gr_blocks gnss_sp_libs gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${VOLK_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${OPT_LIBRARIES} ${OPT_ACQUISITION_LIBRARIES} ${MATIO_LIBRARIES})
-endif(ENABLE_FPGA)
+    target_link_libraries(acq_gr_blocks
+        acquisition_lib
+        gnss_sp_libs
+        gnss_system_parameters
+        ${GNURADIO_RUNTIME_LIBRARIES}
+        ${GNURADIO_FFT_LIBRARIES}
+        ${VOLK_LIBRARIES}
+        ${VOLK_GNSSSDR_LIBRARIES}
+        ${OPT_LIBRARIES}
+        ${OPT_ACQUISITION_LIBRARIES}
+    )
+else()
+    target_link_libraries(acq_gr_blocks
+        gnss_sp_libs
+        gnss_system_parameters
+        ${GNURADIO_RUNTIME_LIBRARIES}
+        ${GNURADIO_FFT_LIBRARIES}
+        ${VOLK_LIBRARIES}
+        ${VOLK_GNSSSDR_LIBRARIES}
+        ${OPT_LIBRARIES}
+        ${MATIO_LIBRARIES}
+        ${OPT_ACQUISITION_LIBRARIES}
+    )
+endif()
 
-if(NOT VOLK_GNSSSDR_FOUND)
+if(NOT VOLKGNSSSDR_FOUND)
     add_dependencies(acq_gr_blocks volk_gnsssdr_module)
-endif(NOT VOLK_GNSSSDR_FOUND)
+endif()

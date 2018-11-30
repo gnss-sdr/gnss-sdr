@@ -15,10 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 
-INCLUDE(FindPkgConfig)
-PKG_CHECK_MODULES(PC_IIO gnuradio-iio)
+include(FindPkgConfig)
+pkg_check_modules(PC_IIO gnuradio-iio)
 
-FIND_PATH(
+find_path(
     IIO_INCLUDE_DIRS
     NAMES gnuradio/iio/api.h
     HINTS $ENV{IIO_DIR}/include
@@ -28,7 +28,7 @@ FIND_PATH(
           /usr/include
 )
 
-FIND_LIBRARY(
+find_library(
     IIO_LIBRARIES
     NAMES gnuradio-iio
     HINTS $ENV{IIO_DIR}/lib
@@ -63,6 +63,6 @@ FIND_LIBRARY(
           /usr/lib/sh4-linux-gnu
 )
 
-INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(IIO DEFAULT_MSG IIO_LIBRARIES IIO_INCLUDE_DIRS)
-MARK_AS_ADVANCED(IIO_LIBRARIES IIO_INCLUDE_DIRS)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(GRIIO DEFAULT_MSG IIO_LIBRARIES IIO_INCLUDE_DIRS)
+mark_as_advanced(IIO_LIBRARIES IIO_INCLUDE_DIRS)

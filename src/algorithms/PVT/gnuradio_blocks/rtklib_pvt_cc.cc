@@ -953,15 +953,15 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
 
             // Save BeiDou UTC model parameters
             file_name = xml_base_path + "bds_dnav_utc_model.xml";
-            if (d_pvt_solver->bds_dnav_utc_model.valid)
+            if (d_pvt_solver->beidou_dnav_utc_model.valid)
                 {
                     std::ofstream ofs;
                     try
                         {
                             ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
                             boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_utc_model", d_pvt_solver->bds_dnav_utc_model);
-                            LOG(INFO) << "Saved GPS UTC model parameters";
+                            xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_utc_model", d_pvt_solver->beidou_dnav_utc_model);
+                            LOG(INFO) << "Saved BeiDou DNAV UTC model parameters";
                         }
                     catch (std::exception& e)
                         {
@@ -1555,7 +1555,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                         case 50:  // BDS B1I only
                                                             if (beidou_dnav_ephemeris_iter != d_pvt_solver->beidou_dnav_ephemeris_map.cend())
                                                                 {
-                                                                    rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time);
+                                                                    rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B1");
                                                                     rp->rinex_nav_header(rp->navFile, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
                                                                     b_rinex_header_written = true;  // do not write header anymore
                                                                 }
@@ -1942,7 +1942,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 case 50:  // BDS B1I only
                                                                     if (beidou_dnav_ephemeris_iter != d_pvt_solver->beidou_dnav_ephemeris_map.cend())
                                                                         {
-                                                                            rp->log_rinex_obs(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, gnss_observables_map);
+                                                                            rp->log_rinex_obs(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, gnss_observables_map, "B1");
                                                                         }
                                                                     if (!b_rinex_header_updated and (d_pvt_solver->beidou_dnav_utc_model.d_A0 != 0))
                                                                         {

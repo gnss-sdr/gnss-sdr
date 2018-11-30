@@ -589,12 +589,16 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 	if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
 	{
 		baseband_sampling_freq_acquisition = baseband_sampling_freq/4;	// downsampling filter in L1/E1
-		printf(" aaaaaa baseband_sampling_freq_acquisition = %d\n", baseband_sampling_freq_acquisition);
+		//printf(" aaaaaa baseband_sampling_freq_acquisition = %d\n", baseband_sampling_freq_acquisition);
 	}
 	else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
 	{
 		baseband_sampling_freq_acquisition = baseband_sampling_freq/4;  // downsampling filter in L1/E1
-		printf(" aaaaaa baseband_sampling_freq_acquisition = %d\n", baseband_sampling_freq_acquisition);
+		//printf(" aaaaaa baseband_sampling_freq_acquisition = %d\n", baseband_sampling_freq_acquisition);
+	}
+	else
+	{
+		baseband_sampling_freq_acquisition = baseband_sampling_freq;
 	}
 
 	// 1. Setup GNU Radio flowgraph (file_source -> Acquisition_10m)
@@ -614,8 +618,8 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 
     config->set_property("Acquisition.item_type", "cshort");
     config->set_property("Acquisition.if", "0");
-    config->set_property("Acquisition.sampled_ms", "4");
-    config->set_property("Acquisition.select_queue_Fpga", "0");
+    //config->set_property("Acquisition.sampled_ms", "4");
+    //config->set_property("Acquisition.select_queue_Fpga", "0");
     config->set_property("Acquisition.devicename", "/dev/uio0");
 
     if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
@@ -632,7 +636,10 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 
     if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
         {
-            tmp_gnss_synchro.System = 'G';
+    		config->set_property("Acquisition.sampled_ms", "1");
+    		config->set_property("Acquisition.select_queue_Fpga", "0");
+
+    		tmp_gnss_synchro.System = 'G';
             std::string signal = "1C";
             const char* str = signal.c_str();                                  // get a C style null terminated string
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
@@ -649,6 +656,9 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 
     else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
         {
+    		config->set_property("Acquisition.sampled_ms", "4");
+    		config->set_property("Acquisition.select_queue_Fpga", "0");
+
             tmp_gnss_synchro.System = 'E';
             std::string signal = "1B";
             const char* str = signal.c_str();                                  // get a C style null terminated string
@@ -667,6 +677,8 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
         }
     else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
         {
+    		config->set_property("Acquisition.sampled_ms", "1");
+    		config->set_property("Acquisition.select_queue_Fpga", "1");
             tmp_gnss_synchro.System = 'E';
             std::string signal = "5X";
             const char* str = signal.c_str();                                  // get a C style null terminated string
@@ -684,6 +696,9 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
         }
     else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
         {
+    		config->set_property("Acquisition.sampled_ms", "1");
+    		config->set_property("Acquisition.select_queue_Fpga", "1");
+    		printf("CORRECT L5 A!!!\n");
             tmp_gnss_synchro.System = 'G';
             std::string signal = "L5";
             const char* str = signal.c_str();                                  // get a C style null terminated string
@@ -739,6 +754,7 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
     }
     else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
     {
+    	printf("CORRECT L5 B!!!\n");
     	top_block->msg_connect(acquisition_GpsL5_Fpga->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }
 
@@ -794,6 +810,7 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 	    }
 	    else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
 	    {
+	    	printf("CORRECT L5 C !!!!");
 	        code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L5i_CODE_RATE_HZ / static_cast<double>(GPS_L5i_CODE_LENGTH_CHIPS))));
 	    	nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
 	    }
@@ -830,6 +847,7 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 			}
 			else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
 			{
+
 				acquisition_GpsL5_Fpga->set_single_doppler_flag(1);
 			}
 
@@ -1326,6 +1344,7 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 						start_msg = false;
 					}
 
+				//printf("wait for DMA to finish\n");
 				// wait for the child DMA process to finish
 				pthread_join(thread_DMA, NULL);
 
@@ -1620,7 +1639,7 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
 	unsigned int fft_size = pow(2, nbits);
 
 
-	printf("####################################\n");
+	//printf("####################################\n");
     for (unsigned int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
         {
             std::vector<double> pull_in_results_v;
@@ -1641,8 +1660,12 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                             //simulate Code Delay error in acquisition
                             gnss_synchro.Acq_delay_samples = true_acq_delay_samples + (acq_delay_error_chips_values.at(current_acq_doppler_error_idx).at(current_acq_code_error_idx) / GPS_L1_CA_CODE_RATE_HZ) * static_cast<double>(baseband_sampling_freq);
 
-
-
+                            // debug
+                            //printf("forcing data\n");
+                            //gnss_synchro.Acq_samplestamp_samples = 37500;
+                            //gnss_synchro.Acq_delay_samples = 2933;
+							//printf("acq_samplestamp_samples = %d\n", (int)gnss_synchro.Acq_samplestamp_samples);
+							//printf("true_acq_delay_samples = %d\n", (int)gnss_synchro.Acq_delay_samples);
 
 
                             //create flowgraph

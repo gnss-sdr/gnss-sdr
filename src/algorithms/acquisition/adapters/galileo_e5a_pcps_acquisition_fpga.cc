@@ -51,19 +51,19 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     //printf("creating the E5A acquisition");
     pcpsconf_fpga_t acq_parameters;
     configuration_ = configuration;
-    std::string default_item_type = "cshort";
+    //std::string default_item_type = "cshort";
     std::string default_dump_filename = "../data/acquisition.dat";
 
     DLOG(INFO) << "Role " << role;
 
     //item_type_ = configuration_->property(role + ".item_type", default_item_type);
 
-    long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 32000000);
+    long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 12500000);
     long fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
 
     float downsampling_factor = configuration_->property("GNSS-SDR.downsampling_factor", 1.0);
     acq_parameters.downsampling_factor = downsampling_factor;
-
+    printf("downsampling_factor = %f\n", downsampling_factor);
     fs_in = fs_in/downsampling_factor;
 
     acq_parameters.fs_in = fs_in;
@@ -103,9 +103,11 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     float nbits = ceilf(log2f((float)code_length*2));
     unsigned int nsamples_total = pow(2, nbits);
     unsigned int vector_length = nsamples_total;
+    printf("code_length = %d\n", code_length);
+    printf("vector_length = %d\n", vector_length);
     unsigned int select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga", 1);
     printf("select queue = %d\n", select_queue_Fpga);
-    //printf("select_queue_Fpga = %d\n", select_queue_Fpga);
+    //printf("acq adapter select_queue_Fpga = %d\n", select_queue_Fpga);
     acq_parameters.select_queue_Fpga = select_queue_Fpga;
     std::string default_device_name = "/dev/uio0";
     std::string device_name = configuration_->property(role + ".devicename", default_device_name);
@@ -126,6 +128,8 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     //printf("creating the E5A acquisition CONT");
     //printf("nsamples_total = %d\n", nsamples_total);
 
+    printf("number of codes = %d\n", Galileo_E5a_NUMBER_OF_CODES);
+
     for (unsigned int PRN = 1; PRN <= Galileo_E5a_NUMBER_OF_CODES; PRN++)
         {
             //    gr_complex* code = new gr_complex[code_length_];
@@ -133,14 +137,17 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
 
             if (acq_iq_)
                 {
+            		//printf("aaaaaaaaaaaaa\n");
                     strcpy(signal_, "5X");
                 }
             else if (acq_pilot_)
                 {
+            	//printf("bbbbbbbbbbbbb\n");
                     strcpy(signal_, "5Q");
                 }
             else
                 {
+            		//printf("cccccccccccc\n");
                     strcpy(signal_, "5I");
                 }
 
@@ -180,6 +187,9 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
                 {
                     d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 9) - 1) / max)),
                         static_cast<int>(floor(fft_codes_padded[i].imag() * (pow(2, 9) - 1) / max)));
+
+                    //d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t((2^3)*static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 6) - 1) / max)),
+                    //    (2^3)*static_cast<int>(floor(fft_codes_padded[i].imag() * (pow(2, 6) - 1) / max)));
                 }
         }
 
@@ -217,7 +227,7 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     //acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters);
     //DLOG(INFO) << "acquisition(" << acquisition_fpga_->unique_id() << ")";
 
-    acq_parameters.total_block_exp = 9;
+    acq_parameters.total_block_exp = 10;
 
     acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters);
     DLOG(INFO) << "acquisition(" << acquisition_fpga_->unique_id() << ")";

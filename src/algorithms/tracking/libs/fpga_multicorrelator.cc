@@ -423,6 +423,7 @@ void fpga_multicorrelator_8sc::fpga_configure_tracking_gps_local_code(int32_t PR
     //printf("kkk select_fpga_correlator = %x\n", select_fpga_correlator);
 
     d_map_base[d_PROG_MEMS_ADDR] = LOCAL_CODE_FPGA_CLEAR_ADDRESS_COUNTER;
+    //printf("trk lib d_code_length_chips = %d, d_code_samples_per_chip = %d\n", d_code_length_chips, d_code_samples_per_chip);
     for (k = 0; k < d_code_length_chips * d_code_samples_per_chip; k++)
         {
             //if (d_local_code_in[k] == 1)
@@ -708,6 +709,7 @@ void fpga_multicorrelator_8sc::unlock_channel(void)
     // unlock the channel to let the next samples go through
     //printf("www writing 1 to d map base %d = drop samples\n", d_DROP_SAMPLES_REG_ADDR);
     d_map_base[d_DROP_SAMPLES_REG_ADDR] = 1;  // unlock the channel
+    d_map_base[23] = 1;						// set the tracking module back to idle
 }
 
 void fpga_multicorrelator_8sc::close_device()

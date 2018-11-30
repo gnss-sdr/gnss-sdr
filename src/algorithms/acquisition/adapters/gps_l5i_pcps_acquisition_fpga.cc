@@ -54,7 +54,7 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     //printf("L5 ACQ CLASS CREATED\n");
     pcpsconf_fpga_t acq_parameters;
     configuration_ = configuration;
-    std::string default_item_type = "cshort";
+    //std::string default_item_type = "cshort";
     std::string default_dump_filename = "./data/acquisition.dat";
 
     LOG(INFO) << "role " << role;
@@ -101,7 +101,10 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     unsigned int nsamples_total = pow(2, nbits);
     unsigned int vector_length = nsamples_total;
     unsigned int select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga", 1);
+    printf("code_length = %d\n", (int)  code_length);
+    printf("vector length = %d\n", (int) vector_length);
     printf("select queue = %d\n", select_queue_Fpga);
+    printf("sampled_ms = %d\n", sampled_ms);
     acq_parameters.select_queue_Fpga = select_queue_Fpga;
     std::string default_device_name = "/dev/uio0";
     std::string device_name = configuration_->property(role + ".devicename", default_device_name);

@@ -79,7 +79,7 @@ pcps_acquisition_fpga::pcps_acquisition_fpga(pcpsconf_fpga_t conf_) : gr::block(
     d_single_doppler_flag = false;
 
     d_downsampling_factor = acq_parameters.downsampling_factor;
-    //printf("AAAAAAAAAA downsampling_factor = %f\n", d_downsampling_factor);
+    //printf("CONSTRUCTOR downsampling_factor = %d\n", (int) d_downsampling_factor);
     d_select_queue_Fpga = acq_parameters.select_queue_Fpga;
     //printf("zzzz acq_parameters.code_length = %d\n", acq_parameters.code_length);
     //printf("zzzz acq_parameters.samples_per_ms = %d\n", acq_parameters.samples_per_ms);
@@ -238,6 +238,8 @@ void pcps_acquisition_fpga::set_active(bool active)
     d_input_power = 0.0;
     d_mag = 0.0;
 
+    int32_t doppler;
+
     DLOG(INFO) << "Channel: " << d_channel
                << " , doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
                << " ,sample stamp: " << d_sample_counter << ", threshold: "
@@ -265,21 +267,55 @@ void pcps_acquisition_fpga::set_active(bool active)
     //printf("LAUNCH ACQ\n");
     //printf("acq lib d_num_doppler_bins = %d\n", d_num_doppler_bins);
     //printf("writing config for channel %d -----------------------------------------\n", (int) d_channel);
+
+
+    //printf("d_downsampling_factor = %f\n", d_downsampling_factor);
+
+    //printf("acq_parameters.code_length = %d\n", (int) acq_parameters.code_length);
+        // debug
+//        if (acq_parameters.code_length == 12500)
+//        {
+//        	acquisition_fpga->configure_acquisition_debug();
+//        	acquisition_fpga->set_doppler_sweep(d_num_doppler_bins);
+//        	acquisition_fpga->write_local_code();
+//        	acquisition_fpga->set_block_exp(d_total_block_exp);
+//
+//        	acquisition_fpga->run_acquisition();
+//            acquisition_fpga->read_acquisition_results(&indext, &firstpeak, &secondpeak, &initial_sample, &d_input_power, &d_doppler_index, &total_block_exp);
+//
+//        	doppler = 0;
+//        	d_test_statistics = 0;
+//        }
+//        else
+//        {
+
+
+
     acquisition_fpga->configure_acquisition();
     acquisition_fpga->set_doppler_sweep(d_num_doppler_bins);
+
+
 
     //printf("d_num_doppler_bins = %d\n", (int) d_num_doppler_bins);
     acquisition_fpga->write_local_code();
 
+
+
     //acquisition_fpga->set_doppler_sweep(2);
     //printf("acq lib going to launch acquisition\n");
     acquisition_fpga->set_block_exp(d_total_block_exp);
+
+
+
 
     //printf("running acq for channel %d\n", (int) d_channel);
 
     acquisition_fpga->run_acquisition();
     //printf("acq lib going to read the acquisition results\n");
     //read_acquisition_results(&indext, &firstpeak, &secondpeak, &initial_sample, &d_input_power, &d_doppler_index);
+
+
+
 
     //printf("reading results for channel %d\n", (int) d_channel);
     acquisition_fpga->read_acquisition_results(&indext, &firstpeak, &secondpeak, &initial_sample, &d_input_power, &d_doppler_index, &total_block_exp);
@@ -288,12 +324,26 @@ void pcps_acquisition_fpga::set_active(bool active)
 
     //printf("gnuradio block : d_total_block_exp = %d total_block_exp = %d\n", (int) d_total_block_exp, (int) total_block_exp);
 
+
+
+
     if (total_block_exp > d_total_block_exp)
     {
     	printf("changing blk exp..... d_total_block_exp = %d total_block_exp = %d chan = %d\n", d_total_block_exp, total_block_exp, d_channel);
+    	//getchar();
     	d_total_block_exp = total_block_exp;
 
     }
+
+
+//    // debug
+//    if (acq_parameters.code_length == 12500)
+//    {
+//    	doppler = 0;
+//    	d_test_statistics = 0;
+//    }
+//    else
+//    {
 
     //printf("end channel %d -----------------------------------------------------\n", (int) d_channel);
     //printf("READ ACQ RESULTS\n");
@@ -305,7 +355,7 @@ void pcps_acquisition_fpga::set_active(bool active)
     //usleep(5000000);
     //} // end while test
 
-    int32_t doppler;
+    //int32_t doppler;
 
     // NEW SATELLITE DETECTION ALGORITHM STARTS HERE ----------------------------------------------------
 
@@ -327,6 +377,9 @@ void pcps_acquisition_fpga::set_active(bool active)
 	{
 		d_test_statistics = 0.0;
 	}
+
+
+//    } // debug condition
 
 //    // OLD SATELLITE DETECTION ALGORITHM STARTS HERE ----------------------------------------------------
 //

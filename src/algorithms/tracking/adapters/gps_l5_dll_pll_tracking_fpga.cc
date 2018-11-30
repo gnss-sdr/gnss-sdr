@@ -62,7 +62,7 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
     //################# CONFIGURATION PARAMETERS ########################
     //std::string default_item_type = "gr_complex";
     //std::string item_type = configuration->property(role + ".item_type", default_item_type);
-    int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
+    int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 12500000);
     int fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     trk_param_fpga.fs_in = fs_in;
     bool dump = configuration->property(role + ".dump", false);
@@ -86,6 +86,7 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
     trk_param_fpga.early_late_space_chips = early_late_space_chips;
     int vector_length = std::round(static_cast<double>(fs_in) / (static_cast<double>(GPS_L5i_CODE_RATE_HZ) / static_cast<double>(GPS_L5i_CODE_LENGTH_CHIPS)));
     trk_param_fpga.vector_length = vector_length;
+    printf("trk vector length = %d\n", vector_length);
     int extend_correlation_symbols = configuration->property(role + ".extend_correlation_symbols", 1);
     float early_late_space_narrow_chips = configuration->property(role + ".early_late_space_narrow_chips", 0.15);
     trk_param_fpga.early_late_space_narrow_chips = early_late_space_narrow_chips;
@@ -121,11 +122,12 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
     int max_lock_fail = configuration->property(role + ".max_lock_fail", 50);
     if (FLAGS_max_lock_fail != 50) max_lock_fail = FLAGS_max_lock_fail;
     trk_param_fpga.max_lock_fail = max_lock_fail;
-    double carrier_lock_th = configuration->property(role + ".carrier_lock_th", 0.85);
+    double carrier_lock_th = configuration->property(role + ".carrier_lock_th", 0.75);
     if (FLAGS_carrier_lock_th != 0.85) carrier_lock_th = FLAGS_carrier_lock_th;
     trk_param_fpga.carrier_lock_th = carrier_lock_th;
 
     // FPGA configuration parameters
+
     std::string default_device_name = "/dev/uio";
     std::string device_name = configuration->property(role + ".devicename", default_device_name);
     trk_param_fpga.device_name = device_name;
@@ -133,7 +135,6 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
     trk_param_fpga.device_base = device_base;
     //unsigned int multicorr_type = configuration->property(role + ".multicorr_type", 0);
     trk_param_fpga.multicorr_type = 0;  //multicorr_type : 0 -> 3 correlators, 1 -> 5 correlators
-
     //################# PRE-COMPUTE ALL THE CODES #################
     unsigned int code_samples_per_chip = 1;
     unsigned int code_length_chips = static_cast<unsigned int>(GPS_L5i_CODE_LENGTH_CHIPS);
@@ -178,12 +179,29 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
                     gps_l5i_code_gen_float(tracking_code, PRN);
                     for (unsigned int s = 0; s < code_length_chips; s++)
                         {
-                            d_ca_codes[static_cast<int>(code_length_chips) * (PRN - 1) + s] = static_cast<int>(data_code[s]);
+                            d_ca_codes[static_cast<int>(code_length_chips) * (PRN - 1) + s] = static_cast<int>(tracking_code[s]);
+
+//                            if (d_ca_codes[static_cast<int>(code_length_chips) * (PRN - 1) + s] == -1)
+//                            {
+//                            	d_ca_codes[static_cast<int>(code_length_chips) * (PRN - 1) + s] = 1;
+//                            }
+//                            else
+//                            {
+//                            	d_ca_codes[static_cast<int>(code_length_chips) * (PRN - 1) + s] = 0;
+//                            }
+ //                           printf("tracking_code[%d] = %f\n", s, tracking_code[s]);
+ //                           printf("d_ca_codes[%d] = %d\n", static_cast<int>(code_length_chips) * (PRN - 1) + s, d_ca_codes[static_cast<int>(code_length_chips) * (PRN - 1) + s]);
                             //printf("%f %d | ", ca_codes_f[s], d_ca_codes[static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS)* 2 * (PRN - 1) + s]);
+                        	//printf("d_ca_codes[%d] = %d\n", static_cast<int>(code_length_chips) * (PRN - 1) + s, d_ca_codes[static_cast<int>(code_length_chips) * (PRN - 1) + s]);
+
+
                         }
                 }
         }
     //printf("end \n");
+
+
+
 
 
     delete[] tracking_code;

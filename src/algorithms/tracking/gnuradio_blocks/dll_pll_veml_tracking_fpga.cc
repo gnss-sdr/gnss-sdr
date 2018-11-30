@@ -498,8 +498,12 @@ void dll_pll_veml_tracking_fpga::start_tracking()
 
     d_acq_code_phase_samples = corrected_acq_phase_samples;
 
+
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
     d_carrier_phase_step_rad = PI_2 * d_carrier_doppler_hz / trk_parameters.fs_in;
+
+    //printf("d_carrier_doppler_hz = %f\n", d_carrier_doppler_hz);
+    //printf("d_carrier_phase_step_rad = %f\n", d_carrier_phase_step_rad);
 
     // DLL/PLL filter initialization
     d_carrier_loop_filter.initialize();  // initialize the carrier filter
@@ -693,8 +697,10 @@ bool dll_pll_veml_tracking_fpga::cn0_and_tracking_lock_status(double coh_integra
 {
     //printf("kkkkkkkkkkkkk d_cn0_estimation_counter = %d\n", d_cn0_estimation_counter);
     //printf("trk_parameters.cn0_samples = %d\n", trk_parameters.cn0_samples);
-
+//	printf("trk_parameters.cn0_samples = %d\n", trk_parameters.cn0_samples);
+//	printf("d_cn0_estimation_counter = %d\n", d_cn0_estimation_counter);
     // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
+
     if (d_cn0_estimation_counter < trk_parameters.cn0_samples)
         {
             // fill buffer with prompt correlator output values
@@ -708,6 +714,9 @@ bool dll_pll_veml_tracking_fpga::cn0_and_tracking_lock_status(double coh_integra
             d_cn0_estimation_counter = 0;
             // Code lock indicator
             d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, trk_parameters.cn0_samples, coh_integration_time_s);
+
+
+
             // Carrier lock indicator
             d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, trk_parameters.cn0_samples);
             // Loss of lock detection
@@ -717,6 +726,14 @@ bool dll_pll_veml_tracking_fpga::cn0_and_tracking_lock_status(double coh_integra
             //printf("trk_parameters.cn0_min = %f\n", trk_parameters.cn0_min);
             //printf("d_carrier_lock_fail_counter = %d\n", d_carrier_lock_fail_counter);
             //printf("trk_parameters.max_lock_fail = %d\n", trk_parameters.max_lock_fail);
+
+//            printf("d_CN0_SNV_dB_Hz = %f\n", d_CN0_SNV_dB_Hz);
+//        	printf("d_carrier_lock_threshold = %f\n", d_carrier_lock_threshold);
+//        	printf("trk_parameters.cn0_min = %d\n", trk_parameters.cn0_min);
+//        	printf("trk_parameters.cn0_samples = %d\n", trk_parameters.cn0_samples);
+//        	printf("d_carrier_lock_test = %f\n", d_carrier_lock_test);
+//        	printf("d_carrier_lock_threshold = %f\n", d_carrier_lock_threshold);
+
             if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < trk_parameters.cn0_min)
                 {
                     d_carrier_lock_fail_counter++;
@@ -1299,6 +1316,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
             }
         case 1:  // Standby - Consume samples at full throttle, do nothing
             {
+            	//printf("d_state = 1\n");
                 d_pull_in = 0;
                 multicorrelator_fpga->lock_channel();
                 uint64_t counter_value = multicorrelator_fpga->read_sample_counter();
@@ -1340,6 +1358,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
 
         case 2:
             {
+            	//printf("d_state = 2\n");
             	//printf("trk state 2 counter value = %" PRIu64 "\n", multicorrelator_fpga->read_sample_counter());
                 d_sample_counter = d_sample_counter_next;
                 d_sample_counter_next = d_sample_counter + static_cast<uint64_t>(d_current_prn_length_samples);
@@ -1393,6 +1412,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                                 d_Prompt_buffer_deque.push_back(*d_Prompt);
                                 if (d_Prompt_buffer_deque.size() == d_secondary_code_length)
                                     {
+                                		//printf("Secondary code lock\n");
                                         next_state = acquire_secondary();
                                         if (next_state)
                                             {
@@ -1556,6 +1576,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                                     }
                                 else
                                     {
+                                		//printf(" do not enable extended integration\n");
                                         d_state = 4;
                                     }
                             }
@@ -1566,6 +1587,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
 
         case 3:
             {
+            	//printf("d_state = 3\n");
             	//printf("trk state 3 counter value = %" PRIu64 "\n", multicorrelator_fpga->read_sample_counter());
                 d_sample_counter = d_sample_counter_next;
                 d_sample_counter_next = d_sample_counter + static_cast<uint64_t>(d_current_prn_length_samples);
@@ -1638,6 +1660,8 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                     d_rem_code_phase_chips * static_cast<float>(d_code_samples_per_chip), d_code_phase_step_chips * static_cast<float>(d_code_samples_per_chip),
                     d_current_prn_length_samples);
 
+                //printf("d_cloop = %d\n", d_cloop);
+                //printf("trk_parameters.extend_correlation_symbols = %d\n", trk_parameters.extend_correlation_symbols);
                 save_correlation_results();
 
                 // check lock status
@@ -1652,6 +1676,8 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                         update_tracking_vars();
 
                         // ########### Output the tracking results to Telemetry block ##########
+                        //printf("state 4 interchange_iq = %d\n", interchange_iq);
+                        //printf("state 4 trk_parameters.track_pilot = %d\n", trk_parameters.track_pilot);
                         if (interchange_iq)
                             {
                                 if (trk_parameters.track_pilot)

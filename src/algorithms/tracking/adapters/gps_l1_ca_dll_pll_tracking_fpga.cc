@@ -142,6 +142,11 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
             gps_l1_ca_code_gen_int(&d_ca_codes[(int(GPS_L1_CA_CODE_LENGTH_CHIPS)) * (PRN - 1)], PRN, 0);
+            // debug
+//            for (int kk=0;kk<int(GPS_L1_CA_CODE_LENGTH_CHIPS);kk++)
+//            {
+//            	printf("d_ca_codes[%d] = %d\n", (int(GPS_L1_CA_CODE_LENGTH_CHIPS)) * (PRN - 1) + kk , d_ca_codes[(int(GPS_L1_CA_CODE_LENGTH_CHIPS)) * (PRN - 1) + kk]);
+//            }
         }
     trk_param_fpga.ca_codes = d_ca_codes;
     trk_param_fpga.code_length_chips = GPS_L1_CA_CODE_LENGTH_CHIPS;

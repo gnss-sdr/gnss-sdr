@@ -140,6 +140,8 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     float* ca_codes_f;
     float* data_codes_f;
 
+
+    printf("trk_param_fpga.track_pilot = %d\n", trk_param_fpga.track_pilot);
     if (trk_param_fpga.track_pilot)
         {
             d_data_codes = static_cast<int*>(volk_gnsssdr_malloc((static_cast<unsigned int>(Galileo_E1_B_CODE_LENGTH_CHIPS)) * code_samples_per_chip * Galileo_E1_NUMBER_OF_CODES * sizeof(int), volk_gnsssdr_get_alignment()));
@@ -154,6 +156,8 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     //printf("pppppppp trk_param_fpga.track_pilot = %d\n", trk_param_fpga.track_pilot);
 
     //int kk;
+
+
 
     for (unsigned int PRN = 1; PRN <= Galileo_E1_NUMBER_OF_CODES; PRN++)
         {
@@ -170,6 +174,9 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
                             d_ca_codes[static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS) * 2 * (PRN - 1) + s] = static_cast<int>(ca_codes_f[s]);
                             d_data_codes[static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS) * 2 * (PRN - 1) + s] = static_cast<int>(data_codes_f[s]);
                             //printf("%f %d | ", data_codes_f[s], d_data_codes[static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS)* 2 * (PRN - 1) + s]);
+                            //printf("data_codes_f[%d] = %f\n", s, data_codes_f[s]);
+                            //printf("d_ca_codes[%d] = %d\n", static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS) * 2 * (PRN - 1) + s, d_data_codes[static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS) * 2 * (PRN - 1) + s]);
+
                         }
                     //printf("\n next \n");
                     //scanf ("%d",&kk);
@@ -183,6 +190,7 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
                         {
                             d_ca_codes[static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS) * 2 * (PRN - 1) + s] = static_cast<int>(ca_codes_f[s]);
                             //printf("%f %d | ", ca_codes_f[s], d_ca_codes[static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS)* 2 * (PRN - 1) + s]);
+
                         }
                     //printf("\n next \n");
                     //scanf ("%d",&kk);

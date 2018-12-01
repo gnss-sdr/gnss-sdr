@@ -18,27 +18,31 @@
 include(FindPkgConfig)
 pkg_check_modules(PC_TELEORBIT teleorbit)
 
-find_path(
-    TELEORBIT_INCLUDE_DIRS
+find_path(TELEORBIT_INCLUDE_DIRS
     NAMES teleorbit/api.h
     HINTS $ENV{TELEORBIT_DIR}/include
-        ${PC_TELEORBIT_INCLUDEDIR}
+          ${PC_TELEORBIT_INCLUDEDIR}
     PATHS ${CMAKE_INSTALL_PREFIX}/include
           /usr/local/include
           /usr/include
+          ${TELEORBIT_ROOT}/include
+          $ENV{TELEORBIT_ROOT}/include
 )
 
-find_library(
-    TELEORBIT_LIBRARIES
+find_library(TELEORBIT_LIBRARIES
     NAMES gnuradio-teleorbit
     HINTS $ENV{TELEORBIT_DIR}/lib
-        ${PC_TELEORBIT_LIBDIR}
+          ${PC_TELEORBIT_LIBDIR}
     PATHS ${CMAKE_INSTALL_PREFIX}/lib
           ${CMAKE_INSTALL_PREFIX}/lib64
           /usr/local/lib
           /usr/local/lib64
           /usr/lib
           /usr/lib64
+          ${TELEORBIT_ROOT}/lib
+          $ENV{TELEORBIT_ROOT}/lib
+          ${TELEORBIT_ROOT}/lib64
+          $ENV{TELEORBIT_ROOT}/lib64
 )
 
 include(FindPackageHandleStandardArgs)

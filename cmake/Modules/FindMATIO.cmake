@@ -60,10 +60,24 @@
 #
 
 # Look for the header file.
-find_path(MATIO_INCLUDE_DIR NAMES matio.h DOC "The MATIO include directory")
+find_path(MATIO_INCLUDE_DIR
+    NAMES matio.h
+    HINTS
+      ${MATIO_ROOT}/include
+      $ENV{MATIO_ROOT}/include
+    DOC "The MATIO include directory"
+)
 
 # Look for the library.
-find_library(MATIO_LIBRARY NAMES matio DOC "The MATIO library")
+find_library(MATIO_LIBRARY
+    NAMES matio
+    HINTS
+      ${MATIO_ROOT}/lib
+      $ENV{MATIO_ROOT}/lib
+      ${MATIO_ROOT}/lib64
+      $ENV{MATIO_ROOT}/lib64
+    DOC "The MATIO library"
+)
 
 if(MATIO_INCLUDE_DIR)
     # ---------------------------------------------------

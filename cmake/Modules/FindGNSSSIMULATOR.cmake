@@ -17,11 +17,14 @@
 
 find_program(SW_GENERATOR_BIN gnss_sim
     PATHS /usr/bin
-        /usr/local/bin
-        /opt/local/bin
-        ${CMAKE_INSTALL_PREFIX}/bin
-    PATH_SUFFIXES bin)
+          /usr/local/bin
+          /opt/local/bin
+          ${CMAKE_INSTALL_PREFIX}/bin
+          ${GNSSSIMULATOR_ROOT}/bin
+          $ENV{GNSSSIMULATOR_ROOT}/bin
+    PATH_SUFFIXES bin
+)
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(GNSSSIMULATOR  DEFAULT_MSG  SW_GENERATOR_BIN)
+find_package_handle_standard_args(GNSSSIMULATOR DEFAULT_MSG SW_GENERATOR_BIN)
 mark_as_advanced(SW_GENERATOR_BIN)

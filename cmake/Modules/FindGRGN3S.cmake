@@ -30,6 +30,8 @@ find_path(
     PATHS ${CMAKE_INSTALL_PREFIX}/include
           /usr/local/include
           /usr/include
+          ${GRGN3S_ROOT}/include
+          $ENV{GRGN3S_ROOT}/include
 )
 
 find_library(
@@ -43,6 +45,10 @@ find_library(
           /usr/local/lib64
           /usr/lib
           /usr/lib64
+          ${GRGN3S_ROOT}/lib
+          $ENV{GRGN3S_ROOT}/lib
+          ${GRGN3S_ROOT}/lib64
+          $ENV{GRGN3S_ROOT}/lib64
 )
 
 include(FindPackageHandleStandardArgs)

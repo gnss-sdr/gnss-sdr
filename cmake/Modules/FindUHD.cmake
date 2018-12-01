@@ -22,21 +22,21 @@
 include(FindPkgConfig)
 pkg_check_modules(PC_UHD uhd)
 
-find_path(
-    UHD_INCLUDE_DIRS
+find_path(UHD_INCLUDE_DIRS
     NAMES uhd/config.hpp
     HINTS $ENV{UHD_DIR}/include
-        ${PC_UHD_INCLUDEDIR}
+          ${PC_UHD_INCLUDEDIR}
     PATHS /usr/local/include
           /usr/include
           ${GNURADIO_INSTALL_PREFIX}/include
+          ${UHD_ROOT}/include
+          $ENV{UHD_ROOT}/include
 )
 
-find_library(
-    UHD_LIBRARIES
+find_library(UHD_LIBRARIES
     NAMES uhd
     HINTS $ENV{UHD_DIR}/lib
-        ${PC_UHD_LIBDIR}
+          ${PC_UHD_LIBDIR}
     PATHS /usr/local/lib
           /usr/lib/x86_64-linux-gnu
           /usr/lib/i386-linux-gnu
@@ -64,6 +64,10 @@ find_library(
           /usr/lib64
           /usr/lib
           ${GNURADIO_INSTALL_PREFIX}/lib
+          ${UHD_ROOT}/lib
+          $ENV{UHD_ROOT}/lib
+          ${UHD_ROOT}/lib64
+          $ENV{UHD_ROOT}/lib64
 )
 
 include(FindPackageHandleStandardArgs)

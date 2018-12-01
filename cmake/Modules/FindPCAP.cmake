@@ -48,10 +48,12 @@
 if(EXISTS $ENV{PCAPDIR})
   find_path(PCAP_INCLUDE_DIR
     NAMES
-    pcap/pcap.h
-    pcap.h
+      pcap/pcap.h
+      pcap.h
     PATHS
       $ENV{PCAPDIR}
+      ${PCAP_ROOT}/include
+      $ENV{PCAP_ROOT}/include
     NO_DEFAULT_PATH
   )
   find_library(PCAP_LIBRARY
@@ -59,18 +61,25 @@ if(EXISTS $ENV{PCAPDIR})
       pcap
     PATHS
       $ENV{PCAPDIR}
+      ${PCAP_ROOT}/lib
+      $ENV{PCAP_ROOT}/lib
     NO_DEFAULT_PATH
   )
 else()
   find_path(PCAP_INCLUDE_DIR
     NAMES
-    pcap/pcap.h
-    pcap.h
+      pcap/pcap.h
+      pcap.h
+    HINTS
+      ${PCAP_ROOT}/include
+      $ENV{PCAP_ROOT}/include
   )
-
   find_library(PCAP_LIBRARY
     NAMES
       pcap
+    HINTS
+      ${PCAP_ROOT}/lib
+      $ENV{PCAP_ROOT}/lib
   )
 endif()
 

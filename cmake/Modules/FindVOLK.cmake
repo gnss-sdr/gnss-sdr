@@ -22,18 +22,18 @@
 include(FindPkgConfig)
 pkg_check_modules(PC_VOLK volk)
 
-find_path(
-    VOLK_INCLUDE_DIRS
+find_path(VOLK_INCLUDE_DIRS
     NAMES volk/volk.h
     HINTS $ENV{VOLK_DIR}/include
           ${PC_VOLK_INCLUDEDIR}
     PATHS /usr/local/include
           /usr/include
           ${CMAKE_INSTALL_PREFIX}/include
+          ${VOLK_ROOT}/include
+          $ENV{VOLK_ROOT}/include
 )
 
-find_library(
-    VOLK_LIBRARIES
+find_library(VOLK_LIBRARIES
     NAMES volk
     HINTS $ENV{VOLK_DIR}/lib
           ${PC_VOLK_LIBDIR}
@@ -65,6 +65,10 @@ find_library(
           /usr/lib/alpha-linux-gnu
           /usr/lib64
           ${CMAKE_INSTALL_PREFIX}/lib
+          ${VOLK_ROOT}/lib
+          $ENV{VOLK_ROOT}/lib
+          ${VOLK_ROOT}/lib64
+          $ENV{VOLK_ROOT}/lib64
 )
 
 include(FindPackageHandleStandardArgs)

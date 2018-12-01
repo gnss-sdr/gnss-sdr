@@ -73,7 +73,7 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
                                      gr::io_signature::make(0, 0, (sizeof(gr_complex) * sampled_ms * samples_per_ms)))
 {
     this->message_port_register_out(pmt::mp("events"));
-    d_sample_counter = 0;  // SAMPLE COUNTER
+    d_sample_counter = 0ULL;  // SAMPLE COUNTER
     d_active = false;
     d_state = 0;
     d_fs_in = fs_in;
@@ -199,7 +199,8 @@ void pcps_quicksync_acquisition_cc::init()
     //DLOG(INFO) << "START init";
     d_gnss_synchro->Acq_delay_samples = 0.0;
     d_gnss_synchro->Acq_doppler_hz = 0.0;
-    d_gnss_synchro->Acq_samplestamp_samples = 0;
+    d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
+    d_gnss_synchro->Acq_doppler_step = 0U;
     d_mag = 0.0;
     d_input_power = 0.0;
 
@@ -236,7 +237,8 @@ void pcps_quicksync_acquisition_cc::set_state(int state)
         {
             d_gnss_synchro->Acq_delay_samples = 0.0;
             d_gnss_synchro->Acq_doppler_hz = 0.0;
-            d_gnss_synchro->Acq_samplestamp_samples = 0;
+            d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
+            d_gnss_synchro->Acq_doppler_step = 0U;
             d_well_count = 0;
             d_mag = 0.0;
             d_input_power = 0.0;
@@ -279,7 +281,8 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                         //restart acquisition variables
                         d_gnss_synchro->Acq_delay_samples = 0.0;
                         d_gnss_synchro->Acq_doppler_hz = 0.0;
-                        d_gnss_synchro->Acq_samplestamp_samples = 0;
+                        d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
+                        d_gnss_synchro->Acq_doppler_step = 0U;
                         d_well_count = 0;
                         d_mag = 0.0;
                         d_input_power = 0.0;
@@ -288,7 +291,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                         d_state = 1;
                     }
 
-                d_sample_counter += d_sampled_ms * d_samples_per_ms * ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_sampled_ms * d_samples_per_ms * ninput_items[0]);  // sample counter
                 consume_each(ninput_items[0]);
                 //DLOG(INFO) << "END CASE 0";
                 break;
@@ -324,7 +327,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                 d_test_statistics = 0.0;
                 d_noise_floor_power = 0.0;
 
-                d_sample_counter += d_sampled_ms * d_samples_per_ms;  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_sampled_ms * d_samples_per_ms);  // sample counter
 
                 d_well_count++;
 
@@ -456,6 +459,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                                         d_gnss_synchro->Acq_delay_samples = static_cast<double>(d_possible_delay[indext]);
                                         d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
                                         d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
+                                        d_gnss_synchro->Acq_doppler_step = d_doppler_step;
 
                                         /* 5- Compute the test statistics and compare to the threshold d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;*/
                                         d_test_statistics = d_mag / d_input_power;
@@ -536,7 +540,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                 d_active = false;
                 d_state = 0;
 
-                d_sample_counter += d_sampled_ms * d_samples_per_ms * ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_sampled_ms * d_samples_per_ms * ninput_items[0]);  // sample counter
                 consume_each(ninput_items[0]);
 
                 acquisition_message = 1;
@@ -565,7 +569,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                 d_active = false;
                 d_state = 0;
 
-                d_sample_counter += d_sampled_ms * d_samples_per_ms * ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_sampled_ms * d_samples_per_ms * ninput_items[0]);  // sample counter
                 consume_each(ninput_items[0]);
 
                 acquisition_message = 2;

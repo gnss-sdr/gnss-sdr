@@ -42,12 +42,16 @@
 
 using google::LogMessage;
 
+void GpsL1CaPcpsAcquisitionFineDoppler::stop_acquisition()
+{
+}
+
 GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     std::string default_item_type = "gr_complex";
-    std::string default_dump_filename = "./data/acquisition.dat";
+    std::string default_dump_filename = "./acquisition.mat";
 
     DLOG(INFO) << "role " << role;
     Acq_Conf acq_parameters = Acq_Conf();
@@ -56,6 +60,7 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
     long fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in_;
+    acq_parameters.samples_per_chip = static_cast<unsigned int>(ceil(GPS_L1_CA_CHIP_PERIOD * static_cast<float>(acq_parameters.fs_in)));
     dump_ = configuration->property(role + ".dump", false);
     acq_parameters.dump = dump_;
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);

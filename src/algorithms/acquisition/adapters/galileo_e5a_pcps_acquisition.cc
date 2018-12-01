@@ -42,13 +42,17 @@
 
 using google::LogMessage;
 
+void GalileoE5aPcpsAcquisition::stop_acquisition()
+{
+}
+
 GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* configuration,
     std::string role, unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     Acq_Conf acq_parameters = Acq_Conf();
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
-    std::string default_dump_filename = "../data/acquisition.dat";
+    std::string default_dump_filename = "./acquisition.mat";
 
     DLOG(INFO) << "Role " << role;
 
@@ -57,6 +61,7 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
     long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 32000000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in_;
+    acq_parameters.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / Galileo_E5a_CODE_CHIP_RATE_HZ) * static_cast<float>(acq_parameters.fs_in)));
     acq_pilot_ = configuration_->property(role + ".acquire_pilot", false);
     acq_iq_ = configuration_->property(role + ".acquire_iq", false);
     if (acq_iq_)
@@ -100,16 +105,16 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
     acq_parameters.it_size = item_size_;
-    acq_parameters.samples_per_code = code_length_;
-    acq_parameters.samples_per_ms = code_length_;
+    acq_parameters.samples_per_ms = static_cast<float>(fs_in_) * 0.001;
     acq_parameters.sampled_ms = sampled_ms_;
+    acq_parameters.ms_per_code = 1;
+    acq_parameters.samples_per_code = acq_parameters.samples_per_ms * static_cast<float>(GALILEO_E5a_CODE_PERIOD_MS);
     acq_parameters.num_doppler_bins_step2 = configuration_->property(role + ".second_nbins", 4);
     acq_parameters.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
     acq_parameters.make_2_steps = configuration_->property(role + ".make_two_steps", false);
     acq_parameters.blocking_on_standby = configuration_->property(role + ".blocking_on_standby", false);
     acquisition_ = pcps_make_acquisition(acq_parameters);
 
-    stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
     channel_ = 0;
     threshold_ = 0.0;
     doppler_step_ = 0;
@@ -257,15 +262,15 @@ void GalileoE5aPcpsAcquisition::set_state(int state)
 }
 
 
-void GalileoE5aPcpsAcquisition::connect(gr::top_block_sptr top_block)
+void GalileoE5aPcpsAcquisition::connect(gr::top_block_sptr top_block __attribute__((unused)))
 {
     if (item_type_.compare("gr_complex") == 0)
         {
-            top_block->connect(stream_to_vector_, 0, acquisition_, 0);
+            // nothing to connect
         }
     else if (item_type_.compare("cshort") == 0)
         {
-            top_block->connect(stream_to_vector_, 0, acquisition_, 0);
+            // nothing to connect
         }
     else
         {
@@ -274,15 +279,15 @@ void GalileoE5aPcpsAcquisition::connect(gr::top_block_sptr top_block)
 }
 
 
-void GalileoE5aPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
+void GalileoE5aPcpsAcquisition::disconnect(gr::top_block_sptr top_block __attribute__((unused)))
 {
     if (item_type_.compare("gr_complex") == 0)
         {
-            top_block->disconnect(stream_to_vector_, 0, acquisition_, 0);
+            // nothing to disconnect
         }
     else if (item_type_.compare("cshort") == 0)
         {
-            top_block->disconnect(stream_to_vector_, 0, acquisition_, 0);
+            // nothing to disconnect
         }
     else
         {
@@ -293,7 +298,7 @@ void GalileoE5aPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr GalileoE5aPcpsAcquisition::get_left_block()
 {
-    return stream_to_vector_;
+    return acquisition_;
 }
 
 

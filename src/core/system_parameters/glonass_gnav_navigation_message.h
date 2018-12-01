@@ -40,6 +40,7 @@
 #include "glonass_gnav_utc_model.h"
 #include "GLONASS_L1_L2_CA.h"
 #include <bitset>
+#include <cstdint>
 
 
 /*!
@@ -50,18 +51,18 @@
 class Glonass_Gnav_Navigation_Message
 {
 private:
-    unsigned long int read_navigation_unsigned(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int, int>> parameter);
-    signed long int read_navigation_signed(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int, int>> parameter);
-    bool read_navigation_bool(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int, int>> parameter);
+    uint64_t read_navigation_unsigned(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter);
+    int64_t read_navigation_signed(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter);
+    bool read_navigation_bool(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter);
 
 public:
     bool flag_CRC_test;
-    unsigned int d_frame_ID;
-    unsigned int d_string_ID;
+    uint32_t d_frame_ID;
+    uint32_t d_string_ID;
     bool flag_update_slot_number;
 
-    int i_channel_ID;
-    unsigned int i_satellite_PRN;
+    int32_t i_channel_ID;
+    uint32_t i_satellite_PRN;
 
     Glonass_Gnav_Ephemeris gnav_ephemeris;                   //!< Ephemeris information decoded
     Glonass_Gnav_Utc_Model gnav_utc_model;                   //!< UTC model information
@@ -75,18 +76,18 @@ public:
     bool flag_ephemeris_str_4;  //!< Flag indicating that ephemeris 4/4 (string 4) have been received
 
     // Almanac Flags
-    bool flag_all_almanac;                     //!< Flag indicating that all almanac have been received
-    bool flag_almanac_str_6;                   //!< Flag indicating that almanac of string 6 have been received
-    bool flag_almanac_str_7;                   //!< Flag indicating that almanac of string 7 have been received
-    bool flag_almanac_str_8;                   //!< Flag indicating that almanac of string 8 have been received
-    bool flag_almanac_str_9;                   //!< Flag indicating that almanac of string 9 have been received
-    bool flag_almanac_str_10;                  //!< Flag indicating that almanac of string 10 have been received
-    bool flag_almanac_str_11;                  //!< Flag indicating that almanac of string 11 have been received
-    bool flag_almanac_str_12;                  //!< Flag indicating that almanac of string 12 have been received
-    bool flag_almanac_str_13;                  //!< Flag indicating that almanac of string 13 have been received
-    bool flag_almanac_str_14;                  //!< Flag indicating that almanac of string 14 have been received
-    bool flag_almanac_str_15;                  //!< Flag indicating that almanac of string 15 have been received
-    unsigned int i_alm_satellite_slot_number;  //!< SV Orbit Slot Number
+    bool flag_all_almanac;                 //!< Flag indicating that all almanac have been received
+    bool flag_almanac_str_6;               //!< Flag indicating that almanac of string 6 have been received
+    bool flag_almanac_str_7;               //!< Flag indicating that almanac of string 7 have been received
+    bool flag_almanac_str_8;               //!< Flag indicating that almanac of string 8 have been received
+    bool flag_almanac_str_9;               //!< Flag indicating that almanac of string 9 have been received
+    bool flag_almanac_str_10;              //!< Flag indicating that almanac of string 10 have been received
+    bool flag_almanac_str_11;              //!< Flag indicating that almanac of string 11 have been received
+    bool flag_almanac_str_12;              //!< Flag indicating that almanac of string 12 have been received
+    bool flag_almanac_str_13;              //!< Flag indicating that almanac of string 13 have been received
+    bool flag_almanac_str_14;              //!< Flag indicating that almanac of string 14 have been received
+    bool flag_almanac_str_15;              //!< Flag indicating that almanac of string 15 have been received
+    uint32_t i_alm_satellite_slot_number;  //!< SV Orbit Slot Number
 
     // UTC and System Clocks Flags
     bool flag_utc_model_valid;   //!< If set, it indicates that the UTC model parameters are filled
@@ -114,7 +115,7 @@ public:
      * \param satellite_slot_number [in] Satellite slot number identifier
      * \returns Frame number being decoded, 0 if operation was not successful.
      */
-    unsigned int get_frame_number(unsigned int satellite_slot_number);
+    uint32_t get_frame_number(uint32_t satellite_slot_number);
 
     /*!
      * \brief Reset GLONASS GNAV Navigation Information
@@ -136,7 +137,7 @@ public:
      * \param satellite_slot_number Slot number identifier for the satellite
      * \returns Returns the Glonass_Gnav_Almanac object for the input slot number
      */
-    Glonass_Gnav_Almanac get_almanac(unsigned int satellite_slot_number);
+    Glonass_Gnav_Almanac get_almanac(uint32_t satellite_slot_number);
 
     /*!
      * \brief Returns true if a new Glonass_Gnav_Ephemeris object has arrived.
@@ -158,7 +159,7 @@ public:
      * \param frame_string [in] is the string message within the parsed frame
      * \returns Returns the ID of the decoded string
      */
-    int string_decoder(std::string frame_string);
+    int32_t string_decoder(std::string frame_string);
 
     /*!
      * Default constructor

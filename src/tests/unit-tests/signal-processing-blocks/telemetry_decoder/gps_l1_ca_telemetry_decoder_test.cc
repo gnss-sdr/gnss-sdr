@@ -38,7 +38,11 @@
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
+#ifdef GR_GREATER_38
+#include <gnuradio/analog/sig_source.h>
+#else
 #include <gnuradio/analog/sig_source_c.h>
+#endif
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/skiphead.h>
@@ -87,7 +91,7 @@ void GpsL1CADllPllTelemetryDecoderTest_msg_rx::msg_handler_events(pmt::pmt_t msg
 {
     try
         {
-            long int message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(msg);
             rx_message = message;
         }
     catch (boost::bad_any_cast& e)
@@ -140,7 +144,7 @@ void GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx::msg_handler_events(pmt::pmt_t
 {
     try
         {
-            long int message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(msg);
             rx_message = message;
         }
     catch (boost::bad_any_cast& e)
@@ -418,7 +422,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
 
     //check results
     //load the true values
-    long int nepoch = true_obs_data.num_epochs();
+    int64_t nepoch = true_obs_data.num_epochs();
     std::cout << "True observation epochs=" << nepoch << std::endl;
 
     arma::vec true_timestamp_s = arma::zeros(nepoch, 1);
@@ -427,7 +431,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
     arma::vec true_prn_delay_chips = arma::zeros(nepoch, 1);
     arma::vec true_tow_s = arma::zeros(nepoch, 1);
 
-    long int epoch_counter = 0;
+    int64_t epoch_counter = 0;
     while (true_obs_data.read_binary_obs())
         {
             true_timestamp_s(epoch_counter) = true_obs_data.signal_timestamp_s;

@@ -4,6 +4,7 @@
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *         Javier Arribas, 2011. jarribas(at)cttc.es
+ *         Marc Majoral, 2018. mmajoral(at)cttc.es
  *
  * This class encapsulates the complexity behind the instantiation
  * of GNSS blocks.
@@ -103,6 +104,7 @@
 #include "sbas_l1_telemetry_decoder.h"
 #include "hybrid_observables.h"
 #include "rtklib_pvt.h"
+#include "gps_l1_ca_kf_tracking.h"
 
 #if RAW_UDP
 #include "custom_udp_signal_source.h"
@@ -110,7 +112,15 @@
 
 #if ENABLE_FPGA
 #include "gps_l1_ca_pcps_acquisition_fpga.h"
+#include "gps_l2_m_pcps_acquisition_fpga.h"
+#include "galileo_e1_pcps_ambiguous_acquisition_fpga.h"
+#include "galileo_e5a_pcps_acquisition_fpga.h"
+#include "gps_l5i_pcps_acquisition_fpga.h"
 #include "gps_l1_ca_dll_pll_tracking_fpga.h"
+#include "gps_l2_m_dll_pll_tracking_fpga.h"
+#include "galileo_e1_dll_pll_veml_tracking_fpga.h"
+#include "galileo_e5a_dll_pll_tracking_fpga.h"
+#include "gps_l5_dll_pll_tracking_fpga.h"
 #endif
 
 #if OPENCL_BLOCKS
@@ -163,7 +173,11 @@ using google::LogMessage;
 
 
 GNSSBlockFactory::GNSSBlockFactory() {}
+
+
 GNSSBlockFactory::~GNSSBlockFactory() {}
+
+
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalSource(
     std::shared_ptr<ConfigurationInterface> configuration, gr::msg_queue::sptr queue, int ID)
 {
@@ -1389,18 +1403,42 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                 out_streams));
             block = std::move(block_);
         }
+#if ENABLE_FPGA
+    else if (implementation.compare("GPS_L2_M_PCPS_Acquisition_Fpga") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new GpsL2MPcpsAcquisitionFpga(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
+#endif
     else if (implementation.compare("GPS_L5i_PCPS_Acquisition") == 0)
         {
             std::unique_ptr<AcquisitionInterface> block_(new GpsL5iPcpsAcquisition(configuration.get(), role, in_streams,
                 out_streams));
             block = std::move(block_);
         }
+#if ENABLE_FPGA
+    else if (implementation.compare("GPS_L5i_PCPS_Acquisition_Fpga") == 0)
+        {
+            std::unique_ptr<AcquisitionInterface> block_(new GpsL5iPcpsAcquisitionFpga(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
+#endif
     else if (implementation.compare("Galileo_E1_PCPS_Ambiguous_Acquisition") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new GalileoE1PcpsAmbiguousAcquisition(configuration.get(), role, in_streams,
                 out_streams));
             block = std::move(block_);
         }
+#if ENABLE_FPGA
+    else if (implementation.compare("Galileo_E1_PCPS_Ambiguous_Acquisition_Fpga") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new GalileoE1PcpsAmbiguousAcquisitionFpga(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
+#endif
     else if (implementation.compare("Galileo_E1_PCPS_8ms_Ambiguous_Acquisition") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new GalileoE1Pcps8msAmbiguousAcquisition(configuration.get(), role, in_streams,
@@ -1431,6 +1469,14 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                 out_streams));
             block = std::move(block_);
         }
+#if ENABLE_FPGA
+    else if (implementation.compare("Galileo_E5a_Pcps_Acquisition_Fpga") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new GalileoE5aPcpsAcquisitionFpga(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
+#endif
     else if (implementation.compare("Galileo_E1_PCPS_QuickSync_Ambiguous_Acquisition") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new GalileoE1PcpsQuickSyncAmbiguousAcquisition(configuration.get(), role, in_streams,
@@ -1454,6 +1500,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
         {
             std::unique_ptr<GNSSBlockInterface> block_(new GpsL1CaDllPllTracking(configuration.get(), role, in_streams,
                 out_streams));
+            block = std::move(block_);
+        }
+    else if (implementation.compare("GPS_L1_CA_KF_Tracking") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new GpsL1CaKfTracking(configuration.get(), role, in_streams,
+                    out_streams));
             block = std::move(block_);
         }
     else if (implementation.compare("GPS_L1_CA_DLL_PLL_C_Aid_Tracking") == 0)
@@ -1482,12 +1534,28 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                 out_streams));
             block = std::move(block_);
         }
+#if ENABLE_FPGA
+    else if (implementation.compare("GPS_L2_M_DLL_PLL_Tracking_Fpga") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new GpsL2MDllPllTrackingFpga(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
+#endif
     else if ((implementation.compare("GPS_L5i_DLL_PLL_Tracking") == 0) or (implementation.compare("GPS_L5_DLL_PLL_Tracking") == 0))
         {
             std::unique_ptr<GNSSBlockInterface> block_(new GpsL5DllPllTracking(configuration.get(), role, in_streams,
                 out_streams));
             block = std::move(block_);
         }
+#if ENABLE_FPGA
+    else if ((implementation.compare("GPS_L5i_DLL_PLL_Tracking_Fpga") == 0) or (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0))
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new GpsL5DllPllTrackingFpga(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
+#endif
 #if CUDA_GPU_ACCEL
     else if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_GPU") == 0)
         {
@@ -1502,6 +1570,14 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                 out_streams));
             block = std::move(block_);
         }
+#if ENABLE_FPGA
+    else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
+        {
+            std::unique_ptr<TrackingInterface> block_(new GalileoE1DllPllVemlTrackingFpga(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
+#endif
     else if (implementation.compare("Galileo_E1_TCP_CONNECTOR_Tracking") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new GalileoE1TcpConnectorTracking(configuration.get(), role, in_streams,
@@ -1514,6 +1590,14 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                 out_streams));
             block = std::move(block_);
         }
+#if ENABLE_FPGA
+    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new GalileoE5aDllPllTrackingFpga(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
+#endif
     else if (implementation.compare("GLONASS_L1_CA_DLL_PLL_Tracking") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new GlonassL1CaDllPllTracking(configuration.get(), role, in_streams,
@@ -1682,18 +1766,42 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
                 out_streams));
             block = std::move(block_);
         }
+#if ENABLE_FPGA
+    else if (implementation.compare("GPS_L2_M_PCPS_Acquisition_Fpga") == 0)
+        {
+            std::unique_ptr<AcquisitionInterface> block_(new GpsL2MPcpsAcquisitionFpga(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
+#endif
     else if (implementation.compare("GPS_L5i_PCPS_Acquisition") == 0)
         {
             std::unique_ptr<AcquisitionInterface> block_(new GpsL5iPcpsAcquisition(configuration.get(), role, in_streams,
                 out_streams));
             block = std::move(block_);
         }
+#if ENABLE_FPGA
+    else if (implementation.compare("GPS_L5i_PCPS_Acquisition_Fpga") == 0)
+        {
+            std::unique_ptr<AcquisitionInterface> block_(new GpsL5iPcpsAcquisitionFpga(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
+#endif
     else if (implementation.compare("Galileo_E1_PCPS_Ambiguous_Acquisition") == 0)
         {
             std::unique_ptr<AcquisitionInterface> block_(new GalileoE1PcpsAmbiguousAcquisition(configuration.get(), role, in_streams,
                 out_streams));
             block = std::move(block_);
         }
+#if ENABLE_FPGA
+    else if (implementation.compare("Galileo_E1_PCPS_Ambiguous_Acquisition_Fpga") == 0)
+        {
+            std::unique_ptr<AcquisitionInterface> block_(new GalileoE1PcpsAmbiguousAcquisitionFpga(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
+#endif
     else if (implementation.compare("Galileo_E1_PCPS_8ms_Ambiguous_Acquisition") == 0)
         {
             std::unique_ptr<AcquisitionInterface> block_(new GalileoE1Pcps8msAmbiguousAcquisition(configuration.get(), role, in_streams,
@@ -1731,6 +1839,14 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
                 out_streams));
             block = std::move(block_);
         }
+#if ENABLE_FPGA
+    else if (implementation.compare("Galileo_E5a_Pcps_Acquisition_Fpga") == 0)
+        {
+            std::unique_ptr<AcquisitionInterface> block_(new GalileoE5aPcpsAcquisitionFpga(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
+#endif
     else if (implementation.compare("GLONASS_L1_CA_PCPS_Acquisition") == 0)
         {
             std::unique_ptr<AcquisitionInterface> block_(new GlonassL1CaPcpsAcquisition(configuration.get(), role, in_streams,
@@ -1767,6 +1883,12 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
                 out_streams));
             block = std::move(block_);
         }
+    else if (implementation.compare("GPS_L1_CA_KF_Tracking") == 0)
+        {
+            std::unique_ptr<TrackingInterface> block_(new GpsL1CaKfTracking(configuration.get(), role, in_streams,
+                    out_streams));
+            block = std::move(block_);
+        }
     else if (implementation.compare("GPS_L1_CA_DLL_PLL_C_Aid_Tracking") == 0)
         {
             std::unique_ptr<TrackingInterface> block_(new GpsL1CaDllPllCAidTracking(configuration.get(), role, in_streams,
@@ -1793,6 +1915,14 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
                 out_streams));
             block = std::move(block_);
         }
+#if ENABLE_FPGA
+    else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
+        {
+            std::unique_ptr<TrackingInterface> block_(new GalileoE1DllPllVemlTrackingFpga(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
+#endif
     else if (implementation.compare("Galileo_E1_TCP_CONNECTOR_Tracking") == 0)
         {
             std::unique_ptr<TrackingInterface> block_(new GalileoE1TcpConnectorTracking(configuration.get(), role, in_streams,
@@ -1805,18 +1935,42 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
                 out_streams));
             block = std::move(block_);
         }
+#if ENABLE_FPGA
+    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
+        {
+            std::unique_ptr<TrackingInterface> block_(new GalileoE5aDllPllTrackingFpga(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
+#endif
     else if (implementation.compare("GPS_L2_M_DLL_PLL_Tracking") == 0)
         {
             std::unique_ptr<TrackingInterface> block_(new GpsL2MDllPllTracking(configuration.get(), role, in_streams,
                 out_streams));
             block = std::move(block_);
         }
+#if ENABLE_FPGA
+    else if (implementation.compare("GPS_L2_M_DLL_PLL_Tracking_Fpga") == 0)
+        {
+            std::unique_ptr<TrackingInterface> block_(new GpsL2MDllPllTrackingFpga(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
+#endif
     else if ((implementation.compare("GPS_L5i_DLL_PLL_Tracking") == 0) or (implementation.compare("GPS_L5_DLL_PLL_Tracking") == 0))
         {
             std::unique_ptr<TrackingInterface> block_(new GpsL5DllPllTracking(configuration.get(), role, in_streams,
                 out_streams));
             block = std::move(block_);
         }
+#if ENABLE_FPGA
+    else if ((implementation.compare("GPS_L5i_DLL_PLL_Tracking_Fpga") == 0) or (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0))
+        {
+            std::unique_ptr<TrackingInterface> block_(new GpsL5DllPllTrackingFpga(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
+#endif
 #if CUDA_GPU_ACCEL
     else if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_GPU") == 0)
         {

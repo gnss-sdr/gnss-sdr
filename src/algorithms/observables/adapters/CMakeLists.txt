@@ -17,24 +17,26 @@
 #
 
 set(OBS_ADAPTER_SOURCES
-	hybrid_observables.cc
+    hybrid_observables.cc
+)
+
+set(OBS_ADAPTER_HEADERS
+    hybrid_observables.h
 )
 
 include_directories(
-     ${CMAKE_CURRENT_SOURCE_DIR}
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/observables/gnuradio_blocks
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+    ${CMAKE_SOURCE_DIR}/src/core/interfaces
+    ${CMAKE_SOURCE_DIR}/src/core/receiver
+    ${CMAKE_SOURCE_DIR}/src/algorithms/observables/gnuradio_blocks
+    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+    ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
+    ${GLOG_INCLUDE_DIRS}
+    ${GFlags_INCLUDE_DIRS}
+    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
-file(GLOB OBS_ADAPTER_HEADERS "*.h")
-list(SORT OBS_ADAPTER_HEADERS)
 add_library(obs_adapters ${OBS_ADAPTER_SOURCES} ${OBS_ADAPTER_HEADERS})
 source_group(Headers FILES ${OBS_ADAPTER_HEADERS})
 target_link_libraries(obs_adapters obs_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES})

@@ -77,7 +77,7 @@ static inline void volk_gnsssdr_16i_xn_resampler_16i_xn_generic(int16_t** result
 {
     int local_code_chip_index;
     int current_correlator_tap;
-    int n;
+    unsigned int n;
     for (current_correlator_tap = 0; current_correlator_tap < num_out_vectors; current_correlator_tap++)
         {
             for (n = 0; n < num_points; n++)

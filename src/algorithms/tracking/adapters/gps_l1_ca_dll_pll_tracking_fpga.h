@@ -1,5 +1,5 @@
 /*!
- * \file gps_l1_ca_dll_pll_tracking.h
+ * \file gps_l1_ca_dll_pll_tracking_fpga.h
  * \brief  Interface of an adapter of a DLL+PLL tracking loop block
  * for GPS L1 C/A to a TrackingInterface that uses the FPGA
  * \author Marc Majoral, 2018. mmajoral(at)cttc.es
@@ -13,7 +13,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,7 +31,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -39,9 +39,10 @@
 #ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_
 #define GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_
 
+#include <string>
 #include "tracking_interface.h"
 #include "dll_pll_veml_tracking_fpga.h"
-#include <string>
+
 
 class ConfigurationInterface;
 
@@ -91,6 +92,11 @@ public:
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
     void start_tracking() override;
+
+    /*!
+     * \brief Stop running tracking
+     */
+    void stop_tracking() override;
 
 private:
     dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;

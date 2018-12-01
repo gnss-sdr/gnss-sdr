@@ -34,6 +34,7 @@
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/fft/fft.h>
+#include <cstdint>
 #include <memory>
 
 class Notch;
@@ -41,7 +42,7 @@ class Notch;
 typedef boost::shared_ptr<Notch> notch_sptr;
 
 notch_sptr make_notch_filter(float pfa, float p_c_factor,
-    int length_, int n_segments_est, int n_segments_reset);
+    int32_t length_, int32_t n_segments_est, int32_t n_segments_reset);
 
 /*!
  * \brief This class implements a real-time software-defined multi state notch filter
@@ -53,11 +54,11 @@ private:
     float pfa;
     float noise_pow_est;
     float thres_;
-    int length_;
-    int n_deg_fred;
-    unsigned int n_segments;
-    unsigned int n_segments_est;
-    unsigned int n_segments_reset;
+    int32_t length_;
+    int32_t n_deg_fred;
+    uint32_t n_segments;
+    uint32_t n_segments_est;
+    uint32_t n_segments_reset;
     bool filter_state_;
     gr_complex last_out;
     gr_complex z_0;
@@ -68,7 +69,7 @@ private:
     std::unique_ptr<gr::fft::fft_complex> d_fft;
 
 public:
-    Notch(float pfa, float p_c_factor, int length_, int n_segments_est, int n_segments_reset);
+    Notch(float pfa, float p_c_factor, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset);
 
     ~Notch();
 

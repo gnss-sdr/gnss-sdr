@@ -61,7 +61,7 @@ gps_l2c_telemetry_decoder_cc::gps_l2c_telemetry_decoder_cc(
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     DLOG(INFO) << "GPS L2C M TELEMETRY PROCESSING: satellite " << d_satellite;
-    //set_output_multiple (1);
+    // set_output_multiple (1);
     d_channel = 0;
     d_flag_valid_word = false;
     d_TOW_at_current_symbol = 0;
@@ -69,7 +69,7 @@ gps_l2c_telemetry_decoder_cc::gps_l2c_telemetry_decoder_cc(
     d_state = 0;  //initial state
     d_crc_error_count = 0;
 
-    //initialize the CNAV frame decoder (libswiftcnav)
+    // initialize the CNAV frame decoder (libswiftcnav)
     cnav_msg_decoder_init(&d_cnav_decoder);
 }
 
@@ -134,34 +134,34 @@ int gps_l2c_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
 
     bool flag_new_cnav_frame = false;
     cnav_msg_t msg;
-    u32 delay = 0;
+    uint32_t delay = 0;
 
-    //add the symbol to the decoder
-    u8 symbol_clip = static_cast<u8>(in[0].Prompt_I > 0) * 255;
+    // add the symbol to the decoder
+    uint8_t symbol_clip = static_cast<uint8_t>(in[0].Prompt_I > 0) * 255;
     flag_new_cnav_frame = cnav_msg_decoder_add_symbol(&d_cnav_decoder, symbol_clip, &msg, &delay);
 
-    consume_each(1);  //one by one
+    consume_each(1);  // one by one
 
     // UPDATE GNSS SYNCHRO DATA
-    Gnss_Synchro current_synchro_data;  //structure to save the synchronization information and send the output object to the next block
+    Gnss_Synchro current_synchro_data;  // structure to save the synchronization information and send the output object to the next block
 
-    //1. Copy the current tracking output
+    // 1. Copy the current tracking output
     current_synchro_data = in[0];
 
-    //2. Add the telemetry decoder information
-    //check if new CNAV frame is available
+    // 2. Add the telemetry decoder information
+    // check if new CNAV frame is available
     if (flag_new_cnav_frame == true)
         {
             std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS> raw_bits;
-            //Expand packet bits to bitsets. Notice the reverse order of the bits sequence, required by the CNAV message decoder
-            for (u32 i = 0; i < GPS_L2_CNAV_DATA_PAGE_BITS; i++)
+            // Expand packet bits to bitsets. Notice the reverse order of the bits sequence, required by the CNAV message decoder
+            for (uint32_t i = 0; i < GPS_L2_CNAV_DATA_PAGE_BITS; i++)
                 {
                     raw_bits[GPS_L2_CNAV_DATA_PAGE_BITS - 1 - i] = ((msg.raw_msg[i / 8] >> (7 - i % 8)) & 1u);
                 }
 
             d_CNAV_Message.decode_page(raw_bits);
 
-            //Push the new navigation data to the queues
+            // Push the new navigation data to the queues
             if (d_CNAV_Message.have_new_ephemeris() == true)
                 {
                     // get ephemeris object for this SV
@@ -183,12 +183,12 @@ int gps_l2c_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                 }
 
-            //update TOW at the preamble instant
+            // update TOW at the preamble instant
             d_TOW_at_Preamble = static_cast<double>(msg.tow);
-            //* The time of the last input symbol can be computed from the message ToW and
-            //* delay by the formulae:
-            //* \code
-            //* symbolTime_ms = msg->tow * 6000 + *pdelay * 20 + (12 * 20); 12 symbols of the encoder's transitory
+            // The time of the last input symbol can be computed from the message ToW and
+            // delay by the formulae:
+            // \code
+            // symbolTime_ms = msg->tow * 6000 + *pdelay * 20 + (12 * 20); 12 symbols of the encoder's transitory
             d_TOW_at_current_symbol = static_cast<double>(msg.tow) * 6.0 + static_cast<double>(delay) * GPS_L2_M_PERIOD + 12 * GPS_L2_M_PERIOD;
             //d_TOW_at_current_symbol = floor(d_TOW_at_current_symbol * 1000.0) / 1000.0;
             d_flag_valid_word = true;
@@ -210,11 +210,11 @@ int gps_l2c_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
             try
                 {
                     double tmp_double;
-                    unsigned long int tmp_ulong_int;
+                    uint64_t tmp_ulong_int;
                     tmp_double = d_TOW_at_current_symbol;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                     tmp_ulong_int = current_synchro_data.Tracking_sample_counter;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(unsigned long int));
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(uint64_t));
                     tmp_double = d_TOW_at_Preamble;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                 }
@@ -224,7 +224,7 @@ int gps_l2c_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
                 }
         }
 
-    //3. Make the output (copy the object contents to the GNURadio reserved memory)
+    // 3. Make the output (copy the object contents to the GNURadio reserved memory)
     out[0] = current_synchro_data;
     return 1;
 }

@@ -32,10 +32,52 @@
 
 #include "gpx_printer.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/filesystem/operations.hpp>   // for create_directories, exists
+#include <boost/filesystem/path.hpp>         // for path, operator<<
+#include <boost/filesystem/path_traits.hpp>  // for filesystem
 #include <glog/logging.h>
 #include <sstream>
 
 using google::LogMessage;
+
+
+Gpx_Printer::Gpx_Printer(const std::string& base_path)
+{
+    positions_printed = false;
+    indent = "  ";
+    gpx_base_path = base_path;
+    boost::filesystem::path full_path(boost::filesystem::current_path());
+    const boost::filesystem::path p(gpx_base_path);
+    if (!boost::filesystem::exists(p))
+        {
+            std::string new_folder;
+            for (auto& folder : boost::filesystem::path(gpx_base_path))
+                {
+                    new_folder += folder.string();
+                    boost::system::error_code ec;
+                    if (!boost::filesystem::exists(new_folder))
+                        {
+                            if (!boost::filesystem::create_directory(new_folder, ec))
+                                {
+                                    std::cout << "Could not create the " << new_folder << " folder." << std::endl;
+                                    gpx_base_path = full_path.string();
+                                }
+                        }
+                    new_folder += boost::filesystem::path::preferred_separator;
+                }
+        }
+    else
+        {
+            gpx_base_path = p.string();
+        }
+    if (gpx_base_path.compare(".") != 0)
+        {
+            std::cout << "GPX files will be stored at " << gpx_base_path << std::endl;
+        }
+
+    gpx_base_path = gpx_base_path + boost::filesystem::path::preferred_separator;
+}
+
 
 bool Gpx_Printer::set_headers(std::string filename, bool time_tag_name)
 {
@@ -84,6 +126,8 @@ bool Gpx_Printer::set_headers(std::string filename, bool time_tag_name)
         {
             gpx_filename = filename + ".gpx";
         }
+
+    gpx_filename = gpx_base_path + gpx_filename;
     gpx_file.open(gpx_filename.c_str());
 
     if (gpx_file.is_open())
@@ -94,17 +138,20 @@ bool Gpx_Printer::set_headers(std::string filename, bool time_tag_name)
             gpx_file << std::setprecision(14);
             gpx_file << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl
                      << "<gpx version=\"1.1\" creator=\"GNSS-SDR\"" << std::endl
-                     << "xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd\"" << std::endl
-                     << "xmlns=\"http://www.topografix.com/GPX/1/1\"" << std::endl
-                     << "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">" << std::endl
-                     << "<trk>" << std::endl
-                     << indent << "<name>Position fixes computed by GNSS-SDR v" << GNSS_SDR_VERSION << "</name>" << std::endl
-                     << indent << "<desc>GNSS-SDR position log generated at " << pt << " (local time)</desc>" << std::endl
-                     << indent << "<trkseg>" << std::endl;
+                     << indent << "xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v2 http://www.garmin.com/xmlschemas/TrackPointExtensionv2.xsd\"" << std::endl
+                     << indent << "xmlns=\"http://www.topografix.com/GPX/1/1\"" << std::endl
+                     << indent << "xmlns:gpxx=\"http://www.garmin.com/xmlschemas/GpxExtensions/v3\"" << std::endl
+                     << indent << "xmlns:gpxtpx=\"http://www.garmin.com/xmlschemas/TrackPointExtension/v2\"" << std::endl
+                     << indent << "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">" << std::endl
+                     << indent << "<trk>" << std::endl
+                     << indent << indent << "<name>Position fixes computed by GNSS-SDR v" << GNSS_SDR_VERSION << "</name>" << std::endl
+                     << indent << indent << "<desc>GNSS-SDR position log generated at " << pt << " (local time)</desc>" << std::endl
+                     << indent << indent << "<trkseg>" << std::endl;
             return true;
         }
     else
         {
+            std::cout << "File " << gpx_filename << " cannot be saved. Wrong permissions?" << std::endl;
             return false;
         }
 }
@@ -119,12 +166,16 @@ bool Gpx_Printer::print_position(const std::shared_ptr<rtklib_solver>& position,
     positions_printed = true;
     std::shared_ptr<rtklib_solver> position_ = position;
 
+    double speed_over_ground = position_->get_speed_over_ground();    // expressed in m/s
+    double course_over_ground = position_->get_course_over_ground();  // expressed in deg
+
     double hdop = position_->get_hdop();
     double vdop = position_->get_vdop();
     double pdop = position_->get_pdop();
     std::string utc_time = to_iso_extended_string(position_->get_position_UTC_time());
-    utc_time.resize(23);   // time up to ms
-    utc_time.append("Z");  // UTC time zone
+    if (utc_time.length() < 23) utc_time += ".";
+    utc_time.resize(23, '0');  // time up to ms
+    utc_time.append("Z");      // UTC time zone
 
     if (print_average_values == false)
         {
@@ -141,9 +192,13 @@ bool Gpx_Printer::print_position(const std::shared_ptr<rtklib_solver>& position,
 
     if (gpx_file.is_open())
         {
-            gpx_file << indent << indent << "<trkpt lon=\"" << longitude << "\" lat=\"" << latitude << "\"><ele>" << height << "</ele>"
+            gpx_file << indent << indent << indent << "<trkpt lon=\"" << longitude << "\" lat=\"" << latitude << "\"><ele>" << height << "</ele>"
                      << "<time>" << utc_time << "</time>"
-                     << "<hdop>" << hdop << "</hdop><vdop>" << vdop << "</vdop><pdop>" << pdop << "</pdop></trkpt>" << std::endl;
+                     << "<hdop>" << hdop << "</hdop><vdop>" << vdop << "</vdop><pdop>" << pdop << "</pdop>"
+                     << "<extensions><gpxtpx:TrackPointExtension>"
+                     << "<gpxtpx:speed>" << speed_over_ground << "</gpxtpx:speed>"
+                     << "<gpxtpx:course>" << course_over_ground << "</gpxtpx:course>"
+                     << "</gpxtpx:TrackPointExtension></extensions></trkpt>" << std::endl;
             return true;
         }
     else
@@ -157,8 +212,8 @@ bool Gpx_Printer::close_file()
 {
     if (gpx_file.is_open())
         {
-            gpx_file << indent << "</trkseg>" << std::endl
-                     << "</trk>" << std::endl
+            gpx_file << indent << indent << "</trkseg>" << std::endl
+                     << indent << "</trk>" << std::endl
                      << "</gpx>";
             gpx_file.close();
             return true;
@@ -167,13 +222,6 @@ bool Gpx_Printer::close_file()
         {
             return false;
         }
-}
-
-
-Gpx_Printer::Gpx_Printer()
-{
-    positions_printed = false;
-    indent = "  ";
 }
 
 

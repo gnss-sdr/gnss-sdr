@@ -64,11 +64,11 @@ gps_l5_telemetry_decoder_cc::gps_l5_telemetry_decoder_cc(
     DLOG(INFO) << "GPS L5 TELEMETRY PROCESSING: satellite " << d_satellite;
     d_channel = 0;
     d_flag_valid_word = false;
-    d_TOW_at_current_symbol = 0.0;
-    d_TOW_at_Preamble = 0.0;
-    //initialize the CNAV frame decoder (libswiftcnav)
+    d_TOW_at_current_symbol_ms = 0U;
+    d_TOW_at_Preamble_ms = 0U;
+    // initialize the CNAV frame decoder (libswiftcnav)
     cnav_msg_decoder_init(&d_cnav_decoder);
-    for (int aux = 0; aux < GPS_L5i_NH_CODE_LENGTH; aux++)
+    for (int32_t aux = 0; aux < GPS_L5i_NH_CODE_LENGTH; aux++)
         {
             if (GPS_L5i_NH_CODE[aux] == 0)
                 {
@@ -108,7 +108,7 @@ void gps_l5_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satellite)
 }
 
 
-void gps_l5_telemetry_decoder_cc::set_channel(int channel)
+void gps_l5_telemetry_decoder_cc::set_channel(int32_t channel)
 {
     d_channel = channel;
     d_CNAV_Message.reset();
@@ -146,17 +146,17 @@ int gps_l5_telemetry_decoder_cc::general_work(int noutput_items __attribute__((u
 
     // UPDATE GNSS SYNCHRO DATA
     Gnss_Synchro current_synchro_data;  //structure to save the synchronization information and send the output object to the next block
-    //1. Copy the current tracking output
+    // 1. Copy the current tracking output
     current_synchro_data = in[0];
     consume_each(1);  //one by one
     sym_hist.push_back(in[0].Prompt_I);
-    int corr_NH = 0;
-    int symbol_value = 0;
+    int32_t corr_NH = 0;
+    int32_t symbol_value = 0;
 
-    //Search correlation with Neuman-Hofman Code (see IS-GPS-705D)
+    // Search correlation with Neuman-Hofman Code (see IS-GPS-705D)
     if (sym_hist.size() == GPS_L5i_NH_CODE_LENGTH)
         {
-            for (int i = 0; i < GPS_L5i_NH_CODE_LENGTH; i++)
+            for (int32_t i = 0; i < GPS_L5i_NH_CODE_LENGTH; i++)
                 {
                     if ((bits_NH[i] * sym_hist.at(i)) > 0.0)
                         {
@@ -191,29 +191,29 @@ int gps_l5_telemetry_decoder_cc::general_work(int noutput_items __attribute__((u
 
     bool flag_new_cnav_frame = false;
     cnav_msg_t msg;
-    u32 delay = 0;
+    uint32_t delay = 0;
 
-    //add the symbol to the decoder
+    // add the symbol to the decoder
     if (new_sym)
         {
-            u8 symbol_clip = static_cast<u8>(symbol_value > 0) * 255;
+            uint8_t symbol_clip = static_cast<uint8_t>(symbol_value > 0) * 255;
             flag_new_cnav_frame = cnav_msg_decoder_add_symbol(&d_cnav_decoder, symbol_clip, &msg, &delay);
             new_sym = false;
         }
-    //2. Add the telemetry decoder information
-    //check if new CNAV frame is available
+    // 2. Add the telemetry decoder information
+    // check if new CNAV frame is available
     if (flag_new_cnav_frame == true)
         {
             std::bitset<GPS_L5_CNAV_DATA_PAGE_BITS> raw_bits;
-            //Expand packet bits to bitsets. Notice the reverse order of the bits sequence, required by the CNAV message decoder
-            for (u32 i = 0; i < GPS_L5_CNAV_DATA_PAGE_BITS; i++)
+            // Expand packet bits to bitsets. Notice the reverse order of the bits sequence, required by the CNAV message decoder
+            for (uint32_t i = 0; i < GPS_L5_CNAV_DATA_PAGE_BITS; i++)
                 {
                     raw_bits[GPS_L5_CNAV_DATA_PAGE_BITS - 1 - i] = ((msg.raw_msg[i / 8] >> (7 - i % 8)) & 1u);
                 }
 
             d_CNAV_Message.decode_page(raw_bits);
 
-            //Push the new navigation data to the queues
+            // Push the new navigation data to the queues
             if (d_CNAV_Message.have_new_ephemeris() == true)
                 {
                     // get ephemeris object for this SV
@@ -235,48 +235,55 @@ int gps_l5_telemetry_decoder_cc::general_work(int noutput_items __attribute__((u
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                 }
 
-            //update TOW at the preamble instant
-            d_TOW_at_Preamble = static_cast<double>(msg.tow) * 6.0;
-            //* The time of the last input symbol can be computed from the message ToW and
-            //* delay by the formulae:
-            //* \code
-            //* symbolTime_ms = msg->tow * 6000 + *pdelay * 10 + (12 * 10); 12 symbols of the encoder's transitory
-            d_TOW_at_current_symbol = (static_cast<double>(msg.tow) * 6.0) + (static_cast<double>(delay) + 12.0) * GPS_L5i_SYMBOL_PERIOD;
-            d_TOW_at_current_symbol = floor(d_TOW_at_current_symbol * 1000.0) / 1000.0;
+            // update TOW at the preamble instant
+            d_TOW_at_Preamble_ms = msg.tow * 6000;
+            // The time of the last input symbol can be computed from the message ToW and
+            // delay by the formulae:
+            // \code
+            // symbolTime_ms = msg->tow * 6000 + *pdelay * 10 + (12 * 10); 12 symbols of the encoder's transitory
+            d_TOW_at_current_symbol_ms = msg.tow * 6000 + (delay + 12) * GPS_L5i_SYMBOL_PERIOD_MS;
             d_flag_valid_word = true;
         }
     else
         {
-            d_TOW_at_current_symbol += GPS_L5i_PERIOD;
+            d_TOW_at_current_symbol_ms += GPS_L5i_PERIOD_MS;
             if (current_synchro_data.Flag_valid_symbol_output == false)
                 {
                     d_flag_valid_word = false;
                 }
         }
-    current_synchro_data.TOW_at_current_symbol_ms = round(d_TOW_at_current_symbol * 1000.0);
-    current_synchro_data.Flag_valid_word = d_flag_valid_word;
 
-    if (d_dump == true)
+    if (d_flag_valid_word == true)
         {
-            // MULTIPLEXED FILE RECORDING - Record results to file
-            try
-                {
-                    double tmp_double;
-                    unsigned long int tmp_ulong_int;
-                    tmp_double = d_TOW_at_current_symbol;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                    tmp_ulong_int = current_synchro_data.Tracking_sample_counter;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(unsigned long int));
-                    tmp_double = d_TOW_at_Preamble;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                }
-            catch (const std::ifstream::failure &e)
-                {
-                    LOG(WARNING) << "Exception writing Telemetry GPS L5 dump file " << e.what();
-                }
-        }
+            current_synchro_data.TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
+            current_synchro_data.Flag_valid_word = d_flag_valid_word;
 
-    //3. Make the output (copy the object contents to the GNURadio reserved memory)
-    out[0] = current_synchro_data;
-    return 1;
+            if (d_dump == true)
+                {
+                    // MULTIPLEXED FILE RECORDING - Record results to file
+                    try
+                        {
+                            double tmp_double;
+                            uint64_t tmp_ulong_int;
+                            tmp_double = static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0;
+                            d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                            tmp_ulong_int = current_synchro_data.Tracking_sample_counter;
+                            d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(uint64_t));
+                            tmp_double = static_cast<double>(d_TOW_at_Preamble_ms) / 1000.0;
+                            d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                        }
+                    catch (const std::ifstream::failure &e)
+                        {
+                            LOG(WARNING) << "Exception writing Telemetry GPS L5 dump file " << e.what();
+                        }
+                }
+
+            // 3. Make the output (copy the object contents to the GNURadio reserved memory)
+            out[0] = current_synchro_data;
+            return 1;
+        }
+    else
+        {
+            return 0;
+        }
 }

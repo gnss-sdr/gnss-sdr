@@ -150,8 +150,6 @@ bool hybrid_ls_pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
                                 // 4- fill the observations vector with the corrected observables
                                 obs.resize(valid_obs + 1, 1);
                                 obs(valid_obs) = gnss_observables_iter->second.Pseudorange_m + SV_clock_bias_s * GALILEO_C_m_s - this->get_time_offset_s() * GALILEO_C_m_s;
-                                this->set_visible_satellites_ID(valid_obs, galileo_ephemeris_iter->second.i_satellite_PRN);
-                                this->set_visible_satellites_CN0_dB(valid_obs, gnss_observables_iter->second.CN0_dB_hz);
 
                                 Galileo_week_number = galileo_ephemeris_iter->second.WN_5;  //for GST
                                 GST = galileo_ephemeris_iter->second.Galileo_System_Time(Galileo_week_number, hybrid_current_time);
@@ -213,8 +211,6 @@ bool hybrid_ls_pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
                                         double Code_bias_m = P1_P2 / (1.0 - Gamma);
                                         obs.resize(valid_obs + 1, 1);
                                         obs(valid_obs) = gnss_observables_iter->second.Pseudorange_m + dtr * GPS_C_m_s - Code_bias_m - this->get_time_offset_s() * GPS_C_m_s;
-                                        this->set_visible_satellites_ID(valid_obs, gps_ephemeris_iter->second.i_satellite_PRN);
-                                        this->set_visible_satellites_CN0_dB(valid_obs, gnss_observables_iter->second.CN0_dB_hz);
 
                                         // SV ECEF DEBUG OUTPUT
                                         LOG(INFO) << "(new)ECEF GPS L1 CA satellite SV ID=" << gps_ephemeris_iter->second.i_satellite_PRN
@@ -265,8 +261,6 @@ bool hybrid_ls_pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
                                         // 4- fill the observations vector with the corrected observables
                                         obs.resize(valid_obs + 1, 1);
                                         obs(valid_obs) = gnss_observables_iter->second.Pseudorange_m + dtr * GPS_C_m_s + SV_clock_bias_s * GPS_C_m_s;
-                                        this->set_visible_satellites_ID(valid_obs, gps_cnav_ephemeris_iter->second.i_satellite_PRN);
-                                        this->set_visible_satellites_CN0_dB(valid_obs, gnss_observables_iter->second.CN0_dB_hz);
 
                                         GPS_week = gps_cnav_ephemeris_iter->second.i_GPS_week;
                                         GPS_week = GPS_week % 1024;  //Necessary due to the increase of WN bits in CNAV message (10 in GPS NAV and 13 in CNAV)

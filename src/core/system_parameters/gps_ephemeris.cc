@@ -37,43 +37,43 @@
 
 Gps_Ephemeris::Gps_Ephemeris()
 {
-    i_satellite_PRN = 0;
-    d_TOW = 0;
-    d_Crs = 0;
-    d_Delta_n = 0;
-    d_M_0 = 0;
-    d_Cuc = 0;
-    d_e_eccentricity = 0;
-    d_Cus = 0;
-    d_sqrt_A = 0;
-    d_Toe = 0;
-    d_Toc = 0;
-    d_Cic = 0;
-    d_OMEGA0 = 0;
-    d_Cis = 0;
-    d_i_0 = 0;
-    d_Crc = 0;
-    d_OMEGA = 0;
-    d_OMEGA_DOT = 0;
-    d_IDOT = 0;
+    i_satellite_PRN = 0U;
+    d_TOW = 0.0;
+    d_Crs = 0.0;
+    d_Delta_n = 0.0;
+    d_M_0 = 0.0;
+    d_Cuc = 0.0;
+    d_e_eccentricity = 0.0;
+    d_Cus = 0.0;
+    d_sqrt_A = 0.0;
+    d_Toe = 0.0;
+    d_Toc = 0.0;
+    d_Cic = 0.0;
+    d_OMEGA0 = 0.0;
+    d_Cis = 0.0;
+    d_i_0 = 0.0;
+    d_Crc = 0.0;
+    d_OMEGA = 0.0;
+    d_OMEGA_DOT = 0.0;
+    d_IDOT = 0.0;
     i_code_on_L2 = 0;
     i_GPS_week = 0;
     b_L2_P_data_flag = false;
     i_SV_accuracy = 0;
     i_SV_health = 0;
-    d_IODE_SF2 = 0;
-    d_IODE_SF3 = 0;
-    d_TGD = 0;   // Estimated Group Delay Differential: L1-L2 correction term only for the benefit of "L1 P(Y)" or "L2 P(Y)" s users [s]
-    d_IODC = 0;  // Issue of Data, Clock
-    i_AODO = 0;  // Age of Data Offset (AODO) term for the navigation message correction table (NMCT) contained in subframe 4 (reference paragraph 20.3.3.5.1.9) [s]
+    d_IODE_SF2 = 0.0;
+    d_IODE_SF3 = 0.0;
+    d_TGD = 0.0;   // Estimated Group Delay Differential: L1-L2 correction term only for the benefit of "L1 P(Y)" or "L2 P(Y)" s users [s]
+    d_IODC = 0.0;  // Issue of Data, Clock
+    i_AODO = 0;    // Age of Data Offset (AODO) term for the navigation message correction table (NMCT) contained in subframe 4 (reference paragraph 20.3.3.5.1.9) [s]
 
     b_fit_interval_flag = false;  // indicates the curve-fit interval used by the CS (Block II/IIA/IIR/IIR-M/IIF) and SS (Block IIIA) in determining the ephemeris parameters, as follows: 0  =  4 hours, 1  =  greater than 4 hours.
-    d_spare1 = 0;
-    d_spare2 = 0;
+    d_spare1 = 0.0;
+    d_spare2 = 0.0;
 
-    d_A_f0 = 0;  // Coefficient 0 of code phase offset model [s]
-    d_A_f1 = 0;  // Coefficient 1 of code phase offset model [s/s]
-    d_A_f2 = 0;  // Coefficient 2 of code phase offset model [s/s^2]
+    d_A_f0 = 0.0;  // Coefficient 0 of code phase offset model [s]
+    d_A_f1 = 0.0;  // Coefficient 1 of code phase offset model [s/s]
+    d_A_f2 = 0.0;  // Coefficient 2 of code phase offset model [s/s^2]
 
     b_integrity_status_flag = false;
     b_alert_flag = false;         // If true, indicates  that the SV URA may be worse than indicated in d_SV_accuracy, use that SV at our own risk.
@@ -81,7 +81,7 @@ Gps_Ephemeris::Gps_Ephemeris()
 
     auto gnss_sat = Gnss_Satellite();
     std::string _system("GPS");
-    for (unsigned int i = 1; i < 33; i++)
+    for (uint32_t i = 1; i < 33; i++)
         {
             satelliteBlock[i] = gnss_sat.what_block(_system, i);
         }
@@ -120,7 +120,7 @@ double Gps_Ephemeris::sv_clock_drift(double transmitTime)
     //    double dt;
     //    dt = check_t(transmitTime - d_Toc);
     //
-    //    for (int i = 0; i < 2; i++)
+    //    for (int32_t i = 0; i < 2; i++)
     //        {
     //            dt -= d_A_f0 + d_A_f1 * dt + d_A_f2 * (dt * dt);
     //        }
@@ -169,7 +169,7 @@ double Gps_Ephemeris::sv_clock_relativistic_term(double transmitTime)
     E = M;
 
     // --- Iteratively compute eccentric anomaly ----------------------------
-    for (int ii = 1; ii < 20; ii++)
+    for (int32_t ii = 1; ii < 20; ii++)
         {
             E_old = E;
             E = M + d_e_eccentricity * sin(E);
@@ -228,7 +228,7 @@ double Gps_Ephemeris::satellitePosition(double transmitTime)
     E = M;
 
     // --- Iteratively compute eccentric anomaly ----------------------------
-    for (int ii = 1; ii < 20; ii++)
+    for (int32_t ii = 1; ii < 20; ii++)
         {
             E_old = E;
             E = M + d_e_eccentricity * sin(E);

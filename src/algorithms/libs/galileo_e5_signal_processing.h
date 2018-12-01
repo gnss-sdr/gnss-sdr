@@ -35,23 +35,23 @@
 #define GNSS_SDR_GALILEO_E5_SIGNAL_PROCESSING_H_
 
 #include <complex>
+#include <cstdint>
 
 
 /*!
  * \brief Generates Galileo E5a code at 1 sample/chip
  * bool _pilot generates E5aQ code if true and E5aI (data signal) if false.
  */
-void galileo_e5_a_code_gen_complex_primary(std::complex<float>* _dest, signed int _prn, char _Signal[3]);
+void galileo_e5_a_code_gen_complex_primary(std::complex<float>* _dest, int32_t _prn, char _Signal[3]);
 
-
-void galileo_e5_a_code_gen_tiered(std::complex<float>* _dest, std::complex<float>* _primary, unsigned int _prn, char _Signal[3]);
+void galileo_e5_a_code_gen_tiered(std::complex<float>* _dest, std::complex<float>* _primary, uint32_t _prn, char _Signal[3]);
 
 /*!
  * \brief Generates Galileo E5a complex code, shifted to the desired chip and sampled at a frequency fs
  * bool _pilot generates E5aQ code if true and E5aI (data signal) if false.
  */
 void galileo_e5_a_code_gen_complex_sampled(std::complex<float>* _dest,
-    char _Signal[3], unsigned int _prn, signed int _fs, unsigned int _chip_shift);
+    char _Signal[3], uint32_t _prn, int32_t _fs, uint32_t _chip_shift);
 
 
 #endif /* GNSS_SDR_GALILEO_E5_SIGNAL_PROCESSING_H_ */

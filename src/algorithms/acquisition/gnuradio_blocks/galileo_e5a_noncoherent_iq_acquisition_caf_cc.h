@@ -52,7 +52,7 @@ typedef boost::shared_ptr<galileo_e5a_noncoherentIQ_acquisition_caf_cc> galileo_
 galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr
 galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(unsigned int sampled_ms,
     unsigned int max_dwells,
-    unsigned int doppler_max, long fs_in,
+    unsigned int doppler_max, int64_t fs_in,
     int samples_per_ms, int samples_per_code,
     bool bit_transition_flag,
     bool dump,
@@ -74,7 +74,7 @@ private:
     galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(
         unsigned int sampled_ms,
         unsigned int max_dwells,
-        unsigned int doppler_max, long fs_in,
+        unsigned int doppler_max, int64_t fs_in,
         int samples_per_ms, int samples_per_code,
         bool bit_transition_flag,
         bool dump,
@@ -86,7 +86,7 @@ private:
     galileo_e5a_noncoherentIQ_acquisition_caf_cc(
         unsigned int sampled_ms,
         unsigned int max_dwells,
-        unsigned int doppler_max, long fs_in,
+        unsigned int doppler_max, int64_t fs_in,
         int samples_per_ms, int samples_per_code,
         bool bit_transition_flag,
         bool dump,
@@ -99,7 +99,7 @@ private:
         int doppler_offset);
     float estimate_input_power(gr_complex* in);
 
-    long d_fs_in;
+    int64_t d_fs_in;
     int d_samples_per_ms;
     int d_sampled_ms;
     int d_samples_per_code;
@@ -111,7 +111,7 @@ private:
     unsigned int d_max_dwells;
     unsigned int d_well_count;
     unsigned int d_fft_size;
-    unsigned long int d_sample_counter;
+    uint64_t d_sample_counter;
     gr_complex** d_grid_doppler_wipeoffs;
     unsigned int d_num_doppler_bins;
     gr_complex* d_fft_code_I_A;

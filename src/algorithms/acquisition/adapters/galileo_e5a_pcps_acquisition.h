@@ -35,7 +35,6 @@
 #include "acquisition_interface.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition.h"
-#include <gnuradio/blocks/stream_to_vector.h>
 #include <string>
 
 class ConfigurationInterface;
@@ -123,13 +122,17 @@ public:
      */
     void set_state(int state) override;
 
+    /*!
+     * \brief Stop running acquisition
+     */
+    void stop_acquisition() override;
+
 private:
     float calculate_threshold(float pfa);
 
     ConfigurationInterface* configuration_;
 
     pcps_acquisition_sptr acquisition_;
-    gr::blocks::stream_to_vector::sptr stream_to_vector_;
 
     size_t item_size_;
 

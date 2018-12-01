@@ -1,6 +1,9 @@
 /*!
  * \file gnss_synchro_monitor.h
- * \brief Interface of a Position Velocity and Time computation block
+ * \brief Interface of a receiver monitoring block which allows sending
+ * a data stream with the receiver internal parameters (Gnss_Synchro objects)
+ * to local or remote clients over UDP.
+ *
  * \author Álvaro Cebrián Juan, 2018. acebrianjuan(at)gmail.com
  *
  * -------------------------------------------------------------------------
@@ -64,6 +67,8 @@ private:
     int d_output_rate_ms;
 
     std::unique_ptr<Gnss_Synchro_Udp_Sink> udp_sink_ptr;
+
+    int count;
 
 
 public:

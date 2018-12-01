@@ -37,21 +37,21 @@
 
 using google::LogMessage;
 
-pulse_blanking_cc_sptr make_pulse_blanking_cc(float pfa, int length_,
-    int n_segments_est, int n_segments_reset)
+pulse_blanking_cc_sptr make_pulse_blanking_cc(float pfa, int32_t length_,
+    int32_t n_segments_est, int32_t n_segments_reset)
 {
     return pulse_blanking_cc_sptr(new pulse_blanking_cc(pfa, length_, n_segments_est, n_segments_reset));
 }
 
 
 pulse_blanking_cc::pulse_blanking_cc(float pfa,
-    int length_,
-    int n_segments_est,
-    int n_segments_reset) : gr::block("pulse_blanking_cc",
-                                gr::io_signature::make(1, 1, sizeof(gr_complex)),
-                                gr::io_signature::make(1, 1, sizeof(gr_complex)))
+    int32_t length_,
+    int32_t n_segments_est,
+    int32_t n_segments_reset) : gr::block("pulse_blanking_cc",
+                                    gr::io_signature::make(1, 1, sizeof(gr_complex)),
+                                    gr::io_signature::make(1, 1, sizeof(gr_complex)))
 {
-    const int alignment_multiple = volk_get_alignment() / sizeof(gr_complex);
+    const int32_t alignment_multiple = volk_get_alignment() / sizeof(gr_complex);
     set_alignment(std::max(1, alignment_multiple));
     this->pfa = pfa;
     this->length_ = length_;
@@ -64,9 +64,9 @@ pulse_blanking_cc::pulse_blanking_cc(float pfa,
     boost::math::chi_squared_distribution<float> my_dist_(n_deg_fred);
     thres_ = boost::math::quantile(boost::math::complement(my_dist_, pfa));
     zeros_ = static_cast<gr_complex *>(volk_malloc(length_ * sizeof(gr_complex), volk_get_alignment()));
-    for (int aux = 0; aux < length_; aux++)
+    for (int32_t aux = 0; aux < length_; aux++)
         {
-            zeros_[aux] = gr_complex(0, 0);
+            zeros_[aux] = gr_complex(0.0, 0.0);
         }
 }
 
@@ -79,7 +79,7 @@ pulse_blanking_cc::~pulse_blanking_cc()
 
 void pulse_blanking_cc::forecast(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items_required)
 {
-    for (unsigned int aux = 0; aux < ninput_items_required.size(); aux++)
+    for (uint32_t aux = 0; aux < ninput_items_required.size(); aux++)
         {
             ninput_items_required[aux] = length_;
         }
@@ -93,7 +93,7 @@ int pulse_blanking_cc::general_work(int noutput_items, gr_vector_int &ninput_ite
     gr_complex *out = reinterpret_cast<gr_complex *>(output_items[0]);
     float *magnitude = static_cast<float *>(volk_malloc(noutput_items * sizeof(float), volk_get_alignment()));
     volk_32fc_magnitude_squared_32f(magnitude, in, noutput_items);
-    int sample_index = 0;
+    int32_t sample_index = 0;
     float segment_energy;
     while ((sample_index + length_) < noutput_items)
         {

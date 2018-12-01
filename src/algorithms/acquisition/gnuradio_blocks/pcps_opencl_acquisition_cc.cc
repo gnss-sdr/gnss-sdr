@@ -93,7 +93,7 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(
                                      gr::io_signature::make(0, 0, sizeof(gr_complex) * sampled_ms * samples_per_ms))
 {
     this->message_port_register_out(pmt::mp("events"));
-    d_sample_counter = 0;  // SAMPLE COUNTER
+    d_sample_counter = 0ULL;  // SAMPLE COUNTER
     d_active = false;
     d_state = 0;
     d_core_working = false;
@@ -290,10 +290,10 @@ void pcps_opencl_acquisition_cc::init()
     d_gnss_synchro->Flag_valid_symbol_output = false;
     d_gnss_synchro->Flag_valid_pseudorange = false;
     d_gnss_synchro->Flag_valid_word = false;
-
+    d_gnss_synchro->Acq_doppler_step = 0U;
     d_gnss_synchro->Acq_delay_samples = 0.0;
     d_gnss_synchro->Acq_doppler_hz = 0.0;
-    d_gnss_synchro->Acq_samplestamp_samples = 0;
+    d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
     d_mag = 0.0;
     d_input_power = 0.0;
 
@@ -387,7 +387,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_volk()
     float magt = 0.0;
     float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
     gr_complex *in = d_in_buffer[d_well_count];
-    unsigned long int samplestamp = d_sample_counter_buffer[d_well_count];
+    uint64_t samplestamp = d_sample_counter_buffer[d_well_count];
 
     d_input_power = 0.0;
     d_mag = 0.0;
@@ -450,6 +450,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_volk()
                             d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
                             d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
                             d_gnss_synchro->Acq_samplestamp_samples = samplestamp;
+                            d_gnss_synchro->Acq_doppler_step = d_doppler_step;
 
                             // 5- Compute the test statistics and compare to the threshold
                             //d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
@@ -510,7 +511,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
     float magt = 0.0;
     float fft_normalization_factor = (static_cast<float>(d_fft_size_pow2) * static_cast<float>(d_fft_size));  //This works, but I am not sure why.
     gr_complex *in = d_in_buffer[d_well_count];
-    unsigned long int samplestamp = d_sample_counter_buffer[d_well_count];
+    uint64_t samplestamp = d_sample_counter_buffer[d_well_count];
 
     d_input_power = 0.0;
     d_mag = 0.0;
@@ -613,6 +614,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
                             d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
                             d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
                             d_gnss_synchro->Acq_samplestamp_samples = samplestamp;
+                            d_gnss_synchro->Acq_doppler_step = d_doppler_step;
 
                             // 5- Compute the test statistics and compare to the threshold
                             //d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
@@ -676,7 +678,8 @@ void pcps_opencl_acquisition_cc::set_state(int state)
         {
             d_gnss_synchro->Acq_delay_samples = 0.0;
             d_gnss_synchro->Acq_doppler_hz = 0.0;
-            d_gnss_synchro->Acq_samplestamp_samples = 0;
+            d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
+            d_gnss_synchro->Acq_doppler_step = 0U;
             d_well_count = 0;
             d_mag = 0.0;
             d_input_power = 0.0;
@@ -708,7 +711,8 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
                         //restart acquisition variables
                         d_gnss_synchro->Acq_delay_samples = 0.0;
                         d_gnss_synchro->Acq_doppler_hz = 0.0;
-                        d_gnss_synchro->Acq_samplestamp_samples = 0;
+                        d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
+                        d_gnss_synchro->Acq_doppler_step = 0U;
                         d_well_count = 0;
                         d_mag = 0.0;
                         d_input_power = 0.0;
@@ -719,7 +723,7 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
                         d_state = 1;
                     }
 
-                d_sample_counter += d_fft_size * ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_fft_size * ninput_items[0]);  // sample counter
 
                 break;
             }
@@ -736,20 +740,20 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
                             {
                                 memcpy(d_in_buffer[d_in_dwell_count++], static_cast<const gr_complex *>(input_items[i]),
                                     sizeof(gr_complex) * d_fft_size);
-                                d_sample_counter += d_fft_size;
+                                d_sample_counter += static_cast<uint64_t>(d_fft_size);
                                 d_sample_counter_buffer.push_back(d_sample_counter);
                             }
 
                         if (ninput_items[0] > static_cast<int>(num_dwells))
                             {
-                                d_sample_counter += d_fft_size * (ninput_items[0] - num_dwells);
+                                d_sample_counter += static_cast<uint64_t>(d_fft_size * (ninput_items[0] - num_dwells));
                             }
                     }
                 else
                     {
                         // We already have d_max_dwells consecutive blocks in the internal buffer,
                         // just skip input blocks.
-                        d_sample_counter += d_fft_size * ninput_items[0];
+                        d_sample_counter += static_cast<uint64_t>(d_fft_size * ninput_items[0]);
                     }
 
                 // We create a new thread to process next block if the following
@@ -793,7 +797,7 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
                 d_active = false;
                 d_state = 0;
 
-                d_sample_counter += d_fft_size * ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_fft_size * ninput_items[0]);  // sample counter
 
                 acquisition_message = 1;
                 this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
@@ -817,7 +821,7 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
                 d_active = false;
                 d_state = 0;
 
-                d_sample_counter += d_fft_size * ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_fft_size * ninput_items[0]);  // sample counter
 
                 acquisition_message = 2;
                 this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));

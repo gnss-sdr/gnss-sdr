@@ -43,6 +43,10 @@
 
 using google::LogMessage;
 
+void GlonassL2CaDllPllTracking::stop_tracking()
+{
+}
+
 GlonassL2CaDllPllTracking::GlonassL2CaDllPllTracking(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)

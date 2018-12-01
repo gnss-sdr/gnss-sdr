@@ -32,9 +32,8 @@
 #ifndef GNSS_SDR_GPS_UTC_MODEL_H_
 #define GNSS_SDR_GPS_UTC_MODEL_H_
 
-#include <boost/assign.hpp>
 #include <boost/serialization/nvp.hpp>
-
+#include <cstdint>
 
 /*!
  * \brief This class is a storage for the GPS UTC MODEL data as described in IS-GPS-200E
@@ -49,10 +48,10 @@ public:
     double d_A1;          //!< 1st order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s/s]
     double d_A0;          //!< Constant of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s]
     double d_t_OT;        //!< Reference time for UTC data (reference 20.3.4.5 and 20.3.3.5.2.4 IS-GPS-200E) [s]
-    int i_WN_T;           //!< UTC reference week number [weeks]
+    int32_t i_WN_T;       //!< UTC reference week number [weeks]
     double d_DeltaT_LS;   //!< delta time due to leap seconds [s]. Number of leap seconds since 6-Jan-1980 as transmitted by the GPS almanac.
-    int i_WN_LSF;         //!< Week number at the end of which the leap second becomes effective [weeks]
-    int i_DN;             //!< Day number (DN) at the end of which the leap second becomes effective [days]
+    int32_t i_WN_LSF;     //!< Week number at the end of which the leap second becomes effective [weeks]
+    int32_t i_DN;         //!< Day number (DN) at the end of which the leap second becomes effective [days]
     double d_DeltaT_LSF;  //!< Scheduled future or recent past (relative to NAV message upload) value of the delta time due to leap seconds [s]
 
     /*!
@@ -64,7 +63,7 @@ public:
     /*
      * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the ephemeris data on disk file.
      */
-    inline void serialize(Archive& archive, const unsigned int version)
+    inline void serialize(Archive& archive, const uint32_t version)
     {
         using boost::serialization::make_nvp;
         if (version)
@@ -85,7 +84,7 @@ public:
      * \brief Computes the Coordinated Universal Time (UTC) and
      * returns it in [s] (IS-GPS-200E, 20.3.3.5.2.4)
      */
-    double utc_time(double gpstime_corrected, int i_GPS_week);
+    double utc_time(double gpstime_corrected, int32_t i_GPS_week);
 };
 
 #endif

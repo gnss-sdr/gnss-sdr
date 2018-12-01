@@ -123,6 +123,15 @@ static inline unsigned int get_avx2_enabled(void)
 #endif
 }
 
+static inline unsigned int get_avx512_enabled(void)
+{
+#if defined(VOLK_CPU_x86)
+    return __xgetbv() & 0xE6;  //check for zmm, xmm and ymm regs
+#else
+    return 0;
+#endif
+}
+
 //neon detection is linux specific
 #if defined(__arm__) && defined(__linux__)
 #include <asm/hwcap.h>

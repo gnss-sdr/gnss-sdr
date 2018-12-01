@@ -38,7 +38,7 @@ bool true_observables_reader::read_binary_obs()
             for (int i = 0; i < 12; i++)
                 {
                     d_dump_file.read(reinterpret_cast<char *>(&gps_time_sec[i]), sizeof(double));
-                    d_dump_file.read(reinterpret_cast<char *>(&doppler_l1_hz), sizeof(double));
+                    d_dump_file.read(reinterpret_cast<char *>(&doppler_l1_hz[i]), sizeof(double));
                     d_dump_file.read(reinterpret_cast<char *>(&acc_carrier_phase_l1_cycles[i]), sizeof(double));
                     d_dump_file.read(reinterpret_cast<char *>(&dist_m[i]), sizeof(double));
                     d_dump_file.read(reinterpret_cast<char *>(&true_dist_m[i]), sizeof(double));
@@ -69,7 +69,7 @@ bool true_observables_reader::restart()
 }
 
 
-long int true_observables_reader::num_epochs()
+int64_t true_observables_reader::num_epochs()
 {
     std::ifstream::pos_type size;
     int number_of_vars_in_epoch = 6 * 12;
@@ -78,7 +78,7 @@ long int true_observables_reader::num_epochs()
     if (tmpfile.is_open())
         {
             size = tmpfile.tellg();
-            long int nepoch = size / epoch_size_bytes;
+            int64_t nepoch = size / epoch_size_bytes;
             return nepoch;
         }
     else

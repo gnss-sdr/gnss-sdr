@@ -42,6 +42,10 @@
 
 using google::LogMessage;
 
+void GalileoE1PcpsAmbiguousAcquisition::stop_acquisition()
+{
+}
+
 GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
@@ -49,7 +53,7 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     Acq_Conf acq_parameters;
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
-    std::string default_dump_filename = "./data/acquisition.dat";
+    std::string default_dump_filename = "./acquisition.mat";
 
     DLOG(INFO) << "role " << role;
 
@@ -58,31 +62,38 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in_;
-    dump_ = configuration_->property(role + ".dump", false);
-    acq_parameters.dump = dump_;
-    acq_parameters.dump_channel = configuration_->property(role + ".dump_channel", 0);
-    blocking_ = configuration_->property(role + ".blocking", true);
-    acq_parameters.blocking = blocking_;
+    acq_parameters.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / Galileo_E1_CODE_CHIP_RATE_HZ) * static_cast<float>(acq_parameters.fs_in)));
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
     if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
     acq_parameters.doppler_max = doppler_max_;
-    sampled_ms_ = 4;
+    acq_parameters.ms_per_code = 4;
+    sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", acq_parameters.ms_per_code);
     acq_parameters.sampled_ms = sampled_ms_;
+    if ((acq_parameters.sampled_ms % acq_parameters.ms_per_code) != 0)
+        {
+            LOG(WARNING) << "Parameter coherent_integration_time_ms should be a multiple of 4. Setting it to 4";
+            acq_parameters.sampled_ms = acq_parameters.ms_per_code;
+        }
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
     acq_parameters.bit_transition_flag = bit_transition_flag_;
     use_CFAR_algorithm_flag_ = configuration_->property(role + ".use_CFAR_algorithm", true);  //will be false in future versions
     acq_parameters.use_CFAR_algorithm_flag = use_CFAR_algorithm_flag_;
     acquire_pilot_ = configuration_->property(role + ".acquire_pilot", false);  //will be true in future versions
-
     max_dwells_ = configuration_->property(role + ".max_dwells", 1);
     acq_parameters.max_dwells = max_dwells_;
+    dump_ = configuration_->property(role + ".dump", false);
+    acq_parameters.dump = dump_;
+    acq_parameters.dump_channel = configuration_->property(role + ".dump_channel", 0);
+    blocking_ = configuration_->property(role + ".blocking", true);
+    acq_parameters.blocking = blocking_;
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
     acq_parameters.dump_filename = dump_filename_;
     //--- Find number of samples per spreading code (4 ms)  -----------------
-    code_length_ = static_cast<unsigned int>(std::round(static_cast<double>(fs_in_) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
-    acq_parameters.samples_per_code = code_length_;
-    int samples_per_ms = static_cast<int>(std::round(static_cast<double>(fs_in_) * 0.001));
+    code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(fs_in_) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
+
+    float samples_per_ms = static_cast<float>(fs_in_) * 0.001;
     acq_parameters.samples_per_ms = samples_per_ms;
+    acq_parameters.samples_per_code = acq_parameters.samples_per_ms * static_cast<float>(Galileo_E1_CODE_PERIOD_MS);
     vector_length_ = sampled_ms_ * samples_per_ms;
 
     if (bit_transition_flag_)
@@ -107,9 +118,6 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     acq_parameters.blocking_on_standby = configuration_->property(role + ".blocking_on_standby", false);
     acquisition_ = pcps_make_acquisition(acq_parameters);
     DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
-
-    stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
-    DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id() << ")";
 
     if (item_type_.compare("cbyte") == 0)
         {
@@ -271,18 +279,19 @@ void GalileoE1PcpsAmbiguousAcquisition::connect(gr::top_block_sptr top_block)
 {
     if (item_type_.compare("gr_complex") == 0)
         {
-            top_block->connect(stream_to_vector_, 0, acquisition_, 0);
+            // nothing to connect
         }
     else if (item_type_.compare("cshort") == 0)
         {
-            top_block->connect(stream_to_vector_, 0, acquisition_, 0);
+            // nothing to connect
         }
     else if (item_type_.compare("cbyte") == 0)
         {
+            // Since a byte-based acq implementation is not available,
+            // we just convert cshorts to gr_complex
             top_block->connect(cbyte_to_float_x2_, 0, float_to_complex_, 0);
             top_block->connect(cbyte_to_float_x2_, 1, float_to_complex_, 1);
-            top_block->connect(float_to_complex_, 0, stream_to_vector_, 0);
-            top_block->connect(stream_to_vector_, 0, acquisition_, 0);
+            top_block->connect(float_to_complex_, 0, acquisition_, 0);
         }
     else
         {
@@ -295,20 +304,17 @@ void GalileoE1PcpsAmbiguousAcquisition::disconnect(gr::top_block_sptr top_block)
 {
     if (item_type_.compare("gr_complex") == 0)
         {
-            top_block->disconnect(stream_to_vector_, 0, acquisition_, 0);
+            // nothing to disconnect
         }
     else if (item_type_.compare("cshort") == 0)
         {
-            top_block->disconnect(stream_to_vector_, 0, acquisition_, 0);
+            // nothing to disconnect
         }
     else if (item_type_.compare("cbyte") == 0)
         {
-            // Since a byte-based acq implementation is not available,
-            // we just convert cshorts to gr_complex
             top_block->disconnect(cbyte_to_float_x2_, 0, float_to_complex_, 0);
             top_block->disconnect(cbyte_to_float_x2_, 1, float_to_complex_, 1);
-            top_block->disconnect(float_to_complex_, 0, stream_to_vector_, 0);
-            top_block->disconnect(stream_to_vector_, 0, acquisition_, 0);
+            top_block->disconnect(float_to_complex_, 0, acquisition_, 0);
         }
     else
         {
@@ -321,11 +327,11 @@ gr::basic_block_sptr GalileoE1PcpsAmbiguousAcquisition::get_left_block()
 {
     if (item_type_.compare("gr_complex") == 0)
         {
-            return stream_to_vector_;
+            return acquisition_;
         }
     else if (item_type_.compare("cshort") == 0)
         {
-            return stream_to_vector_;
+            return acquisition_;
         }
     else if (item_type_.compare("cbyte") == 0)
         {

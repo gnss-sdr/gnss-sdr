@@ -16,26 +16,34 @@
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
+
+if(Boost_VERSION LESS 105800)
+    add_definitions(-DOLD_BOOST=1)
+endif()
+
 set(PVT_GR_BLOCKS_SOURCES
-	rtklib_pvt_cc.cc
+    rtklib_pvt_cc.cc
+)
+
+set(PVT_GR_BLOCKS_HEADERS
+    rtklib_pvt_cc.h
 )
 
 include_directories(
-     ${CMAKE_CURRENT_SOURCE_DIR}
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib
-     ${ARMADILLO_INCLUDE_DIRS}
-     ${Boost_INCLUDE_DIRS}
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+    ${CMAKE_SOURCE_DIR}/src/core/interfaces
+    ${CMAKE_SOURCE_DIR}/src/core/receiver
+    ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
+    ${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib
+    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+    ${ARMADILLO_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
+    ${GLOG_INCLUDE_DIRS}
+    ${GFlags_INCLUDE_DIRS}
+    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
-file(GLOB PVT_GR_BLOCKS_HEADERS "*.h")
-list(SORT PVT_GR_BLOCKS_HEADERS)
 add_library(pvt_gr_blocks ${PVT_GR_BLOCKS_SOURCES} ${PVT_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${PVT_GR_BLOCKS_HEADERS})
 target_link_libraries(pvt_gr_blocks pvt_lib ${ARMADILLO_LIBRARIES})

@@ -1,5 +1,5 @@
 /*!
- * \file gps_l5i pcps_acquisition.cc
+ * \file gps_l5i_pcps_acquisition.cc
  * \brief Adapts a PCPS acquisition block to an Acquisition Interface for
  *  GPS L5i signals
  * \authors <ul>
@@ -43,6 +43,10 @@
 
 using google::LogMessage;
 
+void GpsL5iPcpsAcquisition::stop_acquisition()
+{
+}
+
 GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
@@ -50,7 +54,7 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
     Acq_Conf acq_parameters = Acq_Conf();
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
-    std::string default_dump_filename = "./data/acquisition.dat";
+    std::string default_dump_filename = "./acquisition.mat";
 
     LOG(INFO) << "role " << role;
 
@@ -59,6 +63,7 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
     long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in_;
+    acq_parameters.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / GPS_L5i_CODE_RATE_HZ) * static_cast<float>(acq_parameters.fs_in)));
     dump_ = configuration_->property(role + ".dump", false);
     acq_parameters.dump = dump_;
     acq_parameters.dump_channel = configuration_->property(role + ".dump_channel", 0);
@@ -75,16 +80,13 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
     acq_parameters.max_dwells = max_dwells_;
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
     acq_parameters.dump_filename = dump_filename_;
+    acq_parameters.sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 1);
     //--- Find number of samples per spreading code -------------------------
-    code_length_ = static_cast<unsigned int>(std::round(static_cast<double>(fs_in_) / (GPS_L5i_CODE_RATE_HZ / static_cast<double>(GPS_L5i_CODE_LENGTH_CHIPS))));
+    code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(fs_in_) / (GPS_L5i_CODE_RATE_HZ / GPS_L5i_CODE_LENGTH_CHIPS)));
+    acq_parameters.samples_per_ms = static_cast<float>(fs_in_) * 0.001;
+    acq_parameters.samples_per_code = acq_parameters.samples_per_ms * static_cast<float>(GPS_L5i_PERIOD * 1000.0);
 
-    vector_length_ = code_length_;
-
-    if (bit_transition_flag_)
-        {
-            vector_length_ *= 2;
-        }
-
+    vector_length_ = std::floor(acq_parameters.sampled_ms * acq_parameters.samples_per_ms) * (acq_parameters.bit_transition_flag ? 2 : 1);
     code_ = new gr_complex[vector_length_];
 
     if (item_type_.compare("cshort") == 0)
@@ -95,10 +97,10 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
         {
             item_size_ = sizeof(gr_complex);
         }
-    acq_parameters.samples_per_code = code_length_;
-    acq_parameters.samples_per_ms = code_length_;
+
+    acq_parameters.ms_per_code = 1;
     acq_parameters.it_size = item_size_;
-    acq_parameters.sampled_ms = 1;
+    num_codes_ = acq_parameters.sampled_ms;
     acq_parameters.num_doppler_bins_step2 = configuration_->property(role + ".second_nbins", 4);
     acq_parameters.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
     acq_parameters.make_2_steps = configuration_->property(role + ".make_two_steps", false);
@@ -106,15 +108,11 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
     acquisition_ = pcps_make_acquisition(acq_parameters);
     DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
 
-    stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
-    DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id() << ")";
-
     if (item_type_.compare("cbyte") == 0)
         {
             cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
             float_to_complex_ = gr::blocks::float_to_complex::make();
         }
-
     channel_ = 0;
     threshold_ = 0.0;
     doppler_step_ = 0;
@@ -205,9 +203,18 @@ void GpsL5iPcpsAcquisition::init()
 
 void GpsL5iPcpsAcquisition::set_local_code()
 {
-    gps_l5i_code_gen_complex_sampled(code_, gnss_synchro_->PRN, fs_in_);
+    std::complex<float>* code = new std::complex<float>[code_length_];
+
+    gps_l5i_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_);
+
+    for (unsigned int i = 0; i < num_codes_; i++)
+        {
+            memcpy(&(code_[i * code_length_]), code,
+                sizeof(gr_complex) * code_length_);
+        }
 
     acquisition_->set_local_code(code_);
+    delete[] code;
 }
 
 
@@ -246,18 +253,19 @@ void GpsL5iPcpsAcquisition::connect(gr::top_block_sptr top_block)
 {
     if (item_type_.compare("gr_complex") == 0)
         {
-            top_block->connect(stream_to_vector_, 0, acquisition_, 0);
+            // nothing to connect
         }
     else if (item_type_.compare("cshort") == 0)
         {
-            top_block->connect(stream_to_vector_, 0, acquisition_, 0);
+            // nothing to connect
         }
     else if (item_type_.compare("cbyte") == 0)
         {
+            // Since a byte-based acq implementation is not available,
+            // we just convert cshorts to gr_complex
             top_block->connect(cbyte_to_float_x2_, 0, float_to_complex_, 0);
             top_block->connect(cbyte_to_float_x2_, 1, float_to_complex_, 1);
-            top_block->connect(float_to_complex_, 0, stream_to_vector_, 0);
-            top_block->connect(stream_to_vector_, 0, acquisition_, 0);
+            top_block->connect(float_to_complex_, 0, acquisition_, 0);
         }
     else
         {
@@ -270,20 +278,17 @@ void GpsL5iPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 {
     if (item_type_.compare("gr_complex") == 0)
         {
-            top_block->disconnect(stream_to_vector_, 0, acquisition_, 0);
+            // nothing to disconnect
         }
     else if (item_type_.compare("cshort") == 0)
         {
-            top_block->disconnect(stream_to_vector_, 0, acquisition_, 0);
+            // nothing to disconnect
         }
     else if (item_type_.compare("cbyte") == 0)
         {
-            // Since a byte-based acq implementation is not available,
-            // we just convert cshorts to gr_complex
             top_block->disconnect(cbyte_to_float_x2_, 0, float_to_complex_, 0);
             top_block->disconnect(cbyte_to_float_x2_, 1, float_to_complex_, 1);
-            top_block->disconnect(float_to_complex_, 0, stream_to_vector_, 0);
-            top_block->disconnect(stream_to_vector_, 0, acquisition_, 0);
+            top_block->disconnect(float_to_complex_, 0, acquisition_, 0);
         }
     else
         {
@@ -296,11 +301,11 @@ gr::basic_block_sptr GpsL5iPcpsAcquisition::get_left_block()
 {
     if (item_type_.compare("gr_complex") == 0)
         {
-            return stream_to_vector_;
+            return acquisition_;
         }
     else if (item_type_.compare("cshort") == 0)
         {
-            return stream_to_vector_;
+            return acquisition_;
         }
     else if (item_type_.compare("cbyte") == 0)
         {

@@ -48,7 +48,7 @@ using google::LogMessage;
 galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(
     unsigned int sampled_ms,
     unsigned int max_dwells,
-    unsigned int doppler_max, long fs_in,
+    unsigned int doppler_max, int64_t fs_in,
     int samples_per_ms, int samples_per_code,
     bool bit_transition_flag,
     bool dump,
@@ -67,7 +67,7 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
     unsigned int sampled_ms,
     unsigned int max_dwells,
     unsigned int doppler_max,
-    long fs_in,
+    int64_t fs_in,
     int samples_per_ms,
     int samples_per_code,
     bool bit_transition_flag,
@@ -80,7 +80,7 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
                              gr::io_signature::make(0, 0, sizeof(gr_complex)))
 {
     this->message_port_register_out(pmt::mp("events"));
-    d_sample_counter = 0;  // SAMPLE COUNTER
+    d_sample_counter = 0ULL;  // SAMPLE COUNTER
     d_active = false;
     d_state = 0;
     d_fs_in = fs_in;
@@ -280,7 +280,8 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::init()
 
     d_gnss_synchro->Acq_delay_samples = 0.0;
     d_gnss_synchro->Acq_doppler_hz = 0.0;
-    d_gnss_synchro->Acq_samplestamp_samples = 0;
+    d_gnss_synchro->Acq_doppler_step = 0U;
+    d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
     d_mag = 0.0;
     d_input_power = 0.0;
     const double GALILEO_TWO_PI = 6.283185307179600;
@@ -328,7 +329,8 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::set_state(int state)
         {
             d_gnss_synchro->Acq_delay_samples = 0.0;
             d_gnss_synchro->Acq_doppler_hz = 0.0;
-            d_gnss_synchro->Acq_samplestamp_samples = 0;
+            d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
+            d_gnss_synchro->Acq_doppler_step = 0U;
             d_well_count = 0;
             d_mag = 0.0;
             d_input_power = 0.0;
@@ -376,14 +378,15 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                         //restart acquisition variables
                         d_gnss_synchro->Acq_delay_samples = 0.0;
                         d_gnss_synchro->Acq_doppler_hz = 0.0;
-                        d_gnss_synchro->Acq_samplestamp_samples = 0;
+                        d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
+                        d_gnss_synchro->Acq_doppler_step = 0U;
                         d_well_count = 0;
                         d_mag = 0.0;
                         d_input_power = 0.0;
                         d_test_statistics = 0.0;
                         d_state = 1;
                     }
-                d_sample_counter += ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
                 consume_each(ninput_items[0]);
 
                 break;
@@ -407,7 +410,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                         d_state = 2;
                     }
                 d_buffer_count += buff_increment;
-                d_sample_counter += buff_increment;  // sample counter
+                d_sample_counter += static_cast<uint64_t>(buff_increment);  // sample counter
                 consume_each(buff_increment);
                 break;
             }
@@ -419,7 +422,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                     {
                         memcpy(&d_inbuffer[d_buffer_count], in, sizeof(gr_complex) * (d_fft_size - d_buffer_count));
                     }
-                d_sample_counter += (d_fft_size - d_buffer_count);  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_fft_size - d_buffer_count);  // sample counter
 
                 // initialize acquisition algorithm
                 int doppler;
@@ -633,7 +636,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                                         d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
                                         d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
                                         d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
-
+                                        d_gnss_synchro->Acq_doppler_step = d_doppler_step;
                                         // 5- Compute the test statistics and compare to the threshold
                                         d_test_statistics = d_mag / d_input_power;
                                     }
@@ -806,7 +809,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
 
                 acquisition_message = 1;
                 this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
-                d_sample_counter += ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
                 consume_each(ninput_items[0]);
                 break;
             }
@@ -826,7 +829,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                 d_active = false;
                 d_state = 0;
 
-                d_sample_counter += ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
                 consume_each(ninput_items[0]);
                 acquisition_message = 2;
                 this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));

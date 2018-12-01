@@ -36,9 +36,13 @@
 #include "gnss_block_interface.h"
 #include "short_x2_to_cshort.h"
 #include "complex_float_to_complex_byte.h"
+#ifdef GR_GREATER_38
+#include <gnuradio/filter/freq_xlating_fir_filter.h>
+#else
 #include <gnuradio/filter/freq_xlating_fir_filter_ccf.h>
 #include <gnuradio/filter/freq_xlating_fir_filter_fcf.h>
 #include <gnuradio/filter/freq_xlating_fir_filter_scf.h>
+#endif
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/complex_to_float.h>
 #include <gnuradio/blocks/char_to_short.h>
@@ -95,6 +99,7 @@ private:
     gr::filter::freq_xlating_fir_filter_fcf::sptr freq_xlating_fir_filter_fcf_;
     gr::filter::freq_xlating_fir_filter_scf::sptr freq_xlating_fir_filter_scf_;
     ConfigurationInterface* config_;
+    int decimation_factor_;
     bool dump_;
     std::string dump_filename_;
     std::string input_item_type_;
@@ -114,7 +119,6 @@ private:
     gr::blocks::float_to_short::sptr float_to_short_2_;
     short_x2_to_cshort_sptr short_x2_to_cshort_;
     complex_float_to_complex_byte_sptr complex_to_complex_byte_;
-    void init();
 };
 
 #endif  // GNSS_SDR_FREQ_XLATING_FIR_FILTER_H_

@@ -68,7 +68,7 @@ public:
      */
     inline std::string implementation() override
     {
-        return "GPS_L1_CA_PCPS_Acquisition";
+        return "GPS_L1_CA_PCPS_Acquisition_Fpga";
     }
 
     inline size_t item_size() override
@@ -133,6 +133,11 @@ public:
      * \brief If state = 1, it forces the block to start acquiring from the first sample
      */
     void set_state(int state) override;
+
+    /*!
+     * \brief Stop running acquisition
+     */
+    void stop_acquisition() override;
 
 private:
     ConfigurationInterface* configuration_;

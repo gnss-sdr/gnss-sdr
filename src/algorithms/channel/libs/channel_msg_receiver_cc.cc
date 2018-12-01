@@ -33,6 +33,7 @@
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
+#include <cstdint>
 
 using google::LogMessage;
 
@@ -48,7 +49,7 @@ void channel_msg_receiver_cc::msg_handler_events(pmt::pmt_t msg)
     bool result = false;
     try
         {
-            long int message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(msg);
             switch (message)
                 {
                 case 1:  // positive acquisition

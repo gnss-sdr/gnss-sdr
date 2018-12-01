@@ -42,7 +42,7 @@ using google::LogMessage;
 
 
 SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_streams, unsigned int out_streams, gr::msg_queue::sptr queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
+    std::string role, uint32_t in_streams, uint32_t out_streams, gr::msg_queue::sptr queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
 {
     std::string default_filename = "../data/my_capture.dat";
     std::string default_dump_filename = "../data/my_capture_dump.dat";
@@ -59,8 +59,8 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface*
     adc_bits_ = configuration->property(role + ".adc_bits", 4);
     n_channels_ = configuration->property(role + ".total_channels", 1);
     sel_ch_ = configuration->property(role + ".sel_ch", 1);
-    item_size_ = sizeof(int);
-    long bytes_seek = configuration->property(role + ".bytes_to_skip", 65536);
+    item_size_ = sizeof(int32_t);
+    int64_t bytes_seek = configuration->property(role + ".bytes_to_skip", 65536);
     double sample_size_byte = static_cast<double>(adc_bits_) / 4.0;
 
     if (sel_ch_ > n_channels_)
@@ -69,17 +69,22 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface*
         }
     if (n_channels_ > 1)
         {
-            for (unsigned int i = 0; i < (n_channels_ - 1); i++)
+            for (uint32_t i = 0; i < n_channels_; i++)
                 {
-                    null_sinks_.push_back(gr::blocks::null_sink::make(item_size_));
+                    null_sinks_.push_back(gr::blocks::null_sink::make(sizeof(gr_complex)));
+                    unpack_spir_vec_.push_back(make_unpack_spir_gss6450_samples(adc_bits_));
+                    if (endian_swap_)
+                        {
+                            endian_vec_.push_back(gr::blocks::endian_swap::make(item_size_));
+                        }
                 }
-            DLOG(INFO) << "NUMBER OF NULL SINKS = " << null_sinks_.size();
         }
     try
         {
             file_source_ = gr::blocks::file_source::make(item_size_, filename_.c_str(), repeat_);
             file_source_->seek(bytes_seek / item_size_, SEEK_SET);
-            unpack_spir_ = make_unpack_spir_gss6450_samples(adc_bits_);
+
+
             deint_ = gr::blocks::deinterleave::make(item_size_);
         }
     catch (const std::exception& e)
@@ -133,8 +138,8 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface*
 
             if (size > 0)
                 {
-                    samples_ = static_cast<unsigned long long>(floor(static_cast<double>(static_cast<long>(size) - static_cast<long>(bytes_seek)) / (sample_size_byte * static_cast<double>(n_channels_))));
-                    samples_ = samples_ - static_cast<unsigned long long>(ceil(0.002 * sampling_frequency_));  //process all the samples available in the file excluding the last 2 ms
+                    samples_ = static_cast<uint64_t>(floor(static_cast<double>(static_cast<int64_t>(size) - static_cast<int64_t>(bytes_seek)) / (sample_size_byte * static_cast<double>(n_channels_))));
+                    samples_ = samples_ - static_cast<uint64_t>(ceil(0.002 * sampling_frequency_));  //process all the samples available in the file excluding the last 2 ms
                 }
         }
 
@@ -143,22 +148,20 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface*
     LOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
     std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]" << std::endl;
 
-    valve_ = gnss_sdr_make_valve(sizeof(gr_complex), samples_, queue_);
-    DLOG(INFO) << "valve(" << valve_->unique_id() << ")";
+    for (uint32_t i = 0; i < (n_channels_); i++)
+        {
+            valve_vec_.push_back(gnss_sdr_make_valve(sizeof(gr_complex), samples_, queue_));
+            if (dump_)
+                {
+                    std::string tmp_str = dump_filename_ + "_ch" + std::to_string(i);
+                    sink_vec_.push_back(gr::blocks::file_sink::make(sizeof(gr_complex), tmp_str.c_str()));
+                }
+            if (enable_throttle_control_)
+                {
+                    throttle_vec_.push_back(gr::blocks::throttle::make(sizeof(gr_complex), sampling_frequency_));
+                }
+        }
 
-    if (dump_)
-        {
-            sink_ = gr::blocks::file_sink::make(sizeof(gr_complex), dump_filename_.c_str());
-            DLOG(INFO) << "file_sink(" << sink_->unique_id() << ")";
-        }
-    if (enable_throttle_control_)
-        {
-            throttle_ = gr::blocks::throttle::make(sizeof(gr_complex), sampling_frequency_);
-        }
-    if (endian_swap_)
-        {
-            endian_ = gr::blocks::endian_swap::make(item_size_);
-        }
     DLOG(INFO) << "File source filename " << filename_;
     DLOG(INFO) << "Samples " << samples_;
     DLOG(INFO) << "Sampling frequency " << sampling_frequency_;
@@ -188,39 +191,55 @@ void SpirGSS6450FileSignalSource::connect(gr::top_block_sptr top_block)
     if (samples_ > 0)
         {
             top_block->connect(file_source_, 0, deint_, 0);
+
             if (endian_swap_)
                 {
-                    top_block->connect(deint_, sel_ch_ - 1, endian_, 0);
-                    top_block->connect(endian_, 0, unpack_spir_, 0);
+                    top_block->connect(deint_, sel_ch_ - 1, endian_vec_.at(sel_ch_ - 1), 0);
+                    top_block->connect(endian_vec_.at(sel_ch_ - 1), 0, unpack_spir_vec_.at(sel_ch_ - 1), 0);
                 }
             else
                 {
-                    top_block->connect(deint_, sel_ch_ - 1, unpack_spir_, 0);
+                    top_block->connect(deint_, sel_ch_ - 1, unpack_spir_vec_.at(sel_ch_ - 1), 0);
                 }
+
             if (n_channels_ > 1)
                 {
-                    unsigned int aux = 0;
-                    for (unsigned int i = 0; i < n_channels_; i++)
+                    uint32_t aux = 0;
+                    for (uint32_t i = 0; i < n_channels_; i++)
                         {
                             if (i != (sel_ch_ - 1))
                                 {
-                                    top_block->connect(deint_, i, null_sinks_.at(aux), 0);
+                                    if (endian_swap_)
+                                        {
+                                            top_block->connect(deint_, i, endian_vec_.at(i), 0);
+                                            top_block->connect(endian_vec_.at(i), 0, unpack_spir_vec_.at(i), 0);
+                                        }
+                                    else
+                                        {
+                                            top_block->connect(deint_, i, unpack_spir_vec_.at(i), 0);
+                                        }
+
                                     aux++;
                                 }
                         }
                 }
-            if (enable_throttle_control_)
+            for (uint32_t i = 0; i < n_channels_; i++)
                 {
-                    top_block->connect(unpack_spir_, 0, throttle_, 0);
-                    top_block->connect(throttle_, 0, valve_, 0);
-                }
-            else
-                {
-                    top_block->connect(unpack_spir_, 0, valve_, 0);
-                }
-            if (dump_)
-                {
-                    top_block->connect(valve_, 0, sink_, 0);
+                    if (enable_throttle_control_)
+                        {
+                            top_block->connect(unpack_spir_vec_.at(i), 0, throttle_vec_.at(i), 0);
+                            top_block->connect(throttle_vec_.at(i), 0, valve_vec_.at(i), 0);
+                        }
+                    else
+                        {
+                            top_block->connect(unpack_spir_vec_.at(i), 0, valve_vec_.at(i), 0);
+                        }
+                    if (dump_)
+                        {
+                            top_block->connect(valve_vec_.at(i), 0, sink_vec_.at(i), 0);
+                        }
+
+                    top_block->connect(valve_vec_.at(i), 0, null_sinks_.at(i), 0);
                 }
         }
     else
@@ -237,37 +256,52 @@ void SpirGSS6450FileSignalSource::disconnect(gr::top_block_sptr top_block)
             top_block->disconnect(file_source_, 0, deint_, 0);
             if (endian_swap_)
                 {
-                    top_block->disconnect(deint_, sel_ch_ - 1, endian_, 0);
-                    top_block->disconnect(endian_, 0, unpack_spir_, 0);
+                    top_block->disconnect(deint_, sel_ch_ - 1, endian_vec_.at(sel_ch_ - 1), 0);
+                    top_block->disconnect(endian_vec_.at(sel_ch_ - 1), 0, unpack_spir_vec_.at(sel_ch_ - 1), 0);
                 }
             else
                 {
-                    top_block->disconnect(deint_, sel_ch_ - 1, unpack_spir_, 0);
+                    top_block->disconnect(deint_, sel_ch_ - 1, unpack_spir_vec_.at(sel_ch_ - 1), 0);
                 }
             if (n_channels_ > 1)
                 {
-                    unsigned int aux = 0;
-                    for (unsigned int i = 0; i < n_channels_; i++)
+                    uint32_t aux = 0;
+                    for (uint32_t i = 0; i < n_channels_; i++)
                         {
                             if (i != (sel_ch_ - 1))
                                 {
-                                    top_block->disconnect(deint_, i, null_sinks_.at(aux), 0);
+                                    if (endian_swap_)
+                                        {
+                                            top_block->disconnect(deint_, i, endian_vec_.at(i), 0);
+                                            top_block->disconnect(endian_vec_.at(i), 0, unpack_spir_vec_.at(i), 0);
+                                        }
+                                    else
+                                        {
+                                            top_block->disconnect(deint_, i, unpack_spir_vec_.at(i), 0);
+                                        }
+
                                     aux++;
                                 }
                         }
                 }
-            if (enable_throttle_control_)
+
+            for (uint32_t i = 0; i < (n_channels_); i++)
                 {
-                    top_block->disconnect(unpack_spir_, 0, throttle_, 0);
-                    top_block->disconnect(throttle_, 0, valve_, 0);
-                }
-            else
-                {
-                    top_block->disconnect(unpack_spir_, 0, valve_, 0);
-                }
-            if (dump_)
-                {
-                    top_block->disconnect(valve_, 0, sink_, 0);
+                    if (enable_throttle_control_)
+                        {
+                            top_block->disconnect(unpack_spir_vec_.at(i), 0, throttle_vec_.at(i), 0);
+                            top_block->disconnect(throttle_vec_.at(i), 0, valve_vec_.at(i), 0);
+                        }
+                    else
+                        {
+                            top_block->disconnect(unpack_spir_vec_.at(i), 0, valve_vec_.at(i), 0);
+                        }
+                    if (dump_)
+                        {
+                            top_block->disconnect(valve_vec_.at(i), 0, sink_vec_.at(i), 0);
+                        }
+
+                    top_block->disconnect(valve_vec_.at(i), 0, null_sinks_.at(i), 0);
                 }
         }
     else
@@ -283,22 +317,12 @@ gr::basic_block_sptr SpirGSS6450FileSignalSource::get_left_block()
     return gr::blocks::file_source::sptr();
 }
 
+gr::basic_block_sptr SpirGSS6450FileSignalSource::get_right_block(int RF_channel)
+{
+    return valve_vec_.at(RF_channel);
+}
 
 gr::basic_block_sptr SpirGSS6450FileSignalSource::get_right_block()
 {
-    if (samples_ > 0)
-        {
-            return valve_;
-        }
-    else
-        {
-            if (enable_throttle_control_)
-                {
-                    return throttle_;
-                }
-            else
-                {
-                    return unpack_spir_;
-                }
-        }
+    return valve_vec_.at(0);
 }

@@ -1,6 +1,6 @@
 /*!
  * \file cpu_multicorrelator_real_codes.cc
- * \brief High optimized CPU vector multiTAP correlator class with real-valued local codes
+ * \brief Highly optimized CPU vector multiTAP correlator class with real-valued local codes
  * \authors <ul>
  *          <li> Javier Arribas, 2015. jarribas(at)cttc.es
  *          <li> Cillian O'Driscoll, 2017. cillian.odriscoll(at)gmail.com
@@ -37,7 +37,6 @@
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cmath>
 
-
 cpu_multicorrelator_real_codes::cpu_multicorrelator_real_codes()
 {
     d_sig_in = nullptr;
@@ -47,6 +46,7 @@ cpu_multicorrelator_real_codes::cpu_multicorrelator_real_codes()
     d_local_codes_resampled = nullptr;
     d_code_length_chips = 0;
     d_n_correlators = 0;
+    d_use_high_dynamics_resampler = true;
 }
 
 
@@ -84,6 +84,7 @@ bool cpu_multicorrelator_real_codes::set_local_code_and_taps(
     d_local_code_in = local_code_in;
     d_shifts_chips = shifts_chips;
     d_code_length_chips = code_length_chips;
+
     return true;
 }
 
@@ -97,27 +98,68 @@ bool cpu_multicorrelator_real_codes::set_input_output_vectors(std::complex<float
 }
 
 
-void cpu_multicorrelator_real_codes::update_local_code(int correlator_length_samples, float rem_code_phase_chips, float code_phase_step_chips)
+void cpu_multicorrelator_real_codes::update_local_code(int correlator_length_samples, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips)
 {
-    volk_gnsssdr_32f_xn_resampler_32f_xn(d_local_codes_resampled,
-        d_local_code_in,
-        rem_code_phase_chips,
-        code_phase_step_chips,
-        d_shifts_chips,
-        d_code_length_chips,
-        d_n_correlators,
-        correlator_length_samples);
+    if (d_use_high_dynamics_resampler)
+        {
+            volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn(d_local_codes_resampled,
+                d_local_code_in,
+                rem_code_phase_chips,
+                code_phase_step_chips,
+                code_phase_rate_step_chips,
+                d_shifts_chips,
+                d_code_length_chips,
+                d_n_correlators,
+                correlator_length_samples);
+        }
+    else
+        {
+            volk_gnsssdr_32f_xn_resampler_32f_xn(d_local_codes_resampled,
+                d_local_code_in,
+                rem_code_phase_chips,
+                code_phase_step_chips,
+                d_shifts_chips,
+                d_code_length_chips,
+                d_n_correlators,
+                correlator_length_samples);
+        }
 }
 
-
+// Overload Carrier_wipeoff_multicorrelator_resampler to ensure back compatibility
+bool cpu_multicorrelator_real_codes::Carrier_wipeoff_multicorrelator_resampler(
+    float rem_carrier_phase_in_rad,
+    float phase_step_rad,
+    float phase_rate_step_rad,
+    float rem_code_phase_chips,
+    float code_phase_step_chips,
+    float code_phase_rate_step_chips,
+    int signal_length_samples)
+{
+    update_local_code(signal_length_samples, rem_code_phase_chips, code_phase_step_chips, code_phase_rate_step_chips);
+    // Regenerate phase at each call in order to avoid numerical issues
+    lv_32fc_t phase_offset_as_complex[1];
+    phase_offset_as_complex[0] = lv_cmake(std::cos(rem_carrier_phase_in_rad), -std::sin(rem_carrier_phase_in_rad));
+    // call VOLK_GNSSSDR kernel
+    if (d_use_high_dynamics_resampler)
+        {
+            volk_gnsssdr_32fc_32f_high_dynamic_rotator_dot_prod_32fc_xn(d_corr_out, d_sig_in, std::exp(lv_32fc_t(0.0, -phase_step_rad)), std::exp(lv_32fc_t(0.0, -phase_rate_step_rad)), phase_offset_as_complex, const_cast<const float**>(d_local_codes_resampled), d_n_correlators, signal_length_samples);
+        }
+    else
+        {
+            volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn(d_corr_out, d_sig_in, std::exp(lv_32fc_t(0.0, -phase_step_rad)), phase_offset_as_complex, const_cast<const float**>(d_local_codes_resampled), d_n_correlators, signal_length_samples);
+        }
+    return true;
+}
+// Overload Carrier_wipeoff_multicorrelator_resampler to ensure back compatibility
 bool cpu_multicorrelator_real_codes::Carrier_wipeoff_multicorrelator_resampler(
     float rem_carrier_phase_in_rad,
     float phase_step_rad,
     float rem_code_phase_chips,
     float code_phase_step_chips,
+    float code_phase_rate_step_chips,
     int signal_length_samples)
 {
-    update_local_code(signal_length_samples, rem_code_phase_chips, code_phase_step_chips);
+    update_local_code(signal_length_samples, rem_code_phase_chips, code_phase_step_chips, code_phase_rate_step_chips);
     // Regenerate phase at each call in order to avoid numerical issues
     lv_32fc_t phase_offset_as_complex[1];
     phase_offset_as_complex[0] = lv_cmake(std::cos(rem_carrier_phase_in_rad), -std::sin(rem_carrier_phase_in_rad));
@@ -140,4 +182,11 @@ bool cpu_multicorrelator_real_codes::free()
             d_local_codes_resampled = nullptr;
         }
     return true;
+}
+
+
+void cpu_multicorrelator_real_codes::set_high_dynamics_resampler(
+    bool use_high_dynamics_resampler)
+{
+    d_use_high_dynamics_resampler = use_high_dynamics_resampler;
 }

@@ -102,11 +102,15 @@ bool acquisition_dump_reader::read_binary_acq()
     Mat_VarFree(var2_);
 
     var2_ = Mat_VarRead(matfile, "sample_counter");
-    sample_counter = *static_cast<long unsigned int*>(var2_->data);
+    sample_counter = *static_cast<uint64_t*>(var2_->data);
     Mat_VarFree(var2_);
 
     var2_ = Mat_VarRead(matfile, "d_positive_acq");
     positive_acq = *static_cast<int*>(var2_->data);
+    Mat_VarFree(var2_);
+
+    var2_ = Mat_VarRead(matfile, "num_dwells");
+    num_dwells = *static_cast<int*>(var2_->data);
     Mat_VarFree(var2_);
 
     var2_ = Mat_VarRead(matfile, "PRN");
@@ -180,6 +184,7 @@ acquisition_dump_reader::acquisition_dump_reader(const std::string& basename,
     d_doppler_step = doppler_step_;
     d_samples_per_code = samples_per_code_;
     d_num_doppler_bins = 0;
+    num_dwells = 0;
 
     acquisition_dump_reader(basename,
         sat_,
@@ -211,6 +216,7 @@ acquisition_dump_reader::acquisition_dump_reader(const std::string& basename,
     threshold = 0.0;
     positive_acq = 0;
     sample_counter = 0;
+    num_dwells = 0;
     PRN = 0;
     if (d_doppler_step == 0) d_doppler_step = 1;
     d_num_doppler_bins = static_cast<unsigned int>(ceil(static_cast<double>(static_cast<int>(d_doppler_max) - static_cast<int>(-d_doppler_max)) / static_cast<double>(d_doppler_step)));

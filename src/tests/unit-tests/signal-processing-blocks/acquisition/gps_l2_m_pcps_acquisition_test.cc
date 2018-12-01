@@ -37,7 +37,11 @@
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
+#ifdef GR_GREATER_38
+#include <gnuradio/analog/sig_source.h>
+#else
 #include <gnuradio/analog/sig_source_c.h>
+#endif
 #include <gnuradio/blocks/interleaved_short_to_complex.h>
 #include <gnuradio/blocks/char_to_short.h>
 #include <gnuradio/msg_queue.h>
@@ -83,7 +87,7 @@ void GpsL2MPcpsAcquisitionTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            long int message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(msg);
             rx_message = message;
         }
     catch (boost::bad_any_cast &e)
@@ -205,6 +209,14 @@ void GpsL2MPcpsAcquisitionTest::plot_grid()
                     Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                     Gnuplot g1("impulses");
+                    if (FLAGS_show_plots)
+                        {
+                            g1.showonscreen();  // window output
+                        }
+                    else
+                        {
+                            g1.disablescreen();
+                        }
                     g1.set_title("GPS L2CM signal acquisition for satellite PRN #" + std::to_string(gnss_synchro.PRN));
                     g1.set_xlabel("Doppler [Hz]");
                     g1.set_ylabel("Sample");
@@ -213,7 +225,6 @@ void GpsL2MPcpsAcquisitionTest::plot_grid()
 
                     g1.savetops("GPS_L2CM_acq_grid");
                     g1.savetopdf("GPS_L2CM_acq_grid");
-                    if (FLAGS_show_plots) g1.showonscreen();
                 }
             catch (const GnuplotException &ge)
                 {

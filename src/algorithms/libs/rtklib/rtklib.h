@@ -71,7 +71,6 @@
 #define socket_t int
 #define closesocket close
 #define lock_t pthread_mutex_t
-#define thread_t pthread_t
 #define initlock(f) pthread_mutex_init(f, NULL)
 #define rtk_lock(f) pthread_mutex_lock(f)
 #define rtk_unlock(f) pthread_mutex_unlock(f)
@@ -201,7 +200,7 @@ const int NSATGLO = (MAXPRNGLO - MINPRNGLO + 1); //!<   number of GLONASS satell
 const int NSYSGLO = 1;
 */
 const int MINPRNGAL = 1;                          //!<   min satellite PRN number of Galileo
-const int MAXPRNGAL = 30;                         //!<   max satellite PRN number of Galileo
+const int MAXPRNGAL = 36;                         //!<   max satellite PRN number of Galileo
 const int NSATGAL = (MAXPRNGAL - MINPRNGAL + 1);  //!<   number of Galileo satellites
 const int NSYSGAL = 1;
 
@@ -452,27 +451,28 @@ typedef struct
 } alm_t;
 
 
-typedef struct {        /* GPS/QZS/GAL broadcast ephemeris type */
-    int sat;            /* satellite number */
-    int iode,iodc;      /* IODE,IODC */
-    int sva;            /* SV accuracy (URA index) */
-    int svh;            /* SV health (0:ok) */
-    int week;           /* GPS/QZS: gps week, GAL: galileo week */
-    int code;           /* GPS/QZS: code on L2, GAL/BDS: data sources */
-    int flag;           /* GPS/QZS: L2 P data flag, BDS: nav type */
-    gtime_t toe,toc,ttr; /* Toe,Toc,T_trans */
-                        /* SV orbit parameters */
-    double A,e,i0,OMG0,omg,M0,deln,OMGd,idot;
-    double crc,crs,cuc,cus,cic,cis;
-    double toes;        /* Toe (s) in week */
-    double fit;         /* fit interval (h) */
-    double f0,f1,f2;    /* SV clock parameters (af0,af1,af2) */
-    double tgd[4];      /* group delay parameters */
-                        /* GPS/QZS:tgd[0]=TGD */
-                        /* GAL    :tgd[0]=BGD E5a/E1,tgd[1]=BGD E5b/E1 */
-                        /* BDS    :tgd[0]=BGD1,tgd[1]=BGD2 */
-    double isc[4];      /* GPS    :isc[0]=ISCL1, isc[1]=ISCL2, isc[2]=ISCL5I, isc[3]=ISCL5Q */
-    double Adot,ndot;   /* Adot,ndot for CNAV */
+typedef struct
+{                          /* GPS/QZS/GAL broadcast ephemeris type */
+    int sat;               /* satellite number */
+    int iode, iodc;        /* IODE,IODC */
+    int sva;               /* SV accuracy (URA index) */
+    int svh;               /* SV health (0:ok) */
+    int week;              /* GPS/QZS: gps week, GAL: galileo week */
+    int code;              /* GPS/QZS: code on L2, GAL/BDS: data sources */
+    int flag;              /* GPS/QZS: L2 P data flag, BDS: nav type */
+    gtime_t toe, toc, ttr; /* Toe,Toc,T_trans */
+                           /* SV orbit parameters */
+    double A, e, i0, OMG0, omg, M0, deln, OMGd, idot;
+    double crc, crs, cuc, cus, cic, cis;
+    double toes;       /* Toe (s) in week */
+    double fit;        /* fit interval (h) */
+    double f0, f1, f2; /* SV clock parameters (af0,af1,af2) */
+    double tgd[4];     /* group delay parameters */
+                       /* GPS/QZS:tgd[0]=TGD */
+                       /* GAL    :tgd[0]=BGD E5a/E1,tgd[1]=BGD E5b/E1 */
+                       /* BDS    :tgd[0]=BGD1,tgd[1]=BGD2 */
+    double isc[4];     /* GPS    :isc[0]=ISCL1, isc[1]=ISCL2, isc[2]=ISCL5I, isc[3]=ISCL5Q */
+    double Adot, ndot; /* Adot,ndot for CNAV */
 } eph_t;
 
 
@@ -1210,7 +1210,7 @@ typedef struct
     char local[1024]; /* local file path */
     int topts[4];     /* time options {poff,tint,toff,tretry} (s) */
     gtime_t tnext;    /* next retry time (gpst) */
-    thread_t thread;  /* download thread */
+    pthread_t thread;  /* download thread */
 } ftp_t;
 
 
@@ -1283,7 +1283,7 @@ typedef struct
     stream_t stream[8];         /* streams {rov,base,corr,sol1,sol2,logr,logb,logc} */
     stream_t *moni;             /* monitor stream */
     unsigned int tick;          /* start tick */
-    thread_t thread;            /* server thread */
+    pthread_t thread;            /* server thread */
     int cputime;                /* CPU time (ms) for a processing cycle */
     int prcout;                 /* missing observation data count */
     lock_t lock;                /* lock flag */

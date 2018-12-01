@@ -83,7 +83,7 @@ static inline void volk_gnsssdr_16ic_xn_resampler_fast_16ic_xn_generic(lv_16sc_t
                     // resample code for current tap
                     local_code_chip_index = round(code_phase_step_chips * (float)(n) + rem_code_phase_chips[current_vector] - 0.5f);
                     if (local_code_chip_index < 0.0) local_code_chip_index += code_length_chips;
-                    if (local_code_chip_index > (code_length_chips - 1)) local_code_chip_index -= code_length_chips;
+                    if (local_code_chip_index > ((int)code_length_chips - 1)) local_code_chip_index -= code_length_chips;
                     result[current_vector][n] = local_code[local_code_chip_index];
                 }
         }
@@ -180,7 +180,7 @@ static inline void volk_gnsssdr_16ic_xn_resampler_fast_16ic_xn_a_sse2(lv_16sc_t*
                 {
                     local_code_chip_index[0] = (int)(code_phase_step_chips * (float)(number) + rem_code_phase_chips[current_vector]);
                     if (local_code_chip_index[0] < 0.0) local_code_chip_index[0] += code_length_chips - 1;
-                    if (local_code_chip_index[0] > (code_length_chips - 1)) local_code_chip_index[0] -= code_length_chips;
+                    if (local_code_chip_index[0] > ((int)code_length_chips - 1)) local_code_chip_index[0] -= code_length_chips;
                     _result[current_vector][number] = local_code[local_code_chip_index[0]];
                 }
         }
@@ -276,7 +276,7 @@ static inline void volk_gnsssdr_16ic_xn_resampler_fast_16ic_xn_u_sse2(lv_16sc_t*
                 {
                     local_code_chip_index[0] = (int)(code_phase_step_chips * (float)(number) + rem_code_phase_chips[current_vector]);
                     if (local_code_chip_index[0] < 0.0) local_code_chip_index[0] += code_length_chips - 1;
-                    if (local_code_chip_index[0] > (code_length_chips - 1)) local_code_chip_index[0] -= code_length_chips;
+                    if (local_code_chip_index[0] > ((int)code_length_chips - 1)) local_code_chip_index[0] -= code_length_chips;
                     _result[current_vector][number] = local_code[local_code_chip_index[0]];
                 }
         }
@@ -378,7 +378,7 @@ static inline void volk_gnsssdr_16ic_xn_resampler_fast_16ic_xn_neon(lv_16sc_t** 
                 {
                     local_code_chip_index[0] = (int)(code_phase_step_chips * (float)(number) + rem_code_phase_chips[current_vector]);
                     if (local_code_chip_index[0] < 0.0) local_code_chip_index[0] += code_length_chips - 1;
-                    if (local_code_chip_index[0] > (code_length_chips - 1)) local_code_chip_index[0] -= code_length_chips;
+                    if (local_code_chip_index[0] > ((int)code_length_chips - 1)) local_code_chip_index[0] -= code_length_chips;
                     _result[current_vector][number] = local_code[local_code_chip_index[0]];
                 }
         }

@@ -130,6 +130,11 @@ public:
      */
     void set_state(int state) override;
 
+    /*!
+     * \brief Stop running acquisition
+     */
+    void stop_acquisition() override;
+
 private:
     ConfigurationInterface* configuration_;
     pcps_quicksync_acquisition_cc_sptr acquisition_cc_;

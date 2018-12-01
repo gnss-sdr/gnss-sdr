@@ -26,7 +26,7 @@ from volk_gnsssdr_arch_defs import arch_dict
 machines = list()
 machine_dict = dict()
 
-class machine_class:
+class machine_class(object):
     def __init__(self, name, archs):
         self.name = name
         self.archs = list()
@@ -36,7 +36,7 @@ class machine_class:
             arch = arch_dict[arch_name]
             self.archs.append(arch)
             self.arch_names.append(arch_name)
-        self.alignment = max(map(lambda a: a.alignment, self.archs))
+        self.alignment = max([a.alignment for a in self.archs])
     
     def __repr__(self): return self.name
 

@@ -45,6 +45,11 @@
 
 using google::LogMessage;
 
+void GpsL1CaDllPllTracking::stop_tracking()
+{
+    tracking_->stop_tracking();
+}
+
 GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
@@ -57,8 +62,23 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     int fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     trk_param.fs_in = fs_in;
+    trk_param.high_dyn = configuration->property(role + ".high_dyn", false);
+    if (configuration->property(role + ".smoother_length", 10) < 1)
+        {
+            trk_param.smoother_length = 1;
+            std::cout << TEXT_RED << "WARNING: GPS L1 C/A. smoother_length must be bigger than 0. It has been set to 1" << TEXT_RESET << std::endl;
+        }
+    else
+        {
+            trk_param.smoother_length = configuration->property(role + ".smoother_length", 10);
+        }
     bool dump = configuration->property(role + ".dump", false);
     trk_param.dump = dump;
+    std::string default_dump_filename = "./track_ch";
+    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
+    trk_param.dump_filename = dump_filename;
+    bool dump_mat = configuration->property(role + ".dump_mat", true);
+    trk_param.dump_mat = dump_mat;
     float pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
     if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
     trk_param.pll_bw_hz = pll_bw_hz;
@@ -73,9 +93,6 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     trk_param.early_late_space_chips = early_late_space_chips;
     float early_late_space_narrow_chips = configuration->property(role + ".early_late_space_narrow_chips", 0.5);
     trk_param.early_late_space_narrow_chips = early_late_space_narrow_chips;
-    std::string default_dump_filename = "./track_ch";
-    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
-    trk_param.dump_filename = dump_filename;
     int vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
     trk_param.vector_length = vector_length;
     int symbols_extended_correlator = configuration->property(role + ".extend_correlation_symbols", 1);

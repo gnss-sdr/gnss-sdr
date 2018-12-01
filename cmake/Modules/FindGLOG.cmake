@@ -68,6 +68,10 @@ macro(_FIND_GLOG_LIBRARIES _var)
                 /usr/lib/alpha-linux-gnu
                 /usr/lib64
                 /usr/lib
+                ${GLOG_ROOT}/lib
+                $ENV{GLOG_ROOT}/lib
+                ${GLOG_ROOT}/lib64
+                $ENV{GLOG_ROOT}/lib64
           PATH_SUFFIXES lib
       )
     mark_as_advanced(${_var})

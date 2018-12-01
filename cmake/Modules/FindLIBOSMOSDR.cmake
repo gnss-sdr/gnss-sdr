@@ -28,12 +28,16 @@
 # LIBOSMOSDR_LIBRARIES The libosmosdr libraries
 # LIBOSMOSDR_INCLUDE_DIR The location of libosmosdr headers
 
+include(FindPkgConfig)
 pkg_check_modules(LIBOSMOSDR_PKG libosmosdr)
+
 find_path(LIBOSMOSDR_INCLUDE_DIR NAMES osmosdr.h
   PATHS
-  ${LIBOSMOSDR_PKG_INCLUDE_DIRS}
-  /usr/include
-  /usr/local/include
+    ${LIBOSMOSDR_PKG_INCLUDE_DIRS}
+    /usr/include
+    /usr/local/include
+    ${LIBOSMOSDR_ROOT}/include
+    $ENV{LIBOSMOSDR_ROOT}/include
 )
 
 find_library(LIBOSMOSDR_LIBRARIES NAMES osmosdr
@@ -65,7 +69,11 @@ find_library(LIBOSMOSDR_LIBRARIES NAMES osmosdr
     /usr/lib/x86_64-linux-gnux32
     /usr/lib/alpha-linux-gnu
     /usr/lib64
-  )
+    ${LIBOSMOSDR_ROOT}/lib
+    $ENV{LIBOSMOSDR_ROOT}/lib
+    ${LIBOSMOSDR_ROOT}/lib64
+    $ENV{LIBOSMOSDR_ROOT}/lib64
+)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(LIBOSMOSDR DEFAULT_MSG LIBOSMOSDR_INCLUDE_DIR LIBOSMOSDR_LIBRARIES)

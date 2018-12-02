@@ -46,8 +46,13 @@ using google::LogMessage;
 
 
 TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_streams, unsigned int out_streams,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
+    std::string role,
+    unsigned int in_streams,
+    unsigned int out_streams,
+    boost::shared_ptr<gr::msg_queue> queue) : role_(role),
+                                              in_streams_(in_streams),
+                                              out_streams_(out_streams),
+                                              queue_(queue)
 {
     std::string default_filename = "../data/my_capture.dat";
     std::string default_item_type = "byte";
@@ -56,7 +61,7 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
     double default_seconds_to_skip = 0.0;
 
     samples_ = configuration->property(role + ".samples", 0ULL);
-    sampling_frequency_ = configuration->property(role + ".sampling_frequency", 0);
+    sampling_frequency_ = configuration->property(role + ".sampling_frequency", 0LL);
     filename_ = configuration->property(role + ".filename", default_filename);
 
     // override value with commandline flag, if present
@@ -72,7 +77,7 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     enable_throttle_control_ = configuration->property(role + ".enable_throttle_control", false);
     double seconds_to_skip = configuration->property(role + ".seconds_to_skip", default_seconds_to_skip);
-    long bytes_to_skip = 0;
+    int64_t bytes_to_skip = 0;
 
     if (item_type_.compare("byte") == 0)
         {
@@ -122,7 +127,7 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
 
             if (seconds_to_skip > 0)
                 {
-                    bytes_to_skip = static_cast<long>(
+                    bytes_to_skip = static_cast<int64_t>(
                         seconds_to_skip * sampling_frequency_ / 4);
                     if (is_complex_)
                         {

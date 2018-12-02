@@ -43,6 +43,7 @@
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
+#include <cstdint>
 #include <string>
 
 
@@ -98,12 +99,12 @@ public:
         return repeat_;
     }
 
-    inline long sampling_frequency() const
+    inline int64_t sampling_frequency() const
     {
         return sampling_frequency_;
     }
 
-    inline long samples() const
+    inline uint64_t samples() const
     {
         return samples_;
     }
@@ -130,7 +131,7 @@ public:
 
 private:
     uint64_t samples_;
-    long sampling_frequency_;
+    int64_t sampling_frequency_;
     std::string filename_;
     std::string item_type_;
     bool repeat_;

@@ -44,8 +44,13 @@ using google::LogMessage;
 
 
 TwoBitCpxFileSignalSource::TwoBitCpxFileSignalSource(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_streams, unsigned int out_streams,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
+    std::string role,
+    unsigned int in_streams,
+    unsigned int out_streams,
+    boost::shared_ptr<gr::msg_queue> queue) : role_(role),
+                                              in_streams_(in_streams),
+                                              out_streams_(out_streams),
+                                              queue_(queue)
 {
     std::string default_filename = "../data/my_capture.dat";
     std::string default_item_type = "byte";
@@ -56,8 +61,8 @@ TwoBitCpxFileSignalSource::TwoBitCpxFileSignalSource(ConfigurationInterface* con
     filename_ = configuration->property(role + ".filename", default_filename);
 
     // override value with commandline flag, if present
-    if (FLAGS_signal_source.compare("-") != 0) filename_ = FLAGS_signal_source;
-    if (FLAGS_s.compare("-") != 0) filename_ = FLAGS_s;
+    if (FLAGS_signal_source != "-") filename_ = FLAGS_signal_source;
+    if (FLAGS_s != "-") filename_ = FLAGS_s;
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     repeat_ = configuration->property(role + ".repeat", false);
@@ -65,7 +70,7 @@ TwoBitCpxFileSignalSource::TwoBitCpxFileSignalSource(ConfigurationInterface* con
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     enable_throttle_control_ = configuration->property(role + ".enable_throttle_control", false);
 
-    if (item_type_.compare("byte") == 0)
+    if (item_type_ == "byte")
         {
             item_size_ = sizeof(char);
         }
@@ -177,9 +182,7 @@ TwoBitCpxFileSignalSource::TwoBitCpxFileSignalSource(ConfigurationInterface* con
 }
 
 
-TwoBitCpxFileSignalSource::~TwoBitCpxFileSignalSource()
-{
-}
+TwoBitCpxFileSignalSource::~TwoBitCpxFileSignalSource() = default;
 
 
 void TwoBitCpxFileSignalSource::connect(gr::top_block_sptr top_block)

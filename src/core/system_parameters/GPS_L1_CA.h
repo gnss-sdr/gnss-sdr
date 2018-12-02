@@ -221,7 +221,7 @@ const std::vector<std::pair<int32_t, int32_t>> HEALTH_SV32({{283, 6}});
 
 // page 25 - Health (PRN 1 - 24)
 const std::vector<std::pair<int32_t, int32_t>> T_OA({{69, 8}});
-const double T_OA_LSB = TWO_P12;
+const int32_t T_OA_LSB = TWO_P12;
 const std::vector<std::pair<int32_t, int32_t>> WN_A({{77, 8}});
 const std::vector<std::pair<int32_t, int32_t>> HEALTH_SV1({{91, 6}});
 const std::vector<std::pair<int32_t, int32_t>> HEALTH_SV2({{97, 6}});

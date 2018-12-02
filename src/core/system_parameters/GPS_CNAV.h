@@ -171,11 +171,11 @@ const double CNAV_DELTA_TLS_LSB = 1;
 const std::vector<std::pair<int32_t, int32_t> > CNAV_TOT({{172, 16}});
 const double CNAV_TOT_LSB = TWO_P4;
 const std::vector<std::pair<int32_t, int32_t> > CNAV_WN_OT({{188, 13}});
-const double CNAV_WN_OT_LSB = 1;
+const int32_t CNAV_WN_OT_LSB = 1;
 const std::vector<std::pair<int32_t, int32_t> > CNAV_WN_LSF({{201, 13}});
-const double CNAV_WN_LSF_LSB = 1;
+const int32_t CNAV_WN_LSF_LSB = 1;
 const std::vector<std::pair<int32_t, int32_t> > CNAV_DN({{214, 4}});
-const double CNAV_DN_LSB = 1;
+const int32_t CNAV_DN_LSB = 1;
 const std::vector<std::pair<int32_t, int32_t> > CNAV_DELTA_TLSF({{218, 8}});
 const double CNAV_DELTA_TLSF_LSB = 1;
 

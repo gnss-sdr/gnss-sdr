@@ -54,9 +54,9 @@
 class Gps_Navigation_Message
 {
 private:
-    uint64_t read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter);
-    int64_t read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter);
-    bool read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter);
+    uint64_t read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
+    int64_t read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
+    bool read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
     void print_gps_word_bytes(uint32_t GPS_word);
 
 public:
@@ -198,7 +198,7 @@ public:
     /*!
      * \brief Decodes the GPS NAV message
      */
-    int32_t subframe_decoder(char *subframe);
+    int32_t subframe_decoder(char* subframe);
 
     /*!
      * \brief Computes the Coordinated Universal Time (UTC) and

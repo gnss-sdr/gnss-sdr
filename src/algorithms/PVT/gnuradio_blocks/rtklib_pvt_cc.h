@@ -59,7 +59,7 @@ typedef boost::shared_ptr<rtklib_pvt_cc> rtklib_pvt_cc_sptr;
 
 rtklib_pvt_cc_sptr rtklib_make_pvt_cc(uint32_t n_channels,
     const Pvt_Conf& conf_,
-    rtk_t& rtk);
+    const rtk_t& rtk);
 
 /*!
  * \brief This class implements a block that computes the PVT solution using the RTKLIB integrated library
@@ -69,7 +69,7 @@ class rtklib_pvt_cc : public gr::sync_block
 private:
     friend rtklib_pvt_cc_sptr rtklib_make_pvt_cc(uint32_t nchannels,
         const Pvt_Conf& conf_,
-        rtk_t& rtk);
+        const rtk_t& rtk);
 
     void msg_handler_telemetry(pmt::pmt_t msg);
 
@@ -131,9 +131,9 @@ private:
     bool send_sys_v_ttff_msg(ttff_msgbuf ttff);
     std::chrono::time_point<std::chrono::system_clock> start, end;
 
-    bool save_gnss_synchro_map_xml(const std::string file_name);  //debug helper function
+    bool save_gnss_synchro_map_xml(const std::string& file_name);  //debug helper function
 
-    bool load_gnss_synchro_map_xml(const std::string file_name);  //debug helper function
+    bool load_gnss_synchro_map_xml(const std::string& file_name);  //debug helper function
 
     bool d_xml_storage;
     std::string xml_base_path;
@@ -147,7 +147,7 @@ private:
 public:
     rtklib_pvt_cc(uint32_t nchannels,
         const Pvt_Conf& conf_,
-        rtk_t& rtk);
+        const rtk_t& rtk);
 
     /*!
      * \brief Get latest set of ephemeris from PVT block

@@ -70,13 +70,13 @@ std::string INIReader::Get(std::string section, std::string name, std::string de
 }
 
 
-long INIReader::GetInteger(std::string section, std::string name, long default_value)
+int64_t INIReader::GetInteger(std::string section, std::string name, int64_t default_value)
 {
     std::string valstr = Get(section, name, "");
     const char* value = valstr.c_str();
     char* end;
     // This parses "1234" (decimal) and also "0x4D2" (hex)
-    long n = strtol(value, &end, 0);
+    int64_t n = strtol(value, &end, 0);
     return end > value ? n : default_value;
 }
 

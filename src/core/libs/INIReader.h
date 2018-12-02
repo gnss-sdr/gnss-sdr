@@ -48,6 +48,7 @@
 #ifndef __INIREADER_H__
 #define __INIREADER_H__
 
+#include <cstdint>
 #include <map>
 #include <string>
 
@@ -69,7 +70,7 @@ public:
         std::string default_value);
 
     //! Get an integer (long) value from INI file, returning default_value if not found.
-    long GetInteger(std::string section, std::string name, long default_value);
+    int64_t GetInteger(std::string section, std::string name, int64_t default_value);
 
 private:
     int _error;

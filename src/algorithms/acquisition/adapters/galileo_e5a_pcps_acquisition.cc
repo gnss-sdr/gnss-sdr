@@ -34,7 +34,6 @@
 #include "Galileo_E5a.h"
 #include "gnss_sdr_flags.h"
 #include "acq_conf.h"
-#include <boost/lexical_cast.hpp>
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
@@ -42,12 +41,13 @@
 
 using google::LogMessage;
 
-void GalileoE5aPcpsAcquisition::stop_acquisition()
-{
-}
 
 GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(role),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams)
 {
     Acq_Conf acq_parameters = Acq_Conf();
     configuration_ = configuration;
@@ -58,7 +58,7 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
 
     item_type_ = configuration_->property(role + ".item_type", default_item_type);
 
-    long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 32000000);
+    int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 32000000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in_;
     acq_parameters.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / Galileo_E5a_CODE_CHIP_RATE_HZ) * static_cast<float>(acq_parameters.fs_in)));
@@ -91,11 +91,11 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
 
     code_ = new gr_complex[vector_length_];
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
         }
-    else if (item_type_.compare("cshort") == 0)
+    else if (item_type_ == "cshort")
         {
             item_size_ = sizeof(lv_16sc_t);
         }
@@ -118,7 +118,7 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
     channel_ = 0;
     threshold_ = 0.0;
     doppler_step_ = 0;
-    gnss_synchro_ = 0;
+    gnss_synchro_ = nullptr;
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
@@ -136,6 +136,11 @@ GalileoE5aPcpsAcquisition::~GalileoE5aPcpsAcquisition()
 }
 
 
+void GalileoE5aPcpsAcquisition::stop_acquisition()
+{
+}
+
+
 void GalileoE5aPcpsAcquisition::set_channel(unsigned int channel)
 {
     channel_ = channel;
@@ -145,7 +150,7 @@ void GalileoE5aPcpsAcquisition::set_channel(unsigned int channel)
 
 void GalileoE5aPcpsAcquisition::set_threshold(float threshold)
 {
-    float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
+    float pfa = configuration_->property(role_ + std::to_string(channel_) + ".pfa", 0.0);
 
     if (pfa == 0.0)
         {
@@ -264,11 +269,11 @@ void GalileoE5aPcpsAcquisition::set_state(int state)
 
 void GalileoE5aPcpsAcquisition::connect(gr::top_block_sptr top_block __attribute__((unused)))
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             // nothing to connect
         }
-    else if (item_type_.compare("cshort") == 0)
+    else if (item_type_ == "cshort")
         {
             // nothing to connect
         }
@@ -281,11 +286,11 @@ void GalileoE5aPcpsAcquisition::connect(gr::top_block_sptr top_block __attribute
 
 void GalileoE5aPcpsAcquisition::disconnect(gr::top_block_sptr top_block __attribute__((unused)))
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             // nothing to disconnect
         }
-    else if (item_type_.compare("cshort") == 0)
+    else if (item_type_ == "cshort")
         {
             // nothing to disconnect
         }

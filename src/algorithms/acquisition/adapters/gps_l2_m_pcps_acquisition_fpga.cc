@@ -43,13 +43,14 @@
 
 using google::LogMessage;
 
-void GpsL2MPcpsAcquisitionFpga::stop_acquisition()
-{
-}
 
 GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
-    ConfigurationInterface* configuration, std::string role,
-    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration,
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(role),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams)
 {
     //pcpsconf_t acq_parameters;
     pcpsconf_fpga_t acq_parameters;
@@ -62,7 +63,7 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     item_type_ = configuration_->property(role + ".item_type", default_item_type);
     //float pfa =  configuration_->property(role + ".pfa", 0.0);
 
-    long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
+    int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in_;
     //if_ = configuration_->property(role + ".if", 0);
@@ -153,7 +154,7 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
 
     channel_ = 0;
     doppler_step_ = 0;
-    gnss_synchro_ = 0;
+    gnss_synchro_ = nullptr;
 
 
     //    vector_length_ = code_length_;
@@ -206,6 +207,11 @@ GpsL2MPcpsAcquisitionFpga::~GpsL2MPcpsAcquisitionFpga()
 }
 
 
+void GpsL2MPcpsAcquisitionFpga::stop_acquisition()
+{
+}
+
+
 void GpsL2MPcpsAcquisitionFpga::set_channel(unsigned int channel)
 {
     channel_ = channel;
@@ -215,7 +221,7 @@ void GpsL2MPcpsAcquisitionFpga::set_channel(unsigned int channel)
 
 void GpsL2MPcpsAcquisitionFpga::set_threshold(float threshold)
 {
-    //    float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
+    //    float pfa = configuration_->property(role_ + std::to_string(channel_) + ".pfa", 0.0);
     //
     //    if (pfa == 0.0)
     //        {

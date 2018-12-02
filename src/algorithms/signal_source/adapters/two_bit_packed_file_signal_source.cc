@@ -46,8 +46,13 @@ using google::LogMessage;
 
 
 TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_streams, unsigned int out_streams,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
+    std::string role,
+    unsigned int in_streams,
+    unsigned int out_streams,
+    boost::shared_ptr<gr::msg_queue> queue) : role_(role),
+                                              in_streams_(in_streams),
+                                              out_streams_(out_streams),
+                                              queue_(queue)
 {
     std::string default_filename = "../data/my_capture.dat";
     std::string default_item_type = "byte";
@@ -55,13 +60,13 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
     std::string default_sample_type = "real";
     double default_seconds_to_skip = 0.0;
 
-    samples_ = configuration->property(role + ".samples", 0L);
+    samples_ = configuration->property(role + ".samples", 0);
     sampling_frequency_ = configuration->property(role + ".sampling_frequency", 0);
     filename_ = configuration->property(role + ".filename", default_filename);
 
     // override value with commandline flag, if present
-    if (FLAGS_signal_source.compare("-") != 0) filename_ = FLAGS_signal_source;
-    if (FLAGS_s.compare("-") != 0) filename_ = FLAGS_s;
+    if (FLAGS_signal_source != "-") filename_ = FLAGS_signal_source;
+    if (FLAGS_s != "-") filename_ = FLAGS_s;
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     big_endian_items_ = configuration->property(role + ".big_endian_items", true);
@@ -72,13 +77,13 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     enable_throttle_control_ = configuration->property(role + ".enable_throttle_control", false);
     double seconds_to_skip = configuration->property(role + ".seconds_to_skip", default_seconds_to_skip);
-    long bytes_to_skip = 0;
+    int64_t bytes_to_skip = 0;
 
-    if (item_type_.compare("byte") == 0)
+    if (item_type_ == "byte")
         {
             item_size_ = sizeof(char);
         }
-    else if (item_type_.compare("short") == 0)
+    else if (item_type_ == "short")
         {
             // If we have shorts stored in little endian format, might as
             // well read them in as bytes.
@@ -97,16 +102,16 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
             item_size_ = sizeof(char);
         }
 
-    if (sample_type_.compare("real") == 0)
+    if (sample_type_ == "real")
         {
             is_complex_ = false;
         }
-    else if (sample_type_.compare("iq") == 0)
+    else if (sample_type_ == "iq")
         {
             is_complex_ = true;
             reverse_interleaving_ = false;
         }
-    else if (sample_type_.compare("qi") == 0)
+    else if (sample_type_ == "qi")
         {
             is_complex_ = true;
             reverse_interleaving_ = true;
@@ -122,7 +127,7 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
 
             if (seconds_to_skip > 0)
                 {
-                    bytes_to_skip = static_cast<long>(
+                    bytes_to_skip = static_cast<int64_t>(
                         seconds_to_skip * sampling_frequency_ / 4);
                     if (is_complex_)
                         {

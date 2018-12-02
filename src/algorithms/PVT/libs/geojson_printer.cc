@@ -68,7 +68,7 @@ GeoJSON_Printer::GeoJSON_Printer(const std::string& base_path)
         {
             geojson_base_path = p.string();
         }
-    if (geojson_base_path.compare(".") != 0)
+    if (geojson_base_path != ".")
         {
             std::cout << "GeoJSON files will be stored at " << geojson_base_path << std::endl;
         }
@@ -83,7 +83,7 @@ GeoJSON_Printer::~GeoJSON_Printer()
 }
 
 
-bool GeoJSON_Printer::set_headers(std::string filename, bool time_tag_name)
+bool GeoJSON_Printer::set_headers(const std::string& filename, bool time_tag_name)
 {
     boost::posix_time::ptime pt = boost::posix_time::second_clock::local_time();
     tm timeinfo = boost::posix_time::to_tm(pt);
@@ -140,7 +140,7 @@ bool GeoJSON_Printer::set_headers(std::string filename, bool time_tag_name)
             DLOG(INFO) << "GeoJSON printer writing on " << filename.c_str();
 
             // Set iostream numeric format and precision
-            geojson_file.setf(geojson_file.fixed, geojson_file.floatfield);
+            geojson_file.setf(geojson_file.std::ofstream::fixed, geojson_file.std::ofstream::floatfield);
             geojson_file << std::setprecision(14);
 
             // Writing the header
@@ -171,7 +171,7 @@ bool GeoJSON_Printer::print_position(const std::shared_ptr<Pvt_Solution>& positi
     double longitude;
     double height;
 
-    std::shared_ptr<Pvt_Solution> position_ = position;
+    const std::shared_ptr<Pvt_Solution>& position_ = position;
 
     if (print_average_values == false)
         {

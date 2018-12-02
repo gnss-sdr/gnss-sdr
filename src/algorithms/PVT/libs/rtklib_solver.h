@@ -87,7 +87,7 @@ private:
 public:
     sol_t pvt_sol;
     ssat_t pvt_ssat[MAXSAT];
-    rtklib_solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, rtk_t& rtk);
+    rtklib_solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, const rtk_t& rtk);
     ~rtklib_solver();
 
     bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, bool flag_averaging);

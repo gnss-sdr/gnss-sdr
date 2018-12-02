@@ -41,13 +41,14 @@
 
 using google::LogMessage;
 
-void GalileoE1PcpsAmbiguousAcquisitionFpga::stop_acquisition()
-{
-}
 
 GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
-    ConfigurationInterface* configuration, std::string role,
-    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration,
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(role),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams)
 {
     //printf("top acq constructor start\n");
     pcpsconf_fpga_t acq_parameters;
@@ -59,8 +60,8 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
 
     //    item_type_ = configuration_->property(role + ".item_type", default_item_type);
 
-    long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
-    long fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+    int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
+    int64_t fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in;
     //if_ = configuration_->property(role + ".if", 0);
     //acq_parameters.freq = if_;
@@ -296,7 +297,7 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     channel_ = 0;
     //threshold_ = 0.0;
     doppler_step_ = 0;
-    gnss_synchro_ = 0;
+    gnss_synchro_ = nullptr;
     //printf("top acq constructor end\n");
 }
 
@@ -307,6 +308,11 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::~GalileoE1PcpsAmbiguousAcquisitionFpga()
     //delete[] code_;
     delete[] d_all_fft_codes_;
     //printf("top acq destructor end\n");
+}
+
+
+void GalileoE1PcpsAmbiguousAcquisitionFpga::stop_acquisition()
+{
 }
 
 

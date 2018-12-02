@@ -35,6 +35,7 @@
 #ifndef GNSS_SDR_CONFIGURATION_INTERFACE_H_
 #define GNSS_SDR_CONFIGURATION_INTERFACE_H_
 
+#include <cstdint>
 #include <string>
 
 /*!
@@ -54,10 +55,12 @@ public:
     virtual ~ConfigurationInterface() {}
     virtual std::string property(std::string property_name, std::string default_value) = 0;
     virtual bool property(std::string property_name, bool default_value) = 0;
-    virtual long property(std::string property_name, long default_value) = 0;
-    virtual int property(std::string property_name, int default_value) = 0;
-    virtual unsigned int property(std::string property_name, unsigned int default_value) = 0;
-    virtual unsigned short property(std::string property_name, unsigned short default_value) = 0;
+    virtual int64_t property(std::string property_name, int64_t default_value) = 0;
+    virtual uint64_t property(std::string property_name, uint64_t default_value) = 0;
+    virtual int32_t property(std::string property_name, int32_t default_value) = 0;
+    virtual uint32_t property(std::string property_name, uint32_t default_value) = 0;
+    virtual int16_t property(std::string property_name, int16_t default_value) = 0;
+    virtual uint16_t property(std::string property_name, uint16_t default_value) = 0;
     virtual float property(std::string property_name, float default_value) = 0;
     virtual double property(std::string property_name, double default_value) = 0;
     virtual void set_property(std::string property_name, std::string value) = 0;

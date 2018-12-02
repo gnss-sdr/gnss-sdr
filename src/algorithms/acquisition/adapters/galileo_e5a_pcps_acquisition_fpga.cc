@@ -33,7 +33,6 @@
 #include "galileo_e5_signal_processing.h"
 #include "Galileo_E5a.h"
 #include "gnss_sdr_flags.h"
-#include <boost/lexical_cast.hpp>
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
@@ -41,12 +40,13 @@
 
 using google::LogMessage;
 
-void GalileoE5aPcpsAcquisitionFpga::stop_acquisition()
-{
-}
 
 GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(role),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams)
 {
     //printf("creating the E5A acquisition");
     pcpsconf_fpga_t acq_parameters;
@@ -58,8 +58,8 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
 
     //item_type_ = configuration_->property(role + ".item_type", default_item_type);
 
-    long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 32000000);
-    long fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+    int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 32000000);
+    int64_t fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in;
     //acq_parameters.freq = 0;
 
@@ -209,7 +209,7 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     channel_ = 0;
     //threshold_ = 0.0;
     doppler_step_ = 0;
-    gnss_synchro_ = 0;
+    gnss_synchro_ = nullptr;
     //printf("creating the E5A acquisition end");
 }
 
@@ -218,6 +218,11 @@ GalileoE5aPcpsAcquisitionFpga::~GalileoE5aPcpsAcquisitionFpga()
 {
     //delete[] code_;
     delete[] d_all_fft_codes_;
+}
+
+
+void GalileoE5aPcpsAcquisitionFpga::stop_acquisition()
+{
 }
 
 
@@ -231,7 +236,7 @@ void GalileoE5aPcpsAcquisitionFpga::set_channel(unsigned int channel)
 
 void GalileoE5aPcpsAcquisitionFpga::set_threshold(float threshold)
 {
-    //    float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
+    //    float pfa = configuration_->property(role_ + std::to_string(channel_) + ".pfa", 0.0);
     //
     //    if (pfa == 0.0)
     //        {

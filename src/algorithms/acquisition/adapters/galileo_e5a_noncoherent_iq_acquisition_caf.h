@@ -49,7 +49,8 @@ class GalileoE5aNoncoherentIQAcquisitionCaf : public AcquisitionInterface
 {
 public:
     GalileoE5aNoncoherentIQAcquisitionCaf(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role,
+        unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~GalileoE5aNoncoherentIQAcquisitionCaf();
@@ -150,7 +151,7 @@ private:
     unsigned int doppler_step_;
     unsigned int sampled_ms_;
     unsigned int max_dwells_;
-    long fs_in_;
+    int64_t fs_in_;
     bool dump_;
     std::string dump_filename_;
     int Zero_padding;

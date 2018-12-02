@@ -44,6 +44,7 @@ Ls_Pvt::Ls_Pvt() : Pvt_Solution()
 {
 }
 
+
 arma::vec Ls_Pvt::bancroftPos(const arma::mat& satpos, const arma::vec& obs)
 {
     // BANCROFT Calculation of preliminary coordinates for a GPS receiver based on pseudoranges
@@ -233,9 +234,9 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat& satpos, const arma::vec& obs, 
                             Rot_X = Ls_Pvt::rotateSatellite(traveltime, X.col(i));  //armadillo
 
                             //--- Find DOA and range of satellites
-                            double* azim = 0;
-                            double* elev = 0;
-                            double* dist = 0;
+                            double* azim = nullptr;
+                            double* elev = nullptr;
+                            double* dist = nullptr;
                             topocent(azim, elev, dist, pos.subvec(0, 2), Rot_X - pos.subvec(0, 2));
 
                             if (traveltime < 0.1 && nmbOfSatellites > 3)

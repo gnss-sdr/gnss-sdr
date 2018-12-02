@@ -70,7 +70,7 @@ Gpx_Printer::Gpx_Printer(const std::string& base_path)
         {
             gpx_base_path = p.string();
         }
-    if (gpx_base_path.compare(".") != 0)
+    if (gpx_base_path != ".")
         {
             std::cout << "GPX files will be stored at " << gpx_base_path << std::endl;
         }
@@ -79,7 +79,7 @@ Gpx_Printer::Gpx_Printer(const std::string& base_path)
 }
 
 
-bool Gpx_Printer::set_headers(std::string filename, bool time_tag_name)
+bool Gpx_Printer::set_headers(const std::string& filename, bool time_tag_name)
 {
     boost::posix_time::ptime pt = boost::posix_time::second_clock::local_time();
     tm timeinfo = boost::posix_time::to_tm(pt);
@@ -134,7 +134,7 @@ bool Gpx_Printer::set_headers(std::string filename, bool time_tag_name)
         {
             DLOG(INFO) << "GPX printer writing on " << filename.c_str();
             // Set iostream numeric format and precision
-            gpx_file.setf(gpx_file.fixed, gpx_file.floatfield);
+            gpx_file.setf(gpx_file.std::ofstream::fixed, gpx_file.std::ofstream::floatfield);
             gpx_file << std::setprecision(14);
             gpx_file << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl
                      << "<gpx version=\"1.1\" creator=\"GNSS-SDR\"" << std::endl
@@ -164,7 +164,7 @@ bool Gpx_Printer::print_position(const std::shared_ptr<rtklib_solver>& position,
     double height;
 
     positions_printed = true;
-    std::shared_ptr<rtklib_solver> position_ = position;
+    const std::shared_ptr<rtklib_solver>& position_ = position;
 
     double speed_over_ground = position_->get_speed_over_ground();    // expressed in m/s
     double course_over_ground = position_->get_course_over_ground();  // expressed in deg

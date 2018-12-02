@@ -204,7 +204,7 @@ void GNSSFlowgraph::connect()
                         {
                             //TODO: Remove this array implementation and create generic multistream connector
                             //(if a signal source has more than 1 stream, then connect it to the multistream signal conditioner)
-                            if (sig_source_.at(i)->implementation().compare("Raw_Array_Signal_Source") == 0)
+                            if (sig_source_.at(i)->implementation() == "Raw_Array_Signal_Source")
                                 {
                                     //Multichannel Array
                                     std::cout << "ARRAY MODE" << std::endl;
@@ -566,7 +566,7 @@ void GNSSFlowgraph::disconnect()
                 {
                     // TODO: Remove this array implementation and create generic multistream connector
                     // (if a signal source has more than 1 stream, then connect it to the multistream signal conditioner)
-                    if (sig_source_.at(i)->implementation().compare("Raw_Array_Signal_Source") == 0)
+                    if (sig_source_.at(i)->implementation() == "Raw_Array_Signal_Source")
                         {
                             //Multichannel Array
                             for (int j = 0; j < GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_CHANNELS; j++)
@@ -1334,8 +1334,8 @@ void GNSSFlowgraph::init()
     // Mark old implementations as deprecated
     std::string default_str("Default");
     std::string obs_implementation = configuration_->property("Observables.implementation", default_str);
-    if ((obs_implementation.compare("GPS_L1_CA_Observables") == 0) || (obs_implementation.compare("GPS_L2C_Observables") == 0) ||
-        (obs_implementation.compare("Galileo_E1B_Observables") == 0) || (obs_implementation.compare("Galileo_E5A_Observables") == 0))
+    if ((obs_implementation == "GPS_L1_CA_Observables") || (obs_implementation == "GPS_L2C_Observables") ||
+        (obs_implementation == "Galileo_E1B_Observables") || (obs_implementation == "Galileo_E5A_Observables"))
         {
             std::cout << "WARNING: Implementation '" << obs_implementation << "' of the Observables block has been replaced by 'Hybrid_Observables'." << std::endl;
             std::cout << "Please update your configuration file." << std::endl;
@@ -1344,7 +1344,7 @@ void GNSSFlowgraph::init()
     pvt_ = block_factory_->GetPVT(configuration_);
     // Mark old implementations as deprecated
     std::string pvt_implementation = configuration_->property("PVT.implementation", default_str);
-    if ((pvt_implementation.compare("GPS_L1_CA_PVT") == 0) || (pvt_implementation.compare("Galileo_E1_PVT") == 0) || (pvt_implementation.compare("Hybrid_PVT") == 0))
+    if ((pvt_implementation == "GPS_L1_CA_PVT") || (pvt_implementation == "Galileo_E1_PVT") || (pvt_implementation == "Hybrid_PVT"))
         {
             std::cout << "WARNING: Implementation '" << pvt_implementation << "' of the PVT block has been replaced by 'RTKLIB_PVT'." << std::endl;
             std::cout << "Please update your configuration file." << std::endl;
@@ -1630,7 +1630,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                         {
                             for (unsigned int ch = 0; ch < channels_count_; ch++)
                                 {
-                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str().compare("1C") != 0)) untracked_satellite = false;
+                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str() != "1C")) untracked_satellite = false;
                                 }
                             if (untracked_satellite and configuration_->property("Channels_2S.count", 0) > 0)
                                 {
@@ -1661,7 +1661,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                         {
                             for (unsigned int ch = 0; ch < channels_count_; ch++)
                                 {
-                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str().compare("2S") != 0)) untracked_satellite = false;
+                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str() != "2S")) untracked_satellite = false;
                                 }
                             if (untracked_satellite and configuration_->property("Channels_1C.count", 0) > 0)
                                 {
@@ -1692,7 +1692,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                         {
                             for (unsigned int ch = 0; ch < channels_count_; ch++)
                                 {
-                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str().compare("L5") != 0)) untracked_satellite = false;
+                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str() != "L5")) untracked_satellite = false;
                                 }
                             if (untracked_satellite and configuration_->property("Channels_1C.count", 0) > 0)
                                 {
@@ -1723,7 +1723,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                         {
                             for (unsigned int ch = 0; ch < channels_count_; ch++)
                                 {
-                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str().compare("1B") != 0)) untracked_satellite = false;
+                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str() != "1B")) untracked_satellite = false;
                                 }
                             if (untracked_satellite)
                                 {
@@ -1748,7 +1748,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                         {
                             for (unsigned int ch = 0; ch < channels_count_; ch++)
                                 {
-                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str().compare("5X") != 0)) untracked_satellite = false;
+                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str() != "5X")) untracked_satellite = false;
                                 }
                             if (untracked_satellite)
                                 {
@@ -1773,7 +1773,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                         {
                             for (unsigned int ch = 0; ch < channels_count_; ch++)
                                 {
-                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str().compare("1G") != 0)) untracked_satellite = false;
+                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str() != "1G")) untracked_satellite = false;
                                 }
                             if (untracked_satellite)
                                 {
@@ -1798,7 +1798,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                         {
                             for (unsigned int ch = 0; ch < channels_count_; ch++)
                                 {
-                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str().compare("2G") != 0)) untracked_satellite = false;
+                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str() != "2G")) untracked_satellite = false;
                                 }
                             if (untracked_satellite)
                                 {

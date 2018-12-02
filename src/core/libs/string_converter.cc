@@ -34,17 +34,19 @@
 #include <sstream>
 
 
-StringConverter::StringConverter() {}
+StringConverter::StringConverter() = default;
 
-StringConverter::~StringConverter() {}
+
+StringConverter::~StringConverter() = default;
+
 
 bool StringConverter::convert(const std::string& value, bool default_value)
 {
-    if (value.compare("true") == 0)
+    if (value == "true")
         {
             return true;
         }
-    else if (value.compare("false") == 0)
+    else if (value == "false")
         {
             return false;
         }

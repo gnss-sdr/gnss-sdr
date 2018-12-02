@@ -44,7 +44,7 @@ ChannelFsm::ChannelFsm()
 }
 
 
-ChannelFsm::ChannelFsm(std::shared_ptr<AcquisitionInterface> acquisition) : acq_(acquisition)
+ChannelFsm::ChannelFsm(std::shared_ptr<AcquisitionInterface> acquisition) : acq_(std::move(acquisition))
 {
     trk_ = nullptr;
     channel_ = 0U;
@@ -162,21 +162,21 @@ bool ChannelFsm::Event_failed_tracking_standby()
 void ChannelFsm::set_acquisition(std::shared_ptr<AcquisitionInterface> acquisition)
 {
     std::lock_guard<std::mutex> lk(mx);
-    acq_ = acquisition;
+    acq_ = std::move(acquisition);
 }
 
 
 void ChannelFsm::set_tracking(std::shared_ptr<TrackingInterface> tracking)
 {
     std::lock_guard<std::mutex> lk(mx);
-    trk_ = tracking;
+    trk_ = std::move(tracking);
 }
 
 
 void ChannelFsm::set_queue(gr::msg_queue::sptr queue)
 {
     std::lock_guard<std::mutex> lk(mx);
-    queue_ = queue;
+    queue_ = std::move(queue);
 }
 
 

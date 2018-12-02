@@ -34,8 +34,8 @@
  */
 
 #include "file_configuration.h"
-#include "in_memory_configuration.h"
 #include "INIReader.h"
+#include "in_memory_configuration.h"
 #include "string_converter.h"
 #include <glog/logging.h>
 #include <string>
@@ -45,7 +45,7 @@ using google::LogMessage;
 
 FileConfiguration::FileConfiguration(std::string filename)
 {
-    filename_ = filename;
+    filename_ = std::move(filename);
     init();
 }
 
@@ -84,13 +84,13 @@ bool FileConfiguration::property(std::string property_name, bool default_value)
         }
     else
         {
-            std::string empty = "";
+            std::string empty;
             return converter_->convert(property(property_name, empty), default_value);
         }
 }
 
 
-long FileConfiguration::property(std::string property_name, long default_value)
+int64_t FileConfiguration::property(std::string property_name, int64_t default_value)
 {
     if (overrided_->is_present(property_name))
         {
@@ -98,7 +98,21 @@ long FileConfiguration::property(std::string property_name, long default_value)
         }
     else
         {
-            std::string empty = "";
+            std::string empty;
+            return converter_->convert(property(property_name, empty), default_value);
+        }
+}
+
+
+uint64_t FileConfiguration::property(std::string property_name, uint64_t default_value)
+{
+    if (overrided_->is_present(property_name))
+        {
+            return overrided_->property(property_name, default_value);
+        }
+    else
+        {
+            std::string empty;
             return converter_->convert(property(property_name, empty), default_value);
         }
 }
@@ -112,7 +126,7 @@ int FileConfiguration::property(std::string property_name, int default_value)
         }
     else
         {
-            std::string empty = "";
+            std::string empty;
             return converter_->convert(property(property_name, empty), default_value);
         }
 }
@@ -126,13 +140,13 @@ unsigned int FileConfiguration::property(std::string property_name, unsigned int
         }
     else
         {
-            std::string empty = "";
+            std::string empty;
             return converter_->convert(property(property_name, empty), default_value);
         }
 }
 
 
-unsigned short FileConfiguration::property(std::string property_name, unsigned short default_value)
+uint16_t FileConfiguration::property(std::string property_name, uint16_t default_value)
 {
     if (overrided_->is_present(property_name))
         {
@@ -140,7 +154,21 @@ unsigned short FileConfiguration::property(std::string property_name, unsigned s
         }
     else
         {
-            std::string empty = "";
+            std::string empty;
+            return converter_->convert(property(property_name, empty), default_value);
+        }
+}
+
+
+int16_t FileConfiguration::property(std::string property_name, int16_t default_value)
+{
+    if (overrided_->is_present(property_name))
+        {
+            return overrided_->property(property_name, default_value);
+        }
+    else
+        {
+            std::string empty;
             return converter_->convert(property(property_name, empty), default_value);
         }
 }
@@ -154,7 +182,7 @@ float FileConfiguration::property(std::string property_name, float default_value
         }
     else
         {
-            std::string empty = "";
+            std::string empty;
             return converter_->convert(property(property_name, empty), default_value);
         }
 }
@@ -168,7 +196,7 @@ double FileConfiguration::property(std::string property_name, double default_val
         }
     else
         {
-            std::string empty = "";
+            std::string empty;
             return converter_->convert(property(property_name, empty), default_value);
         }
 }

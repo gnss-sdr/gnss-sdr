@@ -172,10 +172,10 @@
 using google::LogMessage;
 
 
-GNSSBlockFactory::GNSSBlockFactory() {}
+GNSSBlockFactory::GNSSBlockFactory() = default;
 
 
-GNSSBlockFactory::~GNSSBlockFactory() {}
+GNSSBlockFactory::~GNSSBlockFactory() = default;
 
 
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalSource(
@@ -355,7 +355,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1C(
     std::string default_item_type = "gr_complex";
     std::string acq_item_type = configuration->property("Acquisition_1C" + appendix1 + ".item_type", default_item_type);
     std::string trk_item_type = configuration->property("Tracking_1C" + appendix2 + ".item_type", default_item_type);
-    if (acq_item_type.compare(trk_item_type))
+    if (acq_item_type.compare(trk_item_type) != 0)
         {
             LOG(ERROR) << "Acquisition and Tracking blocks must have the same input data type!";
         }
@@ -420,7 +420,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2S(
     std::string default_item_type = "gr_complex";
     std::string acq_item_type = configuration->property("Acquisition_2S" + appendix1 + ".item_type", default_item_type);
     std::string trk_item_type = configuration->property("Tracking_2S" + appendix2 + ".item_type", default_item_type);
-    if (acq_item_type.compare(trk_item_type))
+    if (acq_item_type.compare(trk_item_type) != 0)
         {
             LOG(ERROR) << "Acquisition and Tracking blocks must have the same input data type!";
         }
@@ -488,7 +488,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1B(
     std::string default_item_type = "gr_complex";
     std::string acq_item_type = configuration->property("Acquisition_1B" + appendix1 + ".item_type", default_item_type);
     std::string trk_item_type = configuration->property("Tracking_1B" + appendix2 + ".item_type", default_item_type);
-    if (acq_item_type.compare(trk_item_type))
+    if (acq_item_type.compare(trk_item_type) != 0)
         {
             LOG(ERROR) << "Acquisition and Tracking blocks must have the same input data type!";
         }
@@ -556,7 +556,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_5X(
     std::string default_item_type = "gr_complex";
     std::string acq_item_type = configuration->property("Acquisition_5X" + appendix1 + ".item_type", default_item_type);
     std::string trk_item_type = configuration->property("Tracking_5X" + appendix2 + ".item_type", default_item_type);
-    if (acq_item_type.compare(trk_item_type))
+    if (acq_item_type.compare(trk_item_type) != 0)
         {
             LOG(ERROR) << "Acquisition and Tracking blocks must have the same input data type!";
         }
@@ -625,7 +625,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1G(
     std::string default_item_type = "gr_complex";
     std::string acq_item_type = configuration->property("Acquisition_1G" + appendix1 + ".item_type", default_item_type);
     std::string trk_item_type = configuration->property("Tracking_1G" + appendix2 + ".item_type", default_item_type);
-    if (acq_item_type.compare(trk_item_type))
+    if (acq_item_type.compare(trk_item_type) != 0)
         {
             LOG(ERROR) << "Acquisition and Tracking blocks must have the same input data type!";
         }
@@ -694,7 +694,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2G(
     std::string default_item_type = "gr_complex";
     std::string acq_item_type = configuration->property("Acquisition_2G" + appendix1 + ".item_type", default_item_type);
     std::string trk_item_type = configuration->property("Tracking_2G" + appendix2 + ".item_type", default_item_type);
-    if (acq_item_type.compare(trk_item_type))
+    if (acq_item_type.compare(trk_item_type) != 0)
         {
             LOG(ERROR) << "Acquisition and Tracking blocks must have the same input data type!";
         }
@@ -762,7 +762,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_L5(
     std::string default_item_type = "gr_complex";
     std::string acq_item_type = configuration->property("Acquisition_L5" + appendix1 + ".item_type", default_item_type);
     std::string trk_item_type = configuration->property("Tracking_L5" + appendix2 + ".item_type", default_item_type);
-    if (acq_item_type.compare(trk_item_type))
+    if (acq_item_type.compare(trk_item_type) != 0)
         {
             LOG(ERROR) << "Acquisition and Tracking blocks must have the same input data type!";
         }
@@ -1505,7 +1505,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
     else if (implementation.compare("GPS_L1_CA_KF_Tracking") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new GpsL1CaKfTracking(configuration.get(), role, in_streams,
-                    out_streams));
+                out_streams));
             block = std::move(block_);
         }
     else if (implementation.compare("GPS_L1_CA_DLL_PLL_C_Aid_Tracking") == 0)
@@ -1886,7 +1886,7 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
     else if (implementation.compare("GPS_L1_CA_KF_Tracking") == 0)
         {
             std::unique_ptr<TrackingInterface> block_(new GpsL1CaKfTracking(configuration.get(), role, in_streams,
-                    out_streams));
+                out_streams));
             block = std::move(block_);
         }
     else if (implementation.compare("GPS_L1_CA_DLL_PLL_C_Aid_Tracking") == 0)

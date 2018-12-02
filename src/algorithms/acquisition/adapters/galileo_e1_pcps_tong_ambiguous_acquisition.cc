@@ -30,7 +30,6 @@
  */
 
 #include "galileo_e1_pcps_tong_ambiguous_acquisition.h"
-#include <boost/lexical_cast.hpp>
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
 #include "galileo_e1_signal_processing.h"
@@ -40,13 +39,14 @@
 
 using google::LogMessage;
 
-void GalileoE1PcpsTongAmbiguousAcquisition::stop_acquisition()
-{
-}
 
 GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
-    ConfigurationInterface* configuration, std::string role,
-    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration,
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(role),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams)
 {
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
@@ -57,7 +57,7 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
     item_type_ = configuration_->property(role + ".item_type",
         default_item_type);
 
-    long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
+    int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     dump_ = configuration_->property(role + ".dump", false);
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
@@ -90,7 +90,7 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
 
     code_ = new gr_complex[vector_length_];
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             acquisition_cc_ = pcps_tong_make_acquisition_cc(sampled_ms_, doppler_max_,
@@ -112,7 +112,7 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
     channel_ = 0;
     threshold_ = 0.0;
     doppler_step_ = 0;
-    gnss_synchro_ = 0;
+    gnss_synchro_ = nullptr;
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
@@ -130,10 +130,15 @@ GalileoE1PcpsTongAmbiguousAcquisition::~GalileoE1PcpsTongAmbiguousAcquisition()
 }
 
 
+void GalileoE1PcpsTongAmbiguousAcquisition::stop_acquisition()
+{
+}
+
+
 void GalileoE1PcpsTongAmbiguousAcquisition::set_channel(unsigned int channel)
 {
     channel_ = channel;
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             acquisition_cc_->set_channel(channel_);
         }
@@ -142,7 +147,7 @@ void GalileoE1PcpsTongAmbiguousAcquisition::set_channel(unsigned int channel)
 
 void GalileoE1PcpsTongAmbiguousAcquisition::set_threshold(float threshold)
 {
-    float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
+    float pfa = configuration_->property(role_ + std::to_string(channel_) + ".pfa", 0.0);
 
     if (pfa == 0.0) pfa = configuration_->property(role_ + ".pfa", 0.0);
 
@@ -157,7 +162,7 @@ void GalileoE1PcpsTongAmbiguousAcquisition::set_threshold(float threshold)
 
     DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold_;
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             acquisition_cc_->set_threshold(threshold_);
         }
@@ -168,7 +173,7 @@ void GalileoE1PcpsTongAmbiguousAcquisition::set_doppler_max(unsigned int doppler
 {
     doppler_max_ = doppler_max;
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             acquisition_cc_->set_doppler_max(doppler_max_);
         }
@@ -178,7 +183,7 @@ void GalileoE1PcpsTongAmbiguousAcquisition::set_doppler_max(unsigned int doppler
 void GalileoE1PcpsTongAmbiguousAcquisition::set_doppler_step(unsigned int doppler_step)
 {
     doppler_step_ = doppler_step;
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             acquisition_cc_->set_doppler_step(doppler_step_);
         }
@@ -189,7 +194,7 @@ void GalileoE1PcpsTongAmbiguousAcquisition::set_gnss_synchro(
     Gnss_Synchro* gnss_synchro)
 {
     gnss_synchro_ = gnss_synchro;
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             acquisition_cc_->set_gnss_synchro(gnss_synchro_);
         }
@@ -198,7 +203,7 @@ void GalileoE1PcpsTongAmbiguousAcquisition::set_gnss_synchro(
 
 signed int GalileoE1PcpsTongAmbiguousAcquisition::mag()
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             return acquisition_cc_->mag();
         }
@@ -218,10 +223,10 @@ void GalileoE1PcpsTongAmbiguousAcquisition::init()
 
 void GalileoE1PcpsTongAmbiguousAcquisition::set_local_code()
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             bool cboc = configuration_->property(
-                "Acquisition" + boost::lexical_cast<std::string>(channel_) + ".cboc", false);
+                "Acquisition" + std::to_string(channel_) + ".cboc", false);
 
             std::complex<float>* code = new std::complex<float>[code_length_];
 
@@ -243,7 +248,7 @@ void GalileoE1PcpsTongAmbiguousAcquisition::set_local_code()
 
 void GalileoE1PcpsTongAmbiguousAcquisition::reset()
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             acquisition_cc_->set_active(true);
         }
@@ -278,7 +283,7 @@ float GalileoE1PcpsTongAmbiguousAcquisition::calculate_threshold(float pfa)
 
 void GalileoE1PcpsTongAmbiguousAcquisition::connect(gr::top_block_sptr top_block)
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             top_block->connect(stream_to_vector_, 0, acquisition_cc_, 0);
         }
@@ -287,7 +292,7 @@ void GalileoE1PcpsTongAmbiguousAcquisition::connect(gr::top_block_sptr top_block
 
 void GalileoE1PcpsTongAmbiguousAcquisition::disconnect(gr::top_block_sptr top_block)
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             top_block->disconnect(stream_to_vector_, 0, acquisition_cc_, 0);
         }

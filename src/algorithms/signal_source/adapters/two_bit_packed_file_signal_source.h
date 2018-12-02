@@ -129,7 +129,7 @@ public:
     }
 
 private:
-    unsigned long long samples_;
+    uint64_t samples_;
     long sampling_frequency_;
     std::string filename_;
     std::string item_type_;

@@ -43,13 +43,14 @@
 
 using google::LogMessage;
 
-void GpsL2MPcpsAcquisition::stop_acquisition()
-{
-}
 
 GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
-    ConfigurationInterface* configuration, std::string role,
-    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration,
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(role),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams)
 {
     Acq_Conf acq_parameters = Acq_Conf();
     configuration_ = configuration;
@@ -61,7 +62,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     item_type_ = configuration_->property(role + ".item_type", default_item_type);
     //float pfa =  configuration_->property(role + ".pfa", 0.0);
 
-    long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
+    int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in_;
     acq_parameters.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / GPS_L2_M_CODE_RATE_HZ) * static_cast<float>(acq_parameters.fs_in)));
@@ -97,7 +98,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
 
     code_ = new gr_complex[vector_length_];
 
-    if (item_type_.compare("cshort") == 0)
+    if (item_type_ == "cshort")
         {
             item_size_ = sizeof(lv_16sc_t);
         }
@@ -116,7 +117,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     acquisition_ = pcps_make_acquisition(acq_parameters);
     DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
 
-    if (item_type_.compare("cbyte") == 0)
+    if (item_type_ == "cbyte")
         {
             cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
             float_to_complex_ = gr::blocks::float_to_complex::make();
@@ -125,7 +126,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     channel_ = 0;
     threshold_ = 0.0;
     doppler_step_ = 0;
-    gnss_synchro_ = 0;
+    gnss_synchro_ = nullptr;
     num_codes_ = acq_parameters.sampled_ms / acq_parameters.ms_per_code;
     if (in_streams_ > 1)
         {
@@ -144,6 +145,11 @@ GpsL2MPcpsAcquisition::~GpsL2MPcpsAcquisition()
 }
 
 
+void GpsL2MPcpsAcquisition::stop_acquisition()
+{
+}
+
+
 void GpsL2MPcpsAcquisition::set_channel(unsigned int channel)
 {
     channel_ = channel;
@@ -153,7 +159,7 @@ void GpsL2MPcpsAcquisition::set_channel(unsigned int channel)
 
 void GpsL2MPcpsAcquisition::set_threshold(float threshold)
 {
-    float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
+    float pfa = configuration_->property(role_ + std::to_string(channel_) + ".pfa", 0.0);
 
     if (pfa == 0.0)
         {
@@ -263,15 +269,15 @@ float GpsL2MPcpsAcquisition::calculate_threshold(float pfa)
 
 void GpsL2MPcpsAcquisition::connect(gr::top_block_sptr top_block)
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             // nothing to connect
         }
-    else if (item_type_.compare("cshort") == 0)
+    else if (item_type_ == "cshort")
         {
             // nothing to connect
         }
-    else if (item_type_.compare("cbyte") == 0)
+    else if (item_type_ == "cbyte")
         {
             // Since a byte-based acq implementation is not available,
             // we just convert cshorts to gr_complex
@@ -288,15 +294,15 @@ void GpsL2MPcpsAcquisition::connect(gr::top_block_sptr top_block)
 
 void GpsL2MPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             // nothing to disconnect
         }
-    else if (item_type_.compare("cshort") == 0)
+    else if (item_type_ == "cshort")
         {
             // nothing to disconnect
         }
-    else if (item_type_.compare("cbyte") == 0)
+    else if (item_type_ == "cbyte")
         {
             top_block->disconnect(cbyte_to_float_x2_, 0, float_to_complex_, 0);
             top_block->disconnect(cbyte_to_float_x2_, 1, float_to_complex_, 1);
@@ -311,15 +317,15 @@ void GpsL2MPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr GpsL2MPcpsAcquisition::get_left_block()
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             return acquisition_;
         }
-    else if (item_type_.compare("cshort") == 0)
+    else if (item_type_ == "cshort")
         {
             return acquisition_;
         }
-    else if (item_type_.compare("cbyte") == 0)
+    else if (item_type_ == "cbyte")
         {
             return cbyte_to_float_x2_;
         }

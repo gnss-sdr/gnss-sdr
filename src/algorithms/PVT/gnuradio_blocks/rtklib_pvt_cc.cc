@@ -29,11 +29,11 @@
  */
 
 #include "rtklib_pvt_cc.h"
+#include "display.h"
 #include "galileo_almanac.h"
 #include "galileo_almanac_helper.h"
-#include "pvt_conf.h"
-#include "display.h"
 #include "gnss_sdr_create_directory.h"
+#include "pvt_conf.h"
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/exception/all.hpp>
@@ -59,7 +59,7 @@ using google::LogMessage;
 
 rtklib_pvt_cc_sptr rtklib_make_pvt_cc(uint32_t nchannels,
     const Pvt_Conf& conf_,
-    rtk_t& rtk)
+    const rtk_t& rtk)
 {
     return rtklib_pvt_cc_sptr(new rtklib_pvt_cc(nchannels,
         conf_,
@@ -268,9 +268,9 @@ void rtklib_pvt_cc::clear_ephemeris()
 
 rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
     const Pvt_Conf& conf_,
-    rtk_t& rtk) : gr::sync_block("rtklib_pvt_cc",
-                      gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
-                      gr::io_signature::make(0, 0, 0))
+    const rtk_t& rtk) : gr::sync_block("rtklib_pvt_cc",
+                            gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
+                            gr::io_signature::make(0, 0, 0))
 {
     d_output_rate_ms = conf_.output_rate_ms;
     d_display_rate_ms = conf_.display_rate_ms;
@@ -858,7 +858,7 @@ bool rtklib_pvt_cc::send_sys_v_ttff_msg(ttff_msgbuf ttff)
 }
 
 
-bool rtklib_pvt_cc::save_gnss_synchro_map_xml(const std::string file_name)
+bool rtklib_pvt_cc::save_gnss_synchro_map_xml(const std::string& file_name)
 {
     if (gnss_observables_map.empty() == false)
         {
@@ -885,7 +885,7 @@ bool rtklib_pvt_cc::save_gnss_synchro_map_xml(const std::string file_name)
 }
 
 
-bool rtklib_pvt_cc::load_gnss_synchro_map_xml(const std::string file_name)
+bool rtklib_pvt_cc::load_gnss_synchro_map_xml(const std::string& file_name)
 {
     // load from xml (boost serialize)
     std::ifstream ifs;

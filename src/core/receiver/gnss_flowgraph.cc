@@ -1611,7 +1611,7 @@ void GNSSFlowgraph::set_channels_state()
 }
 
 
-Gnss_Signal GNSSFlowgraph::search_next_signal(std::string searched_signal, bool pop, bool tracked)
+Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal, bool pop, bool tracked)
 {
     Gnss_Signal result;
     bool untracked_satellite = true;

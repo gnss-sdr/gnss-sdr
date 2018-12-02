@@ -43,13 +43,14 @@
 
 using google::LogMessage;
 
-void GpsL5iPcpsAcquisitionFpga::stop_acquisition()
-{
-}
 
 GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
-    ConfigurationInterface* configuration, std::string role,
-    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration,
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(role),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams)
 {
     //printf("L5 ACQ CLASS CREATED\n");
     pcpsconf_fpga_t acq_parameters;
@@ -61,8 +62,8 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
 
     //item_type_ = configuration_->property(role + ".item_type", default_item_type);
 
-    long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
-    long fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+    int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
+    int64_t fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in;
     //if_ = configuration_->property(role + ".if", 0);
     //acq_parameters.freq = if_;
@@ -207,7 +208,7 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     channel_ = 0;
     //    threshold_ = 0.0;
     doppler_step_ = 0;
-    gnss_synchro_ = 0;
+    gnss_synchro_ = nullptr;
     //printf("L5 ACQ CLASS FINISHED\n");
 }
 
@@ -216,6 +217,11 @@ GpsL5iPcpsAcquisitionFpga::~GpsL5iPcpsAcquisitionFpga()
 {
     //delete[] code_;
     delete[] d_all_fft_codes_;
+}
+
+
+void GpsL5iPcpsAcquisitionFpga::stop_acquisition()
+{
 }
 
 
@@ -228,7 +234,7 @@ void GpsL5iPcpsAcquisitionFpga::set_channel(unsigned int channel)
 
 void GpsL5iPcpsAcquisitionFpga::set_threshold(float threshold)
 {
-    //    float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
+    //    float pfa = configuration_->property(role_ + std::to_string(channel_) + ".pfa", 0.0);
     //
     //    if (pfa == 0.0)
     //        {

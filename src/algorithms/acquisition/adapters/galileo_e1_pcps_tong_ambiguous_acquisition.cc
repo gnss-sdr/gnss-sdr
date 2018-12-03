@@ -207,10 +207,7 @@ signed int GalileoE1PcpsTongAmbiguousAcquisition::mag()
         {
             return acquisition_cc_->mag();
         }
-    else
-        {
-            return 0;
-        }
+    return 0;
 }
 
 
@@ -228,7 +225,7 @@ void GalileoE1PcpsTongAmbiguousAcquisition::set_local_code()
             bool cboc = configuration_->property(
                 "Acquisition" + std::to_string(channel_) + ".cboc", false);
 
-            std::complex<float>* code = new std::complex<float>[code_length_];
+            auto* code = new std::complex<float>[code_length_];
 
             galileo_e1_code_gen_complex_sampled(code, gnss_synchro_->Signal,
                 cboc, gnss_synchro_->PRN, fs_in_, 0, false);
@@ -273,9 +270,9 @@ float GalileoE1PcpsTongAmbiguousAcquisition::calculate_threshold(float pfa)
     unsigned int ncells = vector_length_ * frequency_bins;
     double exponent = 1 / static_cast<double>(ncells);
     double val = pow(1.0 - pfa, exponent);
-    double lambda = double(vector_length_);
+    auto lambda = double(vector_length_);
     boost::math::exponential_distribution<double> mydist(lambda);
-    float threshold = static_cast<float>(quantile(mydist, val));
+    auto threshold = static_cast<float>(quantile(mydist, val));
 
     return threshold;
 }

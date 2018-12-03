@@ -877,11 +877,9 @@ bool rtklib_pvt_cc::save_gnss_synchro_map_xml(const std::string& file_name)
                 }
             return true;
         }
-    else
-        {
-            LOG(WARNING) << "Failed to save gnss_synchro, map is empty";
-            return false;
-        }
+
+    LOG(WARNING) << "Failed to save gnss_synchro, map is empty";
+    return false;
 }
 
 
@@ -925,10 +923,8 @@ bool rtklib_pvt_cc::get_latest_PVT(double* longitude_deg,
 
             return true;
         }
-    else
-        {
-            return false;
-        }
+
+    return false;
 }
 
 
@@ -1021,7 +1017,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
             if (gnss_observables_map.empty() == false)
                 {
                     double current_RX_time = gnss_observables_map.begin()->second.RX_time;
-                    uint32_t current_RX_time_ms = static_cast<uint32_t>(current_RX_time * 1000.0);
+                    auto current_RX_time_ms = static_cast<uint32_t>(current_RX_time * 1000.0);
                     if (current_RX_time_ms % d_output_rate_ms == 0)
                         {
                             flag_compute_pvt_output = true;

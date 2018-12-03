@@ -48,7 +48,7 @@ class SbasL1TelemetryDecoder : public TelemetryDecoderInterface
 {
 public:
     SbasL1TelemetryDecoder(ConfigurationInterface* configuration,
-        std::string role,
+        const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 

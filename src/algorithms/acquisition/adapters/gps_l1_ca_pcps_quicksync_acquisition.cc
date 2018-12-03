@@ -68,7 +68,7 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
     code_length_ = round(fs_in_ / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     /*Calculate the folding factor value based on the calculations*/
-    unsigned int temp = static_cast<unsigned int>(ceil(sqrt(log2(code_length_))));
+    auto temp = static_cast<unsigned int>(ceil(sqrt(log2(code_length_))));
     folding_factor_ = configuration_->property(role + ".folding_factor", temp);
 
     if (sampled_ms_ % folding_factor_ != 0)
@@ -231,10 +231,7 @@ signed int GpsL1CaPcpsQuickSyncAcquisition::mag()
         {
             return acquisition_cc_->mag();
         }
-    else
-        {
-            return 0;
-        }
+    return 0;
 }
 
 
@@ -249,7 +246,7 @@ void GpsL1CaPcpsQuickSyncAcquisition::set_local_code()
 {
     if (item_type_ == "gr_complex")
         {
-            std::complex<float>* code = new std::complex<float>[code_length_]();
+            auto* code = new std::complex<float>[code_length_]();
 
             gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
 
@@ -299,7 +296,7 @@ float GpsL1CaPcpsQuickSyncAcquisition::calculate_threshold(float pfa)
     double val = pow(1.0 - pfa, exponent);
     double lambda = static_cast<double>(code_length_) / static_cast<double>(folding_factor_);
     boost::math::exponential_distribution<double> mydist(lambda);
-    float threshold = static_cast<float>(quantile(mydist, val));
+    auto threshold = static_cast<float>(quantile(mydist, val));
 
     return threshold;
 }

@@ -44,12 +44,9 @@ std::deque<bool> l5i_xa_shift(std::deque<bool> xa)
         {
             return std::deque<bool>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
         }
-    else
-        {
-            std::deque<bool> out(xa.begin(), xa.end() - 1);
-            out.push_front(xa[12] xor xa[11] xor xa[9] xor xa[8]);
-            return out;
-        }
+    std::deque<bool> out(xa.begin(), xa.end() - 1);
+    out.push_front(xa[12] xor xa[11] xor xa[9] xor xa[8]);
+    return out;
 }
 
 
@@ -59,12 +56,9 @@ std::deque<bool> l5q_xa_shift(std::deque<bool> xa)
         {
             return std::deque<bool>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
         }
-    else
-        {
-            std::deque<bool> out(xa.begin(), xa.end() - 1);
-            out.push_front(xa[12] xor xa[11] xor xa[9] xor xa[8]);
-            return out;
-        }
+    std::deque<bool> out(xa.begin(), xa.end() - 1);
+    out.push_front(xa[12] xor xa[11] xor xa[9] xor xa[8]);
+    return out;
 }
 
 
@@ -182,7 +176,7 @@ void make_l5q(int32_t* _dest, int32_t prn)
 
 void gps_l5i_code_gen_complex(std::complex<float>* _dest, uint32_t _prn)
 {
-    int32_t* _code = new int32_t[GPS_L5i_CODE_LENGTH_CHIPS];
+    auto* _code = new int32_t[GPS_L5i_CODE_LENGTH_CHIPS];
 
     if (_prn > 0 and _prn < 51)
         {
@@ -200,7 +194,7 @@ void gps_l5i_code_gen_complex(std::complex<float>* _dest, uint32_t _prn)
 
 void gps_l5i_code_gen_float(float* _dest, uint32_t _prn)
 {
-    int32_t* _code = new int32_t[GPS_L5i_CODE_LENGTH_CHIPS];
+    auto* _code = new int32_t[GPS_L5i_CODE_LENGTH_CHIPS];
 
     if (_prn > 0 and _prn < 51)
         {
@@ -221,7 +215,7 @@ void gps_l5i_code_gen_float(float* _dest, uint32_t _prn)
  */
 void gps_l5i_code_gen_complex_sampled(std::complex<float>* _dest, uint32_t _prn, int32_t _fs)
 {
-    int32_t* _code = new int32_t[GPS_L5i_CODE_LENGTH_CHIPS];
+    auto* _code = new int32_t[GPS_L5i_CODE_LENGTH_CHIPS];
     if (_prn > 0 and _prn < 51)
         {
             make_l5i(_code, _prn - 1);
@@ -267,7 +261,7 @@ void gps_l5i_code_gen_complex_sampled(std::complex<float>* _dest, uint32_t _prn,
 
 void gps_l5q_code_gen_complex(std::complex<float>* _dest, uint32_t _prn)
 {
-    int32_t* _code = new int32_t[GPS_L5q_CODE_LENGTH_CHIPS];
+    auto* _code = new int32_t[GPS_L5q_CODE_LENGTH_CHIPS];
 
     if (_prn > 0 and _prn < 51)
         {
@@ -285,7 +279,7 @@ void gps_l5q_code_gen_complex(std::complex<float>* _dest, uint32_t _prn)
 
 void gps_l5q_code_gen_float(float* _dest, uint32_t _prn)
 {
-    int32_t* _code = new int32_t[GPS_L5q_CODE_LENGTH_CHIPS];
+    auto* _code = new int32_t[GPS_L5q_CODE_LENGTH_CHIPS];
 
     if (_prn > 0 and _prn < 51)
         {
@@ -306,7 +300,7 @@ void gps_l5q_code_gen_float(float* _dest, uint32_t _prn)
  */
 void gps_l5q_code_gen_complex_sampled(std::complex<float>* _dest, uint32_t _prn, int32_t _fs)
 {
-    int32_t* _code = new int32_t[GPS_L5q_CODE_LENGTH_CHIPS];
+    auto* _code = new int32_t[GPS_L5q_CODE_LENGTH_CHIPS];
     if (_prn > 0 and _prn < 51)
         {
             make_l5q(_code, _prn - 1);

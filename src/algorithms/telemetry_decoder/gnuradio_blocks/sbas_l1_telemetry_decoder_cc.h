@@ -104,7 +104,7 @@ private:
          * samples length must be a multiple of two
          * for block operation
          */
-        bool get_symbols(const std::vector<double> samples, std::vector<double> &symbols);
+        bool get_symbols(const std::vector<double>& samples, std::vector<double> &symbols);
 
     private:
         int32_t d_n_smpls_in_history;
@@ -122,7 +122,7 @@ private:
         symbol_aligner_and_decoder();
         ~symbol_aligner_and_decoder();
         void reset();
-        bool get_bits(const std::vector<double> symbols, std::vector<int32_t> &bits);
+        bool get_bits(const std::vector<double>& symbols, std::vector<int32_t> &bits);
 
     private:
         int32_t d_KK;
@@ -137,7 +137,7 @@ private:
     {
     public:
         void reset();
-        void get_frame_candidates(const std::vector<int32_t> bits, std::vector<std::pair<int32_t, std::vector<int32_t>>> &msg_candidates);
+        void get_frame_candidates(const std::vector<int32_t>& bits, std::vector<std::pair<int32_t, std::vector<int32_t>>> &msg_candidates);
 
     private:
         std::deque<int32_t> d_buffer;
@@ -149,13 +149,13 @@ private:
     {
     public:
         void reset();
-        void get_valid_frames(const std::vector<msg_candiate_int_t> msg_candidates, std::vector<msg_candiate_char_t> &valid_msgs);
+        void get_valid_frames(const std::vector<msg_candiate_int_t>& msg_candidates, std::vector<msg_candiate_char_t> &valid_msgs);
 
     private:
         typedef boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false> crc_24_q_type;
         crc_24_q_type d_checksum_agent;
-        void zerropad_front_and_convert_to_bytes(const std::vector<int32_t> msg_candidate, std::vector<uint8_t> &bytes);
-        void zerropad_back_and_convert_to_bytes(const std::vector<int32_t> msg_candidate, std::vector<uint8_t> &bytes);
+        void zerropad_front_and_convert_to_bytes(const std::vector<int32_t>& msg_candidate, std::vector<uint8_t> &bytes);
+        void zerropad_back_and_convert_to_bytes(const std::vector<int32_t>& msg_candidate, std::vector<uint8_t> &bytes);
     } d_crc_verifier;
 };
 

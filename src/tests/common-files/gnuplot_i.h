@@ -1011,11 +1011,9 @@ bool Gnuplot::set_GNUPlotPath(const std::string &path)
             Gnuplot::m_sGNUPlotPath = path;
             return true;
         }
-    else
-        {
-            Gnuplot::m_sGNUPlotPath.clear();
-            return false;
-        }
+
+    Gnuplot::m_sGNUPlotPath.clear();
+    return false;
 }
 
 
@@ -1068,8 +1066,8 @@ void stringtok(Container &container,
                     container.push_back(in.substr(i));
                     return;
                 }
-            else
-                container.push_back(in.substr(i, j - i));
+
+            container.push_back(in.substr(i, j - i));
 
             // set up for next loop
             i = j + 1;
@@ -1876,7 +1874,7 @@ Gnuplot &Gnuplot::cmd(const std::string &cmdstr)
         {
             return *this;
         }
-    else if (cmdstr.find("splot") != std::string::npos)
+    if (cmdstr.find("splot") != std::string::npos)
         {
             two_dim = false;
             nplots++;
@@ -2052,10 +2050,7 @@ bool Gnuplot::file_exists(const std::string &filename, int mode)
         {
             return true;
         }
-    else
-        {
-            return false;
-        }
+    return false;
 }
 
 
@@ -2158,8 +2153,8 @@ void Gnuplot::remove_tmpfiles()
 {
     if ((tmpfile_list).size() > 0)
         {
-            for (unsigned int i = 0; i < tmpfile_list.size(); i++)
-                if (remove(tmpfile_list[i].c_str()) != 0)
+            for (auto & i : tmpfile_list)
+                if (remove(i.c_str()) != 0)
                     std::cout << "Problem closing files" << std::endl;
 
             Gnuplot::tmpfile_num -= tmpfile_list.size();

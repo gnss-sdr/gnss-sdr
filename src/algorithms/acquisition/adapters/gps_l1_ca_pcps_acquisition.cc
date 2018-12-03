@@ -206,7 +206,7 @@ void GpsL1CaPcpsAcquisition::init()
 
 void GpsL1CaPcpsAcquisition::set_local_code()
 {
-    std::complex<float>* code = new std::complex<float>[code_length_];
+    auto* code = new std::complex<float>[code_length_];
 
     gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
 
@@ -245,9 +245,9 @@ float GpsL1CaPcpsAcquisition::calculate_threshold(float pfa)
     unsigned int ncells = vector_length_ * frequency_bins;
     double exponent = 1 / static_cast<double>(ncells);
     double val = pow(1.0 - pfa, exponent);
-    double lambda = double(vector_length_);
+    auto lambda = double(vector_length_);
     boost::math::exponential_distribution<double> mydist(lambda);
-    float threshold = static_cast<float>(quantile(mydist, val));
+    auto threshold = static_cast<float>(quantile(mydist, val));
 
     return threshold;
 }
@@ -307,7 +307,7 @@ gr::basic_block_sptr GpsL1CaPcpsAcquisition::get_left_block()
         {
             return acquisition_;
         }
-    else if (item_type_ == "cshort")
+    if (item_type_ == "cshort")
         {
             return acquisition_;
         }

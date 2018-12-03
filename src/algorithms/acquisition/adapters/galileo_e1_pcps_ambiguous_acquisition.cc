@@ -103,7 +103,7 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
 
     code_ = new gr_complex[vector_length_];
 
-    if (item_type_.compare("cshort") == 0)
+    if (item_type_ == "cshort")
         {
             item_size_ = sizeof(lv_16sc_t);
         }
@@ -119,7 +119,7 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     acquisition_ = pcps_make_acquisition(acq_parameters);
     DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
 
-    if (item_type_.compare("cbyte") == 0)
+    if (item_type_ == "cbyte")
         {
             cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
             float_to_complex_ = gr::blocks::float_to_complex::make();
@@ -221,7 +221,7 @@ void GalileoE1PcpsAmbiguousAcquisition::set_local_code()
     bool cboc = configuration_->property(
         "Acquisition" + std::to_string(channel_) + ".cboc", false);
 
-    std::complex<float>* code = new std::complex<float>[code_length_];
+    auto* code = new std::complex<float>[code_length_];
 
     if (acquire_pilot_ == true)
         {
@@ -272,9 +272,9 @@ float GalileoE1PcpsAmbiguousAcquisition::calculate_threshold(float pfa)
     unsigned int ncells = vector_length_ * frequency_bins;
     double exponent = 1 / static_cast<double>(ncells);
     double val = pow(1.0 - pfa, exponent);
-    double lambda = double(vector_length_);
+    auto lambda = double(vector_length_);
     boost::math::exponential_distribution<double> mydist(lambda);
-    float threshold = static_cast<float>(quantile(mydist, val));
+    auto threshold = static_cast<float>(quantile(mydist, val));
 
     return threshold;
 }
@@ -334,7 +334,7 @@ gr::basic_block_sptr GalileoE1PcpsAmbiguousAcquisition::get_left_block()
         {
             return acquisition_;
         }
-    else if (item_type_ == "cshort")
+    if (item_type_ == "cshort")
         {
             return acquisition_;
         }

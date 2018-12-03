@@ -1775,11 +1775,9 @@ unsigned int tickget(void)
         {
             return tp.tv_sec * 1000u + tp.tv_nsec / 1000000u;
         }
-    else
-        {
-            gettimeofday(&tv, nullptr);
-            return tv.tv_sec * 1000u + tv.tv_usec / 1000u;
-        }
+    gettimeofday(&tv, nullptr);
+    return tv.tv_sec * 1000u + tv.tv_usec / 1000u;
+
 #else
     gettimeofday(&tv, NULL);
     return tv.tv_sec * 1000u + tv.tv_usec / 1000u;
@@ -2731,7 +2729,7 @@ int geterp(const erp_t *erp, gtime_t time, double *erpv)
 /* compare ephemeris ---------------------------------------------------------*/
 int cmpeph(const void *p1, const void *p2)
 {
-    eph_t *q1 = (eph_t *)p1, *q2 = (eph_t *)p2;
+    auto *q1 = (eph_t *)p1, *q2 = (eph_t *)p2;
     return q1->ttr.time != q2->ttr.time ? (int)(q1->ttr.time - q2->ttr.time) : (q1->toe.time != q2->toe.time ? (int)(q1->toe.time - q2->toe.time) : q1->sat - q2->sat);
 }
 
@@ -2776,7 +2774,7 @@ void uniqeph(nav_t *nav)
 /* compare glonass ephemeris -------------------------------------------------*/
 int cmpgeph(const void *p1, const void *p2)
 {
-    geph_t *q1 = (geph_t *)p1, *q2 = (geph_t *)p2;
+    auto *q1 = (geph_t *)p1, *q2 = (geph_t *)p2;
     return q1->tof.time != q2->tof.time ? (int)(q1->tof.time - q2->tof.time) : (q1->toe.time != q2->toe.time ? (int)(q1->toe.time - q2->toe.time) : q1->sat - q2->sat);
 }
 
@@ -2822,7 +2820,7 @@ void uniqgeph(nav_t *nav)
 /* compare sbas ephemeris ----------------------------------------------------*/
 int cmpseph(const void *p1, const void *p2)
 {
-    seph_t *q1 = (seph_t *)p1, *q2 = (seph_t *)p2;
+    auto *q1 = (seph_t *)p1, *q2 = (seph_t *)p2;
     return q1->tof.time != q2->tof.time ? (int)(q1->tof.time - q2->tof.time) : (q1->t0.time != q2->t0.time ? (int)(q1->t0.time - q2->t0.time) : q1->sat - q2->sat);
 }
 
@@ -2892,7 +2890,7 @@ void uniqnav(nav_t *nav)
 /* compare observation data -------------------------------------------------*/
 int cmpobs(const void *p1, const void *p2)
 {
-    obsd_t *q1 = (obsd_t *)p1, *q2 = (obsd_t *)p2;
+    auto *q1 = (obsd_t *)p1, *q2 = (obsd_t *)p2;
     double tt = timediff(q1->time, q2->time);
     if (fabs(tt) > DTTOL) return tt < 0 ? -1 : 1;
     if (q1->rcv != q2->rcv) return (int)q1->rcv - (int)q2->rcv;
@@ -3175,7 +3173,7 @@ void freenav(nav_t *nav, int opt)
 /* debug trace functions -----------------------------------------------------*/
 //#ifdef TRACE
 //
-FILE *fp_trace = nullptr;         /* file pointer of trace */
+FILE *fp_trace = nullptr;      /* file pointer of trace */
 char file_trace[1024];         /* trace file */
 static int level_trace = 0;    /* level of trace */
 unsigned int tick_trace = 0;   /* tick time at traceopen (ms) */
@@ -3635,7 +3633,7 @@ double satwavelen(int sat, int frq, const nav_t *nav)
         {
             if (frq == 0)
                 return SPEED_OF_LIGHT / FREQ1_BDS; /* B1 */
-            else if (frq == 1)
+            if (frq == 1)
                 return SPEED_OF_LIGHT / FREQ2_BDS; /* B2 */
             else if (frq == 2)
                 return SPEED_OF_LIGHT / FREQ3_BDS; /* B3 */
@@ -3644,7 +3642,7 @@ double satwavelen(int sat, int frq, const nav_t *nav)
         {
             if (frq == 0)
                 return SPEED_OF_LIGHT / FREQ1; /* L1/E1 */
-            else if (frq == 1)
+            if (frq == 1)
                 return SPEED_OF_LIGHT / FREQ2; /* L2 */
             else if (frq == 2)
                 return SPEED_OF_LIGHT / FREQ5; /* L5/E5a */
@@ -3886,7 +3884,7 @@ double interpc(const double coef[], double lat)
     int i = (int)(lat / 15.0);
     if (i < 1)
         return coef[0];
-    else if (i > 4)
+    if (i > 4)
         return coef[4];
     return coef[i - 1] * (1.0 - lat / 15.0 + i) + coef[i] * (lat / 15.0 - i);
 }
@@ -3999,7 +3997,7 @@ double interpvar(double ang, const double *var)
     int i = (int)a;
     if (i < 0)
         return var[0];
-    else if (i >= 18)
+    if (i >= 18)
         return var[18];
     return var[i] * (1.0 - a + i) + var[i + 1] * (a - i);
 }
@@ -4213,7 +4211,7 @@ int rtk_uncompress(const char *file, char *uncfile)
         {
             strcpy(uncfile, tmpfile);
             uncfile[p - tmpfile] = '\0';
-            sprintf(cmd, "gzip -f -d -c \"%s\" > \"%s\"", tmpfile, uncfile);
+            sprintf(cmd, R"(gzip -f -d -c "%s" > "%s")", tmpfile, uncfile);
 
             if (execcmd(cmd))
                 {
@@ -4262,7 +4260,7 @@ int rtk_uncompress(const char *file, char *uncfile)
         {
             strcpy(uncfile, tmpfile);
             uncfile[p - tmpfile + 3] = *(p + 3) == 'D' ? 'O' : 'o';
-            sprintf(cmd, "crx2rnx < \"%s\" > \"%s\"", tmpfile, uncfile);
+            sprintf(cmd, R"(crx2rnx < "%s" > "%s")", tmpfile, uncfile);
 
             if (execcmd(cmd))
                 {

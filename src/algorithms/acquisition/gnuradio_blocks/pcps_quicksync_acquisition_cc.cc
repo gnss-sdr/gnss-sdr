@@ -37,6 +37,7 @@
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cmath>
 #include <sstream>
+#include <utility>
 
 
 using google::LogMessage;
@@ -57,7 +58,7 @@ pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(
             fs_in, samples_per_ms,
             samples_per_code,
             bit_transition_flag,
-            dump, dump_filename));
+            dump, std::move(dump_filename)));
 }
 
 
@@ -110,7 +111,7 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
 
     // For dumping samples into a file
     d_dump = dump;
-    d_dump_filename = dump_filename;
+    d_dump_filename = std::move(dump_filename);
 
     d_corr_acumulator = nullptr;
     d_signal_folded = nullptr;
@@ -304,18 +305,18 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                 int doppler;
                 uint32_t indext = 0;
                 float magt = 0.0;
-                const gr_complex* in = reinterpret_cast<const gr_complex*>(input_items[0]);  //Get the input samples pointer
+                const auto* in = reinterpret_cast<const gr_complex*>(input_items[0]);  //Get the input samples pointer
 
-                gr_complex* in_temp = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_samples_per_code * d_folding_factor * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-                gr_complex* in_temp_folded = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+                auto* in_temp = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_samples_per_code * d_folding_factor * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+                auto* in_temp_folded = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
                 /*Create a signal to store a signal of size 1ms, to perform correlation
             in time. No folding on this data is required*/
-                gr_complex* in_1code = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_samples_per_code * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+                auto* in_1code = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_samples_per_code * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
                 /*Stores the values of the correlation output between the local code
             and the signal with doppler shift corrected */
-                gr_complex* corr_output = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_samples_per_code * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+                auto* corr_output = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_samples_per_code * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
                 /*Stores a copy of the folded version of the signal.This is used for
             the FFT operations in future steps of execution*/

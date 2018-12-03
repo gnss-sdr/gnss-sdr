@@ -45,7 +45,7 @@ class NotchFilter : public GNSSBlockInterface
 {
 public:
     NotchFilter(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role, unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~NotchFilter();

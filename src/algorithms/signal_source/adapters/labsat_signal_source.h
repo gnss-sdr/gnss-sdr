@@ -47,7 +47,7 @@ class LabsatSignalSource : public GNSSBlockInterface
 {
 public:
     LabsatSignalSource(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_stream,
+        const std::string& role, unsigned int in_stream,
         unsigned int out_stream, gr::msg_queue::sptr queue);
 
     virtual ~LabsatSignalSource();

@@ -36,7 +36,7 @@
 
 using google::LogMessage;
 
-IshortToCshort::IshortToCshort(ConfigurationInterface* configuration, std::string role,
+IshortToCshort::IshortToCshort(ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     std::string default_input_item_type = "short";
@@ -144,8 +144,5 @@ gr::basic_block_sptr IshortToCshort::get_right_block()
         {
             return conjugate_sc_;
         }
-    else
-        {
-            return interleaved_short_to_complex_short_;
-        }
+    return interleaved_short_to_complex_short_;
 }

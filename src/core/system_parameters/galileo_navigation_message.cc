@@ -253,10 +253,7 @@ bool Galileo_Navigation_Message::CRC_test(std::bitset<GALILEO_DATA_FRAME_BITS> b
         {
             return true;
         }
-    else
-        {
-            return false;
-        }
+    return false;
 }
 
 
@@ -442,10 +439,9 @@ bool Galileo_Navigation_Message::have_new_ephemeris()  // Check if we have a new
                     std::cout << "Batch number: " << IOD_ephemeris << std::endl;
                     return true;
                 }
-            else
-                {
-                    return false;
-                }
+
+
+            return false;
         }
     else
         return false;
@@ -459,8 +455,8 @@ bool Galileo_Navigation_Message::have_new_iono_and_GST()  // Check if we have a 
             flag_iono_and_GST = false;  // clear the flag
             return true;
         }
-    else
-        return false;
+
+    return false;
 }
 
 
@@ -471,8 +467,8 @@ bool Galileo_Navigation_Message::have_new_utc_model()  // Check if we have a new
             flag_utc_model = false;  // clear the flag
             return true;
         }
-    else
-        return false;
+
+    return false;
 }
 
 
@@ -488,8 +484,8 @@ bool Galileo_Navigation_Message::have_new_almanac()  // Check if we have a new a
             flag_all_almanac = true;
             return true;
         }
-    else
-        return false;
+
+    return false;
 }
 
 

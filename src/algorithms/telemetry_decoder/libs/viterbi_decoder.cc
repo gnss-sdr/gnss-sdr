@@ -180,7 +180,7 @@ int Viterbi_Decoder::do_acs(const double sym[], int nbits)
     int t, i, state_at_t;
     float metric;
     float max_val;
-    float* pm_t_next = new float[d_states];
+    auto* pm_t_next = new float[d_states];
 
     /* t:
      *    - state: state at t
@@ -559,12 +559,9 @@ int Viterbi_Decoder::Prev::get_anchestor_state_of_current_state(int current_stat
         {
             return state[current_state];
         }
-    else
-        {
-            //std::cout<<"alarm "<<"num_states="<<num_states<<" current_state="<<current_state<<std::endl;
-            //return state[current_state];
-            return 0;
-        }
+    //std::cout<<"alarm "<<"num_states="<<num_states<<" current_state="<<current_state<<std::endl;
+    //return state[current_state];
+    return 0;
 }
 
 
@@ -575,10 +572,7 @@ int Viterbi_Decoder::Prev::get_bit_of_current_state(int current_state)
         {
             return bit[current_state];
         }
-    else
-        {
-            return 0;
-        }
+    return 0;
 }
 
 
@@ -588,10 +582,7 @@ float Viterbi_Decoder::Prev::get_metric_of_current_state(int current_state)
         {
             return metric[current_state];
         }
-    else
-        {
-            return 0;
-        }
+    return 0;
 }
 
 

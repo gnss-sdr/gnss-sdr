@@ -34,6 +34,7 @@
 #include <chrono>
 #include <boost/filesystem.hpp>
 #include <boost/make_shared.hpp>
+#include <utility>
 #include <glog/logging.h>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
@@ -88,7 +89,7 @@ void GpsL1CaPcpsAcquisitionTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
         }
     catch (boost::bad_any_cast &e)
@@ -173,9 +174,9 @@ void GpsL1CaPcpsAcquisitionTest::plot_grid()
 {
     //load the measured values
     std::string basename = "./tmp-acq-gps1/acquisition_G_1C";
-    unsigned int sat = static_cast<unsigned int>(gnss_synchro.PRN);
+    auto sat = static_cast<unsigned int>(gnss_synchro.PRN);
 
-    unsigned int samples_per_code = static_cast<unsigned int>(round(4000000 / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));  // !!
+    auto samples_per_code = static_cast<unsigned int>(round(4000000 / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));  // !!
     acquisition_dump_reader acq_dump(basename, sat, doppler_max, doppler_step, samples_per_code, 1);
 
     if (!acq_dump.read_binary_acq()) std::cout << "Error reading files" << std::endl;
@@ -198,7 +199,7 @@ void GpsL1CaPcpsAcquisitionTest::plot_grid()
                 {
                     boost::filesystem::path p(gnuplot_executable);
                     boost::filesystem::path dir = p.parent_path();
-                    std::string gnuplot_path = dir.native();
+                    const std::string& gnuplot_path = dir.native();
                     Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                     Gnuplot g1("lines");
@@ -345,7 +346,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
     ASSERT_EQ(1, msg_rx->rx_message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 
     double delay_error_samples = std::abs(expected_delay_samples - gnss_synchro.Acq_delay_samples);
-    float delay_error_chips = static_cast<float>(delay_error_samples * 1023 / 4000);
+    auto delay_error_chips = static_cast<float>(delay_error_samples * 1023 / 4000);
     double doppler_error_hz = std::abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
 
     EXPECT_LE(doppler_error_hz, 666) << "Doppler error exceeds the expected value: 666 Hz = 2/(3*integration period)";

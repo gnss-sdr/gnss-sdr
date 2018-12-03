@@ -79,7 +79,7 @@ const char *opt2sep(const solopt_t *opt)
 {
     if (!*opt->sep)
         return " ";
-    else if (!strcmp(opt->sep, "\\t"))
+    if (!strcmp(opt->sep, "\\t"))
         return "\t";
     return opt->sep;
 }
@@ -343,7 +343,7 @@ int decode_nmea(char *buff, sol_t *sol)
         {
             return decode_nmearmc(val + 1, n - 1, sol);
         }
-    else if (!strcmp(val[0], "$GPGGA"))
+    if (!strcmp(val[0], "$GPGGA"))
         {
             return decode_nmeagga(val + 1, n - 1, sol);
         }
@@ -815,7 +815,7 @@ int readsoldata(FILE *fp, gtime_t ts, gtime_t te, double tint, int qflag,
 /* compare solution data -----------------------------------------------------*/
 int cmpsol(const void *p1, const void *p2)
 {
-    sol_t *q1 = (sol_t *)p1, *q2 = (sol_t *)p2;
+    auto *q1 = (sol_t *)p1, *q2 = (sol_t *)p2;
     double tt = timediff(q1->time, q2->time);
     return tt < -0.0 ? -1 : (tt > 0.0 ? 1 : 0);
 }
@@ -1023,7 +1023,7 @@ void freesolstatbuf(solstatbuf_t *solstatbuf)
 /* compare solution status ---------------------------------------------------*/
 int cmpsolstat(const void *p1, const void *p2)
 {
-    solstat_t *q1 = (solstat_t *)p1, *q2 = (solstat_t *)p2;
+    auto *q1 = (solstat_t *)p1, *q2 = (solstat_t *)p2;
     double tt = timediff(q1->time, q2->time);
     return tt < -0.0 ? -1 : (tt > 0.0 ? 1 : 0);
 }

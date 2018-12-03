@@ -186,10 +186,7 @@ bool spirent_motion_csv_dump_reader::restart()
                 }
             return true;
         }
-    else
-        {
-            return false;
-        }
+    return false;
 }
 
 
@@ -206,10 +203,7 @@ int64_t spirent_motion_csv_dump_reader::num_epochs()
                 }
             return nepoch - header_lines;
         }
-    else
-        {
-            return 0;
-        }
+    return 0;
 }
 
 

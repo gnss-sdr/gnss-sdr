@@ -300,7 +300,7 @@ int labsat23_source::general_work(int noutput_items,
                                     return -1;
                                 }
 
-                            //check if the selected channel in config file match the file encoding
+                            // check if the selected channel in config file match the file encoding
                             if (d_channel_selector_config == 2 and d_channel_selector != 0)
                                 {
                                     std::cout << "Labsat source channel config inconsistency: channel 2 is selected but the file has only one channel" << std::endl;
@@ -359,18 +359,15 @@ int labsat23_source::general_work(int noutput_items,
                                     std::cout << "Unknown channel B constellation ID " << static_cast<int>(channel_b_constellation) << std::endl;
                                 }
 
-                            //end of header
+                            // end of header
                             d_header_parsed = true;
-                            //seek file to the first signal sample
+                            // seek file to the first signal sample
                             binary_input_file->clear();
                             binary_input_file->seekg(header_bytes, binary_input_file->beg);
                             return 0;
                         }
-                    else
-                        {
-                            std::cout << "Labsat file header error: section 2 is not available." << std::endl;
-                            return -1;
-                        }
+                    std::cout << "Labsat file header error: section 2 is not available." << std::endl;
+                    return -1;
                 }
             else
                 {
@@ -380,7 +377,7 @@ int labsat23_source::general_work(int noutput_items,
         }
     else
         {
-            //ready to start reading samples
+            // ready to start reading samples
             switch (d_bits_per_sample)
                 {
                 case 2:
@@ -391,7 +388,7 @@ int labsat23_source::general_work(int noutput_items,
                                 // dual channel 2 bits per complex sample
                                 break;
                             default:
-                                //single channel 2 bits per complex sample (1 bit I + 1 bit Q, 8 samples per int16)
+                                // single channel 2 bits per complex sample (1 bit I + 1 bit Q, 8 samples per int16)
                                 int n_int16_to_read = noutput_items / 8;
                                 if (n_int16_to_read > 0)
                                     {
@@ -408,23 +405,21 @@ int labsat23_source::general_work(int noutput_items,
                                                     }
                                                 return output_pointer;
                                             }
+
+                                        // trigger the read of the next file in the sequence
+                                        std::cout << "End of current file, reading the next Labsat file in sequence: " << generate_filename() << std::endl;
+
+                                        d_current_file_number++;
+                                        binary_input_file->close();
+                                        binary_input_file->open(generate_filename().c_str(), std::ios::in | std::ios::binary);
+                                        if (binary_input_file->is_open())
+                                            {
+                                                std::cout << "Labsat file source is reading samples from " << generate_filename() << std::endl;
+                                            }
                                         else
                                             {
-                                                //trigger the read of the next file in the sequence
-                                                std::cout << "End of current file, reading the next Labsat file in sequence: " << generate_filename() << std::endl;
-
-                                                d_current_file_number++;
-                                                binary_input_file->close();
-                                                binary_input_file->open(generate_filename().c_str(), std::ios::in | std::ios::binary);
-                                                if (binary_input_file->is_open())
-                                                    {
-                                                        std::cout << "Labsat file source is reading samples from " << generate_filename() << std::endl;
-                                                    }
-                                                else
-                                                    {
-                                                        std::cout << "Last file reached, LabSat source stop" << std::endl;
-                                                        return -1;
-                                                    }
+                                                std::cout << "Last file reached, LabSat source stop" << std::endl;
+                                                return -1;
                                             }
                                     }
                                 else
@@ -442,7 +437,7 @@ int labsat23_source::general_work(int noutput_items,
                                 // dual channel
                                 break;
                             default:
-                                //single channel 4 bits per complex sample (2 bit I + 2 bit Q, 4 samples per int16)
+                                // single channel 4 bits per complex sample (2 bit I + 2 bit Q, 4 samples per int16)
                                 int n_int16_to_read = noutput_items / 4;
                                 if (n_int16_to_read > 0)
                                     {
@@ -459,23 +454,21 @@ int labsat23_source::general_work(int noutput_items,
                                                     }
                                                 return output_pointer;
                                             }
+
+                                        // trigger the read of the next file in the sequence
+                                        std::cout << "End of current file, reading the next Labsat file in sequence: " << generate_filename() << std::endl;
+
+                                        d_current_file_number++;
+                                        binary_input_file->close();
+                                        binary_input_file->open(generate_filename().c_str(), std::ios::in | std::ios::binary);
+                                        if (binary_input_file->is_open())
+                                            {
+                                                std::cout << "Labsat file source is reading samples from " << generate_filename() << std::endl;
+                                            }
                                         else
                                             {
-                                                //trigger the read of the next file in the sequence
-                                                std::cout << "End of current file, reading the next Labsat file in sequence: " << generate_filename() << std::endl;
-
-                                                d_current_file_number++;
-                                                binary_input_file->close();
-                                                binary_input_file->open(generate_filename().c_str(), std::ios::in | std::ios::binary);
-                                                if (binary_input_file->is_open())
-                                                    {
-                                                        std::cout << "Labsat file source is reading samples from " << generate_filename() << std::endl;
-                                                    }
-                                                else
-                                                    {
-                                                        std::cout << "Last file reached, LabSat source stop" << std::endl;
-                                                        return -1;
-                                                    }
+                                                std::cout << "Last file reached, LabSat source stop" << std::endl;
+                                                return -1;
                                             }
                                     }
                                 else

@@ -64,7 +64,7 @@ galileo_e1_tcp_connector_tracking_cc_sptr galileo_e1_tcp_connector_make_tracking
     int64_t fs_in,
     uint32_t vector_length,
     bool dump,
-    const std::string& dump_filename,
+    const std::string &dump_filename,
     float pll_bw_hz,
     float dll_bw_hz,
     float early_late_space_chips,
@@ -544,8 +544,6 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
         {
             return 1;
         }
-    else
-        {
-            return 0;
-        }
+
+    return 0;
 }

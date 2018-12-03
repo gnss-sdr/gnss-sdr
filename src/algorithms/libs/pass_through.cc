@@ -149,7 +149,7 @@ gr::basic_block_sptr Pass_Through::get_left_block()
                 {
                     return conjugate_cc_;
                 }
-            else if (item_type_ == "cshort")
+            if (item_type_ == "cshort")
                 {
                     return conjugate_sc_;
                 }
@@ -176,7 +176,7 @@ gr::basic_block_sptr Pass_Through::get_right_block()
                 {
                     return conjugate_cc_;
                 }
-            else if (item_type_ == "cshort")
+            if (item_type_ == "cshort")
                 {
                     return conjugate_sc_;
                 }

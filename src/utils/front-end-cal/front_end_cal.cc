@@ -78,12 +78,9 @@ bool FrontEndCal::read_assistance_from_XML()
                 }
             return true;
         }
-    else
-        {
-            std::cout << "ERROR: SUPL client error reading XML" << std::endl;
-            LOG(WARNING) << "ERROR: SUPL client error reading XML";
-            return false;
-        }
+    std::cout << "ERROR: SUPL client error reading XML" << std::endl;
+    LOG(WARNING) << "ERROR: SUPL client error reading XML";
+    return false;
 }
 
 
@@ -256,10 +253,7 @@ bool FrontEndCal::get_ephemeris()
                         {
                             return true;
                         }
-                    else
-                        {
-                            return false;
-                        }
+                    return false;
                 }
             else
                 {
@@ -274,10 +268,7 @@ bool FrontEndCal::get_ephemeris()
                 {
                     return true;
                 }
-            else
-                {
-                    return false;
-                }
+            return false;
         }
 }
 
@@ -377,10 +368,7 @@ double FrontEndCal::estimate_doppler_from_eph(unsigned int PRN, double TOW, doub
             mean_Doppler_Hz = arma::mean(Doppler_Hz);
             return mean_Doppler_Hz;
         }
-    else
-        {
-            throw(1);
-        }
+    throw(1);
 }
 
 

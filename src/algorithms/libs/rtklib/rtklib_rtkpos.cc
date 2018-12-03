@@ -67,7 +67,7 @@ static int resamb_TCAR(rtk_t *rtk __attribute((unused)), const obsd_t *obs __att
 
 /* global variables ----------------------------------------------------------*/
 static int statlevel = 0;          /* rtk status output level (0:off) */
-static FILE *fp_stat = nullptr;       /* rtk status file pointer */
+static FILE *fp_stat = nullptr;    /* rtk status file pointer */
 static char file_stat[1024] = "";  /* rtk status file original path */
 static gtime_t time_stat = {0, 0}; /* rtk status file time */
 
@@ -1616,8 +1616,7 @@ int ddmat(rtk_t *rtk, double *D)
                                             rtk->ssat[i - k].fix[f] = 2; /* fix */
                                             break;
                                         }
-                                    else
-                                        rtk->ssat[i - k].fix[f] = 1;
+                                    rtk->ssat[i - k].fix[f] = 1;
                                 }
                             for (j = k; j < k + MAXSAT; j++)
                                 {

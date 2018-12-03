@@ -207,10 +207,7 @@ signed int GalileoE1PcpsTongAmbiguousAcquisition::mag()
         {
             return acquisition_cc_->mag();
         }
-    else
-        {
-            return 0;
-        }
+    return 0;
 }
 
 

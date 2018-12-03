@@ -780,8 +780,5 @@ int galileo_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
             *out[0] = current_symbol;
             return 1;
         }
-    else
-        {
-            return 0;
-        }
+    return 0;
 }

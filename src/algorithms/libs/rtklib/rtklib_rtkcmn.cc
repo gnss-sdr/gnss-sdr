@@ -1775,11 +1775,9 @@ unsigned int tickget(void)
         {
             return tp.tv_sec * 1000u + tp.tv_nsec / 1000000u;
         }
-    else
-        {
-            gettimeofday(&tv, nullptr);
-            return tv.tv_sec * 1000u + tv.tv_usec / 1000u;
-        }
+    gettimeofday(&tv, nullptr);
+    return tv.tv_sec * 1000u + tv.tv_usec / 1000u;
+
 #else
     gettimeofday(&tv, NULL);
     return tv.tv_sec * 1000u + tv.tv_usec / 1000u;
@@ -3175,7 +3173,7 @@ void freenav(nav_t *nav, int opt)
 /* debug trace functions -----------------------------------------------------*/
 //#ifdef TRACE
 //
-FILE *fp_trace = nullptr;         /* file pointer of trace */
+FILE *fp_trace = nullptr;      /* file pointer of trace */
 char file_trace[1024];         /* trace file */
 static int level_trace = 0;    /* level of trace */
 unsigned int tick_trace = 0;   /* tick time at traceopen (ms) */
@@ -3635,7 +3633,7 @@ double satwavelen(int sat, int frq, const nav_t *nav)
         {
             if (frq == 0)
                 return SPEED_OF_LIGHT / FREQ1_BDS; /* B1 */
-            else if (frq == 1)
+            if (frq == 1)
                 return SPEED_OF_LIGHT / FREQ2_BDS; /* B2 */
             else if (frq == 2)
                 return SPEED_OF_LIGHT / FREQ3_BDS; /* B3 */
@@ -3644,7 +3642,7 @@ double satwavelen(int sat, int frq, const nav_t *nav)
         {
             if (frq == 0)
                 return SPEED_OF_LIGHT / FREQ1; /* L1/E1 */
-            else if (frq == 1)
+            if (frq == 1)
                 return SPEED_OF_LIGHT / FREQ2; /* L2 */
             else if (frq == 2)
                 return SPEED_OF_LIGHT / FREQ5; /* L5/E5a */
@@ -3886,7 +3884,7 @@ double interpc(const double coef[], double lat)
     int i = (int)(lat / 15.0);
     if (i < 1)
         return coef[0];
-    else if (i > 4)
+    if (i > 4)
         return coef[4];
     return coef[i - 1] * (1.0 - lat / 15.0 + i) + coef[i] * (lat / 15.0 - i);
 }
@@ -3999,7 +3997,7 @@ double interpvar(double ang, const double *var)
     int i = (int)a;
     if (i < 0)
         return var[0];
-    else if (i >= 18)
+    if (i >= 18)
         return var[18];
     return var[i] * (1.0 - a + i) + var[i + 1] * (a - i);
 }

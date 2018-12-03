@@ -282,8 +282,5 @@ int gps_l5_telemetry_decoder_cc::general_work(int noutput_items __attribute__((u
             out[0] = current_synchro_data;
             return 1;
         }
-    else
-        {
-            return 0;
-        }
+    return 0;
 }

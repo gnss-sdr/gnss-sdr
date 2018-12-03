@@ -144,8 +144,5 @@ gr::basic_block_sptr IshortToCshort::get_right_block()
         {
             return conjugate_sc_;
         }
-    else
-        {
-            return interleaved_short_to_complex_short_;
-        }
+    return interleaved_short_to_complex_short_;
 }

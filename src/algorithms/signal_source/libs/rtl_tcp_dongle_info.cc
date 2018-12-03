@@ -126,28 +126,26 @@ double rtl_tcp_dongle_info::clip_gain(int gain) const
             // no defined gains to clip to
             return gain;
         }
-    else
-        {
-            double last_stop = gains.front();
-            BOOST_FOREACH (double g, gains)
-                {
-                    g /= 10.0;
 
-                    if (gain < g)
+    double last_stop = gains.front();
+    BOOST_FOREACH (double g, gains)
+        {
+            g /= 10.0;
+
+            if (gain < g)
+                {
+                    if (std::abs(gain - g) < std::abs(gain - last_stop))
                         {
-                            if (std::abs(gain - g) < std::abs(gain - last_stop))
-                                {
-                                    return g;
-                                }
-                            else
-                                {
-                                    return last_stop;
-                                }
+                            return g;
                         }
-                    last_stop = g;
+                    else
+                        {
+                            return last_stop;
+                        }
                 }
-            return last_stop;
+            last_stop = g;
         }
+    return last_stop;
 }
 
 

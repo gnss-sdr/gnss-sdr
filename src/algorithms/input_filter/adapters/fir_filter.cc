@@ -284,7 +284,7 @@ gr::basic_block_sptr FirFilter::get_left_block()
         {
             return fir_filter_ccf_;
         }
-    else if ((taps_item_type_ == "float") && (input_item_type_ == "cshort") && (output_item_type_ == "cshort"))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "cshort") && (output_item_type_ == "cshort"))
         {
             return cshort_to_float_x2_;
         }
@@ -314,7 +314,7 @@ gr::basic_block_sptr FirFilter::get_right_block()
         {
             return fir_filter_ccf_;
         }
-    else if ((taps_item_type_ == "float") && (input_item_type_ == "cshort") && (output_item_type_ == "cshort"))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "cshort") && (output_item_type_ == "cshort"))
         {
             return short_x2_to_cshort_;
         }

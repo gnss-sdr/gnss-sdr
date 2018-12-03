@@ -79,9 +79,7 @@ bool gnss_sdr_create_directory(const std::string& foldername)
                 }
             return true;
         }
-    else
-        {
-            os_test_file.close();
-            return false;
-        }
+
+    os_test_file.close();
+    return false;
 }

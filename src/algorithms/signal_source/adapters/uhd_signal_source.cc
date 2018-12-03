@@ -314,8 +314,5 @@ gr::basic_block_sptr UhdSignalSource::get_right_block(int RF_channel)
         {
             return valve_.at(RF_channel);
         }
-    else
-        {
-            return uhd_source_;
-        }
+    return uhd_source_;
 }

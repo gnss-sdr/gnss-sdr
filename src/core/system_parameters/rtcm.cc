@@ -178,10 +178,8 @@ bool Rtcm::check_CRC(const std::string& message) const
         {
             return true;
         }
-    else
-        {
-            return false;
-        }
+
+    return false;
 }
 
 

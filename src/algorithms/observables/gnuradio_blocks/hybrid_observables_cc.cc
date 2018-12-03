@@ -409,10 +409,7 @@ bool hybrid_observables_cc::interp_trk_obs(Gnss_Synchro &interpolated_obs, const
                             //           << " ,diff: " << old_abs_diff << " samples (" << static_cast<double>(old_abs_diff) / static_cast<double>(d_gnss_synchro_history->at(ch, nearest_element).fs) << " s)\n";
                             return true;
                         }
-                    else
-                        {
-                            return false;
-                        }
+                    return false;
                 }
             else
                 {
@@ -616,8 +613,5 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
                 }
             return 1;
         }
-    else
-        {
-            return 0;
-        }
+    return 0;
 }

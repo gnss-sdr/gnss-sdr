@@ -370,15 +370,9 @@ gr::basic_block_sptr FileSignalSource::get_right_block()
         {
             return valve_;
         }
-    else
+    if (enable_throttle_control_ == true)
         {
-            if (enable_throttle_control_ == true)
-                {
-                    return throttle_;
-                }
-            else
-                {
-                    return file_source_;
-                }
+            return throttle_;
         }
+    return file_source_;
 }

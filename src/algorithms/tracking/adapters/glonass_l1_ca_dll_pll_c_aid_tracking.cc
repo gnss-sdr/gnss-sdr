@@ -220,7 +220,7 @@ gr::basic_block_sptr GlonassL1CaDllPllCAidTracking::get_left_block()
         {
             return tracking_cc;
         }
-    else if (item_type_ == "cshort")
+    if (item_type_ == "cshort")
         {
             return tracking_sc;
         }
@@ -238,7 +238,7 @@ gr::basic_block_sptr GlonassL1CaDllPllCAidTracking::get_right_block()
         {
             return tracking_cc;
         }
-    else if (item_type_ == "cshort")
+    if (item_type_ == "cshort")
         {
             return tracking_sc;
         }

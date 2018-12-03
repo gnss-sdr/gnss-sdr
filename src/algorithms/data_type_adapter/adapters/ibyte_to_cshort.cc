@@ -141,8 +141,5 @@ gr::basic_block_sptr IbyteToCshort::get_right_block()
         {
             return conjugate_sc_;
         }
-    else
-        {
-            return interleaved_byte_to_complex_short_;
-        }
+    return interleaved_byte_to_complex_short_;
 }

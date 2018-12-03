@@ -213,10 +213,7 @@ signed int GalileoE5aNoncoherentIQAcquisitionCaf::mag()
         {
             return acquisition_cc_->mag();
         }
-    else
-        {
-            return 0;
-        }
+    return 0;
 }
 
 

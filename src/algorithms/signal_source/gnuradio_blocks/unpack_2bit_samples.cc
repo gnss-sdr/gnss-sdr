@@ -66,8 +66,8 @@ bool systemBytesAreBigEndian()
     b.byte = static_cast<int8_t>(0x01);
     if (*(char *)&b.byte == 1)
         return false;
-    else
-        return true;
+
+    return true;
 }
 
 

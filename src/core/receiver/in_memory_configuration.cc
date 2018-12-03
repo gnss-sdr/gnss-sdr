@@ -55,10 +55,7 @@ std::string InMemoryConfiguration::property(std::string property_name, std::stri
         {
             return iter->second;
         }
-    else
-        {
-            return default_value;
-        }
+    return default_value;
 }
 
 

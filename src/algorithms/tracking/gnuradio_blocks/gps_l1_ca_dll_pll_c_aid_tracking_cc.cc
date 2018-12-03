@@ -905,8 +905,6 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __attrib
         {
             return 1;
         }
-    else
-        {
-            return 0;
-        }
+
+    return 0;
 }

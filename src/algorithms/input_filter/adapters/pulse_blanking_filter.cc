@@ -158,15 +158,12 @@ gr::basic_block_sptr PulseBlankingFilter::get_left_block()
                 {
                     return freq_xlating_;
                 }
-            else
-                {
-                    return pulse_blanking_cc_;
-                }
+            return pulse_blanking_cc_;
         }
     else
         {
-            return nullptr;
             LOG(ERROR) << " Unknown input filter input/output item type conversion";
+            return nullptr;
         }
 }
 
@@ -177,9 +174,6 @@ gr::basic_block_sptr PulseBlankingFilter::get_right_block()
         {
             return pulse_blanking_cc_;
         }
-    else
-        {
-            return nullptr;
-            LOG(ERROR) << " Unknown input filter input/output item type conversion";
-        }
+    LOG(ERROR) << " Unknown input filter input/output item type conversion";
+    return nullptr;
 }

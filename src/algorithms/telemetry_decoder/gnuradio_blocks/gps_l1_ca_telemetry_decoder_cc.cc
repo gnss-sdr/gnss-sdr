@@ -136,9 +136,11 @@ bool gps_l1_ca_telemetry_decoder_cc::gps_word_parityCheck(uint32_t gpsword)
     parity = t ^ _rotl(t, 6) ^ _rotl(t, 12) ^ _rotl(t, 18) ^ _rotl(t, 24);
     parity = parity & 0x3F;
     if (parity == (gpsword & 0x3F))
-        return (true);
-    else
-        return (false);
+        {
+            return (true);
+        }
+
+    return (false);
 }
 
 
@@ -474,8 +476,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
 
             return 1;
         }
-    else
-        {
-            return 0;
-        }
+
+
+    return 0;
 }

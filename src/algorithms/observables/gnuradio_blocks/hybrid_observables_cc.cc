@@ -175,13 +175,13 @@ int32_t hybrid_observables_cc::save_matfile()
         {
             return 1;
         }
-    double **RX_time = new double *[d_nchannels_out];
-    double **TOW_at_current_symbol_s = new double *[d_nchannels_out];
-    double **Carrier_Doppler_hz = new double *[d_nchannels_out];
-    double **Carrier_phase_cycles = new double *[d_nchannels_out];
-    double **Pseudorange_m = new double *[d_nchannels_out];
-    double **PRN = new double *[d_nchannels_out];
-    double **Flag_valid_pseudorange = new double *[d_nchannels_out];
+    auto **RX_time = new double *[d_nchannels_out];
+    auto **TOW_at_current_symbol_s = new double *[d_nchannels_out];
+    auto **Carrier_Doppler_hz = new double *[d_nchannels_out];
+    auto **Carrier_phase_cycles = new double *[d_nchannels_out];
+    auto **Pseudorange_m = new double *[d_nchannels_out];
+    auto **PRN = new double *[d_nchannels_out];
+    auto **Flag_valid_pseudorange = new double *[d_nchannels_out];
 
     for (uint32_t i = 0; i < d_nchannels_out; i++)
         {
@@ -238,13 +238,13 @@ int32_t hybrid_observables_cc::save_matfile()
             return 1;
         }
 
-    double *RX_time_aux = new double[d_nchannels_out * num_epoch];
-    double *TOW_at_current_symbol_s_aux = new double[d_nchannels_out * num_epoch];
-    double *Carrier_Doppler_hz_aux = new double[d_nchannels_out * num_epoch];
-    double *Carrier_phase_cycles_aux = new double[d_nchannels_out * num_epoch];
-    double *Pseudorange_m_aux = new double[d_nchannels_out * num_epoch];
-    double *PRN_aux = new double[d_nchannels_out * num_epoch];
-    double *Flag_valid_pseudorange_aux = new double[d_nchannels_out * num_epoch];
+    auto *RX_time_aux = new double[d_nchannels_out * num_epoch];
+    auto *TOW_at_current_symbol_s_aux = new double[d_nchannels_out * num_epoch];
+    auto *Carrier_Doppler_hz_aux = new double[d_nchannels_out * num_epoch];
+    auto *Carrier_phase_cycles_aux = new double[d_nchannels_out * num_epoch];
+    auto *Pseudorange_m_aux = new double[d_nchannels_out * num_epoch];
+    auto *PRN_aux = new double[d_nchannels_out * num_epoch];
+    auto *Flag_valid_pseudorange_aux = new double[d_nchannels_out * num_epoch];
     uint32_t k = 0U;
     for (int64_t j = 0; j < num_epoch; j++)
         {
@@ -503,8 +503,8 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
     gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items)
 {
-    const Gnss_Synchro **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);
-    Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
+    const auto **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);
+    auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
 
     // Push receiver clock into history buffer (connected to the last of the input channels)
     // The clock buffer gives time to the channels to compute the tracking observables

@@ -511,7 +511,7 @@ void dll_pll_veml_tracking::start_tracking()
         }
     else if (systemName == "Galileo" and signal_type == "5X")
         {
-            gr_complex *aux_code = static_cast<gr_complex *>(volk_gnsssdr_malloc(sizeof(gr_complex) * d_code_length_chips, volk_gnsssdr_get_alignment()));
+            auto *aux_code = static_cast<gr_complex *>(volk_gnsssdr_malloc(sizeof(gr_complex) * d_code_length_chips, volk_gnsssdr_get_alignment()));
             galileo_e5_a_code_gen_complex_primary(aux_code, d_acquisition_gnss_synchro->PRN, const_cast<char *>(signal_type.c_str()));
             if (trk_parameters.track_pilot)
                 {
@@ -1082,28 +1082,28 @@ int32_t dll_pll_veml_tracking::save_matfile()
         {
             return 1;
         }
-    float *abs_VE = new float[num_epoch];
-    float *abs_E = new float[num_epoch];
-    float *abs_P = new float[num_epoch];
-    float *abs_L = new float[num_epoch];
-    float *abs_VL = new float[num_epoch];
-    float *Prompt_I = new float[num_epoch];
-    float *Prompt_Q = new float[num_epoch];
-    uint64_t *PRN_start_sample_count = new uint64_t[num_epoch];
-    float *acc_carrier_phase_rad = new float[num_epoch];
-    float *carrier_doppler_hz = new float[num_epoch];
-    float *carrier_doppler_rate_hz = new float[num_epoch];
-    float *code_freq_chips = new float[num_epoch];
-    float *code_freq_rate_chips = new float[num_epoch];
-    float *carr_error_hz = new float[num_epoch];
-    float *carr_error_filt_hz = new float[num_epoch];
-    float *code_error_chips = new float[num_epoch];
-    float *code_error_filt_chips = new float[num_epoch];
-    float *CN0_SNV_dB_Hz = new float[num_epoch];
-    float *carrier_lock_test = new float[num_epoch];
-    float *aux1 = new float[num_epoch];
-    double *aux2 = new double[num_epoch];
-    uint32_t *PRN = new uint32_t[num_epoch];
+    auto *abs_VE = new float[num_epoch];
+    auto *abs_E = new float[num_epoch];
+    auto *abs_P = new float[num_epoch];
+    auto *abs_L = new float[num_epoch];
+    auto *abs_VL = new float[num_epoch];
+    auto *Prompt_I = new float[num_epoch];
+    auto *Prompt_Q = new float[num_epoch];
+    auto *PRN_start_sample_count = new uint64_t[num_epoch];
+    auto *acc_carrier_phase_rad = new float[num_epoch];
+    auto *carrier_doppler_hz = new float[num_epoch];
+    auto *carrier_doppler_rate_hz = new float[num_epoch];
+    auto *code_freq_chips = new float[num_epoch];
+    auto *code_freq_rate_chips = new float[num_epoch];
+    auto *carr_error_hz = new float[num_epoch];
+    auto *carr_error_filt_hz = new float[num_epoch];
+    auto *code_error_chips = new float[num_epoch];
+    auto *code_error_filt_chips = new float[num_epoch];
+    auto *CN0_SNV_dB_Hz = new float[num_epoch];
+    auto *carrier_lock_test = new float[num_epoch];
+    auto *aux1 = new float[num_epoch];
+    auto *aux2 = new double[num_epoch];
+    auto *PRN = new uint32_t[num_epoch];
 
     try
         {
@@ -1340,8 +1340,8 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     gr::thread::scoped_lock l(d_setlock);
-    const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);
-    Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
+    const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);
+    auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
 
     switch (d_state)

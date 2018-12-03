@@ -108,7 +108,7 @@ void galileo_e5_a_code_gen_complex_sampled(std::complex<float>* _dest, char _Sig
     const uint32_t _codeLength = Galileo_E5a_CODE_LENGTH_CHIPS;
     const int32_t _codeFreqBasis = Galileo_E5a_CODE_CHIP_RATE_HZ;
 
-    std::complex<float>* _code = new std::complex<float>[_codeLength]();
+    auto* _code = new std::complex<float>[_codeLength]();
 
     galileo_e5_a_code_gen_complex_primary(_code, _prn, _Signal);
 

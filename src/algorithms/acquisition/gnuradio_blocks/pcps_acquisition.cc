@@ -472,7 +472,7 @@ void pcps_acquisition::dump_results(int32_t effective_fft_size)
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            float aux = static_cast<float>(d_gnss_synchro->Acq_doppler_hz);
+            auto aux = static_cast<float>(d_gnss_synchro->Acq_doppler_hz);
             matvar = Mat_VarCreate("acq_doppler_hz", MAT_C_SINGLE, MAT_T_SINGLE, 1, dims, &aux, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
@@ -927,7 +927,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                 uint32_t buff_increment;
                 if (d_cshort)
                     {
-                        const lv_16sc_t* in = reinterpret_cast<const lv_16sc_t*>(input_items[0]);  // Get the input samples pointer
+                        const auto* in = reinterpret_cast<const lv_16sc_t*>(input_items[0]);  // Get the input samples pointer
                         if ((ninput_items[0] + d_buffer_count) <= d_consumed_samples)
                             {
                                 buff_increment = ninput_items[0];
@@ -940,7 +940,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                     }
                 else
                     {
-                        const gr_complex* in = reinterpret_cast<const gr_complex*>(input_items[0]);  // Get the input samples pointer
+                        const auto* in = reinterpret_cast<const gr_complex*>(input_items[0]);  // Get the input samples pointer
                         if ((ninput_items[0] + d_buffer_count) <= d_consumed_samples)
                             {
                                 buff_increment = ninput_items[0];

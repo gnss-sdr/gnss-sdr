@@ -221,7 +221,7 @@ void GalileoE1PcpsAmbiguousAcquisition::set_local_code()
     bool cboc = configuration_->property(
         "Acquisition" + std::to_string(channel_) + ".cboc", false);
 
-    std::complex<float>* code = new std::complex<float>[code_length_];
+    auto* code = new std::complex<float>[code_length_];
 
     if (acquire_pilot_ == true)
         {
@@ -272,9 +272,9 @@ float GalileoE1PcpsAmbiguousAcquisition::calculate_threshold(float pfa)
     unsigned int ncells = vector_length_ * frequency_bins;
     double exponent = 1 / static_cast<double>(ncells);
     double val = pow(1.0 - pfa, exponent);
-    double lambda = double(vector_length_);
+    auto lambda = double(vector_length_);
     boost::math::exponential_distribution<double> mydist(lambda);
-    float threshold = static_cast<float>(quantile(mydist, val));
+    auto threshold = static_cast<float>(quantile(mydist, val));
 
     return threshold;
 }

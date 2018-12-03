@@ -227,7 +227,7 @@ std::string Rtcm::binary_data_to_bin(const std::string& s) const
 
     for (uint32_t i = 0; i < s.length(); i++)
         {
-            uint8_t val = static_cast<uint8_t>(s.at(i));
+            auto val = static_cast<uint8_t>(s.at(i));
             std::bitset<8> bs(val);
             ss << bs;
         }
@@ -488,7 +488,7 @@ std::bitset<58> Rtcm::get_MT1001_sat_content(const Gps_Ephemeris& eph, double ob
 
 std::string Rtcm::print_MT1001(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, uint16_t station_id)
 {
-    uint32_t ref_id = static_cast<uint32_t>(station_id);
+    auto ref_id = static_cast<uint32_t>(station_id);
     uint32_t smooth_int = 0;
     bool sync_flag = false;
     bool divergence_free = false;
@@ -537,7 +537,7 @@ std::string Rtcm::print_MT1001(const Gps_Ephemeris& gps_eph, double obs_time, co
 
 std::string Rtcm::print_MT1002(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, uint16_t station_id)
 {
-    uint32_t ref_id = static_cast<uint32_t>(station_id);
+    auto ref_id = static_cast<uint32_t>(station_id);
     uint32_t smooth_int = 0;
     bool sync_flag = false;
     bool divergence_free = false;
@@ -608,7 +608,7 @@ std::bitset<74> Rtcm::get_MT1002_sat_content(const Gps_Ephemeris& eph, double ob
 
 std::string Rtcm::print_MT1003(const Gps_Ephemeris& ephL1, const Gps_CNAV_Ephemeris& ephL2, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, uint16_t station_id)
 {
-    uint32_t ref_id = static_cast<uint32_t>(station_id);
+    auto ref_id = static_cast<uint32_t>(station_id);
     uint32_t smooth_int = 0;
     bool sync_flag = false;
     bool divergence_free = false;
@@ -717,7 +717,7 @@ std::bitset<101> Rtcm::get_MT1003_sat_content(const Gps_Ephemeris& ephL1, const 
 
 std::string Rtcm::print_MT1004(const Gps_Ephemeris& ephL1, const Gps_CNAV_Ephemeris& ephL2, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, uint16_t station_id)
 {
-    uint32_t ref_id = static_cast<uint32_t>(station_id);
+    auto ref_id = static_cast<uint32_t>(station_id);
     uint32_t smooth_int = 0;
     bool sync_flag = false;
     bool divergence_free = false;
@@ -1169,7 +1169,7 @@ std::bitset<64> Rtcm::get_MT1009_sat_content(const Glonass_Gnav_Ephemeris& eph, 
 
 std::string Rtcm::print_MT1009(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, uint16_t station_id)
 {
-    uint32_t ref_id = static_cast<uint32_t>(station_id);
+    auto ref_id = static_cast<uint32_t>(station_id);
     uint32_t smooth_int = 0;
     bool sync_flag = false;
     bool divergence_free = false;
@@ -1218,7 +1218,7 @@ std::string Rtcm::print_MT1009(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, d
 
 std::string Rtcm::print_MT1010(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, uint16_t station_id)
 {
-    uint32_t ref_id = static_cast<uint32_t>(station_id);
+    auto ref_id = static_cast<uint32_t>(station_id);
     uint32_t smooth_int = 0;
     bool sync_flag = false;
     bool divergence_free = false;
@@ -1293,7 +1293,7 @@ std::bitset<79> Rtcm::get_MT1010_sat_content(const Glonass_Gnav_Ephemeris& eph, 
 
 std::string Rtcm::print_MT1011(const Glonass_Gnav_Ephemeris& ephL1, const Glonass_Gnav_Ephemeris& ephL2, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, uint16_t station_id)
 {
-    uint32_t ref_id = static_cast<uint32_t>(station_id);
+    auto ref_id = static_cast<uint32_t>(station_id);
     uint32_t smooth_int = 0;
     bool sync_flag = false;
     bool divergence_free = false;
@@ -1404,7 +1404,7 @@ std::bitset<107> Rtcm::get_MT1011_sat_content(const Glonass_Gnav_Ephemeris& ephL
 
 std::string Rtcm::print_MT1012(const Glonass_Gnav_Ephemeris& ephL1, const Glonass_Gnav_Ephemeris& ephL2, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, uint16_t station_id)
 {
-    uint32_t ref_id = static_cast<uint32_t>(station_id);
+    auto ref_id = static_cast<uint32_t>(station_id);
     uint32_t smooth_int = 0;
     bool sync_flag = false;
     bool divergence_free = false;
@@ -3562,7 +3562,7 @@ int32_t Rtcm::set_DF003(uint32_t ref_station_ID)
 int32_t Rtcm::set_DF004(double obs_time)
 {
     // TOW in milliseconds from the beginning of the GPS week, measured in GPS time
-    uint64_t tow = static_cast<uint64_t>(std::round(obs_time * 1000));
+    auto tow = static_cast<uint64_t>(std::round(obs_time * 1000));
     if (tow > 604799999)
         {
             LOG(WARNING) << "To large TOW! Set to the last millisecond of the week";
@@ -3653,7 +3653,7 @@ int32_t Rtcm::set_DF010(bool code_indicator)
 int32_t Rtcm::set_DF011(const Gnss_Synchro& gnss_synchro)
 {
     double ambiguity = std::floor(gnss_synchro.Pseudorange_m / 299792.458);
-    uint64_t gps_L1_pseudorange = static_cast<uint64_t>(std::round((gnss_synchro.Pseudorange_m - ambiguity * 299792.458) / 0.02));
+    auto gps_L1_pseudorange = static_cast<uint64_t>(std::round((gnss_synchro.Pseudorange_m - ambiguity * 299792.458) / 0.02));
     DF011 = std::bitset<24>(gps_L1_pseudorange);
     return 0;
 }
@@ -3667,7 +3667,7 @@ int32_t Rtcm::set_DF012(const Gnss_Synchro& gnss_synchro)
     double gps_L1_pseudorange_c = gps_L1_pseudorange * 0.02 + ambiguity * 299792.458;
     double L1_phaserange_c = gnss_synchro.Carrier_phase_rads / GPS_TWO_PI;
     double L1_phaserange_c_r = std::fmod(L1_phaserange_c - gps_L1_pseudorange_c / lambda + 1500.0, 3000.0) - 1500.0;
-    int64_t gps_L1_phaserange_minus_L1_pseudorange = static_cast<int64_t>(std::round(L1_phaserange_c_r * lambda / 0.0005));
+    auto gps_L1_phaserange_minus_L1_pseudorange = static_cast<int64_t>(std::round(L1_phaserange_c_r * lambda / 0.0005));
     DF012 = std::bitset<20>(gps_L1_phaserange_minus_L1_pseudorange);
     return 0;
 }
@@ -3685,7 +3685,7 @@ int32_t Rtcm::set_DF013(const Gps_Ephemeris& eph, double obs_time, const Gnss_Sy
 
 int32_t Rtcm::set_DF014(const Gnss_Synchro& gnss_synchro)
 {
-    uint32_t gps_L1_pseudorange_ambiguity = static_cast<uint32_t>(std::floor(gnss_synchro.Pseudorange_m / 299792.458));
+    auto gps_L1_pseudorange_ambiguity = static_cast<uint32_t>(std::floor(gnss_synchro.Pseudorange_m / 299792.458));
     DF014 = std::bitset<8>(gps_L1_pseudorange_ambiguity);
     return 0;
 }
@@ -3698,7 +3698,7 @@ int32_t Rtcm::set_DF015(const Gnss_Synchro& gnss_synchro)
         {
             CN0_dB_Hz_est = 63.75;
         }
-    uint32_t CN0_dB_Hz = static_cast<uint32_t>(std::round(CN0_dB_Hz_est / 0.25));
+    auto CN0_dB_Hz = static_cast<uint32_t>(std::round(CN0_dB_Hz_est / 0.25));
     DF015 = std::bitset<8>(CN0_dB_Hz);
     return 0;
 }
@@ -3758,7 +3758,7 @@ int32_t Rtcm::set_DF020(const Gnss_Synchro& gnss_synchro)
         {
             CN0_dB_Hz_est = 63.75;
         }
-    uint32_t CN0_dB_Hz = static_cast<uint32_t>(std::round(CN0_dB_Hz_est / 0.25));
+    auto CN0_dB_Hz = static_cast<uint32_t>(std::round(CN0_dB_Hz_est / 0.25));
     DF020 = std::bitset<8>(CN0_dB_Hz);
     return 0;
 }
@@ -3794,7 +3794,7 @@ int32_t Rtcm::set_DF024(bool galileo_indicator)
 
 int32_t Rtcm::set_DF025(double antenna_ECEF_X_m)
 {
-    int64_t ant_ref_x = static_cast<int64_t>(std::round(antenna_ECEF_X_m * 10000));
+    auto ant_ref_x = static_cast<int64_t>(std::round(antenna_ECEF_X_m * 10000));
     DF025 = std::bitset<38>(ant_ref_x);
     return 0;
 }
@@ -3802,7 +3802,7 @@ int32_t Rtcm::set_DF025(double antenna_ECEF_X_m)
 
 int32_t Rtcm::set_DF026(double antenna_ECEF_Y_m)
 {
-    int64_t ant_ref_y = static_cast<int64_t>(std::round(antenna_ECEF_Y_m * 10000));
+    auto ant_ref_y = static_cast<int64_t>(std::round(antenna_ECEF_Y_m * 10000));
     DF026 = std::bitset<38>(ant_ref_y);
     return 0;
 }
@@ -3810,7 +3810,7 @@ int32_t Rtcm::set_DF026(double antenna_ECEF_Y_m)
 
 int32_t Rtcm::set_DF027(double antenna_ECEF_Z_m)
 {
-    int64_t ant_ref_z = static_cast<int64_t>(std::round(antenna_ECEF_Z_m * 10000));
+    auto ant_ref_z = static_cast<int64_t>(std::round(antenna_ECEF_Z_m * 10000));
     DF027 = std::bitset<38>(ant_ref_z);
     return 0;
 }
@@ -3818,7 +3818,7 @@ int32_t Rtcm::set_DF027(double antenna_ECEF_Z_m)
 
 int32_t Rtcm::set_DF028(double height)
 {
-    uint32_t h_ = static_cast<uint32_t>(std::round(height * 10000));
+    auto h_ = static_cast<uint32_t>(std::round(height * 10000));
     DF028 = std::bitset<16>(h_);
     return 0;
 }
@@ -3834,7 +3834,7 @@ int32_t Rtcm::set_DF031(uint32_t antenna_setup_id)
 int32_t Rtcm::set_DF034(double obs_time)
 {
     // TOW in milliseconds from the beginning of the GLONASS day, measured in GLONASS time
-    uint64_t tk = static_cast<uint64_t>(std::round(obs_time * 1000));
+    auto tk = static_cast<uint64_t>(std::round(obs_time * 1000));
     if (tk > 86400999)
         {
             LOG(WARNING) << "To large GLONASS Epoch Time (tk)! Set to the last millisecond of the day";
@@ -3945,7 +3945,7 @@ int32_t Rtcm::set_DF040(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 int32_t Rtcm::set_DF041(const Gnss_Synchro& gnss_synchro)
 {
     double ambiguity = std::floor(gnss_synchro.Pseudorange_m / 599584.92);
-    uint64_t glonass_L1_pseudorange = static_cast<uint64_t>(std::round((gnss_synchro.Pseudorange_m - ambiguity * 599584.92) / 0.02));
+    auto glonass_L1_pseudorange = static_cast<uint64_t>(std::round((gnss_synchro.Pseudorange_m - ambiguity * 599584.92) / 0.02));
     DF041 = std::bitset<25>(glonass_L1_pseudorange);
     return 0;
 }
@@ -3959,7 +3959,7 @@ int32_t Rtcm::set_DF042(const Gnss_Synchro& gnss_synchro)
     double glonass_L1_pseudorange_c = glonass_L1_pseudorange * 0.02 + ambiguity * 299792.458;
     double L1_phaserange_c = gnss_synchro.Carrier_phase_rads / GLONASS_TWO_PI;
     double L1_phaserange_c_r = std::fmod(L1_phaserange_c - glonass_L1_pseudorange_c / lambda + 1500.0, 3000.0) - 1500.0;
-    int64_t glonass_L1_phaserange_minus_L1_pseudorange = static_cast<int64_t>(std::round(L1_phaserange_c_r * lambda / 0.0005));
+    auto glonass_L1_phaserange_minus_L1_pseudorange = static_cast<int64_t>(std::round(L1_phaserange_c_r * lambda / 0.0005));
     DF042 = std::bitset<20>(glonass_L1_phaserange_minus_L1_pseudorange);
     return 0;
 }
@@ -3977,7 +3977,7 @@ int32_t Rtcm::set_DF043(const Glonass_Gnav_Ephemeris& eph, double obs_time, cons
 
 int32_t Rtcm::set_DF044(const Gnss_Synchro& gnss_synchro)
 {
-    uint32_t glonass_L1_pseudorange_ambiguity = static_cast<uint32_t>(std::floor(gnss_synchro.Pseudorange_m / 599584.916));
+    auto glonass_L1_pseudorange_ambiguity = static_cast<uint32_t>(std::floor(gnss_synchro.Pseudorange_m / 599584.916));
     DF044 = std::bitset<7>(glonass_L1_pseudorange_ambiguity);
     return 0;
 }
@@ -3991,7 +3991,7 @@ int32_t Rtcm::set_DF045(const Gnss_Synchro& gnss_synchro)
             LOG(WARNING) << "GLONASS L1 CNR must be between 0 and 63.75, but CNR " << CN0_dB_Hz_est << " was found. Setting to 63.75 dB-Hz";
             CN0_dB_Hz_est = 63.75;
         }
-    uint32_t CN0_dB_Hz = static_cast<uint32_t>(std::round(CN0_dB_Hz_est / 0.25));
+    auto CN0_dB_Hz = static_cast<uint32_t>(std::round(CN0_dB_Hz_est / 0.25));
     DF045 = std::bitset<8>(CN0_dB_Hz);
     return 0;
 }
@@ -4051,7 +4051,7 @@ int32_t Rtcm::set_DF050(const Gnss_Synchro& gnss_synchro)
         {
             CN0_dB_Hz_est = 63.75;
         }
-    uint32_t CN0_dB_Hz = static_cast<uint32_t>(std::round(CN0_dB_Hz_est / 0.25));
+    auto CN0_dB_Hz = static_cast<uint32_t>(std::round(CN0_dB_Hz_est / 0.25));
     DF050 = std::bitset<8>(CN0_dB_Hz);
     return 0;
 }
@@ -4089,7 +4089,7 @@ int32_t Rtcm::set_DF052(const Gps_Ephemeris& gps_eph, double obs_time)
 
 int32_t Rtcm::set_DF071(const Gps_Ephemeris& gps_eph)
 {
-    uint32_t iode = static_cast<uint32_t>(gps_eph.d_IODE_SF2);
+    auto iode = static_cast<uint32_t>(gps_eph.d_IODE_SF2);
     DF071 = std::bitset<8>(iode);
     return 0;
 }
@@ -4097,7 +4097,7 @@ int32_t Rtcm::set_DF071(const Gps_Ephemeris& gps_eph)
 
 int32_t Rtcm::set_DF076(const Gps_Ephemeris& gps_eph)
 {
-    uint32_t week_number = static_cast<uint32_t>(gps_eph.i_GPS_week);
+    auto week_number = static_cast<uint32_t>(gps_eph.i_GPS_week);
     DF076 = std::bitset<10>(week_number);
     return 0;
 }
@@ -4105,7 +4105,7 @@ int32_t Rtcm::set_DF076(const Gps_Ephemeris& gps_eph)
 
 int32_t Rtcm::set_DF077(const Gps_Ephemeris& gps_eph)
 {
-    uint16_t ura = static_cast<uint16_t>(gps_eph.i_SV_accuracy);
+    auto ura = static_cast<uint16_t>(gps_eph.i_SV_accuracy);
     DF077 = std::bitset<4>(ura);
     return 0;
 }
@@ -4113,7 +4113,7 @@ int32_t Rtcm::set_DF077(const Gps_Ephemeris& gps_eph)
 
 int32_t Rtcm::set_DF078(const Gps_Ephemeris& gps_eph)
 {
-    uint16_t code_on_L2 = static_cast<uint16_t>(gps_eph.i_code_on_L2);
+    auto code_on_L2 = static_cast<uint16_t>(gps_eph.i_code_on_L2);
     DF078 = std::bitset<2>(code_on_L2);
     return 0;
 }
@@ -4121,7 +4121,7 @@ int32_t Rtcm::set_DF078(const Gps_Ephemeris& gps_eph)
 
 int32_t Rtcm::set_DF079(const Gps_Ephemeris& gps_eph)
 {
-    uint32_t idot = static_cast<uint32_t>(std::round(gps_eph.d_IDOT / I_DOT_LSB));
+    auto idot = static_cast<uint32_t>(std::round(gps_eph.d_IDOT / I_DOT_LSB));
     DF079 = std::bitset<14>(idot);
     return 0;
 }
@@ -4129,7 +4129,7 @@ int32_t Rtcm::set_DF079(const Gps_Ephemeris& gps_eph)
 
 int32_t Rtcm::set_DF080(const Gps_Ephemeris& gps_eph)
 {
-    uint16_t iode = static_cast<uint16_t>(gps_eph.d_IODE_SF2);
+    auto iode = static_cast<uint16_t>(gps_eph.d_IODE_SF2);
     DF080 = std::bitset<8>(iode);
     return 0;
 }
@@ -4137,7 +4137,7 @@ int32_t Rtcm::set_DF080(const Gps_Ephemeris& gps_eph)
 
 int32_t Rtcm::set_DF081(const Gps_Ephemeris& gps_eph)
 {
-    uint32_t toc = static_cast<uint32_t>(std::round(gps_eph.d_Toc / T_OC_LSB));
+    auto toc = static_cast<uint32_t>(std::round(gps_eph.d_Toc / T_OC_LSB));
     DF081 = std::bitset<16>(toc);
     return 0;
 }
@@ -4145,7 +4145,7 @@ int32_t Rtcm::set_DF081(const Gps_Ephemeris& gps_eph)
 
 int32_t Rtcm::set_DF082(const Gps_Ephemeris& gps_eph)
 {
-    int16_t af2 = static_cast<int16_t>(std::round(gps_eph.d_A_f2 / A_F2_LSB));
+    auto af2 = static_cast<int16_t>(std::round(gps_eph.d_A_f2 / A_F2_LSB));
     DF082 = std::bitset<8>(af2);
     return 0;
 }
@@ -4153,7 +4153,7 @@ int32_t Rtcm::set_DF082(const Gps_Ephemeris& gps_eph)
 
 int32_t Rtcm::set_DF083(const Gps_Ephemeris& gps_eph)
 {
-    int32_t af1 = static_cast<int32_t>(std::round(gps_eph.d_A_f1 / A_F1_LSB));
+    auto af1 = static_cast<int32_t>(std::round(gps_eph.d_A_f1 / A_F1_LSB));
     DF083 = std::bitset<16>(af1);
     return 0;
 }
@@ -4161,7 +4161,7 @@ int32_t Rtcm::set_DF083(const Gps_Ephemeris& gps_eph)
 
 int32_t Rtcm::set_DF084(const Gps_Ephemeris& gps_eph)
 {
-    int64_t af0 = static_cast<int64_t>(std::round(gps_eph.d_A_f0 / A_F0_LSB));
+    auto af0 = static_cast<int64_t>(std::round(gps_eph.d_A_f0 / A_F0_LSB));
     DF084 = std::bitset<22>(af0);
     return 0;
 }
@@ -4169,7 +4169,7 @@ int32_t Rtcm::set_DF084(const Gps_Ephemeris& gps_eph)
 
 int32_t Rtcm::set_DF085(const Gps_Ephemeris& gps_eph)
 {
-    uint32_t iodc = static_cast<uint32_t>(gps_eph.d_IODC);
+    auto iodc = static_cast<uint32_t>(gps_eph.d_IODC);
     DF085 = std::bitset<10>(iodc);
     return 0;
 }
@@ -4177,7 +4177,7 @@ int32_t Rtcm::set_DF085(const Gps_Ephemeris& gps_eph)
 
 int32_t Rtcm::set_DF086(const Gps_Ephemeris& gps_eph)
 {
-    int32_t crs = static_cast<int32_t>(std::round(gps_eph.d_Crs / C_RS_LSB));
+    auto crs = static_cast<int32_t>(std::round(gps_eph.d_Crs / C_RS_LSB));
     DF086 = std::bitset<16>(crs);
     return 0;
 }
@@ -4185,7 +4185,7 @@ int32_t Rtcm::set_DF086(const Gps_Ephemeris& gps_eph)
 
 int32_t Rtcm::set_DF087(const Gps_Ephemeris& gps_eph)
 {
-    int32_t delta_n = static_cast<int32_t>(std::round(gps_eph.d_Delta_n / DELTA_N_LSB));
+    auto delta_n = static_cast<int32_t>(std::round(gps_eph.d_Delta_n / DELTA_N_LSB));
     DF087 = std::bitset<16>(delta_n);
     return 0;
 }
@@ -4193,7 +4193,7 @@ int32_t Rtcm::set_DF087(const Gps_Ephemeris& gps_eph)
 
 int32_t Rtcm::set_DF088(const Gps_Ephemeris& gps_eph)
 {
-    int64_t m0 = static_cast<int64_t>(std::round(gps_eph.d_M_0 / M_0_LSB));
+    auto m0 = static_cast<int64_t>(std::round(gps_eph.d_M_0 / M_0_LSB));
     DF088 = std::bitset<32>(m0);
     return 0;
 }
@@ -4201,14 +4201,14 @@ int32_t Rtcm::set_DF088(const Gps_Ephemeris& gps_eph)
 
 int32_t Rtcm::set_DF089(const Gps_Ephemeris& gps_eph)
 {
-    int32_t cuc = static_cast<int32_t>(std::round(gps_eph.d_Cuc / C_UC_LSB));
+    auto cuc = static_cast<int32_t>(std::round(gps_eph.d_Cuc / C_UC_LSB));
     DF089 = std::bitset<16>(cuc);
     return 0;
 }
 
 int32_t Rtcm::set_DF090(const Gps_Ephemeris& gps_eph)
 {
-    uint64_t ecc = static_cast<uint64_t>(std::round(gps_eph.d_e_eccentricity / E_LSB));
+    auto ecc = static_cast<uint64_t>(std::round(gps_eph.d_e_eccentricity / E_LSB));
     DF090 = std::bitset<32>(ecc);
     return 0;
 }
@@ -4216,7 +4216,7 @@ int32_t Rtcm::set_DF090(const Gps_Ephemeris& gps_eph)
 
 int32_t Rtcm::set_DF091(const Gps_Ephemeris& gps_eph)
 {
-    int32_t cus = static_cast<int32_t>(std::round(gps_eph.d_Cus / C_US_LSB));
+    auto cus = static_cast<int32_t>(std::round(gps_eph.d_Cus / C_US_LSB));
     DF091 = std::bitset<16>(cus);
     return 0;
 }
@@ -4224,7 +4224,7 @@ int32_t Rtcm::set_DF091(const Gps_Ephemeris& gps_eph)
 
 int32_t Rtcm::set_DF092(const Gps_Ephemeris& gps_eph)
 {
-    uint64_t sqr_a = static_cast<uint64_t>(std::round(gps_eph.d_sqrt_A / SQRT_A_LSB));
+    auto sqr_a = static_cast<uint64_t>(std::round(gps_eph.d_sqrt_A / SQRT_A_LSB));
     DF092 = std::bitset<32>(sqr_a);
     return 0;
 }
@@ -4232,7 +4232,7 @@ int32_t Rtcm::set_DF092(const Gps_Ephemeris& gps_eph)
 
 int32_t Rtcm::set_DF093(const Gps_Ephemeris& gps_eph)
 {
-    uint32_t toe = static_cast<uint32_t>(std::round(gps_eph.d_Toe / T_OE_LSB));
+    auto toe = static_cast<uint32_t>(std::round(gps_eph.d_Toe / T_OE_LSB));
     DF093 = std::bitset<16>(toe);
     return 0;
 }
@@ -4240,7 +4240,7 @@ int32_t Rtcm::set_DF093(const Gps_Ephemeris& gps_eph)
 
 int32_t Rtcm::set_DF094(const Gps_Ephemeris& gps_eph)
 {
-    int32_t cic = static_cast<int32_t>(std::round(gps_eph.d_Cic / C_IC_LSB));
+    auto cic = static_cast<int32_t>(std::round(gps_eph.d_Cic / C_IC_LSB));
     DF094 = std::bitset<16>(cic);
     return 0;
 }
@@ -4248,7 +4248,7 @@ int32_t Rtcm::set_DF094(const Gps_Ephemeris& gps_eph)
 
 int32_t Rtcm::set_DF095(const Gps_Ephemeris& gps_eph)
 {
-    int64_t Omega0 = static_cast<int64_t>(std::round(gps_eph.d_OMEGA0 / OMEGA_0_LSB));
+    auto Omega0 = static_cast<int64_t>(std::round(gps_eph.d_OMEGA0 / OMEGA_0_LSB));
     DF095 = std::bitset<32>(Omega0);
     return 0;
 }
@@ -4256,7 +4256,7 @@ int32_t Rtcm::set_DF095(const Gps_Ephemeris& gps_eph)
 
 int32_t Rtcm::set_DF096(const Gps_Ephemeris& gps_eph)
 {
-    int32_t cis = static_cast<int32_t>(std::round(gps_eph.d_Cis / C_IS_LSB));
+    auto cis = static_cast<int32_t>(std::round(gps_eph.d_Cis / C_IS_LSB));
     DF096 = std::bitset<16>(cis);
     return 0;
 }
@@ -4264,7 +4264,7 @@ int32_t Rtcm::set_DF096(const Gps_Ephemeris& gps_eph)
 
 int32_t Rtcm::set_DF097(const Gps_Ephemeris& gps_eph)
 {
-    int64_t i0 = static_cast<int64_t>(std::round(gps_eph.d_i_0 / I_0_LSB));
+    auto i0 = static_cast<int64_t>(std::round(gps_eph.d_i_0 / I_0_LSB));
     DF097 = std::bitset<32>(i0);
     return 0;
 }
@@ -4272,7 +4272,7 @@ int32_t Rtcm::set_DF097(const Gps_Ephemeris& gps_eph)
 
 int32_t Rtcm::set_DF098(const Gps_Ephemeris& gps_eph)
 {
-    int32_t crc = static_cast<int32_t>(std::round(gps_eph.d_Crc / C_RC_LSB));
+    auto crc = static_cast<int32_t>(std::round(gps_eph.d_Crc / C_RC_LSB));
     DF098 = std::bitset<16>(crc);
     return 0;
 }
@@ -4280,7 +4280,7 @@ int32_t Rtcm::set_DF098(const Gps_Ephemeris& gps_eph)
 
 int32_t Rtcm::set_DF099(const Gps_Ephemeris& gps_eph)
 {
-    int64_t omega = static_cast<int64_t>(std::round(gps_eph.d_OMEGA / OMEGA_LSB));
+    auto omega = static_cast<int64_t>(std::round(gps_eph.d_OMEGA / OMEGA_LSB));
     DF099 = std::bitset<32>(omega);
     return 0;
 }
@@ -4288,7 +4288,7 @@ int32_t Rtcm::set_DF099(const Gps_Ephemeris& gps_eph)
 
 int32_t Rtcm::set_DF100(const Gps_Ephemeris& gps_eph)
 {
-    int64_t omegadot = static_cast<int64_t>(std::round(gps_eph.d_OMEGA_DOT / OMEGA_DOT_LSB));
+    auto omegadot = static_cast<int64_t>(std::round(gps_eph.d_OMEGA_DOT / OMEGA_DOT_LSB));
     DF100 = std::bitset<24>(omegadot);
     return 0;
 }
@@ -4296,7 +4296,7 @@ int32_t Rtcm::set_DF100(const Gps_Ephemeris& gps_eph)
 
 int32_t Rtcm::set_DF101(const Gps_Ephemeris& gps_eph)
 {
-    int16_t tgd = static_cast<int16_t>(std::round(gps_eph.d_TGD / T_GD_LSB));
+    auto tgd = static_cast<int16_t>(std::round(gps_eph.d_TGD / T_GD_LSB));
     DF101 = std::bitset<8>(tgd);
     return 0;
 }
@@ -4304,7 +4304,7 @@ int32_t Rtcm::set_DF101(const Gps_Ephemeris& gps_eph)
 
 int32_t Rtcm::set_DF102(const Gps_Ephemeris& gps_eph)
 {
-    uint16_t sv_heath = static_cast<uint16_t>(gps_eph.i_SV_health);
+    auto sv_heath = static_cast<uint16_t>(gps_eph.i_SV_health);
     DF102 = std::bitset<6>(sv_heath);
     return 0;
 }
@@ -4334,7 +4334,7 @@ int32_t Rtcm::set_DF105(uint32_t glonass_gnav_alm_health_ind)
 int32_t Rtcm::set_DF106(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
     // Convert the value from (15, 30, 45, 60) to (00, 01, 10, 11)
-    uint32_t P_1 = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_P_1 / 15.0 - 1.0));
+    auto P_1 = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_P_1 / 15.0 - 1.0));
     DF106 = std::bitset<2>(P_1);
     return 0;
 }
@@ -4378,7 +4378,7 @@ int32_t Rtcm::set_DF109(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 
 int32_t Rtcm::set_DF110(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    uint32_t t_b = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_t_b / (15 * 60)));
+    auto t_b = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_t_b / (15 * 60)));
     DF110 = std::bitset<7>(t_b);
     return 0;
 }
@@ -4386,7 +4386,7 @@ int32_t Rtcm::set_DF110(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 
 int32_t Rtcm::set_DF111(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    int32_t VXn_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_VXn / TWO_N20)));
+    auto VXn_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_VXn / TWO_N20)));
     uint32_t VXn_sgn = glo_sgn(glonass_gnav_eph.d_VXn);
 
     DF111 = std::bitset<24>(VXn_mag);
@@ -4397,7 +4397,7 @@ int32_t Rtcm::set_DF111(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 
 int32_t Rtcm::set_DF112(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    int32_t Xn_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_Xn / TWO_N11)));
+    auto Xn_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_Xn / TWO_N11)));
     uint32_t Xn_sgn = glo_sgn(glonass_gnav_eph.d_Xn);
 
     DF112 = std::bitset<27>(Xn_mag);
@@ -4408,7 +4408,7 @@ int32_t Rtcm::set_DF112(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 
 int32_t Rtcm::set_DF113(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    int32_t AXn_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_AXn / TWO_N30)));
+    auto AXn_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_AXn / TWO_N30)));
     uint32_t AXn_sgn = glo_sgn(glonass_gnav_eph.d_AXn);
 
     DF113 = std::bitset<5>(AXn_mag);
@@ -4419,7 +4419,7 @@ int32_t Rtcm::set_DF113(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 
 int32_t Rtcm::set_DF114(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    int32_t VYn_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_VYn / TWO_N20)));
+    auto VYn_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_VYn / TWO_N20)));
     uint32_t VYn_sgn = glo_sgn(glonass_gnav_eph.d_VYn);
 
     DF114 = std::bitset<24>(VYn_mag);
@@ -4430,7 +4430,7 @@ int32_t Rtcm::set_DF114(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 
 int32_t Rtcm::set_DF115(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    int32_t Yn_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_Yn / TWO_N11)));
+    auto Yn_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_Yn / TWO_N11)));
     uint32_t Yn_sgn = glo_sgn(glonass_gnav_eph.d_Yn);
 
     DF115 = std::bitset<27>(Yn_mag);
@@ -4441,7 +4441,7 @@ int32_t Rtcm::set_DF115(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 
 int32_t Rtcm::set_DF116(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    int32_t AYn_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_AYn / TWO_N30)));
+    auto AYn_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_AYn / TWO_N30)));
     uint32_t AYn_sgn = glo_sgn(glonass_gnav_eph.d_AYn);
 
     DF116 = std::bitset<5>(AYn_mag);
@@ -4452,7 +4452,7 @@ int32_t Rtcm::set_DF116(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 
 int32_t Rtcm::set_DF117(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    int32_t VZn_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_VZn / TWO_N20)));
+    auto VZn_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_VZn / TWO_N20)));
     uint32_t VZn_sgn = glo_sgn(glonass_gnav_eph.d_VZn);
 
     DF117 = std::bitset<24>(VZn_mag);
@@ -4463,7 +4463,7 @@ int32_t Rtcm::set_DF117(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 
 int32_t Rtcm::set_DF118(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    int32_t Zn_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_Zn / TWO_N11)));
+    auto Zn_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_Zn / TWO_N11)));
     uint32_t Zn_sgn = glo_sgn(glonass_gnav_eph.d_Zn);
 
     DF118 = std::bitset<27>(Zn_mag);
@@ -4474,7 +4474,7 @@ int32_t Rtcm::set_DF118(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 
 int32_t Rtcm::set_DF119(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    int32_t AZn_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_AZn / TWO_N30)));
+    auto AZn_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_AZn / TWO_N30)));
     uint32_t AZn_sgn = glo_sgn(glonass_gnav_eph.d_AZn);
 
     DF119 = std::bitset<5>(AZn_mag);
@@ -4493,7 +4493,7 @@ int32_t Rtcm::set_DF120(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 
 int32_t Rtcm::set_DF121(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    int32_t gamma_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_gamma_n / TWO_N40)));
+    auto gamma_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_gamma_n / TWO_N40)));
     uint32_t gamma_sgn = glo_sgn(glonass_gnav_eph.d_gamma_n);
 
     DF121 = std::bitset<11>(gamma_mag);
@@ -4504,7 +4504,7 @@ int32_t Rtcm::set_DF121(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 
 int32_t Rtcm::set_DF122(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    uint32_t P = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_P));
+    auto P = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_P));
     DF122 = std::bitset<2>(P);
     return 0;
 }
@@ -4512,7 +4512,7 @@ int32_t Rtcm::set_DF122(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 
 int32_t Rtcm::set_DF123(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    uint32_t ln = static_cast<uint32_t>((glonass_gnav_eph.d_l3rd_n));
+    auto ln = static_cast<uint32_t>((glonass_gnav_eph.d_l3rd_n));
     DF123 = std::bitset<1>(ln);
     return 0;
 }
@@ -4520,7 +4520,7 @@ int32_t Rtcm::set_DF123(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 
 int32_t Rtcm::set_DF124(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    int32_t tau_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_tau_n / TWO_N30)));
+    auto tau_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_tau_n / TWO_N30)));
     uint32_t tau_sgn = glo_sgn(glonass_gnav_eph.d_tau_n);
 
     DF124 = std::bitset<22>(tau_mag);
@@ -4531,7 +4531,7 @@ int32_t Rtcm::set_DF124(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 
 int32_t Rtcm::set_DF125(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    int32_t delta_tau_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_Delta_tau_n / TWO_N30)));
+    auto delta_tau_mag = static_cast<int32_t>(std::round(fabs(glonass_gnav_eph.d_Delta_tau_n / TWO_N30)));
     uint32_t delta_tau_sgn = glo_sgn(glonass_gnav_eph.d_Delta_tau_n);
 
     DF125 = std::bitset<5>(delta_tau_mag);
@@ -4542,7 +4542,7 @@ int32_t Rtcm::set_DF125(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 
 int32_t Rtcm::set_DF126(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    uint32_t ecc = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_E_n));
+    auto ecc = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_E_n));
     DF126 = std::bitset<5>(ecc);
     return 0;
 }
@@ -4558,7 +4558,7 @@ int32_t Rtcm::set_DF127(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 
 int32_t Rtcm::set_DF128(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    uint32_t F_t = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_F_T));
+    auto F_t = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_F_T));
     DF128 = std::bitset<4>(F_t);
     return 0;
 }
@@ -4566,7 +4566,7 @@ int32_t Rtcm::set_DF128(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 
 int32_t Rtcm::set_DF129(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    uint32_t N_t = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_N_T));
+    auto N_t = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_N_T));
     DF129 = std::bitset<11>(N_t);
     return 0;
 }
@@ -4574,7 +4574,7 @@ int32_t Rtcm::set_DF129(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 
 int32_t Rtcm::set_DF130(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    uint32_t M = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_M));
+    auto M = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_M));
     DF130 = std::bitset<2>(M);
     return 0;
 }
@@ -4582,7 +4582,7 @@ int32_t Rtcm::set_DF130(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 
 int32_t Rtcm::set_DF131(uint32_t fifth_str_additional_data_ind)
 {
-    uint32_t fith_str_data = static_cast<uint32_t>(fifth_str_additional_data_ind);
+    auto fith_str_data = static_cast<uint32_t>(fifth_str_additional_data_ind);
     DF131 = std::bitset<1>(fith_str_data);
     return 0;
 }
@@ -4590,7 +4590,7 @@ int32_t Rtcm::set_DF131(uint32_t fifth_str_additional_data_ind)
 
 int32_t Rtcm::set_DF132(const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model)
 {
-    uint32_t N_A = static_cast<uint32_t>(std::round(glonass_gnav_utc_model.d_N_A));
+    auto N_A = static_cast<uint32_t>(std::round(glonass_gnav_utc_model.d_N_A));
     DF132 = std::bitset<11>(N_A);
     return 0;
 }
@@ -4598,7 +4598,7 @@ int32_t Rtcm::set_DF132(const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model)
 
 int32_t Rtcm::set_DF133(const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model)
 {
-    int32_t tau_c = static_cast<int32_t>(std::round(glonass_gnav_utc_model.d_tau_c / TWO_N31));
+    auto tau_c = static_cast<int32_t>(std::round(glonass_gnav_utc_model.d_tau_c / TWO_N31));
     DF133 = std::bitset<32>(tau_c);
     return 0;
 }
@@ -4606,7 +4606,7 @@ int32_t Rtcm::set_DF133(const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model)
 
 int32_t Rtcm::set_DF134(const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model)
 {
-    uint32_t N_4 = static_cast<uint32_t>(std::round(glonass_gnav_utc_model.d_N_4));
+    auto N_4 = static_cast<uint32_t>(std::round(glonass_gnav_utc_model.d_N_4));
     DF134 = std::bitset<5>(N_4);
     return 0;
 }
@@ -4614,7 +4614,7 @@ int32_t Rtcm::set_DF134(const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model)
 
 int32_t Rtcm::set_DF135(const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model)
 {
-    int32_t tau_gps = static_cast<int32_t>(std::round(glonass_gnav_utc_model.d_tau_gps) / TWO_N30);
+    auto tau_gps = static_cast<int32_t>(std::round(glonass_gnav_utc_model.d_tau_gps) / TWO_N30);
     DF135 = std::bitset<22>(tau_gps);
     return 0;
 }
@@ -4638,7 +4638,7 @@ int32_t Rtcm::set_DF137(const Gps_Ephemeris& gps_eph)
 int32_t Rtcm::set_DF248(double obs_time)
 {
     // TOW in milliseconds from the beginning of the Galileo week, measured in Galileo time
-    uint64_t tow = static_cast<uint64_t>(std::round(obs_time * 1000));
+    auto tow = static_cast<uint64_t>(std::round(obs_time * 1000));
     if (tow > 604799999)
         {
             LOG(WARNING) << "To large TOW! Set to the last millisecond of the week";
@@ -4663,7 +4663,7 @@ int32_t Rtcm::set_DF252(const Galileo_Ephemeris& gal_eph)
 
 int32_t Rtcm::set_DF289(const Galileo_Ephemeris& gal_eph)
 {
-    uint32_t galileo_week_number = static_cast<uint32_t>(gal_eph.WN_5);
+    auto galileo_week_number = static_cast<uint32_t>(gal_eph.WN_5);
     if (galileo_week_number > 4095)
         {
             LOG(WARNING) << "Error decoding Galileo week number (it has a 4096 roll-off, but " << galileo_week_number << " was detected)";
@@ -4675,7 +4675,7 @@ int32_t Rtcm::set_DF289(const Galileo_Ephemeris& gal_eph)
 
 int32_t Rtcm::set_DF290(const Galileo_Ephemeris& gal_eph)
 {
-    uint32_t iod_nav = static_cast<uint32_t>(gal_eph.IOD_nav_1);
+    auto iod_nav = static_cast<uint32_t>(gal_eph.IOD_nav_1);
     if (iod_nav > 1023)
         {
             LOG(WARNING) << "Error decoding Galileo IODnav (it has a max of 1023, but " << iod_nav << " was detected)";
@@ -4687,7 +4687,7 @@ int32_t Rtcm::set_DF290(const Galileo_Ephemeris& gal_eph)
 
 int32_t Rtcm::set_DF291(const Galileo_Ephemeris& gal_eph)
 {
-    uint16_t SISA = static_cast<uint16_t>(gal_eph.SISA_3);
+    auto SISA = static_cast<uint16_t>(gal_eph.SISA_3);
     //SISA = 0; // SIS Accuracy, data content definition not given in Galileo OS SIS ICD, Issue 1.1, Sept 2010
     DF291 = std::bitset<8>(SISA);
     return 0;
@@ -4696,7 +4696,7 @@ int32_t Rtcm::set_DF291(const Galileo_Ephemeris& gal_eph)
 
 int32_t Rtcm::set_DF292(const Galileo_Ephemeris& gal_eph)
 {
-    int32_t idot = static_cast<int32_t>(std::round(gal_eph.iDot_2 / FNAV_idot_2_LSB));
+    auto idot = static_cast<int32_t>(std::round(gal_eph.iDot_2 / FNAV_idot_2_LSB));
     DF292 = std::bitset<14>(idot);
     return 0;
 }
@@ -4704,7 +4704,7 @@ int32_t Rtcm::set_DF292(const Galileo_Ephemeris& gal_eph)
 
 int32_t Rtcm::set_DF293(const Galileo_Ephemeris& gal_eph)
 {
-    uint32_t toc = static_cast<uint32_t>(gal_eph.t0c_4);
+    auto toc = static_cast<uint32_t>(gal_eph.t0c_4);
     if (toc > 604740)
         {
             LOG(WARNING) << "Error decoding Galileo ephemeris time (max of 604740, but " << toc << " was detected)";
@@ -4716,7 +4716,7 @@ int32_t Rtcm::set_DF293(const Galileo_Ephemeris& gal_eph)
 
 int32_t Rtcm::set_DF294(const Galileo_Ephemeris& gal_eph)
 {
-    int16_t af2 = static_cast<int16_t>(std::round(gal_eph.af2_4 / FNAV_af2_1_LSB));
+    auto af2 = static_cast<int16_t>(std::round(gal_eph.af2_4 / FNAV_af2_1_LSB));
     DF294 = std::bitset<6>(af2);
     return 0;
 }
@@ -4724,7 +4724,7 @@ int32_t Rtcm::set_DF294(const Galileo_Ephemeris& gal_eph)
 
 int32_t Rtcm::set_DF295(const Galileo_Ephemeris& gal_eph)
 {
-    int64_t af1 = static_cast<int64_t>(std::round(gal_eph.af1_4 / FNAV_af1_1_LSB));
+    auto af1 = static_cast<int64_t>(std::round(gal_eph.af1_4 / FNAV_af1_1_LSB));
     DF295 = std::bitset<21>(af1);
     return 0;
 }
@@ -4740,7 +4740,7 @@ int32_t Rtcm::set_DF296(const Galileo_Ephemeris& gal_eph)
 
 int32_t Rtcm::set_DF297(const Galileo_Ephemeris& gal_eph)
 {
-    int32_t crs = static_cast<int32_t>(std::round(gal_eph.C_rs_3 / FNAV_Crs_3_LSB));
+    auto crs = static_cast<int32_t>(std::round(gal_eph.C_rs_3 / FNAV_Crs_3_LSB));
     DF297 = std::bitset<16>(crs);
     return 0;
 }
@@ -4748,7 +4748,7 @@ int32_t Rtcm::set_DF297(const Galileo_Ephemeris& gal_eph)
 
 int32_t Rtcm::set_DF298(const Galileo_Ephemeris& gal_eph)
 {
-    int32_t delta_n = static_cast<int32_t>(std::round(gal_eph.delta_n_3 / FNAV_deltan_3_LSB));
+    auto delta_n = static_cast<int32_t>(std::round(gal_eph.delta_n_3 / FNAV_deltan_3_LSB));
     DF298 = std::bitset<16>(delta_n);
     return 0;
 }
@@ -4756,7 +4756,7 @@ int32_t Rtcm::set_DF298(const Galileo_Ephemeris& gal_eph)
 
 int32_t Rtcm::set_DF299(const Galileo_Ephemeris& gal_eph)
 {
-    int64_t m0 = static_cast<int64_t>(std::round(gal_eph.M0_1 / FNAV_M0_2_LSB));
+    auto m0 = static_cast<int64_t>(std::round(gal_eph.M0_1 / FNAV_M0_2_LSB));
     DF299 = std::bitset<32>(m0);
     return 0;
 }
@@ -4772,7 +4772,7 @@ int32_t Rtcm::set_DF300(const Galileo_Ephemeris& gal_eph)
 
 int32_t Rtcm::set_DF301(const Galileo_Ephemeris& gal_eph)
 {
-    uint64_t ecc = static_cast<uint64_t>(std::round(gal_eph.e_1 / FNAV_e_2_LSB));
+    auto ecc = static_cast<uint64_t>(std::round(gal_eph.e_1 / FNAV_e_2_LSB));
     DF301 = std::bitset<32>(ecc);
     return 0;
 }
@@ -4780,7 +4780,7 @@ int32_t Rtcm::set_DF301(const Galileo_Ephemeris& gal_eph)
 
 int32_t Rtcm::set_DF302(const Galileo_Ephemeris& gal_eph)
 {
-    int32_t cus = static_cast<int32_t>(std::round(gal_eph.C_us_3 / FNAV_Cus_3_LSB));
+    auto cus = static_cast<int32_t>(std::round(gal_eph.C_us_3 / FNAV_Cus_3_LSB));
     DF302 = std::bitset<16>(cus);
     return 0;
 }
@@ -4788,7 +4788,7 @@ int32_t Rtcm::set_DF302(const Galileo_Ephemeris& gal_eph)
 
 int32_t Rtcm::set_DF303(const Galileo_Ephemeris& gal_eph)
 {
-    uint64_t sqr_a = static_cast<uint64_t>(std::round(gal_eph.A_1 / FNAV_a12_2_LSB));
+    auto sqr_a = static_cast<uint64_t>(std::round(gal_eph.A_1 / FNAV_a12_2_LSB));
     DF303 = std::bitset<32>(sqr_a);
     return 0;
 }
@@ -4796,7 +4796,7 @@ int32_t Rtcm::set_DF303(const Galileo_Ephemeris& gal_eph)
 
 int32_t Rtcm::set_DF304(const Galileo_Ephemeris& gal_eph)
 {
-    uint32_t toe = static_cast<uint32_t>(std::round(gal_eph.t0e_1 / FNAV_t0e_3_LSB));
+    auto toe = static_cast<uint32_t>(std::round(gal_eph.t0e_1 / FNAV_t0e_3_LSB));
     DF304 = std::bitset<14>(toe);
     return 0;
 }
@@ -4804,7 +4804,7 @@ int32_t Rtcm::set_DF304(const Galileo_Ephemeris& gal_eph)
 
 int32_t Rtcm::set_DF305(const Galileo_Ephemeris& gal_eph)
 {
-    int32_t cic = static_cast<int32_t>(std::round(gal_eph.C_ic_4 / FNAV_Cic_4_LSB));
+    auto cic = static_cast<int32_t>(std::round(gal_eph.C_ic_4 / FNAV_Cic_4_LSB));
     DF305 = std::bitset<16>(cic);
     return 0;
 }
@@ -4812,7 +4812,7 @@ int32_t Rtcm::set_DF305(const Galileo_Ephemeris& gal_eph)
 
 int32_t Rtcm::set_DF306(const Galileo_Ephemeris& gal_eph)
 {
-    int64_t Omega0 = static_cast<int64_t>(std::round(gal_eph.OMEGA_0_2 / FNAV_omega0_2_LSB));
+    auto Omega0 = static_cast<int64_t>(std::round(gal_eph.OMEGA_0_2 / FNAV_omega0_2_LSB));
     DF306 = std::bitset<32>(Omega0);
     return 0;
 }
@@ -4820,7 +4820,7 @@ int32_t Rtcm::set_DF306(const Galileo_Ephemeris& gal_eph)
 
 int32_t Rtcm::set_DF307(const Galileo_Ephemeris& gal_eph)
 {
-    int32_t cis = static_cast<int32_t>(std::round(gal_eph.C_is_4 / FNAV_Cis_4_LSB));
+    auto cis = static_cast<int32_t>(std::round(gal_eph.C_is_4 / FNAV_Cis_4_LSB));
     DF307 = std::bitset<16>(cis);
     return 0;
 }
@@ -4828,7 +4828,7 @@ int32_t Rtcm::set_DF307(const Galileo_Ephemeris& gal_eph)
 
 int32_t Rtcm::set_DF308(const Galileo_Ephemeris& gal_eph)
 {
-    int64_t i0 = static_cast<int64_t>(std::round(gal_eph.i_0_2 / FNAV_i0_3_LSB));
+    auto i0 = static_cast<int64_t>(std::round(gal_eph.i_0_2 / FNAV_i0_3_LSB));
     DF308 = std::bitset<32>(i0);
     return 0;
 }
@@ -4844,7 +4844,7 @@ int32_t Rtcm::set_DF309(const Galileo_Ephemeris& gal_eph)
 
 int32_t Rtcm::set_DF310(const Galileo_Ephemeris& gal_eph)
 {
-    int32_t omega = static_cast<int32_t>(std::round(gal_eph.omega_2 / FNAV_omega0_2_LSB));
+    auto omega = static_cast<int32_t>(std::round(gal_eph.omega_2 / FNAV_omega0_2_LSB));
     DF310 = std::bitset<32>(omega);
     return 0;
 }
@@ -4852,7 +4852,7 @@ int32_t Rtcm::set_DF310(const Galileo_Ephemeris& gal_eph)
 
 int32_t Rtcm::set_DF311(const Galileo_Ephemeris& gal_eph)
 {
-    int64_t Omegadot = static_cast<int64_t>(std::round(gal_eph.OMEGA_dot_3 / FNAV_omegadot_2_LSB));
+    auto Omegadot = static_cast<int64_t>(std::round(gal_eph.OMEGA_dot_3 / FNAV_omegadot_2_LSB));
     DF311 = std::bitset<24>(Omegadot);
     return 0;
 }
@@ -4860,7 +4860,7 @@ int32_t Rtcm::set_DF311(const Galileo_Ephemeris& gal_eph)
 
 int32_t Rtcm::set_DF312(const Galileo_Ephemeris& gal_eph)
 {
-    int32_t bdg_E1_E5a = static_cast<int32_t>(std::round(gal_eph.BGD_E1E5a_5 / FNAV_BGD_1_LSB));
+    auto bdg_E1_E5a = static_cast<int32_t>(std::round(gal_eph.BGD_E1E5a_5 / FNAV_BGD_1_LSB));
     DF312 = std::bitset<10>(bdg_E1_E5a);
     return 0;
 }
@@ -4868,7 +4868,7 @@ int32_t Rtcm::set_DF312(const Galileo_Ephemeris& gal_eph)
 
 int32_t Rtcm::set_DF313(const Galileo_Ephemeris& gal_eph)
 {
-    uint32_t bdg_E5b_E1 = static_cast<uint32_t>(std::round(gal_eph.BGD_E1E5b_5));
+    auto bdg_E5b_E1 = static_cast<uint32_t>(std::round(gal_eph.BGD_E1E5b_5));
     //bdg_E5b_E1 = 0; //reserved
     DF313 = std::bitset<10>(bdg_E5b_E1);
     return 0;

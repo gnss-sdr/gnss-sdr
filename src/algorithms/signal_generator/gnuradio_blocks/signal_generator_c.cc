@@ -289,7 +289,7 @@ int signal_generator_c::general_work(int noutput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items __attribute__((unused)),
     gr_vector_void_star &output_items)
 {
-    gr_complex *out = reinterpret_cast<gr_complex *>(output_items[0]);
+    auto *out = reinterpret_cast<gr_complex *>(output_items[0]);
 
     work_counter_++;
 

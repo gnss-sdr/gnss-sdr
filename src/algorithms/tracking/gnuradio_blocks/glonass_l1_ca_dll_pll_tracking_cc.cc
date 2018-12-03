@@ -331,24 +331,24 @@ int32_t Glonass_L1_Ca_Dll_Pll_Tracking_cc::save_matfile()
         {
             return 1;
         }
-    float *abs_E = new float[num_epoch];
-    float *abs_P = new float[num_epoch];
-    float *abs_L = new float[num_epoch];
-    float *Prompt_I = new float[num_epoch];
-    float *Prompt_Q = new float[num_epoch];
-    uint64_t *PRN_start_sample_count = new uint64_t[num_epoch];
-    double *acc_carrier_phase_rad = new double[num_epoch];
-    double *carrier_doppler_hz = new double[num_epoch];
-    double *code_freq_chips = new double[num_epoch];
-    double *carr_error_hz = new double[num_epoch];
-    double *carr_error_filt_hz = new double[num_epoch];
-    double *code_error_chips = new double[num_epoch];
-    double *code_error_filt_chips = new double[num_epoch];
-    double *CN0_SNV_dB_Hz = new double[num_epoch];
-    double *carrier_lock_test = new double[num_epoch];
-    double *aux1 = new double[num_epoch];
-    double *aux2 = new double[num_epoch];
-    uint32_t *PRN = new uint32_t[num_epoch];
+    auto *abs_E = new float[num_epoch];
+    auto *abs_P = new float[num_epoch];
+    auto *abs_L = new float[num_epoch];
+    auto *Prompt_I = new float[num_epoch];
+    auto *Prompt_Q = new float[num_epoch];
+    auto *PRN_start_sample_count = new uint64_t[num_epoch];
+    auto *acc_carrier_phase_rad = new double[num_epoch];
+    auto *carrier_doppler_hz = new double[num_epoch];
+    auto *code_freq_chips = new double[num_epoch];
+    auto *carr_error_hz = new double[num_epoch];
+    auto *carr_error_filt_hz = new double[num_epoch];
+    auto *code_error_chips = new double[num_epoch];
+    auto *code_error_filt_chips = new double[num_epoch];
+    auto *CN0_SNV_dB_Hz = new double[num_epoch];
+    auto *carrier_lock_test = new double[num_epoch];
+    auto *aux1 = new double[num_epoch];
+    auto *aux2 = new double[num_epoch];
+    auto *PRN = new uint32_t[num_epoch];
 
     try
         {
@@ -549,8 +549,8 @@ int Glonass_L1_Ca_Dll_Pll_Tracking_cc::general_work(int noutput_items __attribut
     double code_error_filt_chips = 0.0;
 
     // Block input data and block output stream pointers
-    const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);  // PRN start block alignment
-    Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
+    const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);  // PRN start block alignment
+    auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
 
     // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
@@ -749,7 +749,7 @@ int Glonass_L1_Ca_Dll_Pll_Tracking_cc::general_work(int noutput_items __attribut
                     // AUX vars (for debug purposes)
                     tmp_float = d_rem_code_phase_samples;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
-                    double tmp_double = static_cast<double>(d_sample_counter + d_current_prn_length_samples);
+                    auto tmp_double = static_cast<double>(d_sample_counter + d_current_prn_length_samples);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                     // PRN
                     uint32_t prn_ = d_acquisition_gnss_synchro->PRN;

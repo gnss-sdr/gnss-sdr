@@ -82,7 +82,7 @@ int gnss_sdr_valve::work(int noutput_items,
         {
             if (d_ncopied_items >= d_nitems)
                 {
-                    ControlMessageFactory *cmf = new ControlMessageFactory();
+                    auto *cmf = new ControlMessageFactory();
                     d_queue->handle(cmf->GetQueueMessage(200, 0));
                     LOG(INFO) << "Stopping receiver, " << d_ncopied_items << " samples processed";
                     delete cmf;

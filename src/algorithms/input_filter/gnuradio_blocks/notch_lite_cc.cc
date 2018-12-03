@@ -103,8 +103,8 @@ int NotchLite::general_work(int noutput_items, gr_vector_int &ninput_items __att
     float sig2dB = 0.0;
     float sig2lin = 0.0;
     lv_32fc_t dot_prod_;
-    const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);
-    gr_complex *out = reinterpret_cast<gr_complex *>(output_items[0]);
+    const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);
+    auto *out = reinterpret_cast<gr_complex *>(output_items[0]);
     in++;
     while ((index_out + length_) < noutput_items)
         {

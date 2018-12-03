@@ -2878,7 +2878,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
             line += std::string(1, ' ');
             line += Rinex_Printer::doub2for(static_cast<double>(gps_ephemeris_iter->second.i_code_on_L2), 18, 2);
             line += std::string(1, ' ');
-            double GPS_week_continuous_number = static_cast<double>(gps_ephemeris_iter->second.i_GPS_week + 1024);  // valid until April 7, 2019 (check http://www.colorado.edu/geography/gcraft/notes/gps/gpseow.htm)
+            auto GPS_week_continuous_number = static_cast<double>(gps_ephemeris_iter->second.i_GPS_week + 1024);  // valid until April 7, 2019 (check http://www.colorado.edu/geography/gcraft/notes/gps/gpseow.htm)
             line += Rinex_Printer::doub2for(GPS_week_continuous_number, 18, 2);
             line += std::string(1, ' ');
             line += Rinex_Printer::doub2for(static_cast<double>(gps_ephemeris_iter->second.i_code_on_L2), 18, 2);
@@ -3082,7 +3082,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
             double my_zero = 0.0;
             line += Rinex_Printer::doub2for(my_zero, 18, 2);
             line += std::string(1, ' ');
-            double GPS_week_continuous_number = static_cast<double>(gps_ephemeris_iter->second.i_GPS_week + 1024);  // valid until April 7, 2019 (check http://www.colorado.edu/geography/gcraft/notes/gps/gpseow.htm)
+            auto GPS_week_continuous_number = static_cast<double>(gps_ephemeris_iter->second.i_GPS_week + 1024);  // valid until April 7, 2019 (check http://www.colorado.edu/geography/gcraft/notes/gps/gpseow.htm)
             line += Rinex_Printer::doub2for(GPS_week_continuous_number, 18, 2);
             line += std::string(1, ' ');
             line += Rinex_Printer::doub2for(my_zero, 18, 2);
@@ -3227,7 +3227,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gal
             int32_t data_source_INAV = Rinex_Printer::toInt(iNAVE1B, 10);
             line += Rinex_Printer::doub2for(static_cast<double>(data_source_INAV), 18, 2);
             line += std::string(1, ' ');
-            double GST_week = static_cast<double>(galileo_ephemeris_iter->second.WN_5);
+            auto GST_week = static_cast<double>(galileo_ephemeris_iter->second.WN_5);
             double num_GST_rollovers = floor((GST_week + 1024.0) / 4096.0);
             double Galileo_week_continuous_number = GST_week + 1024.0 + num_GST_rollovers * 4096.0;
             line += Rinex_Printer::doub2for(Galileo_week_continuous_number, 18, 2);
@@ -7558,7 +7558,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
                     lineObs += std::to_string(static_cast<int32_t>(*it));
                 }
             ret = total_glo_map.equal_range(*it);
-            for (std::multimap<uint32_t, Gnss_Synchro>::iterator iter = ret.first; iter != ret.second; ++iter)
+            for (auto iter = ret.first; iter != ret.second; ++iter)
                 {
                     /// \todo Need to account for pseudorange correction for glonass
                     //double leap_seconds = Rinex_Printer::get_leap_second(glonass_gnav_eph, gps_obs_time);
@@ -7798,7 +7798,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& g
             lineObs += std::to_string(static_cast<int32_t>(*it));
 
             ret = total_glo_map.equal_range(*it);
-            for (std::multimap<uint32_t, Gnss_Synchro>::iterator iter = ret.first; iter != ret.second; ++iter)
+            for (auto iter = ret.first; iter != ret.second; ++iter)
                 {
                     /// \todo Need to account for pseudorange correction for glonass
                     //double leap_seconds = Rinex_Printer::get_leap_second(glonass_gnav_eph, gps_obs_time);
@@ -8035,7 +8035,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ga
             if (static_cast<int32_t>(*it) < 10) lineObs += std::string(1, '0');
             lineObs += std::to_string(static_cast<int32_t>(*it));
             ret = total_glo_map.equal_range(*it);
-            for (std::multimap<uint32_t, Gnss_Synchro>::iterator iter = ret.first; iter != ret.second; ++iter)
+            for (auto iter = ret.first; iter != ret.second; ++iter)
                 {
                     lineObs += Rinex_Printer::rightJustify(asString(iter->second.Pseudorange_m, 3), 14);
 
@@ -8616,7 +8616,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, c
             if (static_cast<int32_t>(*it) < 10) lineObs += std::string(1, '0');
             lineObs += std::to_string(static_cast<int32_t>(*it));
             ret = total_mmap.equal_range(*it);
-            for (std::multimap<uint32_t, Gnss_Synchro>::iterator iter = ret.first; iter != ret.second; ++iter)
+            for (auto iter = ret.first; iter != ret.second; ++iter)
                 {
                     lineObs += Rinex_Printer::rightJustify(asString(iter->second.Pseudorange_m, 3), 14);
 
@@ -8856,7 +8856,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
             if (static_cast<int32_t>(*it) < 10) lineObs += std::string(1, '0');
             lineObs += std::to_string(static_cast<int32_t>(*it));
             ret = total_map.equal_range(*it);
-            for (std::multimap<uint32_t, Gnss_Synchro>::iterator iter = ret.first; iter != ret.second; ++iter)
+            for (auto iter = ret.first; iter != ret.second; ++iter)
                 {
                     lineObs += Rinex_Printer::rightJustify(asString(iter->second.Pseudorange_m, 3), 14);
 
@@ -9110,7 +9110,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
             if (static_cast<int32_t>(*it) < 10) lineObs += std::string(1, '0');
             lineObs += std::to_string(static_cast<int32_t>(*it));
             ret = total_gal_map.equal_range(*it);
-            for (std::multimap<uint32_t, Gnss_Synchro>::iterator iter = ret.first; iter != ret.second; ++iter)
+            for (auto iter = ret.first; iter != ret.second; ++iter)
                 {
                     lineObs += Rinex_Printer::rightJustify(asString(iter->second.Pseudorange_m, 3), 14);
 
@@ -9339,7 +9339,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
             if (static_cast<int32_t>(*it) < 10) lineObs += std::string(1, '0');
             lineObs += std::to_string(static_cast<int32_t>(*it));
             ret = total_gps_map.equal_range(*it);
-            for (std::multimap<uint32_t, Gnss_Synchro>::iterator iter = ret.first; iter != ret.second; ++iter)
+            for (auto iter = ret.first; iter != ret.second; ++iter)
                 {
                     lineObs += Rinex_Printer::rightJustify(asString(iter->second.Pseudorange_m, 3), 14);
 
@@ -9398,7 +9398,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
             if (static_cast<int32_t>(*it) < 10) lineObs += std::string(1, '0');
             lineObs += std::to_string(static_cast<int32_t>(*it));
             ret = total_gal_map.equal_range(*it);
-            for (std::multimap<uint32_t, Gnss_Synchro>::iterator iter = ret.first; iter != ret.second; ++iter)
+            for (auto iter = ret.first; iter != ret.second; ++iter)
                 {
                     lineObs += Rinex_Printer::rightJustify(asString(iter->second.Pseudorange_m, 3), 14);
 
@@ -9648,7 +9648,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
             if (static_cast<int32_t>(*it) < 10) lineObs += std::string(1, '0');
             lineObs += std::to_string(static_cast<int32_t>(*it));
             ret = total_gps_map.equal_range(*it);
-            for (std::multimap<uint32_t, Gnss_Synchro>::iterator iter = ret.first; iter != ret.second; ++iter)
+            for (auto iter = ret.first; iter != ret.second; ++iter)
                 {
                     lineObs += Rinex_Printer::rightJustify(asString(iter->second.Pseudorange_m, 3), 14);
 
@@ -9707,7 +9707,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
             if (static_cast<int32_t>(*it) < 10) lineObs += std::string(1, '0');
             lineObs += std::to_string(static_cast<int32_t>(*it));
             ret = total_gal_map.equal_range(*it);
-            for (std::multimap<uint32_t, Gnss_Synchro>::iterator iter = ret.first; iter != ret.second; ++iter)
+            for (auto iter = ret.first; iter != ret.second; ++iter)
                 {
                     lineObs += Rinex_Printer::rightJustify(asString(iter->second.Pseudorange_m, 3), 14);
 

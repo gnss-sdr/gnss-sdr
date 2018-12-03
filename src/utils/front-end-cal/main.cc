@@ -433,7 +433,7 @@ int main(int argc, char** argv)
                 {
                     std::cout << " " << PRN << " ";
                     double doppler_measurement_hz = 0;
-                    for (std::vector<Gnss_Synchro>::iterator it = gnss_sync_vector.begin(); it != gnss_sync_vector.end(); ++it)
+                    for (auto it = gnss_sync_vector.begin(); it != gnss_sync_vector.end(); ++it)
                         {
                             doppler_measurement_hz += (*it).Acq_doppler_hz;
                         }
@@ -540,7 +540,7 @@ int main(int argc, char** argv)
 
     std::cout << "SV ID  Measured [Hz]   Predicted [Hz]" << std::endl;
 
-    for (std::map<int, double>::iterator it = doppler_measurements_map.begin(); it != doppler_measurements_map.end(); ++it)
+    for (auto it = doppler_measurements_map.begin(); it != doppler_measurements_map.end(); ++it)
         {
             try
                 {
@@ -576,7 +576,7 @@ int main(int argc, char** argv)
     double mean_osc_err_ppm = 0;
     int n_elements = f_if_estimation_Hz_map.size();
 
-    for (std::map<int, double>::iterator it = f_if_estimation_Hz_map.begin(); it != f_if_estimation_Hz_map.end(); ++it)
+    for (auto it = f_if_estimation_Hz_map.begin(); it != f_if_estimation_Hz_map.end(); ++it)
         {
             mean_f_if_Hz += (*it).second;
             mean_fs_Hz += f_fs_estimation_Hz_map.find((*it).first)->second;
@@ -597,7 +597,7 @@ int main(int argc, char** argv)
               << "Corrected Doppler vs. Predicted" << std::endl;
     std::cout << "SV ID  Corrected [Hz]   Predicted [Hz]" << std::endl;
 
-    for (std::map<int, double>::iterator it = doppler_measurements_map.begin(); it != doppler_measurements_map.end(); ++it)
+    for (auto it = doppler_measurements_map.begin(); it != doppler_measurements_map.end(); ++it)
         {
             try
                 {

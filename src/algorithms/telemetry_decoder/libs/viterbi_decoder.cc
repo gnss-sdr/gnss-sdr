@@ -180,7 +180,7 @@ int Viterbi_Decoder::do_acs(const double sym[], int nbits)
     int t, i, state_at_t;
     float metric;
     float max_val;
-    float* pm_t_next = new float[d_states];
+    auto* pm_t_next = new float[d_states];
 
     /* t:
      *    - state: state at t

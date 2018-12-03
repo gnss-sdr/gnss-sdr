@@ -137,34 +137,34 @@ bool rtklib_solver::save_matfile()
             return false;
         }
 
-    uint32_t *TOW_at_current_symbol_ms = new uint32_t[num_epoch];
-    uint32_t *week = new uint32_t[num_epoch];
-    double *RX_time = new double[num_epoch];
-    double *user_clk_offset = new double[num_epoch];
-    double *pos_x = new double[num_epoch];
-    double *pos_y = new double[num_epoch];
-    double *pos_z = new double[num_epoch];
-    double *vel_x = new double[num_epoch];
-    double *vel_y = new double[num_epoch];
-    double *vel_z = new double[num_epoch];
-    double *cov_xx = new double[num_epoch];
-    double *cov_yy = new double[num_epoch];
-    double *cov_zz = new double[num_epoch];
-    double *cov_xy = new double[num_epoch];
-    double *cov_yz = new double[num_epoch];
-    double *cov_zx = new double[num_epoch];
-    double *latitude = new double[num_epoch];
-    double *longitude = new double[num_epoch];
-    double *height = new double[num_epoch];
-    uint8_t *valid_sats = new uint8_t[num_epoch];
-    uint8_t *solution_status = new uint8_t[num_epoch];
-    uint8_t *solution_type = new uint8_t[num_epoch];
-    float *AR_ratio_factor = new float[num_epoch];
-    float *AR_ratio_threshold = new float[num_epoch];
-    double *gdop = new double[num_epoch];
-    double *pdop = new double[num_epoch];
-    double *hdop = new double[num_epoch];
-    double *vdop = new double[num_epoch];
+    auto *TOW_at_current_symbol_ms = new uint32_t[num_epoch];
+    auto *week = new uint32_t[num_epoch];
+    auto *RX_time = new double[num_epoch];
+    auto *user_clk_offset = new double[num_epoch];
+    auto *pos_x = new double[num_epoch];
+    auto *pos_y = new double[num_epoch];
+    auto *pos_z = new double[num_epoch];
+    auto *vel_x = new double[num_epoch];
+    auto *vel_y = new double[num_epoch];
+    auto *vel_z = new double[num_epoch];
+    auto *cov_xx = new double[num_epoch];
+    auto *cov_yy = new double[num_epoch];
+    auto *cov_zz = new double[num_epoch];
+    auto *cov_xy = new double[num_epoch];
+    auto *cov_yz = new double[num_epoch];
+    auto *cov_zx = new double[num_epoch];
+    auto *latitude = new double[num_epoch];
+    auto *longitude = new double[num_epoch];
+    auto *height = new double[num_epoch];
+    auto *valid_sats = new uint8_t[num_epoch];
+    auto *solution_status = new uint8_t[num_epoch];
+    auto *solution_type = new uint8_t[num_epoch];
+    auto *AR_ratio_factor = new float[num_epoch];
+    auto *AR_ratio_threshold = new float[num_epoch];
+    auto *gdop = new double[num_epoch];
+    auto *pdop = new double[num_epoch];
+    auto *hdop = new double[num_epoch];
+    auto *vdop = new double[num_epoch];
 
     try
         {
@@ -548,7 +548,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 // convert ephemeris from GNSS-SDR class to RTKLIB structure
                                                 eph_data[valid_obs] = eph_to_rtklib(galileo_ephemeris_iter->second);
                                                 // convert observation from GNSS-SDR class to RTKLIB structure
-                                                unsigned char default_code_ = static_cast<unsigned char>(CODE_NONE);
+                                                auto default_code_ = static_cast<unsigned char>(CODE_NONE);
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
                                                     {default_code_, default_code_, default_code_},
                                                     {}, {0.0, 0.0, 0.0}, {}};
@@ -624,7 +624,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 // convert ephemeris from GNSS-SDR class to RTKLIB structure
                                                 eph_data[valid_obs] = eph_to_rtklib(gps_cnav_ephemeris_iter->second);
                                                 // convert observation from GNSS-SDR class to RTKLIB structure
-                                                unsigned char default_code_ = static_cast<unsigned char>(CODE_NONE);
+                                                auto default_code_ = static_cast<unsigned char>(CODE_NONE);
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
                                                     {default_code_, default_code_, default_code_},
                                                     {}, {0.0, 0.0, 0.0}, {}};
@@ -671,7 +671,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 // convert ephemeris from GNSS-SDR class to RTKLIB structure
                                                 eph_data[valid_obs] = eph_to_rtklib(gps_cnav_ephemeris_iter->second);
                                                 // convert observation from GNSS-SDR class to RTKLIB structure
-                                                unsigned char default_code_ = static_cast<unsigned char>(CODE_NONE);
+                                                auto default_code_ = static_cast<unsigned char>(CODE_NONE);
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
                                                     {default_code_, default_code_, default_code_},
                                                     {}, {0.0, 0.0, 0.0}, {}};

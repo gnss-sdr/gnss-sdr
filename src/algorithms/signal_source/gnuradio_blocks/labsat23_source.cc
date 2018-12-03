@@ -172,7 +172,7 @@ int labsat23_source::general_work(int noutput_items,
     __attribute__((unused)) gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items)
 {
-    gr_complex *out = reinterpret_cast<gr_complex *>(output_items[0]);
+    auto *out = reinterpret_cast<gr_complex *>(output_items[0]);
 
     if (d_header_parsed == false)
         {
@@ -314,7 +314,7 @@ int labsat23_source::general_work(int noutput_items,
                                     return -1;
                                 }
                             byte_counter++;
-                            uint8_t quantization = static_cast<uint8_t>(memblock[byte_counter]);
+                            auto quantization = static_cast<uint8_t>(memblock[byte_counter]);
                             switch (quantization)
                                 {
                                 case 1:
@@ -327,7 +327,7 @@ int labsat23_source::general_work(int noutput_items,
                                     std::cout << "Unknown quantization ID " << static_cast<int>(quantization) << std::endl;
                                 }
                             byte_counter++;
-                            uint8_t channel_a_constellation = static_cast<uint8_t>(memblock[byte_counter]);
+                            auto channel_a_constellation = static_cast<uint8_t>(memblock[byte_counter]);
                             switch (channel_a_constellation)
                                 {
                                 case 0:
@@ -343,7 +343,7 @@ int labsat23_source::general_work(int noutput_items,
                                     std::cout << "Unknown channel A constellation ID " << static_cast<int>(channel_a_constellation) << std::endl;
                                 }
                             byte_counter++;
-                            uint8_t channel_b_constellation = static_cast<uint8_t>(memblock[byte_counter]);
+                            auto channel_b_constellation = static_cast<uint8_t>(memblock[byte_counter]);
                             switch (channel_b_constellation)
                                 {
                                 case 0:

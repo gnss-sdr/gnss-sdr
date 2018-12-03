@@ -205,7 +205,7 @@ void rtl_tcp_signal_source_c::set_agc_mode(bool agc)
 
 void rtl_tcp_signal_source_c::set_gain(int gain)
 {
-    unsigned clipped = static_cast<unsigned>(info_.clip_gain(gain) * 10.0);
+    auto clipped = static_cast<unsigned>(info_.clip_gain(gain) * 10.0);
     boost::system::error_code ec = rtl_tcp_command(RTL_TCP_SET_GAIN, clipped, socket_);
     if (ec)
         {

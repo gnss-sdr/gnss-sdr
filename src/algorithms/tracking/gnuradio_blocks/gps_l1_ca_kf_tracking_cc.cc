@@ -427,28 +427,28 @@ int32_t Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
         {
             return 1;
         }
-    float *abs_VE = new float[num_epoch];
-    float *abs_E = new float[num_epoch];
-    float *abs_P = new float[num_epoch];
-    float *abs_L = new float[num_epoch];
-    float *abs_VL = new float[num_epoch];
-    float *Prompt_I = new float[num_epoch];
-    float *Prompt_Q = new float[num_epoch];
-    uint64_t *PRN_start_sample_count = new uint64_t[num_epoch];
-    float *acc_carrier_phase_rad = new float[num_epoch];
-    float *carrier_doppler_hz = new float[num_epoch];
-    float *carrier_dopplerrate_hz2 = new float[num_epoch];
-    float *code_freq_chips = new float[num_epoch];
-    float *carr_error_hz = new float[num_epoch];
-    float *carr_noise_sigma2 = new float[num_epoch];
-    float *carr_error_filt_hz = new float[num_epoch];
-    float *code_error_chips = new float[num_epoch];
-    float *code_error_filt_chips = new float[num_epoch];
-    float *CN0_SNV_dB_Hz = new float[num_epoch];
-    float *carrier_lock_test = new float[num_epoch];
-    float *aux1 = new float[num_epoch];
-    double *aux2 = new double[num_epoch];
-    uint32_t *PRN = new uint32_t[num_epoch];
+    auto *abs_VE = new float[num_epoch];
+    auto *abs_E = new float[num_epoch];
+    auto *abs_P = new float[num_epoch];
+    auto *abs_L = new float[num_epoch];
+    auto *abs_VL = new float[num_epoch];
+    auto *Prompt_I = new float[num_epoch];
+    auto *Prompt_Q = new float[num_epoch];
+    auto *PRN_start_sample_count = new uint64_t[num_epoch];
+    auto *acc_carrier_phase_rad = new float[num_epoch];
+    auto *carrier_doppler_hz = new float[num_epoch];
+    auto *carrier_dopplerrate_hz2 = new float[num_epoch];
+    auto *code_freq_chips = new float[num_epoch];
+    auto *carr_error_hz = new float[num_epoch];
+    auto *carr_noise_sigma2 = new float[num_epoch];
+    auto *carr_error_filt_hz = new float[num_epoch];
+    auto *code_error_chips = new float[num_epoch];
+    auto *code_error_filt_chips = new float[num_epoch];
+    auto *CN0_SNV_dB_Hz = new float[num_epoch];
+    auto *carrier_lock_test = new float[num_epoch];
+    auto *aux1 = new float[num_epoch];
+    auto *aux2 = new double[num_epoch];
+    auto *PRN = new uint32_t[num_epoch];
 
     try
         {
@@ -677,8 +677,8 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
     double code_error_filt_chips = 0.0;
 
     // Block input data and block output stream pointers
-    const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);
-    Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
+    const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);
+    auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
 
     // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
     Gnss_Synchro current_synchro_data = Gnss_Synchro();

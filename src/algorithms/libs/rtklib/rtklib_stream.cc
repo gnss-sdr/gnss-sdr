@@ -1534,7 +1534,7 @@ gtime_t nextdltime(const int *topts, int stat)
 /* ftp thread ----------------------------------------------------------------*/
 void *ftpthread(void *arg)
 {
-    ftp_t *ftp = (ftp_t *)arg;
+    auto *ftp = (ftp_t *)arg;
     FILE *fp;
     gtime_t time;
     char remote[1024], local[1024], tmpfile[1024], errfile[1024], *p;

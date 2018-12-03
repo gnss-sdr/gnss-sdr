@@ -222,13 +222,13 @@ bool sbas_l1_telemetry_decoder_cc::symbol_aligner_and_decoder::get_bits(const st
     std::vector<double> symbols_vd1(symbols);  // aligned symbol vector -> copy input symbol vector
     std::vector<double> symbols_vd2;           // shifted symbol vector -> add past sample in front of input vector
     symbols_vd2.push_back(d_past_symbol);
-    for (std::vector<double>::const_iterator symbol_it = symbols.cbegin(); symbol_it != symbols.cend() - 1; ++symbol_it)
+    for (auto symbol_it = symbols.cbegin(); symbol_it != symbols.cend() - 1; ++symbol_it)
         {
             symbols_vd2.push_back(*symbol_it);
         }
     // arrays for decoded bits
-    int32_t *bits_vd1 = new int32_t[nbits_requested];
-    int32_t *bits_vd2 = new int32_t[nbits_requested];
+    auto *bits_vd1 = new int32_t[nbits_requested];
+    auto *bits_vd2 = new int32_t[nbits_requested];
     // decode
     float metric_vd1 = d_vd1->decode_continuous(symbols_vd1.data(), traceback_depth, bits_vd1, nbits_requested, nbits_decoded);
     float metric_vd2 = d_vd2->decode_continuous(symbols_vd2.data(), traceback_depth, bits_vd2, nbits_requested, nbits_decoded);
@@ -270,7 +270,7 @@ void sbas_l1_telemetry_decoder_cc::frame_detector::get_frame_candidates(const st
     ss << "copy bits ";
     int32_t count = 0;
     // copy new bits into the working buffer
-    for (std::vector<int32_t>::const_iterator bit_it = bits.cbegin(); bit_it < bits.cend(); ++bit_it)
+    for (auto bit_it = bits.cbegin(); bit_it < bits.cend(); ++bit_it)
         {
             d_buffer.push_back(*bit_it);
             ss << *bit_it;
@@ -281,12 +281,12 @@ void sbas_l1_telemetry_decoder_cc::frame_detector::get_frame_candidates(const st
     while (d_buffer.size() >= sbas_msg_length)
         {
             // compare with all preambles
-            for (std::vector<std::vector<int32_t>>::iterator preample_it = preambles.begin(); preample_it < preambles.end(); ++preample_it)
+            for (auto preample_it = preambles.begin(); preample_it < preambles.end(); ++preample_it)
                 {
                     bool preamble_detected = true;
                     bool inv_preamble_detected = true;
                     // compare the buffer bits with the preamble bits
-                    for (std::vector<int32_t>::iterator preample_bit_it = preample_it->begin(); preample_bit_it < preample_it->end(); ++preample_bit_it)
+                    for (auto preample_bit_it = preample_it->begin(); preample_bit_it < preample_it->end(); ++preample_bit_it)
                         {
                             preamble_detected = *preample_bit_it == d_buffer[preample_bit_it - preample_it->begin()] ? preamble_detected : false;
                             inv_preamble_detected = *preample_bit_it != d_buffer[preample_bit_it - preample_it->begin()] ? inv_preamble_detected : false;
@@ -299,13 +299,13 @@ void sbas_l1_telemetry_decoder_cc::frame_detector::get_frame_candidates(const st
                             if (inv_preamble_detected)
                                 {
                                     // invert bits
-                                    for (std::vector<int32_t>::iterator candidate_bit_it = candidate.begin(); candidate_bit_it != candidate.end(); candidate_bit_it++)
+                                    for (auto candidate_bit_it = candidate.begin(); candidate_bit_it != candidate.end(); candidate_bit_it++)
                                         *candidate_bit_it = *candidate_bit_it == 0 ? 1 : 0;
                                 }
                             msg_candidates.push_back(std::pair<int32_t, std::vector<int32_t>>(relative_preamble_start, candidate));
                             ss.str("");
                             ss << "preamble " << preample_it - preambles.begin() << (inv_preamble_detected ? " inverted" : " normal") << " detected! candidate=";
-                            for (std::vector<int32_t>::iterator bit_it = candidate.begin(); bit_it < candidate.end(); ++bit_it)
+                            for (auto bit_it = candidate.begin(); bit_it < candidate.end(); ++bit_it)
                                 ss << *bit_it;
                             VLOG(EVENT) << ss.str();
                         }
@@ -329,7 +329,7 @@ void sbas_l1_telemetry_decoder_cc::crc_verifier::get_valid_frames(const std::vec
     VLOG(FLOW) << "get_valid_frames(): "
                << "msg_candidates.size()=" << msg_candidates.size();
     // for each candidate
-    for (std::vector<msg_candiate_int_t>::const_iterator candidate_it = msg_candidates.cbegin(); candidate_it < msg_candidates.cend(); ++candidate_it)
+    for (auto candidate_it = msg_candidates.cbegin(); candidate_it < msg_candidates.cend(); ++candidate_it)
         {
             // convert to bytes
             std::vector<uint8_t> candidate_bytes;
@@ -352,7 +352,7 @@ void sbas_l1_telemetry_decoder_cc::crc_verifier::get_valid_frames(const std::vec
                     ss << "Not a valid message.";
                 }
             ss << " Relbitoffset=" << candidate_it->first << " content=";
-            for (std::vector<uint8_t>::iterator byte_it = candidate_bytes.begin(); byte_it < candidate_bytes.end(); ++byte_it)
+            for (auto byte_it = candidate_bytes.begin(); byte_it < candidate_bytes.end(); ++byte_it)
                 {
                     ss << std::setw(2) << std::setfill('0') << std::hex << static_cast<uint32_t>((*byte_it));
                 }
@@ -367,7 +367,7 @@ void sbas_l1_telemetry_decoder_cc::crc_verifier::zerropad_back_and_convert_to_by
     const size_t bits_per_byte = 8;
     uint8_t byte = 0;
     VLOG(LMORE) << "zerropad_back_and_convert_to_bytes():" << byte;
-    for (std::vector<int>::const_iterator candidate_bit_it = msg_candidate.cbegin(); candidate_bit_it < msg_candidate.cend(); ++candidate_bit_it)
+    for (auto candidate_bit_it = msg_candidate.cbegin(); candidate_bit_it < msg_candidate.cend(); ++candidate_bit_it)
         {
             int32_t idx_bit = candidate_bit_it - msg_candidate.begin();
             int32_t bit_pos_in_current_byte = (bits_per_byte - 1) - (idx_bit % bits_per_byte);
@@ -395,7 +395,7 @@ void sbas_l1_telemetry_decoder_cc::crc_verifier::zerropad_front_and_convert_to_b
     uint8_t byte = 0;
     int32_t idx_bit = 6;  // insert 6 zeros at the front to fit the 250bits into a multiple of bytes
     VLOG(LMORE) << "zerropad_front_and_convert_to_bytes():" << byte;
-    for (std::vector<int32_t>::const_iterator candidate_bit_it = msg_candidate.cbegin(); candidate_bit_it < msg_candidate.cend(); ++candidate_bit_it)
+    for (auto candidate_bit_it = msg_candidate.cbegin(); candidate_bit_it < msg_candidate.cend(); ++candidate_bit_it)
         {
             int32_t bit_pos_in_current_byte = (bits_per_byte - 1) - (idx_bit % bits_per_byte);
             byte |= static_cast<uint8_t>(*candidate_bit_it) << bit_pos_in_current_byte;
@@ -422,8 +422,8 @@ int sbas_l1_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
     VLOG(FLOW) << "general_work(): "
                << "noutput_items=" << noutput_items << "\toutput_items real size=" << output_items.size() << "\tninput_items size=" << ninput_items.size() << "\tinput_items real size=" << input_items.size() << "\tninput_items[0]=" << ninput_items[0];
     // get pointers on in- and output gnss-synchro objects
-    Gnss_Synchro *out = reinterpret_cast<Gnss_Synchro *>(output_items[0]);            // Get the output buffer pointer
-    const Gnss_Synchro *in = reinterpret_cast<const Gnss_Synchro *>(input_items[0]);  // Get the input buffer pointer
+    auto *out = reinterpret_cast<Gnss_Synchro *>(output_items[0]);            // Get the output buffer pointer
+    const auto *in = reinterpret_cast<const Gnss_Synchro *>(input_items[0]);  // Get the input buffer pointer
 
     Gnss_Synchro current_symbol;  // structure to save the synchronization information and send the output object to the next block
     // 1. Copy the current tracking output
@@ -460,7 +460,7 @@ int sbas_l1_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
             // compute message sample stamp
             // and fill messages in SBAS raw message objects
             //std::vector<Sbas_Raw_Msg> sbas_raw_msgs;
-            for (std::vector<msg_candiate_char_t>::const_iterator it = valid_msgs.cbegin();
+            for (auto it = valid_msgs.cbegin();
                  it != valid_msgs.cend(); ++it)
                 {
                     int32_t message_sample_offset =

@@ -54,7 +54,7 @@ std::vector<uint8_t> packData(std::vector<int8_t> const &raw_data,
 
     for (unsigned int i = 0; i < raw_data.size(); ++i)
         {
-            unsigned val = static_cast<unsigned>((raw_data[i] - 1) / 2 & 0x03);
+            auto val = static_cast<unsigned>((raw_data[i] - 1) / 2 & 0x03);
 
             packed_data[j] |= val << shift;
 

@@ -182,7 +182,7 @@ void make_l5q(int32_t* _dest, int32_t prn)
 
 void gps_l5i_code_gen_complex(std::complex<float>* _dest, uint32_t _prn)
 {
-    int32_t* _code = new int32_t[GPS_L5i_CODE_LENGTH_CHIPS];
+    auto* _code = new int32_t[GPS_L5i_CODE_LENGTH_CHIPS];
 
     if (_prn > 0 and _prn < 51)
         {
@@ -200,7 +200,7 @@ void gps_l5i_code_gen_complex(std::complex<float>* _dest, uint32_t _prn)
 
 void gps_l5i_code_gen_float(float* _dest, uint32_t _prn)
 {
-    int32_t* _code = new int32_t[GPS_L5i_CODE_LENGTH_CHIPS];
+    auto* _code = new int32_t[GPS_L5i_CODE_LENGTH_CHIPS];
 
     if (_prn > 0 and _prn < 51)
         {
@@ -221,7 +221,7 @@ void gps_l5i_code_gen_float(float* _dest, uint32_t _prn)
  */
 void gps_l5i_code_gen_complex_sampled(std::complex<float>* _dest, uint32_t _prn, int32_t _fs)
 {
-    int32_t* _code = new int32_t[GPS_L5i_CODE_LENGTH_CHIPS];
+    auto* _code = new int32_t[GPS_L5i_CODE_LENGTH_CHIPS];
     if (_prn > 0 and _prn < 51)
         {
             make_l5i(_code, _prn - 1);
@@ -267,7 +267,7 @@ void gps_l5i_code_gen_complex_sampled(std::complex<float>* _dest, uint32_t _prn,
 
 void gps_l5q_code_gen_complex(std::complex<float>* _dest, uint32_t _prn)
 {
-    int32_t* _code = new int32_t[GPS_L5q_CODE_LENGTH_CHIPS];
+    auto* _code = new int32_t[GPS_L5q_CODE_LENGTH_CHIPS];
 
     if (_prn > 0 and _prn < 51)
         {
@@ -285,7 +285,7 @@ void gps_l5q_code_gen_complex(std::complex<float>* _dest, uint32_t _prn)
 
 void gps_l5q_code_gen_float(float* _dest, uint32_t _prn)
 {
-    int32_t* _code = new int32_t[GPS_L5q_CODE_LENGTH_CHIPS];
+    auto* _code = new int32_t[GPS_L5q_CODE_LENGTH_CHIPS];
 
     if (_prn > 0 and _prn < 51)
         {
@@ -306,7 +306,7 @@ void gps_l5q_code_gen_float(float* _dest, uint32_t _prn)
  */
 void gps_l5q_code_gen_complex_sampled(std::complex<float>* _dest, uint32_t _prn, int32_t _fs)
 {
-    int32_t* _code = new int32_t[GPS_L5q_CODE_LENGTH_CHIPS];
+    auto* _code = new int32_t[GPS_L5q_CODE_LENGTH_CHIPS];
     if (_prn > 0 and _prn < 51)
         {
             make_l5q(_code, _prn - 1);

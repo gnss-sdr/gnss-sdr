@@ -393,7 +393,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
             }
         case 1:
             {
-                const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
+                const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
                 unsigned int buff_increment;
                 if ((ninput_items[0] + d_buffer_count) <= d_fft_size)
                     {
@@ -417,7 +417,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
         case 2:
             {
                 // Fill last part of the buffer and reset counter
-                const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
+                const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
                 if (d_buffer_count < d_fft_size)
                     {
                         memcpy(&d_inbuffer[d_buffer_count], in, sizeof(gr_complex) * (d_fft_size - d_buffer_count));
@@ -674,7 +674,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                 if (d_CAF_window_hz > 0)
                     {
                         int CAF_bins_half;
-                        float *accum = static_cast<float *>(volk_gnsssdr_malloc(sizeof(float), volk_gnsssdr_get_alignment()));
+                        auto *accum = static_cast<float *>(volk_gnsssdr_malloc(sizeof(float), volk_gnsssdr_get_alignment()));
                         CAF_bins_half = d_CAF_window_hz / (2 * d_doppler_step);
                         float weighting_factor;
                         weighting_factor = 0.5 / static_cast<float>(CAF_bins_half);

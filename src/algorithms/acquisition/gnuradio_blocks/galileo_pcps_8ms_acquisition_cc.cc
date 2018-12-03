@@ -246,7 +246,7 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
                 float magt = 0.0;
                 float magt_A = 0.0;
                 float magt_B = 0.0;
-                const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
+                const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
                 float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
                 d_input_power = 0.0;
                 d_mag = 0.0;

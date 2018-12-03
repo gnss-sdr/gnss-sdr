@@ -231,8 +231,8 @@ void GalileoE5aNoncoherentIQAcquisitionCaf::set_local_code()
 {
     if (item_type_ == "gr_complex")
         {
-            std::complex<float>* codeI = new std::complex<float>[code_length_];
-            std::complex<float>* codeQ = new std::complex<float>[code_length_];
+            auto* codeI = new std::complex<float>[code_length_];
+            auto* codeQ = new std::complex<float>[code_length_];
 
             if (gnss_synchro_->Signal[0] == '5' && gnss_synchro_->Signal[1] == 'X')
                 {
@@ -305,9 +305,9 @@ float GalileoE5aNoncoherentIQAcquisitionCaf::calculate_threshold(float pfa)
     unsigned int ncells = vector_length_ * frequency_bins;
     double exponent = 1 / static_cast<double>(ncells);
     double val = pow(1.0 - pfa, exponent);
-    double lambda = double(vector_length_);
+    auto lambda = double(vector_length_);
     boost::math::exponential_distribution<double> mydist(lambda);
-    float threshold = static_cast<float>(quantile(mydist, val));
+    auto threshold = static_cast<float>(quantile(mydist, val));
 
     return threshold;
 }

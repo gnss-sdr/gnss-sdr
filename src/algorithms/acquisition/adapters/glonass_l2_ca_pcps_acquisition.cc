@@ -318,7 +318,7 @@ gr::basic_block_sptr GlonassL2CaPcpsAcquisition::get_left_block()
         {
             return acquisition_;
         }
-    else if (item_type_ == "cshort")
+    if (item_type_ == "cshort")
         {
             return acquisition_;
         }

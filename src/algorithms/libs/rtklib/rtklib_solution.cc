@@ -79,7 +79,7 @@ const char *opt2sep(const solopt_t *opt)
 {
     if (!*opt->sep)
         return " ";
-    else if (!strcmp(opt->sep, "\\t"))
+    if (!strcmp(opt->sep, "\\t"))
         return "\t";
     return opt->sep;
 }
@@ -343,7 +343,7 @@ int decode_nmea(char *buff, sol_t *sol)
         {
             return decode_nmearmc(val + 1, n - 1, sol);
         }
-    else if (!strcmp(val[0], "$GPGGA"))
+    if (!strcmp(val[0], "$GPGGA"))
         {
             return decode_nmeagga(val + 1, n - 1, sol);
         }

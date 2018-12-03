@@ -92,14 +92,14 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
             for (int i = 0; i < RF_channels_; i++)
                 {
                     // Single RF channel UHD operation (backward compatible config file format)
-                    samples_.push_back(configuration->property(role + ".samples" + boost::lexical_cast<std::string>(i), 0));
-                    dump_.push_back(configuration->property(role + ".dump" + boost::lexical_cast<std::string>(i), false));
-                    dump_filename_.push_back(configuration->property(role + ".dump_filename" + boost::lexical_cast<std::string>(i), default_dump_file));
+                    samples_.push_back(configuration->property(role + ".samples" + std::to_string(i), 0));
+                    dump_.push_back(configuration->property(role + ".dump" + std::to_string(i), false));
+                    dump_filename_.push_back(configuration->property(role + ".dump_filename" + std::to_string(i), default_dump_file));
 
-                    freq_.push_back(configuration->property(role + ".freq" + boost::lexical_cast<std::string>(i), GPS_L1_FREQ_HZ));
-                    gain_.push_back(configuration->property(role + ".gain" + boost::lexical_cast<std::string>(i), 50.0));
+                    freq_.push_back(configuration->property(role + ".freq" + std::to_string(i), GPS_L1_FREQ_HZ));
+                    gain_.push_back(configuration->property(role + ".gain" + std::to_string(i), 50.0));
 
-                    IF_bandwidth_hz_.push_back(configuration->property(role + ".IF_bandwidth_hz" + boost::lexical_cast<std::string>(i), sample_rate_ / 2));
+                    IF_bandwidth_hz_.push_back(configuration->property(role + ".IF_bandwidth_hz" + std::to_string(i), sample_rate_ / 2));
                 }
         }
     // 1. Make the uhd driver instance
@@ -314,8 +314,5 @@ gr::basic_block_sptr UhdSignalSource::get_right_block(int RF_channel)
         {
             return valve_.at(RF_channel);
         }
-    else
-        {
-            return uhd_source_;
-        }
+    return uhd_source_;
 }

@@ -149,11 +149,8 @@ bool Gpx_Printer::set_headers(const std::string& filename, bool time_tag_name)
                      << indent << indent << "<trkseg>" << std::endl;
             return true;
         }
-    else
-        {
-            std::cout << "File " << gpx_filename << " cannot be saved. Wrong permissions?" << std::endl;
-            return false;
-        }
+    std::cout << "File " << gpx_filename << " cannot be saved. Wrong permissions?" << std::endl;
+    return false;
 }
 
 
@@ -201,10 +198,7 @@ bool Gpx_Printer::print_position(const std::shared_ptr<rtklib_solver>& position,
                      << "</gpxtpx:TrackPointExtension></extensions></trkpt>" << std::endl;
             return true;
         }
-    else
-        {
-            return false;
-        }
+    return false;
 }
 
 
@@ -218,10 +212,7 @@ bool Gpx_Printer::close_file()
             gpx_file.close();
             return true;
         }
-    else
-        {
-            return false;
-        }
+    return false;
 }
 
 

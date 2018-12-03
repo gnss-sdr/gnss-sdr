@@ -144,8 +144,5 @@ gr::basic_block_sptr IbyteToCbyte::get_right_block()
         {
             return conjugate_ic_;
         }
-    else
-        {
-            return ibyte_to_cbyte_;
-        }
+    return ibyte_to_cbyte_;
 }

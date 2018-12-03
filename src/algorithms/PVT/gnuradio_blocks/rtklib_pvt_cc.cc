@@ -877,11 +877,9 @@ bool rtklib_pvt_cc::save_gnss_synchro_map_xml(const std::string& file_name)
                 }
             return true;
         }
-    else
-        {
-            LOG(WARNING) << "Failed to save gnss_synchro, map is empty";
-            return false;
-        }
+
+    LOG(WARNING) << "Failed to save gnss_synchro, map is empty";
+    return false;
 }
 
 
@@ -925,10 +923,8 @@ bool rtklib_pvt_cc::get_latest_PVT(double* longitude_deg,
 
             return true;
         }
-    else
-        {
-            return false;
-        }
+
+    return false;
 }
 
 

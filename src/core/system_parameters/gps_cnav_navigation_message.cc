@@ -337,10 +337,7 @@ bool Gps_CNAV_Navigation_Message::have_new_ephemeris()  // Check if we have a ne
                     b_flag_ephemeris_2 = false;  // clear the flag
                     return true;
                 }
-            else
-                {
-                    return false;
-                }
+            return false;
         }
     else
         {
@@ -362,10 +359,7 @@ bool Gps_CNAV_Navigation_Message::have_new_iono()  // Check if we have a new ion
             b_flag_iono_valid = false;  // clear the flag
             return true;
         }
-    else
-        {
-            return false;
-        }
+    return false;
 }
 
 
@@ -382,10 +376,7 @@ bool Gps_CNAV_Navigation_Message::have_new_utc_model()  // Check if we have a ne
             b_flag_utc_valid = false;  // clear the flag
             return true;
         }
-    else
-        {
-            return false;
-        }
+    return false;
 }
 
 

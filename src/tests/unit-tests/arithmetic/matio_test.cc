@@ -145,7 +145,7 @@ TEST(MatioTest, WriteAndReadGrComplex)
     std::vector<gr_complex> x_v_read;
     for (unsigned int i = 0; i < size; i++)
         {
-            x_v_read.push_back(gr_complex(x_read_real[i], x_read_imag[i]));
+            x_v_read.emplace_back(x_read_real[i], x_read_imag[i]);
         }
 
     Mat_Close(matfp_read);

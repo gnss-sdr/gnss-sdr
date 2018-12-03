@@ -31,7 +31,6 @@
 
 #include "fir_filter.h"
 #include "configuration_interface.h"
-#include <boost/lexical_cast.hpp>
 #include <utility>
 #include <gnuradio/filter/pm_remez.h>
 #include <glog/logging.h>
@@ -284,7 +283,7 @@ gr::basic_block_sptr FirFilter::get_left_block()
         {
             return fir_filter_ccf_;
         }
-    else if ((taps_item_type_ == "float") && (input_item_type_ == "cshort") && (output_item_type_ == "cshort"))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "cshort") && (output_item_type_ == "cshort"))
         {
             return cshort_to_float_x2_;
         }
@@ -314,7 +313,7 @@ gr::basic_block_sptr FirFilter::get_right_block()
         {
             return fir_filter_ccf_;
         }
-    else if ((taps_item_type_ == "float") && (input_item_type_ == "cshort") && (output_item_type_ == "cshort"))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "cshort") && (output_item_type_ == "cshort"))
         {
             return short_x2_to_cshort_;
         }
@@ -369,23 +368,23 @@ void FirFilter::init()
     double option_value;
     for (unsigned int i = 0; i < number_of_bands; i++)
         {
-            option = ".band" + boost::lexical_cast<std::string>(i + 1) + "_begin";
+            option = ".band" + std::to_string(i + 1) + "_begin";
             option_value = config_->property(role_ + option, default_bands[i]);
             bands.push_back(option_value);
 
-            option = ".band" + boost::lexical_cast<std::string>(i + 1) + "_end";
+            option = ".band" + std::to_string(i + 1) + "_end";
             option_value = config_->property(role_ + option, default_bands[i]);
             bands.push_back(option_value);
 
-            option = ".ampl" + boost::lexical_cast<std::string>(i + 1) + "_begin";
+            option = ".ampl" + std::to_string(i + 1) + "_begin";
             option_value = config_->property(role_ + option, default_bands[i]);
             ampl.push_back(option_value);
 
-            option = ".ampl" + boost::lexical_cast<std::string>(i + 1) + "_end";
+            option = ".ampl" + std::to_string(i + 1) + "_end";
             option_value = config_->property(role_ + option, default_bands[i]);
             ampl.push_back(option_value);
 
-            option = ".band" + boost::lexical_cast<std::string>(i + 1) + "_error";
+            option = ".band" + std::to_string(i + 1) + "_error";
             option_value = config_->property(role_ + option, default_bands[i]);
             error_w.push_back(option_value);
         }
@@ -399,7 +398,7 @@ void FirFilter::init()
     // those bands, and the weight given to the error in those bands.
     std::vector<double> taps_d = gr::filter::pm_remez(number_of_taps - 1, bands, ampl, error_w, filter_type, grid_density);
     taps_.reserve(taps_d.size());
-    for (double & it : taps_d)
+    for (double& it : taps_d)
         {
             taps_.push_back(float(it));
         }

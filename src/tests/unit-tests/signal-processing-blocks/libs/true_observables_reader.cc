@@ -63,10 +63,7 @@ bool true_observables_reader::restart()
             d_dump_file.seekg(0, std::ios::beg);
             return true;
         }
-    else
-        {
-            return false;
-        }
+    return false;
 }
 
 
@@ -82,10 +79,7 @@ int64_t true_observables_reader::num_epochs()
             int64_t nepoch = size / epoch_size_bytes;
             return nepoch;
         }
-    else
-        {
-            return 0;
-        }
+    return 0;
 }
 
 

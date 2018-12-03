@@ -231,10 +231,7 @@ signed int GpsL1CaPcpsQuickSyncAcquisition::mag()
         {
             return acquisition_cc_->mag();
         }
-    else
-        {
-            return 0;
-        }
+    return 0;
 }
 
 

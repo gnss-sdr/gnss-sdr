@@ -44,12 +44,9 @@ std::deque<bool> l5i_xa_shift(std::deque<bool> xa)
         {
             return std::deque<bool>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
         }
-    else
-        {
-            std::deque<bool> out(xa.begin(), xa.end() - 1);
-            out.push_front(xa[12] xor xa[11] xor xa[9] xor xa[8]);
-            return out;
-        }
+    std::deque<bool> out(xa.begin(), xa.end() - 1);
+    out.push_front(xa[12] xor xa[11] xor xa[9] xor xa[8]);
+    return out;
 }
 
 
@@ -59,12 +56,9 @@ std::deque<bool> l5q_xa_shift(std::deque<bool> xa)
         {
             return std::deque<bool>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
         }
-    else
-        {
-            std::deque<bool> out(xa.begin(), xa.end() - 1);
-            out.push_front(xa[12] xor xa[11] xor xa[9] xor xa[8]);
-            return out;
-        }
+    std::deque<bool> out(xa.begin(), xa.end() - 1);
+    out.push_front(xa[12] xor xa[11] xor xa[9] xor xa[8]);
+    return out;
 }
 
 

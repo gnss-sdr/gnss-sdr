@@ -31,7 +31,6 @@
 
 #include "freq_xlating_fir_filter.h"
 #include "configuration_interface.h"
-#include <boost/lexical_cast.hpp>
 #include <utility>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/filter/pm_remez.h>
@@ -84,23 +83,23 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(ConfigurationInterface* configuration
 
             for (unsigned int i = 0; i < number_of_bands; i++)
                 {
-                    option = ".band" + boost::lexical_cast<std::string>(i + 1) + "_begin";
+                    option = ".band" + std::to_string(i + 1) + "_begin";
                     option_value = config_->property(role_ + option, default_bands[i]);
                     bands.push_back(option_value);
 
-                    option = ".band" + boost::lexical_cast<std::string>(i + 1) + "_end";
+                    option = ".band" + std::to_string(i + 1) + "_end";
                     option_value = config_->property(role_ + option, default_bands[i]);
                     bands.push_back(option_value);
 
-                    option = ".ampl" + boost::lexical_cast<std::string>(i + 1) + "_begin";
+                    option = ".ampl" + std::to_string(i + 1) + "_begin";
                     option_value = config_->property(role_ + option, default_bands[i]);
                     ampl.push_back(option_value);
 
-                    option = ".ampl" + boost::lexical_cast<std::string>(i + 1) + "_end";
+                    option = ".ampl" + std::to_string(i + 1) + "_end";
                     option_value = config_->property(role_ + option, default_bands[i]);
                     ampl.push_back(option_value);
 
-                    option = ".band" + boost::lexical_cast<std::string>(i + 1) + "_error";
+                    option = ".band" + std::to_string(i + 1) + "_error";
                     option_value = config_->property(role_ + option, default_bands[i]);
                     error_w.push_back(option_value);
                 }
@@ -108,7 +107,7 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(ConfigurationInterface* configuration
             int grid_density = config_->property(role_ + ".grid_density", default_grid_density);
             taps_d = gr::filter::pm_remez(number_of_taps - 1, bands, ampl, error_w, filter_type, grid_density);
             taps_.reserve(taps_d.size());
-            for (double & it : taps_d)
+            for (double& it : taps_d)
                 {
                     taps_.push_back(static_cast<float>(it));
                 }
@@ -324,7 +323,7 @@ gr::basic_block_sptr FreqXlatingFirFilter::get_left_block()
         {
             return freq_xlating_fir_filter_ccf_;
         }
-    else if ((taps_item_type_ == "float") && (input_item_type_ == "float") && (output_item_type_ == "gr_complex"))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "float") && (output_item_type_ == "gr_complex"))
         {
             return freq_xlating_fir_filter_fcf_;
         }
@@ -358,7 +357,7 @@ gr::basic_block_sptr FreqXlatingFirFilter::get_right_block()
         {
             return freq_xlating_fir_filter_ccf_;
         }
-    else if ((taps_item_type_ == "float") && (input_item_type_ == "float") && (output_item_type_ == "gr_complex"))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "float") && (output_item_type_ == "gr_complex"))
         {
             return freq_xlating_fir_filter_fcf_;
         }

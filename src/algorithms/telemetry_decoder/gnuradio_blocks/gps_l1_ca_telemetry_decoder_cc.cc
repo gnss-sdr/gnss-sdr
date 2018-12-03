@@ -136,9 +136,11 @@ bool gps_l1_ca_telemetry_decoder_cc::gps_word_parityCheck(uint32_t gpsword)
     parity = t ^ _rotl(t, 6) ^ _rotl(t, 12) ^ _rotl(t, 18) ^ _rotl(t, 24);
     parity = parity & 0x3F;
     if (parity == (gpsword & 0x3F))
-        return (true);
-    else
-        return (false);
+        {
+            return (true);
+        }
+
+    return (false);
 }
 
 
@@ -165,7 +167,7 @@ void gps_l1_ca_telemetry_decoder_cc::set_channel(int32_t channel)
                     try
                         {
                             d_dump_filename = "telemetry";
-                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
+                            d_dump_filename.append(std::to_string(d_channel));
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
@@ -474,8 +476,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
 
             return 1;
         }
-    else
-        {
-            return 0;
-        }
+
+
+    return 0;
 }

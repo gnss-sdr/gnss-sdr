@@ -90,11 +90,8 @@ int gnss_sdr_valve::work(int noutput_items,
                         {
                             return -1;  // Done!
                         }
-                    else
-                        {
-                            usleep(1000000);
-                            return 0;  // do not produce or consume
-                        }
+                    usleep(1000000);
+                    return 0;  // do not produce or consume
                 }
             unsigned long long n = std::min(d_nitems - d_ncopied_items, static_cast<long long unsigned int>(noutput_items));
             if (n == 0) return 0;
@@ -102,9 +99,7 @@ int gnss_sdr_valve::work(int noutput_items,
             d_ncopied_items += n;
             return n;
         }
-    else
-        {
-            memcpy(output_items[0], input_items[0], noutput_items * input_signature()->sizeof_stream_item(0));
-            return noutput_items;
-        }
+
+    memcpy(output_items[0], input_items[0], noutput_items * input_signature()->sizeof_stream_item(0));
+    return noutput_items;
 }

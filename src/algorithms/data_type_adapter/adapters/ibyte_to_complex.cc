@@ -142,8 +142,5 @@ gr::basic_block_sptr IbyteToComplex::get_right_block()
         {
             return conjugate_cc_;
         }
-    else
-        {
-            return gr_interleaved_char_to_complex_;
-        }
+    return gr_interleaved_char_to_complex_;
 }

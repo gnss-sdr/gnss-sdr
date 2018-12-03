@@ -224,10 +224,8 @@ bool Galileo_Fnav_Message::_CRC_test(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> b
         {
             return true;
         }
-    else
-        {
-            return false;
-        }
+
+    return false;
 }
 
 
@@ -498,10 +496,7 @@ bool Galileo_Fnav_Message::have_new_ephemeris()  // Check if we have a new ephem
                     std::cout << "Batch number: " << IOD_ephemeris << std::endl;
                     return true;
                 }
-            else
-                {
-                    return false;
-                }
+            return false;
         }
     else
         {

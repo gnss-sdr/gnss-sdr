@@ -105,7 +105,7 @@ void signal_generator_c::init()
         {
             start_phase_rad_.push_back(0);
             current_data_bit_int_.push_back(1);
-            current_data_bits_.push_back(gr_complex(1, 0));
+            current_data_bits_.emplace_back(1, 0);
             ms_counter_.push_back(0);
             data_modulation_.push_back((Galileo_E5a_I_SECONDARY_CODE.at(0) == '0' ? 1 : -1));
             pilot_modulation_.push_back((Galileo_E5a_Q_SECONDARY_CODE[PRN_[sat]].at(0) == '0' ? 1 : -1));

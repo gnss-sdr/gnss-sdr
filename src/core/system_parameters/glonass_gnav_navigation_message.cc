@@ -83,7 +83,7 @@ void Glonass_Gnav_Navigation_Message::reset()
 
     // Data update information
     d_previous_tb = 0.0;
-    for (double & i : d_previous_Na)
+    for (double& i : d_previous_Na)
         i = 0.0;
 
     std::map<int, std::string> satelliteBlock;  // Map that stores to which block the PRN belongs http://www.navcen.uscg.gov/?Do=constellationStatus
@@ -200,7 +200,7 @@ bool Glonass_Gnav_Navigation_Message::CRC_test(std::bitset<GLONASS_GNAV_STRING_B
             return true;
         }
     // (a-ii) Only one of the checksums (C1,...,C7) is equal to zero but C_Sigma = 1
-    else if (C_Sigma == 1 && C1 + C2 + C3 + C4 + C5 + C6 + C7 == 6)
+    if (C_Sigma == 1 && C1 + C2 + C3 + C4 + C5 + C6 + C7 == 6)
         {
             return true;
         }
@@ -733,8 +733,8 @@ bool Glonass_Gnav_Navigation_Message::have_new_utc_model()  // Check if we have 
             flag_utc_model_str_5 = false;  // clear the flag
             return true;
         }
-    else
-        return false;
+
+    return false;
 }
 
 

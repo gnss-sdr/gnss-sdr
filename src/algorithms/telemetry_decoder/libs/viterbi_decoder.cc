@@ -559,12 +559,9 @@ int Viterbi_Decoder::Prev::get_anchestor_state_of_current_state(int current_stat
         {
             return state[current_state];
         }
-    else
-        {
-            //std::cout<<"alarm "<<"num_states="<<num_states<<" current_state="<<current_state<<std::endl;
-            //return state[current_state];
-            return 0;
-        }
+    //std::cout<<"alarm "<<"num_states="<<num_states<<" current_state="<<current_state<<std::endl;
+    //return state[current_state];
+    return 0;
 }
 
 
@@ -575,10 +572,7 @@ int Viterbi_Decoder::Prev::get_bit_of_current_state(int current_state)
         {
             return bit[current_state];
         }
-    else
-        {
-            return 0;
-        }
+    return 0;
 }
 
 
@@ -588,10 +582,7 @@ float Viterbi_Decoder::Prev::get_metric_of_current_state(int current_state)
         {
             return metric[current_state];
         }
-    else
-        {
-            return 0;
-        }
+    return 0;
 }
 
 

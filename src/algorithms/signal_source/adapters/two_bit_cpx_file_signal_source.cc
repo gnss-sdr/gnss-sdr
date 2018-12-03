@@ -318,15 +318,9 @@ gr::basic_block_sptr TwoBitCpxFileSignalSource::get_right_block()
         {
             return valve_;
         }
-    else
+    if (enable_throttle_control_ == true)
         {
-            if (enable_throttle_control_ == true)
-                {
-                    return throttle_;
-                }
-            else
-                {
-                    return unpack_byte_;
-                }
+            return throttle_;
         }
+    return unpack_byte_;
 }

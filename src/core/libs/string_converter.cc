@@ -46,7 +46,7 @@ bool StringConverter::convert(const std::string& value, bool default_value)
         {
             return true;
         }
-    else if (value == "false")
+    if (value == "false")
         {
             return false;
         }
@@ -68,10 +68,8 @@ int64_t StringConverter::convert(const std::string& value, int64_t default_value
         {
             return default_value;
         }
-    else
-        {
-            return result;
-        }
+
+    return result;
 }
 
 
@@ -86,10 +84,8 @@ uint64_t StringConverter::convert(const std::string& value, uint64_t default_val
         {
             return default_value;
         }
-    else
-        {
-            return result;
-        }
+
+    return result;
 }
 
 
@@ -104,10 +100,8 @@ int32_t StringConverter::convert(const std::string& value, int32_t default_value
         {
             return default_value;
         }
-    else
-        {
-            return result;
-        }
+
+    return result;
 }
 
 
@@ -122,10 +116,8 @@ uint32_t StringConverter::convert(const std::string& value, uint32_t default_val
         {
             return default_value;
         }
-    else
-        {
-            return result;
-        }
+
+    return result;
 }
 
 
@@ -140,10 +132,8 @@ uint16_t StringConverter::convert(const std::string& value, uint16_t default_val
         {
             return default_value;
         }
-    else
-        {
-            return result;
-        }
+
+    return result;
 }
 
 
@@ -158,10 +148,8 @@ int16_t StringConverter::convert(const std::string& value, int16_t default_value
         {
             return default_value;
         }
-    else
-        {
-            return result;
-        }
+
+    return result;
 }
 
 
@@ -176,10 +164,8 @@ float StringConverter::convert(const std::string& value, float default_value)
         {
             return default_value;
         }
-    else
-        {
-            return result;
-        }
+
+    return result;
 }
 
 
@@ -194,8 +180,6 @@ double StringConverter::convert(const std::string& value, double default_value)
         {
             return default_value;
         }
-    else
-        {
-            return result;
-        }
+
+    return result;
 }

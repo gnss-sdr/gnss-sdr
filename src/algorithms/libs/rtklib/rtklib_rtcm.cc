@@ -194,8 +194,8 @@ int input_rtcm2(rtcm_t *rtcm, unsigned char data)
                 }
             if (++rtcm->nbit < 30)
                 continue;
-            else
-                rtcm->nbit = 0;
+
+            rtcm->nbit = 0;
 
             /* check parity */
             if (!decode_word(rtcm->word, rtcm->buff + rtcm->nbyte))

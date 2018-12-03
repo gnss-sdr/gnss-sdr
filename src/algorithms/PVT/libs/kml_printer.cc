@@ -206,11 +206,8 @@ bool Kml_Printer::set_headers(const std::string& filename, bool time_tag_name)
 
             return true;
         }
-    else
-        {
-            std::cout << "File " << kml_filename << " cannot be saved. Wrong permissions?" << std::endl;
-            return false;
-        }
+    std::cout << "File " << kml_filename << " cannot be saved. Wrong permissions?" << std::endl;
+    return false;
 }
 
 
@@ -282,10 +279,7 @@ bool Kml_Printer::print_position(const std::shared_ptr<rtklib_solver>& position,
 
             return true;
         }
-    else
-        {
-            return false;
-        }
+    return false;
 }
 
 
@@ -319,10 +313,7 @@ bool Kml_Printer::close_file()
 
             return true;
         }
-    else
-        {
-            return false;
-        }
+    return false;
 }
 
 

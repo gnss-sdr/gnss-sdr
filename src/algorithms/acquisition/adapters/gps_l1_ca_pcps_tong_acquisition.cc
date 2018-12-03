@@ -193,10 +193,7 @@ signed int GpsL1CaPcpsTongAcquisition::mag()
         {
             return acquisition_cc_->mag();
         }
-    else
-        {
-            return 0;
-        }
+    return 0;
 }
 
 

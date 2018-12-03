@@ -309,7 +309,7 @@ gr::basic_block_sptr GpsL5iPcpsAcquisition::get_left_block()
         {
             return acquisition_;
         }
-    else if (item_type_ == "cshort")
+    if (item_type_ == "cshort")
         {
             return acquisition_;
         }

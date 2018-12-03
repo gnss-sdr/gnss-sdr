@@ -439,7 +439,7 @@ void galileo_telemetry_decoder_cc::set_channel(int32_t channel)
                     try
                         {
                             d_dump_filename = "telemetry";
-                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
+                            d_dump_filename.append(std::to_string(d_channel));
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
@@ -780,8 +780,5 @@ int galileo_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
             *out[0] = current_symbol;
             return 1;
         }
-    else
-        {
-            return 0;
-        }
+    return 0;
 }

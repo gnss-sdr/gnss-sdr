@@ -91,10 +91,10 @@ TEST(MatioTest, WriteAndReadGrComplex)
     float x_real[size];
     float x_imag[size];
     unsigned int i = 0;
-    for (auto it = x_v.cbegin(); it != x_v.cend(); it++)
+    for (auto it : x_v)
         {
-            x_real[i] = it->real();
-            x_imag[i] = it->imag();
+            x_real[i] = it.real();
+            x_imag[i] = it.imag();
             i++;
         }
 
@@ -108,10 +108,10 @@ TEST(MatioTest, WriteAndReadGrComplex)
     float y_real[size_y];
     float y_imag[size_y];
     i = 0;
-    for (auto it = x2.cbegin(); it != x2.cend(); it++)
+    for (auto it : x2)
         {
-            y_real[i] = it->real();
-            y_imag[i] = it->imag();
+            y_real[i] = it.real();
+            y_imag[i] = it.imag();
             i++;
         }
 

@@ -51,17 +51,17 @@ void galileo_e1_code_gen_int(int* _dest, char _Signal[3], int32_t _prn)
 
     if (_galileo_signal.rfind("1B") != std::string::npos && _galileo_signal.length() >= 2)
         {
-            for (size_t i = 0; i < Galileo_E1_B_PRIMARY_CODE[prn].length(); i++)
+            for (char i : Galileo_E1_B_PRIMARY_CODE[prn])
                 {
-                    hex_to_binary_converter(&_dest[index], Galileo_E1_B_PRIMARY_CODE[prn].at(i));
+                    hex_to_binary_converter(&_dest[index], i);
                     index += 4;
                 }
         }
     else if (_galileo_signal.rfind("1C") != std::string::npos && _galileo_signal.length() >= 2)
         {
-            for (size_t i = 0; i < Galileo_E1_C_PRIMARY_CODE[prn].length(); i++)
+            for (char i : Galileo_E1_C_PRIMARY_CODE[prn])
                 {
-                    hex_to_binary_converter(&_dest[index], Galileo_E1_C_PRIMARY_CODE[prn].at(i));
+                    hex_to_binary_converter(&_dest[index], i);
                     index += 4;
                 }
         }

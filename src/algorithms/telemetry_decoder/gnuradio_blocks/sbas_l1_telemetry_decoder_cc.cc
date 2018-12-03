@@ -299,8 +299,8 @@ void sbas_l1_telemetry_decoder_cc::frame_detector::get_frame_candidates(const st
                             if (inv_preamble_detected)
                                 {
                                     // invert bits
-                                    for (auto candidate_bit_it = candidate.begin(); candidate_bit_it != candidate.end(); candidate_bit_it++)
-                                        *candidate_bit_it = *candidate_bit_it == 0 ? 1 : 0;
+                                    for (int & candidate_bit_it : candidate)
+                                        candidate_bit_it = candidate_bit_it == 0 ? 1 : 0;
                                 }
                             msg_candidates.push_back(std::pair<int32_t, std::vector<int32_t>>(relative_preamble_start, candidate));
                             ss.str("");
@@ -460,17 +460,16 @@ int sbas_l1_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
             // compute message sample stamp
             // and fill messages in SBAS raw message objects
             //std::vector<Sbas_Raw_Msg> sbas_raw_msgs;
-            for (auto it = valid_msgs.cbegin();
-                 it != valid_msgs.cend(); ++it)
+            for (const auto & valid_msg : valid_msgs)
                 {
                     int32_t message_sample_offset =
-                        (sample_alignment ? 0 : -1) + d_samples_per_symbol * (symbol_alignment ? -1 : 0) + d_samples_per_symbol * d_symbols_per_bit * it->first;
+                        (sample_alignment ? 0 : -1) + d_samples_per_symbol * (symbol_alignment ? -1 : 0) + d_samples_per_symbol * d_symbols_per_bit * valid_msg.first;
                     double message_sample_stamp = sample_stamp + static_cast<double>(message_sample_offset) / 1000.0;
                     VLOG(EVENT) << "message_sample_stamp=" << message_sample_stamp
                                 << " (sample_stamp=" << sample_stamp
                                 << " sample_alignment=" << sample_alignment
                                 << " symbol_alignment=" << symbol_alignment
-                                << " relative_preamble_start=" << it->first
+                                << " relative_preamble_start=" << valid_msg.first
                                 << " message_sample_offset=" << message_sample_offset
                                 << ")";
                     //Sbas_Raw_Msg sbas_raw_msg(message_sample_stamp, this->d_satellite.get_PRN(), it->second);

@@ -52,9 +52,9 @@ std::vector<uint8_t> packData(std::vector<int8_t> const &raw_data,
     int shift = (big_endian ? 6 : 0);
     unsigned int j = 0;
 
-    for (unsigned int i = 0; i < raw_data.size(); ++i)
+    for (signed char i : raw_data)
         {
-            auto val = static_cast<unsigned>((raw_data[i] - 1) / 2 & 0x03);
+            auto val = static_cast<unsigned>((i - 1) / 2 & 0x03);
 
             packed_data[j] |= val << shift;
 

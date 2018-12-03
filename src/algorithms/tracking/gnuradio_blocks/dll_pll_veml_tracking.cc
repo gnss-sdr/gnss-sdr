@@ -133,11 +133,11 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                     // preamble bits to sampled symbols
                     d_gps_l1ca_preambles_symbols = static_cast<int32_t *>(volk_gnsssdr_malloc(GPS_CA_PREAMBLE_LENGTH_SYMBOLS * sizeof(int32_t), volk_gnsssdr_get_alignment()));
                     int32_t n = 0;
-                    for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
+                    for (unsigned short preambles_bit : preambles_bits)
                         {
                             for (uint32_t j = 0; j < GPS_CA_TELEMETRY_SYMBOLS_PER_BIT; j++)
                                 {
-                                    if (preambles_bits[i] == 1)
+                                    if (preambles_bit == 1)
                                         {
                                             d_gps_l1ca_preambles_symbols[n] = 1;
                                         }

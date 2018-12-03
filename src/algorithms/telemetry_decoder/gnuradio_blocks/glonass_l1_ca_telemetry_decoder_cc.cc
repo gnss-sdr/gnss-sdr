@@ -74,11 +74,11 @@ glonass_l1_ca_telemetry_decoder_cc::glonass_l1_ca_telemetry_decoder_cc(
     // preamble bits to sampled symbols
     d_preambles_symbols = static_cast<int32_t *>(malloc(sizeof(int32_t) * d_symbols_per_preamble));
     int32_t n = 0;
-    for (int32_t i = 0; i < GLONASS_GNAV_PREAMBLE_LENGTH_BITS; i++)
+    for (unsigned short d_preambles_bit : d_preambles_bits)
         {
             for (uint32_t j = 0; j < GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_PREAMBLE_BIT; j++)
                 {
-                    if (d_preambles_bits[i] == 1)
+                    if (d_preambles_bit == 1)
                         {
                             d_preambles_symbols[n] = 1;
                         }

@@ -2158,8 +2158,8 @@ void Gnuplot::remove_tmpfiles()
 {
     if ((tmpfile_list).size() > 0)
         {
-            for (unsigned int i = 0; i < tmpfile_list.size(); i++)
-                if (remove(tmpfile_list[i].c_str()) != 0)
+            for (auto & i : tmpfile_list)
+                if (remove(i.c_str()) != 0)
                     std::cout << "Problem closing files" << std::endl;
 
             Gnuplot::tmpfile_num -= tmpfile_list.size();

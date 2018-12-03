@@ -225,9 +225,9 @@ std::string Rtcm::binary_data_to_bin(const std::string& s) const
     std::string s_aux;
     std::stringstream ss;
 
-    for (uint32_t i = 0; i < s.length(); i++)
+    for (char i : s)
         {
-            auto val = static_cast<uint8_t>(s.at(i));
+            auto val = static_cast<uint8_t>(i);
             std::bitset<8> bs(val);
             ss << bs;
         }

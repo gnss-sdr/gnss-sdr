@@ -86,9 +86,9 @@ Notch::~Notch()
 
 void Notch::forecast(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items_required)
 {
-    for (uint32_t aux = 0; aux < ninput_items_required.size(); aux++)
+    for (int & aux : ninput_items_required)
         {
-            ninput_items_required[aux] = length_;
+            aux = length_;
         }
 }
 

@@ -67,11 +67,11 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     // preamble bits to sampled symbols
     d_preambles_symbols = static_cast<int32_t *>(volk_gnsssdr_malloc(GPS_CA_PREAMBLE_LENGTH_SYMBOLS * sizeof(int32_t), volk_gnsssdr_get_alignment()));
     int32_t n = 0;
-    for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
+    for (unsigned short preambles_bit : preambles_bits)
         {
             for (uint32_t j = 0; j < GPS_CA_TELEMETRY_SYMBOLS_PER_BIT; j++)
                 {
-                    if (preambles_bits[i] == 1)
+                    if (preambles_bit == 1)
                         {
                             d_preambles_symbols[n] = 1;
                         }
@@ -193,11 +193,11 @@ bool gps_l1_ca_telemetry_decoder_cc::decode_subframe()
     bool subframe_synchro_confirmation = false;
     bool CRC_ok = true;
 
-    for (int32_t n = 0; n < GPS_SUBFRAME_MS; n++)
+    for (float d_subframe_symbol : d_subframe_symbols)
         {
             // ******* SYMBOL TO BIT *******
             // extended correlation to bit period is enabled in tracking!
-            symbol_accumulator += d_subframe_symbols[n];  // accumulate the input value in d_symbol_accumulator
+            symbol_accumulator += d_subframe_symbol;  // accumulate the input value in d_symbol_accumulator
             symbol_accumulator_counter++;
             if (symbol_accumulator_counter == 20)
                 {

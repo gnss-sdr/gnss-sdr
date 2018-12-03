@@ -38,7 +38,7 @@
 
 using google::LogMessage;
 
-NotchFilter::NotchFilter(ConfigurationInterface* configuration, std::string role,
+NotchFilter::NotchFilter(ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     size_t item_size_;

@@ -50,7 +50,7 @@ class ConfigurationInterface;
 class SpirFileSignalSource : public GNSSBlockInterface
 {
 public:
-    SpirFileSignalSource(ConfigurationInterface* configuration, std::string role,
+    SpirFileSignalSource(ConfigurationInterface* configuration, const std::string& role,
         unsigned int in_streams, unsigned int out_streams,
         boost::shared_ptr<gr::msg_queue> queue);
 

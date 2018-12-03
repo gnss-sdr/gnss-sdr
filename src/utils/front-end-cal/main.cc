@@ -73,6 +73,7 @@
 #include <exception>
 #include <memory>
 #include <queue>
+#include <utility>
 #include <vector>
 
 
@@ -124,7 +125,7 @@ void FrontEndCal_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
             channel_internal_queue.push(rx_message);
         }
@@ -173,7 +174,7 @@ void wait_message()
 }
 
 
-bool front_end_capture(std::shared_ptr<ConfigurationInterface> configuration)
+bool front_end_capture(const std::shared_ptr<ConfigurationInterface>& configuration)
 {
     gr::top_block_sptr top_block;
     GNSSBlockFactory block_factory;

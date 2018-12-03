@@ -31,6 +31,7 @@
 #include "spirent_motion_csv_dump_reader.h"
 #include <boost/tokenizer.hpp>
 #include <iostream>
+#include <utility>
 
 
 spirent_motion_csv_dump_reader::spirent_motion_csv_dump_reader()
@@ -218,7 +219,7 @@ bool spirent_motion_csv_dump_reader::open_obs_file(std::string out_file)
         {
             try
                 {
-                    d_dump_filename = out_file;
+                    d_dump_filename = std::move(out_file);
                     d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
                     d_dump_file.open(d_dump_filename.c_str());
                     std::string line;

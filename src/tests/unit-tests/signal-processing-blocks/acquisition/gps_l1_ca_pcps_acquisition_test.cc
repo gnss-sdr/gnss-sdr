@@ -34,6 +34,7 @@
 #include <chrono>
 #include <boost/filesystem.hpp>
 #include <boost/make_shared.hpp>
+#include <utility>
 #include <glog/logging.h>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
@@ -88,7 +89,7 @@ void GpsL1CaPcpsAcquisitionTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
         }
     catch (boost::bad_any_cast &e)
@@ -198,7 +199,7 @@ void GpsL1CaPcpsAcquisitionTest::plot_grid()
                 {
                     boost::filesystem::path p(gnuplot_executable);
                     boost::filesystem::path dir = p.parent_path();
-                    std::string gnuplot_path = dir.native();
+                    const std::string& gnuplot_path = dir.native();
                     Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                     Gnuplot g1("lines");

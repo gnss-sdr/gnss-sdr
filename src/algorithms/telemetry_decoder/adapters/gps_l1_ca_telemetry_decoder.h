@@ -46,7 +46,7 @@ class GpsL1CaTelemetryDecoder : public TelemetryDecoderInterface
 {
 public:
     GpsL1CaTelemetryDecoder(ConfigurationInterface* configuration,
-        std::string role,
+        const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 

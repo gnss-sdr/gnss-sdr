@@ -56,14 +56,14 @@ gnss_sdr_valve::gnss_sdr_valve(size_t sizeof_stream_item,
 
 boost::shared_ptr<gr::block> gnss_sdr_make_valve(size_t sizeof_stream_item, unsigned long long nitems, gr::msg_queue::sptr queue, bool stop_flowgraph)
 {
-    boost::shared_ptr<gnss_sdr_valve> valve_(new gnss_sdr_valve(sizeof_stream_item, nitems, queue, stop_flowgraph));
+    boost::shared_ptr<gnss_sdr_valve> valve_(new gnss_sdr_valve(sizeof_stream_item, nitems, std::move(queue), stop_flowgraph));
     return valve_;
 }
 
 
 boost::shared_ptr<gr::block> gnss_sdr_make_valve(size_t sizeof_stream_item, unsigned long long nitems, gr::msg_queue::sptr queue)
 {
-    boost::shared_ptr<gnss_sdr_valve> valve_(new gnss_sdr_valve(sizeof_stream_item, nitems, queue, true));
+    boost::shared_ptr<gnss_sdr_valve> valve_(new gnss_sdr_valve(sizeof_stream_item, nitems, std::move(queue), true));
     return valve_;
 }
 

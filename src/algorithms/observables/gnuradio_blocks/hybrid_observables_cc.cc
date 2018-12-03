@@ -42,6 +42,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <limits>
+#include <utility>
 
 
 using google::LogMessage;
@@ -49,7 +50,7 @@ using google::LogMessage;
 
 hybrid_observables_cc_sptr hybrid_make_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, bool dump_mat, std::string dump_filename)
 {
-    return hybrid_observables_cc_sptr(new hybrid_observables_cc(nchannels_in, nchannels_out, dump, dump_mat, dump_filename));
+    return hybrid_observables_cc_sptr(new hybrid_observables_cc(nchannels_in, nchannels_out, dump, dump_mat, std::move(dump_filename)));
 }
 
 
@@ -63,7 +64,7 @@ hybrid_observables_cc::hybrid_observables_cc(uint32_t nchannels_in,
 {
     d_dump = dump;
     d_dump_mat = dump_mat and d_dump;
-    d_dump_filename = dump_filename;
+    d_dump_filename = std::move(dump_filename);
     d_nchannels_out = nchannels_out;
     d_nchannels_in = nchannels_in;
     T_rx_clock_step_samples = 0U;

@@ -38,7 +38,7 @@
 
 using google::LogMessage;
 
-Pass_Through::Pass_Through(ConfigurationInterface* configuration, std::string role,
+Pass_Through::Pass_Through(ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
                                 in_streams_(in_streams),

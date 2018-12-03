@@ -47,7 +47,7 @@ class DirectResamplerConditioner : public GNSSBlockInterface
 {
 public:
     DirectResamplerConditioner(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_stream,
+        const std::string& role, unsigned int in_stream,
         unsigned int out_stream);
 
     virtual ~DirectResamplerConditioner();

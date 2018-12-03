@@ -254,7 +254,7 @@ void Rinex_Printer::lengthCheck(const std::string& line)
 }
 
 
-std::string Rinex_Printer::createFilename(std::string type)
+std::string Rinex_Printer::createFilename(const std::string& type)
 {
     const std::string stationName = "GSDR";  // 4-character station name designator
     boost::gregorian::date today = boost::gregorian::day_clock::local_day();
@@ -3529,7 +3529,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gal
 }
 
 
-void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephemeris& eph, const double d_TOW_first_observation, const std::string glonass_bands)
+void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephemeris& eph, const double d_TOW_first_observation, const std::string& glonass_bands)
 {
     if (eph.d_m)
         {
@@ -3859,7 +3859,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
 }
 
 
-void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const double d_TOW_first_observation, const std::string glonass_bands)
+void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const double d_TOW_first_observation, const std::string& glonass_bands)
 {
     if (glonass_gnav_eph.d_m)
         {
@@ -4212,7 +4212,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
 }
 
 
-void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris& gps_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const double d_TOW_first_observation, const std::string glonass_bands)
+void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris& gps_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const double d_TOW_first_observation, const std::string& glonass_bands)
 {
     if (glonass_gnav_eph.d_m)
         {
@@ -4529,7 +4529,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
 }
 
 
-void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris& galileo_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const double d_TOW_first_observation, const std::string galileo_bands, const std::string glonass_bands)
+void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris& galileo_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const double d_TOW_first_observation, const std::string& galileo_bands, const std::string& glonass_bands)
 {
     if (glonass_gnav_eph.d_m)
         {
@@ -5107,7 +5107,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
 }
 
 
-void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris& eph, const double d_TOW_first_observation, const std::string gps_bands)
+void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris& eph, const double d_TOW_first_observation, const std::string& gps_bands)
 {
     std::string line;
 
@@ -5352,7 +5352,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
 }
 
 
-void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph, const Gps_CNAV_Ephemeris& eph_cnav, const double d_TOW_first_observation, const std::string gps_bands)
+void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph, const Gps_CNAV_Ephemeris& eph_cnav, const double d_TOW_first_observation, const std::string& gps_bands)
 {
     if (eph_cnav.d_i_0)
         {
@@ -5624,7 +5624,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
 }
 
 
-void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& eph_cnav, const Galileo_Ephemeris& galileo_eph, const double d_TOW_first_observation, const std::string gps_bands, const std::string galileo_bands)
+void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& eph_cnav, const Galileo_Ephemeris& galileo_eph, const double d_TOW_first_observation, const std::string& gps_bands, const std::string& galileo_bands)
 {
     std::string line;
     version = 3;
@@ -5972,7 +5972,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
 }
 
 
-void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris& eph_cnav, const Galileo_Ephemeris& galileo_eph, const double d_TOW_first_observation, const std::string gps_bands, const std::string galileo_bands)
+void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris& eph_cnav, const Galileo_Ephemeris& galileo_eph, const double d_TOW_first_observation, const std::string& gps_bands, const std::string& galileo_bands)
 {
     std::string line;
     version = 3;
@@ -6290,7 +6290,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
 }
 
 
-void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris& eph, const double d_TOW_first_observation, const std::string bands)
+void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris& eph, const double d_TOW_first_observation, const std::string& bands)
 {
     std::string line;
     version = 3;
@@ -6551,7 +6551,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
 }
 
 
-void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps_eph, const Galileo_Ephemeris& galileo_eph, const double d_TOW_first_observation, const std::string galileo_bands)
+void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps_eph, const Galileo_Ephemeris& galileo_eph, const double d_TOW_first_observation, const std::string& galileo_bands)
 {
     if (galileo_eph.e_1)
         {
@@ -7050,7 +7050,7 @@ void Rinex_Printer::update_obs_header(std::fstream& out, const Galileo_Utc_Model
 }
 
 
-void Rinex_Printer::log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeris& eph, const double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, const std::string glonass_band)
+void Rinex_Printer::log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeris& eph, const double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, const std::string& glonass_band)
 {
     // RINEX observations timestamps are GPS timestamps.
     std::string line;
@@ -8669,7 +8669,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, c
 }
 
 
-void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, const std::string galileo_bands)
+void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, const std::string& galileo_bands)
 {
     // RINEX observations timestamps are Galileo timestamps.
     // See http://gage14.upc.es/gLAB/HTML/Observation_Rinex_v3.01.html

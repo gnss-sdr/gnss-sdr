@@ -52,6 +52,7 @@
 #include <cmath>
 #include <iostream>
 #include <sstream>
+#include <utility>
 
 
 using google::LogMessage;
@@ -61,7 +62,7 @@ gps_l1_ca_tcp_connector_make_tracking_cc(
     int64_t fs_in,
     uint32_t vector_length,
     bool dump,
-    std::string dump_filename,
+    const std::string& dump_filename,
     float early_late_space_chips,
     size_t port_ch0)
 {
@@ -94,7 +95,7 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
     d_dump = dump;
     d_fs_in = fs_in;
     d_vector_length = vector_length;
-    d_dump_filename = dump_filename;
+    d_dump_filename = std::move(dump_filename);
 
     //--- DLL variables --------------------------------------------------------
     d_early_late_spc_chips = early_late_space_chips;  // Define early-late offset (in chips)

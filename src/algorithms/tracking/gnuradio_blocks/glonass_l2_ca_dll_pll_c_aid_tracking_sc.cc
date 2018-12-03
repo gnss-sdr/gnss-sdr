@@ -51,6 +51,7 @@
 #include <iostream>
 #include <memory>
 #include <sstream>
+#include <utility>
 
 #define CN0_ESTIMATION_SAMPLES 10
 
@@ -70,7 +71,7 @@ glonass_l2_ca_dll_pll_c_aid_make_tracking_sc(
     float early_late_space_chips)
 {
     return glonass_l2_ca_dll_pll_c_aid_tracking_sc_sptr(new glonass_l2_ca_dll_pll_c_aid_tracking_sc(
-        fs_in, vector_length, dump, dump_filename, pll_bw_hz, dll_bw_hz, pll_bw_narrow_hz, dll_bw_narrow_hz, extend_correlation_ms, early_late_space_chips));
+        fs_in, vector_length, dump, std::move(dump_filename), pll_bw_hz, dll_bw_hz, pll_bw_narrow_hz, dll_bw_narrow_hz, extend_correlation_ms, early_late_space_chips));
 }
 
 
@@ -90,7 +91,7 @@ void glonass_l2_ca_dll_pll_c_aid_tracking_sc::msg_handler_preamble_index(pmt::pm
     DLOG(INFO) << "Extended correlation enabled for Tracking CH " << d_channel << ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN);
     if (d_enable_extended_integration == false)  //avoid re-setting preamble indicator
         {
-            d_preamble_timestamp_s = pmt::to_double(msg);
+            d_preamble_timestamp_s = pmt::to_double(std::move(msg));
             d_enable_extended_integration = true;
             d_preamble_synchronized = false;
         }
@@ -119,7 +120,7 @@ glonass_l2_ca_dll_pll_c_aid_tracking_sc::glonass_l2_ca_dll_pll_c_aid_tracking_sc
     d_dump = dump;
     d_fs_in = fs_in;
     d_vector_length = vector_length;
-    d_dump_filename = dump_filename;
+    d_dump_filename = std::move(dump_filename);
     d_correlation_length_samples = static_cast<int32_t>(d_vector_length);
 
     // Initialize tracking  ==========================================

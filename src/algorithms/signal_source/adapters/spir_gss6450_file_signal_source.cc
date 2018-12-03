@@ -43,7 +43,7 @@ using google::LogMessage;
 
 
 SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface* configuration,
-    std::string role, uint32_t in_streams, uint32_t out_streams, gr::msg_queue::sptr queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(std::move(queue))
+    const std::string& role, uint32_t in_streams, uint32_t out_streams, gr::msg_queue::sptr queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(std::move(queue))
 {
     std::string default_filename = "../data/my_capture.dat";
     std::string default_dump_filename = "../data/my_capture_dump.dat";

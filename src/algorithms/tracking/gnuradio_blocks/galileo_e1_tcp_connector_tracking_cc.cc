@@ -43,6 +43,7 @@
 #include <sstream>
 #include <boost/asio.hpp>
 #include <boost/lexical_cast.hpp>
+#include <utility>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
@@ -63,7 +64,7 @@ galileo_e1_tcp_connector_tracking_cc_sptr galileo_e1_tcp_connector_make_tracking
     int64_t fs_in,
     uint32_t vector_length,
     bool dump,
-    std::string dump_filename,
+    const std::string& dump_filename,
     float pll_bw_hz,
     float dll_bw_hz,
     float early_late_space_chips,
@@ -103,7 +104,7 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
     d_dump = dump;
     d_fs_in = fs_in;
     d_vector_length = vector_length;
-    d_dump_filename = dump_filename;
+    d_dump_filename = std::move(dump_filename);
 
     // Initialize tracking  ==========================================
     //--- DLL variables --------------------------------------------------------

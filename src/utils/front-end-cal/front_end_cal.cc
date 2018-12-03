@@ -38,6 +38,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/lexical_cast.hpp>
+#include <utility>
 #include "gps_navigation_message.h"
 #include "gps_ephemeris.h"
 #include "gps_cnav_ephemeris.h"
@@ -235,7 +236,7 @@ int FrontEndCal::Get_SUPL_Assist()
 
 void FrontEndCal::set_configuration(std::shared_ptr<ConfigurationInterface> configuration)
 {
-    configuration_ = configuration;
+    configuration_ = std::move(configuration);
 }
 
 

@@ -60,6 +60,8 @@
 #include <matio.h>
 #include <glog/logging.h>
 
+#include <utility>
+
 
 using google::LogMessage;
 
@@ -67,7 +69,7 @@ rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag
 {
     // init empty ephemeris for all the available GNSS channels
     d_nchannels = nchannels;
-    d_dump_filename = dump_filename;
+    d_dump_filename = std::move(dump_filename);
     d_flag_dump_enabled = flag_dump_to_file;
     d_flag_dump_mat_enabled = flag_dump_to_mat;
     count_valid_position = 0;

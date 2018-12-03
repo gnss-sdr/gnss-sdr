@@ -37,7 +37,7 @@
 
 using google::LogMessage;
 
-IbyteToCshort::IbyteToCshort(ConfigurationInterface* configuration, std::string role,
+IbyteToCshort::IbyteToCshort(ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     std::string default_input_item_type = "byte";

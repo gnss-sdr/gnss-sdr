@@ -45,7 +45,7 @@ using google::LogMessage;
 
 
 SpirFileSignalSource::SpirFileSignalSource(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_streams, unsigned int out_streams,
+    const std::string& role, unsigned int in_streams, unsigned int out_streams,
     boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(std::move(queue))
 {
     std::string default_filename = "../data/my_capture.dat";

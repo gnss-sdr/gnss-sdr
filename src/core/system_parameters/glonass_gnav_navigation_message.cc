@@ -212,7 +212,7 @@ bool Glonass_Gnav_Navigation_Message::CRC_test(std::bitset<GLONASS_GNAV_STRING_B
 }
 
 
-bool Glonass_Gnav_Navigation_Message::read_navigation_bool(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter)
+bool Glonass_Gnav_Navigation_Message::read_navigation_bool(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter)
 {
     bool value;
 
@@ -228,7 +228,7 @@ bool Glonass_Gnav_Navigation_Message::read_navigation_bool(std::bitset<GLONASS_G
 }
 
 
-uint64_t Glonass_Gnav_Navigation_Message::read_navigation_unsigned(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter)
+uint64_t Glonass_Gnav_Navigation_Message::read_navigation_unsigned(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter)
 {
     uint64_t value = 0ULL;
     int32_t num_of_slices = parameter.size();
@@ -247,7 +247,7 @@ uint64_t Glonass_Gnav_Navigation_Message::read_navigation_unsigned(std::bitset<G
 }
 
 
-int64_t Glonass_Gnav_Navigation_Message::read_navigation_signed(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter)
+int64_t Glonass_Gnav_Navigation_Message::read_navigation_signed(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter)
 {
     int64_t value = 0LL;
     int64_t sign = 0LL;
@@ -310,7 +310,7 @@ uint32_t Glonass_Gnav_Navigation_Message::get_frame_number(uint32_t satellite_sl
 }
 
 
-int32_t Glonass_Gnav_Navigation_Message::string_decoder(std::string frame_string)
+int32_t Glonass_Gnav_Navigation_Message::string_decoder(const std::string& frame_string)
 {
     int32_t J = 0;
     d_string_ID = 0U;

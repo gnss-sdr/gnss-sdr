@@ -800,7 +800,7 @@ void GNSSFlowgraph::wait()
 }
 
 
-bool GNSSFlowgraph::send_telemetry_msg(pmt::pmt_t msg)
+bool GNSSFlowgraph::send_telemetry_msg(const pmt::pmt_t& msg)
 {
     // Push ephemeris to PVT telemetry msg in port using a channel out port
     // it uses the first channel as a message producer (it is already connected to PVT)

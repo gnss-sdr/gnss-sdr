@@ -88,14 +88,37 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     acq_parameters.blocking = blocking_;
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
     acq_parameters.dump_filename = dump_filename_;
-    //--- Find number of samples per spreading code (4 ms)  -----------------
-    code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(fs_in_) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
 
-    float samples_per_ms = static_cast<float>(fs_in_) * 0.001;
-    acq_parameters.samples_per_ms = samples_per_ms;
-    acq_parameters.samples_per_code = acq_parameters.samples_per_ms * static_cast<float>(Galileo_E1_CODE_PERIOD_MS);
-    vector_length_ = sampled_ms_ * samples_per_ms;
+    acq_parameters_.use_automatic_resampler = configuration_->property("GNSS-SDR.use_acquisition_resampler", false);
+    if (acq_parameters_.use_automatic_resampler == true and item_type_.compare("gr_complex") != 0)
+        {
+            LOG(WARNING) << "Galileo E1 acqisition disabled the automatic resampler feature because its item_type is not set to gr_complex";
+            acq_parameters_.use_automatic_resampler = false;
+        }
+    if (acq_parameters_.use_automatic_resampler)
+        {
+            if (acq_parameters_.fs_in > Galileo_E1_OPT_ACQ_FS_HZ)
+                {
+                    acq_parameters_.resampled_fs = Galileo_E1_OPT_ACQ_FS_HZ;
+                    acq_parameters_.resampler_ratio = static_cast<float>(acq_parameters_.fs_in) / static_cast<float>(acq_parameters_.resampled_fs);
+                }
 
+            //--- Find number of samples per spreading code (4 ms)  -----------------
+            code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
+            float samples_per_ms = static_cast<float>(acq_parameters_.resampled_fs) * 0.001;
+            acq_parameters_.samples_per_ms = samples_per_ms;
+            acq_parameters_.samples_per_code = acq_parameters_.samples_per_ms * static_cast<float>(Galileo_E1_CODE_PERIOD_MS);
+            vector_length_ = sampled_ms_ * samples_per_ms;
+        }
+    else
+        {
+            //--- Find number of samples per spreading code (4 ms)  -----------------
+            code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(fs_in_) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
+            float samples_per_ms = static_cast<float>(fs_in_) * 0.001;
+            acq_parameters_.samples_per_ms = samples_per_ms;
+            acq_parameters_.samples_per_code = acq_parameters_.samples_per_ms * static_cast<float>(Galileo_E1_CODE_PERIOD_MS);
+            vector_length_ = sampled_ms_ * samples_per_ms;
+        }
     if (bit_transition_flag_)
         {
             vector_length_ *= 2;
@@ -227,13 +250,29 @@ void GalileoE1PcpsAmbiguousAcquisition::set_local_code()
         {
             //set local signal generator to Galileo E1 pilot component (1C)
             char pilot_signal[3] = "1C";
-            galileo_e1_code_gen_complex_sampled(code, pilot_signal,
-                cboc, gnss_synchro_->PRN, fs_in_, 0, false);
+            if (acq_parameters_.use_automatic_resampler)
+                {
+                    galileo_e1_code_gen_complex_sampled(code, pilot_signal,
+                        cboc, gnss_synchro_->PRN, acq_parameters_.resampled_fs, 0, false);
+                }
+            else
+                {
+                    galileo_e1_code_gen_complex_sampled(code, pilot_signal,
+                        cboc, gnss_synchro_->PRN, fs_in_, 0, false);
+                }
         }
     else
         {
-            galileo_e1_code_gen_complex_sampled(code, gnss_synchro_->Signal,
-                cboc, gnss_synchro_->PRN, fs_in_, 0, false);
+            if (acq_parameters_.use_automatic_resampler)
+                {
+                    galileo_e1_code_gen_complex_sampled(code, gnss_synchro_->Signal,
+                        cboc, gnss_synchro_->PRN, acq_parameters_.resampled_fs, 0, false);
+                }
+            else
+                {
+                    galileo_e1_code_gen_complex_sampled(code, gnss_synchro_->Signal,
+                        cboc, gnss_synchro_->PRN, fs_in_, 0, false);
+                }
         }
 
 

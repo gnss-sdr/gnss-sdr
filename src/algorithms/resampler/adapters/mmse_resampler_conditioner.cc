@@ -69,7 +69,7 @@ MmseResamplerConditioner::MmseResamplerConditioner(
             std::vector<float> taps = gr::filter::firdes::low_pass(1.0,
                 sample_freq_in_,
                 sample_freq_out_ / 2.1,
-                sample_freq_out_ / 10,
+                sample_freq_out_ / 5,
                 gr::filter::firdes::win_type::WIN_HAMMING);
             std::cout << "Enabled fractional resampler low pass filter with " << taps.size() << " taps" << std::endl;
             fir_filter_ccf_ = gr::filter::fir_filter_ccf::make(1, taps);

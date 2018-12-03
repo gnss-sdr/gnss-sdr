@@ -84,16 +84,44 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     max_dwells_ = configuration_->property(role + ".max_dwells", 1);
     acq_parameters.max_dwells = max_dwells_;
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
-    acq_parameters.dump_filename = dump_filename_;
-    acq_parameters.num_doppler_bins_step2 = configuration_->property(role + ".second_nbins", 4);
-    acq_parameters.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
-    acq_parameters.make_2_steps = configuration_->property(role + ".make_two_steps", false);
-    //--- Find number of samples per spreading code -------------------------
-    code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(fs_in_) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
-    acq_parameters.samples_per_ms = static_cast<float>(fs_in_) * 0.001;
-    acq_parameters.samples_per_code = acq_parameters.samples_per_ms * static_cast<float>(GPS_L1_CA_CODE_PERIOD * 1000.0);
-
-    vector_length_ = std::floor(acq_parameters.sampled_ms * acq_parameters.samples_per_ms) * (acq_parameters.bit_transition_flag ? 2 : 1);
+    acq_parameters_.dump_filename = dump_filename_;
+    acq_parameters_.num_doppler_bins_step2 = configuration_->property(role + ".second_nbins", 4);
+    acq_parameters_.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
+    acq_parameters_.make_2_steps = configuration_->property(role + ".make_two_steps", false);
+    acq_parameters_.use_automatic_resampler = configuration_->property("GNSS-SDR.use_acquisition_resampler", false);
+    if (acq_parameters_.use_automatic_resampler == true and item_type_.compare("gr_complex") != 0)
+        {
+            LOG(WARNING) << "GPS L1 CA acquisition disabled the automatic resampler feature because its item_type is not set to gr_complex";
+            acq_parameters_.use_automatic_resampler = false;
+        }
+    if (acq_parameters_.use_automatic_resampler)
+        {
+            if (acq_parameters_.fs_in > GPS_L1_CA_OPT_ACQ_FS_HZ)
+                {
+                    acq_parameters_.resampler_ratio = floor(static_cast<float>(acq_parameters_.fs_in) / GPS_L1_CA_OPT_ACQ_FS_HZ);
+                    uint32_t decimation = acq_parameters_.fs_in / GPS_L1_CA_OPT_ACQ_FS_HZ;
+                    while (acq_parameters_.fs_in % decimation > 0)
+                        {
+                            decimation--;
+                        };
+                    acq_parameters_.resampler_ratio = decimation;
+                    acq_parameters_.resampled_fs = acq_parameters_.fs_in / static_cast<int>(acq_parameters_.resampler_ratio);
+                }
+            //--- Find number of samples per spreading code -------------------------
+            code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
+            acq_parameters_.samples_per_ms = static_cast<float>(acq_parameters_.resampled_fs) * 0.001;
+            acq_parameters_.samples_per_code = acq_parameters_.samples_per_ms * static_cast<float>(GPS_L1_CA_CODE_PERIOD * 1000.0);
+            vector_length_ = std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2 : 1);
+        }
+    else
+        {
+            acq_parameters_.resampled_fs = fs_in_;
+            //--- Find number of samples per spreading code -------------------------
+            code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(fs_in_) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
+            acq_parameters_.samples_per_ms = static_cast<float>(fs_in_) * 0.001;
+            acq_parameters_.samples_per_code = acq_parameters_.samples_per_ms * static_cast<float>(GPS_L1_CA_CODE_PERIOD * 1000.0);
+            vector_length_ = std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2 : 1);
+        }
     code_ = new gr_complex[vector_length_];
 
     if (item_type_ == "cshort")
@@ -208,8 +236,14 @@ void GpsL1CaPcpsAcquisition::set_local_code()
 {
     std::complex<float>* code = new std::complex<float>[code_length_];
 
-    gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
-
+    if (acq_parameters_.use_automatic_resampler)
+        {
+            gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, acq_parameters_.resampled_fs, 0);
+        }
+    else
+        {
+            gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
+        }
     for (unsigned int i = 0; i < sampled_ms_; i++)
         {
             memcpy(&(code_[i * code_length_]), code,

@@ -53,4 +53,7 @@ Acq_Conf::Acq_Conf()
     dump_channel = 0U;
     it_size = sizeof(char);
     blocking_on_standby = false;
+    use_automatic_resampler = false;
+    resampler_ratio = 1.0;
+    resampled_fs = 0LL;
 }

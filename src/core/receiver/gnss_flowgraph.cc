@@ -32,12 +32,22 @@
  * -------------------------------------------------------------------------
  */
 
+#include "GPS_L1_CA.h"
+#include "Galileo_E1.h"
+#include "GPS_L2C.h"
+#include "GPS_L5.h"
+#include "Galileo_E5a.h"
 #include "gnss_flowgraph.h"
 #include "gnss_synchro.h"
 #include "configuration_interface.h"
 #include "gnss_block_interface.h"
 #include "channel_interface.h"
 #include "gnss_block_factory.h"
+#ifdef GR_GREATER_38
+#include <gnuradio/filter/mmse_resampler_cc.h>
+#else
+#include <gnuradio/filter/fractional_resampler_cc.h>
+#endif
 #include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
 #include <glog/logging.h>
@@ -343,6 +353,8 @@ void GNSSFlowgraph::connect()
 #endif
     // Signal conditioner (selected_signal_source) >> channels (i) (dependent of their associated SignalSource_ID)
     int selected_signal_conditioner_ID = 0;
+    bool use_acq_resampler = configuration_->property("GNSS-SDR.use_acquisition_resampler", false);
+    double fs = static_cast<double>(configuration_->property("GNSS-SDR.internal_fs_sps", 0));
     for (unsigned int i = 0; i < channels_count_; i++)
         {
             if (FPGA_enabled == false)
@@ -357,8 +369,97 @@ void GNSSFlowgraph::connect()
                         }
                     try
                         {
-                            top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
-                                channels_.at(i)->get_left_block(), 0);
+                            //                            top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
+                            //                                channels_.at(i)->get_left_block(), 0);
+
+                            // Enable automatic resampler for the acquisition, if required
+                            if (use_acq_resampler == true)
+                                {
+                                    //create acquisition resamplers if required
+                                    double resampler_ratio = 1.0;
+                                    double acq_fs = fs;
+                                    //find the signal associated to this channel
+                                    switch (mapStringValues_[channels_.at(i)->implementation()])
+                                        {
+                                        case evGPS_1C:
+                                            acq_fs = GPS_L1_CA_OPT_ACQ_FS_HZ;
+                                            break;
+                                        case evGPS_2S:
+                                            acq_fs = GPS_L2C_OPT_ACQ_FS_HZ;
+                                            break;
+                                        case evGPS_L5:
+                                            acq_fs = GPS_L5_OPT_ACQ_FS_HZ;
+                                            break;
+                                        case evSBAS_1C:
+                                            acq_fs = GPS_L1_CA_OPT_ACQ_FS_HZ;
+                                            break;
+                                        case evGAL_1B:
+                                            acq_fs = Galileo_E1_OPT_ACQ_FS_HZ;
+                                            break;
+                                        case evGAL_5X:
+                                            acq_fs = fs;
+                                            break;
+                                        case evGLO_1G:
+                                            acq_fs = fs;
+                                            break;
+                                        case evGLO_2G:
+                                            acq_fs = fs;
+                                            break;
+                                        }
+                                    if (acq_fs < fs)
+                                        {
+                                            //check if the resampler is already created for the channel system/signal and for the specific RF Channel
+                                            std::string map_key = channels_.at(i)->implementation() + std::to_string(selected_signal_conditioner_ID);
+
+                                            resampler_ratio = fs / acq_fs;
+
+                                            gr::basic_block_sptr tmp_blk;
+#ifdef GR_GREATER_38
+                                            tmp_blk = gr::filter::mmse_resampler_cc::make(0.0, resampler_ratio);
+#else
+                                            tmp_blk = gr::filter::fractional_resampler_cc::make(0.0, resampler_ratio);
+#endif
+
+                                            std::pair<std::map<std::string, gr::basic_block_sptr>::iterator, bool> ret;
+                                            ret = acq_resamplers_.insert(std::pair<std::string, gr::basic_block_sptr>(map_key, tmp_blk));
+                                            if (ret.second == true)
+                                                {
+                                                    top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
+                                                        acq_resamplers_.at(map_key), 0);
+                                                    LOG(INFO) << "Created "
+                                                              << channels_.at(i)->implementation()
+                                                              << " acquisition resampler for RF channel " << std::to_string(signal_conditioner_ID) << " with ratio " << resampler_ratio;
+                                                }
+                                            else
+                                                {
+                                                    LOG(INFO) << "Found  "
+                                                              << channels_.at(i)->implementation()
+                                                              << " acquisition resampler for RF channel " << std::to_string(signal_conditioner_ID) << " with ratio " << resampler_ratio;
+                                                }
+
+
+                                            top_block_->connect(acq_resamplers_.at(map_key), 0,
+                                                channels_.at(i)->get_left_block_acq(), 0);
+
+                                            top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
+                                                channels_.at(i)->get_left_block_trk(), 0);
+                                        }
+                                    else
+                                        {
+                                            //resampler not required!
+                                            top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
+                                                channels_.at(i)->get_left_block_acq(), 0);
+                                            top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
+                                                channels_.at(i)->get_left_block_trk(), 0);
+                                        }
+                                }
+                            else
+                                {
+                                    top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
+                                        channels_.at(i)->get_left_block_acq(), 0);
+                                    top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
+                                        channels_.at(i)->get_left_block_trk(), 0);
+                                }
                         }
                     catch (const std::exception& e)
                         {
@@ -678,7 +779,7 @@ void GNSSFlowgraph::disconnect()
             try
                 {
                     top_block_->disconnect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
-                        channels_.at(i)->get_left_block(), 0);
+                        channels_.at(i)->get_left_block_trk(), 0);
                 }
             catch (const std::exception& e)
                 {

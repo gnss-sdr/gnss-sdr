@@ -37,6 +37,7 @@
 #define GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_H_
 
 #include "acquisition_interface.h"
+#include "acq_conf.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition.h"
 #include "complex_byte_to_float_x2.h"
@@ -144,6 +145,7 @@ public:
 private:
     ConfigurationInterface* configuration_;
     pcps_acquisition_sptr acquisition_;
+    Acq_Conf acq_parameters_;
     gr::blocks::float_to_complex::sptr float_to_complex_;
     complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
     size_t item_size_;

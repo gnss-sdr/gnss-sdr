@@ -38,12 +38,10 @@
 using google::LogMessage;
 
 // Constructor
-Channel::Channel(ConfigurationInterface* configuration, uint32_t channel,
-    std::shared_ptr<GNSSBlockInterface> pass_through, std::shared_ptr<AcquisitionInterface> acq,
+Channel::Channel(ConfigurationInterface* configuration, uint32_t channel, std::shared_ptr<AcquisitionInterface> acq,
     std::shared_ptr<TrackingInterface> trk, std::shared_ptr<TelemetryDecoderInterface> nav,
     std::string role, std::string implementation, gr::msg_queue::sptr queue)
 {
-    pass_through_ = std::move(pass_through);
     acq_ = std::move(acq);
     trk_ = std::move(trk);
     nav_ = std::move(nav);
@@ -112,32 +110,15 @@ Channel::~Channel() = default;
 
 void Channel::connect(gr::top_block_sptr top_block)
 {
-    if (connected_)
-        {
-            LOG(WARNING) << "channel already connected internally";
-            return;
-        }
-    if (flag_enable_fpga == false)
-        {
-            pass_through_->connect(top_block);
-        }
     acq_->connect(top_block);
     trk_->connect(top_block);
     nav_->connect(top_block);
 
     //Synchronous ports
-    if (flag_enable_fpga == false)
-        {
-            top_block->connect(pass_through_->get_right_block(), 0, acq_->get_left_block(), 0);
-            DLOG(INFO) << "pass_through_ -> acquisition";
-            top_block->connect(pass_through_->get_right_block(), 0, trk_->get_left_block(), 0);
-            DLOG(INFO) << "pass_through_ -> tracking";
-        }
     top_block->connect(trk_->get_right_block(), 0, nav_->get_left_block(), 0);
     DLOG(INFO) << "tracking -> telemetry_decoder";
 
     // Message ports
-
     top_block->msg_connect(acq_->get_right_block(), pmt::mp("events"), channel_msg_rx, pmt::mp("events"));
     top_block->msg_connect(trk_->get_right_block(), pmt::mp("events"), channel_msg_rx, pmt::mp("events"));
 
@@ -153,17 +134,8 @@ void Channel::disconnect(gr::top_block_sptr top_block)
             return;
         }
 
-    if (flag_enable_fpga == false)
-        {
-            top_block->disconnect(pass_through_->get_right_block(), 0, acq_->get_left_block(), 0);
-            top_block->disconnect(pass_through_->get_right_block(), 0, trk_->get_left_block(), 0);
-        }
     top_block->disconnect(trk_->get_right_block(), 0, nav_->get_left_block(), 0);
 
-    if (flag_enable_fpga == false)
-        {
-            pass_through_->disconnect(top_block);
-        }
     acq_->disconnect(top_block);
     trk_->disconnect(top_block);
     nav_->disconnect(top_block);
@@ -173,9 +145,19 @@ void Channel::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr Channel::get_left_block()
 {
-    return pass_through_->get_left_block();
+    LOG(ERROR) << "Deprecated call to get_left_block() in channel interface";
+    return NULL;
 }
 
+gr::basic_block_sptr Channel::get_left_block_trk()
+{
+    return trk_->get_left_block();
+}
+
+gr::basic_block_sptr Channel::get_left_block_acq()
+{
+    return acq_->get_left_block();
+}
 
 gr::basic_block_sptr Channel::get_right_block()
 {

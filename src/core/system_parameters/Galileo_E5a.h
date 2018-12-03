@@ -57,6 +57,9 @@ const int32_t Galileo_E5a_NUMBER_OF_CODES = 50;
 const int32_t GALILEO_E5A_HISTORY_DEEP = 20;
 const int32_t GALILEO_E5A_CRC_ERROR_LIMIT = 6;
 
+//optimum parameters
+const uint32_t Galileo_E5A_OPT_ACQ_FS_HZ = 10000000;
+
 // F/NAV message structure
 
 const int32_t GALILEO_FNAV_PREAMBLE_LENGTH_BITS = 12;

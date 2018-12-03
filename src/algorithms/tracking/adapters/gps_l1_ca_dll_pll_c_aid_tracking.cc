@@ -47,7 +47,7 @@ using google::LogMessage;
 
 
 GpsL1CaDllPllCAidTracking::GpsL1CaDllPllCAidTracking(
-    ConfigurationInterface* configuration, std::string role,
+    ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     DLOG(INFO) << "role " << role;
@@ -82,7 +82,7 @@ GpsL1CaDllPllCAidTracking::GpsL1CaDllPllCAidTracking(
     vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     //################# MAKE TRACKING GNURadio object ###################
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             tracking_cc = gps_l1_ca_dll_pll_c_aid_make_tracking_cc(
@@ -98,7 +98,7 @@ GpsL1CaDllPllCAidTracking::GpsL1CaDllPllCAidTracking(
                 early_late_space_chips);
             DLOG(INFO) << "tracking(" << tracking_cc->unique_id() << ")";
         }
-    else if (item_type_.compare("cshort") == 0)
+    else if (item_type_ == "cshort")
         {
             item_size_ = sizeof(lv_16sc_t);
             tracking_sc = gps_l1_ca_dll_pll_c_aid_make_tracking_sc(
@@ -141,11 +141,11 @@ void GpsL1CaDllPllCAidTracking::stop_tracking()
 
 void GpsL1CaDllPllCAidTracking::start_tracking()
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             tracking_cc->start_tracking();
         }
-    else if (item_type_.compare("cshort") == 0)
+    else if (item_type_ == "cshort")
         {
             tracking_sc->start_tracking();
         }
@@ -162,11 +162,11 @@ void GpsL1CaDllPllCAidTracking::set_channel(unsigned int channel)
 {
     channel_ = channel;
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             tracking_cc->set_channel(channel);
         }
-    else if (item_type_.compare("cshort") == 0)
+    else if (item_type_ == "cshort")
         {
             tracking_sc->set_channel(channel);
         }
@@ -178,11 +178,11 @@ void GpsL1CaDllPllCAidTracking::set_channel(unsigned int channel)
 
 void GpsL1CaDllPllCAidTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             tracking_cc->set_gnss_synchro(p_gnss_synchro);
         }
-    else if (item_type_.compare("cshort") == 0)
+    else if (item_type_ == "cshort")
         {
             tracking_sc->set_gnss_synchro(p_gnss_synchro);
         }
@@ -210,11 +210,11 @@ void GpsL1CaDllPllCAidTracking::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr GpsL1CaDllPllCAidTracking::get_left_block()
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             return tracking_cc;
         }
-    else if (item_type_.compare("cshort") == 0)
+    else if (item_type_ == "cshort")
         {
             return tracking_sc;
         }
@@ -227,11 +227,11 @@ gr::basic_block_sptr GpsL1CaDllPllCAidTracking::get_left_block()
 
 gr::basic_block_sptr GpsL1CaDllPllCAidTracking::get_right_block()
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             return tracking_cc;
         }
-    else if (item_type_.compare("cshort") == 0)
+    else if (item_type_ == "cshort")
         {
             return tracking_sc;
         }

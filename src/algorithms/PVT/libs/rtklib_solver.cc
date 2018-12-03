@@ -60,6 +60,8 @@
 #include <matio.h>
 #include <glog/logging.h>
 
+#include <utility>
+
 
 using google::LogMessage;
 
@@ -67,18 +69,18 @@ rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag
 {
     // init empty ephemeris for all the available GNSS channels
     d_nchannels = nchannels;
-    d_dump_filename = dump_filename;
+    d_dump_filename = std::move(dump_filename);
     d_flag_dump_enabled = flag_dump_to_file;
     d_flag_dump_mat_enabled = flag_dump_to_mat;
     count_valid_position = 0;
     this->set_averaging_flag(false);
     rtk_ = rtk;
-    for (unsigned int i = 0; i < 4; i++) dop_[i] = 0.0;
+    for (double & i : dop_) i = 0.0;
     pvt_sol = {{0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, '0', '0', '0', 0, 0, 0};
     ssat_t ssat0 = {0, 0, {0.0}, {0.0}, {0.0}, {'0'}, {'0'}, {'0'}, {'0'}, {'0'}, {}, {}, {}, {}, 0.0, 0.0, 0.0, 0.0, {{{0, 0}}, {{0, 0}}}, {{}, {}}};
-    for (unsigned int i = 0; i < MAXSAT; i++)
+    for (auto & i : pvt_ssat)
         {
-            pvt_ssat[i] = ssat0;
+            i = ssat0;
         }
     // ############# ENABLE DATA FILE LOG #################
     if (d_flag_dump_enabled == true)
@@ -137,34 +139,34 @@ bool rtklib_solver::save_matfile()
             return false;
         }
 
-    uint32_t *TOW_at_current_symbol_ms = new uint32_t[num_epoch];
-    uint32_t *week = new uint32_t[num_epoch];
-    double *RX_time = new double[num_epoch];
-    double *user_clk_offset = new double[num_epoch];
-    double *pos_x = new double[num_epoch];
-    double *pos_y = new double[num_epoch];
-    double *pos_z = new double[num_epoch];
-    double *vel_x = new double[num_epoch];
-    double *vel_y = new double[num_epoch];
-    double *vel_z = new double[num_epoch];
-    double *cov_xx = new double[num_epoch];
-    double *cov_yy = new double[num_epoch];
-    double *cov_zz = new double[num_epoch];
-    double *cov_xy = new double[num_epoch];
-    double *cov_yz = new double[num_epoch];
-    double *cov_zx = new double[num_epoch];
-    double *latitude = new double[num_epoch];
-    double *longitude = new double[num_epoch];
-    double *height = new double[num_epoch];
-    uint8_t *valid_sats = new uint8_t[num_epoch];
-    uint8_t *solution_status = new uint8_t[num_epoch];
-    uint8_t *solution_type = new uint8_t[num_epoch];
-    float *AR_ratio_factor = new float[num_epoch];
-    float *AR_ratio_threshold = new float[num_epoch];
-    double *gdop = new double[num_epoch];
-    double *pdop = new double[num_epoch];
-    double *hdop = new double[num_epoch];
-    double *vdop = new double[num_epoch];
+    auto *TOW_at_current_symbol_ms = new uint32_t[num_epoch];
+    auto *week = new uint32_t[num_epoch];
+    auto *RX_time = new double[num_epoch];
+    auto *user_clk_offset = new double[num_epoch];
+    auto *pos_x = new double[num_epoch];
+    auto *pos_y = new double[num_epoch];
+    auto *pos_z = new double[num_epoch];
+    auto *vel_x = new double[num_epoch];
+    auto *vel_y = new double[num_epoch];
+    auto *vel_z = new double[num_epoch];
+    auto *cov_xx = new double[num_epoch];
+    auto *cov_yy = new double[num_epoch];
+    auto *cov_zz = new double[num_epoch];
+    auto *cov_xy = new double[num_epoch];
+    auto *cov_yz = new double[num_epoch];
+    auto *cov_zx = new double[num_epoch];
+    auto *latitude = new double[num_epoch];
+    auto *longitude = new double[num_epoch];
+    auto *height = new double[num_epoch];
+    auto *valid_sats = new uint8_t[num_epoch];
+    auto *solution_status = new uint8_t[num_epoch];
+    auto *solution_type = new uint8_t[num_epoch];
+    auto *AR_ratio_factor = new float[num_epoch];
+    auto *AR_ratio_threshold = new float[num_epoch];
+    auto *gdop = new double[num_epoch];
+    auto *pdop = new double[num_epoch];
+    auto *hdop = new double[num_epoch];
+    auto *vdop = new double[num_epoch];
 
     try
         {
@@ -548,7 +550,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 // convert ephemeris from GNSS-SDR class to RTKLIB structure
                                                 eph_data[valid_obs] = eph_to_rtklib(galileo_ephemeris_iter->second);
                                                 // convert observation from GNSS-SDR class to RTKLIB structure
-                                                unsigned char default_code_ = static_cast<unsigned char>(CODE_NONE);
+                                                auto default_code_ = static_cast<unsigned char>(CODE_NONE);
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
                                                     {default_code_, default_code_, default_code_},
                                                     {}, {0.0, 0.0, 0.0}, {}};
@@ -624,7 +626,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 // convert ephemeris from GNSS-SDR class to RTKLIB structure
                                                 eph_data[valid_obs] = eph_to_rtklib(gps_cnav_ephemeris_iter->second);
                                                 // convert observation from GNSS-SDR class to RTKLIB structure
-                                                unsigned char default_code_ = static_cast<unsigned char>(CODE_NONE);
+                                                auto default_code_ = static_cast<unsigned char>(CODE_NONE);
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
                                                     {default_code_, default_code_, default_code_},
                                                     {}, {0.0, 0.0, 0.0}, {}};
@@ -671,7 +673,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 // convert ephemeris from GNSS-SDR class to RTKLIB structure
                                                 eph_data[valid_obs] = eph_to_rtklib(gps_cnav_ephemeris_iter->second);
                                                 // convert observation from GNSS-SDR class to RTKLIB structure
-                                                unsigned char default_code_ = static_cast<unsigned char>(CODE_NONE);
+                                                auto default_code_ = static_cast<unsigned char>(CODE_NONE);
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
                                                     {default_code_, default_code_, default_code_},
                                                     {}, {0.0, 0.0, 0.0}, {}};
@@ -775,11 +777,11 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
             nav_data.n = valid_obs;
             nav_data.ng = glo_valid_obs;
 
-            for (int i = 0; i < MAXSAT; i++)
+            for (auto & i : nav_data.lam)
                 {
-                    nav_data.lam[i][0] = SPEED_OF_LIGHT / FREQ1;  // L1/E1
-                    nav_data.lam[i][1] = SPEED_OF_LIGHT / FREQ2;  // L2
-                    nav_data.lam[i][2] = SPEED_OF_LIGHT / FREQ5;  // L5/E5
+                    i[0] = SPEED_OF_LIGHT / FREQ1;  // L1/E1
+                    i[1] = SPEED_OF_LIGHT / FREQ2;  // L2
+                    i[2] = SPEED_OF_LIGHT / FREQ5;  // L5/E5
                 }
 
             result = rtkpos(&rtk_, obs_data, valid_obs + glo_valid_obs, &nav_data);
@@ -809,12 +811,12 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     std::vector<double> azel;
                     azel.reserve(used_sats * 2);
                     unsigned int index_aux = 0;
-                    for (unsigned int i = 0; i < MAXSAT; i++)
+                    for (auto & i : rtk_.ssat)
                         {
-                            if (rtk_.ssat[i].vs == 1)
+                            if (i.vs == 1)
                                 {
-                                    azel[2 * index_aux] = rtk_.ssat[i].azel[0];
-                                    azel[2 * index_aux + 1] = rtk_.ssat[i].azel[1];
+                                    azel[2 * index_aux] = i.azel[0];
+                                    azel[2 * index_aux + 1] = i.azel[1];
                                     index_aux++;
                                 }
                         }

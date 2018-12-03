@@ -37,13 +37,14 @@
 #include <uhd/exception.hpp>
 #include <volk/volk.h>
 #include <iostream>
+#include <utility>
 
 
 using google::LogMessage;
 
 UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_stream, unsigned int out_stream,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+    const std::string& role, unsigned int in_stream, unsigned int out_stream,
+    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
 {
     // DUMP PARAMETERS
     std::string empty = "";
@@ -57,13 +58,13 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
     // available transports on the system (ethernet, usb...).
     // To narrow down the discovery process to a particular device,
     // specify a transport key/value pair specific to your device.
-    if (empty.compare(device_address_) != 0)  // if not empty
+    if (empty != device_address_)  // if not empty
         {
             dev_addr["addr"] = device_address_;
         }
     //filter the device by serial number if required (useful for USB devices)
     std::string device_serial = configuration->property(role + ".device_serial", empty);
-    if (empty.compare(device_serial) != 0)  // if not empty
+    if (empty != device_serial)  // if not empty
         {
             dev_addr["serial"] = device_serial;
         }
@@ -111,17 +112,17 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
     //    fc32: Complex floating point (32-bit floats) range [-1.0, +1.0].
     //    sc16: Complex signed integer (16-bit integers) range [-32768, +32767].
     //     sc8: Complex signed integer (8-bit integers) range [-128, 127].
-    if (item_type_.compare("cbyte") == 0)
+    if (item_type_ == "cbyte")
         {
             item_size_ = sizeof(lv_8sc_t);
             uhd_stream_args_ = uhd::stream_args_t("sc8");
         }
-    else if (item_type_.compare("cshort") == 0)
+    else if (item_type_ == "cshort")
         {
             item_size_ = sizeof(lv_16sc_t);
             uhd_stream_args_ = uhd::stream_args_t("sc16");
         }
-    else if (item_type_.compare("gr_complex") == 0)
+    else if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             uhd_stream_args_ = uhd::stream_args_t("fc32");

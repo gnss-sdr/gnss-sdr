@@ -30,6 +30,7 @@
 
 #include "true_observables_reader.h"
 #include <iostream>
+#include <utility>
 
 bool true_observables_reader::read_binary_obs()
 {
@@ -94,7 +95,7 @@ bool true_observables_reader::open_obs_file(std::string out_file)
         {
             try
                 {
-                    d_dump_filename = out_file;
+                    d_dump_filename = std::move(out_file);
                     d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
                     d_dump_file.open(d_dump_filename.c_str(), std::ios::in | std::ios::binary);
                     std::cout << "True observables Log file opened: " << d_dump_filename.c_str() << std::endl;

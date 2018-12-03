@@ -136,8 +136,8 @@ bool Gpx_Printer::set_headers(const std::string& filename, bool time_tag_name)
             // Set iostream numeric format and precision
             gpx_file.setf(gpx_file.std::ofstream::fixed, gpx_file.std::ofstream::floatfield);
             gpx_file << std::setprecision(14);
-            gpx_file << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl
-                     << "<gpx version=\"1.1\" creator=\"GNSS-SDR\"" << std::endl
+            gpx_file << R"(<?xml version="1.0" encoding="UTF-8"?>)" << std::endl
+                     << R"(<gpx version="1.1" creator="GNSS-SDR")" << std::endl
                      << indent << "xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v2 http://www.garmin.com/xmlschemas/TrackPointExtensionv2.xsd\"" << std::endl
                      << indent << "xmlns=\"http://www.topografix.com/GPX/1/1\"" << std::endl
                      << indent << "xmlns:gpxx=\"http://www.garmin.com/xmlschemas/GpxExtensions/v3\"" << std::endl

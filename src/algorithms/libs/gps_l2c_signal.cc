@@ -55,7 +55,7 @@ void gps_l2c_m_code(int32_t* _dest, uint32_t _prn)
 
 void gps_l2c_m_code_gen_complex(std::complex<float>* _dest, uint32_t _prn)
 {
-    int32_t* _code = new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS];
+    auto* _code = new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS];
 
     if (_prn > 0 and _prn < 51)
         {
@@ -73,7 +73,7 @@ void gps_l2c_m_code_gen_complex(std::complex<float>* _dest, uint32_t _prn)
 
 void gps_l2c_m_code_gen_float(float* _dest, uint32_t _prn)
 {
-    int32_t* _code = new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS];
+    auto* _code = new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS];
 
     if (_prn > 0 and _prn < 51)
         {
@@ -94,7 +94,7 @@ void gps_l2c_m_code_gen_float(float* _dest, uint32_t _prn)
  */
 void gps_l2c_m_code_gen_complex_sampled(std::complex<float>* _dest, uint32_t _prn, int32_t _fs)
 {
-    int32_t* _code = new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS];
+    auto* _code = new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS];
     if (_prn > 0 and _prn < 51)
         {
             gps_l2c_m_code(_code, _prn);

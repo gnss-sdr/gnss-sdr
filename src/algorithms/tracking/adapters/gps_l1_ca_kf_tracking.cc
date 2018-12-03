@@ -49,7 +49,7 @@ using google::LogMessage;
 
 
 GpsL1CaKfTracking::GpsL1CaKfTracking(
-    ConfigurationInterface* configuration, std::string role,
+    ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     DLOG(INFO) << "role " << role;
@@ -90,7 +90,7 @@ GpsL1CaKfTracking::GpsL1CaKfTracking(
     bce_kappa = configuration->property(role + ".bce_kappa", 0);
 
     //################# MAKE TRACKING GNURadio object ###################
-    if (item_type.compare("gr_complex") == 0)
+    if (item_type == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             tracking_ = gps_l1_ca_kf_make_tracking_cc(

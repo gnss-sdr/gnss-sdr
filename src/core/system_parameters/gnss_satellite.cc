@@ -111,7 +111,7 @@ Gnss_Satellite& Gnss_Satellite::operator=(const Gnss_Satellite &rhs) {
 void Gnss_Satellite::set_system(const std::string& system_)
 {
     // Set the satellite system {"GPS", "Glonass", "SBAS", "Galileo", "Compass"}
-    std::set<std::string>::iterator it = system_set.find(system_);
+    auto it = system_set.find(system_);
 
     if (it != system_set.cend())
         {

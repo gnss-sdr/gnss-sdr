@@ -56,7 +56,7 @@ class TwoBitCpxFileSignalSource : public GNSSBlockInterface
 {
 public:
     TwoBitCpxFileSignalSource(ConfigurationInterface* configuration,
-        std::string role,
+        const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams,
         boost::shared_ptr<gr::msg_queue> queue);

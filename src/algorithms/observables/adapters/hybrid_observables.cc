@@ -38,7 +38,7 @@
 using google::LogMessage;
 
 HybridObservables::HybridObservables(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    const std::string& role, unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     std::string default_dump_filename = "./observables.dat";
     DLOG(INFO) << "role " << role;

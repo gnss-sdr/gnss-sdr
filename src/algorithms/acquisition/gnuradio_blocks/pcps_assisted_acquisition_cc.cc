@@ -32,6 +32,7 @@
 
 #include "pcps_assisted_acquisition_cc.h"
 #include <sstream>
+#include <utility>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
@@ -52,7 +53,7 @@ pcps_assisted_acquisition_cc_sptr pcps_make_assisted_acquisition_cc(
 {
     return pcps_assisted_acquisition_cc_sptr(
         new pcps_assisted_acquisition_cc(max_dwells, sampled_ms, doppler_max, doppler_min,
-            fs_in, samples_per_ms, dump, dump_filename));
+            fs_in, samples_per_ms, dump, std::move(dump_filename)));
 }
 
 
@@ -89,7 +90,7 @@ pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(
 
     // For dumping samples into a file
     d_dump = dump;
-    d_dump_filename = dump_filename;
+    d_dump_filename = std::move(dump_filename);
 
     d_doppler_resolution = 0;
     d_threshold = 0;
@@ -301,9 +302,9 @@ double pcps_assisted_acquisition_cc::search_maximum()
 
 float pcps_assisted_acquisition_cc::estimate_input_power(gr_vector_const_void_star &input_items)
 {
-    const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
+    const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
     // 1- Compute the input signal power estimation
-    float *p_tmp_vector = static_cast<float *>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
+    auto *p_tmp_vector = static_cast<float *>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
 
     volk_32fc_magnitude_squared_32f(p_tmp_vector, in, d_fft_size);
 
@@ -318,7 +319,7 @@ float pcps_assisted_acquisition_cc::estimate_input_power(gr_vector_const_void_st
 int pcps_assisted_acquisition_cc::compute_and_accumulate_grid(gr_vector_const_void_star &input_items)
 {
     // initialize acquisition algorithm
-    const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
+    const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
 
     DLOG(INFO) << "Channel: " << d_channel
                << " , doing acquisition of satellite: " << d_gnss_synchro->System << " "
@@ -328,7 +329,7 @@ int pcps_assisted_acquisition_cc::compute_and_accumulate_grid(gr_vector_const_vo
                << ", doppler_step: " << d_doppler_step;
 
     // 2- Doppler frequency search loop
-    float *p_tmp_vector = static_cast<float *>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
+    auto *p_tmp_vector = static_cast<float *>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
 
     for (int doppler_index = 0; doppler_index < d_num_doppler_points; doppler_index++)
         {

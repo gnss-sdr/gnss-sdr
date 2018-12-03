@@ -63,8 +63,8 @@ int unpack_byte_2bit_cpx_samples::work(int noutput_items,
     gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items)
 {
-    const signed char *in = reinterpret_cast<const signed char *>(input_items[0]);
-    short *out = reinterpret_cast<short *>(output_items[0]);
+    const auto *in = reinterpret_cast<const signed char *>(input_items[0]);
+    auto *out = reinterpret_cast<short *>(output_items[0]);
 
     byte_2bit_struct sample;
     int n = 0;

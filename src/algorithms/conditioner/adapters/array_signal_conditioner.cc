@@ -32,6 +32,8 @@
 #include "array_signal_conditioner.h"
 #include <glog/logging.h>
 
+#include <utility>
+
 
 using google::LogMessage;
 
@@ -41,11 +43,11 @@ ArraySignalConditioner::ArraySignalConditioner(ConfigurationInterface *configura
     std::shared_ptr<GNSSBlockInterface> in_filt,
     std::shared_ptr<GNSSBlockInterface> res,
     std::string role,
-    std::string implementation) : data_type_adapt_(data_type_adapt),
-                                  in_filt_(in_filt),
-                                  res_(res),
-                                  role_(role),
-                                  implementation_(implementation)
+    std::string implementation) : data_type_adapt_(std::move(data_type_adapt)),
+                                  in_filt_(std::move(in_filt)),
+                                  res_(std::move(res)),
+                                  role_(std::move(role)),
+                                  implementation_(std::move(implementation))
 {
     connected_ = false;
     if (configuration)

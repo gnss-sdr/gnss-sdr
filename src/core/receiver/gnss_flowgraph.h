@@ -128,7 +128,7 @@ public:
      *
      * It is used to assist the receiver with external ephemeris data
      */
-    bool send_telemetry_msg(pmt::pmt_t msg);
+    bool send_telemetry_msg(const pmt::pmt_t& msg);
 
     /*!
      * \brief Returns a smart pointer to the PVT object

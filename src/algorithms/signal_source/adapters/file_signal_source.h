@@ -53,7 +53,7 @@ class ConfigurationInterface;
 class FileSignalSource : public GNSSBlockInterface
 {
 public:
-    FileSignalSource(ConfigurationInterface* configuration, std::string role,
+    FileSignalSource(ConfigurationInterface* configuration, const std::string& role,
         unsigned int in_streams, unsigned int out_streams,
         boost::shared_ptr<gr::msg_queue> queue);
 

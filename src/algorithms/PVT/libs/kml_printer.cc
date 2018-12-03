@@ -149,8 +149,8 @@ bool Kml_Printer::set_headers(const std::string& filename, bool time_tag_name)
             tmp_file.setf(tmp_file.std::ofstream::fixed, tmp_file.std::ofstream::floatfield);
             tmp_file << std::setprecision(14);
 
-            kml_file << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl
-                     << "<kml xmlns=\"http://www.opengis.net/kml/2.2\" xmlns:gx=\"http://www.google.com/kml/ext/2.2\">" << std::endl
+            kml_file << R"(<?xml version="1.0" encoding="UTF-8"?>)" << std::endl
+                     << R"(<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">)" << std::endl
                      << indent << "<Document>" << std::endl
                      << indent << indent << "<name>GNSS Track</name>" << std::endl
                      << indent << indent << "<description><![CDATA[" << std::endl

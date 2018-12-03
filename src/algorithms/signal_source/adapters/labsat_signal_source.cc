@@ -33,11 +33,13 @@
 #include "labsat23_source.h"
 #include <glog/logging.h>
 
+#include <utility>
+
 
 using google::LogMessage;
 
 LabsatSignalSource::LabsatSignalSource(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_stream, unsigned int out_stream, gr::msg_queue::sptr queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+    const std::string& role, unsigned int in_stream, unsigned int out_stream, gr::msg_queue::sptr queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/source.bin";
@@ -51,7 +53,7 @@ LabsatSignalSource::LabsatSignalSource(ConfigurationInterface* configuration,
     samples_ = configuration->property(role + ".samples", 0);
     filename_ = configuration->property(role + ".filename", default_filename);
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             labsat23_source_ = labsat23_make_source(filename_.c_str(), channel_selector);

@@ -38,12 +38,14 @@
 #include "GLONASS_L1_L2_CA.h"
 #include <glog/logging.h>
 
+#include <utility>
+
 
 using google::LogMessage;
 
 SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_stream,
-    unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+    const std::string& role, unsigned int in_stream,
+    unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/gen_source.dat";
@@ -110,7 +112,7 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
                 }
         }
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             DLOG(INFO) << "Item size " << item_size_;
@@ -154,7 +156,7 @@ SignalGenerator::~SignalGenerator() = default;
 
 void SignalGenerator::connect(gr::top_block_sptr top_block)
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             top_block->connect(gen_source_, 0, vector_to_stream_, 0);
             DLOG(INFO) << "connected gen_source to vector_to_stream";
@@ -170,7 +172,7 @@ void SignalGenerator::connect(gr::top_block_sptr top_block)
 
 void SignalGenerator::disconnect(gr::top_block_sptr top_block)
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             top_block->disconnect(gen_source_, 0, vector_to_stream_, 0);
             if (dump_)

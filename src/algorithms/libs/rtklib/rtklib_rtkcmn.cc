@@ -4213,7 +4213,7 @@ int rtk_uncompress(const char *file, char *uncfile)
         {
             strcpy(uncfile, tmpfile);
             uncfile[p - tmpfile] = '\0';
-            sprintf(cmd, "gzip -f -d -c \"%s\" > \"%s\"", tmpfile, uncfile);
+            sprintf(cmd, R"(gzip -f -d -c "%s" > "%s")", tmpfile, uncfile);
 
             if (execcmd(cmd))
                 {
@@ -4262,7 +4262,7 @@ int rtk_uncompress(const char *file, char *uncfile)
         {
             strcpy(uncfile, tmpfile);
             uncfile[p - tmpfile + 3] = *(p + 3) == 'D' ? 'O' : 'o';
-            sprintf(cmd, "crx2rnx < \"%s\" > \"%s\"", tmpfile, uncfile);
+            sprintf(cmd, R"(crx2rnx < "%s" > "%s")", tmpfile, uncfile);
 
             if (execcmd(cmd))
                 {

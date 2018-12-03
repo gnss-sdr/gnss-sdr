@@ -40,9 +40,7 @@ tcp_communication::tcp_communication() : tcp_socket_(io_service_)
 }
 
 
-tcp_communication::~tcp_communication()
-{
-}
+tcp_communication::~tcp_communication() = default;
 
 
 int tcp_communication::listen_tcp_connection(size_t d_port_, size_t d_port_ch0_)

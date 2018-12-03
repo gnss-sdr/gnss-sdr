@@ -2147,7 +2147,7 @@ std::string Gnuplot::create_tmpfile(std::ofstream &tmp)
     //
     // Save the temporary filename
     //
-    tmpfile_list.push_back(name);
+    tmpfile_list.emplace_back(name);
     Gnuplot::tmpfile_num++;
 
     return name;

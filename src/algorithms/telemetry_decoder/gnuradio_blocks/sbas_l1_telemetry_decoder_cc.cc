@@ -302,7 +302,7 @@ void sbas_l1_telemetry_decoder_cc::frame_detector::get_frame_candidates(const st
                                     for (std::vector<int32_t>::iterator candidate_bit_it = candidate.begin(); candidate_bit_it != candidate.end(); candidate_bit_it++)
                                         *candidate_bit_it = *candidate_bit_it == 0 ? 1 : 0;
                                 }
-                            msg_candidates.push_back(std::pair<int32_t, std::vector<int32_t>>(relative_preamble_start, candidate));
+                            msg_candidates.emplace_back(relative_preamble_start, candidate);
                             ss.str("");
                             ss << "preamble " << preample_it - preambles.begin() << (inv_preamble_detected ? " inverted" : " normal") << " detected! candidate=";
                             for (std::vector<int32_t>::iterator bit_it = candidate.begin(); bit_it < candidate.end(); ++bit_it)
@@ -344,7 +344,7 @@ void sbas_l1_telemetry_decoder_cc::crc_verifier::get_valid_frames(const std::vec
             //  the final remainder must be zero for a valid message, because the CRC is done over the received CRC value
             if (crc == 0)
                 {
-                    valid_msgs.push_back(msg_candiate_char_t(candidate_it->first, candidate_bytes));
+                    valid_msgs.emplace_back(candidate_it->first, candidate_bytes);
                     ss << "Valid message found!";
                 }
             else

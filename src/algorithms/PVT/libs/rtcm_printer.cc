@@ -46,7 +46,7 @@
 using google::LogMessage;
 
 
-Rtcm_Printer::Rtcm_Printer(const std::string& filename, bool flag_rtcm_file_dump, bool flag_rtcm_server, bool flag_rtcm_tty_port, uint16_t rtcm_tcp_port, uint16_t rtcm_station_id, std::string rtcm_dump_devname, bool time_tag_name, const std::string& base_path)
+Rtcm_Printer::Rtcm_Printer(const std::string& filename, bool flag_rtcm_file_dump, bool flag_rtcm_server, bool flag_rtcm_tty_port, uint16_t rtcm_tcp_port, uint16_t rtcm_station_id, const std::string& rtcm_dump_devname, bool time_tag_name, const std::string& base_path)
 {
     boost::posix_time::ptime pt = boost::posix_time::second_clock::local_time();
     tm timeinfo = boost::posix_time::to_tm(pt);

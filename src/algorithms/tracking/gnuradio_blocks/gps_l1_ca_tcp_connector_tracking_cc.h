@@ -93,7 +93,7 @@ private:
     Gps_L1_Ca_Tcp_Connector_Tracking_cc(
         int64_t fs_in, uint32_t vector_length,
         bool dump,
-        std::string dump_filename,
+        const std::string& dump_filename,
         float early_late_space_chips,
         size_t port_ch0);
 

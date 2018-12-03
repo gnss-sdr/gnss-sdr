@@ -48,7 +48,7 @@ public:
     /*!
      * \brief Default constructor.
      */
-    Rtcm_Printer(const std::string& filename, bool flag_rtcm_file_dump, bool flag_rtcm_server, bool flag_rtcm_tty_port, uint16_t rtcm_tcp_port, uint16_t rtcm_station_id, std::string rtcm_dump_filename, bool time_tag_name = true, const std::string& base_path = ".");
+    Rtcm_Printer(const std::string& filename, bool flag_rtcm_file_dump, bool flag_rtcm_server, bool flag_rtcm_tty_port, uint16_t rtcm_tcp_port, uint16_t rtcm_station_id, const std::string& rtcm_dump_filename, bool time_tag_name = true, const std::string& base_path = ".");
 
     /*!
      * \brief Default destructor.

@@ -90,7 +90,7 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
     int64_t fs_in,
     uint32_t vector_length,
     bool dump,
-    std::string dump_filename,
+    const std::string& dump_filename,
     float pll_bw_hz __attribute__((unused)),
     float dll_bw_hz __attribute__((unused)),
     float early_late_space_chips,

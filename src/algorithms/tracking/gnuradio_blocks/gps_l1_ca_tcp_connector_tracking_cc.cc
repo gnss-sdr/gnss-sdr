@@ -85,7 +85,7 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
     int64_t fs_in,
     uint32_t vector_length,
     bool dump,
-    std::string dump_filename,
+    const std::string& dump_filename,
     float early_late_space_chips,
     size_t port_ch0) : gr::block("Gps_L1_Ca_Tcp_Connector_Tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
                            gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))

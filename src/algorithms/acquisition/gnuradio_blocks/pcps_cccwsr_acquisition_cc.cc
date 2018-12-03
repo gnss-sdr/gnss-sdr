@@ -36,6 +36,7 @@
 
 #include "pcps_cccwsr_acquisition_cc.h"
 #include <sstream>
+#include <utility>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
@@ -54,7 +55,7 @@ pcps_cccwsr_acquisition_cc_sptr pcps_cccwsr_make_acquisition_cc(
 {
     return pcps_cccwsr_acquisition_cc_sptr(
         new pcps_cccwsr_acquisition_cc(sampled_ms, max_dwells, doppler_max, fs_in,
-            samples_per_ms, samples_per_code, dump, dump_filename));
+            samples_per_ms, samples_per_code, dump, std::move(dump_filename)));
 }
 
 pcps_cccwsr_acquisition_cc::pcps_cccwsr_acquisition_cc(
@@ -98,7 +99,7 @@ pcps_cccwsr_acquisition_cc::pcps_cccwsr_acquisition_cc(
 
     // For dumping samples into a file
     d_dump = dump;
-    d_dump_filename = dump_filename;
+    d_dump_filename = std::move(dump_filename);
 
     d_doppler_resolution = 0;
     d_threshold = 0;
@@ -261,7 +262,7 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
                 float magt = 0.0;
                 float magt_plus = 0.0;
                 float magt_minus = 0.0;
-                const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
+                const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
                 float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
 
                 d_sample_counter += static_cast<uint64_t>(d_fft_size);  // sample counter

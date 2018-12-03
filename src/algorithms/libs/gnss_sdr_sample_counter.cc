@@ -71,7 +71,7 @@ int gnss_sdr_sample_counter::work(int noutput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items __attribute__((unused)),
     gr_vector_void_star &output_items)
 {
-    Gnss_Synchro *out = reinterpret_cast<Gnss_Synchro *>(output_items[0]);
+    auto *out = reinterpret_cast<Gnss_Synchro *>(output_items[0]);
     out[0] = Gnss_Synchro();
     out[0].Flag_valid_symbol_output = false;
     out[0].Flag_valid_word = false;

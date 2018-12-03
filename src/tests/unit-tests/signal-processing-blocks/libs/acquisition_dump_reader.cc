@@ -119,7 +119,7 @@ bool acquisition_dump_reader::read_binary_acq()
 
     std::vector<std::vector<float> >::iterator it1;
     std::vector<float>::iterator it2;
-    float* aux = static_cast<float*>(var_->data);
+    auto* aux = static_cast<float*>(var_->data);
     int k = 0;
     float normalization_factor = std::pow(d_samples_per_code, 4) * input_power;
     for (it1 = mag.begin(); it1 != mag.end(); it1++)

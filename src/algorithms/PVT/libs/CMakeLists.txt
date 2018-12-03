@@ -80,8 +80,7 @@ else()
     )
 endif()
 
-target_link_libraries(
-    pvt_lib
+target_link_libraries(pvt_lib
     rtklib_lib
     gnss_sdr_flags
     gnss_sp_libs

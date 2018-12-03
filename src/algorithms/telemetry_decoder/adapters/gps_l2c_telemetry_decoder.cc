@@ -43,7 +43,7 @@
 using google::LogMessage;
 
 GpsL2CTelemetryDecoder::GpsL2CTelemetryDecoder(ConfigurationInterface* configuration,
-    std::string role,
+    const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
                                 in_streams_(in_streams),

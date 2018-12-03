@@ -123,8 +123,8 @@ void unpack_spir_gss6450_samples::decode_4bits_word(uint32_t input_uint32, gr_co
 int unpack_spir_gss6450_samples::work(int noutput_items,
     gr_vector_const_void_star& input_items, gr_vector_void_star& output_items)
 {
-    const int32_t* in = reinterpret_cast<const int32_t*>(input_items[0]);
-    gr_complex* out = reinterpret_cast<gr_complex*>(output_items[0]);
+    const auto* in = reinterpret_cast<const int32_t*>(input_items[0]);
+    auto* out = reinterpret_cast<gr_complex*>(output_items[0]);
     int n_sample = 0;
     int in_counter = 0;
     do

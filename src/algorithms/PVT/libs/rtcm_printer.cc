@@ -38,6 +38,7 @@
 #include <boost/filesystem/path_traits.hpp>  // for filesystem
 #include <glog/logging.h>
 #include <iomanip>
+#include <utility>
 #include <fcntl.h>    // for O_RDWR
 #include <termios.h>  // for tcgetattr
 
@@ -45,7 +46,7 @@
 using google::LogMessage;
 
 
-Rtcm_Printer::Rtcm_Printer(std::string filename, bool flag_rtcm_file_dump, bool flag_rtcm_server, bool flag_rtcm_tty_port, uint16_t rtcm_tcp_port, uint16_t rtcm_station_id, std::string rtcm_dump_devname, bool time_tag_name, const std::string& base_path)
+Rtcm_Printer::Rtcm_Printer(const std::string& filename, bool flag_rtcm_file_dump, bool flag_rtcm_server, bool flag_rtcm_tty_port, uint16_t rtcm_tcp_port, uint16_t rtcm_station_id, const std::string& rtcm_dump_devname, bool time_tag_name, const std::string& base_path)
 {
     boost::posix_time::ptime pt = boost::posix_time::second_clock::local_time();
     tm timeinfo = boost::posix_time::to_tm(pt);
@@ -141,7 +142,7 @@ Rtcm_Printer::Rtcm_Printer(std::string filename, bool flag_rtcm_file_dump, bool 
                 }
         }
 
-    rtcm_devname = rtcm_dump_devname;
+    rtcm_devname = std::move(rtcm_dump_devname);
     if (flag_rtcm_tty_port == true)
         {
             rtcm_dev_descriptor = init_serial(rtcm_devname.c_str());
@@ -337,7 +338,7 @@ bool Rtcm_Printer::Print_Rtcm_MSM(uint32_t msm_number, const Gps_Ephemeris& gps_
 }
 
 
-int Rtcm_Printer::init_serial(std::string serial_device)
+int Rtcm_Printer::init_serial(const std::string& serial_device)
 {
     /*
      * Opens the serial device and sets the default baud rate for a RTCM transmission (9600,8,N,1)

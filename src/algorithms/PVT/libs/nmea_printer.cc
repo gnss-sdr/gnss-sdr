@@ -248,9 +248,9 @@ char Nmea_Printer::checkSum(std::string sentence)
 {
     char check = 0;
     // iterate over the string, XOR each byte with the total sum:
-    for (unsigned int c = 0; c < sentence.length(); c++)
+    for (char c : sentence)
         {
-            check = char(check ^ sentence.at(c));
+            check = char(check ^ c);
         }
     // return the result
     return check;

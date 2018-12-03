@@ -446,7 +446,7 @@ void decodefile(rtksvr_t *svr, int index)
 /* rtk server thread ---------------------------------------------------------*/
 void *rtksvrthread(void *arg)
 {
-    rtksvr_t *svr = (rtksvr_t *)arg;
+    auto *svr = (rtksvr_t *)arg;
     obs_t obs;
     obsd_t data[MAXOBS * 2];
     double tt;

@@ -197,13 +197,11 @@ int search(int n, int m, const double *L, const double *D,
                 {
                     if (k == n - 1)
                         break;
-                    else
-                        {
-                            k++;
-                            z[k] += step[k];
-                            y = zb[k] - z[k];
-                            step[k] = -step[k] - SGN_LAMBDA(step[k]);
-                        }
+
+                    k++;
+                    z[k] += step[k];
+                    y = zb[k] - z[k];
+                    step[k] = -step[k] - SGN_LAMBDA(step[k]);
                 }
         }
     for (i = 0; i < m - 1; i++)

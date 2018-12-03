@@ -37,14 +37,20 @@
 #include <boost/format.hpp>
 #include <glog/logging.h>
 #include <iostream>
+#include <utility>
 
 
 using google::LogMessage;
 
 
 RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_stream, unsigned int out_stream,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+    const std::string& role,
+    unsigned int in_stream,
+    unsigned int out_stream,
+    boost::shared_ptr<gr::msg_queue> queue) : role_(std::move(role)),
+                                              in_stream_(in_stream),
+                                              out_stream_(out_stream),
+                                              queue_(queue)
 {
     // DUMP PARAMETERS
     std::string empty = "";
@@ -69,11 +75,11 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
     port_ = configuration->property(role + ".port", default_port);
     flip_iq_ = configuration->property(role + ".flip_iq", false);
 
-    if (item_type_.compare("short") == 0)
+    if (item_type_ == "short")
         {
             item_size_ = sizeof(short);
         }
-    else if (item_type_.compare("gr_complex") == 0)
+    else if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             // 1. Make the gr block

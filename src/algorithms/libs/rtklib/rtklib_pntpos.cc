@@ -243,7 +243,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                     return 0.0;
                 }
 
-            else if (obs->code[i] != CODE_NONE and obs->code[j] == CODE_NONE)
+            if (obs->code[i] != CODE_NONE and obs->code[j] == CODE_NONE)
                 {
                     P1 += P1_C1; /* C1->P1 */
                     PC = P1 - P1_P2;

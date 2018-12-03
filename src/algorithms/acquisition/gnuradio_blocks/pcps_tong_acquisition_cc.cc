@@ -56,6 +56,7 @@
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <sstream>
+#include <utility>
 
 using google::LogMessage;
 
@@ -68,7 +69,7 @@ pcps_tong_acquisition_cc_sptr pcps_tong_make_acquisition_cc(
 {
     return pcps_tong_acquisition_cc_sptr(
         new pcps_tong_acquisition_cc(sampled_ms, doppler_max, fs_in, samples_per_ms, samples_per_code,
-            tong_init_val, tong_max_val, tong_max_dwells, dump, dump_filename));
+            tong_init_val, tong_max_val, tong_max_dwells, dump, std::move(dump_filename)));
 }
 
 pcps_tong_acquisition_cc::pcps_tong_acquisition_cc(
@@ -111,7 +112,7 @@ pcps_tong_acquisition_cc::pcps_tong_acquisition_cc(
 
     // For dumping samples into a file
     d_dump = dump;
-    d_dump_filename = dump_filename;
+    d_dump_filename = std::move(dump_filename);
 
     d_doppler_resolution = 0;
     d_threshold = 0;
@@ -282,7 +283,7 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
                 int doppler;
                 uint32_t indext = 0;
                 float magt = 0.0;
-                const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
+                const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
                 float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
                 d_input_power = 0.0;
                 d_mag = 0.0;

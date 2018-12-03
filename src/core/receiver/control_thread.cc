@@ -289,10 +289,8 @@ int ControlThread::run()
         {
             return 42;  // signal the gnss-sdr-harness.sh to restart the receiver program
         }
-    else
-        {
-            return 0;  // normal shutdown
-        }
+
+    return 0;  // normal shutdown
 }
 
 

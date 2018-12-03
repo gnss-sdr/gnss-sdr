@@ -121,7 +121,7 @@ void gps_l5_telemetry_decoder_cc::set_channel(int32_t channel)
                     try
                         {
                             d_dump_filename = "telemetry_L5_";
-                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
+                            d_dump_filename.append(std::to_string(d_channel));
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
@@ -141,8 +141,8 @@ int gps_l5_telemetry_decoder_cc::general_work(int noutput_items __attribute__((u
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     // get pointers on in- and output gnss-synchro objects
-    Gnss_Synchro *out = reinterpret_cast<Gnss_Synchro *>(output_items[0]);            // Get the output buffer pointer
-    const Gnss_Synchro *in = reinterpret_cast<const Gnss_Synchro *>(input_items[0]);  // Get the input buffer pointer
+    auto *out = reinterpret_cast<Gnss_Synchro *>(output_items[0]);            // Get the output buffer pointer
+    const auto *in = reinterpret_cast<const Gnss_Synchro *>(input_items[0]);  // Get the input buffer pointer
 
     // UPDATE GNSS SYNCHRO DATA
     Gnss_Synchro current_synchro_data;  //structure to save the synchronization information and send the output object to the next block
@@ -282,8 +282,5 @@ int gps_l5_telemetry_decoder_cc::general_work(int noutput_items __attribute__((u
             out[0] = current_synchro_data;
             return 1;
         }
-    else
-        {
-            return 0;
-        }
+    return 0;
 }

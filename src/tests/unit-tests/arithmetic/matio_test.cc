@@ -65,7 +65,7 @@ TEST(MatioTest, WriteAndReadDoubles)
     ASSERT_FALSE(reinterpret_cast<long *>(matvar_read) == nullptr) << "Error reading variable in .mat file";
 
     matvar_read = Mat_VarRead(matfp_read, "x");
-    double *x_read = reinterpret_cast<double *>(matvar_read->data);
+    auto *x_read = reinterpret_cast<double *>(matvar_read->data);
     Mat_Close(matfp_read);
 
     for (int i = 0; i < 10; i++)
@@ -91,10 +91,10 @@ TEST(MatioTest, WriteAndReadGrComplex)
     float x_real[size];
     float x_imag[size];
     unsigned int i = 0;
-    for (std::vector<gr_complex>::const_iterator it = x_v.cbegin(); it != x_v.cend(); it++)
+    for (auto it : x_v)
         {
-            x_real[i] = it->real();
-            x_imag[i] = it->imag();
+            x_real[i] = it.real();
+            x_imag[i] = it.imag();
             i++;
         }
 
@@ -108,10 +108,10 @@ TEST(MatioTest, WriteAndReadGrComplex)
     float y_real[size_y];
     float y_imag[size_y];
     i = 0;
-    for (std::vector<gr_complex>::const_iterator it = x2.cbegin(); it != x2.cend(); it++)
+    for (auto it : x2)
         {
-            y_real[i] = it->real();
-            y_imag[i] = it->imag();
+            y_real[i] = it.real();
+            y_imag[i] = it.imag();
             i++;
         }
 
@@ -139,13 +139,13 @@ TEST(MatioTest, WriteAndReadGrComplex)
     ASSERT_FALSE(reinterpret_cast<long *>(matvar_read) == nullptr) << "Error reading variable in .mat file";
 
     matvar_read = Mat_VarRead(matfp_read, "x");
-    mat_complex_split_t *x_read_st = reinterpret_cast<mat_complex_split_t *>(matvar_read->data);
-    float *x_read_real = reinterpret_cast<float *>(x_read_st->Re);
-    float *x_read_imag = reinterpret_cast<float *>(x_read_st->Im);
+    auto *x_read_st = reinterpret_cast<mat_complex_split_t *>(matvar_read->data);
+    auto *x_read_real = reinterpret_cast<float *>(x_read_st->Re);
+    auto *x_read_imag = reinterpret_cast<float *>(x_read_st->Im);
     std::vector<gr_complex> x_v_read;
     for (unsigned int i = 0; i < size; i++)
         {
-            x_v_read.push_back(gr_complex(x_read_real[i], x_read_imag[i]));
+            x_v_read.emplace_back(x_read_real[i], x_read_imag[i]);
         }
 
     Mat_Close(matfp_read);

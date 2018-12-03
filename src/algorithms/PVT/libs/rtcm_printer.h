@@ -48,7 +48,7 @@ public:
     /*!
      * \brief Default constructor.
      */
-    Rtcm_Printer(std::string filename, bool flag_rtcm_file_dump, bool flag_rtcm_server, bool flag_rtcm_tty_port, uint16_t rtcm_tcp_port, uint16_t rtcm_station_id, std::string rtcm_dump_filename, bool time_tag_name = true, const std::string& base_path = ".");
+    Rtcm_Printer(const std::string& filename, bool flag_rtcm_file_dump, bool flag_rtcm_server, bool flag_rtcm_tty_port, uint16_t rtcm_tcp_port, uint16_t rtcm_station_id, const std::string& rtcm_dump_filename, bool time_tag_name = true, const std::string& base_path = ".");
 
     /*!
      * \brief Default destructor.
@@ -149,7 +149,7 @@ private:
     uint16_t port;
     uint16_t station_id;
     int32_t rtcm_dev_descriptor;                     // RTCM serial device descriptor (i.e. COM port)
-    int32_t init_serial(std::string serial_device);  //serial port control
+    int32_t init_serial(const std::string& serial_device);  //serial port control
     void close_serial();
     std::shared_ptr<Rtcm> rtcm;
     bool Print_Message(const std::string& message);

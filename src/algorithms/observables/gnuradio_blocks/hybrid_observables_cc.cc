@@ -42,6 +42,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <limits>
+#include <utility>
 
 
 using google::LogMessage;
@@ -49,7 +50,7 @@ using google::LogMessage;
 
 hybrid_observables_cc_sptr hybrid_make_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, bool dump_mat, std::string dump_filename)
 {
-    return hybrid_observables_cc_sptr(new hybrid_observables_cc(nchannels_in, nchannels_out, dump, dump_mat, dump_filename));
+    return hybrid_observables_cc_sptr(new hybrid_observables_cc(nchannels_in, nchannels_out, dump, dump_mat, std::move(dump_filename)));
 }
 
 
@@ -63,7 +64,7 @@ hybrid_observables_cc::hybrid_observables_cc(uint32_t nchannels_in,
 {
     d_dump = dump;
     d_dump_mat = dump_mat and d_dump;
-    d_dump_filename = dump_filename;
+    d_dump_filename = std::move(dump_filename);
     d_nchannels_out = nchannels_out;
     d_nchannels_in = nchannels_in;
     T_rx_clock_step_samples = 0U;
@@ -74,10 +75,10 @@ hybrid_observables_cc::hybrid_observables_cc(uint32_t nchannels_in,
         {
             std::string dump_path;
             // Get path
-            if (d_dump_filename.find_last_of("/") != std::string::npos)
+            if (d_dump_filename.find_last_of('/') != std::string::npos)
                 {
-                    std::string dump_filename_ = d_dump_filename.substr(d_dump_filename.find_last_of("/") + 1);
-                    dump_path = d_dump_filename.substr(0, d_dump_filename.find_last_of("/"));
+                    std::string dump_filename_ = d_dump_filename.substr(d_dump_filename.find_last_of('/') + 1);
+                    dump_path = d_dump_filename.substr(0, d_dump_filename.find_last_of('/'));
                     d_dump_filename = dump_filename_;
                 }
             else
@@ -89,9 +90,9 @@ hybrid_observables_cc::hybrid_observables_cc(uint32_t nchannels_in,
                     d_dump_filename = "observables.dat";
                 }
             // remove extension if any
-            if (d_dump_filename.substr(1).find_last_of(".") != std::string::npos)
+            if (d_dump_filename.substr(1).find_last_of('.') != std::string::npos)
                 {
-                    d_dump_filename = d_dump_filename.substr(0, d_dump_filename.find_last_of("."));
+                    d_dump_filename = d_dump_filename.substr(0, d_dump_filename.find_last_of('.'));
                 }
             d_dump_filename.append(".dat");
             d_dump_filename = dump_path + boost::filesystem::path::preferred_separator + d_dump_filename;
@@ -175,13 +176,13 @@ int32_t hybrid_observables_cc::save_matfile()
         {
             return 1;
         }
-    double **RX_time = new double *[d_nchannels_out];
-    double **TOW_at_current_symbol_s = new double *[d_nchannels_out];
-    double **Carrier_Doppler_hz = new double *[d_nchannels_out];
-    double **Carrier_phase_cycles = new double *[d_nchannels_out];
-    double **Pseudorange_m = new double *[d_nchannels_out];
-    double **PRN = new double *[d_nchannels_out];
-    double **Flag_valid_pseudorange = new double *[d_nchannels_out];
+    auto **RX_time = new double *[d_nchannels_out];
+    auto **TOW_at_current_symbol_s = new double *[d_nchannels_out];
+    auto **Carrier_Doppler_hz = new double *[d_nchannels_out];
+    auto **Carrier_phase_cycles = new double *[d_nchannels_out];
+    auto **Pseudorange_m = new double *[d_nchannels_out];
+    auto **PRN = new double *[d_nchannels_out];
+    auto **Flag_valid_pseudorange = new double *[d_nchannels_out];
 
     for (uint32_t i = 0; i < d_nchannels_out; i++)
         {
@@ -238,13 +239,13 @@ int32_t hybrid_observables_cc::save_matfile()
             return 1;
         }
 
-    double *RX_time_aux = new double[d_nchannels_out * num_epoch];
-    double *TOW_at_current_symbol_s_aux = new double[d_nchannels_out * num_epoch];
-    double *Carrier_Doppler_hz_aux = new double[d_nchannels_out * num_epoch];
-    double *Carrier_phase_cycles_aux = new double[d_nchannels_out * num_epoch];
-    double *Pseudorange_m_aux = new double[d_nchannels_out * num_epoch];
-    double *PRN_aux = new double[d_nchannels_out * num_epoch];
-    double *Flag_valid_pseudorange_aux = new double[d_nchannels_out * num_epoch];
+    auto *RX_time_aux = new double[d_nchannels_out * num_epoch];
+    auto *TOW_at_current_symbol_s_aux = new double[d_nchannels_out * num_epoch];
+    auto *Carrier_Doppler_hz_aux = new double[d_nchannels_out * num_epoch];
+    auto *Carrier_phase_cycles_aux = new double[d_nchannels_out * num_epoch];
+    auto *Pseudorange_m_aux = new double[d_nchannels_out * num_epoch];
+    auto *PRN_aux = new double[d_nchannels_out * num_epoch];
+    auto *Flag_valid_pseudorange_aux = new double[d_nchannels_out * num_epoch];
     uint32_t k = 0U;
     for (int64_t j = 0; j < num_epoch; j++)
         {
@@ -408,10 +409,7 @@ bool hybrid_observables_cc::interp_trk_obs(Gnss_Synchro &interpolated_obs, const
                             //           << " ,diff: " << old_abs_diff << " samples (" << static_cast<double>(old_abs_diff) / static_cast<double>(d_gnss_synchro_history->at(ch, nearest_element).fs) << " s)\n";
                             return true;
                         }
-                    else
-                        {
-                            return false;
-                        }
+                    return false;
                 }
             else
                 {
@@ -503,8 +501,8 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
     gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items)
 {
-    const Gnss_Synchro **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);
-    Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
+    const auto **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);
+    auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
 
     // Push receiver clock into history buffer (connected to the last of the input channels)
     // The clock buffer gives time to the channels to compute the tracking observables
@@ -615,8 +613,5 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
                 }
             return 1;
         }
-    else
-        {
-            return 0;
-        }
+    return 0;
 }

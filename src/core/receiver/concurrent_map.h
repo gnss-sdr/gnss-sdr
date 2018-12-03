@@ -94,11 +94,8 @@ public:
                 lock.unlock();
                 return true;
             }
-        else
-            {
-                lock.unlock();
-                return false;
-            }
+        lock.unlock();
+        return false;
     }
 };
 

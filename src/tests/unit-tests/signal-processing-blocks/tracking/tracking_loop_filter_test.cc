@@ -56,10 +56,10 @@ TEST(TrackingLoopFilterTest, FirstOrderLoop)
     float g1 = noise_bandwidth * 4.0;
 
     float result = 0.0;
-    for (unsigned int i = 0; i < sample_data.size(); ++i)
+    for (float i : sample_data)
         {
-            result = theFilter.apply(sample_data[i]);
-            EXPECT_FLOAT_EQ(result, sample_data[i] * g1);
+            result = theFilter.apply(i);
+            EXPECT_FLOAT_EQ(result, i * g1);
         }
 }
 

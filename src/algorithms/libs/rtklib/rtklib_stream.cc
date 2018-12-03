@@ -1227,7 +1227,7 @@ int rspntrip_s(ntrip_t *ntrip, char *msg)
             tracet(2, "rspntrip_s: response ok nb=%d\n", ntrip->nb);
             return 1;
         }
-    else if ((p = strstr((char *)ntrip->buff, NTRIP_RSP_ERROR)))
+    if ((p = strstr((char *)ntrip->buff, NTRIP_RSP_ERROR)))
         { /* error */
             nb = ntrip->nb < MAXSTATMSG ? ntrip->nb : MAXSTATMSG;
             // strncpy(msg, (char *)ntrip->buff, nb); This line triggers a warning. Replaced by;
@@ -1534,7 +1534,7 @@ gtime_t nextdltime(const int *topts, int stat)
 /* ftp thread ----------------------------------------------------------------*/
 void *ftpthread(void *arg)
 {
-    ftp_t *ftp = (ftp_t *)arg;
+    auto *ftp = (ftp_t *)arg;
     FILE *fp;
     gtime_t time;
     char remote[1024], local[1024], tmpfile[1024], errfile[1024], *p;
@@ -2362,7 +2362,7 @@ void strsendcmd(stream_t *str, const char *cmd)
                 }
             if (*q == '\0')
                 break;
-            else
-                p = q + 1;
+
+            p = q + 1;
         }
 }

@@ -74,11 +74,11 @@ glonass_l2_ca_telemetry_decoder_cc::glonass_l2_ca_telemetry_decoder_cc(
     // preamble bits to sampled symbols
     d_preambles_symbols = static_cast<int32_t *>(malloc(sizeof(int32_t) * d_symbols_per_preamble));
     int32_t n = 0;
-    for (int32_t i = 0; i < GLONASS_GNAV_PREAMBLE_LENGTH_BITS; i++)
+    for (unsigned short d_preambles_bit : d_preambles_bits)
         {
             for (uint32_t j = 0; j < GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_PREAMBLE_BIT; j++)
                 {
-                    if (d_preambles_bits[i] == 1)
+                    if (d_preambles_bit == 1)
                         {
                             d_preambles_symbols[n] = 1;
                         }
@@ -244,7 +244,7 @@ void glonass_l2_ca_telemetry_decoder_cc::set_channel(int32_t channel)
                     try
                         {
                             d_dump_filename = "telemetry";
-                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
+                            d_dump_filename.append(std::to_string(d_channel));
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
@@ -265,8 +265,8 @@ int glonass_l2_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
     int32_t corr_value = 0;
     int32_t preamble_diff = 0;
 
-    Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);            // Get the output buffer pointer
-    const Gnss_Synchro **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);  // Get the input buffer pointer
+    auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);            // Get the output buffer pointer
+    const auto **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);  // Get the input buffer pointer
 
     Gnss_Synchro current_symbol;  // structure to save the synchronization information and send the output object to the next block
     // 1. Copy the current tracking output

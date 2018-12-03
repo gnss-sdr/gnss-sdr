@@ -49,9 +49,10 @@
 #include "ini.h"
 #include <cctype>   // for tolower
 #include <cstdlib>  // for stro
+#include <utility>
 
 
-INIReader::INIReader(std::string filename)
+INIReader::INIReader(const std::string& filename)
 {
     _error = ini_parse(filename.c_str(), ValueHandler, this);
 }
@@ -65,14 +66,14 @@ int INIReader::ParseError()
 
 std::string INIReader::Get(std::string section, std::string name, std::string default_value)
 {
-    std::string key = MakeKey(section, name);
+    std::string key = MakeKey(std::move(section), std::move(name));
     return _values.count(key) ? _values[key] : default_value;
 }
 
 
 int64_t INIReader::GetInteger(std::string section, std::string name, int64_t default_value)
 {
-    std::string valstr = Get(section, name, "");
+    std::string valstr = Get(std::move(section), std::move(name), "");
     const char* value = valstr.c_str();
     char* end;
     // This parses "1234" (decimal) and also "0x4D2" (hex)
@@ -81,12 +82,12 @@ int64_t INIReader::GetInteger(std::string section, std::string name, int64_t def
 }
 
 
-std::string INIReader::MakeKey(std::string section, std::string name)
+std::string INIReader::MakeKey(const std::string& section, const std::string& name)
 {
     std::string key = section + "." + name;
     // Convert to lower case to make lookups case-insensitive
-    for (unsigned int i = 0; i < key.length(); i++)
-        key[i] = tolower(key[i]);
+    for (char & i : key)
+        i = tolower(i);
     return key;
 }
 
@@ -94,7 +95,7 @@ std::string INIReader::MakeKey(std::string section, std::string name)
 int INIReader::ValueHandler(void* user, const char* section, const char* name,
     const char* value)
 {
-    INIReader* reader = static_cast<INIReader*>(user);
+    auto* reader = static_cast<INIReader*>(user);
     reader->_values[MakeKey(section, name)] = value;
     return 1;
 }

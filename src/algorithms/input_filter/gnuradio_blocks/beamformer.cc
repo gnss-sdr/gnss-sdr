@@ -69,7 +69,7 @@ beamformer::~beamformer()
 int beamformer::work(int noutput_items, gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items)
 {
-    gr_complex *out = reinterpret_cast<gr_complex *>(output_items[0]);
+    auto *out = reinterpret_cast<gr_complex *>(output_items[0]);
     // channel output buffers
     //  gr_complex *ch1 = (gr_complex *) input_items[0];
     //  gr_complex *ch2 = (gr_complex *) input_items[1];

@@ -166,7 +166,7 @@ void ControlThread::init()
     else
         {
             // fill agnss_ref_time_
-            struct tm tm = {};
+            struct tm tm = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
             if (strptime(ref_time_str.c_str(), "%d/%m/%Y %H:%M:%S", &tm) != nullptr)
                 {
                     agnss_ref_time_.d_tv_sec = timegm(&tm);
@@ -876,7 +876,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
     std::vector<unsigned int> visible_gps;
     std::vector<unsigned int> visible_gal;
     std::shared_ptr<PvtInterface> pvt_ptr = flowgraph_->get_pvt();
-    struct tm tstruct = {};
+    struct tm tstruct = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     char buf[80];
     tstruct = *gmtime(&rx_utc_time);
     strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S ", &tstruct);

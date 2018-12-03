@@ -109,7 +109,7 @@ void gps_l2c_telemetry_decoder_cc::set_channel(int channel)
                     try
                         {
                             d_dump_filename = "telemetry_L2CM_";
-                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
+                            d_dump_filename.append(std::to_string(d_channel));
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);

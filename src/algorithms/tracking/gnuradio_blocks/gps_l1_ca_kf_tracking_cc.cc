@@ -44,7 +44,6 @@
 #include "gnss_sdr_flags.h"
 #include "GPS_L1_CA.h"
 #include "control_message_factory.h"
-#include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
@@ -648,7 +647,7 @@ void Gps_L1_Ca_Kf_Tracking_cc::set_channel(uint32_t channel)
                 {
                     try
                         {
-                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
+                            d_dump_filename.append(std::to_string(d_channel));
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);

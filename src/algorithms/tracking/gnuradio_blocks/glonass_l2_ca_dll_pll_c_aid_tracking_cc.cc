@@ -41,7 +41,6 @@
 #include "GLONASS_L1_L2_CA.h"
 #include "gnss_sdr_flags.h"
 #include "control_message_factory.h"
-#include <boost/lexical_cast.hpp>
 #include <boost/bind.hpp>
 #include <gnuradio/io_signature.h>
 #include <matio.h>
@@ -564,7 +563,7 @@ void glonass_l2_ca_dll_pll_c_aid_tracking_cc::set_channel(uint32_t channel)
                 {
                     try
                         {
-                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
+                            d_dump_filename.append(std::to_string(d_channel));
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);

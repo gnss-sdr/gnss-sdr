@@ -40,6 +40,7 @@
 #include <gnuradio/io_signature.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <fstream>
+#include <utility>
 
 
 /*
@@ -63,22 +64,22 @@ signal_make_generator_c(std::vector<std::string> signal1, std::vector<std::strin
 signal_generator_c::signal_generator_c(std::vector<std::string> signal1,
     std::vector<std::string> system,
     const std::vector<unsigned int> &PRN,
-    const std::vector<float> &CN0_dB,
-    const std::vector<float> &doppler_Hz,
-    const std::vector<unsigned int> &delay_chips,
-    const std::vector<unsigned int> &delay_sec,
+    std::vector<float> CN0_dB,
+    std::vector<float> doppler_Hz,
+    std::vector<unsigned int> delay_chips,
+    std::vector<unsigned int> delay_sec,
     bool data_flag,
     bool noise_flag,
     unsigned int fs_in,
     unsigned int vector_length,
     float BW_BB) : gr::block("signal_gen_cc", gr::io_signature::make(0, 0, sizeof(gr_complex)), gr::io_signature::make(1, 1, sizeof(gr_complex) * vector_length)),
-                   signal_(signal1),
-                   system_(system),
+                   signal_(std::move(signal1)),
+                   system_(std::move(system)),
                    PRN_(PRN),
-                   CN0_dB_(CN0_dB),
-                   doppler_Hz_(doppler_Hz),
-                   delay_chips_(delay_chips),
-                   delay_sec_(delay_sec),
+                   CN0_dB_(std::move(CN0_dB)),
+                   doppler_Hz_(std::move(doppler_Hz)),
+                   delay_chips_(std::move(delay_chips)),
+                   delay_sec_(std::move(delay_sec)),
                    data_flag_(data_flag),
                    noise_flag_(noise_flag),
                    fs_in_(fs_in),

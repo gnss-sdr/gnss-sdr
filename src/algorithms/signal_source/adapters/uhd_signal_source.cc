@@ -37,13 +37,14 @@
 #include <uhd/exception.hpp>
 #include <volk/volk.h>
 #include <iostream>
+#include <utility>
 
 
 using google::LogMessage;
 
 UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
     std::string role, unsigned int in_stream, unsigned int out_stream,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
 {
     // DUMP PARAMETERS
     std::string empty = "";

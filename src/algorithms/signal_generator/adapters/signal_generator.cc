@@ -38,12 +38,14 @@
 #include "GLONASS_L1_L2_CA.h"
 #include <glog/logging.h>
 
+#include <utility>
+
 
 using google::LogMessage;
 
 SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
     std::string role, unsigned int in_stream,
-    unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+    unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/gen_source.dat";

@@ -40,6 +40,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <utility>
 
 
 using google::LogMessage;
@@ -52,7 +53,7 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
     boost::shared_ptr<gr::msg_queue> queue) : role_(role),
                                               in_streams_(in_streams),
                                               out_streams_(out_streams),
-                                              queue_(queue)
+                                              queue_(std::move(queue))
 {
     std::string default_filename = "../data/my_capture.dat";
     std::string default_item_type = "byte";

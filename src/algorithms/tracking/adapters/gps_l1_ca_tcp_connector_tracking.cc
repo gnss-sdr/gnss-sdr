@@ -37,6 +37,8 @@
 
 #include "gps_l1_ca_tcp_connector_tracking.h"
 #include <glog/logging.h>
+
+#include <utility>
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
 
@@ -46,7 +48,7 @@ using google::LogMessage;
 
 GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(
     ConfigurationInterface* configuration, std::string role,
-    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    unsigned int in_streams, unsigned int out_streams) : role_(std::move(role)), in_streams_(in_streams), out_streams_(out_streams)
 {
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################

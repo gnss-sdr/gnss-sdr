@@ -32,6 +32,7 @@
 #include "freq_xlating_fir_filter.h"
 #include "configuration_interface.h"
 #include <boost/lexical_cast.hpp>
+#include <utility>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/filter/pm_remez.h>
 #include <gnuradio/filter/firdes.h>
@@ -41,7 +42,7 @@
 using google::LogMessage;
 
 FreqXlatingFirFilter::FreqXlatingFirFilter(ConfigurationInterface* configuration, std::string role,
-    unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(std::move(role)), in_streams_(in_streams), out_streams_(out_streams)
 {
     std::string default_input_item_type = "gr_complex";
     std::string default_output_item_type = "gr_complex";

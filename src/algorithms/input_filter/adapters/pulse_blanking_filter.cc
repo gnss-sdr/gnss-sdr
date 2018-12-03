@@ -33,13 +33,14 @@
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
 #include <gnuradio/filter/firdes.h>
+#include <utility>
 #include <vector>
 #include <cmath>
 
 using google::LogMessage;
 
 PulseBlankingFilter::PulseBlankingFilter(ConfigurationInterface* configuration, std::string role,
-    unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(std::move(role)), in_streams_(in_streams), out_streams_(out_streams)
 {
     size_t item_size;
     xlat_ = false;

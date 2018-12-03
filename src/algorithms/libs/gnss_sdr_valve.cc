@@ -37,6 +37,7 @@
 #include <gnuradio/io_signature.h>
 #include <algorithm>  // for min
 #include <cstring>    // for memcpy
+#include <utility>
 
 gnss_sdr_valve::gnss_sdr_valve(size_t sizeof_stream_item,
     unsigned long long nitems,
@@ -46,7 +47,7 @@ gnss_sdr_valve::gnss_sdr_valve(size_t sizeof_stream_item,
                                gr::io_signature::make(1, 1, sizeof_stream_item)),
                            d_nitems(nitems),
                            d_ncopied_items(0),
-                           d_queue(queue),
+                           d_queue(std::move(queue)),
                            d_stop_flowgraph(stop_flowgraph)
 {
     d_open_valve = false;

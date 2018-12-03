@@ -37,6 +37,7 @@
 #include <boost/format.hpp>
 #include <glog/logging.h>
 #include <iostream>
+#include <utility>
 
 
 using google::LogMessage;
@@ -44,7 +45,7 @@ using google::LogMessage;
 
 RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
     std::string role, unsigned int in_stream, unsigned int out_stream,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+    boost::shared_ptr<gr::msg_queue> queue) : role_(std::move(role)), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
 {
     // DUMP PARAMETERS
     std::string empty = "";

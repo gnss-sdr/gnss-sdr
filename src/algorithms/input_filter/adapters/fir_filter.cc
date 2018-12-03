@@ -32,6 +32,7 @@
 #include "fir_filter.h"
 #include "configuration_interface.h"
 #include <boost/lexical_cast.hpp>
+#include <utility>
 #include <gnuradio/filter/pm_remez.h>
 #include <glog/logging.h>
 #include <volk/volk.h>
@@ -40,7 +41,7 @@
 using google::LogMessage;
 
 FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
-    unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(std::move(role)), in_streams_(in_streams), out_streams_(out_streams)
 {
     size_t item_size;
     (*this).init();

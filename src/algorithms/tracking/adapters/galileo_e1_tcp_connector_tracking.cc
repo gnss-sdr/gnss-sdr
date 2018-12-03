@@ -37,6 +37,8 @@
 
 #include "galileo_e1_tcp_connector_tracking.h"
 #include <glog/logging.h>
+
+#include <utility>
 #include "Galileo_E1.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
@@ -47,7 +49,7 @@ using google::LogMessage;
 
 GalileoE1TcpConnectorTracking::GalileoE1TcpConnectorTracking(
     ConfigurationInterface* configuration, std::string role,
-    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    unsigned int in_streams, unsigned int out_streams) : role_(std::move(role)), in_streams_(in_streams), out_streams_(out_streams)
 {
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################

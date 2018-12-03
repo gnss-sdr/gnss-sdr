@@ -1,5 +1,5 @@
 /*!
- * \file kml_printer.cc
+ * \file nmea_printer.cc
  * \brief Implementation of a NMEA 2.1 printer for GNSS-SDR
  * This class provides a implementation of a subset of the NMEA-0183 standard for interfacing
  * marine electronic devices as defined by the National Marine Electronics Association (NMEA).
@@ -132,7 +132,9 @@ int Nmea_Printer::init_serial(const std::string& serial_device)
      * Opens the serial device and sets the default baud rate for a NMEA transmission (9600,8,N,1)
      */
     int fd = 0;
-    struct termios options = {};
+    struct termios options
+    {
+    };
     int64_t BAUD;
     int64_t DATABITS;
     int64_t STOPBITS;

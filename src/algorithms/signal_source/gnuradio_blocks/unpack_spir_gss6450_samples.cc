@@ -49,9 +49,8 @@ unpack_spir_gss6450_samples::unpack_spir_gss6450_samples(unsigned int adc_nbit) 
 }
 
 
-unpack_spir_gss6450_samples::~unpack_spir_gss6450_samples()
-{
-}
+unpack_spir_gss6450_samples::~unpack_spir_gss6450_samples() = default;
+
 
 void unpack_spir_gss6450_samples::decode_4bits_word(uint32_t input_uint32, gr_complex* out, int adc_bits)
 {

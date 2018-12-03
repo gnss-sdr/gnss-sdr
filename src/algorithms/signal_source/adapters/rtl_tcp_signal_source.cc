@@ -139,9 +139,7 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
 }
 
 
-RtlTcpSignalSource::~RtlTcpSignalSource()
-{
-}
+RtlTcpSignalSource::~RtlTcpSignalSource() = default;
 
 
 void RtlTcpSignalSource::MakeBlock()

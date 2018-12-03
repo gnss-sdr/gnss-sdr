@@ -45,9 +45,6 @@
 
 using google::LogMessage;
 
-void GalileoE5aDllPllTracking::stop_tracking()
-{
-}
 
 GalileoE5aDllPllTracking::GalileoE5aDllPllTracking(
     ConfigurationInterface* configuration, std::string role,
@@ -154,7 +151,10 @@ GalileoE5aDllPllTracking::GalileoE5aDllPllTracking(
 }
 
 
-GalileoE5aDllPllTracking::~GalileoE5aDllPllTracking()
+GalileoE5aDllPllTracking::~GalileoE5aDllPllTracking() = default;
+
+
+void GalileoE5aDllPllTracking::stop_tracking()
 {
 }
 

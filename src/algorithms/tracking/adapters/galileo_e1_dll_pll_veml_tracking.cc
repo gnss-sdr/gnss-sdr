@@ -45,9 +45,6 @@
 
 using google::LogMessage;
 
-void GalileoE1DllPllVemlTracking::stop_tracking()
-{
-}
 
 GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     ConfigurationInterface* configuration, std::string role,
@@ -157,7 +154,10 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
 }
 
 
-GalileoE1DllPllVemlTracking::~GalileoE1DllPllVemlTracking()
+GalileoE1DllPllVemlTracking::~GalileoE1DllPllVemlTracking() = default;
+
+
+void GalileoE1DllPllVemlTracking::stop_tracking()
 {
 }
 

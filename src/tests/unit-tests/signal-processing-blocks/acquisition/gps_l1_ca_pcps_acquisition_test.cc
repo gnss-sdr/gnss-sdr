@@ -107,9 +107,7 @@ GpsL1CaPcpsAcquisitionTest_msg_rx::GpsL1CaPcpsAcquisitionTest_msg_rx() : gr::blo
 }
 
 
-GpsL1CaPcpsAcquisitionTest_msg_rx::~GpsL1CaPcpsAcquisitionTest_msg_rx()
-{
-}
+GpsL1CaPcpsAcquisitionTest_msg_rx::~GpsL1CaPcpsAcquisitionTest_msg_rx() = default;
 
 
 // ###########################################################
@@ -127,9 +125,7 @@ protected:
         doppler_step = 100;
     }
 
-    ~GpsL1CaPcpsAcquisitionTest()
-    {
-    }
+    ~GpsL1CaPcpsAcquisitionTest() = default;
 
     void init();
     void plot_grid();

@@ -51,9 +51,7 @@ HybridObservables::HybridObservables(ConfigurationInterface* configuration,
 }
 
 
-HybridObservables::~HybridObservables()
-{
-}
+HybridObservables::~HybridObservables() = default;
 
 
 void HybridObservables::connect(gr::top_block_sptr top_block)

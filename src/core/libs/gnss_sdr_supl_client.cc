@@ -49,7 +49,7 @@ gnss_sdr_supl_client::gnss_sdr_supl_client()
 }
 
 
-gnss_sdr_supl_client::~gnss_sdr_supl_client() {}
+gnss_sdr_supl_client::~gnss_sdr_supl_client() = default;
 
 
 void gnss_sdr_supl_client::print_assistance()

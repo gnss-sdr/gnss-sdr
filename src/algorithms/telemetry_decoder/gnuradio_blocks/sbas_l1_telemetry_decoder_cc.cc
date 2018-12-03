@@ -110,9 +110,7 @@ sbas_l1_telemetry_decoder_cc::sample_aligner::sample_aligner()
 }
 
 
-sbas_l1_telemetry_decoder_cc::sample_aligner::~sample_aligner()
-{
-}
+sbas_l1_telemetry_decoder_cc::sample_aligner::~sample_aligner() = default;
 
 
 void sbas_l1_telemetry_decoder_cc::sample_aligner::reset()

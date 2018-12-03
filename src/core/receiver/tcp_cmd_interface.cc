@@ -47,9 +47,7 @@ TcpCmdInterface::TcpCmdInterface()
 }
 
 
-TcpCmdInterface::~TcpCmdInterface()
-{
-}
+TcpCmdInterface::~TcpCmdInterface() = default;
 
 
 void TcpCmdInterface::register_functions()

@@ -77,9 +77,7 @@ IshortToCshort::IshortToCshort(ConfigurationInterface* configuration, std::strin
 }
 
 
-IshortToCshort::~IshortToCshort()
-{
-}
+IshortToCshort::~IshortToCshort() = default;
 
 
 void IshortToCshort::connect(gr::top_block_sptr top_block)

@@ -45,9 +45,6 @@
 
 using google::LogMessage;
 
-void GpsL5DllPllTracking::stop_tracking()
-{
-}
 
 GpsL5DllPllTracking::GpsL5DllPllTracking(
     ConfigurationInterface* configuration, std::string role,
@@ -154,7 +151,10 @@ GpsL5DllPllTracking::GpsL5DllPllTracking(
 }
 
 
-GpsL5DllPllTracking::~GpsL5DllPllTracking()
+GpsL5DllPllTracking::~GpsL5DllPllTracking() = default;
+
+
+void GpsL5DllPllTracking::stop_tracking()
 {
 }
 

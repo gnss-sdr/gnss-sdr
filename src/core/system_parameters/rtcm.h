@@ -597,7 +597,7 @@ private:
     class Rtcm_Listener
     {
     public:
-        virtual ~Rtcm_Listener() {}
+        virtual ~Rtcm_Listener() = default;
         virtual void deliver(const Rtcm_Message& msg) = 0;
     };
 

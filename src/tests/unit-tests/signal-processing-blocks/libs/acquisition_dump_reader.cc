@@ -234,6 +234,4 @@ acquisition_dump_reader::acquisition_dump_reader(const std::string& basename,
 }
 
 
-acquisition_dump_reader::~acquisition_dump_reader()
-{
-}
+acquisition_dump_reader::~acquisition_dump_reader() = default;

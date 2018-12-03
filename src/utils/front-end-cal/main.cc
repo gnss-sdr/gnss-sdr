@@ -144,7 +144,9 @@ FrontEndCal_msg_rx::FrontEndCal_msg_rx() : gr::block("FrontEndCal_msg_rx", gr::i
 }
 
 
-FrontEndCal_msg_rx::~FrontEndCal_msg_rx() {}
+FrontEndCal_msg_rx::~FrontEndCal_msg_rx() = default;
+
+
 void wait_message()
 {
     while (!stop)

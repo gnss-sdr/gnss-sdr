@@ -423,10 +423,10 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
             d_dump_filename = trk_parameters.dump_filename;
             std::string dump_path;
             // Get path
-            if (d_dump_filename.find_last_of("/") != std::string::npos)
+            if (d_dump_filename.find_last_of('/') != std::string::npos)
                 {
-                    std::string dump_filename_ = d_dump_filename.substr(d_dump_filename.find_last_of("/") + 1);
-                    dump_path = d_dump_filename.substr(0, d_dump_filename.find_last_of("/"));
+                    std::string dump_filename_ = d_dump_filename.substr(d_dump_filename.find_last_of('/') + 1);
+                    dump_path = d_dump_filename.substr(0, d_dump_filename.find_last_of('/'));
                     d_dump_filename = dump_filename_;
                 }
             else
@@ -438,9 +438,9 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                     d_dump_filename = "trk_channel_";
                 }
             // remove extension if any
-            if (d_dump_filename.substr(1).find_last_of(".") != std::string::npos)
+            if (d_dump_filename.substr(1).find_last_of('.') != std::string::npos)
                 {
-                    d_dump_filename = d_dump_filename.substr(0, d_dump_filename.find_last_of("."));
+                    d_dump_filename = d_dump_filename.substr(0, d_dump_filename.find_last_of('.'));
                 }
 
             d_dump_filename = dump_path + boost::filesystem::path::preferred_separator + d_dump_filename;

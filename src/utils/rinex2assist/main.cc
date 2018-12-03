@@ -77,7 +77,7 @@ int main(int argc, char** argv)
     // Uncompress if RINEX file is gzipped
     std::string rinex_filename(argv[1]);
     std::string input_filename = rinex_filename;
-    std::size_t found = rinex_filename.find_last_of(".");
+    std::size_t found = rinex_filename.find_last_of('.');
     if (found != std::string::npos)
         {
             if (rinex_filename.size() >= found + 3)

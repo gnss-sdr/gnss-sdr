@@ -289,10 +289,10 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     K_blk_samples = 0.0;
 
     // Initialize tracking  ==========================================
-    d_code_loop_filter.set_DLL_BW(trk_parameters.dll_bw_hz);
-    d_carrier_loop_filter.set_PLL_BW(trk_parameters.pll_bw_hz);
     d_code_loop_filter = Tracking_2nd_DLL_filter(static_cast<float>(d_code_period));
     d_carrier_loop_filter = Tracking_2nd_PLL_filter(static_cast<float>(d_code_period));
+    d_code_loop_filter.set_DLL_BW(trk_parameters.dll_bw_hz);
+    d_carrier_loop_filter.set_PLL_BW(trk_parameters.pll_bw_hz);
 
     // Initialization of local code replica
     // Get space for a vector with the sinboc(1,1) replica sampled 2x/chip

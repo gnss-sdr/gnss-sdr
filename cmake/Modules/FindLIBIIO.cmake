@@ -27,6 +27,8 @@ find_path(
           /usr/local/include
           /usr/include
           /opt/local/include
+          ${LIBIIO_ROOT}/include
+          $ENV{LIBIIO_ROOT}/include
 )
 
 find_library(
@@ -63,6 +65,10 @@ find_library(
           /usr/lib/x86_64-linux-gnux32
           /usr/lib/sh4-linux-gnu
           /Library/Frameworks/iio.framework/
+          ${LIBIIO_ROOT}/lib
+          $ENV{LIBIIO_ROOT}/lib
+          ${LIBIIO_ROOT}/lib64
+          $ENV{LIBIIO_ROOT}/lib64
 )
 
 include(FindPackageHandleStandardArgs)

@@ -131,9 +131,7 @@ unpack_2bit_samples::unpack_2bit_samples(bool big_endian_bytes,
 }
 
 
-unpack_2bit_samples::~unpack_2bit_samples()
-{
-}
+unpack_2bit_samples::~unpack_2bit_samples() = default;
 
 
 int unpack_2bit_samples::work(int noutput_items,

@@ -142,9 +142,7 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
 }
 
 
-FirFilter::~FirFilter()
-{
-}
+FirFilter::~FirFilter() = default;
 
 
 void FirFilter::connect(gr::top_block_sptr top_block)

@@ -163,7 +163,7 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
     systemName["E"] = std::string("Galileo");
     systemName["C"] = std::string("Compass");
 
-    d_acquisition_gnss_synchro = 0;
+    d_acquisition_gnss_synchro = nullptr;
     d_channel = 0;
     d_next_rem_code_phase_samples = 0;
     d_acq_code_phase_samples = 0.0;

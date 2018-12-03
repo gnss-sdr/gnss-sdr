@@ -270,8 +270,8 @@ int32_t hybrid_observables_cc::save_matfile()
             filename.erase(filename.end() - 4, filename.end());
         }
     filename.append(".mat");
-    matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
-    if (reinterpret_cast<int64_t *>(matfp) != NULL)
+    matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT73);
+    if (reinterpret_cast<int64_t *>(matfp) != nullptr)
         {
             size_t dims[2] = {static_cast<size_t>(d_nchannels_out), static_cast<size_t>(num_epoch)};
             matvar = Mat_VarCreate("RX_time", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, RX_time_aux, MAT_F_DONT_COPY_DATA);

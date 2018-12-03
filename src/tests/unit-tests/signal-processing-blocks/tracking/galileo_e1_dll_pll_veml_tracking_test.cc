@@ -65,9 +65,7 @@ protected:
         gnss_synchro = Gnss_Synchro();
     }
 
-    ~GalileoE1DllPllVemlTrackingInternalTest()
-    {
-    }
+    ~GalileoE1DllPllVemlTrackingInternalTest() = default;
 
     void init();
 

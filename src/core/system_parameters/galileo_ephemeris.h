@@ -123,10 +123,7 @@ public:
             {
             };
 
-        archive& BOOST_SERIALIZATION_NVP(flag_all_ephemeris);
-        archive& BOOST_SERIALIZATION_NVP(IOD_ephemeris);
-        archive& BOOST_SERIALIZATION_NVP(IOD_nav_1);
-        archive& BOOST_SERIALIZATION_NVP(SV_ID_PRN_4);
+        archive& BOOST_SERIALIZATION_NVP(i_satellite_PRN);
 
         archive& BOOST_SERIALIZATION_NVP(M0_1);
         archive& BOOST_SERIALIZATION_NVP(delta_n_3);
@@ -155,6 +152,10 @@ public:
         archive& BOOST_SERIALIZATION_NVP(Galileo_satClkDrift);
         archive& BOOST_SERIALIZATION_NVP(Galileo_dtr);
 
+        archive& BOOST_SERIALIZATION_NVP(flag_all_ephemeris);
+        archive& BOOST_SERIALIZATION_NVP(IOD_ephemeris);
+        archive& BOOST_SERIALIZATION_NVP(IOD_nav_1);
+
         archive& BOOST_SERIALIZATION_NVP(SISA_3);
         archive& BOOST_SERIALIZATION_NVP(E5a_HS);
         archive& BOOST_SERIALIZATION_NVP(E5b_HS_5);
@@ -165,8 +166,6 @@ public:
 
         archive& BOOST_SERIALIZATION_NVP(BGD_E1E5a_5);
         archive& BOOST_SERIALIZATION_NVP(BGD_E1E5b_5);
-
-        archive& BOOST_SERIALIZATION_NVP(i_satellite_PRN);
     }
 };
 

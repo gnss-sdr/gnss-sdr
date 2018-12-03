@@ -24,14 +24,23 @@
 
 find_path(GPSTK_INCLUDE_DIR gpstk/Rinex3ObsBase.hpp
     HINTS /usr/include
-        /usr/local/include
-        /opt/local/include)
+          /usr/local/include
+          /opt/local/include
+          ${GPSTK_ROOT}/include
+          $ENV{GPSTK_ROOT}/include
+)
 
 set(GPSTK_NAMES ${GPSTK_NAMES} gpstk libgpstk)
+
 find_library(GPSTK_LIBRARY NAMES ${GPSTK_NAMES}
     HINTS /usr/lib
-        /usr/local/lib
-        /opt/local/lib)
+          /usr/local/lib
+          /opt/local/lib
+          ${GPSTK_ROOT}/lib
+          $ENV{GPSTK_ROOT}/lib
+          ${GPSTK_ROOT}/lib64
+          $ENV{GPSTK_ROOT}/lib64
+)
 
 # handle the QUIETLY and REQUIRED arguments and set GPSTK_FOUND to TRUE if
 # all listed variables are TRUE

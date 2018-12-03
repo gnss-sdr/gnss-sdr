@@ -71,9 +71,7 @@ ByteToShort::ByteToShort(ConfigurationInterface* configuration, std::string role
 }
 
 
-ByteToShort::~ByteToShort()
-{
-}
+ByteToShort::~ByteToShort() = default;
 
 
 void ByteToShort::connect(gr::top_block_sptr top_block)

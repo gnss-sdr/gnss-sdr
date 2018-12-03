@@ -77,7 +77,7 @@ Rtcm_Printer::Rtcm_Printer(std::string filename, bool flag_rtcm_file_dump, bool 
                 {
                     rtcm_base_path = p.string();
                 }
-            if (rtcm_base_path.compare(".") != 0)
+            if (rtcm_base_path != ".")
                 {
                     std::cout << "RTCM binary file will be stored at " << rtcm_base_path << std::endl;
                 }

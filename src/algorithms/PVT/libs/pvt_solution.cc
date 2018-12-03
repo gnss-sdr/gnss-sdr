@@ -188,7 +188,7 @@ int Pvt_Solution::tropo(double *ddr_m, double sinel, double hsta_km, double p_mb
     double b;
     double rtop;
 
-    while (1)
+    while (true)
         {
             rtop = pow((a_e + htop), 2) - pow((a_e + hsta_km), 2) * (1 - pow(sinel, 2));
 

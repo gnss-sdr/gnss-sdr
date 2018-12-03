@@ -40,22 +40,31 @@ set(TELEMETRY_DECODER_ADAPTER_HEADERS
 )
 
 include_directories(
-     ${CMAKE_CURRENT_SOURCE_DIR}
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/gnuradio_blocks
-     ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/libs
-     ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/libs/libswiftcnav
-     ${Boost_INCLUDE_DIRS}
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+    ${CMAKE_SOURCE_DIR}/src/core/interfaces
+    ${CMAKE_SOURCE_DIR}/src/core/receiver
+    ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/gnuradio_blocks
+    ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/libs
+    ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/libs/libswiftcnav
+    ${Boost_INCLUDE_DIRS}
+    ${GLOG_INCLUDE_DIRS}
+    ${GFlags_INCLUDE_DIRS}
+    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
 list(SORT TELEMETRY_DECODER_ADAPTER_HEADERS)
 list(SORT TELEMETRY_DECODER_ADAPTER_SOURCES)
 
-add_library(telemetry_decoder_adapters ${TELEMETRY_DECODER_ADAPTER_SOURCES} ${TELEMETRY_DECODER_ADAPTER_HEADERS})
+add_library(telemetry_decoder_adapters
+    ${TELEMETRY_DECODER_ADAPTER_SOURCES}
+    ${TELEMETRY_DECODER_ADAPTER_HEADERS}
+)
+
 source_group(Headers FILES ${TELEMETRY_DECODER_ADAPTER_HEADERS})
-target_link_libraries(telemetry_decoder_adapters telemetry_decoder_gr_blocks gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES})
+
+target_link_libraries(telemetry_decoder_adapters
+    telemetry_decoder_gr_blocks
+    gnss_system_parameters
+    ${GNURADIO_RUNTIME_LIBRARIES}
+)

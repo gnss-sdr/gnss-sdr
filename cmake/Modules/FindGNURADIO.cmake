@@ -65,29 +65,29 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
     set(PC_LIBDIR ${PC_GNURADIO_${EXTVAR}_LIBDIR})
 
     # look for include files
-    find_path(
-        ${INCVAR_NAME}
+    find_path(${INCVAR_NAME}
         NAMES ${INCFILE}
         HINTS $ENV{GNURADIO_RUNTIME_DIR}/include
-            ${PC_INCDIR}
-            ${CMAKE_INSTALL_PREFIX}/include
-            ${GNURADIO_INSTALL_PREFIX}/include
+              ${PC_INCDIR}
+              ${CMAKE_INSTALL_PREFIX}/include
+              ${GNURADIO_INSTALL_PREFIX}/include
         PATHS /usr/local/include
               /usr/include
               ${GNURADIO_INSTALL_PREFIX}/include
+              ${GNURADIO_ROOT}/include
+              $ENV{GNURADIO_ROOT}/include
     )
 
     # look for libs
     foreach(libname ${PC_GNURADIO_${EXTVAR}_LIBRARIES})
-        find_library(
-            ${LIBVAR_NAME}_${libname}
+        find_library(${LIBVAR_NAME}_${libname}
             NAMES ${libname} ${libname}-${PC_GNURADIO_RUNTIME_VERSION}
             HINTS $ENV{GNURADIO_RUNTIME_DIR}/lib
-                ${PC_LIBDIR}
-                ${CMAKE_INSTALL_PREFIX}/lib/
-                ${CMAKE_INSTALL_PREFIX}/lib64/
-                ${GNURADIO_INSTALL_PREFIX}/lib/
-                ${GNURADIO_INSTALL_PREFIX}/lib64
+                  ${PC_LIBDIR}
+                  ${CMAKE_INSTALL_PREFIX}/lib
+                  ${CMAKE_INSTALL_PREFIX}/lib64
+                  ${GNURADIO_INSTALL_PREFIX}/lib
+                  ${GNURADIO_INSTALL_PREFIX}/lib64
             PATHS /usr/local/lib
                   /usr/lib/x86_64-linux-gnu
                   /usr/lib/i386-linux-gnu
@@ -115,6 +115,10 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
                   /usr/lib64
                   /usr/lib
                   ${GNURADIO_INSTALL_PREFIX}/lib
+                  ${GNURADIO_ROOT}/lib
+                  $ENV{GNURADIO_ROOT}/lib
+                  ${GNURADIO_ROOT}/lib64
+                  $ENV{GNURADIO_ROOT}/lib64
         )
         list(APPEND ${LIBVAR_NAME} ${${LIBVAR_NAME}_${libname}})
     endforeach()
@@ -174,6 +178,8 @@ if(NOT PC_GNURADIO_RUNTIME_VERSION)
               PATHS /usr/local/include
                     /usr/include
                     ${GNURADIO_INSTALL_PREFIX}/include
+                    ${GNURADIO_ROOT}/include
+                    $ENV{GNURADIO_ROOT}/include
               )
     if(GNURADIO_VERSION_GREATER_THAN_373)
         set(PC_GNURADIO_RUNTIME_VERSION "3.7.4+")
@@ -187,6 +193,8 @@ if(NOT PC_GNURADIO_RUNTIME_VERSION)
               PATHS /usr/local/include
                     /usr/include
                     ${GNURADIO_INSTALL_PREFIX}/include
+                    ${GNURADIO_ROOT}/include
+                    $ENV{GNURADIO_ROOT}/include
               )
     if(GNURADIO_VERSION_GREATER_THAN_38)
         set(PC_GNURADIO_RUNTIME_VERSION "3.8.0+")

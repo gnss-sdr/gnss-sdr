@@ -2643,7 +2643,7 @@ void save_msm_obs(rtcm_t *rtcm, int sys, msm_h_t *h, const double *r,
     const char *sig[32];
     double tt, wl;
     unsigned char code[32];
-    char *msm_type = (char *)"", *q = NULL;
+    char *msm_type = (char *)"", *q = nullptr;
     int i, j, k, type, prn, sat, fn, index = 0, freq[32], ind[32];
 
     type = getbitu(rtcm->buff, 24, 12);
@@ -2966,7 +2966,7 @@ int decode_msm4(rtcm_t *rtcm, int sys)
             i += 6;
         }
     /* save obs data in msm message */
-    save_msm_obs(rtcm, sys, &h, r, pr, cp, NULL, NULL, cnr, lock, NULL, half);
+    save_msm_obs(rtcm, sys, &h, r, pr, cp, nullptr, nullptr, cnr, lock, nullptr, half);
 
     rtcm->obsflag = !sync;
     return sync ? 0 : 1;
@@ -3128,7 +3128,7 @@ int decode_msm6(rtcm_t *rtcm, int sys)
             i += 10;
         }
     /* save obs data in msm message */
-    save_msm_obs(rtcm, sys, &h, r, pr, cp, NULL, NULL, cnr, lock, NULL, half);
+    save_msm_obs(rtcm, sys, &h, r, pr, cp, nullptr, nullptr, cnr, lock, nullptr, half);
 
     rtcm->obsflag = !sync;
     return sync ? 0 : 1;

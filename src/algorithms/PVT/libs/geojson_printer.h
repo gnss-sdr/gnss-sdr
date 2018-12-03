@@ -55,7 +55,7 @@ private:
 public:
     GeoJSON_Printer(const std::string& base_path = ".");
     ~GeoJSON_Printer();
-    bool set_headers(std::string filename, bool time_tag_name = true);
+    bool set_headers(const std::string& filename, bool time_tag_name = true);
     bool print_position(const std::shared_ptr<Pvt_Solution>& position, bool print_average_values);
     bool close_file();
 };

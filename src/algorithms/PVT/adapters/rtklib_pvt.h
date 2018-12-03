@@ -46,7 +46,7 @@ class RtklibPvt : public PvtInterface
 {
 public:
     RtklibPvt(ConfigurationInterface* configuration,
-        std::string role,
+        const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 
@@ -95,8 +95,6 @@ public:
 private:
     rtklib_pvt_cc_sptr pvt_;
     rtk_t rtk;
-    bool dump_;
-    std::string dump_filename_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;

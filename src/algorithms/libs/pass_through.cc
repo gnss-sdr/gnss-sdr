@@ -120,9 +120,7 @@ Pass_Through::Pass_Through(ConfigurationInterface* configuration, std::string ro
 }
 
 
-Pass_Through::~Pass_Through()
-{
-}
+Pass_Through::~Pass_Through() = default;
 
 
 void Pass_Through::connect(gr::top_block_sptr top_block)

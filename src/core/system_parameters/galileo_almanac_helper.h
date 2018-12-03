@@ -45,7 +45,7 @@ public:
     // Word type 7: Almanac for SVID1 (1/2), almanac reference time and almanac reference week number
     int32_t IOD_a_7;
     int32_t WN_a_7;
-    double t0a_7;
+    int32_t t0a_7;
     int32_t SVID1_7;
     double DELTA_A_7;
     double e_7;
@@ -73,7 +73,7 @@ public:
     // Word type 9: Almanac for SVID2 (2/2) and SVID3 (1/2)
     int32_t IOD_a_9;
     int32_t WN_a_9;
-    double t0a_9;
+    int32_t t0a_9;
     double M0_9;
     double af0_9;
     double af1_9;

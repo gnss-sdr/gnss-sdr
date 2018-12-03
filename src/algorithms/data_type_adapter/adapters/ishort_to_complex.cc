@@ -75,9 +75,7 @@ IshortToComplex::IshortToComplex(ConfigurationInterface* configuration, std::str
 }
 
 
-IshortToComplex::~IshortToComplex()
-{
-}
+IshortToComplex::~IshortToComplex() = default;
 
 
 void IshortToComplex::connect(gr::top_block_sptr top_block)

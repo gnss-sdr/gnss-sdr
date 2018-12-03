@@ -88,7 +88,7 @@ int init_rtcm(rtcm_t *rtcm)
             rtcm->sta.pos[i] = rtcm->sta.del[i] = 0.0;
         }
     rtcm->sta.hgt = 0.0;
-    rtcm->dgps = NULL;
+    rtcm->dgps = nullptr;
     for (i = 0; i < MAXSAT; i++)
         {
             rtcm->ssr[i] = ssr0;
@@ -108,9 +108,9 @@ int init_rtcm(rtcm_t *rtcm)
     for (i = 0; i < 100; i++) rtcm->nmsg2[i] = 0;
     for (i = 0; i < 300; i++) rtcm->nmsg3[i] = 0;
 
-    rtcm->obs.data = NULL;
-    rtcm->nav.eph = NULL;
-    rtcm->nav.geph = NULL;
+    rtcm->obs.data = nullptr;
+    rtcm->nav.eph = nullptr;
+    rtcm->nav.geph = nullptr;
 
     /* reallocate memory for observation and ephemris buffer */
     if (!(rtcm->obs.data = (obsd_t *)malloc(sizeof(obsd_t) * MAXOBS)) ||
@@ -141,13 +141,13 @@ void free_rtcm(rtcm_t *rtcm)
 
     /* free memory for observation and ephemeris buffer */
     free(rtcm->obs.data);
-    rtcm->obs.data = NULL;
+    rtcm->obs.data = nullptr;
     rtcm->obs.n = 0;
     free(rtcm->nav.eph);
-    rtcm->nav.eph = NULL;
+    rtcm->nav.eph = nullptr;
     rtcm->nav.n = 0;
     free(rtcm->nav.geph);
-    rtcm->nav.geph = NULL;
+    rtcm->nav.geph = nullptr;
     rtcm->nav.ng = 0;
 }
 

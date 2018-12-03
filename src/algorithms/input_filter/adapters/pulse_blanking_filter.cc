@@ -105,9 +105,7 @@ PulseBlankingFilter::PulseBlankingFilter(ConfigurationInterface* configuration, 
 }
 
 
-PulseBlankingFilter::~PulseBlankingFilter()
-{
-}
+PulseBlankingFilter::~PulseBlankingFilter() = default;
 
 
 void PulseBlankingFilter::connect(gr::top_block_sptr top_block)

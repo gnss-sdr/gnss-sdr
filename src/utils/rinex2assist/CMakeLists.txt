@@ -20,40 +20,61 @@ find_package(GPSTK QUIET)
 if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
     include(GNUInstallDirs)
     string(REGEX REPLACE /[^/]*$ "" LIBDIR ${CMAKE_INSTALL_LIBDIR})
-    set(GPSTK_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/../../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX} )
-    set(GPSTK_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/include )
-endif(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
+    set(GPSTK_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/../../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
+    set(GPSTK_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/include)
+endif()
 
 set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${GPSTK_INCLUDE_DIR}/gpstk)
 
-include_directories(
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${GFlags_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
-    ${GPSTK_INCLUDE_DIR}/gpstk
-    ${GPSTK_INCLUDE_DIR}
+find_package(Boost COMPONENTS iostreams serialization QUIET)
+
+find_program(UNCOMPRESS_EXECUTABLE uncompress
+    PATHS /bin
+    /usr/bin
+    /usr/sbin
 )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
+if(NOT UNCOMPRESS_EXECUTABLE-NOTFOUND)
+    add_definitions(-DUNCOMPRESS_EXECUTABLE="${UNCOMPRESS_EXECUTABLE}")
+else()
+    add_definitions(-DUNCOMPRESS_EXECUTABLE="")
+endif()
 
-add_executable(rinex2assist ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
+if(Boost_FOUND)
+    include_directories(
+        ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+        ${GFlags_INCLUDE_DIRS}
+        ${Boost_INCLUDE_DIRS}
+        ${GPSTK_INCLUDE_DIR}/gpstk
+        ${GPSTK_INCLUDE_DIR}
+    )
 
-target_link_libraries(rinex2assist
-    ${Boost_LIBRARIES}
-    ${GPSTK_LIBRARY}
-    ${GFlags_LIBS}
-    gnss_sp_libs
-    gnss_rx)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
 
-if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
-    add_dependencies(rinex2assist gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION})
-endif(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
+    add_executable(rinex2assist ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
 
-add_custom_command(TARGET rinex2assist POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:rinex2assist>
-                   ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:rinex2assist>)
+    target_link_libraries(rinex2assist
+        ${Boost_LIBRARIES}
+        ${GPSTK_LIBRARY}
+        ${GFlags_LIBS}
+        gnss_sp_libs
+        gnss_rx
+    )
 
-install(TARGETS rinex2assist
-                RUNTIME DESTINATION bin
-                COMPONENT "rinex2assist"
-)
+    if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
+        add_dependencies(rinex2assist gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION})
+    endif()
+
+    add_custom_command(TARGET rinex2assist POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:rinex2assist>
+            ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:rinex2assist>
+    )
+
+    install(TARGETS rinex2assist
+        RUNTIME DESTINATION bin
+        COMPONENT "rinex2assist"
+    )
+else()
+    message(STATUS "Boost Iostreams library not found.")
+    message(STATUS "rinex2assist will not be built.")
+endif()

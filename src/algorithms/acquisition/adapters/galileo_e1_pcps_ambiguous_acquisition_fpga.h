@@ -52,7 +52,8 @@ class GalileoE1PcpsAmbiguousAcquisitionFpga : public AcquisitionInterface
 {
 public:
     GalileoE1PcpsAmbiguousAcquisitionFpga(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role,
+        unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~GalileoE1PcpsAmbiguousAcquisitionFpga();

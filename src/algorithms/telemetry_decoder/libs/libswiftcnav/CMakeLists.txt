@@ -17,27 +17,33 @@
 #
 
 set(TELEMETRY_DECODER_LIBSWIFTCNAV_SOURCES
-     cnav_msg.c
-     bits.c
-     edc.c
-     viterbi27.c
+    cnav_msg.c
+    bits.c
+    edc.c
+    viterbi27.c
 )
 
 set(TELEMETRY_DECODER_LIBSWIFTCNAV_HEADERS
-     cnav_msg.h
-     bits.h
-     edc.h
-     swift_common.h
-     fec.h
+    cnav_msg.h
+    bits.h
+    edc.h
+    swift_common.h
+    fec.h
 )
 
 include_directories(
-     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 list(SORT TELEMETRY_DECODER_LIBSWIFTCNAV_HEADERS)
 list(SORT TELEMETRY_DECODER_LIBSWIFTCNAV_SOURCES)
 
-add_library(telemetry_decoder_libswiftcnav STATIC ${TELEMETRY_DECODER_LIBSWIFTCNAV_SOURCES} ${TELEMETRY_DECODER_LIBSWIFTCNAV_HEADERS})
+add_library(telemetry_decoder_libswiftcnav STATIC
+    ${TELEMETRY_DECODER_LIBSWIFTCNAV_SOURCES}
+    ${TELEMETRY_DECODER_LIBSWIFTCNAV_HEADERS}
+)
+
 source_group(Headers FILES ${TELEMETRY_DECODER_LIBSWIFTCNAV_HEADERS})
-set_target_properties(telemetry_decoder_libswiftcnav PROPERTIES LINKER_LANGUAGE C)
+
+set_target_properties(telemetry_decoder_libswiftcnav
+    PROPERTIES LINKER_LANGUAGE C)

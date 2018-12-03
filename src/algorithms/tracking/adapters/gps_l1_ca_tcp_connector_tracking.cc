@@ -43,9 +43,6 @@
 
 using google::LogMessage;
 
-void GpsL1CaTcpConnectorTracking::stop_tracking()
-{
-}
 
 GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(
     ConfigurationInterface* configuration, std::string role,
@@ -103,7 +100,10 @@ GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(
 }
 
 
-GpsL1CaTcpConnectorTracking::~GpsL1CaTcpConnectorTracking()
+GpsL1CaTcpConnectorTracking::~GpsL1CaTcpConnectorTracking() = default;
+
+
+void GpsL1CaTcpConnectorTracking::stop_tracking()
 {
 }
 

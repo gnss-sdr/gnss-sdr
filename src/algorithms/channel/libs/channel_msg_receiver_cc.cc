@@ -40,7 +40,7 @@ using google::LogMessage;
 
 channel_msg_receiver_cc_sptr channel_msg_receiver_make_cc(std::shared_ptr<ChannelFsm> channel_fsm, bool repeat)
 {
-    return channel_msg_receiver_cc_sptr(new channel_msg_receiver_cc(channel_fsm, repeat));
+    return channel_msg_receiver_cc_sptr(new channel_msg_receiver_cc(std::move(channel_fsm), repeat));
 }
 
 
@@ -49,7 +49,7 @@ void channel_msg_receiver_cc::msg_handler_events(pmt::pmt_t msg)
     bool result = false;
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             switch (message)
                 {
                 case 1:  // positive acquisition
@@ -89,9 +89,9 @@ channel_msg_receiver_cc::channel_msg_receiver_cc(std::shared_ptr<ChannelFsm> cha
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"), boost::bind(&channel_msg_receiver_cc::msg_handler_events, this, _1));
 
-    d_channel_fsm = channel_fsm;
+    d_channel_fsm = std::move(channel_fsm);
     d_repeat = repeat;
 }
 
 
-channel_msg_receiver_cc::~channel_msg_receiver_cc() {}
+channel_msg_receiver_cc::~channel_msg_receiver_cc() = default;

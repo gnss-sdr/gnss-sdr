@@ -160,11 +160,11 @@ void Gps_Navigation_Message::print_gps_word_bytes(uint32_t GPS_word)
 }
 
 
-bool Gps_Navigation_Message::read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter)
+bool Gps_Navigation_Message::read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter)
 {
     bool value;
 
-    if (bits[GPS_SUBFRAME_BITS - parameter[0].first] == 1)
+    if (static_cast<int>(bits[GPS_SUBFRAME_BITS - parameter[0].first]) == 1)
         {
             value = true;
         }
@@ -176,7 +176,7 @@ bool Gps_Navigation_Message::read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS>
 }
 
 
-uint64_t Gps_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter)
+uint64_t Gps_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter)
 {
     uint64_t value = 0ULL;
     int32_t num_of_slices = parameter.size();
@@ -185,7 +185,7 @@ uint64_t Gps_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_SUBFRA
             for (int32_t j = 0; j < parameter[i].second; j++)
                 {
                     value <<= 1;  // shift left
-                    if (bits[GPS_SUBFRAME_BITS - parameter[i].first - j] == 1)
+                    if (static_cast<int>(bits[GPS_SUBFRAME_BITS - parameter[i].first - j]) == 1)
                         {
                             value += 1ULL;  // insert the bit
                         }
@@ -195,13 +195,13 @@ uint64_t Gps_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_SUBFRA
 }
 
 
-int64_t Gps_Navigation_Message::read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter)
+int64_t Gps_Navigation_Message::read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter)
 {
     int64_t value = 0LL;
     int32_t num_of_slices = parameter.size();
 
     // read the MSB and perform the sign extension
-    if (bits[GPS_SUBFRAME_BITS - parameter[0].first] == 1)
+    if (static_cast<int>(bits[GPS_SUBFRAME_BITS - parameter[0].first]) == 1)
         {
             value ^= 0xFFFFFFFFFFFFFFFFLL;  // 64 bits variable
         }
@@ -216,7 +216,7 @@ int64_t Gps_Navigation_Message::read_navigation_signed(std::bitset<GPS_SUBFRAME_
                 {
                     value <<= 1;                    // shift left
                     value &= 0xFFFFFFFFFFFFFFFELL;  // reset the corresponding bit (for the 64 bits variable)
-                    if (bits[GPS_SUBFRAME_BITS - parameter[i].first - j] == 1)
+                    if (static_cast<int>(bits[GPS_SUBFRAME_BITS - parameter[i].first - j]) == 1)
                         {
                             value += 1LL;  // insert the bit
                         }
@@ -225,7 +225,8 @@ int64_t Gps_Navigation_Message::read_navigation_signed(std::bitset<GPS_SUBFRAME_
     return value;
 }
 
-int32_t Gps_Navigation_Message::subframe_decoder(char *subframe)
+
+int32_t Gps_Navigation_Message::subframe_decoder(char* subframe)
 {
     int32_t subframe_ID = 0;
     uint32_t gps_word;
@@ -350,7 +351,7 @@ int32_t Gps_Navigation_Message::subframe_decoder(char *subframe)
             if (SV_page > 24 && SV_page < 33)  // Page 4 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200H, page 110)
                 {
                     //! \TODO read almanac
-                    if (SV_data_ID)
+                    if (SV_data_ID != 0)
                         {
                         }
                 }
@@ -427,7 +428,7 @@ int32_t Gps_Navigation_Message::subframe_decoder(char *subframe)
             if (SV_page_5 < 25)
                 {
                     //! \TODO read almanac
-                    if (SV_data_ID_5)
+                    if (SV_data_ID_5 != 0)
                         {
                         }
                 }
@@ -509,7 +510,7 @@ double Gps_Navigation_Message::utc_time(const double gpstime_corrected) const
                              * proper accommodation of the leap second event with a possible week number
                              * transition is provided by the following expression for UTC:
                              */
-                            int32_t W = fmod(gpstime_corrected - Delta_t_UTC - 43200, 86400) + 43200;
+                            int32_t W = static_cast<int32_t>(fmod(gpstime_corrected - Delta_t_UTC - 43200, 86400)) + 43200;
                             t_utc_daytime = fmod(W, 86400 + d_DeltaT_LSF - d_DeltaT_LS);
                             //implement something to handle a leap second event!
                         }

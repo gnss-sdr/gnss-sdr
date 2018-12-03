@@ -1,8 +1,8 @@
 /*!
  * \file dll_pll_veml_tracking.cc
  * \brief Implementation of a code DLL + carrier PLL tracking block.
+ * \author Javier Arribas, 2018. jarribas(at)cttc.es
  * \author Antonio Ramos, 2018 antonio.ramosdet(at)gmail.com
- * 		   Javier Arribas, 2018. jarribas(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:
  * [1] K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
@@ -402,7 +402,6 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     d_carrier_phase_step_rad = 0.0;
     d_carrier_phase_rate_step_rad = 0.0;
     d_rem_code_phase_chips = 0.0;
-    d_code_phase_samples = 0.0;
     d_last_prompt = gr_complex(0.0, 0.0);
     d_state = 0;  // initial state: standby
     clear_tracking_vars();
@@ -463,36 +462,6 @@ void dll_pll_veml_tracking::start_tracking()
     d_acq_code_phase_samples = d_acquisition_gnss_synchro->Acq_delay_samples;
     d_acq_carrier_doppler_hz = d_acquisition_gnss_synchro->Acq_doppler_hz;
     d_acq_sample_stamp = d_acquisition_gnss_synchro->Acq_samplestamp_samples;
-
-    int64_t acq_trk_diff_samples = static_cast<int64_t>(d_sample_counter) - static_cast<int64_t>(d_acq_sample_stamp);
-    double acq_trk_diff_seconds = static_cast<double>(acq_trk_diff_samples) / trk_parameters.fs_in;
-    DLOG(INFO) << "Number of samples between Acquisition and Tracking = " << acq_trk_diff_samples;
-    DLOG(INFO) << "Number of seconds between Acquisition and Tracking = " << acq_trk_diff_seconds;
-    // Doppler effect Fd = (C / (C + Vr)) * F
-    double radial_velocity = (d_signal_carrier_freq + d_acq_carrier_doppler_hz) / d_signal_carrier_freq;
-    // new chip and PRN sequence periods based on acq Doppler
-    d_code_freq_chips = radial_velocity * d_code_chip_rate;
-    d_code_phase_step_chips = d_code_freq_chips / trk_parameters.fs_in;
-    d_code_phase_rate_step_chips = 0.0;
-    double T_chip_mod_seconds = 1.0 / d_code_freq_chips;
-    double T_prn_mod_seconds = T_chip_mod_seconds * static_cast<double>(d_code_length_chips);
-    double T_prn_mod_samples = T_prn_mod_seconds * trk_parameters.fs_in;
-
-    //d_current_prn_length_samples = std::round(T_prn_mod_samples);
-    d_current_prn_length_samples = std::floor(T_prn_mod_samples);
-
-    double T_prn_true_seconds = static_cast<double>(d_code_length_chips) / d_code_chip_rate;
-    double T_prn_true_samples = T_prn_true_seconds * trk_parameters.fs_in;
-    double T_prn_diff_seconds = T_prn_true_seconds - T_prn_mod_seconds;
-    double N_prn_diff = acq_trk_diff_seconds / T_prn_true_seconds;
-    double corrected_acq_phase_samples = std::fmod(d_acq_code_phase_samples + T_prn_diff_seconds * N_prn_diff * trk_parameters.fs_in, T_prn_true_samples);
-    if (corrected_acq_phase_samples < 0.0)
-        {
-            corrected_acq_phase_samples += T_prn_mod_samples;
-        }
-    double delay_correction_samples = d_acq_code_phase_samples - corrected_acq_phase_samples;
-
-    d_acq_code_phase_samples = corrected_acq_phase_samples;
 
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
     d_carrier_phase_step_rad = PI_2 * d_carrier_doppler_hz / trk_parameters.fs_in;
@@ -590,7 +559,6 @@ void dll_pll_veml_tracking::start_tracking()
             d_local_code_shift_chips[2] = trk_parameters.early_late_space_chips * static_cast<float>(d_code_samples_per_chip);
         }
 
-    d_code_phase_samples = d_acq_code_phase_samples;
     d_code_loop_filter.set_DLL_BW(trk_parameters.dll_bw_hz);
     d_carrier_loop_filter.set_PLL_BW(trk_parameters.pll_bw_hz);
     d_carrier_loop_filter.set_pdi(static_cast<float>(d_code_period));
@@ -598,16 +566,13 @@ void dll_pll_veml_tracking::start_tracking()
 
     // DEBUG OUTPUT
     std::cout << "Tracking of " << systemName << " " << signal_pretty_name << " signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
-    LOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
+    DLOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
     // enable tracking pull-in
     d_state = 1;
     d_cloop = true;
     d_Prompt_buffer_deque.clear();
     d_last_prompt = gr_complex(0.0, 0.0);
-    LOG(INFO) << "PULL-IN Doppler [Hz] = " << d_carrier_doppler_hz
-              << ". Code Phase correction [samples] = " << delay_correction_samples
-              << ". PULL-IN Code Phase [samples] = " << d_acq_code_phase_samples;
 }
 
 
@@ -1206,8 +1171,8 @@ int32_t dll_pll_veml_tracking::save_matfile()
     std::string filename = dump_filename_;
     filename.erase(filename.length() - 4, 4);
     filename.append(".mat");
-    matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
-    if (reinterpret_cast<int64_t *>(matfp) != NULL)
+    matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT73);
+    if (reinterpret_cast<int64_t *>(matfp) != nullptr)
         {
             size_t dims[2] = {1, static_cast<size_t>(num_epoch)};
             matvar = Mat_VarCreate("abs_VE", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, abs_VE, 0);
@@ -1391,17 +1356,34 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
         case 1:  // Pull-in
             {
                 // Signal alignment (skip samples until the incoming signal is aligned with local replica)
-                uint64_t acq_to_trk_delay_samples = static_cast<uint64_t>(d_sample_counter - d_acq_sample_stamp);
-                double acq_trk_shif_correction_samples = static_cast<double>(d_current_prn_length_samples) - std::fmod(static_cast<double>(acq_to_trk_delay_samples), static_cast<double>(d_current_prn_length_samples));
-                int32_t samples_offset = std::round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
-                if (samples_offset < 0)
-                    {
-                        samples_offset = 0;
-                    }
-                d_acc_carrier_phase_rad -= d_carrier_phase_step_rad * d_acq_code_phase_samples;
+                int64_t acq_trk_diff_samples = static_cast<int64_t>(d_sample_counter) - static_cast<int64_t>(d_acq_sample_stamp);
+                double acq_trk_diff_seconds = static_cast<double>(acq_trk_diff_samples) / trk_parameters.fs_in;
+                double delta_trk_to_acq_prn_start_samples = static_cast<double>(acq_trk_diff_samples) - d_acq_code_phase_samples;
+
+                // Doppler effect Fd = (C / (C + Vr)) * F
+                double radial_velocity = (d_signal_carrier_freq + d_acq_carrier_doppler_hz) / d_signal_carrier_freq;
+                // new chip and PRN sequence periods based on acq Doppler
+                d_code_freq_chips = radial_velocity * d_code_chip_rate;
+                d_code_freq_chips = d_code_chip_rate;
+                d_code_phase_step_chips = d_code_freq_chips / trk_parameters.fs_in;
+                d_code_phase_rate_step_chips = 0.0;
+                double T_chip_mod_seconds = 1.0 / d_code_freq_chips;
+                double T_prn_mod_seconds = T_chip_mod_seconds * static_cast<double>(d_code_length_chips);
+                double T_prn_mod_samples = T_prn_mod_seconds * trk_parameters.fs_in;
+
+                d_acq_code_phase_samples = T_prn_mod_samples - std::fmod(delta_trk_to_acq_prn_start_samples, T_prn_mod_samples);
+                d_current_prn_length_samples = round(T_prn_mod_samples);
+
+                int32_t samples_offset = round(d_acq_code_phase_samples);
+                d_acc_carrier_phase_rad -= d_carrier_phase_step_rad * static_cast<double>(samples_offset);
                 d_state = 2;
-                d_sample_counter += static_cast<uint64_t>(samples_offset);  // count for the processed samples
-                consume_each(samples_offset);                               // shift input to perform alignment with local replica
+                d_sample_counter += samples_offset;  // count for the processed samples
+
+                DLOG(INFO) << "Number of samples between Acquisition and Tracking = " << acq_trk_diff_samples << " ( " << acq_trk_diff_seconds << " s)";
+                DLOG(INFO) << "PULL-IN Doppler [Hz] = " << d_carrier_doppler_hz
+                           << ". PULL-IN Code Phase [samples] = " << d_acq_code_phase_samples;
+
+                consume_each(samples_offset);  // shift input to perform alignment with local replica
                 return 0;
             }
         case 2:  // Wide tracking and symbol synchronization

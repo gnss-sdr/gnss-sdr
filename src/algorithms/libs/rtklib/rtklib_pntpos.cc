@@ -138,7 +138,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     double gamma_ = 0.0;
     int i = 0;
     int j = 1;
-    int sys = satsys(obs->sat, NULL);
+    int sys = satsys(obs->sat, nullptr);
     *var = 0.0;
 
     if (sys == SYS_NONE)
@@ -416,7 +416,7 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
             vsat[i] = 0;
             azel[i * 2] = azel[1 + i * 2] = resp[i] = 0.0;
 
-            if (!(sys = satsys(obs[i].sat, NULL))) continue;
+            if (!(sys = satsys(obs[i].sat, nullptr))) continue;
 
             /* reject duplicated observation data */
             if (i < n - 1 && i < MAXOBS - 1 && obs[i].sat == obs[i + 1].sat)

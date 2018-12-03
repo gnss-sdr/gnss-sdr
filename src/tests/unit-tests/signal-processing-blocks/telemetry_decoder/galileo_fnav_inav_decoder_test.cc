@@ -215,7 +215,7 @@ TEST_F(Galileo_FNAV_INAV_test, ValidationOfResults)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
-
+    start = std::chrono::system_clock::now();
     int repetitions = 10;
     // FNAV FULLY ENCODED FRAME
     double FNAV_frame[488] = {-1, 1, -1, -1, 1, -1, 1, 1, 1, -1, -1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -282,7 +282,7 @@ TEST_F(Galileo_FNAV_INAV_test, ValidationOfResults)
                 EXPECT_EQ(decode_INAV_word(&INAV_frame_odd[0], 240), true);
             }
     }) << "Exception during INAV frame decoding";
-
-
+    end = std::chrono::system_clock::now();
+    elapsed_seconds = end - start;
     std::cout << "Galileo FNAV/INAV Test completed in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }

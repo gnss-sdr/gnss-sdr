@@ -54,7 +54,8 @@ class GpsL2MPcpsAcquisitionFpga : public AcquisitionInterface
 {
 public:
     GpsL2MPcpsAcquisitionFpga(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role,
+        unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~GpsL2MPcpsAcquisitionFpga();
@@ -157,7 +158,7 @@ private:
     unsigned int doppler_max_;
     unsigned int doppler_step_;
     unsigned int max_dwells_;
-    long fs_in_;
+    int64_t fs_in_;
     //long if_;
     bool dump_;
     bool blocking_;

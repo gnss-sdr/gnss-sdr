@@ -172,7 +172,7 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
     d_carrier_lock_threshold = FLAGS_carrier_lock_th;
     systemName["E"] = std::string("Galileo");
 
-    d_acquisition_gnss_synchro = 0;
+    d_acquisition_gnss_synchro = nullptr;
     d_channel = 0;
     d_next_rem_code_phase_samples = 0;
     d_acq_code_phase_samples = 0.0;

@@ -67,4 +67,4 @@ Acquisition_msg_rx::Acquisition_msg_rx() : gr::block("Acquisition_msg_rx", gr::i
 }
 
 
-Acquisition_msg_rx::~Acquisition_msg_rx() {}
+Acquisition_msg_rx::~Acquisition_msg_rx() = default;

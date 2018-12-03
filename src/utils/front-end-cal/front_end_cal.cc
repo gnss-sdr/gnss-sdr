@@ -53,9 +53,9 @@ extern concurrent_map<Gps_Utc_Model> global_gps_utc_model_map;
 extern concurrent_map<Gps_Almanac> global_gps_almanac_map;
 extern concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
-FrontEndCal::FrontEndCal() {}
+FrontEndCal::FrontEndCal() = default;
 
-FrontEndCal::~FrontEndCal() {}
+FrontEndCal::~FrontEndCal() = default;
 
 bool FrontEndCal::read_assistance_from_XML()
 {

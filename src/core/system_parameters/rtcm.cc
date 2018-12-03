@@ -288,7 +288,7 @@ uint32_t Rtcm::bin_to_uint(const std::string& s) const
             LOG(WARNING) << "Cannot convert to a uint32_t";
             return 0;
         }
-    uint32_t reading = strtoul(s.c_str(), NULL, 2);
+    uint32_t reading = strtoul(s.c_str(), nullptr, 2);
     return reading;
 }
 
@@ -312,7 +312,7 @@ int32_t Rtcm::bin_to_int(const std::string& s) const
         }
     else
         {
-            reading = strtol(s.c_str(), NULL, 2);
+            reading = strtol(s.c_str(), nullptr, 2);
         }
     return reading;
 }
@@ -333,13 +333,13 @@ int32_t Rtcm::bin_to_sint(const std::string& s) const
         {
             sign = 1;
             // Get the magnitude of the value
-            reading = strtol((s.substr(1)).c_str(), NULL, 2);
+            reading = strtol((s.substr(1)).c_str(), nullptr, 2);
         }
     else
         {
             sign = -1;
             // Get the magnitude of the value
-            reading = strtol((s.substr(1)).c_str(), NULL, 2);
+            reading = strtol((s.substr(1)).c_str(), nullptr, 2);
         }
     return sign * reading;
 }
@@ -372,11 +372,11 @@ double Rtcm::bin_to_double(const std::string& s) const
             original_bitset.flip();
             std::string aux;
             to_string(original_bitset, aux);
-            reading_int = -(strtoll(aux.c_str(), NULL, 2) + 1);
+            reading_int = -(strtoll(aux.c_str(), nullptr, 2) + 1);
         }
     else
         {
-            reading_int = strtoll(s.c_str(), NULL, 2);
+            reading_int = strtoll(s.c_str(), nullptr, 2);
         }
 
     reading = static_cast<double>(reading_int);
@@ -391,7 +391,7 @@ uint64_t Rtcm::hex_to_uint(const std::string& s) const
             LOG(WARNING) << "Cannot convert to a uint64_t";
             return 0;
         }
-    uint64_t reading = strtoul(s.c_str(), NULL, 16);
+    uint64_t reading = strtoul(s.c_str(), nullptr, 16);
     return reading;
 }
 
@@ -403,7 +403,7 @@ int64_t Rtcm::hex_to_int(const std::string& s) const
             LOG(WARNING) << "Cannot convert to a int64_t";
             return 0;
         }
-    int64_t reading = strtol(s.c_str(), NULL, 16);
+    int64_t reading = strtol(s.c_str(), nullptr, 16);
     return reading;
 }
 

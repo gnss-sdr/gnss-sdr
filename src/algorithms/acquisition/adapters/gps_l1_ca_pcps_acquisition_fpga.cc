@@ -48,13 +48,14 @@
 
 using google::LogMessage;
 
-void GpsL1CaPcpsAcquisitionFpga::stop_acquisition()
-{
-}
 
 GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
-    ConfigurationInterface* configuration, std::string role,
-    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration,
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(role),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams)
 {
     pcpsconf_fpga_t acq_parameters;
     configuration_ = configuration;
@@ -62,8 +63,8 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
 
     DLOG(INFO) << "role " << role;
 
-    long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
-    long fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+    int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
+    int64_t fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     //fs_in = fs_in/2.0; // downampling filter
     //printf("####### DEBUG Acq: fs_in = %d\n", fs_in);
     acq_parameters.fs_in = fs_in;
@@ -173,13 +174,18 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
 
     channel_ = 0;
     doppler_step_ = 0;
-    gnss_synchro_ = 0;
+    gnss_synchro_ = nullptr;
 }
 
 
 GpsL1CaPcpsAcquisitionFpga::~GpsL1CaPcpsAcquisitionFpga()
 {
     delete[] d_all_fft_codes_;
+}
+
+
+void GpsL1CaPcpsAcquisitionFpga::stop_acquisition()
+{
 }
 
 

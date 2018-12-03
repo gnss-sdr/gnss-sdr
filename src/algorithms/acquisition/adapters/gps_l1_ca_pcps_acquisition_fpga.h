@@ -53,7 +53,8 @@ class GpsL1CaPcpsAcquisitionFpga : public AcquisitionInterface
 {
 public:
     GpsL1CaPcpsAcquisitionFpga(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role,
+        unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~GpsL1CaPcpsAcquisitionFpga();

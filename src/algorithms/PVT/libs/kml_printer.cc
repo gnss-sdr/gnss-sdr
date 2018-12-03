@@ -70,7 +70,7 @@ Kml_Printer::Kml_Printer(const std::string& base_path)
         {
             kml_base_path = p.string();
         }
-    if (kml_base_path.compare(".") != 0)
+    if (kml_base_path != ".")
         {
             std::cout << "KML files will be stored at " << kml_base_path << std::endl;
         }
@@ -87,7 +87,7 @@ Kml_Printer::Kml_Printer(const std::string& base_path)
 }
 
 
-bool Kml_Printer::set_headers(std::string filename, bool time_tag_name)
+bool Kml_Printer::set_headers(const std::string& filename, bool time_tag_name)
 {
     boost::posix_time::ptime pt = boost::posix_time::second_clock::local_time();
     tm timeinfo = boost::posix_time::to_tm(pt);
@@ -143,10 +143,10 @@ bool Kml_Printer::set_headers(std::string filename, bool time_tag_name)
         {
             DLOG(INFO) << "KML printer writing on " << filename.c_str();
             // Set iostream numeric format and precision
-            kml_file.setf(kml_file.fixed, kml_file.floatfield);
+            kml_file.setf(kml_file.std::ofstream::fixed, kml_file.std::ofstream::floatfield);
             kml_file << std::setprecision(14);
 
-            tmp_file.setf(tmp_file.fixed, tmp_file.floatfield);
+            tmp_file.setf(tmp_file.std::ofstream::fixed, tmp_file.std::ofstream::floatfield);
             tmp_file << std::setprecision(14);
 
             kml_file << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl
@@ -222,7 +222,7 @@ bool Kml_Printer::print_position(const std::shared_ptr<rtklib_solver>& position,
 
     positions_printed = true;
 
-    std::shared_ptr<rtklib_solver> position_ = position;
+    const std::shared_ptr<rtklib_solver>& position_ = position;
 
     double speed_over_ground = position_->get_speed_over_ground();    // expressed in m/s
     double course_over_ground = position_->get_course_over_ground();  // expressed in deg

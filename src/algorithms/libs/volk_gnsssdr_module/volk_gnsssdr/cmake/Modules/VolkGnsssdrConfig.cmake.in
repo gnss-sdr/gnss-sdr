@@ -15,33 +15,33 @@
 # You should have received a copy of the GNU General Public License
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 
-INCLUDE(FindPkgConfig)
-PKG_CHECK_MODULES(PC_VOLK_GNSSSDR volk_gnsssdr)
+include(FindPkgConfig)
+pkg_check_modules(PC_VOLK_GNSSSDR volk_gnsssdr)
 
-FIND_PATH(
+find_path(
     VOLK_GNSSSDR_INCLUDE_DIRS
     NAMES volk_gnsssdr/volk_gnsssdr.h
     HINTS $ENV{VOLK_DIR}/include
         ${PC_VOLK_INCLUDEDIR}
     PATHS /usr/local/include
-          /usr/include
-          /opt/local/include
-          "@CMAKE_INSTALL_PREFIX@/include"
+        /usr/include
+        /opt/local/include
+        "@CMAKE_INSTALL_PREFIX@/include"
 )
 
-FIND_LIBRARY(
+find_library(
     VOLK_GNSSSDR_LIBRARIES
     NAMES volk_gnsssdr
     HINTS $ENV{VOLK_DIR}/lib
         ${PC_VOLK_LIBDIR}
     PATHS /usr/local/lib
-          /usr/local/lib64
-          /usr/lib
-          /usr/lib64
-          /opt/local/lib
-          "@CMAKE_INSTALL_PREFIX@/lib"
+        /usr/local/lib64
+        /usr/lib
+        /usr/lib64
+        /opt/local/lib
+        "@CMAKE_INSTALL_PREFIX@/lib"
 )
 
-INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(VOLK_GNSSSDR DEFAULT_MSG VOLK_GNSSSDR_LIBRARIES VOLK_GNSSSDR_INCLUDE_DIRS)
-MARK_AS_ADVANCED(VOLK_GNSSSDR_LIBRARIES VOLK_GNSSSDR_INCLUDE_DIRS)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(VOLKGNSSSDR DEFAULT_MSG VOLK_GNSSSDR_LIBRARIES VOLK_GNSSSDR_INCLUDE_DIRS)
+mark_as_advanced(VOLK_GNSSSDR_LIBRARIES VOLK_GNSSSDR_INCLUDE_DIRS)

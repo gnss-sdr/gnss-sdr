@@ -703,7 +703,7 @@ std::string Gnuplot::terminal_std = "aqua";
 // constructor: set a style during construction
 //
 inline Gnuplot::Gnuplot(const std::string &style)
-    : gnucmd(NULL), valid(false), two_dim(false), nplots(0)
+    : gnucmd(nullptr), valid(false), two_dim(false), nplots(0)
 
 {
     init();
@@ -720,7 +720,7 @@ inline Gnuplot::Gnuplot(const std::vector<double> &x,
     const std::string &style,
     const std::string &labelx,
     const std::string &labely)
-    : gnucmd(NULL), valid(false), two_dim(false), nplots(0)
+    : gnucmd(nullptr), valid(false), two_dim(false), nplots(0)
 {
     init();
 
@@ -742,7 +742,7 @@ inline Gnuplot::Gnuplot(const std::vector<double> &x,
     const std::string &style,
     const std::string &labelx,
     const std::string &labely)
-    : gnucmd(NULL), valid(false), two_dim(false), nplots(0)
+    : gnucmd(nullptr), valid(false), two_dim(false), nplots(0)
 {
     init();
 
@@ -766,7 +766,7 @@ inline Gnuplot::Gnuplot(const std::vector<double> &x,
     const std::string &labelx,
     const std::string &labely,
     const std::string &labelz)
-    : gnucmd(NULL), valid(false), two_dim(false), nplots(0)
+    : gnucmd(nullptr), valid(false), two_dim(false), nplots(0)
 {
     init();
 
@@ -1027,7 +1027,7 @@ bool Gnuplot::set_GNUPlotPath(const std::string &path)
 void Gnuplot::set_terminal_std(const std::string &type)
 {
 #if defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
-    if (type.find("x11") != std::string::npos && std::getenv("DISPLAY") == NULL)
+    if (type.find("x11") != std::string::npos && std::getenv("DISPLAY") == nullptr)
         {
             throw GnuplotException("Can't find DISPLAY variable");
         }

@@ -245,8 +245,8 @@ bool rtklib_solver::save_matfile()
     std::string filename = dump_filename;
     filename.erase(filename.length() - 4, 4);
     filename.append(".mat");
-    matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
-    if (reinterpret_cast<int64_t *>(matfp) != NULL)
+    matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT73);
+    if (reinterpret_cast<int64_t *>(matfp) != nullptr)
         {
             size_t dims[2] = {1, static_cast<size_t>(num_epoch)};
             matvar = Mat_VarCreate("TOW_at_current_symbol_ms", MAT_C_UINT32, MAT_T_UINT32, 2, dims, TOW_at_current_symbol_ms, 0);

@@ -94,7 +94,7 @@ serial_t *openserial(const char *path, int mode, char *msg)
     int rw = 0;
     tracet(3, "openserial: path=%s mode=%d\n", path, mode);
 
-    if (!(serial = (serial_t *)malloc(sizeof(serial_t)))) return NULL;
+    if (!(serial = (serial_t *)malloc(sizeof(serial_t)))) return nullptr;
 
     if ((p = strchr((char *)path, ':')))
         {
@@ -112,7 +112,7 @@ serial_t *openserial(const char *path, int mode, char *msg)
             sprintf(msg, "bitrate error (%d)", brate);
             tracet(1, "openserial: %s path=%s\n", msg, path);
             free(serial);
-            return NULL;
+            return nullptr;
         }
     parity = (char)toupper((int)parity);
 
@@ -135,7 +135,7 @@ serial_t *openserial(const char *path, int mode, char *msg)
             sprintf(msg, "device open error (%d)", errno);
             tracet(1, "openserial: %s dev=%s\n", msg, dev);
             free(serial);
-            return NULL;
+            return nullptr;
         }
     tcgetattr(serial->dev, &ios);
     ios.c_iflag = 0;
@@ -295,7 +295,7 @@ void closefile_(file_t *file)
     if (file->fp_tag) fclose(file->fp_tag);
     if (file->fp_tmp) fclose(file->fp_tmp);
     if (file->fp_tag_tmp) fclose(file->fp_tag_tmp);
-    file->fp = file->fp_tag = file->fp_tmp = file->fp_tag_tmp = NULL;
+    file->fp = file->fp_tag = file->fp_tmp = file->fp_tag_tmp = nullptr;
 }
 
 
@@ -310,7 +310,7 @@ file_t *openfile(const char *path, int mode, char *msg)
 
     tracet(3, "openfile: path=%s mode=%d\n", path, mode);
 
-    if (!(mode & (STR_MODE_R | STR_MODE_W))) return NULL;
+    if (!(mode & (STR_MODE_R | STR_MODE_W))) return nullptr;
 
     /* file options */
     for (p = (char *)path; (p = strstr(p, "::")); p += 2)
@@ -327,9 +327,9 @@ file_t *openfile(const char *path, int mode, char *msg)
     if (start <= 0.0) start = 0.0;
     if (swapintv <= 0.0) swapintv = 0.0;
 
-    if (!(file = (file_t *)malloc(sizeof(file_t)))) return NULL;
+    if (!(file = (file_t *)malloc(sizeof(file_t)))) return nullptr;
 
-    file->fp = file->fp_tag = file->fp_tmp = file->fp_tag_tmp = NULL;
+    file->fp = file->fp_tag = file->fp_tmp = file->fp_tag_tmp = nullptr;
     if (strlen(path) < MAXSTRPATH) strcpy(file->path, path);
     if ((p = strstr(file->path, "::"))) *p = '\0';
     file->openpath[0] = '\0';
@@ -350,7 +350,7 @@ file_t *openfile(const char *path, int mode, char *msg)
     if (!openfile_(file, time, msg))
         {
             free(file);
-            return NULL;
+            return nullptr;
         }
     return file;
 }
@@ -399,7 +399,7 @@ void swapclose(file_t *file)
     tracet(3, "swapclose: fp_tmp=%d\n", file->fp_tmp);
     if (file->fp_tmp) fclose(file->fp_tmp);
     if (file->fp_tag_tmp) fclose(file->fp_tag_tmp);
-    file->fp_tmp = file->fp_tag_tmp = NULL;
+    file->fp_tmp = file->fp_tag_tmp = nullptr;
 }
 
 
@@ -427,7 +427,7 @@ int readfile(file_t *file, unsigned char *buff, int nmax, char *msg)
             /* input from stdin */
             FD_ZERO(&rs);
             FD_SET(0, &rs);
-            if (!select(1, &rs, NULL, NULL, &tv)) return 0;
+            if (!select(1, &rs, nullptr, nullptr, &tv)) return 0;
             if ((nr = read(0, buff, nmax)) < 0) return 0;
             return nr;
         }
@@ -652,7 +652,7 @@ socket_t accept_nb(socket_t sock, struct sockaddr *addr, socklen_t *len)
     fd_set rs;
     FD_ZERO(&rs);
     FD_SET(sock, &rs);
-    if (!select(sock + 1, &rs, NULL, NULL, &tv)) return 0;
+    if (!select(sock + 1, &rs, nullptr, nullptr, &tv)) return 0;
     return accept(sock, addr, len);
 }
 
@@ -673,7 +673,7 @@ int connect_nb(socket_t sock, struct sockaddr *addr, socklen_t len)
             FD_ZERO(&rs);
             FD_SET(sock, &rs);
             ws = rs;
-            if (select(sock + 1, &rs, &ws, NULL, &tv) == 0) return 0;
+            if (select(sock + 1, &rs, &ws, nullptr, &tv) == 0) return 0;
         }
     return 1;
 }
@@ -686,7 +686,7 @@ int recv_nb(socket_t sock, unsigned char *buff, int n)
     fd_set rs;
     FD_ZERO(&rs);
     FD_SET(sock, &rs);
-    if (!select(sock + 1, &rs, NULL, NULL, &tv)) return 0;
+    if (!select(sock + 1, &rs, nullptr, nullptr, &tv)) return 0;
     return recv(sock, (char *)buff, n, 0);
 }
 
@@ -698,7 +698,7 @@ int send_nb(socket_t sock, unsigned char *buff, int n)
     fd_set ws;
     FD_ZERO(&ws);
     FD_SET(sock, &ws);
-    if (!select(sock + 1, NULL, &ws, NULL, &tv)) return 0;
+    if (!select(sock + 1, nullptr, &ws, nullptr, &tv)) return 0;
     return send(sock, (char *)buff, n, 0);
 }
 
@@ -788,20 +788,20 @@ tcpsvr_t *opentcpsvr(const char *path, char *msg)
     tcpsvr0 = {{0, {0}, 0, {0, 0, 0, {0}}, 0, 0, 0, 0}, {{0, {0}, 0, {0, 0, 0, {0}}, 0, 0, 0, 0}}};
     tracet(3, "opentcpsvr: path=%s\n", path);
 
-    if (!(tcpsvr = (tcpsvr_t *)malloc(sizeof(tcpsvr_t)))) return NULL;
+    if (!(tcpsvr = (tcpsvr_t *)malloc(sizeof(tcpsvr_t)))) return nullptr;
     *tcpsvr = tcpsvr0;
-    decodetcppath(path, tcpsvr->svr.saddr, port, NULL, NULL, NULL, NULL);
+    decodetcppath(path, tcpsvr->svr.saddr, port, nullptr, nullptr, nullptr, nullptr);
     if (sscanf(port, "%d", &tcpsvr->svr.port) < 1)
         {
             sprintf(msg, "port error: %s", port);
             tracet(1, "opentcpsvr: port error port=%s\n", port);
             free(tcpsvr);
-            return NULL;
+            return nullptr;
         }
     if (!gentcp(&tcpsvr->svr, 0, msg))
         {
             free(tcpsvr);
-            return NULL;
+            return nullptr;
         }
     tcpsvr->svr.tcon = 0;
     return tcpsvr;
@@ -1018,15 +1018,15 @@ tcpcli_t *opentcpcli(const char *path, char *msg)
 
     tracet(3, "opentcpcli: path=%s\n", path);
 
-    if (!(tcpcli = (tcpcli_t *)malloc(sizeof(tcpcli_t)))) return NULL;
+    if (!(tcpcli = (tcpcli_t *)malloc(sizeof(tcpcli_t)))) return nullptr;
     *tcpcli = tcpcli0;
-    decodetcppath(path, tcpcli->svr.saddr, port, NULL, NULL, NULL, NULL);
+    decodetcppath(path, tcpcli->svr.saddr, port, nullptr, nullptr, nullptr, nullptr);
     if (sscanf(port, "%d", &tcpcli->svr.port) < 1)
         {
             sprintf(msg, "port error: %s", port);
             tracet(1, "opentcp: port error port=%s\n", port);
             free(tcpcli);
-            return NULL;
+            return nullptr;
         }
     tcpcli->svr.tcon = 0;
     tcpcli->toinact = toinact;
@@ -1367,7 +1367,7 @@ ntrip_t *openntrip(const char *path, int type, char *msg)
 
     tracet(3, "openntrip: path=%s type=%d\n", path, type);
 
-    if (!(ntrip = (ntrip_t *)malloc(sizeof(ntrip_t)))) return NULL;
+    if (!(ntrip = (ntrip_t *)malloc(sizeof(ntrip_t)))) return nullptr;
 
     ntrip->state = 0;
     ntrip->type = type; /* 0:server, 1:client */
@@ -1402,7 +1402,7 @@ ntrip_t *openntrip(const char *path, int type, char *msg)
         {
             tracet(1, "openntrip: opentcp error\n");
             free(ntrip);
-            return NULL;
+            return nullptr;
         }
     return ntrip;
 }
@@ -1548,7 +1548,7 @@ void *ftpthread(void *arg)
             tracet(1, "no local directory\n");
             ftp->error = 11;
             ftp->state = 3;
-            return 0;
+            return nullptr;
         }
     /* replace keyword in file path and local path */
     time = timeadd(utc2gpst(timeget()), ftp->topts[0]);
@@ -1584,7 +1584,7 @@ void *ftpthread(void *arg)
             strcpy(ftp->local, tmpfile);
             tracet(3, "ftpthread: file exists %s\n", ftp->local);
             ftp->state = 2;
-            return 0;
+            return nullptr;
         }
     /* proxy settings for wget (ref [2]) */
     if (*proxyaddr)
@@ -1633,7 +1633,7 @@ void *ftpthread(void *arg)
             tracet(1, "execcmd error: cmd=%s ret=%d\n", cmd, ret);
             ftp->error = ret;
             ftp->state = 3;
-            return 0;
+            return nullptr;
         }
     if (remove(errfile) != 0) trace(1, "Error removing file");
 
@@ -1652,14 +1652,14 @@ void *ftpthread(void *arg)
                     tracet(1, "file uncompact error: %s\n", local);
                     ftp->error = 12;
                     ftp->state = 3;
-                    return 0;
+                    return nullptr;
                 }
         }
     if (strlen(local) < 1024) strcpy(ftp->local, local);
     ftp->state = 2; /* ftp completed */
 
     tracet(3, "ftpthread: complete cmd=%s\n", cmd);
-    return 0;
+    return nullptr;
 }
 
 
@@ -1672,12 +1672,12 @@ ftp_t *openftp(const char *path, int type, char *msg)
 
     msg[0] = '\0';
 
-    if (!(ftp = (ftp_t *)malloc(sizeof(ftp_t)))) return NULL;
+    if (!(ftp = (ftp_t *)malloc(sizeof(ftp_t)))) return nullptr;
 
     ftp->state = 0;
     ftp->proto = type;
     ftp->error = 0;
-    ftp->thread = 0;
+    ftp->thread = nullptr;
     ftp->local[0] = '\0';
 
     /* decode ftp path */
@@ -1718,7 +1718,7 @@ int readftp(ftp_t *ftp, unsigned char *buff, int n, char *msg)
             ftp->state = 1;
             sprintf(msg, "%s://%s", ftp->proto ? "http" : "ftp", ftp->addr);
 
-            if (pthread_create(&ftp->thread, NULL, ftpthread, ftp))
+            if (pthread_create(&ftp->thread, nullptr, ftpthread, ftp))
                 {
                     tracet(1, "readftp: ftp thread create error\n");
                     ftp->state = 3;
@@ -1786,7 +1786,7 @@ void strinit(stream_t *stream)
     stream->inb = stream->inr = stream->outb = stream->outr = 0;
     stream->tick = stream->tact = stream->inbt = stream->outbt = 0;
     initlock(&stream->lock);
-    stream->port = NULL;
+    stream->port = nullptr;
     stream->path[0] = '\0';
     stream->msg[0] = '\0';
 }
@@ -1838,7 +1838,7 @@ int stropen(stream_t *stream, int type, int mode, const char *path)
     stream->tick = tickget();
     stream->inbt = stream->outbt = 0;
     stream->msg[0] = '\0';
-    stream->port = NULL;
+    stream->port = nullptr;
     switch (type)
         {
         case STR_SERIAL:
@@ -1870,7 +1870,7 @@ int stropen(stream_t *stream, int type, int mode, const char *path)
             return 1;
         }
     stream->state = !stream->port ? -1 : 1;
-    return stream->port != NULL;
+    return stream->port != nullptr;
 }
 
 
@@ -1923,7 +1923,7 @@ void strclose(stream_t *stream)
     stream->inr = stream->outr = 0;
     stream->path[0] = '\0';
     stream->msg[0] = '\0';
-    stream->port = NULL;
+    stream->port = nullptr;
 }
 
 
@@ -2286,7 +2286,7 @@ int gen_hex(const char *msg, unsigned char *buff)
     trace(4, "gen_hex: msg=%s\n", msg);
 
     strncpy(mbuff, msg, 1023);
-    for (p = strtok(mbuff, " "); p && narg < 256; p = strtok(NULL, " "))
+    for (p = strtok(mbuff, " "); p && narg < 256; p = strtok(nullptr, " "))
         {
             args[narg++] = p;
         }

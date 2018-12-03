@@ -123,9 +123,9 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Con
     d_threshold = 0;
     d_num_doppler_points = 0;
     d_doppler_step = 0;
-    d_grid_data = 0;
-    d_grid_doppler_wipeoffs = 0;
-    d_gnss_synchro = 0;
+    d_grid_data = nullptr;
+    d_grid_doppler_wipeoffs = nullptr;
+    d_gnss_synchro = nullptr;
     d_code_phase = 0;
     d_doppler_freq = 0;
     d_test_statistics = 0;
@@ -672,8 +672,8 @@ void pcps_acquisition_fine_doppler_cc::dump_results(int effective_fft_size)
     filename.append(std::to_string(d_gnss_synchro->PRN));
     filename.append(".mat");
 
-    mat_t *matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
-    if (matfp == NULL)
+    mat_t *matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT73);
+    if (matfp == nullptr)
         {
             std::cout << "Unable to create or open Acquisition dump file" << std::endl;
             d_dump = false;

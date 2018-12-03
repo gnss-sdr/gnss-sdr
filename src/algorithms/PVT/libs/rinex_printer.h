@@ -547,7 +547,7 @@ private:
      */
     inline double asDouble(const std::string& s)
     {
-        return strtod(s.c_str(), 0);
+        return strtod(s.c_str(), nullptr);
     }
 
 
@@ -560,7 +560,7 @@ private:
      */
     inline int64_t asInt(const std::string& s)
     {
-        return strtol(s.c_str(), 0, 10);
+        return strtol(s.c_str(), nullptr, 10);
     }
 
 
@@ -796,7 +796,7 @@ inline std::string Rinex_Printer::asFixWidthString(const int x, const int width,
 
 inline int64_t asInt(const std::string& s)
 {
-    return strtol(s.c_str(), 0, 10);
+    return strtol(s.c_str(), nullptr, 10);
 }
 
 

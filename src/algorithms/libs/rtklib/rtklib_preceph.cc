@@ -134,7 +134,7 @@ int addpeph(nav_t *nav, peph_t *peph)
                 {
                     trace(1, "readsp3b malloc error n=%d\n", nav->nemax);
                     free(nav->peph);
-                    nav->peph = NULL;
+                    nav->peph = nullptr;
                     nav->ne = nav->nemax = 0;
                     return 0;
                 }
@@ -361,7 +361,7 @@ void readsp3(const char *file, nav_t *nav, int opt)
  *-----------------------------------------------------------------------------*/
 int readsap(const char *file, gtime_t time, nav_t *nav)
 {
-    pcvs_t pcvs = {0, 0, (pcv_t *){0}};
+    pcvs_t pcvs = {0, 0, (pcv_t *){nullptr}};
     pcv_t pcv0 = {0, {}, {}, {0, 0}, {0, 0}, {{}, {}}, {{}, {}}}, *pcv;
     int i;
 
@@ -809,7 +809,7 @@ void satantoff(gtime_t time, const double *rs, int sat, const nav_t *nav,
     trace(4, "satantoff: time=%s sat=%2d\n", time_str(time, 3), sat);
 
     /* sun position in ecef */
-    sunmoonpos(gpst2utc(time), erpv, rsun, NULL, &gmst);
+    sunmoonpos(gpst2utc(time), erpv, rsun, nullptr, &gmst);
 
     /* unit vectors of satellite fixed coordinates */
     for (i = 0; i < 3; i++) r[i] = -rs[i];
@@ -820,7 +820,7 @@ void satantoff(gtime_t time, const double *rs, int sat, const nav_t *nav,
     if (!normv3(r, ey)) return;
     cross3(ey, ez, ex);
 
-    if (NFREQ >= 3 && (satsys(sat, NULL) & (SYS_GAL | SYS_SBS))) k = 2;
+    if (NFREQ >= 3 && (satsys(sat, nullptr) & (SYS_GAL | SYS_SBS))) k = 2;
 
     if (NFREQ < 2 || lam[j] == 0.0 || lam[k] == 0.0) return;
 
@@ -871,8 +871,8 @@ int peph2pos(gtime_t time, int sat, const nav_t *nav, int opt,
         !pephclk(time, sat, nav, dtss, &varc)) return 0;
 
     time = timeadd(time, tt);
-    if (!pephpos(time, sat, nav, rst, dtst, NULL, NULL) ||
-        !pephclk(time, sat, nav, dtst, NULL)) return 0;
+    if (!pephpos(time, sat, nav, rst, dtst, nullptr, nullptr) ||
+        !pephclk(time, sat, nav, dtst, nullptr)) return 0;
 
     /* satellite antenna offset correction */
     if (opt)

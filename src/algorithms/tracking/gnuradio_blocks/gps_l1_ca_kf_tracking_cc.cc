@@ -172,7 +172,7 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
     systemName["G"] = std::string("GPS");
     systemName["S"] = std::string("SBAS");
 
-    d_acquisition_gnss_synchro = 0;
+    d_acquisition_gnss_synchro = nullptr;
     d_channel = 0;
     d_acq_code_phase_samples = 0.0;
     d_acq_carrier_doppler_hz = 0.0;
@@ -516,8 +516,8 @@ int32_t Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
     std::string filename = d_dump_filename;
     filename.erase(filename.length() - 4, 4);
     filename.append(".mat");
-    matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
-    if (reinterpret_cast<long *>(matfp) != NULL)
+    matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT73);
+    if (reinterpret_cast<long *>(matfp) != nullptr)
         {
             size_t dims[2] = {1, static_cast<size_t>(num_epoch)};
             matvar = Mat_VarCreate("abs_VE", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, abs_VE, 0);

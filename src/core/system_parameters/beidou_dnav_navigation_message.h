@@ -87,7 +87,8 @@ public:
     double d_Cus;            //!< Amplitude of the Sine Harmonic Correction Term to the Argument of Latitude [rad]
     double d_sqrt_A;         //!< Square Root of the Semi-Major Axis [sqrt(m)]
     //broadcast orbit 3
-    double d_Toe;            //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
+    double d_Toe_sf2;        //!< Ephemeris data reference time of week in subframe 2
+    double d_Toe_sf3;        //!< Ephemeris data reference time of week in subframe 3
     double d_Toe2;
     double d_Toc;            //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200E) [s]
     double d_Cic;            //!< Amplitude of the Cosine Harmonic Correction Term to the Angle of Inclination [rad]

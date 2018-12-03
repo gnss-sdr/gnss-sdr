@@ -49,6 +49,8 @@
 #include "gps_l2c_signal.h"
 #include "GPS_L5.h"
 #include "gps_l5_signal.h"
+#include "Beidou_B1I.h"
+#include "beidou_b1i_signal_processing.h"
 #include "gnss_sdr_create_directory.h"
 #include <boost/filesystem/path.hpp>
 #include <glog/logging.h>
@@ -60,8 +62,7 @@
 #include <iostream>
 #include <sstream>
 #include <numeric>
-#include "../../../core/system_parameters/Beidou_B1I.h"
-#include "../../libs/beidou_b1i_signal_processing.h"
+
 
 using google::LogMessage;
 
@@ -288,8 +289,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                     d_secondary = true;
                     trk_parameters.track_pilot = false;
                     interchange_iq = false;
-                    d_secondary_code_length = static_cast<unsigned int>(BEIDOU_B1I_NH_CODE_LENGTH);
-                    d_secondary_code_string = const_cast<std::string *>(&BEIDOU_B1I_NH_CODE_STR);
+                    d_secondary_code_length = static_cast<unsigned int>(BEIDOU_B1I_SECONDARY_CODE_LENGTH);
+                    d_secondary_code_string = const_cast<std::string *>(&BEIDOU_B1I_SECONDARY_CODE_STR);
 
                 }
             else

@@ -96,7 +96,7 @@ private:
 
     //bits and frame
     unsigned short int d_frame_bit_index;
-    double bits_NH[BEIDOU_B1I_NH_CODE_LENGTH];
+    double bits_NH[BEIDOU_B1I_SECONDARY_CODE_LENGTH];
     unsigned int d_BEIDOU_frame_4bytes;
     unsigned int d_prev_BEIDOU_frame_4bytes;
     bool d_flag_parity;

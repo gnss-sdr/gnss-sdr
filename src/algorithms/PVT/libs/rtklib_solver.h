@@ -60,13 +60,14 @@
 #include "gps_navigation_message.h"
 #include "gps_cnav_navigation_message.h"
 #include "glonass_gnav_navigation_message.h"
+#include "beidou_dnav_navigation_message.h"
 #include "galileo_almanac.h"
 #include "gnss_synchro.h"
 #include "pvt_solution.h"
 #include <fstream>
 #include <map>
 #include <string>
-#include "../../../core/system_parameters/beidou_dnav_navigation_message.h"
+
 
 
 /*!

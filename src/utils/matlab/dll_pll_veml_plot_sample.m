@@ -34,9 +34,9 @@ if ~exist('dll_pll_veml_read_tracking_dump.m', 'file')
     addpath('./libs')
 end
 
-samplingFreq = 99375000;     %[Hz]
+samplingFreq = 25000000;     %[Hz]
 coherent_integration_time_ms = 1; %[ms]
-channels = 8;   % Number of channels
+channels = 10;   % Number of channels
 first_channel = 0;  % Number of the first channel
 
 path = '/home/dmiralles/Documents/gnss-sdr/';%#';  %% CHANGE THIS PATH

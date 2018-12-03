@@ -53,7 +53,7 @@ void Beidou_Dnav_Navigation_Message::reset()
     d_e_eccentricity = 0;
     d_Cus = 0;
     d_sqrt_A = 0;
-    d_Toe = 0;
+    d_Toe_sf2 = 0;
     d_Toc = 0;
     d_Cic = 0;
     d_OMEGA0 = 0;
@@ -317,7 +317,7 @@ void Beidou_Dnav_Navigation_Message::satellitePosition(double transmitTime)
     a = d_sqrt_A * d_sqrt_A;
 
     // Time from ephemeris reference epoch
-    tk = check_t(transmitTime - d_Toe);
+    tk = check_t(transmitTime - d_Toe_sf2);
 
     // Computed mean motion
     n0 = sqrt(BEIDOU_GM / (a * a * a));
@@ -371,7 +371,7 @@ void Beidou_Dnav_Navigation_Message::satellitePosition(double transmitTime)
     i = d_i_0 + d_IDOT * tk + d_Cic * cos(2 * phi) + d_Cis * sin(2 * phi);
 
     // Compute the angle between the ascending node and the Greenwich meridian
-    Omega = d_OMEGA0 + (d_OMEGA_DOT - BEIDOU_OMEGA_EARTH_DOT) * tk - BEIDOU_OMEGA_EARTH_DOT * d_Toe;
+    Omega = d_OMEGA0 + (d_OMEGA_DOT - BEIDOU_OMEGA_EARTH_DOT) * tk - BEIDOU_OMEGA_EARTH_DOT * d_Toe_sf2;
 
     // Reduce to between 0 and 2*pi rad
     Omega = fmod((Omega + 2 * BEIDOU_PI), (2 * BEIDOU_PI));
@@ -452,7 +452,7 @@ int Beidou_Dnav_Navigation_Message::subframe_decoder(char *subframe)
         d_alpha0 = static_cast<double>(read_navigation_signed(subframe_bits, D1_ALPHA0));
         d_alpha0 = d_alpha0 * D1_ALPHA0_LSB;
 
-	d_alpha1 = static_cast<double>(read_navigation_signed(subframe_bits, D1_ALPHA1));
+	    d_alpha1 = static_cast<double>(read_navigation_signed(subframe_bits, D1_ALPHA1));
         d_alpha1 = d_alpha1 * D1_ALPHA1_LSB;
         d_alpha2 = static_cast<double>(read_navigation_signed(subframe_bits, D1_ALPHA2));
         d_alpha2 = d_alpha2 * D1_ALPHA2_LSB;
@@ -514,8 +514,8 @@ int Beidou_Dnav_Navigation_Message::subframe_decoder(char *subframe)
         d_sqrt_A = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_SQRT_A));
         d_sqrt_A = d_sqrt_A * D1_SQRT_A_LSB;
 
-        d_Toe = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_TOE));
-        d_Toe = d_Toe * D1_TOE_LSB;
+        d_Toe_sf2 = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_TOE_SF2));
+        d_Toe_sf2 = static_cast<double>((static_cast<int>(d_Toe_sf2) <<  15));
 
 //        d_SOW = d_SOW_SF2; // Set transmission time
 //        b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
@@ -532,7 +532,7 @@ int Beidou_Dnav_Navigation_Message::subframe_decoder(char *subframe)
         d_SOW_SF3 = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_SOW));
         d_SOW = d_SOW_SF3; // Set transmission time
 
-        d_Toe = d_Toe * D1_TOE_LSB;
+        d_Toe_sf3 = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_TOE_SF3));
 
         d_i_0 = static_cast<double>(read_navigation_signed(subframe_bits, D1_I0));
         d_i_0 = d_i_0 * D1_I0_LSB;
@@ -833,7 +833,7 @@ Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris()
     ephemeris.d_e_eccentricity = d_e_eccentricity;
     ephemeris.d_Cus = d_Cus;
     ephemeris.d_sqrt_A = d_sqrt_A;
-    ephemeris.d_Toe =static_cast<float>( (static_cast<int>(d_Toe) <<  15) | static_cast<int>(d_Toe2)) ;
+    ephemeris.d_Toe = ((d_Toe_sf2 + d_Toe_sf3) * D1_TOE_LSB) ;
     ephemeris.d_Toc = d_Toc;
     ephemeris.d_Cic = d_Cic;
     ephemeris.d_OMEGA0 = d_OMEGA0;

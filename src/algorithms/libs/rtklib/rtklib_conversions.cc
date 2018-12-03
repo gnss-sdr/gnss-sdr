@@ -66,13 +66,23 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs, const Gnss_Synchro& gnss_synchro
             rtklib_obs.sat = gnss_synchro.PRN + NSATGPS;
             break;
         case 'C':
-            rtklib_obs.sat = gnss_synchro.PRN + NSATGPS + NSATGLO + NSATGAL;
+            rtklib_obs.sat = gnss_synchro.PRN + NSATGPS + NSATGLO + NSATGAL + NSATQZS;
             break;
 
         default:
             rtklib_obs.sat = gnss_synchro.PRN;
         }
-    rtklib_obs.time = gpst2time(adjgpsweek(week), gnss_synchro.RX_time);
+
+    // Mote that BeiDou week numbers do not need adjustment for foreseeable future. Consider change
+    // to more elegant solution
+    if(gnss_synchro.System == 'C')
+		{
+    		rtklib_obs.time = bdt2time(week, gnss_synchro.RX_time);
+		}
+    else
+    	{
+    		rtklib_obs.time = gpst2time(adjgpsweek(week), gnss_synchro.RX_time);
+    	}
     rtklib_obs.rcv = 1;
     return rtklib_obs;
 }
@@ -247,7 +257,7 @@ eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph)
     rtklib_sat.Adot = 0;  //only in CNAV;
     rtklib_sat.ndot = 0;  //only in CNAV;
 
-    rtklib_sat.week = adjgpsweek(bei_eph.i_BEIDOU_week); /* week of tow */
+    rtklib_sat.week = bei_eph.i_BEIDOU_week; /* week of tow */
     rtklib_sat.cic = bei_eph.d_Cic;
     rtklib_sat.cis = bei_eph.d_Cis;
     rtklib_sat.cuc = bei_eph.d_Cuc;
@@ -258,7 +268,7 @@ eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph)
     rtklib_sat.f1 = bei_eph.d_A_f1;
     rtklib_sat.f2 = bei_eph.d_A_f2;
     rtklib_sat.tgd[0] = bei_eph.d_TGD1;
-    rtklib_sat.tgd[1] = 0.0;
+    rtklib_sat.tgd[1] = bei_eph.d_TGD2;
     rtklib_sat.tgd[2] = 0.0;
     rtklib_sat.tgd[3] = 0.0;
     rtklib_sat.toes = bei_eph.d_Toe;

@@ -58,7 +58,7 @@ beidou_b1i_telemetry_decoder_cc::beidou_b1i_telemetry_decoder_cc(
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
 
     // set the preamble
-    unsigned short int preambles_bits[BEIDOU_B1I_PREAMBLE_LENGTH_BITS] = BEIDOU_PREAMBLE;
+    unsigned short int preambles_bits[BEIDOU_B1I_PREAMBLE_LENGTH_BITS] = BEIDOU_DNAV_PREAMBLE;
 
     // preamble bits to sampled symbols
     d_preambles_symbols = static_cast<int *>(volk_gnsssdr_malloc(BEIDOU_B1I_PREAMBLE_LENGTH_SYMBOLS * sizeof(int), volk_gnsssdr_get_alignment()));
@@ -94,16 +94,16 @@ beidou_b1i_telemetry_decoder_cc::beidou_b1i_telemetry_decoder_cc(
     d_preamble_time_samples = 0;
     d_TOW_at_current_symbol_ms = 0;
     d_symbol_history.resize(BEIDOU_B1I_PREAMBLE_LENGTH_BITS);  // Change fixed buffer size
-    d_symbol_nh_history.resize(BEIDOU_B1I_NH_CODE_LENGTH);  // Change fixed buffer size
+    d_symbol_nh_history.resize(BEIDOU_B1I_SECONDARY_CODE_LENGTH);  // Change fixed buffer size
     d_bit_buffer.resize(30);  // Change fixed buffer size
     d_symbol_history.clear();                                     // Clear all the elements in the buffer
     d_symbol_nh_history.clear();
     d_bit_buffer.clear();
     d_make_correlation = true;
     d_symbol_counter_corr = 0;
-    for (int aux = 0; aux < BEIDOU_B1I_NH_CODE_LENGTH; aux++)
+    for (int aux = 0; aux < BEIDOU_B1I_SECONDARY_CODE_LENGTH; aux++)
         {
-            if (BEIDOU_B1I_NH_CODE[aux] == 0)
+            if (BEIDOU_B1I_SECONDARY_CODE[aux] == 0)
                 {
                     bits_NH[aux] = -1.0;
                 }
@@ -270,9 +270,9 @@ int beidou_b1i_telemetry_decoder_cc::general_work(int noutput_items __attribute_
     d_symbol_nh_history.push_back(current_symbol.Prompt_I);  //add new symbol to the symbol queue
     consume_each(1);
 
-    if (d_symbol_nh_history.size() == BEIDOU_B1I_NH_CODE_LENGTH)
+    if (d_symbol_nh_history.size() == BEIDOU_B1I_SECONDARY_CODE_LENGTH)
         {
-            for (int i = 0; i < BEIDOU_B1I_NH_CODE_LENGTH; i++)
+            for (int i = 0; i < BEIDOU_B1I_SECONDARY_CODE_LENGTH; i++)
                 {
                     if ((bits_NH[i] * d_symbol_nh_history.at(i)) > 0.0)
                         {
@@ -283,7 +283,7 @@ int beidou_b1i_telemetry_decoder_cc::general_work(int noutput_items __attribute_
                             corr_NH -= 1;
                         }
                 }
-           if (abs(corr_NH) == BEIDOU_B1I_NH_CODE_LENGTH)
+           if (abs(corr_NH) == BEIDOU_B1I_SECONDARY_CODE_LENGTH)
                 {
                     sync_NH = true;
                     if (corr_NH > 0)

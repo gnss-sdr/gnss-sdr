@@ -53,6 +53,9 @@ const double BEIDOU_B1I_CODE_LENGTH_CHIPS    = 2046.0;    //!< beidou b1I code l
 const double BEIDOU_B1I_CODE_PERIOD          = 0.001;     //!< beidou b1I code period [seconds]
 const unsigned int BEIDOU_B1I_CODE_PERIOD_MS = 1;    //!< GPS L1 C/A code period [ms]
 const double BEIDOU_B1I_CHIP_PERIOD          = 4.8875e-07;     //!< beidou b1I chip period [seconds]
+const int BEIDOU_B1I_SECONDARY_CODE_LENGTH = 20;
+const int BEIDOU_B1I_SECONDARY_CODE[20] = {0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0};
+const std::string BEIDOU_B1I_SECONDARY_CODE_STR = "00000100110101001110";
 
 /*!
  * \brief Maximum Time-Of-Arrival (TOA) difference between satellites for a receiver operated on Earth surface is 20 ms
@@ -72,8 +75,7 @@ const double BEIDOU_STARTOFFSET_ms = 68.802; //**************[ms] Initial sign. 
 const int BEIDOU_B1I_HISTORY_DEEP = 100; // ****************
 
 // NAVIGATION MESSAGE DEMODULATION AND DECODING
-
-#define BEIDOU_PREAMBLE {1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0}
+#define BEIDOU_DNAV_PREAMBLE {1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0}
 const int BEIDOU_B1I_PREAMBLE_LENGTH_BITS = 11;
 const int BEIDOU_B1I_PREAMBLE_LENGTH_SYMBOLS = 220;   // **************
 const double BEIDOU_B1I_PREAMBLE_DURATION_S = 0.220;
@@ -87,9 +89,7 @@ const int BEIDOU_SUBFRAME_BITS = 300;                  //!< Number of bits per s
 const int BEIDOU_SUBFRAME_SECONDS = 6;                 //!< Subframe duration [seconds]
 const int BEIDOU_SUBFRAME_MS = 6000;                 //!< Subframe duration [miliseconds]
 const int BEIDOU_WORD_BITS = 30;                       //!< Number of bits per word in the NAV message [bits]
-const int BEIDOU_B1I_NH_CODE_LENGTH = 20;
-const int BEIDOU_B1I_NH_CODE[20] = {0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0};
-const std::string BEIDOU_B1I_NH_CODE_STR = "00000100110101001110";
+
 
 
 // BEIDOU D1 NAVIGATION MESSAGE STRUCTURE
@@ -151,11 +151,11 @@ const std::vector<std::pair<int,int> > D1_CRS( { {225,8},{241,10} } );
 const double D1_CRS_LSB = TWO_N6;
 const std::vector<std::pair<int,int> > D1_SQRT_A( { {251,12},{271,20} } );
 const double D1_SQRT_A_LSB = TWO_N19;
-const std::vector<std::pair<int,int> > D1_TOE( { {291,2} } );
+const std::vector<std::pair<int,int> > D1_TOE_SF2( { {291,2} } );
 const double D1_TOE_LSB = TWO_P3;
 
 //SUBFRAME 3
-const std::vector<std::pair<int,int> > D1_TOE_MSB2( { {43,10},{61,5} } );
+const std::vector<std::pair<int,int> > D1_TOE_SF3( { {43,10},{61,5} } );
 const std::vector<std::pair<int,int> > D1_I0( { {66,17},{91,15} } );
 const double D1_I0_LSB =  PI_TWO_N31;
 const std::vector<std::pair<int,int> > D1_CIC( { {106,7},{121,11} } );

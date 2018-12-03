@@ -46,9 +46,6 @@
 
 using google::LogMessage;
 
-void GlonassL1CaDllPllCAidTracking::stop_tracking()
-{
-}
 
 GlonassL1CaDllPllCAidTracking::GlonassL1CaDllPllCAidTracking(
     ConfigurationInterface* configuration, std::string role,
@@ -135,7 +132,10 @@ GlonassL1CaDllPllCAidTracking::GlonassL1CaDllPllCAidTracking(
 }
 
 
-GlonassL1CaDllPllCAidTracking::~GlonassL1CaDllPllCAidTracking()
+GlonassL1CaDllPllCAidTracking::~GlonassL1CaDllPllCAidTracking() = default;
+
+
+void GlonassL1CaDllPllCAidTracking::stop_tracking()
 {
 }
 

@@ -97,9 +97,9 @@ pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(
     d_doppler_min = 0;
     d_num_doppler_points = 0;
     d_doppler_step = 0;
-    d_grid_data = 0;
-    d_grid_doppler_wipeoffs = 0;
-    d_gnss_synchro = 0;
+    d_grid_data = nullptr;
+    d_grid_doppler_wipeoffs = nullptr;
+    d_gnss_synchro = nullptr;
     d_code_phase = 0;
     d_doppler_freq = 0;
     d_test_statistics = 0;

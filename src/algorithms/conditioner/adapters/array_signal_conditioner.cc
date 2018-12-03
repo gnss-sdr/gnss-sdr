@@ -55,7 +55,7 @@ ArraySignalConditioner::ArraySignalConditioner(ConfigurationInterface *configura
 
 
 // Destructor
-ArraySignalConditioner::~ArraySignalConditioner() {}
+ArraySignalConditioner::~ArraySignalConditioner() = default;
 
 
 void ArraySignalConditioner::connect(gr::top_block_sptr top_block)

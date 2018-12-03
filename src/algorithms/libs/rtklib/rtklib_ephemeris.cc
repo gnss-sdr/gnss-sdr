@@ -129,7 +129,7 @@ void alm2pos(gtime_t time, const alm_t *alm, double *rs, double *dts)
             rs[0] = rs[1] = rs[2] = *dts = 0.0;
             return;
         }
-    mu = satsys(alm->sat, NULL) == SYS_GAL ? MU_GAL : MU_GPS;
+    mu = satsys(alm->sat, nullptr) == SYS_GAL ? MU_GAL : MU_GPS;
 
     M = alm->M0 + sqrt(mu / (alm->A * alm->A * alm->A)) * tk;
     for (n = 0, E = M, Ek = 0.0; fabs(E - Ek) > RTOL_KEPLER && n < MAX_ITER_KEPLER; n++)
@@ -457,7 +457,7 @@ eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav)
 
     trace(4, "seleph  : time=%s sat=%2d iode=%d\n", time_str(time, 3), sat, iode);
 
-    switch (satsys(sat, NULL))
+    switch (satsys(sat, nullptr))
         {
         case SYS_QZS:
             tmax = MAXDTOE_QZS + 1.0;
@@ -490,7 +490,7 @@ eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav)
         {
             trace(3, "no broadcast ephemeris: %s sat=%2d iode=%3d\n", time_str(time, 0),
                 sat, iode);
-            return NULL;
+            return nullptr;
         }
     return nav->eph + j;
 }
@@ -520,7 +520,7 @@ geph_t *selgeph(gtime_t time, int sat, int iode, const nav_t *nav)
         {
             trace(3, "no glonass ephemeris  : %s sat=%2d iode=%2d\n", time_str(time, 0),
                 sat, iode);
-            return NULL;
+            return nullptr;
         }
     return nav->geph + j;
 }
@@ -547,7 +547,7 @@ seph_t *selseph(gtime_t time, int sat, const nav_t *nav)
     if (j < 0)
         {
             trace(3, "no sbas ephemeris     : %s sat=%2d\n", time_str(time, 0), sat);
-            return NULL;
+            return nullptr;
         }
     return nav->seph + j;
 }
@@ -564,7 +564,7 @@ int ephclk(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
 
     trace(4, "ephclk  : time=%s sat=%2d\n", time_str(time, 3), sat);
 
-    sys = satsys(sat, NULL);
+    sys = satsys(sat, nullptr);
 
     if (sys == SYS_GPS || sys == SYS_GAL || sys == SYS_QZS || sys == SYS_BDS)
         {
@@ -600,7 +600,7 @@ int ephpos(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
 
     trace(4, "ephpos  : time=%s sat=%2d iode=%d\n", time_str(time, 3), sat, iode);
 
-    sys = satsys(sat, NULL);
+    sys = satsys(sat, nullptr);
 
     *svh = -1;
 
@@ -738,7 +738,7 @@ int satpos_ssr(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
     if (!ephpos(time, teph, sat, nav, ssr->iode, rs, dts, var, svh)) return 0;
 
     /* satellite clock for gps, galileo and qzss */
-    sys = satsys(sat, NULL);
+    sys = satsys(sat, nullptr);
     if (sys == SYS_GPS || sys == SYS_GAL || sys == SYS_QZS || sys == SYS_BDS)
         {
             if (!(eph = seleph(teph, sat, ssr->iode, nav))) return 0;

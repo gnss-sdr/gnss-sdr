@@ -66,7 +66,7 @@
 char *getfield(char *p, int pos)
 {
     for (pos--; pos > 0; pos--, p++)
-        if (!(p = strchr(p, ','))) return NULL;
+        if (!(p = strchr(p, ','))) return nullptr;
     return p;
 }
 
@@ -579,7 +579,7 @@ void readmsgs(const char *file, int sel, gtime_t ts, gtime_t te,
                         {
                             trace(1, "readsbsmsg malloc error: nmax=%d\n", sbs->nmax);
                             free(sbs->msgs);
-                            sbs->msgs = NULL;
+                            sbs->msgs = nullptr;
                             sbs->n = sbs->nmax = 0;
                             fclose(fp);
                             return;
@@ -942,7 +942,7 @@ int sbslongcorr(gtime_t time, int sat, const sbssat_t *sbssat,
             return 1;
         }
     /* if sbas satellite without correction, no correction applied */
-    if (satsys(sat, NULL) == SYS_SBS) return 1;
+    if (satsys(sat, nullptr) == SYS_SBS) return 1;
 
     trace(2, "no sbas long-term correction: %s sat=%2d\n", time_str(time, 0), sat);
     return 0;

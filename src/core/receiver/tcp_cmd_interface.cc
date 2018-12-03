@@ -47,9 +47,7 @@ TcpCmdInterface::TcpCmdInterface()
 }
 
 
-TcpCmdInterface::~TcpCmdInterface()
-{
-}
+TcpCmdInterface::~TcpCmdInterface() = default;
 
 
 void TcpCmdInterface::register_functions()
@@ -142,7 +140,7 @@ std::string TcpCmdInterface::status(const std::vector<std::string> &commandLine 
             &course_over_ground_deg,
             &UTC_time) == true)
         {
-            struct tm tstruct = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+            struct tm tstruct = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, nullptr};
             char buf1[80];
             tstruct = *gmtime(&UTC_time);
             strftime(buf1, sizeof(buf1), "%d/%m/%Y %H:%M:%S", &tstruct);
@@ -173,7 +171,7 @@ std::string TcpCmdInterface::hotstart(const std::vector<std::string> &commandLin
     if (commandLine.size() > 5)
         {
             // Read commandline time parameter
-            struct tm tm = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+            struct tm tm = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, nullptr};
             if (strptime(commandLine.at(1).c_str(), "%d/%m/%Y %H:%M:%S", &tm) == nullptr)
                 {
                     response = "ERROR: time parameter malformed\n";
@@ -219,7 +217,7 @@ std::string TcpCmdInterface::warmstart(const std::vector<std::string> &commandLi
         {
             std::string tmp_str;
             // Read commandline time parameter
-            struct tm tm = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+            struct tm tm = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, nullptr};
             tmp_str = commandLine.at(1) + commandLine.at(2);
             if (strptime(commandLine.at(1).c_str(), "%d/%m/%Y %H:%M:%S", &tm) == nullptr)
                 {

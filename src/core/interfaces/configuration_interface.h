@@ -52,7 +52,7 @@
 class ConfigurationInterface
 {
 public:
-    virtual ~ConfigurationInterface() {}
+    virtual ~ConfigurationInterface() = default;
     virtual std::string property(std::string property_name, std::string default_value) = 0;
     virtual bool property(std::string property_name, bool default_value) = 0;
     virtual int64_t property(std::string property_name, int64_t default_value) = 0;

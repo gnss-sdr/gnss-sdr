@@ -239,9 +239,7 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
 }
 
 
-UhdSignalSource::~UhdSignalSource()
-{
-}
+UhdSignalSource::~UhdSignalSource() = default;
 
 
 void UhdSignalSource::connect(gr::top_block_sptr top_block)

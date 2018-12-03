@@ -246,9 +246,7 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
 }
 
 
-TwoBitPackedFileSignalSource::~TwoBitPackedFileSignalSource()
-{
-}
+TwoBitPackedFileSignalSource::~TwoBitPackedFileSignalSource() = default;
 
 
 void TwoBitPackedFileSignalSource::connect(gr::top_block_sptr top_block)

@@ -149,9 +149,7 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
 }
 
 
-SignalGenerator::~SignalGenerator()
-{
-}
+SignalGenerator::~SignalGenerator() = default;
 
 
 void SignalGenerator::connect(gr::top_block_sptr top_block)

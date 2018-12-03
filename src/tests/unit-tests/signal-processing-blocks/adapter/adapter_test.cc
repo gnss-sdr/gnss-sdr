@@ -80,9 +80,7 @@ DataTypeAdapter::DataTypeAdapter()
 }
 
 
-DataTypeAdapter::~DataTypeAdapter()
-{
-}
+DataTypeAdapter::~DataTypeAdapter() = default;
 
 
 int DataTypeAdapter::run_ishort_to_cshort_block()

@@ -98,7 +98,7 @@ tec_t *addtec(const double *lats, const double *lons, const double *hgts,
     ndata[0] = nitem(lats);
     ndata[1] = nitem(lons);
     ndata[2] = nitem(hgts);
-    if (ndata[0] <= 1 || ndata[1] <= 1 || ndata[2] <= 0) return NULL;
+    if (ndata[0] <= 1 || ndata[1] <= 1 || ndata[2] <= 0) return nullptr;
 
     if (nav->nt >= nav->ntmax)
         {
@@ -107,9 +107,9 @@ tec_t *addtec(const double *lats, const double *lons, const double *hgts,
                 {
                     trace(1, "readionex malloc error ntmax=%d\n", nav->ntmax);
                     free(nav->tec);
-                    nav->tec = NULL;
+                    nav->tec = nullptr;
                     nav->nt = nav->ntmax = 0;
-                    return NULL;
+                    return nullptr;
                 }
             nav->tec = nav_tec;
         }
@@ -128,7 +128,7 @@ tec_t *addtec(const double *lats, const double *lons, const double *hgts,
     if (!(p->data = (double *)malloc(sizeof(double) * n)) ||
         !(p->rms = (float *)malloc(sizeof(float) * n)))
         {
-            return NULL;
+            return nullptr;
         }
     for (i = 0; i < n; i++)
         {
@@ -236,7 +236,7 @@ double readionexh(FILE *fp, double *lats, double *lons, double *hgts,
 int readionexb(FILE *fp, const double *lats, const double *lons,
     const double *hgts, double rb, double nexp, nav_t *nav)
 {
-    tec_t *p = NULL;
+    tec_t *p = nullptr;
     gtime_t time = {0, 0};
     double lat, lon[3], hgt, x;
     int i, j, k, n, m, index, type = 0;
@@ -255,17 +255,17 @@ int readionexb(FILE *fp, const double *lats, const double *lons,
             else if (strstr(label, "END OF TEC MAP") == label)
                 {
                     type = 0;
-                    p = NULL;
+                    p = nullptr;
                 }
             else if (strstr(label, "START OF RMS MAP") == label)
                 {
                     type = 2;
-                    p = NULL;
+                    p = nullptr;
                 }
             else if (strstr(label, "END OF RMS MAP") == label)
                 {
                     type = 0;
-                    p = NULL;
+                    p = nullptr;
                 }
             else if (strstr(label, "EPOCH OF CURRENT MAP") == label)
                 {
@@ -379,7 +379,7 @@ void readtec(const char *file, nav_t *nav, int opt)
     if (!opt)
         {
             free(nav->tec);
-            nav->tec = NULL;
+            nav->tec = nullptr;
             nav->nt = nav->ntmax = 0;
         }
     for (i = 0; i < MAXEXFILE; i++)

@@ -68,9 +68,7 @@ GlonassL1CaTelemetryDecoder::GlonassL1CaTelemetryDecoder(ConfigurationInterface*
 }
 
 
-GlonassL1CaTelemetryDecoder::~GlonassL1CaTelemetryDecoder()
-{
-}
+GlonassL1CaTelemetryDecoder::~GlonassL1CaTelemetryDecoder() = default;
 
 
 void GlonassL1CaTelemetryDecoder::set_satellite(const Gnss_Satellite& satellite)

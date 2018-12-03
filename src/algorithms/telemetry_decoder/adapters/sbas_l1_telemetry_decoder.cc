@@ -66,9 +66,7 @@ SbasL1TelemetryDecoder::SbasL1TelemetryDecoder(ConfigurationInterface* configura
 }
 
 
-SbasL1TelemetryDecoder::~SbasL1TelemetryDecoder()
-{
-}
+SbasL1TelemetryDecoder::~SbasL1TelemetryDecoder() = default;
 
 
 void SbasL1TelemetryDecoder::set_satellite(const Gnss_Satellite& satellite)

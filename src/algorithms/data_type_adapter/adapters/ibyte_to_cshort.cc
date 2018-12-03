@@ -78,9 +78,7 @@ IbyteToCshort::IbyteToCshort(ConfigurationInterface* configuration, std::string 
 }
 
 
-IbyteToCshort::~IbyteToCshort()
-{
-}
+IbyteToCshort::~IbyteToCshort() = default;
 
 
 void IbyteToCshort::connect(gr::top_block_sptr top_block)

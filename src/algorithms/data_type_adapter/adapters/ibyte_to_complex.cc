@@ -75,9 +75,7 @@ IbyteToComplex::IbyteToComplex(ConfigurationInterface* configuration, std::strin
 }
 
 
-IbyteToComplex::~IbyteToComplex()
-{
-}
+IbyteToComplex::~IbyteToComplex() = default;
 
 
 void IbyteToComplex::connect(gr::top_block_sptr top_block)

@@ -117,8 +117,8 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
         }
     else
         {
-            d_fft_code_Q_A = 0;
-            d_magnitudeQA = 0;
+            d_fft_code_Q_A = nullptr;
+            d_magnitudeQA = nullptr;
         }
     // IF COHERENT INTEGRATION TIME > 1
     if (d_sampled_ms > 1)
@@ -132,16 +132,16 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
                 }
             else
                 {
-                    d_fft_code_Q_B = 0;
-                    d_magnitudeQB = 0;
+                    d_fft_code_Q_B = nullptr;
+                    d_magnitudeQB = nullptr;
                 }
         }
     else
         {
-            d_fft_code_I_B = 0;
-            d_magnitudeIB = 0;
-            d_fft_code_Q_B = 0;
-            d_magnitudeQB = 0;
+            d_fft_code_I_B = nullptr;
+            d_magnitudeIB = nullptr;
+            d_fft_code_Q_B = nullptr;
+            d_magnitudeQB = nullptr;
         }
 
     // Direct FFT
@@ -157,14 +157,14 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
     d_doppler_resolution = 0;
     d_threshold = 0;
     d_doppler_step = 250;
-    d_grid_doppler_wipeoffs = 0;
-    d_gnss_synchro = 0;
+    d_grid_doppler_wipeoffs = nullptr;
+    d_gnss_synchro = nullptr;
     d_code_phase = 0;
     d_doppler_freq = 0;
     d_test_statistics = 0;
-    d_CAF_vector = 0;
-    d_CAF_vector_I = 0;
-    d_CAF_vector_Q = 0;
+    d_CAF_vector = nullptr;
+    d_CAF_vector_I = nullptr;
+    d_CAF_vector_Q = nullptr;
     d_channel = 0;
     d_gr_stream_buffer = 0;
 }

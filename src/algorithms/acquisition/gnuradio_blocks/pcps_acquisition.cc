@@ -34,8 +34,8 @@
  */
 
 #include "pcps_acquisition.h"
+#include "GLONASS_L1_L2_CA.h"  // for GLONASS_TWO_PI
 #include "GPS_L1_CA.h"         // for GPS_TWO_PI
-#include "GLONASS_L1_L2_CA.h"  // for GLONASS_TWO_PI"
 #include "gnss_sdr_create_directory.h"
 #include <boost/filesystem/path.hpp>
 #include <glog/logging.h>
@@ -120,7 +120,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
     // Inverse FFT
     d_ifft = new gr::fft::fft_complex(d_fft_size, false);
 
-    d_gnss_synchro = 0;
+    d_gnss_synchro = nullptr;
     d_grid_doppler_wipeoffs = nullptr;
     d_grid_doppler_wipeoffs_step_two = nullptr;
     d_magnitude_grid = nullptr;
@@ -445,8 +445,8 @@ void pcps_acquisition::dump_results(int32_t effective_fft_size)
     filename.append(std::to_string(d_gnss_synchro->PRN));
     filename.append(".mat");
 
-    mat_t* matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
-    if (matfp == NULL)
+    mat_t* matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT73);
+    if (matfp == nullptr)
         {
             std::cout << "Unable to create or open Acquisition dump file" << std::endl;
             //acq_parameters.dump = false;

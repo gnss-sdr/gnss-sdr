@@ -99,9 +99,7 @@ NotchFilterLite::NotchFilterLite(ConfigurationInterface* configuration, std::str
 }
 
 
-NotchFilterLite::~NotchFilterLite()
-{
-}
+NotchFilterLite::~NotchFilterLite() = default;
 
 
 void NotchFilterLite::connect(gr::top_block_sptr top_block)

@@ -322,7 +322,7 @@ int decode_nmeagga(char **val, int n, sol_t *sol)
 /* decode nmea ---------------------------------------------------------------*/
 int decode_nmea(char *buff, sol_t *sol)
 {
-    char *p, *q, *val[MAXFIELD] = {0};
+    char *p, *q, *val[MAXFIELD] = {nullptr};
     int n = 0;
 
     trace(4, "decode_nmea: buff=%s\n", buff);
@@ -382,7 +382,7 @@ char *decode_soltime(char *buff, const solopt_t *opt, gtime_t *time)
                 {
                     *time = utc2gpst(timeadd(*time, -9 * 3600.0));
                 }
-            if (!(p = strchr(buff, ':')) || !(p = strchr(p + 1, ':'))) return NULL;
+            if (!(p = strchr(buff, ':')) || !(p = strchr(p + 1, ':'))) return nullptr;
             for (p++; isdigit((int)*p) || *p == '.';) p++;
             return p + len;
         }
@@ -390,10 +390,10 @@ char *decode_soltime(char *buff, const solopt_t *opt, gtime_t *time)
         {
             if (sscanf(buff, "%lf %lf %lf %lf:%lf:%lf", v, v + 1, v + 2, v + 3, v + 4, v + 5) < 6)
                 {
-                    return NULL;
+                    return nullptr;
                 }
             *time = timeadd(epoch2time(v), -12.0 * 3600.0);
-            if (!(p = strchr(buff, ':')) || !(p = strchr(p + 1, ':'))) return NULL;
+            if (!(p = strchr(buff, ':')) || !(p = strchr(p + 1, ':'))) return nullptr;
             for (p++; isdigit((int)*p) || *p == '.';) p++;
             return p + len;
         }
@@ -409,7 +409,7 @@ char *decode_soltime(char *buff, const solopt_t *opt, gtime_t *time)
             *time = gpst2time((int)v[0], v[1]);
             return p;
         }
-    return NULL;
+    return nullptr;
 }
 
 
@@ -834,7 +834,7 @@ int sort_solbuf(solbuf_t *solbuf)
         {
             trace(1, "sort_solbuf: memory allocation error\n");
             free(solbuf->data);
-            solbuf->data = NULL;
+            solbuf->data = nullptr;
             solbuf->n = solbuf->nmax = 0;
             return 0;
         }
@@ -935,7 +935,7 @@ int addsol(solbuf_t *solbuf, const sol_t *sol)
                 {
                     trace(1, "addsol: memory allocation error\n");
                     free(solbuf->data);
-                    solbuf->data = NULL;
+                    solbuf->data = nullptr;
                     solbuf->n = solbuf->nmax = 0;
                     return 0;
                 }
@@ -956,7 +956,7 @@ sol_t *getsol(solbuf_t *solbuf, int index)
 {
     trace(4, "getsol: index=%d\n", index);
 
-    if (index < 0 || solbuf->n <= index) return NULL;
+    if (index < 0 || solbuf->n <= index) return nullptr;
     if ((index = solbuf->start + index) >= solbuf->nmax)
         {
             index -= solbuf->nmax;
@@ -981,7 +981,7 @@ void initsolbuf(solbuf_t *solbuf, int cyclic, int nmax)
     solbuf->n = solbuf->nmax = solbuf->start = solbuf->end = 0;
     solbuf->cyclic = cyclic;
     solbuf->time = time0;
-    solbuf->data = NULL;
+    solbuf->data = nullptr;
     if (cyclic)
         {
             if (nmax <= 2) nmax = 2;
@@ -1006,7 +1006,7 @@ void freesolbuf(solbuf_t *solbuf)
 
     free(solbuf->data);
     solbuf->n = solbuf->nmax = solbuf->start = solbuf->end = 0;
-    solbuf->data = NULL;
+    solbuf->data = nullptr;
 }
 
 
@@ -1016,7 +1016,7 @@ void freesolstatbuf(solstatbuf_t *solstatbuf)
 
     solstatbuf->n = solstatbuf->nmax = 0;
     free(solstatbuf->data);
-    solstatbuf->data = NULL;
+    solstatbuf->data = nullptr;
 }
 
 
@@ -1042,7 +1042,7 @@ int sort_solstat(solstatbuf_t *statbuf)
         {
             trace(1, "sort_solstat: memory allocation error\n");
             free(statbuf->data);
-            statbuf->data = NULL;
+            statbuf->data = nullptr;
             statbuf->n = statbuf->nmax = 0;
             return 0;
         }
@@ -1115,7 +1115,7 @@ void addsolstat(solstatbuf_t *statbuf, const solstat_t *stat)
                 {
                     trace(1, "addsolstat: memory allocation error\n");
                     free(statbuf->data);
-                    statbuf->data = NULL;
+                    statbuf->data = nullptr;
                     statbuf->n = statbuf->nmax = 0;
                     return;
                 }
@@ -1169,7 +1169,7 @@ int readsolstatt(char *files[], int nfile, gtime_t ts, gtime_t te,
     trace(3, "readsolstatt: nfile=%d\n", nfile);
 
     statbuf->n = statbuf->nmax = 0;
-    statbuf->data = NULL;
+    statbuf->data = nullptr;
 
     for (i = 0; i < nfile; i++)
         {

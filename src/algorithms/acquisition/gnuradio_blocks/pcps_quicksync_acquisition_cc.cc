@@ -112,16 +112,16 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
     d_dump = dump;
     d_dump_filename = dump_filename;
 
-    d_corr_acumulator = 0;
-    d_signal_folded = 0;
+    d_corr_acumulator = nullptr;
+    d_signal_folded = nullptr;
     d_code_folded = new gr_complex[d_fft_size]();
     d_noise_floor_power = 0;
     d_doppler_resolution = 0;
     d_threshold = 0;
     d_doppler_step = 0;
-    d_grid_doppler_wipeoffs = 0;
-    d_fft_if2 = 0;
-    d_gnss_synchro = 0;
+    d_grid_doppler_wipeoffs = nullptr;
+    d_fft_if2 = nullptr;
+    d_gnss_synchro = nullptr;
     d_code_phase = 0;
     d_doppler_freq = 0;
     d_test_statistics = 0;

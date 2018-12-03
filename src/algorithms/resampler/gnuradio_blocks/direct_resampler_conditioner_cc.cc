@@ -71,9 +71,7 @@ direct_resampler_conditioner_cc::direct_resampler_conditioner_cc(
 }
 
 
-direct_resampler_conditioner_cc::~direct_resampler_conditioner_cc()
-{
-}
+direct_resampler_conditioner_cc::~direct_resampler_conditioner_cc() = default;
 
 
 void direct_resampler_conditioner_cc::forecast(int noutput_items,

@@ -77,6 +77,7 @@ float Tracking_2nd_PLL_filter::get_carrier_nco(float PLL_discriminator)
     return carr_nco;
 }
 
+
 Tracking_2nd_PLL_filter::Tracking_2nd_PLL_filter(float pdi_carr)
 {
     //--- PLL variables --------------------------------------------------------
@@ -94,9 +95,8 @@ Tracking_2nd_PLL_filter::Tracking_2nd_PLL_filter()
 }
 
 
-Tracking_2nd_PLL_filter::~Tracking_2nd_PLL_filter()
-{
-}
+Tracking_2nd_PLL_filter::~Tracking_2nd_PLL_filter() = default;
+
 
 void Tracking_2nd_PLL_filter::set_pdi(float pdi_carr)
 {

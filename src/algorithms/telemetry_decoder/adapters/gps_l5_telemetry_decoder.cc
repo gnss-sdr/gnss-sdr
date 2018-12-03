@@ -64,9 +64,7 @@ GpsL5TelemetryDecoder::GpsL5TelemetryDecoder(ConfigurationInterface* configurati
 }
 
 
-GpsL5TelemetryDecoder::~GpsL5TelemetryDecoder()
-{
-}
+GpsL5TelemetryDecoder::~GpsL5TelemetryDecoder() = default;
 
 
 void GpsL5TelemetryDecoder::set_satellite(const Gnss_Satellite& satellite)

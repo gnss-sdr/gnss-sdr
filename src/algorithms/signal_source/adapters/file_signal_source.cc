@@ -59,8 +59,8 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
     filename_ = configuration->property(role + ".filename", default_filename);
 
     // override value with commandline flag, if present
-    if (FLAGS_signal_source.compare("-") != 0) filename_ = FLAGS_signal_source;
-    if (FLAGS_s.compare("-") != 0) filename_ = FLAGS_s;
+    if (FLAGS_signal_source != "-") filename_ = FLAGS_signal_source;
+    if (FLAGS_s != "-") filename_ = FLAGS_s;
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     repeat_ = configuration->property(role + ".repeat", false);
@@ -74,28 +74,28 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
 
     bool is_complex = false;
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
         }
-    else if (item_type_.compare("float") == 0)
+    else if (item_type_ == "float")
         {
             item_size_ = sizeof(float);
         }
-    else if (item_type_.compare("short") == 0)
+    else if (item_type_ == "short")
         {
             item_size_ = sizeof(int16_t);
         }
-    else if (item_type_.compare("ishort") == 0)
+    else if (item_type_ == "ishort")
         {
             item_size_ = sizeof(int16_t);
             is_complex = true;
         }
-    else if (item_type_.compare("byte") == 0)
+    else if (item_type_ == "byte")
         {
             item_size_ = sizeof(int8_t);
         }
-    else if (item_type_.compare("ibyte") == 0)
+    else if (item_type_ == "ibyte")
         {
             item_size_ = sizeof(int8_t);
             is_complex = true;
@@ -135,7 +135,7 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
         }
     catch (const std::exception& e)
         {
-            if (filename_.compare(default_filename) == 0)
+            if (filename_ == default_filename)
                 {
                     std::cerr
                         << "The configuration file has not been found."

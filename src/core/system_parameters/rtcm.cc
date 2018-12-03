@@ -329,7 +329,7 @@ int32_t Rtcm::bin_to_sint(const std::string& s) const
     int32_t sign;
 
     // Check for sign bit as defined RTCM doc
-    if (s.substr(0, 1).compare("0") == 0)
+    if (s.substr(0, 1) == "0")
         {
             sign = 1;
             // Get the magnitude of the value
@@ -2357,7 +2357,7 @@ std::string Rtcm::get_MSM_header(uint32_t msg_number,
 
     std::string header = DF002.to_string() + DF003.to_string();
     // GNSS Epoch Time Specific to each constellation
-    if ((sys.compare("R") == 0))
+    if ((sys == "R"))
         {
             // GLONASS Epoch Time
             Rtcm::set_DF034(obs_time);
@@ -3228,22 +3228,22 @@ std::vector<std::pair<int32_t, Gnss_Synchro> > Rtcm::sort_by_signal(const std::v
             std::string sig_b_(b.second.Signal);
             std::string sig_b = sig_b_.substr(0, 2);
 
-            if (system_a.compare("G") == 0)
+            if (system_a == "G")
                 {
                     value_a = gps_signal_map.at(sig_a);
                 }
 
-            if (system_a.compare("E") == 0)
+            if (system_a == "E")
                 {
                     value_a = galileo_signal_map.at(sig_a);
                 }
 
-            if (system_b.compare("G") == 0)
+            if (system_b == "G")
                 {
                     value_b = gps_signal_map.at(sig_b);
                 }
 
-            if (system_b.compare("E") == 0)
+            if (system_b == "E")
                 {
                     value_b = galileo_signal_map.at(sig_b);
                 }
@@ -5166,23 +5166,23 @@ int32_t Rtcm::set_DF399(const Gnss_Synchro& gnss_synchro)
     std::string sig_(gnss_synchro.Signal);
     std::string sig = sig_.substr(0, 2);
 
-    if (sig.compare("1C") == 0)
+    if (sig == "1C")
         {
             lambda = GPS_C_m_s / GPS_L1_FREQ_HZ;
         }
-    if (sig.compare("2S") == 0)
+    if (sig == "2S")
         {
             lambda = GPS_C_m_s / GPS_L2_FREQ_HZ;
         }
-    if (sig.compare("5X") == 0)
+    if (sig == "5X")
         {
             lambda = GPS_C_m_s / Galileo_E5a_FREQ_HZ;
         }
-    if (sig.compare("1B") == 0)
+    if (sig == "1B")
         {
             lambda = GPS_C_m_s / Galileo_E1_FREQ_HZ;
         }
-    if (sig.compare("7X") == 0)
+    if (sig == "7X")
         {
             lambda = GPS_C_m_s / 1.207140e9;  // Galileo_E1b_FREQ_HZ;
         }
@@ -5235,31 +5235,31 @@ int32_t Rtcm::set_DF401(const Gnss_Synchro& gnss_synchro)
     std::string sig = sig_.substr(0, 2);
     std::string sys(&gnss_synchro.System, 1);
 
-    if ((sig.compare("1C") == 0) && (sys.compare("G") == 0))
+    if ((sig == "1C") && (sys == "G"))
         {
             lambda = GPS_C_m_s / GPS_L1_FREQ_HZ;
         }
-    if ((sig.compare("2S")) == 0 && (sys.compare("G") == 0))
+    if ((sig.compare("2S")) == 0 && (sys == "G"))
         {
             lambda = GPS_C_m_s / GPS_L2_FREQ_HZ;
         }
-    if ((sig.compare("5X")) == 0 && (sys.compare("E") == 0))
+    if ((sig.compare("5X")) == 0 && (sys == "E"))
         {
             lambda = GPS_C_m_s / Galileo_E5a_FREQ_HZ;
         }
-    if ((sig.compare("1B")) == 0 && (sys.compare("E") == 0))
+    if ((sig.compare("1B")) == 0 && (sys == "E"))
         {
             lambda = GPS_C_m_s / Galileo_E1_FREQ_HZ;
         }
-    if ((sig.compare("7X")) == 0 && (sys.compare("E") == 0))
+    if ((sig.compare("7X")) == 0 && (sys == "E"))
         {
             lambda = GPS_C_m_s / 1.207140e9;  // Galileo_E1b_FREQ_HZ;
         }
-    if ((sig.compare("1C") == 0) && (sys.compare("R") == 0))
+    if ((sig == "1C") && (sys == "R"))
         {
             lambda = GLONASS_C_m_s / ((GLONASS_L1_CA_FREQ_HZ + (GLONASS_L1_CA_DFREQ_HZ * GLONASS_PRN.at(gnss_synchro.PRN))));
         }
-    if ((sig.compare("2C") == 0) && (sys.compare("R") == 0))
+    if ((sig == "2C") && (sys == "R"))
         {
             // TODO Need to add slot number and freq number to gnss_syncro
             lambda = GLONASS_C_m_s / (GLONASS_L2_CA_FREQ_HZ);

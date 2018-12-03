@@ -64,7 +64,7 @@ DirectResamplerConditioner::DirectResamplerConditioner(
     DLOG(INFO) << "dump_ is " << dump_;
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             resampler_ = direct_resampler_make_conditioner_cc(sample_freq_in_, sample_freq_out_);
@@ -73,7 +73,7 @@ DirectResamplerConditioner::DirectResamplerConditioner(
             DLOG(INFO) << "Item size " << item_size_;
             DLOG(INFO) << "resampler(" << resampler_->unique_id() << ")";
         }
-    else if (item_type_.compare("cshort") == 0)
+    else if (item_type_ == "cshort")
         {
             item_size_ = sizeof(lv_16sc_t);
             resampler_ = direct_resampler_make_conditioner_cs(sample_freq_in_, sample_freq_out_);
@@ -82,7 +82,7 @@ DirectResamplerConditioner::DirectResamplerConditioner(
             DLOG(INFO) << "Item size " << item_size_;
             DLOG(INFO) << "resampler(" << resampler_->unique_id() << ")";
         }
-    else if (item_type_.compare("cbyte") == 0)
+    else if (item_type_ == "cbyte")
         {
             item_size_ = sizeof(lv_8sc_t);
             resampler_ = direct_resampler_make_conditioner_cb(sample_freq_in_, sample_freq_out_);

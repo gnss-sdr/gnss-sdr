@@ -78,7 +78,7 @@ GalileoE1TcpConnectorTracking::GalileoE1TcpConnectorTracking(
     vector_length = std::round(fs_in / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS));
 
     //################# MAKE TRACKING GNURadio object ###################
-    if (item_type.compare("gr_complex") == 0)
+    if (item_type == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             tracking_ = galileo_e1_tcp_connector_make_tracking_cc(

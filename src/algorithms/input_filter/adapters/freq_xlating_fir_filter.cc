@@ -72,7 +72,7 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(ConfigurationInterface* configuration
     std::string filter_type = config_->property(role_ + ".filter_type", default_filter_type);
     decimation_factor_ = config_->property(role_ + ".decimation_factor", default_decimation_factor);
 
-    if (filter_type.compare("lowpass") != 0)
+    if (filter_type != "lowpass")
         {
             std::vector<double> taps_d;
             std::vector<double> bands;
@@ -123,28 +123,28 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(ConfigurationInterface* configuration
 
     size_t item_size;
 
-    if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("gr_complex") == 0) && (output_item_type_.compare("gr_complex") == 0))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "gr_complex") && (output_item_type_ == "gr_complex"))
         {
             item_size = sizeof(gr_complex);    //output
             input_size_ = sizeof(gr_complex);  //input
             freq_xlating_fir_filter_ccf_ = gr::filter::freq_xlating_fir_filter_ccf::make(decimation_factor_, taps_, intermediate_freq_, sampling_freq_);
             DLOG(INFO) << "input_filter(" << freq_xlating_fir_filter_ccf_->unique_id() << ")";
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("float") == 0) && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "float") && (output_item_type_ == "gr_complex"))
         {
             item_size = sizeof(gr_complex);
             input_size_ = sizeof(float);  //input
             freq_xlating_fir_filter_fcf_ = gr::filter::freq_xlating_fir_filter_fcf::make(decimation_factor_, taps_, intermediate_freq_, sampling_freq_);
             DLOG(INFO) << "input_filter(" << freq_xlating_fir_filter_fcf_->unique_id() << ")";
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("short") == 0) && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "short") && (output_item_type_ == "gr_complex"))
         {
             item_size = sizeof(gr_complex);
             input_size_ = sizeof(int16_t);  //input
             freq_xlating_fir_filter_scf_ = gr::filter::freq_xlating_fir_filter_scf::make(decimation_factor_, taps_, intermediate_freq_, sampling_freq_);
             DLOG(INFO) << "input_filter(" << freq_xlating_fir_filter_scf_->unique_id() << ")";
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("short") == 0) && (output_item_type_.compare("cshort") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "short") && (output_item_type_ == "cshort"))
         {
             item_size = sizeof(lv_16sc_t);
             input_size_ = sizeof(int16_t);  //input
@@ -155,7 +155,7 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(ConfigurationInterface* configuration
             float_to_short_2_ = gr::blocks::float_to_short::make();
             short_x2_to_cshort_ = make_short_x2_to_cshort();
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("byte") == 0) && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "byte") && (output_item_type_ == "gr_complex"))
         {
             item_size = sizeof(gr_complex);
             input_size_ = sizeof(int8_t);  //input
@@ -163,7 +163,7 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(ConfigurationInterface* configuration
             freq_xlating_fir_filter_scf_ = gr::filter::freq_xlating_fir_filter_scf::make(decimation_factor_, taps_, intermediate_freq_, sampling_freq_);
             DLOG(INFO) << "input_filter(" << freq_xlating_fir_filter_scf_->unique_id() << ")";
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("byte") == 0) && (output_item_type_.compare("cbyte") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "byte") && (output_item_type_ == "cbyte"))
         {
             item_size = sizeof(lv_8sc_t);
             input_size_ = sizeof(int8_t);  //input
@@ -201,28 +201,28 @@ FreqXlatingFirFilter::~FreqXlatingFirFilter() = default;
 
 void FreqXlatingFirFilter::connect(gr::top_block_sptr top_block)
 {
-    if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("gr_complex") == 0) && (output_item_type_.compare("gr_complex") == 0))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "gr_complex") && (output_item_type_ == "gr_complex"))
         {
             if (dump_)
                 {
                     top_block->connect(freq_xlating_fir_filter_ccf_, 0, file_sink_, 0);
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("float") == 0) && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "float") && (output_item_type_ == "gr_complex"))
         {
             if (dump_)
                 {
                     top_block->connect(freq_xlating_fir_filter_fcf_, 0, file_sink_, 0);
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("short") == 0) && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "short") && (output_item_type_ == "gr_complex"))
         {
             if (dump_)
                 {
                     top_block->connect(freq_xlating_fir_filter_scf_, 0, file_sink_, 0);
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("short") == 0) && (output_item_type_.compare("cshort") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "short") && (output_item_type_ == "cshort"))
         {
             top_block->connect(freq_xlating_fir_filter_scf_, 0, complex_to_float_, 0);
             top_block->connect(complex_to_float_, 0, float_to_short_1_, 0);
@@ -234,7 +234,7 @@ void FreqXlatingFirFilter::connect(gr::top_block_sptr top_block)
                     top_block->connect(short_x2_to_cshort_, 0, file_sink_, 0);
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("byte") == 0) && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "byte") && (output_item_type_ == "gr_complex"))
         {
             top_block->connect(gr_char_to_short_, 0, freq_xlating_fir_filter_scf_, 0);
             if (dump_)
@@ -242,7 +242,7 @@ void FreqXlatingFirFilter::connect(gr::top_block_sptr top_block)
                     top_block->connect(freq_xlating_fir_filter_scf_, 0, file_sink_, 0);
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("byte") == 0) && (output_item_type_.compare("cbyte") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "byte") && (output_item_type_ == "cbyte"))
         {
             top_block->connect(gr_char_to_short_, 0, freq_xlating_fir_filter_scf_, 0);
             top_block->connect(freq_xlating_fir_filter_scf_, 0, complex_to_complex_byte_, 0);
@@ -260,28 +260,28 @@ void FreqXlatingFirFilter::connect(gr::top_block_sptr top_block)
 
 void FreqXlatingFirFilter::disconnect(gr::top_block_sptr top_block)
 {
-    if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("gr_complex") == 0) && (output_item_type_.compare("gr_complex") == 0))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "gr_complex") && (output_item_type_ == "gr_complex"))
         {
             if (dump_)
                 {
                     top_block->disconnect(freq_xlating_fir_filter_ccf_, 0, file_sink_, 0);
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("float") == 0) && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "float") && (output_item_type_ == "gr_complex"))
         {
             if (dump_)
                 {
                     top_block->disconnect(freq_xlating_fir_filter_fcf_, 0, file_sink_, 0);
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("short") == 0) && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "short") && (output_item_type_ == "gr_complex"))
         {
             if (dump_)
                 {
                     top_block->disconnect(freq_xlating_fir_filter_scf_, 0, file_sink_, 0);
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("short") == 0) && (output_item_type_.compare("cshort") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "short") && (output_item_type_ == "cshort"))
         {
             top_block->disconnect(freq_xlating_fir_filter_scf_, 0, complex_to_float_, 0);
             top_block->disconnect(complex_to_float_, 0, float_to_short_1_, 0);
@@ -293,7 +293,7 @@ void FreqXlatingFirFilter::disconnect(gr::top_block_sptr top_block)
                     top_block->disconnect(short_x2_to_cshort_, 0, file_sink_, 0);
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("byte") == 0) && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "byte") && (output_item_type_ == "gr_complex"))
         {
             top_block->disconnect(gr_char_to_short_, 0, freq_xlating_fir_filter_scf_, 0);
             if (dump_)
@@ -301,7 +301,7 @@ void FreqXlatingFirFilter::disconnect(gr::top_block_sptr top_block)
                     top_block->disconnect(freq_xlating_fir_filter_scf_, 0, file_sink_, 0);
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("byte") == 0) && (output_item_type_.compare("cbyte") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "byte") && (output_item_type_ == "cbyte"))
         {
             top_block->disconnect(gr_char_to_short_, 0, freq_xlating_fir_filter_scf_, 0);
             top_block->disconnect(freq_xlating_fir_filter_scf_, 0, complex_to_complex_byte_, 0);
@@ -319,27 +319,27 @@ void FreqXlatingFirFilter::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr FreqXlatingFirFilter::get_left_block()
 {
-    if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("gr_complex") == 0) && (output_item_type_.compare("gr_complex") == 0))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "gr_complex") && (output_item_type_ == "gr_complex"))
         {
             return freq_xlating_fir_filter_ccf_;
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("float") == 0) && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "float") && (output_item_type_ == "gr_complex"))
         {
             return freq_xlating_fir_filter_fcf_;
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("short") == 0) && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "short") && (output_item_type_ == "gr_complex"))
         {
             return freq_xlating_fir_filter_scf_;
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("short") == 0) && (output_item_type_.compare("cshort") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "short") && (output_item_type_ == "cshort"))
         {
             return freq_xlating_fir_filter_scf_;
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("byte") == 0) && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "byte") && (output_item_type_ == "gr_complex"))
         {
             return gr_char_to_short_;
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("byte") == 0) && (output_item_type_.compare("cbyte") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "byte") && (output_item_type_ == "cbyte"))
         {
             return gr_char_to_short_;
         }
@@ -353,27 +353,27 @@ gr::basic_block_sptr FreqXlatingFirFilter::get_left_block()
 
 gr::basic_block_sptr FreqXlatingFirFilter::get_right_block()
 {
-    if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("gr_complex") == 0) && (output_item_type_.compare("gr_complex") == 0))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "gr_complex") && (output_item_type_ == "gr_complex"))
         {
             return freq_xlating_fir_filter_ccf_;
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("float") == 0) && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "float") && (output_item_type_ == "gr_complex"))
         {
             return freq_xlating_fir_filter_fcf_;
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("short") == 0) && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "short") && (output_item_type_ == "gr_complex"))
         {
             return freq_xlating_fir_filter_scf_;
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("short") == 0) && (output_item_type_.compare("cshort") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "short") && (output_item_type_ == "cshort"))
         {
             return short_x2_to_cshort_;
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("byte") == 0) && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "byte") && (output_item_type_ == "gr_complex"))
         {
             return freq_xlating_fir_filter_scf_;
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("byte") == 0) && (output_item_type_.compare("cbyte") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "byte") && (output_item_type_ == "cbyte"))
         {
             return complex_to_complex_byte_;
         }

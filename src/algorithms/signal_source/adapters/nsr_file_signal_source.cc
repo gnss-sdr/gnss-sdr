@@ -57,8 +57,8 @@ NsrFileSignalSource::NsrFileSignalSource(ConfigurationInterface* configuration,
     filename_ = configuration->property(role + ".filename", default_filename);
 
     // override value with commandline flag, if present
-    if (FLAGS_signal_source.compare("-") != 0) filename_ = FLAGS_signal_source;
-    if (FLAGS_s.compare("-") != 0) filename_ = FLAGS_s;
+    if (FLAGS_signal_source != "-") filename_ = FLAGS_signal_source;
+    if (FLAGS_s != "-") filename_ = FLAGS_s;
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     repeat_ = configuration->property(role + ".repeat", false);
@@ -66,7 +66,7 @@ NsrFileSignalSource::NsrFileSignalSource(ConfigurationInterface* configuration,
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     enable_throttle_control_ = configuration->property(role + ".enable_throttle_control", false);
 
-    if (item_type_.compare("byte") == 0)
+    if (item_type_ == "byte")
         {
             item_size_ = sizeof(char);
         }

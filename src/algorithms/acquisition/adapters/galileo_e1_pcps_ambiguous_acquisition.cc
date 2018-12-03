@@ -103,7 +103,7 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
 
     code_ = new gr_complex[vector_length_];
 
-    if (item_type_.compare("cshort") == 0)
+    if (item_type_ == "cshort")
         {
             item_size_ = sizeof(lv_16sc_t);
         }
@@ -119,7 +119,7 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     acquisition_ = pcps_make_acquisition(acq_parameters);
     DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
 
-    if (item_type_.compare("cbyte") == 0)
+    if (item_type_ == "cbyte")
         {
             cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
             float_to_complex_ = gr::blocks::float_to_complex::make();

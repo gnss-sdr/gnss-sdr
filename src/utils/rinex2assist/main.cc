@@ -80,65 +80,71 @@ int main(int argc, char** argv)
     std::size_t found = rinex_filename.find_last_of(".");
     if (found != std::string::npos)
         {
-            if ((rinex_filename.substr(found + 1, found + 3).compare("gz") == 0))
+            if (rinex_filename.size() >= found + 3)
                 {
-                    std::ifstream file(rinex_filename, std::ios_base::in | std::ios_base::binary);
-                    if (file.fail())
+                    if ((rinex_filename.substr(found + 1, found + 3) == "gz"))
                         {
-                            std::cerr << "Could not open file " << rinex_filename << std::endl;
-                            return 1;
-                        }
-                    boost::iostreams::filtering_streambuf<boost::iostreams::input> in;
-                    try
-                        {
-                            in.push(boost::iostreams::gzip_decompressor());
-                        }
-                    catch (const boost::exception& e)
-                        {
-                            std::cerr << "Could not decompress file " << rinex_filename << std::endl;
-                            return 1;
-                        }
-                    in.push(file);
-                    std::string rinex_filename_unzipped = rinex_filename.substr(0, found);
-                    std::ofstream output_file(rinex_filename_unzipped.c_str(), std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
-                    if (file.fail())
-                        {
-                            std::cerr << "Could not create file " << rinex_filename_unzipped << std::endl;
-                            return 1;
-                        }
-                    boost::iostreams::copy(in, output_file);
-                    input_filename = rinex_filename_unzipped;
-                }
-            if ((rinex_filename.substr(found + 1, found + 2).compare("Z") == 0))
-                {
-                    std::ifstream file(rinex_filename, std::ios_base::in | std::ios_base::binary);
-                    if (file.fail())
-                        {
-                            std::cerr << "Could not open file" << rinex_filename << std::endl;
-                            return 1;
-                        }
-                    file.close();
-                    std::string uncompress_executable(UNCOMPRESS_EXECUTABLE);
-                    if (!uncompress_executable.empty())
-                        {
-                            // option k is not always available, so we save a copy of the original file
-                            std::string argum = std::string("/bin/cp " + rinex_filename + " " + rinex_filename + ".aux");
-                            int s1 = std::system(argum.c_str());
-                            std::string argum2 = std::string(uncompress_executable + " -f " + rinex_filename);
-                            int s2 = std::system(argum2.c_str());
-                            std::string argum3 = std::string("/bin/mv " + rinex_filename + +".aux" + " " + rinex_filename);
-                            int s3 = std::system(argum3.c_str());
-                            input_filename = rinex_filename.substr(0, found);
-                            if ((s1 != 0) or (s2 != 0) or (s3 != 0))
+                            std::ifstream file(rinex_filename, std::ios_base::in | std::ios_base::binary);
+                            if (file.fail())
                                 {
-                                    std::cerr << "Failure uncompressing file." << std::endl;
+                                    std::cerr << "Could not open file " << rinex_filename << std::endl;
                                     return 1;
                                 }
+                            boost::iostreams::filtering_streambuf<boost::iostreams::input> in;
+                            try
+                                {
+                                    in.push(boost::iostreams::gzip_decompressor());
+                                }
+                            catch (const boost::exception& e)
+                                {
+                                    std::cerr << "Could not decompress file " << rinex_filename << std::endl;
+                                    return 1;
+                                }
+                            in.push(file);
+                            std::string rinex_filename_unzipped = rinex_filename.substr(0, found);
+                            std::ofstream output_file(rinex_filename_unzipped.c_str(), std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+                            if (file.fail())
+                                {
+                                    std::cerr << "Could not create file " << rinex_filename_unzipped << std::endl;
+                                    return 1;
+                                }
+                            boost::iostreams::copy(in, output_file);
+                            input_filename = rinex_filename_unzipped;
                         }
-                    else
+                }
+            if (rinex_filename.size() >= found + 2)
+                {
+                    if ((rinex_filename.substr(found + 1, found + 2) == "Z"))
                         {
-                            std::cerr << "uncompress program not found." << std::endl;
-                            return 1;
+                            std::ifstream file(rinex_filename, std::ios_base::in | std::ios_base::binary);
+                            if (file.fail())
+                                {
+                                    std::cerr << "Could not open file" << rinex_filename << std::endl;
+                                    return 1;
+                                }
+                            file.close();
+                            std::string uncompress_executable(UNCOMPRESS_EXECUTABLE);
+                            if (!uncompress_executable.empty())
+                                {
+                                    // option k is not always available, so we save a copy of the original file
+                                    std::string argum = std::string("/bin/cp " + rinex_filename + " " + rinex_filename + ".aux");
+                                    int s1 = std::system(argum.c_str());
+                                    std::string argum2 = std::string(uncompress_executable + " -f " + rinex_filename);
+                                    int s2 = std::system(argum2.c_str());
+                                    std::string argum3 = std::string("/bin/mv " + rinex_filename + +".aux" + " " + rinex_filename);
+                                    int s3 = std::system(argum3.c_str());
+                                    input_filename = rinex_filename.substr(0, found);
+                                    if ((s1 != 0) or (s2 != 0) or (s3 != 0))
+                                        {
+                                            std::cerr << "Failure uncompressing file." << std::endl;
+                                            return 1;
+                                        }
+                                }
+                            else
+                                {
+                                    std::cerr << "uncompress program not found." << std::endl;
+                                    return 1;
+                                }
                         }
                 }
         }
@@ -164,7 +170,7 @@ int main(int argc, char** argv)
             rnffs >> hdr;
 
             // Check that it really is a RINEX navigation file
-            if (hdr.fileType.substr(0, 1).compare("N") != 0)
+            if (hdr.fileType.substr(0, 1) != "N")
                 {
                     std::cerr << "This is not a valid RINEX navigation file, or file not found." << std::endl;
                     std::cerr << "No XML file will be created." << std::endl;
@@ -172,7 +178,7 @@ int main(int argc, char** argv)
                 }
 
             // Collect UTC parameters from RINEX header
-            if (hdr.fileSys.compare("G: (GPS)") == 0 || hdr.fileSys.compare("MIXED") == 0)
+            if (hdr.fileSys == "G: (GPS)" || hdr.fileSys == "MIXED")
                 {
                     gps_utc_model.valid = (hdr.valid > 2147483648) ? true : false;
                     gps_utc_model.d_A1 = hdr.mapTimeCorr["GPUT"].A0;
@@ -195,7 +201,7 @@ int main(int argc, char** argv)
                     gps_iono.d_beta2 = hdr.mapIonoCorr["GPSB"].param[2];
                     gps_iono.d_beta3 = hdr.mapIonoCorr["GPSB"].param[3];
                 }
-            if (hdr.fileSys.compare("E: (GAL)") == 0 || hdr.fileSys.compare("MIXED") == 0)
+            if (hdr.fileSys == "E: (GAL)" || hdr.fileSys == "MIXED")
                 {
                     gal_utc_model.A0_6 = hdr.mapTimeCorr["GAUT"].A0;
                     gal_utc_model.A1_6 = hdr.mapTimeCorr["GAUT"].A1;
@@ -221,7 +227,7 @@ int main(int argc, char** argv)
             // Read navigation data
             while (rnffs >> rne)
                 {
-                    if (rne.satSys.compare("G") == 0 or rne.satSys.empty())
+                    if (rne.satSys == "G" or rne.satSys.empty())
                         {
                             // Fill GPS ephemeris object
                             Gps_Ephemeris eph;
@@ -266,7 +272,7 @@ int main(int argc, char** argv)
                             eph_map[i] = eph;
                             i++;
                         }
-                    if (rne.satSys.compare("E") == 0)
+                    if (rne.satSys == "E")
                         {
                             // Fill Galileo ephemeris object
                             Galileo_Ephemeris eph;

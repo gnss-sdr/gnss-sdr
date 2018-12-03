@@ -70,7 +70,7 @@ GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(
     vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     //################# MAKE TRACKING GNURadio object ###################
-    if (item_type.compare("gr_complex") == 0)
+    if (item_type == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             tracking_ = gps_l1_ca_tcp_connector_make_tracking_cc(

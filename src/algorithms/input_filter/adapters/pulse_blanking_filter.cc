@@ -61,7 +61,7 @@ PulseBlankingFilter::PulseBlankingFilter(ConfigurationInterface* configuration, 
     int n_segments_est = config_->property(role_ + ".segments_est", default_n_segments_est);
     int default_n_segments_reset = 5000000;
     int n_segments_reset = config_->property(role_ + ".segments_reset", default_n_segments_reset);
-    if (input_item_type_.compare("gr_complex") == 0)
+    if (input_item_type_ == "gr_complex")
         {
             item_size = sizeof(gr_complex);    //output
             input_size_ = sizeof(gr_complex);  //input
@@ -110,7 +110,7 @@ PulseBlankingFilter::~PulseBlankingFilter() = default;
 
 void PulseBlankingFilter::connect(gr::top_block_sptr top_block)
 {
-    if (input_item_type_.compare("gr_complex") == 0)
+    if (input_item_type_ == "gr_complex")
         {
             if (dump_)
                 {
@@ -131,7 +131,7 @@ void PulseBlankingFilter::connect(gr::top_block_sptr top_block)
 
 void PulseBlankingFilter::disconnect(gr::top_block_sptr top_block)
 {
-    if (input_item_type_.compare("gr_complex") == 0)
+    if (input_item_type_ == "gr_complex")
         {
             if (dump_)
                 {
@@ -151,7 +151,7 @@ void PulseBlankingFilter::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr PulseBlankingFilter::get_left_block()
 {
-    if (input_item_type_.compare("gr_complex") == 0)
+    if (input_item_type_ == "gr_complex")
         {
             if (xlat_)
                 {
@@ -172,7 +172,7 @@ gr::basic_block_sptr PulseBlankingFilter::get_left_block()
 
 gr::basic_block_sptr PulseBlankingFilter::get_right_block()
 {
-    if (input_item_type_.compare("gr_complex") == 0)
+    if (input_item_type_ == "gr_complex")
         {
             return pulse_blanking_cc_;
         }

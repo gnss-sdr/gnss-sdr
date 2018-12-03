@@ -51,7 +51,7 @@ LabsatSignalSource::LabsatSignalSource(ConfigurationInterface* configuration,
     samples_ = configuration->property(role + ".samples", 0);
     filename_ = configuration->property(role + ".filename", default_filename);
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             labsat23_source_ = labsat23_make_source(filename_.c_str(), channel_selector);

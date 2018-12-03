@@ -48,7 +48,7 @@ BeamformerFilter::BeamformerFilter(
     DLOG(INFO) << "dump_ is " << dump_;
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             beamformer_ = make_beamformer();

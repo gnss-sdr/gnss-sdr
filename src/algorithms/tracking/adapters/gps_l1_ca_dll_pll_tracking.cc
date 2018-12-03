@@ -132,7 +132,7 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     trk_param.carrier_lock_th = carrier_lock_th;
 
     //################# MAKE TRACKING GNURadio object ###################
-    if (item_type.compare("gr_complex") == 0)
+    if (item_type == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             tracking_ = dll_pll_veml_make_tracking(trk_param);

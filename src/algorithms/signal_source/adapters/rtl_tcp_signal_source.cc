@@ -69,11 +69,11 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
     port_ = configuration->property(role + ".port", default_port);
     flip_iq_ = configuration->property(role + ".flip_iq", false);
 
-    if (item_type_.compare("short") == 0)
+    if (item_type_ == "short")
         {
             item_size_ = sizeof(short);
         }
-    else if (item_type_.compare("gr_complex") == 0)
+    else if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             // 1. Make the gr block

@@ -47,7 +47,7 @@ Pass_Through::Pass_Through(ConfigurationInterface* configuration, std::string ro
     std::string default_item_type = "gr_complex";
     std::string input_type = configuration->property(role + ".input_item_type", default_item_type);
     std::string output_type = configuration->property(role + ".output_item_type", default_item_type);
-    if (input_type.compare(output_type) != 0)
+    if (input_type != output_type)
         {
             LOG(WARNING) << "input_item_type and output_item_type are different in a Pass_Through implementation! Taking "
                          << input_type
@@ -57,11 +57,11 @@ Pass_Through::Pass_Through(ConfigurationInterface* configuration, std::string ro
     item_type_ = configuration->property(role + ".item_type", input_type);
     inverted_spectrum = configuration->property(role + ".inverted_spectrum", false);
 
-    if (item_type_.compare("float") == 0)
+    if (item_type_ == "float")
         {
             item_size_ = sizeof(float);
         }
-    else if (item_type_.compare("gr_complex") == 0)
+    else if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             if (inverted_spectrum)
@@ -69,15 +69,15 @@ Pass_Through::Pass_Through(ConfigurationInterface* configuration, std::string ro
                     conjugate_cc_ = make_conjugate_cc();
                 }
         }
-    else if (item_type_.compare("short") == 0)
+    else if (item_type_ == "short")
         {
             item_size_ = sizeof(int16_t);
         }
-    else if (item_type_.compare("ishort") == 0)
+    else if (item_type_ == "ishort")
         {
             item_size_ = sizeof(int16_t);
         }
-    else if (item_type_.compare("cshort") == 0)
+    else if (item_type_ == "cshort")
         {
             item_size_ = sizeof(lv_16sc_t);
             if (inverted_spectrum)
@@ -85,15 +85,15 @@ Pass_Through::Pass_Through(ConfigurationInterface* configuration, std::string ro
                     conjugate_sc_ = make_conjugate_sc();
                 }
         }
-    else if (item_type_.compare("byte") == 0)
+    else if (item_type_ == "byte")
         {
             item_size_ = sizeof(int8_t);
         }
-    else if (item_type_.compare("ibyte") == 0)
+    else if (item_type_ == "ibyte")
         {
             item_size_ = sizeof(int8_t);
         }
-    else if (item_type_.compare("cbyte") == 0)
+    else if (item_type_ == "cbyte")
         {
             item_size_ = sizeof(lv_8sc_t);
             if (inverted_spectrum)
@@ -145,15 +145,15 @@ gr::basic_block_sptr Pass_Through::get_left_block()
 {
     if (inverted_spectrum)
         {
-            if (item_type_.compare("gr_complex") == 0)
+            if (item_type_ == "gr_complex")
                 {
                     return conjugate_cc_;
                 }
-            else if (item_type_.compare("cshort") == 0)
+            else if (item_type_ == "cshort")
                 {
                     return conjugate_sc_;
                 }
-            else if (item_type_.compare("cbyte") == 0)
+            else if (item_type_ == "cbyte")
                 {
                     return conjugate_ic_;
                 }
@@ -172,15 +172,15 @@ gr::basic_block_sptr Pass_Through::get_right_block()
 {
     if (inverted_spectrum)
         {
-            if (item_type_.compare("gr_complex") == 0)
+            if (item_type_ == "gr_complex")
                 {
                     return conjugate_cc_;
                 }
-            else if (item_type_.compare("cshort") == 0)
+            else if (item_type_ == "cshort")
                 {
                     return conjugate_sc_;
                 }
-            else if (item_type_.compare("cbyte") == 0)
+            else if (item_type_ == "cbyte")
                 {
                     return conjugate_ic_;
                 }

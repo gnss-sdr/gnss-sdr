@@ -70,7 +70,7 @@ NotchFilterLite::NotchFilterLite(ConfigurationInterface* configuration, std::str
     n_segments_reset = configuration->property(role + ".segments_reset", default_n_segments_reset);
     int n_segments_coeff = static_cast<int>((samp_freq / coeff_rate) / static_cast<float>(length_));
     n_segments_coeff = std::max(1, n_segments_coeff);
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             notch_filter_lite_ = make_notch_filter_lite(p_c_factor, pfa, length_, n_segments_est, n_segments_reset, n_segments_coeff);

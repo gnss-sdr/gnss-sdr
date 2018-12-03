@@ -113,7 +113,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     if (trk_parameters.system == 'G')
         {
             systemName = "GPS";
-            if (signal_type.compare("1C") == 0)
+            if (signal_type == "1C")
                 {
                     d_signal_carrier_freq = GPS_L1_FREQ_HZ;
                     d_code_period = GPS_L1_CA_CODE_PERIOD;
@@ -151,7 +151,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                     d_symbol_history.resize(GPS_CA_PREAMBLE_LENGTH_SYMBOLS);  // Change fixed buffer size
                     d_symbol_history.clear();                                 // Clear all the elements in the buffer
                 }
-            else if (signal_type.compare("2S") == 0)
+            else if (signal_type == "2S")
                 {
                     d_signal_carrier_freq = GPS_L2_FREQ_HZ;
                     d_code_period = GPS_L2_M_PERIOD;
@@ -165,7 +165,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                     trk_parameters.track_pilot = false;
                     interchange_iq = false;
                 }
-            else if (signal_type.compare("L5") == 0)
+            else if (signal_type == "L5")
                 {
                     d_signal_carrier_freq = GPS_L5_FREQ_HZ;
                     d_code_period = GPS_L5i_PERIOD;
@@ -207,7 +207,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     else if (trk_parameters.system == 'E')
         {
             systemName = "Galileo";
-            if (signal_type.compare("1B") == 0)
+            if (signal_type == "1B")
                 {
                     d_signal_carrier_freq = Galileo_E1_FREQ_HZ;
                     d_code_period = Galileo_E1_CODE_PERIOD;
@@ -231,7 +231,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                         }
                     interchange_iq = false;  // Note that E1-B and E1-C are in anti-phase, NOT IN QUADRATURE. See Galileo ICD.
                 }
-            else if (signal_type.compare("5X") == 0)
+            else if (signal_type == "5X")
                 {
                     d_signal_carrier_freq = Galileo_E5a_FREQ_HZ;
                     d_code_period = GALILEO_E5a_CODE_PERIOD;
@@ -472,15 +472,15 @@ void dll_pll_veml_tracking::start_tracking()
     d_carrier_loop_filter.initialize();  // initialize the carrier filter
     d_code_loop_filter.initialize();     // initialize the code filter
 
-    if (systemName.compare("GPS") == 0 and signal_type.compare("1C") == 0)
+    if (systemName == "GPS" and signal_type == "1C")
         {
             gps_l1_ca_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
         }
-    else if (systemName.compare("GPS") == 0 and signal_type.compare("2S") == 0)
+    else if (systemName == "GPS" and signal_type == "2S")
         {
             gps_l2c_m_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
         }
-    else if (systemName.compare("GPS") == 0 and signal_type.compare("L5") == 0)
+    else if (systemName == "GPS" and signal_type == "L5")
         {
             if (trk_parameters.track_pilot)
                 {
@@ -494,7 +494,7 @@ void dll_pll_veml_tracking::start_tracking()
                     gps_l5i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
                 }
         }
-    else if (systemName.compare("Galileo") == 0 and signal_type.compare("1B") == 0)
+    else if (systemName == "Galileo" and signal_type == "1B")
         {
             if (trk_parameters.track_pilot)
                 {
@@ -509,7 +509,7 @@ void dll_pll_veml_tracking::start_tracking()
                     galileo_e1_code_gen_sinboc11_float(d_tracking_code, d_acquisition_gnss_synchro->Signal, d_acquisition_gnss_synchro->PRN);
                 }
         }
-    else if (systemName.compare("Galileo") == 0 and signal_type.compare("5X") == 0)
+    else if (systemName == "Galileo" and signal_type == "5X")
         {
             gr_complex *aux_code = static_cast<gr_complex *>(volk_gnsssdr_malloc(sizeof(gr_complex) * d_code_length_chips, volk_gnsssdr_get_alignment()));
             galileo_e5_a_code_gen_complex_primary(aux_code, d_acquisition_gnss_synchro->PRN, const_cast<char *>(signal_type.c_str()));
@@ -578,7 +578,7 @@ void dll_pll_veml_tracking::start_tracking()
 
 dll_pll_veml_tracking::~dll_pll_veml_tracking()
 {
-    if (signal_type.compare("1C") == 0)
+    if (signal_type == "1C")
         {
             volk_gnsssdr_free(d_gps_l1ca_preambles_symbols);
         }

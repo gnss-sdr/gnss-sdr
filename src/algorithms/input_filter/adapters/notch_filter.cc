@@ -63,7 +63,7 @@ NotchFilter::NotchFilter(ConfigurationInterface* configuration, std::string role
     length_ = configuration->property(role + ".length", default_length_);
     n_segments_est = configuration->property(role + ".segments_est", default_n_segments_est);
     n_segments_reset = configuration->property(role + ".segments_reset", default_n_segments_reset);
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             notch_filter_ = make_notch_filter(pfa, p_c_factor, length_, n_segments_est, n_segments_reset);

@@ -110,7 +110,7 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
                 }
         }
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             DLOG(INFO) << "Item size " << item_size_;
@@ -154,7 +154,7 @@ SignalGenerator::~SignalGenerator() = default;
 
 void SignalGenerator::connect(gr::top_block_sptr top_block)
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             top_block->connect(gen_source_, 0, vector_to_stream_, 0);
             DLOG(INFO) << "connected gen_source to vector_to_stream";
@@ -170,7 +170,7 @@ void SignalGenerator::connect(gr::top_block_sptr top_block)
 
 void SignalGenerator::disconnect(gr::top_block_sptr top_block)
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             top_block->disconnect(gen_source_, 0, vector_to_stream_, 0);
             if (dump_)

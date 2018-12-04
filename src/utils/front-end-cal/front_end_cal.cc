@@ -255,10 +255,7 @@ bool FrontEndCal::get_ephemeris()
                         }
                     return false;
                 }
-            else
-                {
-                    return true;
-                }
+            return true;
         }
     else
         {

@@ -153,7 +153,7 @@ gr::basic_block_sptr Pass_Through::get_left_block()
                 {
                     return conjugate_sc_;
                 }
-            else if (item_type_ == "cbyte")
+            if (item_type_ == "cbyte")
                 {
                     return conjugate_ic_;
                 }
@@ -180,7 +180,7 @@ gr::basic_block_sptr Pass_Through::get_right_block()
                 {
                     return conjugate_sc_;
                 }
-            else if (item_type_ == "cbyte")
+            if (item_type_ == "cbyte")
                 {
                     return conjugate_ic_;
                 }

@@ -337,12 +337,8 @@ bool Gps_CNAV_Navigation_Message::have_new_ephemeris()  // Check if we have a ne
                     b_flag_ephemeris_2 = false;  // clear the flag
                     return true;
                 }
-            return false;
         }
-    else
-        {
-            return false;
-        }
+    return false;
 }
 
 

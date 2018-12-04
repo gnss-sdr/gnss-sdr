@@ -313,7 +313,7 @@ gr::basic_block_sptr GpsL5iPcpsAcquisition::get_left_block()
         {
             return acquisition_;
         }
-    else if (item_type_ == "cbyte")
+    if (item_type_ == "cbyte")
         {
             return cbyte_to_float_x2_;
         }

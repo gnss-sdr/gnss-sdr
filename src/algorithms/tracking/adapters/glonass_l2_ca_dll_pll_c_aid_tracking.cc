@@ -222,11 +222,8 @@ gr::basic_block_sptr GlonassL2CaDllPllCAidTracking::get_left_block()
         {
             return tracking_sc;
         }
-    else
-        {
-            LOG(WARNING) << item_type_ << " unknown tracking item type";
-            return nullptr;
-        }
+    LOG(WARNING) << item_type_ << " unknown tracking item type";
+    return nullptr;
 }
 
 
@@ -240,9 +237,6 @@ gr::basic_block_sptr GlonassL2CaDllPllCAidTracking::get_right_block()
         {
             return tracking_sc;
         }
-    else
-        {
-            LOG(WARNING) << item_type_ << " unknown tracking item type";
-            return nullptr;
-        }
+    LOG(WARNING) << item_type_ << " unknown tracking item type";
+    return nullptr;
 }

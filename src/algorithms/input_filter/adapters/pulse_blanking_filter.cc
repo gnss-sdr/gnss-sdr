@@ -160,11 +160,8 @@ gr::basic_block_sptr PulseBlankingFilter::get_left_block()
                 }
             return pulse_blanking_cc_;
         }
-    else
-        {
-            LOG(ERROR) << " Unknown input filter input/output item type conversion";
-            return nullptr;
-        }
+    LOG(ERROR) << " Unknown input filter input/output item type conversion";
+    return nullptr;
 }
 
 

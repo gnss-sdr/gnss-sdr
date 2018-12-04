@@ -327,7 +327,7 @@ gr::basic_block_sptr FreqXlatingFirFilter::get_left_block()
         {
             return freq_xlating_fir_filter_fcf_;
         }
-    else if ((taps_item_type_ == "float") && (input_item_type_ == "short") && (output_item_type_ == "gr_complex"))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "short") && (output_item_type_ == "gr_complex"))
         {
             return freq_xlating_fir_filter_scf_;
         }
@@ -361,7 +361,7 @@ gr::basic_block_sptr FreqXlatingFirFilter::get_right_block()
         {
             return freq_xlating_fir_filter_fcf_;
         }
-    else if ((taps_item_type_ == "float") && (input_item_type_ == "short") && (output_item_type_ == "gr_complex"))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "short") && (output_item_type_ == "gr_complex"))
         {
             return freq_xlating_fir_filter_scf_;
         }

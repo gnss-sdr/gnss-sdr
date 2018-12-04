@@ -204,11 +204,9 @@ bool Glonass_Gnav_Navigation_Message::CRC_test(std::bitset<GLONASS_GNAV_STRING_B
         {
             return true;
         }
-    else
-        // All other conditions are assumed errors. TODO: Add correction for case B
-        {
-            return false;
-        }
+
+    // All other conditions are assumed errors. TODO: Add correction for case B
+    return false;
 }
 
 

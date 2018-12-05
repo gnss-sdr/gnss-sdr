@@ -56,4 +56,5 @@ Acq_Conf::Acq_Conf()
     use_automatic_resampler = false;
     resampler_ratio = 1.0;
     resampled_fs = 0LL;
+    resampler_latency_samples = 0U;
 }

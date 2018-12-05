@@ -139,9 +139,16 @@ public:
      */
     void stop_acquisition() override;
 
+    /*!
+     * \brief Sets the resampler latency to account it in the acquisition code delay estimation
+     */
+
+    void set_resampler_latency(uint32_t latency_samples) override;
+
 private:
     ConfigurationInterface* configuration_;
     pcps_acquisition_sptr acquisition_;
+    Acq_Conf acq_parameters_;
     gr::blocks::float_to_complex::sptr float_to_complex_;
     complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
     size_t item_size_;

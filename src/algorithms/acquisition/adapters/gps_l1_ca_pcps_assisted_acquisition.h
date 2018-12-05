@@ -128,6 +128,8 @@ public:
      */
     void stop_acquisition() override;
 
+    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
+
 private:
     pcps_assisted_acquisition_cc_sptr acquisition_cc_;
     size_t item_size_;

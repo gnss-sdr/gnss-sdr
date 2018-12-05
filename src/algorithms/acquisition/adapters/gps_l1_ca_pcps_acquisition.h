@@ -142,6 +142,13 @@ public:
      */
     void stop_acquisition() override;
 
+    /*!
+     * \brief Sets the resampler latency to account it in the acquisition code delay estimation
+     */
+
+    void set_resampler_latency(uint32_t latency_samples) override;
+
+
 private:
     ConfigurationInterface* configuration_;
     pcps_acquisition_sptr acquisition_;

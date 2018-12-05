@@ -58,10 +58,8 @@
 #include <boost/filesystem.hpp>
 
 #ifdef GR_GREATER_38
-#include <gnuradio/filter/mmse_resampler_cc.h>
 #include <gnuradio/filter/fir_filter_blk.h>
 #else
-#include <gnuradio/filter/fractional_resampler_cc.h>
 #include <gnuradio/filter/fir_filter_ccf.h>
 #endif
 #include <gnuradio/filter/firdes.h>
@@ -322,7 +320,7 @@ void TrackingPullInTest::configure_receiver(
             System_and_Signal = "GPS L2CM";
             signal.copy(gnss_synchro.Signal, 2, 0);
             config->set_property("Tracking.early_late_space_chips", "0.5");
-            config->set_property("Tracking.track_pilot", "false");
+            config->set_property("Tracking.track_pilot", "true");
         }
     else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking") == 0 or implementation.compare("Galileo_E5a_DLL_PLL_Tracking_b") == 0)
         {
@@ -335,7 +333,7 @@ void TrackingPullInTest::configure_receiver(
                     config->supersede_property("Tracking.implementation", std::string("Galileo_E5a_DLL_PLL_Tracking"));
                 }
             config->set_property("Tracking.early_late_space_chips", "0.5");
-            config->set_property("Tracking.track_pilot", "false");
+            config->set_property("Tracking.track_pilot", "true");
             config->set_property("Tracking.order", "2");
         }
     else if (implementation.compare("GPS_L5_DLL_PLL_Tracking") == 0)
@@ -345,7 +343,7 @@ void TrackingPullInTest::configure_receiver(
             System_and_Signal = "GPS L5I";
             signal.copy(gnss_synchro.Signal, 2, 0);
             config->set_property("Tracking.early_late_space_chips", "0.5");
-            config->set_property("Tracking.track_pilot", "false");
+            config->set_property("Tracking.track_pilot", "true");
             config->set_property("Tracking.order", "2");
         }
     else
@@ -497,8 +495,6 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
     top_block->connect(file_source, 0, gr_interleaved_char_to_complex, 0);
 
     // Enable automatic resampler for the acquisition, if required
-    std::vector<float> taps;
-    int decimation = 1;
     if (FLAGS_use_acquisition_resampler == true)
         {
             //create acquisition resamplers if required
@@ -524,7 +520,7 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
                     opt_fs = Galileo_E1_OPT_ACQ_FS_HZ;
                     break;
                 case evGAL_5X:
-                    opt_fs = baseband_sampling_freq;
+                    opt_fs = Galileo_E5a_OPT_ACQ_FS_HZ;
                     break;
                 case evGLO_1G:
                     opt_fs = baseband_sampling_freq;
@@ -536,30 +532,38 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
             if (opt_fs < baseband_sampling_freq)
                 {
                     resampler_ratio = baseband_sampling_freq / opt_fs;
-                    decimation = floor(resampler_ratio);
+                    int decimation = floor(resampler_ratio);
                     while (baseband_sampling_freq % decimation > 0)
                         {
                             decimation--;
                         };
                     double acq_fs = baseband_sampling_freq / decimation;
 
-                    //create a FIR low pass filter
-                    taps = gr::filter::firdes::low_pass(1.0,
-                        baseband_sampling_freq,
-                        acq_fs / 2.1,
-                        acq_fs / 20,
-                        gr::filter::firdes::win_type::WIN_HAMMING);
-                    std::cout << "Enabled decimation low pass filter with " << taps.size() << " taps and decimation factor of " << decimation << std::endl;
-                    gr::basic_block_sptr fir_filter_ccf_ = gr::filter::fir_filter_ccf::make(decimation, taps);
-
-                    //#ifdef GR_GREATER_38
-                    //                    gr::basic_block_sptr resampler = gr::filter::mmse_resampler_cc::make(0.0, resampler_ratio);
-                    //#else
-                    //                    gr::basic_block_sptr resampler = gr::filter::fractional_resampler_cc::make(0.0, resampler_ratio);
-                    //#endif
-                    top_block->connect(gr_interleaved_char_to_complex, 0, fir_filter_ccf_, 0);
-                    //                    top_block->connect(fir_filter_ccf_, 0, resampler, 0);
-                    top_block->connect(fir_filter_ccf_, 0, acquisition->get_left_block(), 0);
+                    if (decimation > 1)
+                        {
+                            //create a FIR low pass filter
+                            std::vector<float> taps;
+                            taps = gr::filter::firdes::low_pass(1.0,
+                                baseband_sampling_freq,
+                                acq_fs / 2.1,
+                                acq_fs / 10,
+                                gr::filter::firdes::win_type::WIN_HAMMING);
+                            std::cout << "Enabled decimation low pass filter with " << taps.size() << " taps and decimation factor of " << decimation << std::endl;
+                            acquisition->set_resampler_latency((taps.size() - 1) / 2);
+                            gr::basic_block_sptr fir_filter_ccf_ = gr::filter::fir_filter_ccf::make(decimation, taps);
+                            top_block->connect(gr_interleaved_char_to_complex, 0, fir_filter_ccf_, 0);
+                            top_block->connect(fir_filter_ccf_, 0, acquisition->get_left_block(), 0);
+                        }
+                    else
+                        {
+                            std::cout << "Disabled acquisition resampler because the input sampling frequency is too low\n";
+                            top_block->connect(gr_interleaved_char_to_complex, 0, acquisition->get_left_block(), 0);
+                        }
+                }
+            else
+                {
+                    std::cout << "Disabled acquisition resampler because the input sampling frequency is too low\n";
+                    top_block->connect(gr_interleaved_char_to_complex, 0, acquisition->get_left_block(), 0);
                 }
         }
     else
@@ -567,6 +571,8 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
             top_block->connect(gr_interleaved_char_to_complex, 0, acquisition->get_left_block(), 0);
             //top_block->connect(head_samples, 0, acquisition->get_left_block(), 0);
         }
+
+
     boost::shared_ptr<Acquisition_msg_rx> msg_rx;
     try
         {
@@ -633,17 +639,8 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
                 {
                     std::cout << " " << PRN << " ";
                     doppler_measurements_map.insert(std::pair<int, double>(PRN, tmp_gnss_synchro.Acq_doppler_hz));
-
-                    if (FLAGS_use_acquisition_resampler == true)
-                        {
-                            code_delay_measurements_map.insert(std::pair<int, double>(PRN, tmp_gnss_synchro.Acq_delay_samples - (taps.size()) / 2));
-                            acq_samplestamp_map.insert(std::pair<int, double>(PRN, tmp_gnss_synchro.Acq_samplestamp_samples));
-                        }
-                    else
-                        {
-                            code_delay_measurements_map.insert(std::pair<int, double>(PRN, tmp_gnss_synchro.Acq_delay_samples));
-                            acq_samplestamp_map.insert(std::pair<int, double>(PRN, tmp_gnss_synchro.Acq_samplestamp_samples));
-                        }
+                    code_delay_measurements_map.insert(std::pair<int, double>(PRN, tmp_gnss_synchro.Acq_delay_samples));
+                    acq_samplestamp_map.insert(std::pair<int, double>(PRN, tmp_gnss_synchro.Acq_samplestamp_samples));
                 }
             else
                 {

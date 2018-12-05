@@ -58,7 +58,7 @@ const int32_t GALILEO_E5A_HISTORY_DEEP = 20;
 const int32_t GALILEO_E5A_CRC_ERROR_LIMIT = 6;
 
 //optimum parameters
-const uint32_t Galileo_E5A_OPT_ACQ_FS_HZ = 10000000;
+const uint32_t Galileo_E5a_OPT_ACQ_FS_HZ = 10000000;  //!< Sampling frequncy that maximizes the acquisition SNR while using a non-multiple of chip rate
 
 // F/NAV message structure
 

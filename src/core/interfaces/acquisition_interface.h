@@ -65,6 +65,7 @@ public:
     virtual signed int mag() = 0;
     virtual void reset() = 0;
     virtual void stop_acquisition() = 0;
+    virtual void set_resampler_latency(uint32_t latency_samples) = 0;
 };
 
 #endif /* GNSS_SDR_ACQUISITION_INTERFACE */

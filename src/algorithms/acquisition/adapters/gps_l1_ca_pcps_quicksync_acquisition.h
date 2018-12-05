@@ -136,6 +136,8 @@ public:
      */
     void stop_acquisition() override;
 
+    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
+
 private:
     ConfigurationInterface* configuration_;
     pcps_quicksync_acquisition_cc_sptr acquisition_cc_;

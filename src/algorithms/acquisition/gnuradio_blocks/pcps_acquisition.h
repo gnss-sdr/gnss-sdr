@@ -237,6 +237,8 @@ public:
     }
 
 
+    void set_resampler_latency(uint32_t latency_samples);
+
     /*!
       * \brief Parallel Code Phase Search Acquisition signal processing.
       */

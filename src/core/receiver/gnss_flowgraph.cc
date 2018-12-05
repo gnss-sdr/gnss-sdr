@@ -43,11 +43,13 @@
 #include "gnss_block_interface.h"
 #include "channel_interface.h"
 #include "gnss_block_factory.h"
+#include "channel.h"
 #ifdef GR_GREATER_38
-#include <gnuradio/filter/mmse_resampler_cc.h>
+#include <gnuradio/filter/fir_filter_blk.h>
 #else
-#include <gnuradio/filter/fractional_resampler_cc.h>
+#include <gnuradio/filter/fir_filter_ccf.h>
 #endif
+#include <gnuradio/filter/firdes.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
 #include <glog/logging.h>
@@ -354,7 +356,7 @@ void GNSSFlowgraph::connect()
     // Signal conditioner (selected_signal_source) >> channels (i) (dependent of their associated SignalSource_ID)
     int selected_signal_conditioner_ID = 0;
     bool use_acq_resampler = configuration_->property("GNSS-SDR.use_acquisition_resampler", false);
-    double fs = static_cast<double>(configuration_->property("GNSS-SDR.internal_fs_sps", 0));
+    uint32_t fs = configuration_->property("GNSS-SDR.internal_fs_sps", 0);
     for (unsigned int i = 0; i < channels_count_; i++)
         {
             if (FPGA_enabled == false)
@@ -369,9 +371,6 @@ void GNSSFlowgraph::connect()
                         }
                     try
                         {
-                            //                            top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
-                            //                                channels_.at(i)->get_left_block(), 0);
-
                             // Enable automatic resampler for the acquisition, if required
                             if (use_acq_resampler == true)
                                 {
@@ -397,7 +396,7 @@ void GNSSFlowgraph::connect()
                                             acq_fs = Galileo_E1_OPT_ACQ_FS_HZ;
                                             break;
                                         case evGAL_5X:
-                                            acq_fs = fs;
+                                            acq_fs = Galileo_E5a_OPT_ACQ_FS_HZ;
                                             break;
                                         case evGLO_1G:
                                             acq_fs = fs;
@@ -406,47 +405,72 @@ void GNSSFlowgraph::connect()
                                             acq_fs = fs;
                                             break;
                                         }
+
                                     if (acq_fs < fs)
                                         {
                                             //check if the resampler is already created for the channel system/signal and for the specific RF Channel
                                             std::string map_key = channels_.at(i)->implementation() + std::to_string(selected_signal_conditioner_ID);
-
-                                            resampler_ratio = fs / acq_fs;
-
-                                            gr::basic_block_sptr tmp_blk;
-#ifdef GR_GREATER_38
-                                            tmp_blk = gr::filter::mmse_resampler_cc::make(0.0, resampler_ratio);
-#else
-                                            tmp_blk = gr::filter::fractional_resampler_cc::make(0.0, resampler_ratio);
-#endif
-
-                                            std::pair<std::map<std::string, gr::basic_block_sptr>::iterator, bool> ret;
-                                            ret = acq_resamplers_.insert(std::pair<std::string, gr::basic_block_sptr>(map_key, tmp_blk));
-                                            if (ret.second == true)
+                                            resampler_ratio = static_cast<double>(fs) / acq_fs;
+                                            int decimation = floor(resampler_ratio);
+                                            while (fs % decimation > 0)
                                                 {
+                                                    decimation--;
+                                                };
+                                            double acq_fs = fs / decimation;
+
+                                            if (decimation > 1)
+                                                {
+                                                    //create a FIR low pass filter
+                                                    std::vector<float> taps;
+                                                    taps = gr::filter::firdes::low_pass(1.0,
+                                                        fs,
+                                                        acq_fs / 2.1,
+                                                        acq_fs / 10,
+                                                        gr::filter::firdes::win_type::WIN_HAMMING);
+
+                                                    gr::basic_block_sptr fir_filter_ccf_ = gr::filter::fir_filter_ccf::make(decimation, taps);
+
+                                                    std::pair<std::map<std::string, gr::basic_block_sptr>::iterator, bool> ret;
+                                                    ret = acq_resamplers_.insert(std::pair<std::string, gr::basic_block_sptr>(map_key, fir_filter_ccf_));
+                                                    if (ret.second == true)
+                                                        {
+                                                            top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
+                                                                acq_resamplers_.at(map_key), 0);
+                                                            LOG(INFO) << "Created "
+                                                                      << channels_.at(i)->implementation()
+                                                                      << " acquisition resampler for RF channel " << std::to_string(signal_conditioner_ID) << " with " << taps.size() << " taps and decimation factor of " << decimation;
+                                                        }
+                                                    else
+                                                        {
+                                                            LOG(INFO) << "Found existing "
+                                                                      << channels_.at(i)->implementation()
+                                                                      << " acquisition resampler for RF channel " << std::to_string(signal_conditioner_ID) << " with " << taps.size() << " taps and decimation factor of " << decimation;
+                                                        }
+
+
+                                                    top_block_->connect(acq_resamplers_.at(map_key), 0,
+                                                        channels_.at(i)->get_left_block_acq(), 0);
+
                                                     top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
-                                                        acq_resamplers_.at(map_key), 0);
-                                                    LOG(INFO) << "Created "
-                                                              << channels_.at(i)->implementation()
-                                                              << " acquisition resampler for RF channel " << std::to_string(signal_conditioner_ID) << " with ratio " << resampler_ratio;
+                                                        channels_.at(i)->get_left_block_trk(), 0);
+
+                                                    std::shared_ptr<Channel> channel_ptr;
+                                                    channel_ptr = std::dynamic_pointer_cast<Channel>(channels_.at(i));
+                                                    channel_ptr->acquisition()->set_resampler_latency((taps.size() - 1) / 2);
                                                 }
                                             else
                                                 {
-                                                    LOG(INFO) << "Found  "
-                                                              << channels_.at(i)->implementation()
-                                                              << " acquisition resampler for RF channel " << std::to_string(signal_conditioner_ID) << " with ratio " << resampler_ratio;
+                                                    LOG(INFO) << "Disabled acquisition resampler because the input sampling frequency is too low";
+                                                    //resampler not required!
+                                                    top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
+                                                        channels_.at(i)->get_left_block_acq(), 0);
+                                                    top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
+                                                        channels_.at(i)->get_left_block_trk(), 0);
                                                 }
-
-
-                                            top_block_->connect(acq_resamplers_.at(map_key), 0,
-                                                channels_.at(i)->get_left_block_acq(), 0);
-
-                                            top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
-                                                channels_.at(i)->get_left_block_trk(), 0);
                                         }
                                     else
                                         {
-                                            //resampler not required!
+                                            LOG(INFO) << "Disabled acquisition resampler because the input sampling frequency is too low";
                                             top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
                                                 channels_.at(i)->get_left_block_acq(), 0);
                                             top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,

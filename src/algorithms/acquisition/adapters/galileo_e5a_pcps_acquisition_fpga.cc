@@ -115,6 +115,9 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     acq_parameters.samples_per_ms = nsamples_total / sampled_ms;
     acq_parameters.samples_per_code = nsamples_total;
 
+
+    acq_parameters.excludelimit = static_cast<unsigned int>(ceil((1.0 / Galileo_E5a_CODE_CHIP_RATE_HZ) * static_cast<float>(acq_parameters.fs_in)));
+
     //vector_length_ = code_length_ * sampled_ms_;
 
     // compute all the GALILEO E5 PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
@@ -128,7 +131,7 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     //printf("creating the E5A acquisition CONT");
     //printf("nsamples_total = %d\n", nsamples_total);
 
-    printf("number of codes = %d\n", Galileo_E5a_NUMBER_OF_CODES);
+    //printf("number of codes = %d\n", Galileo_E5a_NUMBER_OF_CODES);
 
     for (unsigned int PRN = 1; PRN <= Galileo_E5a_NUMBER_OF_CODES; PRN++)
         {

@@ -175,8 +175,10 @@ fpga_acquisition::fpga_acquisition(std::string device_name,
             //std::cout << "Acquisition test register sanity check success!" << std::endl;
         }
         */
-    fpga_acquisition::open_device();
+
     fpga_acquisition::reset_acquisition();
+
+    fpga_acquisition::open_device();
     fpga_acquisition::fpga_acquisition_test_register();
     fpga_acquisition::close_device();
 
@@ -329,9 +331,16 @@ void fpga_acquisition::fpga_configure_acquisition_local_code(lv_16sc_t fft_local
 void fpga_acquisition::run_acquisition(void)
 {
 
+
+	//uint32_t result_valid = 0;
+    //while(result_valid == 0)
+    //{
+    //	read_result_valid(&result_valid); // polling
+    //}
 	//printf("acq lib run_acqisition called\n");
     // enable interrupts
     int32_t reenable = 1;
+    int32_t disable_int = 0;
     //reenable = 1;
     write(d_fd, reinterpret_cast<void *>(&reenable), sizeof(int32_t));
 
@@ -345,7 +354,7 @@ void fpga_acquisition::run_acquisition(void)
 
     //uint32_t result_valid = 0;
 
-    //usleep(500000);
+    //usleep(5000000);
     //printf("acq lib waiting for result valid\n");
     //while(result_valid == 0)
     //{
@@ -363,6 +372,7 @@ void fpga_acquisition::run_acquisition(void)
         }
 
 
+    write(d_fd, reinterpret_cast<void *>(&disable_int), sizeof(int32_t));
 
 }
 
@@ -529,8 +539,9 @@ void fpga_acquisition::configure_acquisition()
 	fpga_acquisition::open_device();
 
 	//printf("acq lib configure acquisition called\n");
-    //printf("AAA d_select_queue = %d\n", d_select_queue);
+
     d_map_base[0] = d_select_queue;
+    //printf("AAA d_select_queue = %d\n", d_select_queue);
     //d_map_base[0] = 1;
     //printf("acq internal writing d_vector_length = %d to d map base 1\n ", d_vector_length);
     d_map_base[1] = d_vector_length;
@@ -547,20 +558,27 @@ void fpga_acquisition::configure_acquisition()
 
 
 
+
+
 //void fpga_acquisition::configure_acquisition_debug()
 //{
+//	fpga_acquisition::open_device();
+//
 //	//printf("acq lib configure acquisition called\n");
+// //   d_map_base[0] = d_select_queue;
 //    //printf("AAA d_select_queue = %d\n", d_select_queue);
-//    d_map_base[0] = d_select_queue;
+//
+//    //usleep(500000);
+//    //d_map_base[0] = 1;
 //    //printf("acq internal writing d_vector_length = %d to d map base 1\n ", d_vector_length);
-//    d_map_base[1] = d_vector_length;
+///*    d_map_base[1] = d_vector_length;
 //    //printf("acq interal writing d_nsamples = %d to d map base 2\n ", d_nsamples);
 //    d_map_base[2] = d_nsamples;
 //    //printf("AAA writing LOG2 d_vector_length = %d to d map base 7\n ", (int)log2((float)d_vector_length));
 //    d_map_base[7] = static_cast<int32_t>(log2(static_cast<float>(d_vector_length)));  // log2 FFTlength
 //    //printf("AAA writing excludelimit = %d to d map base 12\n", (int) d_excludelimit);
 //    d_map_base[12] = d_excludelimit;
-//
+//*/
 //    //printf("acquisition debug vector length = %d\n", d_vector_length);
 //    //printf("acquisition debug vector length = %d\n", (int)log2((float)d_vector_length));
 //}
@@ -599,6 +617,10 @@ void fpga_acquisition::set_phase_step(uint32_t doppler_index)
 void fpga_acquisition::read_acquisition_results(uint32_t *max_index,
     float *firstpeak, float *secondpeak, uint64_t *initial_sample, float *power_sum, uint32_t *doppler_index, uint32_t *total_blk_exp)
 {
+
+	//do
+	//{
+
 
 	//usleep(500000);
 	//printf("reading results\n");
@@ -651,6 +673,9 @@ void fpga_acquisition::read_acquisition_results(uint32_t *max_index,
 
     readval = d_map_base[15]; // read dummy
 
+	//} while (*total_blk_exp == 11);
+
+
 
 
     fpga_acquisition::close_device();
@@ -686,8 +711,10 @@ void fpga_acquisition::close_device()
 
 void fpga_acquisition::reset_acquisition(void)
 {
+	fpga_acquisition::open_device();
 	//printf("acq lib reset acquisition called\n");
     d_map_base[8] = RESET_ACQUISITION;  // writing a 2 to d_map_base[8] resets the multicorrelator
+    fpga_acquisition::close_device();
 }
 
 // this function is only used for the unit tests

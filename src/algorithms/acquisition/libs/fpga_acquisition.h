@@ -116,6 +116,8 @@ public:
     void configure_acquisition(void);
 
     //void configure_acquisition_debug(void);
+    void close_device();
+    void open_device();
 
 private:
     int64_t d_fs_in;
@@ -136,8 +138,8 @@ private:
     void fpga_acquisition_test_register(void);
     void fpga_configure_acquisition_local_code(lv_16sc_t fft_local_code[]);
     //void configure_acquisition();
-    void close_device();
-    void open_device();
+//    void close_device();
+//    void open_device();
     void read_result_valid(uint32_t *result_valid);
 
     // test parameters

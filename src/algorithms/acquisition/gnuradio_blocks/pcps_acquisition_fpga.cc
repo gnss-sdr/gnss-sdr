@@ -315,17 +315,38 @@ void pcps_acquisition_fpga::set_active(bool active)
     //read_acquisition_results(&indext, &firstpeak, &secondpeak, &initial_sample, &d_input_power, &d_doppler_index);
 
 
-
-
     //printf("reading results for channel %d\n", (int) d_channel);
     acquisition_fpga->read_acquisition_results(&indext, &firstpeak, &secondpeak, &initial_sample, &d_input_power, &d_doppler_index, &total_block_exp);
+
+
 
     //printf("returned d_doppler_index = %d\n", d_doppler_index);
 
     //printf("gnuradio block : d_total_block_exp = %d total_block_exp = %d\n", (int) d_total_block_exp, (int) total_block_exp);
 
-
-
+    //printf("d_fft_size = %d = %d\n", d_fft_size, acq_parameters.samples_per_code);
+    //printf("indext = %d\n", (int) indext);
+    //printf("initial_sample = %d\n", (int) initial_sample);
+    //printf("firstpeak = %d\n", (int) firstpeak);
+    //printf("secondpeak = %d\n", (int) secondpeak);
+    //printf("total_block_exp = %d\n", (int) total_block_exp);
+//    if (total_block_exp == 11)
+//    {
+//    	printf("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE\n");
+//    	getchar();
+//
+//    }
+//    if (total_block_exp > d_total_block_exp)
+//    {
+//    	usleep(5000000);
+//    	acquisition_fpga->read_acquisition_results(&indext, &firstpeak, &secondpeak, &initial_sample, &d_input_power, &d_doppler_index, &total_block_exp);
+//        printf("second time d_fft_size = %d = %d", d_fft_size, acq_parameters.samples_per_code);
+//        printf("second time indext = %d\n", (int) indext);
+//        printf("second time initial_sample = %d\n", (int) initial_sample);
+//        printf("second time firstpeak = %d\n", (int) firstpeak);
+//        printf("second time secondpeak = %d\n", (int) secondpeak);
+//        printf("second time total_block_exp = %d\n", (int) total_block_exp);
+//    }
 
     if (total_block_exp > d_total_block_exp)
     {
@@ -336,14 +357,7 @@ void pcps_acquisition_fpga::set_active(bool active)
     }
 
 
-//    // debug
-//    if (acq_parameters.code_length == 12500)
-//    {
-//    	doppler = 0;
-//    	d_test_statistics = 0;
-//    }
-//    else
-//    {
+
 
     //printf("end channel %d -----------------------------------------------------\n", (int) d_channel);
     //printf("READ ACQ RESULTS\n");
@@ -358,6 +372,8 @@ void pcps_acquisition_fpga::set_active(bool active)
     //int32_t doppler;
 
     // NEW SATELLITE DETECTION ALGORITHM STARTS HERE ----------------------------------------------------
+
+
 
 	if (d_single_doppler_flag == false)
 	{
@@ -379,7 +395,7 @@ void pcps_acquisition_fpga::set_active(bool active)
 	}
 
 
-//    } // debug condition
+
 
 //    // OLD SATELLITE DETECTION ALGORITHM STARTS HERE ----------------------------------------------------
 //
@@ -419,8 +435,10 @@ void pcps_acquisition_fpga::set_active(bool active)
     {
     	if (d_downsampling_factor > 1)
     	{
+
     		//printf("yes here\n");
-    		d_gnss_synchro->Acq_delay_samples = static_cast<double>(d_downsampling_factor*(indext % acq_parameters.samples_per_code));
+    		//d_gnss_synchro->Acq_delay_samples = static_cast<double>(d_downsampling_factor*(indext % acq_parameters.samples_per_code));
+    		d_gnss_synchro->Acq_delay_samples = static_cast<double>(d_downsampling_factor*(indext));
     		//d_gnss_synchro->Acq_samplestamp_samples = d_downsampling_factor*d_sample_counter - 81*0.25*d_downsampling_factor; // delay due to the downsampling filter in the acquisition
     		d_gnss_synchro->Acq_samplestamp_samples = d_downsampling_factor*d_sample_counter - 44; //33; //41; //+ 81*0.5; // delay due to the downsampling filter in the acquisition
     		//d_gnss_synchro->Acq_samplestamp_samples = d_downsampling_factor*d_sample_counter - 81/d_downsampling_factor; // delay due to the downsampling filter in the acquisition
@@ -434,7 +452,8 @@ void pcps_acquisition_fpga::set_active(bool active)
     	else
     	{
     		//printf("xxxxxxxxxxxxxxxx no here\n");
-        	d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % acq_parameters.samples_per_code);
+        	//d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % acq_parameters.samples_per_code);
+        	d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext);
         	d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;  // delay due to the downsampling filter in the acquisition
         	//d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter - 40;  // delay due to the downsampling filter in the acquisition
         	//d_gnss_synchro->Acq_samplestamp_samples = d_downsampling_factor*d_sample_counter - 81*0.5*d_downsampling_factor;
@@ -442,7 +461,8 @@ void pcps_acquisition_fpga::set_active(bool active)
     }
     else
     {
-    	d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % acq_parameters.samples_per_code);
+    	//d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % acq_parameters.samples_per_code);
+    	d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext);
     	d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;  // delay due to the downsampling filter in the acquisition
     }
 
@@ -491,10 +511,11 @@ void pcps_acquisition_fpga::set_active(bool active)
             send_positive_acquisition();
             d_state = 0;  // Positive acquisition
 
-            //printf("acq d_gnss_synchro->Acq_delay_samples = %f\n: ",d_gnss_synchro->Acq_delay_samples);
-            //printf("acq d_gnss_synchro->Acq_samplestamp_samples = %d\n", (unsigned int) d_gnss_synchro->Acq_samplestamp_samples);
-            //printf("acq d_gnss_synchro->Acq_doppler_hz = %f\n", d_gnss_synchro->Acq_doppler_hz);
-            //printf("acq d_gnss_synchro->PRN = %d\n", (int) d_gnss_synchro->PRN);
+            //printf("acq POSITIVE ACQ d_fft_size = %d = %d\n", d_fft_size, acq_parameters.samples_per_code);
+            //printf("acq POSITIVE ACQ d_gnss_synchro->Acq_delay_samples = %f\n: ",d_gnss_synchro->Acq_delay_samples);
+            //printf("acq POSITIVE ACQ d_gnss_synchro->Acq_samplestamp_samples = %d\n", (unsigned int) d_gnss_synchro->Acq_samplestamp_samples);
+            //printf("acq POSITIVE ACQ d_gnss_synchro->Acq_doppler_hz = %f\n", d_gnss_synchro->Acq_doppler_hz);
+            //printf("acq POSITIVE ACQ d_gnss_synchro->PRN = %d\n", (int) d_gnss_synchro->PRN);
         }
     else
         {

@@ -93,7 +93,6 @@ const int32_t GALILEO_E1_CODE_PERIOD_MS = 4;
 
 const std::vector<std::pair<int32_t, int32_t>> type({{1, 6}});
 const std::vector<std::pair<int32_t, int32_t>> PAGE_TYPE_bit({{1, 6}});
-;
 
 /*Page 1 - Word type 1: Ephemeris (1/4)*/
 const std::vector<std::pair<int32_t, int32_t>> IOD_nav_1_bit({{7, 10}});

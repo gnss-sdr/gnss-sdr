@@ -257,6 +257,9 @@ eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph)
     rtklib_sat.Adot = 0;  //only in CNAV;
     rtklib_sat.ndot = 0;  //only in CNAV;
 
+    rtklib_sat.code = 1;
+    rtklib_sat.flag = 1;
+
     rtklib_sat.week = bei_eph.i_BEIDOU_week; /* week of tow */
     rtklib_sat.cic = bei_eph.d_Cic;
     rtklib_sat.cis = bei_eph.d_Cis;

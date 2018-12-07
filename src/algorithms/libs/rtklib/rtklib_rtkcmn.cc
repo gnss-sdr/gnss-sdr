@@ -3635,7 +3635,7 @@ double satwavelen(int sat, int frq, const nav_t *nav)
                 return SPEED_OF_LIGHT / FREQ1_BDS; /* B1 */
             if (frq == 1)
                 return SPEED_OF_LIGHT / FREQ2_BDS; /* B2 */
-            else if (frq == 2)
+            if (frq == 2)
                 return SPEED_OF_LIGHT / FREQ3_BDS; /* B3 */
         }
     else
@@ -3644,7 +3644,7 @@ double satwavelen(int sat, int frq, const nav_t *nav)
                 return SPEED_OF_LIGHT / FREQ1; /* L1/E1 */
             if (frq == 1)
                 return SPEED_OF_LIGHT / FREQ2; /* L2 */
-            else if (frq == 2)
+            if (frq == 2)
                 return SPEED_OF_LIGHT / FREQ5; /* L5/E5a */
             else if (frq == 3)
                 return SPEED_OF_LIGHT / FREQ6; /* L6/LEX */

@@ -70,8 +70,8 @@ public:
     int configure_receiver();
     int run_receiver();
     void check_results();
-    bool save_mat_xy(std::vector<double>& x, std::vector<double>& y, std::string filename);
-    bool save_mat_x(std::vector<double>& x, std::string filename);
+    bool save_mat_xy(std::vector<double>* x, std::vector<double>* y, std::string filename);
+    bool save_mat_x(std::vector<double>* x, std::string filename);
     std::string config_filename_no_extension;
 
 private:
@@ -359,7 +359,7 @@ int PositionSystemTest::run_receiver()
 }
 
 
-bool PositionSystemTest::save_mat_xy(std::vector<double>& x, std::vector<double>& y, std::string filename)
+bool PositionSystemTest::save_mat_xy(std::vector<double>* x, std::vector<double>* y, std::string filename)
 {
     try
         {
@@ -371,7 +371,7 @@ bool PositionSystemTest::save_mat_xy(std::vector<double>& x, std::vector<double>
             matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT5);
             if (reinterpret_cast<int64_t*>(matfp) != NULL)
                 {
-                    size_t dims[2] = {1, x.size()};
+                    size_t dims[2] = {1, x->size()};
                     matvar = Mat_VarCreate("x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, &x[0], 0);
                     Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
                     Mat_VarFree(matvar);
@@ -394,7 +394,7 @@ bool PositionSystemTest::save_mat_xy(std::vector<double>& x, std::vector<double>
         }
 }
 
-bool PositionSystemTest::save_mat_x(std::vector<double>& x, std::string filename)
+bool PositionSystemTest::save_mat_x(std::vector<double>* x, std::string filename)
 {
     try
         {
@@ -406,7 +406,7 @@ bool PositionSystemTest::save_mat_x(std::vector<double>& x, std::string filename
             matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT5);
             if (reinterpret_cast<int64_t*>(matfp) != NULL)
                 {
-                    size_t dims[2] = {1, x.size()};
+                    size_t dims[2] = {1, x->size()};
                     matvar = Mat_VarCreate("x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, &x[0], 0);
                     Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
                     Mat_VarFree(matvar);

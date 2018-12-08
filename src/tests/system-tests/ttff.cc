@@ -398,7 +398,7 @@ void TtffTest::print_TTFF_report(const std::vector<double> &ttff_v, std::shared_
     stm << "Navigation mode: "
         << "3D" << std::endl;
 
-    if (source.compare("UHD_Signal_Source"))
+    if (source != "UHD_Signal_Source")
         {
             stm << "Source: File" << std::endl;
         }

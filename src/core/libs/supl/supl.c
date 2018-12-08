@@ -211,10 +211,10 @@ int EXPORT supl_decode_rrlp(supl_ulp_t *ulp_pdu, PDU_t **ret_rrlp) {
     ret_rrlp = 0;
     return E_SUPL_DECODE_RRLP;
   }
-  
+
   return E_SUPL_INTERNAL;
 }
-  
+
 int EXPORT supl_server_connect(supl_ctx_t *ctx, char *server) {
   int err;
   SSL_METHOD *meth;
@@ -225,7 +225,7 @@ int EXPORT supl_server_connect(supl_ctx_t *ctx, char *server) {
   SSL_load_error_strings();
   ctx->ssl_ctx = SSL_CTX_new(meth);
   if (!ctx->ssl_ctx) return E_SUPL_CONNECT;
-  
+
   ctx->ssl = SSL_new(ctx->ssl_ctx);
   if (!ctx->ssl) return E_SUPL_CONNECT;
 
@@ -242,13 +242,13 @@ int EXPORT supl_server_connect(supl_ctx_t *ctx, char *server) {
   {
     X509 *s_cert = SSL_get_peer_certificate(ctx->ssl);
     FILE *fp = fopen("/tmp/s_cert.pem", "w");
-    if (fp) 
+    if (fp)
       PEM_write_X509(fp, s_cert);
     fclose(fp);
     X509_free(s_cert);
   }
 #endif
-	   
+
   return 0;
 }
 
@@ -274,7 +274,7 @@ static int server_connect(char *server) {
   }
 
   for (aip = ailist; aip; aip = aip->ai_next) {
-    if ((fd = socket(aip->ai_family, SOCK_STREAM | SOCK_CLOEXEC, 0)) < 0) {
+    if ((fd = socket(aip->ai_family, SOCK_STREAM, 0)) < 0) {
       err = errno;
     }
     if (connect(fd, aip->ai_addr, aip->ai_addrlen) != 0) {
@@ -315,15 +315,15 @@ static int pdu_make_ulp_start(supl_ctx_t *ctx, supl_ulp_t *pdu) {
   ulp->message.choice.msSUPLSTART.sETCapabilities.posProtocol.rrlp = 1;
 
   if (ctx->p.set & PARAM_GSM_CELL_CURRENT) {
-  ulp->message.choice.msSUPLSTART.locationId.cellInfo.present = CellInfo_PR_gsmCell; 
+  ulp->message.choice.msSUPLSTART.locationId.cellInfo.present = CellInfo_PR_gsmCell;
   ulp->message.choice.msSUPLSTART.locationId.cellInfo.choice.gsmCell.refMCC = ctx->p.gsm.mcc;
   ulp->message.choice.msSUPLSTART.locationId.cellInfo.choice.gsmCell.refMNC = ctx->p.gsm.mnc;
   ulp->message.choice.msSUPLSTART.locationId.cellInfo.choice.gsmCell.refLAC = ctx->p.gsm.lac;
   ulp->message.choice.msSUPLSTART.locationId.cellInfo.choice.gsmCell.refCI = ctx->p.gsm.ci;
-  ulp->message.choice.msSUPLSTART.locationId.cellInfo.choice.gsmCell.nMR = OPTIONAL_MISSING; 
-  ulp->message.choice.msSUPLSTART.locationId.cellInfo.choice.gsmCell.tA = OPTIONAL_MISSING; 
+  ulp->message.choice.msSUPLSTART.locationId.cellInfo.choice.gsmCell.nMR = OPTIONAL_MISSING;
+  ulp->message.choice.msSUPLSTART.locationId.cellInfo.choice.gsmCell.tA = OPTIONAL_MISSING;
   } else if (ctx->p.set & PARAM_WCDMA_CELL_CURRENT) {
-    ulp->message.choice.msSUPLSTART.locationId.cellInfo.present = CellInfo_PR_wcdmaCell; 
+    ulp->message.choice.msSUPLSTART.locationId.cellInfo.present = CellInfo_PR_wcdmaCell;
     ulp->message.choice.msSUPLSTART.locationId.cellInfo.choice.wcdmaCell.refMCC = ctx->p.wcdma.mcc;
     ulp->message.choice.msSUPLSTART.locationId.cellInfo.choice.wcdmaCell.refMNC = ctx->p.wcdma.mnc;
     ulp->message.choice.msSUPLSTART.locationId.cellInfo.choice.wcdmaCell.refUC = ctx->p.wcdma.uc;
@@ -447,15 +447,15 @@ static int pdu_make_ulp_pos_init(supl_ctx_t *ctx, supl_ulp_t *pdu) {
   ulp->message.choice.msSUPLPOSINIT.requestedAssistData = req_adata;
 
   if (ctx->p.set & PARAM_GSM_CELL_CURRENT) {
-  ulp->message.choice.msSUPLPOSINIT.locationId.cellInfo.present = CellInfo_PR_gsmCell; 
+  ulp->message.choice.msSUPLPOSINIT.locationId.cellInfo.present = CellInfo_PR_gsmCell;
   ulp->message.choice.msSUPLPOSINIT.locationId.cellInfo.choice.gsmCell.refMCC = ctx->p.gsm.mcc;
   ulp->message.choice.msSUPLPOSINIT.locationId.cellInfo.choice.gsmCell.refMNC = ctx->p.gsm.mnc;
-  ulp->message.choice.msSUPLPOSINIT.locationId.cellInfo.choice.gsmCell.refLAC = ctx->p.gsm.lac; 
-  ulp->message.choice.msSUPLPOSINIT.locationId.cellInfo.choice.gsmCell.refCI = ctx->p.gsm.ci; 
-  ulp->message.choice.msSUPLPOSINIT.locationId.cellInfo.choice.gsmCell.nMR = OPTIONAL_MISSING; 
-  ulp->message.choice.msSUPLPOSINIT.locationId.cellInfo.choice.gsmCell.tA = OPTIONAL_MISSING; 
+  ulp->message.choice.msSUPLPOSINIT.locationId.cellInfo.choice.gsmCell.refLAC = ctx->p.gsm.lac;
+  ulp->message.choice.msSUPLPOSINIT.locationId.cellInfo.choice.gsmCell.refCI = ctx->p.gsm.ci;
+  ulp->message.choice.msSUPLPOSINIT.locationId.cellInfo.choice.gsmCell.nMR = OPTIONAL_MISSING;
+  ulp->message.choice.msSUPLPOSINIT.locationId.cellInfo.choice.gsmCell.tA = OPTIONAL_MISSING;
   } else if (ctx->p.set & PARAM_WCDMA_CELL_CURRENT) {
-    ulp->message.choice.msSUPLPOSINIT.locationId.cellInfo.present = CellInfo_PR_wcdmaCell; 
+    ulp->message.choice.msSUPLPOSINIT.locationId.cellInfo.present = CellInfo_PR_wcdmaCell;
     ulp->message.choice.msSUPLPOSINIT.locationId.cellInfo.choice.wcdmaCell.refMCC = ctx->p.wcdma.mcc;
     ulp->message.choice.msSUPLPOSINIT.locationId.cellInfo.choice.wcdmaCell.refMNC = ctx->p.wcdma.mnc;
     ulp->message.choice.msSUPLPOSINIT.locationId.cellInfo.choice.wcdmaCell.refUC = ctx->p.wcdma.uc;
@@ -512,7 +512,7 @@ static int pdu_make_ulp_rrlp_ack(supl_ctx_t *ctx, supl_ulp_t *pdu, PDU_t *rrlp) 
 
   rrlp_ack->referenceNumber = rrlp->referenceNumber;
   rrlp_ack->component.present = RRLP_Component_PR_assistanceDataAck;
-    
+
   ret = uper_encode_to_buffer(&asn_DEF_PDU, rrlp_ack, buffer, sizeof(buffer));
   asn_DEF_ULP_PDU.free_struct(&asn_DEF_PDU, rrlp_ack, 0);
   if (ret.encoded == -1) {
@@ -524,12 +524,12 @@ static int pdu_make_ulp_rrlp_ack(supl_ctx_t *ctx, supl_ulp_t *pdu, PDU_t *rrlp) 
 
   ulp = calloc(1, sizeof(ULP_PDU_t));
   session_id = calloc(1, sizeof(SetSessionID_t));
-  
+
   ulp->length = 0;
   ulp->version.maj = 1;
   ulp->version.min = 0;
   ulp->version.servind = 0;
-  
+
   session_id->sessionId = 1;
   //  session_id->setId.present = SETId_PR_msisdn;
   // (void)OCTET_STRING_fromBuf(&session_id->setId.choice.msisdn, ctx->p.msisdn, 8);
@@ -594,7 +594,7 @@ int EXPORT supl_collect_rrlp(supl_assist_t *assist, PDU_t *rrlp, struct timeval 
 	  loc->buf[3];
       if (loc->buf[1] & 0x80) l *= -1;
       lat = 90.0 / (1 << 23) * l;
-      
+
       l = (loc->buf[4] << 16) |
 	  (loc->buf[5] << 8) |
 	  loc->buf[6];
@@ -612,7 +612,7 @@ int EXPORT supl_collect_rrlp(supl_assist_t *assist, PDU_t *rrlp, struct timeval 
       assist->pos.uncertainty = l;
     }
   }
-    
+
   if (hdr->acquisAssist) {
     int n;
 
@@ -825,7 +825,7 @@ int EXPORT supl_get_assist(supl_ctx_t *ctx, char *server, supl_assist_t *assist)
   supl_response_harvest(ctx, &ulp);
 
   supl_ulp_free(&ulp);
-  
+
   /*
   ** send SUPL_POS_INIT
   */
@@ -949,4 +949,3 @@ void EXPORT supl_set_debug(FILE *log, int flags) {
   if (flags & SUPL_DEBUG_DEBUG) debug.debug = 1;
 #endif
 }
-

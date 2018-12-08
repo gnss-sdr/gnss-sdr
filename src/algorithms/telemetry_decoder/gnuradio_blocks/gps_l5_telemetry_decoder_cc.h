@@ -83,14 +83,14 @@ private:
     std::string d_dump_filename;
     std::ofstream d_dump_file;
 
-    cnav_msg_decoder_t d_cnav_decoder;
+    cnav_msg_decoder_t d_cnav_decoder{};
 
     uint32_t d_TOW_at_current_symbol_ms;
     uint32_t d_TOW_at_Preamble_ms;
     bool d_flag_valid_word;
 
     Gps_CNAV_Navigation_Message d_CNAV_Message;
-    double bits_NH[GPS_L5i_NH_CODE_LENGTH];
+    double bits_NH[GPS_L5i_NH_CODE_LENGTH]{};
     std::deque<double> sym_hist;
     bool sync_NH;
     bool new_sym;

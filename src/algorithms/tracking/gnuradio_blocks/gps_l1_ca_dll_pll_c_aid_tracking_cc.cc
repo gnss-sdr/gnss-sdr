@@ -551,9 +551,9 @@ void gps_l1_ca_dll_pll_c_aid_tracking_cc::set_channel(uint32_t channel)
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
                             LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str();
                         }
-                    catch (const std::ifstream::failure *e)
+                    catch (const std::ifstream::failure &e)
                         {
-                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e->what() << std::endl;
+                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what();
                         }
                 }
         }
@@ -891,9 +891,9 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __attrib
                     uint32_t prn_ = d_acquisition_gnss_synchro->PRN;
                     d_dump_file.write(reinterpret_cast<char *>(&prn_), sizeof(uint32_t));
                 }
-            catch (const std::ifstream::failure *e)
+            catch (const std::ifstream::failure &e)
                 {
-                    LOG(WARNING) << "Exception writing trk dump file " << e->what();
+                    LOG(WARNING) << "Exception writing trk dump file " << e.what();
                 }
         }
 

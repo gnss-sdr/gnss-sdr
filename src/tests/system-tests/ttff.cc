@@ -398,7 +398,7 @@ void TtffTest::print_TTFF_report(const std::vector<double> &ttff_v, std::shared_
     stm << "Navigation mode: "
         << "3D" << std::endl;
 
-    if (source.compare("UHD_Signal_Source"))
+    if (source != "UHD_Signal_Source")
         {
             stm << "Source: File" << std::endl;
         }
@@ -417,7 +417,7 @@ void TtffTest::print_TTFF_report(const std::vector<double> &ttff_v, std::shared_
 }
 
 
-TEST_F(TtffTest, ColdStart)
+TEST_F(TtffTest /*unused*/, ColdStart /*unused*/)
 {
     unsigned int num_measurements = 0;
 
@@ -500,7 +500,7 @@ TEST_F(TtffTest, ColdStart)
 }
 
 
-TEST_F(TtffTest, HotStart)
+TEST_F(TtffTest /*unused*/, HotStart /*unused*/)
 {
     unsigned int num_measurements = 0;
     TTFF_v.clear();

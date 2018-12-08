@@ -518,7 +518,7 @@ int fix_amb_ILS(rtk_t *rtk, int *sat1, int *sat2, int *NW, int n)
             return 0;
         }
 
-    rtk->sol.ratio = (float)(MIN_PPP(s[1] / s[0], 999.9));
+    rtk->sol.ratio = static_cast<float>(MIN_PPP(s[1] / s[0], 999.9));
 
     /* varidation by ratio-test */
     if (rtk->opt.thresar[0] > 0.0 && rtk->sol.ratio < rtk->opt.thresar[0])
@@ -1113,7 +1113,7 @@ void udbias_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
     /* reset phase-bias if expire obs outage counter */
     for (i = 0; i < MAXSAT; i++)
         {
-            if (++rtk->ssat[i].outc[0] > (unsigned int)rtk->opt.maxout)
+            if (++rtk->ssat[i].outc[0] > static_cast<unsigned int>(rtk->opt.maxout))
                 {
                     initx(rtk, 0.0, 0.0, IB_PPP(i + 1, &rtk->opt));
                 }
@@ -1492,11 +1492,11 @@ void pppos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
             for (i = 0; i < 3; i++)
                 {
                     rtk->sol.rr[i] = rtk->x[i];
-                    rtk->sol.qr[i] = (float)rtk->P[i + i * rtk->nx];
+                    rtk->sol.qr[i] = static_cast<float>(rtk->P[i + i * rtk->nx]);
                 }
-            rtk->sol.qr[3] = (float)rtk->P[1];
-            rtk->sol.qr[4] = (float)rtk->P[2 + rtk->nx];
-            rtk->sol.qr[5] = (float)rtk->P[2];
+            rtk->sol.qr[3] = static_cast<float>(rtk->P[1]);
+            rtk->sol.qr[4] = static_cast<float>(rtk->P[2 + rtk->nx]);
+            rtk->sol.qr[5] = static_cast<float>(rtk->P[2]);
             rtk->sol.dtr[0] = rtk->x[IC_PPP(0, opt)];
             rtk->sol.dtr[1] = rtk->x[IC_PPP(1, opt)] - rtk->x[IC_PPP(0, opt)];
             for (i = 0; i < n && i < MAXOBS; i++)

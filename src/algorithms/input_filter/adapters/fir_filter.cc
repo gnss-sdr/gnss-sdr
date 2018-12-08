@@ -287,15 +287,15 @@ gr::basic_block_sptr FirFilter::get_left_block()
         {
             return cshort_to_float_x2_;
         }
-    else if ((taps_item_type_ == "float") && (input_item_type_ == "cbyte") && (output_item_type_ == "gr_complex"))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "cbyte") && (output_item_type_ == "gr_complex"))
         {
             return cbyte_to_float_x2_;
         }
-    else if ((taps_item_type_ == "float") && (input_item_type_ == "cbyte") && (output_item_type_ == "cbyte"))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "cbyte") && (output_item_type_ == "cbyte"))
         {
             return cbyte_to_float_x2_;
         }
-    else if ((taps_item_type_ == "float") && (input_item_type_ == "cshort") && (output_item_type_ == "gr_complex"))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "cshort") && (output_item_type_ == "gr_complex"))
         {
             return cshort_to_float_x2_;
         }
@@ -317,15 +317,15 @@ gr::basic_block_sptr FirFilter::get_right_block()
         {
             return short_x2_to_cshort_;
         }
-    else if ((taps_item_type_ == "float") && (input_item_type_ == "cbyte") && (output_item_type_ == "gr_complex"))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "cbyte") && (output_item_type_ == "gr_complex"))
         {
             return float_to_complex_;
         }
-    else if ((taps_item_type_ == "float") && (input_item_type_ == "cbyte") && (output_item_type_ == "cbyte"))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "cbyte") && (output_item_type_ == "cbyte"))
         {
             return char_x2_cbyte_;
         }
-    else if ((taps_item_type_ == "float") && (input_item_type_ == "cshort") && (output_item_type_ == "gr_complex"))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "cshort") && (output_item_type_ == "gr_complex"))
         {
             return float_to_complex_;
         }

@@ -82,7 +82,7 @@ private:
 
     // symbols
     boost::circular_buffer<Gnss_Synchro> d_symbol_history;
-    float d_subframe_symbols[GPS_SUBFRAME_MS];  // symbols per subframe
+    float d_subframe_symbols[GPS_SUBFRAME_MS]{};  // symbols per subframe
     int d_current_subframe_symbol;
 
     // bits and frame

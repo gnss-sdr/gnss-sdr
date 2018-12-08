@@ -49,7 +49,7 @@ beamformer::beamformer()
 {
     //initialize weight vector
 
-    if (posix_memalign((void **)&weight_vector, 16, GNSS_SDR_BEAMFORMER_CHANNELS * sizeof(gr_complex)) == 0)
+    if (posix_memalign(reinterpret_cast<void **>(&weight_vector), 16, GNSS_SDR_BEAMFORMER_CHANNELS * sizeof(gr_complex)) == 0)
         {
         };
 

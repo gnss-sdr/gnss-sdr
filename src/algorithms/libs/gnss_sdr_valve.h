@@ -37,13 +37,14 @@
 #include <gnuradio/sync_block.h>
 #include <gnuradio/msg_queue.h>
 #include <boost/shared_ptr.hpp>
+#include <cstdint>
 
 boost::shared_ptr<gr::block> gnss_sdr_make_valve(size_t sizeof_stream_item,
-    unsigned long long nitems,
+    uint64_t nitems,
     gr::msg_queue::sptr queue);
 
 boost::shared_ptr<gr::block> gnss_sdr_make_valve(size_t sizeof_stream_item,
-    unsigned long long nitems,
+    uint64_t nitems,
     gr::msg_queue::sptr queue,
     bool stop_flowgraph);
 
@@ -54,22 +55,22 @@ boost::shared_ptr<gr::block> gnss_sdr_make_valve(size_t sizeof_stream_item,
 class gnss_sdr_valve : public gr::sync_block
 {
     friend boost::shared_ptr<gr::block> gnss_sdr_make_valve(size_t sizeof_stream_item,
-        unsigned long long nitems,
+        uint64_t nitems,
         gr::msg_queue::sptr queue);
     friend boost::shared_ptr<gr::block> gnss_sdr_make_valve(size_t sizeof_stream_item,
-        unsigned long long nitems,
+        uint64_t nitems,
         gr::msg_queue::sptr queue,
         bool stop_flowgraph);
 
-    unsigned long long d_nitems;
-    unsigned long long d_ncopied_items;
+    uint64_t d_nitems;
+    uint64_t d_ncopied_items;
     gr::msg_queue::sptr d_queue;
     bool d_stop_flowgraph;
     bool d_open_valve;
 
 public:
     gnss_sdr_valve(size_t sizeof_stream_item,
-        unsigned long long nitems,
+        uint64_t nitems,
         gr::msg_queue::sptr queue, bool stop_flowgraph);
     void open_valve();
 

@@ -74,7 +74,7 @@ glonass_l1_ca_telemetry_decoder_cc::glonass_l1_ca_telemetry_decoder_cc(
     // preamble bits to sampled symbols
     d_preambles_symbols = static_cast<int32_t *>(malloc(sizeof(int32_t) * d_symbols_per_preamble));
     int32_t n = 0;
-    for (unsigned short d_preambles_bit : d_preambles_bits)
+    for (uint16_t d_preambles_bit : d_preambles_bits)
         {
             for (uint32_t j = 0; j < GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_PREAMBLE_BIT; j++)
                 {
@@ -268,7 +268,7 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
     auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);            // Get the output buffer pointer
     const auto **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);  // Get the input buffer pointer
 
-    Gnss_Synchro current_symbol;  // structure to save the synchronization information and send the output object to the next block
+    Gnss_Synchro current_symbol{};  // structure to save the synchronization information and send the output object to the next block
     // 1. Copy the current tracking output
     current_symbol = in[0][0];
     d_symbol_history.push_back(current_symbol);  // add new symbol to the symbol queue

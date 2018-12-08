@@ -31,7 +31,7 @@
 #include "byte_to_short.h"
 #include "configuration_interface.h"
 #include <glog/logging.h>
-
+#include <cstdint>
 #include <utility>
 
 
@@ -51,7 +51,7 @@ ByteToShort::ByteToShort(ConfigurationInterface* configuration, std::string role
     dump_ = config_->property(role_ + ".dump", false);
     dump_filename_ = config_->property(role_ + ".dump_filename", default_dump_filename);
 
-    size_t item_size = sizeof(short);
+    size_t item_size = sizeof(int16_t);
 
     gr_char_to_short_ = gr::blocks::char_to_short::make();
 

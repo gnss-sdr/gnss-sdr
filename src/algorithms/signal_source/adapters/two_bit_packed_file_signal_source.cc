@@ -90,7 +90,7 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
             // well read them in as bytes.
             if (big_endian_items_)
                 {
-                    item_size_ = sizeof(short);
+                    item_size_ = sizeof(int16_t);
                 }
             else
                 {

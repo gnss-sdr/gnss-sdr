@@ -94,7 +94,7 @@ public:
 
 private:
     rtklib_pvt_cc_sptr pvt_;
-    rtk_t rtk;
+    rtk_t rtk{};
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;

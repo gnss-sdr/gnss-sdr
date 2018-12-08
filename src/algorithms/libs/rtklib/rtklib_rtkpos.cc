@@ -151,7 +151,7 @@ int rtkopenstat(const char *file, int level)
 
     reppath(file, path, time, "", "");
 
-    if (!(fp_stat = fopen(path, "w")))
+    if (!(fp_stat = fopen(path, "we")))
         {
             trace(1, "rtkopenstat: file open error path=%s\n", path);
             return 0;
@@ -301,8 +301,8 @@ void swapsolstat(void)
     gtime_t time = utc2gpst(timeget());
     char path[1024];
 
-    if ((int)(time2gpst(time, nullptr) / INT_SWAP_STAT) ==
-        (int)(time2gpst(time_stat, nullptr) / INT_SWAP_STAT))
+    if (static_cast<int>(time2gpst(time, nullptr) / INT_SWAP_STAT) ==
+        static_cast<int>(time2gpst(time_stat, nullptr) / INT_SWAP_STAT))
         {
             return;
         }
@@ -314,7 +314,7 @@ void swapsolstat(void)
         }
     if (fp_stat) fclose(fp_stat);
 
-    if (!(fp_stat = fopen(path, "w")))
+    if (!(fp_stat = fopen(path, "we")))
         {
             trace(2, "swapsolstat: file open error path=%s\n", path);
             return;
@@ -795,7 +795,7 @@ void detslp_ll(rtk_t *rtk, const obsd_t *obs, int i, int rcv)
                 setbitu(&rtk->ssat[sat - 1].slip[f], 2, 2, obs[i].LLI[f]);
 
             /* save slip and half-cycle valid flag */
-            rtk->ssat[sat - 1].slip[f] |= (unsigned char)slip;
+            rtk->ssat[sat - 1].slip[f] |= static_cast<unsigned char>(slip);
             rtk->ssat[sat - 1].half[f] = (obs[i].LLI[f] & 2) ? 0 : 1;
         }
 }
@@ -923,7 +923,7 @@ void udbias(rtk_t *rtk, double tt, const obsd_t *obs, const int *sat,
             /* reset phase-bias if instantaneous AR or expire obs outage counter */
             for (i = 1; i <= MAXSAT; i++)
                 {
-                    reset = ++rtk->ssat[i - 1].outc[f] > (unsigned int)rtk->opt.maxout;
+                    reset = ++rtk->ssat[i - 1].outc[f] > static_cast<unsigned int>(rtk->opt.maxout);
 
                     if (rtk->opt.modear == ARMODE_INST && rtk->x[IB_RTK(i, f, &rtk->opt)] != 0.0)
                         {
@@ -1786,7 +1786,7 @@ int resamb_LAMBDA(rtk_t *rtk, double *bias, double *xa)
             trace(4, "N(2)=");
             tracemat(4, b + nb, 1, nb, 10, 3);
 
-            rtk->sol.ratio = s[0] > 0 ? (float)(s[1] / s[0]) : 0.0f;
+            rtk->sol.ratio = s[0] > 0 ? static_cast<float>(s[1] / s[0]) : 0.0f;
             if (rtk->sol.ratio > 999.9) rtk->sol.ratio = 999.9f;
 
             /* validation by popular ratio-test */
@@ -2077,22 +2077,22 @@ int relpos(rtk_t *rtk, const obsd_t *obs, int nu, int nr,
             for (i = 0; i < 3; i++)
                 {
                     rtk->sol.rr[i] = rtk->xa[i];
-                    rtk->sol.qr[i] = (float)rtk->Pa[i + i * rtk->na];
+                    rtk->sol.qr[i] = static_cast<float>(rtk->Pa[i + i * rtk->na]);
                 }
-            rtk->sol.qr[3] = (float)rtk->Pa[1];
-            rtk->sol.qr[4] = (float)rtk->Pa[1 + 2 * rtk->na];
-            rtk->sol.qr[5] = (float)rtk->Pa[2];
+            rtk->sol.qr[3] = static_cast<float>(rtk->Pa[1]);
+            rtk->sol.qr[4] = static_cast<float>(rtk->Pa[1 + 2 * rtk->na]);
+            rtk->sol.qr[5] = static_cast<float>(rtk->Pa[2]);
         }
     else
         {
             for (i = 0; i < 3; i++)
                 {
                     rtk->sol.rr[i] = rtk->x[i];
-                    rtk->sol.qr[i] = (float)rtk->P[i + i * rtk->nx];
+                    rtk->sol.qr[i] = static_cast<float>(rtk->P[i + i * rtk->nx]);
                 }
-            rtk->sol.qr[3] = (float)rtk->P[1];
-            rtk->sol.qr[4] = (float)rtk->P[1 + 2 * rtk->nx];
-            rtk->sol.qr[5] = (float)rtk->P[2];
+            rtk->sol.qr[3] = static_cast<float>(rtk->P[1]);
+            rtk->sol.qr[4] = static_cast<float>(rtk->P[1 + 2 * rtk->nx]);
+            rtk->sol.qr[5] = static_cast<float>(rtk->P[2]);
             rtk->nfix = 0;
         }
     for (i = 0; i < n; i++)
@@ -2321,7 +2321,7 @@ int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
                     errmsg(rtk, "base station position error (%s)\n", msg);
                     return 0;
                 }
-            rtk->sol.age = (float)timediff(rtk->sol.time, solb.time);
+            rtk->sol.age = static_cast<float>(timediff(rtk->sol.time, solb.time));
 
             if (fabs(rtk->sol.age) > TTOL_MOVEB)
                 {
@@ -2335,7 +2335,7 @@ int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
         }
     else
         {
-            rtk->sol.age = (float)timediff(obs[0].time, obs[nu].time);
+            rtk->sol.age = static_cast<float>(timediff(obs[0].time, obs[nu].time));
 
             if (fabs(rtk->sol.age) > opt->maxtdiff)
                 {

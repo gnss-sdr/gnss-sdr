@@ -73,7 +73,7 @@ protected:
     gr::top_block_sptr top_block;
     std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
-    Gnss_Synchro gnss_synchro;
+    Gnss_Synchro gnss_synchro{};
     size_t item_size;
     bool stop;
     int message;

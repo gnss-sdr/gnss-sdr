@@ -62,9 +62,9 @@ bool systemIsBigEndian()
 
 bool systemBytesAreBigEndian()
 {
-    byte_and_samples b;
+    byte_and_samples b{};
     b.byte = static_cast<int8_t>(0x01);
-    if (*(char *)&b.byte == 1)
+    if (*reinterpret_cast<char *>(&b.byte) == 1)
         return false;
 
     return true;
@@ -158,7 +158,7 @@ int unpack_2bit_samples::work(int noutput_items,
     // 1) The samples in a byte are in big endian order
     // 2) The samples in a byte are in little endian order
 
-    byte_and_samples raw_byte;
+    byte_and_samples raw_byte{};
     int n = 0;
 
     if (!reverse_interleaving_)

@@ -322,15 +322,13 @@ gr::basic_block_sptr GlonassL2CaPcpsAcquisition::get_left_block()
         {
             return acquisition_;
         }
-    else if (item_type_ == "cbyte")
+    if (item_type_ == "cbyte")
         {
             return cbyte_to_float_x2_;
         }
-    else
-        {
-            LOG(WARNING) << item_type_ << " unknown acquisition item type";
-            return nullptr;
-        }
+
+    LOG(WARNING) << item_type_ << " unknown acquisition item type";
+    return nullptr;
 }
 
 

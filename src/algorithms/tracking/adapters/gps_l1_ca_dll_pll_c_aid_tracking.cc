@@ -218,11 +218,8 @@ gr::basic_block_sptr GpsL1CaDllPllCAidTracking::get_left_block()
         {
             return tracking_sc;
         }
-    else
-        {
-            LOG(WARNING) << item_type_ << " unknown tracking item type";
-            return nullptr;
-        }
+    LOG(WARNING) << item_type_ << " unknown tracking item type";
+    return nullptr;
 }
 
 gr::basic_block_sptr GpsL1CaDllPllCAidTracking::get_right_block()
@@ -235,9 +232,6 @@ gr::basic_block_sptr GpsL1CaDllPllCAidTracking::get_right_block()
         {
             return tracking_sc;
         }
-    else
-        {
-            LOG(WARNING) << item_type_ << " unknown tracking item type";
-            return nullptr;
-        }
+    LOG(WARNING) << item_type_ << " unknown tracking item type";
+    return nullptr;
 }

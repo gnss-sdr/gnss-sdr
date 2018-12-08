@@ -35,9 +35,7 @@
 #include <string>
 
 
-tcp_communication::tcp_communication() : tcp_socket_(io_service_)
-{
-}
+tcp_communication::tcp_communication() : tcp_socket_(io_service_) {}  // NOLINT
 
 
 tcp_communication::~tcp_communication() = default;

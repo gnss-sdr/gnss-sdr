@@ -496,12 +496,8 @@ bool Galileo_Fnav_Message::have_new_ephemeris()  // Check if we have a new ephem
                     std::cout << "Batch number: " << IOD_ephemeris << std::endl;
                     return true;
                 }
-            return false;
         }
-    else
-        {
-            return false;
-        }
+    return false;
 }
 
 

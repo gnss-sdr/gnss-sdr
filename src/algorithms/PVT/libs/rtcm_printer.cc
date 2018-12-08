@@ -37,6 +37,7 @@
 #include <boost/filesystem/path.hpp>         // for path, operator<<
 #include <boost/filesystem/path_traits.hpp>  // for filesystem
 #include <glog/logging.h>
+#include <cstdint>
 #include <iomanip>
 #include <utility>
 #include <fcntl.h>    // for O_RDWR
@@ -187,7 +188,7 @@ Rtcm_Printer::~Rtcm_Printer()
         }
     if (rtcm_file_descriptor.is_open())
         {
-            long pos;
+            int64_t pos;
             pos = rtcm_file_descriptor.tellp();
             rtcm_file_descriptor.close();
             if (pos == 0)
@@ -345,13 +346,13 @@ int Rtcm_Printer::init_serial(const std::string& serial_device)
      */
     int32_t fd = 0;
     struct termios options;
-    long BAUD;
-    long DATABITS;
-    long STOPBITS;
-    long PARITYON;
-    long PARITY;
+    int64_t BAUD;
+    int64_t DATABITS;
+    int64_t STOPBITS;
+    int64_t PARITYON;
+    int64_t PARITY;
 
-    fd = open(serial_device.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
+    fd = open(serial_device.c_str(), O_RDWR | O_NOCTTY | O_NDELAY | O_CLOEXEC);
     if (fd == -1) return fd;  // failed to open TTY port
 
     if (fcntl(fd, F_SETFL, 0) == -1) LOG(INFO) << "Error enabling direct I/O";  // clear all flags on descriptor, enable direct I/O

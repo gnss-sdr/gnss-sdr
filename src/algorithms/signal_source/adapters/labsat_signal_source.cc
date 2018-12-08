@@ -32,7 +32,7 @@
 #include "configuration_interface.h"
 #include "labsat23_source.h"
 #include <glog/logging.h>
-
+#include <cstdint>
 #include <utility>
 
 
@@ -63,7 +63,7 @@ LabsatSignalSource::LabsatSignalSource(ConfigurationInterface* configuration,
     else
         {
             LOG(WARNING) << item_type_ << " unrecognized item type for LabSat source";
-            item_size_ = sizeof(short);
+            item_size_ = sizeof(int16_t);
         }
     if (dump_)
         {

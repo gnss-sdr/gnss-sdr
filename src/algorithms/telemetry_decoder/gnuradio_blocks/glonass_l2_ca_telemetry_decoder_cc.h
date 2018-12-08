@@ -80,7 +80,7 @@ private:
     double d_preamble_time_samples;
 
     //!< Preamble decoding
-    uint16_t d_preambles_bits[GLONASS_GNAV_PREAMBLE_LENGTH_BITS];
+    uint16_t d_preambles_bits[GLONASS_GNAV_PREAMBLE_LENGTH_BITS]{};
     int32_t *d_preambles_symbols;
     uint32_t d_samples_per_symbol;
     int32_t d_symbols_per_preamble;

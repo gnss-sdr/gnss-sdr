@@ -257,16 +257,14 @@ bool FrontEndCal::get_ephemeris()
                 }
             return true;
         }
-    else
+
+    std::cout << "Trying to read ephemeris from SUPL server..." << std::endl;
+    LOG(INFO) << "Trying to read ephemeris from SUPL server...";
+    if (Get_SUPL_Assist() == 0)
         {
-            std::cout << "Trying to read ephemeris from SUPL server..." << std::endl;
-            LOG(INFO) << "Trying to read ephemeris from SUPL server...";
-            if (Get_SUPL_Assist() == 0)
-                {
-                    return true;
-                }
-            return false;
+            return true;
         }
+    return false;
 }
 
 

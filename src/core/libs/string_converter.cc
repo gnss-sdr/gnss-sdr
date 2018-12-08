@@ -50,10 +50,8 @@ bool StringConverter::convert(const std::string& value, bool default_value)
         {
             return false;
         }
-    else
-        {
-            return default_value;
-        }
+
+    return default_value;
 }
 
 

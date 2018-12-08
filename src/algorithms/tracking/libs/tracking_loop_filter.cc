@@ -52,6 +52,7 @@ Tracking_loop_filter::Tracking_loop_filter(float update_interval,
     update_coefficients();
 }
 
+
 Tracking_loop_filter::Tracking_loop_filter()
     : d_loop_order(2),
       d_current_index(0),
@@ -64,10 +65,9 @@ Tracking_loop_filter::Tracking_loop_filter()
     update_coefficients();
 }
 
-Tracking_loop_filter::~Tracking_loop_filter()
-{
-    // Don't need to do anything here
-}
+
+Tracking_loop_filter::~Tracking_loop_filter() = default;
+
 
 float Tracking_loop_filter::apply(float current_input)
 {
@@ -107,6 +107,7 @@ float Tracking_loop_filter::apply(float current_input)
 
     return result;
 }
+
 
 void Tracking_loop_filter::update_coefficients(void)
 {
@@ -216,16 +217,19 @@ void Tracking_loop_filter::update_coefficients(void)
         };
 }
 
+
 void Tracking_loop_filter::set_noise_bandwidth(float noise_bandwidth)
 {
     d_noise_bandwidth = noise_bandwidth;
     update_coefficients();
 }
 
+
 float Tracking_loop_filter::get_noise_bandwidth(void) const
 {
     return d_noise_bandwidth;
 }
+
 
 void Tracking_loop_filter::set_update_interval(float update_interval)
 {
@@ -238,16 +242,19 @@ float Tracking_loop_filter::get_update_interval(void) const
     return d_update_interval;
 }
 
+
 void Tracking_loop_filter::set_include_last_integrator(bool include_last_integrator)
 {
     d_include_last_integrator = include_last_integrator;
     update_coefficients();
 }
 
+
 bool Tracking_loop_filter::get_include_last_integrator(void) const
 {
     return d_include_last_integrator;
 }
+
 
 void Tracking_loop_filter::set_order(int loop_order)
 {
@@ -264,10 +271,12 @@ void Tracking_loop_filter::set_order(int loop_order)
     update_coefficients();
 }
 
+
 int Tracking_loop_filter::get_order(void) const
 {
     return d_loop_order;
 }
+
 
 void Tracking_loop_filter::initialize(float initial_output)
 {

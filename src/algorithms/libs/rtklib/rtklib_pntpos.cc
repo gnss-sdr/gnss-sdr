@@ -609,11 +609,11 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
                     sol->dtr[2] = x[5] / SPEED_OF_LIGHT; /* gal-gps time offset (s) */
                     sol->dtr[3] = x[6] / SPEED_OF_LIGHT; /* bds-gps time offset (s) */
                     for (j = 0; j < 6; j++) sol->rr[j] = j < 3 ? x[j] : 0.0;
-                    for (j = 0; j < 3; j++) sol->qr[j] = (float)Q[j + j * NX];
-                    sol->qr[3] = (float)Q[1];      /* cov xy */
-                    sol->qr[4] = (float)Q[2 + NX]; /* cov yz */
-                    sol->qr[5] = (float)Q[2];      /* cov zx */
-                    sol->ns = (unsigned char)ns;
+                    for (j = 0; j < 3; j++) sol->qr[j] = static_cast<float>(Q[j + j * NX]);
+                    sol->qr[3] = static_cast<float>(Q[1]);      /* cov xy */
+                    sol->qr[4] = static_cast<float>(Q[2 + NX]); /* cov yz */
+                    sol->qr[5] = static_cast<float>(Q[2]);      /* cov zx */
+                    sol->ns = static_cast<unsigned char>(ns);
                     sol->age = sol->ratio = 0.0;
 
                     /* validate solution */
@@ -652,7 +652,7 @@ int raim_fde(const obsd_t *obs, int n, const double *rs,
 
     trace(3, "raim_fde: %s n=%2d\n", time_str(obs[0].time, 0), n);
 
-    if (!(obs_e = (obsd_t *)malloc(sizeof(obsd_t) * n))) return 0;
+    if (!(obs_e = static_cast<obsd_t *>(malloc(sizeof(obsd_t) * n)))) return 0;
     rs_e = mat(6, n);
     dts_e = mat(2, n);
     vare_e = mat(1, n);

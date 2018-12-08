@@ -517,7 +517,7 @@ int32_t Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
     filename.erase(filename.length() - 4, 4);
     filename.append(".mat");
     matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT73);
-    if (reinterpret_cast<long *>(matfp) != nullptr)
+    if (reinterpret_cast<int64_t *>(matfp) != nullptr)
         {
             size_t dims[2] = {1, static_cast<size_t>(num_epoch)};
             matvar = Mat_VarCreate("abs_VE", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, abs_VE, 0);

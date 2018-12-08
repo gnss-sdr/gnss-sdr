@@ -62,7 +62,7 @@ int unpack_byte_2bit_samples::work(int noutput_items,
     const auto *in = reinterpret_cast<const signed char *>(input_items[0]);
     auto *out = reinterpret_cast<float *>(output_items[0]);
 
-    byte_2bit_struct sample;
+    byte_2bit_struct sample{};
     int n = 0;
     for (int i = 0; i < noutput_items / 4; i++)
         {

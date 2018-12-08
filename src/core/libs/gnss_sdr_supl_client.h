@@ -74,9 +74,9 @@ private:
     int lac;
     int ci;
     // assistance protocol structure
-    supl_ctx_t ctx;
+    supl_ctx_t ctx{};
     // assistance data
-    supl_assist_t assist;
+    supl_assist_t assist{};
     bool read_gal_almanac_from_gsa(const std::string& file_name);
 
 public:

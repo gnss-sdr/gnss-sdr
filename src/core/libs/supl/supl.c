@@ -274,7 +274,7 @@ static int server_connect(char *server) {
   }
 
   for (aip = ailist; aip; aip = aip->ai_next) {
-    if ((fd = socket(aip->ai_family, SOCK_STREAM, 0)) < 0) {
+    if ((fd = socket(aip->ai_family, SOCK_STREAM | SOCK_CLOEXEC, 0)) < 0) {
       err = errno;
     }
     if (connect(fd, aip->ai_addr, aip->ai_addrlen) != 0) {

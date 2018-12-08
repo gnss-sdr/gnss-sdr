@@ -121,7 +121,7 @@ int PositionSystemTest::generate_signal()
     pid_t wait_result;
     int child_status;
 
-    char* const parmList[] = {&generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0], NULL};
+    char* const parmList[] = {&generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0], nullptr};
 
     int pid;
     if ((pid = fork()) == -1)
@@ -342,12 +342,12 @@ int PositionSystemTest::run_receiver()
     std::string argum2 = std::string("/bin/ls *kml | tail -1");
     char buffer[1035];
     fp = popen(&argum2[0], "r");
-    if (fp == NULL)
+    if (fp == nullptr)
         {
             std::cout << "Failed to run command: " << argum2 << std::endl;
             return -1;
         }
-    while (fgets(buffer, sizeof(buffer), fp) != NULL)
+    while (fgets(buffer, sizeof(buffer), fp) != nullptr)
         {
             std::string aux = std::string(buffer);
             EXPECT_EQ(aux.empty(), false);
@@ -910,7 +910,7 @@ void PositionSystemTest::print_results(const arma::mat& R_eb_enu)
         }
 }
 
-TEST_F(PositionSystemTest, Position_system_test)
+TEST_F(PositionSystemTest /*unused*/, Position_system_test /*unused*/)
 {
     if (FLAGS_config_file_ptest.empty())
         {

@@ -331,11 +331,11 @@ gr::basic_block_sptr FreqXlatingFirFilter::get_left_block()
         {
             return freq_xlating_fir_filter_scf_;
         }
-    else if ((taps_item_type_ == "float") && (input_item_type_ == "short") && (output_item_type_ == "cshort"))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "short") && (output_item_type_ == "cshort"))
         {
             return freq_xlating_fir_filter_scf_;
         }
-    else if ((taps_item_type_ == "float") && (input_item_type_ == "byte") && (output_item_type_ == "gr_complex"))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "byte") && (output_item_type_ == "gr_complex"))
         {
             return gr_char_to_short_;
         }
@@ -365,11 +365,11 @@ gr::basic_block_sptr FreqXlatingFirFilter::get_right_block()
         {
             return freq_xlating_fir_filter_scf_;
         }
-    else if ((taps_item_type_ == "float") && (input_item_type_ == "short") && (output_item_type_ == "cshort"))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "short") && (output_item_type_ == "cshort"))
         {
             return short_x2_to_cshort_;
         }
-    else if ((taps_item_type_ == "float") && (input_item_type_ == "byte") && (output_item_type_ == "gr_complex"))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "byte") && (output_item_type_ == "gr_complex"))
         {
             return freq_xlating_fir_filter_scf_;
         }

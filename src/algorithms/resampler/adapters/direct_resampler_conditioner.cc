@@ -38,6 +38,7 @@
 #include <gnuradio/blocks/file_sink.h>
 #include <volk/volk.h>
 #include <cmath>
+#include <cstdint>
 #include <limits>
 
 using google::LogMessage;
@@ -94,7 +95,7 @@ DirectResamplerConditioner::DirectResamplerConditioner(
     else
         {
             LOG(WARNING) << item_type_ << " unrecognized item type for resampler";
-            item_size_ = sizeof(short);
+            item_size_ = sizeof(int16_t);
         }
     if (dump_)
         {

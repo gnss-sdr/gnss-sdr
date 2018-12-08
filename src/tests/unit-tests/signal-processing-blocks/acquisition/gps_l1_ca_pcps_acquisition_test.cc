@@ -62,7 +62,7 @@
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CaPcpsAcquisitionTest_msg_rx;
 
-typedef boost::shared_ptr<GpsL1CaPcpsAcquisitionTest_msg_rx> GpsL1CaPcpsAcquisitionTest_msg_rx_sptr;
+using GpsL1CaPcpsAcquisitionTest_msg_rx_sptr = boost::shared_ptr<GpsL1CaPcpsAcquisitionTest_msg_rx>;
 
 GpsL1CaPcpsAcquisitionTest_msg_rx_sptr GpsL1CaPcpsAcquisitionTest_msg_rx_make();
 
@@ -134,7 +134,7 @@ protected:
     gr::top_block_sptr top_block;
     std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
-    Gnss_Synchro gnss_synchro;
+    Gnss_Synchro gnss_synchro{};
     size_t item_size;
     unsigned int doppler_max;
     unsigned int doppler_step;

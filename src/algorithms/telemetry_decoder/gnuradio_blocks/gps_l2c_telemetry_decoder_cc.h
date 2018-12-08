@@ -91,7 +91,7 @@ private:
     std::string d_dump_filename;
     std::ofstream d_dump_file;
 
-    cnav_msg_decoder_t d_cnav_decoder;
+    cnav_msg_decoder_t d_cnav_decoder{};
 
     int32_t d_state;
     int32_t d_crc_error_count;

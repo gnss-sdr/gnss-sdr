@@ -542,7 +542,7 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
             int32_t n_valid = 0;
             for (uint32_t n = 0; n < d_nchannels_out; n++)
                 {
-                    Gnss_Synchro interpolated_gnss_synchro;
+                    Gnss_Synchro interpolated_gnss_synchro{};
                     if (!interp_trk_obs(interpolated_gnss_synchro, n, d_Rx_clock_buffer.front() + T_rx_TOW_offset_ms * T_rx_clock_step_samples))
                         {
                             // Produce an empty observation

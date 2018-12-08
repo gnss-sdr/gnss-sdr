@@ -329,11 +329,9 @@ gr::basic_block_sptr GpsL2MPcpsAcquisition::get_left_block()
         {
             return cbyte_to_float_x2_;
         }
-    else
-        {
-            LOG(WARNING) << item_type_ << " unknown acquisition item type";
-            return nullptr;
-        }
+
+    LOG(WARNING) << item_type_ << " unknown acquisition item type";
+    return nullptr;
 }
 
 

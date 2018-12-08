@@ -113,9 +113,9 @@ int init_rtcm(rtcm_t *rtcm)
     rtcm->nav.geph = nullptr;
 
     /* reallocate memory for observation and ephemris buffer */
-    if (!(rtcm->obs.data = (obsd_t *)malloc(sizeof(obsd_t) * MAXOBS)) ||
-        !(rtcm->nav.eph = (eph_t *)malloc(sizeof(eph_t) * MAXSAT)) ||
-        !(rtcm->nav.geph = (geph_t *)malloc(sizeof(geph_t) * MAXPRNGLO)))
+    if (!(rtcm->obs.data = static_cast<obsd_t *>(malloc(sizeof(obsd_t) * MAXOBS))) ||
+        !(rtcm->nav.eph = static_cast<eph_t *>(malloc(sizeof(eph_t) * MAXSAT))) ||
+        !(rtcm->nav.geph = static_cast<geph_t *>(malloc(sizeof(geph_t) * MAXPRNGLO))))
         {
             free_rtcm(rtcm);
             return 0;
@@ -182,7 +182,7 @@ int input_rtcm2(rtcm_t *rtcm, unsigned char data)
             /* synchronize frame */
             if (rtcm->nbyte == 0)
                 {
-                    preamb = (unsigned char)(rtcm->word >> 22);
+                    preamb = static_cast<unsigned char>(rtcm->word >> 22);
                     if (rtcm->word & 0x40000000) preamb ^= 0xFF; /* decode preamble */
                     if (preamb != RTCM2PREAMB) continue;
 
@@ -330,7 +330,7 @@ int input_rtcm2f(rtcm_t *rtcm, FILE *fp)
     for (i = 0; i < 4096; i++)
         {
             if ((data = fgetc(fp)) == EOF) return -2;
-            if ((ret = input_rtcm2(rtcm, (unsigned char)data))) return ret;
+            if ((ret = input_rtcm2(rtcm, static_cast<unsigned char>(data)))) return ret;
         }
     return 0; /* return at every 4k bytes */
 }
@@ -352,7 +352,7 @@ int input_rtcm3f(rtcm_t *rtcm, FILE *fp)
     for (i = 0; i < 4096; i++)
         {
             if ((data = fgetc(fp)) == EOF) return -2;
-            if ((ret = input_rtcm3(rtcm, (unsigned char)data))) return ret;
+            if ((ret = input_rtcm3(rtcm, static_cast<unsigned char>(data)))) return ret;
         }
     return 0; /* return at every 4k bytes */
 }

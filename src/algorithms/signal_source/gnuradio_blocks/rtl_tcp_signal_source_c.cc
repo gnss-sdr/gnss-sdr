@@ -51,7 +51,7 @@ enum
 
 rtl_tcp_signal_source_c_sptr
 rtl_tcp_make_signal_source_c(const std::string &address,
-    short port,
+    int16_t port,
     bool flip_iq)
 {
     return gnuradio::get_initial_sptr(new rtl_tcp_signal_source_c(address,
@@ -61,7 +61,7 @@ rtl_tcp_make_signal_source_c(const std::string &address,
 
 
 rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
-    short port,
+    int16_t port,
     bool flip_iq)
     : gr::sync_block("rtl_tcp_signal_source_c",
           gr::io_signature::make(0, 0, 0),

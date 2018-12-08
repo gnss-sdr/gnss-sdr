@@ -514,7 +514,7 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
     if ((sysv_msqid = msgget(sysv_msg_key, msgflg)) == -1)
         {
             std::cout << "GNSS-SDR can not create message queues!" << std::endl;
-            throw new std::exception();
+            throw std::exception();
         }
     start = std::chrono::system_clock::now();
 }

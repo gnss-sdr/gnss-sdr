@@ -40,7 +40,7 @@
 #include <utility>
 
 gnss_sdr_valve::gnss_sdr_valve(size_t sizeof_stream_item,
-    unsigned long long nitems,
+    uint64_t nitems,
     gr::msg_queue::sptr queue,
     bool stop_flowgraph) : gr::sync_block("valve",
                                gr::io_signature::make(1, 1, sizeof_stream_item),
@@ -54,14 +54,14 @@ gnss_sdr_valve::gnss_sdr_valve(size_t sizeof_stream_item,
 }
 
 
-boost::shared_ptr<gr::block> gnss_sdr_make_valve(size_t sizeof_stream_item, unsigned long long nitems, gr::msg_queue::sptr queue, bool stop_flowgraph)
+boost::shared_ptr<gr::block> gnss_sdr_make_valve(size_t sizeof_stream_item, uint64_t nitems, gr::msg_queue::sptr queue, bool stop_flowgraph)
 {
     boost::shared_ptr<gnss_sdr_valve> valve_(new gnss_sdr_valve(sizeof_stream_item, nitems, std::move(queue), stop_flowgraph));
     return valve_;
 }
 
 
-boost::shared_ptr<gr::block> gnss_sdr_make_valve(size_t sizeof_stream_item, unsigned long long nitems, gr::msg_queue::sptr queue)
+boost::shared_ptr<gr::block> gnss_sdr_make_valve(size_t sizeof_stream_item, uint64_t nitems, gr::msg_queue::sptr queue)
 {
     boost::shared_ptr<gnss_sdr_valve> valve_(new gnss_sdr_valve(sizeof_stream_item, nitems, std::move(queue), true));
     return valve_;
@@ -93,7 +93,7 @@ int gnss_sdr_valve::work(int noutput_items,
                     usleep(1000000);
                     return 0;  // do not produce or consume
                 }
-            unsigned long long n = std::min(d_nitems - d_ncopied_items, static_cast<long long unsigned int>(noutput_items));
+            uint64_t n = std::min(d_nitems - d_ncopied_items, static_cast<uint64_t>(noutput_items));
             if (n == 0) return 0;
             memcpy(output_items[0], input_items[0], n * input_signature()->sizeof_stream_item(0));
             d_ncopied_items += n;

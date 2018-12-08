@@ -143,7 +143,7 @@ int gps_l2c_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
     consume_each(1);  // one by one
 
     // UPDATE GNSS SYNCHRO DATA
-    Gnss_Synchro current_synchro_data;  // structure to save the synchronization information and send the output object to the next block
+    Gnss_Synchro current_synchro_data{};  // structure to save the synchronization information and send the output object to the next block
 
     // 1. Copy the current tracking output
     current_synchro_data = in[0];

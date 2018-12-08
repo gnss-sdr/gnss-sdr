@@ -66,7 +66,7 @@
 #include <gnuradio/blocks/head.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/file_sink.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include <chrono>
 #include <cstdint>
 #include <ctime>  // for ctime
@@ -97,7 +97,7 @@ std::vector<Gnss_Synchro> gnss_sync_vector;
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class FrontEndCal_msg_rx;
 
-typedef boost::shared_ptr<FrontEndCal_msg_rx> FrontEndCal_msg_rx_sptr;
+using FrontEndCal_msg_rx_sptr = boost::shared_ptr<FrontEndCal_msg_rx>;
 
 FrontEndCal_msg_rx_sptr FrontEndCal_msg_rx_make();
 
@@ -402,7 +402,7 @@ int main(int argc, char** argv)
 
     // record startup time
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds{};
     start = std::chrono::system_clock::now();
 
     bool start_msg = true;
@@ -434,7 +434,7 @@ int main(int argc, char** argv)
                 {
                     std::cout << " " << PRN << " ";
                     double doppler_measurement_hz = 0;
-                    for (auto & it : gnss_sync_vector)
+                    for (auto& it : gnss_sync_vector)
                         {
                             doppler_measurement_hz += it.Acq_doppler_hz;
                         }
@@ -541,7 +541,7 @@ int main(int argc, char** argv)
 
     std::cout << "SV ID  Measured [Hz]   Predicted [Hz]" << std::endl;
 
-    for (auto & it : doppler_measurements_map)
+    for (auto& it : doppler_measurements_map)
         {
             try
                 {
@@ -577,7 +577,7 @@ int main(int argc, char** argv)
     double mean_osc_err_ppm = 0;
     int n_elements = f_if_estimation_Hz_map.size();
 
-    for (auto & it : f_if_estimation_Hz_map)
+    for (auto& it : f_if_estimation_Hz_map)
         {
             mean_f_if_Hz += it.second;
             mean_fs_Hz += f_fs_estimation_Hz_map.find(it.first)->second;
@@ -598,7 +598,7 @@ int main(int argc, char** argv)
               << "Corrected Doppler vs. Predicted" << std::endl;
     std::cout << "SV ID  Corrected [Hz]   Predicted [Hz]" << std::endl;
 
-    for (auto & it : doppler_measurements_map)
+    for (auto& it : doppler_measurements_map)
         {
             try
                 {

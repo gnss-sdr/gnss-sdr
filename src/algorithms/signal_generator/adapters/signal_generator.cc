@@ -37,7 +37,7 @@
 #include "Galileo_E5a.h"
 #include "GLONASS_L1_L2_CA.h"
 #include <glog/logging.h>
-
+#include <cstdint>
 #include <utility>
 
 
@@ -104,11 +104,11 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
         {
             if (signal1[0].at(0) == '1')
                 {
-                    vector_length = round((float)fs_in / (GLONASS_L1_CA_CODE_RATE_HZ / GLONASS_L1_CA_CODE_LENGTH_CHIPS));
+                    vector_length = round(static_cast<float>(fs_in) / (GLONASS_L1_CA_CODE_RATE_HZ / GLONASS_L1_CA_CODE_LENGTH_CHIPS));
                 }
             else
                 {
-                    vector_length = round((float)fs_in / (GLONASS_L2_CA_CODE_RATE_HZ / GLONASS_L2_CA_CODE_LENGTH_CHIPS));
+                    vector_length = round(static_cast<float>(fs_in) / (GLONASS_L2_CA_CODE_RATE_HZ / GLONASS_L2_CA_CODE_LENGTH_CHIPS));
                 }
         }
 
@@ -128,7 +128,7 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
     else
         {
             LOG(WARNING) << item_type_ << " unrecognized item type for resampler";
-            item_size_ = sizeof(short);
+            item_size_ = sizeof(int16_t);
         }
 
     if (dump_)

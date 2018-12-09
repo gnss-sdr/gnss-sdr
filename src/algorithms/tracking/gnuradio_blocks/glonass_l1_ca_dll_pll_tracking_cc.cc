@@ -37,14 +37,14 @@
  */
 
 #include "glonass_l1_ca_dll_pll_tracking_cc.h"
-#include "glonass_l1_signal_processing.h"
 #include "GLONASS_L1_L2_CA.h"
-#include "tracking_discriminators.h"
-#include "lock_detectors.h"
-#include "gnss_sdr_flags.h"
 #include "control_message_factory.h"
-#include <gnuradio/io_signature.h>
+#include "glonass_l1_signal_processing.h"
+#include "gnss_sdr_flags.h"
+#include "lock_detectors.h"
+#include "tracking_discriminators.h"
 #include <glog/logging.h>
+#include <gnuradio/io_signature.h>
 #include <matio.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cmath>

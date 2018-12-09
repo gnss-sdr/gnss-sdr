@@ -33,9 +33,9 @@
 #define GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_H_
 
 
-#include <string>
-#include <gnuradio/msg_queue.h>
 #include "gnss_block_interface.h"
+#include <gnuradio/msg_queue.h>
+#include <string>
 
 
 class ConfigurationInterface;

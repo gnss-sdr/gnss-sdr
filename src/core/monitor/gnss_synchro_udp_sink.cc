@@ -32,8 +32,8 @@
 #include "gnss_synchro_udp_sink.h"
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/serialization/vector.hpp>
-#include <sstream>
 #include <iostream>
+#include <sstream>
 
 Gnss_Synchro_Udp_Sink::Gnss_Synchro_Udp_Sink(std::vector<std::string> addresses, const uint16_t& port) : socket{io_service}
 {

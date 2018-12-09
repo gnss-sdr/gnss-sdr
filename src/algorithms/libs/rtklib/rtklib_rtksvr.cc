@@ -1,12 +1,12 @@
 
 #include "rtklib_rtksvr.h"
+#include "rtklib_preceph.h"
+#include "rtklib_rtcm.h"
 #include "rtklib_rtkcmn.h"
 #include "rtklib_rtkpos.h"
-#include "rtklib_solution.h"
 #include "rtklib_sbas.h"
-#include "rtklib_preceph.h"
+#include "rtklib_solution.h"
 #include "rtklib_stream.h"
-#include "rtklib_rtcm.h"
 
 /* write solution header to output stream ------------------------------------*/
 void writesolhead(stream_t *stream, const solopt_t *solopt)

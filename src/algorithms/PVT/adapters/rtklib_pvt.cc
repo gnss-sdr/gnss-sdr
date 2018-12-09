@@ -30,11 +30,11 @@
 
 
 #include "rtklib_pvt.h"
-#include "pvt_conf.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
-#include <boost/archive/xml_oarchive.hpp>
+#include "pvt_conf.h"
 #include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
 #include <boost/serialization/map.hpp>
 #include <glog/logging.h>
 #if OLD_BOOST

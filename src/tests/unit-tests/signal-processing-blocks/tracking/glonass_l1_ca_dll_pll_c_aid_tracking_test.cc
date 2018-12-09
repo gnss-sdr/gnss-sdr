@@ -31,27 +31,26 @@
  */
 
 
-#include <chrono>
-#include <gnuradio/top_block.h>
-#include <gnuradio/blocks/file_source.h>
+#include "glonass_l1_ca_dll_pll_c_aid_tracking.h"
+#include "gnss_block_factory.h"
+#include "gnss_block_interface.h"
+#include "gnss_sdr_valve.h"
+#include "gnss_synchro.h"
+#include "in_memory_configuration.h"
+#include "tracking_interface.h"
 #include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/blocks/file_source.h>
+#include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/blocks/skiphead.h>
+#include <gnuradio/msg_queue.h>
+#include <gnuradio/top_block.h>
+#include <gtest/gtest.h>
+#include <chrono>
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
 #include <gnuradio/analog/sig_source_c.h>
 #endif
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/blocks/skiphead.h>
-#include <gtest/gtest.h>
-#include "gnss_block_factory.h"
-#include "gnss_block_interface.h"
-#include "tracking_interface.h"
-#include "in_memory_configuration.h"
-#include "gnss_sdr_valve.h"
-#include "gnss_synchro.h"
-#include "glonass_l1_ca_dll_pll_c_aid_tracking.h"
-
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GlonassL1CaDllPllCAidTrackingTest_msg_rx;
@@ -162,7 +161,7 @@ TEST_F(GlonassL1CaDllPllCAidTrackingTest, ValidationOfResults)
     init();
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Tracking test");
-    std::shared_ptr<TrackingInterface> tracking = std::make_shared<GlonassL1CaDllPllTracking>(config.get(), "Tracking_1G", 1, 1);
+    std::shared_ptr<TrackingInterface> tracking = std::make_shared<GlonassL1CaDllPllCAidTracking>(config.get(), "Tracking_1G", 1, 1);
     boost::shared_ptr<GlonassL1CaDllPllCAidTrackingTest_msg_rx> msg_rx = GlonassL1CaDllPllCAidTrackingTest_msg_rx_make();
 
     gnss_synchro.Acq_delay_samples = 1343;

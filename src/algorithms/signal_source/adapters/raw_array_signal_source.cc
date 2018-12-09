@@ -30,10 +30,10 @@
 
 #include "raw_array_signal_source.h"
 #include "configuration_interface.h"
-#include <dbfcttc/raw_array.h>
+#include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/msg_queue.h>
-#include <glog/logging.h>
+#include <dbfcttc/raw_array.h>
 
 
 using google::LogMessage;

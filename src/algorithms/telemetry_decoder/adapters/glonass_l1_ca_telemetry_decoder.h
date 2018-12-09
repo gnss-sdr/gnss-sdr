@@ -34,8 +34,8 @@
 #ifndef GNSS_SDR_GLONASS_L1_CA_TELEMETRY_DECODER_H_
 #define GNSS_SDR_GLONASS_L1_CA_TELEMETRY_DECODER_H_
 
-#include "telemetry_decoder_interface.h"
 #include "glonass_l1_ca_telemetry_decoder_cc.h"
+#include "telemetry_decoder_interface.h"
 #include <string>
 
 class ConfigurationInterface;

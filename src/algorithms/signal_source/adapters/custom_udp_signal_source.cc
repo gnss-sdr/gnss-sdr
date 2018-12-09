@@ -31,8 +31,8 @@
 
 
 #include "custom_udp_signal_source.h"
-#include "configuration_interface.h"
 #include "GPS_L1_CA.h"
+#include "configuration_interface.h"
 #include <boost/format.hpp>
 #include <glog/logging.h>
 #include <iostream>

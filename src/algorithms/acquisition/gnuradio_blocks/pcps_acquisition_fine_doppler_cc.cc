@@ -31,18 +31,18 @@
  */
 
 #include "pcps_acquisition_fine_doppler_cc.h"
-#include "gps_sdr_signal_processing.h"
-#include "control_message_factory.h"
 #include "GPS_L1_CA.h"
+#include "control_message_factory.h"
 #include "gnss_sdr_create_directory.h"
+#include "gps_sdr_signal_processing.h"
 #include <boost/filesystem/path.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
+#include <matio.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <algorithm>  // std::rotate, std::fill_n
 #include <sstream>
-#include <matio.h>
 
 
 using google::LogMessage;

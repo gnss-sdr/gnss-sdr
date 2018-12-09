@@ -30,13 +30,13 @@
  */
 
 #include "galileo_pcps_8ms_acquisition_cc.h"
-#include <sstream>
-#include <utility>
+#include "control_message_factory.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include "control_message_factory.h"
+#include <sstream>
+#include <utility>
 
 using google::LogMessage;
 

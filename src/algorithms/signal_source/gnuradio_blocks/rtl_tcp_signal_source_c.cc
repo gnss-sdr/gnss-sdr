@@ -32,8 +32,8 @@
 
 #include "rtl_tcp_signal_source_c.h"
 #include "rtl_tcp_commands.h"
-#include <glog/logging.h>
 #include <boost/thread/thread.hpp>
+#include <glog/logging.h>
 #include <map>
 
 using google::LogMessage;

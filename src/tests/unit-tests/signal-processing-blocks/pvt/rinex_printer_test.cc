@@ -28,8 +28,8 @@
  * -------------------------------------------------------------------------
  */
 
-#include <string>
 #include "rinex_printer.h"
+#include <string>
 
 
 TEST(RinexPrinterTest, GalileoObsHeader)

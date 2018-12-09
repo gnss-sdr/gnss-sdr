@@ -37,11 +37,11 @@
  */
 
 #include "galileo_e5a_dll_pll_tracking_fpga.h"
-#include "configuration_interface.h"
 #include "Galileo_E5a.h"
+#include "configuration_interface.h"
+#include "display.h"
 #include "galileo_e5_signal_processing.h"
 #include "gnss_sdr_flags.h"
-#include "display.h"
 #include <glog/logging.h>
 
 using google::LogMessage;

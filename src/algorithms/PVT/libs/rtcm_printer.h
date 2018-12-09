@@ -148,7 +148,7 @@ private:
     std::string rtcm_devname;
     uint16_t port;
     uint16_t station_id;
-    int32_t rtcm_dev_descriptor;                     // RTCM serial device descriptor (i.e. COM port)
+    int32_t rtcm_dev_descriptor;                            // RTCM serial device descriptor (i.e. COM port)
     int32_t init_serial(const std::string& serial_device);  //serial port control
     void close_serial();
     std::shared_ptr<Rtcm> rtcm;

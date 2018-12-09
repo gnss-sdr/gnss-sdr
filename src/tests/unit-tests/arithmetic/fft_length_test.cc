@@ -29,14 +29,14 @@
  * -------------------------------------------------------------------------
  */
 
+#include "gnuplot_i.h"
+#include "test_flags.h"
+#include <boost/filesystem.hpp>
+#include <gnuradio/fft/fft.h>
 #include <algorithm>
 #include <chrono>
 #include <functional>
 #include <random>
-#include <boost/filesystem.hpp>
-#include <gnuradio/fft/fft.h>
-#include "gnuplot_i.h"
-#include "test_flags.h"
 
 
 DEFINE_int32(fft_iterations_test, 1000, "Number of averaged iterations in FFT length timing test");

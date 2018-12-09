@@ -29,10 +29,10 @@
  */
 
 
+#include "nmea_printer.h"
 #include <cstdio>
 #include <fstream>
 #include <string>
-#include "nmea_printer.h"
 
 
 class NmeaPrinterTest : public ::testing::Test

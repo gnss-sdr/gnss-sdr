@@ -55,14 +55,14 @@
 #define GNSS_SDR_RTKLIB_SOLVER_H_
 
 
-#include "rtklib_rtkpos.h"
-#include "galileo_navigation_message.h"
-#include "gps_navigation_message.h"
-#include "gps_cnav_navigation_message.h"
-#include "glonass_gnav_navigation_message.h"
 #include "galileo_almanac.h"
+#include "galileo_navigation_message.h"
+#include "glonass_gnav_navigation_message.h"
 #include "gnss_synchro.h"
+#include "gps_cnav_navigation_message.h"
+#include "gps_navigation_message.h"
 #include "pvt_solution.h"
+#include "rtklib_rtkpos.h"
 #include <fstream>
 #include <map>
 #include <string>

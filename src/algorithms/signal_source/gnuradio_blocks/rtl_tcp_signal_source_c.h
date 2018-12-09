@@ -39,11 +39,11 @@
 #define GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_C_H
 
 #include "rtl_tcp_dongle_info.h"
-#include <boost/asio.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/condition.hpp>
 #include <boost/array.hpp>
+#include <boost/asio.hpp>
 #include <boost/circular_buffer.hpp>
+#include <boost/thread/condition.hpp>
+#include <boost/thread/mutex.hpp>
 #include <gnuradio/sync_block.h>
 #include <cstdint>
 #include <string>

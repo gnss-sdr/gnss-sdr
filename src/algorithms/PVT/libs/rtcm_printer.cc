@@ -38,10 +38,10 @@
 #include <boost/filesystem/path_traits.hpp>  // for filesystem
 #include <glog/logging.h>
 #include <cstdint>
+#include <fcntl.h>  // for O_RDWR
 #include <iomanip>
-#include <utility>
-#include <fcntl.h>    // for O_RDWR
 #include <termios.h>  // for tcgetattr
+#include <utility>
 
 
 using google::LogMessage;

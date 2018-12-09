@@ -34,8 +34,8 @@
 #ifndef GNSS_SDR_GPS_L1_CA_PCPS_ASSISTED_ACQUISITION_H_
 #define GNSS_SDR_GPS_L1_CA_PCPS_ASSISTED_ACQUISITION_H_
 
-#include "gnss_synchro.h"
 #include "acquisition_interface.h"
+#include "gnss_synchro.h"
 #include "pcps_assisted_acquisition_cc.h"
 #include <string>
 

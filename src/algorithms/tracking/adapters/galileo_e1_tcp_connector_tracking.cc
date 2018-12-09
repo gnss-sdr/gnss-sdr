@@ -36,12 +36,11 @@
  */
 
 #include "galileo_e1_tcp_connector_tracking.h"
-#include <glog/logging.h>
-
-#include <utility>
 #include "Galileo_E1.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
+#include <glog/logging.h>
+#include <utility>
 
 
 using google::LogMessage;

@@ -19,14 +19,13 @@
 #ifndef INCLUDED_VOLK_GNSSSDR_RUNTIME
 #define INCLUDED_VOLK_GNSSSDR_RUNTIME
 
-#include <volk_gnsssdr/volk_gnsssdr_typedefs.h>
-#include <volk_gnsssdr/volk_gnsssdr_config_fixed.h>
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
+#include <volk_gnsssdr/volk_gnsssdr_config_fixed.h>
 #include <volk_gnsssdr/volk_gnsssdr_malloc.h>
-
-#include <stdlib.h>
+#include <volk_gnsssdr/volk_gnsssdr_typedefs.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 __VOLK_DECL_BEGIN
 

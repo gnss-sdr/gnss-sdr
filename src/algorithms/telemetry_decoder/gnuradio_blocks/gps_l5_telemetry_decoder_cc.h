@@ -44,9 +44,9 @@
 
 extern "C"
 {
+#include "bits.h"
 #include "cnav_msg.h"
 #include "edc.h"
-#include "bits.h"
 }
 
 #include "GPS_L5.h"

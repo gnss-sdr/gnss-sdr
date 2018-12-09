@@ -31,10 +31,10 @@
  */
 
 #include "ad9361_fpga_signal_source.h"
-#include "configuration_interface.h"
-#include "ad9361_manager.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
+#include "ad9361_manager.h"
+#include "configuration_interface.h"
 #include <glog/logging.h>
 #include <exception>
 #include <iostream>  // for cout, endl

@@ -29,10 +29,10 @@
  */
 
 #include "pcps_quicksync_acquisition_cc.h"
-#include "control_message_factory.h"
 #include "GPS_L1_CA.h"
-#include <gnuradio/io_signature.h>
+#include "control_message_factory.h"
 #include <glog/logging.h>
+#include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cmath>

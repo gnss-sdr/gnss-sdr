@@ -33,8 +33,8 @@
 #ifndef GNSS_SDR_GNSS_SYNCHRO_H_
 #define GNSS_SDR_GNSS_SYNCHRO_H_
 
-#include <boost/serialization/nvp.hpp>
 #include "gnss_signal.h"
+#include <boost/serialization/nvp.hpp>
 #include <cstdint>
 
 /*!

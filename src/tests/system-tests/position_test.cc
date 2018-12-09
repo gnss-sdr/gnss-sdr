@@ -32,31 +32,30 @@
  * -------------------------------------------------------------------------
  */
 
-#include "geofunctions.h"
-#include "position_test_flags.h"
-#include "rtklib_solver_dump_reader.h"
-#include "spirent_motion_csv_dump_reader.h"
+#include "MATH_CONSTANTS.h"
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
 #include "control_thread.h"
-#include "in_memory_configuration.h"
 #include "file_configuration.h"
-#include "MATH_CONSTANTS.h"
+#include "geofunctions.h"
 #include "gnuplot_i.h"
-#include "test_flags.h"
+#include "in_memory_configuration.h"
+#include "position_test_flags.h"
+#include "rtklib_solver_dump_reader.h"
 #include "signal_generator_flags.h"
-#include <boost/filesystem.hpp>
+#include "spirent_motion_csv_dump_reader.h"
+#include "test_flags.h"
 #include <armadillo>
+#include <boost/filesystem.hpp>
 #include <glog/logging.h>
 #include <gtest/gtest.h>
+#include <matio.h>
 #include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <fstream>
 #include <numeric>
 #include <thread>
-#include <armadillo>
-#include <matio.h>
 
 // For GPS NAVIGATION (L1)
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;

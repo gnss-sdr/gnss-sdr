@@ -36,9 +36,9 @@
 #define INCLUDED_volk_gnsssdr_32fc_resamplerxnpuppet_32fc_H
 
 #include "volk_gnsssdr/volk_gnsssdr_32fc_xn_resampler_32fc_xn.h"
-#include <volk_gnsssdr/volk_gnsssdr_malloc.h>
-#include <volk_gnsssdr/volk_gnsssdr_complex.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <volk_gnsssdr/volk_gnsssdr_complex.h>
+#include <volk_gnsssdr/volk_gnsssdr_malloc.h>
 #include <string.h>
 
 

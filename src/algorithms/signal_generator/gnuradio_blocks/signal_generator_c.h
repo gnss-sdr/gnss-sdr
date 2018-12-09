@@ -35,9 +35,9 @@
 #include <boost/scoped_array.hpp>
 //#include <gnuradio/random.h>
 #include <gnuradio/block.h>
+#include <random>
 #include <string>
 #include <vector>
-#include <random>
 
 
 class signal_generator_c;

@@ -29,8 +29,8 @@
  */
 
 #include "rtcm.h"
-#include "Galileo_E1.h"
 #include "GPS_L2C.h"
+#include "Galileo_E1.h"
 #include <boost/algorithm/string.hpp>  // for to_upper_copy
 #include <boost/crc.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>

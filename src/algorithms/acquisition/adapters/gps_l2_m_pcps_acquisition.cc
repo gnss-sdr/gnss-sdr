@@ -32,11 +32,11 @@
  */
 
 #include "gps_l2_m_pcps_acquisition.h"
-#include "configuration_interface.h"
-#include "gps_l2c_signal.h"
 #include "GPS_L2C.h"
-#include "gnss_sdr_flags.h"
 #include "acq_conf.h"
+#include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
+#include "gps_l2c_signal.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
 

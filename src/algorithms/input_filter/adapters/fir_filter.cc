@@ -31,10 +31,10 @@
 
 #include "fir_filter.h"
 #include "configuration_interface.h"
-#include <utility>
-#include <gnuradio/filter/pm_remez.h>
 #include <glog/logging.h>
+#include <gnuradio/filter/pm_remez.h>
 #include <volk/volk.h>
+#include <utility>
 
 
 using google::LogMessage;

@@ -32,12 +32,12 @@
 #ifndef GNSS_SDR_PCPS_8MS_ACQUISITION_CC_H_
 #define GNSS_SDR_PCPS_8MS_ACQUISITION_CC_H_
 
+#include "gnss_synchro.h"
+#include <gnuradio/block.h>
+#include <gnuradio/fft/fft.h>
+#include <gnuradio/gr_complex.h>
 #include <fstream>
 #include <string>
-#include <gnuradio/block.h>
-#include <gnuradio/gr_complex.h>
-#include <gnuradio/fft/fft.h>
-#include "gnss_synchro.h"
 
 class galileo_pcps_8ms_acquisition_cc;
 

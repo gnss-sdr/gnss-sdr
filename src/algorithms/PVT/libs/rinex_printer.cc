@@ -29,21 +29,21 @@
  */
 
 #include "rinex_printer.h"
-#include <boost/date_time/time_zone_base.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/local_time/local_time.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/time_zone_base.hpp>
 #include <boost/filesystem/operations.hpp>   // for create_directories, exists
 #include <boost/filesystem/path.hpp>         // for path, operator<<
 #include <boost/filesystem/path_traits.hpp>  // for filesystem
 #include <glog/logging.h>
-#include <unistd.h>   // for getlogin_r()
 #include <algorithm>  // for min and max
 #include <cmath>      // for floor
 #include <cstdlib>    // for getenv()
 #include <iterator>
 #include <ostream>
 #include <set>
+#include <unistd.h>  // for getlogin_r()
 #include <utility>
 #include <vector>
 

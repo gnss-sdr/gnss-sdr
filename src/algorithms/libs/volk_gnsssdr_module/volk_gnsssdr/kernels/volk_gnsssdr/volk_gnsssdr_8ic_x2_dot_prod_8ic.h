@@ -59,9 +59,9 @@
 #ifndef INCLUDED_volk_gnsssdr_8ic_x2_dot_prod_8ic_H
 #define INCLUDED_volk_gnsssdr_8ic_x2_dot_prod_8ic_H
 
-#include <string.h>
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
+#include <string.h>
 
 #ifdef LV_HAVE_GENERIC
 

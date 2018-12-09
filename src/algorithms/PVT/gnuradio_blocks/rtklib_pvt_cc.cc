@@ -34,8 +34,8 @@
 #include "galileo_almanac_helper.h"
 #include "gnss_sdr_create_directory.h"
 #include "pvt_conf.h"
-#include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
 #include <boost/exception/all.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/serialization/map.hpp>
@@ -43,9 +43,9 @@
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/io_signature.h>
 #include <algorithm>
+#include <exception>
 #include <iostream>
 #include <map>
-#include <exception>
 #if OLD_BOOST
 #include <boost/math/common_factor_rt.hpp>
 namespace bc = boost::math;

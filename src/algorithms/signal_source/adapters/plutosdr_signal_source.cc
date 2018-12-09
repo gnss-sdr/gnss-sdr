@@ -29,9 +29,9 @@
  */
 
 #include "plutosdr_signal_source.h"
+#include "GPS_L1_CA.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_valve.h"
-#include "GPS_L1_CA.h"
 #include <glog/logging.h>
 #include <iostream>
 

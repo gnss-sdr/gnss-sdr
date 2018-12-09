@@ -31,25 +31,25 @@
  */
 
 
-#include <unistd.h>
+#include "control_message_factory.h"
+#include "control_thread.h"
+#include "in_memory_configuration.h"
+#include <boost/exception/diagnostic_information.hpp>
+#include <boost/exception_ptr.hpp>
+#include <boost/lexical_cast.hpp>
+#include <gflags/gflags.h>
+#include <glog/logging.h>
+#include <gnuradio/message.h>
+#include <gnuradio/msg_queue.h>
+#include <gtest/gtest.h>
 #include <chrono>
 #include <exception>
 #include <memory>
-#include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
+#include <sys/types.h>
 #include <thread>
-#include <boost/lexical_cast.hpp>
-#include <boost/exception/diagnostic_information.hpp>
-#include <boost/exception_ptr.hpp>
-#include <gtest/gtest.h>
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/message.h>
-#include <gflags/gflags.h>
-#include <glog/logging.h>
-#include "control_thread.h"
-#include "in_memory_configuration.h"
-#include "control_message_factory.h"
+#include <unistd.h>
 
 
 class ControlThreadTest : public ::testing::Test
@@ -88,7 +88,7 @@ int ControlThreadTest::stop_receiver()
 }
 
 
-TEST_F(ControlThreadTest, InstantiateRunControlMessages)
+TEST_F(ControlThreadTest /*unused*/, InstantiateRunControlMessages /*unused*/)
 {
     std::shared_ptr<InMemoryConfiguration> config = std::make_shared<InMemoryConfiguration>();
 
@@ -150,7 +150,7 @@ TEST_F(ControlThreadTest, InstantiateRunControlMessages)
 }
 
 
-TEST_F(ControlThreadTest, InstantiateRunControlMessages2)
+TEST_F(ControlThreadTest /*unused*/, InstantiateRunControlMessages2 /*unused*/)
 {
     std::shared_ptr<InMemoryConfiguration> config = std::make_shared<InMemoryConfiguration>();
     config->set_property("SignalSource.implementation", "File_Signal_Source");
@@ -214,7 +214,7 @@ TEST_F(ControlThreadTest, InstantiateRunControlMessages2)
 }
 
 
-TEST_F(ControlThreadTest, StopReceiverProgrammatically)
+TEST_F(ControlThreadTest /*unused*/, StopReceiverProgrammatically /*unused*/)
 {
     std::shared_ptr<InMemoryConfiguration> config = std::make_shared<InMemoryConfiguration>();
     config->set_property("SignalSource.implementation", "File_Signal_Source");

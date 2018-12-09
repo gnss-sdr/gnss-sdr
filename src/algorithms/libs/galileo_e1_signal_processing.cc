@@ -236,7 +236,7 @@ void galileo_e1_code_gen_complex_sampled(std::complex<float>* _dest, char _Signa
     std::string _galileo_signal = _Signal;
     const int32_t _codeFreqBasis = Galileo_E1_CODE_CHIP_RATE_HZ;  // Hz
     auto _samplesPerCode = static_cast<uint32_t>(static_cast<double>(_fs) /
-                                                     (static_cast<double>(_codeFreqBasis) / static_cast<double>(Galileo_E1_B_CODE_LENGTH_CHIPS)));
+                                                 (static_cast<double>(_codeFreqBasis) / static_cast<double>(Galileo_E1_B_CODE_LENGTH_CHIPS)));
 
     if (_galileo_signal.rfind("1C") != std::string::npos && _galileo_signal.length() >= 2 && _secondary_flag)
         {

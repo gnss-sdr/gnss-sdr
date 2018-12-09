@@ -29,17 +29,17 @@
  */
 
 #include "gps_l1_ca_dll_pll_c_aid_tracking_cc.h"
-#include "gps_sdr_signal_processing.h"
-#include "tracking_discriminators.h"
-#include "lock_detectors.h"
-#include "gnss_sdr_flags.h"
 #include "GPS_L1_CA.h"
 #include "control_message_factory.h"
+#include "gnss_sdr_flags.h"
+#include "gps_sdr_signal_processing.h"
+#include "lock_detectors.h"
+#include "tracking_discriminators.h"
 #include <boost/bind.hpp>
+#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <matio.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include <glog/logging.h>
 #include <cmath>
 #include <iostream>
 #include <memory>

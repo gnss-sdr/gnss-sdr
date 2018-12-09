@@ -39,8 +39,8 @@
 #ifndef GNSS_SDR_GLONASS_L1_CA_DLL_PLL_TRACKING_H_
 #define GNSS_SDR_GLONASS_L1_CA_DLL_PLL_TRACKING_H_
 
-#include "tracking_interface.h"
 #include "glonass_l1_ca_dll_pll_tracking_cc.h"
+#include "tracking_interface.h"
 #include <string>
 
 class ConfigurationInterface;

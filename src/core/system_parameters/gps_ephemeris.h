@@ -34,8 +34,8 @@
 
 
 #include <boost/assign.hpp>
-#include <boost/serialization/nvp.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/serialization/nvp.hpp>
 #include <cstdint>
 #include <map>
 #include <string>

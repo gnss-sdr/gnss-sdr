@@ -36,18 +36,18 @@
  */
 
 #include "dll_pll_veml_tracking_fpga.h"
-#include "tracking_discriminators.h"
-#include "lock_detectors.h"
-#include "control_message_factory.h"
-#include "MATH_CONSTANTS.h"
-#include "Galileo_E1.h"
-#include "Galileo_E5a.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
-#include "gps_l2c_signal.h"
 #include "GPS_L5.h"
-#include "gps_l5_signal.h"
+#include "Galileo_E1.h"
+#include "Galileo_E5a.h"
+#include "MATH_CONSTANTS.h"
+#include "control_message_factory.h"
 #include "gnss_sdr_create_directory.h"
+#include "gps_l2c_signal.h"
+#include "gps_l5_signal.h"
+#include "lock_detectors.h"
+#include "tracking_discriminators.h"
 #include <boost/filesystem/path.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>

@@ -36,18 +36,18 @@
  */
 
 #include "gps_l1_ca_tcp_connector_tracking_cc.h"
+#include "GPS_L1_CA.h"
 #include "control_message_factory.h"
 #include "gnss_sdr_flags.h"
 #include "gps_sdr_signal_processing.h"
-#include "GPS_L1_CA.h"
 #include "lock_detectors.h"
 #include "tcp_communication.h"
 #include "tcp_packet_data.h"
 #include "tracking_discriminators.h"
 #include <boost/asio.hpp>
 #include <boost/lexical_cast.hpp>
-#include <gnuradio/io_signature.h>
 #include <glog/logging.h>
+#include <gnuradio/io_signature.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cmath>
 #include <iostream>
@@ -85,7 +85,7 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
     int64_t fs_in,
     uint32_t vector_length,
     bool dump,
-    const std::string& dump_filename,
+    const std::string &dump_filename,
     float early_late_space_chips,
     size_t port_ch0) : gr::block("Gps_L1_Ca_Tcp_Connector_Tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
                            gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))

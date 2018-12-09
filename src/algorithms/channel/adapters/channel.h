@@ -35,15 +35,15 @@
 #ifndef GNSS_SDR_CHANNEL_H_
 #define GNSS_SDR_CHANNEL_H_
 
-#include "channel_interface.h"
 #include "channel_fsm.h"
-#include "gnss_synchro.h"
+#include "channel_interface.h"
 #include "channel_msg_receiver_cc.h"
-#include <gnuradio/msg_queue.h>
+#include "gnss_synchro.h"
 #include <gnuradio/block.h>
+#include <gnuradio/msg_queue.h>
 #include <memory>
-#include <string>
 #include <mutex>
+#include <string>
 
 class ConfigurationInterface;
 class AcquisitionInterface;

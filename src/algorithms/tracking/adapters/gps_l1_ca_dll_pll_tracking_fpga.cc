@@ -36,13 +36,13 @@
  * -------------------------------------------------------------------------
  */
 
-#include <glog/logging.h>
-#include "gps_sdr_signal_processing.h"
 #include "gps_l1_ca_dll_pll_tracking_fpga.h"
-#include "configuration_interface.h"
 #include "GPS_L1_CA.h"
-#include "gnss_sdr_flags.h"
+#include "configuration_interface.h"
 #include "display.h"
+#include "gnss_sdr_flags.h"
+#include "gps_sdr_signal_processing.h"
+#include <glog/logging.h>
 
 #define NUM_PRNs 32
 

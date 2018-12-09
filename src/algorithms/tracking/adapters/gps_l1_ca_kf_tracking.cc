@@ -39,9 +39,9 @@
 
 
 #include "gps_l1_ca_kf_tracking.h"
-#include "gnss_sdr_flags.h"
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
 #include <glog/logging.h>
 
 

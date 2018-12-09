@@ -31,9 +31,9 @@
  */
 
 
+#include "in_memory_configuration.h"
 #include "pass_through.h"
 #include <gtest/gtest.h>
-#include "in_memory_configuration.h"
 
 
 TEST(PassThroughTest, Instantiate)

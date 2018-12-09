@@ -34,8 +34,8 @@
 
 #include "MATH_CONSTANTS.h"
 #include <cstdint>
-#include <vector>
 #include <utility>  // std::pair
+#include <vector>
 
 
 // CNAV GPS NAVIGATION MESSAGE STRUCTURE

@@ -34,12 +34,12 @@
  * -------------------------------------------------------------------------
  */
 
-#include "dll_pll_conf.h"
 #include "gps_l2_m_dll_pll_tracking.h"
-#include "configuration_interface.h"
 #include "GPS_L2C.h"
-#include "gnss_sdr_flags.h"
+#include "configuration_interface.h"
 #include "display.h"
+#include "dll_pll_conf.h"
+#include "gnss_sdr_flags.h"
 #include <glog/logging.h>
 
 

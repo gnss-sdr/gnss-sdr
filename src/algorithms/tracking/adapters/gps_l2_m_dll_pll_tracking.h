@@ -38,8 +38,8 @@
 #ifndef GNSS_SDR_gps_l2_m_dll_pll_tracking_H_
 #define GNSS_SDR_gps_l2_m_dll_pll_tracking_H_
 
-#include "tracking_interface.h"
 #include "dll_pll_veml_tracking.h"
+#include "tracking_interface.h"
 #include <string>
 
 class ConfigurationInterface;

@@ -51,10 +51,10 @@
  *
  *----------------------------------------------------------------------------*/
 
-#include <cctype>
 #include "rtklib_solution.h"
 #include "rtklib_rtkcmn.h"
 #include "rtklib_rtksvr.h"
+#include <cctype>
 
 
 /* constants and macros ------------------------------------------------------*/
@@ -1111,7 +1111,7 @@ void addsolstat(solstatbuf_t *statbuf, const solstat_t *stat)
         {
             statbuf->nmax = statbuf->nmax == 0 ? 8192 : statbuf->nmax * 2;
             if (!(statbuf_data = static_cast<solstat_t *>(realloc(statbuf->data, sizeof(solstat_t) *
-                                                                         statbuf->nmax))))
+                                                                                     statbuf->nmax))))
                 {
                     trace(1, "addsolstat: memory allocation error\n");
                     free(statbuf->data);

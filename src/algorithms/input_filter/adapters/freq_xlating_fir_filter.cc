@@ -31,12 +31,12 @@
 
 #include "freq_xlating_fir_filter.h"
 #include "configuration_interface.h"
-#include <utility>
-#include <gnuradio/blocks/file_sink.h>
-#include <gnuradio/filter/pm_remez.h>
-#include <gnuradio/filter/firdes.h>
 #include <glog/logging.h>
+#include <gnuradio/blocks/file_sink.h>
+#include <gnuradio/filter/firdes.h>
+#include <gnuradio/filter/pm_remez.h>
 #include <volk/volk.h>
+#include <utility>
 
 using google::LogMessage;
 

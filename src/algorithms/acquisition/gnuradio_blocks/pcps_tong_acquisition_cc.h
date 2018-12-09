@@ -53,8 +53,8 @@
 
 #include "gnss_synchro.h"
 #include <gnuradio/block.h>
-#include <gnuradio/gr_complex.h>
 #include <gnuradio/fft/fft.h>
+#include <gnuradio/gr_complex.h>
 #include <fstream>
 #include <string>
 

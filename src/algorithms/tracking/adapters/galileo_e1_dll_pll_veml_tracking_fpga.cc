@@ -35,11 +35,11 @@
  */
 
 #include "galileo_e1_dll_pll_veml_tracking_fpga.h"
-#include "configuration_interface.h"
 #include "Galileo_E1.h"
+#include "configuration_interface.h"
+#include "display.h"
 #include "galileo_e1_signal_processing.h"
 #include "gnss_sdr_flags.h"
-#include "display.h"
 #include <glog/logging.h>
 
 //#define NUM_PRNs_GALILEO_E1 50

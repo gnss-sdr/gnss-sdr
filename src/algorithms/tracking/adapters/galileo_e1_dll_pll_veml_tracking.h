@@ -37,8 +37,8 @@
 #ifndef GNSS_SDR_GALILEO_E1_DLL_PLL_VEML_TRACKING_H_
 #define GNSS_SDR_GALILEO_E1_DLL_PLL_VEML_TRACKING_H_
 
-#include "tracking_interface.h"
 #include "dll_pll_veml_tracking.h"
+#include "tracking_interface.h"
 #include <string>
 
 

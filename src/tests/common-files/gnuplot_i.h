@@ -48,18 +48,18 @@
 #define GNSS_SDR_GNUPLOT_I_H_
 
 #include <gflags/gflags.h>
-#include <iostream>
-#include <string>
-#include <vector>
-#include <fstream>
-#include <sstream>  // for std::ostringstream
-#include <stdexcept>
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>  // for getenv()
 #include <cstring>  // for strncpy
-#include <cmath>
-#include <list>  // for std::list
+#include <fstream>
+#include <iostream>
+#include <list>     // for std::list
+#include <sstream>  // for std::ostringstream
+#include <stdexcept>
+#include <string>
 #include <sys/stat.h>
+#include <vector>
 
 DEFINE_bool(show_plots, true, "Show plots on screen. Disable for non-interactive testing.");
 
@@ -2100,19 +2100,19 @@ std::string Gnuplot::create_tmpfile(std::ofstream &tmp)
             throw GnuplotException(except.str());
         }
 
-// int mkstemp(char *name);
-// shall replace the contents of the string pointed to by "name" by a unique
-// filename, and return a file descriptor for the file open for reading and
-// writing.  Otherwise, -1 shall be returned if no suitable file could be
-// created.  The string in template should look like a filename with six
-// trailing 'X' s; mkstemp() replaces each 'X' with a character from the
-// portable filename character set.  The characters are chosen such that the
-// resulting name does not duplicate the name of an existing file at the
-// time of a call to mkstemp()
+        // int mkstemp(char *name);
+        // shall replace the contents of the string pointed to by "name" by a unique
+        // filename, and return a file descriptor for the file open for reading and
+        // writing.  Otherwise, -1 shall be returned if no suitable file could be
+        // created.  The string in template should look like a filename with six
+        // trailing 'X' s; mkstemp() replaces each 'X' with a character from the
+        // portable filename character set.  The characters are chosen such that the
+        // resulting name does not duplicate the name of an existing file at the
+        // time of a call to mkstemp()
 
-//
-// open temporary files for output
-//
+        //
+        // open temporary files for output
+        //
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
     if (_mktemp(name) == NULL)
@@ -2153,7 +2153,7 @@ void Gnuplot::remove_tmpfiles()
 {
     if ((tmpfile_list).size() > 0)
         {
-            for (auto & i : tmpfile_list)
+            for (auto &i : tmpfile_list)
                 if (remove(i.c_str()) != 0)
                     std::cout << "Problem closing files" << std::endl;
 

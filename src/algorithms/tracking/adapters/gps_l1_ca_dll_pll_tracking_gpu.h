@@ -37,9 +37,9 @@
 #ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_GPU_H_
 #define GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_GPU_H_
 
-#include <string>
-#include "tracking_interface.h"
 #include "gps_l1_ca_dll_pll_tracking_gpu_cc.h"
+#include "tracking_interface.h"
+#include <string>
 
 
 class ConfigurationInterface;

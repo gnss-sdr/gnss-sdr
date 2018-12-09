@@ -31,29 +31,29 @@
  */
 
 
+#include <boost/shared_ptr.hpp>
+#include <glog/logging.h>
+#include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/blocks/file_source.h>
+#include <gnuradio/top_block.h>
 #include <chrono>
 #include <fstream>
 #include <stdexcept>
-#include <boost/shared_ptr.hpp>
-#include <glog/logging.h>
-#include <gnuradio/top_block.h>
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/analog/sig_source_waveform.h>
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
 #include <gnuradio/analog/sig_source_c.h>
 #endif
-#include <gnuradio/blocks/null_sink.h>
+#include "fir_filter.h"
+#include "galileo_e1_pcps_quicksync_ambiguous_acquisition.h"
+#include "gen_signal_source.h"
 #include "gnss_block_interface.h"
-#include "in_memory_configuration.h"
+#include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
+#include "in_memory_configuration.h"
 #include "signal_generator.h"
 #include "signal_generator_c.h"
-#include "fir_filter.h"
-#include "gen_signal_source.h"
-#include "gnss_sdr_valve.h"
-#include "galileo_e1_pcps_quicksync_ambiguous_acquisition.h"
+#include <gnuradio/blocks/null_sink.h>
 
 DEFINE_double(e1_value_threshold, 0.3, "Value of the threshold for the acquisition");
 DEFINE_int32(e1_value_CN0_dB_0, 50, "Value for the CN0_dB_0 in channel 0");

@@ -29,22 +29,22 @@
  * -------------------------------------------------------------------------
  */
 
+#include "byte_to_short.h"
+#include "ibyte_to_cbyte.h"
+#include "ibyte_to_complex.h"
+#include "ibyte_to_cshort.h"
+#include "in_memory_configuration.h"
+#include "ishort_to_complex.h"
+#include "ishort_to_cshort.h"
+#include <gnuradio/blocks/file_source.h>
+#include <gtest/gtest.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include <algorithm>
 #include <cstdint>
 #include <fstream>
 #include <iterator>
 #include <system_error>
 #include <vector>
-#include <gnuradio/blocks/file_source.h>
-#include <gtest/gtest.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
-#include "byte_to_short.h"
-#include "ibyte_to_cbyte.h"
-#include "ibyte_to_complex.h"
-#include "ibyte_to_cshort.h"
-#include "ishort_to_complex.h"
-#include "ishort_to_cshort.h"
-#include "in_memory_configuration.h"
 
 
 class DataTypeAdapter : public ::testing::Test

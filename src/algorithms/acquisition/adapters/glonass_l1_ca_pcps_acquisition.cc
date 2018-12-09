@@ -32,11 +32,11 @@
  */
 
 #include "glonass_l1_ca_pcps_acquisition.h"
+#include "GLONASS_L1_L2_CA.h"
+#include "acq_conf.h"
 #include "configuration_interface.h"
 #include "glonass_l1_signal_processing.h"
 #include "gnss_sdr_flags.h"
-#include "acq_conf.h"
-#include "GLONASS_L1_L2_CA.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
 

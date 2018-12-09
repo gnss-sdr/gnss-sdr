@@ -33,8 +33,8 @@
 
 
 #include "direct_resampler_conditioner_cb.h"
-#include <gnuradio/io_signature.h>
 #include <glog/logging.h>
+#include <gnuradio/io_signature.h>
 
 
 using google::LogMessage;

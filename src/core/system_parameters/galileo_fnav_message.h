@@ -38,16 +38,16 @@
 #define GNSS_SDR_GALILEO_FNAV_MESSAGE_H_
 
 
+#include "Galileo_E5a.h"
+#include "galileo_almanac_helper.h"
 #include "galileo_ephemeris.h"
 #include "galileo_iono.h"
-#include "galileo_almanac_helper.h"
 #include "galileo_utc_model.h"
-#include "Galileo_E5a.h"
 #include <bitset>
 #include <cstdint>
 #include <string>
-#include <vector>
 #include <utility>
+#include <vector>
 
 /*!
  * \brief This class handles the Galileo F/NAV Data message, as described in the

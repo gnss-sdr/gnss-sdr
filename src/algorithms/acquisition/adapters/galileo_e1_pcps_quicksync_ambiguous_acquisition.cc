@@ -30,12 +30,12 @@
  */
 
 #include "galileo_e1_pcps_quicksync_ambiguous_acquisition.h"
-#include <boost/math/distributions/exponential.hpp>
-#include <glog/logging.h>
-#include "galileo_e1_signal_processing.h"
 #include "Galileo_E1.h"
 #include "configuration_interface.h"
+#include "galileo_e1_signal_processing.h"
 #include "gnss_sdr_flags.h"
+#include <boost/math/distributions/exponential.hpp>
+#include <glog/logging.h>
 
 using google::LogMessage;
 

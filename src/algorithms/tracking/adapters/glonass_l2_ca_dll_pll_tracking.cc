@@ -35,8 +35,8 @@
  */
 
 #include "glonass_l2_ca_dll_pll_tracking.h"
-#include "configuration_interface.h"
 #include "GLONASS_L1_L2_CA.h"
+#include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
 #include <glog/logging.h>
 

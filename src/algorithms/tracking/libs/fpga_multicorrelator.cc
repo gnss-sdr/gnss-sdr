@@ -35,27 +35,26 @@
  */
 
 #include "fpga_multicorrelator.h"
-
 #include <cmath>
 
 // FPGA stuff
 #include <new>
 
 // libraries used by DMA test code and GIPO test code
-#include <stdio.h>
-#include <fcntl.h>
-#include <unistd.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <unistd.h>
 
 // libraries used by DMA test code
-#include <sys/stat.h>
-#include <stdint.h>
-#include <unistd.h>
 #include <assert.h>
+#include <stdint.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 // libraries used by GPIO test code
-#include <stdlib.h>
 #include <signal.h>
+#include <stdlib.h>
 #include <sys/mman.h>
 
 // logging

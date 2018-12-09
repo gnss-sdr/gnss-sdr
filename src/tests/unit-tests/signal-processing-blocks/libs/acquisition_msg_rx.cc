@@ -31,11 +31,11 @@
  */
 
 #include "acquisition_msg_rx.h"
-#include <cstdint>
 #include <boost/bind.hpp>
-#include <utility>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
+#include <cstdint>
+#include <utility>
 
 
 Acquisition_msg_rx_sptr Acquisition_msg_rx_make()

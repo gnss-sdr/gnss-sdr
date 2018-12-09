@@ -36,11 +36,10 @@
  */
 
 #include "gps_l1_ca_tcp_connector_tracking.h"
-#include <glog/logging.h>
-
-#include <utility>
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
+#include <glog/logging.h>
+#include <utility>
 
 
 using google::LogMessage;

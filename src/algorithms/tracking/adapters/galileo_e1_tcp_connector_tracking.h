@@ -39,9 +39,9 @@
 #ifndef GNSS_SDR_GALILEO_E1_TCP_CONNECTOR_TRACKING_H_
 #define GNSS_SDR_GALILEO_E1_TCP_CONNECTOR_TRACKING_H_
 
-#include <string>
-#include "tracking_interface.h"
 #include "galileo_e1_tcp_connector_tracking_cc.h"
+#include "tracking_interface.h"
+#include <string>
 
 
 class ConfigurationInterface;

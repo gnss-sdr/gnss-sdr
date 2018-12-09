@@ -17,7 +17,7 @@
 #else
 #define EXPORT
 #endif
-
+// clang-format off
 #if USE_OPENSSL_FALLBACK
 #include <openssl/crypto.h>
 #include <openssl/x509.h>
@@ -31,7 +31,7 @@
 #include <gnutls/openssl.h>
 #include <gnutls/x509.h>
 #endif
-
+// clang-format on
 #include <PDU.h>
 #include <ULP-PDU.h>
 

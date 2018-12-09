@@ -33,8 +33,8 @@
 
 #include "glonass_l1_ca_telemetry_decoder_cc.h"
 #include <boost/lexical_cast.hpp>
-#include <gnuradio/io_signature.h>
 #include <glog/logging.h>
+#include <gnuradio/io_signature.h>
 
 
 #define CRC_ERROR_LIMIT 6

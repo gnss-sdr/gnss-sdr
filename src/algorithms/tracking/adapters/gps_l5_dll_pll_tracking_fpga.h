@@ -37,8 +37,8 @@
 #ifndef GNSS_SDR_GPS_L5_DLL_PLL_TRACKING_FPGA_H_
 #define GNSS_SDR_GPS_L5_DLL_PLL_TRACKING_FPGA_H_
 
-#include "tracking_interface.h"
 #include "dll_pll_veml_tracking_fpga.h"
+#include "tracking_interface.h"
 #include <string>
 
 class ConfigurationInterface;

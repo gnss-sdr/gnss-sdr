@@ -30,9 +30,9 @@
 
 
 #include "channel_msg_receiver_cc.h"
+#include <glog/logging.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/io_signature.h>
-#include <glog/logging.h>
 #include <cstdint>
 
 using google::LogMessage;

@@ -35,12 +35,12 @@
  *
  * -------------------------------------------------------------------------
  */
-#include "dll_pll_conf.h"
 #include "galileo_e5a_dll_pll_tracking.h"
-#include "configuration_interface.h"
 #include "Galileo_E5a.h"
-#include "gnss_sdr_flags.h"
+#include "configuration_interface.h"
 #include "display.h"
+#include "dll_pll_conf.h"
+#include "gnss_sdr_flags.h"
 #include <glog/logging.h>
 
 using google::LogMessage;

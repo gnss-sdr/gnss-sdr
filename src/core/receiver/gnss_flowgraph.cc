@@ -33,11 +33,11 @@
  */
 
 #include "gnss_flowgraph.h"
-#include "gnss_synchro.h"
-#include "configuration_interface.h"
-#include "gnss_block_interface.h"
 #include "channel_interface.h"
+#include "configuration_interface.h"
 #include "gnss_block_factory.h"
+#include "gnss_block_interface.h"
+#include "gnss_synchro.h"
 #include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
 #include <glog/logging.h>

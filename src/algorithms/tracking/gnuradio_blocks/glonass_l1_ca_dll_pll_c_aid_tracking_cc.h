@@ -45,10 +45,10 @@
 //#include "tracking_loop_filter.h"
 #include "cpu_multicorrelator.h"
 #include <gnuradio/block.h>
-#include <pmt/pmt.h>
+#include <deque>
 #include <fstream>
 #include <map>
-#include <deque>
+#include <pmt/pmt.h>
 #include <string>
 
 class glonass_l1_ca_dll_pll_c_aid_tracking_cc;

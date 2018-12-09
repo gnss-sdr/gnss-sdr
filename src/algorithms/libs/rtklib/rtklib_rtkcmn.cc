@@ -54,10 +54,10 @@
 //#include <cstdio>
 #include <dirent.h>
 #include <iostream>
-#include <string>
 #include <sstream>
-#include <sys/time.h>
+#include <string>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <sys/types.h>
 
 
@@ -1471,7 +1471,9 @@ gtime_t timeget(void)
 {
     gtime_t time;
     double ep[6] = {};
-    struct timeval tv{};
+    struct timeval tv
+    {
+    };
     struct tm *tt;
 
     if (!gettimeofday(&tv, nullptr) && (tt = gmtime(&tv.tv_sec)))

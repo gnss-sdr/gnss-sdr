@@ -28,18 +28,18 @@
  * -------------------------------------------------------------------------
  */
 
+#include "geofunctions.h"
+#include "gnss_sdr_supl_client.h"
+#include "in_memory_configuration.h"
+#include "rtklib_solver.h"
+#include <armadillo>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/serialization/map.hpp>
 #include <gtest/gtest.h>
-#include <string>
 #include <iomanip>
 #include <iostream>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/serialization/map.hpp>
-#include "rtklib_solver.h"
-#include "in_memory_configuration.h"
-#include "gnss_sdr_supl_client.h"
-#include "geofunctions.h"
-#include <armadillo>
+#include <string>
 
 
 rtk_t configure_rtklib_options()

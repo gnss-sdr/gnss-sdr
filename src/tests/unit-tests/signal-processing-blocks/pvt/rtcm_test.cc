@@ -29,10 +29,10 @@
  * -------------------------------------------------------------------------
  */
 
+#include "Galileo_E1.h"
+#include "rtcm.h"
 #include <memory>
 #include <thread>
-#include "rtcm.h"
-#include "Galileo_E1.h"
 
 TEST(RtcmTest, HexToBin)
 {

@@ -53,13 +53,13 @@
 
 #include "gnss_synchro.h"
 #include <gnuradio/block.h>
-#include <gnuradio/gr_complex.h>
 #include <gnuradio/fft/fft.h>
-#include <fstream>
-#include <string>
+#include <gnuradio/gr_complex.h>
 #include <algorithm>
-#include <functional>
 #include <cassert>
+#include <fstream>
+#include <functional>
+#include <string>
 
 class pcps_quicksync_acquisition_cc;
 
@@ -90,17 +90,17 @@ class pcps_quicksync_acquisition_cc : public gr::block
 {
 private:
     friend pcps_quicksync_acquisition_cc_sptr
-    pcps_quicksync_make_acquisition_cc(uint32_t  folding_factor,
-        uint32_t  sampled_ms, uint32_t  max_dwells,
-        uint32_t  doppler_max, int64_t  fs_in,
+    pcps_quicksync_make_acquisition_cc(uint32_t folding_factor,
+        uint32_t sampled_ms, uint32_t max_dwells,
+        uint32_t doppler_max, int64_t fs_in,
         int32_t samples_per_ms, int32_t samples_per_code,
         bool bit_transition_flag,
         bool dump,
         std::string dump_filename);
 
-    pcps_quicksync_acquisition_cc(uint32_t  folding_factor,
-        uint32_t  sampled_ms, uint32_t  max_dwells,
-        uint32_t  doppler_max, int64_t  fs_in,
+    pcps_quicksync_acquisition_cc(uint32_t folding_factor,
+        uint32_t sampled_ms, uint32_t max_dwells,
+        uint32_t doppler_max, int64_t fs_in,
         int32_t samples_per_ms, int32_t samples_per_code,
         bool bit_transition_flag,
         bool dump,
@@ -110,36 +110,36 @@ private:
         int32_t doppler_offset);
 
     gr_complex* d_code;
-    uint32_t  d_folding_factor;  // also referred in the paper as 'p'
+    uint32_t d_folding_factor;  // also referred in the paper as 'p'
     float* d_corr_acumulator;
-    uint32_t * d_possible_delay;
+    uint32_t* d_possible_delay;
     float* d_corr_output_f;
     float* d_magnitude_folded;
     gr_complex* d_signal_folded;
     gr_complex* d_code_folded;
     float d_noise_floor_power;
 
-    int64_t  d_fs_in;
+    int64_t d_fs_in;
     int32_t d_samples_per_ms;
     int32_t d_samples_per_code;
-    uint32_t  d_doppler_resolution;
+    uint32_t d_doppler_resolution;
     float d_threshold;
     std::string d_satellite_str;
-    uint32_t  d_doppler_max;
-    uint32_t  d_doppler_step;
-    uint32_t  d_sampled_ms;
-    uint32_t  d_max_dwells;
-    uint32_t  d_well_count;
-    uint32_t  d_fft_size;
+    uint32_t d_doppler_max;
+    uint32_t d_doppler_step;
+    uint32_t d_sampled_ms;
+    uint32_t d_max_dwells;
+    uint32_t d_well_count;
+    uint32_t d_fft_size;
     uint64_t d_sample_counter;
     gr_complex** d_grid_doppler_wipeoffs;
-    uint32_t  d_num_doppler_bins;
+    uint32_t d_num_doppler_bins;
     gr_complex* d_fft_codes;
     gr::fft::fft_complex* d_fft_if;
     gr::fft::fft_complex* d_fft_if2;
     gr::fft::fft_complex* d_ifft;
     Gnss_Synchro* d_gnss_synchro;
-    uint32_t  d_code_phase;
+    uint32_t d_code_phase;
     float d_doppler_freq;
     float d_mag;
     float* d_magnitude;
@@ -150,7 +150,7 @@ private:
     bool d_active;
     int32_t d_state;
     bool d_dump;
-    uint32_t  d_channel;
+    uint32_t d_channel;
     std::string d_dump_filename;
 
 public:
@@ -172,7 +172,7 @@ public:
     /*!
      * \brief Returns the maximum peak of grid search.
      */
-    inline uint32_t  mag() const
+    inline uint32_t mag() const
     {
         return d_mag;
     }
@@ -209,7 +209,7 @@ public:
      * \brief Set acquisition channel unique ID
      * \param channel - receiver channel.
      */
-    inline void set_channel(uint32_t  channel)
+    inline void set_channel(uint32_t channel)
     {
         d_channel = channel;
     }
@@ -228,7 +228,7 @@ public:
      * \brief Set maximum Doppler grid search
      * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
      */
-    inline void set_doppler_max(uint32_t  doppler_max)
+    inline void set_doppler_max(uint32_t doppler_max)
     {
         d_doppler_max = doppler_max;
     }
@@ -237,7 +237,7 @@ public:
      * \brief Set Doppler steps for the grid search
      * \param doppler_step - Frequency bin of the search grid [Hz].
      */
-    inline void set_doppler_step(uint32_t  doppler_step)
+    inline void set_doppler_step(uint32_t doppler_step)
     {
         d_doppler_step = doppler_step;
     }

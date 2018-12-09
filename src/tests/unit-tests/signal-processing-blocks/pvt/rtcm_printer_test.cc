@@ -29,8 +29,8 @@
  */
 
 
-#include <string>
 #include "rtcm_printer.h"
+#include <string>
 
 
 TEST(RtcmPrinterTest, Instantiate)

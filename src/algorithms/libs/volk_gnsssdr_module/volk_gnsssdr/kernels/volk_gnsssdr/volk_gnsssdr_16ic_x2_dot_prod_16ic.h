@@ -59,9 +59,9 @@
 #ifndef INCLUDED_volk_gnsssdr_16ic_x2_dot_prod_16ic_H
 #define INCLUDED_volk_gnsssdr_16ic_x2_dot_prod_16ic_H
 
+#include <volk_gnsssdr/saturation_arithmetic.h>
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
-#include <volk_gnsssdr/saturation_arithmetic.h>
 
 
 #ifdef LV_HAVE_GENERIC

@@ -33,8 +33,8 @@
 
 #include "conjugate_cc.h"
 #include "gnss_block_interface.h"
-#include <gnuradio/blocks/interleaved_short_to_complex.h>
 #include <gnuradio/blocks/file_sink.h>
+#include <gnuradio/blocks/interleaved_short_to_complex.h>
 #include <string>
 
 class ConfigurationInterface;

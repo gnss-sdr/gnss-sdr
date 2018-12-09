@@ -31,8 +31,8 @@
 
 
 #include "gps_l2c_telemetry_decoder_cc.h"
-#include "gnss_synchro.h"
 #include "display.h"
+#include "gnss_synchro.h"
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>

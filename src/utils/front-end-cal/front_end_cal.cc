@@ -30,23 +30,23 @@
  */
 
 #include "front_end_cal.h"
-#include <cmath>
-#include <memory>
-#include <exception>
+#include "gnss_sdr_supl_client.h"
+#include "gps_almanac.h"
+#include "gps_cnav_ephemeris.h"
+#include "gps_cnav_iono.h"
+#include "gps_ephemeris.h"
+#include "gps_iono.h"
+#include "gps_navigation_message.h"
+#include "gps_utc_model.h"
 #include <boost/filesystem.hpp>
-#include <glog/logging.h>
+#include <boost/lexical_cast.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
-#include <boost/lexical_cast.hpp>
+#include <glog/logging.h>
+#include <cmath>
+#include <exception>
+#include <memory>
 #include <utility>
-#include "gps_navigation_message.h"
-#include "gps_ephemeris.h"
-#include "gps_cnav_ephemeris.h"
-#include "gps_almanac.h"
-#include "gps_iono.h"
-#include "gps_cnav_iono.h"
-#include "gps_utc_model.h"
-#include "gnss_sdr_supl_client.h"
 
 extern concurrent_map<Gps_Ephemeris> global_gps_ephemeris_map;
 extern concurrent_map<Gps_Iono> global_gps_iono_map;

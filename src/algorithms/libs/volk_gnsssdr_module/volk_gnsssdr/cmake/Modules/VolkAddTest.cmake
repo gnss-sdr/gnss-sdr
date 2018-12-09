@@ -30,7 +30,7 @@ set(__INCLUDED_VOLK_ADD_TEST TRUE)
 
 function(VOLK_GEN_TEST executable_name)
     include(CMakeParseArgumentsCopy)
-    CMAKE_PARSE_ARGUMENTS(VOLK_TEST "" "" "SOURCES;TARGET_DEPS;EXTRA_LIB_DIRS;ENVIRONS;ARGS" ${ARGN})
+    cmake_parse_arguments(VOLK_TEST "" "" "SOURCES;TARGET_DEPS;EXTRA_LIB_DIRS;ENVIRONS;ARGS" ${ARGN})
     add_executable(${executable_name} ${VOLK_TEST_SOURCES})
     target_link_libraries(${executable_name} ${VOLK_TEST_TARGET_DEPS})
 endfunction()
@@ -53,7 +53,7 @@ function(VOLK_ADD_TEST test_name executable_name)
 
   #parse the arguments for component names
   include(CMakeParseArgumentsCopy)
-  CMAKE_PARSE_ARGUMENTS(VOLK_TEST "" "" "TARGET_DEPS;EXTRA_LIB_DIRS;ENVIRONS;ARGS" ${ARGN})
+  cmake_parse_arguments(VOLK_TEST "" "" "TARGET_DEPS;EXTRA_LIB_DIRS;ENVIRONS;ARGS" ${ARGN})
 
   #set the initial environs to use
   set(environs ${VOLK_TEST_ENVIRONS})
@@ -146,7 +146,7 @@ function(VOLK_ADD_TEST test_name executable_name)
     #each line sets an environment variable
     foreach(environ ${environs})
       file(APPEND ${sh_file} "export ${environ}\n")
-    endforeach(environ)
+    endforeach()
 
     set(VOLK_TEST_ARGS "${test_name}")
 
@@ -166,7 +166,7 @@ function(VOLK_ADD_TEST test_name executable_name)
       COMMAND ${SHELL} ${sh_file} ${TARGET_DIR_LIST}
     )
 
-  endif(UNIX)
+  endif()
 
   if(WIN32)
     #In the land of windows, all libraries must be in the PATH.  Since
@@ -199,7 +199,7 @@ function(VOLK_ADD_TEST test_name executable_name)
     #each line sets an environment variable
     foreach(environ ${environs})
       file(APPEND ${bat_file} "SET ${environ}\n")
-    endforeach(environ)
+    endforeach()
 
     set(VOLK_TEST_ARGS "${test_name}")
 
@@ -213,7 +213,7 @@ function(VOLK_ADD_TEST test_name executable_name)
     add_test(NAME qa_${test_name}
         COMMAND ${bat_file} ${TARGET_DIR_LIST}
     )
-  endif(WIN32)
+  endif()
 
-endfunction(VOLK_ADD_TEST)
+endfunction()
 

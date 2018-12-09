@@ -47,7 +47,7 @@ class IshortToComplex : public GNSSBlockInterface
 {
 public:
     IshortToComplex(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role, unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~IshortToComplex();

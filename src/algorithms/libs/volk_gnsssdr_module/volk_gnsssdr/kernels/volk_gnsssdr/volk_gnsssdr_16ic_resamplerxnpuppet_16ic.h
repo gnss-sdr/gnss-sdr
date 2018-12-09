@@ -47,7 +47,7 @@ static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_generic(lv_16sc_t* r
     int code_length_chips = 2046;
     float code_phase_step_chips = ((float)(code_length_chips) + 0.1) / ((float)num_points);
     int num_out_vectors = 3;
-    unsigned int n;
+    int n;
     float rem_code_phase_chips = -0.234;
     float shifts_chips[3] = {-0.1, 0.0, 0.1};
     lv_16sc_t** result_aux = (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_out_vectors, volk_gnsssdr_get_alignment());
@@ -78,7 +78,7 @@ static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_a_sse3(lv_16sc_t* re
     float code_phase_step_chips = ((float)(code_length_chips) + 0.1) / ((float)num_points);
     int num_out_vectors = 3;
     float rem_code_phase_chips = -0.234;
-    unsigned int n;
+    int n;
     float shifts_chips[3] = {-0.1, 0.0, 0.1};
     lv_16sc_t** result_aux = (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_out_vectors, volk_gnsssdr_get_alignment());
 
@@ -107,7 +107,7 @@ static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_u_sse3(lv_16sc_t* re
     float code_phase_step_chips = ((float)(code_length_chips) + 0.1) / ((float)num_points);
     int num_out_vectors = 3;
     float rem_code_phase_chips = -0.234;
-    unsigned int n;
+    int n;
     float shifts_chips[3] = {-0.1, 0.0, 0.1};
     lv_16sc_t** result_aux = (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_out_vectors, volk_gnsssdr_get_alignment());
 
@@ -137,7 +137,7 @@ static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_u_sse4_1(lv_16sc_t* 
     float code_phase_step_chips = ((float)(code_length_chips) + 0.1) / ((float)num_points);
     int num_out_vectors = 3;
     float rem_code_phase_chips = -0.234;
-    unsigned int n;
+    int n;
     float shifts_chips[3] = {-0.1, 0.0, 0.1};
     lv_16sc_t** result_aux = (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_out_vectors, volk_gnsssdr_get_alignment());
 
@@ -167,7 +167,7 @@ static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_a_sse4_1(lv_16sc_t* 
     float code_phase_step_chips = ((float)(code_length_chips) + 0.1) / ((float)num_points);
     int num_out_vectors = 3;
     float rem_code_phase_chips = -0.234;
-    unsigned int n;
+    int n;
     float shifts_chips[3] = {-0.1, 0.0, 0.1};
     lv_16sc_t** result_aux = (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_out_vectors, volk_gnsssdr_get_alignment());
 
@@ -197,7 +197,7 @@ static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_u_avx(lv_16sc_t* res
     float code_phase_step_chips = ((float)(code_length_chips) + 0.1) / ((float)num_points);
     int num_out_vectors = 3;
     float rem_code_phase_chips = -0.234;
-    unsigned int n;
+    int n;
     float shifts_chips[3] = {-0.1, 0.0, 0.1};
     lv_16sc_t** result_aux = (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_out_vectors, volk_gnsssdr_get_alignment());
 
@@ -227,7 +227,7 @@ static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_a_avx(lv_16sc_t* res
     float code_phase_step_chips = ((float)(code_length_chips) + 0.1) / ((float)num_points);
     int num_out_vectors = 3;
     float rem_code_phase_chips = -0.234;
-    unsigned int n;
+    int n;
     float shifts_chips[3] = {-0.1, 0.0, 0.1};
     lv_16sc_t** result_aux = (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_out_vectors, volk_gnsssdr_get_alignment());
 
@@ -257,7 +257,7 @@ static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_neon(lv_16sc_t* resu
     float code_phase_step_chips = ((float)(code_length_chips) + 0.1) / ((float)num_points);
     int num_out_vectors = 3;
     float rem_code_phase_chips = -0.234;
-    unsigned int n;
+    int n;
     float shifts_chips[3] = {-0.1, 0.0, 0.1};
     lv_16sc_t** result_aux = (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_out_vectors, volk_gnsssdr_get_alignment());
 

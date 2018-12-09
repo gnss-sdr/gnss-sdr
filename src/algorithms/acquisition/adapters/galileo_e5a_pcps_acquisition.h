@@ -35,7 +35,6 @@
 #include "acquisition_interface.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition.h"
-#include <gnuradio/blocks/stream_to_vector.h>
 #include <string>
 
 class ConfigurationInterface;
@@ -44,7 +43,8 @@ class GalileoE5aPcpsAcquisition : public AcquisitionInterface
 {
 public:
     GalileoE5aPcpsAcquisition(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role,
+        unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~GalileoE5aPcpsAcquisition();
@@ -123,13 +123,17 @@ public:
      */
     void set_state(int state) override;
 
+    /*!
+     * \brief Stop running acquisition
+     */
+    void stop_acquisition() override;
+
 private:
     float calculate_threshold(float pfa);
 
     ConfigurationInterface* configuration_;
 
     pcps_acquisition_sptr acquisition_;
-    gr::blocks::stream_to_vector::sptr stream_to_vector_;
 
     size_t item_size_;
 
@@ -154,7 +158,7 @@ private:
     unsigned int in_streams_;
     unsigned int out_streams_;
 
-    long fs_in_;
+    int64_t fs_in_;
 
     float threshold_;
 

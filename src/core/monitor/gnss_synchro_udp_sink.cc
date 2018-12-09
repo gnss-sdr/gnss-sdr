@@ -35,7 +35,7 @@
 #include <sstream>
 #include <iostream>
 
-Gnss_Synchro_Udp_Sink::Gnss_Synchro_Udp_Sink(std::vector<std::string> addresses, const unsigned short& port) : socket{io_service}
+Gnss_Synchro_Udp_Sink::Gnss_Synchro_Udp_Sink(std::vector<std::string> addresses, const uint16_t& port) : socket{io_service}
 {
     for (auto address : addresses)
         {

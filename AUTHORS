@@ -3,7 +3,7 @@ GNSS-SDR Authorship
 
 The GNSS-SDR project is hosted and sponsored by the Centre Tecnològic de
 Telecomunicacions de Catalunya (CTTC), a non-profit research foundation located
-in Castelldefels (40.396764 N, 3.713379 E), 20 km south of Barcelona, Spain.
+in Castelldefels (41.27504 N, 1.987709 E), 20 km south of Barcelona, Spain.
 GNSS-SDR is the by-product of GNSS research conducted at the Communications
 Systems Division of CTTC, and it is the combined effort of students,
 software engineers and researchers from different institutions around the World.
@@ -40,6 +40,7 @@ Antonio Ramos           antonio.ramosdet@gmail.com      Developer
 Marc Majoral            marc.majoral@cttc.cat           Developer
 Jordi Vilà-Valls        jordi.vila@cttc.cat             Consultant
 Pau Closas              pau.closas@northeastern.edu     Consultant
+Álvaro Cebrián Juan     acebrianjuan@gmail.com          Contributor
 Andres Cecilia Luque    a.cecilia.luque@gmail.com       Contributor
 Anthony Arnold          anthony.arnold@uqconnect.edu.au Contributor
 Carlos Avilés           carlos.avilesr@googlemail.com   Contributor
@@ -49,6 +50,7 @@ Daniel Fehr             daniel.co@bluewin.ch            Contributor
 David Pubill            david.pubill@cttc.cat           Contributor
 Fran Fabra              fabra@ice.csic.es               Contributor
 Gabriel Araujo          gabriel.araujo.5000@gmail.com   Contributor
+Gerald LaMountain       gerald@gece.neu.edu             Contributor
 Leonardo Tonetto        tonetto.dev@gmail.com           Contributor
 Mara Branzanti          mara.branzanti@gmail.com        Contributor
 Marc Molina             marc.molina.pena@gmail.com      Contributor

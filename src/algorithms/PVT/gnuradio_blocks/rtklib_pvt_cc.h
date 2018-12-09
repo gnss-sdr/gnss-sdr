@@ -31,19 +31,23 @@
 #ifndef GNSS_SDR_RTKLIB_PVT_CC_H
 #define GNSS_SDR_RTKLIB_PVT_CC_H
 
-
+#include "gps_ephemeris.h"
 #include "nmea_printer.h"
 #include "kml_printer.h"
 #include "gpx_printer.h"
 #include "geojson_printer.h"
 #include "rinex_printer.h"
 #include "rtcm_printer.h"
+#include "pvt_conf.h"
 #include "rtklib_solver.h"
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 #include <gnuradio/sync_block.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <chrono>
+#include <cstdint>
 #include <fstream>
 #include <utility>
 #include <string>
@@ -53,78 +57,48 @@ class rtklib_pvt_cc;
 
 typedef boost::shared_ptr<rtklib_pvt_cc> rtklib_pvt_cc_sptr;
 
-rtklib_pvt_cc_sptr rtklib_make_pvt_cc(unsigned int n_channels,
-    bool dump,
-    std::string dump_filename,
-    int output_rate_ms,
-    int display_rate_ms,
-    bool flag_nmea_tty_port,
-    std::string nmea_dump_filename,
-    std::string nmea_dump_devname,
-    int rinex_version,
-    int rinexobs_rate_ms,
-    int rinexnav_rate_ms,
-    bool flag_rtcm_server,
-    bool flag_rtcm_tty_port,
-    unsigned short rtcm_tcp_port,
-    unsigned short rtcm_station_id,
-    std::map<int, int> rtcm_msg_rate_ms,
-    std::string rtcm_dump_devname,
-    const unsigned int type_of_receiver,
-    rtk_t& rtk);
+rtklib_pvt_cc_sptr rtklib_make_pvt_cc(uint32_t n_channels,
+    const Pvt_Conf& conf_,
+    const rtk_t& rtk);
 
 /*!
- * \brief This class implements a block that computes the PVT solution with Galileo E1 signals
+ * \brief This class implements a block that computes the PVT solution using the RTKLIB integrated library
  */
 class rtklib_pvt_cc : public gr::sync_block
 {
 private:
-    friend rtklib_pvt_cc_sptr rtklib_make_pvt_cc(unsigned int nchannels,
-        bool dump,
-        std::string dump_filename,
-        int output_rate_ms,
-        int display_rate_ms,
-        bool flag_nmea_tty_port,
-        std::string nmea_dump_filename,
-        std::string nmea_dump_devname,
-        int rinex_version,
-        int rinexobs_rate_ms,
-        int rinexnav_rate_ms,
-        bool flag_rtcm_server,
-        bool flag_rtcm_tty_port,
-        unsigned short rtcm_tcp_port,
-        unsigned short rtcm_station_id,
-        std::map<int, int> rtcm_msg_rate_ms,
-        std::string rtcm_dump_devname,
-        const unsigned int type_of_receiver,
-        rtk_t& rtk);
+    friend rtklib_pvt_cc_sptr rtklib_make_pvt_cc(uint32_t nchannels,
+        const Pvt_Conf& conf_,
+        const rtk_t& rtk);
 
     void msg_handler_telemetry(pmt::pmt_t msg);
 
     bool d_dump;
+    bool d_dump_mat;
+    bool b_rinex_output_enabled;
     bool b_rinex_header_written;
     bool b_rinex_header_updated;
     double d_rinex_version;
-    int d_rinexobs_rate_ms;
-    int d_rinexnav_rate_ms;
+    int32_t d_rinexobs_rate_ms;
+    int32_t d_rinexnav_rate_ms;
 
     bool b_rtcm_writing_started;
-    int d_rtcm_MT1045_rate_ms;  //!< Galileo Broadcast Ephemeris
-    int d_rtcm_MT1019_rate_ms;  //!< GPS Broadcast Ephemeris (orbits)
-    int d_rtcm_MT1020_rate_ms;  //!< GLONASS Broadcast Ephemeris (orbits)
-    int d_rtcm_MT1077_rate_ms;  //!< The type 7 Multiple Signal Message format for the USA’s GPS system, popular
-    int d_rtcm_MT1087_rate_ms;  //!< GLONASS MSM7. The type 7 Multiple Signal Message format for the Russian GLONASS system
-    int d_rtcm_MT1097_rate_ms;  //!< Galileo MSM7. The type 7 Multiple Signal Message format for Europe’s Galileo system
-    int d_rtcm_MSM_rate_ms;
+    bool b_rtcm_enabled;
+    int32_t d_rtcm_MT1045_rate_ms;  //!< Galileo Broadcast Ephemeris
+    int32_t d_rtcm_MT1019_rate_ms;  //!< GPS Broadcast Ephemeris (orbits)
+    int32_t d_rtcm_MT1020_rate_ms;  //!< GLONASS Broadcast Ephemeris (orbits)
+    int32_t d_rtcm_MT1077_rate_ms;  //!< The type 7 Multiple Signal Message format for the USA’s GPS system, popular
+    int32_t d_rtcm_MT1087_rate_ms;  //!< GLONASS MSM7. The type 7 Multiple Signal Message format for the Russian GLONASS system
+    int32_t d_rtcm_MT1097_rate_ms;  //!< Galileo MSM7. The type 7 Multiple Signal Message format for Europe’s Galileo system
+    int32_t d_rtcm_MSM_rate_ms;
 
-    int d_last_status_print_seg;  //for status printer
+    int32_t d_last_status_print_seg;  //for status printer
 
-    unsigned int d_nchannels;
+    uint32_t d_nchannels;
     std::string d_dump_filename;
-    std::ofstream d_dump_file;
 
-    int d_output_rate_ms;
-    int d_display_rate_ms;
+    int32_t d_output_rate_ms;
+    int32_t d_display_rate_ms;
 
     std::shared_ptr<Rinex_Printer> rp;
     std::shared_ptr<Kml_Printer> d_kml_dump;
@@ -134,12 +108,17 @@ private:
     std::shared_ptr<Rtcm_Printer> d_rtcm_printer;
     double d_rx_time;
 
-    std::shared_ptr<rtklib_solver> d_ls_pvt;
+    bool d_geojson_output_enabled;
+    bool d_gpx_output_enabled;
+    bool d_kml_output_enabled;
+    bool d_nmea_output_file_enabled;
+
+    std::shared_ptr<rtklib_solver> d_pvt_solver;
 
     std::map<int, Gnss_Synchro> gnss_observables_map;
     bool observables_pairCompare_min(const std::pair<int, Gnss_Synchro>& a, const std::pair<int, Gnss_Synchro>& b);
 
-    unsigned int type_of_rx;
+    uint32_t type_of_rx;
 
     bool first_fix;
     key_t sysv_msg_key;
@@ -152,32 +131,51 @@ private:
     bool send_sys_v_ttff_msg(ttff_msgbuf ttff);
     std::chrono::time_point<std::chrono::system_clock> start, end;
 
+    bool save_gnss_synchro_map_xml(const std::string& file_name);  //debug helper function
+
+    bool load_gnss_synchro_map_xml(const std::string& file_name);  //debug helper function
+
+    bool d_xml_storage;
+    std::string xml_base_path;
+
+    inline std::time_t to_time_t(boost::posix_time::ptime pt)
+    {
+        return (pt - boost::posix_time::ptime(boost::gregorian::date(1970, 1, 1))).total_seconds();
+    }
+
+
 public:
-    rtklib_pvt_cc(unsigned int nchannels,
-        bool dump, std::string dump_filename,
-        int output_rate_ms,
-        int display_rate_ms,
-        bool flag_nmea_tty_port,
-        std::string nmea_dump_filename,
-        std::string nmea_dump_devname,
-        int rinex_version,
-        int rinexobs_rate_ms,
-        int rinexnav_rate_ms,
-        bool flag_rtcm_server,
-        bool flag_rtcm_tty_port,
-        unsigned short rtcm_tcp_port,
-        unsigned short rtcm_station_id,
-        std::map<int, int> rtcm_msg_rate_ms,
-        std::string rtcm_dump_devname,
-        const unsigned int type_of_receiver,
-        rtk_t& rtk);
+    rtklib_pvt_cc(uint32_t nchannels,
+        const Pvt_Conf& conf_,
+        const rtk_t& rtk);
 
     /*!
-     * \brief Get latest set of GPS L1 ephemeris from PVT block
+     * \brief Get latest set of ephemeris from PVT block
      *
-     * It is used to save the assistance data at the receiver shutdown
      */
-    std::map<int, Gps_Ephemeris> get_GPS_L1_ephemeris_map();
+    std::map<int, Gps_Ephemeris> get_gps_ephemeris_map() const;
+
+    std::map<int, Gps_Almanac> get_gps_almanac_map() const;
+
+    std::map<int, Galileo_Ephemeris> get_galileo_ephemeris_map() const;
+
+    std::map<int, Galileo_Almanac> get_galileo_almanac_map() const;
+
+    /*!
+     * \brief Clear all ephemeris information and the almanacs for GPS and Galileo
+     *
+     */
+    void clear_ephemeris();
+
+    /*!
+     * \brief Get the latest Position WGS84 [deg], Ground Velocity, Course over Ground, and UTC Time, if available
+     */
+    bool get_latest_PVT(double* longitude_deg,
+        double* latitude_deg,
+        double* height_m,
+        double* ground_speed_kmh,
+        double* course_over_ground_deg,
+        time_t* UTC_time);
 
     ~rtklib_pvt_cc();  //!< Default destructor
 

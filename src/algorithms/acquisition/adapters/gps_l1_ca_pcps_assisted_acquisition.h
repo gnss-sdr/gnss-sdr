@@ -49,7 +49,8 @@ class GpsL1CaPcpsAssistedAcquisition : public AcquisitionInterface
 {
 public:
     GpsL1CaPcpsAssistedAcquisition(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role,
+        unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~GpsL1CaPcpsAssistedAcquisition();
@@ -122,6 +123,11 @@ public:
     void reset() override;
     void set_state(int state __attribute__((unused))) override{};
 
+    /*!
+     * \brief Stop running acquisition
+     */
+    void stop_acquisition() override;
+
 private:
     pcps_assisted_acquisition_cc_sptr acquisition_cc_;
     size_t item_size_;
@@ -135,7 +141,7 @@ private:
     int doppler_min_;
     unsigned int sampled_ms_;
     int max_dwells_;
-    long fs_in_;
+    int64_t fs_in_;
     bool dump_;
     std::string dump_filename_;
     std::complex<float>* code_;

@@ -34,6 +34,7 @@
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <utility>
 #include <glog/logging.h>
 
 
@@ -43,7 +44,7 @@ hybrid_ls_pvt::hybrid_ls_pvt(int nchannels, std::string dump_filename, bool flag
 {
     // init empty ephemeris for all the available GNSS channels
     d_nchannels = nchannels;
-    d_dump_filename = dump_filename;
+    d_dump_filename = std::move(dump_filename);
     d_flag_dump_enabled = flag_dump_to_file;
     d_galileo_current_time = 0;
     count_valid_position = 0;
@@ -150,8 +151,6 @@ bool hybrid_ls_pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
                                 // 4- fill the observations vector with the corrected observables
                                 obs.resize(valid_obs + 1, 1);
                                 obs(valid_obs) = gnss_observables_iter->second.Pseudorange_m + SV_clock_bias_s * GALILEO_C_m_s - this->get_time_offset_s() * GALILEO_C_m_s;
-                                this->set_visible_satellites_ID(valid_obs, galileo_ephemeris_iter->second.i_satellite_PRN);
-                                this->set_visible_satellites_CN0_dB(valid_obs, gnss_observables_iter->second.CN0_dB_hz);
 
                                 Galileo_week_number = galileo_ephemeris_iter->second.WN_5;  //for GST
                                 GST = galileo_ephemeris_iter->second.Galileo_System_Time(Galileo_week_number, hybrid_current_time);
@@ -175,7 +174,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
                     {
                         // 1 GPS - find the ephemeris for the current GPS SV observation. The SV PRN ID is the map key
                         std::string sig_(gnss_observables_iter->second.Signal);
-                        if (sig_.compare("1C") == 0)
+                        if (sig_ == "1C")
                             {
                                 gps_ephemeris_iter = gps_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                 if (gps_ephemeris_iter != gps_ephemeris_map.end())
@@ -213,8 +212,6 @@ bool hybrid_ls_pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
                                         double Code_bias_m = P1_P2 / (1.0 - Gamma);
                                         obs.resize(valid_obs + 1, 1);
                                         obs(valid_obs) = gnss_observables_iter->second.Pseudorange_m + dtr * GPS_C_m_s - Code_bias_m - this->get_time_offset_s() * GPS_C_m_s;
-                                        this->set_visible_satellites_ID(valid_obs, gps_ephemeris_iter->second.i_satellite_PRN);
-                                        this->set_visible_satellites_CN0_dB(valid_obs, gnss_observables_iter->second.CN0_dB_hz);
 
                                         // SV ECEF DEBUG OUTPUT
                                         LOG(INFO) << "(new)ECEF GPS L1 CA satellite SV ID=" << gps_ephemeris_iter->second.i_satellite_PRN
@@ -232,7 +229,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
                                         DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->first;
                                     }
                             }
-                        if (sig_.compare("2S") == 0)
+                        if (sig_ == "2S")
                             {
                                 gps_cnav_ephemeris_iter = gps_cnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                 if (gps_cnav_ephemeris_iter != gps_cnav_ephemeris_map.end())
@@ -265,8 +262,6 @@ bool hybrid_ls_pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
                                         // 4- fill the observations vector with the corrected observables
                                         obs.resize(valid_obs + 1, 1);
                                         obs(valid_obs) = gnss_observables_iter->second.Pseudorange_m + dtr * GPS_C_m_s + SV_clock_bias_s * GPS_C_m_s;
-                                        this->set_visible_satellites_ID(valid_obs, gps_cnav_ephemeris_iter->second.i_satellite_PRN);
-                                        this->set_visible_satellites_CN0_dB(valid_obs, gnss_observables_iter->second.CN0_dB_hz);
 
                                         GPS_week = gps_cnav_ephemeris_iter->second.i_GPS_week;
                                         GPS_week = GPS_week % 1024;  //Necessary due to the increase of WN bits in CNAV message (10 in GPS NAV and 13 in CNAV)

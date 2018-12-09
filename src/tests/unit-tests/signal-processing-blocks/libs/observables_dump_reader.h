@@ -31,6 +31,7 @@
 #ifndef GNSS_SDR_OBSERVABLES_DUMP_READER_H
 #define GNSS_SDR_OBSERVABLES_DUMP_READER_H
 
+#include <cstdint>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -42,7 +43,7 @@ public:
     ~observables_dump_reader();
     bool read_binary_obs();
     bool restart();
-    long int num_epochs();
+    int64_t num_epochs();
     bool open_obs_file(std::string out_file);
     void close_obs_file();
 

@@ -36,6 +36,7 @@
 #include "galileo_navigation_message.h"
 #include "gps_navigation_message.h"
 #include "gps_cnav_navigation_message.h"
+#include "galileo_almanac.h"
 #include "gnss_synchro.h"
 #include "rtklib_rtkcmn.h"
 #include <fstream>

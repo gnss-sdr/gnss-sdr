@@ -51,7 +51,7 @@ class GpsL2MDllPllTracking : public TrackingInterface
 {
 public:
     GpsL2MDllPllTracking(ConfigurationInterface* configuration,
-        std::string role,
+        const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 
@@ -90,6 +90,10 @@ public:
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
     void start_tracking() override;
+    /*!
+     * \brief Stop running tracking
+     */
+    void stop_tracking() override;
 
 private:
     dll_pll_veml_tracking_sptr tracking_;

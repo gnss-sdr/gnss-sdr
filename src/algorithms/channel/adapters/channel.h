@@ -60,7 +60,7 @@ class Channel : public ChannelInterface
 {
 public:
     //! Constructor
-    Channel(ConfigurationInterface* configuration, unsigned int channel,
+    Channel(ConfigurationInterface* configuration, uint32_t channel,
         std::shared_ptr<GNSSBlockInterface> pass_through, std::shared_ptr<AcquisitionInterface> acq,
         std::shared_ptr<TrackingInterface> trk, std::shared_ptr<TelemetryDecoderInterface> nav,
         std::string role, std::string implementation, gr::msg_queue::sptr queue);
@@ -73,21 +73,17 @@ public:
     gr::basic_block_sptr get_right_block() override;
 
     inline std::string role() override { return role_; }
-
     //! Returns "Channel"
     inline std::string implementation() override { return implementation_; }
-
     inline size_t item_size() override { return 0; }
-
     inline Gnss_Signal get_signal() const override { return gnss_signal_; }
-
     void start_acquisition() override;                          //!< Start the State Machine
+    void stop_channel() override;                               //!< Stop the State Machine
     void set_signal(const Gnss_Signal& gnss_signal_) override;  //!< Sets the channel GNSS signal
 
     inline std::shared_ptr<AcquisitionInterface> acquisition() { return acq_; }
     inline std::shared_ptr<TrackingInterface> tracking() { return trk_; }
     inline std::shared_ptr<TelemetryDecoderInterface> telemetry() { return nav_; }
-
     void msg_handler_events(pmt::pmt_t msg);
 
 private:
@@ -99,7 +95,7 @@ private:
     std::string role_;
     std::string implementation_;
     bool flag_enable_fpga;
-    unsigned int channel_;
+    uint32_t channel_;
     Gnss_Synchro gnss_synchro_;
     Gnss_Signal gnss_signal_;
     bool connected_;

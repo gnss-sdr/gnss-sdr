@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
     float def_tol = 1e-6;
     lv_32fc_t def_scalar = 327.0;
     int def_iter = 1;
-    int def_vlen = 131071;
+    int def_vlen = 8111;
     bool def_benchmark_mode = true;
     std::string def_kernel_regex = "";
 

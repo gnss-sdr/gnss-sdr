@@ -35,7 +35,11 @@
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
+#ifdef GR_GREATER_38
+#include <gnuradio/analog/sig_source.h>
+#else
 #include <gnuradio/analog/sig_source_c.h>
+#endif
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gtest/gtest.h>
@@ -85,7 +89,7 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx::msg_handler_events(pmt::pmt_
 {
     try
         {
-            long int message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(msg);
             rx_message = message;
             channel_internal_queue.push(rx_message);
         }
@@ -341,7 +345,7 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::config_2()
         std::to_string(integration_time_ms));
     config->set_property("Acquisition.max_dwells", "1");
     config->set_property("Acquisition.implementation", "GLONASS_L1_CA_PCPS_Acquisition");
-    config->set_property("Acquisition.pfa", "0.1");
+    //config->set_property("Acquisition.pfa", "0.1");
     config->set_property("Acquisition.doppler_max", "10000");
     config->set_property("Acquisition.doppler_step", "250");
     config->set_property("Acquisition.bit_transition_flag", "false");
@@ -359,8 +363,8 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::start_queue()
 void GlonassL1CaPcpsAcquisitionGSoC2017Test::wait_message()
 {
     struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    int64_t begin = 0;
+    int64_t end = 0;
 
     while (!stop)
         {
@@ -496,7 +500,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResults)
     }) << "Failure setting doppler_step.";
 
     ASSERT_NO_THROW({
-        acquisition->set_threshold(0.5);
+        acquisition->set_threshold(0.05);
     }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({

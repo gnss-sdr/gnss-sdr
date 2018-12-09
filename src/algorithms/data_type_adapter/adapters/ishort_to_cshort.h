@@ -48,7 +48,7 @@ class IshortToCshort : public GNSSBlockInterface
 {
 public:
     IshortToCshort(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role, unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~IshortToCshort();

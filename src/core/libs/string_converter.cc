@@ -34,46 +34,60 @@
 #include <sstream>
 
 
-StringConverter::StringConverter() {}
+StringConverter::StringConverter() = default;
 
-StringConverter::~StringConverter() {}
+
+StringConverter::~StringConverter() = default;
+
 
 bool StringConverter::convert(const std::string& value, bool default_value)
 {
-    if (value.compare("true") == 0)
+    if (value == "true")
         {
             return true;
         }
-    else if (value.compare("false") == 0)
+    if (value == "false")
         {
             return false;
         }
-    else
-        {
-            return default_value;
-        }
+
+    return default_value;
 }
 
 
-long StringConverter::convert(const std::string& value, long default_value)
+int64_t StringConverter::convert(const std::string& value, int64_t default_value)
 {
     std::stringstream stream(value);
 
-    long result;
+    int64_t result;
     stream >> result;
 
     if (stream.fail())
         {
             return default_value;
         }
-    else
-        {
-            return result;
-        }
+
+    return result;
 }
 
 
-int StringConverter::convert(const std::string& value, int default_value)
+uint64_t StringConverter::convert(const std::string& value, uint64_t default_value)
+{
+    std::stringstream stream(value);
+
+    uint64_t result;
+    stream >> result;
+
+    if (stream.fail())
+        {
+            return default_value;
+        }
+
+    return result;
+}
+
+
+int32_t StringConverter::convert(const std::string& value, int32_t default_value)
 {
     std::stringstream stream(value);
 
@@ -84,46 +98,56 @@ int StringConverter::convert(const std::string& value, int default_value)
         {
             return default_value;
         }
-    else
-        {
-            return result;
-        }
+
+    return result;
 }
 
 
-unsigned int StringConverter::convert(const std::string& value, unsigned int default_value)
+uint32_t StringConverter::convert(const std::string& value, uint32_t default_value)
 {
     std::stringstream stream(value);
 
-    unsigned int result;
+    uint32_t result;
     stream >> result;
 
     if (stream.fail())
         {
             return default_value;
         }
-    else
-        {
-            return result;
-        }
+
+    return result;
 }
 
 
-unsigned short StringConverter::convert(const std::string& value, unsigned short default_value)
+uint16_t StringConverter::convert(const std::string& value, uint16_t default_value)
 {
     std::stringstream stream(value);
 
-    unsigned short result;
+    uint16_t result;
     stream >> result;
 
     if (stream.fail())
         {
             return default_value;
         }
-    else
+
+    return result;
+}
+
+
+int16_t StringConverter::convert(const std::string& value, int16_t default_value)
+{
+    std::stringstream stream(value);
+
+    int16_t result;
+    stream >> result;
+
+    if (stream.fail())
         {
-            return result;
+            return default_value;
         }
+
+    return result;
 }
 
 
@@ -138,10 +162,8 @@ float StringConverter::convert(const std::string& value, float default_value)
         {
             return default_value;
         }
-    else
-        {
-            return result;
-        }
+
+    return result;
 }
 
 
@@ -156,8 +178,6 @@ double StringConverter::convert(const std::string& value, double default_value)
         {
             return default_value;
         }
-    else
-        {
-            return result;
-        }
+
+    return result;
 }

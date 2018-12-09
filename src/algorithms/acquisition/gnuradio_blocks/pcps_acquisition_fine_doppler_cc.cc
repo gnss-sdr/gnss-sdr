@@ -34,6 +34,8 @@
 #include "gps_sdr_signal_processing.h"
 #include "control_message_factory.h"
 #include "GPS_L1_CA.h"
+#include "gnss_sdr_create_directory.h"
+#include <boost/filesystem/path.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
@@ -59,14 +61,12 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Con
 {
     this->message_port_register_out(pmt::mp("events"));
     acq_parameters = conf_;
-    d_sample_counter = 0;  // SAMPLE COUNTER
+    d_sample_counter = 0ULL;  // SAMPLE COUNTER
     d_active = false;
     d_fs_in = conf_.fs_in;
     d_samples_per_ms = conf_.samples_per_ms;
-    d_sampled_ms = conf_.sampled_ms;
     d_config_doppler_max = conf_.doppler_max;
-    d_config_doppler_min = -conf_.doppler_max;
-    d_fft_size = d_sampled_ms * d_samples_per_ms;
+    d_fft_size = d_samples_per_ms;
     // HS Acquisition
     d_max_dwells = conf_.max_dwells;
     d_gnuradio_forecast_samples = d_fft_size;
@@ -75,7 +75,7 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Con
     d_fft_codes = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     d_magnitude = static_cast<float *>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
 
-    d_10_ms_buffer = static_cast<gr_complex *>(volk_gnsssdr_malloc(10 * d_samples_per_ms * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_10_ms_buffer = static_cast<gr_complex *>(volk_gnsssdr_malloc(50 * d_samples_per_ms * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
     // Direct FFT
     d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
@@ -87,13 +87,45 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Con
     d_dump = conf_.dump;
     d_dump_filename = conf_.dump_filename;
 
+    if (d_dump)
+        {
+            std::string dump_path;
+            // Get path
+            if (d_dump_filename.find_last_of('/') != std::string::npos)
+                {
+                    std::string dump_filename_ = d_dump_filename.substr(d_dump_filename.find_last_of('/') + 1);
+                    dump_path = d_dump_filename.substr(0, d_dump_filename.find_last_of('/'));
+                    d_dump_filename = dump_filename_;
+                }
+            else
+                {
+                    dump_path = std::string(".");
+                }
+            if (d_dump_filename.empty())
+                {
+                    d_dump_filename = "acquisition";
+                }
+            // remove extension if any
+            if (d_dump_filename.substr(1).find_last_of('.') != std::string::npos)
+                {
+                    d_dump_filename = d_dump_filename.substr(0, d_dump_filename.find_last_of('.'));
+                }
+            d_dump_filename = dump_path + boost::filesystem::path::preferred_separator + d_dump_filename;
+            // create directory
+            if (!gnss_sdr_create_directory(dump_path))
+                {
+                    std::cerr << "GNSS-SDR cannot create dump file for the Acquisition block. Wrong permissions?" << std::endl;
+                    d_dump = false;
+                }
+        }
+
     d_n_samples_in_buffer = 0;
     d_threshold = 0;
     d_num_doppler_points = 0;
     d_doppler_step = 0;
-    d_grid_data = 0;
-    d_grid_doppler_wipeoffs = 0;
-    d_gnss_synchro = 0;
+    d_grid_data = nullptr;
+    d_grid_doppler_wipeoffs = nullptr;
+    d_gnss_synchro = nullptr;
     d_code_phase = 0;
     d_doppler_freq = 0;
     d_test_statistics = 0;
@@ -126,7 +158,7 @@ void pcps_acquisition_fine_doppler_cc::set_doppler_step(unsigned int doppler_ste
     d_doppler_step = doppler_step;
     // Create the search grid array
 
-    d_num_doppler_points = floor(std::abs(d_config_doppler_max - d_config_doppler_min) / d_doppler_step);
+    d_num_doppler_points = floor(std::abs(2 * d_config_doppler_max) / d_doppler_step);
 
     d_grid_data = new float *[d_num_doppler_points];
     for (int i = 0; i < d_num_doppler_points; i++)
@@ -182,10 +214,10 @@ void pcps_acquisition_fine_doppler_cc::init()
     d_gnss_synchro->Flag_valid_symbol_output = false;
     d_gnss_synchro->Flag_valid_pseudorange = false;
     d_gnss_synchro->Flag_valid_word = false;
-
+    d_gnss_synchro->Acq_doppler_step = 0U;
     d_gnss_synchro->Acq_delay_samples = 0.0;
     d_gnss_synchro->Acq_doppler_hz = 0.0;
-    d_gnss_synchro->Acq_samplestamp_samples = 0;
+    d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
     d_state = 0;
 }
 
@@ -222,7 +254,7 @@ void pcps_acquisition_fine_doppler_cc::update_carrier_wipeoff()
     d_grid_doppler_wipeoffs = new gr_complex *[d_num_doppler_points];
     for (int doppler_index = 0; doppler_index < d_num_doppler_points; doppler_index++)
         {
-            doppler_hz = d_config_doppler_min + d_doppler_step * doppler_index;
+            doppler_hz = d_doppler_step * doppler_index - d_config_doppler_max;
             // doppler search steps
             // compute the carrier doppler wipe-off signal and store it
             phase_step_rad = static_cast<float>(GPS_TWO_PI) * doppler_hz / static_cast<float>(d_fs_in);
@@ -295,8 +327,9 @@ double pcps_acquisition_fine_doppler_cc::compute_CAF()
 
     // 4- record the maximum peak and the associated synchronization parameters
     d_gnss_synchro->Acq_delay_samples = static_cast<double>(index_time);
-    d_gnss_synchro->Acq_doppler_hz = static_cast<double>(index_doppler * d_doppler_step + d_config_doppler_min);
+    d_gnss_synchro->Acq_doppler_hz = static_cast<double>(index_doppler * d_doppler_step - d_config_doppler_max);
     d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
+    d_gnss_synchro->Acq_doppler_step = d_doppler_step;
 
     return d_test_statistics;
 }
@@ -304,7 +337,7 @@ double pcps_acquisition_fine_doppler_cc::compute_CAF()
 
 float pcps_acquisition_fine_doppler_cc::estimate_input_power(gr_vector_const_void_star &input_items)
 {
-    const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
+    const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
     // Compute the input signal power estimation
     float power = 0;
     volk_32fc_magnitude_squared_32f(d_magnitude, in, d_fft_size);
@@ -317,7 +350,7 @@ float pcps_acquisition_fine_doppler_cc::estimate_input_power(gr_vector_const_voi
 int pcps_acquisition_fine_doppler_cc::compute_and_accumulate_grid(gr_vector_const_void_star &input_items)
 {
     // initialize acquisition algorithm
-    const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
+    const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
 
     DLOG(INFO) << "Channel: " << d_channel
                << " , doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
@@ -326,13 +359,14 @@ int pcps_acquisition_fine_doppler_cc::compute_and_accumulate_grid(gr_vector_cons
                << ", doppler_step: " << d_doppler_step;
 
     // 2- Doppler frequency search loop
-    float *p_tmp_vector = static_cast<float *>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
+    auto *p_tmp_vector = static_cast<float *>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
 
     for (int doppler_index = 0; doppler_index < d_num_doppler_points; doppler_index++)
         {
             // doppler search steps
             // Perform the carrier wipe-off
             volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in, d_grid_doppler_wipeoffs[doppler_index], d_fft_size);
+
             // 3- Perform the FFT-based convolution  (parallel time search)
             // Compute the FFT of the carrier wiped--off incoming signal
             d_fft_if->execute();
@@ -352,6 +386,14 @@ int pcps_acquisition_fine_doppler_cc::compute_and_accumulate_grid(gr_vector_cons
 
     volk_gnsssdr_free(p_tmp_vector);
     return d_fft_size;
+    //debug
+    //            std::cout << "iff=[";
+    //            for (int n = 0; n < d_fft_size; n++)
+    //                {
+    //                    std::cout << std::real(d_ifft->get_outbuf()[n]) << "+" << std::imag(d_ifft->get_outbuf()[n]) << "i,";
+    //                }
+    //            std::cout << "]\n";
+    //            getchar();
 }
 
 
@@ -363,12 +405,12 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler()
     int signal_samples = prn_replicas * d_fft_size;
     //int fft_size_extended = nextPowerOf2(signal_samples * zero_padding_factor);
     int fft_size_extended = signal_samples * zero_padding_factor;
-    gr::fft::fft_complex *fft_operator = new gr::fft::fft_complex(fft_size_extended, true);
+    auto *fft_operator = new gr::fft::fft_complex(fft_size_extended, true);
     //zero padding the entire vector
     std::fill_n(fft_operator->get_inbuf(), fft_size_extended, gr_complex(0.0, 0.0));
 
     //1. generate local code aligned with the acquisition code phase estimation
-    gr_complex *code_replica = static_cast<gr_complex *>(volk_gnsssdr_malloc(signal_samples * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    auto *code_replica = static_cast<gr_complex *>(volk_gnsssdr_malloc(signal_samples * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
     gps_l1_ca_code_gen_complex_sampled(code_replica, d_gnss_synchro->PRN, d_fs_in, 0);
 
@@ -391,7 +433,7 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler()
     fft_operator->execute();
 
     // 4. Compute the magnitude and find the maximum
-    float *p_tmp_vector = static_cast<float *>(volk_gnsssdr_malloc(fft_size_extended * sizeof(float), volk_gnsssdr_get_alignment()));
+    auto *p_tmp_vector = static_cast<float *>(volk_gnsssdr_malloc(fft_size_extended * sizeof(float), volk_gnsssdr_get_alignment()));
 
     volk_32fc_magnitude_squared_32f(p_tmp_vector, fft_operator->get_outbuf(), fft_size_extended);
 
@@ -400,7 +442,7 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler()
 
     //case even
     int counter = 0;
-    float *fftFreqBins = new float[fft_size_extended];
+    auto *fftFreqBins = new float[fft_size_extended];
 
     std::fill_n(fftFreqBins, fft_size_extended, 0.0);
 
@@ -440,7 +482,7 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler()
 // Called by gnuradio to enable drivers, etc for i/o devices.
 bool pcps_acquisition_fine_doppler_cc::start()
 {
-    d_sample_counter = 0;
+    d_sample_counter = 0ULL;
     return true;
 }
 
@@ -454,7 +496,8 @@ void pcps_acquisition_fine_doppler_cc::set_state(int state)
         {
             d_gnss_synchro->Acq_delay_samples = 0.0;
             d_gnss_synchro->Acq_doppler_hz = 0.0;
-            d_gnss_synchro->Acq_samplestamp_samples = 0;
+            d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
+            d_gnss_synchro->Acq_doppler_step = 0U;
             d_well_count = 0;
             d_test_statistics = 0.0;
             d_active = true;
@@ -495,22 +538,25 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
             if (d_active == true)
                 {
                     reset_grid();
+                    d_n_samples_in_buffer = 0;
                     d_state = 1;
                 }
             if (!acq_parameters.blocking_on_standby)
                 {
-                    d_sample_counter += d_fft_size;  // sample counter
+                    d_sample_counter += static_cast<uint64_t>(d_fft_size);  // sample counter
                     consume_each(d_fft_size);
                 }
             break;
         case 1:  // S1. ComputeGrid
             compute_and_accumulate_grid(input_items);
+            memcpy(&d_10_ms_buffer[d_n_samples_in_buffer], reinterpret_cast<const gr_complex *>(input_items[0]), d_fft_size * sizeof(gr_complex));
+            d_n_samples_in_buffer += d_fft_size;
             d_well_count++;
             if (d_well_count >= d_max_dwells)
                 {
                     d_state = 2;
                 }
-            d_sample_counter += d_fft_size;  // sample counter
+            d_sample_counter += static_cast<uint64_t>(d_fft_size);  // sample counter
             consume_each(d_fft_size);
             break;
         case 2:  // Compute test statistics and decide
@@ -522,10 +568,9 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
             else
                 {
                     d_state = 5;  //negative acquisition
+                    d_n_samples_in_buffer = 0;
                 }
-            d_n_samples_in_buffer = 0;
-            d_sample_counter += d_fft_size;  // sample counter
-            consume_each(d_fft_size);
+
             break;
         case 3:  // Fine doppler estimation
             samples_remaining = 10 * d_samples_per_ms - d_n_samples_in_buffer;
@@ -534,15 +579,19 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
                 {
                     memcpy(&d_10_ms_buffer[d_n_samples_in_buffer], reinterpret_cast<const gr_complex *>(input_items[0]), noutput_items * sizeof(gr_complex));
                     d_n_samples_in_buffer += noutput_items;
-                    d_sample_counter += noutput_items;  // sample counter
+                    d_sample_counter += static_cast<uint64_t>(noutput_items);  // sample counter
                     consume_each(noutput_items);
                 }
             else
                 {
-                    memcpy(&d_10_ms_buffer[d_n_samples_in_buffer], reinterpret_cast<const gr_complex *>(input_items[0]), samples_remaining * sizeof(gr_complex));
-                    estimate_Doppler();                     //disabled in repo
-                    d_sample_counter += samples_remaining;  // sample counter
-                    consume_each(samples_remaining);
+                    if (samples_remaining > 0)
+                        {
+                            memcpy(&d_10_ms_buffer[d_n_samples_in_buffer], reinterpret_cast<const gr_complex *>(input_items[0]), samples_remaining * sizeof(gr_complex));
+                            d_sample_counter += static_cast<uint64_t>(samples_remaining);  // sample counter
+                            consume_each(samples_remaining);
+                        }
+                    estimate_Doppler();  //disabled in repo
+                    d_n_samples_in_buffer = 0;
                     d_state = 4;
                 }
             break;
@@ -566,7 +615,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
             d_state = 0;
             if (!acq_parameters.blocking_on_standby)
                 {
-                    d_sample_counter += noutput_items;  // sample counter
+                    d_sample_counter += static_cast<uint64_t>(noutput_items);  // sample counter
                     consume_each(noutput_items);
                 }
             break;
@@ -590,7 +639,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
             d_state = 0;
             if (!acq_parameters.blocking_on_standby)
                 {
-                    d_sample_counter += noutput_items;  // sample counter
+                    d_sample_counter += static_cast<uint64_t>(noutput_items);  // sample counter
                     consume_each(noutput_items);
                 }
             break;
@@ -598,7 +647,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
             d_state = 0;
             if (!acq_parameters.blocking_on_standby)
                 {
-                    d_sample_counter += noutput_items;  // sample counter
+                    d_sample_counter += static_cast<uint64_t>(noutput_items);  // sample counter
                     consume_each(noutput_items);
                 }
             break;
@@ -623,8 +672,8 @@ void pcps_acquisition_fine_doppler_cc::dump_results(int effective_fft_size)
     filename.append(std::to_string(d_gnss_synchro->PRN));
     filename.append(".mat");
 
-    mat_t *matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
-    if (matfp == NULL)
+    mat_t *matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT73);
+    if (matfp == nullptr)
         {
             std::cout << "Unable to create or open Acquisition dump file" << std::endl;
             d_dump = false;
@@ -650,7 +699,7 @@ void pcps_acquisition_fine_doppler_cc::dump_results(int effective_fft_size)
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            float aux = static_cast<float>(d_gnss_synchro->Acq_doppler_hz);
+            auto aux = static_cast<float>(d_gnss_synchro->Acq_doppler_hz);
             matvar = Mat_VarCreate("acq_doppler_hz", MAT_C_SINGLE, MAT_T_SINGLE, 1, dims, &aux, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);

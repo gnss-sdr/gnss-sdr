@@ -1,6 +1,7 @@
 /*!
  * \file dll_pll_veml_tracking.h
  * \brief Implementation of a code DLL + carrier PLL tracking block.
+ * \author Javier Arribas, 2018. jarribas(at)cttc.es
  * \author Antonio Ramos, 2018 antonio.ramosdet(at)gmail.com
  *
  * -------------------------------------------------------------------------
@@ -41,6 +42,8 @@
 #include <string>
 #include <map>
 #include <queue>
+#include <utility>
+#include <boost/circular_buffer.hpp>
 
 class dll_pll_veml_tracking;
 
@@ -56,9 +59,10 @@ class dll_pll_veml_tracking : public gr::block
 public:
     ~dll_pll_veml_tracking();
 
-    void set_channel(unsigned int channel);
+    void set_channel(uint32_t channel);
     void set_gnss_synchro(Gnss_Synchro *p_gnss_synchro);
     void start_tracking();
+    void stop_tracking();
 
     int general_work(int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
@@ -69,6 +73,7 @@ private:
     friend dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_);
 
     dll_pll_veml_tracking(const Dll_Pll_Conf &conf_);
+    void msg_handler_preamble_index(pmt::pmt_t msg);
 
     bool cn0_and_tracking_lock_status(double coh_integration_time_s);
     bool acquire_secondary();
@@ -78,13 +83,13 @@ private:
     void clear_tracking_vars();
     void save_correlation_results();
     void log_data(bool integrating);
-    int save_matfile();
+    int32_t save_matfile();
 
     // tracking configuration vars
     Dll_Pll_Conf trk_parameters;
     bool d_veml;
     bool d_cloop;
-    unsigned int d_channel;
+    uint32_t d_channel;
     Gnss_Synchro *d_acquisition_gnss_synchro;
 
     //Signal parameters
@@ -93,21 +98,23 @@ private:
     double d_signal_carrier_freq;
     double d_code_period;
     double d_code_chip_rate;
-    unsigned int d_secondary_code_length;
-    unsigned int d_code_length_chips;
-    unsigned int d_code_samples_per_chip;  // All signals have 1 sample per chip code except Gal. E1 which has 2 (CBOC disabled) or 12 (CBOC enabled)
-    int d_symbols_per_bit;
+    uint32_t d_secondary_code_length;
+    uint32_t d_code_length_chips;
+    uint32_t d_code_samples_per_chip;  // All signals have 1 sample per chip code except Gal. E1 which has 2 (CBOC disabled) or 12 (CBOC enabled)
+    int32_t d_symbols_per_bit;
     std::string systemName;
     std::string signal_type;
     std::string *d_secondary_code_string;
     std::string signal_pretty_name;
 
+    int32_t *d_gps_l1ca_preambles_symbols;
+    boost::circular_buffer<float> d_symbol_history;
+
     //tracking state machine
-    int d_state;
-    bool d_synchonizing;
+    int32_t d_state;
     //Integration period in samples
-    int d_correlation_length_ms;
-    int d_n_correlator_taps;
+    int32_t d_correlation_length_ms;
+    int32_t d_n_correlator_taps;
 
     float *d_tracking_code;
     float *d_data_code;
@@ -128,8 +135,8 @@ private:
     gr_complex *d_Very_Late;
 
     bool d_enable_extended_integration;
-    int d_extend_correlation_symbols_count;
-    int d_current_symbol;
+    int32_t d_extend_correlation_symbols_count;
+    int32_t d_current_symbol;
 
     gr_complex d_VE_accu;
     gr_complex d_E_accu;
@@ -141,10 +148,14 @@ private:
     gr_complex *d_Prompt_Data;
 
     double d_code_phase_step_chips;
+    double d_code_phase_rate_step_chips;
+    boost::circular_buffer<std::pair<double, double>> d_code_ph_history;
     double d_carrier_phase_step_rad;
+    double d_carrier_phase_rate_step_rad;
+    boost::circular_buffer<std::pair<double, double>> d_carr_ph_history;
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;
-    double d_rem_carr_phase_rad;
+    float d_rem_carr_phase_rad;
 
     // PLL and DLL filter library
     Tracking_2nd_DLL_filter d_code_loop_filter;
@@ -159,25 +170,23 @@ private:
     double d_carr_error_filt_hz;
     double d_code_error_chips;
     double d_code_error_filt_chips;
-    double d_K_blk_samples;
     double d_code_freq_chips;
     double d_carrier_doppler_hz;
     double d_acc_carrier_phase_rad;
     double d_rem_code_phase_chips;
-    double d_code_phase_samples;
     double T_chip_seconds;
     double T_prn_seconds;
     double T_prn_samples;
     double K_blk_samples;
     // PRN period in samples
-    int d_current_prn_length_samples;
+    int32_t d_current_prn_length_samples;
     // processing samples counters
-    unsigned long int d_sample_counter;
-    unsigned long int d_acq_sample_stamp;
+    uint64_t d_sample_counter;
+    uint64_t d_acq_sample_stamp;
 
     // CN0 estimation and lock detector
-    int d_cn0_estimation_counter;
-    int d_carrier_lock_fail_counter;
+    int32_t d_cn0_estimation_counter;
+    int32_t d_carrier_lock_fail_counter;
     std::deque<float> d_carrier_lock_detector_queue;
     double d_carrier_lock_test;
     double d_CN0_SNV_dB_Hz;
@@ -187,6 +196,9 @@ private:
 
     // file dump
     std::ofstream d_dump_file;
+    std::string d_dump_filename;
+    bool d_dump;
+    bool d_dump_mat;
 };
 
 #endif  // GNSS_SDR_DLL_PLL_VEML_TRACKING_H

@@ -173,7 +173,7 @@ double adjcp(rtcm_t *rtcm, int sat, int freq, double cp)
 int lossoflock(rtcm_t *rtcm, int sat, int freq, int lock)
 {
     int lli = (!lock && !rtcm->lock[sat - 1][freq]) || lock < rtcm->lock[sat - 1][freq];
-    rtcm->lock[sat - 1][freq] = (unsigned short)lock;
+    rtcm->lock[sat - 1][freq] = static_cast<uint16_t>(lock);
     return lli;
 }
 
@@ -181,7 +181,7 @@ int lossoflock(rtcm_t *rtcm, int sat, int freq, int lock)
 /* s/n ratio -----------------------------------------------------------------*/
 unsigned char snratio(double snr)
 {
-    return (unsigned char)(snr <= 0.0 || 255.5 <= snr ? 0.0 : snr * 4.0 + 0.5);
+    return static_cast<unsigned char>(snr <= 0.0 || 255.5 <= snr ? 0.0 : snr * 4.0 + 0.5);
 }
 
 
@@ -337,7 +337,7 @@ int decode_type1002(rtcm_t *rtcm)
                 }
             if ((index = obsindex3(&rtcm->obs, rtcm->time, sat)) < 0) continue;
             pr1 = pr1 * 0.02 + amb * PRUNIT_GPS;
-            if (ppr1 != (int)0xFFF80000)
+            if (ppr1 != static_cast<int>(0xFFF80000))
                 {
                     rtcm->obs.data[index].P[0] = pr1;
                     cp1 = adjcp(rtcm, sat, 0, ppr1 * 0.0005 / lam_carr[0]);
@@ -418,7 +418,7 @@ int decode_type1004(rtcm_t *rtcm)
                 }
             if ((index = obsindex3(&rtcm->obs, rtcm->time, sat)) < 0) continue;
             pr1 = pr1 * 0.02 + amb * PRUNIT_GPS;
-            if (ppr1 != (int)0xFFF80000)
+            if (ppr1 != static_cast<int>(0xFFF80000))
                 {
                     rtcm->obs.data[index].P[0] = pr1;
                     cp1 = adjcp(rtcm, sat, 0, ppr1 * 0.0005 / lam_carr[0]);
@@ -428,11 +428,11 @@ int decode_type1004(rtcm_t *rtcm)
             rtcm->obs.data[index].SNR[0] = snratio(cnr1 * 0.25);
             rtcm->obs.data[index].code[0] = code1 ? CODE_L1P : CODE_L1C;
 
-            if (pr21 != (int)0xFFFFE000)
+            if (pr21 != static_cast<int>(0xFFFFE000))
                 {
                     rtcm->obs.data[index].P[1] = pr1 + pr21 * 0.02;
                 }
-            if (ppr2 != (int)0xFFF80000)
+            if (ppr2 != static_cast<int>(0xFFF80000))
                 {
                     cp2 = adjcp(rtcm, sat, 1, ppr2 * 0.0005 / lam_carr[1]);
                     rtcm->obs.data[index].L[1] = pr1 / lam_carr[1] + cp2;
@@ -449,7 +449,7 @@ int decode_type1004(rtcm_t *rtcm)
 /* get signed 38bit field ----------------------------------------------------*/
 double getbits_38(const unsigned char *buff, int pos)
 {
-    return (double)getbits(buff, pos, 32) * 64.0 + getbitu(buff, pos + 32, 6);
+    return static_cast<double>(getbits(buff, pos, 32)) * 64.0 + getbitu(buff, pos + 32, 6);
 }
 
 
@@ -564,7 +564,7 @@ int decode_type1007(rtcm_t *rtcm)
             i += 12 + 8;
             for (j = 0; j < n && j < 31; j++)
                 {
-                    des[j] = (char)getbitu(rtcm->buff, i, 8);
+                    des[j] = static_cast<char>(getbitu(rtcm->buff, i, 8));
                     i += 8;
                 }
             setup = getbitu(rtcm->buff, i, 8);
@@ -606,14 +606,14 @@ int decode_type1008(rtcm_t *rtcm)
             i += 12 + 8;
             for (j = 0; j < n && j < 31; j++)
                 {
-                    des[j] = (char)getbitu(rtcm->buff, i, 8);
+                    des[j] = static_cast<char>(getbitu(rtcm->buff, i, 8));
                     i += 8;
                 }
             setup = getbitu(rtcm->buff, i, 8);
             i += 8 + 8;
             for (j = 0; j < m && j < 31; j++)
                 {
-                    sno[j] = (char)getbitu(rtcm->buff, i, 8);
+                    sno[j] = static_cast<char>(getbitu(rtcm->buff, i, 8));
                     i += 8;
                 }
         }
@@ -730,7 +730,7 @@ int decode_type1010(rtcm_t *rtcm)
                 }
             if ((index = obsindex3(&rtcm->obs, rtcm->time, sat)) < 0) continue;
             pr1 = pr1 * 0.02 + amb * PRUNIT_GLO;
-            if (ppr1 != (int)0xFFF80000)
+            if (ppr1 != static_cast<int>(0xFFF80000))
                 {
                     rtcm->obs.data[index].P[0] = pr1;
                     lam1 = SPEED_OF_LIGHT / (FREQ1_GLO + DFRQ1_GLO * (freq - 7));
@@ -804,7 +804,7 @@ int decode_type1012(rtcm_t *rtcm)
                 }
             if ((index = obsindex3(&rtcm->obs, rtcm->time, sat)) < 0) continue;
             pr1 = pr1 * 0.02 + amb * PRUNIT_GLO;
-            if (ppr1 != (int)0xFFF80000)
+            if (ppr1 != static_cast<int>(0xFFF80000))
                 {
                     lam1 = SPEED_OF_LIGHT / (FREQ1_GLO + DFRQ1_GLO * (freq - 7));
                     rtcm->obs.data[index].P[0] = pr1;
@@ -815,11 +815,11 @@ int decode_type1012(rtcm_t *rtcm)
             rtcm->obs.data[index].SNR[0] = snratio(cnr1 * 0.25);
             rtcm->obs.data[index].code[0] = code1 ? CODE_L1P : CODE_L1C;
 
-            if (pr21 != (int)0xFFFFE000)
+            if (pr21 != static_cast<int>(0xFFFFE000))
                 {
                     rtcm->obs.data[index].P[1] = pr1 + pr21 * 0.02;
                 }
-            if (ppr2 != (int)0xFFF80000)
+            if (ppr2 != static_cast<int>(0xFFF80000))
                 {
                     lam2 = SPEED_OF_LIGHT / (FREQ2_GLO + DFRQ2_GLO * (freq - 7));
                     cp2 = adjcp(rtcm, sat, 1, ppr2 * 0.0005 / lam2);
@@ -1189,32 +1189,32 @@ int decode_type1033(rtcm_t *rtcm)
             i += 12 + 8;
             for (j = 0; j < n && j < 31; j++)
                 {
-                    des[j] = (char)getbitu(rtcm->buff, i, 8);
+                    des[j] = static_cast<char>(getbitu(rtcm->buff, i, 8));
                     i += 8;
                 }
             setup = getbitu(rtcm->buff, i, 8);
             i += 8 + 8;
             for (j = 0; j < m && j < 31; j++)
                 {
-                    sno[j] = (char)getbitu(rtcm->buff, i, 8);
+                    sno[j] = static_cast<char>(getbitu(rtcm->buff, i, 8));
                     i += 8;
                 }
             i += 8;
             for (j = 0; j < n1 && j < 31; j++)
                 {
-                    rec[j] = (char)getbitu(rtcm->buff, i, 8);
+                    rec[j] = static_cast<char>(getbitu(rtcm->buff, i, 8));
                     i += 8;
                 }
             i += 8;
             for (j = 0; j < n2 && j < 31; j++)
                 {
-                    ver[j] = (char)getbitu(rtcm->buff, i, 8);
+                    ver[j] = static_cast<char>(getbitu(rtcm->buff, i, 8));
                     i += 8;
                 }
             i += 8;
             for (j = 0; j < n3 && j < 31; j++)
                 {
-                    rsn[j] = (char)getbitu(rtcm->buff, i, 8);
+                    rsn[j] = static_cast<char>(getbitu(rtcm->buff, i, 8));
                     i += 8;
                 }
         }
@@ -2222,7 +2222,7 @@ int decode_ssr3(rtcm_t *rtcm, int sys)
                     i += 14;
                     if (mode <= ncode)
                         {
-                            cbias[codes[mode] - 1] = (float)bias;
+                            cbias[codes[mode] - 1] = static_cast<float>(bias);
                         }
                     else
                         {
@@ -2240,7 +2240,7 @@ int decode_ssr3(rtcm_t *rtcm, int sys)
 
             for (k = 0; k < MAXCODE; k++)
                 {
-                    rtcm->ssr[sat - 1].cbias[k] = (float)cbias[k];
+                    rtcm->ssr[sat - 1].cbias[k] = static_cast<float>(cbias[k]);
                 }
             rtcm->ssr[sat - 1].update = 1;
         }
@@ -2579,7 +2579,7 @@ int decode_ssr7(rtcm_t *rtcm, int sys)
             for (k = 0; k < MAXCODE; k++)
                 {
                     rtcm->ssr[sat - 1].pbias[k] = pbias[k];
-                    rtcm->ssr[sat - 1].stdpb[k] = (float)stdpb[k];
+                    rtcm->ssr[sat - 1].stdpb[k] = static_cast<float>(stdpb[k]);
                 }
         }
     return 20;
@@ -2643,7 +2643,7 @@ void save_msm_obs(rtcm_t *rtcm, int sys, msm_h_t *h, const double *r,
     const char *sig[32];
     double tt, wl;
     unsigned char code[32];
-    char *msm_type = (char *)"", *q = NULL;
+    char *msm_type = (char *)"", *q = nullptr;
     int i, j, k, type, prn, sat, fn, index = 0, freq[32], ind[32];
 
     type = getbitu(rtcm->buff, 24, 12);
@@ -2773,11 +2773,11 @@ void save_msm_obs(rtcm_t *rtcm, int sys, msm_h_t *h, const double *r,
                             /* doppler (hz) */
                             if (rr && rrf && rrf[j] > -1E12 && wl > 0.0)
                                 {
-                                    rtcm->obs.data[index].D[ind[k]] = (float)(-(rr[i] + rrf[j]) / wl);
+                                    rtcm->obs.data[index].D[ind[k]] = static_cast<float>(-(rr[i] + rrf[j]) / wl);
                                 }
                             rtcm->obs.data[index].LLI[ind[k]] =
                                 lossoflock(rtcm, sat, ind[k], lock[j]) + (half[j] ? 3 : 0);
-                            rtcm->obs.data[index].SNR[ind[k]] = (unsigned char)(cnr[j] * 4.0);
+                            rtcm->obs.data[index].SNR[ind[k]] = static_cast<unsigned char>(cnr[j] * 4.0);
                             rtcm->obs.data[index].code[ind[k]] = code[k];
                         }
                     j++;
@@ -2966,7 +2966,7 @@ int decode_msm4(rtcm_t *rtcm, int sys)
             i += 6;
         }
     /* save obs data in msm message */
-    save_msm_obs(rtcm, sys, &h, r, pr, cp, NULL, NULL, cnr, lock, NULL, half);
+    save_msm_obs(rtcm, sys, &h, r, pr, cp, nullptr, nullptr, cnr, lock, nullptr, half);
 
     rtcm->obsflag = !sync;
     return sync ? 0 : 1;
@@ -3128,7 +3128,7 @@ int decode_msm6(rtcm_t *rtcm, int sys)
             i += 10;
         }
     /* save obs data in msm message */
-    save_msm_obs(rtcm, sys, &h, r, pr, cp, NULL, NULL, cnr, lock, NULL, half);
+    save_msm_obs(rtcm, sys, &h, r, pr, cp, nullptr, nullptr, cnr, lock, nullptr, half);
 
     rtcm->obsflag = !sync;
     return sync ? 0 : 1;

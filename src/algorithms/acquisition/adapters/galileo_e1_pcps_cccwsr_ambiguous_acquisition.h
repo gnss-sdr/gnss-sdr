@@ -48,7 +48,8 @@ class GalileoE1PcpsCccwsrAmbiguousAcquisition : public AcquisitionInterface
 {
 public:
     GalileoE1PcpsCccwsrAmbiguousAcquisition(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role,
+        unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~GalileoE1PcpsCccwsrAmbiguousAcquisition();
@@ -125,6 +126,11 @@ public:
      */
     void set_state(int state) override;
 
+    /*!
+     * \brief Stop running acquisition
+     */
+    void stop_acquisition() override;
+
 private:
     ConfigurationInterface* configuration_;
     pcps_cccwsr_acquisition_cc_sptr acquisition_cc_;
@@ -140,7 +146,7 @@ private:
     unsigned int doppler_step_;
     unsigned int sampled_ms_;
     unsigned int max_dwells_;
-    long fs_in_;
+    int64_t fs_in_;
     bool dump_;
     std::string dump_filename_;
     std::complex<float>* code_data_;

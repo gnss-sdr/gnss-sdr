@@ -35,7 +35,11 @@
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
+#ifdef GR_GREATER_38
+#include <gnuradio/analog/sig_source.h>
+#else
 #include <gnuradio/analog/sig_source_c.h>
+#endif
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/skiphead.h>
@@ -61,9 +65,7 @@ protected:
         gnss_synchro = Gnss_Synchro();
     }
 
-    ~GalileoE1DllPllVemlTrackingInternalTest()
-    {
-    }
+    ~GalileoE1DllPllVemlTrackingInternalTest() = default;
 
     void init();
 
@@ -71,7 +73,7 @@ protected:
     gr::top_block_sptr top_block;
     std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
-    Gnss_Synchro gnss_synchro;
+    Gnss_Synchro gnss_synchro{};
     size_t item_size;
     bool stop;
     int message;

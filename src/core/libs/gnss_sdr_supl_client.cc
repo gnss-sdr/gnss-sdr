@@ -32,6 +32,7 @@
  */
 
 #include "gnss_sdr_supl_client.h"
+#include <pugixml.hpp>
 #include <cmath>
 #include <utility>
 
@@ -47,7 +48,9 @@ gnss_sdr_supl_client::gnss_sdr_supl_client()
     request = 0;
 }
 
-gnss_sdr_supl_client::~gnss_sdr_supl_client() {}
+
+gnss_sdr_supl_client::~gnss_sdr_supl_client() = default;
+
 
 void gnss_sdr_supl_client::print_assistance()
 {
@@ -189,6 +192,7 @@ int gnss_sdr_supl_client::get_assistance(int i_mcc, int i_mns, int i_lac, int i_
     return err;
 }
 
+
 void gnss_sdr_supl_client::read_supl_data()
 {
     // READ REFERENCE LOCATION
@@ -264,12 +268,11 @@ void gnss_sdr_supl_client::read_supl_data()
                     gps_almanac_iterator->second.d_OMEGA0 = static_cast<double>(a->OMEGA_0) * pow(2.0, -23);
                     gps_almanac_iterator->second.d_sqrt_A = static_cast<double>(a->A_sqrt) * pow(2.0, -11);
                     gps_almanac_iterator->second.d_OMEGA_DOT = static_cast<double>(a->OMEGA_dot) * pow(2.0, -38);
-                    gps_almanac_iterator->second.d_Toa = static_cast<double>(a->toa) * pow(2.0, 12);
-                    gps_almanac_iterator->second.d_e_eccentricity = static_cast<double>(a->toa) * pow(2.0, -21);
+                    gps_almanac_iterator->second.i_Toa = static_cast<int32_t>(a->toa) * pow(2.0, 12);
+                    gps_almanac_iterator->second.d_e_eccentricity = static_cast<double>(a->e) * pow(2.0, -21);
                     gps_almanac_iterator->second.d_M_0 = static_cast<double>(a->M0) * pow(2.0, -23);
                 }
         }
-
 
     // READ SV EPHEMERIS
     if (assist.cnt_eph)
@@ -366,15 +369,15 @@ void gnss_sdr_supl_client::read_supl_data()
 }
 
 
-bool gnss_sdr_supl_client::load_ephemeris_xml(const std::string file_name)
+bool gnss_sdr_supl_client::load_ephemeris_xml(const std::string& file_name)
 {
+    std::ifstream ifs;
     try
         {
-            std::ifstream ifs(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
+            ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
             boost::archive::xml_iarchive xml(ifs);
             gps_ephemeris_map.clear();
             xml >> boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", this->gps_ephemeris_map);
-            ifs.close();
             LOG(INFO) << "Loaded Ephemeris map data with " << this->gps_ephemeris_map.size() << " satellites";
         }
     catch (std::exception& e)
@@ -385,16 +388,17 @@ bool gnss_sdr_supl_client::load_ephemeris_xml(const std::string file_name)
     return true;
 }
 
-bool gnss_sdr_supl_client::save_ephemeris_map_xml(const std::string file_name, std::map<int, Gps_Ephemeris> eph_map)
+
+bool gnss_sdr_supl_client::save_ephemeris_map_xml(const std::string& file_name, std::map<int, Gps_Ephemeris> eph_map)
 {
-    if (eph_map.size() > 0)
+    if (eph_map.empty() == false)
         {
+            std::ofstream ofs;
             try
                 {
-                    std::ofstream ofs(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
                     boost::archive::xml_oarchive xml(ofs);
                     xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", eph_map);
-                    ofs.close();
                     LOG(INFO) << "Saved Ephemeris map data";
                 }
             catch (std::exception& e)
@@ -402,23 +406,165 @@ bool gnss_sdr_supl_client::save_ephemeris_map_xml(const std::string file_name, s
                     LOG(WARNING) << e.what();
                     return false;
                 }
-            return true;
         }
     else
         {
             LOG(WARNING) << "Failed to save Ephemeris, map is empty";
             return false;
         }
+    return true;
 }
 
-bool gnss_sdr_supl_client::load_utc_xml(const std::string file_name)
+
+bool gnss_sdr_supl_client::load_gal_ephemeris_xml(const std::string& file_name)
 {
+    std::ifstream ifs;
     try
         {
-            std::ifstream ifs(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
+            ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
             boost::archive::xml_iarchive xml(ifs);
-            xml >> boost::serialization::make_nvp("GNSS-SDR_utc_map", this->gps_utc);
-            ifs.close();
+            gal_ephemeris_map.clear();
+            xml >> boost::serialization::make_nvp("GNSS-SDR_gal_ephemeris_map", this->gal_ephemeris_map);
+            LOG(INFO) << "Loaded Ephemeris map data with " << this->gal_ephemeris_map.size() << " satellites";
+        }
+    catch (std::exception& e)
+        {
+            LOG(WARNING) << e.what() << "File: " << file_name;
+            return false;
+        }
+    return true;
+}
+
+
+bool save_gal_ephemeris_map_xml(const std::string& file_name, std::map<int, Galileo_Ephemeris> eph_map)
+{
+    if (eph_map.empty() == false)
+        {
+            std::ofstream ofs;
+            try
+                {
+                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_ephemeris_map", eph_map);
+                    LOG(INFO) << "Saved Galileo ephemeris map data";
+                }
+            catch (std::exception& e)
+                {
+                    LOG(WARNING) << e.what();
+                    return false;
+                }
+        }
+    else
+        {
+            LOG(WARNING) << "Failed to save Galileo ephemeris, map is empty";
+            return false;
+        }
+    return true;
+}
+
+
+bool gnss_sdr_supl_client::load_cnav_ephemeris_xml(const std::string& file_name)
+{
+    std::ifstream ifs;
+    try
+        {
+            ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
+            boost::archive::xml_iarchive xml(ifs);
+            gps_cnav_ephemeris_map.clear();
+            xml >> boost::serialization::make_nvp("GNSS-SDR_cnav_ephemeris_map", this->gps_cnav_ephemeris_map);
+            LOG(INFO) << "Loaded Ephemeris map data with " << this->gps_cnav_ephemeris_map.size() << " satellites";
+        }
+    catch (std::exception& e)
+        {
+            LOG(WARNING) << e.what() << "File: " << file_name;
+            return false;
+        }
+    return true;
+}
+
+
+bool save_cnav_ephemeris_map_xml(const std::string& file_name, std::map<int, Gps_CNAV_Ephemeris> eph_map)
+{
+    if (eph_map.empty() == false)
+        {
+            std::ofstream ofs;
+            try
+                {
+                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_cnav_ephemeris_map", eph_map);
+                    LOG(INFO) << "Saved GPS CNAV ephemeris map data";
+                }
+            catch (std::exception& e)
+                {
+                    LOG(WARNING) << e.what();
+                    return false;
+                }
+        }
+    else
+        {
+            LOG(WARNING) << "Failed to save GPS CNAV ephemeris, map is empty";
+            return false;
+        }
+    return true;
+}
+
+
+bool gnss_sdr_supl_client::load_gnav_ephemeris_xml(const std::string& file_name)
+{
+    std::ifstream ifs;
+    try
+        {
+            ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
+            boost::archive::xml_iarchive xml(ifs);
+            gps_cnav_ephemeris_map.clear();
+            xml >> boost::serialization::make_nvp("GNSS-SDR_gnav_ephemeris_map", this->glonass_gnav_ephemeris_map);
+            LOG(INFO) << "Loaded GLONASS ephemeris map data with " << this->gps_cnav_ephemeris_map.size() << " satellites";
+        }
+    catch (std::exception& e)
+        {
+            LOG(WARNING) << e.what() << "File: " << file_name;
+            return false;
+        }
+    return true;
+}
+
+
+bool save_gnav_ephemeris_map_xml(const std::string& file_name, std::map<int, Glonass_Gnav_Ephemeris> eph_map)
+{
+    if (eph_map.empty() == false)
+        {
+            std::ofstream ofs;
+            try
+                {
+                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_gnav_ephemeris_map", eph_map);
+                    LOG(INFO) << "Saved GLONASS GNAV ephemeris map data";
+                }
+            catch (std::exception& e)
+                {
+                    LOG(WARNING) << e.what();
+                    return false;
+                }
+        }
+    else
+        {
+            LOG(WARNING) << "Failed to save GLONASS GNAV ephemeris, map is empty";
+            return false;
+        }
+    return true;
+}
+
+
+bool gnss_sdr_supl_client::load_utc_xml(const std::string& file_name)
+{
+    std::ifstream ifs;
+    try
+        {
+            ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
+            boost::archive::xml_iarchive xml(ifs);
+            xml >> boost::serialization::make_nvp("GNSS-SDR_utc_model", this->gps_utc);
             LOG(INFO) << "Loaded UTC model data";
         }
     catch (std::exception& e)
@@ -429,40 +575,134 @@ bool gnss_sdr_supl_client::load_utc_xml(const std::string file_name)
     return true;
 }
 
-bool gnss_sdr_supl_client::save_utc_map_xml(const std::string file_name, std::map<int, Gps_Utc_Model> utc_map)
+
+bool gnss_sdr_supl_client::save_utc_xml(const std::string& file_name, Gps_Utc_Model& utc)
 {
-    if (utc_map.size() > 0)
+    if (utc.valid)
         {
+            std::ofstream ofs;
             try
                 {
-                    std::ofstream ofs(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
                     boost::archive::xml_oarchive xml(ofs);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_utc_map", utc_map);
-                    ofs.close();
-                    LOG(INFO) << "Saved UTC Model data";
+                    xml << boost::serialization::make_nvp("GNSS-SDR_utc_model", utc);
+                    LOG(INFO) << "Saved GPS UTC Model data";
                 }
             catch (std::exception& e)
                 {
                     LOG(WARNING) << e.what();
                     return false;
                 }
-            return true;
         }
     else
         {
-            LOG(WARNING) << "Failed to save UTC model, map is empty";
+            LOG(WARNING) << "Failed to save GPS UTC model, no valid data";
             return false;
         }
+    return true;
 }
 
-bool gnss_sdr_supl_client::load_iono_xml(const std::string file_name)
+
+bool gnss_sdr_supl_client::load_cnav_utc_xml(const std::string& file_name)
 {
+    std::ifstream ifs;
     try
         {
-            std::ifstream ifs(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
+            ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
             boost::archive::xml_iarchive xml(ifs);
-            xml >> boost::serialization::make_nvp("GNSS-SDR_iono_map", this->gps_iono);
-            ifs.close();
+            xml >> boost::serialization::make_nvp("GNSS-SDR_cnav_utc_model", this->gps_cnav_utc);
+            LOG(INFO) << "Loaded CNAV UTC model data";
+        }
+    catch (std::exception& e)
+        {
+            LOG(WARNING) << e.what() << "File: " << file_name;
+            return false;
+        }
+    return true;
+}
+
+
+bool gnss_sdr_supl_client::save_cnav_utc_xml(const std::string& file_name, Gps_CNAV_Utc_Model& utc)
+{
+    if (utc.valid)
+        {
+            std::ofstream ofs;
+            try
+                {
+                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_cnav_utc_model", utc);
+                    LOG(INFO) << "Saved GPS CNAV UTC model data";
+                }
+            catch (std::exception& e)
+                {
+                    LOG(WARNING) << e.what();
+                    return false;
+                }
+        }
+    else
+        {
+            LOG(WARNING) << "Failed to save GPS CNAV UTC model, no valid data";
+            return false;
+        }
+    return true;
+}
+
+
+bool gnss_sdr_supl_client::load_gal_utc_xml(const std::string& file_name)
+{
+    std::ifstream ifs;
+    try
+        {
+            ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
+            boost::archive::xml_iarchive xml(ifs);
+            xml >> boost::serialization::make_nvp("GNSS-SDR_gal_utc_model", this->gal_utc);
+            LOG(INFO) << "Loaded Galileo UTC model data";
+        }
+    catch (std::exception& e)
+        {
+            LOG(WARNING) << e.what() << "File: " << file_name;
+            return false;
+        }
+    return true;
+}
+
+
+bool gnss_sdr_supl_client::save_gal_utc_xml(const std::string& file_name, Galileo_Utc_Model& utc)
+{
+    if (utc.flag_utc_model)
+        {
+            std::ofstream ofs;
+            try
+                {
+                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_utc_model", utc);
+                    LOG(INFO) << "Saved Galileo UTC Model data";
+                }
+            catch (std::exception& e)
+                {
+                    LOG(WARNING) << e.what();
+                    return false;
+                }
+        }
+    else
+        {
+            LOG(WARNING) << "Failed to save Galileo UTC model, no valid data";
+            return false;
+        }
+    return true;
+}
+
+
+bool gnss_sdr_supl_client::load_iono_xml(const std::string& file_name)
+{
+    std::ifstream ifs;
+    try
+        {
+            ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
+            boost::archive::xml_iarchive xml(ifs);
+            xml >> boost::serialization::make_nvp("GNSS-SDR_iono_model", this->gps_iono);
             LOG(INFO) << "Loaded IONO model data";
         }
     catch (std::exception& e)
@@ -473,16 +713,17 @@ bool gnss_sdr_supl_client::load_iono_xml(const std::string file_name)
     return true;
 }
 
-bool gnss_sdr_supl_client::save_iono_map_xml(const std::string file_name, std::map<int, Gps_Iono> iono_map)
+
+bool gnss_sdr_supl_client::save_iono_xml(const std::string& file_name, Gps_Iono& iono)
 {
-    if (iono_map.size() > 0)
+    if (iono.valid)
         {
+            std::ofstream ofs;
             try
                 {
-                    std::ofstream ofs(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
                     boost::archive::xml_oarchive xml(ofs);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_iono_map", iono_map);
-                    ofs.close();
+                    xml << boost::serialization::make_nvp("GNSS-SDR_iono_model", iono);
                     LOG(INFO) << "Saved IONO Model data";
                 }
             catch (std::exception& e)
@@ -490,23 +731,260 @@ bool gnss_sdr_supl_client::save_iono_map_xml(const std::string file_name, std::m
                     LOG(WARNING) << e.what();
                     return false;
                 }
-            return true;
         }
     else
         {
             LOG(WARNING) << "Failed to save IONO model, map is empty";
             return false;
         }
+    return true;
 }
 
-bool gnss_sdr_supl_client::load_ref_time_xml(const std::string file_name)
+
+bool gnss_sdr_supl_client::load_gal_iono_xml(const std::string& file_name)
 {
+    std::ifstream ifs;
     try
         {
-            std::ifstream ifs(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
+            ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
             boost::archive::xml_iarchive xml(ifs);
-            xml >> boost::serialization::make_nvp("GNSS-SDR_ref_time_map", this->gps_time);
-            ifs.close();
+            xml >> boost::serialization::make_nvp("GNSS-SDR_gal_iono_model", this->gal_iono);
+            LOG(INFO) << "Loaded Galileo IONO model data";
+        }
+    catch (std::exception& e)
+        {
+            LOG(WARNING) << e.what() << "File: " << file_name;
+            return false;
+        }
+    return true;
+}
+
+
+bool gnss_sdr_supl_client::save_gal_iono_xml(const std::string& file_name, Galileo_Iono& iono)
+{
+    if (iono.ai0_5 != 0.0)
+        {
+            std::ofstream ofs;
+            try
+                {
+                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_iono_model", iono);
+                    LOG(INFO) << "Saved Galileo IONO Model data";
+                }
+            catch (std::exception& e)
+                {
+                    LOG(WARNING) << e.what();
+                    return false;
+                }
+        }
+    else
+        {
+            LOG(WARNING) << "Failed to save Galileo IONO model, map is empty";
+            return false;
+        }
+    return true;
+}
+
+
+bool gnss_sdr_supl_client::load_gps_almanac_xml(const std::string& file_name)
+{
+    std::ifstream ifs;
+    try
+        {
+            ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
+            boost::archive::xml_iarchive xml(ifs);
+            gps_almanac_map.clear();
+            xml >> boost::serialization::make_nvp("GNSS-SDR_gps_almanac_map", this->gps_almanac_map);
+            LOG(INFO) << "Loaded GPS almanac map data with " << this->gps_almanac_map.size() << " satellites";
+        }
+    catch (std::exception& e)
+        {
+            LOG(WARNING) << e.what() << "File: " << file_name;
+            return false;
+        }
+    return true;
+}
+
+
+bool gnss_sdr_supl_client::save_gps_almanac_xml(const std::string& file_name, std::map<int, Gps_Almanac> gps_almanac_map)
+{
+    if (gps_almanac_map.empty() == false)
+        {
+            std::ofstream ofs;
+            try
+                {
+                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_gps_almanac_map", gps_almanac_map);
+                    LOG(INFO) << "Saved GPS almanac data";
+                }
+            catch (std::exception& e)
+                {
+                    LOG(WARNING) << e.what();
+                    return false;
+                }
+        }
+    else
+        {
+            LOG(WARNING) << "Failed to save GPS almanac, map is empty";
+            return false;
+        }
+    return true;
+}
+
+
+bool gnss_sdr_supl_client::load_gal_almanac_xml(const std::string& file_name)
+{
+    std::ifstream ifs;
+    try
+        {
+            ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
+            boost::archive::xml_iarchive xml(ifs);
+            gal_almanac_map.clear();
+            xml >> boost::serialization::make_nvp("GNSS-SDR_gal_almanac_map", this->gal_almanac_map);
+        }
+    catch (std::exception& e)
+        {
+            // Maybe the file is from https://www.gsc-europa.eu/system-status/almanac-data ?
+            return this->read_gal_almanac_from_gsa(file_name);
+        }
+    LOG(INFO) << "Loaded Galileo almanac map data with " << this->gal_almanac_map.size() << " satellites";
+    return true;
+}
+
+
+bool gnss_sdr_supl_client::read_gal_almanac_from_gsa(const std::string& file_name)
+{
+    pugi::xml_document doc;
+    pugi::xml_parse_result result = doc.load_file(file_name.c_str());
+    if (!result)
+        {
+            LOG(WARNING) << "Error loading file " << file_name << ":" << result.description();
+            return false;
+        }
+    for (pugi::xml_node almanac : doc.child("signalData")
+                                      .child("body")
+                                      .child("Almanacs")
+                                      .children("svAlmanac"))
+        {
+            Galileo_Almanac gal_alm;
+            try
+                {
+                    uint32_t prn = static_cast<uint32_t>(std::stoi(almanac.child_value("SVID")));
+                    gal_alm.i_satellite_PRN = prn;
+                    gal_alm.i_Toa = std::stoi(almanac.child("almanac").child_value("t0a"));
+                    gal_alm.i_WNa = std::stoi(almanac.child("almanac").child_value("wna"));
+                    gal_alm.i_IODa = std::stoi(almanac.child("almanac").child_value("iod"));
+                    gal_alm.d_Delta_i = std::stod(almanac.child("almanac").child_value("deltai"));
+                    gal_alm.d_M_0 = std::stod(almanac.child("almanac").child_value("m0"));
+                    gal_alm.d_e_eccentricity = std::stod(almanac.child("almanac").child_value("ecc"));
+                    gal_alm.d_Delta_sqrt_A = std::stod(almanac.child("almanac").child_value("aSqRoot"));
+                    gal_alm.d_OMEGA0 = std::stod(almanac.child("almanac").child_value("omega0"));
+                    gal_alm.d_OMEGA = std::stod(almanac.child("almanac").child_value("w"));
+                    gal_alm.d_OMEGA_DOT = std::stod(almanac.child("almanac").child_value("omegaDot"));
+                    gal_alm.d_A_f0 = std::stod(almanac.child("almanac").child_value("af0"));
+                    gal_alm.d_A_f1 = std::stod(almanac.child("almanac").child_value("af1"));
+                    gal_alm.E5b_HS = std::stoi(almanac.child("svINavSignalStatus").child_value("statusE5b"));
+                    gal_alm.E1B_HS = std::stoi(almanac.child("svINavSignalStatus").child_value("statusE1B"));
+                    gal_alm.E5a_HS = std::stoi(almanac.child("svFNavSignalStatus").child_value("statusE5a"));
+
+                    this->gal_almanac_map[static_cast<int>(prn)] = gal_alm;
+                }
+            catch (const std::exception& e)
+                {
+                    std::cerr << e.what() << std::endl;
+                }
+        }
+    if (this->gal_almanac_map.empty())
+        {
+            return false;
+        }
+    return true;
+}
+
+
+bool gnss_sdr_supl_client::save_gal_almanac_xml(const std::string& file_name, std::map<int, Galileo_Almanac> gal_almanac_map)
+{
+    if (gal_almanac_map.empty() == false)
+        {
+            std::ofstream ofs;
+            try
+                {
+                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_almanac_map", gal_almanac_map);
+                    LOG(INFO) << "Saved Galileo almanac data";
+                }
+            catch (std::exception& e)
+                {
+                    LOG(WARNING) << e.what();
+                    return false;
+                }
+        }
+    else
+        {
+            LOG(WARNING) << "Failed to save Galileo almanac, map is empty";
+            return false;
+        }
+    return true;
+}
+
+
+bool gnss_sdr_supl_client::load_glo_utc_xml(const std::string& file_name)
+{
+    std::ifstream ifs;
+    try
+        {
+            ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
+            boost::archive::xml_iarchive xml(ifs);
+            xml >> boost::serialization::make_nvp("GNSS-SDR_glo_utc_model", this->glo_gnav_utc);
+            LOG(INFO) << "Loaded UTC model data";
+        }
+    catch (std::exception& e)
+        {
+            LOG(WARNING) << e.what() << "File: " << file_name;
+            return false;
+        }
+    return true;
+}
+
+
+bool gnss_sdr_supl_client::save_glo_utc_xml(const std::string& file_name, Glonass_Gnav_Utc_Model& utc)
+{
+    if (utc.valid)
+        {
+            std::ofstream ofs;
+            try
+                {
+                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_glo_utc_model", utc);
+                    LOG(INFO) << "Saved Glonass UTC Model data";
+                }
+            catch (std::exception& e)
+                {
+                    LOG(WARNING) << e.what();
+                    return false;
+                }
+        }
+    else
+        {
+            LOG(WARNING) << "Failed to save Glonass UTC model, no valid data";
+            return false;
+        }
+    return true;
+}
+
+
+bool gnss_sdr_supl_client::load_ref_time_xml(const std::string& file_name)
+{
+    std::ifstream ifs;
+    try
+        {
+            ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
+            boost::archive::xml_iarchive xml(ifs);
+            xml >> boost::serialization::make_nvp("GNSS-SDR_ref_time", this->gps_time);
             LOG(INFO) << "Loaded Ref Time data";
         }
     catch (std::exception& e)
@@ -517,16 +995,17 @@ bool gnss_sdr_supl_client::load_ref_time_xml(const std::string file_name)
     return true;
 }
 
-bool gnss_sdr_supl_client::save_ref_time_map_xml(const std::string file_name, std::map<int, Gps_Ref_Time> ref_time_map)
+
+bool gnss_sdr_supl_client::save_ref_time_xml(const std::string& file_name, Agnss_Ref_Time& ref_time)
 {
-    if (ref_time_map.size() > 0)
+    if (ref_time.valid == true)
         {
+            std::ofstream ofs;
             try
                 {
-                    std::ofstream ofs(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
                     boost::archive::xml_oarchive xml(ofs);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_ref_time_map", ref_time_map);
-                    ofs.close();
+                    xml << boost::serialization::make_nvp("GNSS-SDR_ref_time", ref_time);
                     LOG(INFO) << "Saved Ref Time data";
                 }
             catch (std::exception& e)
@@ -534,23 +1013,24 @@ bool gnss_sdr_supl_client::save_ref_time_map_xml(const std::string file_name, st
                     LOG(WARNING) << e.what();
                     return false;
                 }
-            return true;
         }
     else
         {
-            LOG(WARNING) << "Failed to save Ref Time, map is empty";
+            LOG(WARNING) << "Failed to save Ref Time";
             return false;
         }
+    return true;
 }
 
-bool gnss_sdr_supl_client::load_ref_location_xml(const std::string file_name)
+
+bool gnss_sdr_supl_client::load_ref_location_xml(const std::string& file_name)
 {
+    std::ifstream ifs;
     try
         {
-            std::ifstream ifs(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
+            ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
             boost::archive::xml_iarchive xml(ifs);
-            xml >> boost::serialization::make_nvp("GNSS-SDR_ref_location_map", this->gps_ref_loc);
-            ifs.close();
+            xml >> boost::serialization::make_nvp("GNSS-SDR_ref_location", this->gps_ref_loc);
             LOG(INFO) << "Loaded Ref Location data";
         }
     catch (std::exception& e)
@@ -561,16 +1041,17 @@ bool gnss_sdr_supl_client::load_ref_location_xml(const std::string file_name)
     return true;
 }
 
-bool gnss_sdr_supl_client::save_ref_location_map_xml(const std::string file_name, std::map<int, Gps_Ref_Location> ref_location_map)
+
+bool gnss_sdr_supl_client::save_ref_location_xml(const std::string& file_name, Agnss_Ref_Location& ref_location)
 {
-    if (ref_location_map.size() > 0)
+    if (ref_location.valid == true)
         {
+            std::ofstream ofs;
             try
                 {
-                    std::ofstream ofs(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
                     boost::archive::xml_oarchive xml(ofs);
-                    xml << boost::serialization::make_nvp("GNSS-SDR_ref_location_map", ref_location_map);
-                    ofs.close();
+                    xml << boost::serialization::make_nvp("GNSS-SDR_ref_location", ref_location);
                     LOG(INFO) << "Saved Ref Location data";
                 }
             catch (std::exception& e)
@@ -578,11 +1059,11 @@ bool gnss_sdr_supl_client::save_ref_location_map_xml(const std::string file_name
                     LOG(WARNING) << e.what();
                     return false;
                 }
-            return true;
         }
     else
         {
-            LOG(WARNING) << "Failed to save Ref Location, map is empty";
+            LOG(WARNING) << "Failed to save Ref Location";
             return false;
         }
+    return true;
 }

@@ -34,13 +34,14 @@
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/fft/fft.h>
+#include <cstdint>
 #include <memory>
 
 class NotchLite;
 
 typedef boost::shared_ptr<NotchLite> notch_lite_sptr;
 
-notch_lite_sptr make_notch_filter_lite(float p_c_factor, float pfa, int length_, int n_segments_est, int n_segments_reset, int n_segments_coeff);
+notch_lite_sptr make_notch_filter_lite(float p_c_factor, float pfa, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset, int32_t n_segments_coeff);
 
 /*!
  * \brief This class implements a real-time software-defined multi state notch filter light version
@@ -49,13 +50,13 @@ notch_lite_sptr make_notch_filter_lite(float p_c_factor, float pfa, int length_,
 class NotchLite : public gr::block
 {
 private:
-    int length_;
-    int n_segments;
-    int n_segments_est;
-    int n_segments_reset;
-    int n_segments_coeff_reset;
-    int n_segments_coeff;
-    int n_deg_fred;
+    int32_t length_;
+    int32_t n_segments;
+    int32_t n_segments_est;
+    int32_t n_segments_reset;
+    int32_t n_segments_coeff_reset;
+    int32_t n_segments_coeff;
+    int32_t n_deg_fred;
     float pfa;
     float thres_;
     float noise_pow_est;
@@ -71,7 +72,7 @@ private:
     std::unique_ptr<gr::fft::fft_complex> d_fft;
 
 public:
-    NotchLite(float p_c_factor, float pfa, int length_, int n_segments_est, int n_segments_reset, int n_segments_coeff);
+    NotchLite(float p_c_factor, float pfa, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset, int32_t n_segments_coeff);
 
     ~NotchLite();
 

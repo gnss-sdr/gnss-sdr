@@ -43,7 +43,7 @@
 using google::LogMessage;
 
 GpsL2CTelemetryDecoder::GpsL2CTelemetryDecoder(ConfigurationInterface* configuration,
-    std::string role,
+    const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
                                 in_streams_(in_streams),
@@ -68,9 +68,7 @@ GpsL2CTelemetryDecoder::GpsL2CTelemetryDecoder(ConfigurationInterface* configura
 }
 
 
-GpsL2CTelemetryDecoder::~GpsL2CTelemetryDecoder()
-{
-}
+GpsL2CTelemetryDecoder::~GpsL2CTelemetryDecoder() = default;
 
 
 void GpsL2CTelemetryDecoder::set_satellite(const Gnss_Satellite& satellite)

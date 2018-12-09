@@ -64,10 +64,11 @@ $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time
        libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev \
        libboost-serialization-dev liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr \
        libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev \
-       libgnutls-openssl-dev libpcap-dev python-mako python-six libmatio-dev googletest
+       libgnutls-openssl-dev libpcap-dev python-mako python-six libmatio-dev libpugixml-dev \
+       libgtest-dev
 ~~~~~~
 
-Please note that `googletest` was named `libgtest-dev` in distributions older than Debian 9 "stretch" and Ubuntu 17.04 "zesty".
+Please note that the required files from `libgtest-dev` were moved to `googletest` in Debian 9 "stretch" and Ubuntu 18.04 "bionic", and moved back again to `libgtest-dev` in Debian 10 "buster" and Ubuntu 18.10 "cosmic".
 
 **Note for Ubuntu 14.04 LTS "trusty" users:** you will need to build from source and install GNU Radio manually, as explained below, since GNSS-SDR requires `gnuradio-dev` >= 3.7.3, and Ubuntu 14.04 came with 3.7.2. Install all the packages above BUT EXCEPT `libuhd-dev`, `gnuradio-dev` and `gr-osmosdr` (and remove them if they are already installed in your machine), and install those dependencies using PyBOMBS. The same applies to `libmatio-dev`: Ubuntu 14.04 came with 1.5.2 and the minimum required version is 1.5.3. Please do not install the `libmatio-dev` package and install `libtool`, `automake` and `libhdf5-dev` instead. A recent version of the library will be downloaded and built automatically if CMake does not find it installed.
 
@@ -85,7 +86,7 @@ $ sudo yum install make automake gcc gcc-c++ kernel-devel cmake git boost-devel 
        boost-date-time boost-system boost-filesystem boost-thread boost-chrono \
        boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel \
        blas-devel lapack-devel matio-devel armadillo-devel gflags-devel \
-       glog-devel openssl-devel libpcap-devel python-mako python-six
+       glog-devel openssl-devel libpcap-devel python-mako python-six pugixml-devel
 ~~~~~~
 
 Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
@@ -102,7 +103,7 @@ $ sudo yum install make automake gcc gcc-c++ kernel-devel libtool \
        hdf5-devel cmake git boost-devel boost-date-time boost-system \
        boost-filesystem boost-thread boost-chrono boost-serialization \
        log4cpp-devel gnuradio-devel gr-osmosdr-devel blas-devel lapack-devel \
-       armadillo-devel openssl-devel libpcap-devel python-mako python-six
+       armadillo-devel openssl-devel libpcap-devel python-mako python-six pugixml-devel
 ~~~~~~
 
 Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
@@ -113,7 +114,7 @@ If you are using Arch Linux (with base-devel group installed):
 
 ~~~~~~
 $ pacman -S cmake git boost boost-libs log4cpp libvolk gnuradio gnuradio-osmosdr \
-       blas lapack gflags google-glog openssl python2-mako python2-six \
+       blas lapack gflags google-glog openssl pugixml python-mako python-six \
        libmatio libpcap gtest
 ~~~~~~
 
@@ -186,9 +187,9 @@ $ sudo apt-get install libblas-dev liblapack-dev       # For Debian/Ubuntu/Linux
 $ sudo yum install lapack-devel blas-devel             # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
 $ sudo pacman -S blas lapack                           # For Arch Linux
-$ wget https://sourceforge.net/projects/arma/files/armadillo-8.500.1.tar.xz
-$ tar xvfz armadillo-8.500.1.tar.xz
-$ cd armadillo-8.500.1
+$ wget https://sourceforge.net/projects/arma/files/armadillo-9.100.5.tar.xz
+$ tar xvfz armadillo-9.100.5.tar.xz
+$ cd armadillo-9.100.5
 $ cmake .
 $ make
 $ sudo make install
@@ -201,9 +202,9 @@ The full stop separated from ```cmake``` by a space is important. [CMake](https:
 #### Install [Gflags](https://github.com/gflags/gflags "Gflags' Homepage"), a commandline flags processing module for C++:
 
 ~~~~~~
-$ wget https://github.com/gflags/gflags/archive/v2.2.1.tar.gz
-$ tar xvfz v2.2.1.tar.gz
-$ cd gflags-2.2.1
+$ wget https://github.com/gflags/gflags/archive/v2.2.2.tar.gz
+$ tar xvfz v2.2.2.tar.gz
+$ cd gflags-2.2.2
 $ cmake -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DBUILD_gflags_nothreads_LIB=OFF .
 $ make
 $ sudo make install
@@ -229,20 +230,20 @@ $ sudo ldconfig
 #### Build the [Google C++ Testing Framework](https://github.com/google/googletest "Googletest Homepage"), also known as Google Test:
 
 ~~~~~~
-$ wget https://github.com/google/googletest/archive/release-1.8.0.zip
-$ unzip release-1.8.0.zip
-$ cd googletest-release-1.8.0
-$ cmake -DBUILD_GTEST=ON -DBUILD_GMOCK=OFF .
+$ wget https://github.com/google/googletest/archive/release-1.8.1.zip
+$ unzip release-1.8.1.zip
+$ cd googletest-release-1.8.1
+$ cmake -DINSTALL_GTEST=OFF -DBUILD_GMOCK=OFF .
 $ make
 ~~~~~~
 
 Please **DO NOT install** Google Test (do *not* type ```sudo make install```). Every user needs to compile his tests using the same compiler flags used to compile the installed Google Test libraries; otherwise he may run into undefined behaviors (i.e. the tests can behave strangely and may even crash for no obvious reasons). The reason is that C++ has this thing called the One-Definition Rule: if two C++ source files contain different definitions of the same class/function/variable, and you link them together, you violate the rule. The linker may or may not catch the error (in many cases it is not required by the C++ standard to catch the violation). If it does not, you get strange run-time behaviors that are unexpected and hard to debug. If you compile Google Test and your test code using different compiler flags, they may see different definitions of the same class/function/variable (e.g. due to the use of ```#if``` in Google Test). Therefore, for your sanity, we recommend to avoid installing pre-compiled Google Test libraries. Instead, each project should compile Google Test itself such that it can be sure that the same flags are used for both Google Test and the tests. The building system of GNSS-SDR does the compilation and linking of googletest to its own tests; it is only required that you tell the system where the googletest folder that you downloaded resides. Just add to your ```$HOME/.bashrc``` file the following line:
 
 ~~~~~~
-export GTEST_DIR=/home/username/googletest-release-1.8.0/googletest
+export GTEST_DIR=/home/username/googletest-release-1.8.1/googletest
 ~~~~~~
 
-changing `/home/username/googletest-release-1.8.0/googletest` by the actual directory where you built googletest.
+changing `/home/username/googletest-release-1.8.1/googletest` by the actual directory where you built googletest.
 
 
 
@@ -516,10 +517,7 @@ More details can be found in our tutorial about [GNSS-SDR configuration options 
 <a name="macosx">macOS and Mac OS X</a>
 ---------
 
-
-### macOS 10.13 (High Sierra) and 10.12 (Sierra), Mac OS X 10.11 (El Capitan), 10.10 (Yosemite) and 10.9 (Mavericks).
-
-If you still have not installed [Xcode](https://developer.apple.com/xcode/ "Xcode"), do it now from the App Store (it's free). You will also need the Xcode Command Line Tools. Launch the Terminal, found in /Applications/Utilities/, and type:
+GNSS-SDR can be built on MacOS or Mac OS X, starting from 10.9 (Mavericks) and including 10.14 (Mojave). If you still have not installed [Xcode](https://developer.apple.com/xcode/ "Xcode"), do it now from the App Store (it's free). You will also need the Xcode Command Line Tools. Launch the Terminal, found in /Applications/Utilities/, and type:
 
 ~~~~~~
 $ xcode-select --install
@@ -550,6 +548,7 @@ $ sudo port install google-glog +gflags
 $ sudo port install py27-mako
 $ sudo port install py27-six
 $ sudo port install matio
+$ sudo port install pugixml
 ~~~~~~
 
 You also might need to activate a Python installation. The list of installed versions can be retrieved with:
@@ -558,7 +557,7 @@ You also might need to activate a Python installation. The list of installed ver
 $ port select list python
 ~~~~~~
 
-and you can activate a certain version (2.7 works well) by typing:
+and you can activate a certain version by typing:
 
 ~~~~~~
 $ sudo port select --set python python27
@@ -589,6 +588,7 @@ $ brew install armadillo
 $ brew install glog gflags gnutls
 $ brew install gnuradio
 $ brew install libmatio
+$ brew install pugixml
 $ pip install mako
 $ pip install six
 ~~~~~~

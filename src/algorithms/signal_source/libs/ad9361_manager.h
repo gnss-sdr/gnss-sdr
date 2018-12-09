@@ -33,6 +33,7 @@
 #ifndef GNSS_SDR_AD9361_MANAGER_H
 #define GNSS_SDR_AD9361_MANAGER_H
 
+#include <cstdint>
 #include <string>
 
 #ifdef __APPLE__
@@ -51,9 +52,9 @@ enum iodev
 /* common RX and TX streaming params */
 struct stream_cfg
 {
-    long long bw_hz;     // Analog banwidth in Hz
-    long long fs_hz;     // Baseband sample rate in Hz
-    long long lo_hz;     // Local oscillator frequency in Hz
+    int64_t bw_hz;       // Analog banwidth in Hz
+    int64_t fs_hz;       // Baseband sample rate in Hz
+    int64_t lo_hz;       // Local oscillator frequency in Hz
     const char *rfport;  // Port name
 };
 
@@ -61,8 +62,8 @@ struct stream_cfg
 /* check return value of attr_write function */
 void errchk(int v, const char *what);
 
-/* write attribute: long long int */
-void wr_ch_lli(struct iio_channel *chn, const char *what, long long val);
+/* write attribute: int64_t int */
+void wr_ch_lli(struct iio_channel *chn, const char *what, int64_t val);
 
 /* write attribute: string */
 void wr_ch_str(struct iio_channel *chn, const char *what, const char *str);
@@ -88,9 +89,9 @@ bool get_lo_chan(struct iio_context *ctx, enum iodev d, struct iio_channel **chn
 /* applies streaming configuration through IIO */
 bool cfg_ad9361_streaming_ch(struct iio_context *ctx, struct stream_cfg *cfg, enum iodev type, int chid);
 
-bool config_ad9361_rx_local(unsigned long bandwidth_,
-    unsigned long sample_rate_,
-    unsigned long freq_,
+bool config_ad9361_rx_local(uint64_t bandwidth_,
+    uint64_t sample_rate_,
+    uint64_t freq_,
     std::string rf_port_select_,
     std::string gain_mode_rx1_,
     std::string gain_mode_rx2_,
@@ -98,28 +99,28 @@ bool config_ad9361_rx_local(unsigned long bandwidth_,
     double rf_gain_rx2_);
 
 bool config_ad9361_rx_remote(std::string remote_host,
-    unsigned long bandwidth_,
-    unsigned long sample_rate_,
-    unsigned long freq_,
+    uint64_t bandwidth_,
+    uint64_t sample_rate_,
+    uint64_t freq_,
     std::string rf_port_select_,
     std::string gain_mode_rx1_,
     std::string gain_mode_rx2_,
     double rf_gain_rx1_,
     double rf_gain_rx2_);
 
-bool config_ad9361_lo_local(unsigned long bandwidth_,
-    unsigned long sample_rate_,
-    unsigned long freq_rf_tx_hz_,
+bool config_ad9361_lo_local(uint64_t bandwidth_,
+    uint64_t sample_rate_,
+    uint64_t freq_rf_tx_hz_,
     double tx_attenuation_db_,
-    long long freq_dds_tx_hz_,
+    int64_t freq_dds_tx_hz_,
     double scale_dds_dbfs_);
 
 bool config_ad9361_lo_remote(std::string remote_host,
-    unsigned long bandwidth_,
-    unsigned long sample_rate_,
-    unsigned long freq_rf_tx_hz_,
+    uint64_t bandwidth_,
+    uint64_t sample_rate_,
+    uint64_t freq_rf_tx_hz_,
     double tx_attenuation_db_,
-    long long freq_dds_tx_hz_,
+    int64_t freq_dds_tx_hz_,
     double scale_dds_dbfs_);
 
 

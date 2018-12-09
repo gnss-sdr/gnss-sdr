@@ -1,5 +1,5 @@
 /*!
- * \file GPS_L5i_PCPS_Acquisition.h
+ * \file gps_l5i_pcps_acquisition.h
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
  *  GPS L5i signals
  * \authors <ul>
@@ -38,7 +38,6 @@
 #include "gnss_synchro.h"
 #include "pcps_acquisition.h"
 #include "complex_byte_to_float_x2.h"
-#include <gnuradio/blocks/stream_to_vector.h>
 #include <gnuradio/blocks/float_to_complex.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <string>
@@ -54,7 +53,8 @@ class GpsL5iPcpsAcquisition : public AcquisitionInterface
 {
 public:
     GpsL5iPcpsAcquisition(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role,
+        unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~GpsL5iPcpsAcquisition();
@@ -134,10 +134,14 @@ public:
      */
     void set_state(int state) override;
 
+    /*!
+     * \brief Stop running acquisition
+     */
+    void stop_acquisition() override;
+
 private:
     ConfigurationInterface* configuration_;
     pcps_acquisition_sptr acquisition_;
-    gr::blocks::stream_to_vector::sptr stream_to_vector_;
     gr::blocks::float_to_complex::sptr float_to_complex_;
     complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
     size_t item_size_;
@@ -151,13 +155,14 @@ private:
     unsigned int doppler_max_;
     unsigned int doppler_step_;
     unsigned int max_dwells_;
-    long fs_in_;
+    int64_t fs_in_;
     bool dump_;
     bool blocking_;
     std::string dump_filename_;
     std::complex<float>* code_;
     Gnss_Synchro* gnss_synchro_;
     std::string role_;
+    unsigned int num_codes_;
     unsigned int in_streams_;
     unsigned int out_streams_;
 

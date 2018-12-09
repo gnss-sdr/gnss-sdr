@@ -45,8 +45,9 @@
 
 using google::LogMessage;
 
+
 GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
-    ConfigurationInterface* configuration, std::string role,
+    ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     Dll_Pll_Conf trk_param = Dll_Pll_Conf();
@@ -59,6 +60,21 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     trk_param.fs_in = fs_in;
     bool dump = configuration->property(role + ".dump", false);
     trk_param.dump = dump;
+    std::string default_dump_filename = "./track_ch";
+    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
+    trk_param.dump_filename = dump_filename;
+    bool dump_mat = configuration->property(role + ".dump_mat", true);
+    trk_param.dump_mat = dump_mat;
+    trk_param.high_dyn = configuration->property(role + ".high_dyn", false);
+    if (configuration->property(role + ".smoother_length", 10) < 1)
+        {
+            trk_param.smoother_length = 1;
+            std::cout << TEXT_RED << "WARNING: Gal. E1. smoother_length must be bigger than 0. It has been set to 1" << TEXT_RESET << std::endl;
+        }
+    else
+        {
+            trk_param.smoother_length = configuration->property(role + ".smoother_length", 10);
+        }
     float pll_bw_hz = configuration->property(role + ".pll_bw_hz", 5.0);
     if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
     trk_param.pll_bw_hz = pll_bw_hz;
@@ -95,9 +111,6 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
         }
     trk_param.track_pilot = track_pilot;
     trk_param.extend_correlation_symbols = extend_correlation_symbols;
-    std::string default_dump_filename = "./track_ch";
-    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
-    trk_param.dump_filename = dump_filename;
     int vector_length = std::round(fs_in / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS));
     trk_param.vector_length = vector_length;
     trk_param.system = 'E';
@@ -117,7 +130,7 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     trk_param.carrier_lock_th = carrier_lock_th;
 
     //################# MAKE TRACKING GNURadio object ###################
-    if (item_type.compare("gr_complex") == 0)
+    if (item_type == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             tracking_ = dll_pll_veml_make_tracking(trk_param);
@@ -141,7 +154,10 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
 }
 
 
-GalileoE1DllPllVemlTracking::~GalileoE1DllPllVemlTracking()
+GalileoE1DllPllVemlTracking::~GalileoE1DllPllVemlTracking() = default;
+
+
+void GalileoE1DllPllVemlTracking::stop_tracking()
 {
 }
 

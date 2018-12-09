@@ -131,6 +131,4 @@ Tracking_FLL_PLL_filter::Tracking_FLL_PLL_filter()
 }
 
 
-Tracking_FLL_PLL_filter::~Tracking_FLL_PLL_filter()
-{
-}
+Tracking_FLL_PLL_filter::~Tracking_FLL_PLL_filter() = default;

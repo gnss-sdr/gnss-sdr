@@ -48,7 +48,8 @@ class GpsL1CaPcpsOpenClAcquisition : public AcquisitionInterface
 {
 public:
     GpsL1CaPcpsOpenClAcquisition(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role,
+        unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~GpsL1CaPcpsOpenClAcquisition();
@@ -124,6 +125,11 @@ public:
     void reset() override;
     void set_state(int state __attribute__((unused))) override{};
 
+    /*!
+     * \brief Stop running acquisition
+     */
+    void stop_acquisition() override;
+
 private:
     ConfigurationInterface* configuration_;
     pcps_opencl_acquisition_cc_sptr acquisition_cc_;
@@ -139,7 +145,7 @@ private:
     unsigned int doppler_step_;
     unsigned int sampled_ms_;
     unsigned int max_dwells_;
-    long fs_in_;
+    int64_t fs_in_;
     bool dump_;
     std::string dump_filename_;
     std::complex<float>* code_;

@@ -43,7 +43,7 @@
 using google::LogMessage;
 
 GlonassL1CaTelemetryDecoder::GlonassL1CaTelemetryDecoder(ConfigurationInterface* configuration,
-    std::string role,
+    const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
                                 in_streams_(in_streams),
@@ -68,9 +68,7 @@ GlonassL1CaTelemetryDecoder::GlonassL1CaTelemetryDecoder(ConfigurationInterface*
 }
 
 
-GlonassL1CaTelemetryDecoder::~GlonassL1CaTelemetryDecoder()
-{
-}
+GlonassL1CaTelemetryDecoder::~GlonassL1CaTelemetryDecoder() = default;
 
 
 void GlonassL1CaTelemetryDecoder::set_satellite(const Gnss_Satellite& satellite)

@@ -61,8 +61,13 @@ typedef boost::shared_ptr<pcps_assisted_acquisition_cc>
     pcps_assisted_acquisition_cc_sptr;
 
 pcps_assisted_acquisition_cc_sptr
-pcps_make_assisted_acquisition_cc(int max_dwells, unsigned int sampled_ms,
-    int doppler_max, int doppler_min, long fs_in, int samples_per_ms,
+pcps_make_assisted_acquisition_cc(
+    int32_t max_dwells,
+    uint32_t sampled_ms,
+    int32_t doppler_max,
+    int32_t doppler_min,
+    int64_t fs_in,
+    int32_t samples_per_ms,
     bool dump, std::string dump_filename);
 
 /*!
@@ -75,20 +80,20 @@ class pcps_assisted_acquisition_cc : public gr::block
 {
 private:
     friend pcps_assisted_acquisition_cc_sptr
-    pcps_make_assisted_acquisition_cc(int max_dwells, unsigned int sampled_ms,
-        int doppler_max, int doppler_min, long fs_in,
-        int samples_per_ms, bool dump,
+    pcps_make_assisted_acquisition_cc(int32_t max_dwells, uint32_t sampled_ms,
+        int32_t doppler_max, int32_t doppler_min, int64_t fs_in,
+        int32_t samples_per_ms, bool dump,
         std::string dump_filename);
 
-    pcps_assisted_acquisition_cc(int max_dwells, unsigned int sampled_ms,
-        int doppler_max, int doppler_min, long fs_in,
-        int samples_per_ms, bool dump,
+    pcps_assisted_acquisition_cc(int32_t max_dwells, uint32_t sampled_ms,
+        int32_t doppler_max, int32_t doppler_min, int64_t fs_in,
+        int32_t samples_per_ms, bool dump,
         std::string dump_filename);
 
-    void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
-        int doppler_offset);
+    void calculate_magnitudes(gr_complex* fft_begin, int32_t doppler_shift,
+        int32_t doppler_offset);
 
-    int compute_and_accumulate_grid(gr_vector_const_void_star& input_items);
+    int32_t compute_and_accumulate_grid(gr_vector_const_void_star& input_items);
     float estimate_input_power(gr_vector_const_void_star& input_items);
     double search_maximum();
     void get_assistance();
@@ -96,23 +101,23 @@ private:
     void redefine_grid();
     void free_grid_memory();
 
-    long d_fs_in;
-    int d_samples_per_ms;
-    int d_max_dwells;
-    unsigned int d_doppler_resolution;
-    int d_gnuradio_forecast_samples;
+    int64_t d_fs_in;
+    int32_t d_samples_per_ms;
+    int32_t d_max_dwells;
+    uint32_t d_doppler_resolution;
+    int32_t d_gnuradio_forecast_samples;
     float d_threshold;
     std::string d_satellite_str;
-    int d_doppler_max;
-    int d_doppler_min;
-    int d_config_doppler_max;
-    int d_config_doppler_min;
+    int32_t d_doppler_max;
+    int32_t d_doppler_min;
+    int32_t d_config_doppler_max;
+    int32_t d_config_doppler_min;
 
-    int d_num_doppler_points;
-    int d_doppler_step;
-    unsigned int d_sampled_ms;
-    unsigned int d_fft_size;
-    unsigned long int d_sample_counter;
+    int32_t d_num_doppler_points;
+    int32_t d_doppler_step;
+    uint32_t d_sampled_ms;
+    uint32_t d_fft_size;
+    uint64_t d_sample_counter;
     gr_complex* d_carrier;
     gr_complex* d_fft_codes;
 
@@ -122,17 +127,17 @@ private:
     gr::fft::fft_complex* d_fft_if;
     gr::fft::fft_complex* d_ifft;
     Gnss_Synchro* d_gnss_synchro;
-    unsigned int d_code_phase;
+    uint32_t d_code_phase;
     float d_doppler_freq;
     float d_input_power;
     float d_test_statistics;
     std::ofstream d_dump_file;
-    int d_state;
+    int32_t d_state;
     bool d_active;
     bool d_disable_assist;
-    int d_well_count;
+    int32_t d_well_count;
     bool d_dump;
-    unsigned int d_channel;
+    uint32_t d_channel;
 
     std::string d_dump_filename;
 
@@ -155,7 +160,7 @@ public:
     /*!
      * \brief Returns the maximum peak of grid search.
      */
-    inline unsigned int mag() const
+    inline uint32_t mag() const
     {
         return d_test_statistics;
     }
@@ -185,7 +190,7 @@ public:
      * \brief Set acquisition channel unique ID
      * \param channel - receiver channel.
      */
-    inline void set_channel(unsigned int channel)
+    inline void set_channel(uint32_t channel)
     {
         d_channel = channel;
     }
@@ -204,7 +209,7 @@ public:
      * \brief Set maximum Doppler grid search
      * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
      */
-    inline void set_doppler_max(unsigned int doppler_max)
+    inline void set_doppler_max(uint32_t doppler_max)
     {
         d_doppler_max = doppler_max;
     }
@@ -213,7 +218,7 @@ public:
      * \brief Set Doppler steps for the grid search
      * \param doppler_step - Frequency bin of the search grid [Hz].
      */
-    void set_doppler_step(unsigned int doppler_step);
+    void set_doppler_step(uint32_t doppler_step);
 
     /*!
      * \brief Parallel Code Phase Search Acquisition signal processing.

@@ -34,7 +34,11 @@
 #include <gflags/gflags.h>
 #include <gnuradio/top_block.h>
 #include <gnuradio/analog/sig_source_waveform.h>
+#ifdef GR_GREATER_38
+#include <gnuradio/analog/sig_source.h>
+#else
 #include <gnuradio/analog/sig_source_c.h>
+#endif
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gtest/gtest.h>
@@ -58,9 +62,7 @@ protected:
         config = std::make_shared<InMemoryConfiguration>();
         nsamples = FLAGS_pb_filter_test_nsamples;
     }
-    ~PulseBlankingFilterTest()
-    {
-    }
+    ~PulseBlankingFilterTest() = default;
 
     void init();
     void configure_gr_complex_gr_complex();

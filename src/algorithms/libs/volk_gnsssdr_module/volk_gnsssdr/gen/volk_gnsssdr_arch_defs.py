@@ -25,7 +25,7 @@ import six
 archs = list()
 arch_dict = dict()
 
-class arch_class:
+class arch_class(object):
     def __init__(self, flags, checks, **kwargs):
         for key, cast, failval in (
             ('name', str, None),

@@ -71,9 +71,7 @@ direct_resampler_conditioner_cs::direct_resampler_conditioner_cs(
 }
 
 
-direct_resampler_conditioner_cs::~direct_resampler_conditioner_cs()
-{
-}
+direct_resampler_conditioner_cs::~direct_resampler_conditioner_cs() = default;
 
 
 void direct_resampler_conditioner_cs::forecast(int noutput_items,
@@ -93,8 +91,8 @@ int direct_resampler_conditioner_cs::general_work(int noutput_items,
     gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items)
 {
-    const lv_16sc_t *in = reinterpret_cast<const lv_16sc_t *>(input_items[0]);
-    lv_16sc_t *out = reinterpret_cast<lv_16sc_t *>(output_items[0]);
+    const auto *in = reinterpret_cast<const lv_16sc_t *>(input_items[0]);
+    auto *out = reinterpret_cast<lv_16sc_t *>(output_items[0]);
 
     int lcv = 0;
     int count = 0;

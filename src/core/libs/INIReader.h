@@ -48,6 +48,7 @@
 #ifndef __INIREADER_H__
 #define __INIREADER_H__
 
+#include <cstdint>
 #include <map>
 #include <string>
 
@@ -59,22 +60,22 @@ class INIReader
 {
 public:
     //! Construct INIReader and parse given filename. See ini.h for more info about the parsing.
-    INIReader(std::string filename);
+    INIReader(const std::string& filename);
 
     //! Return the result of ini_parse(), i.e., 0 on success, line number of first error on parse error, or -1 on file open error.
     int ParseError();
 
     //! Get a string value from INI file, returning default_value if not found.
-    std::string Get(std::string section, std::string name,
+    std::string Get(const std::string& section, const std::string& name,
         std::string default_value);
 
     //! Get an integer (long) value from INI file, returning default_value if not found.
-    long GetInteger(std::string section, std::string name, long default_value);
+    int64_t GetInteger(const std::string& section, const std::string& name, int64_t default_value);
 
 private:
     int _error;
     std::map<std::string, std::string> _values;
-    static std::string MakeKey(std::string section, std::string name);
+    static std::string MakeKey(const std::string& section, const std::string& name);
     static int ValueHandler(void* user, const char* section, const char* name,
         const char* value);
 };

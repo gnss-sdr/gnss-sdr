@@ -48,7 +48,8 @@ class GalileoE1PcpsTongAmbiguousAcquisition : public AcquisitionInterface
 {
 public:
     GalileoE1PcpsTongAmbiguousAcquisition(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role,
+        unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~GalileoE1PcpsTongAmbiguousAcquisition();
@@ -128,6 +129,11 @@ public:
      */
     void set_state(int state) override;
 
+    /*!
+     * \brief Stop running acquisition
+     */
+    void stop_acquisition() override;
+
 private:
     ConfigurationInterface* configuration_;
     pcps_tong_acquisition_cc_sptr acquisition_cc_;
@@ -144,7 +150,7 @@ private:
     unsigned int tong_init_val_;
     unsigned int tong_max_val_;
     unsigned int tong_max_dwells_;
-    long fs_in_;
+    int64_t fs_in_;
     bool dump_;
     std::string dump_filename_;
     std::complex<float>* code_;

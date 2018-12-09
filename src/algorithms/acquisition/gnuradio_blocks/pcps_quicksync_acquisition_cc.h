@@ -67,10 +67,14 @@ typedef boost::shared_ptr<pcps_quicksync_acquisition_cc>
     pcps_quicksync_acquisition_cc_sptr;
 
 pcps_quicksync_acquisition_cc_sptr
-pcps_quicksync_make_acquisition_cc(unsigned int folding_factor,
-    unsigned int sampled_ms, unsigned int max_dwells,
-    unsigned int doppler_max, long fs_in,
-    int samples_per_ms, int samples_per_code,
+pcps_quicksync_make_acquisition_cc(
+    uint32_t folding_factor,
+    uint32_t sampled_ms,
+    uint32_t max_dwells,
+    uint32_t doppler_max,
+    int64_t fs_in,
+    int32_t samples_per_ms,
+    int32_t samples_per_code,
     bool bit_transition_flag,
     bool dump,
     std::string dump_filename);
@@ -86,56 +90,56 @@ class pcps_quicksync_acquisition_cc : public gr::block
 {
 private:
     friend pcps_quicksync_acquisition_cc_sptr
-    pcps_quicksync_make_acquisition_cc(unsigned int folding_factor,
-        unsigned int sampled_ms, unsigned int max_dwells,
-        unsigned int doppler_max, long fs_in,
-        int samples_per_ms, int samples_per_code,
+    pcps_quicksync_make_acquisition_cc(uint32_t  folding_factor,
+        uint32_t  sampled_ms, uint32_t  max_dwells,
+        uint32_t  doppler_max, int64_t  fs_in,
+        int32_t samples_per_ms, int32_t samples_per_code,
         bool bit_transition_flag,
         bool dump,
         std::string dump_filename);
 
-    pcps_quicksync_acquisition_cc(unsigned int folding_factor,
-        unsigned int sampled_ms, unsigned int max_dwells,
-        unsigned int doppler_max, long fs_in,
-        int samples_per_ms, int samples_per_code,
+    pcps_quicksync_acquisition_cc(uint32_t  folding_factor,
+        uint32_t  sampled_ms, uint32_t  max_dwells,
+        uint32_t  doppler_max, int64_t  fs_in,
+        int32_t samples_per_ms, int32_t samples_per_code,
         bool bit_transition_flag,
         bool dump,
         std::string dump_filename);
 
-    void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
-        int doppler_offset);
+    void calculate_magnitudes(gr_complex* fft_begin, int32_t doppler_shift,
+        int32_t doppler_offset);
 
     gr_complex* d_code;
-    unsigned int d_folding_factor;  // also referred in the paper as 'p'
+    uint32_t  d_folding_factor;  // also referred in the paper as 'p'
     float* d_corr_acumulator;
-    unsigned int* d_possible_delay;
+    uint32_t * d_possible_delay;
     float* d_corr_output_f;
     float* d_magnitude_folded;
     gr_complex* d_signal_folded;
     gr_complex* d_code_folded;
     float d_noise_floor_power;
 
-    long d_fs_in;
-    int d_samples_per_ms;
-    int d_samples_per_code;
-    unsigned int d_doppler_resolution;
+    int64_t  d_fs_in;
+    int32_t d_samples_per_ms;
+    int32_t d_samples_per_code;
+    uint32_t  d_doppler_resolution;
     float d_threshold;
     std::string d_satellite_str;
-    unsigned int d_doppler_max;
-    unsigned int d_doppler_step;
-    unsigned int d_sampled_ms;
-    unsigned int d_max_dwells;
-    unsigned int d_well_count;
-    unsigned int d_fft_size;
-    unsigned long int d_sample_counter;
+    uint32_t  d_doppler_max;
+    uint32_t  d_doppler_step;
+    uint32_t  d_sampled_ms;
+    uint32_t  d_max_dwells;
+    uint32_t  d_well_count;
+    uint32_t  d_fft_size;
+    uint64_t d_sample_counter;
     gr_complex** d_grid_doppler_wipeoffs;
-    unsigned int d_num_doppler_bins;
+    uint32_t  d_num_doppler_bins;
     gr_complex* d_fft_codes;
     gr::fft::fft_complex* d_fft_if;
     gr::fft::fft_complex* d_fft_if2;
     gr::fft::fft_complex* d_ifft;
     Gnss_Synchro* d_gnss_synchro;
-    unsigned int d_code_phase;
+    uint32_t  d_code_phase;
     float d_doppler_freq;
     float d_mag;
     float* d_magnitude;
@@ -144,9 +148,9 @@ private:
     bool d_bit_transition_flag;
     std::ofstream d_dump_file;
     bool d_active;
-    int d_state;
+    int32_t d_state;
     bool d_dump;
-    unsigned int d_channel;
+    uint32_t  d_channel;
     std::string d_dump_filename;
 
 public:
@@ -168,7 +172,7 @@ public:
     /*!
      * \brief Returns the maximum peak of grid search.
      */
-    inline unsigned int mag() const
+    inline uint32_t  mag() const
     {
         return d_mag;
     }
@@ -199,13 +203,13 @@ public:
      * first available sample.
      * \param state - int=1 forces start of acquisition
      */
-    void set_state(int state);
+    void set_state(int32_t state);
 
     /*!
      * \brief Set acquisition channel unique ID
      * \param channel - receiver channel.
      */
-    inline void set_channel(unsigned int channel)
+    inline void set_channel(uint32_t  channel)
     {
         d_channel = channel;
     }
@@ -224,7 +228,7 @@ public:
      * \brief Set maximum Doppler grid search
      * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
      */
-    inline void set_doppler_max(unsigned int doppler_max)
+    inline void set_doppler_max(uint32_t  doppler_max)
     {
         d_doppler_max = doppler_max;
     }
@@ -233,7 +237,7 @@ public:
      * \brief Set Doppler steps for the grid search
      * \param doppler_step - Frequency bin of the search grid [Hz].
      */
-    inline void set_doppler_step(unsigned int doppler_step)
+    inline void set_doppler_step(uint32_t  doppler_step)
     {
         d_doppler_step = doppler_step;
     }

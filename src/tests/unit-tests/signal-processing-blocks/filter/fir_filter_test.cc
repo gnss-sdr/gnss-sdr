@@ -34,7 +34,11 @@
 #include <gflags/gflags.h>
 #include <gnuradio/top_block.h>
 #include <gnuradio/analog/sig_source_waveform.h>
+#ifdef GR_GREATER_38
+#include <gnuradio/analog/sig_source.h>
+#else
 #include <gnuradio/analog/sig_source_c.h>
+#endif
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gtest/gtest.h>
@@ -59,9 +63,7 @@ protected:
         item_size = sizeof(gr_complex);
         config = std::make_shared<InMemoryConfiguration>();
     }
-    ~FirFilterTest()
-    {
-    }
+    ~FirFilterTest() = default;
 
     void init();
     void configure_cbyte_cbyte();

@@ -33,22 +33,23 @@
 
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/block.h>
+#include <cstdint>
 
 class pulse_blanking_cc;
 
 typedef boost::shared_ptr<pulse_blanking_cc> pulse_blanking_cc_sptr;
 
-pulse_blanking_cc_sptr make_pulse_blanking_cc(float pfa, int length_, int n_segments_est, int n_segments_reset);
+pulse_blanking_cc_sptr make_pulse_blanking_cc(float pfa, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset);
 
 
 class pulse_blanking_cc : public gr::block
 {
 private:
-    int length_;
-    int n_segments;
-    int n_segments_est;
-    int n_segments_reset;
-    int n_deg_fred;
+    int32_t length_;
+    int32_t n_segments;
+    int32_t n_segments_est;
+    int32_t n_segments_reset;
+    int32_t n_deg_fred;
     bool last_filtered;
     float noise_power_estimation;
     float thres_;
@@ -56,7 +57,7 @@ private:
     gr_complex *zeros_;
 
 public:
-    pulse_blanking_cc(float pfa, int length_, int n_segments_est, int n_segments_reset);
+    pulse_blanking_cc(float pfa, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset);
 
     ~pulse_blanking_cc();
 

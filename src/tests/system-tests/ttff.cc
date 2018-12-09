@@ -135,7 +135,7 @@ void TtffTest::config_1()
     config->set_property("GNSS-SDR.SUPL_gps_acquisition_server", "supl.google.com");
     config->set_property("GNSS-SDR.SUPL_gps_acquisition_port", std::to_string(7275));
     config->set_property("GNSS-SDR.SUPL_MCC", std::to_string(244));
-    config->set_property("GNSS-SDR.SUPL_MNS", std::to_string(5));
+    config->set_property("GNSS-SDR.SUPL_MNC", std::to_string(5));
     config->set_property("GNSS-SDR.SUPL_LAC", "0x59e2");
     config->set_property("GNSS-SDR.SUPL_CI", "0x31b0");
 
@@ -398,7 +398,7 @@ void TtffTest::print_TTFF_report(const std::vector<double> &ttff_v, std::shared_
     stm << "Navigation mode: "
         << "3D" << std::endl;
 
-    if (source.compare("UHD_Signal_Source"))
+    if (source != "UHD_Signal_Source")
         {
             stm << "Source: File" << std::endl;
         }
@@ -417,7 +417,7 @@ void TtffTest::print_TTFF_report(const std::vector<double> &ttff_v, std::shared_
 }
 
 
-TEST_F(TtffTest, ColdStart)
+TEST_F(TtffTest /*unused*/, ColdStart /*unused*/)
 {
     unsigned int num_measurements = 0;
 
@@ -500,7 +500,7 @@ TEST_F(TtffTest, ColdStart)
 }
 
 
-TEST_F(TtffTest, HotStart)
+TEST_F(TtffTest /*unused*/, HotStart /*unused*/)
 {
     unsigned int num_measurements = 0;
     TTFF_v.clear();

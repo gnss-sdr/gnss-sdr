@@ -37,6 +37,8 @@
 
 #include "galileo_e1_tcp_connector_tracking.h"
 #include <glog/logging.h>
+
+#include <utility>
 #include "Galileo_E1.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
@@ -44,9 +46,10 @@
 
 using google::LogMessage;
 
+
 GalileoE1TcpConnectorTracking::GalileoE1TcpConnectorTracking(
-    ConfigurationInterface* configuration, std::string role,
-    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration, const std::string& role,
+    unsigned int in_streams, unsigned int out_streams) : role_(std::move(role)), in_streams_(in_streams), out_streams_(out_streams)
 {
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
@@ -77,7 +80,7 @@ GalileoE1TcpConnectorTracking::GalileoE1TcpConnectorTracking(
     vector_length = std::round(fs_in / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS));
 
     //################# MAKE TRACKING GNURadio object ###################
-    if (item_type.compare("gr_complex") == 0)
+    if (item_type == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             tracking_ = galileo_e1_tcp_connector_make_tracking_cc(
@@ -109,7 +112,10 @@ GalileoE1TcpConnectorTracking::GalileoE1TcpConnectorTracking(
 }
 
 
-GalileoE1TcpConnectorTracking::~GalileoE1TcpConnectorTracking()
+GalileoE1TcpConnectorTracking::~GalileoE1TcpConnectorTracking() = default;
+
+
+void GalileoE1TcpConnectorTracking::stop_tracking()
 {
 }
 

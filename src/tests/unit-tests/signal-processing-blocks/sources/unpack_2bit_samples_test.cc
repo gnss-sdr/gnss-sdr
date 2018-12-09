@@ -33,9 +33,14 @@
 
 #include <gtest/gtest.h>
 #include <gnuradio/top_block.h>
+#ifdef GR_GREATER_38
+#include <gnuradio/blocks/vector_source.h>
+#include <gnuradio/blocks/vector_sink.h>
+#else
 #include <gnuradio/blocks/vector_source_b.h>
 #include <gnuradio/blocks/vector_source_s.h>
 #include <gnuradio/blocks/vector_sink_b.h>
+#endif
 #include <gnuradio/blocks/stream_to_vector.h>
 #include "unpack_2bit_samples.h"
 
@@ -47,9 +52,9 @@ std::vector<uint8_t> packData(std::vector<int8_t> const &raw_data,
     int shift = (big_endian ? 6 : 0);
     unsigned int j = 0;
 
-    for (unsigned int i = 0; i < raw_data.size(); ++i)
+    for (signed char i : raw_data)
         {
-            unsigned val = static_cast<unsigned>((raw_data[i] - 1) / 2 & 0x03);
+            auto val = static_cast<unsigned>((i - 1) / 2 & 0x03);
 
             packed_data[j] |= val << shift;
 

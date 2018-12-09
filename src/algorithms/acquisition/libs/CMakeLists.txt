@@ -17,32 +17,42 @@
 #
 
 if(ENABLE_FPGA)
-   set(ACQUISITION_LIB_SOURCES fpga_acquisition.cc )
-   include_directories(
-     ${CMAKE_CURRENT_SOURCE_DIR}
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${VOLK_INCLUDE_DIRS}
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${VOLK_GNSSSDR_INCLUDE_DIRS}
-   )
-
-   file(GLOB ACQUISITION_LIB_HEADERS "*.h")
-endif(ENABLE_FPGA)
+    set(ACQUISITION_LIB_SOURCES fpga_acquisition.cc)
+    set(ACQUISITION_LIB_HEADERS fpga_acquisition.h)
+    include_directories(
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+        ${CMAKE_SOURCE_DIR}/src/core/receiver
+        ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+        ${VOLK_INCLUDE_DIRS}
+        ${GLOG_INCLUDE_DIRS}
+        ${GFlags_INCLUDE_DIRS}
+        ${VOLK_GNSSSDR_INCLUDE_DIRS}
+    )
+endif()
 
 set(ACQUISITION_LIB_HEADERS ${ACQUISITION_LIB_HEADERS} acq_conf.h)
-list(SORT ACQUISITION_LIB_HEADERS)
-
 set(ACQUISITION_LIB_SOURCES ${ACQUISITION_LIB_SOURCES} acq_conf.cc)
 
-add_library(acquisition_lib ${ACQUISITION_LIB_SOURCES} ${ACQUISITION_LIB_HEADERS})
+list(SORT ACQUISITION_LIB_HEADERS)
+list(SORT ACQUISITION_LIB_SOURCES)
+
+add_library(acquisition_lib
+    ${ACQUISITION_LIB_SOURCES}
+    ${ACQUISITION_LIB_HEADERS}
+)
+
 source_group(Headers FILES ${ACQUISITION_LIB_HEADERS})
-target_link_libraries(acquisition_lib ${VOLK_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES})
-if(VOLK_GNSSSDR_FOUND)
+
+target_link_libraries(acquisition_lib
+    ${VOLK_LIBRARIES}
+    ${VOLK_GNSSSDR_LIBRARIES}
+    ${GNURADIO_RUNTIME_LIBRARIES}
+)
+
+if(VOLKGNSSSDR_FOUND)
     add_dependencies(acquisition_lib glog-${glog_RELEASE})
-else(VOLK_GNSSSDR_FOUND)
+else()
     add_dependencies(acquisition_lib glog-${glog_RELEASE} volk_gnsssdr_module)
 endif()

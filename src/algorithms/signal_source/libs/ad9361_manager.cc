@@ -46,8 +46,8 @@ void errchk(int v, const char *what)
 }
 
 
-/* write attribute: long long int */
-void wr_ch_lli(struct iio_channel *chn, const char *what, long long val)
+/* write attribute: int64_t int */
+void wr_ch_lli(struct iio_channel *chn, const char *what, int64_t val)
 {
     errchk(iio_channel_attr_write_longlong(chn, what, val), what);
 }
@@ -176,9 +176,9 @@ bool cfg_ad9361_streaming_ch(struct iio_context *ctx, struct stream_cfg *cfg, en
 }
 
 
-bool config_ad9361_rx_local(unsigned long bandwidth_,
-    unsigned long sample_rate_,
-    unsigned long freq_,
+bool config_ad9361_rx_local(uint64_t bandwidth_,
+    uint64_t sample_rate_,
+    uint64_t freq_,
     std::string rf_port_select_,
     std::string gain_mode_rx1_,
     std::string gain_mode_rx2_,
@@ -292,9 +292,9 @@ bool config_ad9361_rx_local(unsigned long bandwidth_,
 
 
 bool config_ad9361_rx_remote(std::string remote_host,
-    unsigned long bandwidth_,
-    unsigned long sample_rate_,
-    unsigned long freq_,
+    uint64_t bandwidth_,
+    uint64_t sample_rate_,
+    uint64_t freq_,
     std::string rf_port_select_,
     std::string gain_mode_rx1_,
     std::string gain_mode_rx2_,
@@ -407,11 +407,11 @@ bool config_ad9361_rx_remote(std::string remote_host,
 }
 
 
-bool config_ad9361_lo_local(unsigned long bandwidth_,
-    unsigned long sample_rate_,
-    unsigned long freq_rf_tx_hz_,
+bool config_ad9361_lo_local(uint64_t bandwidth_,
+    uint64_t sample_rate_,
+    uint64_t freq_rf_tx_hz_,
     double tx_attenuation_db_,
-    long long freq_dds_tx_hz_,
+    int64_t freq_dds_tx_hz_,
     double scale_dds_dbfs_)
 {
     // TX stream config
@@ -476,13 +476,13 @@ bool config_ad9361_lo_local(unsigned long bandwidth_,
 
     //set frequency, scale and phase
 
-    ret = iio_channel_attr_write_longlong(dds_channel0_I, "frequency", (long long)freq_dds_tx_hz_);
+    ret = iio_channel_attr_write_longlong(dds_channel0_I, "frequency", static_cast<int64_t>(freq_dds_tx_hz_));
     if (ret < 0)
         {
             std::cout << "Failed to set TX DDS frequency I: " << ret << std::endl;
         }
 
-    ret = iio_channel_attr_write_longlong(dds_channel0_Q, "frequency", (long long)freq_dds_tx_hz_);
+    ret = iio_channel_attr_write_longlong(dds_channel0_Q, "frequency", static_cast<int64_t>(freq_dds_tx_hz_));
     if (ret < 0)
         {
             std::cout << "Failed to set TX DDS frequency Q: " << ret << std::endl;
@@ -544,11 +544,11 @@ bool config_ad9361_lo_local(unsigned long bandwidth_,
 
 
 bool config_ad9361_lo_remote(std::string remote_host,
-    unsigned long bandwidth_,
-    unsigned long sample_rate_,
-    unsigned long freq_rf_tx_hz_,
+    uint64_t bandwidth_,
+    uint64_t sample_rate_,
+    uint64_t freq_rf_tx_hz_,
     double tx_attenuation_db_,
-    long long freq_dds_tx_hz_,
+    int64_t freq_dds_tx_hz_,
     double scale_dds_dbfs_)
 {
     // TX stream config
@@ -613,13 +613,13 @@ bool config_ad9361_lo_remote(std::string remote_host,
 
     //set frequency, scale and phase
 
-    ret = iio_channel_attr_write_longlong(dds_channel0_I, "frequency", (long long)freq_dds_tx_hz_);
+    ret = iio_channel_attr_write_longlong(dds_channel0_I, "frequency", static_cast<int64_t>(freq_dds_tx_hz_));
     if (ret < 0)
         {
             std::cout << "Failed to set TX DDS frequency I: " << ret << std::endl;
         }
 
-    ret = iio_channel_attr_write_longlong(dds_channel0_Q, "frequency", (long long)freq_dds_tx_hz_);
+    ret = iio_channel_attr_write_longlong(dds_channel0_Q, "frequency", static_cast<int64_t>(freq_dds_tx_hz_));
     if (ret < 0)
         {
             std::cout << "Failed to set TX DDS frequency Q: " << ret << std::endl;

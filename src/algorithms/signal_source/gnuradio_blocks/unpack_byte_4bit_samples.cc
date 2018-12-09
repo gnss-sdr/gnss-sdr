@@ -47,17 +47,15 @@ unpack_byte_4bit_samples::unpack_byte_4bit_samples() : sync_interpolator("unpack
 }
 
 
-unpack_byte_4bit_samples::~unpack_byte_4bit_samples()
-{
-}
+unpack_byte_4bit_samples::~unpack_byte_4bit_samples() = default;
 
 
 int unpack_byte_4bit_samples::work(int noutput_items,
     gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items)
 {
-    const signed char *in = reinterpret_cast<const signed char *>(input_items[0]);
-    signed char *out = reinterpret_cast<signed char *>(output_items[0]);
+    const auto *in = reinterpret_cast<const signed char *>(input_items[0]);
+    auto *out = reinterpret_cast<signed char *>(output_items[0]);
     int n = 0;
     unsigned char tmp_char2;
     for (int i = 0; i < noutput_items / 2; i++)

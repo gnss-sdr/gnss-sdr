@@ -34,7 +34,7 @@
 
 Gps_Acq_Assist::Gps_Acq_Assist()
 {
-    i_satellite_PRN = 0;
+    i_satellite_PRN = 0U;
     d_TOW = 0.0;
     d_Doppler0 = 0.0;
     d_Doppler1 = 0.0;

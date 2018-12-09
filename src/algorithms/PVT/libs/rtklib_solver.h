@@ -60,6 +60,7 @@
 #include "gps_navigation_message.h"
 #include "gps_cnav_navigation_message.h"
 #include "glonass_gnav_navigation_message.h"
+#include "galileo_almanac.h"
 #include "gnss_synchro.h"
 #include "pvt_solution.h"
 #include <fstream>
@@ -76,13 +77,17 @@ private:
     rtk_t rtk_;
     std::string d_dump_filename;
     std::ofstream d_dump_file;
-    sol_t pvt_sol;
+    bool save_matfile();
+
     bool d_flag_dump_enabled;
+    bool d_flag_dump_mat_enabled;
     int d_nchannels;  // Number of available channels for positioning
     double dop_[4];
 
 public:
-    rtklib_solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, rtk_t& rtk);
+    sol_t pvt_sol;
+    ssat_t pvt_ssat[MAXSAT];
+    rtklib_solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, const rtk_t& rtk);
     ~rtklib_solver();
 
     bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, bool flag_averaging);
@@ -98,10 +103,11 @@ public:
 
     Galileo_Utc_Model galileo_utc_model;
     Galileo_Iono galileo_iono;
-    Galileo_Almanac galileo_almanac;
+    std::map<int, Galileo_Almanac> galileo_almanac_map;
 
     Gps_Utc_Model gps_utc_model;
     Gps_Iono gps_iono;
+    std::map<int, Gps_Almanac> gps_almanac_map;
 
     Gps_CNAV_Iono gps_cnav_iono;
     Gps_CNAV_Utc_Model gps_cnav_utc_model;

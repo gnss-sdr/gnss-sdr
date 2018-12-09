@@ -40,13 +40,13 @@
 class ConfigurationInterface;
 
 /*!
- * \brief This class implements a PvtInterface for Galileo E1
+ * \brief This class implements a PvtInterface for the RTKLIB PVT block
  */
 class RtklibPvt : public PvtInterface
 {
 public:
     RtklibPvt(ConfigurationInterface* configuration,
-        std::string role,
+        const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 
@@ -57,11 +57,17 @@ public:
         return role_;
     }
 
-    //!  Returns "RTKLIB_Pvt"
+    //!  Returns "RTKLIB_PVT"
     inline std::string implementation() override
     {
         return "RTKLIB_PVT";
     }
+
+    void clear_ephemeris() override;
+    std::map<int, Gps_Ephemeris> get_gps_ephemeris() const override;
+    std::map<int, Galileo_Ephemeris> get_galileo_ephemeris() const override;
+    std::map<int, Gps_Almanac> get_gps_almanac() const override;
+    std::map<int, Galileo_Almanac> get_galileo_almanac() const override;
 
     void connect(gr::top_block_sptr top_block) override;
     void disconnect(gr::top_block_sptr top_block) override;
@@ -79,16 +85,19 @@ public:
         return sizeof(gr_complex);
     }
 
+    bool get_latest_PVT(double* longitude_deg,
+        double* latitude_deg,
+        double* height_m,
+        double* ground_speed_kmh,
+        double* course_over_ground_deg,
+        time_t* UTC_time) override;
+
 private:
     rtklib_pvt_cc_sptr pvt_;
-    rtk_t rtk;
-    bool dump_;
-    std::string dump_filename_;
+    rtk_t rtk{};
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    std::string eph_xml_filename_;
-    bool save_assistance_to_XML();
 };
 
 #endif

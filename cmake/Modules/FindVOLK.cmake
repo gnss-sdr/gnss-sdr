@@ -16,28 +16,30 @@
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 
 ########################################################################
-# Find the library for the USRP Hardware Driver
+# Find VOLK (Vector-Optimized Library of Kernels)
 ########################################################################
 
 include(FindPkgConfig)
-pkg_check_modules(PC_UHD uhd)
+pkg_check_modules(PC_VOLK volk)
 
-find_path(UHD_INCLUDE_DIRS
-    NAMES uhd/config.hpp
-    HINTS $ENV{UHD_DIR}/include
-          ${PC_UHD_INCLUDEDIR}
+find_path(VOLK_INCLUDE_DIRS
+    NAMES volk/volk.h
+    HINTS $ENV{VOLK_DIR}/include
+          ${PC_VOLK_INCLUDEDIR}
     PATHS /usr/local/include
           /usr/include
-          ${GNURADIO_INSTALL_PREFIX}/include
-          ${UHD_ROOT}/include
-          $ENV{UHD_ROOT}/include
+          ${CMAKE_INSTALL_PREFIX}/include
+          ${VOLK_ROOT}/include
+          $ENV{VOLK_ROOT}/include
 )
 
-find_library(UHD_LIBRARIES
-    NAMES uhd
-    HINTS $ENV{UHD_DIR}/lib
-          ${PC_UHD_LIBDIR}
+find_library(VOLK_LIBRARIES
+    NAMES volk
+    HINTS $ENV{VOLK_DIR}/lib
+          ${PC_VOLK_LIBDIR}
     PATHS /usr/local/lib
+          /usr/local/lib64
+          /usr/lib
           /usr/lib/x86_64-linux-gnu
           /usr/lib/i386-linux-gnu
           /usr/lib/arm-linux-gnueabihf
@@ -62,14 +64,13 @@ find_library(UHD_LIBRARIES
           /usr/lib/x86_64-linux-gnux32
           /usr/lib/alpha-linux-gnu
           /usr/lib64
-          /usr/lib
-          ${GNURADIO_INSTALL_PREFIX}/lib
-          ${UHD_ROOT}/lib
-          $ENV{UHD_ROOT}/lib
-          ${UHD_ROOT}/lib64
-          $ENV{UHD_ROOT}/lib64
+          ${CMAKE_INSTALL_PREFIX}/lib
+          ${VOLK_ROOT}/lib
+          $ENV{VOLK_ROOT}/lib
+          ${VOLK_ROOT}/lib64
+          $ENV{VOLK_ROOT}/lib64
 )
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(UHD DEFAULT_MSG UHD_LIBRARIES UHD_INCLUDE_DIRS)
-mark_as_advanced(UHD_LIBRARIES UHD_INCLUDE_DIRS)
+find_package_handle_standard_args(VOLK DEFAULT_MSG VOLK_LIBRARIES VOLK_INCLUDE_DIRS)
+mark_as_advanced(VOLK_LIBRARIES VOLK_INCLUDE_DIRS VOLK_VERSION)

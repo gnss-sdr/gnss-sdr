@@ -74,10 +74,10 @@ private:
     int lac;
     int ci;
     // assistance protocol structure
-    supl_ctx_t ctx;
+    supl_ctx_t ctx{};
     // assistance data
-    supl_assist_t assist;
-    bool read_gal_almanac_from_gsa(const std::string file_name);
+    supl_assist_t assist{};
+    bool read_gal_almanac_from_gsa(const std::string& file_name);
 
 public:
     // SUPL SERVER INFO
@@ -127,18 +127,18 @@ public:
     /*!
      * \brief Read GPS NAV ephemeris map from XML file
      */
-    bool load_ephemeris_xml(const std::string file_name);
+    bool load_ephemeris_xml(const std::string& file_name);
 
     /*!
      * \brief Save ephemeris map to XML file.
      */
-    bool save_ephemeris_map_xml(const std::string file_name,
+    bool save_ephemeris_map_xml(const std::string& file_name,
         std::map<int, Gps_Ephemeris> eph_map);
 
     /*!
      * \brief Read GPS CNAV ephemeris map from XML file
      */
-    bool load_cnav_ephemeris_xml(const std::string file_name);
+    bool load_cnav_ephemeris_xml(const std::string& file_name);
 
     /*!
      * \brief Save GPS CNAV ephemeris map to XML file.
@@ -149,7 +149,7 @@ public:
     /*!
      * \brief Read Galileo ephemeris map from XML file
      */
-    bool load_gal_ephemeris_xml(const std::string file_name);
+    bool load_gal_ephemeris_xml(const std::string& file_name);
 
     /*!
      * \brief Save Galileo ephemeris map to XML file.
@@ -160,7 +160,7 @@ public:
     /*!
      * \brief Read GLONASS GNAV ephemeris map from XML file
      */
-    bool load_gnav_ephemeris_xml(const std::string file_name);
+    bool load_gnav_ephemeris_xml(const std::string& file_name);
 
     /*!
      * \brief Save GLONASS GNAV ephemeris map to XML file.
@@ -171,103 +171,103 @@ public:
     /*!
      * \brief Read GPS utc model from XML file
      */
-    bool load_utc_xml(const std::string file_name);
+    bool load_utc_xml(const std::string& file_name);
 
     /*!
      * \brief Save UTC model map to XML file
      */
-    bool save_utc_xml(const std::string file_name, Gps_Utc_Model& utc);
+    bool save_utc_xml(const std::string& file_name, Gps_Utc_Model& utc);
 
     /*!
      * \brief Read CNAV GPS utc model from XML file
      */
-    bool load_cnav_utc_xml(const std::string file_name);
+    bool load_cnav_utc_xml(const std::string& file_name);
 
     /*!
      * \brief Save CNAV UTC model map to XML file
      */
-    bool save_cnav_utc_xml(const std::string file_name, Gps_CNAV_Utc_Model& utc);
+    bool save_cnav_utc_xml(const std::string& file_name, Gps_CNAV_Utc_Model& utc);
 
     /*!
      * \brief Read Galileo utc model from XML file
      */
-    bool load_gal_utc_xml(const std::string file_name);
+    bool load_gal_utc_xml(const std::string& file_name);
 
     /*!
      * \brief Save Galileo UTC model map to XML file
      */
-    bool save_gal_utc_xml(const std::string file_name, Galileo_Utc_Model& utc);
+    bool save_gal_utc_xml(const std::string& file_name, Galileo_Utc_Model& utc);
 
     /*!
      * \brief Read Galileo almanac map from XML file
      */
-    bool load_gal_almanac_xml(const std::string file_name);
+    bool load_gal_almanac_xml(const std::string& file_name);
 
     /*!
      * \brief Save Galileo almanac map to XML file
      */
-    bool save_gal_almanac_xml(const std::string file_name, std::map<int, Galileo_Almanac> gal_almanac);
+    bool save_gal_almanac_xml(const std::string& file_name, std::map<int, Galileo_Almanac> gal_almanac);
 
     /*!
      * \brief Read GPS almanac map from XML file
      */
-    bool load_gps_almanac_xml(const std::string file_name);
+    bool load_gps_almanac_xml(const std::string& file_name);
 
     /*!
      * \brief Save GPS almanac map to XML file
      */
-    bool save_gps_almanac_xml(const std::string file_name, std::map<int, Gps_Almanac> gps_almanac_map);
+    bool save_gps_almanac_xml(const std::string& file_name, std::map<int, Gps_Almanac> gps_almanac_map);
 
     /*!
      * \brief Read iono from XML file
      */
-    bool load_iono_xml(const std::string file_name);
+    bool load_iono_xml(const std::string& file_name);
 
     /*!
      * \brief Save iono map to XML file
      */
-    bool save_iono_xml(const std::string file_name, Gps_Iono& iono);
+    bool save_iono_xml(const std::string& file_name, Gps_Iono& iono);
 
     /*!
      * \brief Read Galileo iono from XML file
      */
-    bool load_gal_iono_xml(const std::string file_name);
+    bool load_gal_iono_xml(const std::string& file_name);
 
     /*!
      * \brief Save Galileo iono map to XML file
      */
-    bool save_gal_iono_xml(const std::string file_name, Galileo_Iono& iono);
+    bool save_gal_iono_xml(const std::string& file_name, Galileo_Iono& iono);
 
     /*!
      * \brief Read Glonass utc model from XML file
      */
-    bool load_glo_utc_xml(const std::string file_name);
+    bool load_glo_utc_xml(const std::string& file_name);
 
     /*!
      * \brief Save Glonass UTC model map to XML file
      */
-    bool save_glo_utc_xml(const std::string file_name, Glonass_Gnav_Utc_Model& utc);
+    bool save_glo_utc_xml(const std::string& file_name, Glonass_Gnav_Utc_Model& utc);
 
     /*!
      * \brief Read ref time from XML file
      */
-    bool load_ref_time_xml(const std::string file_name);
+    bool load_ref_time_xml(const std::string& file_name);
 
     /*!
      * \brief Save ref time map to XML file
      */
-    bool save_ref_time_xml(const std::string file_name,
+    bool save_ref_time_xml(const std::string& file_name,
         Agnss_Ref_Time& ref_time_map);
 
     /*!
      * \brief Read ref location from XML file
      */
-    bool load_ref_location_xml(const std::string file_name);
+    bool load_ref_location_xml(const std::string& file_name);
 
     /*!
      * \brief Save ref location map to XML file
      */
-    bool save_ref_location_xml(std::string file_name,
+    bool save_ref_location_xml(const std::string& file_name,
         Agnss_Ref_Location& ref_location);
 
     /*

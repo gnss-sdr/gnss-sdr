@@ -59,26 +59,27 @@
 #include "GLONASS_L1_L2_CA.h"
 #include <matio.h>
 #include <glog/logging.h>
+#include <utility>
 
 
 using google::LogMessage;
 
-rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, rtk_t &rtk)
+rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, const rtk_t &rtk)
 {
     // init empty ephemeris for all the available GNSS channels
     d_nchannels = nchannels;
-    d_dump_filename = dump_filename;
+    d_dump_filename = std::move(dump_filename);
     d_flag_dump_enabled = flag_dump_to_file;
     d_flag_dump_mat_enabled = flag_dump_to_mat;
     count_valid_position = 0;
     this->set_averaging_flag(false);
     rtk_ = rtk;
-    for (unsigned int i = 0; i < 4; i++) dop_[i] = 0.0;
+    for (double &i : dop_) i = 0.0;
     pvt_sol = {{0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, '0', '0', '0', 0, 0, 0};
     ssat_t ssat0 = {0, 0, {0.0}, {0.0}, {0.0}, {'0'}, {'0'}, {'0'}, {'0'}, {'0'}, {}, {}, {}, {}, 0.0, 0.0, 0.0, 0.0, {{{0, 0}}, {{0, 0}}}, {{}, {}}};
-    for (unsigned int i = 0; i < MAXSAT; i++)
+    for (auto &i : pvt_ssat)
         {
-            pvt_ssat[i] = ssat0;
+            i = ssat0;
         }
     // ############# ENABLE DATA FILE LOG #################
     if (d_flag_dump_enabled == true)
@@ -137,34 +138,34 @@ bool rtklib_solver::save_matfile()
             return false;
         }
 
-    uint32_t *TOW_at_current_symbol_ms = new uint32_t[num_epoch];
-    uint32_t *week = new uint32_t[num_epoch];
-    double *RX_time = new double[num_epoch];
-    double *user_clk_offset = new double[num_epoch];
-    double *pos_x = new double[num_epoch];
-    double *pos_y = new double[num_epoch];
-    double *pos_z = new double[num_epoch];
-    double *vel_x = new double[num_epoch];
-    double *vel_y = new double[num_epoch];
-    double *vel_z = new double[num_epoch];
-    double *cov_xx = new double[num_epoch];
-    double *cov_yy = new double[num_epoch];
-    double *cov_zz = new double[num_epoch];
-    double *cov_xy = new double[num_epoch];
-    double *cov_yz = new double[num_epoch];
-    double *cov_zx = new double[num_epoch];
-    double *latitude = new double[num_epoch];
-    double *longitude = new double[num_epoch];
-    double *height = new double[num_epoch];
-    uint8_t *valid_sats = new uint8_t[num_epoch];
-    uint8_t *solution_status = new uint8_t[num_epoch];
-    uint8_t *solution_type = new uint8_t[num_epoch];
-    float *AR_ratio_factor = new float[num_epoch];
-    float *AR_ratio_threshold = new float[num_epoch];
-    double *gdop = new double[num_epoch];
-    double *pdop = new double[num_epoch];
-    double *hdop = new double[num_epoch];
-    double *vdop = new double[num_epoch];
+    auto *TOW_at_current_symbol_ms = new uint32_t[num_epoch];
+    auto *week = new uint32_t[num_epoch];
+    auto *RX_time = new double[num_epoch];
+    auto *user_clk_offset = new double[num_epoch];
+    auto *pos_x = new double[num_epoch];
+    auto *pos_y = new double[num_epoch];
+    auto *pos_z = new double[num_epoch];
+    auto *vel_x = new double[num_epoch];
+    auto *vel_y = new double[num_epoch];
+    auto *vel_z = new double[num_epoch];
+    auto *cov_xx = new double[num_epoch];
+    auto *cov_yy = new double[num_epoch];
+    auto *cov_zz = new double[num_epoch];
+    auto *cov_xy = new double[num_epoch];
+    auto *cov_yz = new double[num_epoch];
+    auto *cov_zx = new double[num_epoch];
+    auto *latitude = new double[num_epoch];
+    auto *longitude = new double[num_epoch];
+    auto *height = new double[num_epoch];
+    auto *valid_sats = new uint8_t[num_epoch];
+    auto *solution_status = new uint8_t[num_epoch];
+    auto *solution_type = new uint8_t[num_epoch];
+    auto *AR_ratio_factor = new float[num_epoch];
+    auto *AR_ratio_threshold = new float[num_epoch];
+    auto *gdop = new double[num_epoch];
+    auto *pdop = new double[num_epoch];
+    auto *hdop = new double[num_epoch];
+    auto *vdop = new double[num_epoch];
 
     try
         {
@@ -245,8 +246,8 @@ bool rtklib_solver::save_matfile()
     std::string filename = dump_filename;
     filename.erase(filename.length() - 4, 4);
     filename.append(".mat");
-    matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
-    if (reinterpret_cast<int64_t *>(matfp) != NULL)
+    matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT73);
+    if (reinterpret_cast<int64_t *>(matfp) != nullptr)
         {
             size_t dims[2] = {1, static_cast<size_t>(num_epoch)};
             matvar = Mat_VarCreate("TOW_at_current_symbol_ms", MAT_C_UINT32, MAT_T_UINT32, 2, dims, TOW_at_current_symbol_ms, 0);
@@ -473,11 +474,11 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                 case 'G':
                     {
                         std::string sig_(gnss_observables_iter->second.Signal);
-                        if (sig_.compare("1C") == 0)
+                        if (sig_ == "1C")
                             {
                                 band1 = true;
                             }
-                        if (sig_.compare("2S") == 0)
+                        if (sig_ == "2S")
                             {
                                 band2 = true;
                             }
@@ -500,7 +501,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     {
                         std::string sig_(gnss_observables_iter->second.Signal);
                         // Galileo E1
-                        if (sig_.compare("1B") == 0)
+                        if (sig_ == "1B")
                             {
                                 // 1 Gal - find the ephemeris for the current GALILEO SV observation. The SV PRN ID is the map key
                                 galileo_ephemeris_iter = galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
@@ -523,7 +524,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             }
 
                         // Galileo E5
-                        if (sig_.compare("5X") == 0)
+                        if (sig_ == "5X")
                             {
                                 // 1 Gal - find the ephemeris for the current GALILEO SV observation. The SV PRN ID is the map key
                                 galileo_ephemeris_iter = galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
@@ -548,7 +549,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 // convert ephemeris from GNSS-SDR class to RTKLIB structure
                                                 eph_data[valid_obs] = eph_to_rtklib(galileo_ephemeris_iter->second);
                                                 // convert observation from GNSS-SDR class to RTKLIB structure
-                                                unsigned char default_code_ = static_cast<unsigned char>(CODE_NONE);
+                                                auto default_code_ = static_cast<unsigned char>(CODE_NONE);
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
                                                     {default_code_, default_code_, default_code_},
                                                     {}, {0.0, 0.0, 0.0}, {}};
@@ -571,7 +572,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                         // GPS L1
                         // 1 GPS - find the ephemeris for the current GPS SV observation. The SV PRN ID is the map key
                         std::string sig_(gnss_observables_iter->second.Signal);
-                        if (sig_.compare("1C") == 0)
+                        if (sig_ == "1C")
                             {
                                 gps_ephemeris_iter = gps_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                 if (gps_ephemeris_iter != gps_ephemeris_map.cend())
@@ -592,7 +593,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     }
                             }
                         // GPS L2 (todo: solve NAV/CNAV clash)
-                        if ((sig_.compare("2S") == 0) and (gps_dual_band == false))
+                        if ((sig_ == "2S") and (gps_dual_band == false))
                             {
                                 gps_cnav_ephemeris_iter = gps_cnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                 if (gps_cnav_ephemeris_iter != gps_cnav_ephemeris_map.cend())
@@ -624,7 +625,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 // convert ephemeris from GNSS-SDR class to RTKLIB structure
                                                 eph_data[valid_obs] = eph_to_rtklib(gps_cnav_ephemeris_iter->second);
                                                 // convert observation from GNSS-SDR class to RTKLIB structure
-                                                unsigned char default_code_ = static_cast<unsigned char>(CODE_NONE);
+                                                auto default_code_ = static_cast<unsigned char>(CODE_NONE);
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
                                                     {default_code_, default_code_, default_code_},
                                                     {}, {0.0, 0.0, 0.0}, {}};
@@ -641,7 +642,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     }
                             }
                         // GPS L5
-                        if (sig_.compare("L5") == 0)
+                        if (sig_ == "L5")
                             {
                                 gps_cnav_ephemeris_iter = gps_cnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                 if (gps_cnav_ephemeris_iter != gps_cnav_ephemeris_map.cend())
@@ -671,7 +672,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 // convert ephemeris from GNSS-SDR class to RTKLIB structure
                                                 eph_data[valid_obs] = eph_to_rtklib(gps_cnav_ephemeris_iter->second);
                                                 // convert observation from GNSS-SDR class to RTKLIB structure
-                                                unsigned char default_code_ = static_cast<unsigned char>(CODE_NONE);
+                                                auto default_code_ = static_cast<unsigned char>(CODE_NONE);
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
                                                     {default_code_, default_code_, default_code_},
                                                     {}, {0.0, 0.0, 0.0}, {}};
@@ -693,7 +694,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     {
                         std::string sig_(gnss_observables_iter->second.Signal);
                         // GLONASS GNAV L1
-                        if (sig_.compare("1G") == 0)
+                        if (sig_ == "1G")
                             {
                                 // 1 Glo - find the ephemeris for the current GLONASS SV observation. The SV Slot Number (PRN ID) is the map key
                                 glonass_gnav_ephemeris_iter = glonass_gnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
@@ -715,7 +716,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     }
                             }
                         // GLONASS GNAV L2
-                        if (sig_.compare("2G") == 0)
+                        if (sig_ == "2G")
                             {
                                 // 1 GLONASS - find the ephemeris for the current GLONASS SV observation. The SV PRN ID is the map key
                                 glonass_gnav_ephemeris_iter = glonass_gnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
@@ -775,11 +776,11 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
             nav_data.n = valid_obs;
             nav_data.ng = glo_valid_obs;
 
-            for (int i = 0; i < MAXSAT; i++)
+            for (auto &i : nav_data.lam)
                 {
-                    nav_data.lam[i][0] = SPEED_OF_LIGHT / FREQ1;  // L1/E1
-                    nav_data.lam[i][1] = SPEED_OF_LIGHT / FREQ2;  // L2
-                    nav_data.lam[i][2] = SPEED_OF_LIGHT / FREQ5;  // L5/E5
+                    i[0] = SPEED_OF_LIGHT / FREQ1;  // L1/E1
+                    i[1] = SPEED_OF_LIGHT / FREQ2;  // L2
+                    i[2] = SPEED_OF_LIGHT / FREQ5;  // L5/E5
                 }
 
             result = rtkpos(&rtk_, obs_data, valid_obs + glo_valid_obs, &nav_data);
@@ -809,12 +810,12 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     std::vector<double> azel;
                     azel.reserve(used_sats * 2);
                     unsigned int index_aux = 0;
-                    for (unsigned int i = 0; i < MAXSAT; i++)
+                    for (auto &i : rtk_.ssat)
                         {
-                            if (rtk_.ssat[i].vs == 1)
+                            if (i.vs == 1)
                                 {
-                                    azel[2 * index_aux] = rtk_.ssat[i].azel[0];
-                                    azel[2 * index_aux + 1] = rtk_.ssat[i].azel[1];
+                                    azel[2 * index_aux] = i.azel[0];
+                                    azel[2 * index_aux + 1] = i.azel[1];
                                     index_aux++;
                                 }
                         }

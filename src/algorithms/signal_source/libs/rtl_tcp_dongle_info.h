@@ -42,7 +42,7 @@
 class rtl_tcp_dongle_info
 {
 private:
-    char magic_[4];
+    char magic_[4]{};
     uint32_t tuner_type_;
     uint32_t tuner_gain_count_;
 

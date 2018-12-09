@@ -597,7 +597,7 @@ private:
     class Rtcm_Listener
     {
     public:
-        virtual ~Rtcm_Listener() {}
+        virtual ~Rtcm_Listener() = default;
         virtual void deliver(const Rtcm_Message& msg) = 0;
     };
 
@@ -854,7 +854,7 @@ private:
                     std::string message;
                     Rtcm_Message msg;
                     queue_->wait_and_pop(message);  //message += '\n';
-                    if (message.compare("Goodbye") == 0) break;
+                    if (message == "Goodbye") break;
                     const char* char_msg = message.c_str();
                     msg.body_length(message.length());
                     std::memcpy(msg.body(), char_msg, msg.body_length());

@@ -41,7 +41,7 @@
 #include <iostream>
 
 
-typedef boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false> CRC_Galileo_FNAV_type;
+using CRC_Galileo_FNAV_type = boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false>;
 
 void Galileo_Fnav_Message::reset()
 {
@@ -84,7 +84,7 @@ void Galileo_Fnav_Message::reset()
     FNAV_region4_1 = false;
     FNAV_region5_1 = false;
     FNAV_BGD_1 = 0.0;
-    FNAV_E5ahs_1 = 0.0;
+    FNAV_E5ahs_1 = 0;
     FNAV_WN_1 = 0.0;
     FNAV_TOW_1 = 0.0;
     FNAV_E5advs_1 = false;
@@ -134,8 +134,8 @@ void Galileo_Fnav_Message::reset()
 
     // WORD 5 Almanac (SVID1 and SVID2(1/2)), Week Number and almanac reference time
     FNAV_IODa_5 = 0;
-    FNAV_WNa_5 = 0.0;
-    FNAV_t0a_5 = 0.0;
+    FNAV_WNa_5 = 0;
+    FNAV_t0a_5 = 0;
     FNAV_SVID1_5 = 0;
     FNAV_Deltaa12_1_5 = 0.0;
     FNAV_e_1_5 = 0.0;
@@ -160,7 +160,7 @@ void Galileo_Fnav_Message::reset()
     FNAV_M0_2_6 = 0.0;
     FNAV_af0_2_6 = 0.0;
     FNAV_af1_2_6 = 0.0;
-    FNAV_E5ahs_2_6 = 0.0;
+    FNAV_E5ahs_2_6 = 0;
     FNAV_SVID3_6 = 0;
     FNAV_Deltaa12_3_6 = 0.0;
     FNAV_e_3_6 = 0.0;
@@ -171,7 +171,7 @@ void Galileo_Fnav_Message::reset()
     FNAV_M0_3_6 = 0.0;
     FNAV_af0_3_6 = 0.0;
     FNAV_af1_3_6 = 0.0;
-    FNAV_E5ahs_3_6 = 0.0;
+    FNAV_E5ahs_3_6 = 0;
 }
 
 
@@ -181,7 +181,7 @@ Galileo_Fnav_Message::Galileo_Fnav_Message()
 }
 
 
-void Galileo_Fnav_Message::split_page(std::string page_string)
+void Galileo_Fnav_Message::split_page(const std::string& page_string)
 {
     std::string message_word = page_string.substr(0, 214);
     std::string CRC_data = page_string.substr(214, 24);
@@ -224,14 +224,12 @@ bool Galileo_Fnav_Message::_CRC_test(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> b
         {
             return true;
         }
-    else
-        {
-            return false;
-        }
+
+    return false;
 }
 
 
-void Galileo_Fnav_Message::decode_page(std::string data)
+void Galileo_Fnav_Message::decode_page(const std::string& data)
 {
     std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> data_bits(data);
     page_type = read_navigation_unsigned(data_bits, FNAV_PAGE_TYPE_bit);
@@ -346,8 +344,8 @@ void Galileo_Fnav_Message::decode_page(std::string data)
             break;
         case 5:  // Almanac (SVID1 and SVID2(1/2)), Week Number and almanac reference time
             FNAV_IODa_5 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_IODa_5_bit));
-            FNAV_WNa_5 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_WNa_5_bit));
-            FNAV_t0a_5 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_t0a_5_bit));
+            FNAV_WNa_5 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_WNa_5_bit));
+            FNAV_t0a_5 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_t0a_5_bit));
             FNAV_t0a_5 *= FNAV_t0a_5_LSB;
             FNAV_SVID1_5 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_SVID1_5_bit));
             FNAV_Deltaa12_1_5 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Deltaa12_1_5_bit));
@@ -368,7 +366,7 @@ void Galileo_Fnav_Message::decode_page(std::string data)
             FNAV_af0_1_5 *= FNAV_af0_5_LSB;
             FNAV_af1_1_5 = static_cast<double>(read_navigation_signed(data_bits, FNAV_af1_1_5_bit));
             FNAV_af1_1_5 *= FNAV_af1_5_LSB;
-            FNAV_E5ahs_1_5 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_E5ahs_1_5_bit));
+            FNAV_E5ahs_1_5 = static_cast<uint32_t>(read_navigation_unsigned(data_bits, FNAV_E5ahs_1_5_bit));
             FNAV_SVID2_5 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_SVID2_5_bit));
             FNAV_Deltaa12_2_5 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Deltaa12_2_5_bit));
             FNAV_Deltaa12_2_5 *= FNAV_Deltaa12_5_LSB;
@@ -404,7 +402,7 @@ void Galileo_Fnav_Message::decode_page(std::string data)
             FNAV_af0_2_6 *= FNAV_af0_5_LSB;
             FNAV_af1_2_6 = static_cast<double>(read_navigation_signed(data_bits, FNAV_af1_2_6_bit));
             FNAV_af1_2_6 *= FNAV_af1_5_LSB;
-            FNAV_E5ahs_2_6 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_E5ahs_2_6_bit));
+            FNAV_E5ahs_2_6 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_E5ahs_2_6_bit));
             FNAV_SVID3_6 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_SVID3_6_bit));
             FNAV_Deltaa12_3_6 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Deltaa12_3_6_bit));
             FNAV_Deltaa12_3_6 *= FNAV_Deltaa12_5_LSB;
@@ -424,7 +422,7 @@ void Galileo_Fnav_Message::decode_page(std::string data)
             FNAV_af0_3_6 *= FNAV_af0_5_LSB;
             FNAV_af1_3_6 = static_cast<double>(read_navigation_signed(data_bits, FNAV_af1_3_6_bit));
             FNAV_af1_3_6 *= FNAV_af1_5_LSB;
-            FNAV_E5ahs_3_6 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_E5ahs_3_6_bit));
+            FNAV_E5ahs_3_6 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_E5ahs_3_6_bit));
 
             flag_almanac_2 = true;
             break;
@@ -432,7 +430,7 @@ void Galileo_Fnav_Message::decode_page(std::string data)
 }
 
 
-uint64_t Galileo_Fnav_Message::read_navigation_unsigned(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter)
+uint64_t Galileo_Fnav_Message::read_navigation_unsigned(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter)
 {
     uint64_t value = 0ULL;
     int num_of_slices = parameter.size();
@@ -441,7 +439,7 @@ uint64_t Galileo_Fnav_Message::read_navigation_unsigned(std::bitset<GALILEO_FNAV
             for (int j = 0; j < parameter[i].second; j++)
                 {
                     value <<= 1;  // shift left
-                    if (bits[GALILEO_FNAV_DATA_FRAME_BITS - parameter[i].first - j] == 1)
+                    if (static_cast<int>(bits[GALILEO_FNAV_DATA_FRAME_BITS - parameter[i].first - j]) == 1)
                         {
                             value += 1;  // insert the bit
                         }
@@ -451,13 +449,13 @@ uint64_t Galileo_Fnav_Message::read_navigation_unsigned(std::bitset<GALILEO_FNAV
 }
 
 
-int64_t Galileo_Fnav_Message::read_navigation_signed(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter)
+int64_t Galileo_Fnav_Message::read_navigation_signed(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter)
 {
     int64_t value = 0LL;
     int num_of_slices = parameter.size();
 
     // read the MSB and perform the sign extension
-    if (bits[GALILEO_FNAV_DATA_FRAME_BITS - parameter[0].first] == 1)
+    if (static_cast<int>(bits[GALILEO_FNAV_DATA_FRAME_BITS - parameter[0].first]) == 1)
         {
             value ^= 0x0FFFFFFFFFFFFFFF;  // 64 bits variable
         }
@@ -472,7 +470,7 @@ int64_t Galileo_Fnav_Message::read_navigation_signed(std::bitset<GALILEO_FNAV_DA
                 {
                     value <<= 1;                  // shift left
                     value &= 0xFFFFFFFFFFFFFFFE;  // reset the corresponding bit (for the 64 bits variable)
-                    if (bits[GALILEO_FNAV_DATA_FRAME_BITS - parameter[i].first - j] == 1)
+                    if (static_cast<int>(bits[GALILEO_FNAV_DATA_FRAME_BITS - parameter[i].first - j]) == 1)
                         {
                             value += 1;  // insert the bit
                         }
@@ -498,13 +496,8 @@ bool Galileo_Fnav_Message::have_new_ephemeris()  // Check if we have a new ephem
                     std::cout << "Batch number: " << IOD_ephemeris << std::endl;
                     return true;
                 }
-            else
-                {
-                    return false;
-                }
         }
-    else
-        return false;
+    return false;
 }
 
 
@@ -513,10 +506,12 @@ bool Galileo_Fnav_Message::have_new_iono_and_GST()  // Check if we have a new io
     if ((flag_iono_and_GST == true) and (flag_utc_model == true))  // the condition on flag_utc_model is added to have a time stamp for iono
         {
             flag_iono_and_GST = false;  // clear the flag
-            return true;
         }
     else
-        return false;
+        {
+            return false;
+        }
+    return true;
 }
 
 
@@ -525,10 +520,12 @@ bool Galileo_Fnav_Message::have_new_utc_model()  // Check if we have a new utc d
     if (flag_utc_model == true)
         {
             flag_utc_model = false;  // clear the flag
-            return true;
         }
     else
-        return false;
+        {
+            return false;
+        }
+    return true;
 }
 
 
@@ -540,10 +537,12 @@ bool Galileo_Fnav_Message::have_new_almanac()  // Check if we have a new almanac
             flag_almanac_1 = false;
             flag_almanac_2 = false;
             flag_all_almanac = true;
-            return true;
         }
     else
-        return false;
+        {
+            return false;
+        }
+    return true;
 }
 
 

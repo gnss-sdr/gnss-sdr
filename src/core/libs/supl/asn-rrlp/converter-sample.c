@@ -788,7 +788,7 @@ static int argument_is_stdin(char *av[], int idx) {
 static FILE *argument_to_file(char *av[], int idx) {
 	return argument_is_stdin(av, idx)
 		? stdin
-		: fopen(av[idx], "r");
+		: fopen(av[idx], "re");
 }
 
 static char *argument_to_name(char *av[], int idx) {

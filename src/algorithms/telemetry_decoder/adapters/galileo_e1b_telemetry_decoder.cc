@@ -44,7 +44,7 @@
 using google::LogMessage;
 
 GalileoE1BTelemetryDecoder::GalileoE1BTelemetryDecoder(ConfigurationInterface* configuration,
-    std::string role,
+    const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
                                 in_streams_(in_streams),
@@ -69,9 +69,7 @@ GalileoE1BTelemetryDecoder::GalileoE1BTelemetryDecoder(ConfigurationInterface* c
 }
 
 
-GalileoE1BTelemetryDecoder::~GalileoE1BTelemetryDecoder()
-{
-}
+GalileoE1BTelemetryDecoder::~GalileoE1BTelemetryDecoder() = default;
 
 
 void GalileoE1BTelemetryDecoder::set_satellite(const Gnss_Satellite& satellite)

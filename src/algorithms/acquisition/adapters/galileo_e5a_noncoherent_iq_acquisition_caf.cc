@@ -36,7 +36,6 @@
  */
 
 #include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
-#include <boost/lexical_cast.hpp>
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
 #include "galileo_e5_signal_processing.h"
@@ -46,13 +45,14 @@
 
 using google::LogMessage;
 
-void GalileoE5aNoncoherentIQAcquisitionCaf::stop_acquisition()
-{
-}
 
 GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
-    ConfigurationInterface* configuration, std::string role,
-    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration,
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(role),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams)
 {
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
@@ -62,7 +62,7 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
 
     item_type_ = configuration_->property(role + ".item_type", default_item_type);
 
-    long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 32000000);
+    int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 32000000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     dump_ = configuration_->property(role + ".dump", false);
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
@@ -101,7 +101,7 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
         {
             both_signal_components = true;
         }
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             acquisition_cc_ = galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(sampled_ms_, max_dwells_,
@@ -117,7 +117,7 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
     channel_ = 0;
     threshold_ = 0.0;
     doppler_step_ = 0;
-    gnss_synchro_ = 0;
+    gnss_synchro_ = nullptr;
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
@@ -136,10 +136,15 @@ GalileoE5aNoncoherentIQAcquisitionCaf::~GalileoE5aNoncoherentIQAcquisitionCaf()
 }
 
 
+void GalileoE5aNoncoherentIQAcquisitionCaf::stop_acquisition()
+{
+}
+
+
 void GalileoE5aNoncoherentIQAcquisitionCaf::set_channel(unsigned int channel)
 {
     channel_ = channel;
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             acquisition_cc_->set_channel(channel_);
         }
@@ -148,7 +153,7 @@ void GalileoE5aNoncoherentIQAcquisitionCaf::set_channel(unsigned int channel)
 
 void GalileoE5aNoncoherentIQAcquisitionCaf::set_threshold(float threshold)
 {
-    float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
+    float pfa = configuration_->property(role_ + std::to_string(channel_) + ".pfa", 0.0);
 
     if (pfa == 0.0) pfa = configuration_->property(role_ + ".pfa", 0.0);
 
@@ -163,7 +168,7 @@ void GalileoE5aNoncoherentIQAcquisitionCaf::set_threshold(float threshold)
 
     DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold_;
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             acquisition_cc_->set_threshold(threshold_);
         }
@@ -174,7 +179,7 @@ void GalileoE5aNoncoherentIQAcquisitionCaf::set_doppler_max(unsigned int doppler
 {
     doppler_max_ = doppler_max;
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             acquisition_cc_->set_doppler_max(doppler_max_);
         }
@@ -184,7 +189,7 @@ void GalileoE5aNoncoherentIQAcquisitionCaf::set_doppler_max(unsigned int doppler
 void GalileoE5aNoncoherentIQAcquisitionCaf::set_doppler_step(unsigned int doppler_step)
 {
     doppler_step_ = doppler_step;
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             acquisition_cc_->set_doppler_step(doppler_step_);
         }
@@ -195,7 +200,7 @@ void GalileoE5aNoncoherentIQAcquisitionCaf::set_gnss_synchro(
     Gnss_Synchro* gnss_synchro)
 {
     gnss_synchro_ = gnss_synchro;
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             acquisition_cc_->set_gnss_synchro(gnss_synchro_);
         }
@@ -204,14 +209,11 @@ void GalileoE5aNoncoherentIQAcquisitionCaf::set_gnss_synchro(
 
 signed int GalileoE5aNoncoherentIQAcquisitionCaf::mag()
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             return acquisition_cc_->mag();
         }
-    else
-        {
-            return 0;
-        }
+    return 0;
 }
 
 
@@ -224,10 +226,10 @@ void GalileoE5aNoncoherentIQAcquisitionCaf::init()
 
 void GalileoE5aNoncoherentIQAcquisitionCaf::set_local_code()
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
-            std::complex<float>* codeI = new std::complex<float>[code_length_];
-            std::complex<float>* codeQ = new std::complex<float>[code_length_];
+            auto* codeI = new std::complex<float>[code_length_];
+            auto* codeQ = new std::complex<float>[code_length_];
 
             if (gnss_synchro_->Signal[0] == '5' && gnss_synchro_->Signal[1] == 'X')
                 {
@@ -281,7 +283,7 @@ void GalileoE5aNoncoherentIQAcquisitionCaf::set_local_code()
 
 void GalileoE5aNoncoherentIQAcquisitionCaf::reset()
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             acquisition_cc_->set_active(true);
         }
@@ -300,9 +302,9 @@ float GalileoE5aNoncoherentIQAcquisitionCaf::calculate_threshold(float pfa)
     unsigned int ncells = vector_length_ * frequency_bins;
     double exponent = 1 / static_cast<double>(ncells);
     double val = pow(1.0 - pfa, exponent);
-    double lambda = double(vector_length_);
+    auto lambda = double(vector_length_);
     boost::math::exponential_distribution<double> mydist(lambda);
-    float threshold = static_cast<float>(quantile(mydist, val));
+    auto threshold = static_cast<float>(quantile(mydist, val));
 
     return threshold;
 }

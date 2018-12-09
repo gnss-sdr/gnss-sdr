@@ -37,7 +37,9 @@
 #include <boost/filesystem/path.hpp>         // for path, operator<<
 #include <boost/filesystem/path_traits.hpp>  // for filesystem
 #include <glog/logging.h>
+#include <cstdint>
 #include <iomanip>
+#include <utility>
 #include <fcntl.h>    // for O_RDWR
 #include <termios.h>  // for tcgetattr
 
@@ -45,7 +47,7 @@
 using google::LogMessage;
 
 
-Rtcm_Printer::Rtcm_Printer(std::string filename, bool flag_rtcm_file_dump, bool flag_rtcm_server, bool flag_rtcm_tty_port, uint16_t rtcm_tcp_port, uint16_t rtcm_station_id, std::string rtcm_dump_devname, bool time_tag_name, const std::string& base_path)
+Rtcm_Printer::Rtcm_Printer(const std::string& filename, bool flag_rtcm_file_dump, bool flag_rtcm_server, bool flag_rtcm_tty_port, uint16_t rtcm_tcp_port, uint16_t rtcm_station_id, const std::string& rtcm_dump_devname, bool time_tag_name, const std::string& base_path)
 {
     boost::posix_time::ptime pt = boost::posix_time::second_clock::local_time();
     tm timeinfo = boost::posix_time::to_tm(pt);
@@ -77,7 +79,7 @@ Rtcm_Printer::Rtcm_Printer(std::string filename, bool flag_rtcm_file_dump, bool 
                 {
                     rtcm_base_path = p.string();
                 }
-            if (rtcm_base_path.compare(".") != 0)
+            if (rtcm_base_path != ".")
                 {
                     std::cout << "RTCM binary file will be stored at " << rtcm_base_path << std::endl;
                 }
@@ -141,7 +143,7 @@ Rtcm_Printer::Rtcm_Printer(std::string filename, bool flag_rtcm_file_dump, bool 
                 }
         }
 
-    rtcm_devname = rtcm_dump_devname;
+    rtcm_devname = std::move(rtcm_dump_devname);
     if (flag_rtcm_tty_port == true)
         {
             rtcm_dev_descriptor = init_serial(rtcm_devname.c_str());
@@ -186,7 +188,7 @@ Rtcm_Printer::~Rtcm_Printer()
         }
     if (rtcm_file_descriptor.is_open())
         {
-            long pos;
+            int64_t pos;
             pos = rtcm_file_descriptor.tellp();
             rtcm_file_descriptor.close();
             if (pos == 0)
@@ -337,20 +339,20 @@ bool Rtcm_Printer::Print_Rtcm_MSM(uint32_t msm_number, const Gps_Ephemeris& gps_
 }
 
 
-int Rtcm_Printer::init_serial(std::string serial_device)
+int Rtcm_Printer::init_serial(const std::string& serial_device)
 {
     /*
      * Opens the serial device and sets the default baud rate for a RTCM transmission (9600,8,N,1)
      */
     int32_t fd = 0;
     struct termios options;
-    long BAUD;
-    long DATABITS;
-    long STOPBITS;
-    long PARITYON;
-    long PARITY;
+    int64_t BAUD;
+    int64_t DATABITS;
+    int64_t STOPBITS;
+    int64_t PARITYON;
+    int64_t PARITY;
 
-    fd = open(serial_device.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
+    fd = open(serial_device.c_str(), O_RDWR | O_NOCTTY | O_NDELAY | O_CLOEXEC);
     if (fd == -1) return fd;  // failed to open TTY port
 
     if (fcntl(fd, F_SETFL, 0) == -1) LOG(INFO) << "Error enabling direct I/O";  // clear all flags on descriptor, enable direct I/O

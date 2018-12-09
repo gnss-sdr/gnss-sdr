@@ -37,6 +37,7 @@
 #include <gnuradio/message.h>
 #include <glog/logging.h>
 #include <sstream>
+#include <utility>
 
 using google::LogMessage;
 
@@ -44,8 +45,8 @@ using google::LogMessage;
 GenSignalSource::GenSignalSource(GNSSBlockInterface *signal_generator, GNSSBlockInterface *filter,
     std::string role, boost::shared_ptr<gr::msg_queue> queue) : signal_generator_(signal_generator),
                                                                 filter_(filter),
-                                                                role_(role),
-                                                                queue_(queue)
+                                                                role_(std::move(role)),
+                                                                queue_(std::move(queue))
 {
     connected_ = false;
 }

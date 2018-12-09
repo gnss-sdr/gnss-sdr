@@ -45,12 +45,9 @@
 
 using google::LogMessage;
 
-void GlonassL1CaDllPllTracking::stop_tracking()
-{
-}
 
 GlonassL1CaDllPllTracking::GlonassL1CaDllPllTracking(
-    ConfigurationInterface* configuration, std::string role,
+    ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     DLOG(INFO) << "role " << role;
@@ -78,7 +75,7 @@ GlonassL1CaDllPllTracking::GlonassL1CaDllPllTracking(
     vector_length = std::round(fs_in / (GLONASS_L1_CA_CODE_RATE_HZ / GLONASS_L1_CA_CODE_LENGTH_CHIPS));
 
     //################# MAKE TRACKING GNURadio object ###################
-    if (item_type.compare("gr_complex") == 0)
+    if (item_type == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             tracking_ = glonass_l1_ca_dll_pll_make_tracking_cc(
@@ -108,7 +105,10 @@ GlonassL1CaDllPllTracking::GlonassL1CaDllPllTracking(
 }
 
 
-GlonassL1CaDllPllTracking::~GlonassL1CaDllPllTracking()
+GlonassL1CaDllPllTracking::~GlonassL1CaDllPllTracking() = default;
+
+
+void GlonassL1CaDllPllTracking::stop_tracking()
 {
 }
 

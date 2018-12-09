@@ -37,7 +37,7 @@
 #include <iostream>
 
 
-typedef boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false> CRC_Galileo_INAV_type;
+using CRC_Galileo_INAV_type = boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false>;
 
 
 void Galileo_Navigation_Message::reset()
@@ -139,15 +139,15 @@ void Galileo_Navigation_Message::reset()
     Delta_tLS_6 = 0.0;
     t0t_6 = 0.0;
     WNot_6 = 0.0;
-    WN_LSF_6 = 0.0;
-    DN_6 = 0.0;
+    WN_LSF_6 = 0;
+    DN_6 = 0;
     Delta_tLSF_6 = 0.0;
     TOW_6 = 0.0;
 
     // Word type 7: Almanac for SVID1 (1/2), almanac reference time and almanac reference week number
     IOD_a_7 = 0;
     WN_a_7 = 0;
-    t0a_7 = 0.0;
+    t0a_7 = 0;
     SVID1_7 = 0;
     DELTA_A_7 = 0.0;
     e_7 = 0.0;
@@ -174,7 +174,7 @@ void Galileo_Navigation_Message::reset()
     // Word type 9: Almanac for SVID2 (2/2) and SVID3 (1/2)
     IOD_a_9 = 0;
     WN_a_9 = 0;
-    t0a_9 = 0.0;
+    t0a_9 = 0;
     M0_9 = 0.0;
     af0_9 = 0.0;
     af1_9 = 0.0;
@@ -253,14 +253,11 @@ bool Galileo_Navigation_Message::CRC_test(std::bitset<GALILEO_DATA_FRAME_BITS> b
         {
             return true;
         }
-    else
-        {
-            return false;
-        }
+    return false;
 }
 
 
-uint64_t Galileo_Navigation_Message::read_navigation_unsigned(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> > parameter)
+uint64_t Galileo_Navigation_Message::read_navigation_unsigned(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter)
 {
     uint64_t value = 0ULL;
     int32_t num_of_slices = parameter.size();
@@ -269,7 +266,7 @@ uint64_t Galileo_Navigation_Message::read_navigation_unsigned(std::bitset<GALILE
             for (int32_t j = 0; j < parameter[i].second; j++)
                 {
                     value <<= 1;  // shift left
-                    if (bits[GALILEO_DATA_JK_BITS - parameter[i].first - j] == 1)
+                    if (static_cast<int>(bits[GALILEO_DATA_JK_BITS - parameter[i].first - j]) == 1)
                         {
                             value += 1;  // insert the bit
                         }
@@ -279,7 +276,7 @@ uint64_t Galileo_Navigation_Message::read_navigation_unsigned(std::bitset<GALILE
 }
 
 
-uint64_t Galileo_Navigation_Message::read_page_type_unsigned(std::bitset<GALILEO_PAGE_TYPE_BITS> bits, const std::vector<std::pair<int32_t, int32_t> > parameter)
+uint64_t Galileo_Navigation_Message::read_page_type_unsigned(std::bitset<GALILEO_PAGE_TYPE_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter)
 {
     uint64_t value = 0ULL;
     int32_t num_of_slices = parameter.size();
@@ -288,7 +285,7 @@ uint64_t Galileo_Navigation_Message::read_page_type_unsigned(std::bitset<GALILEO
             for (int32_t j = 0; j < parameter[i].second; j++)
                 {
                     value <<= 1;  // shift left
-                    if (bits[GALILEO_PAGE_TYPE_BITS - parameter[i].first - j] == 1)
+                    if (static_cast<int>(bits[GALILEO_PAGE_TYPE_BITS - parameter[i].first - j]) == 1)
                         {
                             value += 1ULL;  // insert the bit
                         }
@@ -298,13 +295,13 @@ uint64_t Galileo_Navigation_Message::read_page_type_unsigned(std::bitset<GALILEO
 }
 
 
-int64_t Galileo_Navigation_Message::read_navigation_signed(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> > parameter)
+int64_t Galileo_Navigation_Message::read_navigation_signed(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter)
 {
     int64_t value = 0LL;
     int32_t num_of_slices = parameter.size();
 
     // read the MSB and perform the sign extension
-    if (bits[GALILEO_DATA_JK_BITS - parameter[0].first] == 1)
+    if (static_cast<int>(bits[GALILEO_DATA_JK_BITS - parameter[0].first]) == 1)
         {
             value ^= 0xFFFFFFFFFFFFFFFFLL;  // 64 bits variable
         }
@@ -319,7 +316,7 @@ int64_t Galileo_Navigation_Message::read_navigation_signed(std::bitset<GALILEO_D
                 {
                     value <<= 1;                  // shift left
                     value &= 0xFFFFFFFFFFFFFFFE;  // reset the corresponding bit (for the 64 bits variable)
-                    if (bits[GALILEO_DATA_JK_BITS - parameter[i].first - j] == 1)
+                    if (static_cast<int>(bits[GALILEO_DATA_JK_BITS - parameter[i].first - j]) == 1)
                         {
                             value += 1LL;  // insert the bit
                         }
@@ -329,10 +326,10 @@ int64_t Galileo_Navigation_Message::read_navigation_signed(std::bitset<GALILEO_D
 }
 
 
-bool Galileo_Navigation_Message::read_navigation_bool(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> > parameter)
+bool Galileo_Navigation_Message::read_navigation_bool(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter)
 {
     bool value;
-    if (bits[GALILEO_DATA_JK_BITS - parameter[0].first] == 1)
+    if (static_cast<int>(static_cast<int>(bits[GALILEO_DATA_JK_BITS - parameter[0].first])) == 1)
         {
             value = true;
         }
@@ -356,7 +353,7 @@ void Galileo_Navigation_Message::split_page(std::string page_string, int32_t fla
     if (page_string.at(0) == '1')  // if page is odd
         {
             // std::cout<< "page_string.at(0) split page="<<page_string.at(0) << std::endl;
-            std::string page_Odd = page_string;
+            const std::string& page_Odd = page_string;
             // std::cout<<"Page odd string in split page"<< std::endl << page_Odd << std::endl;
 
             if (flag_even_word == 1)  // An odd page has been received but the previous even page is kept in memory and it is considered to join pages
@@ -442,13 +439,8 @@ bool Galileo_Navigation_Message::have_new_ephemeris()  // Check if we have a new
                     std::cout << "Batch number: " << IOD_ephemeris << std::endl;
                     return true;
                 }
-            else
-                {
-                    return false;
-                }
         }
-    else
-        return false;
+    return false;
 }
 
 
@@ -459,8 +451,8 @@ bool Galileo_Navigation_Message::have_new_iono_and_GST()  // Check if we have a 
             flag_iono_and_GST = false;  // clear the flag
             return true;
         }
-    else
-        return false;
+
+    return false;
 }
 
 
@@ -471,8 +463,8 @@ bool Galileo_Navigation_Message::have_new_utc_model()  // Check if we have a new
             flag_utc_model = false;  // clear the flag
             return true;
         }
-    else
-        return false;
+
+    return false;
 }
 
 
@@ -488,8 +480,8 @@ bool Galileo_Navigation_Message::have_new_almanac()  // Check if we have a new a
             flag_all_almanac = true;
             return true;
         }
-    else
-        return false;
+
+    return false;
 }
 
 
@@ -646,7 +638,7 @@ Galileo_Almanac_Helper Galileo_Navigation_Message::get_almanac()
 }
 
 
-int32_t Galileo_Navigation_Message::page_jk_decoder(const char *data_jk)
+int32_t Galileo_Navigation_Message::page_jk_decoder(const char* data_jk)
 {
     int32_t page_number = 0;
 
@@ -816,9 +808,9 @@ int32_t Galileo_Navigation_Message::page_jk_decoder(const char *data_jk)
             DLOG(INFO) << "t0t_6= " << t0t_6;
             WNot_6 = static_cast<double>(read_navigation_unsigned(data_jk_bits, WNot_6_bit));
             DLOG(INFO) << "WNot_6= " << WNot_6;
-            WN_LSF_6 = static_cast<double>(read_navigation_unsigned(data_jk_bits, WN_LSF_6_bit));
+            WN_LSF_6 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, WN_LSF_6_bit));
             DLOG(INFO) << "WN_LSF_6= " << WN_LSF_6;
-            DN_6 = static_cast<double>(read_navigation_unsigned(data_jk_bits, DN_6_bit));
+            DN_6 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, DN_6_bit));
             DLOG(INFO) << "DN_6= " << DN_6;
             Delta_tLSF_6 = static_cast<double>(read_navigation_signed(data_jk_bits, Delta_tLSF_6_bit));
             DLOG(INFO) << "Delta_tLSF_6= " << Delta_tLSF_6;
@@ -831,14 +823,14 @@ int32_t Galileo_Navigation_Message::page_jk_decoder(const char *data_jk)
             break;
 
         case 7:  // Word type 7: Almanac for SVID1 (1/2), almanac reference time and almanac reference week number
-            IOD_a_7 = static_cast<double>(read_navigation_unsigned(data_jk_bits, IOD_a_7_bit));
+            IOD_a_7 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, IOD_a_7_bit));
             DLOG(INFO) << "IOD_a_7= " << IOD_a_7;
             WN_a_7 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, WN_a_7_bit));
             DLOG(INFO) << "WN_a_7= " << WN_a_7;
-            t0a_7 = static_cast<double>(read_navigation_unsigned(data_jk_bits, t0a_7_bit));
+            t0a_7 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, t0a_7_bit));
             t0a_7 = t0a_7 * t0a_7_LSB;
             DLOG(INFO) << "t0a_7= " << t0a_7;
-            SVID1_7 = static_cast<double>(read_navigation_unsigned(data_jk_bits, SVID1_7_bit));
+            SVID1_7 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, SVID1_7_bit));
             DLOG(INFO) << "SVID1_7= " << SVID1_7;
             DELTA_A_7 = static_cast<double>(read_navigation_signed(data_jk_bits, DELTA_A_7_bit));
             DELTA_A_7 = DELTA_A_7 * DELTA_A_7_LSB;
@@ -866,7 +858,7 @@ int32_t Galileo_Navigation_Message::page_jk_decoder(const char *data_jk)
             break;
 
         case 8:  // Word type 8: Almanac for SVID1 (2/2) and SVID2 (1/2)*/
-            IOD_a_8 = static_cast<double>(read_navigation_unsigned(data_jk_bits, IOD_a_8_bit));
+            IOD_a_8 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, IOD_a_8_bit));
             DLOG(INFO) << "IOD_a_8= " << IOD_a_8;
             af0_8 = static_cast<double>(read_navigation_signed(data_jk_bits, af0_8_bit));
             af0_8 = af0_8 * af0_8_LSB;
@@ -903,11 +895,11 @@ int32_t Galileo_Navigation_Message::page_jk_decoder(const char *data_jk)
             break;
 
         case 9:  // Word type 9: Almanac for SVID2 (2/2) and SVID3 (1/2)
-            IOD_a_9 = static_cast<double>(read_navigation_unsigned(data_jk_bits, IOD_a_9_bit));
+            IOD_a_9 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, IOD_a_9_bit));
             DLOG(INFO) << "IOD_a_9= " << IOD_a_9;
             WN_a_9 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, WN_a_9_bit));
             DLOG(INFO) << "WN_a_9= " << WN_a_9;
-            t0a_9 = static_cast<double>(read_navigation_unsigned(data_jk_bits, t0a_9_bit));
+            t0a_9 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, t0a_9_bit));
             t0a_9 = t0a_9 * t0a_9_LSB;
             DLOG(INFO) << "t0a_9= " << t0a_9;
             M0_9 = static_cast<double>(read_navigation_signed(data_jk_bits, M0_9_bit));
@@ -942,7 +934,7 @@ int32_t Galileo_Navigation_Message::page_jk_decoder(const char *data_jk)
             break;
 
         case 10:  // Word type 10: Almanac for SVID3 (2/2) and GST-GPS conversion parameters
-            IOD_a_10 = static_cast<double>(read_navigation_unsigned(data_jk_bits, IOD_a_10_bit));
+            IOD_a_10 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, IOD_a_10_bit));
             DLOG(INFO) << "IOD_a_10= " << IOD_a_10;
             Omega0_10 = static_cast<double>(read_navigation_signed(data_jk_bits, Omega0_10_bit));
             Omega0_10 = Omega0_10 * Omega0_10_LSB;

@@ -29,11 +29,11 @@
  */
 
 #include "rtklib_pvt_cc.h"
+#include "display.h"
 #include "galileo_almanac.h"
 #include "galileo_almanac_helper.h"
-#include "pvt_conf.h"
-#include "display.h"
 #include "gnss_sdr_create_directory.h"
+#include "pvt_conf.h"
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/exception/all.hpp>
@@ -59,7 +59,7 @@ using google::LogMessage;
 
 rtklib_pvt_cc_sptr rtklib_make_pvt_cc(uint32_t nchannels,
     const Pvt_Conf& conf_,
-    rtk_t& rtk)
+    const rtk_t& rtk)
 {
     return rtklib_pvt_cc_sptr(new rtklib_pvt_cc(nchannels,
         conf_,
@@ -268,9 +268,9 @@ void rtklib_pvt_cc::clear_ephemeris()
 
 rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
     const Pvt_Conf& conf_,
-    rtk_t& rtk) : gr::sync_block("rtklib_pvt_cc",
-                      gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
-                      gr::io_signature::make(0, 0, 0))
+    const rtk_t& rtk) : gr::sync_block("rtklib_pvt_cc",
+                            gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
+                            gr::io_signature::make(0, 0, 0))
 {
     d_output_rate_ms = conf_.output_rate_ms;
     d_display_rate_ms = conf_.display_rate_ms;
@@ -492,7 +492,7 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
                 {
                     xml_base_path = p.string();
                 }
-            if (xml_base_path.compare(".") != 0)
+            if (xml_base_path != ".")
                 {
                     std::cout << "XML files will be stored at " << xml_base_path << std::endl;
                 }
@@ -514,7 +514,7 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
     if ((sysv_msqid = msgget(sysv_msg_key, msgflg)) == -1)
         {
             std::cout << "GNSS-SDR can not create message queues!" << std::endl;
-            throw new std::exception();
+            throw std::exception();
         }
     start = std::chrono::system_clock::now();
 }
@@ -858,7 +858,7 @@ bool rtklib_pvt_cc::send_sys_v_ttff_msg(ttff_msgbuf ttff)
 }
 
 
-bool rtklib_pvt_cc::save_gnss_synchro_map_xml(const std::string file_name)
+bool rtklib_pvt_cc::save_gnss_synchro_map_xml(const std::string& file_name)
 {
     if (gnss_observables_map.empty() == false)
         {
@@ -877,15 +877,13 @@ bool rtklib_pvt_cc::save_gnss_synchro_map_xml(const std::string file_name)
                 }
             return true;
         }
-    else
-        {
-            LOG(WARNING) << "Failed to save gnss_synchro, map is empty";
-            return false;
-        }
+
+    LOG(WARNING) << "Failed to save gnss_synchro, map is empty";
+    return false;
 }
 
 
-bool rtklib_pvt_cc::load_gnss_synchro_map_xml(const std::string file_name)
+bool rtklib_pvt_cc::load_gnss_synchro_map_xml(const std::string& file_name)
 {
     // load from xml (boost serialize)
     std::ifstream ifs;
@@ -925,10 +923,8 @@ bool rtklib_pvt_cc::get_latest_PVT(double* longitude_deg,
 
             return true;
         }
-    else
-        {
-            return false;
-        }
+
+    return false;
 }
 
 
@@ -959,7 +955,13 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                             std::map<int, Galileo_Ephemeris>::const_iterator tmp_eph_iter_gal = d_pvt_solver->galileo_ephemeris_map.find(in[i][epoch].PRN);
                             std::map<int, Gps_CNAV_Ephemeris>::const_iterator tmp_eph_iter_cnav = d_pvt_solver->gps_cnav_ephemeris_map.find(in[i][epoch].PRN);
                             std::map<int, Glonass_Gnav_Ephemeris>::const_iterator tmp_eph_iter_glo_gnav = d_pvt_solver->glonass_gnav_ephemeris_map.find(in[i][epoch].PRN);
-                            if (((tmp_eph_iter_gps->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal).compare("1C") == 0)) or ((tmp_eph_iter_cnav->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal).compare("2S") == 0)) or ((tmp_eph_iter_gal->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal).compare("1B") == 0)) or ((tmp_eph_iter_gal->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal).compare("5X") == 0)) or ((tmp_eph_iter_glo_gnav->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal).compare("1G") == 0)) or ((tmp_eph_iter_glo_gnav->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal).compare("2G") == 0)) or ((tmp_eph_iter_cnav->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal).compare("L5") == 0)))
+                            if (((tmp_eph_iter_gps->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "1C")) or
+                                ((tmp_eph_iter_cnav->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "2S")) or
+                                ((tmp_eph_iter_gal->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "1B")) or
+                                ((tmp_eph_iter_gal->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "5X")) or
+                                ((tmp_eph_iter_glo_gnav->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "1G")) or
+                                ((tmp_eph_iter_glo_gnav->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "2G")) or
+                                ((tmp_eph_iter_cnav->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "L5")))
                                 {
                                     // store valid observables in a map.
                                     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(i, in[i][epoch]));
@@ -1015,7 +1017,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
             if (gnss_observables_map.empty() == false)
                 {
                     double current_RX_time = gnss_observables_map.begin()->second.RX_time;
-                    uint32_t current_RX_time_ms = static_cast<uint32_t>(current_RX_time * 1000.0);
+                    auto current_RX_time_ms = static_cast<uint32_t>(current_RX_time * 1000.0);
                     if (current_RX_time_ms % d_output_rate_ms == 0)
                         {
                             flag_compute_pvt_output = true;
@@ -1893,7 +1895,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                             std::string system(&gnss_observables_iter->second.System, 1);
                                                                             if (gps_channel == 0)
                                                                                 {
-                                                                                    if (system.compare("G") == 0)
+                                                                                    if (system == "G")
                                                                                         {
                                                                                             // This is a channel with valid GPS signal
                                                                                             gps_eph_iter = d_pvt_solver->gps_ephemeris_map.find(gnss_observables_iter->second.PRN);
@@ -1905,7 +1907,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                                 }
                                                                             if (gal_channel == 0)
                                                                                 {
-                                                                                    if (system.compare("E") == 0)
+                                                                                    if (system == "E")
                                                                                         {
                                                                                             gal_eph_iter = d_pvt_solver->galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                                                                             if (gal_eph_iter != d_pvt_solver->galileo_ephemeris_map.cend())
@@ -2013,7 +2015,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                             std::string system(&gnss_observables_iter->second.System, 1);
                                                                             if (gps_channel == 0)
                                                                                 {
-                                                                                    if (system.compare("G") == 0)
+                                                                                    if (system == "G")
                                                                                         {
                                                                                             // This is a channel with valid GPS signal
                                                                                             gps_eph_iter = d_pvt_solver->gps_ephemeris_map.find(gnss_observables_iter->second.PRN);
@@ -2025,7 +2027,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                                 }
                                                                             if (glo_channel == 0)
                                                                                 {
-                                                                                    if (system.compare("R") == 0)
+                                                                                    if (system == "R")
                                                                                         {
                                                                                             glonass_gnav_eph_iter = d_pvt_solver->glonass_gnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                                                                             if (glonass_gnav_eph_iter != d_pvt_solver->glonass_gnav_ephemeris_map.cend())
@@ -2073,7 +2075,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                             std::string system(&gnss_observables_iter->second.System, 1);
                                                                             if (gal_channel == 0)
                                                                                 {
-                                                                                    if (system.compare("E") == 0)
+                                                                                    if (system == "E")
                                                                                         {
                                                                                             // This is a channel with valid GPS signal
                                                                                             gal_eph_iter = d_pvt_solver->galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
@@ -2085,7 +2087,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                                 }
                                                                             if (glo_channel == 0)
                                                                                 {
-                                                                                    if (system.compare("R") == 0)
+                                                                                    if (system == "R")
                                                                                         {
                                                                                             glonass_gnav_eph_iter = d_pvt_solver->glonass_gnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                                                                             if (glonass_gnav_eph_iter != d_pvt_solver->glonass_gnav_ephemeris_map.cend())
@@ -2132,7 +2134,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                             std::string system(&gnss_observables_iter->second.System, 1);
                                                                             if (gps_channel == 0)
                                                                                 {
-                                                                                    if (system.compare("G") == 0)
+                                                                                    if (system == "G")
                                                                                         {
                                                                                             // This is a channel with valid GPS signal
                                                                                             gps_eph_iter = d_pvt_solver->gps_ephemeris_map.find(gnss_observables_iter->second.PRN);
@@ -2144,7 +2146,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                                 }
                                                                             if (glo_channel == 0)
                                                                                 {
-                                                                                    if (system.compare("R") == 0)
+                                                                                    if (system == "R")
                                                                                         {
                                                                                             glonass_gnav_eph_iter = d_pvt_solver->glonass_gnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                                                                             if (glonass_gnav_eph_iter != d_pvt_solver->glonass_gnav_ephemeris_map.cend())
@@ -2191,7 +2193,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                             std::string system(&gnss_observables_iter->second.System, 1);
                                                                             if (gal_channel == 0)
                                                                                 {
-                                                                                    if (system.compare("E") == 0)
+                                                                                    if (system == "E")
                                                                                         {
                                                                                             // This is a channel with valid GPS signal
                                                                                             gal_eph_iter = d_pvt_solver->galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
@@ -2203,7 +2205,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                                 }
                                                                             if (glo_channel == 0)
                                                                                 {
-                                                                                    if (system.compare("R") == 0)
+                                                                                    if (system == "R")
                                                                                         {
                                                                                             glonass_gnav_eph_iter = d_pvt_solver->glonass_gnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                                                                             if (glonass_gnav_eph_iter != d_pvt_solver->glonass_gnav_ephemeris_map.cend())
@@ -2250,7 +2252,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                             std::string system(&gnss_observables_iter->second.System, 1);
                                                                             if (gal_channel == 0)
                                                                                 {
-                                                                                    if (system.compare("E") == 0)
+                                                                                    if (system == "E")
                                                                                         {
                                                                                             // This is a channel with valid GPS signal
                                                                                             gal_eph_iter = d_pvt_solver->galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
@@ -2262,7 +2264,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                                 }
                                                                             if (gps_channel == 0)
                                                                                 {
-                                                                                    if (system.compare("G") == 0)
+                                                                                    if (system == "G")
                                                                                         {
                                                                                             gps_eph_iter = d_pvt_solver->gps_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                                                                             if (gps_eph_iter != d_pvt_solver->gps_ephemeris_map.cend())
@@ -2395,7 +2397,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                             std::string system(&gnss_observables_iter->second.System, 1);
                                                                             if (gps_channel == 0)
                                                                                 {
-                                                                                    if (system.compare("G") == 0)
+                                                                                    if (system == "G")
                                                                                         {
                                                                                             // This is a channel with valid GPS signal
                                                                                             gps_eph_iter = d_pvt_solver->gps_ephemeris_map.find(gnss_observables_iter->second.PRN);
@@ -2407,7 +2409,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                                 }
                                                                             if (gal_channel == 0)
                                                                                 {
-                                                                                    if (system.compare("E") == 0)
+                                                                                    if (system == "E")
                                                                                         {
                                                                                             gal_eph_iter = d_pvt_solver->galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                                                                             if (gal_eph_iter != d_pvt_solver->galileo_ephemeris_map.cend())
@@ -2513,7 +2515,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                             std::string system(&gnss_observables_iter->second.System, 1);
                                                                             if (gps_channel == 0)
                                                                                 {
-                                                                                    if (system.compare("G") == 0)
+                                                                                    if (system == "G")
                                                                                         {
                                                                                             // This is a channel with valid GPS signal
                                                                                             gps_eph_iter = d_pvt_solver->gps_ephemeris_map.find(gnss_observables_iter->second.PRN);
@@ -2525,7 +2527,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                                 }
                                                                             if (glo_channel == 0)
                                                                                 {
-                                                                                    if (system.compare("R") == 0)
+                                                                                    if (system == "R")
                                                                                         {
                                                                                             glonass_gnav_eph_iter = d_pvt_solver->glonass_gnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                                                                             if (glonass_gnav_eph_iter != d_pvt_solver->glonass_gnav_ephemeris_map.cend())
@@ -2573,7 +2575,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                             std::string system(&gnss_observables_iter->second.System, 1);
                                                                             if (gal_channel == 0)
                                                                                 {
-                                                                                    if (system.compare("E") == 0)
+                                                                                    if (system == "E")
                                                                                         {
                                                                                             // This is a channel with valid GPS signal
                                                                                             gal_eph_iter = d_pvt_solver->galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
@@ -2585,7 +2587,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                                 }
                                                                             if (glo_channel == 0)
                                                                                 {
-                                                                                    if (system.compare("R") == 0)
+                                                                                    if (system == "R")
                                                                                         {
                                                                                             glonass_gnav_eph_iter = d_pvt_solver->glonass_gnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                                                                             if (glonass_gnav_eph_iter != d_pvt_solver->glonass_gnav_ephemeris_map.cend())
@@ -2633,7 +2635,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                             std::string system(&gnss_observables_iter->second.System, 1);
                                                                             if (gps_channel == 0)
                                                                                 {
-                                                                                    if (system.compare("G") == 0)
+                                                                                    if (system == "G")
                                                                                         {
                                                                                             // This is a channel with valid GPS signal
                                                                                             gps_eph_iter = d_pvt_solver->gps_ephemeris_map.find(gnss_observables_iter->second.PRN);
@@ -2645,7 +2647,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                                 }
                                                                             if (glo_channel == 0)
                                                                                 {
-                                                                                    if (system.compare("R") == 0)
+                                                                                    if (system == "R")
                                                                                         {
                                                                                             glonass_gnav_eph_iter = d_pvt_solver->glonass_gnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                                                                             if (glonass_gnav_eph_iter != d_pvt_solver->glonass_gnav_ephemeris_map.cend())
@@ -2694,7 +2696,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                             std::string system(&gnss_observables_iter->second.System, 1);
                                                                             if (gal_channel == 0)
                                                                                 {
-                                                                                    if (system.compare("E") == 0)
+                                                                                    if (system == "E")
                                                                                         {
                                                                                             // This is a channel with valid GPS signal
                                                                                             gal_eph_iter = d_pvt_solver->galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
@@ -2706,7 +2708,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                                 }
                                                                             if (glo_channel == 0)
                                                                                 {
-                                                                                    if (system.compare("R") == 0)
+                                                                                    if (system == "R")
                                                                                         {
                                                                                             glonass_gnav_eph_iter = d_pvt_solver->glonass_gnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                                                                             if (glonass_gnav_eph_iter != d_pvt_solver->glonass_gnav_ephemeris_map.cend())
@@ -2754,7 +2756,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                             std::string system(&gnss_observables_iter->second.System, 1);
                                                                             if (gps_channel == 0)
                                                                                 {
-                                                                                    if (system.compare("G") == 0)
+                                                                                    if (system == "G")
                                                                                         {
                                                                                             // This is a channel with valid GPS signal
                                                                                             gps_eph_iter = d_pvt_solver->gps_ephemeris_map.find(gnss_observables_iter->second.PRN);
@@ -2766,7 +2768,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                                 }
                                                                             if (gal_channel == 0)
                                                                                 {
-                                                                                    if (system.compare("E") == 0)
+                                                                                    if (system == "E")
                                                                                         {
                                                                                             gal_eph_iter = d_pvt_solver->galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                                                                             if (gal_eph_iter != d_pvt_solver->galileo_ephemeris_map.cend())

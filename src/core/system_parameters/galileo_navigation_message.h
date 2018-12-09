@@ -55,10 +55,10 @@ class Galileo_Navigation_Message
 {
 private:
     bool CRC_test(std::bitset<GALILEO_DATA_FRAME_BITS> bits, uint32_t checksum);
-    bool read_navigation_bool(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> > parameter);
-    uint64_t read_navigation_unsigned(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> > parameter);
-    uint64_t read_page_type_unsigned(std::bitset<GALILEO_PAGE_TYPE_BITS> bits, const std::vector<std::pair<int32_t, int32_t> > parameter);
-    int64_t read_navigation_signed(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> > parameter);
+    bool read_navigation_bool(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter);
+    uint64_t read_navigation_unsigned(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter);
+    uint64_t read_page_type_unsigned(std::bitset<GALILEO_PAGE_TYPE_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter);
+    int64_t read_navigation_signed(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter);
 
 public:
     int32_t Page_type_time_stamp;
@@ -159,15 +159,15 @@ public:
     double Delta_tLS_6;
     double t0t_6;
     double WNot_6;
-    double WN_LSF_6;
-    double DN_6;
+    int32_t WN_LSF_6;
+    int32_t DN_6;
     double Delta_tLSF_6;
     double TOW_6;
 
     // Word type 7: Almanac for SVID1 (1/2), almanac reference time and almanac reference week number
     int32_t IOD_a_7;
     int32_t WN_a_7;
-    double t0a_7;
+    int32_t t0a_7;
     int32_t SVID1_7;
     double DELTA_A_7;
     double e_7;
@@ -194,7 +194,7 @@ public:
     // Word type 9: Almanac for SVID2 (2/2) and SVID3 (1/2)
     int32_t IOD_a_9;
     int32_t WN_a_9;
-    double t0a_9;
+    int32_t t0a_9;
     double M0_9;
     double af0_9;
     double af1_9;
@@ -250,7 +250,7 @@ public:
      *
      * Takes in input Data_jk (128 bit) and split it in ephemeris parameters according ICD 4.3.5
      */
-    int32_t page_jk_decoder(const char *data_jk);
+    int32_t page_jk_decoder(const char* data_jk);
 
     void reset();
 

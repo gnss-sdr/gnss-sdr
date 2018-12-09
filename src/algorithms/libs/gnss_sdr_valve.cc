@@ -37,32 +37,33 @@
 #include <gnuradio/io_signature.h>
 #include <algorithm>  // for min
 #include <cstring>    // for memcpy
+#include <utility>
 
 gnss_sdr_valve::gnss_sdr_valve(size_t sizeof_stream_item,
-    unsigned long long nitems,
+    uint64_t nitems,
     gr::msg_queue::sptr queue,
     bool stop_flowgraph) : gr::sync_block("valve",
                                gr::io_signature::make(1, 1, sizeof_stream_item),
                                gr::io_signature::make(1, 1, sizeof_stream_item)),
                            d_nitems(nitems),
                            d_ncopied_items(0),
-                           d_queue(queue),
+                           d_queue(std::move(queue)),
                            d_stop_flowgraph(stop_flowgraph)
 {
     d_open_valve = false;
 }
 
 
-boost::shared_ptr<gr::block> gnss_sdr_make_valve(size_t sizeof_stream_item, unsigned long long nitems, gr::msg_queue::sptr queue, bool stop_flowgraph)
+boost::shared_ptr<gr::block> gnss_sdr_make_valve(size_t sizeof_stream_item, uint64_t nitems, gr::msg_queue::sptr queue, bool stop_flowgraph)
 {
-    boost::shared_ptr<gnss_sdr_valve> valve_(new gnss_sdr_valve(sizeof_stream_item, nitems, queue, stop_flowgraph));
+    boost::shared_ptr<gnss_sdr_valve> valve_(new gnss_sdr_valve(sizeof_stream_item, nitems, std::move(queue), stop_flowgraph));
     return valve_;
 }
 
 
-boost::shared_ptr<gr::block> gnss_sdr_make_valve(size_t sizeof_stream_item, unsigned long long nitems, gr::msg_queue::sptr queue)
+boost::shared_ptr<gr::block> gnss_sdr_make_valve(size_t sizeof_stream_item, uint64_t nitems, gr::msg_queue::sptr queue)
 {
-    boost::shared_ptr<gnss_sdr_valve> valve_(new gnss_sdr_valve(sizeof_stream_item, nitems, queue, true));
+    boost::shared_ptr<gnss_sdr_valve> valve_(new gnss_sdr_valve(sizeof_stream_item, nitems, std::move(queue), true));
     return valve_;
 }
 
@@ -81,7 +82,7 @@ int gnss_sdr_valve::work(int noutput_items,
         {
             if (d_ncopied_items >= d_nitems)
                 {
-                    ControlMessageFactory *cmf = new ControlMessageFactory();
+                    auto *cmf = new ControlMessageFactory();
                     d_queue->handle(cmf->GetQueueMessage(200, 0));
                     LOG(INFO) << "Stopping receiver, " << d_ncopied_items << " samples processed";
                     delete cmf;
@@ -89,21 +90,16 @@ int gnss_sdr_valve::work(int noutput_items,
                         {
                             return -1;  // Done!
                         }
-                    else
-                        {
-                            usleep(1000000);
-                            return 0;  // do not produce or consume
-                        }
+                    usleep(1000000);
+                    return 0;  // do not produce or consume
                 }
-            unsigned long long n = std::min(d_nitems - d_ncopied_items, static_cast<long long unsigned int>(noutput_items));
+            uint64_t n = std::min(d_nitems - d_ncopied_items, static_cast<uint64_t>(noutput_items));
             if (n == 0) return 0;
             memcpy(output_items[0], input_items[0], n * input_signature()->sizeof_stream_item(0));
             d_ncopied_items += n;
             return n;
         }
-    else
-        {
-            memcpy(output_items[0], input_items[0], noutput_items * input_signature()->sizeof_stream_item(0));
-            return noutput_items;
-        }
+
+    memcpy(output_items[0], input_items[0], noutput_items * input_signature()->sizeof_stream_item(0));
+    return noutput_items;
 }

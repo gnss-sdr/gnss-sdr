@@ -109,7 +109,7 @@ void gps_l2c_telemetry_decoder_cc::set_channel(int channel)
                     try
                         {
                             d_dump_filename = "telemetry_L2CM_";
-                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
+                            d_dump_filename.append(std::to_string(d_channel));
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
@@ -129,8 +129,8 @@ int gps_l2c_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     // get pointers on in- and output gnss-synchro objects
-    Gnss_Synchro *out = reinterpret_cast<Gnss_Synchro *>(output_items[0]);            // Get the output buffer pointer
-    const Gnss_Synchro *in = reinterpret_cast<const Gnss_Synchro *>(input_items[0]);  // Get the input buffer pointer
+    auto *out = reinterpret_cast<Gnss_Synchro *>(output_items[0]);            // Get the output buffer pointer
+    const auto *in = reinterpret_cast<const Gnss_Synchro *>(input_items[0]);  // Get the input buffer pointer
 
     bool flag_new_cnav_frame = false;
     cnav_msg_t msg;
@@ -143,7 +143,7 @@ int gps_l2c_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
     consume_each(1);  // one by one
 
     // UPDATE GNSS SYNCHRO DATA
-    Gnss_Synchro current_synchro_data;  // structure to save the synchronization information and send the output object to the next block
+    Gnss_Synchro current_synchro_data{};  // structure to save the synchronization information and send the output object to the next block
 
     // 1. Copy the current tracking output
     current_synchro_data = in[0];

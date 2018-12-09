@@ -39,8 +39,8 @@ Galileo_Utc_Model::Galileo_Utc_Model()
     Delta_tLS_6 = 0.0;
     t0t_6 = 0.0;
     WNot_6 = 0.0;
-    WN_LSF_6 = 0.0;
-    DN_6 = 0.0;
+    WN_LSF_6 = 0;
+    DN_6 = 0;
     Delta_tLSF_6 = 0.0;
     flag_utc_model = false;
     // GPS to Galileo GST conversion parameters

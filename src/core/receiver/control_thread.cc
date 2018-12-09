@@ -166,7 +166,7 @@ void ControlThread::init()
     else
         {
             // fill agnss_ref_time_
-            struct tm tm;
+            struct tm tm = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, nullptr};
             if (strptime(ref_time_str.c_str(), "%d/%m/%Y %H:%M:%S", &tm) != nullptr)
                 {
                     agnss_ref_time_.d_tv_sec = timegm(&tm);
@@ -190,8 +190,6 @@ void ControlThread::init()
 
 ControlThread::~ControlThread()
 {
-    // save navigation data to files
-    // if (save_assistance_to_XML() == true) {}
     if (msqid != -1) msgctl(msqid, IPC_RMID, NULL);
 }
 
@@ -291,10 +289,8 @@ int ControlThread::run()
         {
             return 42;  // signal the gnss-sdr-harness.sh to restart the receiver program
         }
-    else
-        {
-            return 0;  // normal shutdown
-        }
+
+    return 0;  // normal shutdown
 }
 
 
@@ -878,7 +874,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
     std::vector<unsigned int> visible_gps;
     std::vector<unsigned int> visible_gal;
     std::shared_ptr<PvtInterface> pvt_ptr = flowgraph_->get_pvt();
-    struct tm tstruct;
+    struct tm tstruct = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, nullptr};
     char buf[80];
     tstruct = *gmtime(&rx_utc_time);
     strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S ", &tstruct);

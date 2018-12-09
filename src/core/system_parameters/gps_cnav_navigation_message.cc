@@ -72,11 +72,11 @@ Gps_CNAV_Navigation_Message::Gps_CNAV_Navigation_Message()
 }
 
 
-bool Gps_CNAV_Navigation_Message::read_navigation_bool(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter)
+bool Gps_CNAV_Navigation_Message::read_navigation_bool(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter)
 {
     bool value;
 
-    if (bits[GPS_CNAV_DATA_PAGE_BITS - parameter[0].first] == 1)
+    if (static_cast<int>(bits[GPS_CNAV_DATA_PAGE_BITS - parameter[0].first]) == 1)
         {
             value = true;
         }
@@ -88,7 +88,7 @@ bool Gps_CNAV_Navigation_Message::read_navigation_bool(std::bitset<GPS_CNAV_DATA
 }
 
 
-uint64_t Gps_CNAV_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter)
+uint64_t Gps_CNAV_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter)
 {
     uint64_t value = 0ULL;
     int32_t num_of_slices = parameter.size();
@@ -97,7 +97,7 @@ uint64_t Gps_CNAV_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_C
             for (int32_t j = 0; j < parameter[i].second; j++)
                 {
                     value <<= 1;  // shift left
-                    if (bits[GPS_CNAV_DATA_PAGE_BITS - parameter[i].first - j] == 1)
+                    if (static_cast<int>(bits[GPS_CNAV_DATA_PAGE_BITS - parameter[i].first - j]) == 1)
                         {
                             value += 1ULL;  // insert the bit
                         }
@@ -107,13 +107,13 @@ uint64_t Gps_CNAV_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_C
 }
 
 
-int64_t Gps_CNAV_Navigation_Message::read_navigation_signed(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter)
+int64_t Gps_CNAV_Navigation_Message::read_navigation_signed(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter)
 {
     int64_t value = 0LL;
     int32_t num_of_slices = parameter.size();
 
     // read the MSB and perform the sign extension
-    if (bits[GPS_CNAV_DATA_PAGE_BITS - parameter[0].first] == 1)
+    if (static_cast<int>(bits[GPS_CNAV_DATA_PAGE_BITS - parameter[0].first]) == 1)
         {
             value ^= 0xFFFFFFFFFFFFFFFFLL;  // 64 bits variable
         }
@@ -128,7 +128,7 @@ int64_t Gps_CNAV_Navigation_Message::read_navigation_signed(std::bitset<GPS_CNAV
                 {
                     value <<= 1;                    // shift left
                     value &= 0xFFFFFFFFFFFFFFFELL;  // reset the corresponding bit (for the 64 bits variable)
-                    if (bits[GPS_CNAV_DATA_PAGE_BITS - parameter[i].first - j] == 1)
+                    if (static_cast<int>(bits[GPS_CNAV_DATA_PAGE_BITS - parameter[i].first - j]) == 1)
                         {
                             value += 1LL;  // insert the bit
                         }
@@ -306,13 +306,13 @@ void Gps_CNAV_Navigation_Message::decode_page(std::bitset<GPS_CNAV_DATA_PAGE_BIT
             utc_model_record.d_t_OT = static_cast<double>(read_navigation_signed(data_bits, CNAV_TOT));
             utc_model_record.d_t_OT = utc_model_record.d_t_OT * CNAV_TOT_LSB;
 
-            utc_model_record.i_WN_T = static_cast<double>(read_navigation_signed(data_bits, CNAV_WN_OT));
+            utc_model_record.i_WN_T = static_cast<int32_t>(read_navigation_signed(data_bits, CNAV_WN_OT));
             utc_model_record.i_WN_T = utc_model_record.i_WN_T * CNAV_WN_OT_LSB;
 
-            utc_model_record.i_WN_LSF = static_cast<double>(read_navigation_signed(data_bits, CNAV_WN_LSF));
+            utc_model_record.i_WN_LSF = static_cast<int32_t>(read_navigation_signed(data_bits, CNAV_WN_LSF));
             utc_model_record.i_WN_LSF = utc_model_record.i_WN_LSF * CNAV_WN_LSF_LSB;
 
-            utc_model_record.i_DN = static_cast<double>(read_navigation_signed(data_bits, CNAV_DN));
+            utc_model_record.i_DN = static_cast<int32_t>(read_navigation_signed(data_bits, CNAV_DN));
             utc_model_record.i_DN = utc_model_record.i_DN * CNAV_DN_LSB;
 
             utc_model_record.d_DeltaT_LSF = static_cast<double>(read_navigation_signed(data_bits, CNAV_DELTA_TLSF));
@@ -337,15 +337,8 @@ bool Gps_CNAV_Navigation_Message::have_new_ephemeris()  // Check if we have a ne
                     b_flag_ephemeris_2 = false;  // clear the flag
                     return true;
                 }
-            else
-                {
-                    return false;
-                }
         }
-    else
-        {
-            return false;
-        }
+    return false;
 }
 
 
@@ -362,10 +355,7 @@ bool Gps_CNAV_Navigation_Message::have_new_iono()  // Check if we have a new ion
             b_flag_iono_valid = false;  // clear the flag
             return true;
         }
-    else
-        {
-            return false;
-        }
+    return false;
 }
 
 
@@ -382,10 +372,7 @@ bool Gps_CNAV_Navigation_Message::have_new_utc_model()  // Check if we have a ne
             b_flag_utc_valid = false;  // clear the flag
             return true;
         }
-    else
-        {
-            return false;
-        }
+    return false;
 }
 
 

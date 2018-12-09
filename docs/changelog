@@ -71,6 +71,7 @@ This release has several improvements in different dimensions, addition of new f
 - Improvement in C++ usage: The override special identifier is now used when overriding a virtual function. This helps the compiler to check for type changes in the base class, making the detection of errors easier.
 - Improvement in C++ usage: A number of unused includes have been removed. Order of includes set to: local (in-source) headers, then library headers, then system headers. This helps to detect missing includes.
 - Improvement in C++ usage: Enhanced const correctness. Misuses of those variables are detected by the compiler.
+- Improved code with clang-tidy and generation of a compile_commands.json file containing the exact compiler calls for all translation units of the project in machine-readable form if clang-tidy is detected.
 - Applied some style rules to CMake scripts.
 - Minimal versions of dependencies identified and detected.
 

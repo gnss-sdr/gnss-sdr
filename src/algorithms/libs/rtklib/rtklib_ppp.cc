@@ -187,7 +187,7 @@ void average_LC(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav __attribu
 
             if (azel[1 + 2 * i] < rtk->opt.elmin) continue;
 
-            if (satsys(sat, NULL) != SYS_GPS) continue;
+            if (satsys(sat, nullptr) != SYS_GPS) continue;
 
             /* triple-freq carrier and code LC (m) */
             LC1 = L_LC(1, -1, 0, obs[i].L) - P_LC(1, 1, 0, obs[i].P);
@@ -518,7 +518,7 @@ int fix_amb_ILS(rtk_t *rtk, int *sat1, int *sat2, int *NW, int n)
             return 0;
         }
 
-    rtk->sol.ratio = (float)(MIN_PPP(s[1] / s[0], 999.9));
+    rtk->sol.ratio = static_cast<float>(MIN_PPP(s[1] / s[0], 999.9));
 
     /* varidation by ratio-test */
     if (rtk->opt.thresar[0] > 0.0 && rtk->sol.ratio < rtk->opt.thresar[0])
@@ -683,7 +683,7 @@ void testeclipse(const obsd_t *obs, int n, const nav_t *nav, double *rs)
     trace(3, "testeclipse:\n");
 
     /* unit vector of sun direction (ecef) */
-    sunmoonpos(gpst2utc(obs[0].time), erpv, rsun, NULL, NULL);
+    sunmoonpos(gpst2utc(obs[0].time), erpv, rsun, nullptr, nullptr);
     if (normv3(rsun, esun) == 0) trace(1, "Error computing the norm");
 
     for (i = 0; i < n; i++)
@@ -779,7 +779,7 @@ int ifmeas(const obsd_t *obs, const nav_t *nav, const double *azel,
     trace(4, "ifmeas  :\n");
 
     /* L1-L2 for GPS/GLO/QZS, L1-L5 for GAL/SBS */
-    if (NFREQ >= 3 && (satsys(obs->sat, NULL) & (SYS_GAL | SYS_SBS))) j = 2;
+    if (NFREQ >= 3 && (satsys(obs->sat, nullptr) & (SYS_GAL | SYS_SBS))) j = 2;
 
     if (NFREQ < 2 || lam[i] == 0.0 || lam[j] == 0.0) return 0;
 
@@ -817,7 +817,7 @@ int ifmeas(const obsd_t *obs, const nav_t *nav, const double *azel,
     if (opt->sateph == EPHOPT_SBAS) meas[1] -= P1_C1; /* sbas clock based C1 */
 
     /* gps-glonass h/w bias correction for code */
-    if (opt->exterr.ena[3] && satsys(obs->sat, NULL) == SYS_GLO)
+    if (opt->exterr.ena[3] && satsys(obs->sat, nullptr) == SYS_GLO)
         {
             meas[1] += c1 * opt->exterr.gpsglob[0] + c2 * opt->exterr.gpsglob[1];
         }
@@ -913,7 +913,7 @@ int corrmeas(const obsd_t *obs, const nav_t *nav, const double *pos,
     gamma = std::pow(lam[1] / lam[0], 2.0); /* f1^2/f2^2 */
     P1_P2 = nav->cbias[obs->sat - 1][0];
     P1_C1 = nav->cbias[obs->sat - 1][1];
-    if (P1_P2 == 0.0 && (satsys(obs->sat, NULL) & (SYS_GPS | SYS_GAL | SYS_QZS)))
+    if (P1_P2 == 0.0 && (satsys(obs->sat, nullptr) & (SYS_GPS | SYS_GAL | SYS_QZS)))
         {
             P1_P2 = (1.0 - gamma) * gettgd_ppp(obs->sat, nav);
         }
@@ -1113,7 +1113,7 @@ void udbias_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
     /* reset phase-bias if expire obs outage counter */
     for (i = 0; i < MAXSAT; i++)
         {
-            if (++rtk->ssat[i].outc[0] > (unsigned int)rtk->opt.maxout)
+            if (++rtk->ssat[i].outc[0] > static_cast<unsigned int>(rtk->opt.maxout))
                 {
                     initx(rtk, 0.0, 0.0, IB_PPP(i + 1, &rtk->opt));
                 }
@@ -1124,7 +1124,7 @@ void udbias_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
         {
             sat = obs[i].sat;
             j = IB_PPP(sat, &rtk->opt);
-            if (!corrmeas(obs + i, nav, pos, rtk->ssat[sat - 1].azel, &rtk->opt, NULL, NULL,
+            if (!corrmeas(obs + i, nav, pos, rtk->ssat[sat - 1].azel, &rtk->opt, nullptr, nullptr,
                     0.0, meas, var, &brk)) continue;
 
             if (brk)
@@ -1273,7 +1273,7 @@ int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const do
     for (i = 0; i < n && i < MAXOBS; i++)
         {
             sat = obs[i].sat;
-            if (!(sys = satsys(sat, NULL)) || !rtk->ssat[sat - 1].vs) continue;
+            if (!(sys = satsys(sat, nullptr)) || !rtk->ssat[sat - 1].vs) continue;
 
             /* geometric distance/azimuth/elevation angle */
             if ((r = geodist(rs + i * 6, rr, e)) <= 0.0 ||
@@ -1492,11 +1492,11 @@ void pppos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
             for (i = 0; i < 3; i++)
                 {
                     rtk->sol.rr[i] = rtk->x[i];
-                    rtk->sol.qr[i] = (float)rtk->P[i + i * rtk->nx];
+                    rtk->sol.qr[i] = static_cast<float>(rtk->P[i + i * rtk->nx]);
                 }
-            rtk->sol.qr[3] = (float)rtk->P[1];
-            rtk->sol.qr[4] = (float)rtk->P[2 + rtk->nx];
-            rtk->sol.qr[5] = (float)rtk->P[2];
+            rtk->sol.qr[3] = static_cast<float>(rtk->P[1]);
+            rtk->sol.qr[4] = static_cast<float>(rtk->P[2 + rtk->nx]);
+            rtk->sol.qr[5] = static_cast<float>(rtk->P[2]);
             rtk->sol.dtr[0] = rtk->x[IC_PPP(0, opt)];
             rtk->sol.dtr[1] = rtk->x[IC_PPP(1, opt)] - rtk->x[IC_PPP(0, opt)];
             for (i = 0; i < n && i < MAXOBS; i++)

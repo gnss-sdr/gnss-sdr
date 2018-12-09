@@ -57,7 +57,7 @@
 class Galileo_Fnav_Message
 {
 public:
-    void split_page(std::string page_string);
+    void split_page(const std::string& page_string);
     void reset();
     bool have_new_ephemeris();
     bool have_new_iono_and_GST();
@@ -109,7 +109,7 @@ public:
     bool FNAV_region4_1;
     bool FNAV_region5_1;
     double FNAV_BGD_1;
-    double FNAV_E5ahs_1;
+    int32_t FNAV_E5ahs_1;
     double FNAV_WN_1;
     double FNAV_TOW_1;
     bool FNAV_E5advs_1;
@@ -159,8 +159,8 @@ public:
 
     // WORD 5 Almanac (SVID1 and SVID2(1/2)), Week Number and almanac reference time
     int32_t FNAV_IODa_5;
-    double FNAV_WNa_5;
-    double FNAV_t0a_5;
+    int32_t FNAV_WNa_5;
+    int32_t FNAV_t0a_5;
     int32_t FNAV_SVID1_5;
     double FNAV_Deltaa12_1_5;
     double FNAV_e_1_5;
@@ -185,7 +185,7 @@ public:
     double FNAV_M0_2_6;
     double FNAV_af0_2_6;
     double FNAV_af1_2_6;
-    double FNAV_E5ahs_2_6;
+    int32_t FNAV_E5ahs_2_6;
     int32_t FNAV_SVID3_6;
     double FNAV_Deltaa12_3_6;
     double FNAV_e_3_6;
@@ -196,13 +196,13 @@ public:
     double FNAV_M0_3_6;
     double FNAV_af0_3_6;
     double FNAV_af1_3_6;
-    double FNAV_E5ahs_3_6;
+    int32_t FNAV_E5ahs_3_6;
 
 private:
     bool _CRC_test(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, uint32_t checksum);
-    void decode_page(std::string data);
-    uint64_t read_navigation_unsigned(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter);
-    int64_t read_navigation_signed(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter);
+    void decode_page(const std::string& data);
+    uint64_t read_navigation_unsigned(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
+    int64_t read_navigation_signed(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
 
     std::string omega0_1;
     //std::string omega0_2;

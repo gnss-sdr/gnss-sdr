@@ -51,7 +51,8 @@ class GalileoE1PcpsAmbiguousAcquisition : public AcquisitionInterface
 {
 public:
     GalileoE1PcpsAmbiguousAcquisition(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role,
+        unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~GalileoE1PcpsAmbiguousAcquisition();
@@ -154,7 +155,7 @@ private:
     unsigned int doppler_step_;
     unsigned int sampled_ms_;
     unsigned int max_dwells_;
-    long fs_in_;
+    int64_t fs_in_;
     bool dump_;
     bool blocking_;
     std::string dump_filename_;

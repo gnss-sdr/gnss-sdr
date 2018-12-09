@@ -125,7 +125,7 @@ private:
 
     // vars for Viterbi decoder
     int32_t *out0, *out1, *state0, *state1;
-    int32_t g_encoder[2];
+    int32_t g_encoder[2]{};
     const int32_t nn = 2;  // Coding rate 1/n
     const int32_t KK = 7;  // Constraint Length
     int32_t mm = KK - 1;

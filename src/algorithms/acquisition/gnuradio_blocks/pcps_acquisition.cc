@@ -34,8 +34,8 @@
  */
 
 #include "pcps_acquisition.h"
+#include "GLONASS_L1_L2_CA.h"  // for GLONASS_TWO_PI
 #include "GPS_L1_CA.h"         // for GPS_TWO_PI
-#include "GLONASS_L1_L2_CA.h"  // for GLONASS_TWO_PI"
 #include "gnss_sdr_create_directory.h"
 #include <boost/filesystem/path.hpp>
 #include <glog/logging.h>
@@ -120,7 +120,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
     // Inverse FFT
     d_ifft = new gr::fft::fft_complex(d_fft_size, false);
 
-    d_gnss_synchro = 0;
+    d_gnss_synchro = nullptr;
     d_grid_doppler_wipeoffs = nullptr;
     d_grid_doppler_wipeoffs_step_two = nullptr;
     d_magnitude_grid = nullptr;
@@ -158,10 +158,10 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
         {
             std::string dump_path;
             // Get path
-            if (d_dump_filename.find_last_of("/") != std::string::npos)
+            if (d_dump_filename.find_last_of('/') != std::string::npos)
                 {
-                    std::string dump_filename_ = d_dump_filename.substr(d_dump_filename.find_last_of("/") + 1);
-                    dump_path = d_dump_filename.substr(0, d_dump_filename.find_last_of("/"));
+                    std::string dump_filename_ = d_dump_filename.substr(d_dump_filename.find_last_of('/') + 1);
+                    dump_path = d_dump_filename.substr(0, d_dump_filename.find_last_of('/'));
                     d_dump_filename = dump_filename_;
                 }
             else
@@ -173,9 +173,9 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
                     d_dump_filename = "acquisition";
                 }
             // remove extension if any
-            if (d_dump_filename.substr(1).find_last_of(".") != std::string::npos)
+            if (d_dump_filename.substr(1).find_last_of('.') != std::string::npos)
                 {
-                    d_dump_filename = d_dump_filename.substr(0, d_dump_filename.find_last_of("."));
+                    d_dump_filename = d_dump_filename.substr(0, d_dump_filename.find_last_of('.'));
                 }
             d_dump_filename = dump_path + boost::filesystem::path::preferred_separator + d_dump_filename;
             // create directory
@@ -268,16 +268,13 @@ bool pcps_acquisition::is_fdma()
             LOG(INFO) << "Trying to acquire SV PRN " << d_gnss_synchro->PRN << " with freq " << d_old_freq << " in Glonass Channel " << GLONASS_PRN.at(d_gnss_synchro->PRN) << std::endl;
             return true;
         }
-    else if (strcmp(d_gnss_synchro->Signal, "2G") == 0)
+    if (strcmp(d_gnss_synchro->Signal, "2G") == 0)
         {
             d_old_freq += DFRQ2_GLO * GLONASS_PRN.at(d_gnss_synchro->PRN);
             LOG(INFO) << "Trying to acquire SV PRN " << d_gnss_synchro->PRN << " with freq " << d_old_freq << " in Glonass Channel " << GLONASS_PRN.at(d_gnss_synchro->PRN) << std::endl;
             return true;
         }
-    else
-        {
-            return false;
-        }
+    return false;
 }
 
 
@@ -445,8 +442,8 @@ void pcps_acquisition::dump_results(int32_t effective_fft_size)
     filename.append(std::to_string(d_gnss_synchro->PRN));
     filename.append(".mat");
 
-    mat_t* matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
-    if (matfp == NULL)
+    mat_t* matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT73);
+    if (matfp == nullptr)
         {
             std::cout << "Unable to create or open Acquisition dump file" << std::endl;
             //acq_parameters.dump = false;
@@ -472,7 +469,7 @@ void pcps_acquisition::dump_results(int32_t effective_fft_size)
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            float aux = static_cast<float>(d_gnss_synchro->Acq_doppler_hz);
+            auto aux = static_cast<float>(d_gnss_synchro->Acq_doppler_hz);
             matvar = Mat_VarCreate("acq_doppler_hz", MAT_C_SINGLE, MAT_T_SINGLE, 1, dims, &aux, 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
@@ -927,7 +924,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                 uint32_t buff_increment;
                 if (d_cshort)
                     {
-                        const lv_16sc_t* in = reinterpret_cast<const lv_16sc_t*>(input_items[0]);  // Get the input samples pointer
+                        const auto* in = reinterpret_cast<const lv_16sc_t*>(input_items[0]);  // Get the input samples pointer
                         if ((ninput_items[0] + d_buffer_count) <= d_consumed_samples)
                             {
                                 buff_increment = ninput_items[0];
@@ -940,7 +937,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                     }
                 else
                     {
-                        const gr_complex* in = reinterpret_cast<const gr_complex*>(input_items[0]);  // Get the input samples pointer
+                        const auto* in = reinterpret_cast<const gr_complex*>(input_items[0]);  // Get the input samples pointer
                         if ((ninput_items[0] + d_buffer_count) <= d_consumed_samples)
                             {
                                 buff_increment = ninput_items[0];

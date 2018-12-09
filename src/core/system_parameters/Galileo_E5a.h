@@ -174,7 +174,7 @@ const std::vector<std::pair<int32_t, int32_t>> FNAV_TOW_4_bit({{190, 20}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_IODa_5_bit({{7, 4}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_WNa_5_bit({{11, 2}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_t0a_5_bit({{13, 10}});
-const double FNAV_t0a_5_LSB = 600;
+const int32_t FNAV_t0a_5_LSB = 600;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_SVID1_5_bit({{23, 6}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_Deltaa12_1_5_bit({{29, 13}});
 const double FNAV_Deltaa12_5_LSB = TWO_N9;

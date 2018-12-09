@@ -128,7 +128,7 @@ public:
      *
      * It is used to assist the receiver with external ephemeris data
      */
-    bool send_telemetry_msg(pmt::pmt_t msg);
+    bool send_telemetry_msg(const pmt::pmt_t& msg);
 
     /*!
      * \brief Returns a smart pointer to the PVT object
@@ -148,7 +148,7 @@ private:
     void set_signals_list();
     void set_channels_state();  // Initializes the channels state (start acquisition or keep standby)
                                 // using the configuration parameters (number of channels and max channels in acquisition)
-    Gnss_Signal search_next_signal(std::string searched_signal, bool pop, bool tracked = false);
+    Gnss_Signal search_next_signal(const std::string& searched_signal, bool pop, bool tracked = false);
     bool connected_;
     bool running_;
     int sources_count_;
@@ -200,7 +200,7 @@ private:
 
     bool enable_monitor_;
     gr::basic_block_sptr GnssSynchroMonitor_;
-    std::vector<std::string> split_string(const std::string &s, char delim);
+    std::vector<std::string> split_string(const std::string& s, char delim);
 };
 
 #endif /*GNSS_SDR_GNSS_FLOWGRAPH_H_*/

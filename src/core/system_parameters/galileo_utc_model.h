@@ -34,6 +34,7 @@
 #define GNSS_SDR_GALILEO_UTC_MODEL_H_
 
 #include <boost/serialization/nvp.hpp>
+#include <cstdint>
 
 /*!
  * \brief This class is a storage for the GALILEO UTC MODEL data as described in Galileo ICD
@@ -49,8 +50,8 @@ public:
     double Delta_tLS_6;
     double t0t_6;   //!< UTC data reference Time of Week [s]
     double WNot_6;  //!< UTC data reference Week number [week]
-    double WN_LSF_6;
-    double DN_6;
+    int32_t WN_LSF_6;
+    int32_t DN_6;
     double Delta_tLSF_6;
     bool flag_utc_model;
 

@@ -53,12 +53,12 @@ public:
     /*!
      * \brief Default constructor.
      */
-    Nmea_Printer(std::string filename, bool flag_nmea_output_file, bool flag_nmea_tty_port, std::string nmea_dump_filename, const std::string& base_path = ".");
+    Nmea_Printer(const std::string& filename, bool flag_nmea_output_file, bool flag_nmea_tty_port, std::string nmea_dump_devname, const std::string& base_path = ".");
 
     /*!
      * \brief Print NMEA PVT and satellite info to the initialized device
      */
-    bool Print_Nmea_Line(const std::shared_ptr<rtklib_solver>& position, bool print_average_values);
+    bool Print_Nmea_Line(const std::shared_ptr<rtklib_solver>& pvt_data, bool print_average_values);
 
     /*!
      * \brief Default destructor.
@@ -72,7 +72,7 @@ private:
     std::string nmea_devname;
     int nmea_dev_descriptor;  // NMEA serial device descriptor (i.e. COM port)
     std::shared_ptr<rtklib_solver> d_PVT_data;
-    int init_serial(std::string serial_device);  //serial port control
+    int init_serial(const std::string& serial_device);  //serial port control
     void close_serial();
     std::string get_GPGGA();  // fix data
     std::string get_GPGSV();  // satellite data

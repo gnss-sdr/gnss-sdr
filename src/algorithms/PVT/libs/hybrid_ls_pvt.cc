@@ -34,6 +34,7 @@
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <utility>
 #include <glog/logging.h>
 
 
@@ -43,7 +44,7 @@ hybrid_ls_pvt::hybrid_ls_pvt(int nchannels, std::string dump_filename, bool flag
 {
     // init empty ephemeris for all the available GNSS channels
     d_nchannels = nchannels;
-    d_dump_filename = dump_filename;
+    d_dump_filename = std::move(dump_filename);
     d_flag_dump_enabled = flag_dump_to_file;
     d_galileo_current_time = 0;
     count_valid_position = 0;
@@ -173,7 +174,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
                     {
                         // 1 GPS - find the ephemeris for the current GPS SV observation. The SV PRN ID is the map key
                         std::string sig_(gnss_observables_iter->second.Signal);
-                        if (sig_.compare("1C") == 0)
+                        if (sig_ == "1C")
                             {
                                 gps_ephemeris_iter = gps_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                 if (gps_ephemeris_iter != gps_ephemeris_map.end())
@@ -228,7 +229,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
                                         DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->first;
                                     }
                             }
-                        if (sig_.compare("2S") == 0)
+                        if (sig_ == "2S")
                             {
                                 gps_cnav_ephemeris_iter = gps_cnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                 if (gps_cnav_ephemeris_iter != gps_cnav_ephemeris_map.end())

@@ -31,38 +31,38 @@
  */
 
 
-#include <chrono>
 #include <boost/filesystem.hpp>
 #include <boost/make_shared.hpp>
-#include <utility>
 #include <glog/logging.h>
-#include <gnuradio/top_block.h>
-#include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/blocks/file_source.h>
+#include <gnuradio/top_block.h>
+#include <chrono>
+#include <utility>
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
 #include <gnuradio/analog/sig_source_c.h>
 #endif
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/blocks/null_sink.h>
-#include <gtest/gtest.h>
+#include "GPS_L1_CA.h"
+#include "acquisition_dump_reader.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
-#include "in_memory_configuration.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
 #include "gnuplot_i.h"
-#include "GPS_L1_CA.h"
-#include "test_flags.h"
-#include "acquisition_dump_reader.h"
 #include "gps_l1_ca_pcps_acquisition.h"
+#include "in_memory_configuration.h"
+#include "test_flags.h"
+#include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/msg_queue.h>
+#include <gtest/gtest.h>
 
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CaPcpsAcquisitionTest_msg_rx;
 
-typedef boost::shared_ptr<GpsL1CaPcpsAcquisitionTest_msg_rx> GpsL1CaPcpsAcquisitionTest_msg_rx_sptr;
+using GpsL1CaPcpsAcquisitionTest_msg_rx_sptr = boost::shared_ptr<GpsL1CaPcpsAcquisitionTest_msg_rx>;
 
 GpsL1CaPcpsAcquisitionTest_msg_rx_sptr GpsL1CaPcpsAcquisitionTest_msg_rx_make();
 
@@ -134,7 +134,7 @@ protected:
     gr::top_block_sptr top_block;
     std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
-    Gnss_Synchro gnss_synchro;
+    Gnss_Synchro gnss_synchro{};
     size_t item_size;
     unsigned int doppler_max;
     unsigned int doppler_step;
@@ -199,7 +199,7 @@ void GpsL1CaPcpsAcquisitionTest::plot_grid()
                 {
                     boost::filesystem::path p(gnuplot_executable);
                     boost::filesystem::path dir = p.parent_path();
-                    const std::string& gnuplot_path = dir.native();
+                    const std::string &gnuplot_path = dir.native();
                     Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                     Gnuplot g1("lines");

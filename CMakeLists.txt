@@ -1131,7 +1131,13 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
                 endif()
                 message(FATAL_ERROR "libtool is required to build matio from source")
             endif()
-            if(EXISTS "/usr/bin/aclocal" OR EXISTS "/usr/bin/aclocal-1.16" OR EXISTS "/usr/bin/aclocal-1.15" OR EXISTS "/usr/bin/aclocal-1.14" OR EXISTS "/usr/bin/aclocal-1.13" OR EXISTS "/usr/bin/aclocal-1.11"  OR EXISTS "/usr/bin/aclocal-1.10")
+            if(EXISTS "/usr/bin/aclocal" OR
+                EXISTS "/usr/bin/aclocal-1.16" OR
+                EXISTS "/usr/bin/aclocal-1.15" OR
+                EXISTS "/usr/bin/aclocal-1.14" OR
+                EXISTS "/usr/bin/aclocal-1.13" OR
+                EXISTS "/usr/bin/aclocal-1.11" OR
+                EXISTS "/usr/bin/aclocal-1.10")
                 message(STATUS "Automake found.")
             else()
                 message(" aclocal has not been found.")
@@ -1611,6 +1617,26 @@ if((CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU
     add_definitions(-fvisibility=hidden)
 endif()
 
+
+########################################################################
+# clang-tidy https://clang.llvm.org/extra/clang-tidy/index.html
+########################################################################
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    if(NOT (CMAKE_VERSION VERSION_LESS "3.6"))
+        find_program(
+            CLANG_TIDY_EXE
+            NAMES "clang-tidy"
+            DOC "Path to clang-tidy executable"
+        )
+        if(NOT CLANG_TIDY_EXE)
+            message(STATUS "clang-tidy not found.")
+        else()
+            message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
+            set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" "-checks=*")
+            set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+        endif()
+    endif()
+endif()
 
 
 ########################################################################

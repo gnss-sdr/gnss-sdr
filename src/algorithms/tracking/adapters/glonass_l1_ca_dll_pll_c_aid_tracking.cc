@@ -38,9 +38,9 @@
  */
 
 #include "glonass_l1_ca_dll_pll_c_aid_tracking.h"
+#include "GLONASS_L1_L2_CA.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
-#include "GLONASS_L1_L2_CA.h"
 #include <glog/logging.h>
 
 
@@ -224,11 +224,8 @@ gr::basic_block_sptr GlonassL1CaDllPllCAidTracking::get_left_block()
         {
             return tracking_sc;
         }
-    else
-        {
-            LOG(WARNING) << item_type_ << " unknown tracking item type";
-            return nullptr;
-        }
+    LOG(WARNING) << item_type_ << " unknown tracking item type";
+    return nullptr;
 }
 
 
@@ -242,9 +239,8 @@ gr::basic_block_sptr GlonassL1CaDllPllCAidTracking::get_right_block()
         {
             return tracking_sc;
         }
-    else
-        {
-            LOG(WARNING) << item_type_ << " unknown tracking item type";
-            return nullptr;
-        }
+
+
+    LOG(WARNING) << item_type_ << " unknown tracking item type";
+    return nullptr;
 }

@@ -33,8 +33,8 @@
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
-#include <cstring>
 #include <cmath>
+#include <cstring>
 
 using google::LogMessage;
 
@@ -86,7 +86,7 @@ Notch::~Notch()
 
 void Notch::forecast(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items_required)
 {
-    for (int & aux : ninput_items_required)
+    for (int &aux : ninput_items_required)
         {
             aux = length_;
         }

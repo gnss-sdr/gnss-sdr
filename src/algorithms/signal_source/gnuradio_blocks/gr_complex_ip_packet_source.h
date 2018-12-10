@@ -33,13 +33,13 @@
 #ifndef INCLUDED_GR_COMPLEX_IP_PACKET_SOURCE_H
 #define INCLUDED_GR_COMPLEX_IP_PACKET_SOURCE_H
 
-#include <gnuradio/sync_block.h>
 #include <boost/thread.hpp>
-#include <pcap.h>
+#include <gnuradio/sync_block.h>
 #include <arpa/inet.h>
-#include <net/if.h>
 #include <net/ethernet.h>
+#include <net/if.h>
 #include <netinet/if_ether.h>
+#include <pcap.h>
 #include <string>
 #include <sys/ioctl.h>
 

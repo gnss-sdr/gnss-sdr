@@ -31,11 +31,12 @@
  */
 
 #include "rtl_tcp_signal_source.h"
+#include "GPS_L1_CA.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_valve.h"
-#include "GPS_L1_CA.h"
 #include <boost/format.hpp>
 #include <glog/logging.h>
+#include <cstdint>
 #include <iostream>
 #include <utility>
 
@@ -63,7 +64,7 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
 
     // rtl_tcp PARAMETERS
     std::string default_address = "127.0.0.1";
-    short default_port = 1234;
+    int16_t default_port = 1234;
     AGC_enabled_ = configuration->property(role + ".AGC_enabled", true);
     freq_ = configuration->property(role + ".freq", GPS_L1_FREQ_HZ);
     gain_ = configuration->property(role + ".gain", 40.0);
@@ -77,7 +78,7 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
 
     if (item_type_ == "short")
         {
-            item_size_ = sizeof(short);
+            item_size_ = sizeof(int16_t);
         }
     else if (item_type_ == "gr_complex")
         {
@@ -118,7 +119,7 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
     else
         {
             LOG(WARNING) << item_type_ << " unrecognized item type. Using short.";
-            item_size_ = sizeof(short);
+            item_size_ = sizeof(int16_t);
         }
 
     if (samples_ != 0)

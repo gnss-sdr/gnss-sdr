@@ -32,9 +32,9 @@
 #ifndef GNSS_SDR_GPS_L5_H_
 #define GNSS_SDR_GPS_L5_H_
 
-#include "gnss_frequencies.h"
 #include "GPS_CNAV.h"
 #include "MATH_CONSTANTS.h"
+#include "gnss_frequencies.h"
 #include <cstdint>
 #include <string>
 

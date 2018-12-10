@@ -29,10 +29,10 @@
  * -------------------------------------------------------------------------
  */
 
+#include "gnss_signal_processing.h"
+#include <armadillo>
 #include <chrono>
 #include <complex>
-#include <armadillo>
-#include "gnss_signal_processing.h"
 
 DEFINE_int32(size_carrier_test, 100000, "Size of the arrays used for complex carrier testing");
 

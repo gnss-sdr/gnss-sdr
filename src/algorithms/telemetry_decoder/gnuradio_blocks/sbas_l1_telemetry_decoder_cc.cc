@@ -125,7 +125,7 @@ void sbas_l1_telemetry_decoder_cc::sample_aligner::reset()
 /*
  * samples length must be a multiple of two
  */
-bool sbas_l1_telemetry_decoder_cc::sample_aligner::get_symbols(const std::vector<double>& samples, std::vector<double> &symbols)
+bool sbas_l1_telemetry_decoder_cc::sample_aligner::get_symbols(const std::vector<double> &samples, std::vector<double> &symbols)
 {
     double smpls[3] = {};
     double corr_diff;
@@ -213,7 +213,7 @@ void sbas_l1_telemetry_decoder_cc::symbol_aligner_and_decoder::reset()
 }
 
 
-bool sbas_l1_telemetry_decoder_cc::symbol_aligner_and_decoder::get_bits(const std::vector<double>& symbols, std::vector<int32_t> &bits)
+bool sbas_l1_telemetry_decoder_cc::symbol_aligner_and_decoder::get_bits(const std::vector<double> &symbols, std::vector<int32_t> &bits)
 {
     const int32_t traceback_depth = 5 * d_KK;
     int32_t nbits_requested = symbols.size() / d_symbols_per_bit;
@@ -258,7 +258,7 @@ void sbas_l1_telemetry_decoder_cc::frame_detector::reset()
 }
 
 
-void sbas_l1_telemetry_decoder_cc::frame_detector::get_frame_candidates(const std::vector<int32_t>& bits, std::vector<std::pair<int32_t, std::vector<int32_t>>> &msg_candidates)
+void sbas_l1_telemetry_decoder_cc::frame_detector::get_frame_candidates(const std::vector<int32_t> &bits, std::vector<std::pair<int32_t, std::vector<int32_t>>> &msg_candidates)
 {
     std::stringstream ss;
     uint32_t sbas_msg_length = 250;
@@ -299,7 +299,7 @@ void sbas_l1_telemetry_decoder_cc::frame_detector::get_frame_candidates(const st
                             if (inv_preamble_detected)
                                 {
                                     // invert bits
-                                    for (int & candidate_bit_it : candidate)
+                                    for (int &candidate_bit_it : candidate)
                                         candidate_bit_it = candidate_bit_it == 0 ? 1 : 0;
                                 }
                             msg_candidates.emplace_back(relative_preamble_start, candidate);
@@ -323,7 +323,7 @@ void sbas_l1_telemetry_decoder_cc::crc_verifier::reset()
 }
 
 
-void sbas_l1_telemetry_decoder_cc::crc_verifier::get_valid_frames(const std::vector<msg_candiate_int_t>& msg_candidates, std::vector<msg_candiate_char_t> &valid_msgs)
+void sbas_l1_telemetry_decoder_cc::crc_verifier::get_valid_frames(const std::vector<msg_candiate_int_t> &msg_candidates, std::vector<msg_candiate_char_t> &valid_msgs)
 {
     std::stringstream ss;
     VLOG(FLOW) << "get_valid_frames(): "
@@ -361,7 +361,7 @@ void sbas_l1_telemetry_decoder_cc::crc_verifier::get_valid_frames(const std::vec
 }
 
 
-void sbas_l1_telemetry_decoder_cc::crc_verifier::zerropad_back_and_convert_to_bytes(const std::vector<int>& msg_candidate, std::vector<uint8_t> &bytes)
+void sbas_l1_telemetry_decoder_cc::crc_verifier::zerropad_back_and_convert_to_bytes(const std::vector<int> &msg_candidate, std::vector<uint8_t> &bytes)
 {
     std::stringstream ss;
     const size_t bits_per_byte = 8;
@@ -388,7 +388,7 @@ void sbas_l1_telemetry_decoder_cc::crc_verifier::zerropad_back_and_convert_to_by
 }
 
 
-void sbas_l1_telemetry_decoder_cc::crc_verifier::zerropad_front_and_convert_to_bytes(const std::vector<int32_t>& msg_candidate, std::vector<uint8_t> &bytes)
+void sbas_l1_telemetry_decoder_cc::crc_verifier::zerropad_front_and_convert_to_bytes(const std::vector<int32_t> &msg_candidate, std::vector<uint8_t> &bytes)
 {
     std::stringstream ss;
     const size_t bits_per_byte = 8;
@@ -425,7 +425,7 @@ int sbas_l1_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
     auto *out = reinterpret_cast<Gnss_Synchro *>(output_items[0]);            // Get the output buffer pointer
     const auto *in = reinterpret_cast<const Gnss_Synchro *>(input_items[0]);  // Get the input buffer pointer
 
-    Gnss_Synchro current_symbol;  // structure to save the synchronization information and send the output object to the next block
+    Gnss_Synchro current_symbol{};  // structure to save the synchronization information and send the output object to the next block
     // 1. Copy the current tracking output
     current_symbol = in[0];
     // copy correlation samples into samples vector
@@ -460,7 +460,7 @@ int sbas_l1_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
             // compute message sample stamp
             // and fill messages in SBAS raw message objects
             //std::vector<Sbas_Raw_Msg> sbas_raw_msgs;
-            for (const auto & valid_msg : valid_msgs)
+            for (const auto &valid_msg : valid_msgs)
                 {
                     int32_t message_sample_offset =
                         (sample_alignment ? 0 : -1) + d_samples_per_symbol * (symbol_alignment ? -1 : 0) + d_samples_per_symbol * d_symbols_per_bit * valid_msg.first;

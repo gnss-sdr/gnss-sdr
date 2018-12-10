@@ -30,13 +30,13 @@
  * -------------------------------------------------------------------------
  */
 
+#include <armadillo>
+#include <volk/volk.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include <algorithm>
 #include <chrono>
 #include <complex>
 #include <numeric>
-#include <armadillo>
-#include <volk/volk.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
 
 DEFINE_int32(size_multiply_test, 100000, "Size of the arrays used for multiply testing");
 

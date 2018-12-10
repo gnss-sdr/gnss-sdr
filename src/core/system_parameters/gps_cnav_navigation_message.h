@@ -41,8 +41,8 @@
 #include <cstdint>
 #include <map>
 #include <string>
-#include <vector>
 #include <utility>
+#include <vector>
 
 //TODO: Create GPS CNAV almanac
 //#include "gps_almanac.h"

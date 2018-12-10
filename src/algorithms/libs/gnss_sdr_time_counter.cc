@@ -61,7 +61,7 @@ gnss_sdr_time_counter_sptr gnss_sdr_make_time_counter()
 
 
 int gnss_sdr_time_counter::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
-                         gr_vector_const_void_star &input_items __attribute__((unused)), gr_vector_void_star &output_items)
+    gr_vector_const_void_star &input_items __attribute__((unused)), gr_vector_void_star &output_items)
 {
     Gnss_Synchro *out = reinterpret_cast<Gnss_Synchro *>(output_items[0]);
     const Gnss_Synchro *in = reinterpret_cast<const Gnss_Synchro *>(input_items[0]);

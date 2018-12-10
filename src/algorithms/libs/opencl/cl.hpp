@@ -23,15 +23,15 @@
 
 /*! \file
  *
- *   \brief C++ bindings for OpenCL 1.0 (rev 48), OpenCL 1.1 (rev 33) and 
- *       OpenCL 1.2 (rev 15)    
+ *   \brief C++ bindings for OpenCL 1.0 (rev 48), OpenCL 1.1 (rev 33) and
+ *       OpenCL 1.2 (rev 15)
  *   \author Benedict R. Gaster, Laurent Morichetti and Lee Howes
- *   
+ *
  *   Additions and fixes from:
- *       Brian Cole, March 3rd 2010 and April 2012 
+ *       Brian Cole, March 3rd 2010 and April 2012
  *       Matt Gruenke, April 2012.
  *       Bruce Merry, February 2013.
- *   
+ *
  *   \version 1.2.5
  *   \date June 2013
  *
@@ -71,7 +71,7 @@
  *
  * \code
  * #define __CL_ENABLE_EXCEPTIONS
- * 
+ *
  * #if defined(__APPLE__) || defined(__MACOSX)
  * #include <OpenCL/cl.hpp>
  * #else
@@ -80,13 +80,13 @@
  * #include <cstdio>
  * #include <cstdlib>
  * #include <iostream>
- * 
+ *
  *  const char * helloStr  = "__kernel void "
  *                           "hello(void) "
  *                           "{ "
  *                           "  "
  *                           "} ";
- * 
+ *
  *  int
  *  main(void)
  *  {
@@ -100,33 +100,33 @@
  *           return -1;
  *       }
  *
- *       cl_context_properties properties[] = 
+ *       cl_context_properties properties[] =
  *          { CL_CONTEXT_PLATFORM, (cl_context_properties)(platforms[0])(), 0};
- *       cl::Context context(CL_DEVICE_TYPE_CPU, properties); 
- * 
+ *       cl::Context context(CL_DEVICE_TYPE_CPU, properties);
+ *
  *       std::vector<cl::Device> devices = context.getInfo<CL_CONTEXT_DEVICES>();
- * 
+ *
  *       cl::Program::Sources source(1,
  *           std::make_pair(helloStr,strlen(helloStr)));
  *       cl::Program program_ = cl::Program(context, source);
  *       program_.build(devices);
- * 
+ *
  *       cl::Kernel kernel(program_, "hello", &err);
- * 
+ *
  *       cl::Event event;
  *       cl::CommandQueue queue(context, devices[0], 0, &err);
  *       queue.enqueueNDRangeKernel(
- *           kernel, 
- *           cl::NullRange, 
+ *           kernel,
+ *           cl::NullRange,
  *           cl::NDRange(4,4),
  *           cl::NullRange,
  *           NULL,
- *           &event); 
- * 
+ *           &event);
+ *
  *       event.wait();
  *     }
  *     catch (cl::Error err) {
- *        std::cerr 
+ *        std::cerr
  *           << "ERROR: "
  *           << err.what()
  *           << "("
@@ -134,10 +134,10 @@
  *           << ")"
  *           << std::endl;
  *     }
- * 
+ *
  *    return EXIT_SUCCESS;
  *  }
- * 
+ *
  * \endcode
  *
  */
@@ -146,10 +146,10 @@
 
 #ifdef _WIN32
 
-#include <windows.h>
-#include <malloc.h>
-#include <iterator>
 #include <intrin.h>
+#include <iterator>
+#include <malloc.h>
+#include <windows.h>
 
 #if defined(__CL_ENABLE_EXCEPTIONS)
 #include <exception>
@@ -169,12 +169,12 @@
 #endif
 
 #if defined(__APPLE__) || defined(__MACOSX)
-#include <OpenGL/OpenGL.h>
 #include <OpenCL/opencl.h>
+#include <OpenGL/OpenGL.h>
 #include <libkern/OSAtomic.h>
 #else
-#include <GL/gl.h>
 #include <CL/opencl.h>
+#include <GL/gl.h>
 #endif  // !__APPLE__
 
 // To avoid accidentally taking ownership of core OpenCL types
@@ -199,8 +199,8 @@
 #define CL_CALLBACK
 #endif  //CL_CALLBACK
 
-#include <utility>
 #include <limits>
+#include <utility>
 
 #if !defined(__NO_STD_VECTOR)
 #include <vector>
@@ -212,7 +212,6 @@
 
 #if defined(linux) || defined(__APPLE__) || defined(__MACOSX)
 #include <alloca.h>
-
 #include <emmintrin.h>
 #include <xmmintrin.h>
 #endif  // linux
@@ -264,8 +263,8 @@ class Memory;
 class Buffer;
 
 #if defined(__CL_ENABLE_EXCEPTIONS)
-/*! \brief Exception class 
- * 
+/*! \brief Exception class
+ *
  *  This may be thrown by API functions when __CL_ENABLE_EXCEPTIONS is defined.
  */
 class Error : public std::exception
@@ -277,7 +276,7 @@ private:
 public:
     /*! \brief Create a new CL error exception for a given error code
      *  and corresponding message.
-     * 
+     *
      *  \param err error code value.
      *
      *  \param errStr a descriptive string that must remain in scope until
@@ -476,7 +475,7 @@ typedef std::string STRING_CLASS;
 /*! \class string
  * \brief Simple string class, that provides a limited subset of std::string
  * functionality but avoids many of the issues that come with that class.
- 
+
  *  \note Deprecated. Please use std::string as default or
  *  re-define the string class to match the std::string
  *  interface by defining STRING_CLASS
@@ -495,10 +494,10 @@ public:
 
     /*! \brief Constructs a string populated from an arbitrary value of
      *  specified size.
-     * 
+     *
      *  An extra '\0' is added, in case none was contained in str.
      *
-     *  \param str the initial value of the string instance.  Note that '\0'     
+     *  \param str the initial value of the string instance.  Note that '\0'
      *             characters receive no special treatment.  If NULL,
      *             the string is left empty, with a size of 0.
      *
@@ -678,7 +677,7 @@ typedef cl::string STRING_CLASS;
 #endif
 
 /*! \class vector
- * \brief Fixed sized vector implementation that mirroring 
+ * \brief Fixed sized vector implementation that mirroring
  *
  *  \note Deprecated. Please use std::vector as default or
  *  re-define the vector class to match the std::vector
@@ -738,7 +737,7 @@ public:
     }
 
     /*! \brief Appends an element after the last valid element.
-     * Calling this on a vector that has reached capacity will throw an 
+     * Calling this on a vector that has reached capacity will throw an
      * exception if exceptions are enabled.
      */
     void push_back(const T& x)
@@ -921,7 +920,7 @@ public:
 
         /**
          * Internal iterator constructor to capture reference
-         * to the vector it iterates over rather than taking 
+         * to the vector it iterates over rather than taking
          * the vector by copy.
          */
         iterator(const vector<T, N>& vec, int index) : vec_(&vec)
@@ -1617,7 +1616,7 @@ struct ReferenceHandler<cl_device_id>
     /**
      * Retain the device.
      * \param device A valid device created using createSubDevices
-     * \return 
+     * \return
      *   CL_SUCCESS if the function executed successfully.
      *   CL_INVALID_DEVICE if device was not a valid subdevice
      *   CL_OUT_OF_RESOURCES
@@ -1630,7 +1629,7 @@ struct ReferenceHandler<cl_device_id>
     /**
      * Retain the device.
      * \param device A valid device created using createSubDevices
-     * \return 
+     * \return
      *   CL_SUCCESS if the function executed successfully.
      *   CL_INVALID_DEVICE if device was not a valid subdevice
      *   CL_OUT_OF_RESOURCES
@@ -2055,13 +2054,13 @@ public:
     Device() : detail::Wrapper<cl_type>() {}
 
     /*! \brief Copy constructor.
-     * 
+     *
      *  This simply copies the device ID value, which is an inexpensive operation.
      */
     Device(const Device& device) : detail::Wrapper<cl_type>(device) {}
 
     /*! \brief Constructor from cl_device_id.
-     * 
+     *
      *  This simply copies the device ID value, which is an inexpensive operation.
      */
     Device(const cl_device_id& device) : detail::Wrapper<cl_type>(device) {}
@@ -2073,7 +2072,7 @@ public:
     static Device getDefault(cl_int* err = NULL);
 
     /*! \brief Assignment operator from Device.
-     * 
+     *
      *  This simply copies the device ID value, which is an inexpensive operation.
      */
     Device& operator=(const Device& rhs)
@@ -2086,7 +2085,7 @@ public:
     }
 
     /*! \brief Assignment operator from cl_device_id.
-     * 
+     *
      *  This simply copies the device ID value, which is an inexpensive operation.
      */
     Device& operator=(const cl_device_id& rhs)
@@ -2201,19 +2200,19 @@ public:
     Platform() : detail::Wrapper<cl_type>() {}
 
     /*! \brief Copy constructor.
-     * 
+     *
      *  This simply copies the platform ID value, which is an inexpensive operation.
      */
     Platform(const Platform& platform) : detail::Wrapper<cl_type>(platform) {}
 
     /*! \brief Constructor from cl_platform_id.
-     * 
+     *
      *  This simply copies the platform ID value, which is an inexpensive operation.
      */
     Platform(const cl_platform_id& platform) : detail::Wrapper<cl_type>(platform) {}
 
     /*! \brief Assignment operator from Platform.
-     * 
+     *
      *  This simply copies the platform ID value, which is an inexpensive operation.
      */
     Platform& operator=(const Platform& rhs)
@@ -2226,7 +2225,7 @@ public:
     }
 
     /*! \brief Assignment operator from cl_platform_id.
-     * 
+     *
      *  This simply copies the platform ID value, which is an inexpensive operation.
      */
     Platform& operator=(const cl_platform_id& rhs)
@@ -2259,7 +2258,7 @@ public:
     }
 
     /*! \brief Gets a list of devices for this platform.
-     * 
+     *
      *  Wraps clGetDeviceIDs().
      */
     cl_int getDevices(
@@ -2369,7 +2368,7 @@ public:
 #endif
 
     /*! \brief Gets a list of available platforms.
-     * 
+     *
      *  Wraps clGetPlatformIDs().
      */
     static cl_int get(
@@ -2401,7 +2400,7 @@ public:
     }
 
     /*! \brief Gets the first available platform.
-     * 
+     *
      *  Wraps clGetPlatformIDs(), returning the first result.
      */
     static cl_int get(
@@ -2433,7 +2432,7 @@ public:
     }
 
     /*! \brief Gets the first available platform, returning it by value.
-     * 
+     *
      *  Wraps clGetPlatformIDs(), returning the first result.
      */
     static Platform get(
@@ -2694,20 +2693,20 @@ public:
     Context() : detail::Wrapper<cl_type>() {}
 
     /*! \brief Copy constructor.
-     * 
+     *
      *  This calls clRetainContext() on the parameter's cl_context.
      */
     Context(const Context& context) : detail::Wrapper<cl_type>(context) {}
 
     /*! \brief Constructor from cl_context - takes ownership.
-     * 
+     *
      *  This effectively transfers ownership of a refcount on the cl_context
      *  into the new Context object.
      */
     __CL_EXPLICIT_CONSTRUCTORS Context(const cl_context& context) : detail::Wrapper<cl_type>(context) {}
 
     /*! \brief Assignment operator from Context.
-     * 
+     *
      *  This calls clRetainContext() on the parameter and clReleaseContext() on
      *  the previous value held by this instance.
      */
@@ -2721,7 +2720,7 @@ public:
     }
 
     /*! \brief Assignment operator from cl_context - takes ownership.
-     * 
+     *
      *  This effectively transfers ownership of a refcount on the rhs and calls
      *  clReleaseContext() on the value previously held by this instance.
      */
@@ -2756,7 +2755,7 @@ public:
     }
 
     /*! \brief Gets a list of supported image formats.
-     *  
+     *
      *  Wraps clGetSupportedImageFormats().
      */
     cl_int getSupportedImageFormats(
@@ -2855,13 +2854,13 @@ public:
     Event() : detail::Wrapper<cl_type>() {}
 
     /*! \brief Copy constructor.
-     * 
+     *
      *  This calls clRetainEvent() on the parameter's cl_event.
      */
     Event(const Event& event) : detail::Wrapper<cl_type>(event) {}
 
     /*! \brief Constructor from cl_event - takes ownership.
-     * 
+     *
      *  This effectively transfers ownership of a refcount on the cl_event
      *  into the new Event object.
      */
@@ -2882,7 +2881,7 @@ public:
     }
 
     /*! \brief Assignment operator from cl_event.
-     * 
+     *
      *  This calls clRetainEvent() on the parameter and clReleaseEvent() on
      *  the previous value held by this instance.
      */
@@ -2941,7 +2940,7 @@ public:
     }
 
     /*! \brief Blocks the calling thread until this event completes.
-     * 
+     *
      *  Wraps clWaitForEvents().
      */
     cl_int wait() const
@@ -2972,7 +2971,7 @@ public:
 #endif
 
     /*! \brief Blocks the calling thread until every event specified is complete.
-     * 
+     *
      *  Wraps clWaitForEvents().
      */
     static cl_int
@@ -2987,7 +2986,7 @@ public:
 
 #if defined(CL_VERSION_1_1)
 /*! \brief Class interface for user events (a subset of cl_event's).
- * 
+ *
  *  See Event for details about copy semantics, etc.
  */
 class UserEvent : public Event
@@ -3043,7 +3042,7 @@ public:
 #endif
 
 /*! \brief Blocks the calling thread until every event specified is complete.
- * 
+ *
  *  Wraps clWaitForEvents().
  */
 inline static cl_int
@@ -3076,20 +3075,20 @@ public:
     Memory() : detail::Wrapper<cl_type>() {}
 
     /*! \brief Copy constructor - performs shallow copy.
-     * 
+     *
      *  This calls clRetainMemObject() on the parameter's cl_mem.
      */
     Memory(const Memory& memory) : detail::Wrapper<cl_type>(memory) {}
 
     /*! \brief Constructor from cl_mem - takes ownership.
-     * 
+     *
      *  This effectively transfers ownership of a refcount on the cl_mem
      *  into the new Memory object.
      */
     __CL_EXPLICIT_CONSTRUCTORS Memory(const cl_mem& memory) : detail::Wrapper<cl_type>(memory) {}
 
     /*! \brief Assignment operator from Memory.
-     * 
+     *
      *  This calls clRetainMemObject() on the parameter and clReleaseMemObject()
      *  on the previous value held by this instance.
      */
@@ -3173,7 +3172,7 @@ template <typename IteratorType>
 cl_int copy(const cl::Buffer& buffer, IteratorType startIterator, IteratorType endIterator);
 
 /*! \brief Class interface for Buffer Memory Objects.
- * 
+ *
  *  See Memory for details about copy semantics, etc.
  *
  *  \see Memory
@@ -3365,7 +3364,7 @@ public:
 /*! \brief Class interface for creating OpenCL buffers from ID3D10Buffer's.
  *
  *  This is provided to facilitate interoperability with Direct3D.
- * 
+ *
  *  See Memory for details about copy semantics, etc.
  *
  *  \see Memory
@@ -3463,9 +3462,9 @@ public:
 /*! \brief Class interface for GL Buffer Memory Objects.
  *
  *  This is provided to facilitate interoperability with OpenGL.
- * 
+ *
  *  See Memory for details about copy semantics, etc.
- * 
+ *
  *  \see Memory
  */
 class BufferGL : public Buffer
@@ -3548,9 +3547,9 @@ public:
 /*! \brief Class interface for GL Render Buffer Memory Objects.
  *
  *  This is provided to facilitate interoperability with OpenGL.
- * 
+ *
  *  See Memory for details about copy semantics, etc.
- * 
+ *
  *  \see Memory
  */
 class BufferRenderGL : public Buffer
@@ -3633,7 +3632,7 @@ public:
 /*! \brief C++ base class for Image Memory objects.
  *
  *  See Memory for details about copy semantics, etc.
- * 
+ *
  *  \see Memory
  */
 class Image : public Memory
@@ -3707,7 +3706,7 @@ public:
 /*! \brief Class interface for 1D Image Memory objects.
  *
  *  See Memory for details about copy semantics, etc.
- * 
+ *
  *  \see Memory
  */
 class Image1D : public Image
@@ -3913,7 +3912,7 @@ public:
 /*! \brief Class interface for 2D Image Memory objects.
  *
  *  See Memory for details about copy semantics, etc.
- * 
+ *
  *  \see Memory
  */
 class Image2D : public Image
@@ -4033,9 +4032,9 @@ public:
 /*! \brief Class interface for GL 2D Image Memory objects.
  *
  *  This is provided to facilitate interoperability with OpenGL.
- * 
+ *
  *  See Memory for details about copy semantics, etc.
- * 
+ *
  *  \see Memory
  *  \note Deprecated for OpenCL 1.2. Please use ImageGL instead.
  */
@@ -4182,7 +4181,7 @@ public:
 /*! \brief Class interface for 3D Image Memory objects.
  *
  *  See Memory for details about copy semantics, etc.
- * 
+ *
  *  \see Memory
  */
 class Image3D : public Image
@@ -4306,9 +4305,9 @@ public:
 /*! \brief Class interface for GL 3D Image Memory objects.
  *
  *  This is provided to facilitate interoperability with OpenGL.
- * 
+ *
  *  See Memory for details about copy semantics, etc.
- * 
+ *
  *  \see Memory
  */
 class Image3DGL : public Image3D
@@ -4446,7 +4445,7 @@ public:
  *        to the same underlying cl_sampler as the original.  For details, see
  *        clRetainSampler() and clReleaseSampler().
  *
- *  \see cl_sampler 
+ *  \see cl_sampler
  */
 class Sampler : public detail::Wrapper<cl_sampler>
 {
@@ -4487,20 +4486,20 @@ public:
     }
 
     /*! \brief Copy constructor - performs shallow copy.
-     * 
+     *
      *  This calls clRetainSampler() on the parameter's cl_sampler.
      */
     Sampler(const Sampler& sampler) : detail::Wrapper<cl_type>(sampler) {}
 
     /*! \brief Constructor from cl_sampler - takes ownership.
-     * 
+     *
      *  This effectively transfers ownership of a refcount on the cl_sampler
      *  into the new Sampler object.
      */
     Sampler(const cl_sampler& sampler) : detail::Wrapper<cl_type>(sampler) {}
 
     /*! \brief Assignment operator from Sampler.
-     * 
+     *
      *  This calls clRetainSampler() on the parameter and clReleaseSampler()
      *  on the previous value held by this instance.
      */
@@ -4592,7 +4591,7 @@ public:
     }
 
     /*! \brief Conversion operator to const ::size_t *.
-     *  
+     *
      *  \returns a pointer to the size of the first dimension.
      */
     operator const ::size_t*() const
@@ -4680,20 +4679,20 @@ public:
     Kernel() {}
 
     /*! \brief Copy constructor - performs shallow copy.
-     * 
+     *
      *  This calls clRetainKernel() on the parameter's cl_kernel.
      */
     Kernel(const Kernel& kernel) : detail::Wrapper<cl_type>(kernel) {}
 
     /*! \brief Constructor from cl_kernel - takes ownership.
-     * 
+     *
      *  This effectively transfers ownership of a refcount on the cl_kernel
      *  into the new Kernel object.
      */
     __CL_EXPLICIT_CONSTRUCTORS Kernel(const cl_kernel& kernel) : detail::Wrapper<cl_type>(kernel) {}
 
     /*! \brief Assignment operator from Kernel.
-     * 
+     *
      *  This calls clRetainKernel() on the parameter and clReleaseKernel()
      *  on the previous value held by this instance.
      */
@@ -4962,7 +4961,7 @@ public:
      *   Set to CL_INVALID_BINARY if the binary provided is not valid for the matching device.
      * \param err if non-NULL will be set to CL_SUCCESS on successful operation or one of the following errors:
      *   CL_INVALID_CONTEXT if context is not a valid context.
-     *   CL_INVALID_VALUE if the length of devices is zero; or if the length of binaries does not match the length of devices; 
+     *   CL_INVALID_VALUE if the length of devices is zero; or if the length of binaries does not match the length of devices;
      *     or if any entry in binaries is NULL or has length 0.
      *   CL_INVALID_DEVICE if OpenCL devices listed in devices are not in the list of devices associated with context.
      *   CL_INVALID_BINARY if an invalid program binary was encountered for any device. binaryStatus will return specific status for each device.
@@ -5688,7 +5687,7 @@ public:
     /**
      * Enqueue a command to fill a buffer object with a pattern
      * of a given size. The pattern is specified a as vector.
-     * \tparam PatternType The datatype of the pattern field. 
+     * \tparam PatternType The datatype of the pattern field.
      *     The pattern type must be an accepted OpenCL data type.
      */
     template <typename PatternType>
@@ -6033,14 +6032,14 @@ public:
 
 #if defined(CL_VERSION_1_2)
     /**
-     * Enqueues a marker command which waits for either a list of events to complete, 
+     * Enqueues a marker command which waits for either a list of events to complete,
      * or all previously enqueued commands to complete.
      *
-     * Enqueues a marker command which waits for either a list of events to complete, 
-     * or if the list is empty it waits for all commands previously enqueued in command_queue 
-     * to complete before it completes. This command returns an event which can be waited on, 
-     * i.e. this event can be waited on to insure that all events either in the event_wait_list 
-     * or all previously enqueued commands, queued before this command to command_queue, 
+     * Enqueues a marker command which waits for either a list of events to complete,
+     * or if the list is empty it waits for all commands previously enqueued in command_queue
+     * to complete before it completes. This command returns an event which can be waited on,
+     * i.e. this event can be waited on to insure that all events either in the event_wait_list
+     * or all previously enqueued commands, queued before this command to command_queue,
      * have completed.
      */
     cl_int enqueueMarkerWithWaitList(
@@ -6065,12 +6064,12 @@ public:
     /**
      * A synchronization point that enqueues a barrier operation.
      *
-     * Enqueues a barrier command which waits for either a list of events to complete, 
-     * or if the list is empty it waits for all commands previously enqueued in command_queue 
-     * to complete before it completes. This command blocks command execution, that is, any 
-     * following commands enqueued after it do not execute until it completes. This command 
-     * returns an event which can be waited on, i.e. this event can be waited on to insure that 
-     * all events either in the event_wait_list or all previously enqueued commands, queued 
+     * Enqueues a barrier command which waits for either a list of events to complete,
+     * or if the list is empty it waits for all commands previously enqueued in command_queue
+     * to complete before it completes. This command blocks command execution, that is, any
+     * following commands enqueued after it do not execute until it completes. This command
+     * returns an event which can be waited on, i.e. this event can be waited on to insure that
+     * all events either in the event_wait_list or all previously enqueued commands, queued
      * before this command to command_queue, have completed.
      */
     cl_int enqueueBarrierWithWaitList(

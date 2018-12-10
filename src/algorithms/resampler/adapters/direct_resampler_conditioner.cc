@@ -30,14 +30,15 @@
  */
 
 #include "direct_resampler_conditioner.h"
+#include "configuration_interface.h"
+#include "direct_resampler_conditioner_cb.h"
 #include "direct_resampler_conditioner_cc.h"
 #include "direct_resampler_conditioner_cs.h"
-#include "direct_resampler_conditioner_cb.h"
-#include "configuration_interface.h"
 #include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <volk/volk.h>
 #include <cmath>
+#include <cstdint>
 #include <limits>
 
 using google::LogMessage;
@@ -94,7 +95,7 @@ DirectResamplerConditioner::DirectResamplerConditioner(
     else
         {
             LOG(WARNING) << item_type_ << " unrecognized item type for resampler";
-            item_size_ = sizeof(short);
+            item_size_ = sizeof(int16_t);
         }
     if (dump_)
         {

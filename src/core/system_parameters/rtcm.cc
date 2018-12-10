@@ -29,8 +29,8 @@
  */
 
 #include "rtcm.h"
-#include "Galileo_E1.h"
 #include "GPS_L2C.h"
+#include "Galileo_E1.h"
 #include <boost/algorithm/string.hpp>  // for to_upper_copy
 #include <boost/crc.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
@@ -301,7 +301,7 @@ int32_t Rtcm::bin_to_int(const std::string& s) const
     int32_t reading;
 
     // Handle negative numbers
-    if (s.substr(0, 1).compare("0"))
+    if (s.substr(0, 1) != "0")
         {
             // Computing two's complement
             boost::dynamic_bitset<> original_bitset(s);
@@ -327,7 +327,7 @@ int32_t Rtcm::bin_to_sint(const std::string& s) const
     int32_t sign;
 
     // Check for sign bit as defined RTCM doc
-    if (s.substr(0, 1) == "0")
+    if (s.substr(0, 1) != "0")
         {
             sign = 1;
             // Get the magnitude of the value
@@ -363,7 +363,7 @@ double Rtcm::bin_to_double(const std::string& s) const
     int64_t reading_int;
 
     // Handle negative numbers
-    if (s.substr(0, 1).compare("0"))
+    if (s.substr(0, 1) != "0")
         {
             // Computing two's complement
             boost::dynamic_bitset<> original_bitset(s);

@@ -38,16 +38,16 @@
 #define GNSS_SDR_GNSS_FLOWGRAPH_H_
 
 #include "GPS_L1_CA.h"
-#include "gnss_signal.h"
-#include "gnss_sdr_sample_counter.h"
-#include "gnss_synchro_monitor.h"
-#include "gnss_block_interface.h"
-#include "pvt_interface.h"
 #include "channel_interface.h"
 #include "configuration_interface.h"
 #include "gnss_block_factory.h"
-#include <gnuradio/top_block.h>
+#include "gnss_block_interface.h"
+#include "gnss_sdr_sample_counter.h"
+#include "gnss_signal.h"
+#include "gnss_synchro_monitor.h"
+#include "pvt_interface.h"
 #include <gnuradio/msg_queue.h>
+#include <gnuradio/top_block.h>
 #include <list>
 #include <map>
 #include <memory>

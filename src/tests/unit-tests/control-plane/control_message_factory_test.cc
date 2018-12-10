@@ -31,9 +31,9 @@
  */
 
 
-#include <string>
-#include <gtest/gtest.h>
 #include "control_message_factory.h"
+#include <gtest/gtest.h>
+#include <string>
 
 
 TEST(ControlMessageFactoryTest, GetQueueMessage)

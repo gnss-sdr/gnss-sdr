@@ -46,16 +46,16 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-#include "fft_internal.h"
 #include "fft_base_kernels.h"
+#include "fft_internal.h"
+#include <iostream>
+#include <limits>
+#include <sstream>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <iostream>
 #include <string>
-#include <sstream>
-#include <limits>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 using namespace std;
 

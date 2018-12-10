@@ -33,9 +33,9 @@
 #define RAW_ARRAY_SIGNAL_SOURCE_H_
 
 #include "gnss_block_interface.h"
+#include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/msg_queue.h>
-#include <gnuradio/blocks/file_sink.h>
 #include <string>
 
 class ConfigurationInterface;

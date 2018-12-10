@@ -38,24 +38,24 @@ extern "C"
 {
 #include "supl.h"
 }
+#include "GPS_L1_CA.h"
 #include "agnss_ref_location.h"
 #include "agnss_ref_time.h"
-#include "GPS_L1_CA.h"
-#include "gps_ephemeris.h"
-#include "gps_iono.h"
-#include "gps_almanac.h"
-#include "gps_utc_model.h"
-#include "gps_cnav_utc_model.h"
-#include "gps_acq_assist.h"
-#include "gps_cnav_ephemeris.h"
-#include "galileo_ephemeris.h"
-#include "galileo_utc_model.h"
-#include "galileo_iono.h"
 #include "galileo_almanac.h"
+#include "galileo_ephemeris.h"
+#include "galileo_iono.h"
+#include "galileo_utc_model.h"
 #include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_utc_model.h"
-#include <boost/archive/xml_oarchive.hpp>
+#include "gps_acq_assist.h"
+#include "gps_almanac.h"
+#include "gps_cnav_ephemeris.h"
+#include "gps_cnav_utc_model.h"
+#include "gps_ephemeris.h"
+#include "gps_iono.h"
+#include "gps_utc_model.h"
 #include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
 #include <boost/serialization/map.hpp>
 #include <glog/logging.h>
 #include <fstream>
@@ -74,9 +74,9 @@ private:
     int lac;
     int ci;
     // assistance protocol structure
-    supl_ctx_t ctx;
+    supl_ctx_t ctx{};
     // assistance data
-    supl_assist_t assist;
+    supl_assist_t assist{};
     bool read_gal_almanac_from_gsa(const std::string& file_name);
 
 public:

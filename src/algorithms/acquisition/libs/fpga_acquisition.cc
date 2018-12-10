@@ -37,8 +37,8 @@
 #include "GPS_L1_CA.h"
 #include "gps_sdr_signal_processing.h"
 #include <glog/logging.h>
+#include <fcntl.h>  // libraries used by the GIPO
 #include <iostream>
-#include <fcntl.h>     // libraries used by the GIPO
 #include <sys/mman.h>  // libraries used by the GIPO
 
 

@@ -35,8 +35,8 @@
 
 #include "gnss_block_interface.h"
 #include <boost/shared_ptr.hpp>
-#include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/file_sink.h>
+#include <gnuradio/msg_queue.h>
 #include <osmosdr/source.h>
 #include <stdexcept>
 #include <string>

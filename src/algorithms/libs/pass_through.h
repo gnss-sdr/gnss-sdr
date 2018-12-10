@@ -34,11 +34,11 @@
 #define GNSS_SDR_PASS_THROUGH_H_
 
 #include "conjugate_cc.h"
-#include "conjugate_sc.h"
 #include "conjugate_ic.h"
+#include "conjugate_sc.h"
 #include "gnss_block_interface.h"
-#include <gnuradio/hier_block2.h>
 #include <gnuradio/blocks/copy.h>
+#include <gnuradio/hier_block2.h>
 #include <string>
 
 

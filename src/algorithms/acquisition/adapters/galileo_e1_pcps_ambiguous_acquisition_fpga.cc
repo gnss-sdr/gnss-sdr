@@ -30,9 +30,9 @@
  */
 
 #include "galileo_e1_pcps_ambiguous_acquisition_fpga.h"
+#include "Galileo_E1.h"
 #include "configuration_interface.h"
 #include "galileo_e1_signal_processing.h"
-#include "Galileo_E1.h"
 #include "gnss_sdr_flags.h"
 #include <boost/lexical_cast.hpp>
 #include <boost/math/distributions/exponential.hpp>

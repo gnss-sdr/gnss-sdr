@@ -52,8 +52,8 @@
 #ifndef GNSS_SDR_PCPS_ACQUISITION_H_
 #define GNSS_SDR_PCPS_ACQUISITION_H_
 
-#include "gnss_synchro.h"
 #include "acq_conf.h"
+#include "gnss_synchro.h"
 #include <armadillo>
 #include <gnuradio/block.h>
 #include <gnuradio/fft/fft.h>

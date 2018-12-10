@@ -39,9 +39,9 @@
  */
 
 
+#include "pcps_acquisition_fpga.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
-#include "pcps_acquisition_fpga.h"
 
 
 #define AQ_DOWNSAMPLING_DELAY 40  // delay due to the downsampling filter in the acquisition

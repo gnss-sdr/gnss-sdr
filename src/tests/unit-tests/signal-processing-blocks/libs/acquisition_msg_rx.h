@@ -33,8 +33,8 @@
 #ifndef GNSS_SDR_ACQUISITION_MSG_RX_H
 #define GNSS_SDR_ACQUISITION_MSG_RX_H
 
-#include <gnuradio/top_block.h>
 #include <gnuradio/block.h>
+#include <gnuradio/top_block.h>
 #include <pmt/pmt.h>
 
 // ######## GNURADIO ACQUISITION BLOCK MESSAGE RECEVER #########

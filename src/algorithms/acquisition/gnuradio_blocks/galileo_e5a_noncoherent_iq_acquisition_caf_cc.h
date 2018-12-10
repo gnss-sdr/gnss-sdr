@@ -38,12 +38,12 @@
 #ifndef GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_CC_H_
 #define GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_CC_H_
 
+#include "gnss_synchro.h"
+#include <gnuradio/block.h>
+#include <gnuradio/fft/fft.h>
+#include <gnuradio/gr_complex.h>
 #include <fstream>
 #include <string>
-#include <gnuradio/block.h>
-#include <gnuradio/gr_complex.h>
-#include <gnuradio/fft/fft.h>
-#include "gnss_synchro.h"
 
 class galileo_e5a_noncoherentIQ_acquisition_caf_cc;
 

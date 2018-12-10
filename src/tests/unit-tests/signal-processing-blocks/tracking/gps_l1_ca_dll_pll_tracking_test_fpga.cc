@@ -2,7 +2,7 @@
  * \file gps_l1_ca_dll_pll_tracking_test.cc
  * \brief  This class implements a tracking test for Galileo_E5a_DLL_PLL_Tracking
  *  implementation based on some input parameters.
- *  \author Marc Majoral, 2017. mmajoral(at)cttc.cat
+ * \author Marc Majoral, 2017. mmajoral(at)cttc.cat
  * \author Javier Arribas, 2017. jarribas(at)cttc.es
  *
  *
@@ -31,39 +31,38 @@
  * -------------------------------------------------------------------------
  */
 
+#include "GPS_L1_CA.h"
+#include "gnss_block_factory.h"
+#include "gnss_block_interface.h"
+#include "gnss_synchro.h"
+#include "gps_l1_ca_dll_pll_tracking_fpga.h"
+#include "in_memory_configuration.h"
+#include "interleaved_byte_to_complex_short.h"
+#include "signal_generator_flags.h"
+#include "tracking_dump_reader.h"
+#include "tracking_interface.h"
+#include "tracking_true_obs_reader.h"
+#include <armadillo>
+#include <boost/thread.hpp>  // to test the FPGA we have to create a simultaneous task to send the samples using the DMA and stop the test
+#include <gflags/gflags.h>
+#include <glog/logging.h>
+#include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/blocks/file_source.h>
+#include <gnuradio/blocks/interleaved_char_to_complex.h>
+#include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/blocks/skiphead.h>
+#include <gnuradio/top_block.h>
+#include <gtest/gtest.h>
 #include <chrono>
 #include <fcntl.h>
 #include <iostream>
+#include <stdio.h>  // FPGA read input file
 #include <unistd.h>
-#include <armadillo>
-#include <boost/thread.hpp>  // to test the FPGA we have to create a simultaneous task to send the samples using the DMA and stop the test
-#include <stdio.h>           // FPGA read input file
-#include <gnuradio/top_block.h>
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/analog/sig_source_waveform.h>
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
 #include <gnuradio/analog/sig_source_c.h>
 #endif
-#include <gnuradio/blocks/interleaved_char_to_complex.h>
-#include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/blocks/skiphead.h>
-#include <gflags/gflags.h>
-#include <glog/logging.h>
-#include <gtest/gtest.h>
-#include "GPS_L1_CA.h"
-#include "gnss_block_factory.h"
-#include "gnss_block_interface.h"
-#include "tracking_interface.h"
-#include "in_memory_configuration.h"
-#include "gnss_synchro.h"
-//#include "gps_l1_ca_dll_pll_c_aid_tracking_fpga.h"
-#include "gps_l1_ca_dll_pll_tracking_fpga.h"
-#include "tracking_true_obs_reader.h"
-#include "tracking_dump_reader.h"
-#include "signal_generator_flags.h"
-#include "interleaved_byte_to_complex_short.h"
 
 #define DMA_TRACK_TRANSFER_SIZE 2046  // DMA transfer size for tracking
 #define MIN_SAMPLES_REMAINING 20000   // number of remaining samples in the DMA that causes the CPU to stop the flowgraph (it has to be a bit alrger than 2x max packet size)

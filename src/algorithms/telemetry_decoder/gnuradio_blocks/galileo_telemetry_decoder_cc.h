@@ -35,11 +35,11 @@
 
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
-#include "galileo_navigation_message.h"
-#include "galileo_fnav_message.h"
-#include "galileo_ephemeris.h"
 #include "galileo_almanac_helper.h"
+#include "galileo_ephemeris.h"
+#include "galileo_fnav_message.h"
 #include "galileo_iono.h"
+#include "galileo_navigation_message.h"
 #include "galileo_utc_model.h"
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
@@ -125,7 +125,7 @@ private:
 
     // vars for Viterbi decoder
     int32_t *out0, *out1, *state0, *state1;
-    int32_t g_encoder[2];
+    int32_t g_encoder[2]{};
     const int32_t nn = 2;  // Coding rate 1/n
     const int32_t KK = 7;  // Constraint Length
     int32_t mm = KK - 1;

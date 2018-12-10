@@ -30,12 +30,12 @@
  * -------------------------------------------------------------------------
  */
 
-#include <algorithm>
-#include <chrono>
-#include <complex>
 #include <armadillo>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <algorithm>
+#include <chrono>
+#include <complex>
 
 DEFINE_int32(size_magnitude_test, 100000, "Size of the arrays used for magnitude testing");
 

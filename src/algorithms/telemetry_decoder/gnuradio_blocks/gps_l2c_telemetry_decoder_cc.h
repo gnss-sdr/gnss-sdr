@@ -33,9 +33,9 @@
 
 
 #include "gnss_satellite.h"
-#include "gps_cnav_navigation_message.h"
 #include "gps_cnav_ephemeris.h"
 #include "gps_cnav_iono.h"
+#include "gps_cnav_navigation_message.h"
 #include <gnuradio/block.h>
 #include <algorithm>  // for copy
 #include <cstdint>
@@ -48,9 +48,9 @@
 
 extern "C"
 {
+#include "bits.h"
 #include "cnav_msg.h"
 #include "edc.h"
-#include "bits.h"
 }
 
 #include "GPS_L2C.h"
@@ -91,7 +91,7 @@ private:
     std::string d_dump_filename;
     std::ofstream d_dump_file;
 
-    cnav_msg_decoder_t d_cnav_decoder;
+    cnav_msg_decoder_t d_cnav_decoder{};
 
     int32_t d_state;
     int32_t d_crc_error_count;

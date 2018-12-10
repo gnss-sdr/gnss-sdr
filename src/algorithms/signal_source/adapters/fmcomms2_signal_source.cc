@@ -30,11 +30,11 @@
  */
 
 #include "fmcomms2_signal_source.h"
-#include "configuration_interface.h"
-#include "gnss_sdr_valve.h"
-#include "ad9361_manager.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
+#include "ad9361_manager.h"
+#include "configuration_interface.h"
+#include "gnss_sdr_valve.h"
 #include <glog/logging.h>
 #include <exception>
 #include <iostream>

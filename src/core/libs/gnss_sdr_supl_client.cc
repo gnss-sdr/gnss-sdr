@@ -32,8 +32,8 @@
  */
 
 #include "gnss_sdr_supl_client.h"
-#include <pugixml.hpp>
 #include <cmath>
+#include <pugixml.hpp>
 #include <utility>
 
 gnss_sdr_supl_client::gnss_sdr_supl_client()

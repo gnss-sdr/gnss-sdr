@@ -36,11 +36,11 @@
 
 
 #include "gps_l2_m_dll_pll_tracking_fpga.h"
-#include "configuration_interface.h"
 #include "GPS_L2C.h"
-#include "gps_l2c_signal.h"
-#include "gnss_sdr_flags.h"
+#include "configuration_interface.h"
 #include "display.h"
+#include "gnss_sdr_flags.h"
+#include "gps_l2c_signal.h"
 #include <glog/logging.h>
 
 #define NUM_PRNs 32

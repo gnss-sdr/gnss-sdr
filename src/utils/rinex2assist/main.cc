@@ -30,22 +30,22 @@
  */
 
 
-#include "gps_ephemeris.h"
 #include "galileo_ephemeris.h"
-#include "gps_utc_model.h"
-#include "gps_iono.h"
-#include "galileo_utc_model.h"
 #include "galileo_iono.h"
-#include <gflags/gflags.h>
-#include <gpstk/Rinex3NavHeader.hpp>
-#include <gpstk/Rinex3NavData.hpp>
-#include <gpstk/Rinex3NavStream.hpp>
+#include "galileo_utc_model.h"
+#include "gps_ephemeris.h"
+#include "gps_iono.h"
+#include "gps_utc_model.h"
 #include <boost/archive/xml_oarchive.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/filtering_streambuf.hpp>
+#include <boost/serialization/map.hpp>
+#include <gflags/gflags.h>
 #include <cstdlib>
+#include <gpstk/Rinex3NavData.hpp>
+#include <gpstk/Rinex3NavHeader.hpp>
+#include <gpstk/Rinex3NavStream.hpp>
 #include <iostream>
 
 

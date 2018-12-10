@@ -52,14 +52,13 @@
  * -----------------------------------------------------------------------*/
 
 #include "rtklib_solver.h"
-#include "rtklib_conversions.h"
-#include "rtklib_solution.h"
+#include "GLONASS_L1_L2_CA.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
-#include "GLONASS_L1_L2_CA.h"
-#include <matio.h>
+#include "rtklib_conversions.h"
+#include "rtklib_solution.h"
 #include <glog/logging.h>
-
+#include <matio.h>
 #include <utility>
 
 
@@ -75,10 +74,10 @@ rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag
     count_valid_position = 0;
     this->set_averaging_flag(false);
     rtk_ = rtk;
-    for (double & i : dop_) i = 0.0;
+    for (double &i : dop_) i = 0.0;
     pvt_sol = {{0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, '0', '0', '0', 0, 0, 0};
     ssat_t ssat0 = {0, 0, {0.0}, {0.0}, {0.0}, {'0'}, {'0'}, {'0'}, {'0'}, {'0'}, {}, {}, {}, {}, 0.0, 0.0, 0.0, 0.0, {{{0, 0}}, {{0, 0}}}, {{}, {}}};
-    for (auto & i : pvt_ssat)
+    for (auto &i : pvt_ssat)
         {
             i = ssat0;
         }
@@ -777,7 +776,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
             nav_data.n = valid_obs;
             nav_data.ng = glo_valid_obs;
 
-            for (auto & i : nav_data.lam)
+            for (auto &i : nav_data.lam)
                 {
                     i[0] = SPEED_OF_LIGHT / FREQ1;  // L1/E1
                     i[1] = SPEED_OF_LIGHT / FREQ2;  // L2
@@ -811,7 +810,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     std::vector<double> azel;
                     azel.reserve(used_sats * 2);
                     unsigned int index_aux = 0;
-                    for (auto & i : rtk_.ssat)
+                    for (auto &i : rtk_.ssat)
                         {
                             if (i.vs == 1)
                                 {

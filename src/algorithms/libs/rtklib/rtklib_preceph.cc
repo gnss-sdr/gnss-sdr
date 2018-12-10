@@ -98,12 +98,12 @@ int readsp3h(FILE *fp, gtime_t *time, char *type, int *sats,
                 {
                     if (i == 2)
                         {
-                            ns = (int)str2num(buff, 4, 2);
+                            ns = static_cast<int>(str2num(buff, 4, 2));
                         }
                     for (j = 0; j < 17 && k < ns; j++)
                         {
                             sys = code2sys(buff[9 + 3 * j]);
-                            prn = (int)str2num(buff, 10 + 3 * j, 2);
+                            prn = static_cast<int>(str2num(buff, 10 + 3 * j, 2));
                             if (k < MAXSAT) sats[k++] = satno(sys, prn);
                         }
                 }
@@ -130,7 +130,7 @@ int addpeph(nav_t *nav, peph_t *peph)
     if (nav->ne >= nav->nemax)
         {
             nav->nemax += 256;
-            if (!(nav_peph = (peph_t *)realloc(nav->peph, sizeof(peph_t) * nav->nemax)))
+            if (!(nav_peph = static_cast<peph_t *>(realloc(nav->peph, sizeof(peph_t) * nav->nemax))))
                 {
                     trace(1, "readsp3b malloc error n=%d\n", nav->nemax);
                     free(nav->peph);
@@ -190,7 +190,7 @@ void readsp3b(FILE *fp, char type, int *sats __attribute__((unused)), int ns, do
                     if (strlen(buff) < 4 || (buff[0] != 'P' && buff[0] != 'V')) continue;
 
                     sys = buff[1] == ' ' ? SYS_GPS : code2sys(buff[1]);
-                    prn = (int)str2num(buff, 2, 2);
+                    prn = static_cast<int>(str2num(buff, 2, 2));
                     if (sys == SYS_SBS)
                         prn += 100;
                     else if (sys == SYS_QZS)
@@ -223,7 +223,7 @@ void readsp3b(FILE *fp, char type, int *sats __attribute__((unused)), int ns, do
                                         }
                                     if ((base = bfact[j < 3 ? 0 : 1]) > 0.0 && std > 0.0)
                                         {
-                                            peph.std[sat - 1][j] = (float)(std::pow(base, std) * (j < 3 ? 1e-3 : 1e-12));
+                                            peph.std[sat - 1][j] = static_cast<float>(std::pow(base, std) * (j < 3 ? 1e-3 : 1e-12));
                                         }
                                 }
                             else if (v)
@@ -234,7 +234,7 @@ void readsp3b(FILE *fp, char type, int *sats __attribute__((unused)), int ns, do
                                         }
                                     if ((base = bfact[j < 3 ? 0 : 1]) > 0.0 && std > 0.0)
                                         {
-                                            peph.vst[sat - 1][j] = (float)(std::pow(base, std) * (j < 3 ? 1e-7 : 1e-16));
+                                            peph.vst[sat - 1][j] = static_cast<float>(std::pow(base, std) * (j < 3 ? 1e-7 : 1e-16));
                                         }
                                 }
                         }
@@ -315,7 +315,7 @@ void readsp3(const char *file, nav_t *nav, int opt)
 
     for (i = 0; i < MAXEXFILE; i++)
         {
-            if (!(efiles[i] = (char *)malloc(1024)))
+            if (!(efiles[i] = static_cast<char *>(malloc(1024))))
                 {
                     for (i--; i >= 0; i--) free(efiles[i]);
                     return;
@@ -331,7 +331,7 @@ void readsp3(const char *file, nav_t *nav, int opt)
             if (!strstr(ext + 1, "sp3") && !strstr(ext + 1, ".SP3") &&
                 !strstr(ext + 1, "eph") && !strstr(ext + 1, ".EPH")) continue;
 
-            if (!(fp = fopen(efiles[i], "r")))
+            if (!(fp = fopen(efiles[i], "re")))
                 {
                     trace(2, "sp3 file open error %s\n", efiles[i]);
                     continue;
@@ -389,7 +389,7 @@ int readdcbf(const char *file, nav_t *nav, const sta_t *sta)
 
     trace(3, "readdcbf: file=%s\n", file);
 
-    if (!(fp = fopen(file, "r")))
+    if (!(fp = fopen(file, "re")))
         {
             trace(2, "dcb parameters file open error: %s\n", file);
             return 0;
@@ -453,7 +453,7 @@ int readdcb(const char *file, nav_t *nav, const sta_t *sta)
             }
     for (i = 0; i < MAXEXFILE; i++)
         {
-            if (!(efiles[i] = (char *)malloc(1024)))
+            if (!(efiles[i] = static_cast<char *>(malloc(1024))))
                 {
                     for (i--; i >= 0; i--) free(efiles[i]);
                     return 0;
@@ -490,7 +490,7 @@ int addfcb(nav_t *nav, gtime_t ts, gtime_t te, int sat,
     if (nav->nf >= nav->nfmax)
         {
             nav->nfmax = nav->nfmax <= 0 ? 2048 : nav->nfmax * 2;
-            if (!(nav_fcb = (fcbd_t *)realloc(nav->fcb, sizeof(fcbd_t) * nav->nfmax)))
+            if (!(nav_fcb = static_cast<fcbd_t *>(realloc(nav->fcb, sizeof(fcbd_t) * nav->nfmax))))
                 {
                     free(nav->fcb);
                     nav->nf = nav->nfmax = 0;
@@ -525,7 +525,7 @@ int readfcbf(const char *file, nav_t *nav)
 
     trace(3, "readfcbf: file=%s\n", file);
 
-    if (!(fp = fopen(file, "r")))
+    if (!(fp = fopen(file, "re")))
         {
             trace(2, "fcb parameters file open error: %s\n", file);
             return 0;
@@ -578,7 +578,7 @@ int readfcb(const char *file, nav_t *nav)
 
     for (i = 0; i < MAXEXFILE; i++)
         {
-            if (!(efiles[i] = (char *)malloc(1024)))
+            if (!(efiles[i] = static_cast<char *>(malloc(1024))))
                 {
                     for (i--; i >= 0; i--) free(efiles[i]);
                     return 0;

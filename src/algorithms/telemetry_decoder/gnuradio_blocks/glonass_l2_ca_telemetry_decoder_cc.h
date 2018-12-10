@@ -34,9 +34,9 @@
 
 
 #include "GLONASS_L1_L2_CA.h"
-#include "glonass_gnav_navigation_message.h"
-#include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_almanac.h"
+#include "glonass_gnav_ephemeris.h"
+#include "glonass_gnav_navigation_message.h"
 #include "glonass_gnav_utc_model.h"
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
@@ -80,7 +80,7 @@ private:
     double d_preamble_time_samples;
 
     //!< Preamble decoding
-    uint16_t d_preambles_bits[GLONASS_GNAV_PREAMBLE_LENGTH_BITS];
+    uint16_t d_preambles_bits[GLONASS_GNAV_PREAMBLE_LENGTH_BITS]{};
     int32_t *d_preambles_symbols;
     uint32_t d_samples_per_symbol;
     int32_t d_symbols_per_preamble;

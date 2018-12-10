@@ -153,15 +153,12 @@ gr::basic_block_sptr Pass_Through::get_left_block()
                 {
                     return conjugate_sc_;
                 }
-            else if (item_type_ == "cbyte")
+            if (item_type_ == "cbyte")
                 {
                     return conjugate_ic_;
                 }
-            else
-                {
-                    LOG(WARNING) << "Setting inverted_spectrum to true with item_type "
-                                 << item_type_ << " is not defined and has no effect.";
-                }
+            LOG(WARNING) << "Setting inverted_spectrum to true with item_type "
+                         << item_type_ << " is not defined and has no effect.";
         }
 
     return kludge_copy_;
@@ -180,15 +177,12 @@ gr::basic_block_sptr Pass_Through::get_right_block()
                 {
                     return conjugate_sc_;
                 }
-            else if (item_type_ == "cbyte")
+            if (item_type_ == "cbyte")
                 {
                     return conjugate_ic_;
                 }
-            else
-                {
-                    DLOG(WARNING) << "Setting inverted_spectrum to true with item_type "
-                                  << item_type_ << " is not defined and has no effect.";
-                }
+            DLOG(WARNING) << "Setting inverted_spectrum to true with item_type "
+                          << item_type_ << " is not defined and has no effect.";
         }
 
     return kludge_copy_;

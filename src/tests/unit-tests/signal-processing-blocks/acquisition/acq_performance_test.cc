@@ -29,29 +29,29 @@
  * -------------------------------------------------------------------------
  */
 
-#include "gps_l1_ca_pcps_acquisition.h"
-#include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
+#include "acquisition_dump_reader.h"
+#include "display.h"
+#include "file_configuration.h"
 #include "galileo_e1_pcps_ambiguous_acquisition.h"
 #include "galileo_e5a_pcps_acquisition.h"
 #include "glonass_l1_ca_pcps_acquisition.h"
 #include "glonass_l2_ca_pcps_acquisition.h"
+#include "gnss_sdr_valve.h"
+#include "gnuplot_i.h"
+#include "gps_l1_ca_pcps_acquisition.h"
+#include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
 #include "gps_l2_m_pcps_acquisition.h"
 #include "gps_l5i_pcps_acquisition.h"
 #include "in_memory_configuration.h"
-#include "file_configuration.h"
-#include "gnss_sdr_valve.h"
-#include "acquisition_dump_reader.h"
-#include "display.h"
-#include "gnuplot_i.h"
 #include "signal_generator_flags.h"
 #include "test_flags.h"
 #include "tracking_true_obs_reader.h"
 #include "true_observables_reader.h"
 #include <boost/filesystem.hpp>
-#include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
 #include <gnuradio/blocks/skiphead.h>
+#include <gnuradio/top_block.h>
 
 
 DEFINE_string(config_file_ptest, std::string(""), "File containing alternative configuration parameters for the acquisition performance test.");

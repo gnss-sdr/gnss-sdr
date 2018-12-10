@@ -29,9 +29,9 @@
  */
 
 #include "galileo_e5a_pcps_acquisition_fpga.h"
+#include "Galileo_E5a.h"
 #include "configuration_interface.h"
 #include "galileo_e5_signal_processing.h"
-#include "Galileo_E5a.h"
 #include "gnss_sdr_flags.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>

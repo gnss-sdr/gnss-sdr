@@ -38,16 +38,16 @@
  */
 
 #include "gps_l1_ca_kf_tracking_cc.h"
-#include "gps_sdr_signal_processing.h"
-#include "tracking_discriminators.h"
-#include "lock_detectors.h"
-#include "gnss_sdr_flags.h"
 #include "GPS_L1_CA.h"
 #include "control_message_factory.h"
-#include <gnuradio/io_signature.h>
+#include "gnss_sdr_flags.h"
+#include "gps_sdr_signal_processing.h"
+#include "lock_detectors.h"
+#include "tracking_discriminators.h"
 #include <glog/logging.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <gnuradio/io_signature.h>
 #include <matio.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cmath>
 #include <iostream>
 #include <memory>
@@ -517,7 +517,7 @@ int32_t Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
     filename.erase(filename.length() - 4, 4);
     filename.append(".mat");
     matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT73);
-    if (reinterpret_cast<long *>(matfp) != nullptr)
+    if (reinterpret_cast<int64_t *>(matfp) != nullptr)
         {
             size_t dims[2] = {1, static_cast<size_t>(num_epoch)};
             matvar = Mat_VarCreate("abs_VE", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, abs_VE, 0);

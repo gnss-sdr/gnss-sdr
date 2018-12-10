@@ -35,11 +35,11 @@
 
 #include "gnss_block_interface.h"
 #ifdef GR_GREATER_38
-#include <gnuradio/filter/mmse_resampler_cc.h>
 #include <gnuradio/filter/fir_filter_blk.h>
+#include <gnuradio/filter/mmse_resampler_cc.h>
 #else
-#include <gnuradio/filter/fractional_resampler_cc.h>
 #include <gnuradio/filter/fir_filter_ccf.h>
+#include <gnuradio/filter/fractional_resampler_cc.h>
 #endif
 
 #include <gnuradio/filter/firdes.h>

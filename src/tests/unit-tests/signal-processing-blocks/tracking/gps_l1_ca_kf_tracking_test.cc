@@ -30,33 +30,33 @@
  * -------------------------------------------------------------------------
  */
 
+#include "GPS_L1_CA.h"
+#include "gnss_block_factory.h"
+#include "gnss_sdr_flags.h"
+#include "gnuplot_i.h"
+#include "in_memory_configuration.h"
+#include "signal_generator_flags.h"
+#include "test_flags.h"
+#include "tracking_dump_reader.h"
+#include "tracking_interface.h"
+#include "tracking_true_obs_reader.h"
+#include <armadillo>
+#include <boost/filesystem.hpp>
+#include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/blocks/file_source.h>
+#include <gnuradio/blocks/interleaved_char_to_complex.h>
+#include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/blocks/skiphead.h>
+#include <gnuradio/top_block.h>
+#include <gtest/gtest.h>
 #include <chrono>
 #include <unistd.h>
 #include <vector>
-#include <armadillo>
-#include <boost/filesystem.hpp>
-#include <gnuradio/top_block.h>
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/analog/sig_source_waveform.h>
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
 #include <gnuradio/analog/sig_source_c.h>
 #endif
-#include <gnuradio/blocks/interleaved_char_to_complex.h>
-#include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/blocks/skiphead.h>
-#include <gtest/gtest.h>
-#include "GPS_L1_CA.h"
-#include "gnss_block_factory.h"
-#include "tracking_interface.h"
-#include "in_memory_configuration.h"
-#include "tracking_true_obs_reader.h"
-#include "tracking_dump_reader.h"
-#include "signal_generator_flags.h"
-#include "gnuplot_i.h"
-#include "test_flags.h"
-#include "gnss_sdr_flags.h"
 
 DEFINE_bool(plot_gps_l1_kf_tracking_test, false, "Plots results of GpsL1CAKfTrackingTest with gnuplot");
 

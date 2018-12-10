@@ -35,21 +35,21 @@
  */
 
 #include "dll_pll_veml_tracking.h"
-#include "tracking_discriminators.h"
-#include "lock_detectors.h"
-#include "control_message_factory.h"
-#include "MATH_CONSTANTS.h"
-#include "Galileo_E1.h"
-#include "galileo_e1_signal_processing.h"
-#include "Galileo_E5a.h"
-#include "galileo_e5_signal_processing.h"
 #include "GPS_L1_CA.h"
-#include "gps_sdr_signal_processing.h"
 #include "GPS_L2C.h"
-#include "gps_l2c_signal.h"
 #include "GPS_L5.h"
-#include "gps_l5_signal.h"
+#include "Galileo_E1.h"
+#include "Galileo_E5a.h"
+#include "MATH_CONSTANTS.h"
+#include "control_message_factory.h"
+#include "galileo_e1_signal_processing.h"
+#include "galileo_e5_signal_processing.h"
 #include "gnss_sdr_create_directory.h"
+#include "gps_l2c_signal.h"
+#include "gps_l5_signal.h"
+#include "gps_sdr_signal_processing.h"
+#include "lock_detectors.h"
+#include "tracking_discriminators.h"
 #include <boost/filesystem/path.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
@@ -58,8 +58,8 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
-#include <sstream>
 #include <numeric>
+#include <sstream>
 
 using google::LogMessage;
 
@@ -133,7 +133,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                     // preamble bits to sampled symbols
                     d_gps_l1ca_preambles_symbols = static_cast<int32_t *>(volk_gnsssdr_malloc(GPS_CA_PREAMBLE_LENGTH_SYMBOLS * sizeof(int32_t), volk_gnsssdr_get_alignment()));
                     int32_t n = 0;
-                    for (unsigned short preambles_bit : preambles_bits)
+                    for (uint16_t preambles_bit : preambles_bits)
                         {
                             for (uint32_t j = 0; j < GPS_CA_TELEMETRY_SYMBOLS_PER_BIT; j++)
                                 {

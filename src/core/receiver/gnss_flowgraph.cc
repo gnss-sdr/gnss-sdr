@@ -32,31 +32,29 @@
  * -------------------------------------------------------------------------
  */
 
+#include "gnss_flowgraph.h"
 #include "GPS_L1_CA.h"
-#include "Galileo_E1.h"
 #include "GPS_L2C.h"
 #include "GPS_L5.h"
+#include "Galileo_E1.h"
 #include "Galileo_E5a.h"
-#include "gnss_flowgraph.h"
-#include "gnss_synchro.h"
-#include "configuration_interface.h"
-#include "gnss_block_interface.h"
-#include "channel_interface.h"
-#include "gnss_block_factory.h"
 #include "channel.h"
+#include "channel_interface.h"
+#include "configuration_interface.h"
+#include "gnss_block_factory.h"
+#include <boost/lexical_cast.hpp>
+#include <boost/tokenizer.hpp>
+#include <glog/logging.h>
+#include <gnuradio/filter/firdes.h>
+#include <algorithm>
+#include <exception>
+#include <iostream>
+#include <set>
 #ifdef GR_GREATER_38
 #include <gnuradio/filter/fir_filter_blk.h>
 #else
 #include <gnuradio/filter/fir_filter_ccf.h>
 #endif
-#include <gnuradio/filter/firdes.h>
-#include <boost/lexical_cast.hpp>
-#include <boost/tokenizer.hpp>
-#include <glog/logging.h>
-#include <algorithm>
-#include <exception>
-#include <iostream>
-#include <set>
 
 
 #define GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_CHANNELS 8

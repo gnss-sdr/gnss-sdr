@@ -29,22 +29,22 @@
  * -------------------------------------------------------------------------
  */
 
+#include "byte_to_short.h"
+#include "ibyte_to_cbyte.h"
+#include "ibyte_to_complex.h"
+#include "ibyte_to_cshort.h"
+#include "in_memory_configuration.h"
+#include "ishort_to_complex.h"
+#include "ishort_to_cshort.h"
+#include <gnuradio/blocks/file_source.h>
+#include <gtest/gtest.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include <algorithm>
 #include <cstdint>
 #include <fstream>
 #include <iterator>
 #include <system_error>
 #include <vector>
-#include <gnuradio/blocks/file_source.h>
-#include <gtest/gtest.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
-#include "byte_to_short.h"
-#include "ibyte_to_cbyte.h"
-#include "ibyte_to_complex.h"
-#include "ibyte_to_cshort.h"
-#include "ishort_to_complex.h"
-#include "ishort_to_cshort.h"
-#include "in_memory_configuration.h"
 
 
 class DataTypeAdapter : public ::testing::Test
@@ -61,7 +61,7 @@ public:
     std::string file_name_input;
     std::string file_name_output;
     std::vector<int8_t> input_data_bytes;
-    std::vector<short> input_data_shorts;
+    std::vector<int16_t> input_data_shorts;
 };
 
 
@@ -70,12 +70,12 @@ DataTypeAdapter::DataTypeAdapter()
     file_name_input = "adapter_test_input.dat";
     file_name_output = "adapter_test_output.dat";
     int8_t input_bytes[] = {2, 23, -1, 127, -127, 0};
-    short input_shorts[] = {2, 23, -1, 127, -127, 0, 255, 255};
+    int16_t input_shorts[] = {2, 23, -1, 127, -127, 0, 255, 255};
 
     const std::vector<int8_t> input_data_bytes_(input_bytes, input_bytes + sizeof(input_bytes) / sizeof(int8_t));
     input_data_bytes = input_data_bytes_;
 
-    const std::vector<short> input_data_shorts_(input_shorts, input_shorts + sizeof(input_shorts) / sizeof(short));
+    const std::vector<int16_t> input_data_shorts_(input_shorts, input_shorts + sizeof(input_shorts) / sizeof(int16_t));
     input_data_shorts = input_data_shorts_;
 }
 
@@ -92,14 +92,14 @@ int DataTypeAdapter::run_ishort_to_cshort_block()
     EXPECT_EQ(expected_implementation, ishort_to_cshort->implementation());
 
     std::ofstream ofs(file_name_input.c_str(), std::ofstream::binary);
-    for (short aux : input_data_shorts)
+    for (int16_t aux : input_data_shorts)
         {
-            ofs.write(reinterpret_cast<const char*>(&aux), sizeof(short));
+            ofs.write(reinterpret_cast<const char*>(&aux), sizeof(int16_t));
         }
     ofs.close();
 
     auto top_block = gr::make_top_block("Ishort_To_Cshort test");
-    auto file_source = gr::blocks::file_source::make(sizeof(short), file_name_input.c_str());
+    auto file_source = gr::blocks::file_source::make(sizeof(int16_t), file_name_input.c_str());
     auto sink = gr::blocks::file_sink::make(sizeof(lv_16sc_t), file_name_output.c_str(), false);
 
     EXPECT_NO_THROW({
@@ -120,14 +120,14 @@ int DataTypeAdapter::run_ishort_to_complex_block()
     EXPECT_EQ(expected_implementation, ishort_to_complex->implementation());
 
     std::ofstream ofs(file_name_input.c_str(), std::ofstream::binary);
-    for (short aux : input_data_shorts)
+    for (int16_t aux : input_data_shorts)
         {
-            ofs.write(reinterpret_cast<const char*>(&aux), sizeof(short));
+            ofs.write(reinterpret_cast<const char*>(&aux), sizeof(int16_t));
         }
     ofs.close();
 
     auto top_block = gr::make_top_block("Ishort_To_Complex test");
-    auto file_source = gr::blocks::file_source::make(sizeof(short), file_name_input.c_str());
+    auto file_source = gr::blocks::file_source::make(sizeof(int16_t), file_name_input.c_str());
     auto sink = gr::blocks::file_sink::make(sizeof(gr_complex), file_name_output.c_str(), false);
 
     EXPECT_NO_THROW({
@@ -212,7 +212,7 @@ int DataTypeAdapter::run_ibyte_to_cbyte_block()
 
     auto top_block = gr::make_top_block("Ibyte_To_Cbyte test");
     auto file_source = gr::blocks::file_source::make(sizeof(int8_t), file_name_input.c_str());
-    auto sink = gr::blocks::file_sink::make(sizeof(short), file_name_output.c_str(), false);
+    auto sink = gr::blocks::file_sink::make(sizeof(int16_t), file_name_output.c_str(), false);
 
     EXPECT_NO_THROW({
         top_block->connect(file_source, 0, ibyte_to_cbyte->get_left_block(), 0);
@@ -364,9 +364,9 @@ TEST_F(DataTypeAdapter, IshortToComplexValidationOfResults)
         {
             while (ifs.read(reinterpret_cast<char*>(&iSample), sizeof(gr_complex)))
                 {
-                    EXPECT_EQ(input_data_shorts.at(i), static_cast<short>(iSample.real()));
+                    EXPECT_EQ(input_data_shorts.at(i), static_cast<int16_t>(iSample.real()));
                     i++;
-                    EXPECT_EQ(input_data_shorts.at(i), static_cast<short>(iSample.imag()));
+                    EXPECT_EQ(input_data_shorts.at(i), static_cast<int16_t>(iSample.imag()));
                     i++;
                 }
         }
@@ -390,9 +390,9 @@ TEST_F(DataTypeAdapter, IshortToCshortValidationOfResults)
         {
             while (ifs.read(reinterpret_cast<char*>(&iSample), sizeof(lv_16sc_t)))
                 {
-                    EXPECT_EQ(input_data_shorts.at(i), static_cast<short>(iSample.real()));
+                    EXPECT_EQ(input_data_shorts.at(i), static_cast<int16_t>(iSample.real()));
                     i++;
-                    EXPECT_EQ(input_data_shorts.at(i), static_cast<short>(iSample.imag()));
+                    EXPECT_EQ(input_data_shorts.at(i), static_cast<int16_t>(iSample.imag()));
                     i++;
                 }
         }

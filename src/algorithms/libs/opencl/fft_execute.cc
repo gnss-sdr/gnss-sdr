@@ -46,11 +46,11 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-#include "fft_internal.h"
 #include "clFFT.h"
-#include <stdlib.h>
-#include <stdio.h>
+#include "fft_internal.h"
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 #define min(a, b) (((a) < (b)) ? (a) : (b))

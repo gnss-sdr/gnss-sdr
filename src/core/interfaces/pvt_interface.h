@@ -37,11 +37,11 @@
 #ifndef GNSS_SDR_PVT_INTERFACE_H_
 #define GNSS_SDR_PVT_INTERFACE_H_
 
-#include "gnss_block_interface.h"
-#include "gps_ephemeris.h"
-#include "galileo_ephemeris.h"
-#include "gps_almanac.h"
 #include "galileo_almanac.h"
+#include "galileo_ephemeris.h"
+#include "gnss_block_interface.h"
+#include "gps_almanac.h"
+#include "gps_ephemeris.h"
 
 /*!
  * \brief This class represents an interface to a PVT block.

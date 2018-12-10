@@ -66,7 +66,7 @@ int getindex(double value, const double *range)
     if (range[2] == 0.0) return 0;
     if (range[1] > 0.0 && (value < range[0] || range[1] < value)) return -1;
     if (range[1] < 0.0 && (value < range[1] || range[0] < value)) return -1;
-    return (int)floor((value - range[0]) / range[2] + 0.5);
+    return static_cast<int>(floor((value - range[0]) / range[2] + 0.5));
 }
 
 
@@ -103,7 +103,7 @@ tec_t *addtec(const double *lats, const double *lons, const double *hgts,
     if (nav->nt >= nav->ntmax)
         {
             nav->ntmax += 256;
-            if (!(nav_tec = (tec_t *)realloc(nav->tec, sizeof(tec_t) * nav->ntmax)))
+            if (!(nav_tec = static_cast<tec_t *>(realloc(nav->tec, sizeof(tec_t) * nav->ntmax))))
                 {
                     trace(1, "readionex malloc error ntmax=%d\n", nav->ntmax);
                     free(nav->tec);
@@ -125,8 +125,8 @@ tec_t *addtec(const double *lats, const double *lons, const double *hgts,
         }
     n = ndata[0] * ndata[1] * ndata[2];
 
-    if (!(p->data = (double *)malloc(sizeof(double) * n)) ||
-        !(p->rms = (float *)malloc(sizeof(float) * n)))
+    if (!(p->data = static_cast<double *>(malloc(sizeof(double) * n))) ||
+        !(p->rms = static_cast<float *>(malloc(sizeof(float) * n))))
         {
             return nullptr;
         }
@@ -310,7 +310,7 @@ int readionexb(FILE *fp, const double *lats, const double *lons,
                             if (type == 1)
                                 p->data[index] = x * std::pow(10.0, nexp);
                             else
-                                p->rms[index] = (float)(x * std::pow(10.0, nexp));
+                                p->rms[index] = static_cast<float>(x * std::pow(10.0, nexp));
                         }
                 }
         }
@@ -384,7 +384,7 @@ void readtec(const char *file, nav_t *nav, int opt)
         }
     for (i = 0; i < MAXEXFILE; i++)
         {
-            if (!(efiles[i] = (char *)malloc(1024)))
+            if (!(efiles[i] = static_cast<char *>(malloc(1024))))
                 {
                     for (i--; i >= 0; i--) free(efiles[i]);
                     return;
@@ -395,7 +395,7 @@ void readtec(const char *file, nav_t *nav, int opt)
 
     for (i = 0; i < n; i++)
         {
-            if (!(fp = fopen(efiles[i], "r")))
+            if (!(fp = fopen(efiles[i], "re")))
                 {
                     trace(2, "ionex file open error %s\n", efiles[i]);
                     continue;
@@ -447,9 +447,9 @@ int interptec(const tec_t *tec, int k, const double *posp, double *value,
 
     a = dlat / tec->lats[2];
     b = dlon / tec->lons[2];
-    i = (int)floor(a);
+    i = static_cast<int>(floor(a));
     a -= i;
-    j = (int)floor(b);
+    j = static_cast<int>(floor(b));
     b -= j;
 
     /* get gridded tec data */

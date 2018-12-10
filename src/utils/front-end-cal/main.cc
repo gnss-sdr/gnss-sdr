@@ -32,43 +32,43 @@
 #define FRONT_END_CAL_VERSION "0.0.1"
 #endif
 
-#include "front_end_cal.h"
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
 #include "file_configuration.h"
-#include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
-#include "gnss_signal.h"
-#include "gnss_synchro.h"
-#include "gnss_block_factory.h"
-#include "gps_navigation_message.h"
-#include "gps_ephemeris.h"
-#include "gps_cnav_ephemeris.h"
-#include "gps_almanac.h"
-#include "gps_iono.h"
-#include "gps_cnav_iono.h"
-#include "gps_utc_model.h"
-#include "galileo_ephemeris.h"
+#include "front_end_cal.h"
 #include "galileo_almanac.h"
+#include "galileo_ephemeris.h"
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
-#include "sbas_ephemeris.h"
-#include "gnss_sdr_supl_client.h"
+#include "gnss_block_factory.h"
 #include "gnss_sdr_flags.h"
+#include "gnss_sdr_supl_client.h"
+#include "gnss_signal.h"
+#include "gnss_synchro.h"
+#include "gps_almanac.h"
+#include "gps_cnav_ephemeris.h"
+#include "gps_cnav_iono.h"
+#include "gps_ephemeris.h"
+#include "gps_iono.h"
+#include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
+#include "gps_navigation_message.h"
+#include "gps_utc_model.h"
+#include "sbas_ephemeris.h"
+#include <boost/exception/detail/exception_ptr.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread.hpp>
-#include <boost/exception/detail/exception_ptr.hpp>
 #include <glog/logging.h>
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/top_block.h>
+#include <gnuradio/blocks/file_sink.h>
+#include <gnuradio/blocks/file_source.h>
+#include <gnuradio/blocks/head.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/skiphead.h>
-#include <gnuradio/blocks/head.h>
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/blocks/file_sink.h>
-#include <stdlib.h>
+#include <gnuradio/msg_queue.h>
+#include <gnuradio/top_block.h>
 #include <chrono>
 #include <cstdint>
+#include <cstdlib>
 #include <ctime>  // for ctime
 #include <exception>
 #include <memory>
@@ -97,7 +97,7 @@ std::vector<Gnss_Synchro> gnss_sync_vector;
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class FrontEndCal_msg_rx;
 
-typedef boost::shared_ptr<FrontEndCal_msg_rx> FrontEndCal_msg_rx_sptr;
+using FrontEndCal_msg_rx_sptr = boost::shared_ptr<FrontEndCal_msg_rx>;
 
 FrontEndCal_msg_rx_sptr FrontEndCal_msg_rx_make();
 
@@ -402,7 +402,7 @@ int main(int argc, char** argv)
 
     // record startup time
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds{};
     start = std::chrono::system_clock::now();
 
     bool start_msg = true;
@@ -434,7 +434,7 @@ int main(int argc, char** argv)
                 {
                     std::cout << " " << PRN << " ";
                     double doppler_measurement_hz = 0;
-                    for (auto & it : gnss_sync_vector)
+                    for (auto& it : gnss_sync_vector)
                         {
                             doppler_measurement_hz += it.Acq_doppler_hz;
                         }
@@ -541,7 +541,7 @@ int main(int argc, char** argv)
 
     std::cout << "SV ID  Measured [Hz]   Predicted [Hz]" << std::endl;
 
-    for (auto & it : doppler_measurements_map)
+    for (auto& it : doppler_measurements_map)
         {
             try
                 {
@@ -577,7 +577,7 @@ int main(int argc, char** argv)
     double mean_osc_err_ppm = 0;
     int n_elements = f_if_estimation_Hz_map.size();
 
-    for (auto & it : f_if_estimation_Hz_map)
+    for (auto& it : f_if_estimation_Hz_map)
         {
             mean_f_if_Hz += it.second;
             mean_fs_Hz += f_fs_estimation_Hz_map.find(it.first)->second;
@@ -598,7 +598,7 @@ int main(int argc, char** argv)
               << "Corrected Doppler vs. Predicted" << std::endl;
     std::cout << "SV ID  Corrected [Hz]   Predicted [Hz]" << std::endl;
 
-    for (auto & it : doppler_measurements_map)
+    for (auto& it : doppler_measurements_map)
         {
             try
                 {

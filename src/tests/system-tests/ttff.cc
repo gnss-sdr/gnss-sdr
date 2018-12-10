@@ -34,9 +34,9 @@
 #include "concurrent_queue.h"
 #include "control_thread.h"
 #include "file_configuration.h"
-#include "in_memory_configuration.h"
 #include "gnss_flowgraph.h"
 #include "gps_acq_assist.h"
+#include "in_memory_configuration.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
@@ -48,9 +48,9 @@
 #include <numeric>
 #include <random>
 #include <string>
-#include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
+#include <sys/types.h>
 #include <thread>
 
 
@@ -398,7 +398,7 @@ void TtffTest::print_TTFF_report(const std::vector<double> &ttff_v, std::shared_
     stm << "Navigation mode: "
         << "3D" << std::endl;
 
-    if (source.compare("UHD_Signal_Source"))
+    if (source != "UHD_Signal_Source")
         {
             stm << "Source: File" << std::endl;
         }
@@ -417,7 +417,7 @@ void TtffTest::print_TTFF_report(const std::vector<double> &ttff_v, std::shared_
 }
 
 
-TEST_F(TtffTest, ColdStart)
+TEST_F(TtffTest /*unused*/, ColdStart /*unused*/)
 {
     unsigned int num_measurements = 0;
 
@@ -500,7 +500,7 @@ TEST_F(TtffTest, ColdStart)
 }
 
 
-TEST_F(TtffTest, HotStart)
+TEST_F(TtffTest /*unused*/, HotStart /*unused*/)
 {
     unsigned int num_measurements = 0;
     TTFF_v.clear();

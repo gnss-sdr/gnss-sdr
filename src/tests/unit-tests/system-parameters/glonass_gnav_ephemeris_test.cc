@@ -31,8 +31,8 @@
  */
 
 
-#include "gnss_signal_processing.h"
 #include "glonass_gnav_ephemeris.h"
+#include "gnss_signal_processing.h"
 
 
 TEST(GlonassGnavEphemerisTest, ComputeGlonassTime)

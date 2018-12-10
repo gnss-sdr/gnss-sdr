@@ -84,10 +84,10 @@ void gauss(int n, double *L, double *Z, int i, int j)
 {
     int k, mu;
 
-    if ((mu = (int)ROUND_LAMBDA(L[i + j * n])) != 0)
+    if ((mu = static_cast<int> ROUND_LAMBDA(L[i + j * n])) != 0)
         {
-            for (k = i; k < n; k++) L[k + n * j] -= (double)mu * L[k + i * n];
-            for (k = 0; k < n; k++) Z[k + n * j] -= (double)mu * Z[k + i * n];
+            for (k = i; k < n; k++) L[k + n * j] -= static_cast<double>(mu) * L[k + i * n];
+            for (k = 0; k < n; k++) Z[k + n * j] -= static_cast<double>(mu) * Z[k + i * n];
         }
 }
 

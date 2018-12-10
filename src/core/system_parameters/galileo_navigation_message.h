@@ -33,11 +33,11 @@
 #ifndef GNSS_SDR_GALILEO_NAVIGATION_MESSAGE_H_
 #define GNSS_SDR_GALILEO_NAVIGATION_MESSAGE_H_
 
+#include "Galileo_E1.h"
+#include "galileo_almanac_helper.h"
 #include "galileo_ephemeris.h"
 #include "galileo_iono.h"
-#include "galileo_almanac_helper.h"
 #include "galileo_utc_model.h"
-#include "Galileo_E1.h"
 #include <bitset>
 #include <cstdint>
 #include <map>

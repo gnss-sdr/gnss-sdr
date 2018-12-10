@@ -32,8 +32,8 @@
 #ifndef GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H_
 #define GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H_
 
-#include "gnss_block_interface.h"
 #include "fpga_switch.h"
+#include "gnss_block_interface.h"
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/msg_queue.h>
 #include <cstdint>

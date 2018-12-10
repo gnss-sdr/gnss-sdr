@@ -46,16 +46,16 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+#include "clFFT.h"
+#include "fft_internal.h"
+#include <assert.h>
+#include <iostream>
+#include <math.h>
+#include <sstream>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
-#include <iostream>
-#include <sstream>
-#include <string>
 #include <string.h>
-#include <assert.h>
-#include "fft_internal.h"
-#include "clFFT.h"
+#include <string>
 
 using namespace std;
 

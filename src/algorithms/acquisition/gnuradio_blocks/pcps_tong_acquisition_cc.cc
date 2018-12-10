@@ -49,8 +49,8 @@
  */
 
 #include "pcps_tong_acquisition_cc.h"
-#include "control_message_factory.h"
 #include "GPS_L1_CA.h"  // for GPS_TWO_PI
+#include "control_message_factory.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
@@ -61,10 +61,14 @@
 using google::LogMessage;
 
 pcps_tong_acquisition_cc_sptr pcps_tong_make_acquisition_cc(
-    unsigned int sampled_ms, unsigned int doppler_max,
-    long fs_in, int samples_per_ms,
-    int samples_per_code, unsigned int tong_init_val,
-    unsigned int tong_max_val, unsigned int tong_max_dwells,
+    uint32_t sampled_ms,
+    uint32_t doppler_max,
+    int64_t fs_in,
+    int32_t samples_per_ms,
+    int32_t samples_per_code,
+    uint32_t tong_init_val,
+    uint32_t tong_max_val,
+    uint32_t tong_max_dwells,
     bool dump, std::string dump_filename)
 {
     return pcps_tong_acquisition_cc_sptr(
@@ -73,10 +77,14 @@ pcps_tong_acquisition_cc_sptr pcps_tong_make_acquisition_cc(
 }
 
 pcps_tong_acquisition_cc::pcps_tong_acquisition_cc(
-    unsigned int sampled_ms, unsigned int doppler_max,
-    long fs_in, int samples_per_ms,
-    int samples_per_code, unsigned int tong_init_val,
-    unsigned int tong_max_val, unsigned int tong_max_dwells,
+    uint32_t sampled_ms,
+    uint32_t doppler_max,
+    int64_t fs_in,
+    int32_t samples_per_ms,
+    int32_t samples_per_code,
+    uint32_t tong_init_val,
+    uint32_t tong_max_val,
+    uint32_t tong_max_dwells,
     bool dump,
     std::string dump_filename) : gr::block("pcps_tong_acquisition_cc",
                                      gr::io_signature::make(1, 1, sizeof(gr_complex) * sampled_ms * samples_per_ms),
@@ -130,7 +138,7 @@ pcps_tong_acquisition_cc::~pcps_tong_acquisition_cc()
 {
     if (d_num_doppler_bins > 0)
         {
-            for (unsigned int i = 0; i < d_num_doppler_bins; i++)
+            for (uint32_t i = 0; i < d_num_doppler_bins; i++)
                 {
                     volk_gnsssdr_free(d_grid_doppler_wipeoffs[i]);
                     volk_gnsssdr_free(d_grid_data[i]);
@@ -176,8 +184,8 @@ void pcps_tong_acquisition_cc::init()
 
     // Count the number of bins
     d_num_doppler_bins = 0;
-    for (int doppler = static_cast<int>(-d_doppler_max);
-         doppler <= static_cast<int>(d_doppler_max);
+    for (auto doppler = static_cast<int32_t>(-d_doppler_max);
+         doppler <= static_cast<int32_t>(d_doppler_max);
          doppler += d_doppler_step)
         {
             d_num_doppler_bins++;
@@ -186,11 +194,11 @@ void pcps_tong_acquisition_cc::init()
     // Create the carrier Doppler wipeoff signals and allocate data grid.
     d_grid_doppler_wipeoffs = new gr_complex *[d_num_doppler_bins];
     d_grid_data = new float *[d_num_doppler_bins];
-    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+    for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
-            int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
+            int32_t doppler = -static_cast<int32_t>(d_doppler_max) + d_doppler_step * doppler_index;
             float phase_step_rad = GPS_TWO_PI * doppler / static_cast<float>(d_fs_in);
             float _phase[1];
             _phase[0] = 0;
@@ -198,14 +206,14 @@ void pcps_tong_acquisition_cc::init()
 
             d_grid_data[doppler_index] = static_cast<float *>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
 
-            for (unsigned int i = 0; i < d_fft_size; i++)
+            for (uint32_t i = 0; i < d_fft_size; i++)
                 {
                     d_grid_data[doppler_index][i] = 0;
                 }
         }
 }
 
-void pcps_tong_acquisition_cc::set_state(int state)
+void pcps_tong_acquisition_cc::set_state(int32_t state)
 {
     d_state = state;
     if (d_state == 1)
@@ -220,9 +228,9 @@ void pcps_tong_acquisition_cc::set_state(int state)
             d_input_power = 0.0;
             d_test_statistics = 0.0;
 
-            for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+            for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
                 {
-                    for (unsigned int i = 0; i < d_fft_size; i++)
+                    for (uint32_t i = 0; i < d_fft_size; i++)
                         {
                             d_grid_data[doppler_index][i] = 0;
                         }
@@ -241,7 +249,7 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
     gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items __attribute__((unused)))
 {
-    int acquisition_message = -1;  //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
+    int32_t acquisition_message = -1;  //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
 
     switch (d_state)
         {
@@ -260,9 +268,9 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
                         d_input_power = 0.0;
                         d_test_statistics = 0.0;
 
-                        for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+                        for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
                             {
-                                for (unsigned int i = 0; i < d_fft_size; i++)
+                                for (uint32_t i = 0; i < d_fft_size; i++)
                                     {
                                         d_grid_data[doppler_index][i] = 0;
                                     }
@@ -280,7 +288,7 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
         case 1:
             {
                 // initialize acquisition algorithm
-                int doppler;
+                int32_t doppler;
                 uint32_t indext = 0;
                 float magt = 0.0;
                 const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
@@ -304,11 +312,11 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
                 d_input_power /= static_cast<float>(d_fft_size);
 
                 // 2- Doppler frequency search loop
-                for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+                for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
                     {
                         // doppler search steps
 
-                        doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
+                        doppler = -static_cast<int32_t>(d_doppler_max) + d_doppler_step * doppler_index;
 
                         volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in,
                             d_grid_doppler_wipeoffs[doppler_index], d_fft_size);

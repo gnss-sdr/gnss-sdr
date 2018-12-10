@@ -32,8 +32,8 @@
 
 #include "gps_l5_telemetry_decoder.h"
 #include "configuration_interface.h"
-#include <gnuradio/io_signature.h>
 #include <glog/logging.h>
+#include <gnuradio/io_signature.h>
 
 
 using google::LogMessage;

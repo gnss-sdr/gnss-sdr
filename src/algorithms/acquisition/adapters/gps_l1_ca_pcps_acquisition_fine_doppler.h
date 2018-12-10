@@ -34,8 +34,8 @@
 #ifndef GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FINE_DOPPLER_H_
 #define GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FINE_DOPPLER_H_
 
-#include "gnss_synchro.h"
 #include "acquisition_interface.h"
+#include "gnss_synchro.h"
 #include "pcps_acquisition_fine_doppler_cc.h"
 #include <string>
 

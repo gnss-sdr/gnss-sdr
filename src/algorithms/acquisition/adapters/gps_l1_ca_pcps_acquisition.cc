@@ -87,7 +87,7 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     acq_parameters_.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
     acq_parameters_.make_2_steps = configuration_->property(role + ".make_two_steps", false);
     acq_parameters_.use_automatic_resampler = configuration_->property("GNSS-SDR.use_acquisition_resampler", false);
-    if (acq_parameters_.use_automatic_resampler == true and item_type_.compare("gr_complex") != 0)
+    if (acq_parameters_.use_automatic_resampler == true and item_type_ != "gr_complex")
         {
             LOG(WARNING) << "GPS L1 CA acquisition disabled the automatic resampler feature because its item_type is not set to gr_complex";
             acq_parameters_.use_automatic_resampler = false;

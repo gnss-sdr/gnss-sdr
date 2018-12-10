@@ -40,6 +40,7 @@
 #include <fcntl.h>  // libraries used by the GIPO
 #include <iostream>
 #include <sys/mman.h>  // libraries used by the GIPO
+#include <utility>
 
 
 #define PAGE_SIZE 0x10000                     // default page size for the multicorrelator memory map
@@ -102,7 +103,7 @@ fpga_acquisition::fpga_acquisition(std::string device_name,
 
     //printf("AAA- vector_length = %d\n ", vector_length);
     // initial values
-    d_device_name = device_name;
+    d_device_name = std::move(device_name);
     //d_freq = freq;
     d_fs_in = fs_in;
     d_vector_length = vector_length;

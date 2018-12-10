@@ -62,6 +62,7 @@
 
 // string manipulation
 #include <string>
+#include <utility>
 
 // constants
 #include "GPS_L1_CA.h"
@@ -160,7 +161,7 @@ fpga_multicorrelator_8sc::fpga_multicorrelator_8sc(int32_t n_correlators,
 {
     //printf("tracking fpga class created\n");
     d_n_correlators = n_correlators;
-    d_device_name = device_name;
+    d_device_name = std::move(device_name);
     d_device_base = device_base;
     d_track_pilot = track_pilot;
     d_device_descriptor = 0;

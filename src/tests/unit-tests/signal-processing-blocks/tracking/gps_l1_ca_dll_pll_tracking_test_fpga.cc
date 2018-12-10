@@ -58,6 +58,7 @@
 #include <fcntl.h>
 #include <iostream>
 #include <unistd.h>
+#include <utility>
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
@@ -69,7 +70,7 @@
 #define FIVE_SECONDS 5000000          // five seconds in microseconds
 
 void send_tracking_gps_input_samples(FILE *rx_signal_file,
-    int num_remaining_samples, gr::top_block_sptr top_block)
+    int num_remaining_samples, const gr::top_block_sptr& top_block)
 {
     int num_samples_transferred = 0;   // number of samples that have been transferred to the DMA so far
     static int flowgraph_stopped = 0;  // flag to indicate if the flowgraph is stopped already
@@ -142,7 +143,7 @@ void sending_thread(gr::top_block_sptr top_block, const char *file_name)
     usleep(FIVE_SECONDS);  // wait for some time to give time to the other thread to program the device
 
     //send_tracking_gps_input_samples(dma_descr, rx_signal_file, file_length);
-    send_tracking_gps_input_samples(rx_signal_file, file_length, top_block);
+    send_tracking_gps_input_samples(rx_signal_file, file_length, std::move(top_block));
 
     fclose(rx_signal_file);
 }
@@ -180,7 +181,7 @@ void GpsL1CADllPllTrackingTestFpga_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
         }
     catch (boost::bad_any_cast &e)
@@ -204,8 +205,7 @@ GpsL1CADllPllTrackingTestFpga_msg_rx::GpsL1CADllPllTrackingTestFpga_msg_rx() : g
 }
 
 
-GpsL1CADllPllTrackingTestFpga_msg_rx::~GpsL1CADllPllTrackingTestFpga_msg_rx()
-= default;
+GpsL1CADllPllTrackingTestFpga_msg_rx::~GpsL1CADllPllTrackingTestFpga_msg_rx() = default;
 
 
 // ###########################################################
@@ -242,8 +242,7 @@ public:
         gnss_synchro = Gnss_Synchro();
     }
 
-    ~GpsL1CADllPllTrackingTestFpga()
-    = default;
+    ~GpsL1CADllPllTrackingTestFpga() = default;
 
     void configure_receiver();
 

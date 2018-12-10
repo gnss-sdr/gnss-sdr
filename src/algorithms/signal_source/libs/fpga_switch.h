@@ -44,7 +44,7 @@
 class fpga_switch
 {
 public:
-    fpga_switch(std::string device_name);
+    fpga_switch(const std::string& device_name);
     ~fpga_switch();
     void set_switch_position(int switch_position);
 

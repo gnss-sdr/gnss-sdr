@@ -42,6 +42,7 @@
 #include "pcps_acquisition_fpga.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
+#include <utility>
 
 
 #define AQ_DOWNSAMPLING_DELAY 40  // delay due to the downsampling filter in the acquisition
@@ -50,7 +51,7 @@ using google::LogMessage;
 
 pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_)
 {
-    return pcps_acquisition_fpga_sptr(new pcps_acquisition_fpga(conf_));
+    return pcps_acquisition_fpga_sptr(new pcps_acquisition_fpga(std::move(conf_)));
 }
 
 
@@ -61,7 +62,7 @@ pcps_acquisition_fpga::pcps_acquisition_fpga(pcpsconf_fpga_t conf_) : gr::block(
     //   printf("acq constructor start\n");
     this->message_port_register_out(pmt::mp("events"));
 
-    acq_parameters = conf_;
+    acq_parameters = std::move(conf_);
     d_sample_counter = 0ULL;  // SAMPLE COUNTER
     d_active = false;
     d_state = 0;
@@ -256,7 +257,7 @@ void pcps_acquisition_fpga::set_active(bool active)
                     d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
                     d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
 
-                    d_test_statistics = (d_mag / d_input_power); //* correction_factor;
+                    d_test_statistics = (d_mag / d_input_power); // correction_factor;
                 }
 
             // In the case of the FPGA the option of dumping the results of the acquisition to a file is not available

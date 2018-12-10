@@ -32,6 +32,7 @@
 
 #include "gr_complex_ip_packet_source.h"
 #include <gnuradio/io_signature.h>
+#include <utility>
 
 
 const int FIFO_SIZE = 1472000;
@@ -76,15 +77,15 @@ typedef struct gr_udp_header
 
 gr_complex_ip_packet_source::sptr
 gr_complex_ip_packet_source::make(std::string src_device,
-    std::string origin_address,
+    const std::string& origin_address,
     int udp_port,
     int udp_packet_size,
     int n_baseband_channels,
-    std::string wire_sample_type,
+    const std::string& wire_sample_type,
     size_t item_size,
     bool IQ_swap_)
 {
-    return gnuradio::get_initial_sptr(new gr_complex_ip_packet_source(src_device,
+    return gnuradio::get_initial_sptr(new gr_complex_ip_packet_source(std::move(src_device),
         origin_address,
         udp_port,
         udp_packet_size,
@@ -99,11 +100,11 @@ gr_complex_ip_packet_source::make(std::string src_device,
  * The private constructor
  */
 gr_complex_ip_packet_source::gr_complex_ip_packet_source(std::string src_device,
-    __attribute__((unused)) std::string origin_address,
+    __attribute__((unused)) const std::string& origin_address,
     int udp_port,
     int udp_packet_size,
     int n_baseband_channels,
-    std::string wire_sample_type,
+    const std::string& wire_sample_type,
     size_t item_size,
     bool IQ_swap_)
     : gr::sync_block("gr_complex_ip_packet_source",
@@ -129,7 +130,7 @@ gr_complex_ip_packet_source::gr_complex_ip_packet_source(std::string src_device,
             exit(0);
         }
     std::cout << "d_wire_sample_type:" << d_wire_sample_type << std::endl;
-    d_src_device = src_device;
+    d_src_device = std::move(src_device);
     d_udp_port = udp_port;
     d_udp_payload_size = udp_packet_size;
     d_fifo_full = false;

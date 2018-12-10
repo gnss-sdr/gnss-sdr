@@ -50,7 +50,7 @@ class GpsL5DllPllTrackingFpga : public TrackingInterface
 {
 public:
     GpsL5DllPllTrackingFpga(ConfigurationInterface* configuration,
-        std::string role,
+        const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 

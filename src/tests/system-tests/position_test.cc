@@ -837,7 +837,7 @@ void PositionSystemTest::print_results(const arma::mat& R_eb_enu)
                 {
                     boost::filesystem::path p(gnuplot_executable);
                     boost::filesystem::path dir = p.parent_path();
-                    std::string gnuplot_path = dir.native();
+                    const std::string& gnuplot_path = dir.native();
                     Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                     Gnuplot g1("points");

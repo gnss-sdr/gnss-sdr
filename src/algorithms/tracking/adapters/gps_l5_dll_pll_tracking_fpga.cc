@@ -52,7 +52,7 @@ void GpsL5DllPllTrackingFpga::stop_tracking()
 }
 
 GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
-    ConfigurationInterface *configuration, std::string role,
+    ConfigurationInterface *configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     //printf("L5 TRK CLASS CREATED\n");

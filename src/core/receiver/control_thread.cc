@@ -67,6 +67,7 @@
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <sys/types.h>
+#include <utility>
 
 
 extern concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
@@ -294,14 +295,14 @@ int ControlThread::run()
 }
 
 
-void ControlThread::set_control_queue(gr::msg_queue::sptr control_queue)
+void ControlThread::set_control_queue(const gr::msg_queue::sptr& control_queue)
 {
     if (flowgraph_->running())
         {
             LOG(WARNING) << "Unable to set control queue while flowgraph is running";
             return;
         }
-    control_queue_ = control_queue;
+    control_queue_ = std::move(control_queue);
     cmd_interface_.set_msg_queue(control_queue_);
 }
 

@@ -167,8 +167,7 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
 }
 
 
-GpsL2MDllPllTrackingFpga::~GpsL2MDllPllTrackingFpga()
-= default;
+GpsL2MDllPllTrackingFpga::~GpsL2MDllPllTrackingFpga() = default;
 
 
 void GpsL2MDllPllTrackingFpga::start_tracking()

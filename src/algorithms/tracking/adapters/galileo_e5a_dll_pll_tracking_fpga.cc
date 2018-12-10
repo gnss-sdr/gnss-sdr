@@ -51,7 +51,7 @@ void GalileoE5aDllPllTrackingFpga::stop_tracking()
 }
 
 GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
-    ConfigurationInterface *configuration, const std::string& role,
+    ConfigurationInterface *configuration, const std::string &role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     //printf("creating the E5A tracking");

@@ -37,7 +37,6 @@
 #include "gnss_sdr_flags.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
-#include <utility>
 
 
 using google::LogMessage;
@@ -45,9 +44,9 @@ using google::LogMessage;
 
 GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     ConfigurationInterface* configuration,
-    std::string role,
+    const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams) : role_(std::move(role)),
+    unsigned int out_streams) : role_(role),
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {
@@ -89,7 +88,7 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     acq_parameters_.dump_filename = dump_filename_;
 
     acq_parameters_.use_automatic_resampler = configuration_->property("GNSS-SDR.use_acquisition_resampler", false);
-    if (acq_parameters_.use_automatic_resampler == true and item_type_ != "gr_complex")
+    if (acq_parameters_.use_automatic_resampler == true and item_type_.compare("gr_complex") != 0)
         {
             LOG(WARNING) << "Galileo E1 acqisition disabled the automatic resampler feature because its item_type is not set to gr_complex";
             acq_parameters_.use_automatic_resampler = false;

@@ -53,7 +53,7 @@ class GpsL2MPcpsAcquisition : public AcquisitionInterface
 {
 public:
     GpsL2MPcpsAcquisition(ConfigurationInterface* configuration,
-        std::string role,
+        const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 

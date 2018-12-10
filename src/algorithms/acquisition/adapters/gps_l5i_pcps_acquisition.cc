@@ -39,7 +39,6 @@
 #include "gps_l5_signal.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
-#include <utility>
 
 
 using google::LogMessage;
@@ -47,9 +46,9 @@ using google::LogMessage;
 
 GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
     ConfigurationInterface* configuration,
-    std::string role,
+    const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams) : role_(std::move(role)),
+    unsigned int out_streams) : role_(role),
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {
@@ -99,7 +98,7 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
     acq_parameters_.make_2_steps = configuration_->property(role + ".make_two_steps", false);
     acq_parameters_.blocking_on_standby = configuration_->property(role + ".blocking_on_standby", false);
     acq_parameters_.use_automatic_resampler = configuration_->property("GNSS-SDR.use_acquisition_resampler", false);
-    if (acq_parameters_.use_automatic_resampler == true and item_type_ != "gr_complex")
+    if (acq_parameters_.use_automatic_resampler == true and item_type_.compare("gr_complex") != 0)
         {
             LOG(WARNING) << "GPS L5 acquisition disabled the automatic resampler feature because its item_type is not set to gr_complex";
             acq_parameters_.use_automatic_resampler = false;

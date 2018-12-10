@@ -131,6 +131,9 @@ public:
 
     void set_state(int state __attribute__((unused))) override{};
 
+    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
+
+
 private:
     ConfigurationInterface* configuration_;
     galileo_pcps_8ms_acquisition_cc_sptr acquisition_cc_;

@@ -128,13 +128,19 @@ public:
      */
     void stop_acquisition() override;
 
+    /*!
+     * \brief Sets the resampler latency to account it in the acquisition code delay estimation
+     */
+
+    void set_resampler_latency(uint32_t latency_samples) override;
+
 private:
     float calculate_threshold(float pfa);
 
     ConfigurationInterface* configuration_;
 
     pcps_acquisition_sptr acquisition_;
-
+    Acq_Conf acq_parameters_;
     size_t item_size_;
 
     std::string item_type_;

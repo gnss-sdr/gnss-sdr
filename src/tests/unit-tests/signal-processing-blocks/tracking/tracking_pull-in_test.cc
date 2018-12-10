@@ -30,12 +30,12 @@
  * -------------------------------------------------------------------------
  */
 
-
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
 #include "GPS_L5.h"
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
+#include "acquisition_msg_rx.h"
 #include "control_message_factory.h"
 #include "galileo_e1_pcps_ambiguous_acquisition.h"
 #include "galileo_e5a_noncoherent_iq_acquisition_caf.h"

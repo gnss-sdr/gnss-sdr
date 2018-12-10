@@ -33,6 +33,7 @@
  */
 
 #include "MATH_CONSTANTS.h"
+#include "acquisition_msg_rx.h"
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
 #include "control_thread.h"

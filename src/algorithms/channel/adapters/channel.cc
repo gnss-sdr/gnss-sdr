@@ -146,7 +146,7 @@ void Channel::disconnect(gr::top_block_sptr top_block)
 gr::basic_block_sptr Channel::get_left_block()
 {
     LOG(ERROR) << "Deprecated call to get_left_block() in channel interface";
-    return NULL;
+    return nullptr;
 }
 
 gr::basic_block_sptr Channel::get_left_block_trk()

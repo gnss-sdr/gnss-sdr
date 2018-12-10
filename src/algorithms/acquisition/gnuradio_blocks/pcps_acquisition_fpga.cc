@@ -74,7 +74,7 @@ pcps_acquisition_fpga::pcps_acquisition_fpga(pcpsconf_fpga_t conf_) : gr::block(
     d_doppler_step = 0U;
     d_test_statistics = 0.0;
     d_channel = 0U;
-    d_gnss_synchro = 0;
+    d_gnss_synchro = nullptr;
 
     //printf("zzzz acq_parameters.code_length = %d\n", acq_parameters.code_length);
     //printf("zzzz acq_parameters.samples_per_ms = %d\n", acq_parameters.samples_per_ms);

@@ -121,7 +121,7 @@ fpga_acquisition::fpga_acquisition(std::string device_name,
             LOG(WARNING) << "Cannot open deviceio" << d_device_name;
             std::cout << "Acq: cannot open deviceio" << d_device_name << std::endl;
         }
-    d_map_base = reinterpret_cast<volatile uint32_t *>(mmap(NULL, PAGE_SIZE,
+    d_map_base = reinterpret_cast<volatile uint32_t *>(mmap(nullptr, PAGE_SIZE,
         PROT_READ | PROT_WRITE, MAP_SHARED, d_fd, 0));
 
     if (d_map_base == reinterpret_cast<void *>(-1))
@@ -234,7 +234,7 @@ void fpga_acquisition::set_doppler_sweep(uint32_t num_sweeps)
     float phase_step_rad_int_temp;
     int32_t phase_step_rad_int;
     //int32_t doppler = static_cast<int32_t>(-d_doppler_max) + d_doppler_step * doppler_index;
-    int32_t doppler = static_cast<int32_t>(-d_doppler_max);
+    auto doppler = static_cast<int32_t>(-d_doppler_max);
     //float phase_step_rad = GPS_TWO_PI * (d_freq + doppler) / static_cast<float>(d_fs_in);
     float phase_step_rad = GPS_TWO_PI * (doppler) / static_cast<float>(d_fs_in);
     // The doppler step can never be outside the range -pi to +pi, otherwise there would be aliasing
@@ -408,7 +408,7 @@ void fpga_acquisition::unblock_samples()
 
 void fpga_acquisition::close_device()
 {
-    uint32_t *aux = const_cast<uint32_t *>(d_map_base);
+    auto *aux = const_cast<uint32_t *>(d_map_base);
     if (munmap(static_cast<void *>(aux), PAGE_SIZE) == -1)
         {
             printf("Failed to unmap memory uio\n");

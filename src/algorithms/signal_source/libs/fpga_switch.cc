@@ -108,7 +108,7 @@ unsigned fpga_switch::fpga_switch_test_register(
 
 void fpga_switch::close_device()
 {
-    unsigned *aux = const_cast<unsigned *>(d_map_base);
+    auto *aux = const_cast<unsigned *>(d_map_base);
     if (munmap(static_cast<void *>(aux), PAGE_SIZE) == -1)
         {
             std::cout << "Failed to unmap memory uio" << std::endl;

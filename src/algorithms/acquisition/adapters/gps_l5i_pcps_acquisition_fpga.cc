@@ -89,7 +89,7 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     //dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
     //acq_parameters.dump_filename = dump_filename_;
     //--- Find number of samples per spreading code -------------------------
-    unsigned int code_length = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / (GPS_L5i_CODE_RATE_HZ / static_cast<double>(GPS_L5i_CODE_LENGTH_CHIPS))));
+    auto code_length = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / (GPS_L5i_CODE_RATE_HZ / static_cast<double>(GPS_L5i_CODE_LENGTH_CHIPS))));
     acq_parameters.code_length = code_length;
     // The FPGA can only use FFT lengths that are a power of two.
     float nbits = ceilf(log2f((float)code_length));
@@ -105,11 +105,11 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     //printf("L5 ACQ CLASS MID 01\n");
     // compute all the GPS L5 PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
-    gr::fft::fft_complex* fft_if = new gr::fft::fft_complex(vector_length, true);  // Direct FFT
+    auto* fft_if = new gr::fft::fft_complex(vector_length, true);  // Direct FFT
     //printf("L5 ACQ CLASS MID 02\n");
-    std::complex<float>* code = new gr_complex[vector_length];
+    auto* code = new gr_complex[vector_length];
     //printf("L5 ACQ CLASS MID 03\n");
-    gr_complex* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    auto* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     //printf("L5 ACQ CLASS MID 04\n");
     d_all_fft_codes_ = new lv_16sc_t[nsamples_total * NUM_PRNs];  // memory containing all the possible fft codes for PRN 0 to 32
 
@@ -124,7 +124,7 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
             // fill in zero padding
             for (int s = code_length; s < nsamples_total; s++)
                 {
-                    code[s] = std::complex<float>(static_cast<float>(0, 0));
+                    code[s] = std::complex<float>(0.0, 0.0);
                     //code[s] = 0;
                 }
             memcpy(fft_if->get_inbuf(), code, sizeof(gr_complex) * nsamples_total);            // copy to FFT buffer

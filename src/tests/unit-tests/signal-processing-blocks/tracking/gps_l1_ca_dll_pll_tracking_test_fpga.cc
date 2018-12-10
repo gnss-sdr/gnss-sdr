@@ -54,9 +54,9 @@
 #include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
 #include <chrono>
+#include <cstdio>  // FPGA read input file
 #include <fcntl.h>
 #include <iostream>
-#include <stdio.h>  // FPGA read input file
 #include <unistd.h>
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
@@ -151,7 +151,7 @@ void sending_thread(gr::top_block_sptr top_block, const char *file_name)
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CADllPllTrackingTestFpga_msg_rx;
 
-typedef boost::shared_ptr<GpsL1CADllPllTrackingTestFpga_msg_rx> GpsL1CADllPllTrackingTestFpga_msg_rx_sptr;
+using GpsL1CADllPllTrackingTestFpga_msg_rx_sptr = boost::shared_ptr<GpsL1CADllPllTrackingTestFpga_msg_rx>;
 
 GpsL1CADllPllTrackingTestFpga_msg_rx_sptr GpsL1CADllPllTrackingTestFpga_msg_rx_make();
 
@@ -205,8 +205,7 @@ GpsL1CADllPllTrackingTestFpga_msg_rx::GpsL1CADllPllTrackingTestFpga_msg_rx() : g
 
 
 GpsL1CADllPllTrackingTestFpga_msg_rx::~GpsL1CADllPllTrackingTestFpga_msg_rx()
-{
-}
+= default;
 
 
 // ###########################################################
@@ -244,8 +243,7 @@ public:
     }
 
     ~GpsL1CADllPllTrackingTestFpga()
-    {
-    }
+    = default;
 
     void configure_receiver();
 
@@ -283,7 +281,7 @@ int GpsL1CADllPllTrackingTestFpga::generate_signal()
     int child_status;
 
     char *const parmList[] = {&generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0],
-        &p4[0], &p5[0], NULL};
+        &p4[0], &p5[0], nullptr};
 
     int pid;
     if ((pid = fork()) == -1)

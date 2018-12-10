@@ -50,6 +50,7 @@
 #include <exception>
 #include <iostream>
 #include <set>
+#include <utility>
 #ifdef GR_GREATER_38
 #include <gnuradio/filter/fir_filter_blk.h>
 #else
@@ -61,12 +62,12 @@
 
 using google::LogMessage;
 
-GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration, gr::msg_queue::sptr queue)
+GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration, const gr::msg_queue::sptr& queue)
 {
     connected_ = false;
     running_ = false;
     configuration_ = configuration;
-    queue_ = queue;
+    queue_ = std::move(queue);
     init();
 }
 

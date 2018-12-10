@@ -42,10 +42,10 @@
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/serialization/map.hpp>
 #include <gflags/gflags.h>
-#include <cstdlib>
 #include <gpstk/Rinex3NavData.hpp>
 #include <gpstk/Rinex3NavHeader.hpp>
 #include <gpstk/Rinex3NavStream.hpp>
+#include <cstdlib>
 #include <iostream>
 
 

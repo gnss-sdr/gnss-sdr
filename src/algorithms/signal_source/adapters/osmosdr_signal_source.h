@@ -52,7 +52,7 @@ class OsmosdrSignalSource : public GNSSBlockInterface
 {
 public:
     OsmosdrSignalSource(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_stream,
+        const std::string& role, unsigned int in_stream,
         unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~OsmosdrSignalSource();

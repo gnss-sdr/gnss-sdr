@@ -45,7 +45,7 @@
 const size_t PAGE_SIZE = 0x10000;
 const unsigned int TEST_REGISTER_TRACK_WRITEVAL = 0x55AA;
 
-fpga_switch::fpga_switch(std::string device_name)
+fpga_switch::fpga_switch(const std::string& device_name)
 {
     if ((d_device_descriptor = open(device_name.c_str(), O_RDWR | O_SYNC)) == -1)
         {
@@ -108,7 +108,7 @@ unsigned fpga_switch::fpga_switch_test_register(
 
 void fpga_switch::close_device()
 {
-    unsigned *aux = const_cast<unsigned *>(d_map_base);
+    auto *aux = const_cast<unsigned *>(d_map_base);
     if (munmap(static_cast<void *>(aux), PAGE_SIZE) == -1)
         {
             std::cout << "Failed to unmap memory uio" << std::endl;

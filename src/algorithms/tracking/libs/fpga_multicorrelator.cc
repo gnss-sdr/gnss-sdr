@@ -41,20 +41,20 @@
 #include <new>
 
 // libraries used by DMA test code and GIPO test code
-#include <errno.h>
+#include <cerrno>
+#include <cstdio>
 #include <fcntl.h>
-#include <stdio.h>
 #include <unistd.h>
 
 // libraries used by DMA test code
-#include <assert.h>
-#include <stdint.h>
+#include <cassert>
+#include <cstdint>
 #include <sys/stat.h>
 #include <unistd.h>
 
 // libraries used by GPIO test code
-#include <signal.h>
-#include <stdlib.h>
+#include <csignal>
+#include <cstdlib>
 #include <sys/mman.h>
 
 // logging
@@ -62,6 +62,7 @@
 
 // string manipulation
 #include <string>
+#include <utility>
 
 // constants
 #include "GPS_L1_CA.h"
@@ -160,7 +161,7 @@ fpga_multicorrelator_8sc::fpga_multicorrelator_8sc(int32_t n_correlators,
 {
     //printf("tracking fpga class created\n");
     d_n_correlators = n_correlators;
-    d_device_name = device_name;
+    d_device_name = std::move(device_name);
     d_device_base = device_base;
     d_track_pilot = track_pilot;
     d_device_descriptor = 0;
@@ -345,7 +346,7 @@ void fpga_multicorrelator_8sc::set_channel(uint32_t channel)
     //            std::cout << "deviceio" << device_io_name << " opened successfully" << std::endl;
     //
     //        }
-    d_map_base = reinterpret_cast<volatile uint32_t *>(mmap(NULL, PAGE_SIZE,
+    d_map_base = reinterpret_cast<volatile uint32_t *>(mmap(nullptr, PAGE_SIZE,
         PROT_READ | PROT_WRITE, MAP_SHARED, d_device_descriptor, 0));
 
     if (d_map_base == reinterpret_cast<void *>(-1))
@@ -709,7 +710,7 @@ void fpga_multicorrelator_8sc::unlock_channel(void)
 
 void fpga_multicorrelator_8sc::close_device()
 {
-    uint32_t *aux = const_cast<uint32_t *>(d_map_base);
+    auto *aux = const_cast<uint32_t *>(d_map_base);
     if (munmap(static_cast<void *>(aux), PAGE_SIZE) == -1)
         {
             printf("Failed to unmap memory uio\n");

@@ -51,9 +51,9 @@ IncludeBlocks: Merge
 IncludeCategories:
   - Regex:           '^.*.h"'
     Priority:        1
-  - Regex:           '^.*(boost|gflags|glog|gtest|gnsssdr|gnuradio|pmt|uhd|volk)/'
+  - Regex:           '^.*(boost|gflags|glog|gnsssdr|gpstk|gtest|gnuradio|pmt|uhd|volk)/'
     Priority:        2
-  - Regex:           '^.*(armadillo|matio)'
+  - Regex:           '^.*(armadillo|matio|pugixml)'
     Priority:        2
   - Regex:           '.*'
     Priority:        3

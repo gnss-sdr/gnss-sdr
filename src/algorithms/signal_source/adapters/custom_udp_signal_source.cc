@@ -36,14 +36,15 @@
 #include <boost/format.hpp>
 #include <glog/logging.h>
 #include <iostream>
+#include <utility>
 
 
 using google::LogMessage;
 
 
 CustomUDPSignalSource::CustomUDPSignalSource(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_stream, unsigned int out_stream,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+    const std::string& role, unsigned int in_stream, unsigned int out_stream,
+    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
 {
     // DUMP PARAMETERS
     std::string empty = "";
@@ -113,8 +114,7 @@ CustomUDPSignalSource::CustomUDPSignalSource(ConfigurationInterface* configurati
 
 
 CustomUDPSignalSource::~CustomUDPSignalSource()
-{
-}
+= default;
 
 
 void CustomUDPSignalSource::connect(gr::top_block_sptr top_block)

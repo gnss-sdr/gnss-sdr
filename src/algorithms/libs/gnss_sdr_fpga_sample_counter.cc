@@ -33,9 +33,9 @@
 #include "gnss_synchro.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
+#include <cinttypes>
 #include <cmath>
 #include <fcntl.h>  // libraries used by the GIPO
-#include <inttypes.h>
 #include <iostream>
 #include <string>
 #include <sys/mman.h>  // libraries used by the GIPO
@@ -129,7 +129,7 @@ int gnss_sdr_fpga_sample_counter::general_work(int noutput_items __attribute__((
     // variable number).
 
     sample_counter = sample_counter + samples_passed;  //samples_per_output;
-    Gnss_Synchro *out = reinterpret_cast<Gnss_Synchro *>(output_items[0]);
+    auto *out = reinterpret_cast<Gnss_Synchro *>(output_items[0]);
     out[0] = Gnss_Synchro();
     out[0].Flag_valid_symbol_output = false;
     out[0].Flag_valid_word = false;
@@ -236,7 +236,7 @@ void gnss_sdr_fpga_sample_counter::open_device()
             LOG(WARNING) << "Cannot open deviceio" << device_name;
             std::cout << "Counter-Intr: cannot open deviceio" << device_name << std::endl;
         }
-    map_base = reinterpret_cast<volatile uint32_t *>(mmap(NULL, PAGE_SIZE,
+    map_base = reinterpret_cast<volatile uint32_t *>(mmap(nullptr, PAGE_SIZE,
         PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0));
 
     if (map_base == reinterpret_cast<void *>(-1))
@@ -265,7 +265,7 @@ void gnss_sdr_fpga_sample_counter::close_device()
     //printf("=========================================== NOW closing device ...\n");
     map_base[2] = 0;  // disable the generation of the interrupt in the device
 
-    uint32_t *aux = const_cast<uint32_t *>(map_base);
+    auto *aux = const_cast<uint32_t *>(map_base);
     if (munmap(static_cast<void *>(aux), PAGE_SIZE) == -1)
         {
             printf("Failed to unmap memory uio\n");

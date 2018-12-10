@@ -41,14 +41,15 @@
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
 #include <glog/logging.h>
+#include <utility>
 
 
 using google::LogMessage;
 
 
 GpsL1CaDllPllCAidTracking::GpsL1CaDllPllCAidTracking(
-    ConfigurationInterface* configuration, const std::string& role,
-    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration, std::string role,
+    unsigned int in_streams, unsigned int out_streams) : role_(std::move(role)), in_streams_(in_streams), out_streams_(out_streams)
 {
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################

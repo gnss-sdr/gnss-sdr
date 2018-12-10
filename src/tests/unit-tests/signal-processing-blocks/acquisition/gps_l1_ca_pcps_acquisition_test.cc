@@ -233,14 +233,14 @@ void GpsL1CaPcpsAcquisitionTest::plot_grid()
 }
 
 
-TEST_F(GpsL1CaPcpsAcquisitionTest, Instantiate)
+TEST_F(GpsL1CaPcpsAcquisitionTest /*unused*/, Instantiate /*unused*/)
 {
     init();
     boost::shared_ptr<GpsL1CaPcpsAcquisition> acquisition = boost::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition_1C", 1, 0);
 }
 
 
-TEST_F(GpsL1CaPcpsAcquisitionTest, ConnectAndRun)
+TEST_F(GpsL1CaPcpsAcquisitionTest /*unused*/, ConnectAndRun /*unused*/)
 {
     int fs_in = 4000000;
     int nsamples = 4000;
@@ -273,7 +273,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ConnectAndRun)
 }
 
 
-TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
+TEST_F(GpsL1CaPcpsAcquisitionTest /*unused*/, ValidationOfResults /*unused*/)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0.0);

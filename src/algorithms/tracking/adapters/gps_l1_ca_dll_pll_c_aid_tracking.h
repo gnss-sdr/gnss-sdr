@@ -53,7 +53,7 @@ class GpsL1CaDllPllCAidTracking : public TrackingInterface
 {
 public:
     GpsL1CaDllPllCAidTracking(ConfigurationInterface* configuration,
-        const std::string& role,
+        std::string role,
         unsigned int in_streams,
         unsigned int out_streams);
 

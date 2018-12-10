@@ -55,7 +55,6 @@
 #include <queue>
 #include <string>
 #include <vector>
-#include <map>
 
 #if ENABLE_FPGA
 #include "gnss_sdr_fpga_sample_counter.h"

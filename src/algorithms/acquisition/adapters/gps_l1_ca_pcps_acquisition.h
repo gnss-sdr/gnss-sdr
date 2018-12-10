@@ -36,8 +36,8 @@
 #ifndef GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_H_
 #define GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_H_
 
-#include "acquisition_interface.h"
 #include "acq_conf.h"
+#include "acquisition_interface.h"
 #include "complex_byte_to_float_x2.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition.h"
@@ -56,7 +56,7 @@ class GpsL1CaPcpsAcquisition : public AcquisitionInterface
 {
 public:
     GpsL1CaPcpsAcquisition(ConfigurationInterface* configuration,
-        const std::string& role,
+        std::string role,
         unsigned int in_streams,
         unsigned int out_streams);
 

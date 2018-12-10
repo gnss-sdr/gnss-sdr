@@ -86,7 +86,7 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
 
 
     acq_parameters_.use_automatic_resampler = configuration_->property("GNSS-SDR.use_acquisition_resampler", false);
-    if (acq_parameters_.use_automatic_resampler == true and item_type_.compare("gr_complex") != 0)
+    if (acq_parameters_.use_automatic_resampler == true and item_type_ != "gr_complex")
         {
             LOG(WARNING) << "Galileo E5a acquisition disabled the automatic resampler feature because its item_type is not set to gr_complex";
             acq_parameters_.use_automatic_resampler = false;

@@ -32,8 +32,8 @@
 #ifndef GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_H_
 #define GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_H_
 
-#include "acquisition_interface.h"
 #include "acq_conf.h"
+#include "acquisition_interface.h"
 #include "complex_byte_to_float_x2.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition.h"
@@ -52,7 +52,7 @@ class GalileoE1PcpsAmbiguousAcquisition : public AcquisitionInterface
 {
 public:
     GalileoE1PcpsAmbiguousAcquisition(ConfigurationInterface* configuration,
-        const std::string& role,
+        std::string role,
         unsigned int in_streams,
         unsigned int out_streams);
 

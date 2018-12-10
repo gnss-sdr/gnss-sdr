@@ -51,7 +51,7 @@ void GalileoE1DllPllVemlTrackingFpga::stop_tracking()
 }
 
 GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
-    ConfigurationInterface* configuration, std::string role,
+    ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     //dllpllconf_t trk_param;

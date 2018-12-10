@@ -34,14 +34,15 @@
 #include "gnss_sdr_valve.h"
 #include <glog/logging.h>
 #include <iostream>
+#include <utility>
 
 
 using google::LogMessage;
 
 
 PlutosdrSignalSource::PlutosdrSignalSource(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_stream, unsigned int out_stream,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+    const std::string& role, unsigned int in_stream, unsigned int out_stream,
+    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/signal_source.dat";
@@ -63,7 +64,7 @@ PlutosdrSignalSource::PlutosdrSignalSource(ConfigurationInterface* configuration
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
-    if (item_type_.compare("gr_complex") != 0)
+    if (item_type_ != "gr_complex")
         {
             std::cout << "Configuration error: item_type must be gr_complex" << std::endl;
             LOG(FATAL) << "Configuration error: item_type must be gr_complex!";
@@ -106,8 +107,7 @@ PlutosdrSignalSource::PlutosdrSignalSource(ConfigurationInterface* configuration
 
 
 PlutosdrSignalSource::~PlutosdrSignalSource()
-{
-}
+= default;
 
 
 void PlutosdrSignalSource::connect(gr::top_block_sptr top_block)

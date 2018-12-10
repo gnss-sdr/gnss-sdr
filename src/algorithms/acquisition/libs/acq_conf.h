@@ -56,6 +56,10 @@ public:
     bool blocking;
     bool blocking_on_standby;  // enable it only for unit testing to avoid sample consume on idle status
     bool make_2_steps;
+    bool use_automatic_resampler;
+    float resampler_ratio;
+    int64_t resampled_fs;
+    uint32_t resampler_latency_samples;
     std::string dump_filename;
     uint32_t dump_channel;
     size_t it_size;

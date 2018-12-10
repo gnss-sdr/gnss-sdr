@@ -32,6 +32,7 @@
 #ifndef GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_H_
 #define GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_H_
 
+#include "acq_conf.h"
 #include "acquisition_interface.h"
 #include "complex_byte_to_float_x2.h"
 #include "gnss_synchro.h"
@@ -137,8 +138,16 @@ public:
      */
     void stop_acquisition() override;
 
+    /*!
+     * \brief Sets the resampler latency to account it in the acquisition code delay estimation
+     */
+
+    void set_resampler_latency(uint32_t latency_samples) override;
+
+
 private:
     ConfigurationInterface* configuration_;
+    Acq_Conf acq_parameters_;
     pcps_acquisition_sptr acquisition_;
     gr::blocks::float_to_complex::sptr float_to_complex_;
     complex_byte_to_float_x2_sptr cbyte_to_float_x2_;

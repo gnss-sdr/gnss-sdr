@@ -63,6 +63,10 @@ const double GPS_L2_L_PERIOD = 1.5;                 //!< GPS L2 L code period [s
 
 const int32_t GPS_L2C_HISTORY_DEEP = 5;
 
+//optimum parameters
+const uint32_t GPS_L2C_OPT_ACQ_FS_HZ = 1000000;  //!< Sampling frequncy that maximizes the acquisition SNR while using a non-multiple of chip rate
+
+
 const int32_t GPS_L2C_M_INIT_REG[115] =
     {0742417664, 0756014035, 0002747144, 0066265724,     // 1:4
         0601403471, 0703232733, 0124510070, 0617316361,  // 5:8

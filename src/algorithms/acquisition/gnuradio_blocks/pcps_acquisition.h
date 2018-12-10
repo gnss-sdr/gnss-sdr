@@ -98,6 +98,9 @@ private:
     float first_vs_second_peak_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
     float max_to_input_power_statistic(uint32_t& indext, int32_t& doppler, float input_power, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
 
+    bool start();
+
+
     Acq_Conf acq_parameters;
     bool d_active;
     bool d_worker_active;
@@ -232,6 +235,9 @@ public:
         gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
         d_doppler_step = doppler_step;
     }
+
+
+    void set_resampler_latency(uint32_t latency_samples);
 
     /*!
       * \brief Parallel Code Phase Search Acquisition signal processing.

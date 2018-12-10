@@ -55,6 +55,7 @@
 #include <queue>
 #include <string>
 #include <vector>
+#include <map>
 
 #if ENABLE_FPGA
 #include "gnss_sdr_fpga_sample_counter.h"
@@ -72,7 +73,7 @@ public:
     /*!
      * \brief Constructor that initializes the receiver flow graph
      */
-    GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration, gr::msg_queue::sptr queue);
+    GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration, const gr::msg_queue::sptr& queue);
 
     /*!
      * \brief Destructor
@@ -166,6 +167,7 @@ private:
     std::shared_ptr<GNSSBlockInterface> observables_;
     std::shared_ptr<GNSSBlockInterface> pvt_;
 
+    std::map<std::string, gr::basic_block_sptr> acq_resamplers_;
     std::vector<std::shared_ptr<ChannelInterface>> channels_;
     gnss_sdr_sample_counter_sptr ch_out_sample_counter;
 #if ENABLE_FPGA

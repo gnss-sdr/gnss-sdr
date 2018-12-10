@@ -113,12 +113,12 @@ gr_complex_ip_packet_source::gr_complex_ip_packet_source(std::string src_device,
     std::cout << "Start Ethernet packet capture\n";
 
     d_n_baseband_channels = n_baseband_channels;
-    if (wire_sample_type.compare("cbyte") == 0)
+    if (wire_sample_type == "cbyte")
         {
             d_wire_sample_type = 1;
             d_bytes_per_sample = d_n_baseband_channels * 2;
         }
-    else if (wire_sample_type.compare("c4bits") == 0)
+    else if (wire_sample_type == "c4bits")
         {
             d_wire_sample_type = 2;
             d_bytes_per_sample = d_n_baseband_channels;
@@ -142,8 +142,8 @@ gr_complex_ip_packet_source::gr_complex_ip_packet_source(std::string src_device,
     d_item_size = item_size;
     d_IQ_swap = IQ_swap_;
     d_sock_raw = 0;
-    d_pcap_thread = NULL;
-    descr = NULL;
+    d_pcap_thread = nullptr;
+    descr = nullptr;
 
     memset(reinterpret_cast<char *>(&si_me), 0, sizeof(si_me));
 }
@@ -171,7 +171,7 @@ bool gr_complex_ip_packet_source::start()
 bool gr_complex_ip_packet_source::stop()
 {
     std::cout << "gr_complex_ip_packet_source STOP\n";
-    if (descr != NULL)
+    if (descr != nullptr)
         {
             pcap_breakloop(descr);
             d_pcap_thread->join();
@@ -187,7 +187,7 @@ bool gr_complex_ip_packet_source::open()
     boost::mutex::scoped_lock lock(d_mutex);  // hold mutex for duration of this function
     // open device for reading
     descr = pcap_open_live(d_src_device.c_str(), 1500, 1, 1000, errbuf);
-    if (descr == NULL)
+    if (descr == nullptr)
         {
             std::cout << "Error opening Ethernet device " << d_src_device << std::endl;
             std::cout << "Fatal Error in pcap_open_live(): " << std::string(errbuf) << std::endl;
@@ -220,7 +220,7 @@ bool gr_complex_ip_packet_source::open()
 
 gr_complex_ip_packet_source::~gr_complex_ip_packet_source()
 {
-    if (d_pcap_thread != NULL)
+    if (d_pcap_thread != nullptr)
         {
             delete d_pcap_thread;
         }
@@ -232,7 +232,7 @@ gr_complex_ip_packet_source::~gr_complex_ip_packet_source()
 void gr_complex_ip_packet_source::static_pcap_callback(u_char *args, const struct pcap_pkthdr *pkthdr,
     const u_char *packet)
 {
-    gr_complex_ip_packet_source *bridge = reinterpret_cast<gr_complex_ip_packet_source *>(args);
+    auto *bridge = reinterpret_cast<gr_complex_ip_packet_source *>(args);
     bridge->pcap_callback(args, pkthdr, packet);
 }
 
@@ -327,22 +327,22 @@ void gr_complex_ip_packet_source::demux_samples(gr_vector_void_star output_items
             switch (d_wire_sample_type)
                 {
                 case 1:  // interleaved byte samples
-                    for (long unsigned int i = 0; i < output_items.size(); i++)
+                    for (auto & output_item : output_items)
                         {
                             real = fifo_buff[fifo_read_ptr++];
                             imag = fifo_buff[fifo_read_ptr++];
                             if (d_IQ_swap)
                                 {
-                                    static_cast<gr_complex *>(output_items[i])[n] = gr_complex(real, imag);
+                                    static_cast<gr_complex *>(output_item)[n] = gr_complex(real, imag);
                                 }
                             else
                                 {
-                                    static_cast<gr_complex *>(output_items[i])[n] = gr_complex(imag, real);
+                                    static_cast<gr_complex *>(output_item)[n] = gr_complex(imag, real);
                                 }
                         }
                     break;
                 case 2:  // 4-bit samples
-                    for (long unsigned int i = 0; i < output_items.size(); i++)
+                    for (auto & output_item : output_items)
                         {
                             tmp_char2 = fifo_buff[fifo_read_ptr] & 0x0F;
                             if (tmp_char2 >= 8)
@@ -365,11 +365,11 @@ void gr_complex_ip_packet_source::demux_samples(gr_vector_void_star output_items
                                 }
                             if (d_IQ_swap)
                                 {
-                                    static_cast<gr_complex *>(output_items[i])[n] = gr_complex(imag, real);
+                                    static_cast<gr_complex *>(output_item)[n] = gr_complex(imag, real);
                                 }
                             else
                                 {
-                                    static_cast<gr_complex *>(output_items[i])[n] = gr_complex(real, imag);
+                                    static_cast<gr_complex *>(output_item)[n] = gr_complex(real, imag);
                                 }
                         }
                     break;

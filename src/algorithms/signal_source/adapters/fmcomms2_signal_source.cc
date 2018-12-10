@@ -38,13 +38,14 @@
 #include <glog/logging.h>
 #include <exception>
 #include <iostream>
+#include <utility>
 
 
 using google::LogMessage;
 
 Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration,
     std::string role, unsigned int in_stream, unsigned int out_stream,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/signal_source.dat";
@@ -85,7 +86,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
     std::cout << "LO frequency : " << freq_ << " Hz" << std::endl;
     std::cout << "sample rate: " << sample_rate_ << " Hz" << std::endl;
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             if (RF_channels_ == 1)
                 {

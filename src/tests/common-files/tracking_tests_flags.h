@@ -42,6 +42,7 @@ DEFINE_double(external_signal_acquisition_threshold, 2.5, "Threshold for satelli
 DEFINE_int32(external_signal_acquisition_dwells, 5, "Maximum dwells count for satellite acquisition when external file is used");
 DEFINE_double(external_signal_acquisition_doppler_max_hz, 5000.0, "Doppler max for satellite acquisition when external file is used");
 DEFINE_double(external_signal_acquisition_doppler_step_hz, 125.0, "Doppler step for satellite acquisition when external file is used");
+DEFINE_bool(use_acquisition_resampler, false, "Reduce the sampling rate of the input signal for the acquisition in order to optimize the SNR and decrease the processor load");
 
 DEFINE_string(signal_file, std::string("signal_out.bin"), "Path of the external signal capture file");
 DEFINE_double(CN0_dBHz_start, std::numeric_limits<double>::infinity(), "Enable noise generator and set the CN0 start sweep value [dB-Hz]");

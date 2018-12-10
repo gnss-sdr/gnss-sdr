@@ -33,6 +33,7 @@
  */
 
 #include "MATH_CONSTANTS.h"
+#include "acquisition_msg_rx.h"
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
 #include "control_thread.h"
@@ -45,6 +46,7 @@
 #include "signal_generator_flags.h"
 #include "spirent_motion_csv_dump_reader.h"
 #include "test_flags.h"
+#include "tracking_tests_flags.h"  //acquisition resampler
 #include <armadillo>
 #include <boost/filesystem.hpp>
 #include <glog/logging.h>
@@ -183,6 +185,11 @@ int PositionSystemTest::configure_receiver()
             const int output_rate_ms = 100;
 
             config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(sampling_rate_internal));
+            // Enable automatic resampler for the acquisition, if required
+            if (FLAGS_use_acquisition_resampler == true)
+                {
+                    config->set_property("GNSS-SDR.use_acquisition_resampler", "true");
+                }
 
             // Set the assistance system parameters
             config->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");

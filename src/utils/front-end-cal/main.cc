@@ -191,7 +191,7 @@ bool front_end_capture(const std::shared_ptr<ConfigurationInterface>& configurat
     catch (const boost::exception_ptr& e)
         {
             std::cout << "Exception caught in creating source " << e << std::endl;
-            return 0;
+            return false;
         }
 
     std::shared_ptr<GNSSBlockInterface> conditioner;
@@ -202,7 +202,7 @@ bool front_end_capture(const std::shared_ptr<ConfigurationInterface>& configurat
     catch (const boost::exception_ptr& e)
         {
             std::cout << "Exception caught in creating signal conditioner " << e << std::endl;
-            return 0;
+            return false;
         }
     gr::block_sptr sink;
     sink = gr::blocks::file_sink::make(sizeof(gr_complex), "tmp_capture.dat");

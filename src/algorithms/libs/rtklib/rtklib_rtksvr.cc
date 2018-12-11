@@ -424,7 +424,7 @@ void decodefile(rtksvr_t *svr, int index)
         { /* precise clock */
 
             /* read rinex clock */  // Disabled!!
-            if (1 /*readrnxc(file, &nav)<=0 */)
+            if (true /*readrnxc(file, &nav)<=0 */)
                 {
                     tracet(1, "rinex clock file read error: %s\n", file);
                     return;

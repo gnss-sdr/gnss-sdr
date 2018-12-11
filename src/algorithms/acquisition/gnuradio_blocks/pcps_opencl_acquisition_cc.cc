@@ -67,8 +67,8 @@
 using google::LogMessage;
 
 pcps_opencl_acquisition_cc_sptr pcps_make_opencl_acquisition_cc(
-    unsigned int sampled_ms, unsigned int max_dwells,
-    unsigned int doppler_max, long fs_in,
+    uint32_t sampled_ms, uint32_t max_dwells,
+    uint32_t doppler_max, int64_t fs_in,
     int samples_per_ms, int samples_per_code,
     bool bit_transition_flag,
     bool dump,
@@ -81,10 +81,10 @@ pcps_opencl_acquisition_cc_sptr pcps_make_opencl_acquisition_cc(
 
 
 pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(
-    unsigned int sampled_ms,
-    unsigned int max_dwells,
-    unsigned int doppler_max,
-    long fs_in,
+    uint32_t sampled_ms,
+    uint32_t max_dwells,
+    uint32_t doppler_max,
+    int64_t fs_in,
     int samples_per_ms,
     int samples_per_code,
     bool bit_transition_flag,
@@ -115,7 +115,7 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(
     d_cl_fft_batch_size = 1;
 
     d_in_buffer = new gr_complex *[d_max_dwells];
-    for (unsigned int i = 0; i < d_max_dwells; i++)
+    for (uint32_t i = 0; i < d_max_dwells; i++)
         {
             d_in_buffer[i] = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
         }
@@ -123,7 +123,7 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(
     d_fft_codes = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_fft_size_pow2 * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     d_zero_vector = static_cast<gr_complex *>(volk_gnsssdr_malloc((d_fft_size_pow2 - d_fft_size) * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
-    for (unsigned int i = 0; i < (d_fft_size_pow2 - d_fft_size); i++)
+    for (uint32_t i = 0; i < (d_fft_size_pow2 - d_fft_size); i++)
         {
             d_zero_vector[i] = gr_complex(0.0, 0.0);
         }
@@ -149,14 +149,14 @@ pcps_opencl_acquisition_cc::~pcps_opencl_acquisition_cc()
 {
     if (d_num_doppler_bins > 0)
         {
-            for (unsigned int i = 0; i < d_num_doppler_bins; i++)
+            for (uint32_t i = 0; i < d_num_doppler_bins; i++)
                 {
                     volk_gnsssdr_free(d_grid_doppler_wipeoffs[i]);
                 }
             delete[] d_grid_doppler_wipeoffs;
         }
 
-    for (unsigned int i = 0; i < d_max_dwells; i++)
+    for (uint32_t i = 0; i < d_max_dwells; i++)
         {
             volk_gnsssdr_free(d_in_buffer[i]);
         }
@@ -314,7 +314,7 @@ void pcps_opencl_acquisition_cc::init()
             d_cl_buffer_grid_doppler_wipeoffs = new cl::Buffer *[d_num_doppler_bins];
         }
 
-    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+    for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
@@ -407,7 +407,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_volk()
     d_input_power /= static_cast<float>(d_fft_size);
 
     // 2- Doppler frequency search loop
-    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+    for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             // doppler search steps
             doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
@@ -543,7 +543,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
     cl::Kernel kernel;
 
     // 2- Doppler frequency search loop
-    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+    for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             // doppler search steps
 
@@ -736,8 +736,8 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
                         // Fill internal buffer with d_max_dwells signal blocks. This step ensures that
                         // consecutive signal blocks will be processed in multi-dwell operation. This is
                         // essential when d_bit_transition_flag = true.
-                        unsigned int num_dwells = std::min(static_cast<int>(d_max_dwells - d_in_dwell_count), ninput_items[0]);
-                        for (unsigned int i = 0; i < num_dwells; i++)
+                        uint32_t num_dwells = std::min(static_cast<int>(d_max_dwells - d_in_dwell_count), ninput_items[0]);
+                        for (uint32_t i = 0; i < num_dwells; i++)
                             {
                                 memcpy(d_in_buffer[d_in_dwell_count++], static_cast<const gr_complex *>(input_items[i]),
                                     sizeof(gr_complex) * d_fft_size);

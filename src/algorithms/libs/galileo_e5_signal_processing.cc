@@ -37,7 +37,7 @@
 #include <gnuradio/gr_complex.h>
 
 
-void galileo_e5_a_code_gen_complex_primary(std::complex<float>* _dest, int32_t _prn, char _Signal[3])
+void galileo_e5_a_code_gen_complex_primary(std::complex<float>* _dest, int32_t _prn, const char _Signal[3])
 {
     uint32_t prn = _prn - 1;
     uint32_t index = 0;

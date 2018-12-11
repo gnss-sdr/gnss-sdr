@@ -76,7 +76,7 @@ private:
     glonass_l1_ca_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
     glonass_l1_ca_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
 
-    void decode_string(double *symbols, int32_t frame_length);
+    void decode_string(const double *symbols, int32_t frame_length);
 
     //!< Help with coherent tracking
     double d_preamble_time_samples;

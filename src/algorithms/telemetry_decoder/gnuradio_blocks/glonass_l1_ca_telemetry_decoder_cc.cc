@@ -124,7 +124,7 @@ glonass_l1_ca_telemetry_decoder_cc::~glonass_l1_ca_telemetry_decoder_cc()
 }
 
 
-void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols, int32_t frame_length)
+void glonass_l1_ca_telemetry_decoder_cc::decode_string(const double *frame_symbols, int32_t frame_length)
 {
     double chip_acc = 0.0;
     int32_t chip_acc_counter = 0;

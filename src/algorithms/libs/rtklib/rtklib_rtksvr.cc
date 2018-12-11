@@ -730,7 +730,7 @@ void rtksvrunlock(rtksvr_t *svr) { rtk_unlock(&svr->lock); }
  * return : status (1:ok 0:error)
  *-----------------------------------------------------------------------------*/
 int rtksvrstart(rtksvr_t *svr, int cycle, int buffsize, int *strs,
-    char **paths, int *formats, int navsel, char **cmds,
+    char **paths, const int *formats, int navsel, char **cmds,
     char **rcvopts, int nmeacycle, int nmeareq,
     const double *nmeapos, prcopt_t *prcopt,
     solopt_t *solopt, stream_t *moni)

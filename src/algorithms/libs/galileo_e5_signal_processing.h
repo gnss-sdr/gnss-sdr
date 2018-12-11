@@ -42,7 +42,7 @@
  * \brief Generates Galileo E5a code at 1 sample/chip
  * bool _pilot generates E5aQ code if true and E5aI (data signal) if false.
  */
-void galileo_e5_a_code_gen_complex_primary(std::complex<float>* _dest, int32_t _prn, char _Signal[3]);
+void galileo_e5_a_code_gen_complex_primary(std::complex<float>* _dest, int32_t _prn, const char _Signal[3]);
 
 void galileo_e5_a_code_gen_tiered(std::complex<float>* _dest, std::complex<float>* _primary, uint32_t _prn, char _Signal[3]);
 

@@ -75,7 +75,7 @@ int code2sys(char code);
 int readsp3h(FILE *fp, gtime_t *time, char *type, int *sats,
     double *bfact, char *tsys);
 int addpeph(nav_t *nav, peph_t *peph);
-void readsp3b(FILE *fp, char type, int *sats, int ns, double *bfact,
+void readsp3b(FILE *fp, char type, int *sats, int ns, const double *bfact,
     char *tsys, int index, int opt, nav_t *nav);
 int cmppeph(const void *p1, const void *p2);
 void combpeph(nav_t *nav, int opt);

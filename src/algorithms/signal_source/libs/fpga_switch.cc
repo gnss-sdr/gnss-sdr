@@ -45,7 +45,7 @@
 const size_t PAGE_SIZE = 0x10000;
 const unsigned int TEST_REGISTER_TRACK_WRITEVAL = 0x55AA;
 
-fpga_switch::fpga_switch(const std::string& device_name)
+fpga_switch::fpga_switch(const std::string &device_name)
 {
     if ((d_device_descriptor = open(device_name.c_str(), O_RDWR | O_SYNC)) == -1)
         {

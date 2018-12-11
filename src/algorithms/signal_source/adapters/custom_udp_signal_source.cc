@@ -113,8 +113,7 @@ CustomUDPSignalSource::CustomUDPSignalSource(ConfigurationInterface* configurati
 }
 
 
-CustomUDPSignalSource::~CustomUDPSignalSource()
-= default;
+CustomUDPSignalSource::~CustomUDPSignalSource() = default;
 
 
 void CustomUDPSignalSource::connect(gr::top_block_sptr top_block)

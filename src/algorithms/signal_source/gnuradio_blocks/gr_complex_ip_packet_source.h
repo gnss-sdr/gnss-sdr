@@ -84,19 +84,19 @@ private:
 public:
     typedef boost::shared_ptr<gr_complex_ip_packet_source> sptr;
     static sptr make(std::string src_device,
-        const std::string& origin_address,
+        const std::string &origin_address,
         int udp_port,
         int udp_packet_size,
         int n_baseband_channels,
-        const std::string& wire_sample_type,
+        const std::string &wire_sample_type,
         size_t item_size,
         bool IQ_swap_);
     gr_complex_ip_packet_source(std::string src_device,
-        const std::string& origin_address,
+        const std::string &origin_address,
         int udp_port,
         int udp_packet_size,
         int n_baseband_channels,
-        const std::string& wire_sample_type,
+        const std::string &wire_sample_type,
         size_t item_size,
         bool IQ_swap_);
     ~gr_complex_ip_packet_source();

@@ -37,6 +37,7 @@
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/msg_queue.h>
+#include <cstdint>
 #include <osmosdr/source.h>
 #include <stdexcept>
 #include <string>
@@ -98,7 +99,7 @@ private:
 
     std::string item_type_;
     size_t item_size_;
-    long samples_;
+    int64_t samples_;
     bool dump_;
     std::string dump_filename_;
 

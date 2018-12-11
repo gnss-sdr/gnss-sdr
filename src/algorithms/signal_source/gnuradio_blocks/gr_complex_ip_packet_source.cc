@@ -32,8 +32,8 @@
 
 #include "gr_complex_ip_packet_source.h"
 #include <gnuradio/io_signature.h>
+#include <cstdint>
 #include <utility>
-
 
 const int FIFO_SIZE = 1472000;
 
@@ -77,11 +77,11 @@ typedef struct gr_udp_header
 
 gr_complex_ip_packet_source::sptr
 gr_complex_ip_packet_source::make(std::string src_device,
-    const std::string& origin_address,
+    const std::string &origin_address,
     int udp_port,
     int udp_packet_size,
     int n_baseband_channels,
-    const std::string& wire_sample_type,
+    const std::string &wire_sample_type,
     size_t item_size,
     bool IQ_swap_)
 {
@@ -100,11 +100,11 @@ gr_complex_ip_packet_source::make(std::string src_device,
  * The private constructor
  */
 gr_complex_ip_packet_source::gr_complex_ip_packet_source(std::string src_device,
-    __attribute__((unused)) const std::string& origin_address,
+    __attribute__((unused)) const std::string &origin_address,
     int udp_port,
     int udp_packet_size,
     int n_baseband_channels,
-    const std::string& wire_sample_type,
+    const std::string &wire_sample_type,
     size_t item_size,
     bool IQ_swap_)
     : gr::sync_block("gr_complex_ip_packet_source",
@@ -328,7 +328,7 @@ void gr_complex_ip_packet_source::demux_samples(gr_vector_void_star output_items
             switch (d_wire_sample_type)
                 {
                 case 1:  // interleaved byte samples
-                    for (auto & output_item : output_items)
+                    for (auto &output_item : output_items)
                         {
                             real = fifo_buff[fifo_read_ptr++];
                             imag = fifo_buff[fifo_read_ptr++];
@@ -343,7 +343,7 @@ void gr_complex_ip_packet_source::demux_samples(gr_vector_void_star output_items
                         }
                     break;
                 case 2:  // 4-bit samples
-                    for (auto & output_item : output_items)
+                    for (auto &output_item : output_items)
                         {
                             tmp_char2 = fifo_buff[fifo_read_ptr] & 0x0F;
                             if (tmp_char2 >= 8)
@@ -391,7 +391,7 @@ int gr_complex_ip_packet_source::work(int noutput_items,
     boost::mutex::scoped_lock lock(d_mutex);  // hold mutex for duration of this function
     if (fifo_items == 0) return 0;
 
-    if (output_items.size() > static_cast<long unsigned int>(d_n_baseband_channels))
+    if (output_items.size() > static_cast<uint64_t>(d_n_baseband_channels))
         {
             std::cout << "Configuration error: more baseband channels connected than the available in the UDP source\n";
             exit(0);
@@ -440,7 +440,7 @@ int gr_complex_ip_packet_source::work(int noutput_items,
     // update fifo items
     fifo_items = fifo_items - bytes_requested;
 
-    for (long unsigned int n = 0; n < output_items.size(); n++)
+    for (uint64_t n = 0; n < output_items.size(); n++)
         {
             produce(static_cast<int>(n), num_samples_readed);
         }

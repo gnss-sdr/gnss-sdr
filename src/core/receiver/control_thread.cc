@@ -197,8 +197,12 @@ ControlThread::~ControlThread()
 
 void ControlThread::telecommand_listener()
 {
-    int tcp_cmd_port = configuration_->property("GNSS-SDR.telecontrol_tcp_port", 3333);
-    cmd_interface_.run_cmd_server(tcp_cmd_port);
+    bool telecommand_enabled = configuration_->property("GNSS-SDR.telecommand_enabled", false);
+    if (telecommand_enabled)
+        {
+            int tcp_cmd_port = configuration_->property("GNSS-SDR.telecommand_tcp_port", 3333);
+            cmd_interface_.run_cmd_server(tcp_cmd_port);
+        }
 }
 
 
@@ -295,7 +299,7 @@ int ControlThread::run()
 }
 
 
-void ControlThread::set_control_queue(const gr::msg_queue::sptr& control_queue)
+void ControlThread::set_control_queue(const gr::msg_queue::sptr &control_queue)
 {
     if (flowgraph_->running())
         {

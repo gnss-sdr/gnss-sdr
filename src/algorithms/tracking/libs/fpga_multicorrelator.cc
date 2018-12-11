@@ -276,8 +276,8 @@ fpga_multicorrelator_8sc::fpga_multicorrelator_8sc(int32_t n_correlators,
     //        {
     // other types of multicorrelators (32 registers)
     d_RESULT_REG_IMAG_BASE_ADDR = 7;
-    d_RESULT_REG_DATA_REAL_BASE_ADDR = 6;  // no pilot tracking
-    d_RESULT_REG_DATA_IMAG_BASE_ADDR = 12;
+    //d_RESULT_REG_DATA_REAL_BASE_ADDR = 6;  // no pilot tracking
+    //d_RESULT_REG_DATA_IMAG_BASE_ADDR = 12;
     d_SAMPLE_COUNTER_REG_ADDR_LSW = 13;
     d_SAMPLE_COUNTER_REG_ADDR_MSW = 14;
 
@@ -688,13 +688,15 @@ void fpga_multicorrelator_8sc::read_tracking_gps_results(void)
     if (d_track_pilot)
         {
             //printf("reading pilot !!!\n");
-            readval_real = d_map_base[d_RESULT_REG_DATA_REAL_BASE_ADDR];
+            //readval_real = d_map_base[d_RESULT_REG_DATA_REAL_BASE_ADDR];
+	    readval_real = d_map_base[d_RESULT_REG_REAL_BASE_ADDR + d_n_correlators];
             //            if (readval_real >= d_result_SAT_value) // 0x100000 (21 bits two's complement)
             //                {
             //                    readval_real = -2*d_result_SAT_value + readval_real;
             //                }
 
-            readval_imag = d_map_base[d_RESULT_REG_DATA_IMAG_BASE_ADDR];
+            //readval_imag = d_map_base[d_RESULT_REG_DATA_IMAG_BASE_ADDR];
+	    readval_imag = d_map_base[d_RESULT_REG_IMAG_BASE_ADDR + d_n_correlators];
             //            if (readval_imag >= d_result_SAT_value) // 0x100000 (21 bits two's complement)
             //                {
             //                    readval_imag = -2*d_result_SAT_value + readval_imag;

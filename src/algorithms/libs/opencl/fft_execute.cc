@@ -48,9 +48,9 @@
 
 #include "clFFT.h"
 #include "fft_internal.h"
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
 
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 #define min(a, b) (((a) < (b)) ? (a) : (b))
@@ -67,7 +67,7 @@ allocateTemporaryBufferInterleaved(cl_fft_plan *plan, cl_uint batchSize)
             if (plan->tempmemobj)
                 clReleaseMemObject(plan->tempmemobj);
 
-            plan->tempmemobj = clCreateBuffer(plan->context, CL_MEM_READ_WRITE, tmpLength, NULL, &err);
+            plan->tempmemobj = clCreateBuffer(plan->context, CL_MEM_READ_WRITE, tmpLength, nullptr, &err);
         }
     return err;
 }
@@ -88,8 +88,8 @@ allocateTemporaryBufferPlannar(cl_fft_plan *plan, cl_uint batchSize)
             if (plan->tempmemobj_imag)
                 clReleaseMemObject(plan->tempmemobj_imag);
 
-            plan->tempmemobj_real = clCreateBuffer(plan->context, CL_MEM_READ_WRITE, tmpLength, NULL, &err);
-            plan->tempmemobj_imag = clCreateBuffer(plan->context, CL_MEM_READ_WRITE, tmpLength, NULL, &terr);
+            plan->tempmemobj_real = clCreateBuffer(plan->context, CL_MEM_READ_WRITE, tmpLength, nullptr, &err);
+            plan->tempmemobj_imag = clCreateBuffer(plan->context, CL_MEM_READ_WRITE, tmpLength, nullptr, &terr);
             err |= terr;
         }
     return err;
@@ -126,7 +126,7 @@ clFFT_ExecuteInterleaved(cl_command_queue queue, clFFT_Plan Plan, cl_int batchSi
     cl_int num_events, cl_event *event_list, cl_event *event)
 {
     int s;
-    cl_fft_plan *plan = (cl_fft_plan *)Plan;
+    auto *plan = (cl_fft_plan *)Plan;
     if (plan->format != clFFT_InterleavedComplexFormat)
         return CL_INVALID_VALUE;
 
@@ -180,7 +180,7 @@ clFFT_ExecuteInterleaved(cl_command_queue queue, clFFT_Plan Plan, cl_int batchSi
                     err |= clSetKernelArg(kernelInfo->kernel, 2, sizeof(cl_int), &dir);
                     err |= clSetKernelArg(kernelInfo->kernel, 3, sizeof(cl_int), &s);
 
-                    err |= clEnqueueNDRangeKernel(queue, kernelInfo->kernel, 1, NULL, &gWorkItems, &lWorkItems, 0, NULL, NULL);
+                    err |= clEnqueueNDRangeKernel(queue, kernelInfo->kernel, 1, nullptr, &gWorkItems, &lWorkItems, 0, nullptr, nullptr);
                     if (err)
                         return err;
 
@@ -203,7 +203,7 @@ clFFT_ExecuteInterleaved(cl_command_queue queue, clFFT_Plan Plan, cl_int batchSi
                     err |= clSetKernelArg(kernelInfo->kernel, 2, sizeof(cl_int), &dir);
                     err |= clSetKernelArg(kernelInfo->kernel, 3, sizeof(cl_int), &s);
 
-                    err |= clEnqueueNDRangeKernel(queue, kernelInfo->kernel, 1, NULL, &gWorkItems, &lWorkItems, 0, NULL, NULL);
+                    err |= clEnqueueNDRangeKernel(queue, kernelInfo->kernel, 1, nullptr, &gWorkItems, &lWorkItems, 0, nullptr, nullptr);
                     if (err)
                         return err;
 
@@ -223,7 +223,7 @@ clFFT_ExecutePlannar(cl_command_queue queue, clFFT_Plan Plan, cl_int batchSize, 
     cl_int num_events, cl_event *event_list, cl_event *event)
 {
     int s;
-    cl_fft_plan *plan = (cl_fft_plan *)Plan;
+    auto *plan = (cl_fft_plan *)Plan;
 
     if (plan->format != clFFT_SplitComplexFormat)
         return CL_INVALID_VALUE;
@@ -285,7 +285,7 @@ clFFT_ExecutePlannar(cl_command_queue queue, clFFT_Plan Plan, cl_int batchSize, 
                     err |= clSetKernelArg(kernelInfo->kernel, 4, sizeof(cl_int), &dir);
                     err |= clSetKernelArg(kernelInfo->kernel, 5, sizeof(cl_int), &s);
 
-                    err |= clEnqueueNDRangeKernel(queue, kernelInfo->kernel, 1, NULL, &gWorkItems, &lWorkItems, 0, NULL, NULL);
+                    err |= clEnqueueNDRangeKernel(queue, kernelInfo->kernel, 1, nullptr, &gWorkItems, &lWorkItems, 0, nullptr, nullptr);
                     if (err)
                         return err;
 
@@ -309,7 +309,7 @@ clFFT_ExecutePlannar(cl_command_queue queue, clFFT_Plan Plan, cl_int batchSize, 
                     err |= clSetKernelArg(kernelInfo->kernel, 4, sizeof(cl_int), &dir);
                     err |= clSetKernelArg(kernelInfo->kernel, 5, sizeof(cl_int), &s);
 
-                    err |= clEnqueueNDRangeKernel(queue, kernelInfo->kernel, 1, NULL, &gWorkItems, &lWorkItems, 0, NULL, NULL);
+                    err |= clEnqueueNDRangeKernel(queue, kernelInfo->kernel, 1, nullptr, &gWorkItems, &lWorkItems, 0, nullptr, nullptr);
                     if (err)
                         return err;
 
@@ -327,7 +327,7 @@ cl_int
 clFFT_1DTwistInterleaved(clFFT_Plan Plan, cl_command_queue queue, cl_mem array,
     unsigned numRows, unsigned numCols, unsigned startRow, unsigned rowsToProcess, clFFT_Direction dir)
 {
-    cl_fft_plan *plan = (cl_fft_plan *)Plan;
+    auto *plan = (cl_fft_plan *)Plan;
 
     unsigned int N = numRows * numCols;
     unsigned int nCols = numCols;
@@ -337,12 +337,12 @@ clFFT_1DTwistInterleaved(clFFT_Plan Plan, cl_command_queue queue, cl_mem array,
     int err = 0;
 
     cl_device_id device_id;
-    err = clGetCommandQueueInfo(queue, CL_QUEUE_DEVICE, sizeof(cl_device_id), &device_id, NULL);
+    err = clGetCommandQueueInfo(queue, CL_QUEUE_DEVICE, sizeof(cl_device_id), &device_id, nullptr);
     if (err)
         return err;
 
     size_t gSize;
-    err = clGetKernelWorkGroupInfo(plan->twist_kernel, device_id, CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &gSize, NULL);
+    err = clGetKernelWorkGroupInfo(plan->twist_kernel, device_id, CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &gSize, nullptr);
     if (err)
         return err;
 
@@ -357,7 +357,7 @@ clFFT_1DTwistInterleaved(clFFT_Plan Plan, cl_command_queue queue, cl_mem array,
     err |= clSetKernelArg(plan->twist_kernel, 4, sizeof(unsigned int), &rToProcess);
     err |= clSetKernelArg(plan->twist_kernel, 5, sizeof(int), &d);
 
-    err |= clEnqueueNDRangeKernel(queue, plan->twist_kernel, 1, NULL, numGlobalThreads, numLocalThreads, 0, NULL, NULL);
+    err |= clEnqueueNDRangeKernel(queue, plan->twist_kernel, 1, nullptr, numGlobalThreads, numLocalThreads, 0, nullptr, nullptr);
 
     return err;
 }
@@ -366,7 +366,7 @@ cl_int
 clFFT_1DTwistPlannar(clFFT_Plan Plan, cl_command_queue queue, cl_mem array_real, cl_mem array_imag,
     unsigned numRows, unsigned numCols, unsigned startRow, unsigned rowsToProcess, clFFT_Direction dir)
 {
-    cl_fft_plan *plan = (cl_fft_plan *)Plan;
+    auto *plan = (cl_fft_plan *)Plan;
 
     unsigned int N = numRows * numCols;
     unsigned int nCols = numCols;
@@ -376,12 +376,12 @@ clFFT_1DTwistPlannar(clFFT_Plan Plan, cl_command_queue queue, cl_mem array_real,
     int err = 0;
 
     cl_device_id device_id;
-    err = clGetCommandQueueInfo(queue, CL_QUEUE_DEVICE, sizeof(cl_device_id), &device_id, NULL);
+    err = clGetCommandQueueInfo(queue, CL_QUEUE_DEVICE, sizeof(cl_device_id), &device_id, nullptr);
     if (err)
         return err;
 
     size_t gSize;
-    err = clGetKernelWorkGroupInfo(plan->twist_kernel, device_id, CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &gSize, NULL);
+    err = clGetKernelWorkGroupInfo(plan->twist_kernel, device_id, CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &gSize, nullptr);
     if (err)
         return err;
 
@@ -397,7 +397,7 @@ clFFT_1DTwistPlannar(clFFT_Plan Plan, cl_command_queue queue, cl_mem array_real,
     err |= clSetKernelArg(plan->twist_kernel, 5, sizeof(unsigned int), &rToProcess);
     err |= clSetKernelArg(plan->twist_kernel, 6, sizeof(int), &d);
 
-    err |= clEnqueueNDRangeKernel(queue, plan->twist_kernel, 1, NULL, numGlobalThreads, numLocalThreads, 0, NULL, NULL);
+    err |= clEnqueueNDRangeKernel(queue, plan->twist_kernel, 1, nullptr, numGlobalThreads, numLocalThreads, 0, nullptr, nullptr);
 
     return err;
 }

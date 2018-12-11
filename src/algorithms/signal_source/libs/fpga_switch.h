@@ -50,7 +50,7 @@ public:
 
 private:
     int d_device_descriptor;        // driver descriptor
-    volatile unsigned *d_map_base;  // driver memory map
+    volatile unsigned* d_map_base;  // driver memory map
 
     // private functions
     unsigned fpga_switch_test_register(unsigned writeval);

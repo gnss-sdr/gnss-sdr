@@ -48,13 +48,13 @@
 
 #include "clFFT.h"
 #include "fft_internal.h"
-#include <assert.h>
+#include <cassert>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <iostream>
-#include <math.h>
 #include <sstream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <string>
 
 using namespace std;
@@ -806,13 +806,13 @@ createLocalMemfftKernelString(cl_fft_plan *plan)
     kernelName = string("fft") + num2str(kCount);
 
     *kInfo = (cl_fft_kernel_info *)malloc(sizeof(cl_fft_kernel_info));
-    (*kInfo)->kernel = 0;
+    (*kInfo)->kernel = nullptr;
     (*kInfo)->lmem_size = 0;
     (*kInfo)->num_workgroups = 0;
     (*kInfo)->num_workitems_per_workgroup = 0;
     (*kInfo)->dir = cl_fft_kernel_x;
     (*kInfo)->in_place_possible = 1;
-    (*kInfo)->next = NULL;
+    (*kInfo)->next = nullptr;
     (*kInfo)->kernel_name = (char *)malloc(sizeof(char) * (kernelName.size() + 1));
     strcpy((*kInfo)->kernel_name, kernelName.c_str());
 
@@ -1015,7 +1015,7 @@ createGlobalFFTKernelString(cl_fft_plan *plan, int n, int BS, cl_fft_kernel_dir 
 
             kernelName = string("fft") + num2str(kCount);
             *kInfo = (cl_fft_kernel_info *)malloc(sizeof(cl_fft_kernel_info));
-            (*kInfo)->kernel = 0;
+            (*kInfo)->kernel = nullptr;
             if (R2 == 1)
                 (*kInfo)->lmem_size = 0;
             else
@@ -1033,7 +1033,7 @@ createGlobalFFTKernelString(cl_fft_plan *plan, int n, int BS, cl_fft_kernel_dir 
                 (*kInfo)->in_place_possible = 1;
             else
                 (*kInfo)->in_place_possible = 0;
-            (*kInfo)->next = NULL;
+            (*kInfo)->next = nullptr;
             (*kInfo)->kernel_name = (char *)malloc(sizeof(char) * (kernelName.size() + 1));
             strcpy((*kInfo)->kernel_name, kernelName.c_str());
 

@@ -105,7 +105,7 @@ private:
     void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
         int doppler_offset);
 
-    int init_opencl_environment(std::string kernel_filename);
+    int init_opencl_environment(const std::string& kernel_filename);
 
     long d_fs_in;
     int d_samples_per_ms;

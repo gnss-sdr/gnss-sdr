@@ -61,6 +61,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <utility>
 
 
 using google::LogMessage;
@@ -75,7 +76,7 @@ pcps_opencl_acquisition_cc_sptr pcps_make_opencl_acquisition_cc(
 {
     return pcps_opencl_acquisition_cc_sptr(
         new pcps_opencl_acquisition_cc(sampled_ms, max_dwells, doppler_max, fs_in, samples_per_ms,
-            samples_per_code, bit_transition_flag, dump, dump_filename));
+            samples_per_code, bit_transition_flag, dump, std::move(dump_filename)));
 }
 
 
@@ -140,7 +141,7 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(
 
     // For dumping samples into a file
     d_dump = dump;
-    d_dump_filename = dump_filename;
+    d_dump_filename = std::move(dump_filename);
 }
 
 
@@ -193,7 +194,7 @@ pcps_opencl_acquisition_cc::~pcps_opencl_acquisition_cc()
 }
 
 
-int pcps_opencl_acquisition_cc::init_opencl_environment(std::string kernel_filename)
+int pcps_opencl_acquisition_cc::init_opencl_environment(const std::string &kernel_filename)
 {
     //get all platforms (drivers)
     std::vector<cl::Platform> all_platforms;
@@ -359,7 +360,7 @@ void pcps_opencl_acquisition_cc::set_local_code(std::complex<float> *code)
 
             clFFT_ExecuteInterleaved((*d_cl_queue)(), d_cl_fft_plan, d_cl_fft_batch_size,
                 clFFT_Forward, (*d_cl_buffer_2)(), (*d_cl_buffer_2)(),
-                0, NULL, NULL);
+                0, nullptr, nullptr);
 
             //Conjucate the local code
             cl::Kernel kernel = cl::Kernel(d_cl_program, "conj_vector");
@@ -562,7 +563,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
 
             clFFT_ExecuteInterleaved((*d_cl_queue)(), d_cl_fft_plan, d_cl_fft_batch_size,
                 clFFT_Forward, (*d_cl_buffer_1)(), (*d_cl_buffer_2)(),
-                0, NULL, NULL);
+                0, nullptr, nullptr);
 
             // Multiply carrier wiped--off, Fourier transformed incoming signal
             // with the local FFT'd code reference
@@ -576,7 +577,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
             // compute the inverse FFT
             clFFT_ExecuteInterleaved((*d_cl_queue)(), d_cl_fft_plan, d_cl_fft_batch_size,
                 clFFT_Inverse, (*d_cl_buffer_2)(), (*d_cl_buffer_2)(),
-                0, NULL, NULL);
+                0, nullptr, nullptr);
 
             // Compute magnitude
             kernel = cl::Kernel(d_cl_program, "magnitude_squared");

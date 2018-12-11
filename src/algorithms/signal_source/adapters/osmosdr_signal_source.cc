@@ -69,7 +69,7 @@ OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
 
     if (item_type_ == "short")
         {
-            item_size_ = sizeof(short);
+            item_size_ = sizeof(int16_t);
         }
     else if (item_type_ == "gr_complex")
         {
@@ -131,7 +131,7 @@ OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
     else
         {
             LOG(WARNING) << item_type_ << " unrecognized item type. Using short.";
-            item_size_ = sizeof(short);
+            item_size_ = sizeof(int16_t);
         }
 
     if (samples_ != 0)
@@ -158,8 +158,7 @@ OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
 }
 
 
-OsmosdrSignalSource::~OsmosdrSignalSource()
-= default;
+OsmosdrSignalSource::~OsmosdrSignalSource() = default;
 
 
 void OsmosdrSignalSource::driver_instance()

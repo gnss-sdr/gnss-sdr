@@ -78,7 +78,7 @@ private:
 
     void viterbi_decoder(double *page_part_symbols, int32_t *page_part_bits);
 
-    void deinterleaver(int32_t rows, int32_t cols, double *in, double *out);
+    void deinterleaver(int32_t rows, int32_t cols, const double *in, double *out);
 
     void decode_INAV_word(double *symbols, int32_t frame_length);
     void decode_FNAV_word(double *page_symbols, int32_t frame_length);

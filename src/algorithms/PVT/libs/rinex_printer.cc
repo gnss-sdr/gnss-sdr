@@ -7057,7 +7057,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeri
     double int_sec = 0;
 
     // Avoid compiler warning
-    if (glonass_band.size())
+    if (!glonass_band.empty())
         {
         }
 

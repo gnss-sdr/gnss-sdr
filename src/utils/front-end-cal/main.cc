@@ -430,7 +430,7 @@ int main(int argc, char** argv)
                     std::cout << "[";
                     start_msg = false;
                 }
-            if (gnss_sync_vector.size() > 0)
+            if (!gnss_sync_vector.empty())
                 {
                     std::cout << " " << PRN << " ";
                     double doppler_measurement_hz = 0;
@@ -523,7 +523,7 @@ int main(int argc, char** argv)
     std::cout << "Longitude=" << lon_deg << " [º]" << std::endl;
     std::cout << "Altitude=" << altitude_m << " [m]" << std::endl;
 
-    if (doppler_measurements_map.size() == 0)
+    if (doppler_measurements_map.empty())
         {
             std::cout << "Sorry, no GPS satellites detected in the front-end capture, please check the antenna setup..." << std::endl;
             delete acquisition;

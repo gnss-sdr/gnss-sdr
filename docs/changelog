@@ -86,7 +86,6 @@ This release has several improvements in different dimensions, addition of new f
 - The Ninja build system can be used in replacement of make.
 - The volk_gnsssdr library can be built using Python 2.7 or Python 3.6.
 - The volk_gnsssdr library is now ready for AArch64 NEON instructions.
-- Ready for GNU Radio 3.8 C++ API (as per current master branch of GNU Radio upstream repository).
 - Improved detection of required and optional dependencies in many GNU/Linux distributions and processor architectures.
 - Improvement in C++ usage: The <ctime> library has been replaced by the more modern and portable <chrono> (except for the interaction with RTKLIB).
 - Improvement in C++ usage: The <stdio.h> library has been replaced by the more modern and portable <fstream> for file handling.

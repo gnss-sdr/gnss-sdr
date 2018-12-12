@@ -32,10 +32,10 @@
  */
 
 #include "gps_l2_m_pcps_acquisition_fpga.h"
-#include "configuration_interface.h"
-#include "gps_l2c_signal.h"
 #include "GPS_L2C.h"
+#include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
+#include "gps_l2c_signal.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
 
@@ -104,10 +104,10 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
 
     // compute all the GPS L1 PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
-    gr::fft::fft_complex* fft_if = new gr::fft::fft_complex(vector_length, true);  // Direct FFT
+    auto* fft_if = new gr::fft::fft_complex(vector_length, true);  // Direct FFT
     // allocate memory to compute all the PRNs and compute all the possible codes
-    std::complex<float>* code = new std::complex<float>[nsamples_total];  // buffer for the local code
-    gr_complex* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    auto* code = new std::complex<float>[nsamples_total];  // buffer for the local code
+    auto* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     d_all_fft_codes_ = new lv_16sc_t[nsamples_total * NUM_PRNs];  // memory containing all the possible fft codes for PRN 0 to 32
     float max;                                                    // temporary maxima search
     for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
@@ -116,7 +116,7 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
             // fill in zero padding
             for (int s = code_length; s < nsamples_total; s++)
                 {
-                    code[s] = std::complex<float>(static_cast<float>(0, 0));
+                    code[s] = std::complex<float>(0.0, 0.0);
                     //code[s] = 0;
                 }
             memcpy(fft_if->get_inbuf(), code, sizeof(gr_complex) * nsamples_total);            // copy to FFT buffer

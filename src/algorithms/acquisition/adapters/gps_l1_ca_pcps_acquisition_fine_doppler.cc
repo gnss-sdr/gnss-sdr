@@ -33,11 +33,11 @@
  */
 
 #include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
-#include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
+#include "acq_conf.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
-#include "acq_conf.h"
+#include "gps_sdr_signal_processing.h"
 #include <glog/logging.h>
 
 using google::LogMessage;

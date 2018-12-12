@@ -12,10 +12,10 @@
                   <xs:sequence>
                     <xs:element type="xs:byte" name="first"/>
                     <xs:element name="second">
-                      <xs:complexType mixed="true">
+                      <xs:complexType>
                         <xs:sequence>
                           <xs:element type="xs:byte" name="i_satellite_PRN"/>
-                          <xs:element type="xs:byte" name="i_Toa"/>
+                          <xs:element type="xs:int" name="i_Toa"/>
                           <xs:element type="xs:byte" name="i_WNa"/>
                           <xs:element type="xs:byte" name="i_IODa"/>
                           <xs:element type="xs:float" name="d_Delta_i"/>

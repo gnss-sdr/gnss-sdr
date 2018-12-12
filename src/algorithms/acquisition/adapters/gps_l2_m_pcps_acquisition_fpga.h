@@ -35,11 +35,11 @@
 #define GNSS_SDR_GPS_L2_M_PCPS_ACQUISITION_FPGA_H_
 
 #include "acquisition_interface.h"
+#include "complex_byte_to_float_x2.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition_fpga.h"
-#include "complex_byte_to_float_x2.h"
-#include <gnuradio/blocks/stream_to_vector.h>
 #include <gnuradio/blocks/float_to_complex.h>
+#include <gnuradio/blocks/stream_to_vector.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <string>
 
@@ -139,6 +139,8 @@ public:
      * \brief Stop running acquisition
      */
     void stop_acquisition() override;
+
+    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
 
 private:
     ConfigurationInterface* configuration_;

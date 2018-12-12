@@ -32,31 +32,32 @@
  * -------------------------------------------------------------------------
  */
 
-#include "geofunctions.h"
-#include "position_test_flags.h"
-#include "rtklib_solver_dump_reader.h"
-#include "spirent_motion_csv_dump_reader.h"
+#include "MATH_CONSTANTS.h"
+#include "acquisition_msg_rx.h"
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
 #include "control_thread.h"
-#include "in_memory_configuration.h"
 #include "file_configuration.h"
-#include "MATH_CONSTANTS.h"
+#include "geofunctions.h"
 #include "gnuplot_i.h"
-#include "test_flags.h"
+#include "in_memory_configuration.h"
+#include "position_test_flags.h"
+#include "rtklib_solver_dump_reader.h"
 #include "signal_generator_flags.h"
-#include <boost/filesystem.hpp>
+#include "spirent_motion_csv_dump_reader.h"
+#include "test_flags.h"
+#include "tracking_tests_flags.h"  //acquisition resampler
 #include <armadillo>
+#include <boost/filesystem.hpp>
 #include <glog/logging.h>
 #include <gtest/gtest.h>
+#include <matio.h>
 #include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <fstream>
 #include <numeric>
 #include <thread>
-#include <armadillo>
-#include <matio.h>
 
 // For GPS NAVIGATION (L1)
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
@@ -184,6 +185,11 @@ int PositionSystemTest::configure_receiver()
             const int output_rate_ms = 100;
 
             config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(sampling_rate_internal));
+            // Enable automatic resampler for the acquisition, if required
+            if (FLAGS_use_acquisition_resampler == true)
+                {
+                    config->set_property("GNSS-SDR.use_acquisition_resampler", "true");
+                }
 
             // Set the assistance system parameters
             config->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
@@ -831,7 +837,7 @@ void PositionSystemTest::print_results(const arma::mat& R_eb_enu)
                 {
                     boost::filesystem::path p(gnuplot_executable);
                     boost::filesystem::path dir = p.parent_path();
-                    std::string gnuplot_path = dir.native();
+                    const std::string& gnuplot_path = dir.native();
                     Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                     Gnuplot g1("points");

@@ -1,12 +1,12 @@
 
 #include "rtklib_rtksvr.h"
+#include "rtklib_preceph.h"
+#include "rtklib_rtcm.h"
 #include "rtklib_rtkcmn.h"
 #include "rtklib_rtkpos.h"
-#include "rtklib_solution.h"
 #include "rtklib_sbas.h"
-#include "rtklib_preceph.h"
+#include "rtklib_solution.h"
 #include "rtklib_stream.h"
-#include "rtklib_rtcm.h"
 
 /* write solution header to output stream ------------------------------------*/
 void writesolhead(stream_t *stream, const solopt_t *solopt)
@@ -424,7 +424,7 @@ void decodefile(rtksvr_t *svr, int index)
         { /* precise clock */
 
             /* read rinex clock */  // Disabled!!
-            if (1 /*readrnxc(file, &nav)<=0 */)
+            if (true /*readrnxc(file, &nav)<=0 */)
                 {
                     tracet(1, "rinex clock file read error: %s\n", file);
                     return;
@@ -730,7 +730,7 @@ void rtksvrunlock(rtksvr_t *svr) { rtk_unlock(&svr->lock); }
  * return : status (1:ok 0:error)
  *-----------------------------------------------------------------------------*/
 int rtksvrstart(rtksvr_t *svr, int cycle, int buffsize, int *strs,
-    char **paths, int *formats, int navsel, char **cmds,
+    char **paths, const int *formats, int navsel, char **cmds,
     char **rcvopts, int nmeacycle, int nmeareq,
     const double *nmeapos, prcopt_t *prcopt,
     solopt_t *solopt, stream_t *moni)

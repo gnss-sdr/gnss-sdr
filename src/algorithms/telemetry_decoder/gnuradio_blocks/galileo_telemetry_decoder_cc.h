@@ -35,11 +35,11 @@
 
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
-#include "galileo_navigation_message.h"
-#include "galileo_fnav_message.h"
-#include "galileo_ephemeris.h"
 #include "galileo_almanac_helper.h"
+#include "galileo_ephemeris.h"
+#include "galileo_fnav_message.h"
 #include "galileo_iono.h"
+#include "galileo_navigation_message.h"
 #include "galileo_utc_model.h"
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
@@ -78,7 +78,7 @@ private:
 
     void viterbi_decoder(double *page_part_symbols, int32_t *page_part_bits);
 
-    void deinterleaver(int32_t rows, int32_t cols, double *in, double *out);
+    void deinterleaver(int32_t rows, int32_t cols, const double *in, double *out);
 
     void decode_INAV_word(double *symbols, int32_t frame_length);
     void decode_FNAV_word(double *page_symbols, int32_t frame_length);

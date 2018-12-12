@@ -32,9 +32,9 @@
 #ifndef GNSS_SDR_TCP_COMMUNICATION_H_
 #define GNSS_SDR_TCP_COMMUNICATION_H_
 
-#include <boost/asio.hpp>
-#include <boost/array.hpp>
 #include "tcp_packet_data.h"
+#include <boost/array.hpp>
+#include <boost/asio.hpp>
 
 #define NUM_TX_VARIABLES_GALILEO_E1 13
 #define NUM_TX_VARIABLES_GPS_L1_CA 9

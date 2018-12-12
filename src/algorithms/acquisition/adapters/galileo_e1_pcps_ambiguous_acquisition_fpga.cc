@@ -30,9 +30,9 @@
  */
 
 #include "galileo_e1_pcps_ambiguous_acquisition_fpga.h"
+#include "Galileo_E1.h"
 #include "configuration_interface.h"
 #include "galileo_e1_signal_processing.h"
-#include "Galileo_E1.h"
 #include "gnss_sdr_flags.h"
 #include <boost/lexical_cast.hpp>
 #include <boost/math/distributions/exponential.hpp>
@@ -89,7 +89,7 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     //   dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
     //   acq_parameters.dump_filename = dump_filename_;
     //--- Find number of samples per spreading code (4 ms)  -----------------
-    unsigned int code_length = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
+    auto code_length = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
     //acq_parameters.samples_per_code = code_length_;
     //int samples_per_ms = static_cast<int>(std::round(static_cast<double>(fs_in_) * 0.001));
     //acq_parameters.samples_per_ms = samples_per_ms;
@@ -120,9 +120,9 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
 
     // compute all the GALILEO E1 PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
-    gr::fft::fft_complex* fft_if = new gr::fft::fft_complex(nsamples_total, true);  // Direct FFT
-    std::complex<float>* code = new std::complex<float>[nsamples_total];            // buffer for the local code
-    gr_complex* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    auto* fft_if = new gr::fft::fft_complex(nsamples_total, true);  // Direct FFT
+    auto* code = new std::complex<float>[nsamples_total];           // buffer for the local code
+    auto* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     d_all_fft_codes_ = new lv_16sc_t[nsamples_total * Galileo_E1_NUMBER_OF_CODES];  // memory containing all the possible fft codes for PRN 0 to 32
     float max;                                                                      // temporary maxima search
 
@@ -174,7 +174,7 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
             //        // fill in zero padding
             for (int s = code_length; s < nsamples_total; s++)
                 {
-                    code[s] = std::complex<float>(static_cast<float>(0, 0));
+                    code[s] = std::complex<float>(0.0, 0.0);
                     //code[s] = 0;
                 }
 

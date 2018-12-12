@@ -39,9 +39,9 @@
 #ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_
 #define GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_FPGA_H_
 
-#include <string>
-#include "tracking_interface.h"
 #include "dll_pll_veml_tracking_fpga.h"
+#include "tracking_interface.h"
+#include <string>
 
 
 class ConfigurationInterface;
@@ -53,7 +53,7 @@ class GpsL1CaDllPllTrackingFpga : public TrackingInterface
 {
 public:
     GpsL1CaDllPllTrackingFpga(ConfigurationInterface* configuration,
-        std::string role,
+        const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 

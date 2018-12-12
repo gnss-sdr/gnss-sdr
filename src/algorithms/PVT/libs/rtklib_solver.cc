@@ -52,13 +52,13 @@
  * -----------------------------------------------------------------------*/
 
 #include "rtklib_solver.h"
-#include "rtklib_conversions.h"
-#include "rtklib_solution.h"
+#include "GLONASS_L1_L2_CA.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
-#include "GLONASS_L1_L2_CA.h"
-#include <matio.h>
+#include "rtklib_conversions.h"
+#include "rtklib_solution.h"
 #include <glog/logging.h>
+#include <matio.h>
 #include <utility>
 
 
@@ -820,7 +820,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                 }
                         }
 
-                    if (index_aux > 0) dops(index_aux, azel.data(), 0.0, dop_);
+                    if (index_aux > 0) dops(index_aux, azel.data(), 0.0, dop_.data());
                     this->set_valid_position(true);
                     arma::vec rx_position_and_time(4);
                     rx_position_and_time(0) = pvt_sol.rr[0];  // [m]

@@ -33,10 +33,10 @@
 #ifndef GNSS_SDR_GPS_L1_CA_PCPS_QUICKSYNC_ACQUISITION_H_
 #define GNSS_SDR_GPS_L1_CA_PCPS_QUICKSYNC_ACQUISITION_H_
 
-#include "gnss_synchro.h"
 #include "acquisition_interface.h"
-#include "pcps_quicksync_acquisition_cc.h"
 #include "configuration_interface.h"
+#include "gnss_synchro.h"
+#include "pcps_quicksync_acquisition_cc.h"
 #include <gnuradio/blocks/stream_to_vector.h>
 #include <string>
 
@@ -135,6 +135,8 @@ public:
      * \brief Stop running acquisition
      */
     void stop_acquisition() override;
+
+    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
 
 private:
     ConfigurationInterface* configuration_;

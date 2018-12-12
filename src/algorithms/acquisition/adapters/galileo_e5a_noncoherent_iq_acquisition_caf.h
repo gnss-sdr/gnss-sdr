@@ -38,9 +38,9 @@
 #ifndef GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_H_
 #define GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_H_
 
-#include "gnss_synchro.h"
 #include "acquisition_interface.h"
 #include "galileo_e5a_noncoherent_iq_acquisition_caf_cc.h"
+#include "gnss_synchro.h"
 #include <string>
 
 class ConfigurationInterface;
@@ -136,6 +136,8 @@ public:
      * \brief Stop running acquisition
      */
     void stop_acquisition() override;
+
+    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
 
 private:
     ConfigurationInterface* configuration_;

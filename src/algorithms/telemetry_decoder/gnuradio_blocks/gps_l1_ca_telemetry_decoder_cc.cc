@@ -321,7 +321,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
     current_symbol = in[0][0];
 
     // record the oldest subframe symbol before inserting a new symbol into the circular buffer
-    if (d_current_subframe_symbol < GPS_SUBFRAME_MS and d_symbol_history.size() > 0)
+    if (d_current_subframe_symbol < GPS_SUBFRAME_MS and !d_symbol_history.empty())
         {
             d_subframe_symbols[d_current_subframe_symbol] = d_symbol_history[0].Prompt_I;
             d_current_subframe_symbol++;

@@ -32,43 +32,43 @@
 #define FRONT_END_CAL_VERSION "0.0.1"
 #endif
 
-#include "front_end_cal.h"
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
 #include "file_configuration.h"
-#include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
-#include "gnss_signal.h"
-#include "gnss_synchro.h"
-#include "gnss_block_factory.h"
-#include "gps_navigation_message.h"
-#include "gps_ephemeris.h"
-#include "gps_cnav_ephemeris.h"
-#include "gps_almanac.h"
-#include "gps_iono.h"
-#include "gps_cnav_iono.h"
-#include "gps_utc_model.h"
-#include "galileo_ephemeris.h"
+#include "front_end_cal.h"
 #include "galileo_almanac.h"
+#include "galileo_ephemeris.h"
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
-#include "sbas_ephemeris.h"
-#include "gnss_sdr_supl_client.h"
+#include "gnss_block_factory.h"
 #include "gnss_sdr_flags.h"
+#include "gnss_sdr_supl_client.h"
+#include "gnss_signal.h"
+#include "gnss_synchro.h"
+#include "gps_almanac.h"
+#include "gps_cnav_ephemeris.h"
+#include "gps_cnav_iono.h"
+#include "gps_ephemeris.h"
+#include "gps_iono.h"
+#include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
+#include "gps_navigation_message.h"
+#include "gps_utc_model.h"
+#include "sbas_ephemeris.h"
+#include <boost/exception/detail/exception_ptr.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread.hpp>
-#include <boost/exception/detail/exception_ptr.hpp>
 #include <glog/logging.h>
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/top_block.h>
+#include <gnuradio/blocks/file_sink.h>
+#include <gnuradio/blocks/file_source.h>
+#include <gnuradio/blocks/head.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/skiphead.h>
-#include <gnuradio/blocks/head.h>
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/blocks/file_sink.h>
-#include <cstdlib>
+#include <gnuradio/msg_queue.h>
+#include <gnuradio/top_block.h>
 #include <chrono>
 #include <cstdint>
+#include <cstdlib>
 #include <ctime>  // for ctime
 #include <exception>
 #include <memory>
@@ -191,7 +191,7 @@ bool front_end_capture(const std::shared_ptr<ConfigurationInterface>& configurat
     catch (const boost::exception_ptr& e)
         {
             std::cout << "Exception caught in creating source " << e << std::endl;
-            return 0;
+            return false;
         }
 
     std::shared_ptr<GNSSBlockInterface> conditioner;
@@ -202,7 +202,7 @@ bool front_end_capture(const std::shared_ptr<ConfigurationInterface>& configurat
     catch (const boost::exception_ptr& e)
         {
             std::cout << "Exception caught in creating signal conditioner " << e << std::endl;
-            return 0;
+            return false;
         }
     gr::block_sptr sink;
     sink = gr::blocks::file_sink::make(sizeof(gr_complex), "tmp_capture.dat");
@@ -430,7 +430,7 @@ int main(int argc, char** argv)
                     std::cout << "[";
                     start_msg = false;
                 }
-            if (gnss_sync_vector.size() > 0)
+            if (!gnss_sync_vector.empty())
                 {
                     std::cout << " " << PRN << " ";
                     double doppler_measurement_hz = 0;
@@ -523,7 +523,7 @@ int main(int argc, char** argv)
     std::cout << "Longitude=" << lon_deg << " [º]" << std::endl;
     std::cout << "Altitude=" << altitude_m << " [m]" << std::endl;
 
-    if (doppler_measurements_map.size() == 0)
+    if (doppler_measurements_map.empty())
         {
             std::cout << "Sorry, no GPS satellites detected in the front-end capture, please check the antenna setup..." << std::endl;
             delete acquisition;

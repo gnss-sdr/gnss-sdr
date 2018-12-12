@@ -69,10 +69,10 @@
 #define INCLUDED_volk_gnsssdr_16ic_16i_rotator_dot_prod_16ic_xn_H
 
 
-#include <volk_gnsssdr/volk_gnsssdr.h>
-#include <volk_gnsssdr/volk_gnsssdr_malloc.h>
-#include <volk_gnsssdr/volk_gnsssdr_complex.h>
 #include <volk_gnsssdr/saturation_arithmetic.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <volk_gnsssdr/volk_gnsssdr_complex.h>
+#include <volk_gnsssdr/volk_gnsssdr_malloc.h>
 #include <math.h>
 //#include <stdio.h>
 
@@ -742,9 +742,9 @@ static inline void volk_gnsssdr_16ic_16i_rotator_dot_prod_16ic_xn_u_sse3(lv_16sc
 
 
 #ifdef LV_HAVE_AVX2
-#include <immintrin.h>
-#include <volk_gnsssdr/volk_gnsssdr_sse3_intrinsics.h>
 #include <volk_gnsssdr/volk_gnsssdr_avx_intrinsics.h>
+#include <volk_gnsssdr/volk_gnsssdr_sse3_intrinsics.h>
+#include <immintrin.h>
 
 static inline void volk_gnsssdr_16ic_16i_rotator_dot_prod_16ic_xn_a_avx2(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_32fc_t phase_inc, lv_32fc_t* phase, const int16_t** in_a, int num_a_vectors, unsigned int num_points)
 {
@@ -896,9 +896,9 @@ static inline void volk_gnsssdr_16ic_16i_rotator_dot_prod_16ic_xn_a_avx2(lv_16sc
 #endif /* LV_HAVE_AVX2 */
 
 #ifdef LV_HAVE_AVX2
-#include <immintrin.h>
-#include <volk_gnsssdr/volk_gnsssdr_sse3_intrinsics.h>
 #include <volk_gnsssdr/volk_gnsssdr_avx_intrinsics.h>
+#include <volk_gnsssdr/volk_gnsssdr_sse3_intrinsics.h>
+#include <immintrin.h>
 
 static inline void volk_gnsssdr_16ic_16i_rotator_dot_prod_16ic_xn_u_avx2(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_32fc_t phase_inc, lv_32fc_t* phase, const int16_t** in_a, int num_a_vectors, unsigned int num_points)
 {

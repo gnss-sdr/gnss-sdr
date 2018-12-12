@@ -31,12 +31,12 @@
 #ifndef GNSS_SDR_GALILEO_E5A_H_
 #define GNSS_SDR_GALILEO_E5A_H_
 
-#include "gnss_frequencies.h"
 #include "MATH_CONSTANTS.h"
+#include "gnss_frequencies.h"
 #include <cstdint>
 #include <string>
-#include <vector>
 #include <utility>  // std::pair
+#include <vector>
 
 
 // Carrier and code frequencies
@@ -56,6 +56,9 @@ const int32_t Galileo_E5a_NUMBER_OF_CODES = 50;
 // OBSERVABLE HISTORY DEEP FOR INTERPOLATION AND CRC ERROR LIMIT
 const int32_t GALILEO_E5A_HISTORY_DEEP = 20;
 const int32_t GALILEO_E5A_CRC_ERROR_LIMIT = 6;
+
+//optimum parameters
+const uint32_t Galileo_E5a_OPT_ACQ_FS_HZ = 10000000;  //!< Sampling frequncy that maximizes the acquisition SNR while using a non-multiple of chip rate
 
 // F/NAV message structure
 

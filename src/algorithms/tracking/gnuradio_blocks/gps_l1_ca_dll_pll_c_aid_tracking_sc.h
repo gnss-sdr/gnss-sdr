@@ -37,11 +37,11 @@
 #ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_SC_H
 #define GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_SC_H
 
-#include "gps_sdr_signal_processing.h"
+#include "cpu_multicorrelator_16sc.h"
 #include "gnss_synchro.h"
+#include "gps_sdr_signal_processing.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_FLL_PLL_filter.h"
-#include "cpu_multicorrelator_16sc.h"
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
 #include <gnuradio/block.h>

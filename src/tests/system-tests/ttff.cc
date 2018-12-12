@@ -34,9 +34,9 @@
 #include "concurrent_queue.h"
 #include "control_thread.h"
 #include "file_configuration.h"
-#include "in_memory_configuration.h"
 #include "gnss_flowgraph.h"
 #include "gps_acq_assist.h"
+#include "in_memory_configuration.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
@@ -48,9 +48,9 @@
 #include <numeric>
 #include <random>
 #include <string>
-#include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
+#include <sys/types.h>
 #include <thread>
 
 

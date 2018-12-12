@@ -30,10 +30,10 @@
  */
 
 #include "direct_resampler_conditioner.h"
+#include "configuration_interface.h"
+#include "direct_resampler_conditioner_cb.h"
 #include "direct_resampler_conditioner_cc.h"
 #include "direct_resampler_conditioner_cs.h"
-#include "direct_resampler_conditioner_cb.h"
-#include "configuration_interface.h"
 #include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <volk/volk.h>

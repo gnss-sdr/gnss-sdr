@@ -33,8 +33,8 @@
 
 
 #include "tracking_loop_filter.h"
-#include <cmath>
 #include <glog/logging.h>
+#include <cmath>
 
 
 Tracking_loop_filter::Tracking_loop_filter(float update_interval,

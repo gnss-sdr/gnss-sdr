@@ -33,13 +33,13 @@
 #ifndef INCLUDED_GR_COMPLEX_IP_PACKET_SOURCE_H
 #define INCLUDED_GR_COMPLEX_IP_PACKET_SOURCE_H
 
-#include <gnuradio/sync_block.h>
 #include <boost/thread.hpp>
-#include <pcap.h>
+#include <gnuradio/sync_block.h>
 #include <arpa/inet.h>
-#include <net/if.h>
 #include <net/ethernet.h>
+#include <net/if.h>
 #include <netinet/if_ether.h>
+#include <pcap.h>
 #include <string>
 #include <sys/ioctl.h>
 
@@ -84,19 +84,19 @@ private:
 public:
     typedef boost::shared_ptr<gr_complex_ip_packet_source> sptr;
     static sptr make(std::string src_device,
-        std::string origin_address,
+        const std::string &origin_address,
         int udp_port,
         int udp_packet_size,
         int n_baseband_channels,
-        std::string wire_sample_type,
+        const std::string &wire_sample_type,
         size_t item_size,
         bool IQ_swap_);
     gr_complex_ip_packet_source(std::string src_device,
-        std::string origin_address,
+        const std::string &origin_address,
         int udp_port,
         int udp_packet_size,
         int n_baseband_channels,
-        std::string wire_sample_type,
+        const std::string &wire_sample_type,
         size_t item_size,
         bool IQ_swap_);
     ~gr_complex_ip_packet_source();

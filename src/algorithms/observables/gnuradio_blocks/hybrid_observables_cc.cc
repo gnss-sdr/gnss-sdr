@@ -30,8 +30,8 @@
  */
 
 #include "hybrid_observables_cc.h"
-#include "display.h"
 #include "GPS_L1_CA.h"
+#include "display.h"
 #include "gnss_sdr_create_directory.h"
 #include <boost/filesystem/path.hpp>
 #include <glog/logging.h>

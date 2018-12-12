@@ -32,9 +32,9 @@
 #ifndef GNSS_SDR_GALILEO_E1_PCPS_8MS_AMBIGUOUS_ACQUISITION_H_
 #define GNSS_SDR_GALILEO_E1_PCPS_8MS_AMBIGUOUS_ACQUISITION_H_
 
-#include "gnss_synchro.h"
 #include "acquisition_interface.h"
 #include "galileo_pcps_8ms_acquisition_cc.h"
+#include "gnss_synchro.h"
 #include <gnuradio/blocks/stream_to_vector.h>
 #include <string>
 
@@ -130,6 +130,9 @@ public:
     void stop_acquisition() override;
 
     void set_state(int state __attribute__((unused))) override{};
+
+    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
+
 
 private:
     ConfigurationInterface* configuration_;

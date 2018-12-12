@@ -33,40 +33,41 @@
  */
 
 #include "control_thread.h"
-#include "concurrent_queue.h"
 #include "concurrent_map.h"
-#include "pvt_interface.h"
+#include "concurrent_queue.h"
 #include "control_message_factory.h"
 #include "file_configuration.h"
-#include "gnss_flowgraph.h"
-#include "gnss_sdr_flags.h"
+#include "galileo_almanac.h"
 #include "galileo_ephemeris.h"
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
-#include "galileo_almanac.h"
+#include "geofunctions.h"
+#include "glonass_gnav_ephemeris.h"
+#include "glonass_gnav_utc_model.h"
+#include "gnss_flowgraph.h"
+#include "gnss_sdr_flags.h"
+#include "gps_almanac.h"
 #include "gps_ephemeris.h"
 #include "gps_iono.h"
 #include "gps_utc_model.h"
-#include "gps_almanac.h"
-#include "glonass_gnav_ephemeris.h"
-#include "glonass_gnav_utc_model.h"
-#include "geofunctions.h"
-#include "rtklib_rtkcmn.h"
+#include "pvt_interface.h"
 #include "rtklib_conversions.h"
 #include "rtklib_ephemeris.h"
-#include <boost/lexical_cast.hpp>
+#include "rtklib_rtkcmn.h"
 #include <boost/chrono.hpp>
+#include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
 #include <gnuradio/message.h>
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/msg.h>
 #include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <limits>
 #include <map>
 #include <string>
+#include <sys/ipc.h>
+#include <sys/msg.h>
+#include <sys/types.h>
+#include <utility>
 
 
 extern concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
@@ -196,8 +197,12 @@ ControlThread::~ControlThread()
 
 void ControlThread::telecommand_listener()
 {
-    int tcp_cmd_port = configuration_->property("GNSS-SDR.telecontrol_tcp_port", 3333);
-    cmd_interface_.run_cmd_server(tcp_cmd_port);
+    bool telecommand_enabled = configuration_->property("GNSS-SDR.telecommand_enabled", false);
+    if (telecommand_enabled)
+        {
+            int tcp_cmd_port = configuration_->property("GNSS-SDR.telecommand_tcp_port", 3333);
+            cmd_interface_.run_cmd_server(tcp_cmd_port);
+        }
 }
 
 
@@ -294,14 +299,14 @@ int ControlThread::run()
 }
 
 
-void ControlThread::set_control_queue(gr::msg_queue::sptr control_queue)
+void ControlThread::set_control_queue(const gr::msg_queue::sptr &control_queue)
 {
     if (flowgraph_->running())
         {
             LOG(WARNING) << "Unable to set control queue while flowgraph is running";
             return;
         }
-    control_queue_ = control_queue;
+    control_queue_ = std::move(control_queue);
     cmd_interface_.set_msg_queue(control_queue_);
 }
 

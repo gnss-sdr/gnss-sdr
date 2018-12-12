@@ -29,10 +29,10 @@
  * -------------------------------------------------------------------------
  */
 
-#include <random>
+#include "bayesian_estimation.h"
 #include <armadillo>
 #include <gtest/gtest.h>
-#include "bayesian_estimation.h"
+#include <random>
 
 #define BAYESIAN_TEST_N_TRIALS 100
 #define BAYESIAN_TEST_ITER 10000

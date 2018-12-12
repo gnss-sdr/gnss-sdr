@@ -116,7 +116,7 @@ private:
     int do_tb_and_decode(int traceback_length, int requested_decoding_length, int state, int bits[], float& indicator_metric);
 
     // branch metric function
-    float gamma(float rec_array[], int symbol, int nn);
+    float gamma(const float rec_array[], int symbol, int nn);
 
     // trellis generation
     void nsc_transit(int output_p[], int trans_p[], int input, const int g[], int KK, int nn);

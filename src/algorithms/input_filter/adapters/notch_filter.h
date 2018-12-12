@@ -33,8 +33,8 @@
 #ifndef GNSS_SDR_NOTCH_FILTER_H_
 #define GNSS_SDR_NOTCH_FILTER_H_
 
-#include "notch_cc.h"
 #include "gnss_block_interface.h"
+#include "notch_cc.h"
 #include <gnuradio/blocks/file_sink.h>
 #include <string>
 #include <vector>

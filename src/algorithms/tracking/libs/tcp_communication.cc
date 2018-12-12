@@ -29,8 +29,8 @@
  * -------------------------------------------------------------------------
  */
 
-#include "tcp_packet_data.h"
 #include "tcp_communication.h"
+#include "tcp_packet_data.h"
 #include <iostream>
 #include <string>
 

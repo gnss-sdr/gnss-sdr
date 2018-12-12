@@ -29,12 +29,12 @@
  */
 
 #include "uhd_signal_source.h"
+#include "GPS_L1_CA.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_valve.h"
-#include "GPS_L1_CA.h"
 #include <glog/logging.h>
-#include <uhd/types/device_addr.hpp>
 #include <uhd/exception.hpp>
+#include <uhd/types/device_addr.hpp>
 #include <volk/volk.h>
 #include <iostream>
 #include <utility>

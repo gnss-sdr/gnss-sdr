@@ -30,21 +30,21 @@
  */
 
 
-#include "gps_ephemeris.h"
 #include "galileo_ephemeris.h"
-#include "gps_utc_model.h"
-#include "gps_iono.h"
-#include "galileo_utc_model.h"
 #include "galileo_iono.h"
-#include <gflags/gflags.h>
-#include <gpstk/Rinex3NavHeader.hpp>
-#include <gpstk/Rinex3NavData.hpp>
-#include <gpstk/Rinex3NavStream.hpp>
+#include "galileo_utc_model.h"
+#include "gps_ephemeris.h"
+#include "gps_iono.h"
+#include "gps_utc_model.h"
 #include <boost/archive/xml_oarchive.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/filtering_streambuf.hpp>
+#include <boost/serialization/map.hpp>
+#include <gflags/gflags.h>
+#include <gpstk/Rinex3NavData.hpp>
+#include <gpstk/Rinex3NavHeader.hpp>
+#include <gpstk/Rinex3NavStream.hpp>
 #include <cstdlib>
 #include <iostream>
 
@@ -260,15 +260,15 @@ int main(int argc, char** argv)
                             eph.d_TGD = rne.Tgd;
                             eph.d_IODC = rne.IODC;
                             eph.i_AODO = 0;  //
-                            eph.b_fit_interval_flag = (rne.fitint > 4) ? 1 : 0;
+                            eph.b_fit_interval_flag = (rne.fitint > 4) ? true : false;
                             eph.d_spare1 = 0.0;
                             eph.d_spare2 = 0.0;
                             eph.d_A_f0 = rne.af0;
                             eph.d_A_f1 = rne.af1;
                             eph.d_A_f2 = rne.af2;
-                            eph.b_integrity_status_flag = 0;  //
-                            eph.b_alert_flag = 0;             //
-                            eph.b_antispoofing_flag = 0;      //
+                            eph.b_integrity_status_flag = false;  //
+                            eph.b_alert_flag = false;             //
+                            eph.b_antispoofing_flag = false;      //
                             eph_map[i] = eph;
                             i++;
                         }

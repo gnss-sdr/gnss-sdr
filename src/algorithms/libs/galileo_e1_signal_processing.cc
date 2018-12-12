@@ -68,7 +68,7 @@ void galileo_e1_code_gen_int(int* _dest, char _Signal[3], int32_t _prn)
 }
 
 
-void galileo_e1_sinboc_11_gen_int(int* _dest, int* _prn, uint32_t _length_out)
+void galileo_e1_sinboc_11_gen_int(int* _dest, const int* _prn, uint32_t _length_out)
 {
     const uint32_t _length_in = Galileo_E1_B_CODE_LENGTH_CHIPS;
     auto _period = static_cast<uint32_t>(_length_out / _length_in);
@@ -86,7 +86,7 @@ void galileo_e1_sinboc_11_gen_int(int* _dest, int* _prn, uint32_t _length_out)
 }
 
 
-void galileo_e1_sinboc_61_gen_int(int* _dest, int* _prn, uint32_t _length_out)
+void galileo_e1_sinboc_61_gen_int(int* _dest, const int* _prn, uint32_t _length_out)
 {
     const uint32_t _length_in = Galileo_E1_B_CODE_LENGTH_CHIPS;
     auto _period = static_cast<uint32_t>(_length_out / _length_in);
@@ -236,7 +236,7 @@ void galileo_e1_code_gen_complex_sampled(std::complex<float>* _dest, char _Signa
     std::string _galileo_signal = _Signal;
     const int32_t _codeFreqBasis = Galileo_E1_CODE_CHIP_RATE_HZ;  // Hz
     auto _samplesPerCode = static_cast<uint32_t>(static_cast<double>(_fs) /
-                                                     (static_cast<double>(_codeFreqBasis) / static_cast<double>(Galileo_E1_B_CODE_LENGTH_CHIPS)));
+                                                 (static_cast<double>(_codeFreqBasis) / static_cast<double>(Galileo_E1_B_CODE_LENGTH_CHIPS)));
 
     if (_galileo_signal.rfind("1C") != std::string::npos && _galileo_signal.length() >= 2 && _secondary_flag)
         {

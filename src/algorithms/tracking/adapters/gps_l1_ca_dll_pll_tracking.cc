@@ -35,12 +35,12 @@
  * -------------------------------------------------------------------------
  */
 
-#include "dll_pll_conf.h"
 #include "gps_l1_ca_dll_pll_tracking.h"
-#include "configuration_interface.h"
 #include "GPS_L1_CA.h"
-#include "gnss_sdr_flags.h"
+#include "configuration_interface.h"
 #include "display.h"
+#include "dll_pll_conf.h"
+#include "gnss_sdr_flags.h"
 #include <glog/logging.h>
 
 using google::LogMessage;

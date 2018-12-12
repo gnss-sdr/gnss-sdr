@@ -32,8 +32,8 @@
 #ifndef GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H_
 #define GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H_
 
-#include "gnss_block_interface.h"
 #include "fpga_switch.h"
+#include "gnss_block_interface.h"
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/msg_queue.h>
 #include <cstdint>
@@ -45,7 +45,7 @@ class Ad9361FpgaSignalSource : public GNSSBlockInterface
 {
 public:
     Ad9361FpgaSignalSource(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_stream,
+        const std::string& role, unsigned int in_stream,
         unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
 
     ~Ad9361FpgaSignalSource();

@@ -32,11 +32,11 @@
 #ifndef GNSS_SDR_GPS_L1_CA_H_
 #define GNSS_SDR_GPS_L1_CA_H_
 
-#include "gnss_frequencies.h"
 #include "MATH_CONSTANTS.h"
+#include "gnss_frequencies.h"
 #include <cstdint>
-#include <vector>
 #include <utility>  // std::pair
+#include <vector>
 
 
 // Physical constants
@@ -56,6 +56,9 @@ const double GPS_L1_CA_CODE_LENGTH_CHIPS = 1023.0;  //!< GPS L1 C/A code length 
 const double GPS_L1_CA_CODE_PERIOD = 0.001;         //!< GPS L1 C/A code period [seconds]
 const uint32_t GPS_L1_CA_CODE_PERIOD_MS = 1U;       //!< GPS L1 C/A code period [ms]
 const double GPS_L1_CA_CHIP_PERIOD = 9.7752e-07;    //!< GPS L1 C/A chip period [seconds]
+
+//optimum parameters
+const uint32_t GPS_L1_CA_OPT_ACQ_FS_HZ = 1000000;  //!< Sampling frequncy that maximizes the acquisition SNR while using a non-multiple of chip rate
 
 /*!
  * \brief Maximum Time-Of-Arrival (TOA) difference between satellites for a receiver operated on Earth surface is 20 ms

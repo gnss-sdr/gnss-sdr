@@ -221,6 +221,12 @@ pcps_acquisition::~pcps_acquisition()
 }
 
 
+void pcps_acquisition::set_resampler_latency(uint32_t latency_samples)
+{
+    gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
+    acq_parameters.resampler_latency_samples = latency_samples;
+}
+
 void pcps_acquisition::set_local_code(std::complex<float>* code)
 {
     // reset the intermediate frequency
@@ -280,7 +286,15 @@ bool pcps_acquisition::is_fdma()
 
 void pcps_acquisition::update_local_carrier(gr_complex* carrier_vector, int32_t correlator_length_samples, float freq)
 {
-    float phase_step_rad = GPS_TWO_PI * freq / static_cast<float>(acq_parameters.fs_in);
+    float phase_step_rad;
+    if (acq_parameters.use_automatic_resampler)
+        {
+            phase_step_rad = GPS_TWO_PI * freq / static_cast<float>(acq_parameters.resampled_fs);
+        }
+    else
+        {
+            phase_step_rad = GPS_TWO_PI * freq / static_cast<float>(acq_parameters.fs_in);
+        }
     float _phase[1];
     _phase[0] = 0.0;
     volk_gnsssdr_s32f_sincos_32fc(carrier_vector, -phase_step_rad, _phase, correlator_length_samples);
@@ -716,9 +730,20 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                 {
                     d_test_statistics = first_vs_second_peak_statistic(indext, doppler, d_num_doppler_bins, acq_parameters.doppler_max, d_doppler_step);
                 }
-            d_gnss_synchro->Acq_delay_samples = static_cast<double>(std::fmod(static_cast<float>(indext), acq_parameters.samples_per_code));
-            d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
-            d_gnss_synchro->Acq_samplestamp_samples = samp_count;
+            if (acq_parameters.use_automatic_resampler)
+                {
+                    //take into account the acquisition resampler ratio
+                    d_gnss_synchro->Acq_delay_samples = static_cast<double>(std::fmod(static_cast<float>(indext), acq_parameters.samples_per_code)) * acq_parameters.resampler_ratio;
+                    d_gnss_synchro->Acq_delay_samples -= static_cast<double>(acq_parameters.resampler_latency_samples);  //account the resampler filter latency
+                    d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
+                    d_gnss_synchro->Acq_samplestamp_samples = rint(static_cast<double>(samp_count) * acq_parameters.resampler_ratio);
+                }
+            else
+                {
+                    d_gnss_synchro->Acq_delay_samples = static_cast<double>(std::fmod(static_cast<float>(indext), acq_parameters.samples_per_code));
+                    d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
+                    d_gnss_synchro->Acq_samplestamp_samples = samp_count;
+                }
         }
     else
         {
@@ -762,10 +787,23 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                 {
                     d_test_statistics = first_vs_second_peak_statistic(indext, doppler, d_num_doppler_bins_step2, static_cast<int32_t>(d_doppler_center_step_two - (static_cast<float>(d_num_doppler_bins_step2) / 2.0) * acq_parameters.doppler_step2), acq_parameters.doppler_step2);
                 }
-            d_gnss_synchro->Acq_delay_samples = static_cast<double>(std::fmod(static_cast<float>(indext), acq_parameters.samples_per_code));
-            d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
-            d_gnss_synchro->Acq_samplestamp_samples = samp_count;
-            d_gnss_synchro->Acq_doppler_step = acq_parameters.doppler_step2;
+
+            if (acq_parameters.use_automatic_resampler)
+                {
+                    //take into account the acquisition resampler ratio
+                    d_gnss_synchro->Acq_delay_samples = static_cast<double>(std::fmod(static_cast<float>(indext), acq_parameters.samples_per_code)) * acq_parameters.resampler_ratio;
+                    d_gnss_synchro->Acq_delay_samples -= static_cast<double>(acq_parameters.resampler_latency_samples);  //account the resampler filter latency
+                    d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
+                    d_gnss_synchro->Acq_samplestamp_samples = rint(static_cast<double>(samp_count) * acq_parameters.resampler_ratio);
+                    d_gnss_synchro->Acq_doppler_step = acq_parameters.doppler_step2;
+                }
+            else
+                {
+                    d_gnss_synchro->Acq_delay_samples = static_cast<double>(std::fmod(static_cast<float>(indext), acq_parameters.samples_per_code));
+                    d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
+                    d_gnss_synchro->Acq_samplestamp_samples = samp_count;
+                    d_gnss_synchro->Acq_doppler_step = acq_parameters.doppler_step2;
+                }
         }
 
     lk.lock();
@@ -865,6 +903,12 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
         }
 }
 
+// Called by gnuradio to enable drivers, etc for i/o devices.
+bool pcps_acquisition::start()
+{
+    d_sample_counter = 0ULL;
+    return true;
+}
 
 int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
     gr_vector_int& ninput_items, gr_vector_const_void_star& input_items,

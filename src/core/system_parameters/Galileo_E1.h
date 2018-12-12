@@ -33,12 +33,12 @@
 #ifndef GNSS_SDR_GALILEO_E1_H_
 #define GNSS_SDR_GALILEO_E1_H_
 
-#include "gnss_frequencies.h"
 #include "MATH_CONSTANTS.h"
+#include "gnss_frequencies.h"
 #include <cstdint>
 #include <string>
-#include <vector>
 #include <utility>  // std::pair
+#include <vector>
 
 
 // Physical constants
@@ -62,6 +62,11 @@ const double Galileo_E1_B_SYMBOL_RATE_BPS = 250.0;        //!< Galileo E1-B symb
 const int32_t Galileo_E1_B_SAMPLES_PER_SYMBOL = 1;        //!< (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS) / Galileo_E1_B_SYMBOL_RATE_BPS
 const int32_t Galileo_E1_C_SECONDARY_CODE_LENGTH = 25;    //!< Galileo E1-C secondary code length [chips]
 const int32_t Galileo_E1_NUMBER_OF_CODES = 50;
+
+
+//optimum parameters
+const uint32_t Galileo_E1_OPT_ACQ_FS_HZ = 2000000;  //!< Sampling frequncy that maximizes the acquisition SNR while using a non-multiple of chip rate
+
 
 const double GALILEO_STARTOFFSET_ms = 68.802;  //[ms] Initial sign. travel time (this cannot go here)
 

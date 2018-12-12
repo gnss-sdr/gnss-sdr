@@ -29,10 +29,10 @@
  */
 
 #include "pcps_quicksync_acquisition_cc.h"
-#include "control_message_factory.h"
 #include "GPS_L1_CA.h"
-#include <gnuradio/io_signature.h>
+#include "control_message_factory.h"
 #include <glog/logging.h>
+#include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cmath>
@@ -247,7 +247,7 @@ void pcps_quicksync_acquisition_cc::set_state(int32_t state)
             d_mag = 0.0;
             d_input_power = 0.0;
             d_test_statistics = 0.0;
-            d_active = 1;
+            d_active = true;
         }
     else if (d_state == 0)
         {

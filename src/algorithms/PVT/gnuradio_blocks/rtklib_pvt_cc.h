@@ -31,26 +31,26 @@
 #ifndef GNSS_SDR_RTKLIB_PVT_CC_H
 #define GNSS_SDR_RTKLIB_PVT_CC_H
 
-#include "gps_ephemeris.h"
-#include "nmea_printer.h"
-#include "kml_printer.h"
-#include "gpx_printer.h"
 #include "geojson_printer.h"
+#include "gps_ephemeris.h"
+#include "gpx_printer.h"
+#include "kml_printer.h"
+#include "nmea_printer.h"
+#include "pvt_conf.h"
 #include "rinex_printer.h"
 #include "rtcm_printer.h"
-#include "pvt_conf.h"
 #include "rtklib_solver.h"
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <gnuradio/sync_block.h>
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/msg.h>
 #include <chrono>
 #include <cstdint>
 #include <fstream>
-#include <utility>
 #include <string>
+#include <sys/ipc.h>
+#include <sys/msg.h>
+#include <sys/types.h>
+#include <utility>
 
 
 class rtklib_pvt_cc;

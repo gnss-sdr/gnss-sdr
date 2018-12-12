@@ -35,10 +35,10 @@
 #include "gnss_sdr_flags.h"
 #include "gnss_sdr_valve.h"
 #include <glog/logging.h>
-#include <iostream>  // for std::cerr
+#include <exception>
 #include <fstream>
 #include <iomanip>
-#include <exception>
+#include <iostream>  // for std::cerr
 #include <utility>
 
 

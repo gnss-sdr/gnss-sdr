@@ -31,8 +31,8 @@
 #ifndef GNSS_SDR_SAMPLE_COUNTER_H_
 #define GNSS_SDR_SAMPLE_COUNTER_H_
 
-#include <gnuradio/sync_decimator.h>
 #include <boost/shared_ptr.hpp>
+#include <gnuradio/sync_decimator.h>
 #include <cstdint>
 
 
@@ -40,7 +40,10 @@ class gnss_sdr_sample_counter;
 
 typedef boost::shared_ptr<gnss_sdr_sample_counter> gnss_sdr_sample_counter_sptr;
 
-gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter(double _fs, int32_t _interval_ms, size_t _size);
+gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter(
+    double _fs,
+    int32_t _interval_ms,
+    size_t _size);
 
 class gnss_sdr_sample_counter : public gr::sync_decimator
 {

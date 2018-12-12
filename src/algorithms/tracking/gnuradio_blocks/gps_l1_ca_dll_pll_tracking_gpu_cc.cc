@@ -29,17 +29,17 @@
  */
 
 #include "gps_l1_ca_dll_pll_tracking_gpu_cc.h"
-#include "gps_sdr_signal_processing.h"
-#include "tracking_discriminators.h"
-#include "lock_detectors.h"
 #include "GPS_L1_CA.h"
 #include "control_message_factory.h"
 #include "gnss_sdr_flags.h"
+#include "gps_sdr_signal_processing.h"
+#include "lock_detectors.h"
+#include "tracking_discriminators.h"
 #include <boost/lexical_cast.hpp>
-#include <cuda_profiler_api.h>
-#include <gnuradio/io_signature.h>
 #include <glog/logging.h>
+#include <gnuradio/io_signature.h>
 #include <cmath>
+#include <cuda_profiler_api.h>
 #include <iostream>
 #include <memory>
 #include <sstream>

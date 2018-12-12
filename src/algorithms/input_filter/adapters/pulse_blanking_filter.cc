@@ -33,9 +33,9 @@
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
 #include <gnuradio/filter/firdes.h>
+#include <cmath>
 #include <utility>
 #include <vector>
-#include <cmath>
 
 using google::LogMessage;
 

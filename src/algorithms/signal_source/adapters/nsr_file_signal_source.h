@@ -37,8 +37,8 @@
 
 #include "gnss_block_interface.h"
 #include "unpack_byte_2bit_samples.h"
-#include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/file_sink.h>
+#include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/throttle.h>
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/msg_queue.h>

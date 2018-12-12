@@ -51,12 +51,12 @@
  *----------------------------------------------------------------------------*/
 
 #include "rtklib_ppp.h"
-#include "rtklib_rtkcmn.h"
-#include "rtklib_sbas.h"
 #include "rtklib_ephemeris.h"
 #include "rtklib_ionex.h"
-#include "rtklib_tides.h"
 #include "rtklib_lambda.h"
+#include "rtklib_rtkcmn.h"
+#include "rtklib_sbas.h"
+#include "rtklib_tides.h"
 
 /* wave length of LC (m) -----------------------------------------------------*/
 double lam_LC(int i, int j, int k)

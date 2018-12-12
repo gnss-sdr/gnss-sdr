@@ -52,11 +52,11 @@
  *----------------------------------------------------------------------------*/
 
 #include "rtklib_rtkpos.h"
-#include "rtklib_pntpos.h"
 #include "rtklib_ephemeris.h"
+#include "rtklib_lambda.h"
+#include "rtklib_pntpos.h"
 #include "rtklib_ppp.h"
 #include "rtklib_tides.h"
-#include "rtklib_lambda.h"
 
 static int resamb_WLNL(rtk_t *rtk __attribute((unused)), const obsd_t *obs __attribute((unused)), const int *sat __attribute((unused)),
     const int *iu __attribute((unused)), const int *ir __attribute((unused)), int ns __attribute__((unused)), const nav_t *nav __attribute((unused)),
@@ -541,7 +541,7 @@ void initx_rtk(rtk_t *rtk, double xi, double var, int i)
 
 
 /* select common satellites between rover and reference station --------------*/
-int selsat(const obsd_t *obs, double *azel, int nu, int nr,
+int selsat(const obsd_t *obs, const double *azel, int nu, int nr,
     const prcopt_t *opt, int *sat, int *iu, int *ir)
 {
     int i, j, k = 0;
@@ -1155,7 +1155,7 @@ int zdres(int base, const obsd_t *obs, int n, const double *rs,
 
 
 /* test valid observation data -----------------------------------------------*/
-int validobs(int i, int j, int f, int nf, double *y)
+int validobs(int i, int j, int f, int nf, const double *y)
 {
     /* if no phase observable, psudorange is also unusable */
     return y[f + i * nf * 2] != 0.0 && y[f + j * nf * 2] != 0.0 &&
@@ -1302,7 +1302,7 @@ int test_sys(int sys, int m)
 
 /* double-differenced phase/code residuals -----------------------------------*/
 int ddres(rtk_t *rtk, const nav_t *nav, double dt, const double *x,
-    const double *P, const int *sat, double *y, double *e,
+    const double *P, const int *sat, double *y, const double *e,
     double *azel, const int *iu, const int *ir, int ns, double *v,
     double *H, double *R, int *vflg)
 {

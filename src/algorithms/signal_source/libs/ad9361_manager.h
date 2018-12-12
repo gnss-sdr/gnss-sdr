@@ -92,19 +92,19 @@ bool cfg_ad9361_streaming_ch(struct iio_context *ctx, struct stream_cfg *cfg, en
 bool config_ad9361_rx_local(uint64_t bandwidth_,
     uint64_t sample_rate_,
     uint64_t freq_,
-    std::string rf_port_select_,
-    std::string gain_mode_rx1_,
-    std::string gain_mode_rx2_,
+    const std::string &rf_port_select_,
+    const std::string &gain_mode_rx1_,
+    const std::string &gain_mode_rx2_,
     double rf_gain_rx1_,
     double rf_gain_rx2_);
 
-bool config_ad9361_rx_remote(std::string remote_host,
+bool config_ad9361_rx_remote(const std::string &remote_host,
     uint64_t bandwidth_,
     uint64_t sample_rate_,
     uint64_t freq_,
-    std::string rf_port_select_,
-    std::string gain_mode_rx1_,
-    std::string gain_mode_rx2_,
+    const std::string &rf_port_select_,
+    const std::string &gain_mode_rx1_,
+    const std::string &gain_mode_rx2_,
     double rf_gain_rx1_,
     double rf_gain_rx2_);
 
@@ -115,7 +115,7 @@ bool config_ad9361_lo_local(uint64_t bandwidth_,
     int64_t freq_dds_tx_hz_,
     double scale_dds_dbfs_);
 
-bool config_ad9361_lo_remote(std::string remote_host,
+bool config_ad9361_lo_remote(const std::string &remote_host,
     uint64_t bandwidth_,
     uint64_t sample_rate_,
     uint64_t freq_rf_tx_hz_,
@@ -124,7 +124,7 @@ bool config_ad9361_lo_remote(std::string remote_host,
     double scale_dds_dbfs_);
 
 
-bool ad9361_disable_lo_remote(std::string remote_host);
+bool ad9361_disable_lo_remote(const std::string &remote_host);
 
 bool ad9361_disable_lo_local();
 

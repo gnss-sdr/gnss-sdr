@@ -68,8 +68,8 @@ void gps_l1_ca_code_gen_int(int32_t* _dest, int32_t _prn, uint32_t _chip_shift)
 
     for (lcv = 0; lcv < 10; lcv++)
         {
-            G1_register[lcv] = 1;
-            G2_register[lcv] = 1;
+            G1_register[lcv] = true;
+            G2_register[lcv] = true;
         }
 
     /* Generate G1 & G2 Register */

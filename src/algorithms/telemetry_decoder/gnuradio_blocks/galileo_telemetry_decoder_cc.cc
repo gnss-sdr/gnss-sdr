@@ -60,7 +60,7 @@ void galileo_telemetry_decoder_cc::viterbi_decoder(double *page_part_symbols, in
 }
 
 
-void galileo_telemetry_decoder_cc::deinterleaver(int32_t rows, int32_t cols, double *in, double *out)
+void galileo_telemetry_decoder_cc::deinterleaver(int32_t rows, int32_t cols, const double *in, double *out)
 {
     for (int32_t r = 0; r < rows; r++)
         {

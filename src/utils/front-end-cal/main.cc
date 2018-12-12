@@ -191,7 +191,7 @@ bool front_end_capture(const std::shared_ptr<ConfigurationInterface>& configurat
     catch (const boost::exception_ptr& e)
         {
             std::cout << "Exception caught in creating source " << e << std::endl;
-            return 0;
+            return false;
         }
 
     std::shared_ptr<GNSSBlockInterface> conditioner;
@@ -202,7 +202,7 @@ bool front_end_capture(const std::shared_ptr<ConfigurationInterface>& configurat
     catch (const boost::exception_ptr& e)
         {
             std::cout << "Exception caught in creating signal conditioner " << e << std::endl;
-            return 0;
+            return false;
         }
     gr::block_sptr sink;
     sink = gr::blocks::file_sink::make(sizeof(gr_complex), "tmp_capture.dat");
@@ -430,7 +430,7 @@ int main(int argc, char** argv)
                     std::cout << "[";
                     start_msg = false;
                 }
-            if (gnss_sync_vector.size() > 0)
+            if (!gnss_sync_vector.empty())
                 {
                     std::cout << " " << PRN << " ";
                     double doppler_measurement_hz = 0;
@@ -523,7 +523,7 @@ int main(int argc, char** argv)
     std::cout << "Longitude=" << lon_deg << " [º]" << std::endl;
     std::cout << "Altitude=" << altitude_m << " [m]" << std::endl;
 
-    if (doppler_measurements_map.size() == 0)
+    if (doppler_measurements_map.empty())
         {
             std::cout << "Sorry, no GPS satellites detected in the front-end capture, please check the antenna setup..." << std::endl;
             delete acquisition;

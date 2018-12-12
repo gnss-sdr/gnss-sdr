@@ -247,7 +247,7 @@ void pcps_quicksync_acquisition_cc::set_state(int32_t state)
             d_mag = 0.0;
             d_input_power = 0.0;
             d_test_statistics = 0.0;
-            d_active = 1;
+            d_active = true;
         }
     else if (d_state == 0)
         {

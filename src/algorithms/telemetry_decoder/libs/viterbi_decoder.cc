@@ -354,7 +354,7 @@ int Viterbi_Decoder::do_tb_and_decode(int traceback_length, int requested_decodi
  nn                    The length of the received vector
 
  This function is used by siso()  */
-float Viterbi_Decoder::gamma(float rec_array[], int symbol, int nn)
+float Viterbi_Decoder::gamma(const float rec_array[], int symbol, int nn)
 {
     float rm = 0;
     int i;

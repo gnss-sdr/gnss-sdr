@@ -1410,6 +1410,16 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     b_rinex_header_written = true;  // do not write header anymore
                                                                 }
                                                             break;
+                                                        case 33:  // L1+E1+E5a
+                                                            if ((gps_ephemeris_iter != d_pvt_solver->gps_ephemeris_map.cend()) and
+                                                                (galileo_ephemeris_iter != d_pvt_solver->galileo_ephemeris_map.cend()))
+                                                                {
+                                                                    std::string gal_signal("1B 5X");
+                                                                    rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, d_rx_time, gal_signal);
+                                                                    rp->rinex_nav_header(rp->navMixFile, d_pvt_solver->gps_iono, d_pvt_solver->gps_utc_model, d_pvt_solver->galileo_iono, d_pvt_solver->galileo_utc_model);
+                                                                    b_rinex_header_written = true;  // do not write header anymore
+                                                                }
+                                                            break;
                                                         default:
                                                             break;
                                                         }
@@ -1488,6 +1498,9 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     rp->log_rinex_nav(rp->navMixFile, d_pvt_solver->gps_cnav_ephemeris_map, d_pvt_solver->glonass_gnav_ephemeris_map);
                                                                     break;
                                                                 case 32:  // L1+E1+L5+E5a
+                                                                    rp->log_rinex_nav(rp->navMixFile, d_pvt_solver->gps_ephemeris_map, d_pvt_solver->galileo_ephemeris_map);
+                                                                    break;
+                                                                case 33:  // L1+E1+E5a
                                                                     rp->log_rinex_nav(rp->navMixFile, d_pvt_solver->gps_ephemeris_map, d_pvt_solver->galileo_ephemeris_map);
                                                                     break;
                                                                 default:
@@ -1783,6 +1796,20 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                                 }
                                                                             b_rinex_header_updated = true;  // do not write header anymore
                                                                         }
+                                                                    break;
+                                                                case 33:  // L1+E1+E5a
+                                                                    if ((gps_ephemeris_iter != d_pvt_solver->gps_ephemeris_map.cend()) and (galileo_ephemeris_iter != d_pvt_solver->galileo_ephemeris_map.cend()))
+                                                                        {
+                                                                            rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, d_rx_time, gnss_observables_map);
+                                                                        }
+                                                                    if (!b_rinex_header_updated and (d_pvt_solver->gps_utc_model.d_A0 != 0) and (d_pvt_solver->galileo_utc_model.A0_6 != 0))
+                                                                        {
+                                                                            rp->update_obs_header(rp->obsFile, d_pvt_solver->gps_utc_model);
+                                                                            rp->update_nav_header(rp->navMixFile, d_pvt_solver->gps_iono, d_pvt_solver->gps_utc_model, d_pvt_solver->galileo_iono, d_pvt_solver->galileo_utc_model);
+                                                                            b_rinex_header_updated = true;  // do not write header anymore
+                                                                        }
+                                                                    break;
+                                                                default:
                                                                     break;
                                                                 }
                                                         }
@@ -2441,7 +2468,25 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 }
                                                             if (d_rtcm_MSM_rate_ms != 0)
                                                                 {
+                                                                    std::map<int, Gnss_Synchro>::const_iterator gnss_observables_iter;
                                                                     std::map<int, Galileo_Ephemeris>::const_iterator gal_eph_iter = d_pvt_solver->galileo_ephemeris_map.cbegin();
+                                                                    int gal_channel = 0;
+                                                                    for (gnss_observables_iter = gnss_observables_map.cbegin(); gnss_observables_iter != gnss_observables_map.cend(); gnss_observables_iter++)
+                                                                        {
+                                                                            std::string system(&gnss_observables_iter->second.System, 1);
+                                                                            if (gal_channel == 0)
+                                                                                {
+                                                                                    if (system == "E")
+                                                                                        {
+                                                                                            gal_eph_iter = d_pvt_solver->galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
+                                                                                            if (gal_eph_iter != d_pvt_solver->galileo_ephemeris_map.cend())
+                                                                                                {
+                                                                                                    gal_channel = 1;
+                                                                                                }
+                                                                                        }
+                                                                                }
+                                                                        }
+
                                                                     if (gal_eph_iter != d_pvt_solver->galileo_ephemeris_map.cend() and (d_rtcm_MT1097_rate_ms != 0))
                                                                         {
                                                                             d_rtcm_printer->Print_Rtcm_MSM(7, {}, {}, gal_eph_iter->second, {}, d_rx_time, gnss_observables_map, 0, 0, 0, 0, 0);

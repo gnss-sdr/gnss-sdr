@@ -1,7 +1,7 @@
 /*!
  * \file tcp_cmd_interface.h
  *
- * \brief Class that implements a TCP telecontrol command line interface
+ * \brief Class that implements a TCP/IP telecommand command line interface
  * for GNSS-SDR
  * \author Javier Arribas jarribas (at) cttc.es
  * -------------------------------------------------------------------------

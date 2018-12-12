@@ -68,7 +68,7 @@ void galileo_e1_code_gen_int(int* _dest, char _Signal[3], int32_t _prn)
 }
 
 
-void galileo_e1_sinboc_11_gen_int(int* _dest, int* _prn, uint32_t _length_out)
+void galileo_e1_sinboc_11_gen_int(int* _dest, const int* _prn, uint32_t _length_out)
 {
     const uint32_t _length_in = Galileo_E1_B_CODE_LENGTH_CHIPS;
     auto _period = static_cast<uint32_t>(_length_out / _length_in);
@@ -86,7 +86,7 @@ void galileo_e1_sinboc_11_gen_int(int* _dest, int* _prn, uint32_t _length_out)
 }
 
 
-void galileo_e1_sinboc_61_gen_int(int* _dest, int* _prn, uint32_t _length_out)
+void galileo_e1_sinboc_61_gen_int(int* _dest, const int* _prn, uint32_t _length_out)
 {
     const uint32_t _length_in = Galileo_E1_B_CODE_LENGTH_CHIPS;
     auto _period = static_cast<uint32_t>(_length_out / _length_in);

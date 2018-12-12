@@ -92,7 +92,7 @@ bool tracking_true_obs_reader::open_obs_file(std::string out_file)
                 }
             catch (const std::ifstream::failure &e)
                 {
-                    std::cout << "Problem opening Tracking dump Log file: " << d_dump_filename.c_str() << " Error: " << e.what() << std::endl;
+                    std::cout << "Problem opening Tracking dump Log file: " << d_dump_filename.c_str() << std::endl;
                     return false;
                 }
         }

@@ -193,7 +193,6 @@ public:
     double d_A1GLO;
     double d_A0GLO;
 
-    double d_AODE_SF1;
     double d_SQRT_A_ALMANAC;
     double d_A1_ALMANAC;
     double d_A0_ALMANAC;

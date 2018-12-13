@@ -140,7 +140,6 @@ void Beidou_Dnav_Navigation_Message::reset()
     d_A0GAL = 0;
     d_A1GLO = 0;
     d_A0GLO = 0;
-    d_AODE_SF1 = 0;
     d_SQRT_A_ALMANAC = 0;
     d_A1_ALMANAC = 0;
     d_A0_ALMANAC = 0;
@@ -476,7 +475,7 @@ int Beidou_Dnav_Navigation_Message::subframe_decoder(char *subframe)
         d_a1 = static_cast<double>(read_navigation_signed(subframe_bits, D1_A1));
         d_a1 = d_a1 * D1_A1_LSB;
 
-        d_AODE_SF1 = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_AODE));
+        d_AODE = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_AODE));
         flag_iono_valid = true;
         //d_A_f0 = static_cast<double>(read_navigation_signed(subframe_bits, A_F0));
         //d_A_f0 = d_A_f0 * A_F0_LSB;
@@ -848,6 +847,7 @@ Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris()
     ephemeris.i_SV_health = i_SV_health;
     ephemeris.d_TGD1 = d_TGD1;
     ephemeris.d_AODC = d_AODC;
+    ephemeris.d_AODE = d_AODE;
     //ephemeris.d_AODE_SF2 = d_AODE_SF2;
     //ephemeris.d_AODE_SF3 = d_AODE_SF3;
     //ephemeris.i_AODO = i_AODO;

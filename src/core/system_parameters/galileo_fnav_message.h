@@ -95,11 +95,11 @@ public:
     // health and Data validity status
     int32_t FNAV_SV_ID_PRN_1;
     int32_t FNAV_IODnav_1;
-    double FNAV_t0c_1;
+    int32_t FNAV_t0c_1;
     double FNAV_af0_1;
     double FNAV_af1_1;
     double FNAV_af2_1;
-    double FNAV_SISA_1;
+    int32_t FNAV_SISA_1;
     double FNAV_ai0_1;
     double FNAV_ai1_1;
     double FNAV_ai2_1;
@@ -110,8 +110,8 @@ public:
     bool FNAV_region5_1;
     double FNAV_BGD_1;
     int32_t FNAV_E5ahs_1;
-    double FNAV_WN_1;
-    double FNAV_TOW_1;
+    int32_t FNAV_WN_1;
+    int32_t FNAV_TOW_1;
     bool FNAV_E5advs_1;
 
     // WORD 2 Ephemeris (1/3) and GST
@@ -122,8 +122,8 @@ public:
     double FNAV_a12_2;
     double FNAV_omega0_2;
     double FNAV_idot_2;
-    double FNAV_WN_2;
-    double FNAV_TOW_2;
+    int32_t FNAV_WN_2;
+    int32_t FNAV_TOW_2;
 
     // WORD 3 Ephemeris (2/3) and GST
     int32_t FNAV_IODnav_3;
@@ -134,9 +134,9 @@ public:
     double FNAV_Cus_3;
     double FNAV_Crc_3;
     double FNAV_Crs_3;
-    double FNAV_t0e_3;
-    double FNAV_WN_3;
-    double FNAV_TOW_3;
+    int32_t FNAV_t0e_3;
+    int32_t FNAV_WN_3;
+    int32_t FNAV_TOW_3;
 
     // WORD 4 Ephemeris (3/3), GST-UTC conversion, GST-GPS conversion and TOW.
     // Note that the clock is repeated in this page type
@@ -145,17 +145,17 @@ public:
     double FNAV_Cis_4;
     double FNAV_A0_4;
     double FNAV_A1_4;
-    double FNAV_deltatls_4;
-    double FNAV_t0t_4;
-    double FNAV_WNot_4;
-    double FNAV_WNlsf_4;
-    double FNAV_DN_4;
-    double FNAV_deltatlsf_4;
-    double FNAV_t0g_4;
+    int32_t FNAV_deltatls_4;
+    int32_t FNAV_t0t_4;
+    int32_t FNAV_WNot_4;
+    int32_t FNAV_WNlsf_4;
+    int32_t FNAV_DN_4;
+    int32_t FNAV_deltatlsf_4;
+    int32_t FNAV_t0g_4;
     double FNAV_A0g_4;
     double FNAV_A1g_4;
-    double FNAV_WN0g_4;
-    double FNAV_TOW_4;
+    int32_t FNAV_WN0g_4;
+    int32_t FNAV_TOW_4;
 
     // WORD 5 Almanac (SVID1 and SVID2(1/2)), Week Number and almanac reference time
     int32_t FNAV_IODa_5;

@@ -270,7 +270,7 @@ void Galileo_Fnav_Message::decode_page(const std::string& data)
             break;
         case 2:  // Ephemeris (1/3) and GST
             FNAV_IODnav_2 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_IODnav_2_bit));
-            FNAV_M0_2 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_M0_2_bit));
+            FNAV_M0_2 = static_cast<double>(read_navigation_signed(data_bits, FNAV_M0_2_bit));
             FNAV_M0_2 *= FNAV_M0_2_LSB;
             FNAV_omegadot_2 = static_cast<double>(read_navigation_signed(data_bits, FNAV_omegadot_2_bit));
             FNAV_omegadot_2 *= FNAV_omegadot_2_LSB;

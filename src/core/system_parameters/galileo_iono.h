@@ -55,8 +55,8 @@ public:
     bool Region5_flag_5;  //!< Ionospheric Disturbance Flag for region 5
 
     // from page 5 (UTC) to have a timestamp
-    double TOW_5;  //!< UTC data reference Time of Week [s]
-    double WN_5;   //!< UTC data reference Week number [week]
+    int32_t TOW_5;  //!< UTC data reference Time of Week [s]
+    int32_t WN_5;   //!< UTC data reference Week number [week]
 
     /*!
      * Default constructor

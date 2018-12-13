@@ -93,7 +93,7 @@ public:
 
     // Word type 1: Ephemeris (1/4)
     int32_t IOD_nav_1;  //!< IOD_nav page 1
-    double t0e_1;       //!< Ephemeris reference time [s]
+    int32_t t0e_1;      //!< Ephemeris reference time [s]
     double M0_1;        //!< Mean anomaly at reference time [semi-circles]
     double e_1;         //!< Eccentricity
     double A_1;         //!< Square root of the semi-major axis [meters^1/2]
@@ -113,7 +113,7 @@ public:
     double C_us_3;       //!< Amplitude of the sine harmonic correction term to the argument of latitude [radians]
     double C_rc_3;       //!< Amplitude of the cosine harmonic correction term to the orbit radius [meters]
     double C_rs_3;       //!< Amplitude of the sine harmonic correction term to the orbit radius [meters]
-    double SISA_3;
+    int32_t SISA_3;
 
     // Word type 4: Ephemeris (4/4) and Clock correction parameters*/
     int32_t IOD_nav_4;    //
@@ -122,10 +122,10 @@ public:
     double C_is_4;        //!< Amplitude of the sine harmonic correction term to the angle of inclination [radians]
 
     // Clock correction parameters
-    double t0c_4;  //!< Clock correction data reference Time of Week [sec]
-    double af0_4;  //!< SV clock bias correction coefficient [s]
-    double af1_4;  //!< SV clock drift correction coefficient [s/s]
-    double af2_4;  //!< clock drift rate correction coefficient [s/s^2]
+    int32_t t0c_4;  //!< Clock correction data reference Time of Week [sec]
+    double af0_4;   //!< SV clock bias correction coefficient [s]
+    double af1_4;   //!< SV clock drift correction coefficient [s/s]
+    double af2_4;   //!< clock drift rate correction coefficient [s/s^2]
     double spare_4;
 
     //  Word type 5: Ionospheric correction, BGD, signal health and data validity status and GST*/
@@ -143,26 +143,26 @@ public:
     double BGD_E1E5a_5;   //!< E1-E5a Broadcast Group Delay [s]
     double BGD_E1E5b_5;   //!< E1-E5b Broadcast Group Delay [s]
 
-    int32_t E5b_HS_5;   //!< E5b Signal Health Status
-    int32_t E1B_HS_5;   //!< E1B Signal Health Status
-    int32_t E5b_DVS_5;  //!< E5b Data Validity Status
-    int32_t E1B_DVS_5;  //!< E1B Data Validity Status
+    int32_t E5b_HS_5;  //!< E5b Signal Health Status
+    int32_t E1B_HS_5;  //!< E1B Signal Health Status
+    bool E5b_DVS_5;    //!< E5b Data Validity Status
+    bool E1B_DVS_5;    //!< E1B Data Validity Status
 
     // GST
-    double WN_5;
-    double TOW_5;
+    int32_t WN_5;
+    int32_t TOW_5;
     double spare_5;
 
     // Word type 6: GST-UTC conversion parameters
     double A0_6;
     double A1_6;
-    double Delta_tLS_6;
-    double t0t_6;
-    double WNot_6;
+    int32_t Delta_tLS_6;
+    int32_t t0t_6;
+    int32_t WNot_6;
     int32_t WN_LSF_6;
     int32_t DN_6;
-    double Delta_tLSF_6;
-    double TOW_6;
+    int32_t Delta_tLSF_6;
+    int32_t TOW_6;
 
     // Word type 7: Almanac for SVID1 (1/2), almanac reference time and almanac reference week number
     int32_t IOD_a_7;
@@ -217,15 +217,15 @@ public:
     int32_t E1B_HS_10;
 
     // GST-GPS conversion
-    double A_0G_10;   //!< Constant term of the offset Delta t systems
-    double A_1G_10;   //!< Rate of change of the offset Delta t systems
-    double t_0G_10;   //!< Reference time for Galileo/GPS Time Offset (GGTO) data
-    double WN_0G_10;  //!< Week Number of Galileo/GPS Time Offset (GGTO) reference
+    double A_0G_10;    //!< Constant term of the offset Delta t systems
+    double A_1G_10;    //!< Rate of change of the offset Delta t systems
+    int32_t t_0G_10;   //!< Reference time for Galileo/GPS Time Offset (GGTO) data
+    int32_t WN_0G_10;  //!< Week Number of Galileo/GPS Time Offset (GGTO) reference
 
     // Word type 0: I/NAV Spare Word
-    double Time_0;
-    double WN_0;
-    double TOW_0;
+    int32_t Time_0;
+    int32_t WN_0;
+    int32_t TOW_0;
 
     double Galileo_satClkDrift;
     double Galileo_dtr;  //!< Relativistic clock correction term

@@ -270,7 +270,7 @@ void Galileo_Fnav_Message::decode_page(const std::string& data)
             break;
         case 2:  // Ephemeris (1/3) and GST
             FNAV_IODnav_2 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_IODnav_2_bit));
-            FNAV_M0_2 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_M0_2_bit));
+            FNAV_M0_2 = static_cast<double>(read_navigation_signed(data_bits, FNAV_M0_2_bit));
             FNAV_M0_2 *= FNAV_M0_2_LSB;
             FNAV_omegadot_2 = static_cast<double>(read_navigation_signed(data_bits, FNAV_omegadot_2_bit));
             FNAV_omegadot_2 *= FNAV_omegadot_2_LSB;
@@ -294,7 +294,7 @@ void Galileo_Fnav_Message::decode_page(const std::string& data)
             FNAV_i0_3 *= FNAV_i0_3_LSB;
             FNAV_w_3 = static_cast<double>(read_navigation_signed(data_bits, FNAV_w_3_bit));
             FNAV_w_3 *= FNAV_w_3_LSB;
-            FNAV_deltan_3 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_deltan_3_bit));
+            FNAV_deltan_3 = static_cast<double>(read_navigation_signed(data_bits, FNAV_deltan_3_bit));
             FNAV_deltan_3 *= FNAV_deltan_3_LSB;
             FNAV_Cuc_3 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Cuc_3_bit));
             FNAV_Cuc_3 *= FNAV_Cuc_3_LSB;
@@ -314,13 +314,13 @@ void Galileo_Fnav_Message::decode_page(const std::string& data)
             break;
         case 4:  // Ephemeris (3/3),  GST-UTC conversion,  GST-GPS conversion and TOW
             FNAV_IODnav_4 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_IODnav_4_bit));
-            FNAV_Cic_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_Cic_4_bit));
+            FNAV_Cic_4 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Cic_4_bit));
             FNAV_Cic_4 *= FNAV_Cic_4_LSB;
-            FNAV_Cis_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_Cis_4_bit));
+            FNAV_Cis_4 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Cis_4_bit));
             FNAV_Cis_4 *= FNAV_Cis_4_LSB;
-            FNAV_A0_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_A0_4_bit));
+            FNAV_A0_4 = static_cast<double>(read_navigation_signed(data_bits, FNAV_A0_4_bit));
             FNAV_A0_4 *= FNAV_A0_4_LSB;
-            FNAV_A1_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_A1_4_bit));
+            FNAV_A1_4 = static_cast<double>(read_navigation_signed(data_bits, FNAV_A1_4_bit));
             FNAV_A1_4 *= FNAV_A1_4_LSB;
             FNAV_deltatls_4 = static_cast<double>(read_navigation_signed(data_bits, FNAV_deltatls_4_bit));
             FNAV_t0t_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_t0t_4_bit));

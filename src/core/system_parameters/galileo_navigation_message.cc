@@ -125,8 +125,8 @@ void Galileo_Navigation_Message::reset()
     BGD_E1E5b_5 = 0.0;
     E5b_HS_5 = 0;
     E1B_HS_5 = 0;
-    E5b_DVS_5 = 0;
-    E1B_DVS_5 = 0;
+    E5b_DVS_5 = false;
+    E1B_DVS_5 = false;
 
     // GST
     WN_5 = 0;

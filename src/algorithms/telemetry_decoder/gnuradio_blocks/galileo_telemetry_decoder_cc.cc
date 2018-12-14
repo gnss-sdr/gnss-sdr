@@ -309,7 +309,7 @@ void galileo_telemetry_decoder_cc::decode_INAV_word(double *page_part_symbols, i
     else
         {
             // STORE HALF WORD (even page)
-            d_inav_nav.split_page(page_String.c_str(), flag_even_word_arrived);
+            d_inav_nav.split_page(page_String, flag_even_word_arrived);
             flag_even_word_arrived = 1;
         }
     volk_gnsssdr_free(page_part_bits);

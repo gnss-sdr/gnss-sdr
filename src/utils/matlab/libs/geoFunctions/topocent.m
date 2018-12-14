@@ -1,24 +1,21 @@
 function [Az, El, D] = topocent(X, dx)
-%TOPOCENT  Transformation of vector dx into topocentric coordinate
+% TOPOCENT  Transformation of vector dx into topocentric coordinate
 %          system with origin at X.
 %          Both parameters are 3 by 1 vectors.
 %
-%[Az, El, D] = topocent(X, dx);
+% [Az, El, D] = topocent(X, dx);
 %
 %   Inputs:
-%       X           - vector origin corrdinates (in ECEF system [X; Y; Z;]) 
-%       dx          - vector ([dX; dY; dZ;]). 
+%       X           - vector origin corrdinates (in ECEF system [X; Y; Z;])
+%       dx          - vector ([dX; dY; dZ;]).
 %
 %   Outputs:
 %       D           - vector length. Units like units of the input
 %       Az          - azimuth from north positive clockwise, degrees
 %       El          - elevation angle, degrees
 
-%Kai Borre 11-24-96
-%Copyright (c) by Kai Borre
-%
-% CVS record:
-% $Id: topocent.m,v 1.1.1.1.2.4 2006/08/22 13:45:59 dpl Exp $
+% Kai Borre 11-24-96
+% Copyright (c) by Kai Borre
 %==========================================================================
 
 dtr = pi/180;
@@ -27,12 +24,12 @@ dtr = pi/180;
 
 cl  = cos(lambda * dtr);
 sl  = sin(lambda * dtr);
-cb  = cos(phi * dtr); 
+cb  = cos(phi * dtr);
 sb  = sin(phi * dtr);
 
 F   = [-sl -sb*cl cb*cl;
-        cl -sb*sl cb*sl;
-        0    cb   sb];
+    cl -sb*sl cb*sl;
+    0    cb   sb];
 
 local_vector = F' * dx;
 E   = local_vector(1);

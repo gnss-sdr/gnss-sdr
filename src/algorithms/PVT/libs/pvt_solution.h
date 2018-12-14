@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -33,11 +33,12 @@
 #define GNSS_SDR_PVT_SOLUTION_H_
 
 
-#include <deque>
 #include <armadillo>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <deque>
 
-#define PVT_MAX_CHANNELS 24
+const unsigned int PVT_MAX_CHANNELS = 90;
+const unsigned int PVT_MAX_PRN = 127;  // 126 is SBAS
 
 /*!
  * \brief Base class for a PVT solution
@@ -45,52 +46,71 @@
  */
 class Pvt_Solution
 {
-public:
-    Pvt_Solution();
+private:
+    double d_rx_dt_s;  // RX time offset [s]
 
-    double d_latitude_d; //!< RX position Latitude WGS84 [deg]
-    double d_longitude_d; //!< RX position Longitude WGS84 [deg]
-    double d_height_m; //!< RX position height WGS84 [m]
+    double d_latitude_d;             // RX position Latitude WGS84 [deg]
+    double d_longitude_d;            // RX position Longitude WGS84 [deg]
+    double d_height_m;               // RX position height WGS84 [m]
+    double d_speed_over_ground_m_s;  // RX speed over ground [m/s]
+    double d_course_over_ground_d;   // RX course over ground [deg]
 
-    arma::vec d_rx_pos;
-    double d_rx_dt_s; //!< RX time offset [s]
-
-    boost::posix_time::ptime d_position_UTC_time;
+    double d_avg_latitude_d;   // Averaged latitude in degrees
+    double d_avg_longitude_d;  // Averaged longitude in degrees
+    double d_avg_height_m;     // Averaged height [m]
 
     bool b_valid_position;
 
-    int d_valid_observations;                               //!< Number of valid pseudorange observations (valid satellites)
-    int d_visible_satellites_IDs[PVT_MAX_CHANNELS] = {};         //!< Array with the IDs of the valid satellites
-    double d_visible_satellites_El[PVT_MAX_CHANNELS] = {};       //!< Array with the LOS Elevation of the valid satellites
-    double d_visible_satellites_Az[PVT_MAX_CHANNELS] = {};       //!< Array with the LOS Azimuth of the valid satellites
-    double d_visible_satellites_Distance[PVT_MAX_CHANNELS] = {}; //!< Array with the LOS Distance of the valid satellites
-    double d_visible_satellites_CN0_dB[PVT_MAX_CHANNELS] = {};   //!< Array with the IDs of the valid satellites
-
-    //averaging
-    int d_averaging_depth;    //!< Length of averaging window
     std::deque<double> d_hist_latitude_d;
     std::deque<double> d_hist_longitude_d;
     std::deque<double> d_hist_height_m;
 
-    double d_avg_latitude_d;  //!< Averaged latitude in degrees
-    double d_avg_longitude_d; //!< Averaged longitude in degrees
-    double d_avg_height_m;    //!< Averaged height [m]
-    int pos_averaging(bool flag_averaging);
-
-    // DOP estimations
-    arma::mat d_Q;
-    double d_GDOP;
-    double d_PDOP;
-    double d_HDOP;
-    double d_VDOP;
-    double d_TDOP;
-    int compute_DOP(); //!< Compute Dilution Of Precision parameters
-
     bool d_flag_averaging;
+    int d_averaging_depth;  // Length of averaging window
 
-    int set_averaging_depth(int depth);
+    arma::vec d_rx_pos;
+    boost::posix_time::ptime d_position_UTC_time;
+    int d_valid_observations;
 
-    arma::vec rotateSatellite(double traveltime, const arma::vec & X_sat);
+public:
+    Pvt_Solution();
+
+    double get_time_offset_s() const;       //!< Get RX time offset [s]
+    void set_time_offset_s(double offset);  //!< Set RX time offset [s]
+
+    double get_latitude() const;   //!< Get RX position Latitude WGS84 [deg]
+    double get_longitude() const;  //!< Get RX position Longitude WGS84 [deg]
+    double get_height() const;     //!< Get RX position height WGS84 [m]
+
+    double get_speed_over_ground() const;          //!< Get RX speed over ground [m/s]
+    void set_speed_over_ground(double speed_m_s);  //!< Set RX speed over ground [m/s]
+
+    double get_course_over_ground() const;        //!< Get RX course over ground [deg]
+    void set_course_over_ground(double cog_deg);  //!< Set RX course over ground [deg]
+
+    double get_avg_latitude() const;   //!< Get RX position averaged Latitude WGS84 [deg]
+    double get_avg_longitude() const;  //!< Get RX position averaged Longitude WGS84 [deg]
+    double get_avg_height() const;     //!< Get RX position averaged height WGS84 [m]
+
+    void set_rx_pos(const arma::vec &pos);  //!< Set position: Latitude [deg], longitude [deg], height [m]
+    arma::vec get_rx_pos() const;
+
+    bool is_valid_position() const;
+    void set_valid_position(bool is_valid);
+
+    boost::posix_time::ptime get_position_UTC_time() const;
+    void set_position_UTC_time(const boost::posix_time::ptime &pt);
+
+    int get_num_valid_observations() const;    //!< Get the number of valid pseudorange observations (valid satellites)
+    void set_num_valid_observations(int num);  //!< Set the number of valid pseudorange observations (valid satellites)
+
+    //averaging
+    void perform_pos_averaging();
+    void set_averaging_depth(int depth);  //!< Set length of averaging window
+    bool is_averaging() const;
+    void set_averaging_flag(bool flag);
+
+    arma::vec rotateSatellite(double traveltime, const arma::vec &X_sat);
 
     /*!
       * \brief Conversion of Cartesian coordinates (X,Y,Z) to geographical
@@ -107,44 +127,9 @@ public:
       * 4 - World Geodetic System 1984.
       *
       */
-     int cart2geo(double X, double Y, double Z, int elipsoid_selection);
+    int cart2geo(double X, double Y, double Z, int elipsoid_selection);
 
-     /*!
-      * \brief Transformation of vector dx into topocentric coordinate system with origin at x
-      *
-      * \param[in] x    Vector origin coordinates (in ECEF system [X; Y; Z;])
-      * \param[in] dx   Vector ([dX; dY; dZ;]).
-      *
-      * \param[out] D   Vector length. Units like the input
-      * \param[out] Az  Azimuth from north positive clockwise, degrees
-      * \param[out] El  Elevation angle, degrees
-      *
-      * Based on a Matlab function by Kai Borre
-      */
-     int topocent(double *Az, double *El, double *D, const arma::vec & x, const arma::vec & dx);
-
-     /*!
-      * \brief Subroutine to calculate geodetic coordinates latitude, longitude,
-      * height given Cartesian coordinates X,Y,Z, and reference ellipsoid
-      * values semi-major axis (a) and the inverse of flattening (finv).
-      *
-      *  The output units of angular quantities will be in decimal degrees
-      *  (15.5 degrees not 15 deg 30 min). The output units of h will be the
-      *  same as the units of X,Y,Z,a.
-      *
-      *  \param[in] a           - semi-major axis of the reference ellipsoid
-      *  \param[in] finv        - inverse of flattening of the reference ellipsoid
-      *  \param[in] X,Y,Z       - Cartesian coordinates
-      *
-      *  \param[out] dphi        - latitude
-      *  \param[out] dlambda     - longitude
-      *  \param[out] h           - height above reference ellipsoid
-      *
-      * Based in a Matlab function by Kai Borre
-      */
-     int togeod(double *dphi, double *dlambda, double *h, double a, double finv, double X, double Y, double Z);
-
-     /*!
+    /*!
       * \brief Tropospheric correction
       *
       *  \param[in] sinel     - sin of elevation angle of satellite
@@ -167,7 +152,7 @@ public:
       *
       * Translated to C++ by Carles Fernandez from a Matlab implementation by Kai Borre
       */
-     int tropo(double *ddr_m, double sinel, double hsta_km, double p_mb, double t_kel, double hum, double hp_km, double htkel_km, double hhum_km);
+    int tropo(double *ddr_m, double sinel, double hsta_km, double p_mb, double t_kel, double hum, double hp_km, double htkel_km, double hhum_km);
 };
 
 #endif

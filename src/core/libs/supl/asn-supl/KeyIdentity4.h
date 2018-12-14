@@ -4,8 +4,8 @@
  * 	found in "../supl-response.asn"
  */
 
-#ifndef	_KeyIdentity4_H_
-#define	_KeyIdentity4_H_
+#ifndef _KeyIdentity4_H_
+#define _KeyIdentity4_H_
 
 
 #include <asn_application.h>
@@ -14,27 +14,28 @@
 #include <BIT_STRING.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* KeyIdentity4 */
-typedef BIT_STRING_t	 KeyIdentity4_t;
+    /* KeyIdentity4 */
+    typedef BIT_STRING_t KeyIdentity4_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_KeyIdentity4;
-asn_struct_free_f KeyIdentity4_free;
-asn_struct_print_f KeyIdentity4_print;
-asn_constr_check_f KeyIdentity4_constraint;
-ber_type_decoder_f KeyIdentity4_decode_ber;
-der_type_encoder_f KeyIdentity4_encode_der;
-xer_type_decoder_f KeyIdentity4_decode_xer;
-xer_type_encoder_f KeyIdentity4_encode_xer;
-per_type_decoder_f KeyIdentity4_decode_uper;
-per_type_encoder_f KeyIdentity4_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_KeyIdentity4;
+    asn_struct_free_f KeyIdentity4_free;
+    asn_struct_print_f KeyIdentity4_print;
+    asn_constr_check_f KeyIdentity4_constraint;
+    ber_type_decoder_f KeyIdentity4_decode_ber;
+    der_type_encoder_f KeyIdentity4_encode_der;
+    xer_type_decoder_f KeyIdentity4_decode_xer;
+    xer_type_encoder_f KeyIdentity4_encode_xer;
+    per_type_decoder_f KeyIdentity4_decode_uper;
+    per_type_encoder_f KeyIdentity4_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _KeyIdentity4_H_ */
+#endif /* _KeyIdentity4_H_ */
 #include <asn_internal.h>

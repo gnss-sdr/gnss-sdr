@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -32,9 +32,8 @@
 #ifndef GNSS_SDR_GPS_UTC_MODEL_H_
 #define GNSS_SDR_GPS_UTC_MODEL_H_
 
-#include "boost/assign.hpp"
 #include <boost/serialization/nvp.hpp>
-
+#include <cstdint>
 
 /*!
  * \brief This class is a storage for the GPS UTC MODEL data as described in IS-GPS-200E
@@ -46,44 +45,47 @@ class Gps_Utc_Model
 public:
     bool valid;
     // UTC parameters
-    double d_A1;          //!< 1st order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s/s]
-    double d_A0;          //!< Constant of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s]
-    double d_t_OT;        //!< Reference time for UTC data (reference 20.3.4.5 and 20.3.3.5.2.4 IS-GPS-200E) [s]
-    int i_WN_T;           //!< UTC reference week number [weeks]
-    double d_DeltaT_LS;   //!< delta time due to leap seconds [s]. Number of leap seconds since 6-Jan-1980 as transmitted by the GPS almanac.
-    int i_WN_LSF;         //!< Week number at the end of which the leap second becomes effective [weeks]
-    int i_DN;             //!< Day number (DN) at the end of which the leap second becomes effective [days]
-    double d_DeltaT_LSF;  //!< Scheduled future or recent past (relative to NAV message upload) value of the delta time due to leap seconds [s]
+    double d_A0;           //!< Constant of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s]
+    double d_A1;           //!< 1st order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s/s]
+    double d_A2;           //!< 2nd order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s/s]
+    int32_t d_t_OT;        //!< Reference time for UTC data (reference 20.3.4.5 and 20.3.3.5.2.4 IS-GPS-200E) [s]
+    int32_t i_WN_T;        //!< UTC reference week number [weeks]
+    int32_t d_DeltaT_LS;   //!< delta time due to leap seconds [s]. Number of leap seconds since 6-Jan-1980 as transmitted by the GPS almanac.
+    int32_t i_WN_LSF;      //!< Week number at the end of which the leap second becomes effective [weeks]
+    int32_t i_DN;          //!< Day number (DN) at the end of which the leap second becomes effective [days]
+    int32_t d_DeltaT_LSF;  //!< Scheduled future or recent past (relative to NAV message upload) value of the delta time due to leap seconds [s]
 
     /*!
      * Default constructor
      */
     Gps_Utc_Model();
 
-    template<class Archive>
+    template <class Archive>
     /*
      * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the ephemeris data on disk file.
      */
-    void serialize(Archive& archive, const unsigned int version)
+    inline void serialize(Archive& archive, const uint32_t version)
     {
         using boost::serialization::make_nvp;
-        if(version){};
-        archive & make_nvp("valid",valid);
-        archive & make_nvp("d_A1",d_A1);
-        archive & make_nvp("d_A0",d_A0);
-        archive & make_nvp("d_t_OT",d_t_OT);
-        archive & make_nvp("i_WN_T",i_WN_T);
-        archive & make_nvp("d_DeltaT_LS",d_DeltaT_LS);
-        archive & make_nvp("i_WN_LSF",i_WN_LSF);
-        archive & make_nvp("i_DN",i_DN);
-        archive & make_nvp("d_DeltaT_LSF",d_DeltaT_LSF);
+        if (version)
+            {
+            };
+        archive& make_nvp("valid", valid);
+        archive& make_nvp("d_A1", d_A1);
+        archive& make_nvp("d_A0", d_A0);
+        archive& make_nvp("d_t_OT", d_t_OT);
+        archive& make_nvp("i_WN_T", i_WN_T);
+        archive& make_nvp("d_DeltaT_LS", d_DeltaT_LS);
+        archive& make_nvp("i_WN_LSF", i_WN_LSF);
+        archive& make_nvp("i_DN", i_DN);
+        archive& make_nvp("d_DeltaT_LSF", d_DeltaT_LSF);
     }
 
     /*!
      * \brief Computes the Coordinated Universal Time (UTC) and
      * returns it in [s] (IS-GPS-200E, 20.3.3.5.2.4)
      */
-    double utc_time(double gpstime_corrected, int i_GPS_week);
+    double utc_time(double gpstime_corrected, int32_t i_GPS_week);
 };
 
 #endif

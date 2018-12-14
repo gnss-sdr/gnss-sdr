@@ -1,6 +1,5 @@
 function dmsvec = mat2dms(d,m,s,n)
-
-%MAT2DMS Converts a [deg min sec] matrix to vector format
+% MAT2DMS Converts a [deg min sec] matrix to vector format
 %
 %  dms = MAT2DMS(d,m,s) converts a deg:min:sec matrix into a vector
 %  format.  The vector format is dms = 100*deg + min + sec/100.
@@ -24,12 +23,12 @@ function dmsvec = mat2dms(d,m,s,n)
 
 %  Copyright 1996-2002 Systems Planning and Analysis, Inc. and The MathWorks, Inc.
 %  Written by:  E. Byrns, E. Brown
-%   $Revision: 1.10 $    $Date: 2002/03/20 21:25:51 $
+%  Revision: 1.10    Date: 2002/03/20 21:25:51
 
 
 if nargin == 0
     error('Incorrect number of arguments')
-
+    
 elseif nargin==1
     if size(d,2)== 3
         s = d(:,3);   m = d(:,2);   d = d(:,1);
@@ -41,11 +40,11 @@ elseif nargin==1
         error('Single input matrices must be n-by-2 or n-by-3.');
     end
     n = -5;
-
+    
 elseif nargin == 2
     s = zeros(size(d));
     n = -5;
-
+    
 elseif nargin == 3
     n = -5;
 end

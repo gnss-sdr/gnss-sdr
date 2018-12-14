@@ -1,4 +1,4 @@
-/* Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
+/* Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
  *
  * This file is part of GNSS-SDR.
  *
@@ -13,8 +13,10 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  */
+
+// clang-format off
 
 <% this_machine = machine_dict[args[0]] %>
 <% arch_names = this_machine.arch_names %>
@@ -30,6 +32,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+
 
 %for kern in kernels:
 #include <volk_gnsssdr/${kern.name}.h>
@@ -56,3 +59,4 @@ struct volk_gnsssdr_machine volk_gnsssdr_machine_${this_machine.name} = {
 <% len_impls = len(impls) %>    ${len_impls},
     %endfor
 };
+// clang-format on

@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -25,7 +25,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -34,11 +34,11 @@
 #ifndef GNSS_SDR_GALILEO_E1B_TELEMETRY_DECODER_H_
 #define GNSS_SDR_GALILEO_E1B_TELEMETRY_DECODER_H_
 
-#include <string>
-#include "telemetry_decoder_interface.h"
-#include "galileo_e1b_telemetry_decoder_cc.h"
-#include "gnss_satellite.h"
 
+#include "galileo_telemetry_decoder_cc.h"
+#include "gnss_satellite.h"
+#include "telemetry_decoder_interface.h"
+#include <string>
 
 
 class ConfigurationInterface;
@@ -50,12 +50,13 @@ class GalileoE1BTelemetryDecoder : public TelemetryDecoderInterface
 {
 public:
     GalileoE1BTelemetryDecoder(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_streams,
-            unsigned int out_streams);
+        const std::string& role,
+        unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~GalileoE1BTelemetryDecoder();
-    std::string role()
+
+    inline std::string role() override
     {
         return role_;
     }
@@ -63,27 +64,30 @@ public:
     /*!
      * \brief Returns "Galileo_E1B_Telemetry_Decoder"
      */
-    std::string implementation()
+    inline std::string implementation() override
     {
         return "Galileo_E1B_Telemetry_Decoder";
     }
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
-    void set_satellite(Gnss_Satellite satellite);
-    void set_channel(int channel){telemetry_decoder_->set_channel(channel);}
-    void reset()
+
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
+
+    void set_satellite(const Gnss_Satellite& satellite) override;
+    inline void set_channel(int channel) override { telemetry_decoder_->set_channel(channel); }
+    inline void reset() override
     {
         return;
     }
-    size_t item_size()
+
+    inline size_t item_size() override
     {
         return 0;
     }
 
 private:
-    galileo_e1b_telemetry_decoder_cc_sptr telemetry_decoder_;
+    galileo_telemetry_decoder_cc_sptr telemetry_decoder_;
     Gnss_Satellite satellite_;
     int channel_;
     bool dump_;

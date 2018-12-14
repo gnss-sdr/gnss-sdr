@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_IPAddress_H_
-#define	_IPAddress_H_
+#ifndef _IPAddress_H_
+#define _IPAddress_H_
 
 
 #include <asn_application.h>
@@ -15,34 +15,38 @@
 #include <constr_CHOICE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum IPAddress_PR {
-	IPAddress_PR_NOTHING,	/* No components present */
-	IPAddress_PR_ipv4Address,
-	IPAddress_PR_ipv6Address
-} IPAddress_PR;
+    /* Dependencies */
+    typedef enum IPAddress_PR
+    {
+        IPAddress_PR_NOTHING, /* No components present */
+        IPAddress_PR_ipv4Address,
+        IPAddress_PR_ipv6Address
+    } IPAddress_PR;
 
-/* IPAddress */
-typedef struct IPAddress {
-	IPAddress_PR present;
-	union IPAddress_u {
-		OCTET_STRING_t	 ipv4Address;
-		OCTET_STRING_t	 ipv6Address;
-	} choice;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} IPAddress_t;
+    /* IPAddress */
+    typedef struct IPAddress
+    {
+        IPAddress_PR present;
+        union IPAddress_u
+        {
+            OCTET_STRING_t ipv4Address;
+            OCTET_STRING_t ipv6Address;
+        } choice;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_IPAddress;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } IPAddress_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_IPAddress;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _IPAddress_H_ */
+#endif /* _IPAddress_H_ */
 #include <asn_internal.h>

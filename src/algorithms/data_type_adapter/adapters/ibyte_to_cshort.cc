@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,22 +24,21 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
 #include "ibyte_to_cshort.h"
+#include "configuration_interface.h"
 #include <glog/logging.h>
 #include <volk/volk.h>
-#include "configuration_interface.h"
+
 
 using google::LogMessage;
 
-IbyteToCshort::IbyteToCshort(ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams) :
-                config_(configuration), role_(role), in_streams_(in_streams),
-                out_streams_(out_streams)
+IbyteToCshort::IbyteToCshort(ConfigurationInterface* configuration, const std::string& role,
+    unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     std::string default_input_item_type = "byte";
     std::string default_output_item_type = "cshort";
@@ -51,30 +50,57 @@ IbyteToCshort::IbyteToCshort(ConfigurationInterface* configuration, std::string 
 
     dump_ = config_->property(role_ + ".dump", false);
     dump_filename_ = config_->property(role_ + ".dump_filename", default_dump_filename);
+    inverted_spectrum = configuration->property(role + ".inverted_spectrum", false);
 
     size_t item_size = sizeof(lv_16sc_t);
 
     interleaved_byte_to_complex_short_ = make_interleaved_byte_to_complex_short();
 
-    DLOG(INFO) << "data_type_adapter_(" << interleaved_byte_to_complex_short_->unique_id()<<")";
+    DLOG(INFO) << "data_type_adapter_(" << interleaved_byte_to_complex_short_->unique_id() << ")";
 
     if (dump_)
         {
             DLOG(INFO) << "Dumping output into file " << dump_filename_;
             file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
         }
+    if (inverted_spectrum)
+        {
+            conjugate_sc_ = make_conjugate_sc();
+        }
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 
-IbyteToCshort::~IbyteToCshort()
-{}
+IbyteToCshort::~IbyteToCshort() = default;
 
 
 void IbyteToCshort::connect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
-            top_block->connect(interleaved_byte_to_complex_short_, 0, file_sink_, 0);
+            if (inverted_spectrum)
+                {
+                    top_block->connect(interleaved_byte_to_complex_short_, 0, conjugate_sc_, 0);
+                    top_block->connect(conjugate_sc_, 0, file_sink_, 0);
+                }
+            else
+                {
+                    top_block->connect(interleaved_byte_to_complex_short_, 0, file_sink_, 0);
+                }
+        }
+    else
+        {
+            if (inverted_spectrum)
+                {
+                    top_block->connect(interleaved_byte_to_complex_short_, 0, conjugate_sc_, 0);
+                }
         }
 }
 
@@ -83,10 +109,24 @@ void IbyteToCshort::disconnect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
-            top_block->disconnect(interleaved_byte_to_complex_short_, 0, file_sink_, 0);
+            if (inverted_spectrum)
+                {
+                    top_block->disconnect(interleaved_byte_to_complex_short_, 0, conjugate_sc_, 0);
+                    top_block->disconnect(conjugate_sc_, 0, file_sink_, 0);
+                }
+            else
+                {
+                    top_block->disconnect(interleaved_byte_to_complex_short_, 0, file_sink_, 0);
+                }
+        }
+    else
+        {
+            if (inverted_spectrum)
+                {
+                    top_block->disconnect(interleaved_byte_to_complex_short_, 0, conjugate_sc_, 0);
+                }
         }
 }
-
 
 
 gr::basic_block_sptr IbyteToCshort::get_left_block()
@@ -95,10 +135,11 @@ gr::basic_block_sptr IbyteToCshort::get_left_block()
 }
 
 
-
 gr::basic_block_sptr IbyteToCshort::get_right_block()
 {
+    if (inverted_spectrum)
+        {
+            return conjugate_sc_;
+        }
     return interleaved_byte_to_complex_short_;
 }
-
-

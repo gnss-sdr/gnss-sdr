@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -33,14 +33,14 @@
 #ifndef FLEXIBAND_SIGNAL_SOURCE_H_
 #define FLEXIBAND_SIGNAL_SOURCE_H_
 
-#include <string>
+#include "gnss_block_interface.h"
+#include <gnuradio/blocks/char_to_float.h>
+#include <gnuradio/blocks/file_sink.h>
+#include <gnuradio/blocks/float_to_complex.h>
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/msg_queue.h>
-#include <gnuradio/blocks/file_sink.h>
-#include <gnuradio/blocks/char_to_float.h>
-#include <gnuradio/blocks/float_to_complex.h>
+#include <string>
 #include <vector>
-#include "gnss_block_interface.h"
 
 
 class ConfigurationInterface;
@@ -49,15 +49,16 @@ class ConfigurationInterface;
  * \brief This class configures and reads samples from Teleorbit Flexiband front-end.
  * This software requires a Flexiband GNU Radio driver installed (not included with GNSS-SDR).
  */
-class FlexibandSignalSource: public GNSSBlockInterface
+class FlexibandSignalSource : public GNSSBlockInterface
 {
 public:
     FlexibandSignalSource(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_stream,
-            unsigned int out_stream, gr::msg_queue::sptr queue);
+        std::string role, unsigned int in_stream,
+        unsigned int out_stream, gr::msg_queue::sptr queue);
 
     virtual ~FlexibandSignalSource();
-    std::string role()
+
+    inline std::string role() override
     {
         return role_;
     }
@@ -65,19 +66,21 @@ public:
     /*!
      * \brief Returns "Flexiband_Signal_Source".
      */
-    std::string implementation()
+    inline std::string implementation() override
     {
         return "Flexiband_Signal_Source";
     }
-    size_t item_size()
+
+    inline size_t item_size() override
     {
         return item_size_;
     }
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
-    gr::basic_block_sptr get_right_block(int RF_channel);
+
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
+    gr::basic_block_sptr get_right_block(int RF_channel) override;
 
 private:
     std::string role_;

@@ -5,7 +5,15 @@
 </machine>
 
 <machine name="neon">
-<archs>generic neon softfp|hardfp orc|</archs>
+<archs>generic neon orc|</archs>
+</machine>
+
+<machine name="neonv7">
+<archs>generic neon neonv7 softfp|hardfp orc|</archs>
+</machine>
+
+<machine name="neonv8">
+<archs>generic neon neonv8</archs>
 </machine>
 
 <!-- trailing | bar means generate without either for MSVC -->
@@ -41,6 +49,16 @@
 <!-- trailing | bar means generate without either for MSVC -->
 <machine name="avx2">
 <archs>generic 32|64| mmx| sse sse2 sse3 ssse3 sse4_1 sse4_2 popcount avx fma avx2 orc|</archs>
+</machine>
+
+<!-- trailing | bar means generate without either for MSVC -->
+<machine name="avx512f">
+<archs>generic 32|64| mmx| sse sse2 sse3 ssse3 sse4_1 sse4_2 popcount avx fma avx2 avx512f orc|</archs>
+</machine>
+
+<!-- trailing | bar means generate without either for MSVC -->
+<machine name="avx512cd">
+<archs>generic 32|64| mmx| sse sse2 sse3 ssse3 sse4_1 sse4_2 popcount avx fma avx2 avx512f avx512cd orc|</archs>
 </machine>
 
 </grammar>

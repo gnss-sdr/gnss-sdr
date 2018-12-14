@@ -52,9 +52,9 @@ asn_TYPE_descriptor_t asn_DEF_OCTET_STRING = {
 #undef	NEXT_PHASE
 #undef	PREV_PHASE
 #define	_CH_PHASE(ctx, inc) do {					\
-		if(ctx->phase == 0)					\
-			ctx->context = 0;				\
-		ctx->phase += inc;					\
+		if((ctx)->phase == 0)					\
+			(ctx)->context = 0;				\
+		(ctx)->phase += (inc);					\
 	} while(0)
 #define	NEXT_PHASE(ctx)	_CH_PHASE(ctx, +1)
 #define	PREV_PHASE(ctx)	_CH_PHASE(ctx, -1)

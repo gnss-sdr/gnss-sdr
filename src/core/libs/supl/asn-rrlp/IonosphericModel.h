@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_IonosphericModel_H_
-#define	_IonosphericModel_H_
+#ifndef _IonosphericModel_H_
+#define _IonosphericModel_H_
 
 
 #include <asn_application.h>
@@ -15,30 +15,32 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* IonosphericModel */
-typedef struct IonosphericModel {
-	long	 alfa0;
-	long	 alfa1;
-	long	 alfa2;
-	long	 alfa3;
-	long	 beta0;
-	long	 beta1;
-	long	 beta2;
-	long	 beta3;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} IonosphericModel_t;
+    /* IonosphericModel */
+    typedef struct IonosphericModel
+    {
+        long alfa0;
+        long alfa1;
+        long alfa2;
+        long alfa3;
+        long beta0;
+        long beta1;
+        long beta2;
+        long beta3;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_IonosphericModel;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } IonosphericModel_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_IonosphericModel;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _IonosphericModel_H_ */
+#endif /* _IonosphericModel_H_ */
 #include <asn_internal.h>

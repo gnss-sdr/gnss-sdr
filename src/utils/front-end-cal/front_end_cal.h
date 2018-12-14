@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -32,9 +32,9 @@
 #ifndef GNSS_SDR_FRONT_END_CAL_H_
 #define GNSS_SDR_FRONT_END_CAL_H_
 
-#include <armadillo>
-#include "file_configuration.h"
 #include "concurrent_map.h"
+#include "file_configuration.h"
+#include <armadillo>
 
 
 class FrontEndCal
@@ -49,7 +49,7 @@ private:
      * coordinates, P.  LLA is in [degrees degrees meters].  P is in meters.
      * The default ellipsoid planet is WGS84. Original copyright (c) by Kai Borre.
      */
-    arma::vec lla2ecef(const arma::vec & lla);
+    arma::vec lla2ecef(const arma::vec &lla);
     /*!
      * GEODETIC2ECEF Convert geodetic to geocentric (ECEF) coordinates
      * [X, Y, Z] = GEODETIC2ECEF(PHI, LAMBDA, H, ELLIPSOID) converts geodetic
@@ -80,7 +80,7 @@ private:
      * Paul R. Wolf and Bon A. Dewitt, "Elements of Photogrammetry with
      * Applications in GIS," 3rd Ed., McGraw-Hill, 2000 (Appendix F-3).
      */
-    arma::vec geodetic2ecef(double phi, double lambda, double h, const arma::vec & ellipsoid);
+    arma::vec geodetic2ecef(double phi, double lambda, double h, const arma::vec &ellipsoid);
     /*!
      * \brief Reads the ephemeris data from an external XML file
      *
@@ -132,7 +132,7 @@ public:
      *  Front-end TUNER Elonics E4000 + RTL2832 sampler For GPS L1 1575.42 MHz
      *
      */
-    void GPS_L1_front_end_model_E4000(double f_bb_true_Hz,double f_bb_meas_Hz,double fs_nominal_hz, double *estimated_fs_Hz, double *estimated_f_if_Hz, double *f_osc_err_ppm );
+    void GPS_L1_front_end_model_E4000(double f_bb_true_Hz, double f_bb_meas_Hz, double fs_nominal_hz, double *estimated_fs_Hz, double *estimated_f_if_Hz, double *f_osc_err_ppm);
 
     FrontEndCal();
     ~FrontEndCal();

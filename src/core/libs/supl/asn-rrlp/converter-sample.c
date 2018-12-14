@@ -384,7 +384,7 @@ buffer_dump() {
 			(long)DynamicBuffer.length - 1,
 			(long)8 - DynamicBuffer.unbits);
 	} else {
-		fprintf(stderr, " %d\n", DynamicBuffer.length);
+		fprintf(stderr, " %ld\n", DynamicBuffer.length);
 	}
 }
 
@@ -774,11 +774,11 @@ static int write_out(const void *buffer, size_t size, void *key) {
 }
 
 static int argument_is_stdin(char *av[], int idx) {
-	if(strcmp(av[idx], "-")) {
+	if(strcmp(av[idx], "-") != 0) {
 		return 0;	/* Certainly not <stdin> */
 	} else {
 		/* This might be <stdin>, unless `./program -- -` */
-		if(strcmp(av[-1], "--"))
+		if(strcmp(av[-1], "--") != 0)
 			return 1;
 		else
 			return 0;
@@ -788,7 +788,7 @@ static int argument_is_stdin(char *av[], int idx) {
 static FILE *argument_to_file(char *av[], int idx) {
 	return argument_is_stdin(av, idx)
 		? stdin
-		: fopen(av[idx], "r");
+		: fopen(av[idx], "re");
 }
 
 static char *argument_to_name(char *av[], int idx) {

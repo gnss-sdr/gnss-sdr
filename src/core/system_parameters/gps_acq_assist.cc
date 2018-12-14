@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -25,7 +25,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -34,7 +34,7 @@
 
 Gps_Acq_Assist::Gps_Acq_Assist()
 {
-    i_satellite_PRN = 0;
+    i_satellite_PRN = 0U;
     d_TOW = 0.0;
     d_Doppler0 = 0.0;
     d_Doppler1 = 0.0;
@@ -46,4 +46,3 @@ Gps_Acq_Assist::Gps_Acq_Assist()
     Azimuth = 0.0;
     Elevation = 0.0;
 }
-

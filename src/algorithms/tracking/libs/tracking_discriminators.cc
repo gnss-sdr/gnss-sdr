@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -27,7 +27,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -49,9 +49,9 @@
 double fll_four_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2, double t1, double t2)
 {
     double cross, dot;
-    dot   = prompt_s1.real()*prompt_s2.real() + prompt_s1.imag()*prompt_s2.imag();
-    cross = prompt_s1.real()*prompt_s2.imag() - prompt_s2.real()*prompt_s1.imag();
-    return atan2(cross, dot) / (t2-t1);
+    dot = prompt_s1.real() * prompt_s2.real() + prompt_s1.imag() * prompt_s2.imag();
+    cross = prompt_s1.real() * prompt_s2.imag() - prompt_s2.real() * prompt_s1.imag();
+    return atan2(cross, dot) / (t2 - t1);
 }
 
 
@@ -81,10 +81,7 @@ double pll_cloop_two_quadrant_atan(gr_complex prompt_s1)
         {
             return atan(prompt_s1.imag() / prompt_s1.real());
         }
-    else
-        {
-            return 0;
-        }
+    return 0.0;
 }
 
 
@@ -100,15 +97,12 @@ double dll_nc_e_minus_l_normalized(gr_complex early_s1, gr_complex late_s1)
 {
     double P_early, P_late;
     P_early = std::abs(early_s1);
-    P_late  = std::abs(late_s1);
-    if( P_early + P_late == 0.0 )
+    P_late = std::abs(late_s1);
+    if (P_early + P_late == 0.0)
         {
             return 0.0;
         }
-    else
-        {
-            return 0.5 * (P_early - P_late) / ((P_early + P_late));
-        }
+    return 0.5 * (P_early - P_late) / (P_early + P_late);
 }
 
 /*
@@ -124,13 +118,10 @@ double dll_nc_vemlp_normalized(gr_complex very_early_s1, gr_complex early_s1, gr
 {
     double P_early, P_late;
     P_early = std::sqrt(std::norm(very_early_s1) + std::norm(early_s1));
-    P_late  = std::sqrt(std::norm(very_late_s1) + std::norm(late_s1));
-    if( P_early + P_late == 0.0 )
+    P_late = std::sqrt(std::norm(very_late_s1) + std::norm(late_s1));
+    if (P_early + P_late == 0.0)
         {
             return 0.0;
         }
-    else
-        {
-            return (P_early - P_late) / ((P_early + P_late));
-        }
+    return (P_early - P_late) / (P_early + P_late);
 }

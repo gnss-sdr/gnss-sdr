@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_SeqOfSgnTypeElement_H_
-#define	_SeqOfSgnTypeElement_H_
+#ifndef _SeqOfSgnTypeElement_H_
+#define _SeqOfSgnTypeElement_H_
 
 
 #include <asn_application.h>
@@ -15,22 +15,25 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct SgnTypeElement;
+    /* Forward declarations */
+    struct SgnTypeElement;
 
-/* SeqOfSgnTypeElement */
-typedef struct SeqOfSgnTypeElement {
-	A_SEQUENCE_OF(struct SgnTypeElement) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SeqOfSgnTypeElement_t;
+    /* SeqOfSgnTypeElement */
+    typedef struct SeqOfSgnTypeElement
+    {
+        A_SEQUENCE_OF(struct SgnTypeElement)
+        list;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SeqOfSgnTypeElement;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SeqOfSgnTypeElement_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SeqOfSgnTypeElement;
 
 #ifdef __cplusplus
 }
@@ -39,5 +42,5 @@ extern asn_TYPE_descriptor_t asn_DEF_SeqOfSgnTypeElement;
 /* Referred external types */
 #include "SgnTypeElement.h"
 
-#endif	/* _SeqOfSgnTypeElement_H_ */
+#endif /* _SeqOfSgnTypeElement_H_ */
 #include <asn_internal.h>

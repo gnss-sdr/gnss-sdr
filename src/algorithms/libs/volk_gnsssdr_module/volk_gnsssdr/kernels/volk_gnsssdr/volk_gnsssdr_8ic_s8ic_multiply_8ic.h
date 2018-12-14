@@ -10,7 +10,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -28,7 +28,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -73,14 +73,14 @@ static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_u_sse3(lv_8sc_t* cVector, 
     lv_8sc_t* c = cVector;
     const lv_8sc_t* a = aVector;
 
-    mult1 = _mm_set_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255);
+    mult1 = _mm_set_epi8(0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF);
 
     y = _mm_set1_epi16(*(short*)&scalar);
     imagy = _mm_srli_si128(y, 1);
     imagy = _mm_and_si128(imagy, mult1);
     realy = _mm_and_si128(y, mult1);
 
-    for(; number < sse_iters; number++)
+    for (; number < sse_iters; number++)
         {
             x = _mm_lddqu_si128((__m128i*)a);
 
@@ -111,7 +111,6 @@ static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_u_sse3(lv_8sc_t* cVector, 
         {
             *c++ = (*a++) * scalar;
         }
-
 }
 #endif /* LV_HAVE_SSE3 */
 
@@ -166,14 +165,14 @@ static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_a_sse3(lv_8sc_t* cVector, 
     lv_8sc_t* c = cVector;
     const lv_8sc_t* a = aVector;
 
-    mult1 = _mm_set_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255);
+    mult1 = _mm_set_epi8(0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF);
 
     y = _mm_set1_epi16(*(short*)&scalar);
     imagy = _mm_srli_si128(y, 1);
     imagy = _mm_and_si128(imagy, mult1);
     realy = _mm_and_si128(y, mult1);
 
-    for(; number < sse_iters; number++)
+    for (; number < sse_iters; number++)
         {
             x = _mm_load_si128((__m128i*)a);
 
@@ -204,7 +203,6 @@ static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_a_sse3(lv_8sc_t* cVector, 
         {
             *c++ = (*a++) * scalar;
         }
-
 }
 #endif /* LV_HAVE_SSE3 */
 

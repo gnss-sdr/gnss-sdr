@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -32,13 +32,11 @@
 #ifndef GNSS_SDR_GPS_L1_CA_PCPS_OPENCL_ACQUISITION_H_
 #define GNSS_SDR_GPS_L1_CA_PCPS_OPENCL_ACQUISITION_H_
 
-#include <string>
-#include <gnuradio/blocks/stream_to_vector.h>
-#include "gnss_synchro.h"
 #include "acquisition_interface.h"
+#include "gnss_synchro.h"
 #include "pcps_opencl_acquisition_cc.h"
-
-
+#include <gnuradio/blocks/stream_to_vector.h>
+#include <string>
 
 class ConfigurationInterface;
 
@@ -46,16 +44,17 @@ class ConfigurationInterface;
  * \brief This class adapts an OpenCL PCPS acquisition block to an
  *  AcquisitionInterface for GPS L1 C/A signals
  */
-class GpsL1CaPcpsOpenClAcquisition: public AcquisitionInterface
+class GpsL1CaPcpsOpenClAcquisition : public AcquisitionInterface
 {
 public:
     GpsL1CaPcpsOpenClAcquisition(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+        const std::string& role,
+        unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~GpsL1CaPcpsOpenClAcquisition();
 
-    std::string role()
+    inline std::string role() override
     {
         return role_;
     }
@@ -63,66 +62,75 @@ public:
     /*!
      * \brief Returns "GPS_L1_CA_PCPS_OpenCl_Acquisition"
      */
-    std::string implementation()
+    inline std::string implementation() override
     {
         return "GPS_L1_CA_PCPS_OpenCl_Acquisition";
     }
-    size_t item_size()
+
+    inline size_t item_size() override
     {
         return item_size_;
     }
 
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
      * to efficiently exchange synchronization data between acquisition and
      *  tracking blocks
      */
-    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
+    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
     /*!
      * \brief Set acquisition channel unique ID
      */
-    void set_channel(unsigned int channel);
+    void set_channel(unsigned int channel) override;
 
     /*!
      * \brief Set statistics threshold of PCPS algorithm
      */
-    void set_threshold(float threshold);
+    void set_threshold(float threshold) override;
 
     /*!
      * \brief Set maximum Doppler off grid search
      */
-    void set_doppler_max(unsigned int doppler_max);
+    void set_doppler_max(unsigned int doppler_max) override;
 
     /*!
      * \brief Set Doppler steps for the grid search
      */
-    void set_doppler_step(unsigned int doppler_step);
+    void set_doppler_step(unsigned int doppler_step) override;
 
     /*!
      * \brief Initializes acquisition algorithm.
      */
-    void init();
+    void init() override;
 
     /*!
      * \brief Sets local code for GPS L1/CA PCPS acquisition algorithm.
      */
-    void set_local_code();
+    void set_local_code() override;
 
     /*!
      * \brief Returns the maximum peak of grid search
      */
-    signed int mag();
+    signed int mag() override;
 
     /*!
      * \brief Restart acquisition algorithm
      */
-    void reset();
+    void reset() override;
+    void set_state(int state __attribute__((unused))) override{};
+
+    /*!
+     * \brief Stop running acquisition
+     */
+    void stop_acquisition() override;
+
+    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
 
 private:
     ConfigurationInterface* configuration_;
@@ -139,12 +147,11 @@ private:
     unsigned int doppler_step_;
     unsigned int sampled_ms_;
     unsigned int max_dwells_;
-    long fs_in_;
-    long if_;
+    int64_t fs_in_;
     bool dump_;
     std::string dump_filename_;
-    std::complex<float> * code_;
-    Gnss_Synchro * gnss_synchro_;
+    std::complex<float>* code_;
+    Gnss_Synchro* gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;

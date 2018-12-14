@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -31,7 +31,7 @@
 #ifndef GNSS_SDR_TRACKING_DUMP_READER_H
 #define GNSS_SDR_TRACKING_DUMP_READER_H
 
-#include <iostream>
+#include <cstdint>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -42,46 +42,52 @@ public:
     ~tracking_dump_reader();
     bool read_binary_obs();
     bool restart();
-    long int num_epochs();
+    int64_t num_epochs();
     bool open_obs_file(std::string out_file);
 
     //tracking dump variables
-    // EPR
+    // VEPLVL
+    float abs_VE;
     float abs_E;
     float abs_P;
     float abs_L;
+    float abs_VL;
     // PROMPT I and Q (to analyze navigation symbols)
     float prompt_I;
     float prompt_Q;
     // PRN start sample stamp
-    unsigned long int PRN_start_sample_count;
+    uint64_t PRN_start_sample_count;
 
     // accumulated carrier phase
-    double acc_carrier_phase_rad;
+    float acc_carrier_phase_rad;
 
     // carrier and code frequency
-    double carrier_doppler_hz;
-    double code_freq_chips;
+    float carrier_doppler_hz;
+    float carrier_doppler_rate_hz_s;
+    float code_freq_chips;
+    float code_freq_rate_chips;
 
     // PLL commands
-    double carr_error_hz;
-    double carr_error_filt_hz;
+    float carr_error_hz;
+    float carr_error_filt_hz;
 
     // DLL commands
-    double code_error_chips;
-    double code_error_filt_chips;
+    float code_error_chips;
+    float code_error_filt_chips;
 
     // CN0 and carrier lock test
-    double CN0_SNV_dB_Hz;
-    double carrier_lock_test;
+    float CN0_SNV_dB_Hz;
+    float carrier_lock_test;
 
     // AUX vars (for debug purposes)
-    double aux1;
+    float aux1;
     double aux2;
+
+    unsigned int PRN;
 
 private:
     std::string d_dump_filename;
     std::ifstream d_dump_file;
 };
 
-#endif //GNSS_SDR_TRACKING_DUMP_READER_H
+#endif  //GNSS_SDR_TRACKING_DUMP_READER_H

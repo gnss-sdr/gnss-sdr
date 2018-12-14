@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_LocationInfo_H_
-#define	_LocationInfo_H_
+#ifndef _LocationInfo_H_
+#define _LocationInfo_H_
 
 
 #include <asn_application.h>
@@ -17,26 +17,28 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* LocationInfo */
-typedef struct LocationInfo {
-	long	 refFrame;
-	long	*gpsTOW	/* OPTIONAL */;
-	FixType_t	 fixType;
-	Ext_GeographicalInformation_t	 posEstimate;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} LocationInfo_t;
+    /* LocationInfo */
+    typedef struct LocationInfo
+    {
+        long refFrame;
+        long *gpsTOW /* OPTIONAL */;
+        FixType_t fixType;
+        Ext_GeographicalInformation_t posEstimate;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_LocationInfo;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } LocationInfo_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_LocationInfo;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _LocationInfo_H_ */
+#endif /* _LocationInfo_H_ */
 #include <asn_internal.h>

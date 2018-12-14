@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,27 +23,30 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
 #include "tlm_dump_reader.h"
+#include <iostream>
+#include <utility>
 
 bool tlm_dump_reader::read_binary_obs()
 {
     try
-    {
-            d_dump_file.read((char *) &TOW_at_current_symbol, sizeof(double));
-            d_dump_file.read((char *) &Prn_timestamp_ms, sizeof(double));
-            d_dump_file.read((char *) &d_TOW_at_Preamble, sizeof(double));
-    }
+        {
+            d_dump_file.read(reinterpret_cast<char *>(&TOW_at_current_symbol), sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&Tracking_sample_counter), sizeof(uint64_t));
+            d_dump_file.read(reinterpret_cast<char *>(&d_TOW_at_Preamble), sizeof(double));
+        }
     catch (const std::ifstream::failure &e)
-    {
+        {
             return false;
-    }
+        }
     return true;
 }
+
 
 bool tlm_dump_reader::restart()
 {
@@ -53,53 +56,50 @@ bool tlm_dump_reader::restart()
             d_dump_file.seekg(0, std::ios::beg);
             return true;
         }
-    else
-        {
-            return false;
-        }
+    return false;
 }
 
-long int tlm_dump_reader::num_epochs()
+
+int64_t tlm_dump_reader::num_epochs()
 {
     std::ifstream::pos_type size;
-    int number_of_vars_in_epoch = 3;
-    int epoch_size_bytes = sizeof(double) * number_of_vars_in_epoch;
-    std::ifstream tmpfile( d_dump_filename.c_str(), std::ios::binary | std::ios::ate);
+    int number_of_vars_in_epoch = 2;
+    int epoch_size_bytes = sizeof(double) * number_of_vars_in_epoch + sizeof(uint64_t);
+    std::ifstream tmpfile(d_dump_filename.c_str(), std::ios::binary | std::ios::ate);
     if (tmpfile.is_open())
         {
             size = tmpfile.tellg();
-            long int nepoch = size / epoch_size_bytes;
+            int64_t nepoch = size / epoch_size_bytes;
             return nepoch;
         }
-    else
-        {
-            return 0;
-        }
+    return 0;
 }
+
 
 bool tlm_dump_reader::open_obs_file(std::string out_file)
 {
     if (d_dump_file.is_open() == false)
         {
             try
-            {
-                    d_dump_filename=out_file;
-                    d_dump_file.exceptions ( std::ifstream::failbit | std::ifstream::badbit );
+                {
+                    d_dump_filename = std::move(out_file);
+                    d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
                     d_dump_file.open(d_dump_filename.c_str(), std::ios::in | std::ios::binary);
                     std::cout << "TLM dump enabled, Log file: " << d_dump_filename.c_str() << std::endl;
                     return true;
-            }
-            catch (const std::ifstream::failure & e)
-            {
+                }
+            catch (const std::ifstream::failure &e)
+                {
                     std::cout << "Problem opening TLM dump Log file: " << d_dump_filename.c_str() << std::endl;
                     return false;
-            }
+                }
         }
     else
         {
             return false;
         }
 }
+
 
 tlm_dump_reader::~tlm_dump_reader()
 {

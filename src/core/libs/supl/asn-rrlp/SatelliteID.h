@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_SatelliteID_H_
-#define	_SatelliteID_H_
+#ifndef _SatelliteID_H_
+#define _SatelliteID_H_
 
 
 #include <asn_application.h>
@@ -14,27 +14,28 @@
 #include <NativeInteger.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* SatelliteID */
-typedef long	 SatelliteID_t;
+    /* SatelliteID */
+    typedef long SatelliteID_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SatelliteID;
-asn_struct_free_f SatelliteID_free;
-asn_struct_print_f SatelliteID_print;
-asn_constr_check_f SatelliteID_constraint;
-ber_type_decoder_f SatelliteID_decode_ber;
-der_type_encoder_f SatelliteID_encode_der;
-xer_type_decoder_f SatelliteID_decode_xer;
-xer_type_encoder_f SatelliteID_encode_xer;
-per_type_decoder_f SatelliteID_decode_uper;
-per_type_encoder_f SatelliteID_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SatelliteID;
+    asn_struct_free_f SatelliteID_free;
+    asn_struct_print_f SatelliteID_print;
+    asn_constr_check_f SatelliteID_constraint;
+    ber_type_decoder_f SatelliteID_decode_ber;
+    der_type_encoder_f SatelliteID_encode_der;
+    xer_type_decoder_f SatelliteID_decode_xer;
+    xer_type_encoder_f SatelliteID_encode_xer;
+    per_type_decoder_f SatelliteID_decode_uper;
+    per_type_encoder_f SatelliteID_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _SatelliteID_H_ */
+#endif /* _SatelliteID_H_ */
 #include <asn_internal.h>

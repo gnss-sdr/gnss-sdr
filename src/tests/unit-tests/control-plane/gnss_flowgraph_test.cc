@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -25,30 +25,31 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
+#include "acquisition_interface.h"
+#include "channel.h"
+#include "channel_interface.h"
+#include "file_configuration.h"
+#include "file_signal_source.h"
+#include "gnss_block_interface.h"
+#include "gnss_flowgraph.h"
+#include "in_memory_configuration.h"
+#include "pass_through.h"
+#include "tracking_interface.h"
 #include <gnuradio/msg_queue.h>
 #include <gtest/gtest.h>
-#include "gnss_flowgraph.h"
-#include "gnss_block_interface.h"
-#include "in_memory_configuration.h"
-#include "file_configuration.h"
-#include "channel.h"
-#include "acquisition_interface.h"
-#include "tracking_interface.h"
-#include "channel_interface.h"
-#include "pass_through.h"
-#include "file_signal_source.h"
 
 
-TEST(GNSSFlowgraph, InstantiateConnectStartStopOldNotation)
+TEST(GNSSFlowgraph /*unused*/, InstantiateConnectStartStopOldNotation /*unused*/)
 {
     std::shared_ptr<ConfigurationInterface> config = std::make_shared<InMemoryConfiguration>();
 
     config->set_property("GNSS-SDR.SUPL_gps_enabled", "false");
+    config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
     config->set_property("SignalSource.sampling_frequency", "4000000");
     config->set_property("SignalSource.implementation", "File_Signal_Source");
     config->set_property("SignalSource.item_type", "gr_complex");
@@ -64,8 +65,8 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStopOldNotation)
     config->set_property("Acquisition_1C.doppler_max", "5000");
     config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
     config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
-    config->set_property("Observables.implementation", "GPS_L1_CA_Observables");
-    config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
+    config->set_property("Observables.implementation", "Hybrid_Observables");
+    config->set_property("PVT.implementation", "RTKLIB_PVT");
 
     std::shared_ptr<GNSSFlowgraph> flowgraph = std::make_shared<GNSSFlowgraph>(config, gr::msg_queue::make(0));
 
@@ -79,10 +80,10 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStopOldNotation)
 }
 
 
-TEST(GNSSFlowgraph, InstantiateConnectStartStop)
+TEST(GNSSFlowgraph /*unused*/, InstantiateConnectStartStop /*unused*/)
 {
     std::shared_ptr<ConfigurationInterface> config = std::make_shared<InMemoryConfiguration>();
-
+    config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
     config->set_property("SignalSource.sampling_frequency", "4000000");
     config->set_property("SignalSource.implementation", "File_Signal_Source");
     config->set_property("SignalSource.item_type", "gr_complex");
@@ -99,8 +100,8 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStop)
     config->set_property("Acquisition_1C.doppler_max", "5000");
     config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
     config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
-    config->set_property("Observables.implementation", "GPS_L1_CA_Observables");
-    config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
+    config->set_property("Observables.implementation", "Hybrid_Observables");
+    config->set_property("PVT.implementation", "RTKLIB_PVT");
 
     std::shared_ptr<GNSSFlowgraph> flowgraph = std::make_shared<GNSSFlowgraph>(config, gr::msg_queue::make(0));
 
@@ -113,10 +114,10 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStop)
     EXPECT_FALSE(flowgraph->running());
 }
 
-TEST(GNSSFlowgraph, InstantiateConnectStartStopGalileoE1B)
+TEST(GNSSFlowgraph /*unused*/, InstantiateConnectStartStopGalileoE1B /*unused*/)
 {
     std::shared_ptr<ConfigurationInterface> config = std::make_shared<InMemoryConfiguration>();
-
+    config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
     config->set_property("SignalSource.sampling_frequency", "4000000");
     config->set_property("SignalSource.implementation", "File_Signal_Source");
     config->set_property("SignalSource.item_type", "gr_complex");
@@ -133,8 +134,8 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStopGalileoE1B)
     config->set_property("Acquisition_1B.doppler_max", "5000");
     config->set_property("Tracking_1B.implementation", "Galileo_E1_DLL_PLL_VEML_Tracking");
     config->set_property("TelemetryDecoder_1B.implementation", "Galileo_E1B_Telemetry_Decoder");
-    config->set_property("Observables.implementation", "Galileo_E1B_Observables");
-    config->set_property("PVT.implementation", "GALILEO_E1_PVT");
+    config->set_property("Observables.implementation", "Hybrid_Observables");
+    config->set_property("PVT.implementation", "RTKLIB_PVT");
 
     std::shared_ptr<GNSSFlowgraph> flowgraph = std::make_shared<GNSSFlowgraph>(config, gr::msg_queue::make(0));
 
@@ -148,10 +149,10 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStopGalileoE1B)
 }
 
 
-TEST(GNSSFlowgraph, InstantiateConnectStartStopHybrid)
+TEST(GNSSFlowgraph /*unused*/, InstantiateConnectStartStopHybrid /*unused*/)
 {
     std::shared_ptr<ConfigurationInterface> config = std::make_shared<InMemoryConfiguration>();
-
+    config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
     config->set_property("SignalSource.sampling_frequency", "4000000");
     config->set_property("SignalSource.implementation", "File_Signal_Source");
     config->set_property("SignalSource.item_type", "gr_complex");
@@ -232,41 +233,25 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStopHybrid)
     config->set_property("Tracking_1B15.implementation", "Galileo_E1_DLL_PLL_VEML_Tracking");
 
     config->set_property("TelemetryDecoder_1C0.implementation", "GPS_L1_CA_Telemetry_Decoder");
-    config->set_property("TelemetryDecoder_1C0.decimation_factor", "4");
     config->set_property("TelemetryDecoder_1C1.implementation", "GPS_L1_CA_Telemetry_Decoder");
-    config->set_property("TelemetryDecoder_1C1.decimation_factor", "4");
     config->set_property("TelemetryDecoder_1C2.implementation", "GPS_L1_CA_Telemetry_Decoder");
-    config->set_property("TelemetryDecoder_1C2.decimation_factor", "4");
     config->set_property("TelemetryDecoder_1C3.implementation", "GPS_L1_CA_Telemetry_Decoder");
-    config->set_property("TelemetryDecoder_1C3.decimation_factor", "4");
     config->set_property("TelemetryDecoder_1C4.implementation", "GPS_L1_CA_Telemetry_Decoder");
-    config->set_property("TelemetryDecoder_1C4.decimation_factor", "4");
     config->set_property("TelemetryDecoder_1C5.implementation", "GPS_L1_CA_Telemetry_Decoder");
-    config->set_property("TelemetryDecoder_1C5.decimation_factor", "4");
     config->set_property("TelemetryDecoder_1C6.implementation", "GPS_L1_CA_Telemetry_Decoder");
-    config->set_property("TelemetryDecoder_1C6.decimation_factor", "4");
     config->set_property("TelemetryDecoder_1C7.implementation", "GPS_L1_CA_Telemetry_Decoder");
-    config->set_property("TelemetryDecoder_1C7.decimation_factor", "4");
 
     config->set_property("TelemetryDecoder_1B8.implementation", "Galileo_E1B_Telemetry_Decoder");
-    config->set_property("TelemetryDecoder_1B8.decimation_factor", "1");
     config->set_property("TelemetryDecoder_1B9.implementation", "Galileo_E1B_Telemetry_Decoder");
-    config->set_property("TelemetryDecoder_1B9.decimation_factor", "1");
     config->set_property("TelemetryDecoder_1B10.implementation", "Galileo_E1B_Telemetry_Decoder");
-    config->set_property("TelemetryDecoder_1B10.decimation_factor", "1");
     config->set_property("TelemetryDecoder_1B11.implementation", "Galileo_E1B_Telemetry_Decoder");
-    config->set_property("TelemetryDecoder_1B11.decimation_factor", "1");
     config->set_property("TelemetryDecoder_1B12.implementation", "Galileo_E1B_Telemetry_Decoder");
-    config->set_property("TelemetryDecoder_1B12.decimation_factor", "1");
     config->set_property("TelemetryDecoder_1B13.implementation", "Galileo_E1B_Telemetry_Decoder");
-    config->set_property("TelemetryDecoder_1B13.decimation_factor", "1");
     config->set_property("TelemetryDecoder_1B14.implementation", "Galileo_E1B_Telemetry_Decoder");
-    config->set_property("TelemetryDecoder_1B14.decimation_factor", "1");
     config->set_property("TelemetryDecoder_1B15.implementation", "Galileo_E1B_Telemetry_Decoder");
-    config->set_property("TelemetryDecoder_1B15.decimation_factor", "1");
 
     config->set_property("Observables.implementation", "Hybrid_Observables");
-    config->set_property("PVT.implementation", "Hybrid_PVT");
+    config->set_property("PVT.implementation", "RTKLIB_PVT");
 
     std::shared_ptr<GNSSFlowgraph> flowgraph = std::make_shared<GNSSFlowgraph>(config, gr::msg_queue::make(0));
 
@@ -278,4 +263,3 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStopHybrid)
     flowgraph->stop();
     EXPECT_FALSE(flowgraph->running());
 }
-

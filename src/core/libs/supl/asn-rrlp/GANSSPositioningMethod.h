@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GANSSPositioningMethod_H_
-#define	_GANSSPositioningMethod_H_
+#ifndef _GANSSPositioningMethod_H_
+#define _GANSSPositioningMethod_H_
 
 
 #include <asn_application.h>
@@ -14,33 +14,35 @@
 #include <BIT_STRING.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum GANSSPositioningMethod {
-	GANSSPositioningMethod_gps	= 0,
-	GANSSPositioningMethod_galileo	= 1
-} e_GANSSPositioningMethod;
+    /* Dependencies */
+    typedef enum GANSSPositioningMethod
+    {
+        GANSSPositioningMethod_gps = 0,
+        GANSSPositioningMethod_galileo = 1
+    } e_GANSSPositioningMethod;
 
-/* GANSSPositioningMethod */
-typedef BIT_STRING_t	 GANSSPositioningMethod_t;
+    /* GANSSPositioningMethod */
+    typedef BIT_STRING_t GANSSPositioningMethod_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSPositioningMethod;
-asn_struct_free_f GANSSPositioningMethod_free;
-asn_struct_print_f GANSSPositioningMethod_print;
-asn_constr_check_f GANSSPositioningMethod_constraint;
-ber_type_decoder_f GANSSPositioningMethod_decode_ber;
-der_type_encoder_f GANSSPositioningMethod_encode_der;
-xer_type_decoder_f GANSSPositioningMethod_decode_xer;
-xer_type_encoder_f GANSSPositioningMethod_encode_xer;
-per_type_decoder_f GANSSPositioningMethod_decode_uper;
-per_type_encoder_f GANSSPositioningMethod_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSPositioningMethod;
+    asn_struct_free_f GANSSPositioningMethod_free;
+    asn_struct_print_f GANSSPositioningMethod_print;
+    asn_constr_check_f GANSSPositioningMethod_constraint;
+    ber_type_decoder_f GANSSPositioningMethod_decode_ber;
+    der_type_encoder_f GANSSPositioningMethod_encode_der;
+    xer_type_decoder_f GANSSPositioningMethod_decode_xer;
+    xer_type_encoder_f GANSSPositioningMethod_encode_xer;
+    per_type_decoder_f GANSSPositioningMethod_decode_uper;
+    per_type_encoder_f GANSSPositioningMethod_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GANSSPositioningMethod_H_ */
+#endif /* _GANSSPositioningMethod_H_ */
 #include <asn_internal.h>

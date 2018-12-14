@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -25,7 +25,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -33,8 +33,7 @@
 #include "string_converter.h"
 
 
-
-TEST(String_Converter_Test, StringToBool)
+TEST(StringConverterTest, StringToBool)
 {
     std::unique_ptr<StringConverter> converter(new StringConverter());
     bool conversion_result = converter->convert("false", true);
@@ -43,7 +42,7 @@ TEST(String_Converter_Test, StringToBool)
 }
 
 
-TEST(String_Converter_Test, StringToSizeT)
+TEST(StringConverterTest, StringToSizeT)
 {
     // Example using a raw pointer
     StringConverter* converter;
@@ -55,9 +54,7 @@ TEST(String_Converter_Test, StringToSizeT)
 }
 
 
-
-
-TEST(String_Converter_Test, StringToBoolFail)
+TEST(StringConverterTest, StringToBoolFail)
 {
     std::unique_ptr<StringConverter> converter(new StringConverter());
     bool conversion_result = converter->convert("lse", true);
@@ -66,9 +63,7 @@ TEST(String_Converter_Test, StringToBoolFail)
 }
 
 
-
-
-TEST(String_Converter_Test, StringToSizeTFail)
+TEST(StringConverterTest, StringToSizeTFail)
 {
     std::unique_ptr<StringConverter> converter(new StringConverter());
     size_t conversion_result = converter->convert("false", 1);

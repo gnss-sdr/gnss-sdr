@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -25,31 +25,29 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
 #include "pass_through.h"
-#include <iostream>
-#include <complex>
+#include "configuration_interface.h"
 #include <glog/logging.h>
 #include <volk/volk.h>
-#include "configuration_interface.h"
+#include <complex>
 
 using google::LogMessage;
 
-Pass_Through::Pass_Through(ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams,
-        unsigned int out_streams) :
-        role_(role),
-        in_streams_(in_streams),
-        out_streams_(out_streams)
+Pass_Through::Pass_Through(ConfigurationInterface* configuration, const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(role),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams)
 {
     std::string default_item_type = "gr_complex";
     std::string input_type = configuration->property(role + ".input_item_type", default_item_type);
     std::string output_type = configuration->property(role + ".output_item_type", default_item_type);
-    if(input_type.compare(output_type) != 0)
+    if (input_type != output_type)
         {
             LOG(WARNING) << "input_item_type and output_item_type are different in a Pass_Through implementation! Taking "
                          << input_type
@@ -57,80 +55,135 @@ Pass_Through::Pass_Through(ConfigurationInterface* configuration, std::string ro
         }
 
     item_type_ = configuration->property(role + ".item_type", input_type);
-    vector_size_ = configuration->property(role + ".vector_size", 1);
+    inverted_spectrum = configuration->property(role + ".inverted_spectrum", false);
 
-    if(item_type_.compare("float") == 0)
+    if (item_type_ == "float")
         {
             item_size_ = sizeof(float);
         }
-    else if(item_type_.compare("gr_complex") == 0)
+    else if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
+            if (inverted_spectrum)
+                {
+                    conjugate_cc_ = make_conjugate_cc();
+                }
         }
-    else if(item_type_.compare("short") == 0)
+    else if (item_type_ == "short")
         {
             item_size_ = sizeof(int16_t);
         }
-    else if(item_type_.compare("ishort") == 0)
+    else if (item_type_ == "ishort")
         {
             item_size_ = sizeof(int16_t);
         }
-    else if(item_type_.compare("cshort") == 0)
+    else if (item_type_ == "cshort")
         {
             item_size_ = sizeof(lv_16sc_t);
+            if (inverted_spectrum)
+                {
+                    conjugate_sc_ = make_conjugate_sc();
+                }
         }
-    else if(item_type_.compare("byte") == 0)
+    else if (item_type_ == "byte")
         {
             item_size_ = sizeof(int8_t);
         }
-    else if(item_type_.compare("ibyte") == 0)
+    else if (item_type_ == "ibyte")
         {
             item_size_ = sizeof(int8_t);
         }
-    else if(item_type_.compare("cbyte") == 0)
+    else if (item_type_ == "cbyte")
         {
             item_size_ = sizeof(lv_8sc_t);
+            if (inverted_spectrum)
+                {
+                    conjugate_ic_ = make_conjugate_ic();
+                }
         }
     else
         {
             LOG(WARNING) << item_type_ << " unrecognized item type. Using float";
             item_size_ = sizeof(float);
         }
+
     kludge_copy_ = gr::blocks::copy::make(item_size_);
     DLOG(INFO) << "kludge_copy(" << kludge_copy_->unique_id() << ")";
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 
-
-Pass_Through::~Pass_Through()
-{}
-
+Pass_Through::~Pass_Through() = default;
 
 
 void Pass_Through::connect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     DLOG(INFO) << "nothing to connect internally";
 }
 
 
-
 void Pass_Through::disconnect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     // Nothing to disconnect
 }
 
 
-
 gr::basic_block_sptr Pass_Through::get_left_block()
 {
+    if (inverted_spectrum)
+        {
+            if (item_type_ == "gr_complex")
+                {
+                    return conjugate_cc_;
+                }
+            if (item_type_ == "cshort")
+                {
+                    return conjugate_sc_;
+                }
+            if (item_type_ == "cbyte")
+                {
+                    return conjugate_ic_;
+                }
+            LOG(WARNING) << "Setting inverted_spectrum to true with item_type "
+                         << item_type_ << " is not defined and has no effect.";
+        }
+
     return kludge_copy_;
 }
 
 
-
 gr::basic_block_sptr Pass_Through::get_right_block()
 {
+    if (inverted_spectrum)
+        {
+            if (item_type_ == "gr_complex")
+                {
+                    return conjugate_cc_;
+                }
+            if (item_type_ == "cshort")
+                {
+                    return conjugate_sc_;
+                }
+            if (item_type_ == "cbyte")
+                {
+                    return conjugate_ic_;
+                }
+            DLOG(WARNING) << "Setting inverted_spectrum to true with item_type "
+                          << item_type_ << " is not defined and has no effect.";
+        }
+
     return kludge_copy_;
 }

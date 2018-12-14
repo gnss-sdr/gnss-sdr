@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -32,10 +32,10 @@
 #ifndef GNSS_SDR_GNSS_SATELLITE_H_
 #define GNSS_SDR_GNSS_SATELLITE_H_
 
-#include <string>
-#include <set>
-#include <iostream>
+#include <cstdint>
 #include <map>
+#include <set>
+#include <string>
 
 
 /*!
@@ -47,27 +47,29 @@
 class Gnss_Satellite
 {
 public:
-    Gnss_Satellite();                          //!< Default Constructor.
-    Gnss_Satellite(const std::string& system_, unsigned int PRN_); //!< Concrete GNSS satellite Constructor.
-    ~Gnss_Satellite();                         //!< Default Destructor.
-    unsigned int get_PRN() const;              //!< Gets satellite's PRN
-    std::string get_system() const;            //!< Gets the satellite system {"GPS", "GLONASS", "SBAS", "Galileo", "Beidou"}
-    std::string get_system_short() const;      //!< Gets the satellite system {"G", "R", "SBAS", "E", "C"}
-    std::string get_block() const;             //!< Gets the satellite block. If GPS, returns {"IIA", "IIR", "IIR-M", "IIF"}
-    std::string what_block(const std::string& system_, unsigned int PRN_); //!< Gets the block of a given satellite
-    friend bool operator== (const Gnss_Satellite &, const Gnss_Satellite &);  //!< operator== for comparison
-    friend std::ostream& operator<<(std::ostream &, const Gnss_Satellite &);  //!< operator<< for pretty printing
+    Gnss_Satellite();                                                       //!< Default Constructor.
+    Gnss_Satellite(const std::string& system_, uint32_t PRN_);              //!< Concrete GNSS satellite Constructor.
+    ~Gnss_Satellite();                                                      //!< Default Destructor.
+    void update_PRN(uint32_t PRN);                                          //!< Updates the PRN Number when information is decoded, only applies to GLONASS GNAV messages
+    uint32_t get_PRN() const;                                               //!< Gets satellite's PRN
+    int32_t get_rf_link() const;                                            //!< Gets the satellite's rf link
+    std::string get_system() const;                                         //!< Gets the satellite system {"GPS", "GLONASS", "SBAS", "Galileo", "Beidou"}
+    std::string get_system_short() const;                                   //!< Gets the satellite system {"G", "R", "SBAS", "E", "C"}
+    std::string get_block() const;                                          //!< Gets the satellite block. If GPS, returns {"IIA", "IIR", "IIR-M", "IIF"}
+    std::string what_block(const std::string& system_, uint32_t PRN_);      //!< Gets the block of a given satellite
+    friend bool operator==(const Gnss_Satellite&, const Gnss_Satellite&);   //!< operator== for comparison
+    friend std::ostream& operator<<(std::ostream&, const Gnss_Satellite&);  //!< operator<< for pretty printing
     //Gnss_Satellite& operator=(const Gnss_Satellite &);
 private:
-    unsigned int PRN;
+    uint32_t PRN;
     std::string system;
-    std::map<std::string,std::string> satelliteSystem;
+    std::map<std::string, std::string> satelliteSystem;
     std::string block;
-    signed int rf_link;
+    int32_t rf_link;
     void set_system(const std::string& system);  // Sets the satellite system {"GPS", "GLONASS", "SBAS", "Galileo", "Beidou"}.
-    void set_PRN(unsigned int PRN);       // Sets satellite's PRN
-    void set_block(const std::string& system_, unsigned int PRN_ );
-    std::set<std::string> system_set;     // = {"GPS", "GLONASS", "SBAS", "Galileo", "Compass"};
+    void set_PRN(uint32_t PRN);                  // Sets satellite's PRN
+    void set_block(const std::string& system_, uint32_t PRN_);
+    std::set<std::string> system_set;  // = {"GPS", "GLONASS", "SBAS", "Galileo", "Compass"};
     void reset();
 };
 #endif

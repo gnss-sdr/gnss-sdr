@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -31,24 +31,25 @@
 #ifndef GNSS_SDR_SBAS_L1_TELEMETRY_DECODER_CC_H
 #define GNSS_SDR_SBAS_L1_TELEMETRY_DECODER_CC_H
 
-#include <algorithm> // for copy
+#include "gnss_satellite.h"
+#include "viterbi_decoder.h"
+#include <boost/crc.hpp>
+#include <gnuradio/block.h>
+#include <algorithm>  // for copy
+#include <cstdint>
 #include <deque>
 #include <fstream>
 #include <string>
-#include <utility> // for pair
+#include <utility>  // for pair
 #include <vector>
-#include <boost/crc.hpp>
-#include <gnuradio/block.h>
-#include "gnss_satellite.h"
-#include "viterbi_decoder.h"
-#include "sbas_telemetry_data.h"
+
 
 class sbas_l1_telemetry_decoder_cc;
 
 typedef boost::shared_ptr<sbas_l1_telemetry_decoder_cc> sbas_l1_telemetry_decoder_cc_sptr;
 
 sbas_l1_telemetry_decoder_cc_sptr
-sbas_l1_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
+sbas_l1_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
 
 /*!
  * \brief This class implements a block that decodes the SBAS integrity and corrections data defined in RTCA MOPS DO-229
@@ -58,45 +59,39 @@ class sbas_l1_telemetry_decoder_cc : public gr::block
 {
 public:
     ~sbas_l1_telemetry_decoder_cc();
-    void set_satellite(Gnss_Satellite satellite);  //!< Set satellite PRN
-    void set_channel(int channel);                 //!< Set receiver's channel
+    void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
+    void set_channel(int32_t channel);                    //!< Set receiver's channel
 
     /*!
      * \brief This is where all signal processing takes place
      */
-    int general_work (int noutput_items, gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
-
-    /*!
-     * \brief Function which tells the scheduler how many input items
-     *        are required to produce noutput_items output items.
-     */
-    void forecast (int noutput_items, gr_vector_int &ninput_items_required);
+    int general_work(int noutput_items, gr_vector_int &ninput_items,
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
 private:
     friend sbas_l1_telemetry_decoder_cc_sptr
-    sbas_l1_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
-    sbas_l1_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
+    sbas_l1_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
+    sbas_l1_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
 
-    void viterbi_decoder(double *page_part_symbols, int *page_part_bits);
+    void viterbi_decoder(double *page_part_symbols, int32_t *page_part_bits);
     void align_samples();
 
-    static const int d_samples_per_symbol = 2;
-    static const int d_symbols_per_bit = 2;
-    static const int d_block_size_in_bits = 30;
+    static const int32_t d_samples_per_symbol = 2;
+    static const int32_t d_symbols_per_bit = 2;
+    static const int32_t d_block_size_in_bits = 30;
 
     bool d_dump;
     Gnss_Satellite d_satellite;
-    int d_channel;
+    int32_t d_channel;
 
     std::string d_dump_filename;
     std::ofstream d_dump_file;
 
-    size_t d_block_size; //!< number of samples which are processed during one invocation of the algorithms
-    std::vector<double> d_sample_buf; //!< input buffer holding the samples to be processed in one block
+    size_t d_block_size;               //!< number of samples which are processed during one invocation of the algorithms
+    std::vector<double> d_sample_buf;  //!< input buffer holding the samples to be processed in one block
 
-    typedef std::pair<int,std::vector<int>> msg_candiate_int_t;
-    typedef std::pair<int,std::vector<unsigned char>> msg_candiate_char_t;
+    typedef std::pair<int32_t, std::vector<int32_t>> msg_candiate_int_t;
+    typedef std::pair<int32_t, std::vector<uint8_t>> msg_candiate_char_t;
 
     // helper class for sample alignment
     class sample_aligner
@@ -109,9 +104,10 @@ private:
          * samples length must be a multiple of two
          * for block operation
          */
-       bool get_symbols(const std::vector<double> samples, std::vector<double> &symbols);
+        bool get_symbols(const std::vector<double> &samples, std::vector<double> &symbols);
+
     private:
-        int d_n_smpls_in_history ;
+        int32_t d_n_smpls_in_history;
         double d_iir_par;
         double d_corr_paired;
         double d_corr_shifted;
@@ -126,11 +122,12 @@ private:
         symbol_aligner_and_decoder();
         ~symbol_aligner_and_decoder();
         void reset();
-        bool get_bits(const std::vector<double> symbols, std::vector<int> &bits);
+        bool get_bits(const std::vector<double> &symbols, std::vector<int32_t> &bits);
+
     private:
-        int d_KK;
-        Viterbi_Decoder * d_vd1;
-        Viterbi_Decoder * d_vd2;
+        int32_t d_KK;
+        Viterbi_Decoder *d_vd1;
+        Viterbi_Decoder *d_vd2;
         double d_past_symbol;
     } d_symbol_aligner_and_decoder;
 
@@ -140,9 +137,10 @@ private:
     {
     public:
         void reset();
-        void get_frame_candidates(const std::vector<int> bits, std::vector<std::pair<int, std::vector<int>>> &msg_candidates);
+        void get_frame_candidates(const std::vector<int32_t> &bits, std::vector<std::pair<int32_t, std::vector<int32_t>>> &msg_candidates);
+
     private:
-        std::deque<int> d_buffer;
+        std::deque<int32_t> d_buffer;
     } d_frame_detector;
 
 
@@ -151,16 +149,14 @@ private:
     {
     public:
         void reset();
-        void get_valid_frames(const std::vector<msg_candiate_int_t> msg_candidates, std::vector<msg_candiate_char_t> &valid_msgs);
+        void get_valid_frames(const std::vector<msg_candiate_int_t> &msg_candidates, std::vector<msg_candiate_char_t> &valid_msgs);
+
     private:
         typedef boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false> crc_24_q_type;
         crc_24_q_type d_checksum_agent;
-        void zerropad_front_and_convert_to_bytes(const std::vector<int> msg_candidate, std::vector<unsigned char> &bytes);
-        void zerropad_back_and_convert_to_bytes(const std::vector<int> msg_candidate, std::vector<unsigned char> &bytes);
+        void zerropad_front_and_convert_to_bytes(const std::vector<int32_t> &msg_candidate, std::vector<uint8_t> &bytes);
+        void zerropad_back_and_convert_to_bytes(const std::vector<int32_t> &msg_candidate, std::vector<uint8_t> &bytes);
     } d_crc_verifier;
-
-
-    Sbas_Telemetry_Data sbas_telemetry_data;
 };
 
 #endif

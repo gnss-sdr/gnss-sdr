@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -15,7 +15,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 
 #
 
@@ -118,10 +118,10 @@ def flatten_section_text(sections):
 ########################################################################
 # Extract kernel info from section, represent as an implementation
 ########################################################################
-class impl_class:
+class impl_class(object):
     def __init__(self, kern_name, header, body):
         #extract LV_HAVE_*
-        self.deps = set(map(str.lower, re.findall('LV_HAVE_(\w+)', header)))
+        self.deps = set(res.lower() for res in re.findall('LV_HAVE_(\w+)', header))
         #extract function suffix and args
         body = flatten_section_text(body)
         try:
@@ -138,7 +138,7 @@ class impl_class:
                 arg_type, arg_name = m.groups()
                 self.args.append((arg_type, arg_name))
         except Exception as ex:
-            raise Exception('I cant parse the function prototype from: %s in %s\n%s'%(kern_name, body, ex))
+            raise Exception('I can\'t parse the function prototype from: %s in %s\n%s'%(kern_name, body, ex))
 
         assert self.name
         self.is_aligned = self.name.startswith('a_')
@@ -153,18 +153,18 @@ def extract_lv_haves(code):
     haves = list()
     for line in code.splitlines():
         if not line.strip().startswith('#'): continue
-        have_set = set(map(str.lower, re.findall('LV_HAVE_(\w+)', line)))
+        have_set = set(res.lower() for res in  re.findall('LV_HAVE_(\w+)', line))
         if have_set: haves.append(have_set)
     return haves
 
 ########################################################################
 # Represent a processing kernel, parse from file
 ########################################################################
-class kernel_class:
+class kernel_class(object):
     def __init__(self, kernel_file):
         self.name = os.path.splitext(os.path.basename(kernel_file))[0]
         self.pname = self.name.replace('volk_gnsssdr_', 'p_')
-        code = open(kernel_file, 'r').read()
+        code = open(kernel_file, 'rb').read().decode("utf-8")
         code = comment_remover(code)
         sections = split_into_nested_ifdef_sections(code)
         self._impls = list()
@@ -204,7 +204,7 @@ class kernel_class:
 ########################################################################
 __file__ = os.path.abspath(__file__)
 srcdir = os.path.dirname(os.path.dirname(__file__))
-kernel_files = glob.glob(os.path.join(srcdir, "kernels", "volk_gnsssdr", "*.h"))
+kernel_files = sorted(glob.glob(os.path.join(srcdir, "kernels", "volk_gnsssdr", "*.h")))
 kernels = list(map(kernel_class, kernel_files))
 
 if __name__ == '__main__':

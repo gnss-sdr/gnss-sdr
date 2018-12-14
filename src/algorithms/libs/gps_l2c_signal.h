@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -25,22 +25,23 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_GPS_L2C_SIGNAL_H_
-#define GNSS_GPS_L2C_SIGNAL_H_
+#ifndef GNSS_SDR_GPS_L2C_SIGNAL_H_
+#define GNSS_SDR_GPS_L2C_SIGNAL_H_
 
 #include <complex>
+#include <cstdint>
 
 
-//!Generates complex GPS L2C M code for the desired SV ID
-void gps_l2c_m_code_gen_complex(std::complex<float>* _dest, unsigned int _prn);
-
+//! Generates complex GPS L2C M code for the desired SV ID
+void gps_l2c_m_code_gen_complex(std::complex<float>* _dest, uint32_t _prn);
+void gps_l2c_m_code_gen_float(float* _dest, uint32_t _prn);
 
 //! Generates complex GPS L2C M code for the desired SV ID, and sampled to specific sampling frequency
-void gps_l2c_m_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, signed int _fs);
+void gps_l2c_m_code_gen_complex_sampled(std::complex<float>* _dest, uint32_t _prn, int32_t _fs);
 
 #endif /* GNSS_GPS_L2C_SIGNAL_H_ */

@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -33,6 +33,7 @@
 #ifndef GNSS_SDR_STRING_CONVERTER_H_
 #define GNSS_SDR_STRING_CONVERTER_H_
 
+#include <cstdint>
 #include <string>
 
 /*!
@@ -46,10 +47,12 @@ public:
     virtual ~StringConverter();
 
     bool convert(const std::string& value, bool default_value);
-    long convert(const std::string& value, long default_value);
-    int convert(const std::string& value, int default_value);
-    unsigned int convert(const std::string& value, unsigned int default_value);
-    unsigned short convert(const std::string& value, unsigned short default_value);
+    int64_t convert(const std::string& value, int64_t default_value);
+    uint64_t convert(const std::string& value, uint64_t default_value);
+    int32_t convert(const std::string& value, int32_t default_value);
+    uint32_t convert(const std::string& value, uint32_t default_value);
+    int16_t convert(const std::string& value, int16_t default_value);
+    uint16_t convert(const std::string& value, uint16_t default_value);
     float convert(const std::string& value, float default_value);
     double convert(const std::string& value, double default_value);
 };

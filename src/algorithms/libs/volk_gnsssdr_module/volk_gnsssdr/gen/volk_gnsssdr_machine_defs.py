@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -15,7 +15,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 from __future__ import print_function
 
@@ -26,7 +26,7 @@ from volk_gnsssdr_arch_defs import arch_dict
 machines = list()
 machine_dict = dict()
 
-class machine_class:
+class machine_class(object):
     def __init__(self, name, archs):
         self.name = name
         self.archs = list()
@@ -36,7 +36,7 @@ class machine_class:
             arch = arch_dict[arch_name]
             self.archs.append(arch)
             self.arch_names.append(arch_name)
-        self.alignment = max(map(lambda a: a.alignment, self.archs))
+        self.alignment = max([a.alignment for a in self.archs])
     
     def __repr__(self): return self.name
 

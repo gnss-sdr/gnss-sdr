@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -13,53 +13,124 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
 if(ENABLE_CUDA)
-     set(OPT_TRACKING_BLOCKS ${OPT_TRACKING_BLOCKS} gps_l1_ca_dll_pll_tracking_gpu_cc.cc)
-     set(OPT_TRACKING_INCLUDES ${OPT_TRACKING_INCLUDES} ${CUDA_INCLUDE_DIRS})
-     set(OPT_TRACKING_LIBRARIES ${OPT_TRACKING_LIBRARIES} ${CUDA_LIBRARIES}) 
-endif(ENABLE_CUDA)
+    set(OPT_TRACKING_BLOCKS_SOURCES
+        ${OPT_TRACKING_BLOCKS_SOURCES}
+        gps_l1_ca_dll_pll_tracking_gpu_cc.cc
+    )
+    set(OPT_TRACKING_BLOCKS_HEADERS
+        ${OPT_TRACKING_BLOCKS_HEADERS}
+        gps_l1_ca_dll_pll_tracking_gpu_cc.h
+    )
+    set(OPT_TRACKING_INCLUDES
+        ${OPT_TRACKING_INCLUDES}
+        ${CUDA_INCLUDE_DIRS}
+    )
+    set(OPT_TRACKING_LIBRARIES
+        ${OPT_TRACKING_LIBRARIES}
+        ${CUDA_LIBRARIES}
+    )
+endif()
+
+if(ENABLE_FPGA)
+    set(OPT_TRACKING_BLOCKS_SOURCES
+        ${OPT_TRACKING_BLOCKS_SOURCES}
+        dll_pll_veml_tracking_fpga.cc
+    )
+    set(OPT_TRACKING_BLOCKS_HEADERS
+        ${OPT_TRACKING_BLOCKS_HEADERS}
+        dll_pll_veml_tracking_fpga.h
+    )
+endif()
 
 set(TRACKING_GR_BLOCKS_SOURCES
-     galileo_e1_dll_pll_veml_tracking_cc.cc
-     galileo_e1_tcp_connector_tracking_cc.cc
-     gps_l1_ca_dll_pll_tracking_cc.cc
-     gps_l1_ca_tcp_connector_tracking_cc.cc
-     galileo_e5a_dll_pll_tracking_cc.cc
-     gps_l2_m_dll_pll_tracking_cc.cc
-     gps_l1_ca_dll_pll_c_aid_tracking_cc.cc
-     gps_l1_ca_dll_pll_c_aid_tracking_sc.cc
-     ${OPT_TRACKING_BLOCKS}   
+    galileo_e1_tcp_connector_tracking_cc.cc
+    gps_l1_ca_tcp_connector_tracking_cc.cc
+    gps_l1_ca_dll_pll_c_aid_tracking_cc.cc
+    gps_l1_ca_dll_pll_c_aid_tracking_sc.cc
+    glonass_l1_ca_dll_pll_tracking_cc.cc
+    glonass_l1_ca_dll_pll_c_aid_tracking_cc.cc
+    glonass_l1_ca_dll_pll_c_aid_tracking_sc.cc
+    gps_l1_ca_kf_tracking_cc.cc
+    glonass_l2_ca_dll_pll_tracking_cc.cc
+    glonass_l2_ca_dll_pll_c_aid_tracking_cc.cc
+    glonass_l2_ca_dll_pll_c_aid_tracking_sc.cc
+    dll_pll_veml_tracking.cc
+    ${OPT_TRACKING_BLOCKS_SOURCES}
+)
+
+set(TRACKING_GR_BLOCKS_HEADERS
+    galileo_e1_tcp_connector_tracking_cc.h
+    gps_l1_ca_tcp_connector_tracking_cc.h
+    gps_l1_ca_dll_pll_c_aid_tracking_cc.h
+    gps_l1_ca_dll_pll_c_aid_tracking_sc.h
+    glonass_l1_ca_dll_pll_tracking_cc.h
+    glonass_l1_ca_dll_pll_c_aid_tracking_cc.h
+    glonass_l1_ca_dll_pll_c_aid_tracking_sc.h
+    gps_l1_ca_kf_tracking_cc.h
+    glonass_l2_ca_dll_pll_tracking_cc.h
+    glonass_l2_ca_dll_pll_c_aid_tracking_cc.h
+    glonass_l2_ca_dll_pll_c_aid_tracking_sc.h
+    dll_pll_veml_tracking.h
+    ${OPT_TRACKING_BLOCKS_HEADERS}
 )
 
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${Boost_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-     ${VOLK_GNSSSDR_INCLUDE_DIRS}
-     ${OPT_TRACKING_INCLUDES}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+    ${CMAKE_SOURCE_DIR}/src/core/interfaces
+    ${CMAKE_SOURCE_DIR}/src/core/receiver
+    ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs
+    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+    ${ARMADILLO_INCLUDE_DIRS}
+    ${GLOG_INCLUDE_DIRS}
+    ${GFlags_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
+    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+    ${VOLK_GNSSSDR_INCLUDE_DIRS}
+    ${OPT_TRACKING_INCLUDES}
+    ${MATIO_INCLUDE_DIRS}
 )
 
 if(ENABLE_GENERIC_ARCH)
-    add_definitions( -DGENERIC_ARCH=1 )
-endif(ENABLE_GENERIC_ARCH)
+    add_definitions(-DGENERIC_ARCH=1)
+endif()
 
-file(GLOB TRACKING_GR_BLOCKS_HEADERS "*.h")
 list(SORT TRACKING_GR_BLOCKS_HEADERS)
-add_library(tracking_gr_blocks ${TRACKING_GR_BLOCKS_SOURCES} ${TRACKING_GR_BLOCKS_HEADERS})
+list(SORT TRACKING_GR_BLOCKS_SOURCES)
+
+add_library(tracking_gr_blocks
+    ${TRACKING_GR_BLOCKS_SOURCES}
+    ${TRACKING_GR_BLOCKS_HEADERS}
+)
+
 source_group(Headers FILES ${TRACKING_GR_BLOCKS_HEADERS})
 
-target_link_libraries(tracking_gr_blocks tracking_lib ${GNURADIO_RUNTIME_LIBRARIES} gnss_sp_libs ${Boost_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${OPT_TRACKING_LIBRARIES})
+target_link_libraries(tracking_gr_blocks
+    tracking_lib
+    ${GNURADIO_RUNTIME_LIBRARIES}
+    gnss_sdr_flags gnss_sp_libs
+    ${Boost_LIBRARIES}
+    ${VOLK_GNSSSDR_LIBRARIES}
+    ${MATIO_LIBRARIES}
+    ${OPT_TRACKING_LIBRARIES}
+)
 
-if(NOT VOLK_GNSSSDR_FOUND)
-    add_dependencies(tracking_gr_blocks volk_gnsssdr_module)
-endif(NOT VOLK_GNSSSDR_FOUND)
+if(NOT VOLKGNSSSDR_FOUND)
+    if(MATIO_FOUND)
+        add_dependencies(tracking_gr_blocks volk_gnsssdr_module)
+    else()
+        add_dependencies(tracking_gr_blocks volk_gnsssdr_module
+            matio-${GNSSSDR_MATIO_LOCAL_VERSION}
+        )
+    endif()
+else()
+    if(NOT MATIO_FOUND)
+        add_dependencies(tracking_gr_blocks
+            matio-${GNSSSDR_MATIO_LOCAL_VERSION}
+        )
+    endif()
+endif()

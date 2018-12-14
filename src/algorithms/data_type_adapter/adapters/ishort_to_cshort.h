@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -31,11 +31,11 @@
 #ifndef GNSS_SDR_ISHORT_TO_CSHORT_H_
 #define GNSS_SDR_ISHORT_TO_CSHORT_H_
 
-#include <string>
-#include <gnuradio/blocks/file_sink.h>
+#include "conjugate_sc.h"
 #include "gnss_block_interface.h"
 #include "interleaved_short_to_complex_short.h"
-
+#include <gnuradio/blocks/file_sink.h>
+#include <string>
 
 
 class ConfigurationInterface;
@@ -44,33 +44,35 @@ class ConfigurationInterface;
  * \brief Adapts a short integer (16 bits) interleaved sample stream into a std::complex<short> stream
  *
  */
-class IshortToCshort: public GNSSBlockInterface
+class IshortToCshort : public GNSSBlockInterface
 {
 public:
     IshortToCshort(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+        const std::string& role, unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~IshortToCshort();
 
-    std::string role()
+    inline std::string role() override
     {
         return role_;
     }
+
     //! Returns "Ishort_To_Cshort"
-    std::string implementation()
+    inline std::string implementation() override
     {
         return "Ishort_To_Cshort";
     }
-    size_t item_size()
+
+    inline size_t item_size() override
     {
         return 0;
     }
 
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
 
 private:
     interleaved_short_to_complex_short_sptr interleaved_short_to_complex_short_;
@@ -83,7 +85,8 @@ private:
     unsigned int in_streams_;
     unsigned int out_streams_;
     gr::blocks::file_sink::sptr file_sink_;
+    conjugate_sc_sptr conjugate_sc_;
+    bool inverted_spectrum;
 };
 
 #endif
-

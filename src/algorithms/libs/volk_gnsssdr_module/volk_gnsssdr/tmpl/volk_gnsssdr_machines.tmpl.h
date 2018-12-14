@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
  *
  * This file is part of GNSS-SDR.
  *
@@ -14,7 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef INCLUDED_LIBVOLK_GNSSSDR_MACHINES_H
@@ -27,6 +27,7 @@
 
 __VOLK_DECL_BEGIN
 
+// clang-format off
 struct volk_gnsssdr_machine {
     const unsigned int caps; //capabilities (i.e., archs compiled into this machine, in the volk_gnsssdr_get_lvarch format)
     const char *name;
@@ -48,5 +49,6 @@ extern struct volk_gnsssdr_machine volk_gnsssdr_machine_${machine.name};
 %endfor
 
 __VOLK_DECL_END
+// clang-format on
 
-#endif //INCLUDED_LIBVOLK_GNSSSDR_MACHINES_H
+#endif  //INCLUDED_LIBVOLK_GNSSSDR_MACHINES_H

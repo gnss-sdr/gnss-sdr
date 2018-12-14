@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,39 +24,39 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
 #include "direct_resampler_conditioner.h"
-#include <cmath>
-#include <limits>
+#include "configuration_interface.h"
+#include "direct_resampler_conditioner_cb.h"
+#include "direct_resampler_conditioner_cc.h"
+#include "direct_resampler_conditioner_cs.h"
 #include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <volk/volk.h>
-#include "direct_resampler_conditioner_cc.h"
-#include "direct_resampler_conditioner_cs.h"
-#include "direct_resampler_conditioner_cb.h"
-#include "configuration_interface.h"
+#include <cmath>
+#include <cstdint>
+#include <limits>
 
 using google::LogMessage;
 
 DirectResamplerConditioner::DirectResamplerConditioner(
-        ConfigurationInterface* configuration, std::string role,
-        unsigned int in_stream, unsigned int out_stream) :
-        role_(role), in_stream_(in_stream), out_stream_(out_stream)
+    ConfigurationInterface* configuration, const std::string& role,
+    unsigned int in_stream, unsigned int out_stream) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
 {
     std::string default_item_type = "short";
     std::string default_dump_file = "./data/signal_conditioner.dat";
-    double fs_in;
-    fs_in = configuration->property("GNSS-SDR.internal_fs_hz", 2048000.0);
-    sample_freq_in_ = configuration->property(role_ + ".sample_freq_in", (double)4000000.0);
+    double fs_in_deprecated, fs_in;
+    fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000.0);
+    fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+    sample_freq_in_ = configuration->property(role_ + ".sample_freq_in", 4000000.0);
     sample_freq_out_ = configuration->property(role_ + ".sample_freq_out", fs_in);
-    if(std::fabs(fs_in - sample_freq_out_) > std::numeric_limits<double>::epsilon())
+    if (std::fabs(fs_in - sample_freq_out_) > std::numeric_limits<double>::epsilon())
         {
-            std::string aux_warn = "CONFIGURATION WARNING: Parameters GNSS-SDR.internal_fs_hz and "
-                    + role_ + ".sample_freq_out are not set to the same value!" ;
+            std::string aux_warn = "CONFIGURATION WARNING: Parameters GNSS-SDR.internal_fs_sps and " + role_ + ".sample_freq_out are not set to the same value!";
             LOG(WARNING) << aux_warn;
             std::cout << aux_warn << std::endl;
         }
@@ -65,7 +65,7 @@ DirectResamplerConditioner::DirectResamplerConditioner(
     DLOG(INFO) << "dump_ is " << dump_;
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             resampler_ = direct_resampler_make_conditioner_cc(sample_freq_in_, sample_freq_out_);
@@ -74,7 +74,7 @@ DirectResamplerConditioner::DirectResamplerConditioner(
             DLOG(INFO) << "Item size " << item_size_;
             DLOG(INFO) << "resampler(" << resampler_->unique_id() << ")";
         }
-    else if (item_type_.compare("cshort") == 0)
+    else if (item_type_ == "cshort")
         {
             item_size_ = sizeof(lv_16sc_t);
             resampler_ = direct_resampler_make_conditioner_cs(sample_freq_in_, sample_freq_out_);
@@ -83,7 +83,7 @@ DirectResamplerConditioner::DirectResamplerConditioner(
             DLOG(INFO) << "Item size " << item_size_;
             DLOG(INFO) << "resampler(" << resampler_->unique_id() << ")";
         }
-    else if (item_type_.compare("cbyte") == 0)
+    else if (item_type_ == "cbyte")
         {
             item_size_ = sizeof(lv_8sc_t);
             resampler_ = direct_resampler_make_conditioner_cb(sample_freq_in_, sample_freq_out_);
@@ -95,7 +95,7 @@ DirectResamplerConditioner::DirectResamplerConditioner(
     else
         {
             LOG(WARNING) << item_type_ << " unrecognized item type for resampler";
-            item_size_ = sizeof(short);
+            item_size_ = sizeof(int16_t);
         }
     if (dump_)
         {
@@ -103,11 +103,18 @@ DirectResamplerConditioner::DirectResamplerConditioner(
             file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
             DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
         }
+    if (in_stream_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_stream_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 
-DirectResamplerConditioner::~DirectResamplerConditioner() {}
-
+DirectResamplerConditioner::~DirectResamplerConditioner() = default;
 
 
 void DirectResamplerConditioner::connect(gr::top_block_sptr top_block)

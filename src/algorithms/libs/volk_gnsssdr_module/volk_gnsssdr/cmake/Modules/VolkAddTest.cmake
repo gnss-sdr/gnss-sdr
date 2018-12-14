@@ -1,21 +1,19 @@
-# Copyright 2015 Free Software Foundation, Inc.
+# Copyright (C) 2015-2018 (see AUTHORS file for a list of contributors)
 #
-# This file is part of Volk
+# This file is part of GNSS-SDR.
 #
-# Volk is free software; you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3, or (at your option)
-# any later version.
+# GNSS-SDR is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-# Volk is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
-# License for more details.
+# GNSS-SDR is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Volk; see the file COPYING.  If not, write to the Free
-# Software Foundation, Inc., 51 Franklin Street, Boston, MA
-# 02110-1301, USA.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 
 if(DEFINED __INCLUDED_VOLK_ADD_TEST)
     return()
@@ -23,23 +21,39 @@ endif()
 set(__INCLUDED_VOLK_ADD_TEST TRUE)
 
 ########################################################################
+# Generate a test executable which can be used in ADD_TEST to call
+# various subtests.
+#
+# SOURCES        - sources for the test
+# TARGET_DEPS    - build target dependencies (e.g., libraries)
+########################################################################
+
+function(VOLK_GEN_TEST executable_name)
+    include(CMakeParseArgumentsCopy)
+    cmake_parse_arguments(VOLK_TEST "" "" "SOURCES;TARGET_DEPS;EXTRA_LIB_DIRS;ENVIRONS;ARGS" ${ARGN})
+    add_executable(${executable_name} ${VOLK_TEST_SOURCES})
+    target_link_libraries(${executable_name} ${VOLK_TEST_TARGET_DEPS})
+endfunction()
+
+########################################################################
 # Add a unit test and setup the environment for it.
 # Encloses ADD_TEST, with additional functionality to create a shell
 # script that sets the environment to gain access to in-build binaries
 # properly. The following variables are used to pass in settings:
+# A test executable has to be generated with VOLK_GEN_TEST beforehand.
+# The executable name has to be passed as argument.
 #
 # NAME           - the test name
-# SOURCES        - sources for the test
 # TARGET_DEPS    - build target dependencies (e.g., libraries)
 # EXTRA_LIB_DIRS - other directories for the library path
 # ENVIRONS       - other environment key/value pairs
 # ARGS           - arguments for the test
 ########################################################################
-function(VOLK_ADD_TEST test_name)
+function(VOLK_ADD_TEST test_name executable_name)
 
   #parse the arguments for component names
   include(CMakeParseArgumentsCopy)
-  CMAKE_PARSE_ARGUMENTS(VOLK_TEST "" "" "SOURCES;TARGET_DEPS;EXTRA_LIB_DIRS;ENVIRONS;ARGS" ${ARGN})
+  cmake_parse_arguments(VOLK_TEST "" "" "TARGET_DEPS;EXTRA_LIB_DIRS;ENVIRONS;ARGS" ${ARGN})
 
   #set the initial environs to use
   set(environs ${VOLK_TEST_ENVIRONS})
@@ -65,7 +79,7 @@ function(VOLK_ADD_TEST test_name)
     #"add_test" command, via the $<FOO:BAR> operator; make sure the
     #test's directory is first, since it ($1) is prepended to PATH.
     unset(TARGET_DIR_LIST)
-    foreach(target ${test_name} ${VOLK_TEST_TARGET_DEPS})
+    foreach(target ${executable_name} ${VOLK_TEST_TARGET_DEPS})
       list(APPEND TARGET_DIR_LIST "\$<TARGET_FILE_DIR:${target}>")
     endforeach()
 
@@ -132,19 +146,18 @@ function(VOLK_ADD_TEST test_name)
     #each line sets an environment variable
     foreach(environ ${environs})
       file(APPEND ${sh_file} "export ${environ}\n")
-    endforeach(environ)
+    endforeach()
+
+    set(VOLK_TEST_ARGS "${test_name}")
 
     #redo the test args to have a space between each
     string(REPLACE ";" " " VOLK_TEST_ARGS "${VOLK_TEST_ARGS}")
 
     #finally: append the test name to execute
-    file(APPEND ${sh_file} ${test_name} " " ${VOLK_TEST_ARGS} "\n")
+    file(APPEND ${sh_file} "${CMAKE_CROSSCOMPILING_EMULATOR} ${executable_name} ${VOLK_TEST_ARGS}\n")
 
     #make the shell file executable
     execute_process(COMMAND chmod +x ${sh_file})
-
-    add_executable(${test_name} ${VOLK_TEST_SOURCES})
-    target_link_libraries(${test_name} ${VOLK_TEST_TARGET_DEPS})
 
     #add the shell file as the test to execute;
     #use the form that allows for $<FOO:BAR> substitutions,
@@ -153,7 +166,7 @@ function(VOLK_ADD_TEST test_name)
       COMMAND ${SHELL} ${sh_file} ${TARGET_DIR_LIST}
     )
 
-  endif(UNIX)
+  endif()
 
   if(WIN32)
     #In the land of windows, all libraries must be in the PATH.  Since
@@ -161,20 +174,19 @@ function(VOLK_ADD_TEST test_name)
     #set them in the PATH to run tests.  The following appends the
     #path of a target dependency.
     #
-    #NOTE: get_target_property LOCATION is being deprecated as of
-    #CMake 3.2.0, which just prints a warning & notes that this
-    #functionality will be removed in the future.  Leave it here for
-    #now until someone can figure out how to do this in Windows.
-    foreach(target ${test_name} ${VOLK_TEST_TARGET_DEPS})
-      get_target_property(location "${target}" LOCATION)
-      if(location)
-        get_filename_component(path ${location} PATH)
-        string(REGEX REPLACE "\\$\\(.*\\)" ${CMAKE_BUILD_TYPE} path ${path})
-        list(APPEND libpath ${path})
-      endif(location)
-    endforeach(target)
+    #create a list of target directories to be determined by the
+    #"add_test" command, via the $<FOO:BAR> operator; make sure the
+    #test's directory is first, since it ($1) is prepended to PATH.
+    unset(TARGET_DIR_LIST)
+    foreach(target ${executable_name} ${VOLK_TEST_TARGET_DEPS})
+      list(APPEND TARGET_DIR_LIST "$<TARGET_FILE_DIR:${target}>")
+    endforeach()
+    #replace list separator with the path separator (escaped)
+    string(REPLACE ";" "\\\\;" TARGET_DIR_LIST "${TARGET_DIR_LIST}")
 
-    list(APPEND libpath ${DLL_PATHS} "%PATH%")
+    #add command line argument (TARGET_DIR_LIST) to path and append current path
+    list(INSERT libpath 0 "%1")
+    list(APPEND libpath "%PATH%")
 
     #replace list separator with the path separator (escaped)
     string(REPLACE ";" "\\;" libpath "${libpath}")
@@ -187,19 +199,21 @@ function(VOLK_ADD_TEST test_name)
     #each line sets an environment variable
     foreach(environ ${environs})
       file(APPEND ${bat_file} "SET ${environ}\n")
-    endforeach(environ)
+    endforeach()
+
+    set(VOLK_TEST_ARGS "${test_name}")
 
     #redo the test args to have a space between each
     string(REPLACE ";" " " VOLK_TEST_ARGS "${VOLK_TEST_ARGS}")
 
     #finally: append the test name to execute
-    file(APPEND ${bat_file} ${test_name} " " ${VOLK_TEST_ARGS} "\n")
+    file(APPEND ${bat_file} "${executable_name} ${VOLK_TEST_ARGS}\n")
     file(APPEND ${bat_file} "\n")
 
-    add_executable(${test_name} ${VOLK_TEST_SOURCES})
-    target_link_libraries(${test_name} ${VOLK_TEST_TARGET_DEPS})
+    add_test(NAME qa_${test_name}
+        COMMAND ${bat_file} ${TARGET_DIR_LIST}
+    )
+  endif()
 
-    add_test(${test_name} ${bat_file})
-  endif(WIN32)
+endfunction()
 
-endfunction(VOLK_ADD_TEST)

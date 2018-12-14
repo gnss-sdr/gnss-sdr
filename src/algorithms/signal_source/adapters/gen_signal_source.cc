@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -25,29 +25,28 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
 #include "gen_signal_source.h"
-#include <iostream>
-#include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread/thread.hpp>
+#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <gnuradio/message.h>
-#include <glog/logging.h>
+#include <sstream>
+#include <utility>
 
 using google::LogMessage;
 
 // Constructor
 GenSignalSource::GenSignalSource(GNSSBlockInterface *signal_generator, GNSSBlockInterface *filter,
-        std::string role, boost::shared_ptr<gr::msg_queue> queue) :
-    signal_generator_(signal_generator),
-    filter_(filter),
-    role_(role),
-    queue_(queue)
+    std::string role, boost::shared_ptr<gr::msg_queue> queue) : signal_generator_(signal_generator),
+                                                                filter_(filter),
+                                                                role_(std::move(role)),
+                                                                queue_(std::move(queue))
 {
     connected_ = false;
 }
@@ -73,7 +72,7 @@ void GenSignalSource::connect(gr::top_block_sptr top_block)
     filter_->connect(top_block);
 
     top_block->connect(signal_generator_->get_right_block(), 0,
-                       filter_->get_left_block(), 0);
+        filter_->get_left_block(), 0);
 
     DLOG(INFO) << "signal_generator -> filter";
 
@@ -90,7 +89,7 @@ void GenSignalSource::disconnect(gr::top_block_sptr top_block)
         }
 
     top_block->disconnect(signal_generator_->get_right_block(), 0,
-                          filter_->get_left_block(), 0);
+        filter_->get_left_block(), 0);
 
     signal_generator_->disconnect(top_block);
     filter_->disconnect(top_block);
@@ -109,4 +108,3 @@ gr::basic_block_sptr GenSignalSource::get_right_block()
 {
     return filter_->get_right_block();
 }
-

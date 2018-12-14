@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_AltitudeInfo_H_
-#define	_AltitudeInfo_H_
+#ifndef _AltitudeInfo_H_
+#define _AltitudeInfo_H_
 
 
 #include <asn_application.h>
@@ -16,36 +16,39 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum altitudeDirection {
-	altitudeDirection_height	= 0,
-	altitudeDirection_depth	= 1
-} e_altitudeDirection;
+    /* Dependencies */
+    typedef enum altitudeDirection
+    {
+        altitudeDirection_height = 0,
+        altitudeDirection_depth = 1
+    } e_altitudeDirection;
 
-/* AltitudeInfo */
-typedef struct AltitudeInfo {
-	ENUMERATED_t	 altitudeDirection;
-	long	 altitude;
-	long	 altUncertainty;
-	/*
+    /* AltitudeInfo */
+    typedef struct AltitudeInfo
+    {
+        ENUMERATED_t altitudeDirection;
+        long altitude;
+        long altUncertainty;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} AltitudeInfo_t;
 
-/* Implementation */
-/* extern asn_TYPE_descriptor_t asn_DEF_altitudeDirection_2;	// (Use -fall-defs-global to expose) */
-extern asn_TYPE_descriptor_t asn_DEF_AltitudeInfo;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } AltitudeInfo_t;
+
+    /* Implementation */
+    /* extern asn_TYPE_descriptor_t asn_DEF_altitudeDirection_2;	// (Use -fall-defs-global to expose) */
+    extern asn_TYPE_descriptor_t asn_DEF_AltitudeInfo;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _AltitudeInfo_H_ */
+#endif /* _AltitudeInfo_H_ */
 #include <asn_internal.h>

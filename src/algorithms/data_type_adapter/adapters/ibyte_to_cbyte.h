@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -32,11 +32,11 @@
 #ifndef GNSS_SDR_IBYTE_TO_CBYTE_H_
 #define GNSS_SDR_IBYTE_TO_CBYTE_H_
 
-#include <string>
-#include <gnuradio/blocks/file_sink.h>
+#include "conjugate_ic.h"
 #include "gnss_block_interface.h"
 #include "interleaved_byte_to_complex_byte.h"
-
+#include <gnuradio/blocks/file_sink.h>
+#include <string>
 
 class ConfigurationInterface;
 
@@ -48,29 +48,31 @@ class IbyteToCbyte : public GNSSBlockInterface
 {
 public:
     IbyteToCbyte(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+        const std::string& role, unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~IbyteToCbyte();
 
-    std::string role()
+    inline std::string role() override
     {
         return role_;
     }
+
     //! Returns "Ibyte_To_Cbyte"
-    std::string implementation()
+    inline std::string implementation() override
     {
         return "Ibyte_To_Cbyte";
     }
-    size_t item_size()
+
+    inline size_t item_size() override
     {
         return 0;
     }
 
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
 
 private:
     interleaved_byte_to_complex_byte_sptr ibyte_to_cbyte_;
@@ -83,6 +85,8 @@ private:
     unsigned int in_streams_;
     unsigned int out_streams_;
     gr::blocks::file_sink::sptr file_sink_;
+    conjugate_ic_sptr conjugate_ic_;
+    bool inverted_spectrum;
 };
 
 #endif

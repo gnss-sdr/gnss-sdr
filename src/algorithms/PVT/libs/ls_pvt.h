@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -45,20 +45,20 @@ private:
     /*!
      * \brief Computes the Lorentz inner product between two vectors
      */
-    double lorentz(const arma::vec & x,const arma::vec & y);
+    double lorentz(const arma::vec& x, const arma::vec& y);
+
 public:
     Ls_Pvt();
 
     /*!
      * \brief Computes the initial position solution based on the Bancroft algorithm
      */
-    arma::vec bancroftPos(const arma::mat & satpos, const arma::vec & obs);
+    arma::vec bancroftPos(const arma::mat& satpos, const arma::vec& obs);
 
     /*!
      * \brief Computes the Weighted Least Squares position solution
      */
-    arma::vec leastSquarePos(const arma::mat & satpos, const arma::vec & obs, const arma::vec & w_vec);
-
+    arma::vec leastSquarePos(const arma::mat& satpos, const arma::vec& obs, const arma::vec& w_vec);
 };
 
 #endif

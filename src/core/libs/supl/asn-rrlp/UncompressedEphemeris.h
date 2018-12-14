@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_UncompressedEphemeris_H_
-#define	_UncompressedEphemeris_H_
+#ifndef _UncompressedEphemeris_H_
+#define _UncompressedEphemeris_H_
 
 
 #include <asn_application.h>
@@ -16,53 +16,55 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* UncompressedEphemeris */
-typedef struct UncompressedEphemeris {
-	long	 ephemCodeOnL2;
-	long	 ephemURA;
-	long	 ephemSVhealth;
-	long	 ephemIODC;
-	long	 ephemL2Pflag;
-	EphemerisSubframe1Reserved_t	 ephemSF1Rsvd;
-	long	 ephemTgd;
-	long	 ephemToc;
-	long	 ephemAF2;
-	long	 ephemAF1;
-	long	 ephemAF0;
-	long	 ephemCrs;
-	long	 ephemDeltaN;
-	long	 ephemM0;
-	long	 ephemCuc;
-	unsigned long	 ephemE;
-	long	 ephemCus;
-	unsigned long	 ephemAPowerHalf;
-	long	 ephemToe;
-	long	 ephemFitFlag;
-	long	 ephemAODA;
-	long	 ephemCic;
-	long	 ephemOmegaA0;
-	long	 ephemCis;
-	long	 ephemI0;
-	long	 ephemCrc;
-	long	 ephemW;
-	long	 ephemOmegaADot;
-	long	 ephemIDot;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} UncompressedEphemeris_t;
+    /* UncompressedEphemeris */
+    typedef struct UncompressedEphemeris
+    {
+        long ephemCodeOnL2;
+        long ephemURA;
+        long ephemSVhealth;
+        long ephemIODC;
+        long ephemL2Pflag;
+        EphemerisSubframe1Reserved_t ephemSF1Rsvd;
+        long ephemTgd;
+        long ephemToc;
+        long ephemAF2;
+        long ephemAF1;
+        long ephemAF0;
+        long ephemCrs;
+        long ephemDeltaN;
+        long ephemM0;
+        long ephemCuc;
+        unsigned long ephemE;
+        long ephemCus;
+        unsigned long ephemAPowerHalf;
+        long ephemToe;
+        long ephemFitFlag;
+        long ephemAODA;
+        long ephemCic;
+        long ephemOmegaA0;
+        long ephemCis;
+        long ephemI0;
+        long ephemCrc;
+        long ephemW;
+        long ephemOmegaADot;
+        long ephemIDot;
 
-/* Implementation */
-/* extern asn_TYPE_descriptor_t asn_DEF_ephemE_17;	// (Use -fall-defs-global to expose) */
-/* extern asn_TYPE_descriptor_t asn_DEF_ephemAPowerHalf_19;	// (Use -fall-defs-global to expose) */
-extern asn_TYPE_descriptor_t asn_DEF_UncompressedEphemeris;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } UncompressedEphemeris_t;
+
+    /* Implementation */
+    /* extern asn_TYPE_descriptor_t asn_DEF_ephemE_17;	// (Use -fall-defs-global to expose) */
+    /* extern asn_TYPE_descriptor_t asn_DEF_ephemAPowerHalf_19;	// (Use -fall-defs-global to expose) */
+    extern asn_TYPE_descriptor_t asn_DEF_UncompressedEphemeris;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _UncompressedEphemeris_H_ */
+#endif /* _UncompressedEphemeris_H_ */
 #include <asn_internal.h>

@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -32,33 +32,40 @@
 #ifndef GNSS_SDR_HYBRID_LS_PVT_H_
 #define GNSS_SDR_HYBRID_LS_PVT_H_
 
+#include "galileo_almanac.h"
+#include "galileo_navigation_message.h"
+#include "gnss_synchro.h"
+#include "gps_cnav_navigation_message.h"
+#include "gps_navigation_message.h"
+#include "ls_pvt.h"
+#include "rtklib_rtkcmn.h"
 #include <fstream>
-#include <iostream>
 #include <map>
 #include <string>
-#include "ls_pvt.h"
-#include "galileo_navigation_message.h"
-#include "gps_navigation_message.h"
-#include "gps_cnav_navigation_message.h"
-#include "gnss_synchro.h"
-
 
 /*!
  * \brief This class implements a simple PVT Least Squares solution
  */
 class hybrid_ls_pvt : public Ls_Pvt
 {
+private:
+    int count_valid_position;
+    bool d_flag_dump_enabled;
+    std::string d_dump_filename;
+    std::ofstream d_dump_file;
+    int d_nchannels;  // Number of available channels for positioning
+    double d_galileo_current_time;
+
 public:
-    hybrid_ls_pvt(int nchannels,std::string dump_filename, bool flag_dump_to_file);
+    hybrid_ls_pvt(int nchannels, std::string dump_filename, bool flag_dump_to_file);
     ~hybrid_ls_pvt();
 
-    bool get_PVT(std::map<int,Gnss_Synchro> gnss_observables_map, double hybrid_current_time, bool flag_averaging);
-    int d_nchannels;                                        //!< Number of available channels for positioning
+    bool get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, double Rx_time, bool flag_averaging);
 
-    std::map<int,Galileo_Ephemeris> galileo_ephemeris_map; //!< Map storing new Galileo_Ephemeris
-    std::map<int,Gps_Ephemeris> gps_ephemeris_map; //!< Map storing new GPS_Ephemeris
-    std::map<int,Gps_CNAV_Ephemeris> gps_cnav_ephemeris_map;
-    
+    std::map<int, Galileo_Ephemeris> galileo_ephemeris_map;  //!< Map storing new Galileo_Ephemeris
+    std::map<int, Gps_Ephemeris> gps_ephemeris_map;          //!< Map storing new GPS_Ephemeris
+    std::map<int, Gps_CNAV_Ephemeris> gps_cnav_ephemeris_map;
+
     Galileo_Utc_Model galileo_utc_model;
     Galileo_Iono galileo_iono;
     Galileo_Almanac galileo_almanac;
@@ -68,16 +75,6 @@ public:
 
     Gps_CNAV_Iono gps_cnav_iono;
     Gps_CNAV_Utc_Model gps_cnav_utc_model;
-
-    double d_galileo_current_time;
-
-    int count_valid_position;
-
-    bool d_flag_dump_enabled;
-    bool d_flag_averaging;
-
-    std::string d_dump_filename;
-    std::ofstream d_dump_file;
 };
 
 #endif

@@ -3,7 +3,7 @@
  * \brief Defines addition of 16-bit integers with saturation
  * \author Javier Arribas, 2015. javier.arribas(at)cttc.es
  *
- * Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
  *
  * This file is part of GNSS-SDR.
  *
@@ -18,7 +18,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  */
 
 
@@ -29,7 +29,7 @@
 
 static inline int16_t sat_adds16i(int16_t x, int16_t y)
 {
-    int32_t res = (int32_t) x + (int32_t) y;
+    int32_t res = (int32_t)x + (int32_t)y;
 
     if (res < SHRT_MIN) res = SHRT_MIN;
     if (res > SHRT_MAX) res = SHRT_MAX;
@@ -39,7 +39,7 @@ static inline int16_t sat_adds16i(int16_t x, int16_t y)
 
 static inline int16_t sat_muls16i(int16_t x, int16_t y)
 {
-    int32_t res = (int32_t) x * (int32_t) y;
+    int32_t res = (int32_t)x * (int32_t)y;
 
     if (res < SHRT_MIN) res = SHRT_MIN;
     if (res > SHRT_MAX) res = SHRT_MAX;

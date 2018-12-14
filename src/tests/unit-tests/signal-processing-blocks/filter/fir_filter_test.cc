@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,45 +23,47 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
-#include <complex>
-#include <ctime>
-#include <iostream>
-#include <stdint.h>
 #include <gflags/gflags.h>
-#include <gnuradio/top_block.h>
 #include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/top_block.h>
+#include <chrono>
+#include <complex>
+#include <cstdint>
+#ifdef GR_GREATER_38
+#include <gnuradio/analog/sig_source.h>
+#else
 #include <gnuradio/analog/sig_source_c.h>
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/blocks/null_sink.h>
-#include <gtest/gtest.h>
+#endif
+#include "file_signal_source.h"
+#include "fir_filter.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
-#include "in_memory_configuration.h"
 #include "gnss_sdr_valve.h"
+#include "in_memory_configuration.h"
 #include "interleaved_byte_to_complex_byte.h"
 #include "interleaved_short_to_complex_short.h"
-#include "fir_filter.h"
-#include "file_signal_source.h"
+#include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/msg_queue.h>
+#include <gtest/gtest.h>
 
 
-DEFINE_int32(filter_test_nsamples, 1000000 , "Number of samples to filter in the tests (max: 2147483647)");
+DEFINE_int32(filter_test_nsamples, 1000000, "Number of samples to filter in the tests (max: 2147483647)");
 
-class Fir_Filter_Test: public ::testing::Test
+class FirFilterTest : public ::testing::Test
 {
 protected:
-    Fir_Filter_Test()
+    FirFilterTest()
     {
         queue = gr::msg_queue::make(0);
         item_size = sizeof(gr_complex);
         config = std::make_shared<InMemoryConfiguration>();
     }
-    ~Fir_Filter_Test()
-    {}
+    ~FirFilterTest() = default;
 
     void init();
     void configure_cbyte_cbyte();
@@ -75,7 +77,8 @@ protected:
     int nsamples = FLAGS_filter_test_nsamples;
 };
 
-void Fir_Filter_Test::init()
+
+void FirFilterTest::init()
 {
     config->set_property("InputFilter.taps_item_type", "float");
     config->set_property("InputFilter.number_of_taps", "5");
@@ -99,32 +102,36 @@ void Fir_Filter_Test::init()
     //config->set_property("InputFilter.dump", "true");
 }
 
-void Fir_Filter_Test::configure_cbyte_cbyte()
+
+void FirFilterTest::configure_cbyte_cbyte()
 {
     config->set_property("InputFilter.input_item_type", "cbyte");
     config->set_property("InputFilter.output_item_type", "cbyte");
 }
 
-void Fir_Filter_Test::configure_gr_complex_gr_complex()
+
+void FirFilterTest::configure_gr_complex_gr_complex()
 {
     config->set_property("InputFilter.input_item_type", "gr_complex");
     config->set_property("InputFilter.output_item_type", "gr_complex");
 }
 
-void Fir_Filter_Test::configure_cshort_cshort()
+
+void FirFilterTest::configure_cshort_cshort()
 {
     config->set_property("InputFilter.input_item_type", "cshort");
     config->set_property("InputFilter.output_item_type", "cshort");
 }
 
-void Fir_Filter_Test::configure_cbyte_gr_complex()
+
+void FirFilterTest::configure_cbyte_gr_complex()
 {
     config->set_property("InputFilter.input_item_type", "cbyte");
     config->set_property("InputFilter.output_item_type", "gr_complex");
 }
 
 
-TEST_F(Fir_Filter_Test, Instantiate_gr_complex_gr_complex)
+TEST_F(FirFilterTest, InstantiateGrComplexGrComplex)
 {
     init();
     configure_gr_complex_gr_complex();
@@ -134,7 +141,7 @@ TEST_F(Fir_Filter_Test, Instantiate_gr_complex_gr_complex)
     ASSERT_EQ(1, res);
 }
 
-TEST_F(Fir_Filter_Test, Instantiate_cshort_cshort)
+TEST_F(FirFilterTest, InstantiateCshortCshort)
 {
     init();
     configure_cshort_cshort();
@@ -144,7 +151,8 @@ TEST_F(Fir_Filter_Test, Instantiate_cshort_cshort)
     ASSERT_EQ(1, res);
 }
 
-TEST_F(Fir_Filter_Test, Instantiate_cbyte_cbyte)
+
+TEST_F(FirFilterTest, InstantiateCbyteCbyte)
 {
     init();
     configure_cbyte_cbyte();
@@ -154,7 +162,8 @@ TEST_F(Fir_Filter_Test, Instantiate_cbyte_cbyte)
     ASSERT_EQ(1, res);
 }
 
-TEST_F(Fir_Filter_Test, Instantiate_cbyte_gr_complex)
+
+TEST_F(FirFilterTest, InstantiateCbyteGrComplex)
 {
     init();
     configure_cbyte_gr_complex();
@@ -164,19 +173,19 @@ TEST_F(Fir_Filter_Test, Instantiate_cbyte_gr_complex)
     ASSERT_EQ(1, res);
 }
 
-TEST_F(Fir_Filter_Test, ConnectAndRun)
+
+TEST_F(FirFilterTest, ConnectAndRun)
 {
     int fs_in = 4000000;
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Fir filter test");
 
     init();
     configure_gr_complex_gr_complex();
     std::shared_ptr<FirFilter> filter = std::make_shared<FirFilter>(config.get(), "InputFilter", 1, 1);
     item_size = sizeof(gr_complex);
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         filter->connect(top_block);
         boost::shared_ptr<gr::block> source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
         boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
@@ -185,24 +194,22 @@ TEST_F(Fir_Filter_Test, ConnectAndRun)
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, filter->get_left_block(), 0);
         top_block->connect(filter->get_right_block(), 0, null_sink, 0);
-    }) << "Failure connecting the top_block."<< std::endl;
+    }) << "Failure connecting the top_block.";
 
-    EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec * 1000000 + tv.tv_usec;
-        top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec * 1000000 + tv.tv_usec;
-    }) << "Failure running the top_block." << std::endl;
-    std::cout <<  "Filtered " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
+    EXPECT_NO_THROW({
+        start = std::chrono::system_clock::now();
+        top_block->run();  // Start threads and wait
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
+    }) << "Failure running the top_block.";
+    std::cout << "Filtered " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
 
 
-TEST_F(Fir_Filter_Test, ConnectAndRunGrcomplex)
+TEST_F(FirFilterTest, ConnectAndRunGrcomplex)
 {
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Fir filter test");
 
     init();
@@ -219,33 +226,31 @@ TEST_F(Fir_Filter_Test, ConnectAndRunGrcomplex)
     config2->set_property("Test_Source.repeat", "true");
 
     item_size = sizeof(gr_complex);
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         filter->connect(top_block);
 
-        boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 1, 1, queue));
+        boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 0, 1, queue));
         source->connect(top_block);
 
         boost::shared_ptr<gr::block> null_sink = gr::blocks::null_sink::make(item_size);
 
         top_block->connect(source->get_right_block(), 0, filter->get_left_block(), 0);
         top_block->connect(filter->get_right_block(), 0, null_sink, 0);
-    }) << "Failure connecting the top_block."<< std::endl;
+    }) << "Failure connecting the top_block.";
 
-    EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec * 1000000 + tv.tv_usec;
-        top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec * 1000000 + tv.tv_usec;
-    }) << "Failure running the top_block." << std::endl;
-    std::cout <<  "Filtered " << nsamples << " gr_complex samples in " << (end-begin) << " microseconds" << std::endl;
+    EXPECT_NO_THROW({
+        start = std::chrono::system_clock::now();
+        top_block->run();  // Start threads and wait
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
+    }) << "Failure running the top_block.";
+    std::cout << "Filtered " << nsamples << " gr_complex samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
 
-TEST_F(Fir_Filter_Test, ConnectAndRunCshorts)
+TEST_F(FirFilterTest, ConnectAndRunCshorts)
 {
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Fir filter test");
 
     init();
@@ -262,10 +267,10 @@ TEST_F(Fir_Filter_Test, ConnectAndRunCshorts)
     config2->set_property("Test_Source.repeat", "true");
 
     item_size = sizeof(std::complex<int16_t>);
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         filter->connect(top_block);
 
-        boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 1, 1, queue));
+        boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 0, 1, queue));
         source->connect(top_block);
 
         interleaved_short_to_complex_short_sptr ishort_to_cshort_ = make_interleaved_short_to_complex_short();
@@ -274,25 +279,22 @@ TEST_F(Fir_Filter_Test, ConnectAndRunCshorts)
         top_block->connect(source->get_right_block(), 0, ishort_to_cshort_, 0);
         top_block->connect(ishort_to_cshort_, 0, filter->get_left_block(), 0);
         top_block->connect(filter->get_right_block(), 0, null_sink, 0);
-    }) << "Failure connecting the top_block."<< std::endl;
+    }) << "Failure connecting the top_block.";
 
-    EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec * 1000000 + tv.tv_usec;
-        top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec * 1000000 + tv.tv_usec;
-    }) << "Failure running the top_block." << std::endl;
-    std::cout <<  "Filtered " << nsamples << " std::complex<int16_t> samples in " << (end-begin) << " microseconds" << std::endl;
+    EXPECT_NO_THROW({
+        start = std::chrono::system_clock::now();
+        top_block->run();  // Start threads and wait
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
+    }) << "Failure running the top_block.";
+    std::cout << "Filtered " << nsamples << " std::complex<int16_t> samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
 
 
-
-TEST_F(Fir_Filter_Test, ConnectAndRunCbytes)
+TEST_F(FirFilterTest, ConnectAndRunCbytes)
 {
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Fir filter test");
 
     init();
@@ -309,10 +311,10 @@ TEST_F(Fir_Filter_Test, ConnectAndRunCbytes)
     config2->set_property("Test_Source.repeat", "true");
 
     item_size = sizeof(std::complex<int8_t>);
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         filter->connect(top_block);
 
-        boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 1, 1, queue));
+        boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 0, 1, queue));
         source->connect(top_block);
 
         interleaved_byte_to_complex_byte_sptr ibyte_to_cbyte_ = make_interleaved_byte_to_complex_byte();
@@ -321,24 +323,22 @@ TEST_F(Fir_Filter_Test, ConnectAndRunCbytes)
         top_block->connect(source->get_right_block(), 0, ibyte_to_cbyte_, 0);
         top_block->connect(ibyte_to_cbyte_, 0, filter->get_left_block(), 0);
         top_block->connect(filter->get_right_block(), 0, null_sink, 0);
-    }) << "Failure connecting the top_block."<< std::endl;
+    }) << "Failure connecting the top_block.";
 
-    EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec * 1000000 + tv.tv_usec;
-        top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec * 1000000 + tv.tv_usec;
-    }) << "Failure running the top_block." << std::endl;
-    std::cout <<  "Filtered " << nsamples << " std::complex<int8_t> samples in " << (end-begin) << " microseconds" << std::endl;
+    EXPECT_NO_THROW({
+        start = std::chrono::system_clock::now();
+        top_block->run();  // Start threads and wait
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
+    }) << "Failure running the top_block.";
+    std::cout << "Filtered " << nsamples << " std::complex<int8_t> samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
 
 
-TEST_F(Fir_Filter_Test, ConnectAndRunCbyteGrcomplex)
+TEST_F(FirFilterTest, ConnectAndRunCbyteGrcomplex)
 {
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds(0);
     top_block = gr::make_top_block("Fir filter test");
 
     init();
@@ -355,10 +355,10 @@ TEST_F(Fir_Filter_Test, ConnectAndRunCbyteGrcomplex)
     config2->set_property("Test_Source.repeat", "true");
 
     item_size = sizeof(gr_complex);
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         filter->connect(top_block);
 
-        boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 1, 1, queue));
+        boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 0, 1, queue));
         source->connect(top_block);
 
         interleaved_byte_to_complex_byte_sptr ibyte_to_cbyte_ = make_interleaved_byte_to_complex_byte();
@@ -367,14 +367,13 @@ TEST_F(Fir_Filter_Test, ConnectAndRunCbyteGrcomplex)
         top_block->connect(source->get_right_block(), 0, ibyte_to_cbyte_, 0);
         top_block->connect(ibyte_to_cbyte_, 0, filter->get_left_block(), 0);
         top_block->connect(filter->get_right_block(), 0, null_sink, 0);
-    }) << "Failure connecting the top_block."<< std::endl;
+    }) << "Failure connecting the top_block.";
 
-    EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec * 1000000 + tv.tv_usec;
-        top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec * 1000000 + tv.tv_usec;
-    }) << "Failure running the top_block." << std::endl;
-    std::cout <<  "Filtered " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
+    EXPECT_NO_THROW({
+        start = std::chrono::system_clock::now();
+        top_block->run();  // Start threads and wait
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
+    }) << "Failure running the top_block.";
+    std::cout << "Filtered " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }

@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -27,7 +27,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -36,10 +36,9 @@
 #include <cmath>
 
 
-
 bool cpu_multicorrelator_16sc::init(
-        int max_signal_length_samples,
-        int n_correlators)
+    int max_signal_length_samples,
+    int n_correlators)
 {
     // ALLOCATE MEMORY FOR INTERNAL vectors
     size_t size = max_signal_length_samples * sizeof(lv_16sc_t);
@@ -55,11 +54,10 @@ bool cpu_multicorrelator_16sc::init(
 }
 
 
-
 bool cpu_multicorrelator_16sc::set_local_code_and_taps(
-        int code_length_chips,
-        const lv_16sc_t* local_code_in,
-        float *shifts_chips)
+    int code_length_chips,
+    const lv_16sc_t* local_code_in,
+    float* shifts_chips)
 {
     d_local_code_in = local_code_in;
     d_shifts_chips = shifts_chips;
@@ -80,29 +78,29 @@ bool cpu_multicorrelator_16sc::set_input_output_vectors(lv_16sc_t* corr_out, con
 void cpu_multicorrelator_16sc::update_local_code(int correlator_length_samples, float rem_code_phase_chips, float code_phase_step_chips)
 {
     volk_gnsssdr_16ic_xn_resampler_16ic_xn(d_local_codes_resampled,
-            d_local_code_in,
-            rem_code_phase_chips,
-            code_phase_step_chips,
-            d_shifts_chips,
-            d_code_length_chips,
-            d_n_correlators,
-            correlator_length_samples);
+        d_local_code_in,
+        rem_code_phase_chips,
+        code_phase_step_chips,
+        d_shifts_chips,
+        d_code_length_chips,
+        d_n_correlators,
+        correlator_length_samples);
 }
 
 
 bool cpu_multicorrelator_16sc::Carrier_wipeoff_multicorrelator_resampler(
-        float rem_carrier_phase_in_rad,
-        float phase_step_rad,
-        float rem_code_phase_chips,
-        float code_phase_step_chips,
-        int signal_length_samples)
+    float rem_carrier_phase_in_rad,
+    float phase_step_rad,
+    float rem_code_phase_chips,
+    float code_phase_step_chips,
+    int signal_length_samples)
 {
     update_local_code(signal_length_samples, rem_code_phase_chips, code_phase_step_chips);
     // Regenerate phase at each call in order to avoid numerical issues
     lv_32fc_t phase_offset_as_complex[1];
     phase_offset_as_complex[0] = lv_cmake(std::cos(rem_carrier_phase_in_rad), -std::sin(rem_carrier_phase_in_rad));
     // call VOLK_GNSSSDR kernel
-    volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn(d_corr_out, d_sig_in, std::exp(lv_32fc_t(0, -phase_step_rad)), phase_offset_as_complex, (const lv_16sc_t**)d_local_codes_resampled, d_n_correlators, signal_length_samples);
+    volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn(d_corr_out, d_sig_in, std::exp(lv_32fc_t(0, -phase_step_rad)), phase_offset_as_complex, const_cast<const lv_16sc_t**>(d_local_codes_resampled), d_n_correlators, signal_length_samples);
     return true;
 }
 
@@ -121,7 +119,7 @@ cpu_multicorrelator_16sc::cpu_multicorrelator_16sc()
 
 cpu_multicorrelator_16sc::~cpu_multicorrelator_16sc()
 {
-    if(d_local_codes_resampled != nullptr)
+    if (d_local_codes_resampled != nullptr)
         {
             cpu_multicorrelator_16sc::free();
         }
@@ -142,4 +140,3 @@ bool cpu_multicorrelator_16sc::free()
         }
     return true;
 }
-

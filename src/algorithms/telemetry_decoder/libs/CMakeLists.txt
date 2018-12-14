@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -13,27 +13,39 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
-set(TELEMETRY_DECODER_LIB_SOURCES 
-     gps_l1_ca_subframe_fsm.cc 
-     viterbi_decoder.cc   
+
+add_subdirectory(libswiftcnav)
+
+set(TELEMETRY_DECODER_LIB_SOURCES
+    viterbi_decoder.cc
+)
+
+set(TELEMETRY_DECODER_LIB_HEADERS
+    viterbi_decoder.h
+    convolutional.h
 )
 
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/adapters
-     ${Boost_INCLUDE_DIRS}
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+    ${CMAKE_SOURCE_DIR}/src/core/interfaces
+    ${CMAKE_SOURCE_DIR}/src/core/receiver
+    ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/adapters
+    ${Boost_INCLUDE_DIRS}
+    ${GLOG_INCLUDE_DIRS}
+    ${GFlags_INCLUDE_DIRS}
 )
 
-file(GLOB TELEMETRY_DECODER_LIB_HEADERS "*.h")
 list(SORT TELEMETRY_DECODER_LIB_HEADERS)
-add_library(telemetry_decoder_lib ${TELEMETRY_DECODER_LIB_SOURCES} ${TELEMETRY_DECODER_LIB_HEADERS})
+list(SORT TELEMETRY_DECODER_LIB_SOURCES)
+
+add_library(telemetry_decoder_lib
+    ${TELEMETRY_DECODER_LIB_SOURCES}
+    ${TELEMETRY_DECODER_LIB_HEADERS}
+)
 source_group(Headers FILES ${TELEMETRY_DECODER_LIB_HEADERS})
+
 target_link_libraries(telemetry_decoder_lib gnss_system_parameters)

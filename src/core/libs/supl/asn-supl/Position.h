@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_Position_H_
-#define	_Position_H_
+#ifndef _Position_H_
+#define _Position_H_
 
 
 #include <asn_application.h>
@@ -16,28 +16,30 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct Velocity;
+    /* Forward declarations */
+    struct Velocity;
 
-/* Position */
-typedef struct Position {
-	UTCTime_t	 timestamp;
-	PositionEstimate_t	 positionEstimate;
-	struct Velocity	*velocity	/* OPTIONAL */;
-	/*
+    /* Position */
+    typedef struct Position
+    {
+        UTCTime_t timestamp;
+        PositionEstimate_t positionEstimate;
+        struct Velocity *velocity /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} Position_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Position;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } Position_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_Position;
 
 #ifdef __cplusplus
 }
@@ -46,5 +48,5 @@ extern asn_TYPE_descriptor_t asn_DEF_Position;
 /* Referred external types */
 #include "Velocity.h"
 
-#endif	/* _Position_H_ */
+#endif /* _Position_H_ */
 #include <asn_internal.h>

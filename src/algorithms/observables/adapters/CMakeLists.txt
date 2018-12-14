@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -13,31 +13,30 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
 set(OBS_ADAPTER_SOURCES
-	gps_l1_ca_observables.cc
-	gps_l2c_observables.cc
-	galileo_e1_observables.cc
-    galileo_e5a_observables.cc
-	hybrid_observables.cc
+    hybrid_observables.cc
+)
+
+set(OBS_ADAPTER_HEADERS
+    hybrid_observables.h
 )
 
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/observables/gnuradio_blocks
-     ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+    ${CMAKE_SOURCE_DIR}/src/core/interfaces
+    ${CMAKE_SOURCE_DIR}/src/core/receiver
+    ${CMAKE_SOURCE_DIR}/src/algorithms/observables/gnuradio_blocks
+    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+    ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
+    ${GLOG_INCLUDE_DIRS}
+    ${GFlags_INCLUDE_DIRS}
+    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
-file(GLOB OBS_ADAPTER_HEADERS "*.h")
-list(SORT OBS_ADAPTER_HEADERS)
 add_library(obs_adapters ${OBS_ADAPTER_SOURCES} ${OBS_ADAPTER_HEADERS})
 source_group(Headers FILES ${OBS_ADAPTER_HEADERS})
 target_link_libraries(obs_adapters obs_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES})

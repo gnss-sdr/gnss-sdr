@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -27,7 +27,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -47,8 +47,8 @@ public:
     cpu_multicorrelator();
     ~cpu_multicorrelator();
     bool init(int max_signal_length_samples, int n_correlators);
-    bool set_local_code_and_taps(int code_length_chips, const std::complex<float>* local_code_in, float *shifts_chips);
-    bool set_input_output_vectors(std::complex<float>* corr_out, const std::complex<float>* sig_in);
+    bool set_local_code_and_taps(int code_length_chips, const std::complex<float> *local_code_in, float *shifts_chips);
+    bool set_input_output_vectors(std::complex<float> *corr_out, const std::complex<float> *sig_in);
     void update_local_code(int correlator_length_samples, float rem_code_phase_chips, float code_phase_step_chips);
     bool Carrier_wipeoff_multicorrelator_resampler(float rem_carrier_phase_in_rad, float phase_step_rad, float rem_code_phase_chips, float code_phase_step_chips, int signal_length_samples);
     bool free();

@@ -1,4 +1,4 @@
-/* Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
+/* Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
  *
  * This file is part of GNSS-SDR.
  *
@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  */
 
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
@@ -31,84 +31,96 @@ static intptr_t __alignment_mask = 0;
 
 struct volk_gnsssdr_machine *get_machine(void)
 {
-  extern struct volk_gnsssdr_machine *volk_gnsssdr_machines[];
-  extern unsigned int n_volk_gnsssdr_machines;
-  static struct volk_gnsssdr_machine *machine = NULL;
+    extern struct volk_gnsssdr_machine *volk_gnsssdr_machines[];
+    extern unsigned int n_volk_gnsssdr_machines;
+    static struct volk_gnsssdr_machine *machine = NULL;
 
-  if(machine != NULL)
-    return machine;
-  else {
-    unsigned int max_score = 0;
-    unsigned int i;
-    struct volk_gnsssdr_machine *max_machine = NULL;
-    for(i=0; i<n_volk_gnsssdr_machines; i++) {
-      if(!(volk_gnsssdr_machines[i]->caps & (~volk_gnsssdr_get_lvarch()))) {
-        if(volk_gnsssdr_machines[i]->caps > max_score) {
-          max_score = volk_gnsssdr_machines[i]->caps;
-          max_machine = volk_gnsssdr_machines[i];
+    if (machine != NULL)
+        return machine;
+    else
+        {
+            unsigned int max_score = 0;
+            unsigned int i;
+            struct volk_gnsssdr_machine *max_machine = NULL;
+            for (i = 0; i < n_volk_gnsssdr_machines; i++)
+                {
+                    if (!(volk_gnsssdr_machines[i]->caps & (~volk_gnsssdr_get_lvarch())))
+                        {
+                            if (volk_gnsssdr_machines[i]->caps > max_score)
+                                {
+                                    max_score = volk_gnsssdr_machines[i]->caps;
+                                    max_machine = volk_gnsssdr_machines[i];
+                                }
+                        }
+                }
+            machine = max_machine;
+            //printf("Using Volk machine: %s\n", machine->name);
+            __alignment = machine->alignment;
+            __alignment_mask = (intptr_t)(__alignment - 1);
+            return machine;
         }
-      }
-    }
-    machine = max_machine;
-    //printf("Using Volk machine: %s\n", machine->name);
-    __alignment = machine->alignment;
-    __alignment_mask = (intptr_t)(__alignment-1);
-    return machine;
-  }
 }
 
 void volk_gnsssdr_list_machines(void)
 {
-  extern struct volk_gnsssdr_machine *volk_gnsssdr_machines[];
-  extern unsigned int n_volk_gnsssdr_machines;
+    extern struct volk_gnsssdr_machine *volk_gnsssdr_machines[];
+    extern unsigned int n_volk_gnsssdr_machines;
 
-  unsigned int i;
-  for(i=0; i<n_volk_gnsssdr_machines; i++) {
-    if(!(volk_gnsssdr_machines[i]->caps & (~volk_gnsssdr_get_lvarch()))) {
-        printf("%s;", volk_gnsssdr_machines[i]->name);
-    }
-  }
-  printf("\n");
+    unsigned int i;
+    for (i = 0; i < n_volk_gnsssdr_machines; i++)
+        {
+            if (!(volk_gnsssdr_machines[i]->caps & (~volk_gnsssdr_get_lvarch())))
+                {
+                    printf("%s;", volk_gnsssdr_machines[i]->name);
+                }
+        }
+    printf("\n");
 }
 
-const char* volk_gnsssdr_get_machine(void)
+const char *volk_gnsssdr_get_machine(void)
 {
-  extern struct volk_gnsssdr_machine *volk_gnsssdr_machines[];
-  extern unsigned int n_volk_gnsssdr_machines;
-  static struct volk_gnsssdr_machine *machine = NULL;
+    extern struct volk_gnsssdr_machine *volk_gnsssdr_machines[];
+    extern unsigned int n_volk_gnsssdr_machines;
+    static struct volk_gnsssdr_machine *machine = NULL;
 
-  if(machine != NULL)
-    return machine->name;
-  else {
-    unsigned int max_score = 0;
-    unsigned int i;
-    struct volk_gnsssdr_machine *max_machine = NULL;
-    for(i=0; i<n_volk_gnsssdr_machines; i++) {
-      if(!(volk_gnsssdr_machines[i]->caps & (~volk_gnsssdr_get_lvarch()))) {
-        if(volk_gnsssdr_machines[i]->caps > max_score) {
-          max_score = volk_gnsssdr_machines[i]->caps;
-          max_machine = volk_gnsssdr_machines[i];
+    if (machine != NULL)
+        return machine->name;
+    else
+        {
+            unsigned int max_score = 0;
+            unsigned int i;
+            struct volk_gnsssdr_machine *max_machine = NULL;
+            for (i = 0; i < n_volk_gnsssdr_machines; i++)
+                {
+                    if (!(volk_gnsssdr_machines[i]->caps & (~volk_gnsssdr_get_lvarch())))
+                        {
+                            if (volk_gnsssdr_machines[i]->caps > max_score)
+                                {
+                                    max_score = volk_gnsssdr_machines[i]->caps;
+                                    max_machine = volk_gnsssdr_machines[i];
+                                }
+                        }
+                }
+            machine = max_machine;
+            return machine->name;
         }
-      }
-    }
-    machine = max_machine;
-    return machine->name;
-  }
 }
 
 size_t volk_gnsssdr_get_alignment(void)
 {
-    get_machine(); //ensures alignment is set
+    get_machine();  //ensures alignment is set
     return __alignment;
 }
 
 bool volk_gnsssdr_is_aligned(const void *ptr)
 {
-    return ((intptr_t)(ptr) & __alignment_mask) == 0;
+    return ((intptr_t)(ptr)&__alignment_mask) == 0;
 }
 
 #define LV_HAVE_GENERIC
 #define LV_HAVE_DISPATCHER
+
+// clang-format off
 
 %for kern in kernels:
 
@@ -190,6 +202,8 @@ void ${kern.name}_manual(${kern.arglist_full}, const char* impl_name)
     );
 }
 
+
+
 volk_gnsssdr_func_desc_t ${kern.name}_get_func_desc(void) {
     const char **impl_names = get_machine()->${kern.name}_impl_names;
     const int *impl_deps = get_machine()->${kern.name}_impl_deps;
@@ -205,3 +219,5 @@ volk_gnsssdr_func_desc_t ${kern.name}_get_func_desc(void) {
 }
 
 %endfor
+
+    // clang-format on

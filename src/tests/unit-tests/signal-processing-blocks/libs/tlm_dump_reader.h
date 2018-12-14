@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -31,7 +31,7 @@
 #ifndef GNSS_SDR_TLM_DUMP_READER_H
 #define GNSS_SDR_TLM_DUMP_READER_H
 
-#include <iostream>
+#include <cstdint>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -42,12 +42,12 @@ public:
     ~tlm_dump_reader();
     bool read_binary_obs();
     bool restart();
-    long int num_epochs();
+    int64_t num_epochs();
     bool open_obs_file(std::string out_file);
 
     //telemetry decoder dump variables
     double TOW_at_current_symbol;
-    double Prn_timestamp_ms;
+    uint64_t Tracking_sample_counter;
     double d_TOW_at_Preamble;
 
 private:
@@ -55,4 +55,4 @@ private:
     std::ifstream d_dump_file;
 };
 
-#endif //GNSS_SDR_TLM_DUMP_READER_H
+#endif  //GNSS_SDR_TLM_DUMP_READER_H

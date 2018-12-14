@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,29 +24,27 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
 #include "fir_filter.h"
-#include <boost/lexical_cast.hpp>
-#include <gnuradio/filter/pm_remez.h>
-#include <glog/logging.h>
-#include <volk/volk.h>
 #include "configuration_interface.h"
+#include <glog/logging.h>
+#include <gnuradio/filter/pm_remez.h>
+#include <volk/volk.h>
+#include <utility>
+
 
 using google::LogMessage;
 
 FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams) :
-                config_(configuration), role_(role), in_streams_(in_streams),
-                out_streams_(out_streams)
+    unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(std::move(role)), in_streams_(in_streams), out_streams_(out_streams)
 {
     size_t item_size;
     (*this).init();
-    if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("gr_complex") == 0)
-            && (output_item_type_.compare("gr_complex") == 0))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "gr_complex") && (output_item_type_ == "gr_complex"))
         {
             item_size = sizeof(gr_complex);
             fir_filter_ccf_ = gr::filter::fir_filter_ccf::make(1, taps_);
@@ -57,8 +55,7 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
                     file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0)
-            && (output_item_type_.compare("cshort") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "cshort") && (output_item_type_ == "cshort"))
         {
             item_size = sizeof(lv_16sc_t);
             cshort_to_float_x2_ = make_cshort_to_float_x2();
@@ -75,8 +72,7 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
                     file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0)
-            && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "cshort") && (output_item_type_ == "gr_complex"))
         {
             item_size = sizeof(gr_complex);
             cshort_to_float_x2_ = make_cshort_to_float_x2();
@@ -92,8 +88,7 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
                 }
         }
 
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
-            && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "cbyte") && (output_item_type_ == "gr_complex"))
         {
             item_size = sizeof(gr_complex);
             cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
@@ -111,8 +106,7 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
                     file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
-            && (output_item_type_.compare("cbyte") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "cbyte") && (output_item_type_ == "cbyte"))
         {
             item_size = sizeof(lv_8sc_t);
             cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
@@ -137,19 +131,23 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
         {
             LOG(ERROR) << " Unknown item type conversion";
         }
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 
-
-FirFilter::~FirFilter()
-{}
-
+FirFilter::~FirFilter() = default;
 
 
 void FirFilter::connect(gr::top_block_sptr top_block)
 {
-    if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("gr_complex") == 0)
-            && (output_item_type_.compare("gr_complex") == 0))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "gr_complex") && (output_item_type_ == "gr_complex"))
         {
             if (dump_)
                 {
@@ -160,8 +158,7 @@ void FirFilter::connect(gr::top_block_sptr top_block)
                     DLOG(INFO) << "Nothing to connect internally";
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0)
-            && (output_item_type_.compare("cshort") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "cshort") && (output_item_type_ == "cshort"))
         {
             top_block->connect(cshort_to_float_x2_, 0, fir_filter_fff_1_, 0);
             top_block->connect(cshort_to_float_x2_, 1, fir_filter_fff_2_, 0);
@@ -174,8 +171,7 @@ void FirFilter::connect(gr::top_block_sptr top_block)
                     top_block->connect(short_x2_to_cshort_, 0, file_sink_, 0);
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
-            && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "cbyte") && (output_item_type_ == "gr_complex"))
         {
             top_block->connect(cbyte_to_float_x2_, 0, fir_filter_fff_1_, 0);
             top_block->connect(cbyte_to_float_x2_, 1, fir_filter_fff_2_, 0);
@@ -186,8 +182,7 @@ void FirFilter::connect(gr::top_block_sptr top_block)
                     top_block->connect(float_to_complex_, 0, file_sink_, 0);
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
-            && (output_item_type_.compare("cbyte") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "cbyte") && (output_item_type_ == "cbyte"))
         {
             top_block->connect(cbyte_to_float_x2_, 0, fir_filter_fff_1_, 0);
             top_block->connect(cbyte_to_float_x2_, 1, fir_filter_fff_2_, 0);
@@ -200,8 +195,7 @@ void FirFilter::connect(gr::top_block_sptr top_block)
                     top_block->connect(char_x2_cbyte_, 0, file_sink_, 0);
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0)
-            && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "cshort") && (output_item_type_ == "gr_complex"))
         {
             top_block->connect(cshort_to_float_x2_, 0, fir_filter_fff_1_, 0);
             top_block->connect(cshort_to_float_x2_, 1, fir_filter_fff_2_, 0);
@@ -219,19 +213,16 @@ void FirFilter::connect(gr::top_block_sptr top_block)
 }
 
 
-
 void FirFilter::disconnect(gr::top_block_sptr top_block)
 {
-    if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("gr_complex") == 0)
-            && (output_item_type_.compare("gr_complex") == 0))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "gr_complex") && (output_item_type_ == "gr_complex"))
         {
             if (dump_)
                 {
                     top_block->disconnect(fir_filter_ccf_, 0, file_sink_, 0);
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
-            && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "cbyte") && (output_item_type_ == "gr_complex"))
         {
             top_block->disconnect(fir_filter_fff_2_, 0, float_to_complex_, 1);
             top_block->disconnect(fir_filter_fff_1_, 0, float_to_complex_, 0);
@@ -242,8 +233,7 @@ void FirFilter::disconnect(gr::top_block_sptr top_block)
                     top_block->disconnect(float_to_complex_, 0, file_sink_, 0);
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0)
-            && (output_item_type_.compare("cshort") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "cshort") && (output_item_type_ == "cshort"))
         {
             top_block->disconnect(cshort_to_float_x2_, 0, fir_filter_fff_1_, 0);
             top_block->disconnect(cshort_to_float_x2_, 1, fir_filter_fff_2_, 0);
@@ -256,8 +246,7 @@ void FirFilter::disconnect(gr::top_block_sptr top_block)
                     top_block->disconnect(short_x2_to_cshort_, 0, file_sink_, 0);
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
-            && (output_item_type_.compare("cbyte") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "cbyte") && (output_item_type_ == "cbyte"))
         {
             top_block->disconnect(float_to_char_2_, 0, char_x2_cbyte_, 1);
             top_block->disconnect(float_to_char_1_, 0, char_x2_cbyte_, 0);
@@ -270,8 +259,7 @@ void FirFilter::disconnect(gr::top_block_sptr top_block)
                     top_block->disconnect(char_x2_cbyte_, 0, file_sink_, 0);
                 }
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0)
-            && (output_item_type_.compare("gr_complex") == 0))
+    else if ((taps_item_type_ == "float") && (input_item_type_ == "cshort") && (output_item_type_ == "gr_complex"))
         {
             top_block->disconnect(cshort_to_float_x2_, 0, fir_filter_fff_1_, 0);
             top_block->disconnect(cshort_to_float_x2_, 1, fir_filter_fff_2_, 0);
@@ -289,31 +277,25 @@ void FirFilter::disconnect(gr::top_block_sptr top_block)
 }
 
 
-
 gr::basic_block_sptr FirFilter::get_left_block()
 {
-    if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("gr_complex") == 0)
-            && (output_item_type_.compare("gr_complex") == 0))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "gr_complex") && (output_item_type_ == "gr_complex"))
         {
             return fir_filter_ccf_;
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0)
-            && (output_item_type_.compare("cshort") == 0))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "cshort") && (output_item_type_ == "cshort"))
         {
             return cshort_to_float_x2_;
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
-            && (output_item_type_.compare("gr_complex") == 0))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "cbyte") && (output_item_type_ == "gr_complex"))
         {
             return cbyte_to_float_x2_;
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
-            && (output_item_type_.compare("cbyte") == 0))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "cbyte") && (output_item_type_ == "cbyte"))
         {
             return cbyte_to_float_x2_;
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0)
-            && (output_item_type_.compare("gr_complex") == 0))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "cshort") && (output_item_type_ == "gr_complex"))
         {
             return cshort_to_float_x2_;
         }
@@ -325,31 +307,25 @@ gr::basic_block_sptr FirFilter::get_left_block()
 }
 
 
-
 gr::basic_block_sptr FirFilter::get_right_block()
 {
-    if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("gr_complex") == 0)
-            && (output_item_type_.compare("gr_complex") == 0))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "gr_complex") && (output_item_type_ == "gr_complex"))
         {
             return fir_filter_ccf_;
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0)
-            && (output_item_type_.compare("cshort") == 0))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "cshort") && (output_item_type_ == "cshort"))
         {
             return short_x2_to_cshort_;
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
-            && (output_item_type_.compare("gr_complex") == 0))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "cbyte") && (output_item_type_ == "gr_complex"))
         {
             return float_to_complex_;
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
-            && (output_item_type_.compare("cbyte") == 0))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "cbyte") && (output_item_type_ == "cbyte"))
         {
             return char_x2_cbyte_;
         }
-    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0)
-              && (output_item_type_.compare("gr_complex") == 0))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "cshort") && (output_item_type_ == "gr_complex"))
         {
             return float_to_complex_;
         }
@@ -361,7 +337,6 @@ gr::basic_block_sptr FirFilter::get_right_block()
 }
 
 
-
 void FirFilter::init()
 {
     std::string default_input_item_type = "gr_complex";
@@ -370,9 +345,9 @@ void FirFilter::init()
     std::string default_dump_filename = "../data/input_filter.dat";
     int default_number_of_taps = 6;
     unsigned int default_number_of_bands = 2;
-    std::vector<double> default_bands = { 0.0, 0.4, 0.6, 1.0 };
-    std::vector<double> default_ampl = { 1.0, 1.0, 0.0, 0.0 };
-    std::vector<double> default_error_w = { 1.0, 1.0 };
+    std::vector<double> default_bands = {0.0, 0.4, 0.6, 1.0};
+    std::vector<double> default_ampl = {1.0, 1.0, 0.0, 0.0};
+    std::vector<double> default_error_w = {1.0, 1.0};
     std::string default_filter_type = "bandpass";
     int default_grid_density = 16;
 
@@ -393,23 +368,23 @@ void FirFilter::init()
     double option_value;
     for (unsigned int i = 0; i < number_of_bands; i++)
         {
-            option = ".band" + boost::lexical_cast<std::string>(i + 1) + "_begin";
+            option = ".band" + std::to_string(i + 1) + "_begin";
             option_value = config_->property(role_ + option, default_bands[i]);
             bands.push_back(option_value);
 
-            option = ".band" + boost::lexical_cast<std::string>(i + 1) + "_end";
+            option = ".band" + std::to_string(i + 1) + "_end";
             option_value = config_->property(role_ + option, default_bands[i]);
             bands.push_back(option_value);
 
-            option = ".ampl" + boost::lexical_cast<std::string>(i + 1) + "_begin";
+            option = ".ampl" + std::to_string(i + 1) + "_begin";
             option_value = config_->property(role_ + option, default_bands[i]);
             ampl.push_back(option_value);
 
-            option = ".ampl" + boost::lexical_cast<std::string>(i + 1) + "_end";
+            option = ".ampl" + std::to_string(i + 1) + "_end";
             option_value = config_->property(role_ + option, default_bands[i]);
             ampl.push_back(option_value);
 
-            option = ".band" + boost::lexical_cast<std::string>(i + 1) + "_error";
+            option = ".band" + std::to_string(i + 1) + "_error";
             option_value = config_->property(role_ + option, default_bands[i]);
             error_w.push_back(option_value);
         }
@@ -423,8 +398,8 @@ void FirFilter::init()
     // those bands, and the weight given to the error in those bands.
     std::vector<double> taps_d = gr::filter::pm_remez(number_of_taps - 1, bands, ampl, error_w, filter_type, grid_density);
     taps_.reserve(taps_d.size());
-    for (std::vector<double>::iterator it = taps_d.begin(); it != taps_d.end(); it++)
+    for (double& it : taps_d)
         {
-            taps_.push_back(float(*it));
+            taps_.push_back(float(it));
         }
 }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
+/* Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
  *
  * This file is part of GNSS-SDR.
  *
@@ -13,20 +13,19 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef INCLUDED_VOLK_GNSSSDR_RUNTIME
 #define INCLUDED_VOLK_GNSSSDR_RUNTIME
 
-#include <volk_gnsssdr/volk_gnsssdr_typedefs.h>
-#include <volk_gnsssdr/volk_gnsssdr_config_fixed.h>
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
+#include <volk_gnsssdr/volk_gnsssdr_config_fixed.h>
 #include <volk_gnsssdr/volk_gnsssdr_malloc.h>
-
-#include <stdlib.h>
+#include <volk_gnsssdr/volk_gnsssdr_typedefs.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 __VOLK_DECL_BEGIN
 
@@ -35,14 +34,14 @@ typedef struct volk_gnsssdr_func_desc
     const char **impl_names;
     const int *impl_deps;
     const bool *impl_alignment;
-    const size_t n_impls;
+    size_t n_impls;
 } volk_gnsssdr_func_desc_t;
 
 //! Prints a list of machines available
 VOLK_API void volk_gnsssdr_list_machines(void);
 
 //! Returns the name of the machine this instance will use
-VOLK_API const char* volk_gnsssdr_get_machine(void);
+VOLK_API const char *volk_gnsssdr_get_machine(void);
 
 //! Get the machine alignment in bytes
 VOLK_API size_t volk_gnsssdr_get_alignment(void);
@@ -68,6 +67,7 @@ VOLK_API size_t volk_gnsssdr_get_alignment(void);
  */
 VOLK_API bool volk_gnsssdr_is_aligned(const void *ptr);
 
+// clang-format off
 %for kern in kernels:
 
 //! A function pointer to the dispatcher implementation
@@ -82,11 +82,10 @@ extern VOLK_API ${kern.pname} ${kern.name}_u;
 //! Call into a specific implementation given by name
 extern VOLK_API void ${kern.name}_manual(${kern.arglist_full}, const char* impl_name);
 
-//! Get description paramaters for this kernel
+//! Get description parameters for this kernel
 extern VOLK_API volk_gnsssdr_func_desc_t ${kern.name}_get_func_desc(void);
 %endfor
-
 __VOLK_DECL_END
-
+// clang-format on
 
 #endif /*INCLUDED_VOLK_GNSSSDR_RUNTIME*/

@@ -1,4 +1,4 @@
-/* Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
+/* Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
  *
  * This file is part of GNSS-SDR.
  *
@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef INCLUDED_VOLK_GNSSSDR_CPU_H
@@ -23,16 +23,18 @@
 
 __VOLK_DECL_BEGIN
 
+// clang-format off
 struct VOLK_CPU {
     %for arch in archs:
     int (*has_${arch.name}) ();
     %endfor
 };
+// clang-format on
 
 extern struct VOLK_CPU volk_gnsssdr_cpu;
 
-void volk_gnsssdr_cpu_init ();
-unsigned int volk_gnsssdr_get_lvarch ();
+void volk_gnsssdr_cpu_init();
+unsigned int volk_gnsssdr_get_lvarch();
 
 __VOLK_DECL_END
 

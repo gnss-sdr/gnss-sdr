@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -21,15 +21,10 @@
 from __future__ import print_function
 
 import os
-import glob
-import sys
 import re
 import glob
-import shutil
-import exceptions
-from sets import Set
 
-class volk_gnsssdr_modtool:
+class volk_gnsssdr_modtool(object):
     def __init__(self, cfg):
         self.volk_gnsssdr = re.compile('volk_gnsssdr');
         self.remove_after_underscore = re.compile("_.*");
@@ -58,10 +53,10 @@ class volk_gnsssdr_modtool:
         else:
             name = self.get_basename(base);
         if name == '':
-            hdr_files = glob.glob(os.path.join(base, "kernels/volk_gnsssdr/*.h"));
+            hdr_files = sorted(glob.glob(os.path.join(base, "kernels/volk_gnsssdr/*.h")));
             begins = re.compile("(?<=volk_gnsssdr_).*")
         else:
-            hdr_files = glob.glob(os.path.join(base, "kernels/volk_gnsssdr_" + name + "/*.h"));
+            hdr_files = sorted(glob.glob(os.path.join(base, "kernels/volk_gnsssdr_" + name + "/*.h")));
             begins = re.compile("(?<=volk_gnsssdr_" + name + "_).*")
 
         datatypes = [];
@@ -96,23 +91,32 @@ class volk_gnsssdr_modtool:
 
         dest = os.path.join(self.my_dict['destination'], 'volk_gnsssdr_' + self.my_dict['name'])
         if os.path.exists(dest):
-            raise exceptions.IOError("Destination %s already exits!"%(dest));
+            raise IOError("Destination %s already exits!" % (dest));
 
         if not os.path.exists(os.path.join(self.my_dict['destination'], 'volk_gnsssdr_' + self.my_dict['name'], 'kernels/volk_gnsssdr_' + self.my_dict['name'])):
             os.makedirs(os.path.join(self.my_dict['destination'], 'volk_gnsssdr_' + self.my_dict['name'], 'kernels/volk_gnsssdr_' + self.my_dict['name']))
 
         current_kernel_names = self.get_current_kernels();
+        need_ifdef_updates = ["constant.h", "volk_complex.h", "volk_malloc.h", "volk_prefs.h",
+                              "volk_common.h", "volk_cpu.tmpl.h", "volk_config_fixed.tmpl.h",
+                              "volk_typedefs.h", "volk.tmpl.h"]
 
         for root, dirnames, filenames in os.walk(self.my_dict['base']):
             for name in filenames:
-                t_table = map(lambda a: re.search(a, name), current_kernel_names);
+                t_table = [re.search(a, name) for a in current_kernel_names]
                 t_table = set(t_table);
                 if t_table == set([None]):
                     infile = os.path.join(root, name);
                     instring = open(infile, 'r').read();
                     outstring = re.sub(self.volk_gnsssdr, 'volk_gnsssdr_' + self.my_dict['name'], instring);
+                    if name in need_ifdef_updates:
+                          outstring = re.sub(self.volk_included, 'INCLUDED_VOLK_' + self.my_dict['name'].upper(), outstring)
                     newname = re.sub(self.volk_gnsssdr, 'volk_gnsssdr_' + self.my_dict['name'], name);
                     relpath = os.path.relpath(infile, self.my_dict['base']);
+                    if name == 'VolkConfig.cmake.in':
+                        outstring = re.sub("VOLK", 'VOLK_' + self.my_dict['name'].upper(), outstring)
+                        newname = "Volk%sConfig.cmake.in" % self.my_dict['name']
+
                     newrelpath = re.sub(self.volk_gnsssdr, 'volk_gnsssdr_' + self.my_dict['name'], relpath);
                     dest = os.path.join(self.my_dict['destination'], 'volk_gnsssdr_' + self.my_dict['name'], os.path.dirname(newrelpath), newname);
 
@@ -157,7 +161,7 @@ class volk_gnsssdr_modtool:
         open(dest, 'w+').write(outstring);
 
         # copy orc proto-kernels if they exist
-        for orcfile in glob.glob(inpath + '/orc/' + top + name + '*.orc'):
+        for orcfile in sorted(glob.glob(inpath + '/kernels/volk_gnsssdr/asm/orc/' + top + name + '*.orc')):
             if os.path.isfile(orcfile):
                 instring = open(orcfile, 'r').read();
                 outstring = re.sub(oldvolk_gnsssdr, 'volk_gnsssdr_' + self.my_dict['name'], instring);
@@ -179,16 +183,11 @@ class volk_gnsssdr_modtool:
         base = os.path.join(self.my_dict['destination'], top[:-1]) ;
 
         if not name in self.get_current_kernels():
-
-            raise exceptions.IOError("Requested kernel %s is not in module %s"%(name,base));
-
-
+            raise IOError("Requested kernel %s is not in module %s" % (name,base));
 
         inpath = os.path.abspath(base);
-
-
         kernel = re.compile(name)
-        search_kernels = Set([kernel])
+        search_kernels = set([kernel])
         profile = re.compile('^\s*VOLK_PROFILE')
         puppet = re.compile('^\s*VOLK_PUPPET')
         src_dest = os.path.join(inpath, 'apps/', top[:-1] + '_profile.cc');
@@ -244,7 +243,7 @@ class volk_gnsssdr_modtool:
         else:
             basename = self.get_basename(base);
         if not name in self.get_current_kernels(base):
-            raise exceptions.IOError("Requested kernel %s is not in module %s"%(name,base));
+            raise IOError("Requested kernel %s is not in module %s" % (name, base));
 
         inpath = os.path.abspath(base);
         if len(basename) > 0:
@@ -256,7 +255,7 @@ class volk_gnsssdr_modtool:
         self.convert_kernel(oldvolk_gnsssdr, name, base, inpath, top);
 
         kernel = re.compile(name)
-        search_kernels = Set([kernel])
+        search_kernels = set([kernel])
 
         profile = re.compile('^\s*VOLK_PROFILE')
         puppet = re.compile('^\s*VOLK_PUPPET')
@@ -324,8 +323,3 @@ class volk_gnsssdr_modtool:
                     write_okay = False
             if write_okay:
                 open(dest, 'a').write(otherline);
-
-
-
-
-

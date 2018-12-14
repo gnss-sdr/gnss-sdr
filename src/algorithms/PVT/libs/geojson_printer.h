@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -33,10 +33,10 @@
 #ifndef GNSS_SDR_GEOJSON_PRINTER_H_
 #define GNSS_SDR_GEOJSON_PRINTER_H_
 
+#include "pvt_solution.h"
 #include <fstream>
 #include <memory>
 #include <string>
-#include "pvt_solution.h"
 
 
 /*!
@@ -50,10 +50,12 @@ private:
     std::ofstream geojson_file;
     bool first_pos;
     std::string filename_;
+    std::string geojson_base_path;
+
 public:
-    GeoJSON_Printer();
+    GeoJSON_Printer(const std::string& base_path = ".");
     ~GeoJSON_Printer();
-    bool set_headers(std::string filename, bool time_tag_name = true);
+    bool set_headers(const std::string& filename, bool time_tag_name = true);
     bool print_position(const std::shared_ptr<Pvt_Solution>& position, bool print_average_values);
     bool close_file();
 };

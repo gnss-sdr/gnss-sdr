@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -15,20 +15,19 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 #
 
 from __future__ import print_function
 
-import ConfigParser
 import sys
 import os
-import exceptions
 import re
 
+from six.moves import configparser, input
 
-class volk_gnsssdr_modtool_config:
+class volk_gnsssdr_modtool_config(object):
     def key_val_sub(self, num, stuff, section):
         return re.sub('\$' + 'k' + str(num), stuff[num][0], (re.sub('\$' + str(num), stuff[num][1], section[1][num])));
 
@@ -46,11 +45,11 @@ class volk_gnsssdr_modtool_config:
             try:
                val = eval(self.key_val_sub(i, stuff, section))
                if val == False:
-                   raise exceptions.ValueError
+                   raise ValueError
             except ValueError:
-                raise exceptions.ValueError('Verification function returns False... key:%s, val:%s'%(stuff[i][0], stuff[i][1]))
+                raise ValueError('Verification function returns False... key:%s, val:%s'%(stuff[i][0], stuff[i][1]))
             except:
-                raise exceptions.IOError('bad configuration... key:%s, val:%s'%(stuff[i][0], stuff[i][1]))
+                raise IOError('bad configuration... key:%s, val:%s'%(stuff[i][0], stuff[i][1]))
 
 
     def __init__(self, cfg=None):
@@ -66,7 +65,7 @@ class volk_gnsssdr_modtool_config:
         self.remapification = [(self.config_name, self.config_defaults_remap)]
         self.verification = [(self.config_name, self.config_defaults_verify)]
         default = os.path.join(os.getcwd(), 'volk_gnsssdr_modtool.cfg')
-        icfg = ConfigParser.RawConfigParser()
+        icfg = configparser.RawConfigParser()
         if cfg:
             icfg.read(cfg)
         elif os.path.exists(default):
@@ -75,7 +74,7 @@ class volk_gnsssdr_modtool_config:
             print("Initializing config file...")
             icfg.add_section(self.config_name)
             for kn in self.config_defaults:
-                rv = raw_input("%s: "%(kn))
+                rv = input("%s: "%(kn))
                 icfg.set(self.config_name, kn, rv)
         self.cfg = icfg
         self.remap()

@@ -1,6 +1,6 @@
 function [x,msg] = roundn(x,n)
 
-%ROUNDN  Rounds input data at specified power of 10
+% ROUNDN  Rounds input data at specified power of 10
 %
 %  y = ROUNDN(x) rounds the input data x to the nearest hundredth.
 %
@@ -15,7 +15,7 @@ function [x,msg] = roundn(x,n)
 
 %  Copyright 1996-2002 Systems Planning and Analysis, Inc. and The MathWorks, Inc.
 %  Written by:  E. Byrns, E. Brown
-%   $Revision: 1.9 $    $Date: 2002/03/20 21:26:19 $
+%  Revision: 1.9    Date: 2002/03/20 21:26:19
 
 msg = [];   %  Initialize output
 

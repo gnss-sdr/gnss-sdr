@@ -13,7 +13,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,7 +31,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -46,42 +46,44 @@ class direct_resampler_conditioner_cc;
 typedef boost::shared_ptr<direct_resampler_conditioner_cc> direct_resampler_conditioner_cc_sptr;
 direct_resampler_conditioner_cc_sptr
 direct_resampler_make_conditioner_cc(double sample_freq_in,
-        double sample_freq_out);
+    double sample_freq_out);
 
 /*!
  * \brief This class implements a direct resampler conditioner for complex data
  *
  * Direct resampling without interpolation
  */
-class direct_resampler_conditioner_cc: public gr::block
+class direct_resampler_conditioner_cc : public gr::block
 {
 private:
     friend direct_resampler_conditioner_cc_sptr
     direct_resampler_make_conditioner_cc(double sample_freq_in,
-            double sample_freq_out);
-    double d_sample_freq_in;  //! Specifies the sampling frequency of the input signal
-    double d_sample_freq_out; //! Specifies the sampling frequency of the output signal
+        double sample_freq_out);
+    double d_sample_freq_in;   //! Specifies the sampling frequency of the input signal
+    double d_sample_freq_out;  //! Specifies the sampling frequency of the output signal
     uint32_t d_phase;
     uint32_t d_lphase;
     uint32_t d_phase_step;
-    unsigned int d_history;
     direct_resampler_conditioner_cc(double sample_freq_in,
-            double sample_freq_out);
+        double sample_freq_out);
 
 public:
     ~direct_resampler_conditioner_cc();
-    unsigned int sample_freq_in() const
+    inline unsigned int sample_freq_in() const
     {
         return d_sample_freq_in;
     }
-    unsigned int sample_freq_out() const
+
+    inline unsigned int sample_freq_out() const
     {
         return d_sample_freq_out;
     }
+
     void forecast(int noutput_items, gr_vector_int &ninput_items_required);
+
     int general_work(int noutput_items, gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items,
-            gr_vector_void_star &output_items);
+        gr_vector_const_void_star &input_items,
+        gr_vector_void_star &output_items);
 };
 
 #endif /* GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CC_H */

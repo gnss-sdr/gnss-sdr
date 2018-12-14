@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -13,7 +13,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
 add_subdirectory(algorithms)
@@ -21,5 +21,5 @@ add_subdirectory(core)
 add_subdirectory(main)
 if(ENABLE_UNIT_TESTING OR ENABLE_SYSTEM_TESTING)
     add_subdirectory(tests)
-endif(ENABLE_UNIT_TESTING OR ENABLE_SYSTEM_TESTING)
+endif()
 add_subdirectory(utils)

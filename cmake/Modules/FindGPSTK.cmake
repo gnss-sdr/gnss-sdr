@@ -1,24 +1,49 @@
+# Copyright (C) 2011-2018 (see AUTHORS file for a list of contributors)
+#
+# This file is part of GNSS-SDR.
+#
+# GNSS-SDR is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# GNSS-SDR is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
+
 # - Find gpstk library
 # Find the native gpstk includes and library
 # This module defines
 #  GPSTK_INCLUDE_DIR, where to find Rinex3ObsBase.hpp, etc.
-#  GPSTK_LIBRARIES, libraries to link against to use GPSTK.
 #  GPSTK_FOUND, If false, do not try to use GPSTK.
-# also defined, but not for general use are
 #  GPSTK_LIBRARY, where to find the GPSTK library.
 
-FIND_PATH(GPSTK_INCLUDE_DIR Rinex3ObsBase.hpp)
+find_path(GPSTK_INCLUDE_DIR gpstk/Rinex3ObsBase.hpp
+    HINTS /usr/include
+          /usr/local/include
+          /opt/local/include
+          ${GPSTK_ROOT}/include
+          $ENV{GPSTK_ROOT}/include
+)
 
-SET(GPSTK_NAMES ${GPSTK_NAMES} gpstk libgpstk)
-FIND_LIBRARY(GPSTK_LIBRARY NAMES ${GPSTK_NAMES} )
+set(GPSTK_NAMES ${GPSTK_NAMES} gpstk libgpstk)
 
-# handle the QUIETLY and REQUIRED arguments and set GPSTK_FOUND to TRUE if 
+find_library(GPSTK_LIBRARY NAMES ${GPSTK_NAMES}
+    HINTS /usr/lib
+          /usr/local/lib
+          /opt/local/lib
+          ${GPSTK_ROOT}/lib
+          $ENV{GPSTK_ROOT}/lib
+          ${GPSTK_ROOT}/lib64
+          $ENV{GPSTK_ROOT}/lib64
+)
+
+# handle the QUIETLY and REQUIRED arguments and set GPSTK_FOUND to TRUE if
 # all listed variables are TRUE
-INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(GPSTK  DEFAULT_MSG  GPSTK_LIBRARY  GPSTK_INCLUDE_DIR)
-
-IF(GPSTK_FOUND)
-  SET( GPSTK_LIBRARIES ${GPSTK_LIBRARY} )
-ENDIF(GPSTK_FOUND)
-
-MARK_AS_ADVANCED(GPSTK_INCLUDE_DIR GPSTK_LIBRARY)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(GPSTK DEFAULT_MSG GPSTK_LIBRARY GPSTK_INCLUDE_DIR)
+mark_as_advanced(GPSTK_INCLUDE_DIR GPSTK_LIBRARY GPSTK_INCLUDE_DIR)

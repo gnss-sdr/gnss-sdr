@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -33,46 +33,44 @@
 #define GNSS_SDR_GALILEO_E1_SIGNAL_PROCESSING_H_
 
 #include <complex>
-
-
-/*!
- * \brief This function generates Galileo E1 code (one sample per chip).
- *
- */
-void galileo_e1_code_gen_int(int* _dest, char _Signal[3], signed int _prn);
+#include <cstdint>
 
 /*!
- * \brief This function generates Galileo E1 sinboc(1,1) code (minimum 2 samples per chip),
- * the _codeLength variable must be a multiple of 2*4092.
+ * \brief This function generates Galileo E1 code (can select E1B or E1C sinboc).
  *
  */
-void galileo_e1_sinboc_11_gen(std::complex<float>* _dest, int* _prn,
-        unsigned int _codeLength);
+void galileo_e1_code_gen_sinboc11_float(float* _dest, char _Signal[3], uint32_t _prn);
+
 /*!
- * \brief This function generates Galileo E1 sinboc(6,1) code (minimum 12 samples per chip),
- * the _codeLength variable must be a multiple of 12*4092.
+ * \brief This function generates Galileo E1 code (can select E1B or E1C, cboc or sinboc
+ * and the sample frequency _fs).
  *
  */
-void galileo_e1_sinboc_61_gen(std::complex<float>* _dest, int* _prn,
-        unsigned int _codeLength);
+void galileo_e1_code_gen_float_sampled(float* _dest, char _Signal[3],
+    bool _cboc, uint32_t _prn, int32_t _fs, uint32_t _chip_shift,
+    bool _secondary_flag);
+
 /*!
- * \brief This function generates Galileo E1 cboc code (12 samples per chip).
+ * \brief This function generates Galileo E1 code (can select E1B or E1C, cboc or sinboc
+ * and the sample frequency _fs).
  *
  */
-void galileo_e1_cboc_gen(std::complex<float>* _dest, int* _prn, char _Signal[3]);
+void galileo_e1_code_gen_float_sampled(float* _dest, char _Signal[3],
+    bool _cboc, uint32_t _prn, int32_t _fs, uint32_t _chip_shift);
+
 /*!
  * \brief This function generates Galileo E1 code (can select E1B or E1C, cboc or sinboc
  * and the sample frequency _fs).
  *
  */
 void galileo_e1_code_gen_complex_sampled(std::complex<float>* _dest, char _Signal[3],
-        bool _cboc, unsigned int _prn, signed int _fs, unsigned int _chip_shift,
-        bool _secondary_flag);
+    bool _cboc, uint32_t _prn, int32_t _fs, uint32_t _chip_shift,
+    bool _secondary_flag);
 
 /*!
  * \brief galileo_e1_code_gen_complex_sampled without _secondary_flag for backward compatibility.
  */
 void galileo_e1_code_gen_complex_sampled(std::complex<float>* _dest, char _Signal[3],
-        bool _cboc, unsigned int _prn, signed int _fs, unsigned int _chip_shift);
+    bool _cboc, uint32_t _prn, int32_t _fs, uint32_t _chip_shift);
 
 #endif /* GNSS_SDR_GALILEO_E1_SIGNAL_PROCESSING_H_ */

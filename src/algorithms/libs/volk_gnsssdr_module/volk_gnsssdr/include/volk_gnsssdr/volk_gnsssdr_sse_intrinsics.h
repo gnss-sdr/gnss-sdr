@@ -4,7 +4,7 @@
  * \brief Holds SSE intrinsics of intrinsics.
  * They should be used in VOLK kernels to avoid copy-paste
  *
- * Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
  *
  * This file is part of GNSS-SDR.
  *
@@ -19,7 +19,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef INCLUDED_VOLK_VOLK_SSE_INTRINSICS_H_
@@ -27,20 +27,22 @@
 #include <xmmintrin.h>
 
 static inline __m128
-_mm_magnitudesquared_ps(__m128 cplxValue1, __m128 cplxValue2){
-  __m128 iValue, qValue;
-  // Arrange in i1i2i3i4 format
-  iValue = _mm_shuffle_ps(cplxValue1, cplxValue2, _MM_SHUFFLE(2,0,2,0));
-  // Arrange in q1q2q3q4 format
-  qValue = _mm_shuffle_ps(cplxValue1, cplxValue2, _MM_SHUFFLE(3,1,3,1));
-  iValue = _mm_mul_ps(iValue, iValue); // Square the I values
-  qValue = _mm_mul_ps(qValue, qValue); // Square the Q Values
-  return _mm_add_ps(iValue, qValue); // Add the I2 and Q2 values
+_mm_magnitudesquared_ps(__m128 cplxValue1, __m128 cplxValue2)
+{
+    __m128 iValue, qValue;
+    // Arrange in i1i2i3i4 format
+    iValue = _mm_shuffle_ps(cplxValue1, cplxValue2, _MM_SHUFFLE(2, 0, 2, 0));
+    // Arrange in q1q2q3q4 format
+    qValue = _mm_shuffle_ps(cplxValue1, cplxValue2, _MM_SHUFFLE(3, 1, 3, 1));
+    iValue = _mm_mul_ps(iValue, iValue);  // Square the I values
+    qValue = _mm_mul_ps(qValue, qValue);  // Square the Q Values
+    return _mm_add_ps(iValue, qValue);    // Add the I2 and Q2 values
 }
 
 static inline __m128
-_mm_magnitude_ps(__m128 cplxValue1, __m128 cplxValue2){
-  return _mm_sqrt_ps(_mm_magnitudesquared_ps(cplxValue1, cplxValue2));
+_mm_magnitude_ps(__m128 cplxValue1, __m128 cplxValue2)
+{
+    return _mm_sqrt_ps(_mm_magnitudesquared_ps(cplxValue1, cplxValue2));
 }
 
 #endif /* INCLUDED_VOLK_VOLK_SSE_INTRINSICS_H_ */

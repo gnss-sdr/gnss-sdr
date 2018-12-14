@@ -5,7 +5,7 @@
  * \author Javier Arribas jarribas (at) cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,16 +23,16 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
 
 #include "beamformer.h"
-#include <iostream>
-#include <sstream>
 #include <gnuradio/io_signature.h>
+#include <sstream>
+
 
 #define GNSS_SDR_BEAMFORMER_CHANNELS 8
 
@@ -43,17 +43,19 @@ beamformer_sptr make_beamformer()
 
 
 beamformer::beamformer()
-: gr::sync_block("beamformer",
-        gr::io_signature::make(GNSS_SDR_BEAMFORMER_CHANNELS, GNSS_SDR_BEAMFORMER_CHANNELS,sizeof(gr_complex)),
-        gr::io_signature::make(1, 1,sizeof(gr_complex)))
+    : gr::sync_block("beamformer",
+          gr::io_signature::make(GNSS_SDR_BEAMFORMER_CHANNELS, GNSS_SDR_BEAMFORMER_CHANNELS, sizeof(gr_complex)),
+          gr::io_signature::make(1, 1, sizeof(gr_complex)))
 {
     //initialize weight vector
 
-    if (posix_memalign((void**)&weight_vector, 16, GNSS_SDR_BEAMFORMER_CHANNELS * sizeof(gr_complex)) == 0){};
-
-    for (int i = 0; i< GNSS_SDR_BEAMFORMER_CHANNELS; i++)
+    if (posix_memalign(reinterpret_cast<void **>(&weight_vector), 16, GNSS_SDR_BEAMFORMER_CHANNELS * sizeof(gr_complex)) == 0)
         {
-            weight_vector[i]=gr_complex(1,0);
+        };
+
+    for (int i = 0; i < GNSS_SDR_BEAMFORMER_CHANNELS; i++)
+        {
+            weight_vector[i] = gr_complex(1, 0);
         }
 }
 
@@ -64,10 +66,10 @@ beamformer::~beamformer()
 }
 
 
-int beamformer::work(int noutput_items,gr_vector_const_void_star &input_items,
-        gr_vector_void_star &output_items)
+int beamformer::work(int noutput_items, gr_vector_const_void_star &input_items,
+    gr_vector_void_star &output_items)
 {
-    gr_complex *out = (gr_complex *) output_items[0];
+    auto *out = reinterpret_cast<gr_complex *>(output_items[0]);
     // channel output buffers
     //  gr_complex *ch1 = (gr_complex *) input_items[0];
     //  gr_complex *ch2 = (gr_complex *) input_items[1];
@@ -81,12 +83,12 @@ int beamformer::work(int noutput_items,gr_vector_const_void_star &input_items,
     // NON-VOLK beamforming operation
     //TODO: Implement VOLK SIMD-accelerated beamformer!
     gr_complex sum;
-    for(int n = 0; n < noutput_items; n++)
+    for (int n = 0; n < noutput_items; n++)
         {
-            sum = gr_complex(0,0);
+            sum = gr_complex(0, 0);
             for (int i = 0; i < GNSS_SDR_BEAMFORMER_CHANNELS; i++)
                 {
-                    sum = sum + ((gr_complex*)input_items[i])[n] * weight_vector[i];
+                    sum = sum + (reinterpret_cast<const gr_complex *>(input_items[i]))[n] * weight_vector[i];
                 }
             out[n] = sum;
         }

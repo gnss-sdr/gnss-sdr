@@ -1,4 +1,4 @@
-/* Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
+/* Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
  *
  * This file is part of GNSS-SDR.
  *
@@ -13,13 +13,14 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  */
 
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <volk_gnsssdr/volk_gnsssdr_typedefs.h>
 #include "volk_gnsssdr_machines.h"
 
+// clang-format off
 struct volk_gnsssdr_machine *volk_gnsssdr_machines[] = {
 %for machine in machines:
 #ifdef LV_MACHINE_${machine.name.upper()}
@@ -27,5 +28,5 @@ struct volk_gnsssdr_machine *volk_gnsssdr_machines[] = {
 #endif
 %endfor
 };
-
-unsigned int n_volk_gnsssdr_machines = sizeof(volk_gnsssdr_machines)/sizeof(*volk_gnsssdr_machines);
+// clang-format on
+unsigned int n_volk_gnsssdr_machines = sizeof(volk_gnsssdr_machines) / sizeof(*volk_gnsssdr_machines);

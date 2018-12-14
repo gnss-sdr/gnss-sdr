@@ -1,24 +1,41 @@
+# Copyright (C) 2011-2018 (see AUTHORS file for a list of contributors)
+#
+# This file is part of GNSS-SDR.
+#
+# GNSS-SDR is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# GNSS-SDR is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
+
+
 ###############################################################################
 # Test for availability of SSE
 #
 # - Anthony Arnold
 ###############################################################################
 
-
-function (test_for_sse h_file result_var name)
-  if (NOT DEFINED ${result_var})
+function(test_for_sse h_file result_var name)
+  if(NOT DEFINED ${result_var})
     execute_process(COMMAND echo "#include <${h_file}>"
-                    COMMAND ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} -c -x c++ -
-		    RESULT_VARIABLE COMPILE_RESULT
-		    OUTPUT_QUIET ERROR_QUIET)
+      COMMAND ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} -c -x c++ -
+      RESULT_VARIABLE COMPILE_RESULT
+      OUTPUT_QUIET ERROR_QUIET)
     set(detected 0)
-    if (COMPILE_RESULT EQUAL 0)
+    if(COMPILE_RESULT EQUAL 0)
       message(STATUS "Detected ${name}")
       set(detected 1)
-    endif(COMPILE_RESULT EQUAL 0)
+    endif()
     set(${result_var} ${detected} CACHE INTERNAL "${name} Available")
-  endif (NOT DEFINED ${result_var})
-endfunction(test_for_sse)
+  endif()
+endfunction()
 
 message(STATUS "Testing for SIMD extensions")
 

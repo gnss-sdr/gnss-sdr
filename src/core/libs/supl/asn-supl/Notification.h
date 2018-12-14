@@ -4,8 +4,8 @@
  * 	found in "../supl-init.asn"
  */
 
-#ifndef	_Notification_H_
-#define	_Notification_H_
+#ifndef _Notification_H_
+#define _Notification_H_
 
 
 #include <asn_application.h>
@@ -18,32 +18,34 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Notification */
-typedef struct Notification {
-	NotificationType_t	 notificationType;
-	EncodingType_t	*encodingType	/* OPTIONAL */;
-	OCTET_STRING_t	*requestorId	/* OPTIONAL */;
-	FormatIndicator_t	*requestorIdType	/* OPTIONAL */;
-	OCTET_STRING_t	*clientName	/* OPTIONAL */;
-	FormatIndicator_t	*clientNameType	/* OPTIONAL */;
-	/*
+    /* Notification */
+    typedef struct Notification
+    {
+        NotificationType_t notificationType;
+        EncodingType_t *encodingType /* OPTIONAL */;
+        OCTET_STRING_t *requestorId /* OPTIONAL */;
+        FormatIndicator_t *requestorIdType /* OPTIONAL */;
+        OCTET_STRING_t *clientName /* OPTIONAL */;
+        FormatIndicator_t *clientNameType /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} Notification_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Notification;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } Notification_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_Notification;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _Notification_H_ */
+#endif /* _Notification_H_ */
 #include <asn_internal.h>

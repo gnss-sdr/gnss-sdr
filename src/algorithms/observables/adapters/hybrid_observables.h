@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -25,7 +25,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -34,10 +34,9 @@
 #ifndef GNSS_SDR_HYBRID_OBSERVABLES_H_
 #define GNSS_SDR_HYBRID_OBSERVABLES_H_
 
-#include <string>
-#include "observables_interface.h"
 #include "hybrid_observables_cc.h"
-
+#include "observables_interface.h"
+#include <string>
 
 class ConfigurationInterface;
 
@@ -48,31 +47,35 @@ class HybridObservables : public ObservablesInterface
 {
 public:
     HybridObservables(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_streams,
-            unsigned int out_streams);
+        const std::string& role,
+        unsigned int in_streams,
+        unsigned int out_streams);
+
     virtual ~HybridObservables();
-    std::string role()
+
+    inline std::string role() override
     {
         return role_;
     }
 
     //!  Returns "Hybrid_Observables"
-    std::string implementation()
+    inline std::string implementation() override
     {
         return "Hybrid_Observables";
     }
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
-    void reset()
+
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
+
+    inline void reset() override
     {
         return;
     }
 
     //! All blocks must have an item_size() function implementation
-    size_t item_size()
+    inline size_t item_size() override
     {
         return sizeof(gr_complex);
     }
@@ -80,6 +83,7 @@ public:
 private:
     hybrid_observables_cc_sptr observables_;
     bool dump_;
+    bool dump_mat_;
     std::string dump_filename_;
     std::string role_;
     unsigned int in_streams_;

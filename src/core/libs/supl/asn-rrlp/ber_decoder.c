@@ -16,7 +16,7 @@
 		asn_dec_rval_t rval;					\
 		rval.code = _code;					\
 		if(opt_ctx) opt_ctx->step = step; /* Save context */	\
-		if(_code == RC_OK || opt_ctx)				\
+		if((_code) == RC_OK || opt_ctx)				\
 			rval.consumed = consumed_myself;		\
 		else							\
 			rval.consumed = 0;	/* Context-free */	\

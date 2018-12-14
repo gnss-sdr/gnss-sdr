@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -25,53 +25,54 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
 
 #include "galileo_e1b_telemetry_decoder.h"
-#include <gnuradio/io_signature.h>
-#include <glog/logging.h>
 #include "configuration_interface.h"
-#include "concurrent_queue.h"
-#include "galileo_ephemeris.h"
 #include "galileo_almanac.h"
+#include "galileo_ephemeris.h"
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
+#include <glog/logging.h>
+#include <gnuradio/io_signature.h>
+
 
 using google::LogMessage;
 
 GalileoE1BTelemetryDecoder::GalileoE1BTelemetryDecoder(ConfigurationInterface* configuration,
-        std::string role,
-        unsigned int in_streams,
-        unsigned int out_streams) :
-        role_(role),
-        in_streams_(in_streams),
-        out_streams_(out_streams)
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(role),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams)
 {
     std::string default_dump_filename = "./navigation.dat";
     DLOG(INFO) << "role " << role;
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     // make telemetry decoder object
-    telemetry_decoder_ = galileo_e1b_make_telemetry_decoder_cc(satellite_, dump_); // TODO fix me
+    telemetry_decoder_ = galileo_make_telemetry_decoder_cc(satellite_, 1, dump_);  //unified galileo decoder set to INAV (frame_type=1)
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
-
-    //decimation factor
-    int decimation_factor = configuration->property(role + ".decimation_factor", 1);
-    telemetry_decoder_->set_decimation(decimation_factor);
-
     channel_ = 0;
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 
-GalileoE1BTelemetryDecoder::~GalileoE1BTelemetryDecoder()
-{}
+GalileoE1BTelemetryDecoder::~GalileoE1BTelemetryDecoder() = default;
 
 
-void GalileoE1BTelemetryDecoder::set_satellite(Gnss_Satellite satellite)
+void GalileoE1BTelemetryDecoder::set_satellite(const Gnss_Satellite& satellite)
 {
     satellite_ = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     telemetry_decoder_->set_satellite(satellite_);
@@ -81,7 +82,9 @@ void GalileoE1BTelemetryDecoder::set_satellite(Gnss_Satellite satellite)
 
 void GalileoE1BTelemetryDecoder::connect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     // Nothing to connect internally
     DLOG(INFO) << "nothing to connect internally";
 }
@@ -89,7 +92,9 @@ void GalileoE1BTelemetryDecoder::connect(gr::top_block_sptr top_block)
 
 void GalileoE1BTelemetryDecoder::disconnect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     // Nothing to disconnect
 }
 
@@ -104,4 +109,3 @@ gr::basic_block_sptr GalileoE1BTelemetryDecoder::get_right_block()
 {
     return telemetry_decoder_;
 }
-

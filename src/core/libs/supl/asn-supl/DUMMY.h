@@ -4,8 +4,8 @@
  * 	found in "../supl-ulp.asn"
  */
 
-#ifndef	_DUMMY_H_
-#define	_DUMMY_H_
+#ifndef _DUMMY_H_
+#define _DUMMY_H_
 
 
 #include <asn_application.h>
@@ -14,27 +14,28 @@
 #include <INTEGER.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* DUMMY */
-typedef INTEGER_t	 DUMMY_t;
+    /* DUMMY */
+    typedef INTEGER_t DUMMY_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_DUMMY;
-asn_struct_free_f DUMMY_free;
-asn_struct_print_f DUMMY_print;
-asn_constr_check_f DUMMY_constraint;
-ber_type_decoder_f DUMMY_decode_ber;
-der_type_encoder_f DUMMY_encode_der;
-xer_type_decoder_f DUMMY_decode_xer;
-xer_type_encoder_f DUMMY_encode_xer;
-per_type_decoder_f DUMMY_decode_uper;
-per_type_encoder_f DUMMY_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_DUMMY;
+    asn_struct_free_f DUMMY_free;
+    asn_struct_print_f DUMMY_print;
+    asn_constr_check_f DUMMY_constraint;
+    ber_type_decoder_f DUMMY_decode_ber;
+    der_type_encoder_f DUMMY_encode_der;
+    xer_type_decoder_f DUMMY_decode_xer;
+    xer_type_encoder_f DUMMY_encode_xer;
+    per_type_decoder_f DUMMY_decode_uper;
+    per_type_encoder_f DUMMY_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _DUMMY_H_ */
+#endif /* _DUMMY_H_ */
 #include <asn_internal.h>

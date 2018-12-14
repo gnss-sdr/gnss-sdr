@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_OTD_Measurement_H_
-#define	_OTD_Measurement_H_
+#ifndef _OTD_Measurement_H_
+#define _OTD_Measurement_H_
 
 
 #include <asn_application.h>
@@ -17,25 +17,27 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* OTD-Measurement */
-typedef struct OTD_Measurement {
-	ModuloTimeSlot_t	 nborTimeSlot;
-	EOTDQuality_t	 eotdQuality;
-	OTDValue_t	 otdValue;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} OTD_Measurement_t;
+    /* OTD-Measurement */
+    typedef struct OTD_Measurement
+    {
+        ModuloTimeSlot_t nborTimeSlot;
+        EOTDQuality_t eotdQuality;
+        OTDValue_t otdValue;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_OTD_Measurement;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } OTD_Measurement_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_OTD_Measurement;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _OTD_Measurement_H_ */
+#endif /* _OTD_Measurement_H_ */
 #include <asn_internal.h>

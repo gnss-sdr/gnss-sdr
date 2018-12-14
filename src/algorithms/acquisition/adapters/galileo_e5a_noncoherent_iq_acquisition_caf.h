@@ -12,7 +12,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,7 +30,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -38,24 +38,24 @@
 #ifndef GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_H_
 #define GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_H_
 
-#include <string>
-#include <gnuradio/blocks/stream_to_vector.h>
-#include "gnss_synchro.h"
 #include "acquisition_interface.h"
 #include "galileo_e5a_noncoherent_iq_acquisition_caf_cc.h"
+#include "gnss_synchro.h"
+#include <string>
 
 class ConfigurationInterface;
 
-class GalileoE5aNoncoherentIQAcquisitionCaf: public AcquisitionInterface
+class GalileoE5aNoncoherentIQAcquisitionCaf : public AcquisitionInterface
 {
 public:
     GalileoE5aNoncoherentIQAcquisitionCaf(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_streams,
-            unsigned int out_streams);
+        const std::string& role,
+        unsigned int in_streams,
+        unsigned int out_streams);
 
     virtual ~GalileoE5aNoncoherentIQAcquisitionCaf();
 
-    std::string role()
+    inline std::string role() override
     {
         return role_;
     }
@@ -63,79 +63,85 @@ public:
     /*!
      * \brief Returns "Galileo_E5a_Noncoherent_IQ_Acquisition_CAF"
      */
-    std::string implementation()
+    inline std::string implementation() override
     {
         return "Galileo_E5a_Noncoherent_IQ_Acquisition_CAF";
     }
 
-    size_t item_size()
+    inline size_t item_size() override
     {
         return item_size_;
     }
 
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
      * to efficiently exchange synchronization data between acquisition and
      *  tracking blocks
      */
-    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
+    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
     /*!
      * \brief Set acquisition channel unique ID
      */
-    void set_channel(unsigned int channel);
+    void set_channel(unsigned int channel) override;
 
     /*!
      * \brief Set statistics threshold of PCPS algorithm
      */
-    void set_threshold(float threshold);
+    void set_threshold(float threshold) override;
 
     /*!
      * \brief Set maximum Doppler off grid search
      */
-    void set_doppler_max(unsigned int doppler_max);
+    void set_doppler_max(unsigned int doppler_max) override;
 
     /*!
      * \brief Set Doppler steps for the grid search
      */
-    void set_doppler_step(unsigned int doppler_step);
+    void set_doppler_step(unsigned int doppler_step) override;
 
     /*!
      * \brief Initializes acquisition algorithm.
      */
-    void init();
+    void init() override;
 
     /*!
      * \brief Sets local Galileo E5a code for PCPS acquisition algorithm.
      */
-    void set_local_code();
+    void set_local_code() override;
 
     /*!
      * \brief Returns the maximum peak of grid search
      */
-    signed int mag();
+    signed int mag() override;
 
     /*!
      * \brief Restart acquisition algorithm
      */
-    void reset();
+    void reset() override;
 
     /*!
      * \brief If set to 1, ensures that acquisition starts at the
      * first available sample.
      * \param state - int=1 forces start of acquisition
      */
-    void set_state(int state);
+    void set_state(int state) override;
+
+    /*!
+     * \brief Stop running acquisition
+     */
+    void stop_acquisition() override;
+
+    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
 
 private:
     ConfigurationInterface* configuration_;
     galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr acquisition_cc_;
-    gr::blocks::stream_to_vector::sptr stream_to_vector_;
     size_t item_size_;
     std::string item_type_;
     unsigned int vector_length_;
@@ -147,16 +153,15 @@ private:
     unsigned int doppler_step_;
     unsigned int sampled_ms_;
     unsigned int max_dwells_;
-    long fs_in_;
-    long if_;
+    int64_t fs_in_;
     bool dump_;
     std::string dump_filename_;
     int Zero_padding;
     int CAF_window_hz_;
-    std::complex<float> * codeI_;
-    std::complex<float> * codeQ_;
+    std::complex<float>* codeI_;
+    std::complex<float>* codeQ_;
     bool both_signal_components;
-    Gnss_Synchro * gnss_synchro_;
+    Gnss_Synchro* gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;

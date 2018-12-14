@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,44 +24,60 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
+#include "agnss_ref_location.h"
+#include "agnss_ref_time.h"
+#include "concurrent_map.h"
+#include "concurrent_queue.h"
+#include "galileo_navigation_message.h"
+#include "gps_acq_assist.h"
+#include "gps_cnav_ephemeris.h"
+#include "gps_cnav_iono.h"
+#include "gps_ephemeris.h"
+#include "gps_navigation_message.h"
+#include <boost/filesystem.hpp>
+#include <boost/thread.hpp>
+#include <gflags/gflags.h>
+#include <glog/logging.h>
+#include <gnuradio/msg_queue.h>
+#include <gtest/gtest.h>
 #include <cmath>
 #include <iostream>
 #include <queue>
-#include <boost/thread.hpp>
-#include <boost/filesystem.hpp>
-#include <gflags/gflags.h>
-#include <glog/logging.h>
-#include <gtest/gtest.h>
-#include <gnuradio/msg_queue.h>
-#include "concurrent_queue.h"
-#include "concurrent_map.h"
-#include "gps_navigation_message.h"
-#include "gps_ephemeris.h"
-#include "gps_cnav_ephemeris.h"
-#include "gps_cnav_iono.h"
-#include "gps_acq_assist.h"
-#include "gps_ref_location.h"
-#include "gps_ref_time.h"
-#include "galileo_navigation_message.h"
-#include "sbas_ionospheric_correction.h"
-#include "sbas_telemetry_data.h"
-#include "sbas_ephemeris.h"
-#include "sbas_satellite_correction.h"
+
 
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 
 concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
+using google::LogMessage;
+
+DECLARE_string(log_dir);
 
 int main(int argc, char **argv)
 {
     google::ParseCommandLineFlags(&argc, &argv, true);
-    testing::InitGoogleTest(&argc, argv);
+    try
+        {
+            testing::InitGoogleTest(&argc, argv);
+        }
+    catch (...)
+        {
+        }  // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
     google::InitGoogleLogging(argv[0]);
-    return RUN_ALL_TESTS();
+    int res = 0;
+    try
+        {
+            res = RUN_ALL_TESTS();
+        }
+    catch (...)
+        {
+            LOG(WARNING) << "Unexpected catch";
+        }
+    google::ShutDownCommandLineFlags();
+    return res;
 }

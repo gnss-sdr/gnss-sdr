@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -27,7 +27,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -35,16 +35,16 @@
 #ifndef GNSS_SDR_TWO_BIT_PACKED_FILE_SIGNAL_SOURCE_H_
 #define GNSS_SDR_TWO_BIT_PACKED_FILE_SIGNAL_SOURCE_H_
 
-#include <string>
-#include <gnuradio/blocks/file_source.h>
+#include "gnss_block_interface.h"
+#include "unpack_2bit_samples.h"
 #include <gnuradio/blocks/file_sink.h>
+#include <gnuradio/blocks/file_source.h>
+#include <gnuradio/blocks/interleaved_char_to_complex.h>
 #include <gnuradio/blocks/throttle.h>
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/msg_queue.h>
-#include <gnuradio/blocks/interleaved_char_to_complex.h>
-#include "gnss_block_interface.h"
-#include "unpack_2bit_samples.h"
-
+#include <cstdint>
+#include <string>
 
 
 class ConfigurationInterface;
@@ -53,15 +53,15 @@ class ConfigurationInterface;
  * \brief Class that reads signals samples from a file
  * and adapts it to a SignalSourceInterface
  */
-class TwoBitPackedFileSignalSource: public GNSSBlockInterface
+class TwoBitPackedFileSignalSource : public GNSSBlockInterface
 {
 public:
-    TwoBitPackedFileSignalSource(ConfigurationInterface* configuration, std::string role,
-            unsigned int in_streams, unsigned int out_streams,
-            boost::shared_ptr<gr::msg_queue> queue);
+    TwoBitPackedFileSignalSource(ConfigurationInterface* configuration, const std::string& role,
+        unsigned int in_streams, unsigned int out_streams,
+        boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~TwoBitPackedFileSignalSource();
-    std::string role()
+    inline std::string role() override
     {
         return role_;
     }
@@ -69,58 +69,69 @@ public:
     /*!
      * \brief Returns "Two_Bit_Packed_File_Signal_Source".
      */
-    std::string implementation()
+    inline std::string implementation() override
     {
         return "Two_Bit_Packed_File_Signal_Source";
     }
-    size_t item_size()
+
+    inline size_t item_size() override
     {
         return item_size_;
     }
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
-    std::string filename()
+
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
+
+    inline std::string filename() const
     {
         return filename_;
     }
-    std::string item_type()
+
+    inline std::string item_type() const
     {
         return item_type_;
     }
-    bool repeat()
+
+    inline bool repeat() const
     {
         return repeat_;
     }
-    long sampling_frequency()
+
+    inline int64_t sampling_frequency() const
     {
         return sampling_frequency_;
     }
-    long samples()
+
+    inline uint64_t samples() const
     {
         return samples_;
     }
-    bool big_endian_items()
+
+    inline bool big_endian_items() const
     {
         return big_endian_items_;
     }
-    bool big_endian_bytes()
+
+    inline bool big_endian_bytes() const
     {
         return big_endian_bytes_;
     }
-    bool is_complex()
+
+    inline bool is_complex() const
     {
         return is_complex_;
     }
-    bool reverse_interleaving()
+
+    inline bool reverse_interleaving() const
     {
         return reverse_interleaving_;
     }
 
 private:
-    unsigned long long samples_;
-    long sampling_frequency_;
+    uint64_t samples_;
+    int64_t sampling_frequency_;
     std::string filename_;
     std::string item_type_;
     bool repeat_;
@@ -134,7 +145,7 @@ private:
     gr::basic_block_sptr char_to_float_;
     boost::shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr sink_;
-    gr::blocks::throttle::sptr  throttle_;
+    gr::blocks::throttle::sptr throttle_;
     boost::shared_ptr<gr::msg_queue> queue_;
     size_t item_size_;
     bool big_endian_items_;
@@ -147,4 +158,3 @@ private:
 };
 
 #endif /*GNSS_SDR_TWO_BIT_CPX_FILE_SIGNAL_SOURCE_H_*/
-

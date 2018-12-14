@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_SeqOfAlmanacElement_H_
-#define	_SeqOfAlmanacElement_H_
+#ifndef _SeqOfAlmanacElement_H_
+#define _SeqOfAlmanacElement_H_
 
 
 #include <asn_application.h>
@@ -15,22 +15,25 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct AlmanacElement;
+    /* Forward declarations */
+    struct AlmanacElement;
 
-/* SeqOfAlmanacElement */
-typedef struct SeqOfAlmanacElement {
-	A_SEQUENCE_OF(struct AlmanacElement) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SeqOfAlmanacElement_t;
+    /* SeqOfAlmanacElement */
+    typedef struct SeqOfAlmanacElement
+    {
+        A_SEQUENCE_OF(struct AlmanacElement)
+        list;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SeqOfAlmanacElement;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SeqOfAlmanacElement_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SeqOfAlmanacElement;
 
 #ifdef __cplusplus
 }
@@ -39,5 +42,5 @@ extern asn_TYPE_descriptor_t asn_DEF_SeqOfAlmanacElement;
 /* Referred external types */
 #include "AlmanacElement.h"
 
-#endif	/* _SeqOfAlmanacElement_H_ */
+#endif /* _SeqOfAlmanacElement_H_ */
 #include <asn_internal.h>

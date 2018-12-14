@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -32,14 +32,16 @@
 #ifndef GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_H
 #define GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_H
 
-#include <string>
-#include <boost/shared_ptr.hpp>
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/blocks/file_sink.h>
-#include <gnuradio/blocks/deinterleave.h>
-#include <gnuradio/blocks/float_to_complex.h>
-#include "rtl_tcp_signal_source_c.h"
 #include "gnss_block_interface.h"
+#include "rtl_tcp_signal_source_c.h"
+#include <boost/shared_ptr.hpp>
+#include <gnuradio/blocks/deinterleave.h>
+#include <gnuradio/blocks/file_sink.h>
+#include <gnuradio/blocks/float_to_complex.h>
+#include <gnuradio/msg_queue.h>
+#include <stdexcept>
+#include <string>
+
 
 class ConfigurationInterface;
 
@@ -48,16 +50,18 @@ class ConfigurationInterface;
  * I/Q samples over TCP.
  * (see http://sdr.osmocom.org/trac/wiki/rtl-sdr)
  */
-class RtlTcpSignalSource: public GNSSBlockInterface
+class RtlTcpSignalSource : public GNSSBlockInterface
 {
 public:
     RtlTcpSignalSource(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_stream,
-            unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
+        const std::string& role,
+        unsigned int in_stream,
+        unsigned int out_stream,
+        boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~RtlTcpSignalSource();
 
-    std::string role()
+    inline std::string role() override
     {
         return role_;
     }
@@ -65,21 +69,23 @@ public:
     /*!
      * \brief Returns "RtlTcp_Signal_Source"
      */
-    std::string implementation()
+    inline std::string implementation() override
     {
         return "RtlTcp_Signal_Source";
     }
-    size_t item_size()
+
+    inline size_t item_size() override
     {
         return item_size_;
     }
 
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
 
 private:
+    void MakeBlock();
     std::string role_;
 
     // rtl_tcp settings

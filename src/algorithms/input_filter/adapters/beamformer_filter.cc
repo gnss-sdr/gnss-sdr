@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,24 +23,23 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
 #include "beamformer_filter.h"
-#include <glog/logging.h>
-#include <gnuradio/blocks/file_sink.h>
 #include "beamformer.h"
 #include "configuration_interface.h"
+#include <glog/logging.h>
+#include <gnuradio/blocks/file_sink.h>
 
 
 using google::LogMessage;
 
 BeamformerFilter::BeamformerFilter(
-        ConfigurationInterface* configuration, std::string role,
-        unsigned int in_stream, unsigned int out_stream) :
-        role_(role), in_stream_(in_stream), out_stream_(out_stream)
+    ConfigurationInterface* configuration, const std::string& role,
+    unsigned int in_stream, unsigned int out_stream) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/input_filter.dat";
@@ -49,18 +48,17 @@ BeamformerFilter::BeamformerFilter(
     DLOG(INFO) << "dump_ is " << dump_;
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             beamformer_ = make_beamformer();
             DLOG(INFO) << "Item size " << item_size_;
             DLOG(INFO) << "resampler(" << beamformer_->unique_id() << ")";
-
         }
     else
         {
             LOG(WARNING) << item_type_
-                                  << " unrecognized item type for beamformer";
+                         << " unrecognized item type for beamformer";
             item_size_ = sizeof(gr_complex);
         }
     if (dump_)
@@ -70,11 +68,18 @@ BeamformerFilter::BeamformerFilter(
             DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
         }
     samples_ = 0;
+    if (in_stream_ > 8)
+        {
+            LOG(ERROR) << "This implementation only supports eight input streams";
+        }
+    if (out_stream_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 
-BeamformerFilter::~BeamformerFilter() {}
-
+BeamformerFilter::~BeamformerFilter() = default;
 
 
 void BeamformerFilter::connect(gr::top_block_sptr top_block)

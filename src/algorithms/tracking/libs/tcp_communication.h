@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -32,9 +32,9 @@
 #ifndef GNSS_SDR_TCP_COMMUNICATION_H_
 #define GNSS_SDR_TCP_COMMUNICATION_H_
 
-#include <boost/asio.hpp>
-#include <boost/array.hpp>
 #include "tcp_packet_data.h"
+#include <boost/array.hpp>
+#include <boost/asio.hpp>
 
 #define NUM_TX_VARIABLES_GALILEO_E1 13
 #define NUM_TX_VARIABLES_GPS_L1_CA 9

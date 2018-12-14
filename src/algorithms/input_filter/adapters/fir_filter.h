@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -25,7 +25,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -33,21 +33,25 @@
 #ifndef GNSS_SDR_FIR_FILTER_H_
 #define GNSS_SDR_FIR_FILTER_H_
 
-#include <cmath>
-#include <string>
-#include <vector>
-#include <gnuradio/gr_complex.h>
+#include "byte_x2_to_complex_byte.h"
+#include "complex_byte_to_float_x2.h"
+#include "cshort_to_float_x2.h"
+#include "gnss_block_interface.h"
+#include "short_x2_to_cshort.h"
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/float_to_char.h>
 #include <gnuradio/blocks/float_to_complex.h>
 #include <gnuradio/blocks/float_to_short.h>
+#include <gnuradio/gr_complex.h>
+#ifdef GR_GREATER_38
+#include <gnuradio/filter/fir_filter_blk.h>
+#else
 #include <gnuradio/filter/fir_filter_ccf.h>
 #include <gnuradio/filter/fir_filter_fff.h>
-#include "gnss_block_interface.h"
-#include "complex_byte_to_float_x2.h"
-#include "byte_x2_to_complex_byte.h"
-#include "short_x2_to_cshort.h"
-#include "cshort_to_float_x2.h"
+#endif
+#include <cmath>
+#include <string>
+#include <vector>
 
 class ConfigurationInterface;
 
@@ -59,35 +63,38 @@ class ConfigurationInterface;
  * given a set of band edges, the desired response on those bands, and the weight given
  * to the error in those bands.
  */
-class FirFilter: public GNSSBlockInterface
+class FirFilter : public GNSSBlockInterface
 {
 public:
     //! Constructor
     FirFilter(ConfigurationInterface* configuration,
-              std::string role,
-              unsigned int in_streams,
-              unsigned int out_streams);
+        std::string role,
+        unsigned int in_streams,
+        unsigned int out_streams);
 
     //! Destructor
     virtual ~FirFilter();
-    std::string role()
+
+    inline std::string role() override
     {
         return role_;
     }
 
     //! Returns "Fir_Filter"
-    std::string implementation()
+    inline std::string implementation() override
     {
         return "Fir_Filter";
     }
-    size_t item_size()
+
+    inline size_t item_size() override
     {
         return 0;
     }
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
+
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
 
 private:
     gr::filter::fir_filter_ccf::sptr fir_filter_ccf_;
@@ -97,7 +104,7 @@ private:
     std::string input_item_type_;
     std::string output_item_type_;
     std::string taps_item_type_;
-    std::vector <float> taps_;
+    std::vector<float> taps_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
@@ -114,7 +121,6 @@ private:
     gr::blocks::float_to_short::sptr float_to_short_1_;
     gr::blocks::float_to_short::sptr float_to_short_2_;
     short_x2_to_cshort_sptr short_x2_to_cshort_;
-
 };
 
 #endif

@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_ReferenceFrame_H_
-#define	_ReferenceFrame_H_
+#ifndef _ReferenceFrame_H_
+#define _ReferenceFrame_H_
 
 
 #include <asn_application.h>
@@ -15,24 +15,26 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* ReferenceFrame */
-typedef struct ReferenceFrame {
-	long	 referenceFN;
-	long	*referenceFNMSB	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} ReferenceFrame_t;
+    /* ReferenceFrame */
+    typedef struct ReferenceFrame
+    {
+        long referenceFN;
+        long *referenceFNMSB /* OPTIONAL */;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ReferenceFrame;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } ReferenceFrame_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_ReferenceFrame;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _ReferenceFrame_H_ */
+#endif /* _ReferenceFrame_H_ */
 #include <asn_internal.h>

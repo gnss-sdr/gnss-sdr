@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -25,7 +25,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -33,10 +33,14 @@
 #ifndef GNSS_SDR_PASS_THROUGH_H_
 #define GNSS_SDR_PASS_THROUGH_H_
 
-#include <string>
-#include <gnuradio/hier_block2.h>
-#include <gnuradio/blocks/copy.h>
+#include "conjugate_cc.h"
+#include "conjugate_ic.h"
+#include "conjugate_sc.h"
 #include "gnss_block_interface.h"
+#include <gnuradio/blocks/copy.h>
+#include <gnuradio/hier_block2.h>
+#include <string>
+
 
 class ConfigurationInterface;
 
@@ -47,46 +51,49 @@ class Pass_Through : public GNSSBlockInterface
 {
 public:
     Pass_Through(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_stream,
-            unsigned int out_stream);
+        const std::string& role,
+        unsigned int in_stream,
+        unsigned int out_stream);
 
     virtual ~Pass_Through();
-    std::string role()
+
+    inline std::string role() override
     {
         return role_;
     }
+
     //! returns "Pass_Through"
-    std::string implementation()
+    inline std::string implementation() override
     {
         return "Pass_Through";
     }
-    std::string item_type()
+
+    inline std::string item_type() const
     {
         return item_type_;
     }
-    size_t vector_size()
-    {
-        return vector_size_;
-    }
-    size_t item_size()
+
+    inline size_t item_size() override
     {
         return item_size_;
     }
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
+
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
 
 private:
     std::string item_type_;
-    size_t vector_size_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    //gr_kludge_copy_sptr kludge_copy_;
     gr::blocks::copy::sptr kludge_copy_;
     size_t item_size_;
+    conjugate_cc_sptr conjugate_cc_;
+    conjugate_sc_sptr conjugate_sc_;
+    conjugate_ic_sptr conjugate_ic_;
+    bool inverted_spectrum;
 };
 
 #endif /*GNSS_SDR_PASS_THROUGH_H_*/

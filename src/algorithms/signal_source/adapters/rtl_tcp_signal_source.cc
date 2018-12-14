@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -25,27 +25,33 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
 #include "rtl_tcp_signal_source.h"
-#include <glog/logging.h>
-#include <iostream>
-#include <boost/format.hpp>
+#include "GPS_L1_CA.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_valve.h"
-#include "GPS_L1_CA.h"
+#include <boost/format.hpp>
+#include <glog/logging.h>
+#include <cstdint>
+#include <iostream>
+#include <utility>
+
 
 using google::LogMessage;
 
 
 RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_stream, unsigned int out_stream,
-        boost::shared_ptr<gr::msg_queue> queue) :
-                role_(role), in_stream_(in_stream), out_stream_(out_stream),
-                queue_(queue)
+    const std::string& role,
+    unsigned int in_stream,
+    unsigned int out_stream,
+    boost::shared_ptr<gr::msg_queue> queue) : role_(std::move(role)),
+                                              in_stream_(in_stream),
+                                              out_stream_(out_stream),
+                                              queue_(queue)
 {
     // DUMP PARAMETERS
     std::string empty = "";
@@ -54,40 +60,31 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
     samples_ = configuration->property(role + ".samples", 0);
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename",
-            default_dump_file);
+        default_dump_file);
 
-    // rtl_tcp PARAMTERS
+    // rtl_tcp PARAMETERS
     std::string default_address = "127.0.0.1";
-    short default_port = 1234;
+    int16_t default_port = 1234;
     AGC_enabled_ = configuration->property(role + ".AGC_enabled", true);
     freq_ = configuration->property(role + ".freq", GPS_L1_FREQ_HZ);
-    gain_ = configuration->property(role + ".gain", (double)40.0);
-    rf_gain_ = configuration->property(role + ".rf_gain", (double)40.0);
-    if_gain_ = configuration->property(role + ".if_gain", (double)40.0);
-    sample_rate_ = configuration->property(role + ".sampling_frequency", (double)2.0e6);
+    gain_ = configuration->property(role + ".gain", 40.0);
+    rf_gain_ = configuration->property(role + ".rf_gain", 40.0);
+    if_gain_ = configuration->property(role + ".if_gain", 40.0);
+    sample_rate_ = configuration->property(role + ".sampling_frequency", 2.0e6);
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     address_ = configuration->property(role + ".address", default_address);
     port_ = configuration->property(role + ".port", default_port);
     flip_iq_ = configuration->property(role + ".flip_iq", false);
 
-    if (item_type_.compare("short") == 0)
+    if (item_type_ == "short")
         {
-            item_size_ = sizeof(short);
+            item_size_ = sizeof(int16_t);
         }
-    else if (item_type_.compare("gr_complex") == 0)
+    else if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             // 1. Make the gr block
-            try
-            {
-                    std::cout << "Connecting to " << address_ << ":" << port_ << std::endl;
-                    LOG (INFO) << "Connecting to " << address_ << ":" << port_;
-                    signal_source_ = rtl_tcp_make_signal_source_c (address_, port_, flip_iq_);
-            }
-            catch( boost::exception & e )
-            {
-                    DLOG(FATAL) << "Boost exception: " << boost::diagnostic_information(e);
-            }
+            MakeBlock();
 
             // 2 set sampling rate
             signal_source_->set_sample_rate(sample_rate_);
@@ -122,7 +119,7 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
     else
         {
             LOG(WARNING) << item_type_ << " unrecognized item type. Using short.";
-            item_size_ = sizeof(short);
+            item_size_ = sizeof(int16_t);
         }
 
     if (samples_ != 0)
@@ -138,26 +135,49 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
             file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
             DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
         }
+    if (in_stream_ > 0)
+        {
+            LOG(ERROR) << "A signal source does not have an input stream";
+        }
+    if (out_stream_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 
-RtlTcpSignalSource::~RtlTcpSignalSource()
-{}
+RtlTcpSignalSource::~RtlTcpSignalSource() = default;
+
+
+void RtlTcpSignalSource::MakeBlock()
+{
+    try
+        {
+            std::cout << "Connecting to " << address_ << ":" << port_ << std::endl;
+            LOG(INFO) << "Connecting to " << address_ << ":" << port_;
+            signal_source_ = rtl_tcp_make_signal_source_c(address_, port_, flip_iq_);
+        }
+    catch (const boost::exception& e)
+        {
+            LOG(WARNING) << "Boost exception: " << boost::diagnostic_information(e);
+            throw std::runtime_error("Failure connecting to the device");
+        }
+}
 
 
 void RtlTcpSignalSource::connect(gr::top_block_sptr top_block)
 {
-    if ( samples_ )
+    if (samples_)
         {
-            top_block->connect (signal_source_, 0, valve_, 0);
+            top_block->connect(signal_source_, 0, valve_, 0);
             DLOG(INFO) << "connected rtl tcp source to valve";
-            if ( dump_ )
+            if (dump_)
                 {
                     top_block->connect(valve_, 0, file_sink_, 0);
                     DLOG(INFO) << "connected valve to file sink";
                 }
         }
-    else if ( dump_ )
+    else if (dump_)
         {
             top_block->connect(signal_source_, 0, file_sink_, 0);
             DLOG(INFO) << "connected rtl tcp source to file sink";
@@ -167,15 +187,15 @@ void RtlTcpSignalSource::connect(gr::top_block_sptr top_block)
 
 void RtlTcpSignalSource::disconnect(gr::top_block_sptr top_block)
 {
-    if ( samples_ )
+    if (samples_)
         {
-            top_block->disconnect (signal_source_, 0, valve_, 0);
-            if ( dump_ )
+            top_block->disconnect(signal_source_, 0, valve_, 0);
+            if (dump_)
                 {
                     top_block->disconnect(valve_, 0, file_sink_, 0);
                 }
         }
-    else if ( dump_ )
+    else if (dump_)
         {
             top_block->disconnect(signal_source_, 0, file_sink_, 0);
         }

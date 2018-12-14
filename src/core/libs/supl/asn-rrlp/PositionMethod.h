@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_PositionMethod_H_
-#define	_PositionMethod_H_
+#ifndef _PositionMethod_H_
+#define _PositionMethod_H_
 
 
 #include <asn_application.h>
@@ -14,34 +14,36 @@
 #include <ENUMERATED.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Dependencies */
-typedef enum PositionMethod {
-	PositionMethod_eotd	= 0,
-	PositionMethod_gps	= 1,
-	PositionMethod_gpsOrEOTD	= 2
-} e_PositionMethod;
+    /* Dependencies */
+    typedef enum PositionMethod
+    {
+        PositionMethod_eotd = 0,
+        PositionMethod_gps = 1,
+        PositionMethod_gpsOrEOTD = 2
+    } e_PositionMethod;
 
-/* PositionMethod */
-typedef ENUMERATED_t	 PositionMethod_t;
+    /* PositionMethod */
+    typedef ENUMERATED_t PositionMethod_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_PositionMethod;
-asn_struct_free_f PositionMethod_free;
-asn_struct_print_f PositionMethod_print;
-asn_constr_check_f PositionMethod_constraint;
-ber_type_decoder_f PositionMethod_decode_ber;
-der_type_encoder_f PositionMethod_encode_der;
-xer_type_decoder_f PositionMethod_decode_xer;
-xer_type_encoder_f PositionMethod_encode_xer;
-per_type_decoder_f PositionMethod_decode_uper;
-per_type_encoder_f PositionMethod_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_PositionMethod;
+    asn_struct_free_f PositionMethod_free;
+    asn_struct_print_f PositionMethod_print;
+    asn_constr_check_f PositionMethod_constraint;
+    ber_type_decoder_f PositionMethod_decode_ber;
+    der_type_encoder_f PositionMethod_encode_der;
+    xer_type_decoder_f PositionMethod_decode_xer;
+    xer_type_encoder_f PositionMethod_encode_xer;
+    per_type_decoder_f PositionMethod_decode_uper;
+    per_type_encoder_f PositionMethod_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _PositionMethod_H_ */
+#endif /* _PositionMethod_H_ */
 #include <asn_internal.h>

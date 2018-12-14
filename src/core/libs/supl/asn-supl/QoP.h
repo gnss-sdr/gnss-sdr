@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_QoP_H_
-#define	_QoP_H_
+#ifndef _QoP_H_
+#define _QoP_H_
 
 
 #include <asn_application.h>
@@ -15,30 +15,32 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* QoP */
-typedef struct QoP {
-	long	 horacc;
-	long	*veracc	/* OPTIONAL */;
-	long	*maxLocAge	/* OPTIONAL */;
-	long	*delay	/* OPTIONAL */;
-	/*
+    /* QoP */
+    typedef struct QoP
+    {
+        long horacc;
+        long *veracc /* OPTIONAL */;
+        long *maxLocAge /* OPTIONAL */;
+        long *delay /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} QoP_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_QoP;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } QoP_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_QoP;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _QoP_H_ */
+#endif /* _QoP_H_ */
 #include <asn_internal.h>

@@ -23,7 +23,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -41,7 +41,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -58,30 +58,29 @@
  * \f$\hat{P}_{tot}=\frac{1}{N}\sum^{N-1}_{i=0}|Pc(i)|^2\f$ is the estimator of the total power, \f$|\cdot|\f$ is the absolute value,
  * \f$Re(\cdot)\f$ stands for the real part of the value, and \f$Pc(i)\f$ is the prompt correlator output for the sample index i.
  *
- * The SNR value is converted to CN0 [dB-Hz], taking to account the receiver bandwidth and the PRN code gain, using the following formula:
+ * The SNR value is converted to CN0 [dB-Hz], taking to account the coherent integration time, using the following formula:
  * \f{equation}
- *     CN0_{dB}=10*log(\hat{\rho})+10*log(\frac{f_s}{2})-10*log(L_{PRN}),
+ *     CN0_{dB}=10*log(\hat{\rho})-10*log(T_{int}),
  * \f}
- * where \f$f_s\f$ is the sampling frequency and \f$L_{PRN}\f$ is the PRN sequence length.
+ * where \f$T_{int}\f$ is the coherent integration time, in seconds.
  *
  */
-float cn0_svn_estimator(gr_complex* Prompt_buffer, int length, long fs_in, double code_length)
+float cn0_svn_estimator(const gr_complex* Prompt_buffer, int length, double coh_integration_time_s)
 {
-    double SNR = 0;
-    double SNR_dB_Hz = 0;
-    double Psig = 0;
-    double Ptot = 0;
-    for (int i=0; i<length; i++)
+    double SNR = 0.0;
+    double SNR_dB_Hz = 0.0;
+    double Psig = 0.0;
+    double Ptot = 0.0;
+    for (int i = 0; i < length; i++)
         {
             Psig += std::abs(static_cast<double>(Prompt_buffer[i].real()));
-            Ptot += static_cast<double>(Prompt_buffer[i].imag()) * static_cast<double>(Prompt_buffer[i].imag())
-                    + static_cast<double>(Prompt_buffer[i].real()) * static_cast<double>(Prompt_buffer[i].real());
+            Ptot += static_cast<double>(Prompt_buffer[i].imag()) * static_cast<double>(Prompt_buffer[i].imag()) + static_cast<double>(Prompt_buffer[i].real()) * static_cast<double>(Prompt_buffer[i].real());
         }
-    Psig = Psig / static_cast<double>(length);
+    Psig /= static_cast<double>(length);
     Psig = Psig * Psig;
-    Ptot = Ptot / static_cast<double>(length);
+    Ptot /= static_cast<double>(length);
     SNR = Psig / (Ptot - Psig);
-    SNR_dB_Hz = 10 * log10(SNR) + 10 * log10(static_cast<double>(fs_in)/2) - 10 * log10(code_length);
+    SNR_dB_Hz = 10.0 * log10(SNR) - 10.0 * log10(coh_integration_time_s);
     return static_cast<float>(SNR_dB_Hz);
 }
 
@@ -97,16 +96,16 @@ float cn0_svn_estimator(gr_complex* Prompt_buffer, int length, long fs_in, doubl
  */
 float carrier_lock_detector(gr_complex* Prompt_buffer, int length)
 {
-    float tmp_sum_I = 0;
-    float tmp_sum_Q = 0;
-    float NBD = 0;
-    float NBP = 0;
-    for (int i=0; i<length; i++)
+    float tmp_sum_I = 0.0;
+    float tmp_sum_Q = 0.0;
+    float NBD = 0.0;
+    float NBP = 0.0;
+    for (int i = 0; i < length; i++)
         {
             tmp_sum_I += Prompt_buffer[i].real();
             tmp_sum_Q += Prompt_buffer[i].imag();
         }
-    NBP = tmp_sum_I*tmp_sum_I + tmp_sum_Q*tmp_sum_Q;
-    NBD = tmp_sum_I*tmp_sum_I - tmp_sum_Q*tmp_sum_Q;
-    return NBD/NBP;
+    NBP = tmp_sum_I * tmp_sum_I + tmp_sum_Q * tmp_sum_Q;
+    NBD = tmp_sum_I * tmp_sum_I - tmp_sum_Q * tmp_sum_Q;
+    return NBD / NBP;
 }

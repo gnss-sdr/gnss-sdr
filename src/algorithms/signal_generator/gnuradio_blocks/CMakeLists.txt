@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -13,35 +13,42 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
 set(SIGNAL_GENERATOR_BLOCK_SOURCES signal_generator_c.cc)
+set(SIGNAL_GENERATOR_BLOCK_HEADERS signal_generator_c.h)
 
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-     ${VOLK_GNSSSDR_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+    ${CMAKE_SOURCE_DIR}/src/core/interfaces
+    ${CMAKE_SOURCE_DIR}/src/core/receiver
+    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+    ${GLOG_INCLUDE_DIRS}
+    ${GFlags_INCLUDE_DIRS}
+    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+    ${VOLK_GNSSSDR_INCLUDE_DIRS}
 )
 
-file(GLOB SIGNAL_GENERATOR_BLOCK_HEADERS "*.h")
-list(SORT SIGNAL_GENERATOR_BLOCK_HEADERS)
-add_library(signal_generator_blocks ${SIGNAL_GENERATOR_BLOCK_SOURCES} ${SIGNAL_GENERATOR_BLOCK_HEADERS})
+add_library(signal_generator_blocks
+    ${SIGNAL_GENERATOR_BLOCK_SOURCES}
+    ${SIGNAL_GENERATOR_BLOCK_HEADERS}
+)
+
 source_group(Headers FILES ${SIGNAL_GENERATOR_BLOCK_HEADERS})
-target_link_libraries(signal_generator_blocks gnss_system_parameters gnss_sp_libs
-                                              ${GNURADIO_RUNTIME_LIBRARIES}
-                                              ${GNURADIO_FFT_LIBRARIES}
-                                              ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
+
+target_link_libraries(signal_generator_blocks
+    gnss_system_parameters
+    gnss_sp_libs
+    ${GNURADIO_RUNTIME_LIBRARIES}
+    ${GNURADIO_FFT_LIBRARIES}
+    ${VOLK_GNSSSDR_LIBRARIES}
+    ${ORC_LIBRARIES}
 )
 
-if(VOLK_GNSSSDR_FOUND)
+if(VOLKGNSSSDR_FOUND)
     # add_dependencies(signal_generator_blocks glog-${glog_RELEASE})
-else(VOLK_GNSSSDR_FOUND)
+else()
     add_dependencies(signal_generator_blocks volk_gnsssdr_module)
 endif()

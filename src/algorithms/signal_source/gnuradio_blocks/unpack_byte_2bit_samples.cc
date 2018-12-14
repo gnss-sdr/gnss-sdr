@@ -5,7 +5,7 @@
  * \author Javier Arribas jarribas (at) cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -34,7 +34,7 @@
 
 struct byte_2bit_struct
 {
-    signed two_bit_sample:2;  // <- 2 bits wide only
+    signed two_bit_sample : 2;  // <- 2 bits wide only
 };
 
 
@@ -45,40 +45,40 @@ unpack_byte_2bit_samples_sptr make_unpack_byte_2bit_samples()
 
 
 unpack_byte_2bit_samples::unpack_byte_2bit_samples() : sync_interpolator("unpack_byte_2bit_samples",
-        gr::io_signature::make(1, 1, sizeof(signed char)),
-        gr::io_signature::make(1, 1, sizeof(float)),
-        4)
-{}
+                                                           gr::io_signature::make(1, 1, sizeof(signed char)),
+                                                           gr::io_signature::make(1, 1, sizeof(float)),
+                                                           4)
+{
+}
 
 
-unpack_byte_2bit_samples::~unpack_byte_2bit_samples()
-{}
+unpack_byte_2bit_samples::~unpack_byte_2bit_samples() = default;
 
 
 int unpack_byte_2bit_samples::work(int noutput_items,
-        gr_vector_const_void_star &input_items,
-        gr_vector_void_star &output_items)
+    gr_vector_const_void_star &input_items,
+    gr_vector_void_star &output_items)
 {
-    const signed char *in = (const signed char *)input_items[0];
-    float *out = (float*)output_items[0];
+    const auto *in = reinterpret_cast<const signed char *>(input_items[0]);
+    auto *out = reinterpret_cast<float *>(output_items[0]);
 
-    byte_2bit_struct sample;
+    byte_2bit_struct sample{};
     int n = 0;
-    for(int i = 0; i < noutput_items/4; i++)
+    for (int i = 0; i < noutput_items / 4; i++)
         {
             // Read packed input sample (1 byte = 4 samples)
             signed char c = in[i];
             sample.two_bit_sample = c & 3;
-            out[n++] = (float)sample.two_bit_sample;
+            out[n++] = static_cast<float>(sample.two_bit_sample);
 
-            sample.two_bit_sample = (c>>2) & 3;
-            out[n++] = (float)sample.two_bit_sample;
+            sample.two_bit_sample = (c >> 2) & 3;
+            out[n++] = static_cast<float>(sample.two_bit_sample);
 
-            sample.two_bit_sample = (c>>4) & 3;
-            out[n++] = (float)sample.two_bit_sample;
+            sample.two_bit_sample = (c >> 4) & 3;
+            out[n++] = static_cast<float>(sample.two_bit_sample);
 
-            sample.two_bit_sample = (c>>6) & 3;
-            out[n++] = (float)sample.two_bit_sample;
+            sample.two_bit_sample = (c >> 6) & 3;
+            out[n++] = static_cast<float>(sample.two_bit_sample);
         }
     return noutput_items;
 }

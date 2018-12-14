@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -26,13 +26,15 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
 #ifndef GNSS_SDR_TRACKING_LOOP_FILTER_H_
 #define GNSS_SDR_TRACKING_LOOP_FILTER_H_
+#define MAX_LOOP_ORDER 3
+#define MAX_LOOP_HISTORY_LENGTH 4
 
 #include <vector>
 
@@ -45,12 +47,12 @@ class Tracking_loop_filter
 {
 private:
     // Store the last inputs and outputs:
-    std::vector< float > d_inputs;
-    std::vector< float > d_outputs;
+    std::vector<float> d_inputs;
+    std::vector<float> d_outputs;
 
     // Store the filter coefficients:
-    std::vector< float > d_input_coefficients;
-    std::vector< float > d_output_coefficients;
+    std::vector<float> d_input_coefficients;
+    std::vector<float> d_output_coefficients;
 
     // The loop order:
     int d_loop_order;
@@ -79,17 +81,17 @@ public:
     bool get_include_last_integrator(void) const;
     int get_order(void) const;
 
-    void set_noise_bandwidth( float noise_bandwidth );
-    void set_update_interval( float update_interval );
-    void set_include_last_integrator( bool include_last_integrator );
-    void set_order( int loop_order );
+    void set_noise_bandwidth(float noise_bandwidth);
+    void set_update_interval(float update_interval);
+    void set_include_last_integrator(bool include_last_integrator);
+    void set_order(int loop_order);
 
     void initialize(float initial_output = 0.0);
-    float apply(float current_input );
+    float apply(float current_input);
 
     Tracking_loop_filter(float update_interval, float noise_bandwidth,
-            int loop_order = 2,
-            bool include_last_integrator = false );
+        int loop_order = 2,
+        bool include_last_integrator = false);
 
     Tracking_loop_filter();
     ~Tracking_loop_filter();

@@ -7,7 +7,7 @@
  *  http://git.osmocom.org/rtl-sdr/
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -25,7 +25,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -35,7 +35,8 @@
 #include <boost/asio/ip/tcp.hpp>
 
 /// Command IDs for configuration rtl_tcp
-enum RTL_TCP_COMMAND {
+enum RTL_TCP_COMMAND
+{
     RTL_TCP_SET_FREQUENCY = 1,
     RTL_TCP_SET_SAMPLE_RATE = 2,
     RTL_TCP_SET_GAIN_MODE = 3,
@@ -48,8 +49,7 @@ enum RTL_TCP_COMMAND {
 /*!
  * \brief Send a command to rtl_tcp over the given socket.
  */
-boost::system::error_code
-rtl_tcp_command (RTL_TCP_COMMAND id, unsigned param,
-                 boost::asio::ip::tcp::socket &socket);
+boost::system::error_code rtl_tcp_command(RTL_TCP_COMMAND id, unsigned param,
+    boost::asio::ip::tcp::socket &socket);
 
-#endif // GNSS_SDR_RTL_TCP_COMMANDS_H
+#endif  // GNSS_SDR_RTL_TCP_COMMANDS_H

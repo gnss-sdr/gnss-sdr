@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_BSIC_H_
-#define	_BSIC_H_
+#ifndef _BSIC_H_
+#define _BSIC_H_
 
 
 #include <asn_application.h>
@@ -14,27 +14,28 @@
 #include <NativeInteger.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* BSIC */
-typedef long	 BSIC_t;
+    /* BSIC */
+    typedef long BSIC_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_BSIC;
-asn_struct_free_f BSIC_free;
-asn_struct_print_f BSIC_print;
-asn_constr_check_f BSIC_constraint;
-ber_type_decoder_f BSIC_decode_ber;
-der_type_encoder_f BSIC_encode_der;
-xer_type_decoder_f BSIC_decode_xer;
-xer_type_encoder_f BSIC_encode_xer;
-per_type_decoder_f BSIC_decode_uper;
-per_type_encoder_f BSIC_encode_uper;
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_BSIC;
+    asn_struct_free_f BSIC_free;
+    asn_struct_print_f BSIC_print;
+    asn_constr_check_f BSIC_constraint;
+    ber_type_decoder_f BSIC_decode_ber;
+    der_type_encoder_f BSIC_encode_der;
+    xer_type_decoder_f BSIC_decode_xer;
+    xer_type_encoder_f BSIC_encode_xer;
+    per_type_decoder_f BSIC_decode_uper;
+    per_type_encoder_f BSIC_encode_uper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _BSIC_H_ */
+#endif /* _BSIC_H_ */
 #include <asn_internal.h>

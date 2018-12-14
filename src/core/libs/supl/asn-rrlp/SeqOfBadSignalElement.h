@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_SeqOfBadSignalElement_H_
-#define	_SeqOfBadSignalElement_H_
+#ifndef _SeqOfBadSignalElement_H_
+#define _SeqOfBadSignalElement_H_
 
 
 #include <asn_application.h>
@@ -15,22 +15,25 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct BadSignalElement;
+    /* Forward declarations */
+    struct BadSignalElement;
 
-/* SeqOfBadSignalElement */
-typedef struct SeqOfBadSignalElement {
-	A_SEQUENCE_OF(struct BadSignalElement) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SeqOfBadSignalElement_t;
+    /* SeqOfBadSignalElement */
+    typedef struct SeqOfBadSignalElement
+    {
+        A_SEQUENCE_OF(struct BadSignalElement)
+        list;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SeqOfBadSignalElement;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SeqOfBadSignalElement_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SeqOfBadSignalElement;
 
 #ifdef __cplusplus
 }
@@ -39,5 +42,5 @@ extern asn_TYPE_descriptor_t asn_DEF_SeqOfBadSignalElement;
 /* Referred external types */
 #include "BadSignalElement.h"
 
-#endif	/* _SeqOfBadSignalElement_H_ */
+#endif /* _SeqOfBadSignalElement_H_ */
 #include <asn_internal.h>

@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_ReferenceIdentity_H_
-#define	_ReferenceIdentity_H_
+#ifndef _ReferenceIdentity_H_
+#define _ReferenceIdentity_H_
 
 
 #include <asn_application.h>
@@ -15,23 +15,25 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* ReferenceIdentity */
-typedef struct ReferenceIdentity {
-	SeqOfReferenceIdentityType_t	 refBTSList;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} ReferenceIdentity_t;
+    /* ReferenceIdentity */
+    typedef struct ReferenceIdentity
+    {
+        SeqOfReferenceIdentityType_t refBTSList;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ReferenceIdentity;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } ReferenceIdentity_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_ReferenceIdentity;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _ReferenceIdentity_H_ */
+#endif /* _ReferenceIdentity_H_ */
 #include <asn_internal.h>

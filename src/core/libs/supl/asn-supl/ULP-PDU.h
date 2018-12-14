@@ -4,8 +4,8 @@
  * 	found in "../supl-ulp.asn"
  */
 
-#ifndef	_ULP_PDU_H_
-#define	_ULP_PDU_H_
+#ifndef _ULP_PDU_H_
+#define _ULP_PDU_H_
 
 
 #include <asn_application.h>
@@ -18,26 +18,28 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* ULP-PDU */
-typedef struct ULP_PDU {
-	long	 length;
-	Version_t	 version;
-	SessionID_t	 sessionID;
-	UlpMessage_t	 message;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} ULP_PDU_t;
+    /* ULP-PDU */
+    typedef struct ULP_PDU
+    {
+        long length;
+        Version_t version;
+        SessionID_t sessionID;
+        UlpMessage_t message;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ULP_PDU;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } ULP_PDU_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_ULP_PDU;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _ULP_PDU_H_ */
+#endif /* _ULP_PDU_H_ */
 #include <asn_internal.h>

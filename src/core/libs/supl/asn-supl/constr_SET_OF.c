@@ -47,10 +47,10 @@
 #undef	NEXT_PHASE
 #undef	PHASE_OUT
 #define	NEXT_PHASE(ctx)	do {			\
-		ctx->phase++;			\
-		ctx->step = 0;			\
+		(ctx)->phase++;			\
+		(ctx)->step = 0;			\
 	} while(0)
-#define	PHASE_OUT(ctx)	do { ctx->phase = 10; } while(0)
+#define	PHASE_OUT(ctx)	do { (ctx)->phase = 10; } while(0)
 
 /*
  * Return a standardized complex structure.
@@ -915,7 +915,7 @@ SET_OF_decode_uper(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 			nelems = uper_get_length(pd,
 				ct ? ct->effective_bits : -1, &repeat);
 			ASN_DEBUG("Got to decode %d elements (eff %d)",
-				(int)nelems, (int)ct ? ct->effective_bits : -1);
+				(int)nelems, (long)ct ? ct->effective_bits : -1);
 			if(nelems < 0) _ASN_DECODE_STARVED;
 		}
 

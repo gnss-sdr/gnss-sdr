@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_DGANSSSgnElement_H_
-#define	_DGANSSSgnElement_H_
+#ifndef _DGANSSSgnElement_H_
+#define _DGANSSSgnElement_H_
 
 
 #include <asn_application.h>
@@ -16,27 +16,29 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* DGANSSSgnElement */
-typedef struct DGANSSSgnElement {
-	SVID_t	 svID;
-	long	 iod;
-	long	 udre;
-	long	 pseudoRangeCor;
-	long	 rangeRateCor;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} DGANSSSgnElement_t;
+    /* DGANSSSgnElement */
+    typedef struct DGANSSSgnElement
+    {
+        SVID_t svID;
+        long iod;
+        long udre;
+        long pseudoRangeCor;
+        long rangeRateCor;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_DGANSSSgnElement;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } DGANSSSgnElement_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_DGANSSSgnElement;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _DGANSSSgnElement_H_ */
+#endif /* _DGANSSSgnElement_H_ */
 #include <asn_internal.h>

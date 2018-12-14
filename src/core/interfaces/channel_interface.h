@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -29,7 +29,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -48,11 +48,16 @@
  * instantiated directly if all inherited pure virtual methods have been
  * implemented by that class or a parent class.
  */
-class ChannelInterface: public GNSSBlockInterface
+class ChannelInterface : public GNSSBlockInterface
 {
 public:
+    virtual gr::basic_block_sptr get_left_block_trk() = 0;
+    virtual gr::basic_block_sptr get_left_block_acq() = 0;
+    virtual gr::basic_block_sptr get_left_block() = 0;
+    virtual gr::basic_block_sptr get_right_block() = 0;
     virtual Gnss_Signal get_signal() const = 0;
     virtual void start_acquisition() = 0;
+    virtual void stop_channel() = 0;
     virtual void set_signal(const Gnss_Signal&) = 0;
 };
 

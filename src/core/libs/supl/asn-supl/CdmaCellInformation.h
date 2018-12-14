@@ -4,8 +4,8 @@
  * 	found in "../supl-common.asn"
  */
 
-#ifndef	_CdmaCellInformation_H_
-#define	_CdmaCellInformation_H_
+#ifndef _CdmaCellInformation_H_
+#define _CdmaCellInformation_H_
 
 
 #include <asn_application.h>
@@ -15,34 +15,36 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* CdmaCellInformation */
-typedef struct CdmaCellInformation {
-	long	 refNID;
-	long	 refSID;
-	long	 refBASEID;
-	long	 refBASELAT;
-	long	 reBASELONG;
-	long	 refREFPN;
-	long	 refWeekNumber;
-	long	 refSeconds;
-	/*
+    /* CdmaCellInformation */
+    typedef struct CdmaCellInformation
+    {
+        long refNID;
+        long refSID;
+        long refBASEID;
+        long refBASELAT;
+        long reBASELONG;
+        long refREFPN;
+        long refWeekNumber;
+        long refSeconds;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} CdmaCellInformation_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_CdmaCellInformation;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } CdmaCellInformation_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_CdmaCellInformation;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _CdmaCellInformation_H_ */
+#endif /* _CdmaCellInformation_H_ */
 #include <asn_internal.h>

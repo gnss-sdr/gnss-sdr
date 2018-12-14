@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GANSSRefTimeInfo_H_
-#define	_GANSSRefTimeInfo_H_
+#ifndef _GANSSRefTimeInfo_H_
+#define _GANSSRefTimeInfo_H_
 
 
 #include <asn_application.h>
@@ -17,26 +17,28 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSSRefTimeInfo */
-typedef struct GANSSRefTimeInfo {
-	long	*ganssDay	/* OPTIONAL */;
-	GANSSTOD_t	 ganssTOD;
-	GANSSTODUncertainty_t	*ganssTODUncertainty	/* OPTIONAL */;
-	long	*ganssTimeID	/* OPTIONAL */;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GANSSRefTimeInfo_t;
+    /* GANSSRefTimeInfo */
+    typedef struct GANSSRefTimeInfo
+    {
+        long *ganssDay /* OPTIONAL */;
+        GANSSTOD_t ganssTOD;
+        GANSSTODUncertainty_t *ganssTODUncertainty /* OPTIONAL */;
+        long *ganssTimeID /* OPTIONAL */;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSRefTimeInfo;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSRefTimeInfo_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSRefTimeInfo;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GANSSRefTimeInfo_H_ */
+#endif /* _GANSSRefTimeInfo_H_ */
 #include <asn_internal.h>

@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -25,20 +25,24 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
 
-#include <gnuradio/top_block.h>
 #include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/top_block.h>
+#ifdef GR_GREATER_38
+#include <gnuradio/analog/sig_source.h>
+#else
 #include <gnuradio/analog/sig_source_f.h>
+#endif
+#include "gnss_sdr_valve.h"
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/msg_queue.h>
-#include "gnss_sdr_valve.h"
 
-TEST(Valve_Test, CheckEventSentAfter100Samples)
+TEST(ValveTest, CheckEventSentAfter100Samples)
 {
     gr::msg_queue::sptr queue = gr::msg_queue::make(0);
 

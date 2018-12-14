@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -25,33 +25,29 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
 #include "nsr_file_signal_source.h"
-#include <cstdlib>
+#include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
+#include "gnss_sdr_valve.h"
+#include <glog/logging.h>
 #include <exception>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <gflags/gflags.h>
-#include <glog/logging.h>
-#include "gnss_sdr_valve.h"
-#include "configuration_interface.h"
+#include <utility>
 
 
 using google::LogMessage;
 
-DEFINE_string(nsr_signal_source, "-",
-        "If defined, path to the file containing the NSR (byte to 2-bit packed) signal samples (overrides the configuration file)");
-
 
 NsrFileSignalSource::NsrFileSignalSource(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams, unsigned int out_streams,
-        boost::shared_ptr<gr::msg_queue> queue) :
-                        role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
+    const std::string& role, unsigned int in_streams, unsigned int out_streams,
+    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(std::move(queue))
 {
     std::string default_filename = "../data/my_capture.dat";
     std::string default_item_type = "byte";
@@ -62,7 +58,8 @@ NsrFileSignalSource::NsrFileSignalSource(ConfigurationInterface* configuration,
     filename_ = configuration->property(role + ".filename", default_filename);
 
     // override value with commandline flag, if present
-    if (FLAGS_nsr_signal_source.compare("-") != 0) filename_= FLAGS_nsr_signal_source;
+    if (FLAGS_signal_source != "-") filename_ = FLAGS_signal_source;
+    if (FLAGS_s != "-") filename_ = FLAGS_s;
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     repeat_ = configuration->property(role + ".repeat", false);
@@ -70,60 +67,59 @@ NsrFileSignalSource::NsrFileSignalSource(ConfigurationInterface* configuration,
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     enable_throttle_control_ = configuration->property(role + ".enable_throttle_control", false);
 
-    if (item_type_.compare("byte") == 0)
+    if (item_type_ == "byte")
         {
             item_size_ = sizeof(char);
         }
     else
         {
-            LOG(WARNING) << item_type_  << " unrecognized item type. Using byte.";
+            LOG(WARNING) << item_type_ << " unrecognized item type. Using byte.";
             item_size_ = sizeof(char);
         }
     try
-    {
+        {
             file_source_ = gr::blocks::file_source::make(item_size_, filename_.c_str(), repeat_);
             unpack_byte_ = make_unpack_byte_2bit_samples();
-
-    }
-    catch (const std::exception &e)
-    {
+        }
+    catch (const std::exception& e)
+        {
             std::cerr
-            << "The receiver was configured to work with a file signal source "
-            << std::endl
-            << "but the specified file is unreachable by GNSS-SDR."
-            << std::endl
-            <<  "Please modify your configuration file"
-            << std::endl
-            <<  "and point SignalSource.filename to a valid raw data file. Then:"
-            << std::endl
-            << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf"
-            << std::endl
-            << "Examples of configuration files available at:"
-            << std::endl
-            << GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/"
-            << std::endl;
+                << "The receiver was configured to work with a file signal source "
+                << std::endl
+                << "but the specified file is unreachable by GNSS-SDR."
+                << std::endl
+                << "Please modify your configuration file"
+                << std::endl
+                << "and point SignalSource.filename to a valid raw data file. Then:"
+                << std::endl
+                << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf"
+                << std::endl
+                << "Examples of configuration files available at:"
+                << std::endl
+                << GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/"
+                << std::endl;
 
             LOG(WARNING) << "file_signal_source: Unable to open the samples file "
                          << filename_.c_str() << ", exiting the program.";
             throw(e);
-    }
+        }
 
     DLOG(INFO) << "file_source(" << file_source_->unique_id() << ")";
 
-    if (samples_ == 0) // read all file
+    if (samples_ == 0)  // read all file
         {
             /*!
              * BUG workaround: The GNU Radio file source does not stop the receiver after reaching the End of File.
              * A possible solution is to compute the file length in samples using file size, excluding the last 2 milliseconds, and enable always the
              * valve block
              */
-            std::ifstream file (filename_.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+            std::ifstream file(filename_.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
             std::ifstream::pos_type size;
 
             if (file.is_open())
                 {
                     size = file.tellg();
-                    LOG(INFO) << "Total samples in the file= " << floor((double)size / (double)item_size());
+                    LOG(INFO) << "Total samples in the file= " << floor(static_cast<double>(size) / static_cast<double>(item_size()));
                 }
             else
                 {
@@ -132,20 +128,20 @@ NsrFileSignalSource::NsrFileSignalSource(ConfigurationInterface* configuration,
                 }
             std::streamsize ss = std::cout.precision();
             std::cout << std::setprecision(16);
-            std::cout << "Processing file " << filename_ << ", which contains " << (double)size << " [bytes]" << std::endl;
-            std::cout.precision (ss);
+            std::cout << "Processing file " << filename_ << ", which contains " << size << " [bytes]" << std::endl;
+            std::cout.precision(ss);
 
             if (size > 0)
                 {
-                    int sample_packet_factor = 4; // 1 byte -> 4 samples
-                    samples_ = floor((double)size / (double)item_size())*sample_packet_factor;
-                    samples_ = samples_- ceil(0.002 * (double)sampling_frequency_); //process all the samples available in the file excluding the last 2 ms
+                    int sample_packet_factor = 4;  // 1 byte -> 4 samples
+                    samples_ = floor(static_cast<double>(size) / static_cast<double>(item_size())) * sample_packet_factor;
+                    samples_ = samples_ - ceil(0.002 * static_cast<double>(sampling_frequency_));  //process all the samples available in the file excluding the last 2 ms
                 }
         }
 
     CHECK(samples_ > 0) << "File does not contain enough samples to process.";
     double signal_duration_s;
-    signal_duration_s = (double)samples_ * ( 1 /(double)sampling_frequency_);
+    signal_duration_s = static_cast<double>(samples_) * (1 / static_cast<double>(sampling_frequency_));
     LOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
     std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]" << std::endl;
 
@@ -171,15 +167,18 @@ NsrFileSignalSource::NsrFileSignalSource(ConfigurationInterface* configuration,
     DLOG(INFO) << "Repeat " << repeat_;
     DLOG(INFO) << "Dump " << dump_;
     DLOG(INFO) << "Dump filename " << dump_filename_;
+    if (in_streams_ > 0)
+        {
+            LOG(ERROR) << "A signal source does not have an input stream";
+        }
+    if (out_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 
-
-
-NsrFileSignalSource::~NsrFileSignalSource()
-{}
-
-
+NsrFileSignalSource::~NsrFileSignalSource() = default;
 
 
 void NsrFileSignalSource::connect(gr::top_block_sptr top_block)
@@ -189,7 +188,7 @@ void NsrFileSignalSource::connect(gr::top_block_sptr top_block)
             if (enable_throttle_control_ == true)
                 {
                     top_block->connect(file_source_, 0, unpack_byte_, 0);
-                    top_block->connect(unpack_byte_, 0,throttle_,0);
+                    top_block->connect(unpack_byte_, 0, throttle_, 0);
                     DLOG(INFO) << "connected file source to throttle";
                     top_block->connect(throttle_, 0, valve_, 0);
                     DLOG(INFO) << "connected throttle to valve";
@@ -202,7 +201,7 @@ void NsrFileSignalSource::connect(gr::top_block_sptr top_block)
             else
                 {
                     top_block->connect(file_source_, 0, unpack_byte_, 0);
-                    top_block->connect(unpack_byte_, 0,valve_,0);
+                    top_block->connect(unpack_byte_, 0, valve_, 0);
                     DLOG(INFO) << "connected file source to valve";
                     if (dump_)
                         {
@@ -216,7 +215,7 @@ void NsrFileSignalSource::connect(gr::top_block_sptr top_block)
             if (enable_throttle_control_ == true)
                 {
                     top_block->connect(file_source_, 0, unpack_byte_, 0);
-                    top_block->connect(unpack_byte_, 0,throttle_,0);
+                    top_block->connect(unpack_byte_, 0, throttle_, 0);
                     DLOG(INFO) << "connected file source to throttle";
                     if (dump_)
                         {
@@ -237,10 +236,6 @@ void NsrFileSignalSource::connect(gr::top_block_sptr top_block)
 }
 
 
-
-
-
-
 void NsrFileSignalSource::disconnect(gr::top_block_sptr top_block)
 {
     if (samples_ > 0)
@@ -249,7 +244,7 @@ void NsrFileSignalSource::disconnect(gr::top_block_sptr top_block)
                 {
                     top_block->disconnect(file_source_, 0, unpack_byte_, 0);
                     DLOG(INFO) << "disconnected file source to unpack_byte_";
-                    top_block->connect(unpack_byte_, 0,throttle_,0);
+                    top_block->connect(unpack_byte_, 0, throttle_, 0);
                     DLOG(INFO) << "disconnected unpack_byte_ to throttle_";
                     top_block->disconnect(throttle_, 0, valve_, 0);
                     DLOG(INFO) << "disconnected throttle to valve";
@@ -300,9 +295,6 @@ void NsrFileSignalSource::disconnect(gr::top_block_sptr top_block)
 }
 
 
-
-
-
 gr::basic_block_sptr NsrFileSignalSource::get_left_block()
 {
     LOG(WARNING) << "Left block of a signal source should not be retrieved";
@@ -311,24 +303,15 @@ gr::basic_block_sptr NsrFileSignalSource::get_left_block()
 }
 
 
-
-
-
 gr::basic_block_sptr NsrFileSignalSource::get_right_block()
 {
     if (samples_ > 0)
         {
             return valve_;
         }
-    else
+    if (enable_throttle_control_ == true)
         {
-            if (enable_throttle_control_ == true)
-                {
-                    return throttle_;
-                }
-            else
-                {
-                    return unpack_byte_;
-                }
+            return throttle_;
         }
+    return unpack_byte_;
 }

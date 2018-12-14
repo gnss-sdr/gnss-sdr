@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -25,34 +25,29 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
 #include "file_signal_source.h"
-#include <cstdlib>
-#include <iostream>
+#include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
+#include "gnss_sdr_valve.h"
+#include <glog/logging.h>
+#include <exception>
 #include <fstream>
 #include <iomanip>
-#include <exception>
-#include <gflags/gflags.h>
-#include <glog/logging.h>
-#include <volk/volk.h>
-#include "gnss_sdr_valve.h"
-#include "configuration_interface.h"
+#include <iostream>  // for std::cerr
+#include <utility>
+
 
 using google::LogMessage;
 
 
-DEFINE_string(signal_source, "-",
-        "If defined, path to the file containing the signal samples (overrides the configuration file)");
-
-
 FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams, unsigned int out_streams,
-        boost::shared_ptr<gr::msg_queue> queue) :
-                        role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
+    const std::string& role, unsigned int in_streams, unsigned int out_streams,
+    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(std::move(queue))
 {
     std::string default_filename = "./example_capture.dat";
     std::string default_item_type = "short";
@@ -65,43 +60,43 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
     filename_ = configuration->property(role + ".filename", default_filename);
 
     // override value with commandline flag, if present
-    if (FLAGS_signal_source.compare("-") != 0) filename_= FLAGS_signal_source;
+    if (FLAGS_signal_source != "-") filename_ = FLAGS_signal_source;
+    if (FLAGS_s != "-") filename_ = FLAGS_s;
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     repeat_ = configuration->property(role + ".repeat", false);
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     enable_throttle_control_ = configuration->property(role + ".enable_throttle_control", false);
-    std::string s = "InputFilter";
-    //double IF = configuration->property(s + ".IF", 0.0);
-    double seconds_to_skip = configuration->property(role + ".seconds_to_skip", default_seconds_to_skip );
-    header_size = configuration->property( role + ".header_size", 0 );
-    long samples_to_skip = 0;
+
+    double seconds_to_skip = configuration->property(role + ".seconds_to_skip", default_seconds_to_skip);
+    header_size = configuration->property(role + ".header_size", 0);
+    int64_t samples_to_skip = 0;
 
     bool is_complex = false;
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
         }
-    else if (item_type_.compare("float") == 0)
+    else if (item_type_ == "float")
         {
             item_size_ = sizeof(float);
         }
-    else if (item_type_.compare("short") == 0)
+    else if (item_type_ == "short")
         {
             item_size_ = sizeof(int16_t);
         }
-    else if (item_type_.compare("ishort") == 0)
+    else if (item_type_ == "ishort")
         {
             item_size_ = sizeof(int16_t);
             is_complex = true;
         }
-    else if (item_type_.compare("byte") == 0)
+    else if (item_type_ == "byte")
         {
             item_size_ = sizeof(int8_t);
         }
-    else if (item_type_.compare("ibyte") == 0)
+    else if (item_type_ == "ibyte")
         {
             item_size_ = sizeof(int8_t);
             is_complex = true;
@@ -109,87 +104,84 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
     else
         {
             LOG(WARNING) << item_type_
-                    << " unrecognized item type. Using gr_complex.";
+                         << " unrecognized item type. Using gr_complex.";
             item_size_ = sizeof(gr_complex);
         }
     try
-    {
+        {
             file_source_ = gr::blocks::file_source::make(item_size_, filename_.c_str(), repeat_);
 
-            if( seconds_to_skip > 0 )
-            {
-                samples_to_skip = static_cast< long >(
-                        seconds_to_skip * sampling_frequency_ );
-
-                if( is_complex )
+            if (seconds_to_skip > 0)
                 {
-                    samples_to_skip *= 2;
-                }
-            }
-            if( header_size > 0 )
-            {
-                samples_to_skip += header_size;
-            }
+                    samples_to_skip = static_cast<int64_t>(seconds_to_skip * sampling_frequency_);
 
-            if( samples_to_skip > 0 )
-            {
-                LOG(INFO) << "Skipping " << samples_to_skip << " samples of the input file";
-                if( not file_source_->seek( samples_to_skip, SEEK_SET ) )
+                    if (is_complex)
+                        {
+                            samples_to_skip *= 2;
+                        }
+                }
+            if (header_size > 0)
                 {
-                    LOG(INFO) << "Error skipping bytes!";
+                    samples_to_skip += header_size;
                 }
-            }
 
-    }
-    catch (const std::exception &e)
-    {
-            if (filename_.compare(default_filename) == 0)
+            if (samples_to_skip > 0)
+                {
+                    LOG(INFO) << "Skipping " << samples_to_skip << " samples of the input file";
+                    if (not file_source_->seek(samples_to_skip, SEEK_SET))
+                        {
+                            LOG(INFO) << "Error skipping bytes!";
+                        }
+                }
+        }
+    catch (const std::exception& e)
+        {
+            if (filename_ == default_filename)
                 {
                     std::cerr
-                    << "The configuration file has not been found."
-                    << std::endl
-                    << "Please create a configuration file based on the examples at the 'conf/' folder "
-                    << std::endl
-                    << "and then generate your own GNSS Software Defined Receiver by doing:"
-                    << std::endl
-                    << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf"
-                    << std::endl;
+                        << "The configuration file has not been found."
+                        << std::endl
+                        << "Please create a configuration file based on the examples at the 'conf/' folder "
+                        << std::endl
+                        << "and then generate your own GNSS Software Defined Receiver by doing:"
+                        << std::endl
+                        << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf"
+                        << std::endl;
                 }
             else
                 {
                     std::cerr
-                    << "The receiver was configured to work with a file signal source "
-                    << std::endl
-                    << "but the specified file is unreachable by GNSS-SDR."
-                    << std::endl
-                    <<  "Please modify your configuration file"
-                    << std::endl
-                    <<  "and point SignalSource.filename to a valid raw data file. Then:"
-                    << std::endl
-                    << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf"
-                    << std::endl
-                    << "Examples of configuration files available at:"
-                    << std::endl
-                    << GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/"
-                    << std::endl;
-
+                        << "The receiver was configured to work with a file signal source "
+                        << std::endl
+                        << "but the specified file is unreachable by GNSS-SDR."
+                        << std::endl
+                        << "Please modify your configuration file"
+                        << std::endl
+                        << "and point SignalSource.filename to a valid raw data file. Then:"
+                        << std::endl
+                        << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf"
+                        << std::endl
+                        << "Examples of configuration files available at:"
+                        << std::endl
+                        << GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/"
+                        << std::endl;
                 }
 
             LOG(INFO) << "file_signal_source: Unable to open the samples file "
                       << filename_.c_str() << ", exiting the program.";
             throw(e);
-    }
+        }
 
     DLOG(INFO) << "file_source(" << file_source_->unique_id() << ")";
 
-    if (samples_ == 0) // read all file
+    if (samples_ == 0)  // read all file
         {
             /*!
              * BUG workaround: The GNU Radio file source does not stop the receiver after reaching the End of File.
              * A possible solution is to compute the file length in samples using file size, excluding the last 100 milliseconds, and enable always the
              * valve block
              */
-            std::ifstream file (filename_.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+            std::ifstream file(filename_.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
             std::ifstream::pos_type size;
 
             if (file.is_open())
@@ -205,21 +197,21 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
             std::streamsize ss = std::cout.precision();
             std::cout << std::setprecision(16);
             std::cout << "Processing file " << filename_ << ", which contains " << static_cast<double>(size) << " [bytes]" << std::endl;
-            std::cout.precision (ss);
+            std::cout.precision(ss);
 
             if (size > 0)
                 {
-                    long bytes_to_skip = samples_to_skip*item_size_;
-                    long bytes_to_process = static_cast<long>(size) - bytes_to_skip;
-                    samples_ = floor(static_cast<double>(bytes_to_process) / static_cast<double>(item_size()) - ceil(0.002 * static_cast<double>(sampling_frequency_))); //process all the samples available in the file excluding at least the last 1 ms
+                    int64_t bytes_to_skip = samples_to_skip * item_size_;
+                    int64_t bytes_to_process = static_cast<int64_t>(size) - bytes_to_skip;
+                    samples_ = floor(static_cast<double>(bytes_to_process) / static_cast<double>(item_size()) - ceil(0.002 * static_cast<double>(sampling_frequency_)));  //process all the samples available in the file excluding at least the last 1 ms
                 }
         }
 
     CHECK(samples_ > 0) << "File does not contain enough samples to process.";
     double signal_duration_s;
-    signal_duration_s = static_cast<double>(samples_) * ( 1 / static_cast<double>(sampling_frequency_));
+    signal_duration_s = static_cast<double>(samples_) * (1 / static_cast<double>(sampling_frequency_));
 
-    if( is_complex )
+    if (is_complex)
         {
             signal_duration_s /= 2.0;
         }
@@ -239,8 +231,8 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
     if (enable_throttle_control_)
         {
             throttle_ = gr::blocks::throttle::make(item_size_, sampling_frequency_);
-
         }
+
     DLOG(INFO) << "File source filename " << filename_;
     DLOG(INFO) << "Samples " << samples_;
     DLOG(INFO) << "Sampling frequency " << sampling_frequency_;
@@ -249,15 +241,18 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
     DLOG(INFO) << "Repeat " << repeat_;
     DLOG(INFO) << "Dump " << dump_;
     DLOG(INFO) << "Dump filename " << dump_filename_;
+    if (in_streams_ > 0)
+        {
+            LOG(ERROR) << "A signal source does not have an input stream";
+        }
+    if (out_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 
-
-
-FileSignalSource::~FileSignalSource()
-{}
-
-
+FileSignalSource::~FileSignalSource() = default;
 
 
 void FileSignalSource::connect(gr::top_block_sptr top_block)
@@ -311,10 +306,6 @@ void FileSignalSource::connect(gr::top_block_sptr top_block)
 }
 
 
-
-
-
-
 void FileSignalSource::disconnect(gr::top_block_sptr top_block)
 {
     if (samples_ > 0)
@@ -366,17 +357,11 @@ void FileSignalSource::disconnect(gr::top_block_sptr top_block)
 }
 
 
-
-
-
 gr::basic_block_sptr FileSignalSource::get_left_block()
 {
     LOG(WARNING) << "Left block of a signal source should not be retrieved";
     return gr::blocks::file_source::sptr();
 }
-
-
-
 
 
 gr::basic_block_sptr FileSignalSource::get_right_block()
@@ -385,15 +370,9 @@ gr::basic_block_sptr FileSignalSource::get_right_block()
         {
             return valve_;
         }
-    else
+    if (enable_throttle_control_ == true)
         {
-            if (enable_throttle_control_ == true)
-                {
-                    return throttle_;
-                }
-            else
-                {
-                    return file_source_;
-                }
+            return throttle_;
         }
+    return file_source_;
 }

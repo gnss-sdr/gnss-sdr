@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -25,30 +25,33 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
 
-#include <ctime>
-#include <iostream>
 #include <boost/shared_ptr.hpp>
-#include <gnuradio/top_block.h>
-#include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/blocks/file_source.h>
+#include <gnuradio/top_block.h>
+#include <chrono>
+#ifdef GR_GREATER_38
+#include <gnuradio/analog/sig_source.h>
+#else
 #include <gnuradio/analog/sig_source_c.h>
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/blocks/null_sink.h>
-#include "gnss_block_interface.h"
-#include "in_memory_configuration.h"
-#include "gnss_synchro.h"
+#endif
+#include "fir_filter.h"
 #include "galileo_e1_pcps_cccwsr_ambiguous_acquisition.h"
+#include "gen_signal_source.h"
+#include "gnss_block_interface.h"
+#include "gnss_sdr_valve.h"
+#include "gnss_synchro.h"
+#include "in_memory_configuration.h"
 #include "signal_generator.h"
 #include "signal_generator_c.h"
-#include "fir_filter.h"
-#include "gen_signal_source.h"
-#include "gnss_sdr_valve.h"
+#include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/msg_queue.h>
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx;
@@ -61,13 +64,14 @@ GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx_sptr GalileoE1PcpsCccwsrAmbig
 class GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx : public gr::block
 {
 private:
-    friend GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx_sptr GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx_make(concurrent_queue<int>& queue );
+    friend GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx_sptr GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx_make(concurrent_queue<int>& queue);
     void msg_handler_events(pmt::pmt_t msg);
     GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx(concurrent_queue<int>& queue);
     concurrent_queue<int>& channel_internal_queue;
+
 public:
     int rx_message;
-    ~GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx(); //!< Default destructor
+    ~GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx();  //!< Default destructor
 };
 
 
@@ -80,21 +84,20 @@ GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx_sptr GalileoE1PcpsCccwsrAmbig
 void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
-    {
-            long int message = pmt::to_long(msg);
+        {
+            int64_t message = pmt::to_long(msg);
             rx_message = message;
             channel_internal_queue.push(rx_message);
-    }
-    catch(boost::bad_any_cast& e)
-    {
+        }
+    catch (boost::bad_any_cast& e)
+        {
             LOG(WARNING) << "msg_handler_telemetry Bad any cast!";
             rx_message = 0;
-    }
+        }
 }
 
 
-GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx::GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx(concurrent_queue<int>& queue) :
-    gr::block("GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue)
+GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx::GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx(concurrent_queue<int>& queue) : gr::block("GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue)
 {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"), boost::bind(&GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx::msg_handler_events, this, _1));
@@ -102,12 +105,13 @@ GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx::GalileoE1PcpsCccwsrAmbiguous
 }
 
 GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx::~GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx()
-{}
+{
+}
 
 
 // ###########################################################
 
-class GalileoE1PcpsCccwsrAmbiguousAcquisitionTest: public ::testing::Test
+class GalileoE1PcpsCccwsrAmbiguousAcquisitionTest : public ::testing::Test
 {
 protected:
     GalileoE1PcpsCccwsrAmbiguousAcquisitionTest()
@@ -167,6 +171,7 @@ protected:
     double Pfa_a;
 };
 
+
 void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::init()
 {
     message = 0;
@@ -182,26 +187,27 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::init()
     Pfa_a = 0;
 }
 
+
 void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::config_1()
 {
     gnss_synchro.Channel_ID = 0;
     gnss_synchro.System = 'E';
     std::string signal = "1C";
-    signal.copy(gnss_synchro.Signal,2,0);
+    signal.copy(gnss_synchro.Signal, 2, 0);
 
     integration_time_ms = 4;
     fs_in = 4e6;
 
     expected_delay_chips = 600;
     expected_doppler_hz = 750;
-    max_doppler_error_hz = 2/(3*integration_time_ms*1e-3);
+    max_doppler_error_hz = 2 / (3 * integration_time_ms * 1e-3);
     max_delay_error_chips = 0.50;
 
     num_of_realizations = 1;
 
     config = std::make_shared<InMemoryConfiguration>();
 
-    config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(fs_in));
+    config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(fs_in));
 
     config->set_property("SignalSource.fs_hz", std::to_string(fs_in));
 
@@ -213,9 +219,9 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::config_1()
     config->set_property("SignalSource.PRN_0", "10");
     config->set_property("SignalSource.CN0_dB_0", "44");
     config->set_property("SignalSource.doppler_Hz_0",
-                         std::to_string(expected_doppler_hz));
+        std::to_string(expected_doppler_hz));
     config->set_property("SignalSource.delay_chips_0",
-                         std::to_string(expected_delay_chips));
+        std::to_string(expected_delay_chips));
 
     config->set_property("SignalSource.noise_flag", "false");
     config->set_property("SignalSource.data_flag", "false");
@@ -240,17 +246,17 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::config_1()
     config->set_property("InputFilter.filter_type", "bandpass");
     config->set_property("InputFilter.grid_density", "16");
 
-    config->set_property("Acquisition.item_type", "gr_complex");
-    config->set_property("Acquisition.if", "0");
-    config->set_property("Acquisition.coherent_integration_time_ms",
-                         std::to_string(integration_time_ms));
-    config->set_property("Acquisition.max_dwells", "1");
-    config->set_property("Acquisition.implementation", "Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition");
-    config->set_property("Acquisition.threshold", "0.7");
-    config->set_property("Acquisition.doppler_max", "10000");
-    config->set_property("Acquisition.doppler_step", "250");
-    config->set_property("Acquisition.dump", "false");
+    config->set_property("Acquisition_1B.item_type", "gr_complex");
+    config->set_property("Acquisition_1B.coherent_integration_time_ms",
+        std::to_string(integration_time_ms));
+    config->set_property("Acquisition_1B.max_dwells", "1");
+    config->set_property("Acquisition_1B.implementation", "Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition");
+    config->set_property("Acquisition_1B.threshold", "0.7");
+    config->set_property("Acquisition_1B.doppler_max", "10000");
+    config->set_property("Acquisition_1B.doppler_step", "250");
+    config->set_property("Acquisition_1B.dump", "false");
 }
+
 
 void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::config_2()
 {
@@ -264,14 +270,14 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::config_2()
 
     expected_delay_chips = 600;
     expected_doppler_hz = 750;
-    max_doppler_error_hz = 2/(3*integration_time_ms*1e-3);
+    max_doppler_error_hz = 2 / (3 * integration_time_ms * 1e-3);
     max_delay_error_chips = 0.50;
 
     num_of_realizations = 100;
 
     config = std::make_shared<InMemoryConfiguration>();
 
-    config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(fs_in));
+    config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(fs_in));
 
     config->set_property("SignalSource.fs_hz", std::to_string(fs_in));
 
@@ -283,9 +289,9 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::config_2()
     config->set_property("SignalSource.PRN_0", "10");
     config->set_property("SignalSource.CN0_dB_0", "44");
     config->set_property("SignalSource.doppler_Hz_0",
-                         std::to_string(expected_doppler_hz));
+        std::to_string(expected_doppler_hz));
     config->set_property("SignalSource.delay_chips_0",
-                         std::to_string(expected_delay_chips));
+        std::to_string(expected_delay_chips));
 
     config->set_property("SignalSource.system_1", "E");
     config->set_property("SignalSource.PRN_1", "15");
@@ -328,17 +334,17 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::config_2()
     config->set_property("InputFilter.filter_type", "bandpass");
     config->set_property("InputFilter.grid_density", "16");
 
-    config->set_property("Acquisition.item_type", "gr_complex");
-    config->set_property("Acquisition.if", "0");
-    config->set_property("Acquisition.coherent_integration_time_ms",
-                         std::to_string(integration_time_ms));
-    config->set_property("Acquisition.max_dwells", "1");
-    config->set_property("Acquisition.implementation", "Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition");
-    config->set_property("Acquisition.threshold", "0.00215"); // Pfa,a = 0.1
-    config->set_property("Acquisition.doppler_max", "10000");
-    config->set_property("Acquisition.doppler_step", "250");
-    config->set_property("Acquisition.dump", "false");
+    config->set_property("Acquisition_1B.implementation", "Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition");
+    config->set_property("Acquisition_1B.item_type", "gr_complex");
+    config->set_property("Acquisition_1B.coherent_integration_time_ms",
+        std::to_string(integration_time_ms));
+    config->set_property("Acquisition_1B.max_dwells", "1");
+    config->set_property("Acquisition_1B.threshold", "0.00215");  // Pfa,a = 0.1
+    config->set_property("Acquisition_1B.doppler_max", "10000");
+    config->set_property("Acquisition_1B.doppler_step", "250");
+    config->set_property("Acquisition_1B.dump", "false");
 }
+
 
 void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::start_queue()
 {
@@ -349,27 +355,26 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::start_queue()
 
 void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::wait_message()
 {
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds(0);
 
     while (!stop)
         {
             acquisition->reset();
 
-            gettimeofday(&tv, NULL);
-            begin = tv.tv_sec *1e6 + tv.tv_usec;
+            start = std::chrono::system_clock::now();
 
             channel_internal_queue.wait_and_pop(message);
 
-            gettimeofday(&tv, NULL);
-            end = tv.tv_sec *1e6 + tv.tv_usec;
+            end = std::chrono::system_clock::now();
+            elapsed_seconds = end - start;
 
-            mean_acq_time_us += (end-begin);
+            mean_acq_time_us += elapsed_seconds.count() * 1e6;
 
             process_message();
         }
 }
+
 
 void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::process_message()
 {
@@ -378,7 +383,7 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::process_message()
             detection_counter++;
 
             // The term -5 is here to correct the additional delay introduced by the FIR filter
-            double delay_error_chips = std::abs((double)expected_delay_chips - (double)(gnss_synchro.Acq_delay_samples-5)*1023.0/((double)fs_in*1e-3));
+            double delay_error_chips = std::abs(static_cast<double>(expected_delay_chips) - static_cast<double>(gnss_synchro.Acq_delay_samples - 5) * 1023.0 / (static_cast<double>(fs_in) * 1e-3));
             double doppler_error_hz = std::abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
 
             mse_delay += std::pow(delay_error_chips, 2);
@@ -392,16 +397,16 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::process_message()
 
     realization_counter++;
 
-    std::cout << "Progress: " << round((float)realization_counter/num_of_realizations*100) << "% \r" << std::flush;
+    std::cout << "Progress: " << round(static_cast<float>(realization_counter) / static_cast<float>(num_of_realizations) * 100.0) << "% \r" << std::flush;
 
     if (realization_counter == num_of_realizations)
         {
             mse_delay /= num_of_realizations;
             mse_doppler /= num_of_realizations;
 
-            Pd = (double)correct_estimation_counter / (double)num_of_realizations;
-            Pfa_a = (double)detection_counter / (double)num_of_realizations;
-            Pfa_p = (double)(detection_counter-correct_estimation_counter) / (double)num_of_realizations;
+            Pd = static_cast<double>(correct_estimation_counter) / static_cast<double>(num_of_realizations);
+            Pfa_a = static_cast<double>(detection_counter) / static_cast<double>(num_of_realizations);
+            Pfa_p = static_cast<double>(detection_counter - correct_estimation_counter) / static_cast<double>(num_of_realizations);
 
             mean_acq_time_us /= num_of_realizations;
 
@@ -412,90 +417,92 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::process_message()
         }
 }
 
+
 void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::stop_queue()
 {
     stop = true;
 }
 
+
 TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, Instantiate)
 {
     config_1();
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition", 1, 1);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition_1B", "Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition", 1, 0);
     acquisition = std::dynamic_pointer_cast<GalileoE1PcpsCccwsrAmbiguousAcquisition>(acq_);
 }
 
+
 TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ConnectAndRun)
 {
-    int nsamples = floor(fs_in*integration_time_ms*1e-3);
-    struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    int nsamples = floor(fs_in * integration_time_ms * 1e-3);
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::duration<double> elapsed_seconds(0);
 
     config_1();
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);
 
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition", 1, 1);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition_1B", "Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition", 1, 0);
     acquisition = std::dynamic_pointer_cast<GalileoE1PcpsCccwsrAmbiguousAcquisition>(acq_);
     boost::shared_ptr<GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx> msg_rx = GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx_make(channel_internal_queue);
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         acquisition->connect(top_block);
         boost::shared_ptr<gr::analog::sig_source_c> source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
         boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, acquisition->get_left_block(), 0);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    }) << "Failure connecting the blocks of acquisition test."<< std::endl;
+    }) << "Failure connecting the blocks of acquisition test.";
 
-    EXPECT_NO_THROW( {
-        gettimeofday(&tv, NULL);
-        begin = tv.tv_sec *1e6 + tv.tv_usec;
-        top_block->run(); // Start threads and wait
-        gettimeofday(&tv, NULL);
-        end = tv.tv_sec *1e6 + tv.tv_usec;
-    }) << "Failure running the top_block."<< std::endl;
+    EXPECT_NO_THROW({
+        start = std::chrono::system_clock::now();
+        top_block->run();  // Start threads and wait
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
+    }) << "Failure running the top_block.";
 
-    std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
+    std::cout << "Processed " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
 }
+
 
 TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResults)
 {
     config_1();
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition", 1, 1);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition_1B", "Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition", 1, 0);
     acquisition = std::dynamic_pointer_cast<GalileoE1PcpsCccwsrAmbiguousAcquisition>(acq_);
     boost::shared_ptr<GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx> msg_rx = GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx_make(channel_internal_queue);
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         acquisition->set_channel(1);
-    }) << "Failure setting channel."<< std::endl;
+    }) << "Failure setting channel.";
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         acquisition->set_gnss_synchro(&gnss_synchro);
-    }) << "Failure setting gnss_synchro."<< std::endl;
+    }) << "Failure setting gnss_synchro.";
 
-    ASSERT_NO_THROW( {
-        acquisition->set_doppler_max(config->property("Acquisition.doppler_max", 10000));
-    }) << "Failure setting doppler_max."<< std::endl;
+    ASSERT_NO_THROW({
+        acquisition->set_doppler_max(config->property("Acquisition_1B.doppler_max", 10000));
+    }) << "Failure setting doppler_max.";
 
-    ASSERT_NO_THROW( {
-        acquisition->set_doppler_step(config->property("Acquisition.doppler_step", 500));
-    }) << "Failure setting doppler_step."<< std::endl;
+    ASSERT_NO_THROW({
+        acquisition->set_doppler_step(config->property("Acquisition_1B.doppler_step", 500));
+    }) << "Failure setting doppler_step.";
 
-    ASSERT_NO_THROW( {
-        acquisition->set_threshold(config->property("Acquisition.threshold", 0.00001));
-    }) << "Failure setting threshold."<< std::endl;
+    ASSERT_NO_THROW({
+        acquisition->set_threshold(config->property("Acquisition_1B.threshold", 0.00001));
+    }) << "Failure setting threshold.";
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         acquisition->connect(top_block);
-    }) << "Failure connecting acquisition to the top_block."<< std::endl;
+    }) << "Failure connecting acquisition to the top_block.";
 
     acquisition->init();
     acquisition->reset();
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         boost::shared_ptr<GenSignalSource> signal_source;
         SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
         FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1);
@@ -503,7 +510,7 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResults)
         signal_source->connect(top_block);
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    }) << "Failure connecting the blocks of acquisition test." << std::endl;
+    }) << "Failure connecting the blocks of acquisition test.";
 
     // i = 0 --> satellite in acquisition is visible
     // i = 1 --> satellite in acquisition is not visible
@@ -513,11 +520,11 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResults)
 
             if (i == 0)
                 {
-                    gnss_synchro.PRN = 10; // This satellite is visible
+                    gnss_synchro.PRN = 10;  // This satellite is visible
                 }
             else if (i == 1)
                 {
-                    gnss_synchro.PRN = 20; // This satellite is not visible
+                    gnss_synchro.PRN = 20;  // This satellite is not visible
                 }
             acquisition->set_gnss_synchro(&gnss_synchro);
             acquisition->set_local_code();
@@ -525,75 +532,76 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResults)
             acquisition->set_state(1);
             start_queue();
 
-            EXPECT_NO_THROW( {
-                top_block->run(); // Start threads and wait
-            }) << "Failure running the top_block." << std::endl;
+            EXPECT_NO_THROW({
+                top_block->run();  // Start threads and wait
+            }) << "Failure running the top_block.";
 
             stop_queue();
 
             if (i == 0)
-            {
-                EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
-                //EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
-                if (message == 1)
-                    {
-                        EXPECT_EQ((unsigned int)1, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
-                    }
-            }
+                {
+                    EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
+                    //EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
+                    if (message == 1)
+                        {
+                            EXPECT_EQ(static_cast<unsigned int>(1), correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
+                        }
+                }
             else if (i == 1)
-            {
-                EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
-            }
+                {
+                    EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
+                }
 #ifdef OLD_BOOST
-            ASSERT_NO_THROW( {
+            ASSERT_NO_THROW({
                 ch_thread.timed_join(boost::posix_time::seconds(1));
-            }) << "Failure while waiting the queue to stop" << std::endl;
+            }) << "Failure while waiting the queue to stop";
 #endif
 #ifndef OLD_BOOST
-            ASSERT_NO_THROW( {
+            ASSERT_NO_THROW({
                 ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-            }) << "Failure while waiting the queue to stop" << std::endl;
+            }) << "Failure while waiting the queue to stop";
 #endif
         }
 }
+
 
 TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResultsProbabilities)
 {
     config_2();
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition", 1, 1);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition_1B", "Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition", 1, 0);
     acquisition = std::dynamic_pointer_cast<GalileoE1PcpsCccwsrAmbiguousAcquisition>(acq_);
     boost::shared_ptr<GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx> msg_rx = GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx_make(channel_internal_queue);
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         acquisition->set_channel(1);
-    }) << "Failure setting channel."<< std::endl;
+    }) << "Failure setting channel.";
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         acquisition->set_gnss_synchro(&gnss_synchro);
-    }) << "Failure setting gnss_synchro."<< std::endl;
+    }) << "Failure setting gnss_synchro.";
 
-    ASSERT_NO_THROW( {
-        acquisition->set_doppler_max(config->property("Acquisition.doppler_max", 10000));
-    }) << "Failure setting doppler_max."<< std::endl;
+    ASSERT_NO_THROW({
+        acquisition->set_doppler_max(config->property("Acquisition_1B.doppler_max", 10000));
+    }) << "Failure setting doppler_max.";
 
-    ASSERT_NO_THROW( {
-        acquisition->set_doppler_step(config->property("Acquisition.doppler_step", 500));
-    }) << "Failure setting doppler_step."<< std::endl;
+    ASSERT_NO_THROW({
+        acquisition->set_doppler_step(config->property("Acquisition_1B.doppler_step", 500));
+    }) << "Failure setting doppler_step.";
 
-    ASSERT_NO_THROW( {
-        acquisition->set_threshold(config->property("Acquisition.threshold", 0.00215));
-    }) << "Failure setting threshold."<< std::endl;
+    ASSERT_NO_THROW({
+        acquisition->set_threshold(config->property("Acquisition_1B.threshold", 0.00215));
+    }) << "Failure setting threshold.";
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         acquisition->connect(top_block);
-    }) << "Failure connecting acquisition to the top_block."<< std::endl;
+    }) << "Failure connecting acquisition to the top_block.";
 
     acquisition->init();
     acquisition->reset();
 
-    ASSERT_NO_THROW( {
+    ASSERT_NO_THROW({
         boost::shared_ptr<GenSignalSource> signal_source;
         SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
         FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1);
@@ -601,7 +609,7 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResultsProbabili
         signal_source->connect(top_block);
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    }) << "Failure connecting the blocks of acquisition test." << std::endl;
+    }) << "Failure connecting the blocks of acquisition test.";
 
     std::cout << "Probability of false alarm (target) = " << 0.1 << std::endl;
 
@@ -613,11 +621,11 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResultsProbabili
 
             if (i == 0)
                 {
-                    gnss_synchro.PRN = 10; // This satellite is visible
+                    gnss_synchro.PRN = 10;  // This satellite is visible
                 }
             else if (i == 1)
                 {
-                    gnss_synchro.PRN = 20; // This satellite is not visible
+                    gnss_synchro.PRN = 20;  // This satellite is not visible
                 }
 
             acquisition->set_gnss_synchro(&gnss_synchro);
@@ -627,23 +635,23 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResultsProbabili
             acquisition->set_state(1);
             start_queue();
 
-            EXPECT_NO_THROW( {
-                top_block->run(); // Start threads and wait
-            }) << "Failure running the top_block."<< std::endl;
+            EXPECT_NO_THROW({
+                top_block->run();  // Start threads and wait
+            }) << "Failure running the top_block.";
 
             stop_queue();
 
             if (i == 0)
-            {
-                std::cout << "Estimated probability of detection = " << Pd << std::endl;
-                std::cout << "Estimated probability of false alarm (satellite present) = " << Pfa_p << std::endl;
-                std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
-            }
+                {
+                    std::cout << "Estimated probability of detection = " << Pd << std::endl;
+                    std::cout << "Estimated probability of false alarm (satellite present) = " << Pfa_p << std::endl;
+                    std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
+                }
             else if (i == 1)
-            {
-                std::cout << "Probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
-                std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
-            }
+                {
+                    std::cout << "Probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
+                    std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
+                }
             ch_thread.join();
         }
 }

@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -27,23 +27,29 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
 #include "gps_l1_ca_pcps_assisted_acquisition.h"
-#include <glog/logging.h>
-#include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
+#include "gps_sdr_signal_processing.h"
+#include <glog/logging.h>
+
 
 using google::LogMessage;
 
+
 GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
-        ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams) :
-    role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration,
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(role),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams)
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_filename = "./data/acquisition.dat";
@@ -51,28 +57,27 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
     DLOG(INFO) << "role " << role;
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-    fs_in_ = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
-    if_ = configuration->property(role + ".if", 0);
+    int64_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
+    fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     dump_ = configuration->property(role + ".dump", false);
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
-    doppler_min_ = configuration->property(role + ".doppler_min", -5000);
+    if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
+    doppler_min_ = configuration->property(role + ".doppler_min", -doppler_max_);
     sampled_ms_ = configuration->property(role + ".coherent_integration_time_ms", 1);
-    max_dwells_= configuration->property(role + ".max_dwells", 1);
+    max_dwells_ = configuration->property(role + ".max_dwells", 1);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
 
     //--- Find number of samples per spreading code -------------------------
-    vector_length_ = round(fs_in_
-            / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
+    vector_length_ = round(fs_in_ / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     code_ = new gr_complex[vector_length_];
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             acquisition_cc_ = pcps_make_assisted_acquisition_cc(max_dwells_, sampled_ms_,
-                    doppler_max_, doppler_min_, if_, fs_in_, vector_length_,
-                    dump_, dump_filename_);
-
+                doppler_max_, doppler_min_, fs_in_, vector_length_,
+                dump_, dump_filename_);
         }
     else
         {
@@ -83,13 +88,26 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
     channel_ = 0;
     threshold_ = 0.0;
     doppler_step_ = 0;
-    gnss_synchro_ = 0;
+    gnss_synchro_ = nullptr;
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 0)
+        {
+            LOG(ERROR) << "This implementation does not provide an output stream";
+        }
 }
 
 
 GpsL1CaPcpsAssistedAcquisition::~GpsL1CaPcpsAssistedAcquisition()
 {
     delete[] code_;
+}
+
+
+void GpsL1CaPcpsAssistedAcquisition::stop_acquisition()
+{
 }
 
 
@@ -130,14 +148,14 @@ void GpsL1CaPcpsAssistedAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro
 
 signed int GpsL1CaPcpsAssistedAcquisition::mag()
 {
-   return acquisition_cc_->mag();
+    return acquisition_cc_->mag();
 }
 
 
 void GpsL1CaPcpsAssistedAcquisition::init()
 {
     acquisition_cc_->init();
-    set_local_code();
+    //set_local_code();
 }
 
 void GpsL1CaPcpsAssistedAcquisition::set_local_code()
@@ -154,14 +172,18 @@ void GpsL1CaPcpsAssistedAcquisition::reset()
 
 void GpsL1CaPcpsAssistedAcquisition::connect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 
 void GpsL1CaPcpsAssistedAcquisition::disconnect(gr::top_block_sptr top_block)
 {
-    if(top_block) { /* top_block is not null */};
+    if (top_block)
+        { /* top_block is not null */
+        };
     //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
@@ -176,4 +198,3 @@ gr::basic_block_sptr GpsL1CaPcpsAssistedAcquisition::get_right_block()
 {
     return acquisition_cc_;
 }
-

@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_Rel7_AssistanceData_Extension_H_
-#define	_Rel7_AssistanceData_Extension_H_
+#ifndef _Rel7_AssistanceData_Extension_H_
+#define _Rel7_AssistanceData_Extension_H_
 
 
 #include <asn_application.h>
@@ -15,28 +15,30 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct GANSS_AssistData;
+    /* Forward declarations */
+    struct GANSS_AssistData;
 
-/* Rel7-AssistanceData-Extension */
-typedef struct Rel7_AssistanceData_Extension {
-	struct GANSS_AssistData	*ganss_AssistData	/* OPTIONAL */;
-	NULL_t	*ganssCarrierPhaseMeasurementRequest	/* OPTIONAL */;
-	NULL_t	*ganssTODGSMTimeAssociationMeasurementRequest	/* OPTIONAL */;
-	/*
+    /* Rel7-AssistanceData-Extension */
+    typedef struct Rel7_AssistanceData_Extension
+    {
+        struct GANSS_AssistData *ganss_AssistData /* OPTIONAL */;
+        NULL_t *ganssCarrierPhaseMeasurementRequest /* OPTIONAL */;
+        NULL_t *ganssTODGSMTimeAssociationMeasurementRequest /* OPTIONAL */;
+        /*
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} Rel7_AssistanceData_Extension_t;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Rel7_AssistanceData_Extension;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } Rel7_AssistanceData_Extension_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_Rel7_AssistanceData_Extension;
 
 #ifdef __cplusplus
 }
@@ -45,5 +47,5 @@ extern asn_TYPE_descriptor_t asn_DEF_Rel7_AssistanceData_Extension;
 /* Referred external types */
 #include "GANSS-AssistData.h"
 
-#endif	/* _Rel7_AssistanceData_Extension_H_ */
+#endif /* _Rel7_AssistanceData_Extension_H_ */
 #include <asn_internal.h>

@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -29,7 +29,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -49,20 +49,20 @@ class Tracking_2nd_DLL_filter
 {
 private:
     // PLL filter parameters
-    float d_tau1_code = 0;
-    float d_tau2_code = 0;
-    float d_pdi_code = 0;
-    float d_dllnoisebandwidth = 0;
-    float d_dlldampingratio = 0;
-    float d_old_code_error = 0;
-    float d_old_code_nco = 0;
-    void calculate_lopp_coef(float* tau1,float* tau2, float lbw, float zeta, float k);
+    float d_tau1_code = 0.0;
+    float d_tau2_code = 0.0;
+    float d_pdi_code = 0.0;
+    float d_dllnoisebandwidth = 0.0;
+    float d_dlldampingratio = 0.0;
+    float d_old_code_error = 0.0;
+    float d_old_code_nco = 0.0;
+    void calculate_lopp_coef(float* tau1, float* tau2, float lbw, float zeta, float k);
 
 public:
-    void set_DLL_BW(float dll_bw_hz); //! Set DLL filter bandwidth [Hz]
-    void set_pdi(float pdi_code);     //! Set Summation interval for code [s]
-    void initialize();                //! Start tracking with acquisition information
-    float get_code_nco(float DLL_discriminator); //! Numerically controlled oscillator
+    void set_DLL_BW(float dll_bw_hz);             //! Set DLL filter bandwidth [Hz]
+    void set_pdi(float pdi_code);                 //! Set Summation interval for code [s]
+    void initialize();                            //! Start tracking with acquisition information
+    float get_code_nco(float DLL_discriminator);  //! Numerically controlled oscillator
     Tracking_2nd_DLL_filter(float pdi_code);
     Tracking_2nd_DLL_filter();
     ~Tracking_2nd_DLL_filter();

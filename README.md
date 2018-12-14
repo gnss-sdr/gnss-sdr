@@ -1,24 +1,38 @@
-![](./docs/doxygen/images/gnss-sdr_logo.png)
+[![](./docs/doxygen/images/gnss-sdr_logo.png)](https://gnss-sdr.org "GNSS-SDR website")
+
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 **Welcome to GNSS-SDR!**
 
-Visit [gnss-sdr.org](http://gnss-sdr.org "GNSS-SDR's Homepage") for more information about this open source GNSS software defined receiver.
+This program is a software-defined receiver which is able to process (that is, to perform detection, synchronization, demodulation and decoding of the navigation message, computation of observables and, finally, computation of position fixes) the following Global Navigation Satellite System's signals:
 
-If you have questions about GNSS-SDR, please [subscribe to the gnss-sdr-developers mailing list](http://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers "Subscribe to the gnss-sdr-developers mailing list" ) and post your questions there.
+In the L1 band:
+ - &#128752; GPS L1 C/A  (centered at 1575.42 MHz) :white_check_mark:
+ - &#128752; Galileo E1b/c  (centered at 1575.42 MHz) :white_check_mark:
+ - &#128752; GLONASS L1 C/A (centered at 1601.72 MHz) :white_check_mark:
+
+In the L2 band:
+ - &#128752; GPS L2C (centered at 1227.60 MHz) :white_check_mark:
+ - &#128752; GLONASS L2 C/A (centered at 1246 MHz) :white_check_mark:
+
+In the L5 band:
+ - &#128752; GPS L5 (centered at 1176.45 MHz) :white_check_mark:
+ - &#128752; Galileo E5a (centered at 1176.45 MHz) :white_check_mark:
+
+GNSS-SDR provides interfaces for a wide range of radio frequency front-ends and raw sample file formats, generates processing outputs in standard formats, allows for the full inspection of the whole signal processing chain, and offers a framework for the development of new features. Please visit [https://gnss-sdr.org](https://gnss-sdr.org "GNSS-SDR website") for more information about this open source software-defined GNSS receiver.
 
 
 
 # How to build GNSS-SDR
 
 
-This section describes how to set up the compilation environment in GNU/Linux or [macOS / Mac OS X](#macosx), and to build GNSS-SDR. See also our [build and install page](http://gnss-sdr.org/build-and-install/ "GNSS-SDR's Build and Install").
+This section describes how to set up the compilation environment in GNU/Linux or [macOS / Mac OS X](#macosx), and to build GNSS-SDR. See also our [build and install page](https://gnss-sdr.org/build-and-install/ "GNSS-SDR's Build and Install").
 
 
 GNU/Linux
 ----------
 
- * Tested distributions: Ubuntu 14.04 LTS and [above](http://packages.ubuntu.com/search?keywords=gnss-sdr), Debian 8.0 "jessie" and [above](https://packages.debian.org/search?searchon=names&keywords=gnss-sdr), Linaro 15.03
- * Known to work but not continually tested: Arch Linux, Fedora, and openSUSE
+ * Tested distributions: Ubuntu 14.04 LTS and above; Debian 8.0 "jessie" and above; Fedora 26 and above; CentOS 7; Arch Linux.
  * Supported microprocessor architectures:
    * i386: Intel x86 instruction set (32-bit microprocessors).
    * amd64: also known as x86-64, the 64-bit version of the x86 instruction set, originally created by AMD and implemented by AMD, Intel, VIA and others.
@@ -39,38 +53,76 @@ Before building GNSS-SDR, you need to install all the required dependencies. The
 
 ### Alternative 1: Install dependencies using software packages
 
-If you want to start building and running GNSS-SDR as quick and easy as possible, the best option is to install all the required dependencies as binary packages. If you are using Debian 8, Ubuntu 14.10 or above, this can be done by copying and pasting the following line in a terminal:
+If you want to start building and running GNSS-SDR as quick and easy as possible, the best option is to install all the required dependencies as binary packages.
+
+#### Debian / Ubuntu
+
+If you are using Debian 8, Ubuntu 14.10 or above, this can be done by copying and pasting the following line in a terminal:
 
 ~~~~~~
 $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time-dev \
        libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev \
-       libboost-serialization-dev libboost-program-options-dev libboost-test-dev \
-       liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev \
-       libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev libgtest-dev \
-       python-mako python-six
+       libboost-serialization-dev liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr \
+       libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev \
+       libgnutls-openssl-dev libpcap-dev python-mako python-six libmatio-dev libpugixml-dev \
+       libgtest-dev
 ~~~~~~
 
-Alternatively, and starting from Ubuntu 16.04 LTS, you can install all the required dependencies by adding the line
+Please note that the required files from `libgtest-dev` were moved to `googletest` in Debian 9 "stretch" and Ubuntu 18.04 "bionic", and moved back again to `libgtest-dev` in Debian 10 "buster" and Ubuntu 18.10 "cosmic".
+
+**Note for Ubuntu 14.04 LTS "trusty" users:** you will need to build from source and install GNU Radio manually, as explained below, since GNSS-SDR requires `gnuradio-dev` >= 3.7.3, and Ubuntu 14.04 came with 3.7.2. Install all the packages above BUT EXCEPT `libuhd-dev`, `gnuradio-dev` and `gr-osmosdr` (and remove them if they are already installed in your machine), and install those dependencies using PyBOMBS. The same applies to `libmatio-dev`: Ubuntu 14.04 came with 1.5.2 and the minimum required version is 1.5.3. Please do not install the `libmatio-dev` package and install `libtool`, `automake` and `libhdf5-dev` instead. A recent version of the library will be downloaded and built automatically if CMake does not find it installed.
+
+**Note for Debian 8 "jessie" users:** please see the note about `libmatio-dev` above. Install `libtool`, `automake` and `libhdf5-dev` instead.
+
+Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
+
+
+#### Fedora
+
+If you are using Fedora 26 or above, the required software dependencies can be installed by doing:
 
 ~~~~~~
-deb-src http://us.archive.ubuntu.com/ubuntu/ xenial universe
+$ sudo yum install make automake gcc gcc-c++ kernel-devel cmake git boost-devel \
+       boost-date-time boost-system boost-filesystem boost-thread boost-chrono \
+       boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel \
+       blas-devel lapack-devel matio-devel armadillo-devel gflags-devel \
+       glog-devel openssl-devel libpcap-devel python-mako python-six pugixml-devel
 ~~~~~~
 
-to your ```/etc/apt/sources.list``` file and doing:
+Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
+
+#### CentOS
+
+If you are using CentOS 7, you can install the dependencies via Extra Packages for Enterprise Linux ([EPEL](https://fedoraproject.org/wiki/EPEL)):
 
 ~~~~~~
-$ sudo apt-get update
-$ sudo apt-get build-dep gnss-sdr
+$ sudo yum install wget
+$ wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+$ sudo rpm -Uvh epel-release-latest-7.noarch.rpm
+$ sudo yum install make automake gcc gcc-c++ kernel-devel libtool \
+       hdf5-devel cmake git boost-devel boost-date-time boost-system \
+       boost-filesystem boost-thread boost-chrono boost-serialization \
+       log4cpp-devel gnuradio-devel gr-osmosdr-devel blas-devel lapack-devel \
+       armadillo-devel openssl-devel libpcap-devel python-mako python-six pugixml-devel
 ~~~~~~
 
-Once you have installed these packages, you can jump directly to [how to download the source code and build GNSS-SDR](#download-and-build-linux).
+Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
 
-Note for Ubuntu 14.04 LTS "trusty" users: you will need to build from source and install GNU Radio manually, as explained below, since GNSS-SDR requires gnuradio-dev >= 3.7.3, and Ubuntu 14.04 came with 3.7.2. Install all the packages above BUT EXCEPT ```libuhd-dev```, ```gnuradio-dev``` and ```gr-osmosdr``` (and remove them if they are already installed in your machine), and install those dependencies using PyBOMBS.
+#### Arch Linux
 
+If you are using Arch Linux (with base-devel group installed):
+
+~~~~~~
+$ pacman -S cmake git boost boost-libs log4cpp libvolk gnuradio gnuradio-osmosdr \
+       blas lapack gflags google-glog openssl pugixml python-mako python-six \
+       libmatio libpcap gtest
+~~~~~~
+
+Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
 
 ### Alternative 2: Install dependencies using PyBOMBS
 
-This option is adequate if you are interested in development, in working with the most recent versions of software dependencies, want more fine tuning on the installed versions, or simply in building everything from the scratch just for the fun of it. In such cases, we recommend to use [PyBOMBS](http://gnuradio.org/pybombs "Python Build Overlay Managed Bundle System wiki") (Python Build Overlay Managed Bundle System), GNU Radio's meta-package manager tool that installs software from source, or whatever the local package manager is, that automatically does all the work for you. Please take a look at the configuration options and general PyBOMBS usage at https://github.com/gnuradio/pybombs. Here we provide a quick step-by-step tutorial.
+This option is adequate if you are interested in development, in working with the most recent versions of software dependencies, want more fine tuning on the installed versions, or simply in building everything from the scratch just for the fun of it. In such cases, we recommend to use [PyBOMBS](https://github.com/gnuradio/pybombs "Python Build Overlay Managed Bundle System") (Python Build Overlay Managed Bundle System), GNU Radio's meta-package manager tool that installs software from source, or whatever the local package manager is, that automatically does all the work for you. Please take a look at the configuration options and general PyBOMBS usage at https://github.com/gnuradio/pybombs. Here we provide a quick step-by-step tutorial.
 
 First of all, install some basic packages:
 
@@ -84,11 +136,16 @@ Download, build and install PyBOMBS:
 $ sudo pip install git+https://github.com/gnuradio/pybombs.git
 ~~~~~~
 
-Add some software recipes (i.e., instructions on how to install software dependencies):
+Apply a configuration:
 
 ~~~~~~
-$ pybombs recipes add gr-recipes git+https://github.com/gnuradio/gr-recipes.git
-$ pybombs recipes add gr-etcetera git+https://github.com/gnuradio/gr-etcetera.git
+$ pybombs auto-config
+~~~~~~
+
+Add list of default recipes:
+
+~~~~~~
+$ pybombs recipes add-defaults
 ~~~~~~
 
 Download, build and install GNU Radio, related drivers and some other extra modules into the directory ```/path/to/prefix``` (replace this path by your preferred one, for instance ```$HOME/sdr```):
@@ -112,7 +169,7 @@ $ pybombs install gnss-sdr
 
 By default, PyBOMBS installs the ‘next’ branch of GNSS-SDR development, which is the most recent version of the source code. This behaviour can be modified by altering the corresponding recipe at ```$HOME/.pybombs/recipes/gr-recipes/gnss-sdr.lwr```
 
-In case you do not want to use PyBOMBS and prefer to build and install GNSS-SDR step by step (i.e., cloning the repository and doing the usual ```cmake .. && make && make install``` dance), Armadillo, GFlags, Glog and GunTLS can be installed either by using PyBOMBS:
+In case you do not want to use PyBOMBS and prefer to build and install GNSS-SDR step by step (i.e., cloning the repository and doing the usual ```cmake .. && make && make install``` dance), Armadillo, GFlags, Glog and GnuTLS can be installed either by using PyBOMBS:
 
 ~~~~~~
 $ pybombs install armadillo gflags glog gnutls
@@ -126,27 +183,28 @@ or manually as explained below, and then please follow instructions on how to [d
 #### Install [Armadillo](http://arma.sourceforge.net/ "Armadillo's Homepage"), a C++ linear algebra library:
 
 ~~~~~~
-$ sudo apt-get install libopenblas-dev liblapack-dev   # For Debian/Ubuntu/LinuxMint
+$ sudo apt-get install libblas-dev liblapack-dev       # For Debian/Ubuntu/LinuxMint
 $ sudo yum install lapack-devel blas-devel             # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
-$ wget http://sourceforge.net/projects/arma/files/armadillo-7.600.2.tar.xz
-$ tar xvfz armadillo-7.600.2.tar.xz
-$ cd armadillo-7.600.2
+$ sudo pacman -S blas lapack                           # For Arch Linux
+$ wget https://sourceforge.net/projects/arma/files/armadillo-9.100.5.tar.xz
+$ tar xvfz armadillo-9.100.5.tar.xz
+$ cd armadillo-9.100.5
 $ cmake .
 $ make
 $ sudo make install
 ~~~~~~
 
-The full stop separated from ```cmake``` by a space is important. [CMake](http://www.cmake.org/ "CMake's Homepage") will figure out what other libraries are currently installed and will modify Armadillo's configuration correspondingly. CMake will also generate a run-time armadillo library, which is a combined alias for all the relevant libraries present on your system (eg. BLAS, LAPACK and ATLAS).
+The full stop separated from ```cmake``` by a space is important. [CMake](https://cmake.org/ "CMake's Homepage") will figure out what other libraries are currently installed and will modify Armadillo's configuration correspondingly. CMake will also generate a run-time armadillo library, which is a combined alias for all the relevant libraries present on your system (eg. BLAS, LAPACK and ATLAS).
 
 
 
 #### Install [Gflags](https://github.com/gflags/gflags "Gflags' Homepage"), a commandline flags processing module for C++:
 
 ~~~~~~
-$ wget https://github.com/gflags/gflags/archive/v2.2.0.tar.gz
-$ tar xvfz v2.2.0.tar.gz
-$ cd gflags-2.2.0
+$ wget https://github.com/gflags/gflags/archive/v2.2.2.tar.gz
+$ tar xvfz v2.2.2.tar.gz
+$ cd gflags-2.2.2
 $ cmake -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DBUILD_gflags_nothreads_LIB=OFF .
 $ make
 $ sudo make install
@@ -158,9 +216,9 @@ $ sudo ldconfig
 #### Install [Glog](https://github.com/google/glog "Glog's Homepage"), a library that implements application-level logging:
 
 ~~~~~~
-$ wget https://github.com/google/glog/archive/v0.3.4.tar.gz
-$ tar xvfz v0.3.4.tar.gz
-$ cd glog-0.3.4
+$ wget https://github.com/google/glog/archive/v0.3.5.tar.gz
+$ tar xvfz v0.3.5.tar.gz
+$ cd glog-0.3.5
 $ ./configure
 $ make
 $ sudo make install
@@ -172,28 +230,30 @@ $ sudo ldconfig
 #### Build the [Google C++ Testing Framework](https://github.com/google/googletest "Googletest Homepage"), also known as Google Test:
 
 ~~~~~~
-$ wget https://github.com/google/googletest/archive/release-1.8.0.zip
-$ unzip release-1.8.0.zip
-$ cd googletest-release-1.8.0
-$ cmake -DBUILD_GTEST=ON -DBUILD_GMOCK=OFF .
+$ wget https://github.com/google/googletest/archive/release-1.8.1.zip
+$ unzip release-1.8.1.zip
+$ cd googletest-release-1.8.1
+$ cmake -DINSTALL_GTEST=OFF -DBUILD_GMOCK=OFF .
 $ make
 ~~~~~~
 
 Please **DO NOT install** Google Test (do *not* type ```sudo make install```). Every user needs to compile his tests using the same compiler flags used to compile the installed Google Test libraries; otherwise he may run into undefined behaviors (i.e. the tests can behave strangely and may even crash for no obvious reasons). The reason is that C++ has this thing called the One-Definition Rule: if two C++ source files contain different definitions of the same class/function/variable, and you link them together, you violate the rule. The linker may or may not catch the error (in many cases it is not required by the C++ standard to catch the violation). If it does not, you get strange run-time behaviors that are unexpected and hard to debug. If you compile Google Test and your test code using different compiler flags, they may see different definitions of the same class/function/variable (e.g. due to the use of ```#if``` in Google Test). Therefore, for your sanity, we recommend to avoid installing pre-compiled Google Test libraries. Instead, each project should compile Google Test itself such that it can be sure that the same flags are used for both Google Test and the tests. The building system of GNSS-SDR does the compilation and linking of googletest to its own tests; it is only required that you tell the system where the googletest folder that you downloaded resides. Just add to your ```$HOME/.bashrc``` file the following line:
 
 ~~~~~~
-export GTEST_DIR=/home/username/googletest-release-1.8.0/googletest
+export GTEST_DIR=/home/username/googletest-release-1.8.1/googletest
 ~~~~~~
 
-changing `/home/username/googletest-release-1.8.0/googletest` by the actual directory where you built googletest.
+changing `/home/username/googletest-release-1.8.1/googletest` by the actual directory where you built googletest.
 
 
 
-#### Install the [GnuTLS library](http://www.gnutls.org/ "GnuTLS's Homepage"):
+#### Install the [GnuTLS](https://www.gnutls.org/ "GnuTLS's Homepage") or [OpenSSL](https://www.openssl.org/ "OpenSSL's Homepage") libraries:
 
 ~~~~~~
 $ sudo apt-get install libgnutls-openssl-dev    # For Debian/Ubuntu/LinuxMint
-$ sudo yum install libgnutls-openssl-devel      # For Fedora/CentOS/RHEL
+$ sudo yum install openssl-devel                # For Fedora/CentOS/RHEL
+$ sudo zypper install openssl-devel             # For OpenSUSE
+$ sudo pacman -S openssl                        # For Arch Linux
 ~~~~~~
 
 In case the GnuTLS library with openssl extensions package is not available in your GNU/Linux distribution, GNSS-SDR can also work well with OpenSSL.
@@ -230,7 +290,7 @@ By default, you will be in the 'master' branch of the Git repository, which corr
 $ git checkout next
 ~~~~~~
 
-More information about GNSS-SDR-specific Git usage and pointers to further readings can be found at our [Git tutorial](http://gnss-sdr.org/docs/tutorials/using-git/ "Using Git").
+More information about GNSS-SDR-specific Git usage and pointers to further readings can be found at our [Git tutorial](https://gnss-sdr.org/docs/tutorials/using-git/ "Using Git").
 
 
 ### Build and install GNSS-SDR
@@ -248,7 +308,7 @@ $ cmake ../
 $ make
 ~~~~~~
 
-By default, CMake will build the Release version, meaning that the compiler will generate a fast, optimized executable. This is the recommended build type when using a RF front-end and you need to attain real time. If working with a file (and thus without real-time constraints), you may want to obtain more information about the internals of the receiver, as well as more fine-grained logging. This can be done by building the Debug version, by doing:
+By default, CMake will build the Release version, meaning that the compiler will generate a fast, optimized executable. This is the recommended build type when using an RF front-end and you need to attain real time. If working with a file (and thus without real-time constraints), you may want to obtain more information about the internals of the receiver, as well as more fine-grained logging. This can be done by building the Debug version, by doing:
 
 ~~~~~~
 $ cmake -DCMAKE_BUILD_TYPE=Debug ../
@@ -291,7 +351,7 @@ GNSS-SDR comes with a library which is a module of the Vector-Optimized Library 
 If you are using Eclipse as your development environment, CMake can create the project for you. Type:
 
 ~~~~~~
-$ cmake -G "Eclipse CDT4 - Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DECLIPSE_CDT4_GENERATE_SOURCE_PROJECT=TRUE -DCMAKE_ECLIPSE_VERSION=3.7 -DCMAKE_ECLIPSE_MAKE_ARGUMENTS=-j8 ../
+$ cmake -G "Eclipse CDT4 - Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DECLIPSE_GENERATE_SOURCE_PROJECT=TRUE -DCMAKE_ECLIPSE_VERSION=4.5 .
 ~~~~~~
 
 and then import the created project file into Eclipse:
@@ -368,7 +428,52 @@ $ sudo make install
 
 (in order to disable the `Osmosdr_Signal_Source` compilation, you can pass `DENABLE_OSMOSDR=OFF` to cmake and build GNSS-SDR again).
 
+###### Build FMCOMMS2 based SDR Hardware support (OPTIONAL):
 
+Install the [libiio](https://github.com/analogdevicesinc/libiio.git) (>=v0.11), [libad9361](https://github.com/analogdevicesinc/libad9361-iio.git) (>=v0.1-1) libraries and [gr-iio](https://github.com/analogdevicesinc/gr-iio.git) (>v0.3) gnuradio block:
+
+~~~~~~
+$ sudo apt-get install libxml2-dev bison flex
+$ git clone https://github.com/analogdevicesinc/libiio.git
+$ cd libiio
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make && sudo make install && sudo ldconfig
+$ cd ../..
+$ git clone https://github.com/analogdevicesinc/libad9361-iio.git
+$ cd libad9361-iio
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make && sudo make install && sudo ldconfig
+$ cd ../..
+$ git clone https://github.com/analogdevicesinc/gr-iio.git
+$ cd gr-iio
+$ mkdir build
+$ cd build
+$ cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+$ make && sudo make install && sudo ldconfig
+$ cd ../..
+~~~~~~
+
+Then configure GNSS-SDR to build the `Fmcomms2_Signal_Source` implementation:
+
+~~~~~~
+$ cd gnss-sdr/build
+$ cmake -DENABLE_FMCOMMS2=ON ../
+$ make
+$ sudo make install
+~~~~~~
+
+or configure it to build `Plutosdr_Signal_Source`:
+~~~~~~
+$ cmake -DENABLE_PLUTOSDR=ON ../
+$ make
+$ sudo make install
+~~~~~~
+
+With `Fmcomms2_Signal_Source` you can use any SDR hardware based on [FMCOMMS2](https://wiki.analog.com/resources/eval/user-guides/ad-fmcomms2-ebz), including the ADALM-PLUTO (PlutoSdr) by configuring correctly the .conf file. The `Plutosdr_Signal_Source` offers a simpler manner to use the ADALM-PLUTO because implements only a subset of FMCOMMS2's parameters valid for those devices.
 
 ###### Build OpenCL support (OPTIONAL):
 
@@ -406,15 +511,13 @@ $ sudo make install
 
 Using this option, all SIMD instructions are exclusively accessed via VOLK, which automatically includes versions of each function for different SIMD instruction sets, then detects at runtime which to use, or if there are none, substitutes a generic, non-SIMD implementation.
 
+More details can be found in our tutorial about [GNSS-SDR configuration options at building time](https://gnss-sdr.org/docs/tutorials/using-git/ "Configuration options at building time").
 
 
 <a name="macosx">macOS and Mac OS X</a>
 ---------
 
-
-### macOS Sierra, Mac OS X 10.11 (El Capitan), 10.10 (Yosemite) and 10.9 (Mavericks).
-
-If you still have not installed [Xcode](http://developer.apple.com/xcode/ "Xcode"), do it now from the App Store (it's free). You will also need the Xcode Command Line Tools. Launch the Terminal, found in /Applications/Utilities/, and type:
+GNSS-SDR can be built on MacOS or Mac OS X, starting from 10.9 (Mavericks) and including 10.14 (Mojave). If you still have not installed [Xcode](https://developer.apple.com/xcode/ "Xcode"), do it now from the App Store (it's free). You will also need the Xcode Command Line Tools. Launch the Terminal, found in /Applications/Utilities/, and type:
 
 ~~~~~~
 $ xcode-select --install
@@ -428,9 +531,9 @@ $ sudo xcodebuild -license
 
 Software pre-requisites can be installed using either [Macports](#macports) or [Homebrew](#homebrew).
 
-####<a name"macports">Macports</a>
+#### <a name="macports">Macports</a>
 
-First, [install Macports](http://www.macports.org/install.php). If you are upgrading from a previous installation, please follow the [migration rules](http://trac.macports.org/wiki/Migration).
+First, [install Macports](https://www.macports.org/install.php). If you are upgrading from a previous installation, please follow the [migration rules](https://trac.macports.org/wiki/Migration).
 
 In a terminal, type:
 
@@ -444,6 +547,8 @@ $ sudo port install gnutls
 $ sudo port install google-glog +gflags
 $ sudo port install py27-mako
 $ sudo port install py27-six
+$ sudo port install matio
+$ sudo port install pugixml
 ~~~~~~
 
 You also might need to activate a Python installation. The list of installed versions can be retrieved with:
@@ -452,7 +557,7 @@ You also might need to activate a Python installation. The list of installed ver
 $ port select list python
 ~~~~~~
 
-and you can activate a certain version (2.7 works well) by typing:
+and you can activate a certain version by typing:
 
 ~~~~~~
 $ sudo port select --set python python27
@@ -460,15 +565,32 @@ $ sudo port select --set python python27
 
 #### <a name="homebrew">Homebrew</a>
 
-Instructions for installing GNU Radio using [homebrew](http://www.brew.sh) can be found [here](http://github.com/odrisci/homebrew-gnuradio) - please ensure to install all dependencies as required.
+First, install [Homebrew](https://brew.sh/). Paste this in a terminal prompt:
 
-Install Armadillo and dependencies:
+~~~~~~
+$ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+~~~~~~
+
+The script explains what it will do and then pauses before it does it. There are more installation options [here](https://docs.brew.sh/Installation.html).
+
+Install pip:
+
+~~~~~~
+$ sudo easy_install pip
+~~~~~~
+
+Install the required dependencies:
 
 ~~~~~~
 $ brew tap homebrew/science
 $ brew install cmake hdf5 arpack superlu
 $ brew install armadillo
 $ brew install glog gflags gnutls
+$ brew install gnuradio
+$ brew install libmatio
+$ brew install pugixml
+$ pip install mako
+$ pip install six
 ~~~~~~
 
 #### Build GNSS-SDR
@@ -506,7 +628,7 @@ GNSS-SDR comes with a library which is a module of the Vector-Optimized Library 
 
 ###### Other package managers
 
-GNU Radio and other dependencies can also be installed using other package managers than Macports, such as [Fink](http://www.finkproject.org/ "Fink") or [Homebrew](http://brew.sh/ "Homebrew"). Since the version of Python that ships with OS X is great for learning but it is not good for development, you could have another Python executable in a non-standard location. If that is the case, you need to inform GNSS-SDR's configuration system by defining the `PYTHON_EXECUTABLE` variable as:
+GNU Radio and other dependencies can also be installed using other package managers than Macports, such as [Fink](http://www.finkproject.org/ "Fink") or [Homebrew](https://brew.sh/ "Homebrew"). Since the version of Python that ships with OS X is great for learning but it is not good for development, you could have another Python executable in a non-standard location. If that is the case, you need to inform GNSS-SDR's configuration system by defining the `PYTHON_EXECUTABLE` variable as:
 
 ~~~~~~
 cmake -DPYTHON_EXECUTABLE=/path/to/bin/python ../
@@ -525,10 +647,11 @@ The CMake script will create Makefiles that download, build and link Armadillo, 
 
 Other builds
 ---------
+* **Docker container**: A technology providing operating-system-level virtualization to build, ship, and run distributed applications, whether on laptops, data center VMs, or the cloud. Visit [https://github.com/carlesfernandez/docker-gnsssdr](https://github.com/carlesfernandez/docker-gnsssdr) or [https://github.com/carlesfernandez/docker-pybombs-gnsssdr](https://github.com/carlesfernandez/docker-pybombs-gnsssdr) for instructions.
 
-* **Snap packages**: [Snaps](http://snapcraft.io) are universal Linux packages aimed to work on any distribution or device, from IoT devices to servers, desktops to mobile devices. Visit [https://github.com/carlesfernandez/snapcraft-sandbox](https://github.com/carlesfernandez/snapcraft-sandbox) for instructions.
+* **Snap packages**: [Snaps](https://snapcraft.io) are universal Linux packages aimed to work on any distribution or device, from IoT devices to servers, desktops to mobile devices. Visit [https://github.com/carlesfernandez/snapcraft-sandbox](https://github.com/carlesfernandez/snapcraft-sandbox) for instructions.
 
-* **GNSS-SDR in embedded platforms**: we provide a Software Development Kit (SDK) based on [OpenEmbedded](http://www.openembedded.org/wiki/Main_Page) for cross-compiling GNSS-SDR in your desktop computer and for producing executables that can run in embedded platforms, such as a Zedboard or a Raspberry Pi 3. Visit [Cross-compiling GNSS-SDR](http://gnss-sdr.org/docs/tutorials/cross-compiling/) for instructions.
+* **GNSS-SDR in embedded platforms**: we provide a Software Development Kit (SDK) based on [OpenEmbedded](http://www.openembedded.org/wiki/Main_Page) for cross-compiling GNSS-SDR in your desktop computer and for producing executables that can run in embedded platforms, such as a Zedboard or a Raspberry Pi 3. Visit [Cross-compiling GNSS-SDR](https://gnss-sdr.org/docs/tutorials/cross-compiling/) for instructions.
 
 
 Updating GNSS-SDR
@@ -560,9 +683,9 @@ Before rebuilding the source code, it is safe (and recommended) to remove the re
 $ rm -rf gnss-sdr/build/*
 ~~~~~~
 
-If you are interested in contributing to the development of GNSS-SDR, please check out [how to do it](http://gnss-sdr.org/contribute/ "How to contribute to GNSS-SDR source code").
+If you are interested in contributing to the development of GNSS-SDR, please check out [how to do it](https://gnss-sdr.org/contribute/ "How to contribute to GNSS-SDR source code").
 
-There is a more controlled way to upgrade your repository, which is to use the Git commands ```fetch``` and ```merge```, as described in our [Git Tutorial](http://gnss-sdr.org/docs/tutorials/using-git/ "Using Git").
+There is a more controlled way to upgrade your repository, which is to use the Git commands ```fetch``` and ```merge```, as described in our [Git Tutorial](https://gnss-sdr.org/docs/tutorials/using-git/ "Using Git").
 
 
 
@@ -574,32 +697,31 @@ Getting started
 1. After building the code, you will find the ```gnss-sdr``` executable file at gnss-sdr/install. You can make it available everywhere else by ```sudo make install```. Run the profilers ```volk_profile``` and ```volk_gnsssdr_profile``` for testing all available VOLK kernels for each architecture supported by your processor. This only has to be done once.
 2. In post-processing mode, you have to provide a captured GNSS signal file.
     1. The signal file can be easily recorded using the GNU Radio file sink in ```gr_complex<float>``` mode.
-    2. You will need a GPS active antenna, a [USRP](http://www.ettus.com/product) and a suitable USRP daughter board to receive GPS L1 C/A signals. GNSS-SDR require to have at least 2 MHz of bandwidth in 1.57542 GHz. (remember to enable the DC bias with the daughter board jumper).
+    2. You will need a GPS active antenna, a [USRP](https://www.ettus.com/product) and a suitable USRP daughter board to receive GPS L1 C/A signals. GNSS-SDR require to have at least 2 MHz of bandwidth in 1.57542 GHz. (remember to enable the DC bias with the daughter board jumper).
 We use a [DBSRX2](https://www.ettus.com/product/details/DBSRX2) to do the task, but you can try the newer Ettus' daughter boards as well.
     3. The easiest way to capture a signal file is to use the GNU Radio Companion GUI. Only two blocks are needed: a USRP signal source connected to complex float file sink. You need to tune the USRP central frequency and decimation factor using USRP signal source properties box. We suggest using a decimation factor of 20 if you use the USRP2. This will give you 100/20 = 5 MSPS which will be enough to receive GPS L1 C/A signals. The front-end gain should also be configured. In our test with the DBSRX2 we obtained good results with ```G=50```.
-    4. Capture at least 80 seconds of signal in open sky conditions. During the process, be aware of USRP driver buffer underuns messages. If your hard disk is not fast enough to write data at this speed you can capture to a virtual RAM drive. 80 seconds of signal at 5 MSPS occupies less than 3 Gbytes using ```gr_complex<float>```.
-    5. If you have no access to a RF front-end, you can download a sample raw data file (that contains GPS and Galileo signals) from [here](http://sourceforge.net/projects/gnss-sdr/files/data/).
+    4. Capture at least 80 seconds of signal in open sky conditions. During the process, be aware of USRP driver buffer underruns messages. If your hard disk is not fast enough to write data at this speed you can capture to a virtual RAM drive. 80 seconds of signal at 5 MSPS occupies less than 3 Gbytes using ```gr_complex<float>```.
+    5. If you have no access to an RF front-end, you can download a sample raw data file (that contains GPS and Galileo signals) from [here](https://sourceforge.net/projects/gnss-sdr/files/data/).
 3. You are ready to configure the receiver to use your captured file among other parameters:
     1. The default configuration file resides at [/usr/local/share/gnss-sdr/conf/default.conf](./conf/gnss-sdr.conf).
     2. You need to review/modify at least the following settings:
         * ```SignalSource.filename=``` (absolute or relative route to your GNSS signal captured file)
-        * ```GNSS-SDR.internal_fs_hz=``` (captured file sampling rate in Hz)
-        * ```SignalSource.sampling_frequency=``` (captured file sampling rate in Hz)
-        * ```SignalConditioner.sample_freq_in=``` (captured file sampling rate in Hz)
-        * ```SignalConditioner.sample_freq_out=``` (captured file sampling rate in Hz)
-        * ```TelemetryDecoder.fs_in=``` (captured file sampling rate in Hz)
+        * ```GNSS-SDR.internal_fs_sps=``` (captured file sampling rate in samples per second)
+        * ```SignalSource.sampling_frequency=``` (captured file sampling rate in samples per second)
+        * ```SignalConditioner.sample_freq_in=``` (captured file sampling rate in samples per second)
+        * ```SignalConditioner.sample_freq_out=``` (captured file sampling rate in samples per second)
     3. The configuration file has in-line documentation, you can try to tune the number of channels and several receiver parameters. Store your .conf file in some working directory of your choice.
 4. Run the receiver invoking the configuration by
 ```$ gnss-sdr --config_file=/path/to/my_receiver.conf```
 The program reports the current status in text mode, directly to the terminal window. If all goes well, and GNSS-SDR is able to successfully track and decode at least 4 satellites, you will get PVT fixes. The program will write .kml, .geojson and RINEX files in the folder from which ```gnss-sdr``` was run. In addition to the console output, GNSS-SDR also writes log files at /tmp/ (configurable with the commandline flag ```./gnss-sdr --log_dir=/path/to/log```).
 
-For more information, check out our [quick start guide](http://gnss-sdr.org/quick-start-guide/).
+For more information, check out our [quick start guide](https://gnss-sdr.org/quick-start-guide/).
 
 
 Using GNSS-SDR
 ==============
 
-With GNSS-SDR, you can define you own receiver, work with captured raw data or from a RF front-end, dump into files intermediate signals, or tune every single algorithm used in the signal processing. All the configuration is done in a single file. Those configuration files reside at the [gnss-sdr/conf/](./conf/) folder (or at /usr/local/share/gnss-sdr/conf if you installed the program). By default, the executable ```gnss-sdr``` will read the configuration available at ```gnss-sdr/conf/gnss-sdr.conf``` (or at (usr/local/share/gnss-sdr/conf/default.conf if you installed the program). You can edit that file to fit your needs, or even better, define a new ```my_receiver.conf``` file with your own configuration. This new receiver can be generated by invoking gnss-sdr with the ```--config_file``` flag pointing to your configuration file:
+With GNSS-SDR, you can define your own receiver, work with captured raw data or from an RF front-end, dump into files intermediate signals, or tune every single algorithm used in the signal processing. All the configuration is done in a single file. Those configuration files reside at the [gnss-sdr/conf/](./conf/) folder (or at /usr/local/share/gnss-sdr/conf if you installed the program). By default, the executable ```gnss-sdr``` will read the configuration available at ```gnss-sdr/conf/gnss-sdr.conf``` (or at (usr/local/share/gnss-sdr/conf/default.conf if you installed the program). You can edit that file to fit your needs, or even better, define a new ```my_receiver.conf``` file with your own configuration. This new receiver can be generated by invoking gnss-sdr with the ```--config_file``` flag pointing to your configuration file:
 
 ~~~~~~
 $ gnss-sdr --config_file=/path/to/my_receiver.conf
@@ -645,15 +767,15 @@ The name of these parameters can be anything but one reserved word: implementati
 SignalConditioner.implementation=Pass_Through
 ~~~~~~
 
-Since the configuration is just a set of property names and values without any meaning or syntax, the system is very versatile and easily extendable. Adding new properties to the system only implies modifications in the classes that will make use of these properties. In addition, the configuration files are not checked against any strict syntax so it is always in a correct status (as long as it contains pairs of property names and values in the [INI format](http://en.wikipedia.org/wiki/INI_file)).
+Since the configuration is just a set of property names and values without any meaning or syntax, the system is very versatile and easily extendable. Adding new properties to the system only implies modifications in the classes that will make use of these properties. In addition, the configuration files are not checked against any strict syntax so it is always in a correct status (as long as it contains pairs of property names and values in the [INI format](https://en.wikipedia.org/wiki/INI_file)).
 
 
 
 ### GNSS block factory
 
-Hence, the application defines a simple accessor class to fetch the configuration pairs of values and passes them to a factory class called [GNSSBlockFactory](./src/core/receiver/gnss_block_factory.h). This factory decides, according to the configuration, which class needs to be instantiated and which parameters should be passed to the constructor. Hence, the factory encapsulates the complexity of blocks' instantiation. With that approach, adding a new block that requires new parameters will be as simple as adding the block class and modifying the factory to be able to instantiate it. This loose coupling between the blocks' implementations and the syntax of the configuration enables extending the application capacities in a high degree. It also allows to produce fully customized receivers, for instance a testbed for acquisition algorithms, and to place observers at any point of the receiver chain.
+Hence, the application defines a simple accessor class to fetch the configuration pairs of values and passes them to a factory class called [GNSSBlockFactory](./src/core/receiver/gnss_block_factory.h). This factory decides, according to the configuration, which class needs to be instantiated and which parameters should be passed to the constructor. Hence, the factory encapsulates the complexity of blocks' instantiation. With that approach, adding a new block that requires new parameters will be as simple as adding the block class and modifying the factory to be able to instantiate it. This loose coupling between the blocks' implementations and the syntax of the configuration enables extending the application capacities in a high degree. It also allows producing fully customized receivers, for instance a testbed for acquisition algorithms, and to place observers at any point of the receiver chain.
 
-More information can be found at the [Control Plane page](http://gnss-sdr.org/docs/control-plane/).
+More information can be found at the [Control Plane page](https://gnss-sdr.org/docs/control-plane/).
 
 
 Signal Processing plane
@@ -665,9 +787,9 @@ GNU Radio's class ```gr::basic_block``` is the abstract base class for all signa
 
 A signal processing flow is constructed by creating a tree of hierarchical blocks, which at any level may also contain terminal nodes that actually implement signal processing functions.
 
-Class ```gr::top_block``` is the top-level hierarchical block representing a flowgraph. It defines GNU Radio runtime functions used during the execution of the program: run(), start(), stop(), wait(), etc. A a subclass called [GNSSBlockInterface](./src/core/interfaces/gnss_block_interface.h) is the common interface for all the GNSS-SDR modules. It defines pure virtual methods, that are required to be implemented by a derived class.
+Class ```gr::top_block``` is the top-level hierarchical block representing a flowgraph. It defines GNU Radio runtime functions used during the execution of the program: run(), start(), stop(), wait(), etc. A subclass called [GNSSBlockInterface](./src/core/interfaces/gnss_block_interface.h) is the common interface for all the GNSS-SDR modules. It defines pure virtual methods, that are required to be implemented by a derived class.
 
-Subclassing GNSSBlockInterface, we defined interfaces for the GNSS receiver blocks depicted in the figure above. This hierarchy provides the definition of different algorithms and different implementations, which will be instantiated according to the configuration. This strategy allows multiple implementations sharing a common interface, achieving the objective of decoupling interfaces from implementations: it defines a family of algorithms, encapsulates each one, and makes them interchangeable. Hence, we let the algorithm vary independently from the program that uses it.
+Subclassing GNSSBlockInterface, we defined interfaces for the GNSS receiver blocks depicted in the figure above. This hierarchy provides the definition of different algorithms and different implementations, which will be instantiated according to the configuration. This strategy allows multiple implementations sharing a common interface, achieving the objective of decoupling interfaces from implementations: it defines a family of algorithms, encapsulates each one, and makes them interchangeable. Hence, we let the algorithm vary independently of the program that uses it.
 
 Internally, GNSS-SDR makes use of the complex data types defined by [VOLK](http://libvolk.org/ "Vector-Optimized Library of Kernels home"). They are fundamental for handling sample streams in which samples are complex numbers with real and imaginary components of 8, 16 or 32 bits, common formats delivered by GNSS (and generic SDR) radio frequency front-ends. The following list shows the data type names that GNSS-SDR exposes through the configuration file:
 
@@ -681,13 +803,13 @@ Internally, GNSS-SDR makes use of the complex data types defined by [VOLK](http:
 - **`gr_complex`**: Complex samples, with real and imaginary parts of type `float`. C++ type name: `std::complex<float>`.
 
 
-More information about the available processing blocks and their configuration parameters can be found at the [Signal Processing Blocks documentation page](http://gnss-sdr.org/docs/sp-blocks/).
+More information about the available processing blocks and their configuration parameters can be found at the [Signal Processing Blocks documentation page](https://gnss-sdr.org/docs/sp-blocks/).
 
 ###  Signal Source
 
 The input of a software receiver are the raw bits that come out from the front-end's analog-to-digital converter (ADC). Those bits can be read from a file stored in the hard disk or directly in real-time from a hardware device through USB or Ethernet buses.
 
-The Signal Source module is in charge of implementing the hardware driver, that is, the portion of the code that communicates with the RF front-end and receives the samples coming from the ADC. This communication is usually performed through USB or Ethernet buses. Since real-time processing requires a highly optimized implementation of the whole receiver, this module also allows to read samples from a file stored in a hard disk, and thus processing without time constraints. Relevant parameters of those samples are the intermediate frequency (or baseband I&Q components), the sampling rate and number of bits per sample, that must be specified by the user in the configuration file.
+The Signal Source module is in charge of implementing the hardware driver, that is, the portion of the code that communicates with the RF front-end and receives the samples coming from the ADC. This communication is usually performed through USB or Ethernet buses. Since real-time processing requires a highly optimized implementation of the whole receiver, this module also allows reading samples from a file stored in a hard disk, and thus processing without time constraints. Relevant parameters of those samples are the intermediate frequency (or baseband I&Q components), the sampling rate and number of bits per sample, that must be specified by the user in the configuration file.
 
 This module also performs bit-depth adaptation, since most of the existing RF front-ends provide samples quantized with 2 or 3 bits, while operations inside the processor are performed on 32- or 64-bit words, depending on its architecture. Although there are implementations of the most intensive computational processes (mainly correlation) that take advantage of specific data types and architectures for the sake of efficiency, the approach is processor-specific and hardly portable. We suggest to keep signal samples in standard data types and letting the compiler select the best library version (implemented using SIMD or any other processor-specific technology) of the required routines for a given processor.
 
@@ -700,14 +822,13 @@ The user can configure the receiver for reading from a file, setting in the conf
 SignalSource.implementation=File_Signal_Source
 SignalSource.filename=/home/user/gnss-sdr/data/my_capture.dat
 SignalSource.item_type=gr_complex
-SignalSource.sampling_frequency=4000000 ; Sampling frequency in [Hz]
-SignalSource.freq=1575420000 ; RF front-end center frequency in [Hz]
+SignalSource.sampling_frequency=4000000 ; Sampling frequency in samples per second (Sps)
 ~~~~~~  
 
-Type ```gr_complex``` refers to a GNU Radio typedef equivalent to ```std::complex<float>```. In order to save some storage space, you might wanted to store your signal in a more efficient format such as an I/Q interleaved ```short`` integer sample stream. In that case, change the corresponding line to:
+Type ```gr_complex``` refers to a GNU Radio typedef equivalent to ```std::complex<float>```. In order to save some storage space, you might want to store your signal in a more efficient format such as an I/Q interleaved ```short`` integer sample stream. In that case, change the corresponding line to:
 
 ~~~~~~
-SignalSource.item_type=short
+SignalSource.item_type=ishort
 ~~~~~~
 
 In this latter case, you will need to convert the interleaved I/Q samples to a complex stream via Data Type Adapter block (see below).
@@ -728,7 +849,7 @@ Sometimes, samples are stored in files with a format which is not in the list of
 
 Within a byte the samples may be packed in big endian ```big_endian_bytes=true``` (if the most significant byte value is stored at the memory location with the lowest address, the next byte value in significance is stored at the following memory location, and so on) or little endian ```big_endian_bytes=false``` (if the least significant byte value is at the lowest address, and the other bytes follow in increasing order of significance). If the order is big endian then the most significant two bits will form the first sample output, otherwise the least significant two bits will be used.
 
-Additionally the samples may be either real ```sample_type=real```, or complex. If the sample type is complex, then the samples are either stored in the order: real, imag, real, imag, ... ```sample_type=iq``` or in the order: imag, real, imag, real, ... ```sample_type=qi```.
+Additionally, the samples may be either real ```sample_type=real```, or complex. If the sample type is complex, then the samples are either stored in the order: real, imag, real, imag, ... ```sample_type=iq``` or in the order: imag, real, imag, real, ... ```sample_type=qi```.
 
 Finally, if the data is stored as shorts ```item_type=short```, then it may be stored in either big endian ```big_endian_items=true``` or little endian ```big_endian_items=false```. If the shorts are big endian then the 2nd byte in each short is output first.
 
@@ -757,7 +878,7 @@ SignalSource.big_endian_bytes=false
 
 ***Example: UHD Signal Source***
 
-The user may prefer to use a [UHD](http://code.ettus.com/redmine/ettus/projects/uhd/wiki)-compatible RF front-end and try real-time processing. For instance, for a USRP1 + DBSRX daughterboard, use:
+The user may prefer to use a [UHD](https://files.ettus.com/manual/)-compatible RF front-end and try real-time processing. For instance, for a USRP1 + DBSRX daughterboard, use:
 
 ~~~~~~
 ;######### SIGNAL_SOURCE CONFIG ############
@@ -770,7 +891,7 @@ SignalSource.subdevice=B:0 ; UHD subdevice specification (for USRP1 use A:0 or B
 ~~~~~~
 
 
-***Example: Configuring the USRP X300 with two front-ends for receiving signals in L1 and L2 bands***
+***Example: Configuring the USRP X300/X310 with two front-ends for receiving signals in L1 and L2 bands***
 
 ~~~~~~
 ;######### SIGNAL_SOURCE CONFIG ############
@@ -796,7 +917,7 @@ SignalSource.dump1=false
 
 ***Example: OsmoSDR-compatible Signal Source***
 
-[OsmoSDR](http://sdr.osmocom.org/trac) is a small form-factor, inexpensive software defined radio project. It provides a driver for several front-ends, such as [RTL-based dongles](http://sdr.osmocom.org/trac/wiki/rtl-sdr), HackRF, bladeRF, etc. Note that not all the OsmoSDR-compatible devices can work as radio frequency front-ends for proper GNSS signal reception, please check the specifications. For suitable RF front-ends, you can use:
+[OsmoSDR](http://sdr.osmocom.org/trac) is a small form-factor, inexpensive software defined radio project. It provides a driver for several front-ends, such as [RTL-based dongles](https://www.rtl-sdr.com/tag/v3/), [HackRF](https://greatscottgadgets.com/hackrf/), [bladeRF](https://www.nuand.com/), [LimeSDR](https://myriadrf.org/projects/limesdr/), [etc](https://github.com/osmocom/gr-osmosdr/blob/master/README). Note that not all the OsmoSDR-compatible devices can work as radio frequency front-ends for proper GNSS signal reception, please check the specifications. For suitable RF front-ends, you can use:
 
 ~~~~~~
 ;######### SIGNAL_SOURCE CONFIG ############
@@ -807,8 +928,22 @@ SignalSource.freq=1575420000
 SignalSource.rf_gain=40
 SignalSource.if_gain=30
 SignalSource.enable_throttle_control=false
-SignalSource.osmosdr_args=rtl_tcp,offset_tune=1
+SignalSource.osmosdr_args=hackrf,bias=1
 ~~~~~~
+
+For [RTL-SDR Blog V3](https://www.rtl-sdr.com/tag/v3/) dongles, the arguments are:
+
+~~~~~~
+SignalSource.osmosdr_args=rtl,bias=1
+~~~~~~
+
+
+and for [LimeSDR](https://myriadrf.org/projects/limesdr/):
+
+~~~~~~
+SignalSource.osmosdr_args=driver=lime,soapy=0
+~~~~~~
+
 
 In case of using a Zarlink's RTL2832 based DVB-T receiver, you can even use the ```rtl_tcp``` I/Q server in order to use the USB dongle remotely. In a terminal, type:
 
@@ -862,7 +997,7 @@ SignalSource.dump1=false
 ~~~~~~
 
 
-More documentation and examples are available at the [Signal Source Blocks page](http://gnss-sdr.org/docs/sp-blocks/signal-source/).
+More documentation and examples are available at the [Signal Source Blocks page](https://gnss-sdr.org/docs/sp-blocks/signal-source/).
 
 ### Signal Conditioner
 
@@ -876,14 +1011,14 @@ If your signal source is providing baseband signal samples of type ```gr_complex
 SignalConditioner.implementation=Pass_Through
 ~~~~~~
 
-If you need to adapt some aspect of you signal, you can enable the Signal Conditioner and configure three internal blocks: a data type adpater, an input signal and a resampler.
+If you need to adapt some aspect of your signal, you can enable the Signal Conditioner and configure three internal blocks: a data type adapter, an input signal and a resampler.
 
 ~~~~~~
 ;#[Signal_Conditioner] enables this block. Then you have to configure [DataTypeAdapter], [InputFilter] and [Resampler] blocks
 SignalConditioner.implementation=Signal_Conditioner
 ~~~~~~
 
-More documentation at the [Signal Conditioner Blocks page](http://gnss-sdr.org/docs/sp-blocks/signal-conditioner/).
+More documentation at the [Signal Conditioner Blocks page](https://gnss-sdr.org/docs/sp-blocks/signal-conditioner/).
 
 #### Data type adapter
 
@@ -895,11 +1030,11 @@ This block changes the type of input data samples. If your signal source deliver
 DataTypeAdapter.implementation=Ishort_To_Complex
 ~~~~~~
 
-More documentation at the [Data Type Adapter Blocks page](http://gnss-sdr.org/docs/sp-blocks/data-type-adapter/).
+More documentation at the [Data Type Adapter Blocks page](https://gnss-sdr.org/docs/sp-blocks/data-type-adapter/).
 
 #### Input filter
 
-This block filters the input data. It can be combined with frequency translation for IF signals. The computation of the filter taps is based on parameters of GNU Radio's function [pm_remez](http://gnuradio.org/doc/doxygen/pm__remez_8h.html), that calculates the optimal (in the Chebyshev/minimax sense) FIR filter impulse response given a set of band edges, the desired reponse on those bands, and the weight given to the error in those bands.
+This block filters the input data. It can be combined with frequency translation for IF signals. The computation of the filter taps is based on parameters of GNU Radio's function [pm_remez](https://gnuradio.org/doc/doxygen/pm__remez_8h.html), that calculates the optimal (in the Chebyshev/minimax sense) FIR filter impulse response given a set of band edges, the desired response on those bands, and the weight given to the error in those bands.
 
 The block can be configured like this:
 
@@ -950,11 +1085,11 @@ InputFilter.IF=0
 InputFilter.decimation_factor=1
 ~~~~~~
 
-More documentation at the [Input Filter Blocks page](http://gnss-sdr.org/docs/sp-blocks/input-filter/).
+More documentation at the [Input Filter Blocks page](https://gnss-sdr.org/docs/sp-blocks/input-filter/).
 
 #### Resampler
 
-This block resamples the input data stream. The ```Direct_Resampler``` block implements a nearest neigbourhood interpolation:
+This block resamples the input data stream. The ```Direct_Resampler``` block implements a nearest neighbourhood interpolation:
 
 ~~~~~~
 ;######### RESAMPLER CONFIG ############
@@ -968,20 +1103,24 @@ Resampler.sample_freq_in=8000000 ; sample frequency of the input signal
 Resampler.sample_freq_out=4000000 ; desired sample frequency of the output signal
 ~~~~~~
 
-More documentation at the [Resampler Blocks page](http://gnss-sdr.org/docs/sp-blocks/resampler/).
+More documentation at the [Resampler Blocks page](https://gnss-sdr.org/docs/sp-blocks/resampler/).
 
 ###  Channel
 
-A channel encapsulates all signal processing devoted to a single satellite. Thus, it is a large composite object which encapsulates the acquisition, tracking and navigation data decoding modules. As a composite object, it can be treated as a single entity, meaning that it can be easily replicated. Since the number of channels is selectable by the user in the configuration file, this approach helps improving the scalability and maintainability of the receiver.
+A channel encapsulates all signal processing devoted to a single satellite. Thus, it is a large composite object which encapsulates the acquisition, tracking and navigation data decoding modules. As a composite object, it can be treated as a single entity, meaning that it can be easily replicated. Since the number of channels is selectable by the user in the configuration file, this approach helps to improve the scalability and maintainability of the receiver.
 
 Each channel must be assigned to a GNSS signal, according to the following identifiers:
 
 | **Signal**        | **Identifier**  |
 |:------------------|:---------------:|
 | GPS L1 C/A        |      1C         |
+| Galileo E1b/c     |      1B         |
+| Glonass L1 C/A    |      1G         |
 | GPS L2 L2C(M)     |      2S         |
-| Galileo E1B       |      1B         |
-| Galileo E5a (I+Q) |      5X         |
+| Glonass L2 C/A    |      2G         |
+| GPS L5            |      L5         |
+| Galileo E5a       |      5X         |
+
 
 
 Example: Eight GPS L1 C/A channels.
@@ -1010,17 +1149,17 @@ Channel6.signal=1B ;
 Channel7.signal=1B ;
 ~~~~~~
 
-This module is also in charge of managing the interplay between acquisition and tracking. Acquisition can be initialized in several ways, depending on the prior information available (called cold start when the receiver has no information about its position nor the satellites almanac; warm start when a rough location and the approximate time of day are available, and the receiver has a recently recorded almanac broadcast; or hot start when the receiver was tracking a satellite and the signal line of sight broke for a short period of time, but the ephemeris and almanac data is still valid, or this information is provided by other means), and an acquisition process can finish deciding that the satellite is not present, that longer integration is needed in order to confirm the presence of the satellite, or declaring the satellite present. In the latter case, acquisition process should stop and trigger the tracking module with coarse estimations of the synchronization parameters. The mathematical abstraction used to design this logic is known as finite state machine (FSM), that is a behavior model composed of a finite number of states, transitions between those states, and actions. For the implementation, we use the [Boost.Statechart library](http://www.boost.org/libs/statechart/doc/tutorial.html), which provides desirable features such as support for asynchronous state machines, multi-threading, type-safety, error handling and compile-time validation.
+This module is also in charge of managing the interplay between acquisition and tracking. Acquisition can be initialized in several ways, depending on the prior information available (called cold start when the receiver has no information about its position nor the satellites' almanac; warm start when a rough location and the approximate time of day are available, and the receiver has a recently recorded almanac broadcast; or hot start when the receiver was tracking a satellite and the signal line of sight broke for a short period of time, but the ephemeris and almanac data is still valid, or this information is provided by other means), and an acquisition process can finish deciding that the satellite is not present, that longer integration is needed in order to confirm the presence of the satellite, or declaring the satellite present. In the latter case, acquisition process should stop and trigger the tracking module with coarse estimations of the synchronization parameters. The mathematical abstraction used to design this logic is known as finite state machine (FSM), that is a behavior model composed of a finite number of states, transitions between those states, and actions.
 
 The abstract class [ChannelInterface](./src/core/interfaces/channel_interface.h) represents an interface to a channel GNSS block. Check [Channel](./src/algorithms/channel/adapters/channel.h) for an actual implementation.
 
-More documentation at the [Channels page](http://gnss-sdr.org/docs/sp-blocks/channels/).
+More documentation at the [Channels page](https://gnss-sdr.org/docs/sp-blocks/channels/).
 
 
 
 #### Acquisition
 
-The first task of a GNSS receiver is to detect the presence or absence of in-view satellites. This is done by the acquisition system process, which also provides a coarse estimation of two signal parameters: the frequency shift with respect to the nominal IF frequency, and a delay term which allows the receiver to create a local code aligned with the incoming code. [AcquisitionInterface](./src/core/interfaces/acquisition_interface.h) is the common interface for all the acquisition algorithms and their corresponding implementations. Algorithms' interface, that may vary depending on the use of information external to the receiver, such as in Assisted GNSS, is defined in classes referred to as *adapters*. These adapters wrap the GNU Radio blocks interface into a compatible interface expected by AcquisitionInterface. This allows the use of existing GNU Radio blocks derived from ```gr::block```, and ensures that newly developed implementations will also be reusable in other GNU Radio-based applications. Moreover, it adds still another layer of abstraction, since each given acquisition algorithm can have different implementations (for instance using different numerical libraries). In such a way, implementations can be continuously improved without having any impact neither on the algorithm interface nor the general acquisition interface.
+The first task of a GNSS receiver is to detect the presence or absence of in-view satellites. This is done by the acquisition system process, which also provides a coarse estimation of two signal parameters: the frequency shift with respect to the nominal frequency, and a delay term which allows the receiver to create a local code aligned with the incoming code. [AcquisitionInterface](./src/core/interfaces/acquisition_interface.h) is the common interface for all the acquisition algorithms and their corresponding implementations. Algorithms' interface, that may vary depending on the use of information external to the receiver, such as in Assisted GNSS, is defined in classes referred to as *adapters*. These adapters wrap the GNU Radio blocks interface into a compatible interface expected by AcquisitionInterface. This allows the use of existing GNU Radio blocks derived from ```gr::block```, and ensures that newly developed implementations will also be reusable in other GNU Radio-based applications. Moreover, it adds still another layer of abstraction, since each given acquisition algorithm can have different implementations (for instance using different numerical libraries). In such a way, implementations can be continuously improved without having any impact neither on the algorithm interface nor the general acquisition interface.
 
 Check [GpsL1CaPcpsAcquisition](./src/algorithms/acquisition/adapters/gps_l1_ca_pcps_acquisition.h) and [GalileoE1PcpsAmbiguousAcquisition](./src/algorithms/acquisition/adapters/galileo_e1_pcps_ambiguous_acquisition.h) for examples of adapters from a Parallel Code Phase Search (PCPS) acquisition block, and [pcps_acquisition_cc](./src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_cc.h) for an example of a block implementation. The source code of all the available acquisition algorithms is located at:
 
@@ -1033,14 +1172,13 @@ Check [GpsL1CaPcpsAcquisition](./src/algorithms/acquisition/adapters/gps_l1_ca_p
   |---------gnuradio_blocks   <- Signal processing blocks implementation
 ~~~~~~
 
-The user can select a given implementation for the algorithm to be used in each receiver channel, as well as their parameters, in the configuration file. For a GPS l1 C/A receiver:
+The user can select a given implementation for the algorithm to be used in each receiver channel, as well as their parameters, in the configuration file. For a GPS L1 C/A receiver:
 
 ~~~~~~
 ;######### ACQUISITION GLOBAL CONFIG ############
 Acquisition_1C.implementation=GPS_L1_CA_PCPS_Acquisition ; Acquisition algorithm selection for this channel
 Acquisition_1C.item_type=gr_complex
-Acquisition_1C.if=0 ; Signal intermediate frequency in [Hz]
-Acquisition_1C.sampled_ms=1 ; Signal block duration for the acquisition signal detection [ms]
+Acquisition_1C.coherent_integration_time_ms=1 ; Signal block duration for the acquisition signal detection [ms]
 Acquisition_1C.threshold=0.005 ; Acquisition threshold
 Acquisition_1C.pfa=0.0001 ; Acquisition false alarm probability. This option overrides the threshold option.
 ;                        Only use with implementations: [GPS_L1_CA_PCPS_Acquisition] or [Galileo_E1_PCPS_Ambiguous_Acquisition]
@@ -1056,8 +1194,7 @@ and, for Galileo E1B channels:
 ;######### GALILEO ACQUISITION CONFIG ############
 Acquisition_1B.implementation=Galileo_E1_PCPS_Ambiguous_Acquisition
 Acquisition_1B.item_type=gr_complex
-Acquisition_1B.if=0
-Acquisition_1B.sampled_ms=4
+Acquisition_1B.coherent_integration_time_ms=4
 Acquisition_1B.pfa=0.0000008
 Acquisition_1B.doppler_max=15000
 Acquisition_1B.doppler_step=125
@@ -1065,7 +1202,7 @@ Acquisition_1B.dump=false
 Acquisition_1B.dump_filename=./acq_dump.dat
 ~~~~~~
 
-More documentation at the [Acquisition Blocks page](http://gnss-sdr.org/docs/sp-blocks/acquisition/).
+More documentation at the [Acquisition Blocks page](https://gnss-sdr.org/docs/sp-blocks/acquisition/).
 
 
 #### Tracking
@@ -1115,12 +1252,12 @@ Tracking_1B.dump=false
 Tracking_1B.dump_filename=../data/veml_tracking_ch_
 ~~~~~~
 
-More documentation at the [Tracking Blocks page](http://gnss-sdr.org/docs/sp-blocks/tracking/).
+More documentation at the [Tracking Blocks page](https://gnss-sdr.org/docs/sp-blocks/tracking/).
 
 
 #### Decoding of the navigation message
 
-Most of GNSS signal links are modulated by a navigation message containing the time the message was transmitted, orbital parameters of satellites (also known as ephemeris) and an almanac (information about the general system health, rough orbits of all satellites in the network as well as data related to error correction). Navigation data bits are structured in words, pages, subframes, frames and superframes. Sometimes, bits corresponding to a single parameter are spread over different words, and values extracted from different frames are required for proper decoding. Some words are for synchronization purposes, others for error control an others contain actual information. There are also error control mechanisms, from parity checks to forward error correction (FEC) encoding and interleaving, depending on the system. All this decoding complexity is managed by a finite state machine implemented with the [Boost.Statechart library](http://www.boost.org/libs/statechart/doc/tutorial.html).
+Most of GNSS signal links are modulated by a navigation message containing the time the message was transmitted, orbital parameters of satellites (also known as ephemeris) and an almanac (information about the general system health, rough orbits of all satellites in the network as well as data related to error correction). Navigation data bits are structured in words, pages, subframes, frames and superframes. Sometimes, bits corresponding to a single parameter are spread over different words, and values extracted from different frames are required for proper decoding. Some words are for synchronization purposes, others for error control and others contain actual information. There are also error control mechanisms, from parity checks to forward error correction (FEC) encoding and interleaving, depending on the system. All this decoding complexity is managed by a finite state machine.
 
 The common interface is [TelemetryDecoderInterface](./src/core/interfaces/telemetry_decoder_interface.h). Check [GpsL1CaTelemetryDecoder](./src/algorithms/telemetry_decoder/adapters/gps_l1_ca_telemetry_decoder.h) for an example of the GPS L1 NAV message decoding adapter, and [gps_l1_ca_telemetry_decoder_cc](./src/algorithms/telemetry_decoder/gnuradio_blocks/gps_l1_ca_telemetry_decoder_cc.h) for an actual implementation of a signal processing block. Configuration example:
 
@@ -1137,15 +1274,13 @@ In case you are configuring a multi-system receiver, you will need to decimate t
 ;######### TELEMETRY DECODER GPS L1 CONFIG ############
 TelemetryDecoder_1C.implementation=GPS_L1_CA_Telemetry_Decoder
 TelemetryDecoder_1C.dump=false
-TelemetryDecoder_1C.decimation_factor=4;
 
 ;######### TELEMETRY DECODER GALILEO E1B CONFIG ############
 TelemetryDecoder_1B.implementation=Galileo_E1B_Telemetry_Decoder
 TelemetryDecoder_1B.dump=false
-TelemetryDecoder_1B.decimation_factor=1;
 ~~~~~~
 
-More documentation at the [Telemetry Decoder Blocks page](http://gnss-sdr.org/docs/sp-blocks/telemetry-decoder/).
+More documentation at the [Telemetry Decoder Blocks page](https://gnss-sdr.org/docs/sp-blocks/telemetry-decoder/).
 
 
 #### Observables
@@ -1154,25 +1289,7 @@ GNSS systems provide different kinds of observations. The most commonly used are
 
 The common interface is [ObservablesInterface](./src/core/interfaces/observables_interface.h).
 
-Configuration example for GPS L1 C/A signals:
-
-~~~~~~
-;######### OBSERVABLES CONFIG ############
-Observables.implementation=GPS_L1_CA_Observables
-Observables.dump=false
-Observables.dump_filename=./observables.dat
-~~~~~~
-
-For Galileo E1B receivers:
-
-~~~~~~
-;######### OBSERVABLES CONFIG ############
-Observables.implementation=Galileo_E1B_Observables
-Observables.dump=false
-Observables.dump_filename=./observables.dat
-~~~~~~
-
-For hybrid GPS L1 / Galileo E1B receivers:
+Configuration example:
 
 ~~~~~~
 ;######### OBSERVABLES CONFIG ############
@@ -1181,80 +1298,55 @@ Observables.dump=false
 Observables.dump_filename=./observables.dat
 ~~~~~~
 
-More documentation at the [Observables Blocks page](http://gnss-sdr.org/docs/sp-blocks/observables/).
+More documentation at the [Observables Blocks page](https://gnss-sdr.org/docs/sp-blocks/observables/).
 
 
 #### Computation of Position, Velocity and Time
-Although data processing for obtaining high-accuracy PVT solutions is out of the scope of GNSS-SDR, we provide a module that can compute simple least square solutions (stored in GIS-friendly formats such as [GeoJSON](http://geojson.org/geojson-spec.html) and [KML](http://www.opengeospatial.org/standards/kml), or transmitted via serial port as [NMEA 0183](https://en.wikipedia.org/wiki/NMEA_0183) messages), and leaves room for more sophisticated positioning methods by storing observables and navigation data in [RINEX](https://en.wikipedia.org/wiki/RINEX) files (v2.11 or v3.02), and generating [RTCM](http://www.rtcm.org "Radio Technical Commission for Maritime Services") 3.2 messages that can be disseminated through the Internet in real time.
+Although data processing for obtaining high-accuracy PVT solutions is out of the scope of GNSS-SDR, we provide a module that can compute position fixes (stored in GIS-friendly formats such as [GeoJSON](https://tools.ietf.org/html/rfc7946), [GPX](http://www.topografix.com/gpx.asp) and [KML](http://www.opengeospatial.org/standards/kml), or transmitted via serial port as [NMEA 0183](https://en.wikipedia.org/wiki/NMEA_0183) messages), and leaves room for more sophisticated positioning methods by storing observables and navigation data in [RINEX](https://en.wikipedia.org/wiki/RINEX) files (v2.11 or v3.02), and generating [RTCM](http://www.rtcm.org "Radio Technical Commission for Maritime Services") 3.2 messages that can be disseminated through the Internet in real time.
 
 The common interface is [PvtInterface](./src/core/interfaces/pvt_interface.h).
 
-Configuration example for GPS L1 C/A signals:
+Configuration example:
 
 ~~~~~~
 ;######### PVT CONFIG ############
-PVT.implementation=GPS_L1_CA_PVT
-PVT.averaging_depth=10 ; Number of PVT observations in the moving average algorithm
-PVT.flag_averaging=true ; Enables the PVT averaging between output intervals (arithmetic mean) [true] or [false]
-PVT.output_rate_ms=100 ; Period in [ms] between two PVT outputs
-PVT.display_rate_ms=500 ; Position console print (std::out) interval [ms].
-PVT.dump=false ; Enables the PVT internal binary data file logging [true] or [false]
-PVT.dump_filename=./PVT ; Log path and filename without extension of GeoJSON and KML files
+PVT.implementation=RTKLIB_PVT
+PVT.positioning_mode=Single      ; options: Single, Static, Kinematic, PPP_Static, PPP_Kinematic
+PVT.iono_model=Broadcast         ; options: OFF, Broadcast
+PVT.trop_model=Saastamoinen      ; options: OFF, Saastamoinen
+PVT.rinex_version=2              ; options: 2 or 3
+PVT.output_rate_ms=100           ; Period in [ms] between two PVT outputs
+PVT.display_rate_ms=500          ; Position console print (std::out) interval [ms].
 PVT.nmea_dump_filename=./gnss_sdr_pvt.nmea ; NMEA log path and filename
-PVT.flag_nmea_tty_port=true ; Enables the NMEA log to a serial TTY port
+PVT.flag_nmea_tty_port=false     ; Enables the NMEA log to a serial TTY port
 PVT.nmea_dump_devname=/dev/pts/4 ; serial device descriptor for NMEA logging
-PVT.flag_rtcm_server=false ; Enables or disables a TCP/IP server dispatching RTCM messages
-PVT.flag_rtcm_tty_port=true ; Enables the RTCM log to a serial TTY port
+PVT.flag_rtcm_server=true        ; Enables or disables a TCP/IP server dispatching RTCM messages
+PVT.flag_rtcm_tty_port=false     ; Enables the RTCM log to a serial TTY port
 PVT.rtcm_dump_devname=/dev/pts/1 ; serial device descriptor for RTCM logging
+PVT.rtcm_tcp_port=2101
+PVT.rtcm_MT1019_rate_ms=5000
+PVT.rtcm_MT1045_rate_ms=5000
+PVT.rtcm_MT1097_rate_ms=1000
+PVT.rtcm_MT1077_rate_ms=1000
 ~~~~~~
 
-For Galileo E1B receivers:
-
-~~~~~~
-;######### PVT CONFIG ############
-PVT.implementation=GALILEO_E1_PVT
-PVT.averaging_depth=100
-PVT.flag_averaging=false
-PVT.output_rate_ms=100;
-PVT.display_rate_ms=500;
-PVT.dump=false
-PVT.dump_filename=./PVT
-PVT.nmea_dump_filename=./gnss_sdr_pvt.nmea ; NMEA log path and filename
-PVT.flag_nmea_tty_port=true ; Enables the NMEA log to a serial TTY port
-PVT.nmea_dump_devname=/dev/pts/4 ; serial device descriptor for NMEA logging
-PVT.flag_rtcm_server=false ; Enables or disables a TCP/IP server dispatching RTCM messages
-PVT.flag_rtcm_tty_port=true ; Enables the RTCM log to a serial TTY port
-PVT.rtcm_dump_devname=/dev/pts/1 ; serial device descriptor for RTCM logging
-~~~~~~
-
-
-For hybrid GPS L1 / Galileo E1B receivers:
-
-~~~~~~
-;######### PVT CONFIG ############
-PVT.implementation=Hybrid_PVT
-PVT.averaging_depth=10
-PVT.flag_averaging=false
-PVT.output_rate_ms=100;
-PVT.display_rate_ms=500;
-PVT.dump=false
-PVT.dump_filename=./PVT
-~~~~~~
 
 **Notes on the output formats:**
 
- * **GeoJSON** is a geospatial data interchange format based on JavaScript Object Notation (JSON) supported by numerous mapping and GIS software packages, including [OpenLayers](http://openlayers.org), [Leaflet](http://leafletjs.com), [MapServer](http://www.mapserver.org), [GeoServer](http://geoserver.org), [GeoDjango](https://www.djangoproject.com), [GDAL](http://www.gdal.org), and [CartoDB](https://cartodb.com). It is also possible to use GeoJSON with [PostGIS](http://postgis.net) and [Mapnik](http://mapnik.org), both of which handle the format via the GDAL OGR conversion library. The [Google Maps Javascript API](https://developers.google.com/maps/documentation/javascript/) v3 directly supports the [integration of GeoJSON data layers](https://developers.google.com/maps/documentation/javascript/examples/layer-data-simple), and [GitHub also supports GeoJSON rendering](https://github.com/blog/1528-there-s-a-map-for-that).
+ * **GeoJSON** is a geospatial data interchange format based on JavaScript Object Notation (JSON) supported by numerous mapping and GIS software packages, including [OpenLayers](https://openlayers.org), [Leaflet](https://leafletjs.com), [MapServer](http://www.mapserver.org), [GeoServer](http://geoserver.org), [GeoDjango](https://www.djangoproject.com), [GDAL](http://www.gdal.org), and [CartoDB](https://cartodb.com). It is also possible to use GeoJSON with [PostGIS](https://postgis.net/) and [Mapnik](http://mapnik.org), both of which handle the format via the GDAL OGR conversion library. The [Google Maps Javascript API](https://developers.google.com/maps/documentation/javascript/) v3 directly supports the [integration of GeoJSON data layers](https://developers.google.com/maps/documentation/javascript/examples/layer-data-simple), and [GitHub also supports GeoJSON rendering](https://github.com/blog/1528-there-s-a-map-for-that).
 
- * **KML** (Keyhole Markup Language) is an XML grammar used to encode and transport representations of geographic data for display in an earth browser. KML is an open standard officially named the OpenGIS KML Encoding Standard (OGC KML), and it is maintained by the Open Geospatial Consortium, Inc. (OGC). KML files can be displayed in geobrowsers such as [Google Earth](https://www.google.com/earth/), [Marble](https://marble.kde.org), [osgEarth](http://osgearth.org), or used with the [NASA World Wind SDK for Java](http://worldwind.arc.nasa.gov/java/).
+ * **KML** (Keyhole Markup Language) is an XML grammar used to encode and transport representations of geographic data for display in an earth browser. KML is an open standard officially named the OpenGIS KML Encoding Standard (OGC KML), and it is maintained by the Open Geospatial Consortium, Inc. (OGC). KML files can be displayed in geobrowsers such as [Google Earth](https://www.google.com/earth/), [Marble](https://marble.kde.org), [osgEarth](http://osgearth.org), or used with the [NASA World Wind SDK for Java](https://worldwind.arc.nasa.gov/java/).
 
- * **NMEA 0183** is a combined electrical and data specification for communication between marine electronics such as echo sounder, sonars, anemometer, gyrocompass, autopilot, GPS receivers and many other types of instruments. It has been defined by, and is controlled by, the U.S. [National Marine Electronics Association](http://www.nmea.org/). The NMEA 0183 standard uses a simple ASCII, serial communications protocol that defines how data are transmitted in a *sentence* from one *talker* to multiple *listeners* at a time. Through the use of intermediate expanders, a talker can have a unidirectional conversation with a nearly unlimited number of listeners, and using multiplexers, multiple sensors can talk to a single computer port. At the application layer, the standard also defines the contents of each sentence (message) type, so that all listeners can parse messages accurately. Those messages can be sent through the serial port (that could be for instance a Bluetooth link) and be used/displayed by a number of software applications such as [gpsd](http://www.catb.org/gpsd/ "The UNIX GPS daemon"), [JOSM](https://josm.openstreetmap.de/ "The Java OpenStreetMap Editor"), [OpenCPN](http://opencpn.org/ocpn/ "Open Chart Plotter Navigator"), and many others (and maybe running on other devices).
+ * **GPX** (the GPS Exchange Format) is a light-weight XML data format for the interchange of GPS data (waypoints, routes, and tracks) between applications and Web services on the Internet. The format is open and can be used without the need to pay license fees, and it is supported by a [large list of software tools](http://www.topografix.com/gpx_resources.asp).
 
- * **RINEX** (Receiver Independent Exchange Format) is an interchange format for raw satellite navigation system data, covering observables and the information contained in the navigation message broadcast by GNSS satellites. This allows the user to post-process the received data to produce a more accurate result (usually with other data unknown to the original receiver, such as better models of the atmospheric conditions at time of measurement). RINEX files can be used by software packages such as [GPSTk](http://www.gpstk.org), [RTKLIB](http://www.rtklib.com/) and [gLAB](http://gage14.upc.es/gLAB/). GNSS-SDR by default generates RINEX version [3.02](https://igscb.jpl.nasa.gov/igscb/data/format/rinex302.pdf). If [2.11](https://igscb.jpl.nasa.gov/igscb/data/format/rinex211.txt) is needed, it can be requested through a commandline flag when invoking the software receiver:
+ * **NMEA 0183** is a combined electrical and data specification for communication between marine electronics such as echo sounder, sonars, anemometer, gyrocompass, autopilot, GPS receivers and many other types of instruments. It has been defined by, and is controlled by, the U.S. [National Marine Electronics Association](http://www.nmea.org/). The NMEA 0183 standard uses a simple ASCII, serial communications protocol that defines how data are transmitted in a *sentence* from one *talker* to multiple *listeners* at a time. Through the use of intermediate expanders, a talker can have a unidirectional conversation with a nearly unlimited number of listeners, and using multiplexers, multiple sensors can talk to a single computer port. At the application layer, the standard also defines the contents of each sentence (message) type, so that all listeners can parse messages accurately. Those messages can be sent through the serial port (that could be for instance a Bluetooth link) and be used/displayed by a number of software applications such as [gpsd](http://www.catb.org/gpsd/ "The UNIX GPS daemon"), [JOSM](https://josm.openstreetmap.de/ "The Java OpenStreetMap Editor"), [OpenCPN](https://opencpn.org/ "Open Chart Plotter Navigator"), and many others (and maybe running on other devices).
+
+ * **RINEX** (Receiver Independent Exchange Format) is an interchange format for raw satellite navigation system data, covering observables and the information contained in the navigation message broadcast by GNSS satellites. This allows the user to post-process the received data to produce a more accurate result (usually with other data unknown to the original receiver, such as better models of the atmospheric conditions at time of measurement). RINEX files can be used by software packages such as [GPSTk](http://www.gpstk.org), [RTKLIB](http://www.rtklib.com/) and [gLAB](http://gage14.upc.es/gLAB/). GNSS-SDR by default generates RINEX version [3.02](https://igscb.jpl.nasa.gov/igscb/data/format/rinex302.pdf). If [2.11](https://igscb.jpl.nasa.gov/igscb/data/format/rinex211.txt) is needed, it can be requested through the `rinex_version` parameter in the configuration file:
 ~~~~~~
-$ gnss-sdr --RINEX_version=2
+PVT.rinex_version=2
 ~~~~~~
 
-* **RTCM SC-104** provides standards that define the data structure for differential GNSS correction information for a variety of differential correction applications. Developed by the Radio Technical Commission for Maritime Services ([RTCM](http://www.rtcm.org/overview.php#Standards "Radio Technical Commission for Maritime Services")), they have become an industry standard for communication of correction information. GNSS-SDR implements RTCM version 3.2, defined in the document *RTCM 10403.2, Differential GNSS (Global Navigation Satellite Systems) Services - Version 3* (February 1, 2013), which can be [purchased online](https://ssl29.pair.com/dmarkle/puborder.php?show=3 "RTCM Online Publication Order Form"). By default, the generated RTCM binary messages are dumped into a text file in hexadecimal format. However, GNSS-SDR is equipped with a TCP/IP server, acting as an NTRIP source that can feed an NTRIP server. NTRIP (Networked Transport of RTCM via Internet Protocol) is an open standard protocol that can be freely download from [BKG](http://igs.bkg.bund.de/root_ftp/NTRIP/documentation/NtripDocumentation.pdf "Networked Transport of RTCM via Internet Protocol (Ntrip) Version 1.0"), and it is designed for disseminating differential correction data (*e.g.* in the RTCM-104 format) or other kinds of GNSS streaming data to stationary or mobile users over the Internet. The TCP/IP server can be enabled by setting ```PVT.flag_rtcm_server=true``` in the configuration file, and will be active during the execution of the software receiver. By default, the server will operate on port 2101 (which is the recommended port for RTCM services according to the Internet Assigned Numbers Authority, [IANA](http://www.iana.org/assignments/service-names-port-numbers "Service Name and Transport Protocol Port Number Registry")), and will identify the Reference Station with ID=1234. This behaviour can be changed in the configuration file:
+* **RTCM SC-104** provides standards that define the data structure for differential GNSS correction information for a variety of differential correction applications. Developed by the Radio Technical Commission for Maritime Services ([RTCM](http://www.rtcm.org/differential-global-navigation-satellite--dgnss--standards.html "Radio Technical Commission for Maritime Services")), they have become an industry standard for communication of correction information. GNSS-SDR implements RTCM version 3.2, defined in the document *RTCM 10403.2, Differential GNSS (Global Navigation Satellite Systems) Services - Version 3* (February 1, 2013), which can be [purchased online](https://ssl29.pair.com/dmarkle/puborder.php?show=3 "RTCM Online Publication Order Form"). By default, the generated RTCM binary messages are dumped into a text file in hexadecimal format. However, GNSS-SDR is equipped with a TCP/IP server, acting as an NTRIP source that can feed an NTRIP server. NTRIP (Networked Transport of RTCM via Internet Protocol) is an open standard protocol that can be freely downloaded from [BKG](https://igs.bkg.bund.de/root_ftp/NTRIP/documentation/NtripDocumentation.pdf "Networked Transport of RTCM via Internet Protocol (Ntrip) Version 1.0"), and it is designed for disseminating differential correction data (*e.g.* in the RTCM-104 format) or other kinds of GNSS streaming data to stationary or mobile users over the Internet. The TCP/IP server can be enabled by setting ```PVT.flag_rtcm_server=true``` in the configuration file, and will be active during the execution of the software receiver. By default, the server will operate on port 2101 (which is the recommended port for RTCM services according to the Internet Assigned Numbers Authority, [IANA](https://www.iana.org/assignments/service-names-port-numbers/ "Service Name and Transport Protocol Port Number Registry")), and will identify the Reference Station with ID=1234. This behaviour can be changed in the configuration file:
 ~~~~~~
 PVT.flag_rtcm_server=true
 PVT.rtcm_tcp_port=2102
@@ -1265,13 +1357,13 @@ PVT.rtcm_station_id=1111
 
 In order to get well-formatted GeoJSON, KML and RINEX files, always terminate ```gnss-sdr``` execution by pressing key ```q``` and then key ```ENTER```. Those files will be automatically deleted if no position fix have been obtained during the execution of the software receiver.
 
-More documentation at the [PVT Blocks page](http://gnss-sdr.org/docs/sp-blocks/pvt/).
+More documentation at the [PVT Blocks page](https://gnss-sdr.org/docs/sp-blocks/pvt/).
 
 
 About the software license
 ==========================
 
-GNSS-SDR is released under the [General Public License (GPL) v3](http://www.gnu.org/licenses/gpl.html), thus securing practical usability, inspection, and continuous improvement by the research community, allowing the discussion based on tangible code and the analysis of results obtained with real signals. The GPL implies that:
+GNSS-SDR is released under the [General Public License (GPL) v3](https://www.gnu.org/licenses/gpl.html), thus securing practical usability, inspection, and continuous improvement by the research community, allowing the discussion based on tangible code and the analysis of results obtained with real signals. The GPL implies that:
 
    1. Copies may be distributed free of charge or for money, but the source code has to be shipped or provided free of charge (or at cost price) on demand. The receiver of the source code has the same rights meaning he can share copies free of charge or resell.
    2. The licensed material may be analyzed or modified.
@@ -1288,7 +1380,7 @@ Publications and Credits
 
 If you use GNSS-SDR to produce a research paper or Thesis, we would appreciate if you reference the following article to credit the GNSS-SDR project:
 
- * C. Fern&aacute;ndez-Prades, J. Arribas, P. Closas, C. Avil&eacute;s, and L. Esteve, [GNSS-SDR: an open source tool for researchers and developers](http://www.cttc.es/publication/gnss-sdr-an-open-source-tool-for-researchers-and-developers/), in Proc. of the ION GNSS 2011 Conference, Portland, Oregon, Sept. 19-23, 2011.
+ * C. Fern&aacute;ndez-Prades, J. Arribas, P. Closas, C. Avil&eacute;s, and L. Esteve, [GNSS-SDR: an open source tool for researchers and developers](http://www.cttc.es/publication/gnss-sdr-an-open-source-tool-for-researchers-and-developers/), in Proceedings of the 24th International Technical Meeting of The Satellite Division of the Institute of Navigation (ION GNSS), Portland, Oregon, Sept. 19-23, 2011, pp. 780-794.
 
 For LaTeX users, this is the BibTeX entry for your convenience:
 
@@ -1296,27 +1388,28 @@ For LaTeX users, this is the BibTeX entry for your convenience:
 @INPROCEEDINGS{GNSS-SDR11,
  AUTHOR = {C.~{Fern\'{a}ndez--Prades} and J.~Arribas and P.~Closas and C.~Avil\'{e}s and L.~Esteve},
  TITLE = {{GNSS-SDR}: An Open Source Tool For Researchers and Developers},
- BOOKTITLE = {Proc. of the ION GNSS 2011 Conference},
+ BOOKTITLE = {Proc. 24th Intl. Tech. Meeting Sat. Div. Inst. Navig.},
  YEAR = {2011},
- address = {Portland, Oregon},
- month = {Sept.} }
+ PAGES = {780--794},
+ ADDRESS = {Portland, Oregon},
+ MONTH = {Sept.} }
 ~~~~~~
 
 
-There is a list of papers related to GNSS-SDR in our [publications page](http://gnss-sdr.org/publications/ "Publications").
+There is a list of papers related to GNSS-SDR in our [publications page](https://gnss-sdr.org/publications/ "Publications").
 
 
 
 Ok, now what?
 =============
 
-In order to start using GNSS-SDR, you may want to populate ```gnss-sdr/data``` folder (or anywhere else on your system) with raw data files. By "raw data" we mean the output of a Radio Frequency front-end's Analog-to-Digital converter. GNSS-SDR needs signal samples already in baseband or in passband, at a suitable intemediate frequency (on the order of MHz). Prepare your configuration file, and then you are ready for running ```gnss-sdr --config_file=your_configuration.conf```, and seeing how the file is processed.
+In order to start using GNSS-SDR, you may want to populate ```gnss-sdr/data``` folder (or anywhere else on your system) with raw data files. By "raw data" we mean the output of a Radio Frequency front-end's Analog-to-Digital converter. GNSS-SDR needs signal samples already in baseband or in passband, at a suitable intermediate frequency (on the order of MHz). Prepare your configuration file, and then you are ready for running ```gnss-sdr --config_file=your_configuration.conf```, and seeing how the file is processed.
 
-Another interesting option is working in real-time with a RF front-end. We provide drivers for UHD-compatible hardware such as the [USRP family](http://www.ettus.com/product), for OsmoSDR and other front-ends (HackRF, bladeRF), for the GN3S v2 USB dongle and for some DVB-T USB dongles. Start with a low number of channels and then increase it in order to test how many channels your processor can handle in real-time.
+Another interesting option is working in real-time with an RF front-end. We provide drivers for UHD-compatible hardware such as the [USRP family](https://www.ettus.com/product), for OsmoSDR and other front-ends (HackRF, bladeRF, LimeSDR), for the GN3S v2 USB dongle and for some DVB-T USB dongles. Start with a low number of channels and then increase it in order to test how many channels your processor can handle in real-time.
 
-You can find more information at the [GNSS-SDR Documentation page](http://gnss-sdr.org/docs/) or directly asking to the [GNSS-SDR Developers mailing list](http://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers).
+You can find more information at the [GNSS-SDR Documentation page](https://gnss-sdr.org/docs/) or directly asking to the [GNSS-SDR Developers mailing list](https://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers).
 
-You are also very welcome to contribute to the project, there are many ways to [participate in GNSS-SDR](http://gnss-sdr.org/contribute/). If you need some special feature not yet implemented, the Developer Team would love to be hired for developing it. Please do not hesitate to [contact them](http://gnss-sdr.org/team/).
+You are also very welcome to contribute to the project, there are many ways to [participate in GNSS-SDR](https://gnss-sdr.org/contribute/). If you need some special feature not yet implemented, the Developer Team would love to be hired for developing it. Please do not hesitate to [contact them](https://gnss-sdr.org/team/).
 
 **Enjoy GNSS-SDR!**
 

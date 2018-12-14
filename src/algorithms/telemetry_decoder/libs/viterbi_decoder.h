@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -32,8 +32,8 @@
 #ifndef GNSS_SDR_VITERBI_DECODER_H_
 #define GNSS_SDR_VITERBI_DECODER_H_
 
+#include <cstddef>  // for size_t
 #include <deque>
-#include <cstdio>
 
 /*!
  * \brief Class that implements a Viterbi decoder
@@ -56,7 +56,7 @@ public:
     float decode_block(const double input_c[], int* output_u_int, const int LL);
 
     float decode_continuous(const double sym[], const int traceback_depth, int output_u_int[],
-            const int nbits_requested, int &nbits_decoded);
+        const int nbits_requested, int& nbits_decoded);
 
 private:
     class Prev
@@ -78,10 +78,10 @@ private:
 
     private:
         int t;
-        int * state;
-        int * bit;
-        float * metric;
-        int * refcount;
+        int* state;
+        int* bit;
+        float* metric;
+        int* refcount;
     };
 
     // code properties
@@ -100,10 +100,10 @@ private:
     int* d_state1;
 
     // trellis state
-    float *d_pm_t;
+    float* d_pm_t;
     std::deque<Prev> d_trellis_paths;
-    float *d_metric_c; /* Set of all possible branch metrics */
-    float *d_rec_array; /* Received values for one trellis section */
+    float* d_metric_c;  /* Set of all possible branch metrics */
+    float* d_rec_array; /* Received values for one trellis section */
     bool d_trellis_state_is_initialised;
 
     // measures
@@ -112,11 +112,11 @@ private:
     // operations on the trellis (change decoder state)
     void init_trellis_state();
     int do_acs(const double sym[], int nbits);
-    int do_traceback(size_t traceback_length);
+    int do_traceback(std::size_t traceback_length);
     int do_tb_and_decode(int traceback_length, int requested_decoding_length, int state, int bits[], float& indicator_metric);
 
     // branch metric function
-    float gamma(float rec_array[], int symbol, int nn);
+    float gamma(const float rec_array[], int symbol, int nn);
 
     // trellis generation
     void nsc_transit(int output_p[], int trans_p[], int input, const int g[], int KK, int nn);

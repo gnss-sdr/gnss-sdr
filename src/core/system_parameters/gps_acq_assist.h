@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -32,7 +32,7 @@
 #ifndef GNSS_SDR_GPS_ACQ_ASSIST_H_
 #define GNSS_SDR_GPS_ACQ_ASSIST_H_
 
-
+#include <cstdint>
 
 /*!
  * \brief This class is a storage for the GPS GSM RRLL acquisition assistance data as described in
@@ -45,17 +45,17 @@
 class Gps_Acq_Assist
 {
 public:
-    unsigned int i_satellite_PRN; //!< SV PRN NUMBER
-    double d_TOW;                 //!< Time Of Week assigned to the acquisition data
-    double d_Doppler0;            //!< Doppler (0 order term) [Hz]
-    double d_Doppler1;            //!< Doppler (1 order term) [Hz]
-    double dopplerUncertainty;    //!< Doppler Uncertainty [Hz]
-    double Code_Phase;            //!< Code phase [chips]
-    double Code_Phase_int;        //!< Integer Code Phase [1 C/A code period]
-    double GPS_Bit_Number;        //!< GPS Bit Number
-    double Code_Phase_window;     //!< Code Phase search window [chips]
-    double Azimuth;               //!< Satellite Azimuth [deg]
-    double Elevation;             //!< Satellite Elevation [deg]
+    uint32_t i_satellite_PRN;   //!< SV PRN NUMBER
+    double d_TOW;               //!< Time Of Week assigned to the acquisition data
+    double d_Doppler0;          //!< Doppler (0 order term) [Hz]
+    double d_Doppler1;          //!< Doppler (1 order term) [Hz]
+    double dopplerUncertainty;  //!< Doppler Uncertainty [Hz]
+    double Code_Phase;          //!< Code phase [chips]
+    double Code_Phase_int;      //!< Integer Code Phase [1 C/A code period]
+    double GPS_Bit_Number;      //!< GPS Bit Number
+    double Code_Phase_window;   //!< Code Phase search window [chips]
+    double Azimuth;             //!< Satellite Azimuth [deg]
+    double Elevation;           //!< Satellite Elevation [deg]
 
     /*!
      * Default constructor

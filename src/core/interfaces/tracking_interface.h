@@ -10,7 +10,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -28,7 +28,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -40,7 +40,8 @@
 #include "gnss_block_interface.h"
 #include "gnss_synchro.h"
 
-template<typename Data>class concurrent_queue;
+template <typename Data>
+class concurrent_queue;
 
 /*!
  * \brief This abstract class represents an interface to a tracking block.
@@ -55,6 +56,7 @@ class TrackingInterface : public GNSSBlockInterface
 {
 public:
     virtual void start_tracking() = 0;
+    virtual void stop_tracking() = 0;
     virtual void set_gnss_synchro(Gnss_Synchro* gnss_synchro) = 0;
     virtual void set_channel(unsigned int channel) = 0;
 };

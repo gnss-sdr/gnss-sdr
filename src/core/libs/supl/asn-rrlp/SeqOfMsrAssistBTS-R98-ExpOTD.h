@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_SeqOfMsrAssistBTS_R98_ExpOTD_H_
-#define	_SeqOfMsrAssistBTS_R98_ExpOTD_H_
+#ifndef _SeqOfMsrAssistBTS_R98_ExpOTD_H_
+#define _SeqOfMsrAssistBTS_R98_ExpOTD_H_
 
 
 #include <asn_application.h>
@@ -15,22 +15,25 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct MsrAssistBTS_R98_ExpOTD;
+    /* Forward declarations */
+    struct MsrAssistBTS_R98_ExpOTD;
 
-/* SeqOfMsrAssistBTS-R98-ExpOTD */
-typedef struct SeqOfMsrAssistBTS_R98_ExpOTD {
-	A_SEQUENCE_OF(struct MsrAssistBTS_R98_ExpOTD) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SeqOfMsrAssistBTS_R98_ExpOTD_t;
+    /* SeqOfMsrAssistBTS-R98-ExpOTD */
+    typedef struct SeqOfMsrAssistBTS_R98_ExpOTD
+    {
+        A_SEQUENCE_OF(struct MsrAssistBTS_R98_ExpOTD)
+        list;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SeqOfMsrAssistBTS_R98_ExpOTD;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SeqOfMsrAssistBTS_R98_ExpOTD_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SeqOfMsrAssistBTS_R98_ExpOTD;
 
 #ifdef __cplusplus
 }
@@ -39,5 +42,5 @@ extern asn_TYPE_descriptor_t asn_DEF_SeqOfMsrAssistBTS_R98_ExpOTD;
 /* Referred external types */
 #include "MsrAssistBTS-R98-ExpOTD.h"
 
-#endif	/* _SeqOfMsrAssistBTS_R98_ExpOTD_H_ */
+#endif /* _SeqOfMsrAssistBTS_R98_ExpOTD_H_ */
 #include <asn_internal.h>

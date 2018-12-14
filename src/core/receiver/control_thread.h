@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -27,7 +27,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -35,15 +35,19 @@
 #ifndef GNSS_SDR_CONTROL_THREAD_H_
 #define GNSS_SDR_CONTROL_THREAD_H_
 
-#include <memory>
-#include <vector>
+#include "agnss_ref_location.h"
+#include "agnss_ref_time.h"
+#include "configuration_interface.h"
+#include "control_message_factory.h"
+#include "gnss_flowgraph.h"
+#include "gnss_satellite.h"
+#include "gnss_sdr_supl_client.h"
+#include "tcp_cmd_interface.h"
+#include <armadillo>
 #include <boost/thread.hpp>
 #include <gnuradio/msg_queue.h>
-#include "control_message_factory.h"
-#include "gnss_sdr_supl_client.h"
-
-class GNSSFlowgraph;
-class ConfigurationInterface;
+#include <memory>
+#include <vector>
 
 
 /*!
@@ -82,14 +86,14 @@ public:
      *
      *  - Read control messages and process them; }
      */
-    void run();
+    int run();
 
     /*!
      * \brief Sets the control_queue
      *
      * \param[in] boost::shared_ptr<gr::msg_queue> control_queue
      */
-    void set_control_queue(boost::shared_ptr<gr::msg_queue> control_queue);
+    void set_control_queue(const gr::msg_queue::sptr& control_queue);
 
 
     unsigned int processed_control_messages()
@@ -113,13 +117,17 @@ public:
     }
 
 private:
+    //Telecommand TCP interface
+    TcpCmdInterface cmd_interface_;
+    void telecommand_listener();
+    boost::thread cmd_interface_thread_;
     //SUPL assistance classes
     gnss_sdr_supl_client supl_client_acquisition_;
     gnss_sdr_supl_client supl_client_ephemeris_;
-    int supl_mcc; // Current network MCC (Mobile country code), 3 digits.
-    int supl_mns; // Current network MNC (Mobile Network code), 2 or 3 digits.
-    int supl_lac; // Current network LAC (Location area code),16 bits, 1-65520 are valid values.
-    int supl_ci;  // Cell Identity (16 bits, 0-65535 are valid values).
+    int supl_mcc;  // Current network MCC (Mobile country code), 3 digits.
+    int supl_mns;  // Current network MNC (Mobile Network code), 2 or 3 digits.
+    int supl_lac;  // Current network LAC (Location area code),16 bits, 1-65520 are valid values.
+    int supl_ci;   // Cell Identity (16 bits, 0-65535 are valid values).
 
     void init();
 
@@ -137,26 +145,33 @@ private:
      * Blocking function that reads the GPS assistance queue
      */
     void gps_acq_assist_data_collector();
-    
+
+    /*
+     * Compute elevations for the specified time and position for all the available satellites in ephemeris and almanac queues
+     * returns a vector filled with the available satellites ordered from high elevation to low elevation angle.
+     */
+    std::vector<std::pair<int, Gnss_Satellite>> get_visible_sats(time_t rx_utc_time, const arma::vec& LLH);
+
     /*
      * Read initial GNSS assistance from SUPL server or local XML files
      */
     void assist_GNSS();
-    
+
     void apply_action(unsigned int what);
     std::shared_ptr<GNSSFlowgraph> flowgraph_;
     std::shared_ptr<ConfigurationInterface> configuration_;
-    boost::shared_ptr<gr::msg_queue> control_queue_;
+    gr::msg_queue::sptr control_queue_;
     std::shared_ptr<ControlMessageFactory> control_message_factory_;
     std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>> control_messages_;
     bool stop_;
+    bool restart_;
     bool delete_configuration_;
     unsigned int processed_control_messages_;
     unsigned int applied_actions_;
     boost::thread keyboard_thread_;
     boost::thread sysv_queue_thread_;
     boost::thread gps_acq_assist_data_collector_thread_;
-    
+
     void keyboard_listener();
     void sysv_queue_listener();
     int msqid;
@@ -167,6 +182,18 @@ private:
     const std::string iono_default_xml_filename = "./gps_iono.xml";
     const std::string ref_time_default_xml_filename = "./gps_ref_time.xml";
     const std::string ref_location_default_xml_filename = "./gps_ref_location.xml";
+    const std::string eph_gal_default_xml_filename = "./gal_ephemeris.xml";
+    const std::string eph_cnav_default_xml_filename = "./gps_cnav_ephemeris.xml";
+    const std::string gal_iono_default_xml_filename = "./gal_iono.xml";
+    const std::string gal_utc_default_xml_filename = "./gal_utc_model.xml";
+    const std::string cnav_utc_default_xml_filename = "./gps_cnav_utc_model.xml";
+    const std::string eph_glo_gnav_default_xml_filename = "./glo_gnav_ephemeris.xml";
+    const std::string glo_utc_default_xml_filename = "./glo_utc_model.xml";
+    const std::string gal_almanac_default_xml_filename = "./gal_almanac.xml";
+    const std::string gps_almanac_default_xml_filename = "./gps_almanac.xml";
+
+    Agnss_Ref_Location agnss_ref_location_;
+    Agnss_Ref_Time agnss_ref_time_;
 };
 
 #endif /*GNSS_SDR_CONTROL_THREAD_H_*/

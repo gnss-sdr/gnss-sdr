@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_SeqOfGANSSTimeModel_H_
-#define	_SeqOfGANSSTimeModel_H_
+#ifndef _SeqOfGANSSTimeModel_H_
+#define _SeqOfGANSSTimeModel_H_
 
 
 #include <asn_application.h>
@@ -15,22 +15,25 @@
 #include <constr_SEQUENCE_OF.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Forward declarations */
-struct GANSSTimeModelElement;
+    /* Forward declarations */
+    struct GANSSTimeModelElement;
 
-/* SeqOfGANSSTimeModel */
-typedef struct SeqOfGANSSTimeModel {
-	A_SEQUENCE_OF(struct GANSSTimeModelElement) list;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} SeqOfGANSSTimeModel_t;
+    /* SeqOfGANSSTimeModel */
+    typedef struct SeqOfGANSSTimeModel
+    {
+        A_SEQUENCE_OF(struct GANSSTimeModelElement)
+        list;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_SeqOfGANSSTimeModel;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } SeqOfGANSSTimeModel_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_SeqOfGANSSTimeModel;
 
 #ifdef __cplusplus
 }
@@ -39,5 +42,5 @@ extern asn_TYPE_descriptor_t asn_DEF_SeqOfGANSSTimeModel;
 /* Referred external types */
 #include "GANSSTimeModelElement.h"
 
-#endif	/* _SeqOfGANSSTimeModel_H_ */
+#endif /* _SeqOfGANSSTimeModel_H_ */
 #include <asn_internal.h>

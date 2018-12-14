@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -25,46 +25,46 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
 
-#include <unistd.h>
+#include "control_message_factory.h"
+#include "control_thread.h"
+#include "in_memory_configuration.h"
+#include <boost/exception/diagnostic_information.hpp>
+#include <boost/exception_ptr.hpp>
+#include <boost/lexical_cast.hpp>
+#include <gflags/gflags.h>
+#include <glog/logging.h>
+#include <gnuradio/message.h>
+#include <gnuradio/msg_queue.h>
+#include <gtest/gtest.h>
 #include <chrono>
 #include <exception>
 #include <memory>
-#include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
+#include <sys/types.h>
 #include <thread>
-#include <boost/lexical_cast.hpp>
-#include <boost/thread.hpp>
-#include <boost/exception/diagnostic_information.hpp>
-#include <boost/exception_ptr.hpp>
-#include <gtest/gtest.h>
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/message.h>
-#include <gflags/gflags.h>
-#include <glog/logging.h>
-#include "control_thread.h"
-#include "in_memory_configuration.h"
-#include "control_message_factory.h"
+#include <unistd.h>
 
 
-class Control_Thread_Test: public ::testing::Test
+class ControlThreadTest : public ::testing::Test
 {
 public:
     static int stop_receiver();
-    typedef struct  {
-        long mtype; // required by SysV message
+    typedef struct
+    {
+        long mtype;  // required by SysV message
         double message;
     } message_buffer;
 };
 
 
-int Control_Thread_Test::stop_receiver()
+int ControlThreadTest::stop_receiver()
 {
     message_buffer msg_stop;
     msg_stop.mtype = 1;
@@ -74,10 +74,12 @@ int Control_Thread_Test::stop_receiver()
     key_t key_stop = 1102;
 
     // wait for the receiver control queue to be created
-    while(((msqid_stop = msgget(key_stop, 0644))) == -1){ }
+    while (((msqid_stop = msgget(key_stop, 0644))) == -1)
+        {
+        }
 
     // wait for a couple of seconds
-    std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(2));
+    std::this_thread::sleep_for(std::chrono::seconds(2));
 
     // Stop the receiver
     msgsnd(msqid_stop, &msg_stop, msgsend_size, IPC_NOWAIT);
@@ -86,14 +88,14 @@ int Control_Thread_Test::stop_receiver()
 }
 
 
-TEST_F(Control_Thread_Test, InstantiateRunControlMessages)
+TEST_F(ControlThreadTest /*unused*/, InstantiateRunControlMessages /*unused*/)
 {
     std::shared_ptr<InMemoryConfiguration> config = std::make_shared<InMemoryConfiguration>();
 
     config->set_property("SignalSource.implementation", "File_Signal_Source");
     std::string path = std::string(TEST_PATH);
     std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
-    const char * file_name = file.c_str();
+    const char* file_name = file.c_str();
     config->set_property("SignalSource.filename", file_name);
     config->set_property("SignalSource.item_type", "gr_complex");
     config->set_property("SignalSource.sampling_frequency", "4000000");
@@ -111,10 +113,11 @@ TEST_F(Control_Thread_Test, InstantiateRunControlMessages)
     config->set_property("Tracking_1C.item_type", "gr_complex");
     config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
     config->set_property("TelemetryDecoder_1C.item_type", "gr_complex");
-    config->set_property("Observables.implementation", "GPS_L1_CA_Observables");
+    config->set_property("Observables.implementation", "Hybrid_Observables");
     config->set_property("Observables.item_type", "gr_complex");
-    config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
+    config->set_property("PVT.implementation", "RTKLIB_PVT");
     config->set_property("PVT.item_type", "gr_complex");
+    config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
 
     std::shared_ptr<ControlThread> control_thread = std::make_shared<ControlThread>(config);
 
@@ -122,23 +125,23 @@ TEST_F(Control_Thread_Test, InstantiateRunControlMessages)
 
     std::unique_ptr<ControlMessageFactory> control_msg_factory(new ControlMessageFactory());
 
-    control_queue->handle(control_msg_factory->GetQueueMessage(0,0));
-    control_queue->handle(control_msg_factory->GetQueueMessage(1,0));
-    control_queue->handle(control_msg_factory->GetQueueMessage(200,0));
+    control_queue->handle(control_msg_factory->GetQueueMessage(0, 0));
+    control_queue->handle(control_msg_factory->GetQueueMessage(1, 0));
+    control_queue->handle(control_msg_factory->GetQueueMessage(200, 0));
 
     control_thread->set_control_queue(control_queue);
     try
-    {
+        {
             control_thread->run();
-    }
-    catch( boost::exception & e )
-    {
+        }
+    catch (const boost::exception& e)
+        {
             std::cout << "Boost exception: " << boost::diagnostic_information(e);
-    }
-    catch(std::exception const&  ex)
-    {
-            std::cout  << "STD exception: " << ex.what();
-    }
+        }
+    catch (const std::exception& ex)
+        {
+            std::cout << "STD exception: " << ex.what();
+        }
 
     unsigned int expected3 = 3;
     unsigned int expected1 = 1;
@@ -147,13 +150,13 @@ TEST_F(Control_Thread_Test, InstantiateRunControlMessages)
 }
 
 
-TEST_F(Control_Thread_Test, InstantiateRunControlMessages2)
+TEST_F(ControlThreadTest /*unused*/, InstantiateRunControlMessages2 /*unused*/)
 {
     std::shared_ptr<InMemoryConfiguration> config = std::make_shared<InMemoryConfiguration>();
     config->set_property("SignalSource.implementation", "File_Signal_Source");
     std::string path = std::string(TEST_PATH);
     std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
-    const char * file_name = file.c_str();
+    const char* file_name = file.c_str();
     config->set_property("SignalSource.filename", file_name);
     config->set_property("SignalSource.item_type", "gr_complex");
     config->set_property("SignalSource.sampling_frequency", "4000000");
@@ -171,10 +174,11 @@ TEST_F(Control_Thread_Test, InstantiateRunControlMessages2)
     config->set_property("Tracking_1C.item_type", "gr_complex");
     config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
     config->set_property("TelemetryDecoder_1C.item_type", "gr_complex");
-    config->set_property("Observables.implementation", "GPS_L1_CA_Observables");
+    config->set_property("Observables.implementation", "Hybrid_Observables");
     config->set_property("Observables.item_type", "gr_complex");
-    config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
+    config->set_property("PVT.implementation", "RTKLIB_PVT");
     config->set_property("PVT.item_type", "gr_complex");
+    config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
 
     std::unique_ptr<ControlThread> control_thread2(new ControlThread(config));
 
@@ -182,26 +186,26 @@ TEST_F(Control_Thread_Test, InstantiateRunControlMessages2)
 
     std::unique_ptr<ControlMessageFactory> control_msg_factory2(new ControlMessageFactory());
 
-    control_queue2->handle(control_msg_factory2->GetQueueMessage(0,0));
-    control_queue2->handle(control_msg_factory2->GetQueueMessage(2,0));
-    control_queue2->handle(control_msg_factory2->GetQueueMessage(1,0));
-    control_queue2->handle(control_msg_factory2->GetQueueMessage(3,0));
-    control_queue2->handle(control_msg_factory2->GetQueueMessage(200,0));
+    control_queue2->handle(control_msg_factory2->GetQueueMessage(0, 0));
+    control_queue2->handle(control_msg_factory2->GetQueueMessage(2, 0));
+    control_queue2->handle(control_msg_factory2->GetQueueMessage(1, 0));
+    control_queue2->handle(control_msg_factory2->GetQueueMessage(3, 0));
+    control_queue2->handle(control_msg_factory2->GetQueueMessage(200, 0));
 
     control_thread2->set_control_queue(control_queue2);
 
     try
-    {
+        {
             control_thread2->run();
-    }
-    catch( boost::exception & e )
-    {
+        }
+    catch (const boost::exception& e)
+        {
             std::cout << "Boost exception: " << boost::diagnostic_information(e);
-    }
-    catch(std::exception const&  ex)
-    {
-            std::cout  << "STD exception: " << ex.what();
-    }
+        }
+    catch (const std::exception& ex)
+        {
+            std::cout << "STD exception: " << ex.what();
+        }
 
     unsigned int expected5 = 5;
     unsigned int expected1 = 1;
@@ -210,14 +214,13 @@ TEST_F(Control_Thread_Test, InstantiateRunControlMessages2)
 }
 
 
-
-TEST_F(Control_Thread_Test, StopReceiverProgrammatically)
+TEST_F(ControlThreadTest /*unused*/, StopReceiverProgrammatically /*unused*/)
 {
     std::shared_ptr<InMemoryConfiguration> config = std::make_shared<InMemoryConfiguration>();
     config->set_property("SignalSource.implementation", "File_Signal_Source");
     std::string path = std::string(TEST_PATH);
     std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
-    const char * file_name = file.c_str();
+    const char* file_name = file.c_str();
     config->set_property("SignalSource.filename", file_name);
     config->set_property("SignalSource.item_type", "gr_complex");
     config->set_property("SignalSource.sampling_frequency", "4000000");
@@ -235,29 +238,30 @@ TEST_F(Control_Thread_Test, StopReceiverProgrammatically)
     config->set_property("Tracking_1C.item_type", "gr_complex");
     config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
     config->set_property("TelemetryDecoder_1C.item_type", "gr_complex");
-    config->set_property("Observables.implementation", "GPS_L1_CA_Observables");
+    config->set_property("Observables.implementation", "Hybrid_Observables");
     config->set_property("Observables.item_type", "gr_complex");
-    config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
+    config->set_property("PVT.implementation", "RTKLIB_PVT");
     config->set_property("PVT.item_type", "gr_complex");
+    config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
 
-    std::unique_ptr<ControlThread> control_thread(new ControlThread(config));
+    std::shared_ptr<ControlThread> control_thread = std::make_shared<ControlThread>(config);
     gr::msg_queue::sptr control_queue = gr::msg_queue::make(0);
     control_thread->set_control_queue(control_queue);
 
     std::thread stop_receiver_thread(stop_receiver);
 
     try
-    {
+        {
             control_thread->run();
-    }
-    catch( boost::exception & e )
-    {
+        }
+    catch (const boost::exception& e)
+        {
             std::cout << "Boost exception: " << boost::diagnostic_information(e);
-    }
-    catch(std::exception const&  ex)
-    {
-            std::cout  << "STD exception: " << ex.what();
-    }
+        }
+    catch (const std::exception& ex)
+        {
+            std::cout << "STD exception: " << ex.what();
+        }
 
     stop_receiver_thread.join();
 }

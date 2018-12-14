@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -31,16 +31,16 @@
 #ifndef GNSS_SDR_CONTROL_MESSAGE_FACTORY_H_
 #define GNSS_SDR_CONTROL_MESSAGE_FACTORY_H_
 
+#include <gnuradio/message.h>
 #include <memory>
 #include <vector>
-#include <gnuradio/message.h>
 
 //! Message described by who sent it and what it says
 typedef struct ControlMessage_
 {
     unsigned int who;
     unsigned int what;
-} ControlMessage ;
+} ControlMessage;
 
 
 /*!
@@ -50,7 +50,6 @@ typedef struct ControlMessage_
  */
 class ControlMessageFactory
 {
-
 public:
     //! Constructor
     ControlMessageFactory();
@@ -58,8 +57,8 @@ public:
     //! Virtual destructor
     virtual ~ControlMessageFactory();
 
-    boost::shared_ptr<gr::message> GetQueueMessage(unsigned int who, unsigned int what);
-    std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>> GetControlMessages(gr::message::sptr queue_message);
+    gr::message::sptr GetQueueMessage(unsigned int who, unsigned int what);
+    std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>> GetControlMessages(const gr::message::sptr& queue_message);
 };
 
 #endif /*GNSS_SDR_CONTROL_MESSAGE_FACTORY_H_*/

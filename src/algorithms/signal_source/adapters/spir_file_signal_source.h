@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -32,15 +32,14 @@
 #ifndef GNSS_SDR_SPIR_FILE_SIGNAL_SOURCE_H_
 #define GNSS_SDR_SPIR_FILE_SIGNAL_SOURCE_H_
 
-#include <string>
-#include <gnuradio/blocks/file_source.h>
+#include "gnss_block_interface.h"
+#include "unpack_intspir_1bit_samples.h"
 #include <gnuradio/blocks/file_sink.h>
+#include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/throttle.h>
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/msg_queue.h>
-#include "gnss_block_interface.h"
-#include "unpack_intspir_1bit_samples.h"
-
+#include <string>
 
 class ConfigurationInterface;
 
@@ -48,15 +47,15 @@ class ConfigurationInterface;
  * \brief Class that reads signals samples from a file
  * and adapts it to a SignalSourceInterface
  */
-class SpirFileSignalSource: public GNSSBlockInterface
+class SpirFileSignalSource : public GNSSBlockInterface
 {
 public:
-    SpirFileSignalSource(ConfigurationInterface* configuration, std::string role,
-            unsigned int in_streams, unsigned int out_streams,
-            boost::shared_ptr<gr::msg_queue> queue);
+    SpirFileSignalSource(ConfigurationInterface* configuration, const std::string& role,
+        unsigned int in_streams, unsigned int out_streams,
+        boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~SpirFileSignalSource();
-    std::string role()
+    inline std::string role() override
     {
         return role_;
     }
@@ -64,35 +63,42 @@ public:
     /*!
      * \brief Returns "Spir_File_Signal_Source".
      */
-    std::string implementation()
+    inline std::string implementation() override
     {
         return "Spir_File_Signal_Source";
     }
-    size_t item_size()
+
+    inline size_t item_size() override
     {
         return item_size_;
     }
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
-    std::string filename()
+
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
+
+    inline std::string filename() const
     {
         return filename_;
     }
-    std::string item_type()
+
+    inline std::string item_type() const
     {
         return item_type_;
     }
-    bool repeat()
+
+    inline bool repeat() const
     {
         return repeat_;
     }
-    long sampling_frequency()
+
+    inline long sampling_frequency() const
     {
         return sampling_frequency_;
     }
-    long samples()
+
+    inline long samples() const
     {
         return samples_;
     }
@@ -112,7 +118,7 @@ private:
     unpack_intspir_1bit_samples_sptr unpack_intspir_;
     boost::shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr sink_;
-    gr::blocks::throttle::sptr  throttle_;
+    gr::blocks::throttle::sptr throttle_;
     boost::shared_ptr<gr::msg_queue> queue_;
     size_t item_size_;
     // Throttle control

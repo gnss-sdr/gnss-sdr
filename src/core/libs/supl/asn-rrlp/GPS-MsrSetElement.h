@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GPS_MsrSetElement_H_
-#define	_GPS_MsrSetElement_H_
+#ifndef _GPS_MsrSetElement_H_
+#define _GPS_MsrSetElement_H_
 
 
 #include <asn_application.h>
@@ -17,25 +17,27 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GPS-MsrSetElement */
-typedef struct GPS_MsrSetElement {
-	long	*refFrame	/* OPTIONAL */;
-	GPSTOW24b_t	 gpsTOW;
-	SeqOfGPS_MsrElement_t	 gps_msrList;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GPS_MsrSetElement_t;
+    /* GPS-MsrSetElement */
+    typedef struct GPS_MsrSetElement
+    {
+        long *refFrame /* OPTIONAL */;
+        GPSTOW24b_t gpsTOW;
+        SeqOfGPS_MsrElement_t gps_msrList;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GPS_MsrSetElement;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GPS_MsrSetElement_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GPS_MsrSetElement;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GPS_MsrSetElement_H_ */
+#endif /* _GPS_MsrSetElement_H_ */
 #include <asn_internal.h>

@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -25,20 +25,18 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
 
 
-#include <string>
-#include <gtest/gtest.h>
 #include "control_message_factory.h"
+#include <gtest/gtest.h>
+#include <string>
 
 
-
-
-TEST(Control_Message_Factory_Test, GetQueueMessage)
+TEST(ControlMessageFactoryTest, GetQueueMessage)
 {
     std::shared_ptr<ControlMessageFactory> factory = std::make_shared<ControlMessageFactory>();
     gr::message::sptr queue_message = factory->GetQueueMessage(0, 2);
@@ -51,9 +49,7 @@ TEST(Control_Message_Factory_Test, GetQueueMessage)
 }
 
 
-
-
-TEST(Control_Message_Factory_Test, GetControlMessages)
+TEST(ControlMessageFactoryTest, GetControlMessages)
 {
     std::shared_ptr<ControlMessageFactory> factory = std::make_shared<ControlMessageFactory>();
     gr::message::sptr queue_message = gr::message::make(0, 0, 0, sizeof(ControlMessage));
@@ -74,7 +70,7 @@ TEST(Control_Message_Factory_Test, GetControlMessages)
 
 /*
 
-TEST(Control_Message_Factory_Test, GetControlMessagesWrongSize)
+TEST(ControlMessageFactoryTest, GetControlMessagesWrongSize)
 {
 
     std::shared_ptr<ControlMessageFactory> factory = std::make_shared<ControlMessageFactory>();

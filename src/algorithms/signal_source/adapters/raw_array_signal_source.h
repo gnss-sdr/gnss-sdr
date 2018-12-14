@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -32,27 +32,27 @@
 #ifndef RAW_ARRAY_SIGNAL_SOURCE_H_
 #define RAW_ARRAY_SIGNAL_SOURCE_H_
 
-#include <string>
+#include "gnss_block_interface.h"
+#include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/msg_queue.h>
-#include <gnuradio/blocks/file_sink.h>
-#include "gnss_block_interface.h"
-
+#include <string>
 
 class ConfigurationInterface;
 
 /*!
  * \brief This class reads samples from a GN3S USB dongle, a RF front-end signal sampler
  */
-class RawArraySignalSource: public GNSSBlockInterface
+class RawArraySignalSource : public GNSSBlockInterface
 {
 public:
     RawArraySignalSource(ConfigurationInterface* configuration,
-            std::string role, unsigned int in_stream,
-            unsigned int out_stream, gr::msg_queue::sptr queue);
+        std::string role, unsigned int in_stream,
+        unsigned int out_stream, gr::msg_queue::sptr queue);
 
     virtual ~RawArraySignalSource();
-    std::string role()
+
+    inline std::string role() override
     {
         return role_;
     }
@@ -60,18 +60,20 @@ public:
     /*!
      * \brief Returns "RawArraySignalSource".
      */
-    std::string implementation()
+    inline std::string implementation() override
     {
         return "Raw_Array_Signal_Source";
     }
-    size_t item_size()
+
+    inline size_t item_size() override
     {
         return item_size_;
     }
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
+
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
 
 private:
     std::string role_;

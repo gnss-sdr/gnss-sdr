@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -27,7 +27,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -72,21 +72,57 @@ static inline void volk_gnsssdr_8i_x2_add_8i_u_sse2(char* cVector, const char* a
 
     __m128i aVal, bVal, cVal;
 
-    for(number = 0; number < sse_iters; number++)
+    for (number = 0; number < sse_iters; number++)
         {
             aVal = _mm_loadu_si128((__m128i*)aPtr);
             bVal = _mm_loadu_si128((__m128i*)bPtr);
 
             cVal = _mm_add_epi8(aVal, bVal);
 
-            _mm_storeu_si128((__m128i*)cPtr, cVal); // Store the results back into the C container
+            _mm_storeu_si128((__m128i*)cPtr, cVal);  // Store the results back into the C container
 
             aPtr += 16;
             bPtr += 16;
             cPtr += 16;
         }
 
-    for(i = sse_iters * 16; i < num_points; ++i)
+    for (i = sse_iters * 16; i < num_points; ++i)
+        {
+            *cPtr++ = (*aPtr++) + (*bPtr++);
+        }
+}
+#endif /* LV_HAVE_SSE2 */
+
+
+#ifdef LV_HAVE_AVX2
+#include <immintrin.h>
+
+static inline void volk_gnsssdr_8i_x2_add_8i_u_avx2(char* cVector, const char* aVector, const char* bVector, unsigned int num_points)
+{
+    const unsigned int avx_iters = num_points / 32;
+    unsigned int number;
+    unsigned int i;
+    char* cPtr = cVector;
+    const char* aPtr = aVector;
+    const char* bPtr = bVector;
+
+    __m256i aVal, bVal, cVal;
+
+    for (number = 0; number < avx_iters; number++)
+        {
+            aVal = _mm256_loadu_si256((__m256i*)aPtr);
+            bVal = _mm256_loadu_si256((__m256i*)bPtr);
+
+            cVal = _mm256_add_epi8(aVal, bVal);
+
+            _mm256_storeu_si256((__m256i*)cPtr, cVal);  // Store the results back into the C container
+
+            aPtr += 32;
+            bPtr += 32;
+            cPtr += 32;
+        }
+
+    for (i = avx_iters * 32; i < num_points; ++i)
         {
             *cPtr++ = (*aPtr++) + (*bPtr++);
         }
@@ -103,7 +139,7 @@ static inline void volk_gnsssdr_8i_x2_add_8i_generic(char* cVector, const char* 
     const char* bPtr = bVector;
     unsigned int number;
 
-    for(number = 0; number < num_points; number++)
+    for (number = 0; number < num_points; number++)
         {
             *cPtr++ = (*aPtr++) + (*bPtr++);
         }
@@ -125,21 +161,57 @@ static inline void volk_gnsssdr_8i_x2_add_8i_a_sse2(char* cVector, const char* a
 
     __m128i aVal, bVal, cVal;
 
-    for(number = 0; number < sse_iters; number++)
+    for (number = 0; number < sse_iters; number++)
         {
             aVal = _mm_load_si128((__m128i*)aPtr);
             bVal = _mm_load_si128((__m128i*)bPtr);
 
             cVal = _mm_add_epi8(aVal, bVal);
 
-            _mm_store_si128((__m128i*)cPtr, cVal); // Store the results back into the C container
+            _mm_store_si128((__m128i*)cPtr, cVal);  // Store the results back into the C container
 
             aPtr += 16;
             bPtr += 16;
             cPtr += 16;
         }
 
-    for(i = sse_iters * 16; i < num_points; ++i)
+    for (i = sse_iters * 16; i < num_points; ++i)
+        {
+            *cPtr++ = (*aPtr++) + (*bPtr++);
+        }
+}
+#endif /* LV_HAVE_SSE2 */
+
+
+#ifdef LV_HAVE_AVX2
+#include <immintrin.h>
+
+static inline void volk_gnsssdr_8i_x2_add_8i_a_avx2(char* cVector, const char* aVector, const char* bVector, unsigned int num_points)
+{
+    const unsigned int avx_iters = num_points / 32;
+    unsigned int number;
+    unsigned int i;
+    char* cPtr = cVector;
+    const char* aPtr = aVector;
+    const char* bPtr = bVector;
+
+    __m256i aVal, bVal, cVal;
+
+    for (number = 0; number < avx_iters; number++)
+        {
+            aVal = _mm256_load_si256((__m256i*)aPtr);
+            bVal = _mm256_load_si256((__m256i*)bPtr);
+
+            cVal = _mm256_add_epi8(aVal, bVal);
+
+            _mm256_store_si256((__m256i*)cPtr, cVal);  // Store the results back into the C container
+
+            aPtr += 32;
+            bPtr += 32;
+            cPtr += 32;
+        }
+
+    for (i = avx_iters * 32; i < num_points; ++i)
         {
             *cPtr++ = (*aPtr++) + (*bPtr++);
         }

@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_Extended_reference_H_
-#define	_Extended_reference_H_
+#ifndef _Extended_reference_H_
+#define _Extended_reference_H_
 
 
 #include <asn_application.h>
@@ -15,24 +15,26 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Extended-reference */
-typedef struct Extended_reference {
-	long	 smlc_code;
-	long	 transaction_ID;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} Extended_reference_t;
+    /* Extended-reference */
+    typedef struct Extended_reference
+    {
+        long smlc_code;
+        long transaction_ID;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Extended_reference;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } Extended_reference_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_Extended_reference;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _Extended_reference_H_ */
+#endif /* _Extended_reference_H_ */
 #include <asn_internal.h>

@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -25,7 +25,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -33,37 +33,37 @@
 #ifndef GNSS_SDR_GEN_SIGNAL_SOURCE_H_
 #define GNSS_SDR_GEN_SIGNAL_SOURCE_H_
 
-#include <string>
-#include <gnuradio/msg_queue.h>
-#include "gnss_block_interface.h"
 
+#include "gnss_block_interface.h"
+#include <gnuradio/msg_queue.h>
+#include <string>
 
 /*!
  * \brief This class wraps blocks that generates synthesized GNSS signal and
  * filters the signal.
  */
-class GenSignalSource: public GNSSBlockInterface
+class GenSignalSource : public GNSSBlockInterface
 {
 public:
     //! Constructor
     GenSignalSource(GNSSBlockInterface *signal_generator, GNSSBlockInterface *filter,
-            std::string role, boost::shared_ptr<gr::msg_queue> queue);
+        std::string role, boost::shared_ptr<gr::msg_queue> queue);
 
     //! Virtual destructor
     virtual ~GenSignalSource();
 
-    void connect(gr::top_block_sptr top_block);
-    void disconnect(gr::top_block_sptr top_block);
-    gr::basic_block_sptr get_left_block();
-    gr::basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
 
-    std::string role(){ return role_; }
+    inline std::string role() override { return role_; }
 
     //! Returns "Signal Source"
-    std::string implementation(){ return "Signal Source"; }
-    size_t item_size(){ return 0; }
+    inline std::string implementation() override { return "Signal Source"; }
+    inline size_t item_size() override { return 0; }
 
-    GNSSBlockInterface *signal_generator(){ return signal_generator_; }
+    inline GNSSBlockInterface *signal_generator() const { return signal_generator_; }
 
 private:
     GNSSBlockInterface *signal_generator_;

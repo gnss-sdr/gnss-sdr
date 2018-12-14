@@ -4,8 +4,8 @@
  * 	found in "../rrlp-components.asn"
  */
 
-#ifndef	_GANSSIonosphereModel_H_
-#define	_GANSSIonosphereModel_H_
+#ifndef _GANSSIonosphereModel_H_
+#define _GANSSIonosphereModel_H_
 
 
 #include <asn_application.h>
@@ -15,25 +15,27 @@
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* GANSSIonosphereModel */
-typedef struct GANSSIonosphereModel {
-	long	 ai0;
-	long	 ai1;
-	long	 ai2;
-	
-	/* Context for parsing across buffer boundaries */
-	asn_struct_ctx_t _asn_ctx;
-} GANSSIonosphereModel_t;
+    /* GANSSIonosphereModel */
+    typedef struct GANSSIonosphereModel
+    {
+        long ai0;
+        long ai1;
+        long ai2;
 
-/* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GANSSIonosphereModel;
+        /* Context for parsing across buffer boundaries */
+        asn_struct_ctx_t _asn_ctx;
+    } GANSSIonosphereModel_t;
+
+    /* Implementation */
+    extern asn_TYPE_descriptor_t asn_DEF_GANSSIonosphereModel;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _GANSSIonosphereModel_H_ */
+#endif /* _GANSSIonosphereModel_H_ */
 #include <asn_internal.h>

@@ -15,9 +15,9 @@
                       <xs:complexType>
                         <xs:sequence>
                           <xs:element type="xs:byte" name="i_satellite_PRN"/>
-                          <xs:element type="xs:float" name="d_TOW"/>
-                          <xs:element type="xs:float" name="d_IODE_SF2"/>
-                          <xs:element type="xs:float" name="d_IODE_SF3"/>
+                          <xs:element type="xs:int" name="d_TOW"/>
+                          <xs:element type="xs:byte" name="d_IODE_SF2"/>
+                          <xs:element type="xs:byte" name="d_IODE_SF3"/>
                           <xs:element type="xs:float" name="d_Crs"/>
                           <xs:element type="xs:float" name="d_Delta_n"/>
                           <xs:element type="xs:float" name="d_M_0"/>
@@ -25,8 +25,8 @@
                           <xs:element type="xs:float" name="d_e_eccentricity"/>
                           <xs:element type="xs:float" name="d_Cus"/>
                           <xs:element type="xs:float" name="d_sqrt_A"/>
-                          <xs:element type="xs:float" name="d_Toe"/>
-                          <xs:element type="xs:float" name="d_Toc"/>
+                          <xs:element type="xs:int" name="d_Toe"/>
+                          <xs:element type="xs:int" name="d_Toc"/>
                           <xs:element type="xs:float" name="d_Cic"/>
                           <xs:element type="xs:float" name="d_OMEGA0"/>
                           <xs:element type="xs:float" name="d_Cis"/>
@@ -41,7 +41,7 @@
                           <xs:element type="xs:byte" name="i_SV_accuracy"/>
                           <xs:element type="xs:byte" name="i_SV_health"/>
                           <xs:element type="xs:float" name="d_TGD"/>
-                          <xs:element type="xs:float" name="d_IODC"/>
+                          <xs:element type="xs:byte" name="d_IODC"/>
                           <xs:element type="xs:short" name="i_AODO"/>
                           <xs:element type="xs:byte" name="b_fit_interval_flag"/>
                           <xs:element type="xs:float" name="d_spare1"/>

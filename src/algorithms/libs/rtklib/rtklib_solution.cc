@@ -682,7 +682,7 @@ void decode_solopt(char *buff, solopt_t *opt)
 
     trace(4, "decode_solhead: buff=%s\n", buff);
 
-    if (strncmp(buff, COMMENTH, 1) != 0 && strncmp(buff, "+", 1)) return;
+    if (strncmp(buff, COMMENTH, 1) != 0 && strncmp(buff, "+", 1) != 0) return;
 
     if (strstr(buff, "GPST"))
         opt->times = TIMES_GPST;

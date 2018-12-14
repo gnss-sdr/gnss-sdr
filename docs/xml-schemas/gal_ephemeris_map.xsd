@@ -30,25 +30,25 @@
                           <xs:element type="xs:float" name="C_rs_3"/>
                           <xs:element type="xs:float" name="C_ic_4"/>
                           <xs:element type="xs:float" name="C_is_4"/>
-                          <xs:element type="xs:float" name="t0e_1"/>
-                          <xs:element type="xs:float" name="t0c_4"/>
+                          <xs:element type="xs:int" name="t0e_1"/>
+                          <xs:element type="xs:int" name="t0c_4"/>
                           <xs:element type="xs:float" name="af0_4"/>
                           <xs:element type="xs:float" name="af1_4"/>
                           <xs:element type="xs:float" name="af2_4"/>
-                          <xs:element type="xs:float" name="WN_5"/>
-                          <xs:element type="xs:float" name="TOW_5"/>
+                          <xs:element type="xs:short" name="WN_5"/>
+                          <xs:element type="xs:int" name="TOW_5"/>
                           <xs:element type="xs:float" name="Galileo_satClkDrift"/>
                           <xs:element type="xs:float" name="Galileo_dtr"/>
                           <xs:element type="xs:byte" name="flag_all_ephemeris"/>
                           <xs:element type="xs:byte" name="IOD_ephemeris"/>
                           <xs:element type="xs:byte" name="IOD_nav_1"/>
-                          <xs:element type="xs:float" name="SISA_3"/>
+                          <xs:element type="xs:byte" name="SISA_3"/>
                           <xs:element type="xs:byte" name="E5a_HS"/>
-                          <xs:element type="xs:float" name="E5b_HS_5"/>
-                          <xs:element type="xs:float" name="E1B_HS_5"/>
+                          <xs:element type="xs:byte" name="E5b_HS_5"/>
+                          <xs:element type="xs:byte" name="E1B_HS_5"/>
                           <xs:element type="xs:byte" name="E5a_DVS"/>
-                          <xs:element type="xs:float" name="E5b_DVS_5"/>
-                          <xs:element type="xs:float" name="E1B_DVS_5"/>
+                          <xs:element type="xs:byte" name="E5b_DVS_5"/>
+                          <xs:element type="xs:byte" name="E1B_DVS_5"/>
                           <xs:element type="xs:float" name="BGD_E1E5a_5"/>
                           <xs:element type="xs:float" name="BGD_E1E5b_5"/>
                         </xs:sequence>

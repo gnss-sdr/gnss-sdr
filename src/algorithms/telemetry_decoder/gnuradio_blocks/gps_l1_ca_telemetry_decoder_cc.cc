@@ -38,7 +38,7 @@
 
 
 #ifndef _rotl
-#define _rotl(X, N) ((X << N) ^ (X >> (32 - N)))  // Used in the parity check algorithm
+#define _rotl(X, N) (((X) << (N)) ^ ((X) >> (32 - (N))))  // Used in the parity check algorithm
 #endif
 
 using google::LogMessage;

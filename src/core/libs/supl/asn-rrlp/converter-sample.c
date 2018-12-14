@@ -774,11 +774,11 @@ static int write_out(const void *buffer, size_t size, void *key) {
 }
 
 static int argument_is_stdin(char *av[], int idx) {
-	if(strcmp(av[idx], "-")) {
+	if(strcmp(av[idx], "-") != 0) {
 		return 0;	/* Certainly not <stdin> */
 	} else {
 		/* This might be <stdin>, unless `./program -- -` */
-		if(strcmp(av[-1], "--"))
+		if(strcmp(av[-1], "--") != 0)
 			return 1;
 		else
 			return 0;

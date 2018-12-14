@@ -369,7 +369,7 @@ asn_GT2time_frac(const GeneralizedTime_t *st, int *frac_value, int *frac_digits,
 			errno = EINVAL;				\
 			return -1;				\
 		} else {					\
-			var = var * 10 + (ch - 0x30);		\
+			(var) = (var) * 10 + (ch - 0x30);		\
 			buf++;					\
 		}						\
 	} while(0)

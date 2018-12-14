@@ -37,17 +37,17 @@ Gps_CNAV_Ephemeris::Gps_CNAV_Ephemeris()
 {
     i_satellite_PRN = 0U;
 
-    d_Toe1 = -1.0;
-    d_Toe2 = -1.0;
+    d_Toe1 = -1;
+    d_Toe2 = -1;
 
-    d_TOW = 0.0;
+    d_TOW = 0;
     d_Crs = 0.0;
     d_M_0 = 0.0;
     d_Cuc = 0.0;
     d_e_eccentricity = 0.0;
     d_Cus = 0.0;
 
-    d_Toc = 0.0;
+    d_Toc = 0;
     d_Cic = 0.0;
     d_OMEGA0 = 0.0;
     d_Cis = 0.0;
@@ -79,7 +79,7 @@ Gps_CNAV_Ephemeris::Gps_CNAV_Ephemeris()
 
     i_URA = 0;
     i_signal_health = 0;
-    d_Top = 0.0;
+    d_Top = 0;
     d_DELTA_A = 0.0;
     d_A_DOT = 0.0;
     d_Delta_n = 0.0;

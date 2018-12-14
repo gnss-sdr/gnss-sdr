@@ -322,7 +322,7 @@ void Galileo_Fnav_Message::decode_page(const std::string& data)
             FNAV_A0_4 *= FNAV_A0_4_LSB;
             FNAV_A1_4 = static_cast<double>(read_navigation_signed(data_bits, FNAV_A1_4_bit));
             FNAV_A1_4 *= FNAV_A1_4_LSB;
-            FNAV_deltatls_4 = static_cast<double>(read_navigation_signed(data_bits, FNAV_deltatls_4_bit));
+            FNAV_deltatls_4 = static_cast<int32_t>(read_navigation_signed(data_bits, FNAV_deltatls_4_bit));
             FNAV_t0t_4 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_t0t_4_bit));
             FNAV_t0t_4 *= FNAV_t0t_4_LSB;
             FNAV_WNot_4 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_WNot_4_bit));

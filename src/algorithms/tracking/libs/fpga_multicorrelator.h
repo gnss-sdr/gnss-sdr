@@ -66,7 +66,9 @@ public:
     //bool Carrier_wipeoff_multicorrelator_resampler(
     void Carrier_wipeoff_multicorrelator_resampler(
         float rem_carrier_phase_in_rad, float phase_step_rad,
+		float carrier_phase_rate_step_rad,
         float rem_code_phase_chips, float code_phase_step_chips,
+		float code_phase_rate_step_chips,
         int32_t signal_length_samples);
     bool free();
     void set_channel(uint32_t channel);

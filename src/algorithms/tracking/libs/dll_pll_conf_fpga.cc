@@ -36,12 +36,14 @@
 Dll_Pll_Conf_Fpga::Dll_Pll_Conf_Fpga()
 {
     /* DLL/PLL tracking configuration */
+	high_dyn = false;
+	smoother_length = 10;
     fs_in = 0.0;
     vector_length = 0U;
     dump = false;
     dump_mat = true;
     dump_filename = std::string("./dll_pll_dump.dat");
-    pll_bw_hz = 40.0;
+    pll_bw_hz = 35.0;
     dll_bw_hz = 2.0;
     pll_bw_narrow_hz = 5.0;
     dll_bw_narrow_hz = 0.75;

@@ -131,7 +131,9 @@ void fpga_multicorrelator_8sc::update_local_code(float rem_code_phase_chips)
 
 void fpga_multicorrelator_8sc::Carrier_wipeoff_multicorrelator_resampler(
     float rem_carrier_phase_in_rad, float phase_step_rad,
+	float carrier_phase_rate_step_rad,
     float rem_code_phase_chips, float code_phase_step_chips,
+	float code_phase_rate_step_chips,
     int32_t signal_length_samples)
 {
     update_local_code(rem_code_phase_chips);

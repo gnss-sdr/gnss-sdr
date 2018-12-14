@@ -189,7 +189,7 @@ void ControlThread::init()
 }
 
 
-ControlThread::~ControlThread()
+ControlThread::~ControlThread()  // NOLINT(modernize-use-equals-default)
 {
     if (msqid != -1) msgctl(msqid, IPC_RMID, NULL);
 }
@@ -751,7 +751,7 @@ void ControlThread::assist_GNSS()
             time_t ref_rx_utc_time = 0;
             if (agnss_ref_time_.valid == true)
                 {
-                    ref_rx_utc_time = agnss_ref_time_.d_tv_sec;
+                    ref_rx_utc_time = static_cast<time_t>(agnss_ref_time_.d_tv_sec);
                 }
 
             std::vector<std::pair<int, Gnss_Satellite>> visible_sats = get_visible_sats(ref_rx_utc_time, ref_LLH);

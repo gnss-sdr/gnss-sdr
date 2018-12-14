@@ -152,7 +152,7 @@ rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
 }
 
 
-rtl_tcp_signal_source_c::~rtl_tcp_signal_source_c()
+rtl_tcp_signal_source_c::~rtl_tcp_signal_source_c()  // NOLINT(modernize-use-equals-default)
 {
     mutex_.unlock();
     io_service_.stop();

@@ -70,11 +70,11 @@ void Galileo_Fnav_Message::reset()
     // health and Data validity status
     FNAV_SV_ID_PRN_1 = 0;
     FNAV_IODnav_1 = -1;
-    FNAV_t0c_1 = 0.0;
+    FNAV_t0c_1 = 0;
     FNAV_af0_1 = 0.0;
     FNAV_af1_1 = 0.0;
     FNAV_af2_1 = 0.0;
-    FNAV_SISA_1 = 0.0;
+    FNAV_SISA_1 = 0;
     FNAV_ai0_1 = 0.0;
     FNAV_ai1_1 = 0.0;
     FNAV_ai2_1 = 0.0;
@@ -85,8 +85,8 @@ void Galileo_Fnav_Message::reset()
     FNAV_region5_1 = false;
     FNAV_BGD_1 = 0.0;
     FNAV_E5ahs_1 = 0;
-    FNAV_WN_1 = 0.0;
-    FNAV_TOW_1 = 0.0;
+    FNAV_WN_1 = 0;
+    FNAV_TOW_1 = 0;
     FNAV_E5advs_1 = false;
 
     // WORD 2 Ephemeris (1/3) and GST
@@ -97,8 +97,8 @@ void Galileo_Fnav_Message::reset()
     FNAV_a12_2 = 0.0;
     FNAV_omega0_2 = 0.0;
     FNAV_idot_2 = 0.0;
-    FNAV_WN_2 = 0.0;
-    FNAV_TOW_2 = 0.0;
+    FNAV_WN_2 = 0;
+    FNAV_TOW_2 = 0;
 
     // WORD 3 Ephemeris (2/3) and GST
     FNAV_IODnav_3 = -3;
@@ -109,9 +109,9 @@ void Galileo_Fnav_Message::reset()
     FNAV_Cus_3 = 0.0;
     FNAV_Crc_3 = 0.0;
     FNAV_Crs_3 = 0.0;
-    FNAV_t0e_3 = 0.0;
-    FNAV_WN_3 = 0.0;
-    FNAV_TOW_3 = 0.0;
+    FNAV_t0e_3 = 0;
+    FNAV_WN_3 = 0;
+    FNAV_TOW_3 = 0;
 
     // WORD 4 Ephemeris (3/3), GST-UTC conversion, GST-GPS conversion and TOW.
     // Note that the clock is repeated in this page type
@@ -120,17 +120,17 @@ void Galileo_Fnav_Message::reset()
     FNAV_Cis_4 = 0.0;
     FNAV_A0_4 = 0.0;
     FNAV_A1_4 = 0.0;
-    FNAV_deltatls_4 = 0.0;
-    FNAV_t0t_4 = 0.0;
-    FNAV_WNot_4 = 0.0;
-    FNAV_WNlsf_4 = 0.0;
-    FNAV_DN_4 = 0.0;
-    FNAV_deltatlsf_4 = 0.0;
-    FNAV_t0g_4 = 0.0;
+    FNAV_deltatls_4 = 0;
+    FNAV_t0t_4 = 0;
+    FNAV_WNot_4 = 0;
+    FNAV_WNlsf_4 = 0;
+    FNAV_DN_4 = 0;
+    FNAV_deltatlsf_4 = 0;
+    FNAV_t0g_4 = 0;
     FNAV_A0g_4 = 0.0;
     FNAV_A1g_4 = 0.0;
-    FNAV_WN0g_4 = 0.0;
-    FNAV_TOW_4 = 0.0;
+    FNAV_WN0g_4 = 0;
+    FNAV_TOW_4 = 0;
 
     // WORD 5 Almanac (SVID1 and SVID2(1/2)), Week Number and almanac reference time
     FNAV_IODa_5 = 0;
@@ -238,7 +238,7 @@ void Galileo_Fnav_Message::decode_page(const std::string& data)
         case 1:  // SVID, Clock correction, SISA, Ionospheric correction, BGD, GST, Signal health and Data validity status
             FNAV_SV_ID_PRN_1 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_SV_ID_PRN_1_bit));
             FNAV_IODnav_1 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_IODnav_1_bit));
-            FNAV_t0c_1 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_t0c_1_bit));
+            FNAV_t0c_1 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_t0c_1_bit));
             FNAV_t0c_1 *= FNAV_t0c_1_LSB;
             FNAV_af0_1 = static_cast<double>(read_navigation_signed(data_bits, FNAV_af0_1_bit));
             FNAV_af0_1 *= FNAV_af0_1_LSB;
@@ -246,7 +246,7 @@ void Galileo_Fnav_Message::decode_page(const std::string& data)
             FNAV_af1_1 *= FNAV_af1_1_LSB;
             FNAV_af2_1 = static_cast<double>(read_navigation_signed(data_bits, FNAV_af2_1_bit));
             FNAV_af2_1 *= FNAV_af2_1_LSB;
-            FNAV_SISA_1 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_SISA_1_bit));
+            FNAV_SISA_1 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_SISA_1_bit));
             FNAV_ai0_1 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_ai0_1_bit));
             FNAV_ai0_1 *= FNAV_ai0_1_LSB;
             FNAV_ai1_1 = static_cast<double>(read_navigation_signed(data_bits, FNAV_ai1_1_bit));
@@ -261,8 +261,8 @@ void Galileo_Fnav_Message::decode_page(const std::string& data)
             FNAV_BGD_1 = static_cast<double>(read_navigation_signed(data_bits, FNAV_BGD_1_bit));
             FNAV_BGD_1 *= FNAV_BGD_1_LSB;
             FNAV_E5ahs_1 = static_cast<uint32_t>(read_navigation_unsigned(data_bits, FNAV_E5ahs_1_bit));
-            FNAV_WN_1 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_WN_1_bit));
-            FNAV_TOW_1 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_TOW_1_bit));
+            FNAV_WN_1 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_WN_1_bit));
+            FNAV_TOW_1 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_TOW_1_bit));
             FNAV_E5advs_1 = static_cast<bool>(read_navigation_unsigned(data_bits, FNAV_E5advs_1_bit));
             flag_TOW_1 = true;
             flag_TOW_set = true;
@@ -282,8 +282,8 @@ void Galileo_Fnav_Message::decode_page(const std::string& data)
             FNAV_omega0_2 *= FNAV_omega0_2_LSB;
             FNAV_idot_2 = static_cast<double>(read_navigation_signed(data_bits, FNAV_idot_2_bit));
             FNAV_idot_2 *= FNAV_idot_2_LSB;
-            FNAV_WN_2 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_WN_2_bit));
-            FNAV_TOW_2 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_TOW_2_bit));
+            FNAV_WN_2 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_WN_2_bit));
+            FNAV_TOW_2 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_TOW_2_bit));
             flag_TOW_2 = true;
             flag_TOW_set = true;
             flag_ephemeris_1 = true;
@@ -304,10 +304,10 @@ void Galileo_Fnav_Message::decode_page(const std::string& data)
             FNAV_Crc_3 *= FNAV_Crc_3_LSB;
             FNAV_Crs_3 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Crs_3_bit));
             FNAV_Crs_3 *= FNAV_Crs_3_LSB;
-            FNAV_t0e_3 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_t0e_3_bit));
+            FNAV_t0e_3 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_t0e_3_bit));
             FNAV_t0e_3 *= FNAV_t0e_3_LSB;
-            FNAV_WN_3 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_WN_3_bit));
-            FNAV_TOW_3 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_TOW_3_bit));
+            FNAV_WN_3 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_WN_3_bit));
+            FNAV_TOW_3 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_TOW_3_bit));
             flag_TOW_3 = true;
             flag_TOW_set = true;
             flag_ephemeris_2 = true;
@@ -322,21 +322,21 @@ void Galileo_Fnav_Message::decode_page(const std::string& data)
             FNAV_A0_4 *= FNAV_A0_4_LSB;
             FNAV_A1_4 = static_cast<double>(read_navigation_signed(data_bits, FNAV_A1_4_bit));
             FNAV_A1_4 *= FNAV_A1_4_LSB;
-            FNAV_deltatls_4 = static_cast<double>(read_navigation_signed(data_bits, FNAV_deltatls_4_bit));
-            FNAV_t0t_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_t0t_4_bit));
+            FNAV_deltatls_4 = static_cast<int32_t>(read_navigation_signed(data_bits, FNAV_deltatls_4_bit));
+            FNAV_t0t_4 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_t0t_4_bit));
             FNAV_t0t_4 *= FNAV_t0t_4_LSB;
-            FNAV_WNot_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_WNot_4_bit));
-            FNAV_WNlsf_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_WNlsf_4_bit));
-            FNAV_DN_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_DN_4_bit));
-            FNAV_deltatlsf_4 = static_cast<double>(read_navigation_signed(data_bits, FNAV_deltatlsf_4_bit));
-            FNAV_t0g_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_t0g_4_bit));
+            FNAV_WNot_4 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_WNot_4_bit));
+            FNAV_WNlsf_4 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_WNlsf_4_bit));
+            FNAV_DN_4 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_DN_4_bit));
+            FNAV_deltatlsf_4 = static_cast<int32_t>(read_navigation_signed(data_bits, FNAV_deltatlsf_4_bit));
+            FNAV_t0g_4 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_t0g_4_bit));
             FNAV_t0g_4 *= FNAV_t0g_4_LSB;
             FNAV_A0g_4 = static_cast<double>(read_navigation_signed(data_bits, FNAV_A0g_4_bit));
             FNAV_A0g_4 *= FNAV_A0g_4_LSB;
             FNAV_A1g_4 = static_cast<double>(read_navigation_signed(data_bits, FNAV_A1g_4_bit));
             FNAV_A1g_4 *= FNAV_A1g_4_LSB;
-            FNAV_WN0g_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_WN0g_4_bit));
-            FNAV_TOW_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_TOW_4_bit));
+            FNAV_WN0g_4 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_WN0g_4_bit));
+            FNAV_TOW_4 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_TOW_4_bit));
             flag_TOW_4 = true;
             flag_TOW_set = true;
             flag_ephemeris_3 = true;

@@ -54,26 +54,26 @@ Galileo_Ephemeris::Galileo_Ephemeris()
     C_rs_3 = 0.0;       // Amplitude of the sine harmonic correction term to the orbit radius [meters]
     C_ic_4 = 0.0;       // Amplitude of the cosine harmonic correction     term to the angle of inclination [radians]
     C_is_4 = 0.0;       // Amplitude of the sine harmonic correction term to the angle of inclination [radians]
-    t0e_1 = 0.0;        // Ephemeris reference time [s]
+    t0e_1 = 0;          // Ephemeris reference time [s]
 
     // Clock correction parameters
-    t0c_4 = 0.0;  // Clock correction data reference Time of Week [sec]
+    t0c_4 = 0;    // Clock correction data reference Time of Week [sec]
     af0_4 = 0.0;  // SV clock bias correction coefficient [s]
     af1_4 = 0.0;  // SV clock drift correction coefficient [s/s]
     af2_4 = 0.0;  // SV clock drift rate correction coefficient [s/s^2]
 
     // GST
-    WN_5 = 0.0;
-    TOW_5 = 0.0;
+    WN_5 = 0;
+    TOW_5 = 0;
 
     // SV status
-    SISA_3 = 0.0;
-    E5a_HS = 0U;
-    E5b_HS_5 = 0.0;
-    E1B_HS_5 = 0.0;
+    SISA_3 = 0;
+    E5a_HS = 0;
+    E5b_HS_5 = 0;
+    E1B_HS_5 = 0;
     E5a_DVS = false;
-    E5b_DVS_5 = 0.0;
-    E1B_DVS_5 = 0.0;
+    E5b_DVS_5 = false;
+    E1B_DVS_5 = false;
     BGD_E1E5a_5 = 0.0;  // E1-E5a Broadcast Group Delay [s]
     BGD_E1E5b_5 = 0.0;  // E1-E5b Broadcast Group Delay [s]
 

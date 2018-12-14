@@ -60,7 +60,7 @@ _charclass[256] = {
 #define	TOKEN_CB_CALL(type, _ns, _current_too, _final) do {	\
 		int _ret;					\
 		pstate_e ns  = _ns;				\
-		ssize_t _sz = (p - chunk_start) + _current_too;	\
+		ssize_t _sz = (p - chunk_start) + (_current_too);	\
 		if (!_sz) {					\
 			/* Shortcut */				\
 			state = _ns;				\
@@ -68,11 +68,11 @@ _charclass[256] = {
 		}						\
 		_ret = cb(type, chunk_start, _sz, key);		\
 		if(_ret < _sz) {				\
-			if(_current_too && _ret == -1)		\
+			if((_current_too) && _ret == -1)		\
 				state = ns;			\
 			goto finish;				\
 		}						\
-		chunk_start = p + _current_too;			\
+		chunk_start = p + (_current_too);			\
 		state = ns;					\
 	} while(0)
 

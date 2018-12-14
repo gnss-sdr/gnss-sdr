@@ -74,7 +74,7 @@ void Galileo_Navigation_Message::reset()
 
     // Word type 1: Ephemeris (1/4)
     IOD_nav_1 = 0;
-    t0e_1 = 0.0;
+    t0e_1 = 0;
     M0_1 = 0.0;
     e_1 = 0.0;
     A_1 = 0.0;
@@ -94,7 +94,7 @@ void Galileo_Navigation_Message::reset()
     C_us_3 = 0.0;       // Amplitude of the sine harmonic correction term to the argument of latitude [radians]
     C_rc_3 = 0.0;       // Amplitude of the cosine harmonic correction term to the orbit radius [meters]
     C_rs_3 = 0.0;       // Amplitude of the sine harmonic correction term to the orbit radius [meters]
-    SISA_3 = 0.0;       //
+    SISA_3 = 0;         //
 
     // Word type 4: Ephemeris (4/4) and Clock correction parameter/
     IOD_nav_4 = 0;
@@ -103,7 +103,7 @@ void Galileo_Navigation_Message::reset()
     C_is_4 = 0.0;  // Amplitude of the sine harmonic correction term to the angle of inclination [radians]
 
     // Clock correction parameters
-    t0c_4 = 0.0;
+    t0c_4 = 0;
     af0_4 = 0.0;
     af1_4 = 0.0;
     af2_4 = 0.0;
@@ -125,24 +125,24 @@ void Galileo_Navigation_Message::reset()
     BGD_E1E5b_5 = 0.0;
     E5b_HS_5 = 0;
     E1B_HS_5 = 0;
-    E5b_DVS_5 = 0;
-    E1B_DVS_5 = 0;
+    E5b_DVS_5 = false;
+    E1B_DVS_5 = false;
 
     // GST
-    WN_5 = 0.0;
-    TOW_5 = 0.0;
+    WN_5 = 0;
+    TOW_5 = 0;
     spare_5 = 0.0;
 
     // Word type 6: GST-UTC conversion parameters
     A0_6 = 0.0;
     A1_6 = 0.0;
-    Delta_tLS_6 = 0.0;
-    t0t_6 = 0.0;
-    WNot_6 = 0.0;
+    Delta_tLS_6 = 0;
+    t0t_6 = 0;
+    WNot_6 = 0;
     WN_LSF_6 = 0;
     DN_6 = 0;
-    Delta_tLSF_6 = 0.0;
-    TOW_6 = 0.0;
+    Delta_tLSF_6 = 0;
+    TOW_6 = 0;
 
     // Word type 7: Almanac for SVID1 (1/2), almanac reference time and almanac reference week number
     IOD_a_7 = 0;
@@ -199,13 +199,13 @@ void Galileo_Navigation_Message::reset()
     // GST-GPS
     A_0G_10 = 0.0;
     A_1G_10 = 0.0;
-    t_0G_10 = 0.0;
-    WN_0G_10 = 0.0;
+    t_0G_10 = 0;
+    WN_0G_10 = 0;
 
     // Word type 0: I/NAV Spare Word
-    Time_0 = 0.0;
-    WN_0 = 0.0;
-    TOW_0 = 0.0;
+    Time_0 = 0;
+    WN_0 = 0;
+    TOW_0 = 0;
 
     flag_TOW_6 = false;
 
@@ -653,7 +653,7 @@ int32_t Galileo_Navigation_Message::page_jk_decoder(const char* data_jk)
         case 1:  // Word type 1: Ephemeris (1/4)
             IOD_nav_1 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, IOD_nav_1_bit));
             DLOG(INFO) << "IOD_nav_1= " << IOD_nav_1;
-            t0e_1 = static_cast<double>(read_navigation_unsigned(data_jk_bits, T0E_1_bit));
+            t0e_1 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, T0E_1_bit));
             t0e_1 = t0e_1 * t0e_1_LSB;
             DLOG(INFO) << "t0e_1= " << t0e_1;
             M0_1 = static_cast<double>(read_navigation_signed(data_jk_bits, M0_1_bit));
@@ -709,7 +709,7 @@ int32_t Galileo_Navigation_Message::page_jk_decoder(const char* data_jk)
             C_rs_3 = static_cast<double>(read_navigation_signed(data_jk_bits, C_rs_3_bit));
             C_rs_3 = C_rs_3 * C_rs_3_LSB;
             DLOG(INFO) << "C_rs_3= " << C_rs_3;
-            SISA_3 = static_cast<double>(read_navigation_unsigned(data_jk_bits, SISA_3_bit));
+            SISA_3 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, SISA_3_bit));
             DLOG(INFO) << "SISA_3= " << SISA_3;
             flag_ephemeris_3 = true;
             DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
@@ -727,7 +727,7 @@ int32_t Galileo_Navigation_Message::page_jk_decoder(const char* data_jk)
             C_is_4 = C_is_4 * C_is_4_LSB;
             DLOG(INFO) << "C_is_4= " << C_is_4;
             // Clock correction parameters
-            t0c_4 = static_cast<double>(read_navigation_unsigned(data_jk_bits, t0c_4_bit));
+            t0c_4 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, t0c_4_bit));
             t0c_4 = t0c_4 * t0c_4_LSB;
             DLOG(INFO) << "t0c_4= " << t0c_4;
             af0_4 = static_cast<double>(read_navigation_signed(data_jk_bits, af0_4_bit));
@@ -777,14 +777,14 @@ int32_t Galileo_Navigation_Message::page_jk_decoder(const char* data_jk)
             DLOG(INFO) << "E5b_HS_5= " << E5b_HS_5;
             E1B_HS_5 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, E1B_HS_5_bit));
             DLOG(INFO) << "E1B_HS_5= " << E1B_HS_5;
-            E5b_DVS_5 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, E5b_DVS_5_bit));
+            E5b_DVS_5 = static_cast<bool>(read_navigation_unsigned(data_jk_bits, E5b_DVS_5_bit));
             DLOG(INFO) << "E5b_DVS_5= " << E5b_DVS_5;
-            E1B_DVS_5 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, E1B_DVS_5_bit));
+            E1B_DVS_5 = static_cast<bool>(read_navigation_unsigned(data_jk_bits, E1B_DVS_5_bit));
             DLOG(INFO) << "E1B_DVS_5= " << E1B_DVS_5;
             // GST
-            WN_5 = static_cast<double>(read_navigation_unsigned(data_jk_bits, WN_5_bit));
+            WN_5 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, WN_5_bit));
             DLOG(INFO) << "WN_5= " << WN_5;
-            TOW_5 = static_cast<double>(read_navigation_unsigned(data_jk_bits, TOW_5_bit));
+            TOW_5 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, TOW_5_bit));
             DLOG(INFO) << "TOW_5= " << TOW_5;
             flag_TOW_5 = true;  // set to false externally
             spare_5 = static_cast<double>(read_navigation_unsigned(data_jk_bits, spare_5_bit));
@@ -801,20 +801,20 @@ int32_t Galileo_Navigation_Message::page_jk_decoder(const char* data_jk)
             A1_6 = static_cast<double>(read_navigation_signed(data_jk_bits, A1_6_bit));
             A1_6 = A1_6 * A1_6_LSB;
             DLOG(INFO) << "A1_6= " << A1_6;
-            Delta_tLS_6 = static_cast<double>(read_navigation_signed(data_jk_bits, Delta_tLS_6_bit));
+            Delta_tLS_6 = static_cast<int32_t>(read_navigation_signed(data_jk_bits, Delta_tLS_6_bit));
             DLOG(INFO) << "Delta_tLS_6= " << Delta_tLS_6;
-            t0t_6 = static_cast<double>(read_navigation_unsigned(data_jk_bits, t0t_6_bit));
+            t0t_6 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, t0t_6_bit));
             t0t_6 = t0t_6 * t0t_6_LSB;
             DLOG(INFO) << "t0t_6= " << t0t_6;
-            WNot_6 = static_cast<double>(read_navigation_unsigned(data_jk_bits, WNot_6_bit));
+            WNot_6 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, WNot_6_bit));
             DLOG(INFO) << "WNot_6= " << WNot_6;
             WN_LSF_6 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, WN_LSF_6_bit));
             DLOG(INFO) << "WN_LSF_6= " << WN_LSF_6;
             DN_6 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, DN_6_bit));
             DLOG(INFO) << "DN_6= " << DN_6;
-            Delta_tLSF_6 = static_cast<double>(read_navigation_signed(data_jk_bits, Delta_tLSF_6_bit));
+            Delta_tLSF_6 = static_cast<int32_t>(read_navigation_signed(data_jk_bits, Delta_tLSF_6_bit));
             DLOG(INFO) << "Delta_tLSF_6= " << Delta_tLSF_6;
-            TOW_6 = static_cast<double>(read_navigation_unsigned(data_jk_bits, TOW_6_bit));
+            TOW_6 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, TOW_6_bit));
             DLOG(INFO) << "TOW_6= " << TOW_6;
             flag_TOW_6 = true;      // set to false externally
             flag_utc_model = true;  // set to false externally
@@ -963,11 +963,11 @@ int32_t Galileo_Navigation_Message::page_jk_decoder(const char* data_jk)
             A_1G_10 = A_1G_10 * A_1G_10_LSB;
             flag_GGTO_2 = true;
             DLOG(INFO) << "A_1G_10= " << A_1G_10;
-            t_0G_10 = static_cast<double>(read_navigation_unsigned(data_jk_bits, t_0G_10_bit));
+            t_0G_10 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, t_0G_10_bit));
             t_0G_10 = t_0G_10 * t_0G_10_LSB;
             flag_GGTO_3 = true;
             DLOG(INFO) << "t_0G_10= " << t_0G_10;
-            WN_0G_10 = static_cast<double>(read_navigation_unsigned(data_jk_bits, WN_0G_10_bit));
+            WN_0G_10 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, WN_0G_10_bit));
             flag_GGTO_4 = true;
             DLOG(INFO) << "WN_0G_10= " << WN_0G_10;
             flag_almanac_4 = true;
@@ -975,11 +975,11 @@ int32_t Galileo_Navigation_Message::page_jk_decoder(const char* data_jk)
             break;
 
         case 0:  // Word type 0: I/NAV Spare Word
-            Time_0 = static_cast<double>(read_navigation_unsigned(data_jk_bits, Time_0_bit));
+            Time_0 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, Time_0_bit));
             DLOG(INFO) << "Time_0= " << Time_0;
-            WN_0 = static_cast<double>(read_navigation_unsigned(data_jk_bits, WN_0_bit));
+            WN_0 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, WN_0_bit));
             DLOG(INFO) << "WN_0= " << WN_0;
-            TOW_0 = static_cast<double>(read_navigation_unsigned(data_jk_bits, TOW_0_bit));
+            TOW_0 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, TOW_0_bit));
             DLOG(INFO) << "TOW_0= " << TOW_0;
             DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
             break;

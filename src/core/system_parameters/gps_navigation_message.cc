@@ -39,14 +39,14 @@ m * \file gps_navigation_message.cc
 void Gps_Navigation_Message::reset()
 {
     b_valid_ephemeris_set_flag = false;
-    d_TOW = 0.0;
-    d_TOW_SF1 = 0.0;
-    d_TOW_SF2 = 0.0;
-    d_TOW_SF3 = 0.0;
-    d_TOW_SF4 = 0.0;
-    d_TOW_SF5 = 0.0;
-    d_IODE_SF2 = 0.0;
-    d_IODE_SF3 = 0.0;
+    d_TOW = 0;
+    d_TOW_SF1 = 0;
+    d_TOW_SF2 = 0;
+    d_TOW_SF3 = 0;
+    d_TOW_SF4 = 0;
+    d_TOW_SF5 = 0;
+    d_IODE_SF2 = 0;
+    d_IODE_SF3 = 0;
     d_Crs = 0.0;
     d_Delta_n = 0.0;
     d_M_0 = 0.0;
@@ -54,8 +54,8 @@ void Gps_Navigation_Message::reset()
     d_e_eccentricity = 0.0;
     d_Cus = 0.0;
     d_sqrt_A = 0.0;
-    d_Toe = 0.0;
-    d_Toc = 0.0;
+    d_Toe = 0;
+    d_Toc = 0;
     d_Cic = 0.0;
     d_OMEGA0 = 0.0;
     d_Cis = 0.0;
@@ -70,7 +70,7 @@ void Gps_Navigation_Message::reset()
     i_SV_accuracy = 0;
     i_SV_health = 0;
     d_TGD = 0.0;
-    d_IODC = -1.0;
+    d_IODC = -1;
     i_AODO = 0;
 
     b_fit_interval_flag = false;
@@ -117,12 +117,12 @@ void Gps_Navigation_Message::reset()
     d_beta3 = 0.0;
     d_A1 = 0.0;
     d_A0 = 0.0;
-    d_t_OT = 0.0;
+    d_t_OT = 0;
     i_WN_T = 0;
-    d_DeltaT_LS = 0.0;
+    d_DeltaT_LS = 0;
     i_WN_LSF = 0;
     i_DN = 0;
-    d_DeltaT_LSF = 0.0;
+    d_DeltaT_LSF = 0;
 
     // Almanac
     i_Toa = 0;
@@ -257,9 +257,9 @@ int32_t Gps_Navigation_Message::subframe_decoder(char* subframe)
             // The transmitted TOW is actual TOW of the next subframe
             // (the variable subframe at this point contains bits of the last subframe).
             //TOW = bin2dec(subframe(31:47)) * 6;
-            d_TOW_SF1 = static_cast<double>(read_navigation_unsigned(subframe_bits, TOW));
+            d_TOW_SF1 = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, TOW));
             //we are in the first subframe (the transmitted TOW is the start time of the next subframe) !
-            d_TOW_SF1 = d_TOW_SF1 * 6.0;
+            d_TOW_SF1 = d_TOW_SF1 * 6;
             d_TOW = d_TOW_SF1;  // Set transmission time
             b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
             b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
@@ -271,8 +271,8 @@ int32_t Gps_Navigation_Message::subframe_decoder(char* subframe)
             i_code_on_L2 = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, CA_OR_P_ON_L2));
             d_TGD = static_cast<double>(read_navigation_signed(subframe_bits, T_GD));
             d_TGD = d_TGD * T_GD_LSB;
-            d_IODC = static_cast<double>(read_navigation_unsigned(subframe_bits, IODC));
-            d_Toc = static_cast<double>(read_navigation_unsigned(subframe_bits, T_OC));
+            d_IODC = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, IODC));
+            d_Toc = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, T_OC));
             d_Toc = d_Toc * T_OC_LSB;
             d_A_f0 = static_cast<double>(read_navigation_signed(subframe_bits, A_F0));
             d_A_f0 = d_A_f0 * A_F0_LSB;
@@ -283,13 +283,13 @@ int32_t Gps_Navigation_Message::subframe_decoder(char* subframe)
             break;
 
         case 2:  //--- It is subframe 2 -------------------
-            d_TOW_SF2 = static_cast<double>(read_navigation_unsigned(subframe_bits, TOW));
-            d_TOW_SF2 = d_TOW_SF2 * 6.0;
+            d_TOW_SF2 = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, TOW));
+            d_TOW_SF2 = d_TOW_SF2 * 6;
             d_TOW = d_TOW_SF2;  // Set transmission time
             b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
             b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
             b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
-            d_IODE_SF2 = static_cast<double>(read_navigation_unsigned(subframe_bits, IODE_SF2));
+            d_IODE_SF2 = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, IODE_SF2));
             d_Crs = static_cast<double>(read_navigation_signed(subframe_bits, C_RS));
             d_Crs = d_Crs * C_RS_LSB;
             d_Delta_n = static_cast<double>(read_navigation_signed(subframe_bits, DELTA_N));
@@ -304,7 +304,7 @@ int32_t Gps_Navigation_Message::subframe_decoder(char* subframe)
             d_Cus = d_Cus * C_US_LSB;
             d_sqrt_A = static_cast<double>(read_navigation_unsigned(subframe_bits, SQRT_A));
             d_sqrt_A = d_sqrt_A * SQRT_A_LSB;
-            d_Toe = static_cast<double>(read_navigation_unsigned(subframe_bits, T_OE));
+            d_Toe = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, T_OE));
             d_Toe = d_Toe * T_OE_LSB;
             b_fit_interval_flag = read_navigation_bool(subframe_bits, FIT_INTERVAL_FLAG);
             i_AODO = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, AODO));
@@ -312,8 +312,8 @@ int32_t Gps_Navigation_Message::subframe_decoder(char* subframe)
             break;
 
         case 3:  // --- It is subframe 3 -------------------------------------
-            d_TOW_SF3 = static_cast<double>(read_navigation_unsigned(subframe_bits, TOW));
-            d_TOW_SF3 = d_TOW_SF3 * 6.0;
+            d_TOW_SF3 = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, TOW));
+            d_TOW_SF3 = d_TOW_SF3 * 6;
             d_TOW = d_TOW_SF3;  // Set transmission time
             b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
             b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
@@ -332,7 +332,7 @@ int32_t Gps_Navigation_Message::subframe_decoder(char* subframe)
             d_OMEGA = d_OMEGA * OMEGA_LSB;
             d_OMEGA_DOT = static_cast<double>(read_navigation_signed(subframe_bits, OMEGA_DOT));
             d_OMEGA_DOT = d_OMEGA_DOT * OMEGA_DOT_LSB;
-            d_IODE_SF3 = static_cast<double>(read_navigation_unsigned(subframe_bits, IODE_SF3));
+            d_IODE_SF3 = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, IODE_SF3));
             d_IDOT = static_cast<double>(read_navigation_signed(subframe_bits, I_DOT));
             d_IDOT = d_IDOT * I_DOT_LSB;
             break;
@@ -340,8 +340,8 @@ int32_t Gps_Navigation_Message::subframe_decoder(char* subframe)
         case 4:  // --- It is subframe 4 ---------- Almanac, ionospheric model, UTC parameters, SV health (PRN: 25-32)
             int32_t SV_data_ID;
             int32_t SV_page;
-            d_TOW_SF4 = static_cast<double>(read_navigation_unsigned(subframe_bits, TOW));
-            d_TOW_SF4 = d_TOW_SF4 * 6.0;
+            d_TOW_SF4 = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, TOW));
+            d_TOW_SF4 = d_TOW_SF4 * 6;
             d_TOW = d_TOW_SF4;  // Set transmission time
             b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
             b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
@@ -384,13 +384,13 @@ int32_t Gps_Navigation_Message::subframe_decoder(char* subframe)
                     d_A1 = d_A1 * A_1_LSB;
                     d_A0 = static_cast<double>(read_navigation_signed(subframe_bits, A_0));
                     d_A0 = d_A0 * A_0_LSB;
-                    d_t_OT = static_cast<double>(read_navigation_unsigned(subframe_bits, T_OT));
+                    d_t_OT = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, T_OT));
                     d_t_OT = d_t_OT * T_OT_LSB;
                     i_WN_T = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, WN_T));
-                    d_DeltaT_LS = static_cast<double>(read_navigation_signed(subframe_bits, DELTAT_LS));
+                    d_DeltaT_LS = static_cast<int32_t>(read_navigation_signed(subframe_bits, DELTAT_LS));
                     i_WN_LSF = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, WN_LSF));
                     i_DN = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, DN));  // Right-justified ?
-                    d_DeltaT_LSF = static_cast<double>(read_navigation_signed(subframe_bits, DELTAT_LSF));
+                    d_DeltaT_LSF = static_cast<int32_t>(read_navigation_signed(subframe_bits, DELTAT_LSF));
                     flag_iono_valid = true;
                     flag_utc_model_valid = true;
                 }
@@ -417,8 +417,8 @@ int32_t Gps_Navigation_Message::subframe_decoder(char* subframe)
         case 5:  //--- It is subframe 5 -----------------almanac health (PRN: 1-24) and Almanac reference week number and time.
             int32_t SV_data_ID_5;
             int32_t SV_page_5;
-            d_TOW_SF5 = static_cast<double>(read_navigation_unsigned(subframe_bits, TOW));
-            d_TOW_SF5 = d_TOW_SF5 * 6.0;
+            d_TOW_SF5 = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, TOW));
+            d_TOW_SF5 = d_TOW_SF5 * 6;
             d_TOW = d_TOW_SF5;  // Set transmission time
             b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
             b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);

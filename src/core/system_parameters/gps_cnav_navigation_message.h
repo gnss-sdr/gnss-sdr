@@ -65,7 +65,7 @@ private:
     Gps_CNAV_Utc_Model utc_model_record;
 
 public:
-    double d_TOW;
+    int32_t d_TOW;
     bool b_flag_ephemeris_1;
     bool b_flag_ephemeris_2;
     bool b_flag_iono_valid;  //!< If set, it indicates that the ionospheric parameters are filled and are not yet read by the get_iono

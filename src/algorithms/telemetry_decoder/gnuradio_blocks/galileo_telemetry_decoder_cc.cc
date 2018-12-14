@@ -141,7 +141,7 @@ galileo_telemetry_decoder_cc::galileo_telemetry_decoder_cc(
             d_samples_per_symbol = 0U;
             d_PRN_code_period_ms = 0U;
             d_required_symbols = 0U;
-            d_frame_length_symbols = 0.0;
+            d_frame_length_symbols = 0U;
             CodeLength = 0;
             DataLength = 0;
             std::cout << "Galileo unified telemetry decoder error: Unknown frame type " << std::endl;

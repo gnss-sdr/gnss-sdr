@@ -181,12 +181,12 @@ xer_check_tag(const void *buf_ptr, int size, const char *need_tag) {
 #define	XER_GOT_BODY(chunk_buf, chunk_size, size)	do {	\
 		ssize_t converted_size = body_receiver		\
 			(struct_key, chunk_buf, chunk_size,	\
-				(size_t)chunk_size < size);	\
+				(size_t)(chunk_size) < (size));	\
 		if(converted_size == -1) RETURN(RC_FAIL);	\
 		if(converted_size == 0				\
-			&& size == (size_t)chunk_size)		\
+			&& (size) == (size_t)(chunk_size))		\
 			RETURN(RC_WMORE);			\
-		chunk_size = converted_size;			\
+		(chunk_size) = converted_size;			\
 	} while(0)
 #define	XER_GOT_EMPTY()	do {					\
 	if(body_receiver(struct_key, 0, 0, size > 0) == -1)	\

@@ -645,7 +645,7 @@ int sbsreadmsgt(const char *file, int sel, gtime_t ts, gtime_t te,
     for (i = 0; i < n; i++)
         {
             if (!(ext = strrchr(efiles[i], '.'))) continue;
-            if (strcmp(ext, ".sbs") != 0 && strcmp(ext, ".SBS") &&
+            if (strcmp(ext, ".sbs") != 0 && strcmp(ext, ".SBS") != 0 &&
                 strcmp(ext, ".ems") != 0 && strcmp(ext, ".EMS") != 0) continue;
 
             readmsgs(efiles[i], sel, ts, te, sbs);

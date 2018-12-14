@@ -1,6 +1,6 @@
-## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
+## [0.0.10](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.10)
 
-Next release will have several improvements in different dimensions, addition of new features and bug fixes:
+This release has several improvements in different dimensions, addition of new features and bug fixes:
 
 ### Improvements in Accuracy:
 
@@ -14,7 +14,7 @@ Next release will have several improvements in different dimensions, addition of
 
 - Internal Finite State Machines rewritten for improved continuity in delivering position fixes. This fixes a bug that was stalling the receiver after about six hours of continuous operation.
 - Redesign of the time counter for enhanced continuity.
-- Improved flow graph in multisystem configurations: the receiver does not get stalled anymore if no signal is found from the first system.
+- Improved flow graph in multi-system configurations: the receiver does not get stalled anymore if no signal is found from the first system.
 - Improved acquisition and tracking sensitivity.
 - Added mechanisms for Assisted GNSS, thus shortening the Time-To-First-Fix. Provision of data via XML files or via SUPL v1.0. Documented at https://gnss-sdr.org/docs/sp-blocks/global-parameters/
 - Other minor bug fixes.
@@ -23,7 +23,7 @@ Next release will have several improvements in different dimensions, addition of
 ### Improvements in Efficiency:
 
 - Added the possibility of non-blocking acquisition, which works well when using real-time data from an RF front-end.
-- Improved flow graph in multiband configurations: satellites acquired in one band are immediately searched in others.
+- Improved flow graph in multi-band configurations: satellites acquired in one band are immediately searched in others.
 - Complex local codes have been replaced by real codes, alleviating the computational burden.
 - New volk_gnsssdr kernels: volk_gnsssdr_16i_xn_resampler_16i_xn.h, volk_gnsssdr_16ic_16i_rotator_dot_prod_16ic_xn.h, volk_gnsssdr_32f_xn_resampler_32f_xn.h, volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn.h
 - Some AVX2 implementations added to the volk_gnsssdr library.
@@ -64,7 +64,7 @@ Next release will have several improvements in different dimensions, addition of
 
 ### Improvements in Maintainability:
 
-- Setup of a Continuous Integration system that checks building and runs QA code in a wide range of GNU/Linux distributions (ArchLinux, CentOS, Debian, Fedora, OpenSUSE, Ubuntu) and releases. See https://gitlab.com/gnss-sdr/gnss-sdr
+- Setup of a Continuous Integration system that checks building and runs QA code in a wide range of GNU/Linux distributions (Arch Linux, CentOS, Debian, Fedora, OpenSUSE, Ubuntu) and releases. See https://gitlab.com/gnss-sdr/gnss-sdr
 - Creation of multi-system processing blocks, drastically reducing code duplication and maintainability time.
 - Automated code formatting with clang-format. This tool is widely available and easy to integrate into many code editors, and it also can be used from the command line. It cuts time spent on adhering to the project's code formatting style.
 - Improvement in C++ usage: C-style casts have been replaced by C++ casts. C-style casts are difficult to search for. C++ casts provide compile time checking ability and express programmers' intent better, so they are safer and clearer.
@@ -84,13 +84,13 @@ Next release will have several improvements in different dimensions, addition of
 - The software builds with C++11, C++14 and C++17 standards.
 - The software can now be built using GCC >= 4.7.2 or LLVM/Clang >= 3.4.0 compilers on GNU/Linux, and with Clang/AppleClang on MacOS.
 - The Ninja build system can be used in replacement of make.
-- The volk_gnsssdr library can be built using Python 2.7 or Python 3.6.
+- The volk_gnsssdr library can be built using Python 2.7+ or Python 3.6+.
 - The volk_gnsssdr library is now ready for AArch64 NEON instructions.
-- Ready for GNU Radio 3.8 C++ API (as per current master branch of GNU Radio upstream repository).
 - Improved detection of required and optional dependencies in many GNU/Linux distributions and processor architectures.
 - Improvement in C++ usage: The <ctime> library has been replaced by the more modern and portable <chrono> (except for the interaction with RTKLIB).
 - Improvement in C++ usage: The <stdio.h> library has been replaced by the more modern and portable <fstream> for file handling.
 - Improvement in C++ usage: C++ libraries preferred over C libraries (e.g., <cctype> instead of <ctype.h>, <cmath> instead of <math.h>).
+- Fix compatibility with Boost 1.67 (closes Debian bug #911882 https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=911882)
 - Fixes required by Debian packaging.
 - Fixes required by Macports packaging.
 - A downside in portability: BLAS and LAPACK libraries are now required even in ARM devices.
@@ -101,7 +101,7 @@ Next release will have several improvements in different dimensions, addition of
 ### Improvements in Reliability:
 
 - Introduced 3 new Input Filter implementations for pulsed and narrowband interference mitigation: `Pulse_Blanking_Filter`, `Notch_Filter` and `Notch_Filter_Lite`. Documented in https://gnss-sdr.org/docs/sp-blocks/input-filter/
-- Improved flow graph stabiliy.
+- Improved flow graph stability.
 - Introduction of high-integrity C++ practices into the source code and included in the coding style guide. See https://gnss-sdr.org/coding-style/
 - Fixed a number of defects detected by Coverity Scan.
 - Improvement of QA code and addition of a number of new tests. Documented at https://gnss-sdr.org/docs/tutorials/testing-software-receiver-2/
@@ -126,7 +126,12 @@ Next release will have several improvements in different dimensions, addition of
 ### Improvements in Testability:
 
 - Several Unit Tests added. Documentation of testing concepts and available tests at https://gnss-sdr.org/docs/tutorials/testing-software-receiver/
+- New extra unit test AcquisitionPerformanceTest checks the performance of Acquisition blocks.
+- New extra unit test TrackingPullInTest checks acquisition to tracking transition.
+- New extra unit test HybridObservablesTest checks the generation of observables.
+- Improved system testing: position_test accepts a wide list of parameters and can be used with external files.
 - Receiver channels can now be fixed to a given satellite.
+- Testing integrated in a Continuous Reproducibility system (see above).
 - Improved CTest support in volk_gnsssdr.
 
 
@@ -142,11 +147,11 @@ Next release will have several improvements in different dimensions, addition of
 - Added a changelog, a code of conduct, a contributing guide and a pull-request template in the source tree.
 - Added colors to the commandline user interface.
 - Updated manfiles.
+- Updated examples of configuration files under the conf/ folder.
 
 
 
 See the definitions of concepts and metrics at https://gnss-sdr.org/design-forces/
-
 
 
 

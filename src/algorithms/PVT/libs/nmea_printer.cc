@@ -102,7 +102,7 @@ Nmea_Printer::Nmea_Printer(const std::string& filename, bool flag_nmea_output_fi
     nmea_devname = std::move(nmea_dump_devname);
     if (flag_nmea_tty_port == true)
         {
-            nmea_dev_descriptor = init_serial(nmea_devname.c_str());
+            nmea_dev_descriptor = init_serial(nmea_devname);
             if (nmea_dev_descriptor != -1)
                 {
                     DLOG(INFO) << "NMEA printer writing on " << nmea_devname.c_str();

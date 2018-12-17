@@ -29,10 +29,10 @@
  * -------------------------------------------------------------------------
  */
 
+#include "gnss_signal_processing.h"
+#include "gps_sdr_signal_processing.h"
 #include <chrono>
 #include <complex>
-#include "gps_sdr_signal_processing.h"
-#include "gnss_signal_processing.h"
 
 
 TEST(CodeGenerationTest, CodeGenGPSL1Test)

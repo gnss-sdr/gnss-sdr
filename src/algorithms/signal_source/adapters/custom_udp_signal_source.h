@@ -36,9 +36,9 @@
 #include "gnss_block_interface.h"
 #include "gr_complex_ip_packet_source.h"
 #include <boost/shared_ptr.hpp>
-#include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/msg_queue.h>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -54,7 +54,7 @@ class CustomUDPSignalSource : public GNSSBlockInterface
 {
 public:
     CustomUDPSignalSource(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_stream,
+        const std::string& role, unsigned int in_stream,
         unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~CustomUDPSignalSource();

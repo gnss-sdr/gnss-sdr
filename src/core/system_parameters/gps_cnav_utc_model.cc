@@ -37,12 +37,12 @@ Gps_CNAV_Utc_Model::Gps_CNAV_Utc_Model()
     d_A2 = 0.0;
     d_A1 = 0.0;
     d_A0 = 0.0;
-    d_t_OT = 0.0;
+    d_t_OT = 0;
     i_WN_T = 0;
-    d_DeltaT_LS = 0.0;
+    d_DeltaT_LS = 0;
     i_WN_LSF = 0;
     i_DN = 0;
-    d_DeltaT_LSF = 0.0;
+    d_DeltaT_LSF = 0;
 }
 
 
@@ -84,7 +84,7 @@ double Gps_CNAV_Utc_Model::utc_time(double gpstime_corrected, int32_t i_GPS_week
                              * proper accommodation of the leap second event with a possible week number
                              * transition is provided by the following expression for UTC:
                              */
-                            int32_t W = fmod(gpstime_corrected - Delta_t_UTC - 43200, 86400) + 43200;
+                            int32_t W = static_cast<int32_t>(fmod(gpstime_corrected - Delta_t_UTC - 43200, 86400)) + 43200;
                             t_utc_daytime = fmod(W, 86400 + d_DeltaT_LSF - d_DeltaT_LS);
                             // implement something to handle a leap second event!
                         }

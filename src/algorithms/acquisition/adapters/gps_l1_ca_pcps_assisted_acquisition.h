@@ -34,8 +34,8 @@
 #ifndef GNSS_SDR_GPS_L1_CA_PCPS_ASSISTED_ACQUISITION_H_
 #define GNSS_SDR_GPS_L1_CA_PCPS_ASSISTED_ACQUISITION_H_
 
-#include "gnss_synchro.h"
 #include "acquisition_interface.h"
+#include "gnss_synchro.h"
 #include "pcps_assisted_acquisition_cc.h"
 #include <string>
 
@@ -49,7 +49,8 @@ class GpsL1CaPcpsAssistedAcquisition : public AcquisitionInterface
 {
 public:
     GpsL1CaPcpsAssistedAcquisition(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role,
+        unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~GpsL1CaPcpsAssistedAcquisition();
@@ -127,6 +128,8 @@ public:
      */
     void stop_acquisition() override;
 
+    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
+
 private:
     pcps_assisted_acquisition_cc_sptr acquisition_cc_;
     size_t item_size_;
@@ -140,7 +143,7 @@ private:
     int doppler_min_;
     unsigned int sampled_ms_;
     int max_dwells_;
-    long fs_in_;
+    int64_t fs_in_;
     bool dump_;
     std::string dump_filename_;
     std::complex<float>* code_;

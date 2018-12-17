@@ -34,13 +34,11 @@
 #define LIBSWIFTNAV_CNAV_MSG_H
 
 #include "fec.h"
-
+#include "swift_common.h"
+#include <limits.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <limits.h>
-
-#include "swift_common.h"
 
 /** \addtogroup GPS_L2
  * \{ */

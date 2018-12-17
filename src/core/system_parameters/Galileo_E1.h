@@ -33,12 +33,12 @@
 #ifndef GNSS_SDR_GALILEO_E1_H_
 #define GNSS_SDR_GALILEO_E1_H_
 
-#include "gnss_frequencies.h"
 #include "MATH_CONSTANTS.h"
+#include "gnss_frequencies.h"
 #include <cstdint>
 #include <string>
-#include <vector>
 #include <utility>  // std::pair
+#include <vector>
 
 
 // Physical constants
@@ -62,6 +62,11 @@ const double Galileo_E1_B_SYMBOL_RATE_BPS = 250.0;        //!< Galileo E1-B symb
 const int32_t Galileo_E1_B_SAMPLES_PER_SYMBOL = 1;        //!< (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS) / Galileo_E1_B_SYMBOL_RATE_BPS
 const int32_t Galileo_E1_C_SECONDARY_CODE_LENGTH = 25;    //!< Galileo E1-C secondary code length [chips]
 const int32_t Galileo_E1_NUMBER_OF_CODES = 50;
+
+
+//optimum parameters
+const uint32_t Galileo_E1_OPT_ACQ_FS_HZ = 2000000;  //!< Sampling frequncy that maximizes the acquisition SNR while using a non-multiple of chip rate
+
 
 const double GALILEO_STARTOFFSET_ms = 68.802;  //[ms] Initial sign. travel time (this cannot go here)
 
@@ -98,7 +103,7 @@ const std::vector<std::pair<int32_t, int32_t>> PAGE_TYPE_bit({{1, 6}});
 /*Page 1 - Word type 1: Ephemeris (1/4)*/
 const std::vector<std::pair<int32_t, int32_t>> IOD_nav_1_bit({{7, 10}});
 const std::vector<std::pair<int32_t, int32_t>> T0E_1_bit({{17, 14}});
-const double t0e_1_LSB = 60;
+const int32_t t0e_1_LSB = 60;
 const std::vector<std::pair<int32_t, int32_t>> M0_1_bit({{31, 32}});
 const double M0_1_LSB = PI_TWO_N31;
 const std::vector<std::pair<int32_t, int32_t>> e_1_bit({{63, 32}});
@@ -146,7 +151,7 @@ const double C_ic_4_LSB = TWO_N29;
 const std::vector<std::pair<int32_t, int32_t>> C_is_4_bit({{39, 16}});
 const double C_is_4_LSB = TWO_N29;
 const std::vector<std::pair<int32_t, int32_t>> t0c_4_bit({{55, 14}});  //
-const double t0c_4_LSB = 60;
+const int32_t t0c_4_LSB = 60;
 const std::vector<std::pair<int32_t, int32_t>> af0_4_bit({{69, 31}});  //
 const double af0_4_LSB = TWO_N34;
 const std::vector<std::pair<int32_t, int32_t>> af1_4_bit({{100, 21}});  //
@@ -193,7 +198,7 @@ const std::vector<std::pair<int32_t, int32_t>> A1_6_bit({{39, 24}});
 const double A1_6_LSB = TWO_N50;
 const std::vector<std::pair<int32_t, int32_t>> Delta_tLS_6_bit({{63, 8}});
 const std::vector<std::pair<int32_t, int32_t>> t0t_6_bit({{71, 8}});
-const double t0t_6_LSB = 3600;
+const int32_t t0t_6_LSB = 3600;
 const std::vector<std::pair<int32_t, int32_t>> WNot_6_bit({{79, 8}});
 const std::vector<std::pair<int32_t, int32_t>> WN_LSF_6_bit({{87, 8}});
 const std::vector<std::pair<int32_t, int32_t>> DN_6_bit({{95, 3}});
@@ -205,7 +210,7 @@ const std::vector<std::pair<int32_t, int32_t>> TOW_6_bit({{106, 20}});
 const std::vector<std::pair<int32_t, int32_t>> IOD_a_7_bit({{7, 4}});
 const std::vector<std::pair<int32_t, int32_t>> WN_a_7_bit({{11, 2}});
 const std::vector<std::pair<int32_t, int32_t>> t0a_7_bit({{13, 10}});
-const double t0a_7_LSB = 600;
+const int32_t t0a_7_LSB = 600;
 const std::vector<std::pair<int32_t, int32_t>> SVID1_7_bit({{23, 6}});
 const std::vector<std::pair<int32_t, int32_t>> DELTA_A_7_bit({{29, 13}});
 const double DELTA_A_7_LSB = TWO_N9;
@@ -250,7 +255,7 @@ const double Omega_dot_8_LSB = TWO_N33;
 const std::vector<std::pair<int32_t, int32_t>> IOD_a_9_bit({{7, 4}});
 const std::vector<std::pair<int32_t, int32_t>> WN_a_9_bit({{11, 2}});
 const std::vector<std::pair<int32_t, int32_t>> t0a_9_bit({{13, 10}});
-const double t0a_9_LSB = 600;
+const int32_t t0a_9_LSB = 600;
 const std::vector<std::pair<int32_t, int32_t>> M0_9_bit({{23, 16}});
 const double M0_9_LSB = TWO_N15;
 const std::vector<std::pair<int32_t, int32_t>> af0_9_bit({{39, 16}});
@@ -289,7 +294,7 @@ const double A_0G_10_LSB = TWO_N35;
 const std::vector<std::pair<int32_t, int32_t>> A_1G_10_bit({{103, 12}});
 const double A_1G_10_LSB = TWO_N51;
 const std::vector<std::pair<int32_t, int32_t>> t_0G_10_bit({{115, 8}});
-const double t_0G_10_LSB = 3600;
+const int32_t t_0G_10_LSB = 3600;
 const std::vector<std::pair<int32_t, int32_t>> WN_0G_10_bit({{123, 6}});
 
 

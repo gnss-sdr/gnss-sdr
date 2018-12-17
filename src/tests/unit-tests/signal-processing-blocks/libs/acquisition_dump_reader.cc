@@ -38,13 +38,13 @@
 bool acquisition_dump_reader::read_binary_acq()
 {
     mat_t* matfile = Mat_Open(d_dump_filename.c_str(), MAT_ACC_RDONLY);
-    if (matfile == NULL)
+    if (matfile == nullptr)
         {
             std::cout << "¡¡¡Unreachable Acquisition dump file!!!" << std::endl;
             return false;
         }
     matvar_t* var_ = Mat_VarRead(matfile, "acq_grid");
-    if (var_ == NULL)
+    if (var_ == nullptr)
         {
             std::cout << "¡¡¡Unreachable grid variable into Acquisition dump file!!!" << std::endl;
             Mat_Close(matfile);
@@ -119,7 +119,7 @@ bool acquisition_dump_reader::read_binary_acq()
 
     std::vector<std::vector<float> >::iterator it1;
     std::vector<float>::iterator it2;
-    float* aux = static_cast<float*>(var_->data);
+    auto* aux = static_cast<float*>(var_->data);
     int k = 0;
     float normalization_factor = std::pow(d_samples_per_code, 4) * input_power;
     for (it1 = mag.begin(); it1 != mag.end(); it1++)
@@ -147,7 +147,7 @@ acquisition_dump_reader::acquisition_dump_reader(const std::string& basename,
     unsigned int samples_per_code_ = 0;
 
     mat_t* matfile = Mat_Open(d_dump_filename.c_str(), MAT_ACC_RDONLY);
-    if (matfile != NULL)
+    if (matfile != nullptr)
         {
             matvar_t* var_ = Mat_VarRead(matfile, "doppler_max");
             doppler_max_ = *static_cast<unsigned int*>(var_->data);
@@ -234,6 +234,4 @@ acquisition_dump_reader::acquisition_dump_reader(const std::string& basename,
 }
 
 
-acquisition_dump_reader::~acquisition_dump_reader()
-{
-}
+acquisition_dump_reader::~acquisition_dump_reader() = default;

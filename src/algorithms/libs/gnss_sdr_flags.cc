@@ -69,7 +69,7 @@ DEFINE_double(pll_bw_hz, 0.0, "If defined, bandwidth of the PLL low pass filter,
 
 static bool ValidateC(const char* flagname, const std::string& value)
 {
-    if (boost::filesystem::exists(value) or value.compare("-") == 0)  // value is ok
+    if (boost::filesystem::exists(value) or value == "-")  // value is ok
         return true;
     std::cout << "Invalid value for flag -" << flagname << ". The file '" << value << "' does not exist." << std::endl;
     std::cout << "GNSS-SDR program ended." << std::endl;
@@ -78,7 +78,7 @@ static bool ValidateC(const char* flagname, const std::string& value)
 
 static bool ValidateConfigFile(const char* flagname, const std::string& value)
 {
-    if (boost::filesystem::exists(value) or value.compare(std::string(GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/default.conf")) == 0)  // value is ok
+    if (boost::filesystem::exists(value) or value == std::string(GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/default.conf"))  // value is ok
         return true;
     std::cout << "Invalid value for flag -" << flagname << ". The file '" << value << "' does not exist." << std::endl;
     std::cout << "GNSS-SDR program ended." << std::endl;
@@ -87,7 +87,7 @@ static bool ValidateConfigFile(const char* flagname, const std::string& value)
 
 static bool ValidateS(const char* flagname, const std::string& value)
 {
-    if (boost::filesystem::exists(value) or value.compare("-") == 0)  // value is ok
+    if (boost::filesystem::exists(value) or value == "-")  // value is ok
         return true;
     std::cout << "Invalid value for flag -" << flagname << ". The file '" << value << "' does not exist." << std::endl;
     std::cout << "GNSS-SDR program ended." << std::endl;
@@ -96,7 +96,7 @@ static bool ValidateS(const char* flagname, const std::string& value)
 
 static bool ValidateSignalSource(const char* flagname, const std::string& value)
 {
-    if (boost::filesystem::exists(value) or value.compare("-") == 0)  // value is ok
+    if (boost::filesystem::exists(value) or value == "-")  // value is ok
         return true;
     std::cout << "Invalid value for flag -" << flagname << ". The file '" << value << "' does not exist." << std::endl;
     std::cout << "GNSS-SDR program ended." << std::endl;

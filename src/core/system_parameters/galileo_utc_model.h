@@ -34,6 +34,7 @@
 #define GNSS_SDR_GALILEO_UTC_MODEL_H_
 
 #include <boost/serialization/nvp.hpp>
+#include <cstdint>
 
 /*!
  * \brief This class is a storage for the GALILEO UTC MODEL data as described in Galileo ICD
@@ -46,22 +47,22 @@ public:
     // Word type 6: GST-UTC conversion parameters
     double A0_6;
     double A1_6;
-    double Delta_tLS_6;
-    double t0t_6;   //!< UTC data reference Time of Week [s]
-    double WNot_6;  //!< UTC data reference Week number [week]
-    double WN_LSF_6;
-    double DN_6;
-    double Delta_tLSF_6;
+    int32_t Delta_tLS_6;
+    int32_t t0t_6;   //!< UTC data reference Time of Week [s]
+    int32_t WNot_6;  //!< UTC data reference Week number [week]
+    int32_t WN_LSF_6;
+    int32_t DN_6;
+    int32_t Delta_tLSF_6;
     bool flag_utc_model;
 
     // GPS to Galileo GST conversion parameters
     double A_0G_10;
     double A_1G_10;
-    double t_0G_10;
-    double WN_0G_10;
+    int32_t t_0G_10;
+    int32_t WN_0G_10;
 
     //double TOW_6;
-    double GST_to_UTC_time(double t_e, int WN);  //!< GST-UTC Conversion Algorithm and Parameters
+    double GST_to_UTC_time(double t_e, int32_t WN);  //!< GST-UTC Conversion Algorithm and Parameters
     /*!
      * Default constructor
      */

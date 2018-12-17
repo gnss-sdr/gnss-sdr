@@ -29,17 +29,18 @@
 */
 
 #include "signal_generator_c.h"
-#include "gps_sdr_signal_processing.h"
-#include "glonass_l1_signal_processing.h"
-#include "galileo_e1_signal_processing.h"
-#include "galileo_e5_signal_processing.h"
+#include "GLONASS_L1_L2_CA.h"
+#include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
-#include "GPS_L1_CA.h"
-#include "GLONASS_L1_L2_CA.h"
+#include "galileo_e1_signal_processing.h"
+#include "galileo_e5_signal_processing.h"
+#include "glonass_l1_signal_processing.h"
+#include "gps_sdr_signal_processing.h"
 #include <gnuradio/io_signature.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <fstream>
+#include <utility>
 
 
 /*
@@ -52,7 +53,7 @@ signal_make_generator_c(std::vector<std::string> signal1, std::vector<std::strin
     const std::vector<unsigned int> &delay_chips, const std::vector<unsigned int> &delay_sec, bool data_flag, bool noise_flag,
     unsigned int fs_in, unsigned int vector_length, float BW_BB)
 {
-    return gnuradio::get_initial_sptr(new signal_generator_c(signal1, system, PRN, CN0_dB, doppler_Hz, delay_chips, delay_sec,
+    return gnuradio::get_initial_sptr(new signal_generator_c(std::move(signal1), std::move(system), PRN, CN0_dB, doppler_Hz, delay_chips, delay_sec,
         data_flag, noise_flag, fs_in, vector_length, BW_BB));
 }
 
@@ -63,22 +64,22 @@ signal_make_generator_c(std::vector<std::string> signal1, std::vector<std::strin
 signal_generator_c::signal_generator_c(std::vector<std::string> signal1,
     std::vector<std::string> system,
     const std::vector<unsigned int> &PRN,
-    const std::vector<float> &CN0_dB,
-    const std::vector<float> &doppler_Hz,
-    const std::vector<unsigned int> &delay_chips,
-    const std::vector<unsigned int> &delay_sec,
+    std::vector<float> CN0_dB,
+    std::vector<float> doppler_Hz,
+    std::vector<unsigned int> delay_chips,
+    std::vector<unsigned int> delay_sec,
     bool data_flag,
     bool noise_flag,
     unsigned int fs_in,
     unsigned int vector_length,
     float BW_BB) : gr::block("signal_gen_cc", gr::io_signature::make(0, 0, sizeof(gr_complex)), gr::io_signature::make(1, 1, sizeof(gr_complex) * vector_length)),
-                   signal_(signal1),
-                   system_(system),
+                   signal_(std::move(signal1)),
+                   system_(std::move(system)),
                    PRN_(PRN),
-                   CN0_dB_(CN0_dB),
-                   doppler_Hz_(doppler_Hz),
-                   delay_chips_(delay_chips),
-                   delay_sec_(delay_sec),
+                   CN0_dB_(std::move(CN0_dB)),
+                   doppler_Hz_(std::move(doppler_Hz)),
+                   delay_chips_(std::move(delay_chips)),
+                   delay_sec_(std::move(delay_sec)),
                    data_flag_(data_flag),
                    noise_flag_(noise_flag),
                    fs_in_(fs_in),
@@ -104,7 +105,7 @@ void signal_generator_c::init()
         {
             start_phase_rad_.push_back(0);
             current_data_bit_int_.push_back(1);
-            current_data_bits_.push_back(gr_complex(1, 0));
+            current_data_bits_.emplace_back(1, 0);
             ms_counter_.push_back(0);
             data_modulation_.push_back((Galileo_E5a_I_SECONDARY_CODE.at(0) == '0' ? 1 : -1));
             pilot_modulation_.push_back((Galileo_E5a_Q_SECONDARY_CODE[PRN_[sat]].at(0) == '0' ? 1 : -1));
@@ -288,7 +289,7 @@ int signal_generator_c::general_work(int noutput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items __attribute__((unused)),
     gr_vector_void_star &output_items)
 {
-    gr_complex *out = reinterpret_cast<gr_complex *>(output_items[0]);
+    auto *out = reinterpret_cast<gr_complex *>(output_items[0]);
 
     work_counter_++;
 

@@ -36,11 +36,11 @@
 
 
 #include "gps_l5_dll_pll_tracking_fpga.h"
-#include "configuration_interface.h"
 #include "GPS_L5.h"
-#include "gps_l5_signal.h"
-#include "gnss_sdr_flags.h"
+#include "configuration_interface.h"
 #include "display.h"
+#include "gnss_sdr_flags.h"
+#include "gps_l5_signal.h"
 #include <glog/logging.h>
 
 #define NUM_PRNs 32
@@ -52,7 +52,7 @@ void GpsL5DllPllTrackingFpga::stop_tracking()
 }
 
 GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
-    ConfigurationInterface *configuration, std::string role,
+    ConfigurationInterface *configuration, const std::string &role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     //printf("L5 TRK CLASS CREATED\n");
@@ -136,7 +136,7 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
 
     //################# PRE-COMPUTE ALL THE CODES #################
     unsigned int code_samples_per_chip = 1;
-    unsigned int code_length_chips = static_cast<unsigned int>(GPS_L5i_CODE_LENGTH_CHIPS);
+    auto code_length_chips = static_cast<unsigned int>(GPS_L5i_CODE_LENGTH_CHIPS);
     //printf("TRK code_length_chips = %d\n", code_length_chips);
 
     float *tracking_code;

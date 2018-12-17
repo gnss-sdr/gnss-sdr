@@ -32,6 +32,8 @@ find_path(LOG4CPP_INCLUDE_DIR log4cpp/Category.hh
   /opt/local/include
   /usr/local/include
   /usr/include
+  ${LOG4CPP_ROOT}/include
+  $ENV{LOG4CPP_ROOT}/include
 )
 
 set(LOG4CPP_NAMES log4cpp)
@@ -68,6 +70,10 @@ find_library(LOG4CPP_LIBRARY
         /usr/lib
         /usr/local/lib
         /opt/local/lib
+        ${LOG4CPP_ROOT}/lib
+        $ENV{LOG4CPP_ROOT}/lib
+        ${LOG4CPP_ROOT}/lib64
+        $ENV{LOG4CPP_ROOT}/lib64
 )
 
 if(LOG4CPP_INCLUDE_DIR AND LOG4CPP_LIBRARY)

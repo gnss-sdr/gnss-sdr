@@ -34,9 +34,9 @@
 #define GNSS_SDR_GPS_L5_TELEMETRY_DECODER_H_
 
 
-#include "telemetry_decoder_interface.h"
-#include "gps_l5_telemetry_decoder_cc.h"
 #include "gnss_satellite.h"
+#include "gps_l5_telemetry_decoder_cc.h"
+#include "telemetry_decoder_interface.h"
 #include <string>
 
 
@@ -49,7 +49,7 @@ class GpsL5TelemetryDecoder : public TelemetryDecoderInterface
 {
 public:
     GpsL5TelemetryDecoder(ConfigurationInterface* configuration,
-        std::string role,
+        const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 

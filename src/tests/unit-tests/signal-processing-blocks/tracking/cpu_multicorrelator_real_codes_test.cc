@@ -29,17 +29,17 @@
  * -------------------------------------------------------------------------
  */
 
+#include "GPS_L1_CA.h"
+#include "cpu_multicorrelator_real_codes.h"
+#include "gps_sdr_signal_processing.h"
+#include <gflags/gflags.h>
+#include <gnuradio/gr_complex.h>
+#include <gtest/gtest.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include <chrono>
 #include <complex>
 #include <random>
 #include <thread>
-#include <gtest/gtest.h>
-#include <gflags/gflags.h>
-#include <gnuradio/gr_complex.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
-#include "cpu_multicorrelator_real_codes.h"
-#include "gps_sdr_signal_processing.h"
-#include "GPS_L1_CA.h"
 
 
 DEFINE_int32(cpu_multicorrelator_real_codes_iterations_test, 100, "Number of averaged iterations in CPU multicorrelator test timing test");

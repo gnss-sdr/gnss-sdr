@@ -29,15 +29,15 @@
  * -------------------------------------------------------------------------
  */
 
-#include <chrono>
-#include <complex>
-#include <thread>
-#include <cuda.h>
-#include <cuda_runtime.h>
-#include <cuda_profiler_api.h>
+#include "GPS_L1_CA.h"
 #include "cuda_multicorrelator.h"
 #include "gps_sdr_signal_processing.h"
-#include "GPS_L1_CA.h"
+#include <chrono>
+#include <complex>
+#include <cuda.h>
+#include <cuda_profiler_api.h>
+#include <cuda_runtime.h>
+#include <thread>
 
 
 DEFINE_int32(gpu_multicorrelator_iterations_test, 1000, "Number of averaged iterations in GPU multicorrelator test timing test");

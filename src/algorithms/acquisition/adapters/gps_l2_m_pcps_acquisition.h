@@ -35,9 +35,9 @@
 #define GNSS_SDR_GPS_L2_M_PCPS_ACQUISITION_H_
 
 #include "acquisition_interface.h"
+#include "complex_byte_to_float_x2.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition.h"
-#include "complex_byte_to_float_x2.h"
 #include <gnuradio/blocks/float_to_complex.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <string>
@@ -53,7 +53,8 @@ class GpsL2MPcpsAcquisition : public AcquisitionInterface
 {
 public:
     GpsL2MPcpsAcquisition(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role,
+        unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~GpsL2MPcpsAcquisition();
@@ -138,9 +139,17 @@ public:
      */
     void stop_acquisition() override;
 
+    /*!
+     * \brief Sets the resampler latency to account it in the acquisition code delay estimation
+     */
+
+    void set_resampler_latency(uint32_t latency_samples) override;
+
+
 private:
     ConfigurationInterface* configuration_;
     pcps_acquisition_sptr acquisition_;
+    Acq_Conf acq_parameters_;
     gr::blocks::float_to_complex::sptr float_to_complex_;
     complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
     size_t item_size_;
@@ -154,7 +163,7 @@ private:
     unsigned int doppler_max_;
     unsigned int doppler_step_;
     unsigned int max_dwells_;
-    long fs_in_;
+    int64_t fs_in_;
     bool dump_;
     bool blocking_;
     std::string dump_filename_;

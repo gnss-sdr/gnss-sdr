@@ -39,7 +39,7 @@
 using google::LogMessage;
 
 MmseResamplerConditioner::MmseResamplerConditioner(
-    ConfigurationInterface* configuration, std::string role,
+    ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_stream, unsigned int out_stream) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
 {
     std::string default_item_type = "gr_complex";
@@ -60,7 +60,7 @@ MmseResamplerConditioner::MmseResamplerConditioner(
     DLOG(INFO) << "dump_ is " << dump_;
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
 
@@ -69,7 +69,7 @@ MmseResamplerConditioner::MmseResamplerConditioner(
             std::vector<float> taps = gr::filter::firdes::low_pass(1.0,
                 sample_freq_in_,
                 sample_freq_out_ / 2.1,
-                sample_freq_out_ / 10,
+                sample_freq_out_ / 5,
                 gr::filter::firdes::win_type::WIN_HAMMING);
             std::cout << "Enabled fractional resampler low pass filter with " << taps.size() << " taps" << std::endl;
             fir_filter_ccf_ = gr::filter::fir_filter_ccf::make(1, taps);
@@ -106,7 +106,9 @@ MmseResamplerConditioner::MmseResamplerConditioner(
 }
 
 
-MmseResamplerConditioner::~MmseResamplerConditioner() {}
+MmseResamplerConditioner::~MmseResamplerConditioner() = default;
+
+
 void MmseResamplerConditioner::connect(gr::top_block_sptr top_block)
 {
     if (dump_)

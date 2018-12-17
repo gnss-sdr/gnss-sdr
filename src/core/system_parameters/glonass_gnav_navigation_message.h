@@ -35,10 +35,10 @@
 #define GNSS_SDR_GLONASS_GNAV_NAVIGATION_MESSAGE_H_
 
 
-#include "glonass_gnav_ephemeris.h"
-#include "glonass_gnav_almanac.h"
-#include "glonass_gnav_utc_model.h"
 #include "GLONASS_L1_L2_CA.h"
+#include "glonass_gnav_almanac.h"
+#include "glonass_gnav_ephemeris.h"
+#include "glonass_gnav_utc_model.h"
 #include <bitset>
 #include <cstdint>
 
@@ -51,9 +51,9 @@
 class Glonass_Gnav_Navigation_Message
 {
 private:
-    uint64_t read_navigation_unsigned(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter);
-    int64_t read_navigation_signed(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter);
-    bool read_navigation_bool(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter);
+    uint64_t read_navigation_unsigned(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
+    int64_t read_navigation_signed(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
+    bool read_navigation_bool(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
 
 public:
     bool flag_CRC_test;
@@ -159,7 +159,7 @@ public:
      * \param frame_string [in] is the string message within the parsed frame
      * \returns Returns the ID of the decoded string
      */
-    int32_t string_decoder(std::string frame_string);
+    int32_t string_decoder(const std::string& frame_string);
 
     /*!
      * Default constructor

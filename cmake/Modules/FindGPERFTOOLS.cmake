@@ -24,7 +24,7 @@
 # Variables used by this module, they can change the default behaviour and need
 # to be set before calling find_package:
 #
-# Gperftools_ROOT_DIR Set this variable to the root installation of
+# GPERFTOOLS_ROOT Set this variable to the root installation of
 # Gperftools if the module has problems finding
 # the proper installation path.
 #
@@ -36,19 +36,37 @@
 
 find_library(GPERFTOOLS_TCMALLOC
   NAMES tcmalloc
-  HINTS ${Gperftools_ROOT_DIR}/lib)
+  HINTS ${Gperftools_ROOT_DIR}/lib
+        ${GPERFTOOLS_ROOT}/lib
+        $ENV{GPERFTOOLS_ROOT}/lib
+        ${GPERFTOOLS_ROOT}/lib64
+        $ENV{GPERFTOOLS_ROOT}/lib64
+)
 
 find_library(GPERFTOOLS_PROFILER
   NAMES profiler
-  HINTS ${Gperftools_ROOT_DIR}/lib)
+  HINTS ${Gperftools_ROOT_DIR}/lib
+        ${GPERFTOOLS_ROOT}/lib
+        $ENV{GPERFTOOLS_ROOT}/lib
+        ${GPERFTOOLS_ROOT}/lib64
+        $ENV{GPERFTOOLS_ROOT}/lib64
+)
 
 find_library(GPERFTOOLS_TCMALLOC_AND_PROFILER
   NAMES tcmalloc_and_profiler
-  HINTS ${Gperftools_ROOT_DIR}/lib)
+  HINTS ${Gperftools_ROOT_DIR}/lib
+        ${GPERFTOOLS_ROOT}/lib
+        $ENV{GPERFTOOLS_ROOT}/lib
+        ${GPERFTOOLS_ROOT}/lib64
+        $ENV{GPERFTOOLS_ROOT}/lib64
+)
 
 find_path(GPERFTOOLS_INCLUDE_DIR
   NAMES gperftools/heap-profiler.h
-  HINTS ${Gperftools_ROOT_DIR}/include)
+  HINTS ${Gperftools_ROOT_DIR}/include
+        ${GPERFTOOLS_ROOT}/include
+        $ENV{GPERFTOOLS_ROOT}/include
+)
 
 set(GPERFTOOLS_LIBRARIES ${GPERFTOOLS_TCMALLOC_AND_PROFILER})
 

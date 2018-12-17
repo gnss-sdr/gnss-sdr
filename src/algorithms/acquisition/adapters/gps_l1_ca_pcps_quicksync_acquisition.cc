@@ -31,23 +31,24 @@
  */
 
 #include "gps_l1_ca_pcps_quicksync_acquisition.h"
-#include <boost/math/distributions/exponential.hpp>
-#include <glog/logging.h>
-#include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
+#include "gps_sdr_signal_processing.h"
+#include <boost/math/distributions/exponential.hpp>
+#include <glog/logging.h>
 
 
 using google::LogMessage;
 
-void GpsL1CaPcpsQuickSyncAcquisition::stop_acquisition()
-{
-}
 
 GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
-    ConfigurationInterface* configuration, std::string role,
-    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration,
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(role),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams)
 {
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
@@ -56,7 +57,7 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
     DLOG(INFO) << "role " << role;
 
     item_type_ = configuration_->property(role + ".item_type", default_item_type);
-    long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
+    int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     dump_ = configuration_->property(role + ".dump", false);
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
@@ -67,7 +68,7 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
     code_length_ = round(fs_in_ / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     /*Calculate the folding factor value based on the calculations*/
-    unsigned int temp = static_cast<unsigned int>(ceil(sqrt(log2(code_length_))));
+    auto temp = static_cast<unsigned int>(ceil(sqrt(log2(code_length_))));
     folding_factor_ = configuration_->property(role + ".folding_factor", temp);
 
     if (sampled_ms_ % folding_factor_ != 0)
@@ -112,7 +113,7 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
               << ", Sampled  ms: " << sampled_ms_
               << ", Code Length: " << code_length_;
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             acquisition_cc_ = pcps_quicksync_make_acquisition_cc(folding_factor_,
@@ -135,7 +136,7 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
     channel_ = 0;
     threshold_ = 0.0;
     doppler_step_ = 0;
-    gnss_synchro_ = 0;
+    gnss_synchro_ = nullptr;
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
@@ -153,10 +154,15 @@ GpsL1CaPcpsQuickSyncAcquisition::~GpsL1CaPcpsQuickSyncAcquisition()
 }
 
 
+void GpsL1CaPcpsQuickSyncAcquisition::stop_acquisition()
+{
+}
+
+
 void GpsL1CaPcpsQuickSyncAcquisition::set_channel(unsigned int channel)
 {
     channel_ = channel;
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             acquisition_cc_->set_channel(channel_);
         }
@@ -165,9 +171,7 @@ void GpsL1CaPcpsQuickSyncAcquisition::set_channel(unsigned int channel)
 
 void GpsL1CaPcpsQuickSyncAcquisition::set_threshold(float threshold)
 {
-    float pfa = configuration_->property(role_ +
-                                             boost::lexical_cast<std::string>(channel_) + ".pfa",
-        0.0);
+    float pfa = configuration_->property(role_ + std::to_string(channel_) + ".pfa", 0.0);
 
     if (pfa == 0.0)
         {
@@ -184,7 +188,7 @@ void GpsL1CaPcpsQuickSyncAcquisition::set_threshold(float threshold)
 
     DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold_;
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             acquisition_cc_->set_threshold(threshold_);
         }
@@ -194,7 +198,7 @@ void GpsL1CaPcpsQuickSyncAcquisition::set_threshold(float threshold)
 void GpsL1CaPcpsQuickSyncAcquisition::set_doppler_max(unsigned int doppler_max)
 {
     doppler_max_ = doppler_max;
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             acquisition_cc_->set_doppler_max(doppler_max_);
         }
@@ -204,7 +208,7 @@ void GpsL1CaPcpsQuickSyncAcquisition::set_doppler_max(unsigned int doppler_max)
 void GpsL1CaPcpsQuickSyncAcquisition::set_doppler_step(unsigned int doppler_step)
 {
     doppler_step_ = doppler_step;
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             acquisition_cc_->set_doppler_step(doppler_step_);
         }
@@ -214,7 +218,7 @@ void GpsL1CaPcpsQuickSyncAcquisition::set_doppler_step(unsigned int doppler_step
 void GpsL1CaPcpsQuickSyncAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
     gnss_synchro_ = gnss_synchro;
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             acquisition_cc_->set_gnss_synchro(gnss_synchro_);
         }
@@ -223,14 +227,11 @@ void GpsL1CaPcpsQuickSyncAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchr
 
 signed int GpsL1CaPcpsQuickSyncAcquisition::mag()
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             return acquisition_cc_->mag();
         }
-    else
-        {
-            return 0;
-        }
+    return 0;
 }
 
 
@@ -243,12 +244,11 @@ void GpsL1CaPcpsQuickSyncAcquisition::init()
 
 void GpsL1CaPcpsQuickSyncAcquisition::set_local_code()
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
-            std::complex<float>* code = new std::complex<float>[code_length_]();
+            auto* code = new std::complex<float>[code_length_]();
 
             gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
-
 
             for (unsigned int i = 0; i < (sampled_ms_ / folding_factor_); i++)
                 {
@@ -266,7 +266,7 @@ void GpsL1CaPcpsQuickSyncAcquisition::set_local_code()
 
 void GpsL1CaPcpsQuickSyncAcquisition::reset()
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             acquisition_cc_->set_active(true);
         }
@@ -275,7 +275,7 @@ void GpsL1CaPcpsQuickSyncAcquisition::reset()
 
 void GpsL1CaPcpsQuickSyncAcquisition::set_state(int state)
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             acquisition_cc_->set_state(state);
         }
@@ -296,7 +296,7 @@ float GpsL1CaPcpsQuickSyncAcquisition::calculate_threshold(float pfa)
     double val = pow(1.0 - pfa, exponent);
     double lambda = static_cast<double>(code_length_) / static_cast<double>(folding_factor_);
     boost::math::exponential_distribution<double> mydist(lambda);
-    float threshold = static_cast<float>(quantile(mydist, val));
+    auto threshold = static_cast<float>(quantile(mydist, val));
 
     return threshold;
 }
@@ -304,7 +304,7 @@ float GpsL1CaPcpsQuickSyncAcquisition::calculate_threshold(float pfa)
 
 void GpsL1CaPcpsQuickSyncAcquisition::connect(gr::top_block_sptr top_block)
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             top_block->connect(stream_to_vector_, 0, acquisition_cc_, 0);
         }
@@ -313,7 +313,7 @@ void GpsL1CaPcpsQuickSyncAcquisition::connect(gr::top_block_sptr top_block)
 
 void GpsL1CaPcpsQuickSyncAcquisition::disconnect(gr::top_block_sptr top_block)
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             top_block->disconnect(stream_to_vector_, 0, acquisition_cc_, 0);
         }

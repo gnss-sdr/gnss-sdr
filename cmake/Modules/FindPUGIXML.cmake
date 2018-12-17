@@ -26,28 +26,36 @@
 find_path(PUGIXML_INCLUDE_DIR
     NAMES pugixml.hpp
     PATHS ${PUGIXML_HOME}/include
-        /usr/include
-        /usr/local/include
-        /opt/local/include)
+          /usr/include
+          /usr/local/include
+          /opt/local/include
+          ${PUGIXML_ROOT}/include
+          $ENV{PUGIXML_ROOT}/include
+)
 
 find_library(PUGIXML_LIBRARY
     NAMES pugixml
     PATHS ${PUGIXML_HOME}/lib
-        /usr/lib/x86_64-linux-gnu
-        /usr/lib/aarch64-linux-gnu
-        /usr/lib/arm-linux-gnueabi
-        /usr/lib/arm-linux-gnueabihf
-        /usr/lib/i386-linux-gnu
-        /usr/lib/mips-linux-gnu
-        /usr/lib/mips64el-linux-gnuabi64
-        /usr/lib/mipsel-linux-gnu
-        /usr/lib/powerpc64le-linux-gnu
-        /usr/lib/s390x-linux-gnu
-        /usr/local/lib
-        /opt/local/lib
-        /usr/lib
-        /usr/lib64
-        /usr/local/lib64)
+          /usr/lib/x86_64-linux-gnu
+          /usr/lib/aarch64-linux-gnu
+          /usr/lib/arm-linux-gnueabi
+          /usr/lib/arm-linux-gnueabihf
+          /usr/lib/i386-linux-gnu
+          /usr/lib/mips-linux-gnu
+          /usr/lib/mips64el-linux-gnuabi64
+          /usr/lib/mipsel-linux-gnu
+          /usr/lib/powerpc64le-linux-gnu
+          /usr/lib/s390x-linux-gnu
+          /usr/local/lib
+          /opt/local/lib
+          /usr/lib
+          /usr/lib64
+          /usr/local/lib64
+          ${PUGIXML_ROOT}/lib
+          $ENV{PUGIXML_ROOT}/lib
+          ${PUGIXML_ROOT}/lib64
+          $ENV{PUGIXML_ROOT}/lib64
+)
 
 # Support the REQUIRED and QUIET arguments, and set PUGIXML_FOUND if found.
 include(FindPackageHandleStandardArgs)

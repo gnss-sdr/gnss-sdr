@@ -30,22 +30,23 @@
  */
 
 #include "front_end_cal.h"
-#include <cmath>
-#include <memory>
-#include <exception>
+#include "gnss_sdr_supl_client.h"
+#include "gps_almanac.h"
+#include "gps_cnav_ephemeris.h"
+#include "gps_cnav_iono.h"
+#include "gps_ephemeris.h"
+#include "gps_iono.h"
+#include "gps_navigation_message.h"
+#include "gps_utc_model.h"
 #include <boost/filesystem.hpp>
-#include <glog/logging.h>
+#include <boost/lexical_cast.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
-#include <boost/lexical_cast.hpp>
-#include "gps_navigation_message.h"
-#include "gps_ephemeris.h"
-#include "gps_cnav_ephemeris.h"
-#include "gps_almanac.h"
-#include "gps_iono.h"
-#include "gps_cnav_iono.h"
-#include "gps_utc_model.h"
-#include "gnss_sdr_supl_client.h"
+#include <glog/logging.h>
+#include <cmath>
+#include <exception>
+#include <memory>
+#include <utility>
 
 extern concurrent_map<Gps_Ephemeris> global_gps_ephemeris_map;
 extern concurrent_map<Gps_Iono> global_gps_iono_map;
@@ -53,9 +54,9 @@ extern concurrent_map<Gps_Utc_Model> global_gps_utc_model_map;
 extern concurrent_map<Gps_Almanac> global_gps_almanac_map;
 extern concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
-FrontEndCal::FrontEndCal() {}
+FrontEndCal::FrontEndCal() = default;
 
-FrontEndCal::~FrontEndCal() {}
+FrontEndCal::~FrontEndCal() = default;
 
 bool FrontEndCal::read_assistance_from_XML()
 {
@@ -77,12 +78,9 @@ bool FrontEndCal::read_assistance_from_XML()
                 }
             return true;
         }
-    else
-        {
-            std::cout << "ERROR: SUPL client error reading XML" << std::endl;
-            LOG(WARNING) << "ERROR: SUPL client error reading XML";
-            return false;
-        }
+    std::cout << "ERROR: SUPL client error reading XML" << std::endl;
+    LOG(WARNING) << "ERROR: SUPL client error reading XML";
+    return false;
 }
 
 
@@ -235,7 +233,7 @@ int FrontEndCal::Get_SUPL_Assist()
 
 void FrontEndCal::set_configuration(std::shared_ptr<ConfigurationInterface> configuration)
 {
-    configuration_ = configuration;
+    configuration_ = std::move(configuration);
 }
 
 
@@ -255,29 +253,18 @@ bool FrontEndCal::get_ephemeris()
                         {
                             return true;
                         }
-                    else
-                        {
-                            return false;
-                        }
-                }
-            else
-                {
-                    return true;
-                }
-        }
-    else
-        {
-            std::cout << "Trying to read ephemeris from SUPL server..." << std::endl;
-            LOG(INFO) << "Trying to read ephemeris from SUPL server...";
-            if (Get_SUPL_Assist() == 0)
-                {
-                    return true;
-                }
-            else
-                {
                     return false;
                 }
+            return true;
         }
+
+    std::cout << "Trying to read ephemeris from SUPL server..." << std::endl;
+    LOG(INFO) << "Trying to read ephemeris from SUPL server...";
+    if (Get_SUPL_Assist() == 0)
+        {
+            return true;
+        }
+    return false;
 }
 
 
@@ -376,10 +363,7 @@ double FrontEndCal::estimate_doppler_from_eph(unsigned int PRN, double TOW, doub
             mean_Doppler_Hz = arma::mean(Doppler_Hz);
             return mean_Doppler_Hz;
         }
-    else
-        {
-            throw(1);
-        }
+    throw(1);
 }
 
 

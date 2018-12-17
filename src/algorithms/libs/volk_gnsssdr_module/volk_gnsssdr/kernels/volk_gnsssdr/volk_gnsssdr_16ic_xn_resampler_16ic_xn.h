@@ -63,10 +63,10 @@
 #ifndef INCLUDED_volk_gnsssdr_16ic_xn_resampler_16ic_xn_H
 #define INCLUDED_volk_gnsssdr_16ic_xn_resampler_16ic_xn_H
 
-#include <math.h>
-#include <stdlib.h>
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
+#include <math.h>
+#include <stdlib.h>
 
 
 #ifdef LV_HAVE_GENERIC

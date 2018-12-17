@@ -18,21 +18,21 @@
 include(FindPkgConfig)
 pkg_check_modules(PC_IIO gnuradio-iio)
 
-find_path(
-    IIO_INCLUDE_DIRS
+find_path(IIO_INCLUDE_DIRS
     NAMES gnuradio/iio/api.h
     HINTS $ENV{IIO_DIR}/include
-        ${PC_IIO_INCLUDEDIR}
+          ${PC_IIO_INCLUDEDIR}
     PATHS ${CMAKE_INSTALL_PREFIX}/include
           /usr/local/include
           /usr/include
+          ${GRIIO_ROOT}/include
+          $ENV{GRIIO_ROOT}/include
 )
 
-find_library(
-    IIO_LIBRARIES
+find_library(IIO_LIBRARIES
     NAMES gnuradio-iio
     HINTS $ENV{IIO_DIR}/lib
-        ${PC_IIO_LIBDIR}
+          ${PC_IIO_LIBDIR}
     PATHS ${CMAKE_INSTALL_PREFIX}/lib
           ${CMAKE_INSTALL_PREFIX}/lib64
           /usr/local/lib
@@ -61,6 +61,10 @@ find_library(
           /usr/lib/sparc64-linux-gnu
           /usr/lib/x86_64-linux-gnux32
           /usr/lib/sh4-linux-gnu
+          ${GRIIO_ROOT}/lib
+          $ENV{GRIIO_ROOT}/lib
+          ${GRIIO_ROOT}/lib64
+          $ENV{GRIIO_ROOT}/lib64
 )
 
 include(FindPackageHandleStandardArgs)

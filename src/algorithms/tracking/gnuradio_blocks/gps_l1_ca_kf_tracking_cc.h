@@ -40,11 +40,11 @@
 #ifndef GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H
 #define GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H
 
+#include "bayesian_estimation.h"
+#include "cpu_multicorrelator_real_codes.h"
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
-#include "cpu_multicorrelator_real_codes.h"
-#include "bayesian_estimation.h"
 #include <armadillo>
 #include <gnuradio/block.h>
 #include <fstream>

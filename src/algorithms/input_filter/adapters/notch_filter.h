@@ -33,8 +33,8 @@
 #ifndef GNSS_SDR_NOTCH_FILTER_H_
 #define GNSS_SDR_NOTCH_FILTER_H_
 
-#include "notch_cc.h"
 #include "gnss_block_interface.h"
+#include "notch_cc.h"
 #include <gnuradio/blocks/file_sink.h>
 #include <string>
 #include <vector>
@@ -45,7 +45,7 @@ class NotchFilter : public GNSSBlockInterface
 {
 public:
     NotchFilter(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role, unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~NotchFilter();

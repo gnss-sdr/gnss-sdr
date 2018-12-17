@@ -32,26 +32,23 @@
 #include "channel.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
-#include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
 #include <cstdint>
 
 using google::LogMessage;
 
 // Constructor
-Channel::Channel(ConfigurationInterface* configuration, uint32_t channel,
-    std::shared_ptr<GNSSBlockInterface> pass_through, std::shared_ptr<AcquisitionInterface> acq,
+Channel::Channel(ConfigurationInterface* configuration, uint32_t channel, std::shared_ptr<AcquisitionInterface> acq,
     std::shared_ptr<TrackingInterface> trk, std::shared_ptr<TelemetryDecoderInterface> nav,
     std::string role, std::string implementation, gr::msg_queue::sptr queue)
 {
-    pass_through_ = pass_through;
-    acq_ = acq;
-    trk_ = trk;
-    nav_ = nav;
-    role_ = role;
-    implementation_ = implementation;
+    acq_ = std::move(acq);
+    trk_ = std::move(trk);
+    nav_ = std::move(nav);
+    role_ = std::move(role);
+    implementation_ = std::move(implementation);
     channel_ = channel;
-    queue_ = queue;
+    queue_ = std::move(queue);
     channel_fsm_ = std::make_shared<ChannelFsm>();
 
     flag_enable_fpga = configuration->property("Channel.enable_FPGA", false);
@@ -59,6 +56,7 @@ Channel::Channel(ConfigurationInterface* configuration, uint32_t channel,
     trk_->set_channel(channel_);
     nav_->set_channel(channel_);
 
+    gnss_synchro_ = Gnss_Synchro();
     gnss_synchro_.Channel_ID = channel_;
     acq_->set_gnss_synchro(&gnss_synchro_);
     trk_->set_gnss_synchro(&gnss_synchro_);
@@ -76,21 +74,21 @@ Channel::Channel(ConfigurationInterface* configuration, uint32_t channel,
 
     // IMPORTANT: Do not change the order between set_doppler_step and set_threshold
 
-    uint32_t doppler_step = configuration->property("Acquisition_" + implementation_ + boost::lexical_cast<std::string>(channel_) + ".doppler_step", 0);
+    uint32_t doppler_step = configuration->property("Acquisition_" + implementation_ + std::to_string(channel_) + ".doppler_step", 0);
     if (doppler_step == 0) doppler_step = configuration->property("Acquisition_" + implementation_ + ".doppler_step", 500);
     if (FLAGS_doppler_step != 0) doppler_step = static_cast<uint32_t>(FLAGS_doppler_step);
     DLOG(INFO) << "Channel " << channel_ << " Doppler_step = " << doppler_step;
 
     acq_->set_doppler_step(doppler_step);
 
-    float threshold = configuration->property("Acquisition_" + implementation_ + boost::lexical_cast<std::string>(channel_) + ".threshold", 0.0);
+    float threshold = configuration->property("Acquisition_" + implementation_ + std::to_string(channel_) + ".threshold", 0.0);
     if (threshold == 0.0) threshold = configuration->property("Acquisition_" + implementation_ + ".threshold", 0.0);
 
     acq_->set_threshold(threshold);
 
     acq_->init();
 
-    repeat_ = configuration->property("Acquisition_" + implementation_ + boost::lexical_cast<std::string>(channel_) + ".repeat_satellite", false);
+    repeat_ = configuration->property("Acquisition_" + implementation_ + std::to_string(channel_) + ".repeat_satellite", false);
     DLOG(INFO) << "Channel " << channel_ << " satellite repeat = " << repeat_;
 
     channel_fsm_->set_acquisition(acq_);
@@ -107,35 +105,20 @@ Channel::Channel(ConfigurationInterface* configuration, uint32_t channel,
 
 
 // Destructor
-Channel::~Channel() {}
+Channel::~Channel() = default;
+
+
 void Channel::connect(gr::top_block_sptr top_block)
 {
-    if (connected_)
-        {
-            LOG(WARNING) << "channel already connected internally";
-            return;
-        }
-    if (flag_enable_fpga == false)
-        {
-            pass_through_->connect(top_block);
-        }
     acq_->connect(top_block);
     trk_->connect(top_block);
     nav_->connect(top_block);
 
     //Synchronous ports
-    if (flag_enable_fpga == false)
-        {
-            top_block->connect(pass_through_->get_right_block(), 0, acq_->get_left_block(), 0);
-            DLOG(INFO) << "pass_through_ -> acquisition";
-            top_block->connect(pass_through_->get_right_block(), 0, trk_->get_left_block(), 0);
-            DLOG(INFO) << "pass_through_ -> tracking";
-        }
     top_block->connect(trk_->get_right_block(), 0, nav_->get_left_block(), 0);
     DLOG(INFO) << "tracking -> telemetry_decoder";
 
     // Message ports
-
     top_block->msg_connect(acq_->get_right_block(), pmt::mp("events"), channel_msg_rx, pmt::mp("events"));
     top_block->msg_connect(trk_->get_right_block(), pmt::mp("events"), channel_msg_rx, pmt::mp("events"));
 
@@ -151,17 +134,8 @@ void Channel::disconnect(gr::top_block_sptr top_block)
             return;
         }
 
-    if (flag_enable_fpga == false)
-        {
-            top_block->disconnect(pass_through_->get_right_block(), 0, acq_->get_left_block(), 0);
-            top_block->disconnect(pass_through_->get_right_block(), 0, trk_->get_left_block(), 0);
-        }
     top_block->disconnect(trk_->get_right_block(), 0, nav_->get_left_block(), 0);
 
-    if (flag_enable_fpga == false)
-        {
-            pass_through_->disconnect(top_block);
-        }
     acq_->disconnect(top_block);
     trk_->disconnect(top_block);
     nav_->disconnect(top_block);
@@ -171,9 +145,19 @@ void Channel::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr Channel::get_left_block()
 {
-    return pass_through_->get_left_block();
+    LOG(ERROR) << "Deprecated call to get_left_block() in channel interface";
+    return nullptr;
 }
 
+gr::basic_block_sptr Channel::get_left_block_trk()
+{
+    return trk_->get_left_block();
+}
+
+gr::basic_block_sptr Channel::get_left_block_acq()
+{
+    return acq_->get_left_block();
+}
 
 gr::basic_block_sptr Channel::get_right_block()
 {

@@ -36,11 +36,11 @@
 
 
 #include "gps_l2_m_dll_pll_tracking_fpga.h"
-#include "configuration_interface.h"
 #include "GPS_L2C.h"
-#include "gps_l2c_signal.h"
-#include "gnss_sdr_flags.h"
+#include "configuration_interface.h"
 #include "display.h"
+#include "gnss_sdr_flags.h"
+#include "gps_l2c_signal.h"
 #include <glog/logging.h>
 
 #define NUM_PRNs 32
@@ -52,7 +52,7 @@ void GpsL2MDllPllTrackingFpga::stop_tracking()
 }
 
 GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
-    ConfigurationInterface* configuration, std::string role,
+    ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     //dllpllconf_t trk_param;
@@ -125,7 +125,7 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
 
     //d_tracking_code = static_cast<float *>(volk_gnsssdr_malloc(2 * static_cast<unsigned int>(GPS_L2_M_CODE_LENGTH_CHIPS) * sizeof(float), volk_gnsssdr_get_alignment()));
     d_ca_codes = static_cast<int*>(volk_gnsssdr_malloc(static_cast<unsigned int>(GPS_L2_M_CODE_LENGTH_CHIPS) * NUM_PRNs * sizeof(int), volk_gnsssdr_get_alignment()));
-    float* ca_codes_f = static_cast<float*>(volk_gnsssdr_malloc(static_cast<unsigned int>(GPS_L2_M_CODE_LENGTH_CHIPS) * sizeof(float), volk_gnsssdr_get_alignment()));
+    auto* ca_codes_f = static_cast<float*>(volk_gnsssdr_malloc(static_cast<unsigned int>(GPS_L2_M_CODE_LENGTH_CHIPS) * sizeof(float), volk_gnsssdr_get_alignment()));
 
     //################# PRE-COMPUTE ALL THE CODES #################
     d_ca_codes = static_cast<int*>(volk_gnsssdr_malloc(static_cast<int>(GPS_L2_M_CODE_LENGTH_CHIPS * NUM_PRNs) * sizeof(int), volk_gnsssdr_get_alignment()));
@@ -167,9 +167,7 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
 }
 
 
-GpsL2MDllPllTrackingFpga::~GpsL2MDllPllTrackingFpga()
-{
-}
+GpsL2MDllPllTrackingFpga::~GpsL2MDllPllTrackingFpga() = default;
 
 
 void GpsL2MDllPllTrackingFpga::start_tracking()

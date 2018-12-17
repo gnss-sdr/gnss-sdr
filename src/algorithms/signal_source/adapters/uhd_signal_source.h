@@ -33,10 +33,10 @@
 
 #include "gnss_block_interface.h"
 #include <boost/shared_ptr.hpp>
-#include <gnuradio/hier_block2.h>
-#include <gnuradio/uhd/usrp_source.h>
 #include <gnuradio/blocks/file_sink.h>
+#include <gnuradio/hier_block2.h>
 #include <gnuradio/msg_queue.h>
+#include <gnuradio/uhd/usrp_source.h>
 #include <string>
 #include <vector>
 
@@ -50,7 +50,7 @@ class UhdSignalSource : public GNSSBlockInterface
 {
 public:
     UhdSignalSource(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_stream,
+        const std::string& role, unsigned int in_stream,
         unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~UhdSignalSource();

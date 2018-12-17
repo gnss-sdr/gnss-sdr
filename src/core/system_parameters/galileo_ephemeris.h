@@ -67,29 +67,29 @@ public:
     double C_rs_3;       //!< Amplitude of the sine harmonic correction term to the orbit radius [meters]
     double C_ic_4;       //!< Amplitude of the cosine harmonic correction term to the angle of inclination [radians]
     double C_is_4;       //!< Amplitude of the sine harmonic correction term to the angle of inclination [radians]
-    double t0e_1;        //!< Ephemeris reference time [s]
+    int32_t t0e_1;       //!< Ephemeris reference time [s]
 
     /*Clock correction parameters*/
-    double t0c_4;  //!< Clock correction data reference Time of Week [sec]
-    double af0_4;  //!< SV clock bias correction coefficient [s]
-    double af1_4;  //!< SV clock drift correction coefficient [s/s]
-    double af2_4;  //!< SV clock drift rate correction coefficient [s/s^2]
+    int32_t t0c_4;  //!< Clock correction data reference Time of Week [sec]
+    double af0_4;   //!< SV clock bias correction coefficient [s]
+    double af1_4;   //!< SV clock drift correction coefficient [s/s]
+    double af2_4;   //!< SV clock drift rate correction coefficient [s/s^2]
 
     /*GST*/
-    //Not belong to ephemeris set (page 1 to 4)
-    double WN_5;   //!< Week number
-    double TOW_5;  //!< Time of Week
+    // Not belong to ephemeris set (page 1 to 4)
+    int32_t WN_5;   //!< Week number
+    int32_t TOW_5;  //!< Time of Week
     double Galileo_satClkDrift;
     double Galileo_dtr;  //!< relativistic clock correction term
 
     // SV status
-    double SISA_3;
-    uint32_t E5a_HS;   //!< E5a Signal Health Status
-    double E5b_HS_5;   //!< E5b Signal Health Status
-    double E1B_HS_5;   //!< E1B Signal Health Status
+    int32_t SISA_3;
+    int32_t E5a_HS;    //!< E5a Signal Health Status
+    int32_t E5b_HS_5;  //!< E5b Signal Health Status
+    int32_t E1B_HS_5;  //!< E1B Signal Health Status
     bool E5a_DVS;      //!< E5a Data Validity Status
-    double E5b_DVS_5;  //!< E5b Data Validity Status
-    double E1B_DVS_5;  //!< E1B Data Validity Status
+    bool E5b_DVS_5;    //!< E5b Data Validity Status
+    bool E1B_DVS_5;    //!< E1B Data Validity Status
 
     double BGD_E1E5a_5;  //!< E1-E5a Broadcast Group Delay [s]
     double BGD_E1E5b_5;  //!< E1-E5b Broadcast Group Delay [s]

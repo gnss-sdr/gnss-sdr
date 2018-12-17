@@ -35,19 +35,19 @@
 #ifndef GNSS_SDR_CONTROL_THREAD_H_
 #define GNSS_SDR_CONTROL_THREAD_H_
 
-#include "gnss_satellite.h"
-#include "control_message_factory.h"
-#include "gnss_sdr_supl_client.h"
-#include "tcp_cmd_interface.h"
-#include "gnss_flowgraph.h"
-#include "configuration_interface.h"
 #include "agnss_ref_location.h"
 #include "agnss_ref_time.h"
+#include "configuration_interface.h"
+#include "control_message_factory.h"
+#include "gnss_flowgraph.h"
+#include "gnss_satellite.h"
+#include "gnss_sdr_supl_client.h"
+#include "tcp_cmd_interface.h"
+#include <armadillo>
 #include <boost/thread.hpp>
 #include <gnuradio/msg_queue.h>
 #include <memory>
 #include <vector>
-#include <armadillo>
 
 
 /*!
@@ -93,7 +93,7 @@ public:
      *
      * \param[in] boost::shared_ptr<gr::msg_queue> control_queue
      */
-    void set_control_queue(gr::msg_queue::sptr control_queue);
+    void set_control_queue(const gr::msg_queue::sptr& control_queue);
 
 
     unsigned int processed_control_messages()

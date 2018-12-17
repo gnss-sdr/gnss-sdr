@@ -40,8 +40,8 @@
 #ifndef GNSS_SDR_BAYESIAN_ESTIMATION_H_
 #define GNSS_SDR_BAYESIAN_ESTIMATION_H_
 
-#include <gnuradio/gr_complex.h>
 #include <armadillo>
+#include <gnuradio/gr_complex.h>
 
 /*! \brief Bayesian_estimator is an estimator of noise characteristics (i.e. mean, covariance)
  *

@@ -33,12 +33,12 @@
 #ifndef GNSS_SDR_GLONASS_L1_L2_CA_H_
 #define GNSS_SDR_GLONASS_L1_L2_CA_H_
 
-#include "gnss_frequencies.h"
 #include "MATH_CONSTANTS.h"
+#include "gnss_frequencies.h"
 #include <cstdint>
 #include <map>
-#include <vector>
 #include <utility>  // std::pair
+#include <vector>
 
 
 // Physical constants

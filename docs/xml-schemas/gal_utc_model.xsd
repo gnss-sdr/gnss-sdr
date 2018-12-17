@@ -7,12 +7,12 @@
             <xs:sequence>
               <xs:element type="xs:float" name="A0_6"/>
               <xs:element type="xs:float" name="A1_6"/>
-              <xs:element type="xs:float" name="Delta_tLS_6"/>
-              <xs:element type="xs:float" name="t0t_6"/>
-              <xs:element type="xs:float" name="WNot_6"/>
-              <xs:element type="xs:float" name="WN_LSF_6"/>
-              <xs:element type="xs:float" name="DN_6"/>
-              <xs:element type="xs:float" name="Delta_tLSF_6"/>
+              <xs:element type="xs:byte" name="Delta_tLS_6"/>
+              <xs:element type="xs:int" name="t0t_6"/>
+              <xs:element type="xs:short" name="WNot_6"/>
+              <xs:element type="xs:short" name="WN_LSF_6"/>
+              <xs:element type="xs:byte" name="DN_6"/>
+              <xs:element type="xs:byte" name="Delta_tLSF_6"/>
               <xs:element type="xs:byte" name="flag_utc_model"/>
             </xs:sequence>
             <xs:attribute type="xs:byte" name="class_id"/>

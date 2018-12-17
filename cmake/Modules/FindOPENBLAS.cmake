@@ -20,17 +20,22 @@
 # The following environment variable is optionally searched
 # OPENBLAS_HOME: Base directory where all OpenBlas components are found
 
-set(OPEN_BLAS_SEARCH_PATHS  /lib/
-                            /lib64/
-                            /usr/lib
-                            /usr/lib64
-                            /usr/local/lib
-                            /usr/local/lib64
-                            /opt/OpenBLAS/lib
-                            /opt/local/lib
-                            /usr/lib/openblas-base
-                            $ENV{OPENBLAS_HOME}/lib
-                            )
+set(OPEN_BLAS_SEARCH_PATHS
+    /lib
+    /lib64/
+    /usr/lib
+    /usr/lib64
+    /usr/local/lib
+    /usr/local/lib64
+    /opt/OpenBLAS/lib
+    /opt/local/lib
+    /usr/lib/openblas-base
+    $ENV{OPENBLAS_HOME}/lib
+    ${OPENBLAS_ROOT}/lib
+    $ENV{OPENBLAS_ROOT}/lib
+    ${OPENBLAS_ROOT}/lib64
+    $ENV{OPENBLAS_ROOT}/lib64
+)
 
 find_library(OPENBLAS NAMES openblas PATHS ${OPEN_BLAS_SEARCH_PATHS})
 

@@ -30,51 +30,61 @@
  * -------------------------------------------------------------------------
  */
 
-#include <unistd.h>
-#include <chrono>
-#include <exception>
+#include "GPS_L1_CA.h"
+#include "GPS_L2C.h"
+#include "GPS_L5.h"
+#include "Galileo_E1.h"
+#include "Galileo_E5a.h"
+#include "acquisition_msg_rx.h"
+#include "galileo_e1_pcps_ambiguous_acquisition.h"
+#include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
+#include "galileo_e5a_pcps_acquisition.h"
+#include "glonass_l1_ca_pcps_acquisition.h"
+#include "glonass_l2_ca_pcps_acquisition.h"
+#include "gnss_block_factory.h"
+#include "gnss_block_interface.h"
+#include "gnss_satellite.h"
+#include "gnss_sdr_sample_counter.h"
+#include "gnss_synchro.h"
+#include "gnuplot_i.h"
+#include "gps_l1_ca_dll_pll_tracking.h"
+#include "gps_l1_ca_pcps_acquisition.h"
+#include "gps_l2_m_pcps_acquisition.h"
+#include "gps_l5i_pcps_acquisition.h"
+#include "hybrid_observables.h"
+#include "in_memory_configuration.h"
+#include "observable_tests_flags.h"
+#include "observables_dump_reader.h"
+#include "signal_generator_flags.h"
+#include "telemetry_decoder_interface.h"
+#include "test_flags.h"
+#include "tlm_dump_reader.h"
+#include "tracking_dump_reader.h"
+#include "tracking_interface.h"
+#include "tracking_tests_flags.h"
+#include "tracking_true_obs_reader.h"
+#include "true_observables_reader.h"
 #include <armadillo>
-#include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
 #include <gnuradio/blocks/null_sink.h>
-#include <gtest/gtest.h>
-#include <gpstk/RinexUtilities.hpp>
+#include <gnuradio/filter/firdes.h>
+#include <gnuradio/top_block.h>
 #include <gpstk/Rinex3ObsBase.hpp>
 #include <gpstk/Rinex3ObsData.hpp>
 #include <gpstk/Rinex3ObsHeader.hpp>
 #include <gpstk/Rinex3ObsStream.hpp>
+#include <gpstk/RinexUtilities.hpp>
+#include <gtest/gtest.h>
 #include <matio.h>
-#include "GPS_L1_CA.h"
-#include "gnss_satellite.h"
-#include "gnss_block_factory.h"
-#include "gnss_block_interface.h"
-#include "acquisition_msg_rx.h"
-#include "gps_l1_ca_pcps_acquisition.h"
-#include "galileo_e1_pcps_ambiguous_acquisition.h"
-#include "galileo_e5a_pcps_acquisition.h"
-#include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
-#include "glonass_l1_ca_pcps_acquisition.h"
-#include "glonass_l2_ca_pcps_acquisition.h"
-#include "gps_l2_m_pcps_acquisition.h"
-#include "gps_l5i_pcps_acquisition.h"
-#include "tracking_interface.h"
-#include "telemetry_decoder_interface.h"
-#include "in_memory_configuration.h"
-#include "gnss_synchro.h"
-#include "tracking_true_obs_reader.h"
-#include "true_observables_reader.h"
-#include "tracking_dump_reader.h"
-#include "observables_dump_reader.h"
-#include "tlm_dump_reader.h"
-#include "gps_l1_ca_dll_pll_tracking.h"
-#include "hybrid_observables.h"
-#include "signal_generator_flags.h"
-#include "gnss_sdr_sample_counter.h"
-#include "test_flags.h"
-#include "tracking_tests_flags.h"
-#include "observable_tests_flags.h"
-#include "gnuplot_i.h"
+#include <chrono>
+#include <exception>
+#include <unistd.h>
+#ifdef GR_GREATER_38
+#include <gnuradio/filter/fir_filter_blk.h>
+#else
+#include <gnuradio/filter/fir_filter_ccf.h>
+#endif
 
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER FOR TRACKING MESSAGES #########
@@ -186,6 +196,19 @@ HybridObservablesTest_tlm_msg_rx::~HybridObservablesTest_tlm_msg_rx()
 class HybridObservablesTest : public ::testing::Test
 {
 public:
+    enum StringValue
+    {
+        evGPS_1C,
+        evGPS_2S,
+        evGPS_L5,
+        evSBAS_1C,
+        evGAL_1B,
+        evGAL_5X,
+        evGLO_1G,
+        evGLO_2G
+    };
+    std::map<std::string, StringValue> mapStringValues_;
+
     std::string generator_binary;
     std::string p1;
     std::string p2;
@@ -247,6 +270,13 @@ public:
         factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
         item_size = sizeof(gr_complex);
+        mapStringValues_["1C"] = evGPS_1C;
+        mapStringValues_["2S"] = evGPS_2S;
+        mapStringValues_["L5"] = evGPS_L5;
+        mapStringValues_["1B"] = evGAL_1B;
+        mapStringValues_["5X"] = evGAL_5X;
+        mapStringValues_["1G"] = evGLO_1G;
+        mapStringValues_["2G"] = evGLO_2G;
     }
 
     ~HybridObservablesTest()
@@ -328,6 +358,11 @@ bool HybridObservablesTest::acquire_signal()
     tmp_gnss_synchro.Channel_ID = 0;
     config = std::make_shared<InMemoryConfiguration>();
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(baseband_sampling_freq));
+    // Enable automatic resampler for the acquisition, if required
+    if (FLAGS_use_acquisition_resampler == true)
+        {
+            config->set_property("GNSS-SDR.use_acquisition_resampler", "true");
+        }
     config->set_property("Acquisition.blocking_on_standby", "true");
     config->set_property("Acquisition.blocking", "true");
     config->set_property("Acquisition.dump", "false");
@@ -337,11 +372,12 @@ bool HybridObservablesTest::acquire_signal()
     std::shared_ptr<AcquisitionInterface> acquisition;
 
     std::string System_and_Signal;
+    std::string signal;
     //create the correspondign acquisition block according to the desired tracking signal
     if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking") == 0)
         {
             tmp_gnss_synchro.System = 'G';
-            std::string signal = "1C";
+            signal = "1C";
             const char* str = signal.c_str();                                  // get a C style null terminated string
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
@@ -353,7 +389,7 @@ bool HybridObservablesTest::acquire_signal()
     else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking") == 0)
         {
             tmp_gnss_synchro.System = 'E';
-            std::string signal = "1B";
+            signal = "1B";
             const char* str = signal.c_str();                                  // get a C style null terminated string
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
@@ -364,7 +400,7 @@ bool HybridObservablesTest::acquire_signal()
     else if (implementation.compare("GPS_L2_M_DLL_PLL_Tracking") == 0)
         {
             tmp_gnss_synchro.System = 'G';
-            std::string signal = "2S";
+            signal = "2S";
             const char* str = signal.c_str();                                  // get a C style null terminated string
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
@@ -375,7 +411,7 @@ bool HybridObservablesTest::acquire_signal()
     else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_b") == 0)
         {
             tmp_gnss_synchro.System = 'E';
-            std::string signal = "5X";
+            signal = "5X";
             const char* str = signal.c_str();                                  // get a C style null terminated string
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
@@ -391,7 +427,7 @@ bool HybridObservablesTest::acquire_signal()
     else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking") == 0)
         {
             tmp_gnss_synchro.System = 'E';
-            std::string signal = "5X";
+            signal = "5X";
             const char* str = signal.c_str();                                  // get a C style null terminated string
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
@@ -402,7 +438,7 @@ bool HybridObservablesTest::acquire_signal()
     else if (implementation.compare("GPS_L5_DLL_PLL_Tracking") == 0)
         {
             tmp_gnss_synchro.System = 'G';
-            std::string signal = "L5";
+            signal = "L5";
             const char* str = signal.c_str();                                  // get a C style null terminated string
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
@@ -433,10 +469,88 @@ bool HybridObservablesTest::acquire_signal()
     file_source->seek(2 * FLAGS_skip_samples, 0);  //skip head. ibyte, two bytes per complex sample
     gr::blocks::interleaved_char_to_complex::sptr gr_interleaved_char_to_complex = gr::blocks::interleaved_char_to_complex::make();
     //gr::blocks::head::sptr head_samples = gr::blocks::head::make(sizeof(gr_complex), baseband_sampling_freq * FLAGS_duration);
+    //top_block->connect(head_samples, 0, acquisition->get_left_block(), 0);
 
     top_block->connect(file_source, 0, gr_interleaved_char_to_complex, 0);
-    top_block->connect(gr_interleaved_char_to_complex, 0, acquisition->get_left_block(), 0);
-    //top_block->connect(head_samples, 0, acquisition->get_left_block(), 0);
+
+    // Enable automatic resampler for the acquisition, if required
+    if (FLAGS_use_acquisition_resampler == true)
+        {
+            //create acquisition resamplers if required
+            double resampler_ratio = 1.0;
+
+            double opt_fs = baseband_sampling_freq;
+            //find the signal associated to this channel
+            switch (mapStringValues_[signal])
+                {
+                case evGPS_1C:
+                    opt_fs = GPS_L1_CA_OPT_ACQ_FS_HZ;
+                    break;
+                case evGPS_2S:
+                    opt_fs = GPS_L2C_OPT_ACQ_FS_HZ;
+                    break;
+                case evGPS_L5:
+                    opt_fs = GPS_L5_OPT_ACQ_FS_HZ;
+                    break;
+                case evSBAS_1C:
+                    opt_fs = GPS_L1_CA_OPT_ACQ_FS_HZ;
+                    break;
+                case evGAL_1B:
+                    opt_fs = Galileo_E1_OPT_ACQ_FS_HZ;
+                    break;
+                case evGAL_5X:
+                    opt_fs = Galileo_E5a_OPT_ACQ_FS_HZ;
+                    break;
+                case evGLO_1G:
+                    opt_fs = baseband_sampling_freq;
+                    break;
+                case evGLO_2G:
+                    opt_fs = baseband_sampling_freq;
+                    break;
+                }
+            if (opt_fs < baseband_sampling_freq)
+                {
+                    resampler_ratio = baseband_sampling_freq / opt_fs;
+                    int decimation = floor(resampler_ratio);
+                    while (baseband_sampling_freq % decimation > 0)
+                        {
+                            decimation--;
+                        };
+                    double acq_fs = baseband_sampling_freq / decimation;
+
+                    if (decimation > 1)
+                        {
+                            //create a FIR low pass filter
+                            std::vector<float> taps;
+                            taps = gr::filter::firdes::low_pass(1.0,
+                                baseband_sampling_freq,
+                                acq_fs / 2.1,
+                                acq_fs / 10,
+                                gr::filter::firdes::win_type::WIN_HAMMING);
+                            std::cout << "Enabled decimation low pass filter with " << taps.size() << " taps and decimation factor of " << decimation << std::endl;
+                            acquisition->set_resampler_latency((taps.size() - 1) / 2);
+                            gr::basic_block_sptr fir_filter_ccf_ = gr::filter::fir_filter_ccf::make(decimation, taps);
+                            top_block->connect(gr_interleaved_char_to_complex, 0, fir_filter_ccf_, 0);
+                            top_block->connect(fir_filter_ccf_, 0, acquisition->get_left_block(), 0);
+                        }
+                    else
+                        {
+                            std::cout << "Disabled acquisition resampler because the input sampling frequency is too low\n";
+                            top_block->connect(gr_interleaved_char_to_complex, 0, acquisition->get_left_block(), 0);
+                        }
+                }
+            else
+                {
+                    std::cout << "Disabled acquisition resampler because the input sampling frequency is too low\n";
+                    top_block->connect(gr_interleaved_char_to_complex, 0, acquisition->get_left_block(), 0);
+                }
+        }
+    else
+        {
+            top_block->connect(gr_interleaved_char_to_complex, 0, acquisition->get_left_block(), 0);
+            //top_block->connect(head_samples, 0, acquisition->get_left_block(), 0);
+        }
+
 
     boost::shared_ptr<Acquisition_msg_rx> msg_rx;
     try
@@ -1763,8 +1877,11 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
         }
     else
         {
-            ASSERT_EQ(ReadRinexObs(&true_obs_vec, gnss_synchro_master), true)
-                << "Failure reading RINEX file";
+            if (!FLAGS_duplicated_satellites_test)
+                {
+                    ASSERT_EQ(ReadRinexObs(&true_obs_vec, gnss_synchro_master), true)
+                        << "Failure reading RINEX file";
+                }
         }
     //read measured values
     observables_dump_reader estimated_observables(tracking_ch_vec.size());
@@ -1825,10 +1942,13 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                     measured_obs_vec.at(n).shed_rows(0, index(0));
                 }
 
-            index = arma::find(measured_obs_vec.at(n).col(0) >= true_obs_vec.at(n)(0, 0), 1, "first");
-            if ((index.size() > 0) and (index(0) > 0))
+            if (!FLAGS_duplicated_satellites_test)
                 {
-                    measured_obs_vec.at(n).shed_rows(0, index(0));
+                    index = arma::find(measured_obs_vec.at(n).col(0) >= true_obs_vec.at(n)(0, 0), 1, "first");
+                    if ((index.size() > 0) and (index(0) > 0))
+                        {
+                            measured_obs_vec.at(n).shed_rows(0, index(0));
+                        }
                 }
         }
 

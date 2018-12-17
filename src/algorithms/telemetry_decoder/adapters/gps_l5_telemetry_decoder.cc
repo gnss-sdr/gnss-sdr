@@ -32,14 +32,14 @@
 
 #include "gps_l5_telemetry_decoder.h"
 #include "configuration_interface.h"
-#include <gnuradio/io_signature.h>
 #include <glog/logging.h>
+#include <gnuradio/io_signature.h>
 
 
 using google::LogMessage;
 
 GpsL5TelemetryDecoder::GpsL5TelemetryDecoder(ConfigurationInterface* configuration,
-    std::string role,
+    const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
                                 in_streams_(in_streams),
@@ -64,9 +64,7 @@ GpsL5TelemetryDecoder::GpsL5TelemetryDecoder(ConfigurationInterface* configurati
 }
 
 
-GpsL5TelemetryDecoder::~GpsL5TelemetryDecoder()
-{
-}
+GpsL5TelemetryDecoder::~GpsL5TelemetryDecoder() = default;
 
 
 void GpsL5TelemetryDecoder::set_satellite(const Gnss_Satellite& satellite)

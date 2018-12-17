@@ -30,6 +30,7 @@
 
 #include "tracking_true_obs_reader.h"
 #include <iostream>
+#include <utility>
 
 bool tracking_true_obs_reader::read_binary_obs()
 {
@@ -57,10 +58,7 @@ bool tracking_true_obs_reader::restart()
             d_dump_file.seekg(0, std::ios::beg);
             return true;
         }
-    else
-        {
-            return false;
-        }
+    return false;
 }
 
 
@@ -76,10 +74,7 @@ int64_t tracking_true_obs_reader::num_epochs()
             int64_t nepoch = size / epoch_size_bytes;
             return nepoch;
         }
-    else
-        {
-            return 0;
-        }
+    return 0;
 }
 
 
@@ -90,14 +85,14 @@ bool tracking_true_obs_reader::open_obs_file(std::string out_file)
             try
                 {
                     d_dump_file.clear();
-                    d_dump_filename = out_file;
+                    d_dump_filename = std::move(out_file);
                     d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
                     d_dump_file.open(d_dump_filename.c_str(), std::ios::in | std::ios::binary);
                     return true;
                 }
             catch (const std::ifstream::failure &e)
                 {
-                    std::cout << "Problem opening Tracking dump Log file: " << d_dump_filename.c_str() << " Error: " << e.what() << std::endl;
+                    std::cout << "Problem opening Tracking dump Log file: " << d_dump_filename.c_str() << std::endl;
                     return false;
                 }
         }

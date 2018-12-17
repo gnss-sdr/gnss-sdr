@@ -56,13 +56,14 @@
 #include "MATH_CONSTANTS.h"
 #include "gnss_frequencies.h"
 #include "gnss_obs_codes.h"
-#include <pthread.h>
-#include <netinet/in.h>
 #include <cctype>
 #include <cmath>
 #include <cstdarg>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <netinet/in.h>
+#include <pthread.h>
 
 
 /* macros --------------------------------------------------------------------*/
@@ -1210,7 +1211,7 @@ typedef struct
     char local[1024]; /* local file path */
     int topts[4];     /* time options {poff,tint,toff,tretry} (s) */
     gtime_t tnext;    /* next retry time (gpst) */
-    pthread_t thread;  /* download thread */
+    pthread_t thread; /* download thread */
 } ftp_t;
 
 
@@ -1283,7 +1284,7 @@ typedef struct
     stream_t stream[8];         /* streams {rov,base,corr,sol1,sol2,logr,logb,logc} */
     stream_t *moni;             /* monitor stream */
     unsigned int tick;          /* start tick */
-    pthread_t thread;            /* server thread */
+    pthread_t thread;           /* server thread */
     int cputime;                /* CPU time (ms) for a processing cycle */
     int prcout;                 /* missing observation data count */
     lock_t lock;                /* lock flag */

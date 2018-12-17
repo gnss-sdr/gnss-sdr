@@ -33,10 +33,10 @@
 #ifndef GNSS_SDR_GPS_L1_CA_PCPS_QUICKSYNC_ACQUISITION_H_
 #define GNSS_SDR_GPS_L1_CA_PCPS_QUICKSYNC_ACQUISITION_H_
 
-#include "gnss_synchro.h"
 #include "acquisition_interface.h"
-#include "pcps_quicksync_acquisition_cc.h"
 #include "configuration_interface.h"
+#include "gnss_synchro.h"
+#include "pcps_quicksync_acquisition_cc.h"
 #include <gnuradio/blocks/stream_to_vector.h>
 #include <string>
 
@@ -50,7 +50,8 @@ class GpsL1CaPcpsQuickSyncAcquisition : public AcquisitionInterface
 {
 public:
     GpsL1CaPcpsQuickSyncAcquisition(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role,
+        unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~GpsL1CaPcpsQuickSyncAcquisition();
@@ -135,6 +136,8 @@ public:
      */
     void stop_acquisition() override;
 
+    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
+
 private:
     ConfigurationInterface* configuration_;
     pcps_quicksync_acquisition_cc_sptr acquisition_cc_;
@@ -151,7 +154,7 @@ private:
     unsigned int sampled_ms_;
     unsigned int max_dwells_;
     unsigned int folding_factor_;
-    long fs_in_;
+    int64_t fs_in_;
     bool dump_;
     std::string dump_filename_;
     std::complex<float>* code_;

@@ -37,24 +37,25 @@
  */
 
 #include "galileo_e1_tcp_connector_tracking_cc.h"
+#include "GPS_L1_CA.h"
+#include "Galileo_E1.h"
+#include "control_message_factory.h"
+#include "galileo_e1_signal_processing.h"
+#include "gnss_sdr_flags.h"
+#include "lock_detectors.h"
+#include "tcp_communication.h"
+#include "tcp_packet_data.h"
+#include "tracking_discriminators.h"
+#include <boost/asio.hpp>
+#include <boost/lexical_cast.hpp>
+#include <glog/logging.h>
+#include <gnuradio/io_signature.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cmath>
 #include <iostream>
 #include <memory>
 #include <sstream>
-#include <boost/asio.hpp>
-#include <boost/lexical_cast.hpp>
-#include <gnuradio/io_signature.h>
-#include <glog/logging.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
-#include "galileo_e1_signal_processing.h"
-#include "tracking_discriminators.h"
-#include "lock_detectors.h"
-#include "GPS_L1_CA.h"
-#include "Galileo_E1.h"
-#include "control_message_factory.h"
-#include "gnss_sdr_flags.h"
-#include "tcp_communication.h"
-#include "tcp_packet_data.h"
+#include <utility>
 
 
 using google::LogMessage;
@@ -63,7 +64,7 @@ galileo_e1_tcp_connector_tracking_cc_sptr galileo_e1_tcp_connector_make_tracking
     int64_t fs_in,
     uint32_t vector_length,
     bool dump,
-    std::string dump_filename,
+    const std::string &dump_filename,
     float pll_bw_hz,
     float dll_bw_hz,
     float early_late_space_chips,
@@ -89,7 +90,7 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
     int64_t fs_in,
     uint32_t vector_length,
     bool dump,
-    std::string dump_filename,
+    const std::string &dump_filename,
     float pll_bw_hz __attribute__((unused)),
     float dll_bw_hz __attribute__((unused)),
     float early_late_space_chips,
@@ -103,7 +104,7 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
     d_dump = dump;
     d_fs_in = fs_in;
     d_vector_length = vector_length;
-    d_dump_filename = dump_filename;
+    d_dump_filename = std::move(dump_filename);
 
     // Initialize tracking  ==========================================
     //--- DLL variables --------------------------------------------------------
@@ -172,7 +173,7 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
     d_carrier_lock_threshold = FLAGS_carrier_lock_th;
     systemName["E"] = std::string("Galileo");
 
-    d_acquisition_gnss_synchro = 0;
+    d_acquisition_gnss_synchro = nullptr;
     d_channel = 0;
     d_next_rem_code_phase_samples = 0;
     d_acq_code_phase_samples = 0.0;
@@ -525,7 +526,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
                     // AUX vars (for debug purposes)
                     tmp_float = 0.0;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
-                    double tmp_double = static_cast<double>(d_sample_counter + d_correlation_length_samples);
+                    auto tmp_double = static_cast<double>(d_sample_counter + d_correlation_length_samples);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                     // PRN
                     uint32_t prn_ = d_acquisition_gnss_synchro->PRN;
@@ -543,8 +544,6 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
         {
             return 1;
         }
-    else
-        {
-            return 0;
-        }
+
+    return 0;
 }

@@ -52,11 +52,11 @@
  *----------------------------------------------------------------------------*/
 
 #include "rtklib_rtkpos.h"
-#include "rtklib_pntpos.h"
 #include "rtklib_ephemeris.h"
+#include "rtklib_lambda.h"
+#include "rtklib_pntpos.h"
 #include "rtklib_ppp.h"
 #include "rtklib_tides.h"
-#include "rtklib_lambda.h"
 
 static int resamb_WLNL(rtk_t *rtk __attribute((unused)), const obsd_t *obs __attribute((unused)), const int *sat __attribute((unused)),
     const int *iu __attribute((unused)), const int *ir __attribute((unused)), int ns __attribute__((unused)), const nav_t *nav __attribute((unused)),
@@ -67,7 +67,7 @@ static int resamb_TCAR(rtk_t *rtk __attribute((unused)), const obsd_t *obs __att
 
 /* global variables ----------------------------------------------------------*/
 static int statlevel = 0;          /* rtk status output level (0:off) */
-static FILE *fp_stat = NULL;       /* rtk status file pointer */
+static FILE *fp_stat = nullptr;    /* rtk status file pointer */
 static char file_stat[1024] = "";  /* rtk status file original path */
 static gtime_t time_stat = {0, 0}; /* rtk status file time */
 
@@ -151,7 +151,7 @@ int rtkopenstat(const char *file, int level)
 
     reppath(file, path, time, "", "");
 
-    if (!(fp_stat = fopen(path, "w")))
+    if (!(fp_stat = fopen(path, "we")))
         {
             trace(1, "rtkopenstat: file open error path=%s\n", path);
             return 0;
@@ -176,7 +176,7 @@ void rtkclosestat(void)
     trace(3, "rtkclosestat:\n");
 
     if (fp_stat) fclose(fp_stat);
-    fp_stat = NULL;
+    fp_stat = nullptr;
     file_stat[0] = '\0';
     statlevel = 0;
 }
@@ -301,8 +301,8 @@ void swapsolstat(void)
     gtime_t time = utc2gpst(timeget());
     char path[1024];
 
-    if ((int)(time2gpst(time, NULL) / INT_SWAP_STAT) ==
-        (int)(time2gpst(time_stat, NULL) / INT_SWAP_STAT))
+    if (static_cast<int>(time2gpst(time, nullptr) / INT_SWAP_STAT) ==
+        static_cast<int>(time2gpst(time_stat, nullptr) / INT_SWAP_STAT))
         {
             return;
         }
@@ -314,7 +314,7 @@ void swapsolstat(void)
         }
     if (fp_stat) fclose(fp_stat);
 
-    if (!(fp_stat = fopen(path, "w")))
+    if (!(fp_stat = fopen(path, "we")))
         {
             trace(2, "swapsolstat: file open error path=%s\n", path);
             return;
@@ -541,7 +541,7 @@ void initx_rtk(rtk_t *rtk, double xi, double var, int i)
 
 
 /* select common satellites between rover and reference station --------------*/
-int selsat(const obsd_t *obs, double *azel, int nu, int nr,
+int selsat(const obsd_t *obs, const double *azel, int nu, int nr,
     const prcopt_t *opt, int *sat, int *iu, int *ir)
 {
     int i, j, k = 0;
@@ -795,7 +795,7 @@ void detslp_ll(rtk_t *rtk, const obsd_t *obs, int i, int rcv)
                 setbitu(&rtk->ssat[sat - 1].slip[f], 2, 2, obs[i].LLI[f]);
 
             /* save slip and half-cycle valid flag */
-            rtk->ssat[sat - 1].slip[f] |= (unsigned char)slip;
+            rtk->ssat[sat - 1].slip[f] |= static_cast<unsigned char>(slip);
             rtk->ssat[sat - 1].half[f] = (obs[i].LLI[f] & 2) ? 0 : 1;
         }
 }
@@ -923,7 +923,7 @@ void udbias(rtk_t *rtk, double tt, const obsd_t *obs, const int *sat,
             /* reset phase-bias if instantaneous AR or expire obs outage counter */
             for (i = 1; i <= MAXSAT; i++)
                 {
-                    reset = ++rtk->ssat[i - 1].outc[f] > (unsigned int)rtk->opt.maxout;
+                    reset = ++rtk->ssat[i - 1].outc[f] > static_cast<unsigned int>(rtk->opt.maxout);
 
                     if (rtk->opt.modear == ARMODE_INST && rtk->x[IB_RTK(i, f, &rtk->opt)] != 0.0)
                         {
@@ -1130,7 +1130,7 @@ int zdres(int base, const obsd_t *obs, int n, const double *rs,
 
             /* troposphere delay model (hydrostatic) */
             zhd = tropmodel(obs[0].time, pos, zazel, 0.0);
-            r += tropmapf(obs[i].time, pos, azel + i * 2, NULL) * zhd;
+            r += tropmapf(obs[i].time, pos, azel + i * 2, nullptr) * zhd;
 
             /* receiver antenna phase center correction */
             antmodel(opt->pcvr + index, opt->antdel[index], azel + i * 2, opt->posopt[1],
@@ -1155,7 +1155,7 @@ int zdres(int base, const obsd_t *obs, int n, const double *rs,
 
 
 /* test valid observation data -----------------------------------------------*/
-int validobs(int i, int j, int f, int nf, double *y)
+int validobs(int i, int j, int f, int nf, const double *y)
 {
     /* if no phase observable, psudorange is also unusable */
     return y[f + i * nf * 2] != 0.0 && y[f + j * nf * 2] != 0.0 &&
@@ -1302,13 +1302,13 @@ int test_sys(int sys, int m)
 
 /* double-differenced phase/code residuals -----------------------------------*/
 int ddres(rtk_t *rtk, const nav_t *nav, double dt, const double *x,
-    const double *P, const int *sat, double *y, double *e,
+    const double *P, const int *sat, double *y, const double *e,
     double *azel, const int *iu, const int *ir, int ns, double *v,
     double *H, double *R, int *vflg)
 {
     prcopt_t *opt = &rtk->opt;
     double bl, dr[3], posu[3], posr[3], didxi = 0.0, didxj = 0.0, *im;
-    double *tropr, *tropu, *dtdxr, *dtdxu, *Ri, *Rj, lami, lamj, fi, fj, df, *Hi = NULL;
+    double *tropr, *tropu, *dtdxr, *dtdxu, *Ri, *Rj, lami, lamj, fi, fj, df, *Hi = nullptr;
     int i, j, k, m, f, ff, nv = 0, nb[NFREQ * 4 * 2 + 2] = {0}, b = 0, sysi, sysj, nf = NF_RTK(opt);
 
     trace(3, "ddres   : dt=%.1f nx=%d ns=%d\n", dt, rtk->nx, ns);
@@ -1616,8 +1616,7 @@ int ddmat(rtk_t *rtk, double *D)
                                             rtk->ssat[i - k].fix[f] = 2; /* fix */
                                             break;
                                         }
-                                    else
-                                        rtk->ssat[i - k].fix[f] = 1;
+                                    rtk->ssat[i - k].fix[f] = 1;
                                 }
                             for (j = k; j < k + MAXSAT; j++)
                                 {
@@ -1787,7 +1786,7 @@ int resamb_LAMBDA(rtk_t *rtk, double *bias, double *xa)
             trace(4, "N(2)=");
             tracemat(4, b + nb, 1, nb, 10, 3);
 
-            rtk->sol.ratio = s[0] > 0 ? (float)(s[1] / s[0]) : 0.0f;
+            rtk->sol.ratio = s[0] > 0 ? static_cast<float>(s[1] / s[0]) : 0.0f;
             if (rtk->sol.ratio > 999.9) rtk->sol.ratio = 999.9f;
 
             /* validation by popular ratio-test */
@@ -1921,7 +1920,7 @@ int relpos(rtk_t *rtk, const obsd_t *obs, int nu, int nr,
 
     for (i = 0; i < MAXSAT; i++)
         {
-            rtk->ssat[i].sys = satsys(i + 1, NULL);
+            rtk->ssat[i].sys = satsys(i + 1, nullptr);
             for (j = 0; j < NFREQ; j++) rtk->ssat[i].vsat[j] = rtk->ssat[i].snr[j] = 0;
         }
     /* satellite positions/clocks */
@@ -2009,7 +2008,7 @@ int relpos(rtk_t *rtk, const obsd_t *obs, int nu, int nr,
     if (stat != SOLQ_NONE && zdres(0, obs, nu, rs, dts, svh, nav, xp, opt, 0, y, e, azel))
         {
             /* post-fit residuals for float solution */
-            nv = ddres(rtk, nav, dt, xp, Pp, sat, y, e, azel, iu, ir, ns, v, NULL, R, vflg);
+            nv = ddres(rtk, nav, dt, xp, Pp, sat, y, e, azel, iu, ir, ns, v, nullptr, R, vflg);
 
             /* validation of float solution */
             if (valpos(rtk, v, R, vflg, nv, 4.0))
@@ -2056,7 +2055,7 @@ int relpos(rtk_t *rtk, const obsd_t *obs, int nu, int nr,
             if (zdres(0, obs, nu, rs, dts, svh, nav, xa, opt, 0, y, e, azel))
                 {
                     /* post-fit reisiduals for fixed solution */
-                    nv = ddres(rtk, nav, dt, xa, NULL, sat, y, e, azel, iu, ir, ns, v, NULL, R, vflg);
+                    nv = ddres(rtk, nav, dt, xa, nullptr, sat, y, e, azel, iu, ir, ns, v, nullptr, R, vflg);
 
                     /* validation of fixed solution */
                     if (valpos(rtk, v, R, vflg, nv, 4.0))
@@ -2078,22 +2077,22 @@ int relpos(rtk_t *rtk, const obsd_t *obs, int nu, int nr,
             for (i = 0; i < 3; i++)
                 {
                     rtk->sol.rr[i] = rtk->xa[i];
-                    rtk->sol.qr[i] = (float)rtk->Pa[i + i * rtk->na];
+                    rtk->sol.qr[i] = static_cast<float>(rtk->Pa[i + i * rtk->na]);
                 }
-            rtk->sol.qr[3] = (float)rtk->Pa[1];
-            rtk->sol.qr[4] = (float)rtk->Pa[1 + 2 * rtk->na];
-            rtk->sol.qr[5] = (float)rtk->Pa[2];
+            rtk->sol.qr[3] = static_cast<float>(rtk->Pa[1]);
+            rtk->sol.qr[4] = static_cast<float>(rtk->Pa[1 + 2 * rtk->na]);
+            rtk->sol.qr[5] = static_cast<float>(rtk->Pa[2]);
         }
     else
         {
             for (i = 0; i < 3; i++)
                 {
                     rtk->sol.rr[i] = rtk->x[i];
-                    rtk->sol.qr[i] = (float)rtk->P[i + i * rtk->nx];
+                    rtk->sol.qr[i] = static_cast<float>(rtk->P[i + i * rtk->nx]);
                 }
-            rtk->sol.qr[3] = (float)rtk->P[1];
-            rtk->sol.qr[4] = (float)rtk->P[1 + 2 * rtk->nx];
-            rtk->sol.qr[5] = (float)rtk->P[2];
+            rtk->sol.qr[3] = static_cast<float>(rtk->P[1]);
+            rtk->sol.qr[4] = static_cast<float>(rtk->P[1 + 2 * rtk->nx]);
+            rtk->sol.qr[5] = static_cast<float>(rtk->P[2]);
             rtk->nfix = 0;
         }
     for (i = 0; i < n; i++)
@@ -2181,13 +2180,13 @@ void rtkfree(rtk_t *rtk)
 
     rtk->nx = rtk->na = 0;
     free(rtk->x);
-    rtk->x = NULL;
+    rtk->x = nullptr;
     free(rtk->P);
-    rtk->P = NULL;
+    rtk->P = nullptr;
     free(rtk->xa);
-    rtk->xa = NULL;
+    rtk->xa = nullptr;
     free(rtk->Pa);
-    rtk->Pa = NULL;
+    rtk->Pa = nullptr;
 }
 
 
@@ -2277,7 +2276,7 @@ int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
     time = rtk->sol.time; /* previous epoch */
 
     /* rover position by single point positioning */
-    if (!pntpos(obs, nu, nav, &rtk->opt, &rtk->sol, NULL, rtk->ssat, msg))
+    if (!pntpos(obs, nu, nav, &rtk->opt, &rtk->sol, nullptr, rtk->ssat, msg))
         {
             errmsg(rtk, "point pos error (%s)\n", msg);
             if (!rtk->opt.dynamics)
@@ -2317,12 +2316,12 @@ int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
         { /*  moving baseline */
 
             /* estimate position/velocity of base station */
-            if (!pntpos(obs + nu, nr, nav, &rtk->opt, &solb, NULL, NULL, msg))
+            if (!pntpos(obs + nu, nr, nav, &rtk->opt, &solb, nullptr, nullptr, msg))
                 {
                     errmsg(rtk, "base station position error (%s)\n", msg);
                     return 0;
                 }
-            rtk->sol.age = (float)timediff(rtk->sol.time, solb.time);
+            rtk->sol.age = static_cast<float>(timediff(rtk->sol.time, solb.time));
 
             if (fabs(rtk->sol.age) > TTOL_MOVEB)
                 {
@@ -2336,7 +2335,7 @@ int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
         }
     else
         {
-            rtk->sol.age = (float)timediff(obs[0].time, obs[nu].time);
+            rtk->sol.age = static_cast<float>(timediff(obs[0].time, obs[nu].time));
 
             if (fabs(rtk->sol.age) > opt->maxtdiff)
                 {

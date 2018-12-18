@@ -46,8 +46,8 @@
  */
 #undef	NEXT_PHASE
 #define	NEXT_PHASE(ctx)	do {			\
-		ctx->phase++;			\
-		ctx->step = 0;			\
+		(ctx)->phase++;			\
+		(ctx)->step = 0;			\
 	} while(0)
 
 /*

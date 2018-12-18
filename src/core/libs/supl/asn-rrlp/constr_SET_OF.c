@@ -47,10 +47,10 @@
 #undef	NEXT_PHASE
 #undef	PHASE_OUT
 #define	NEXT_PHASE(ctx)	do {			\
-		ctx->phase++;			\
-		ctx->step = 0;			\
+		(ctx)->phase++;			\
+		(ctx)->step = 0;			\
 	} while(0)
-#define	PHASE_OUT(ctx)	do { ctx->phase = 10; } while(0)
+#define	PHASE_OUT(ctx)	do { (ctx)->phase = 10; } while(0)
 
 /*
  * Return a standardized complex structure.

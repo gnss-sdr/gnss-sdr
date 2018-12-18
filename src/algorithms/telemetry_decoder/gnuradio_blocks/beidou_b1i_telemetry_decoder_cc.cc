@@ -76,6 +76,12 @@ beidou_b1i_telemetry_decoder_cc::beidou_b1i_telemetry_decoder_cc(
                         }
                     n++;
         }
+
+    d_samples_per_symbol = 20;
+    d_bits_per_preamble = 11;
+    d_samples_per_preamble = 11 * d_samples_per_symbol;
+    d_required_symbols = static_cast<uint32_t>(6000) * d_samples_per_symbol + d_samples_per_preamble;
+
     d_stat = 0;
     d_symbol_accumulator = 0;
     d_symbol_accumulator_counter = 0;
@@ -497,8 +503,8 @@ std::cout << " we have a new set of utc data for the current SV "<< std::endl;
     //2. Add the telemetry decoder information
     if (this->d_flag_preamble == true and d_flag_new_tow_available == true)
         {
-            d_TOW_at_current_symbol_ms = static_cast<unsigned int>(d_BEIDOU_FSM.d_nav.d_SOW) * 1000 + 599;
-            d_TOW_at_Preamble_ms = d_TOW_at_current_symbol_ms;
+    	    d_TOW_at_Preamble_ms = static_cast<unsigned int>(d_BEIDOU_FSM.d_nav.d_SOW +14) * 1000 ;
+    	    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * BEIDOU_B1I_CODE_PERIOD_MS);
             flag_TOW_set = true;
             d_flag_new_tow_available = false;
         }

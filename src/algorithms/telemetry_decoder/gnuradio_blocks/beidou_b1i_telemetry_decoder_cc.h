@@ -38,7 +38,7 @@
 #include <fstream>
 #include <string>
 #include <boost/circular_buffer.hpp>
-#include "../../../core/system_parameters/Beidou_B1I.h"
+#include "Beidou_B1I.h"
 
 class beidou_b1i_telemetry_decoder_cc;
 
@@ -103,6 +103,11 @@ private:
     bool d_flag_preamble;
     bool d_flag_new_tow_available;
     int d_word_number;
+
+    uint32_t d_samples_per_symbol;
+    int32_t d_bits_per_preamble;
+    int32_t d_samples_per_preamble;
+    uint32_t d_required_symbols;
 
     // navigation message vars
     Beidou_Dnav_Navigation_Message d_nav;

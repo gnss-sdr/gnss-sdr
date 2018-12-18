@@ -32,8 +32,8 @@
 #ifndef GNSS_SDR_GPS_L1_CA_PCPS_OPENCL_ACQUISITION_H_
 #define GNSS_SDR_GPS_L1_CA_PCPS_OPENCL_ACQUISITION_H_
 
-#include "gnss_synchro.h"
 #include "acquisition_interface.h"
+#include "gnss_synchro.h"
 #include "pcps_opencl_acquisition_cc.h"
 #include <gnuradio/blocks/stream_to_vector.h>
 #include <string>
@@ -48,7 +48,8 @@ class GpsL1CaPcpsOpenClAcquisition : public AcquisitionInterface
 {
 public:
     GpsL1CaPcpsOpenClAcquisition(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role,
+        unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~GpsL1CaPcpsOpenClAcquisition();
@@ -129,6 +130,8 @@ public:
      */
     void stop_acquisition() override;
 
+    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
+
 private:
     ConfigurationInterface* configuration_;
     pcps_opencl_acquisition_cc_sptr acquisition_cc_;
@@ -144,7 +147,7 @@ private:
     unsigned int doppler_step_;
     unsigned int sampled_ms_;
     unsigned int max_dwells_;
-    long fs_in_;
+    int64_t fs_in_;
     bool dump_;
     std::string dump_filename_;
     std::complex<float>* code_;

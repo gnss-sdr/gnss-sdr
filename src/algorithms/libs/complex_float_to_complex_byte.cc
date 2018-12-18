@@ -53,8 +53,8 @@ int complex_float_to_complex_byte::work(int noutput_items,
     gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items)
 {
-    const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);
-    lv_8sc_t *out = reinterpret_cast<lv_8sc_t *>(output_items[0]);
+    const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);
+    auto *out = reinterpret_cast<lv_8sc_t *>(output_items[0]);
     volk_gnsssdr_32fc_convert_8ic(out, in, noutput_items);
     return noutput_items;
 }

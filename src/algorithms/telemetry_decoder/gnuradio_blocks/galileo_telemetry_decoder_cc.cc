@@ -35,8 +35,8 @@
 #include "display.h"
 #include "gnss_synchro.h"
 #include <boost/lexical_cast.hpp>
-#include <gnuradio/io_signature.h>
 #include <glog/logging.h>
+#include <gnuradio/io_signature.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <iostream>
 
@@ -60,7 +60,7 @@ void galileo_telemetry_decoder_cc::viterbi_decoder(double *page_part_symbols, in
 }
 
 
-void galileo_telemetry_decoder_cc::deinterleaver(int32_t rows, int32_t cols, double *in, double *out)
+void galileo_telemetry_decoder_cc::deinterleaver(int32_t rows, int32_t cols, const double *in, double *out)
 {
     for (int32_t r = 0; r < rows; r++)
         {
@@ -141,7 +141,7 @@ galileo_telemetry_decoder_cc::galileo_telemetry_decoder_cc(
             d_samples_per_symbol = 0U;
             d_PRN_code_period_ms = 0U;
             d_required_symbols = 0U;
-            d_frame_length_symbols = 0.0;
+            d_frame_length_symbols = 0U;
             CodeLength = 0;
             DataLength = 0;
             std::cout << "Galileo unified telemetry decoder error: Unknown frame type " << std::endl;
@@ -260,7 +260,7 @@ galileo_telemetry_decoder_cc::~galileo_telemetry_decoder_cc()
 void galileo_telemetry_decoder_cc::decode_INAV_word(double *page_part_symbols, int32_t frame_length)
 {
     // 1. De-interleave
-    double *page_part_symbols_deint = static_cast<double *>(volk_gnsssdr_malloc(frame_length * sizeof(double), volk_gnsssdr_get_alignment()));
+    auto *page_part_symbols_deint = static_cast<double *>(volk_gnsssdr_malloc(frame_length * sizeof(double), volk_gnsssdr_get_alignment()));
     deinterleaver(GALILEO_INAV_INTERLEAVER_ROWS, GALILEO_INAV_INTERLEAVER_COLS, page_part_symbols, page_part_symbols_deint);
 
     // 2. Viterbi decoder
@@ -274,7 +274,7 @@ void galileo_telemetry_decoder_cc::decode_INAV_word(double *page_part_symbols, i
                 }
         }
 
-    int32_t *page_part_bits = static_cast<int32_t *>(volk_gnsssdr_malloc((frame_length / 2) * sizeof(int32_t), volk_gnsssdr_get_alignment()));
+    auto *page_part_bits = static_cast<int32_t *>(volk_gnsssdr_malloc((frame_length / 2) * sizeof(int32_t), volk_gnsssdr_get_alignment()));
     viterbi_decoder(page_part_symbols_deint, page_part_bits);
     volk_gnsssdr_free(page_part_symbols_deint);
 
@@ -309,7 +309,7 @@ void galileo_telemetry_decoder_cc::decode_INAV_word(double *page_part_symbols, i
     else
         {
             // STORE HALF WORD (even page)
-            d_inav_nav.split_page(page_String.c_str(), flag_even_word_arrived);
+            d_inav_nav.split_page(page_String, flag_even_word_arrived);
             flag_even_word_arrived = 1;
         }
     volk_gnsssdr_free(page_part_bits);
@@ -354,7 +354,7 @@ void galileo_telemetry_decoder_cc::decode_INAV_word(double *page_part_symbols, i
 void galileo_telemetry_decoder_cc::decode_FNAV_word(double *page_symbols, int32_t frame_length)
 {
     // 1. De-interleave
-    double *page_symbols_deint = static_cast<double *>(volk_gnsssdr_malloc(frame_length * sizeof(double), volk_gnsssdr_get_alignment()));
+    auto *page_symbols_deint = static_cast<double *>(volk_gnsssdr_malloc(frame_length * sizeof(double), volk_gnsssdr_get_alignment()));
     deinterleaver(GALILEO_FNAV_INTERLEAVER_ROWS, GALILEO_FNAV_INTERLEAVER_COLS, page_symbols, page_symbols_deint);
 
     // 2. Viterbi decoder
@@ -367,7 +367,7 @@ void galileo_telemetry_decoder_cc::decode_FNAV_word(double *page_symbols, int32_
                     page_symbols_deint[i] = -page_symbols_deint[i];
                 }
         }
-    int32_t *page_bits = static_cast<int32_t *>(volk_gnsssdr_malloc((frame_length / 2) * sizeof(int32_t), volk_gnsssdr_get_alignment()));
+    auto *page_bits = static_cast<int32_t *>(volk_gnsssdr_malloc((frame_length / 2) * sizeof(int32_t), volk_gnsssdr_get_alignment()));
     viterbi_decoder(page_symbols_deint, page_bits);
     volk_gnsssdr_free(page_symbols_deint);
 
@@ -439,7 +439,7 @@ void galileo_telemetry_decoder_cc::set_channel(int32_t channel)
                     try
                         {
                             d_dump_filename = "telemetry";
-                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
+                            d_dump_filename.append(std::to_string(d_channel));
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
@@ -460,10 +460,10 @@ int galileo_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
     int32_t corr_value = 0;
     int32_t preamble_diff = 0;
 
-    Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);            // Get the output buffer pointer
-    const Gnss_Synchro **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);  // Get the input buffer pointer
+    auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);            // Get the output buffer pointer
+    const auto **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);  // Get the input buffer pointer
 
-    Gnss_Synchro current_symbol;  // structure to save the synchronization information and send the output object to the next block
+    Gnss_Synchro current_symbol{};  // structure to save the synchronization information and send the output object to the next block
     // 1. Copy the current tracking output
     current_symbol = in[0][0];
     // add new symbol to the symbol queue
@@ -780,8 +780,5 @@ int galileo_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
             *out[0] = current_symbol;
             return 1;
         }
-    else
-        {
-            return 0;
-        }
+    return 0;
 }

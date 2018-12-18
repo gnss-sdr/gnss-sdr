@@ -31,25 +31,25 @@
  */
 
 
-#include <chrono>
-#include <gnuradio/top_block.h>
-#include <gnuradio/blocks/file_source.h>
+#include "galileo_e5a_dll_pll_tracking.h"
+#include "gnss_block_factory.h"
+#include "gnss_block_interface.h"
+#include "gnss_sdr_valve.h"
+#include "gnss_synchro.h"
+#include "in_memory_configuration.h"
 #include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/blocks/file_source.h>
+#include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/blocks/skiphead.h>
+#include <gnuradio/msg_queue.h>
+#include <gnuradio/top_block.h>
+#include <gtest/gtest.h>
+#include <chrono>
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
 #include <gnuradio/analog/sig_source_c.h>
 #endif
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/blocks/skiphead.h>
-#include <gtest/gtest.h>
-#include "gnss_block_factory.h"
-#include "gnss_block_interface.h"
-#include "in_memory_configuration.h"
-#include "gnss_sdr_valve.h"
-#include "gnss_synchro.h"
-#include "galileo_e5a_dll_pll_tracking.h"
 
 
 class GalileoE5aTrackingTest : public ::testing::Test

@@ -41,8 +41,8 @@
 #include <cstdint>
 #include <map>
 #include <string>
-#include <vector>
 #include <utility>
+#include <vector>
 
 //TODO: Create GPS CNAV almanac
 //#include "gps_almanac.h"
@@ -56,16 +56,16 @@
 class Gps_CNAV_Navigation_Message
 {
 private:
-    uint64_t read_navigation_unsigned(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter);
-    int64_t read_navigation_signed(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter);
-    bool read_navigation_bool(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>> parameter);
+    uint64_t read_navigation_unsigned(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
+    int64_t read_navigation_signed(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
+    bool read_navigation_bool(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
 
     Gps_CNAV_Ephemeris ephemeris_record;
     Gps_CNAV_Iono iono_record;
     Gps_CNAV_Utc_Model utc_model_record;
 
 public:
-    double d_TOW;
+    int32_t d_TOW;
     bool b_flag_ephemeris_1;
     bool b_flag_ephemeris_2;
     bool b_flag_iono_valid;  //!< If set, it indicates that the ionospheric parameters are filled and are not yet read by the get_iono

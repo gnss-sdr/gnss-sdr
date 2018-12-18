@@ -31,8 +31,8 @@
 #ifndef GNSS_SDR_TIME_COUNTER_H_
 #define GNSS_SDR_TIME_COUNTER_H_
 
-#include <gnuradio/block.h>
 #include <boost/shared_ptr.hpp>
+#include <gnuradio/block.h>
 #include <cstdint>
 
 class gnss_sdr_time_counter;

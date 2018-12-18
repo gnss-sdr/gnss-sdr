@@ -36,8 +36,8 @@
 #define GNSS_SDR_FILE_SIGNAL_SOURCE_H_
 
 #include "gnss_block_interface.h"
-#include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/file_sink.h>
+#include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/throttle.h>
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/msg_queue.h>
@@ -53,7 +53,7 @@ class ConfigurationInterface;
 class FileSignalSource : public GNSSBlockInterface
 {
 public:
-    FileSignalSource(ConfigurationInterface* configuration, std::string role,
+    FileSignalSource(ConfigurationInterface* configuration, const std::string& role,
         unsigned int in_streams, unsigned int out_streams,
         boost::shared_ptr<gr::msg_queue> queue);
 

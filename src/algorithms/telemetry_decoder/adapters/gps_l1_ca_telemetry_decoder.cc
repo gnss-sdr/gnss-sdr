@@ -32,18 +32,18 @@
 
 #include "gps_l1_ca_telemetry_decoder.h"
 #include "configuration_interface.h"
-#include "gps_ephemeris.h"
 #include "gps_almanac.h"
+#include "gps_ephemeris.h"
 #include "gps_iono.h"
 #include "gps_utc_model.h"
-#include <gnuradio/io_signature.h>
 #include <glog/logging.h>
+#include <gnuradio/io_signature.h>
 
 
 using google::LogMessage;
 
 GpsL1CaTelemetryDecoder::GpsL1CaTelemetryDecoder(ConfigurationInterface* configuration,
-    std::string role,
+    const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
                                 in_streams_(in_streams),
@@ -68,9 +68,7 @@ GpsL1CaTelemetryDecoder::GpsL1CaTelemetryDecoder(ConfigurationInterface* configu
 }
 
 
-GpsL1CaTelemetryDecoder::~GpsL1CaTelemetryDecoder()
-{
-}
+GpsL1CaTelemetryDecoder::~GpsL1CaTelemetryDecoder() = default;
 
 
 void GpsL1CaTelemetryDecoder::set_satellite(const Gnss_Satellite& satellite)

@@ -48,18 +48,18 @@
 #define GNSS_SDR_GNUPLOT_I_H_
 
 #include <gflags/gflags.h>
-#include <iostream>
-#include <string>
-#include <vector>
-#include <fstream>
-#include <sstream>  // for std::ostringstream
-#include <stdexcept>
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>  // for getenv()
 #include <cstring>  // for strncpy
-#include <cmath>
-#include <list>  // for std::list
+#include <fstream>
+#include <iostream>
+#include <list>     // for std::list
+#include <sstream>  // for std::ostringstream
+#include <stdexcept>
+#include <string>
 #include <sys/stat.h>
+#include <vector>
 
 DEFINE_bool(show_plots, true, "Show plots on screen. Disable for non-interactive testing.");
 
@@ -703,7 +703,7 @@ std::string Gnuplot::terminal_std = "aqua";
 // constructor: set a style during construction
 //
 inline Gnuplot::Gnuplot(const std::string &style)
-    : gnucmd(NULL), valid(false), two_dim(false), nplots(0)
+    : gnucmd(nullptr), valid(false), two_dim(false), nplots(0)
 
 {
     init();
@@ -720,7 +720,7 @@ inline Gnuplot::Gnuplot(const std::vector<double> &x,
     const std::string &style,
     const std::string &labelx,
     const std::string &labely)
-    : gnucmd(NULL), valid(false), two_dim(false), nplots(0)
+    : gnucmd(nullptr), valid(false), two_dim(false), nplots(0)
 {
     init();
 
@@ -742,7 +742,7 @@ inline Gnuplot::Gnuplot(const std::vector<double> &x,
     const std::string &style,
     const std::string &labelx,
     const std::string &labely)
-    : gnucmd(NULL), valid(false), two_dim(false), nplots(0)
+    : gnucmd(nullptr), valid(false), two_dim(false), nplots(0)
 {
     init();
 
@@ -766,7 +766,7 @@ inline Gnuplot::Gnuplot(const std::vector<double> &x,
     const std::string &labelx,
     const std::string &labely,
     const std::string &labelz)
-    : gnucmd(NULL), valid(false), two_dim(false), nplots(0)
+    : gnucmd(nullptr), valid(false), two_dim(false), nplots(0)
 {
     init();
 
@@ -1011,11 +1011,9 @@ bool Gnuplot::set_GNUPlotPath(const std::string &path)
             Gnuplot::m_sGNUPlotPath = path;
             return true;
         }
-    else
-        {
-            Gnuplot::m_sGNUPlotPath.clear();
-            return false;
-        }
+
+    Gnuplot::m_sGNUPlotPath.clear();
+    return false;
 }
 
 
@@ -1027,7 +1025,7 @@ bool Gnuplot::set_GNUPlotPath(const std::string &path)
 void Gnuplot::set_terminal_std(const std::string &type)
 {
 #if defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
-    if (type.find("x11") != std::string::npos && std::getenv("DISPLAY") == NULL)
+    if (type.find("x11") != std::string::npos && std::getenv("DISPLAY") == nullptr)
         {
             throw GnuplotException("Can't find DISPLAY variable");
         }
@@ -1068,8 +1066,8 @@ void stringtok(Container &container,
                     container.push_back(in.substr(i));
                     return;
                 }
-            else
-                container.push_back(in.substr(i, j - i));
+
+            container.push_back(in.substr(i, j - i));
 
             // set up for next loop
             i = j + 1;
@@ -1876,7 +1874,7 @@ Gnuplot &Gnuplot::cmd(const std::string &cmdstr)
         {
             return *this;
         }
-    else if (cmdstr.find("splot") != std::string::npos)
+    if (cmdstr.find("splot") != std::string::npos)
         {
             two_dim = false;
             nplots++;
@@ -2052,10 +2050,7 @@ bool Gnuplot::file_exists(const std::string &filename, int mode)
         {
             return true;
         }
-    else
-        {
-            return false;
-        }
+    return false;
 }
 
 
@@ -2105,19 +2100,19 @@ std::string Gnuplot::create_tmpfile(std::ofstream &tmp)
             throw GnuplotException(except.str());
         }
 
-// int mkstemp(char *name);
-// shall replace the contents of the string pointed to by "name" by a unique
-// filename, and return a file descriptor for the file open for reading and
-// writing.  Otherwise, -1 shall be returned if no suitable file could be
-// created.  The string in template should look like a filename with six
-// trailing 'X' s; mkstemp() replaces each 'X' with a character from the
-// portable filename character set.  The characters are chosen such that the
-// resulting name does not duplicate the name of an existing file at the
-// time of a call to mkstemp()
+        // int mkstemp(char *name);
+        // shall replace the contents of the string pointed to by "name" by a unique
+        // filename, and return a file descriptor for the file open for reading and
+        // writing.  Otherwise, -1 shall be returned if no suitable file could be
+        // created.  The string in template should look like a filename with six
+        // trailing 'X' s; mkstemp() replaces each 'X' with a character from the
+        // portable filename character set.  The characters are chosen such that the
+        // resulting name does not duplicate the name of an existing file at the
+        // time of a call to mkstemp()
 
-//
-// open temporary files for output
-//
+        //
+        // open temporary files for output
+        //
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
     if (_mktemp(name) == NULL)
@@ -2147,7 +2142,7 @@ std::string Gnuplot::create_tmpfile(std::ofstream &tmp)
     //
     // Save the temporary filename
     //
-    tmpfile_list.push_back(name);
+    tmpfile_list.emplace_back(name);
     Gnuplot::tmpfile_num++;
 
     return name;
@@ -2158,8 +2153,8 @@ void Gnuplot::remove_tmpfiles()
 {
     if ((tmpfile_list).size() > 0)
         {
-            for (unsigned int i = 0; i < tmpfile_list.size(); i++)
-                if (remove(tmpfile_list[i].c_str()) != 0)
+            for (auto &i : tmpfile_list)
+                if (remove(i.c_str()) != 0)
                     std::cout << "Problem closing files" << std::endl;
 
             Gnuplot::tmpfile_num -= tmpfile_list.size();

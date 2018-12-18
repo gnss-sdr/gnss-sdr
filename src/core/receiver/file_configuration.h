@@ -37,6 +37,7 @@
 #define GNSS_SDR_FILE_CONFIGURATION_H_
 
 #include "configuration_interface.h"
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -62,10 +63,12 @@ public:
     ~FileConfiguration();
     std::string property(std::string property_name, std::string default_value);
     bool property(std::string property_name, bool default_value);
-    long property(std::string property_name, long default_value);
-    int property(std::string property_name, int default_value);
-    unsigned int property(std::string property_name, unsigned int default_value);
-    unsigned short property(std::string property_name, unsigned short default_value);
+    int64_t property(std::string property_name, int64_t default_value);
+    uint64_t property(std::string property_name, uint64_t default_value);
+    int32_t property(std::string property_name, int32_t default_value);
+    uint32_t property(std::string property_name, uint32_t default_value);
+    int16_t property(std::string property_name, int16_t default_value);
+    uint16_t property(std::string property_name, uint16_t default_value);
     float property(std::string property_name, float default_value);
     double property(std::string property_name, double default_value);
     void set_property(std::string property_name, std::string value);

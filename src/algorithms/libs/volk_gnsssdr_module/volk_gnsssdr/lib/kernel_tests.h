@@ -29,8 +29,8 @@
 
 
 #include "qa_utils.h"
-#include <vector>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <vector>
 
 
 // macros for initializing volk_gnsssdr_test_case_t. Macros are needed to generate

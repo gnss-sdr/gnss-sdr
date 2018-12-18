@@ -33,8 +33,9 @@
 
 #ifndef GNSS_SDR_CIRCULAR_DEQUE_H_
 #define GNSS_SDR_CIRCULAR_DEQUE_H_
-#include <vector>
+
 #include <boost/circular_buffer.hpp>
+#include <vector>
 
 template <class T>
 class Gnss_circular_deque

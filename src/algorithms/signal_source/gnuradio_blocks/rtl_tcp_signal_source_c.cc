@@ -32,8 +32,8 @@
 
 #include "rtl_tcp_signal_source_c.h"
 #include "rtl_tcp_commands.h"
-#include <glog/logging.h>
 #include <boost/thread/thread.hpp>
+#include <glog/logging.h>
 #include <map>
 
 using google::LogMessage;
@@ -51,7 +51,7 @@ enum
 
 rtl_tcp_signal_source_c_sptr
 rtl_tcp_make_signal_source_c(const std::string &address,
-    short port,
+    int16_t port,
     bool flip_iq)
 {
     return gnuradio::get_initial_sptr(new rtl_tcp_signal_source_c(address,
@@ -61,7 +61,7 @@ rtl_tcp_make_signal_source_c(const std::string &address,
 
 
 rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
-    short port,
+    int16_t port,
     bool flip_iq)
     : gr::sync_block("rtl_tcp_signal_source_c",
           gr::io_signature::make(0, 0, 0),
@@ -152,7 +152,7 @@ rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
 }
 
 
-rtl_tcp_signal_source_c::~rtl_tcp_signal_source_c()
+rtl_tcp_signal_source_c::~rtl_tcp_signal_source_c()  // NOLINT(modernize-use-equals-default)
 {
     mutex_.unlock();
     io_service_.stop();
@@ -205,7 +205,7 @@ void rtl_tcp_signal_source_c::set_agc_mode(bool agc)
 
 void rtl_tcp_signal_source_c::set_gain(int gain)
 {
-    unsigned clipped = static_cast<unsigned>(info_.clip_gain(gain) * 10.0);
+    auto clipped = static_cast<unsigned>(info_.clip_gain(gain) * 10.0);
     boost::system::error_code ec = rtl_tcp_command(RTL_TCP_SET_GAIN, clipped, socket_);
     if (ec)
         {

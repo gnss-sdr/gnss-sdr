@@ -47,7 +47,7 @@ class HybridObservables : public ObservablesInterface
 {
 public:
     HybridObservables(ConfigurationInterface* configuration,
-        std::string role,
+        const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 

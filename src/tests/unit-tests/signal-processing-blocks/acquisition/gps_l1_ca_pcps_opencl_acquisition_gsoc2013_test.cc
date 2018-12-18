@@ -31,28 +31,28 @@
  */
 
 
-#include <chrono>
 #include <boost/shared_ptr.hpp>
-#include <gnuradio/top_block.h>
-#include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/blocks/file_source.h>
+#include <gnuradio/top_block.h>
+#include <chrono>
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
 #include <gnuradio/analog/sig_source_c.h>
 #endif
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/blocks/null_sink.h>
-#include "gnss_block_interface.h"
-#include "in_memory_configuration.h"
 #include "configuration_interface.h"
-#include "gnss_synchro.h"
-#include "gps_l1_ca_pcps_opencl_acquisition.h"
-#include "signal_generator.h"
-#include "signal_generator_c.h"
 #include "fir_filter.h"
 #include "gen_signal_source.h"
+#include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
+#include "gnss_synchro.h"
+#include "gps_l1_ca_pcps_opencl_acquisition.h"
+#include "in_memory_configuration.h"
+#include "signal_generator.h"
+#include "signal_generator_c.h"
+#include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/msg_queue.h>
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CaPcpsOpenClAcquisitionGSoC2013Test_msg_rx;

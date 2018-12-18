@@ -90,7 +90,8 @@ const int BEIDOU_SUBFRAME_SECONDS = 6;                 //!< Subframe duration [s
 const int BEIDOU_SUBFRAME_MS = 6000;                 //!< Subframe duration [miliseconds]
 const int BEIDOU_WORD_BITS = 30;                       //!< Number of bits per word in the NAV message [bits]
 
-
+const int BEIDOU_DNAV_PREAMBLE_LENGTH_BITS = 11;
+const int BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS = 220;   // **************
 
 // BEIDOU D1 NAVIGATION MESSAGE STRUCTURE
 // GENERAL

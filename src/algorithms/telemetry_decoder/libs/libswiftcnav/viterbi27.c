@@ -95,15 +95,15 @@ void v27_init(v27_t *v, v27_decision_t *decisions, unsigned int decisions_count,
         unsigned int metric,m0,m1,decision;\
         metric = (v->poly->c0[i] ^ sym0) + (v->poly->c1[i] ^ sym1);\
         m0 = v->old_metrics[i] + metric;\
-        m1 = v->old_metrics[i+32] + (510 - metric);\
+        m1 = v->old_metrics[(i)+32] + (510 - metric);\
         decision = (signed int)(m0-m1) > 0;\
-        v->new_metrics[2*i] = decision ? m1 : m0;\
-        d->w[i/16] |= decision << ((2*i)&31);\
+        v->new_metrics[2*(i)] = decision ? m1 : m0;\
+        d->w[(i)/16] |= decision << ((2*(i))&31);\
         m0 -= (metric+metric-510);\
         m1 += (metric+metric-510);\
         decision = (signed int)(m0-m1) > 0;\
-        v->new_metrics[2*i+1] = decision ? m1 : m0;\
-        d->w[i/16] |= decision << ((2*i+1)&31);\
+        v->new_metrics[2*(i)+1] = decision ? m1 : m0;\
+        d->w[(i)/16] |= decision << ((2*(i)+1)&31);\
 }
 
 /** Update a v27_t decoder with a block of symbols.

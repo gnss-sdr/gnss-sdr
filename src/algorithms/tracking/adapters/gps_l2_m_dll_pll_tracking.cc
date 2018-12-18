@@ -34,23 +34,20 @@
  * -------------------------------------------------------------------------
  */
 
-#include "dll_pll_conf.h"
 #include "gps_l2_m_dll_pll_tracking.h"
-#include "configuration_interface.h"
 #include "GPS_L2C.h"
-#include "gnss_sdr_flags.h"
+#include "configuration_interface.h"
 #include "display.h"
+#include "dll_pll_conf.h"
+#include "gnss_sdr_flags.h"
 #include <glog/logging.h>
 
 
 using google::LogMessage;
 
-void GpsL2MDllPllTracking::stop_tracking()
-{
-}
 
 GpsL2MDllPllTracking::GpsL2MDllPllTracking(
-    ConfigurationInterface* configuration, std::string role,
+    ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     Dll_Pll_Conf trk_param = Dll_Pll_Conf();
@@ -112,7 +109,7 @@ GpsL2MDllPllTracking::GpsL2MDllPllTracking(
     trk_param.carrier_lock_th = carrier_lock_th;
 
     //################# MAKE TRACKING GNURadio object ###################
-    if (item_type.compare("gr_complex") == 0)
+    if (item_type == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             tracking_ = dll_pll_veml_make_tracking(trk_param);
@@ -135,10 +132,12 @@ GpsL2MDllPllTracking::GpsL2MDllPllTracking(
 }
 
 
-GpsL2MDllPllTracking::~GpsL2MDllPllTracking()
+GpsL2MDllPllTracking::~GpsL2MDllPllTracking() = default;
+
+
+void GpsL2MDllPllTracking::stop_tracking()
 {
 }
-
 
 void GpsL2MDllPllTracking::start_tracking()
 {

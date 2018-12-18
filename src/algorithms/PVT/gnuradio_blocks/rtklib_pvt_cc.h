@@ -31,26 +31,26 @@
 #ifndef GNSS_SDR_RTKLIB_PVT_CC_H
 #define GNSS_SDR_RTKLIB_PVT_CC_H
 
-#include "gps_ephemeris.h"
-#include "nmea_printer.h"
-#include "kml_printer.h"
-#include "gpx_printer.h"
 #include "geojson_printer.h"
+#include "gps_ephemeris.h"
+#include "gpx_printer.h"
+#include "kml_printer.h"
+#include "nmea_printer.h"
+#include "pvt_conf.h"
 #include "rinex_printer.h"
 #include "rtcm_printer.h"
-#include "pvt_conf.h"
 #include "rtklib_solver.h"
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <gnuradio/sync_block.h>
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/msg.h>
 #include <chrono>
 #include <cstdint>
 #include <fstream>
-#include <utility>
 #include <string>
+#include <sys/ipc.h>
+#include <sys/msg.h>
+#include <sys/types.h>
+#include <utility>
 
 
 class rtklib_pvt_cc;
@@ -59,7 +59,7 @@ typedef boost::shared_ptr<rtklib_pvt_cc> rtklib_pvt_cc_sptr;
 
 rtklib_pvt_cc_sptr rtklib_make_pvt_cc(uint32_t n_channels,
     const Pvt_Conf& conf_,
-    rtk_t& rtk);
+    const rtk_t& rtk);
 
 /*!
  * \brief This class implements a block that computes the PVT solution using the RTKLIB integrated library
@@ -69,7 +69,7 @@ class rtklib_pvt_cc : public gr::sync_block
 private:
     friend rtklib_pvt_cc_sptr rtklib_make_pvt_cc(uint32_t nchannels,
         const Pvt_Conf& conf_,
-        rtk_t& rtk);
+        const rtk_t& rtk);
 
     void msg_handler_telemetry(pmt::pmt_t msg);
 
@@ -131,9 +131,9 @@ private:
     bool send_sys_v_ttff_msg(ttff_msgbuf ttff);
     std::chrono::time_point<std::chrono::system_clock> start, end;
 
-    bool save_gnss_synchro_map_xml(const std::string file_name);  //debug helper function
+    bool save_gnss_synchro_map_xml(const std::string& file_name);  //debug helper function
 
-    bool load_gnss_synchro_map_xml(const std::string file_name);  //debug helper function
+    bool load_gnss_synchro_map_xml(const std::string& file_name);  //debug helper function
 
     bool d_xml_storage;
     std::string xml_base_path;
@@ -147,7 +147,7 @@ private:
 public:
     rtklib_pvt_cc(uint32_t nchannels,
         const Pvt_Conf& conf_,
-        rtk_t& rtk);
+        const rtk_t& rtk);
 
     /*!
      * \brief Get latest set of ephemeris from PVT block

@@ -31,20 +31,22 @@
 
 
 #include "signal_generator.h"
-#include "configuration_interface.h"
-#include "Galileo_E1.h"
-#include "GPS_L1_CA.h"
-#include "Galileo_E5a.h"
 #include "GLONASS_L1_L2_CA.h"
+#include "GPS_L1_CA.h"
+#include "Galileo_E1.h"
+#include "Galileo_E5a.h"
+#include "Beidou_B1I.h"
+#include "configuration_interface.h"
 #include <glog/logging.h>
-#include "../../../core/system_parameters/Beidou_B1I.h"
+#include <cstdint>
+#include <utility>
 
 
 using google::LogMessage;
 
 SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_stream,
-    unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+    const std::string& role, unsigned int in_stream,
+    unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/gen_source.dat";
@@ -103,11 +105,11 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
         {
             if (signal1[0].at(0) == '1')
                 {
-                    vector_length = round((float)fs_in / (GLONASS_L1_CA_CODE_RATE_HZ / GLONASS_L1_CA_CODE_LENGTH_CHIPS));
+                    vector_length = round(static_cast<float>(fs_in) / (GLONASS_L1_CA_CODE_RATE_HZ / GLONASS_L1_CA_CODE_LENGTH_CHIPS));
                 }
             else
                 {
-                    vector_length = round((float)fs_in / (GLONASS_L2_CA_CODE_RATE_HZ / GLONASS_L2_CA_CODE_LENGTH_CHIPS));
+                    vector_length = round(static_cast<float>(fs_in) / (GLONASS_L2_CA_CODE_RATE_HZ / GLONASS_L2_CA_CODE_LENGTH_CHIPS));
                 }
         }
 
@@ -117,7 +119,7 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
         }
 
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             DLOG(INFO) << "Item size " << item_size_;
@@ -133,7 +135,7 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
     else
         {
             LOG(WARNING) << item_type_ << " unrecognized item type for resampler";
-            item_size_ = sizeof(short);
+            item_size_ = sizeof(int16_t);
         }
 
     if (dump_)
@@ -156,14 +158,12 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
 }
 
 
-SignalGenerator::~SignalGenerator()
-{
-}
+SignalGenerator::~SignalGenerator() = default;
 
 
 void SignalGenerator::connect(gr::top_block_sptr top_block)
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             top_block->connect(gen_source_, 0, vector_to_stream_, 0);
             DLOG(INFO) << "connected gen_source to vector_to_stream";
@@ -179,7 +179,7 @@ void SignalGenerator::connect(gr::top_block_sptr top_block)
 
 void SignalGenerator::disconnect(gr::top_block_sptr top_block)
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             top_block->disconnect(gen_source_, 0, vector_to_stream_, 0);
             if (dump_)

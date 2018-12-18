@@ -34,14 +34,14 @@
 #include "configuration_interface.h"
 #include "sbas_ephemeris.h"
 #include "sbas_l1_telemetry_decoder_cc.h"
-#include <gnuradio/io_signature.h>
 #include <glog/logging.h>
+#include <gnuradio/io_signature.h>
 
 
 using google::LogMessage;
 
 SbasL1TelemetryDecoder::SbasL1TelemetryDecoder(ConfigurationInterface* configuration,
-    std::string role,
+    const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
                                 in_streams_(in_streams),
@@ -66,9 +66,7 @@ SbasL1TelemetryDecoder::SbasL1TelemetryDecoder(ConfigurationInterface* configura
 }
 
 
-SbasL1TelemetryDecoder::~SbasL1TelemetryDecoder()
-{
-}
+SbasL1TelemetryDecoder::~SbasL1TelemetryDecoder() = default;
 
 
 void SbasL1TelemetryDecoder::set_satellite(const Gnss_Satellite& satellite)

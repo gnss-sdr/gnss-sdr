@@ -36,13 +36,14 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <utility>
 
 
 using google::LogMessage;
 
 
 SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface* configuration,
-    std::string role, uint32_t in_streams, uint32_t out_streams, gr::msg_queue::sptr queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
+    const std::string& role, uint32_t in_streams, uint32_t out_streams, gr::msg_queue::sptr queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(std::move(queue))
 {
     std::string default_filename = "../data/my_capture.dat";
     std::string default_dump_filename = "../data/my_capture_dump.dat";
@@ -153,7 +154,8 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface*
             valve_vec_.push_back(gnss_sdr_make_valve(sizeof(gr_complex), samples_, queue_));
             if (dump_)
                 {
-                    sink_vec_.push_back(gr::blocks::file_sink::make(sizeof(gr_complex), dump_filename_.c_str()));
+                    std::string tmp_str = dump_filename_ + "_ch" + std::to_string(i);
+                    sink_vec_.push_back(gr::blocks::file_sink::make(sizeof(gr_complex), tmp_str.c_str()));
                 }
             if (enable_throttle_control_)
                 {
@@ -180,9 +182,7 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface*
 }
 
 
-SpirGSS6450FileSignalSource::~SpirGSS6450FileSignalSource()
-{
-}
+SpirGSS6450FileSignalSource::~SpirGSS6450FileSignalSource() = default;
 
 
 void SpirGSS6450FileSignalSource::connect(gr::top_block_sptr top_block)

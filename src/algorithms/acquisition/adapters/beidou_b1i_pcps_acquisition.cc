@@ -45,8 +45,12 @@
 using google::LogMessage;
 
 BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
-    ConfigurationInterface* configuration, std::string role,
-    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration,
+	std::string role,
+	unsigned int in_streams,
+	unsigned int out_streams) : role_(role),
+			                    in_streams_(in_streams),
+								out_streams_(out_streams)
 {
 	Acq_Conf acq_parameters = Acq_Conf();
     configuration_ = configuration;
@@ -331,4 +335,9 @@ gr::basic_block_sptr BeidouB1iPcpsAcquisition::get_left_block()
 gr::basic_block_sptr BeidouB1iPcpsAcquisition::get_right_block()
 {
     return acquisition_;
+}
+
+void BeidouB1iPcpsAcquisition::set_resampler_latency(uint32_t latency_samples)
+{
+    acquisition_->set_resampler_latency(latency_samples);
 }

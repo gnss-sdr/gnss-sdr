@@ -33,40 +33,41 @@
  */
 
 #include "control_thread.h"
-#include "concurrent_queue.h"
 #include "concurrent_map.h"
-#include "pvt_interface.h"
+#include "concurrent_queue.h"
 #include "control_message_factory.h"
 #include "file_configuration.h"
-#include "gnss_flowgraph.h"
-#include "gnss_sdr_flags.h"
+#include "galileo_almanac.h"
 #include "galileo_ephemeris.h"
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
-#include "galileo_almanac.h"
+#include "geofunctions.h"
+#include "glonass_gnav_ephemeris.h"
+#include "glonass_gnav_utc_model.h"
+#include "gnss_flowgraph.h"
+#include "gnss_sdr_flags.h"
+#include "gps_almanac.h"
 #include "gps_ephemeris.h"
 #include "gps_iono.h"
 #include "gps_utc_model.h"
-#include "gps_almanac.h"
-#include "glonass_gnav_ephemeris.h"
-#include "glonass_gnav_utc_model.h"
-#include "geofunctions.h"
-#include "rtklib_rtkcmn.h"
+#include "pvt_interface.h"
 #include "rtklib_conversions.h"
 #include "rtklib_ephemeris.h"
-#include <boost/lexical_cast.hpp>
+#include "rtklib_rtkcmn.h"
 #include <boost/chrono.hpp>
+#include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
 #include <gnuradio/message.h>
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/msg.h>
 #include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <limits>
 #include <map>
 #include <string>
+#include <sys/ipc.h>
+#include <sys/msg.h>
+#include <sys/types.h>
+#include <utility>
 
 
 extern concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
@@ -166,7 +167,7 @@ void ControlThread::init()
     else
         {
             // fill agnss_ref_time_
-            struct tm tm;
+            struct tm tm = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, nullptr};
             if (strptime(ref_time_str.c_str(), "%d/%m/%Y %H:%M:%S", &tm) != nullptr)
                 {
                     agnss_ref_time_.d_tv_sec = timegm(&tm);
@@ -188,18 +189,20 @@ void ControlThread::init()
 }
 
 
-ControlThread::~ControlThread()
+ControlThread::~ControlThread()  // NOLINT(modernize-use-equals-default)
 {
-    // save navigation data to files
-    // if (save_assistance_to_XML() == true) {}
     if (msqid != -1) msgctl(msqid, IPC_RMID, NULL);
 }
 
 
 void ControlThread::telecommand_listener()
 {
-    int tcp_cmd_port = configuration_->property("GNSS-SDR.telecontrol_tcp_port", 3333);
-    cmd_interface_.run_cmd_server(tcp_cmd_port);
+    bool telecommand_enabled = configuration_->property("GNSS-SDR.telecommand_enabled", false);
+    if (telecommand_enabled)
+        {
+            int tcp_cmd_port = configuration_->property("GNSS-SDR.telecommand_tcp_port", 3333);
+            cmd_interface_.run_cmd_server(tcp_cmd_port);
+        }
 }
 
 
@@ -291,21 +294,19 @@ int ControlThread::run()
         {
             return 42;  // signal the gnss-sdr-harness.sh to restart the receiver program
         }
-    else
-        {
-            return 0;  // normal shutdown
-        }
+
+    return 0;  // normal shutdown
 }
 
 
-void ControlThread::set_control_queue(gr::msg_queue::sptr control_queue)
+void ControlThread::set_control_queue(const gr::msg_queue::sptr &control_queue)
 {
     if (flowgraph_->running())
         {
             LOG(WARNING) << "Unable to set control queue while flowgraph is running";
             return;
         }
-    control_queue_ = control_queue;
+    control_queue_ = std::move(control_queue);
     cmd_interface_.set_msg_queue(control_queue_);
 }
 
@@ -750,7 +751,7 @@ void ControlThread::assist_GNSS()
             time_t ref_rx_utc_time = 0;
             if (agnss_ref_time_.valid == true)
                 {
-                    ref_rx_utc_time = agnss_ref_time_.d_tv_sec;
+                    ref_rx_utc_time = static_cast<time_t>(agnss_ref_time_.d_tv_sec);
                 }
 
             std::vector<std::pair<int, Gnss_Satellite>> visible_sats = get_visible_sats(ref_rx_utc_time, ref_LLH);
@@ -878,7 +879,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
     std::vector<unsigned int> visible_gps;
     std::vector<unsigned int> visible_gal;
     std::shared_ptr<PvtInterface> pvt_ptr = flowgraph_->get_pvt();
-    struct tm tstruct;
+    struct tm tstruct = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, nullptr};
     char buf[80];
     tstruct = *gmtime(&rx_utc_time);
     strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S ", &tstruct);

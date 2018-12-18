@@ -1,5 +1,5 @@
 /*!
- * \file kml_printer.cc
+ * \file nmea_printer.cc
  * \brief Implementation of a NMEA 2.1 printer for GNSS-SDR
  * This class provides a implementation of a subset of the NMEA-0183 standard for interfacing
  * marine electronic devices as defined by the National Marine Electronics Association (NMEA).
@@ -48,7 +48,7 @@
 using google::LogMessage;
 
 
-Nmea_Printer::Nmea_Printer(std::string filename, bool flag_nmea_output_file, bool flag_nmea_tty_port, std::string nmea_dump_devname, const std::string& base_path)
+Nmea_Printer::Nmea_Printer(const std::string& filename, bool flag_nmea_output_file, bool flag_nmea_tty_port, std::string nmea_dump_devname, const std::string& base_path)
 {
     nmea_base_path = base_path;
     d_flag_nmea_output_file = flag_nmea_output_file;
@@ -79,7 +79,7 @@ Nmea_Printer::Nmea_Printer(std::string filename, bool flag_nmea_output_file, boo
                     nmea_base_path = p.string();
                 }
 
-            if ((nmea_base_path.compare(".") != 0) and (d_flag_nmea_output_file == true))
+            if ((nmea_base_path != ".") and (d_flag_nmea_output_file == true))
                 {
                     std::cout << "NMEA files will be stored at " << nmea_base_path << std::endl;
                 }
@@ -99,10 +99,10 @@ Nmea_Printer::Nmea_Printer(std::string filename, bool flag_nmea_output_file, boo
                 }
         }
 
-    nmea_devname = nmea_dump_devname;
+    nmea_devname = std::move(nmea_dump_devname);
     if (flag_nmea_tty_port == true)
         {
-            nmea_dev_descriptor = init_serial(nmea_devname.c_str());
+            nmea_dev_descriptor = init_serial(nmea_devname);
             if (nmea_dev_descriptor != -1)
                 {
                     DLOG(INFO) << "NMEA printer writing on " << nmea_devname.c_str();
@@ -126,20 +126,22 @@ Nmea_Printer::~Nmea_Printer()
 }
 
 
-int Nmea_Printer::init_serial(std::string serial_device)
+int Nmea_Printer::init_serial(const std::string& serial_device)
 {
     /*!
      * Opens the serial device and sets the default baud rate for a NMEA transmission (9600,8,N,1)
      */
     int fd = 0;
-    struct termios options;
+    struct termios options
+    {
+    };
     int64_t BAUD;
     int64_t DATABITS;
     int64_t STOPBITS;
     int64_t PARITYON;
     int64_t PARITY;
 
-    fd = open(serial_device.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
+    fd = open(serial_device.c_str(), O_RDWR | O_NOCTTY | O_NDELAY | O_CLOEXEC);
     if (fd == -1) return fd;  // failed to open TTY port
 
     if (fcntl(fd, F_SETFL, 0) == -1) LOG(INFO) << "Error enabling direct I/O";  // clear all flags on descriptor, enable direct I/O
@@ -246,9 +248,9 @@ char Nmea_Printer::checkSum(std::string sentence)
 {
     char check = 0;
     // iterate over the string, XOR each byte with the total sum:
-    for (unsigned int c = 0; c < sentence.length(); c++)
+    for (char c : sentence)
         {
-            check = char(check ^ sentence.at(c));
+            check = char(check ^ c);
         }
     // return the result
     return check;

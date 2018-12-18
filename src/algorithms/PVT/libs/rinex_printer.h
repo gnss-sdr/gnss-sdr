@@ -68,6 +68,8 @@
 #include <sstream>  // for stringstream
 #include <iomanip>  // for setprecision
 #include <map>
+#include <sstream>  // for stringstream
+#include <string>
 
 class Sbas_Raw_Msg;
 
@@ -151,52 +153,52 @@ public:
     /*!
      *  \brief Generates the GPS L2 Observation data header
      */
-    void rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris& eph, const double d_TOW_first_observation, const std::string gps_bands = "2S");
+    void rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris& eph, const double d_TOW_first_observation, const std::string& gps_bands = "2S");
 
     /*!
      *  \brief Generates the dual frequency GPS L1 & L2/L5 Observation data header
      */
-    void rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph, const Gps_CNAV_Ephemeris& eph_cnav, const double d_TOW_first_observation, const std::string gps_bands = "1C 2S");
+    void rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph, const Gps_CNAV_Ephemeris& eph_cnav, const double d_TOW_first_observation, const std::string& gps_bands = "1C 2S");
 
     /*!
      *  \brief Generates the Galileo Observation data header. Example: bands("1B"), bands("1B 5X"), bands("5X"), ... Default: "1B".
      */
-    void rinex_obs_header(std::fstream& out, const Galileo_Ephemeris& eph, const double d_TOW_first_observation, const std::string bands = "1B");
+    void rinex_obs_header(std::fstream& out, const Galileo_Ephemeris& eph, const double d_TOW_first_observation, const std::string& bands = "1B");
 
     /*!
      *  \brief Generates the Mixed (GPS/Galileo) Observation data header. Example: galileo_bands("1B"), galileo_bands("1B 5X"), galileo_bands("5X"), ... Default: "1B".
      */
-    void rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps_eph, const Galileo_Ephemeris& galileo_eph, const double d_TOW_first_observation, const std::string galileo_bands = "1B");
+    void rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps_eph, const Galileo_Ephemeris& galileo_eph, const double d_TOW_first_observation, const std::string& galileo_bands = "1B");
 
     /*!
      *  \brief Generates the Mixed (GPS/Galileo) Observation data header. Example: galileo_bands("1B"), galileo_bands("1B 5X"), galileo_bands("5X"), ... Default: "1B".
      */
-    void rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& eph_cnav, const Galileo_Ephemeris& galileo_eph, const double d_TOW_first_observation, const std::string gps_bands = "1C 2S", const std::string galileo_bands = "1B");
+    void rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& eph_cnav, const Galileo_Ephemeris& galileo_eph, const double d_TOW_first_observation, const std::string& gps_bands = "1C 2S", const std::string& galileo_bands = "1B");
 
     /*!
      *  \brief Generates the Mixed (GPS/Galileo) Observation data header. Example: galileo_bands("1B"), galileo_bands("1B 5X"), galileo_bands("5X"), ... Default: "1B".
      */
-    void rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris& eph_cnav, const Galileo_Ephemeris& galileo_eph, const double d_TOW_first_observation, const std::string gps_bands = "2S", const std::string galileo_bands = "1B");
+    void rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris& eph_cnav, const Galileo_Ephemeris& galileo_eph, const double d_TOW_first_observation, const std::string& gps_bands = "2S", const std::string& galileo_bands = "1B");
 
     /*!
      *  \brief Generates the GLONASS GNAV Observation data header. Example: bands("1C"), bands("1C 2C"), bands("2C"), ... Default: "1C".
      */
-    void rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephemeris& eph, const double d_TOW_first_observation, const std::string bands = "1G");
+    void rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephemeris& eph, const double d_TOW_first_observation, const std::string& bands = "1G");
 
     /*!
      *  \brief Generates the Mixed (GPS L1 C/A /GLONASS) Observation data header. Example: galileo_bands("1C"), galileo_bands("1B 5X"), galileo_bands("5X"), ... Default: "1B".
      */
-    void rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const double d_TOW_first_observation, const std::string glo_bands = "1C");
+    void rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const double d_TOW_first_observation, const std::string& glo_bands = "1C");
 
     /*!
      *  \brief Generates the Mixed (Galileo/GLONASS) Observation data header. Example: galileo_bands("1C"), galileo_bands("1B 5X"), galileo_bands("5X"), ... Default: "1B".
      */
-    void rinex_obs_header(std::fstream& out, const Galileo_Ephemeris& galileo_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const double d_TOW_first_observation, const std::string galileo_bands = "1B", const std::string glo_bands = "1C");
+    void rinex_obs_header(std::fstream& out, const Galileo_Ephemeris& galileo_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const double d_TOW_first_observation, const std::string& galileo_bands = "1B", const std::string& glo_bands = "1C");
 
     /*!
      *  \brief Generates the Mixed (GPS L2C/GLONASS) Observation data header. Example: galileo_bands("1G")... Default: "1G".
      */
-    void rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris& gps_cnav_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const double d_TOW_first_observation, const std::string glo_bands = "1G");
+    void rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris& gps_cnav_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const double d_TOW_first_observation, const std::string& glo_bands = "1G");
 
     /*!
      *  \brief Generates the a Beidou B1I Observation data header. Example: beidou_bands("B1")
@@ -321,7 +323,7 @@ public:
     /*!
      *  \brief Writes Galileo observables into the RINEX file. Example: galileo_bands("1B"), galileo_bands("1B 5X"), galileo_bands("5X"), ... Default: "1B".
      */
-    void log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, const std::string galileo_bands = "1B");
+    void log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, const std::string& galileo_bands = "1B");
 
     /*!
      *  \brief Writes Mixed GPS / Galileo observables into the RINEX file
@@ -341,7 +343,7 @@ public:
     /*!
      *  \brief Writes GLONASS GNAV observables into the RINEX file. Example: glonass_bands("1C"), galileo_bands("1B 5X"), galileo_bands("5X"), ... Default: "1B".
      */
-    void log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeris& eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, const std::string glonass_bands = "1C");
+    void log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeris& eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, const std::string& glonass_bands = "1C");
 
     /*!
      *  \brief Writes Mixed GPS L1 C/A - GLONASS observables into the RINEX file
@@ -441,7 +443,7 @@ private:
      * "RINEX_FILE_TYPE_SBAS" - SBAS broadcast data file.
      * "RINEX_FILE_TYPE_CLK" - Clock file.
      */
-    std::string createFilename(std::string type);
+    std::string createFilename(const std::string& type);
 
     /*
      * Generates the data for the PGM / RUN BY / DATE line
@@ -582,7 +584,7 @@ private:
      */
     inline double asDouble(const std::string& s)
     {
-        return strtod(s.c_str(), 0);
+        return strtod(s.c_str(), nullptr);
     }
 
 
@@ -595,7 +597,7 @@ private:
      */
     inline int64_t asInt(const std::string& s)
     {
-        return strtol(s.c_str(), 0, 10);
+        return strtol(s.c_str(), nullptr, 10);
     }
 
 
@@ -831,7 +833,7 @@ inline std::string Rinex_Printer::asFixWidthString(const int x, const int width,
 
 inline int64_t asInt(const std::string& s)
 {
-    return strtol(s.c_str(), 0, 10);
+    return strtol(s.c_str(), nullptr, 10);
 }
 
 

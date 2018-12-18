@@ -31,7 +31,7 @@
 #ifndef GNSS_SDR_MATH_CONSTANTS_H_
 #define GNSS_SDR_MATH_CONSTANTS_H_
 
-#include<string>
+#include <string>
 
 /* Constants for scaling the ephemeris found in the data message
         the format is the following: TWO_N5 -> 2^-5, TWO_P4 -> 2^4, PI_TWO_N43 -> Pi*2^-43, etc etc

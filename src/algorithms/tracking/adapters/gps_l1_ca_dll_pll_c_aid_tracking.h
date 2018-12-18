@@ -38,9 +38,9 @@
 #ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_H_
 #define GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_H_
 
-#include "tracking_interface.h"
 #include "gps_l1_ca_dll_pll_c_aid_tracking_cc.h"
 #include "gps_l1_ca_dll_pll_c_aid_tracking_sc.h"
+#include "tracking_interface.h"
 #include <string>
 
 
@@ -53,7 +53,7 @@ class GpsL1CaDllPllCAidTracking : public TrackingInterface
 {
 public:
     GpsL1CaDllPllCAidTracking(ConfigurationInterface* configuration,
-        std::string role,
+        const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 

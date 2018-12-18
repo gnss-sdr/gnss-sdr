@@ -31,10 +31,11 @@
  */
 
 #include "acquisition_msg_rx.h"
-#include <cstdint>
 #include <boost/bind.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
+#include <cstdint>
+#include <utility>
 
 
 Acquisition_msg_rx_sptr Acquisition_msg_rx_make()
@@ -47,7 +48,7 @@ void Acquisition_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
             top_block->stop();  // stop the flowgraph
         }
@@ -67,4 +68,4 @@ Acquisition_msg_rx::Acquisition_msg_rx() : gr::block("Acquisition_msg_rx", gr::i
 }
 
 
-Acquisition_msg_rx::~Acquisition_msg_rx() {}
+Acquisition_msg_rx::~Acquisition_msg_rx() = default;

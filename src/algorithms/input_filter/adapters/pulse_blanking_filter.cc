@@ -33,13 +33,14 @@
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
 #include <gnuradio/filter/firdes.h>
-#include <vector>
 #include <cmath>
+#include <utility>
+#include <vector>
 
 using google::LogMessage;
 
 PulseBlankingFilter::PulseBlankingFilter(ConfigurationInterface* configuration, std::string role,
-    unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(std::move(role)), in_streams_(in_streams), out_streams_(out_streams)
 {
     size_t item_size;
     xlat_ = false;
@@ -61,7 +62,7 @@ PulseBlankingFilter::PulseBlankingFilter(ConfigurationInterface* configuration, 
     int n_segments_est = config_->property(role_ + ".segments_est", default_n_segments_est);
     int default_n_segments_reset = 5000000;
     int n_segments_reset = config_->property(role_ + ".segments_reset", default_n_segments_reset);
-    if (input_item_type_.compare("gr_complex") == 0)
+    if (input_item_type_ == "gr_complex")
         {
             item_size = sizeof(gr_complex);    //output
             input_size_ = sizeof(gr_complex);  //input
@@ -105,14 +106,12 @@ PulseBlankingFilter::PulseBlankingFilter(ConfigurationInterface* configuration, 
 }
 
 
-PulseBlankingFilter::~PulseBlankingFilter()
-{
-}
+PulseBlankingFilter::~PulseBlankingFilter() = default;
 
 
 void PulseBlankingFilter::connect(gr::top_block_sptr top_block)
 {
-    if (input_item_type_.compare("gr_complex") == 0)
+    if (input_item_type_ == "gr_complex")
         {
             if (dump_)
                 {
@@ -133,7 +132,7 @@ void PulseBlankingFilter::connect(gr::top_block_sptr top_block)
 
 void PulseBlankingFilter::disconnect(gr::top_block_sptr top_block)
 {
-    if (input_item_type_.compare("gr_complex") == 0)
+    if (input_item_type_ == "gr_complex")
         {
             if (dump_)
                 {
@@ -153,34 +152,25 @@ void PulseBlankingFilter::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr PulseBlankingFilter::get_left_block()
 {
-    if (input_item_type_.compare("gr_complex") == 0)
+    if (input_item_type_ == "gr_complex")
         {
             if (xlat_)
                 {
                     return freq_xlating_;
                 }
-            else
-                {
-                    return pulse_blanking_cc_;
-                }
+            return pulse_blanking_cc_;
         }
-    else
-        {
-            return nullptr;
-            LOG(ERROR) << " Unknown input filter input/output item type conversion";
-        }
+    LOG(ERROR) << " Unknown input filter input/output item type conversion";
+    return nullptr;
 }
 
 
 gr::basic_block_sptr PulseBlankingFilter::get_right_block()
 {
-    if (input_item_type_.compare("gr_complex") == 0)
+    if (input_item_type_ == "gr_complex")
         {
             return pulse_blanking_cc_;
         }
-    else
-        {
-            return nullptr;
-            LOG(ERROR) << " Unknown input filter input/output item type conversion";
-        }
+    LOG(ERROR) << " Unknown input filter input/output item type conversion";
+    return nullptr;
 }

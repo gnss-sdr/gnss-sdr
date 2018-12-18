@@ -30,11 +30,12 @@
  */
 
 #include "hybrid_ls_pvt.h"
-#include "Galileo_E1.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
+#include "Galileo_E1.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
+#include <utility>
 
 
 using google::LogMessage;
@@ -43,7 +44,7 @@ hybrid_ls_pvt::hybrid_ls_pvt(int nchannels, std::string dump_filename, bool flag
 {
     // init empty ephemeris for all the available GNSS channels
     d_nchannels = nchannels;
-    d_dump_filename = dump_filename;
+    d_dump_filename = std::move(dump_filename);
     d_flag_dump_enabled = flag_dump_to_file;
     d_galileo_current_time = 0;
     count_valid_position = 0;
@@ -173,7 +174,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
                     {
                         // 1 GPS - find the ephemeris for the current GPS SV observation. The SV PRN ID is the map key
                         std::string sig_(gnss_observables_iter->second.Signal);
-                        if (sig_.compare("1C") == 0)
+                        if (sig_ == "1C")
                             {
                                 gps_ephemeris_iter = gps_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                 if (gps_ephemeris_iter != gps_ephemeris_map.end())
@@ -228,7 +229,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
                                         DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->first;
                                     }
                             }
-                        if (sig_.compare("2S") == 0)
+                        if (sig_ == "2S")
                             {
                                 gps_cnav_ephemeris_iter = gps_cnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                 if (gps_cnav_ephemeris_iter != gps_cnav_ephemeris_map.end())
@@ -333,7 +334,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
                         }
 
                     // get time string Gregorian calendar
-                    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>(utc * 1000.0));
+                    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>(utc * 1000.0));  // NOLINT(google-runtime-int)
                     // 22 August 1999 00:00 last Galileo start GST epoch (ICD sec 5.1.2)
                     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
                     this->set_position_UTC_time(p_time);

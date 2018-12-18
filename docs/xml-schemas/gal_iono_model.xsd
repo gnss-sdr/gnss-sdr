@@ -13,8 +13,8 @@
               <xs:element type="xs:byte" name="Region3_flag_5"/>
               <xs:element type="xs:byte" name="Region4_flag_5"/>
               <xs:element type="xs:byte" name="Region5_flag_5"/>
-              <xs:element type="xs:float" name="TOW_5"/>
-              <xs:element type="xs:float" name="WN_5"/>
+              <xs:element type="xs:int" name="TOW_5"/>
+              <xs:element type="xs:short" name="WN_5"/>
             </xs:sequence>
             <xs:attribute type="xs:byte" name="class_id"/>
             <xs:attribute type="xs:byte" name="tracking_level"/>

@@ -29,18 +29,18 @@
  * -------------------------------------------------------------------------
  */
 
-#include <chrono>
-#include <gnuradio/top_block.h>
 #include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/top_block.h>
+#include <chrono>
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
 #include <gnuradio/analog/sig_source_c.h>
 #endif
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/blocks/null_sink.h>
 #include "gnss_sdr_valve.h"
 #include "mmse_resampler_conditioner.h"
+#include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/msg_queue.h>
 
 TEST(MmseResamplerTest, InstantiationAndRunTestWarning)
 {

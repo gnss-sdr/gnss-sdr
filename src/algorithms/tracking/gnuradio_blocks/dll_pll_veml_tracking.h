@@ -1,6 +1,7 @@
 /*!
  * \file dll_pll_veml_tracking.h
  * \brief Implementation of a code DLL + carrier PLL tracking block.
+ * \author Javier Arribas, 2018. jarribas(at)cttc.es
  * \author Antonio Ramos, 2018 antonio.ramosdet(at)gmail.com
  *
  * -------------------------------------------------------------------------
@@ -31,18 +32,18 @@
 #ifndef GNSS_SDR_DLL_PLL_VEML_TRACKING_H
 #define GNSS_SDR_DLL_PLL_VEML_TRACKING_H
 
+#include "cpu_multicorrelator_real_codes.h"
 #include "dll_pll_conf.h"
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
-#include "cpu_multicorrelator_real_codes.h"
+#include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>
 #include <fstream>
-#include <string>
 #include <map>
 #include <queue>
+#include <string>
 #include <utility>
-#include <boost/circular_buffer.hpp>
 
 class dll_pll_veml_tracking;
 
@@ -173,7 +174,6 @@ private:
     double d_carrier_doppler_hz;
     double d_acc_carrier_phase_rad;
     double d_rem_code_phase_chips;
-    double d_code_phase_samples;
     double T_chip_seconds;
     double T_prn_seconds;
     double T_prn_samples;

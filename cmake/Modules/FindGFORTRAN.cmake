@@ -142,6 +142,8 @@ find_library(GFORTRAN NAMES gfortran
         /usr/lib/gcc/powerpc64le-linux-gnu/8
         /usr/lib/gcc/s390x-linux-gnu/8
         /usr/lib/gcc/alpha-linux-gnu/8
+        ${GFORTRAN_ROOT}/lib
+        $ENV{GFORTRAN_ROOT}/lib
 )
 
 include(FindPackageHandleStandardArgs)

@@ -44,9 +44,9 @@
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define CLAMP_DIFF(a, b) (MAX((a), (b)) - (b))
 
-#include <stdint.h>
-#include <stdbool.h>
 #include <inttypes.h>
+#include <stdbool.h>
+#include <stdint.h>
 
 #ifndef COMMON_INT_TYPES
 #define COMMON_INT_TYPES

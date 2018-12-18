@@ -53,7 +53,7 @@
 class GNSSBlockInterface
 {
 public:
-    virtual ~GNSSBlockInterface() {}
+    virtual ~GNSSBlockInterface() = default;
     virtual std::string role() = 0;
     virtual std::string implementation() = 0;
     virtual size_t item_size() = 0;

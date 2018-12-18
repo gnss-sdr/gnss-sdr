@@ -36,18 +36,18 @@
 
 #include "galileo_e5a_telemetry_decoder.h"
 #include "configuration_interface.h"
-#include "galileo_ephemeris.h"
 #include "galileo_almanac.h"
+#include "galileo_ephemeris.h"
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
-#include <gnuradio/io_signature.h>
 #include <glog/logging.h>
+#include <gnuradio/io_signature.h>
 
 
 using google::LogMessage;
 
 GalileoE5aTelemetryDecoder::GalileoE5aTelemetryDecoder(ConfigurationInterface* configuration,
-    std::string role,
+    const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
                                 in_streams_(in_streams),
@@ -72,9 +72,7 @@ GalileoE5aTelemetryDecoder::GalileoE5aTelemetryDecoder(ConfigurationInterface* c
 }
 
 
-GalileoE5aTelemetryDecoder::~GalileoE5aTelemetryDecoder()
-{
-}
+GalileoE5aTelemetryDecoder::~GalileoE5aTelemetryDecoder() = default;
 
 
 void GalileoE5aTelemetryDecoder::set_satellite(const Gnss_Satellite& satellite)

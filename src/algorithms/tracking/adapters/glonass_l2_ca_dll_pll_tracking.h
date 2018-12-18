@@ -38,8 +38,8 @@
 #ifndef GNSS_SDR_GLONASS_L2_CA_DLL_PLL_TRACKING_H_
 #define GNSS_SDR_GLONASS_L2_CA_DLL_PLL_TRACKING_H_
 
-#include "tracking_interface.h"
 #include "glonass_l2_ca_dll_pll_tracking_cc.h"
+#include "tracking_interface.h"
 #include <string>
 
 class ConfigurationInterface;
@@ -51,7 +51,7 @@ class GlonassL2CaDllPllTracking : public TrackingInterface
 {
 public:
     GlonassL2CaDllPllTracking(ConfigurationInterface* configuration,
-        std::string role,
+        const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 

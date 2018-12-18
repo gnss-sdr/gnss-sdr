@@ -34,6 +34,7 @@
 #ifndef GNSS_SDR_BEIDOU_B1I_PCPS_ACQUISITION_H_
 #define GNSS_SDR_BEIDOU_B1I_PCPS_ACQUISITION_H_
 
+#include "acq_conf.h"
 #include "acquisition_interface.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition.h"
@@ -138,6 +139,12 @@ public:
      * \brief Stop running acquisition
      */
     void stop_acquisition() override;
+
+    /*!
+     * \brief Sets the resampler latency to account it in the acquisition code delay estimation
+     */
+    void set_resampler_latency(uint32_t latency_samples) override;
+
 
 private:
     ConfigurationInterface* configuration_;

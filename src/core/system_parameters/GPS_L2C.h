@@ -33,12 +33,12 @@
 #define GNSS_SDR_GPS_L2C_H_
 
 
-#include "gnss_frequencies.h"
 #include "GPS_CNAV.h"
 #include "MATH_CONSTANTS.h"
+#include "gnss_frequencies.h"
 #include <cstdint>
-#include <vector>
 #include <utility>  // std::pair
+#include <vector>
 
 
 // Physical constants
@@ -62,6 +62,10 @@ const int32_t GPS_L2_L_CODE_LENGTH_CHIPS = 767250;  //!< GPS L2 L code length [c
 const double GPS_L2_L_PERIOD = 1.5;                 //!< GPS L2 L code period [seconds]
 
 const int32_t GPS_L2C_HISTORY_DEEP = 5;
+
+//optimum parameters
+const uint32_t GPS_L2C_OPT_ACQ_FS_HZ = 1000000;  //!< Sampling frequncy that maximizes the acquisition SNR while using a non-multiple of chip rate
+
 
 const int32_t GPS_L2C_M_INIT_REG[115] =
     {0742417664, 0756014035, 0002747144, 0066265724,     // 1:4

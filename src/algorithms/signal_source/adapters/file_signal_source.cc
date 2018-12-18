@@ -35,18 +35,19 @@
 #include "gnss_sdr_flags.h"
 #include "gnss_sdr_valve.h"
 #include <glog/logging.h>
-#include <iostream>  // for std::cerr
+#include <exception>
 #include <fstream>
 #include <iomanip>
-#include <exception>
+#include <iostream>  // for std::cerr
+#include <utility>
 
 
 using google::LogMessage;
 
 
 FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_streams, unsigned int out_streams,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
+    const std::string& role, unsigned int in_streams, unsigned int out_streams,
+    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(std::move(queue))
 {
     std::string default_filename = "./example_capture.dat";
     std::string default_item_type = "short";
@@ -59,8 +60,8 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
     filename_ = configuration->property(role + ".filename", default_filename);
 
     // override value with commandline flag, if present
-    if (FLAGS_signal_source.compare("-") != 0) filename_ = FLAGS_signal_source;
-    if (FLAGS_s.compare("-") != 0) filename_ = FLAGS_s;
+    if (FLAGS_signal_source != "-") filename_ = FLAGS_signal_source;
+    if (FLAGS_s != "-") filename_ = FLAGS_s;
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     repeat_ = configuration->property(role + ".repeat", false);
@@ -74,28 +75,28 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
 
     bool is_complex = false;
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
         }
-    else if (item_type_.compare("float") == 0)
+    else if (item_type_ == "float")
         {
             item_size_ = sizeof(float);
         }
-    else if (item_type_.compare("short") == 0)
+    else if (item_type_ == "short")
         {
             item_size_ = sizeof(int16_t);
         }
-    else if (item_type_.compare("ishort") == 0)
+    else if (item_type_ == "ishort")
         {
             item_size_ = sizeof(int16_t);
             is_complex = true;
         }
-    else if (item_type_.compare("byte") == 0)
+    else if (item_type_ == "byte")
         {
             item_size_ = sizeof(int8_t);
         }
-    else if (item_type_.compare("ibyte") == 0)
+    else if (item_type_ == "ibyte")
         {
             item_size_ = sizeof(int8_t);
             is_complex = true;
@@ -135,7 +136,7 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
         }
     catch (const std::exception& e)
         {
-            if (filename_.compare(default_filename) == 0)
+            if (filename_ == default_filename)
                 {
                     std::cerr
                         << "The configuration file has not been found."
@@ -251,9 +252,7 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
 }
 
 
-FileSignalSource::~FileSignalSource()
-{
-}
+FileSignalSource::~FileSignalSource() = default;
 
 
 void FileSignalSource::connect(gr::top_block_sptr top_block)
@@ -371,15 +370,9 @@ gr::basic_block_sptr FileSignalSource::get_right_block()
         {
             return valve_;
         }
-    else
+    if (enable_throttle_control_ == true)
         {
-            if (enable_throttle_control_ == true)
-                {
-                    return throttle_;
-                }
-            else
-                {
-                    return file_source_;
-                }
+            return throttle_;
         }
+    return file_source_;
 }

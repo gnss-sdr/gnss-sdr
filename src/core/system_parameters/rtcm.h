@@ -34,13 +34,14 @@
 
 
 #include "concurrent_queue.h"
-#include "gnss_synchro.h"
 #include "galileo_fnav_message.h"
-#include "gps_navigation_message.h"
-#include "gps_cnav_navigation_message.h"
 #include "glonass_gnav_navigation_message.h"
+#include "gnss_synchro.h"
+#include "gps_cnav_navigation_message.h"
+#include "gps_navigation_message.h"
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <glog/logging.h>
 #include <bitset>
 #include <cstdint>
 #include <deque>
@@ -51,7 +52,6 @@
 #include <thread>
 #include <utility>
 #include <vector>
-#include <glog/logging.h>
 
 
 /*!
@@ -597,7 +597,7 @@ private:
     class Rtcm_Listener
     {
     public:
-        virtual ~Rtcm_Listener() {}
+        virtual ~Rtcm_Listener() = default;
         virtual void deliver(const Rtcm_Message& msg) = 0;
     };
 
@@ -854,7 +854,7 @@ private:
                     std::string message;
                     Rtcm_Message msg;
                     queue_->wait_and_pop(message);  //message += '\n';
-                    if (message.compare("Goodbye") == 0) break;
+                    if (message == "Goodbye") break;
                     const char* char_msg = message.c_str();
                     msg.body_length(message.length());
                     std::memcpy(msg.body(), char_msg, msg.body_length());

@@ -32,9 +32,9 @@
 #ifndef GNSS_SDR_GPS_L5_H_
 #define GNSS_SDR_GPS_L5_H_
 
-#include "gnss_frequencies.h"
 #include "GPS_CNAV.h"
 #include "MATH_CONSTANTS.h"
+#include "gnss_frequencies.h"
 #include <cstdint>
 #include <string>
 
@@ -63,6 +63,9 @@ const int32_t GPS_L5q_CODE_LENGTH_CHIPS = 10230;  //!< GPS L5i code length [chip
 const double GPS_L5q_PERIOD = 0.001;              //!< GPS L5 code period [seconds]
 
 const int32_t GPS_L5_HISTORY_DEEP = 5;
+
+//optimum parameters
+const uint32_t GPS_L5_OPT_ACQ_FS_HZ = 10000000;  //!< Sampling frequncy that maximizes the acquisition SNR while using a non-multiple of chip rate
 
 const int32_t GPS_L5i_INIT_REG[210] =
     {266, 365, 804, 1138,

@@ -54,7 +54,7 @@ const double BEIDOU_B1I_CODE_PERIOD          = 0.001;     //!< beidou b1I code p
 const unsigned int BEIDOU_B1I_CODE_PERIOD_MS = 1;    //!< GPS L1 C/A code period [ms]
 const double BEIDOU_B1I_CHIP_PERIOD          = 4.8875e-07;     //!< beidou b1I chip period [seconds]
 const int BEIDOU_B1I_SECONDARY_CODE_LENGTH = 20;
-const int BEIDOU_B1I_SECONDARY_CODE[20] = {0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0};
+const std::string BEIDOU_B1I_SECONDARY_CODE = "00000100110101001110";
 const std::string BEIDOU_B1I_SECONDARY_CODE_STR = "00000100110101001110";
 
 /*!
@@ -75,7 +75,7 @@ const double BEIDOU_STARTOFFSET_ms = 68.802; //**************[ms] Initial sign. 
 const int BEIDOU_B1I_HISTORY_DEEP = 100; // ****************
 
 // NAVIGATION MESSAGE DEMODULATION AND DECODING
-#define BEIDOU_DNAV_PREAMBLE {1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0}
+
 const int BEIDOU_B1I_PREAMBLE_LENGTH_BITS = 11;
 const int BEIDOU_B1I_PREAMBLE_LENGTH_SYMBOLS = 220;   // **************
 const double BEIDOU_B1I_PREAMBLE_DURATION_S = 0.220;
@@ -90,8 +90,15 @@ const int BEIDOU_SUBFRAME_SECONDS = 6;                 //!< Subframe duration [s
 const int BEIDOU_SUBFRAME_MS = 6000;                 //!< Subframe duration [miliseconds]
 const int BEIDOU_WORD_BITS = 30;                       //!< Number of bits per word in the NAV message [bits]
 
+const std::string BEIDOU_DNAV_PREAMBLE = "11100010010";
 const int BEIDOU_DNAV_PREAMBLE_LENGTH_BITS = 11;
-const int BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS = 220;   // **************
+const int BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS = 11;   // **************
+const double BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS = 300;
+const double BEIDOU_DNAV_SUBFRAME_SYMBOLS = 300;
+const double BEIDOU_DNAV_DATA_BITS = 300;
+
+const double BEIDOU_B1I_SYMBOL_RATE_SPS = 50;		//BEIDOU symbol rate
+const double BEIDOU_B1I_PREAMBLE_PERIOD_SYMBOLS = 300;
 
 // BEIDOU D1 NAVIGATION MESSAGE STRUCTURE
 // GENERAL

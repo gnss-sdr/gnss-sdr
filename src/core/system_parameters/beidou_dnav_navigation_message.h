@@ -69,6 +69,13 @@ private:
 
 public:
     bool b_valid_ephemeris_set_flag; // flag indicating that this ephemeris set have passed the validation check
+    bool flag_sf_1;
+    bool flag_sf_2;
+    bool flag_sf_3;
+    bool flag_sf_4;
+    bool flag_sf_5;
+    bool flag_SOW;
+
     //broadcast orbit 1
     double d_SOW; //!< Time of BeiDou Week of the ephemeris set (taken from subframes SOW) [s]
     double d_SOW_SF1;            //!< Time of BeiDou Week from HOW word of Subframe 1 [s]

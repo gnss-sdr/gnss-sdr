@@ -33,9 +33,9 @@
 #ifndef GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_H_
 #define GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_H_
 
-#include "beidou_b1i_telemetry_decoder_cc.h"
 #include "telemetry_decoder_interface.h"
 #include <string>
+#include "../gnuradio_blocks/beidou_b1i_telemetry_decoder_cc_old.h"
 
 class ConfigurationInterface;
 

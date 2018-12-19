@@ -848,9 +848,6 @@ Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris()
     ephemeris.d_TGD1 = d_TGD1;
     ephemeris.d_AODC = d_AODC;
     ephemeris.d_AODE = d_AODE;
-    //ephemeris.d_AODE_SF2 = d_AODE_SF2;
-    //ephemeris.d_AODE_SF3 = d_AODE_SF3;
-    //ephemeris.i_AODO = i_AODO;
     ephemeris.b_fit_interval_flag = b_fit_interval_flag;
     ephemeris.d_spare1 = d_spare1;
     ephemeris.d_spare2 = d_spare2;

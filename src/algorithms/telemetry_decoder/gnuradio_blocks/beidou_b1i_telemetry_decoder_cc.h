@@ -1,11 +1,14 @@
 /*!
  * \file beidou_b1i_telemetry_decoder_cc.h
- * \brief Interface of a NAV message demodulator block based on
- * Kay Borre book MATLAB-based GPS receiver
- * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.com
+ * \brief Implementation of an adapter of a BEIDOU BI1 DNAV data decoder block
+ * to a TelemetryDecoderInterface
+ * \note Code added as part of GSoC 2018 program
+ * \author Damian Miralles, 2018. dmiralles2009(at)gmail.com
+ * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.es
+ *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,7 +26,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -31,36 +34,37 @@
 #ifndef GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_CC_H
 #define GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_CC_H
 
-#include "beidou_b1i_subframe_fsm.h"
+#include "beidou_dnav_navigation_message.h"
+#include "beidou_dnav_ephemeris.h"
+#include "beidou_dnav_almanac.h"
+#include "beidou_dnav_utc_model.h"
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
+#include "Beidou_B1I.h"
 #include <gnuradio/block.h>
 #include <fstream>
 #include <string>
-#include <boost/circular_buffer.hpp>
-#include "Beidou_B1I.h"
+
 
 class beidou_b1i_telemetry_decoder_cc;
 
 typedef boost::shared_ptr<beidou_b1i_telemetry_decoder_cc> beidou_b1i_telemetry_decoder_cc_sptr;
 
-beidou_b1i_telemetry_decoder_cc_sptr
-beidou_b1i_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
+beidou_b1i_telemetry_decoder_cc_sptr beidou_b1i_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
 
+//!!!! edit
 /*!
- * \brief This class implements a block that decodes the NAV data defined in IS-GPS-200E
+ * \brief This class implements a block that decodes the GNAV data defined in BEIDOU ICD v5.1
+ * \note Code added as part of GSoC 2018 program
+ * \see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf">GLONASS ICD</a>
  *
  */
 class beidou_b1i_telemetry_decoder_cc : public gr::block
 {
 public:
-    ~beidou_b1i_telemetry_decoder_cc();
+    ~beidou_b1i_telemetry_decoder_cc();                //!< Class destructor
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
-    void set_channel(int channel);                        
-    void decode_word(int word_counter, boost::circular_buffer<signed int> *d_bit_buffer, unsigned int& d_BEIDOU_frame_4bytes);
-    void decodebch_bi1(int *bits, int *decbits);
-    unsigned int getbitu(const unsigned char *buff, int pos, int len);
-    void bits2byte(int *bits, int nbits, int nbin, int right, uint8_t *bin);
+    void set_channel(int channel);                        //!< Set receiver's channel
 
     /*!
      * \brief This is where all signal processing takes place
@@ -70,66 +74,49 @@ public:
 
 private:
     friend beidou_b1i_telemetry_decoder_cc_sptr
-    beidou_b1i_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
-
+	beidou_b1i_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
     beidou_b1i_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
 
-    bool beidou_word_parityCheck(unsigned int beidouword);
+    void decode_subframe(double *symbols, int32_t frame_length);
 
-    // class private vars
+    //!< Preamble decoding
+    unsigned short int d_preambles_symbols[BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS];
+    int32_t 	*d_preamble_samples;
+    int32_t 	*d_secondary_code_samples;
+    uint32_t 	d_samples_per_symbol;
+    int32_t 	d_symbols_per_preamble;
+    int32_t     d_samples_per_preamble;
+    int32_t    d_preamble_period_samples;
+    double 		*d_subframe_symbols;
+    uint32_t 	d_subframe_length_symbols;
+    uint32_t    d_required_symbols;
 
-    int *d_preambles_symbols;
-    unsigned int d_stat;
-    bool d_flag_frame_sync;
+    //!< Storage for incoming data
+    std::deque<float> d_symbol_history;
 
-    // symbols
-    boost::circular_buffer<signed int> d_symbol_history;
-    boost::circular_buffer<signed int> d_symbol_nh_history;
-    boost::circular_buffer<signed int> d_bit_buffer;
+    //!< Variables for internal functionality
+    uint64_t d_sample_counter;  //!< Sample counter as an index (1,2,3,..etc) indicating number of samples processed
+    uint64_t d_preamble_index;  //!< Index of sample number where preamble was found
+    uint32_t d_stat;                 //!< Status of decoder
+    bool d_flag_frame_sync;              //!< Indicate when a frame sync is achieved
+    bool d_flag_preamble;                //!< Flag indicating when preamble was found
+    int32_t d_CRC_error_counter;             //!< Number of failed CRC operations
+    bool flag_TOW_set;                   //!< Indicates when time of week is set
 
-    double d_symbol_accumulator;
-    short int d_symbol_accumulator_counter;
-
-    // symbol counting
-    bool d_make_correlation;
-    unsigned int d_symbol_counter_corr;
-
-    //bits and frame
-    unsigned short int d_frame_bit_index;
-    double bits_NH[BEIDOU_B1I_SECONDARY_CODE_LENGTH];
-    unsigned int d_BEIDOU_frame_4bytes;
-    unsigned int d_prev_BEIDOU_frame_4bytes;
-    bool d_flag_parity;
-    bool d_flag_preamble;
-    bool d_flag_new_tow_available;
-    int d_word_number;
-
-    uint32_t d_samples_per_symbol;
-    int32_t d_bits_per_preamble;
-    int32_t d_samples_per_preamble;
-    uint32_t d_required_symbols;
-
-    // navigation message vars
+    //!< Navigation Message variable
     Beidou_Dnav_Navigation_Message d_nav;
-    BeidouB1iSubframeFsm d_BEIDOU_FSM;
 
-    bool d_dump;
+    //!< Values to populate gnss synchronization structure
+    uint32_t d_TOW_at_Preamble_ms;
+    uint32_t d_TOW_at_current_symbol_ms;
+    bool Flag_valid_word;
+
+    //!< Satellite Information and logging capacity
     Gnss_Satellite d_satellite;
-    int d_channel;
-
-    unsigned long int d_preamble_time_samples;
-
-    unsigned int d_TOW_at_Preamble_ms;
-    unsigned int d_TOW_at_current_symbol_ms;
-    unsigned int word_number;
-    bool flag_TOW_set;
-    bool flag_PLL_180_deg_phase_locked;
-
+    int32_t d_channel;
+    bool d_dump;
     std::string d_dump_filename;
     std::ofstream d_dump_file;
-    bool sync_NH;
-    bool new_sym;
-
 };
 
 #endif

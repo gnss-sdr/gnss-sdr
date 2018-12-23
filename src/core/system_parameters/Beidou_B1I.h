@@ -85,7 +85,7 @@ const int BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT = 20;  // *************
 const int BEIDOU_B1I_TELEMETRY_RATE_SYMBOLS_SECOND = BEIDOU_B1I_TELEMETRY_RATE_BITS_SECOND*BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT;   //************!< NAV message bit rate [symbols/s]
 const int BEIDOU_WORD_LENGTH = 4;                      //**************!< CRC + BEIDOU WORD (-2 -1 0 ... 29) Bits = 4 bytes
 const int BEIDOU_SUBFRAME_LENGTH = 40;                 //**************!< BEIDOU_WORD_LENGTH x 10 = 40 bytes
-const int BEIDOU_SUBFRAME_BITS = 300;                  //!< Number of bits per subframe in the NAV message [bits]
+const int BEIDOU_DNAV_SUBFRAME_DATA_BITS = 300;                  //!< Number of bits per subframe in the NAV message [bits]
 const int BEIDOU_SUBFRAME_SECONDS = 6;                 //!< Subframe duration [seconds]
 const int BEIDOU_SUBFRAME_MS = 6000;                 //!< Subframe duration [miliseconds]
 const int BEIDOU_WORD_BITS = 30;                       //!< Number of bits per word in the NAV message [bits]
@@ -96,6 +96,8 @@ const int BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS = 11;   // **************
 const double BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS = 300;
 const double BEIDOU_DNAV_SUBFRAME_SYMBOLS = 300;
 const double BEIDOU_DNAV_DATA_BITS = 300;
+const double BEIDOU_DNAV_WORDS_SUBFRAME = 10;
+const double BEIDOU_DNAV_WORD_LENGTH_BITS = 30;
 
 const double BEIDOU_B1I_SYMBOL_RATE_SPS = 50;		//BEIDOU symbol rate
 const double BEIDOU_B1I_PREAMBLE_PERIOD_SYMBOLS = 300;

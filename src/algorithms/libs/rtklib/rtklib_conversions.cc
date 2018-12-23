@@ -75,14 +75,16 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs, const Gnss_Synchro& gnss_synchro
 
     // Mote that BeiDou week numbers do not need adjustment for foreseeable future. Consider change
     // to more elegant solution
-    if(gnss_synchro.System == 'C')
-		{
-    		rtklib_obs.time = bdt2gpst(bdt2time(week, gnss_synchro.RX_time));
-		}
-    else
-    	{
-    		rtklib_obs.time = gpst2time(adjgpsweek(week), gnss_synchro.RX_time);
-    	}
+//    if(gnss_synchro.System == 'C')
+//		{
+//    		rtklib_obs.time = bdt2gpst(bdt2time(week, gnss_synchro.RX_time));
+//		}
+//    else
+//    	{
+//    		rtklib_obs.time = gpst2time(adjgpsweek(week), gnss_synchro.RX_time);
+//    	}
+//
+    rtklib_obs.time = gpst2time(adjgpsweek(week), gnss_synchro.RX_time);
     rtklib_obs.rcv = 1;
     return rtklib_obs;
 }

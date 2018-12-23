@@ -33,12 +33,20 @@ m * \file beidou_navigation_message.cc
 
 #include <cmath>
 #include <iostream>
+#include <boost/crc.hpp>  // for boost::crc_basic, boost::crc_optimal
+#include <boost/dynamic_bitset.hpp>
+#include <glog/logging.h>
 #include <gnss_satellite.h>
 
 
 void Beidou_Dnav_Navigation_Message::reset()
 {
-    b_valid_ephemeris_set_flag = false;
+	// Control variable for message decoding
+    flag_eph_valid = false;
+    flag_iono_valid = false;
+    flag_utc_model_valid = false;
+    flag_crc_test = false;
+
     d_SOW = 0;
     d_SOW_SF1 = 0;
     d_SOW_SF2 = 0;
@@ -176,11 +184,11 @@ void Beidou_Dnav_Navigation_Message::print_beidou_word_bytes(unsigned int BEIDOU
     std::cout << std::endl;
 }
 
-bool Beidou_Dnav_Navigation_Message::read_navigation_bool(std::bitset<BEIDOU_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter)
+bool Beidou_Dnav_Navigation_Message::read_navigation_bool(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int,int>> parameter)
 {
     bool value;
 
-    if (bits[BEIDOU_SUBFRAME_BITS - parameter[0].first] == 1)
+    if (bits[BEIDOU_DNAV_SUBFRAME_DATA_BITS - parameter[0].first] == 1)
         {
             value = true;
         }
@@ -191,7 +199,7 @@ bool Beidou_Dnav_Navigation_Message::read_navigation_bool(std::bitset<BEIDOU_SUB
     return value;
 }
 
-unsigned long int Beidou_Dnav_Navigation_Message::read_navigation_unsigned(std::bitset<BEIDOU_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter)
+unsigned long int Beidou_Dnav_Navigation_Message::read_navigation_unsigned(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int,int>> parameter)
 {
     unsigned long int value = 0;
     int num_of_slices = parameter.size();
@@ -200,7 +208,7 @@ unsigned long int Beidou_Dnav_Navigation_Message::read_navigation_unsigned(std::
             for (int j = 0; j < parameter[i].second; j++)
                 {
                     value <<= 1; //shift left
-                    if (bits[BEIDOU_SUBFRAME_BITS - parameter[i].first - j] == 1)
+                    if (bits[BEIDOU_DNAV_SUBFRAME_DATA_BITS - parameter[i].first - j] == 1)
                         {
                             value += 1; // insert the bit
                         }
@@ -209,7 +217,7 @@ unsigned long int Beidou_Dnav_Navigation_Message::read_navigation_unsigned(std::
     return value;
 }
 
-signed long int Beidou_Dnav_Navigation_Message::read_navigation_signed(std::bitset<BEIDOU_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter)
+signed long int Beidou_Dnav_Navigation_Message::read_navigation_signed(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int,int>> parameter)
 {
     signed long int value = 0;
     int num_of_slices = parameter.size();
@@ -218,7 +226,7 @@ signed long int Beidou_Dnav_Navigation_Message::read_navigation_signed(std::bits
     if (long_int_size_bytes == 8) // if a long int takes 8 bytes, we are in a 64 bits system
         {
             // read the MSB and perform the sign extension
-            if (bits[BEIDOU_SUBFRAME_BITS - parameter[0].first] == 1)
+            if (bits[BEIDOU_DNAV_SUBFRAME_DATA_BITS - parameter[0].first] == 1)
                 {
                     value ^= 0xFFFFFFFFFFFFFFFF; //64 bits variable
                 }
@@ -233,7 +241,7 @@ signed long int Beidou_Dnav_Navigation_Message::read_navigation_signed(std::bits
                         {
                             value <<= 1; //shift left
                             value &= 0xFFFFFFFFFFFFFFFE; //reset the corresponding bit (for the 64 bits variable)
-                            if (bits[BEIDOU_SUBFRAME_BITS - parameter[i].first - j] == 1)
+                            if (bits[BEIDOU_DNAV_SUBFRAME_DATA_BITS - parameter[i].first - j] == 1)
                                 {
                                     value += 1; // insert the bit
                                 }
@@ -243,7 +251,7 @@ signed long int Beidou_Dnav_Navigation_Message::read_navigation_signed(std::bits
     else  // we assume we are in a 32 bits system
         {
             // read the MSB and perform the sign extension
-            if (bits[BEIDOU_SUBFRAME_BITS - parameter[0].first] == 1)
+            if (bits[BEIDOU_DNAV_SUBFRAME_DATA_BITS - parameter[0].first] == 1)
                 {
                     value ^= 0xFFFFFFFF;
                 }
@@ -258,7 +266,7 @@ signed long int Beidou_Dnav_Navigation_Message::read_navigation_signed(std::bits
                         {
                             value <<= 1; //shift left
                             value &= 0xFFFFFFFE; //reset the corresponding bit
-                            if (bits[BEIDOU_SUBFRAME_BITS - parameter[i].first - j] == 1)
+                            if (bits[BEIDOU_DNAV_SUBFRAME_DATA_BITS - parameter[i].first - j] == 1)
                                 {
                                     value += 1; // insert the bit
                                 }
@@ -387,27 +395,15 @@ void Beidou_Dnav_Navigation_Message::satellitePosition(double transmitTime)
     d_satvel_Z = d_satpos_Y * sin(i);
 }
 
-int Beidou_Dnav_Navigation_Message::subframe_decoder(char *subframe)
+int Beidou_Dnav_Navigation_Message::subframe_decoder(std::string const &subframe)
 {
     int subframe_ID = 0;
-    std::bitset<BEIDOU_SUBFRAME_BITS> mysubframe_bits;
-
-    unsigned int beidou_word;
-
-    std::bitset<BEIDOU_SUBFRAME_BITS> subframe_bits;
-    std::bitset<BEIDOU_WORD_BITS + 2> word_bits;
-    for (int i = 0; i < 10; i++)
-        {
-            memcpy(&beidou_word, &subframe[i * 4], sizeof(char) * 4);
-            word_bits = std::bitset<(BEIDOU_WORD_BITS + 2) > (beidou_word);
-            for (int j = 0; j < BEIDOU_WORD_BITS; j++)
-                {
-                    subframe_bits[BEIDOU_WORD_BITS * (9 - i) + j] = word_bits[j];
-                }
-
-        }
+    std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> subframe_bits(subframe);
 
     subframe_ID = static_cast<int>(read_navigation_unsigned(subframe_bits, D1_FRAID));
+
+    // Perform crc computtaion (tbd)
+    flag_crc_test = true;
 
     // Decode all 5 sub-frames
     switch (subframe_ID)
@@ -476,13 +472,12 @@ int Beidou_Dnav_Navigation_Message::subframe_decoder(char *subframe)
         d_a1 = d_a1 * D1_A1_LSB;
 
         d_AODE = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_AODE));
+
+        // Set system flags for message reception
+        flag_sf_1 = true;
         flag_iono_valid = true;
-        //d_A_f0 = static_cast<double>(read_navigation_signed(subframe_bits, A_F0));
-        //d_A_f0 = d_A_f0 * A_F0_LSB;
-        //d_A_f1 = static_cast<double>(read_navigation_signed(subframe_bits, A_F1));
-        //d_A_f1 = d_A_f1 * A_F1_LSB;
-        //d_A_f2 = static_cast<double>(read_navigation_signed(subframe_bits, A_F2));
-        //d_A_f2 = d_A_f2 * A_F2_LSB;
+        flag_utc_model_valid = true;
+        flag_new_SOW_available = true;
 
         break;
 
@@ -516,13 +511,9 @@ int Beidou_Dnav_Navigation_Message::subframe_decoder(char *subframe)
         d_Toe_sf2 = static_cast<double>(read_navigation_unsigned(subframe_bits, D1_TOE_SF2));
         d_Toe_sf2 = static_cast<double>((static_cast<int>(d_Toe_sf2) <<  15));
 
-//        d_SOW = d_SOW_SF2; // Set transmission time
-//        b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
-//        b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
-//        b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
-//        b_fit_interval_flag = read_navigation_bool(subframe_bits, FIT_INTERVAL_FLAG);
-//        i_AODO = static_cast<int>(read_navigation_unsigned(subframe_bits, AODO));
-//        i_AODO = i_AODO * AODO_LSB;
+        // Set system flags for message reception
+        flag_sf_2 = true;
+        flag_new_SOW_available = true;
 
         break;
 
@@ -554,14 +545,9 @@ int Beidou_Dnav_Navigation_Message::subframe_decoder(char *subframe)
         d_OMEGA = static_cast<double>(read_navigation_signed(subframe_bits, D1_OMEGA));
         d_OMEGA = d_OMEGA * D1_OMEGA_LSB;
 
-        //d_SOW_SF3 = static_cast<double>(read_navigation_unsigned(subframe_bits, SOW));
-
-        //d_SOW_SF3 = d_SOW_SF3 * 6;
-        //d_SOW = d_SOW_SF3; // Set transmission time
-        //b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
-        //b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
-        //b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
-        //d_AODE_SF3 = static_cast<double>(read_navigation_unsigned(subframe_bits, AODE_SF3));
+        // Set system flags for message reception
+        flag_sf_3 = true;
+        flag_new_SOW_available = true;
 
         break;
 
@@ -599,6 +585,11 @@ int Beidou_Dnav_Navigation_Message::subframe_decoder(char *subframe)
         d_M0_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_M0));
         d_M0_ALMANAC = d_M0_ALMANAC * D1_M0_ALMANAC_LSB;
 
+        // Set system flags for message reception
+        flag_sf_4 = true;
+        flag_new_SOW_available = true;
+
+        break;
 /*        b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
         b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
         b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
@@ -762,7 +753,9 @@ int Beidou_Dnav_Navigation_Message::subframe_decoder(char *subframe)
                 d_A1UTC = d_A1UTC * D1_A1UTC_LSB;
             }
 
-
+        // Set system flags for message reception
+        flag_sf_5 = true;
+        flag_new_SOW_available = true;
 
         break;
 
@@ -904,10 +897,73 @@ Beidou_Dnav_Utc_Model Beidou_Dnav_Navigation_Message::get_utc_model()
     return utc_model;
 }
 
+
+bool Beidou_Dnav_Navigation_Message::have_new_ephemeris()  // Check if we have a new ephemeris stored in the galileo navigation class
+{
+    if ((flag_sf_1 == true) and (flag_sf_2 == true) and (flag_sf_3 == true))
+        {
+            // if all ephemeris pages have the same IOD, then they belong to the same block
+			if (d_previous_aode != d_AODE)
+				{
+					flag_sf_1 = false;  // clear the flag
+					flag_sf_2 = false;  // clear the flag
+					flag_sf_3 = false;  // clear the flag
+					flag_eph_valid = true;
+					// Update the time of ephemeris information
+					d_previous_aode = d_AODE;
+					DLOG(INFO) << "Beidou Dnav Ephemeris (1, 2) have been received and belong to the same batch" << std::endl;
+					return true;
+
+				}
+        }
+    return false;
+}
+
+
+bool Beidou_Dnav_Navigation_Message::have_new_iono()
+{
+	// the condition on flag_utc_model is added to have a time stamp for iono
+    if (flag_iono_valid == true)
+        {
+            flag_iono_valid = false;  // clear the flag
+            return true;
+        }
+
+    return false;
+}
+
+
+bool Beidou_Dnav_Navigation_Message::have_new_utc_model()
+{
+    if (flag_utc_model_valid == true)
+        {
+            flag_utc_model_valid = false;  // clear the flag
+            return true;
+        }
+
+    return false;
+}
+
+
+bool Beidou_Dnav_Navigation_Message::have_new_almanac()
+{
+    if ((flag_sf_4 == true) and (flag_sf_5 == true))
+        {
+            // All almanac have been received
+            flag_sf_4 = false;
+            flag_sf_5 = false;
+
+            return true;
+        }
+
+    return false;
+}
+
+
 bool Beidou_Dnav_Navigation_Message::satellite_validation()
 {
     bool flag_data_valid = false;
-    b_valid_ephemeris_set_flag = false;
+    flag_eph_valid = false;
 
     // First Step:
     // check Issue Of Ephemeris Data (AODE AODC..) to find a possible interrupted reception
@@ -917,7 +973,7 @@ bool Beidou_Dnav_Navigation_Message::satellite_validation()
             if (d_AODC!= -1)
                 {
                     flag_data_valid = true;
-                    b_valid_ephemeris_set_flag = true;
+                    flag_eph_valid = true;
                 }
         }
     return flag_data_valid;

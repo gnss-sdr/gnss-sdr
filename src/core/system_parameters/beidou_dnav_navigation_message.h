@@ -54,9 +54,9 @@
 class Beidou_Dnav_Navigation_Message
 {
 private:
-    unsigned long int read_navigation_unsigned(std::bitset<BEIDOU_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter);
-    signed long int read_navigation_signed(std::bitset<BEIDOU_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter);
-    bool read_navigation_bool(std::bitset<BEIDOU_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter);
+    unsigned long int read_navigation_unsigned(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int,int>> parameter);
+    signed long int read_navigation_signed(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int,int>> parameter);
+    bool read_navigation_bool(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int,int>> parameter);
     void print_beidou_word_bytes(unsigned int BEIDOU_word);
     /*
      * Accounts for the beginning or end of week crossover
@@ -68,13 +68,18 @@ private:
     double check_t(double time);
 
 public:
-    bool b_valid_ephemeris_set_flag; // flag indicating that this ephemeris set have passed the validation check
+    // System flags for data processing
+    bool flag_eph_valid;
+    bool flag_utc_model_valid;
+    bool flag_iono_valid;
     bool flag_sf_1;
     bool flag_sf_2;
     bool flag_sf_3;
     bool flag_sf_4;
     bool flag_sf_5;
-    bool flag_SOW;
+    bool flag_new_SOW_available;
+    bool flag_crc_test;
+    double d_previous_aode;
 
     //broadcast orbit 1
     double d_SOW; //!< Time of BeiDou Week of the ephemeris set (taken from subframes SOW) [s]
@@ -172,7 +177,6 @@ public:
     double d_subframe_timestamp_ms; //[ms]
 
     // Ionospheric parameters
-    bool flag_iono_valid; //!< If set, it indicates that the ionospheric parameters are filled (page 18 has arrived and decoded)
     double d_alpha0;      //!< Coefficient 0 of a cubic equation representing the amplitude of the vertical delay [s]
     double d_alpha1;      //!< Coefficient 1 of a cubic equation representing the amplitude of the vertical delay [s/semi-circle]
     double d_alpha2;      //!< Coefficient 2 of a cubic equation representing the amplitude of the vertical delay [s(semi-circle)^2]
@@ -183,7 +187,6 @@ public:
     double d_beta3;       //!< Coefficient 3 of a cubic equation representing the period of the model [s(semi-circle)^3]
 
     // UTC parameters
-    bool flag_utc_model_valid; //!< If set, it indicates that the UTC model parameters are filled
     double d_A2UTC; 
     double d_A1UTC;          //!< 1st order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s/s]
     double d_A0UTC;          //!< Constant of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s]
@@ -213,12 +216,6 @@ public:
     int    almanac_WN;
     double d_toa2;
 
-
-
-
-
-
-
     // Satellite velocity
     double d_satvel_X;    //!< Earth-fixed velocity coordinate x of the satellite [m]
     double d_satvel_Y;    //!< Earth-fixed velocity coordinate y of the satellite [m]
@@ -247,7 +244,7 @@ public:
     /*!
      * \brief Decodes the GPS NAV message
      */
-    int subframe_decoder(char *subframe);
+    int subframe_decoder(std::string const &subframe);
 
     /*!
      * \brief Computes the position of the satellite
@@ -270,6 +267,25 @@ public:
 
     bool satellite_validation();
 
+    /*
+     * \brief Returns true if new Ephemeris has arrived. The flag is set to false when the function is executed
+     */
+    bool have_new_ephemeris();
+
+    /*
+     * \brief Returns true if new Iono model has arrived. The flag is set to false when the function is executed
+     */
+    bool have_new_iono();
+
+    /*
+     * \brief Returns true if new UTC model has arrived. The flag is set to false when the function is executed
+     */
+    bool have_new_utc_model();
+
+    /*
+     * \brief Returns true if new UTC model has arrived. The flag is set to false when the function is executed
+     */
+    bool have_new_almanac();
     /*!
      * Default constructor
      */

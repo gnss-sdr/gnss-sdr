@@ -2,7 +2,8 @@
  * \file beidou_b1i_telemetry_decoder_cc.h
  * \brief Implementation of an adapter of a BEIDOU BI1 DNAV data decoder block
  * to a TelemetryDecoderInterface
- * \note Code added as part of GSoC 2018 program
+ * \details Code added as part of GSoC 2018 program. However new modifications included to mimic
+ * decoding of existing signals
  * \author Damian Miralles, 2018. dmiralles2009(at)gmail.com
  * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.es
  *
@@ -78,11 +79,14 @@ private:
     beidou_b1i_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
 
     void decode_subframe(double *symbols, int32_t frame_length);
+    void decode_word(int32_t word_counter, double* enc_word_symbols, int32_t* dec_word_symbols);
+    void decode_bch15_11_01(int32_t *bits, int32_t *decbits);
+
 
     //!< Preamble decoding
     unsigned short int d_preambles_symbols[BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS];
     int32_t 	*d_preamble_samples;
-    int32_t 	*d_secondary_code_samples;
+    int32_t 	*d_secondary_code_symbols;
     uint32_t 	d_samples_per_symbol;
     int32_t 	d_symbols_per_preamble;
     int32_t     d_samples_per_preamble;
@@ -101,7 +105,7 @@ private:
     bool d_flag_frame_sync;              //!< Indicate when a frame sync is achieved
     bool d_flag_preamble;                //!< Flag indicating when preamble was found
     int32_t d_CRC_error_counter;             //!< Number of failed CRC operations
-    bool flag_TOW_set;                   //!< Indicates when time of week is set
+    bool flag_SOW_set;                   //!< Indicates when time of week is set
 
     //!< Navigation Message variable
     Beidou_Dnav_Navigation_Message d_nav;

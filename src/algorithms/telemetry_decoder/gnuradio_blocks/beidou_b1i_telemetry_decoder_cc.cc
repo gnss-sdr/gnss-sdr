@@ -76,21 +76,21 @@ beidou_b1i_telemetry_decoder_cc::beidou_b1i_telemetry_decoder_cc(
     d_samples_per_preamble = BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS * d_samples_per_symbol;
 
     // preamble symbols to samples
-    d_secondary_code_samples = static_cast<int32_t *>(volk_gnsssdr_malloc(BEIDOU_B1I_SECONDARY_CODE_LENGTH * sizeof(int32_t), volk_gnsssdr_get_alignment()));
+    d_secondary_code_symbols = static_cast<int32_t *>(volk_gnsssdr_malloc(BEIDOU_B1I_SECONDARY_CODE_LENGTH * sizeof(int32_t), volk_gnsssdr_get_alignment()));
     d_preamble_samples = static_cast<int32_t *>(volk_gnsssdr_malloc(d_samples_per_preamble * sizeof(int32_t), volk_gnsssdr_get_alignment()));
     d_preamble_period_samples = BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS*d_samples_per_symbol;
-    d_subframe_length_symbols = BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS - BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS;
+    d_subframe_length_symbols = BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS;
 
     // Setting samples of secondary code
     for (int32_t i = 0; i < BEIDOU_B1I_SECONDARY_CODE_LENGTH; i++)
 		{
 			if (BEIDOU_B1I_SECONDARY_CODE.at(i) == '1')
 				{
-					d_secondary_code_samples[i] = 1;
+					d_secondary_code_symbols[i] = 1;
 				}
 			else
 				{
-					d_secondary_code_samples[i] = -1;
+					d_secondary_code_symbols[i] = -1;
 				}
 		}
 
@@ -103,7 +103,7 @@ beidou_b1i_telemetry_decoder_cc::beidou_b1i_telemetry_decoder_cc(
                 {
                     for (uint32_t j = 0; j < d_samples_per_symbol; j++)
                         {
-                            d_preamble_samples[n] = d_secondary_code_samples[m];
+                            d_preamble_samples[n] = d_secondary_code_symbols[m];
                             n++;
                             m++;
                             m = m % BEIDOU_B1I_SECONDARY_CODE_LENGTH;
@@ -113,7 +113,7 @@ beidou_b1i_telemetry_decoder_cc::beidou_b1i_telemetry_decoder_cc(
                 {
                     for (uint32_t j = 0; j < d_samples_per_symbol; j++)
                         {
-                            d_preamble_samples[n] = -d_secondary_code_samples[m];
+                            d_preamble_samples[n] = -d_secondary_code_symbols[m];
                             n++;
                             m++;
                             m = m % BEIDOU_B1I_SECONDARY_CODE_LENGTH;
@@ -122,7 +122,7 @@ beidou_b1i_telemetry_decoder_cc::beidou_b1i_telemetry_decoder_cc(
         }
 
     d_subframe_symbols = static_cast<double *>(volk_gnsssdr_malloc(d_subframe_length_symbols * sizeof(double), volk_gnsssdr_get_alignment()));
-    d_required_symbols = BEIDOU_DNAV_SUBFRAME_SYMBOLS*d_samples_per_symbol;
+    d_required_symbols = BEIDOU_DNAV_SUBFRAME_SYMBOLS*d_samples_per_symbol + d_samples_per_preamble;
     d_sample_counter = 0;
     d_stat = 0;
     d_preamble_index = 0;
@@ -134,7 +134,7 @@ beidou_b1i_telemetry_decoder_cc::beidou_b1i_telemetry_decoder_cc(
     d_CRC_error_counter = 0;
     d_flag_preamble = false;
     d_channel = 0;
-    flag_TOW_set = false;
+    flag_SOW_set = false;
 
 }
 
@@ -142,7 +142,7 @@ beidou_b1i_telemetry_decoder_cc::beidou_b1i_telemetry_decoder_cc(
 beidou_b1i_telemetry_decoder_cc::~beidou_b1i_telemetry_decoder_cc()
 {
 	volk_gnsssdr_free(d_preamble_samples);
-    volk_gnsssdr_free(d_secondary_code_samples);
+    volk_gnsssdr_free(d_secondary_code_symbols);
     volk_gnsssdr_free(d_subframe_symbols);
 
     if (d_dump_file.is_open() == true)
@@ -159,14 +159,95 @@ beidou_b1i_telemetry_decoder_cc::~beidou_b1i_telemetry_decoder_cc()
 }
 
 
+void beidou_b1i_telemetry_decoder_cc::decode_bch15_11_01(int32_t *bits, int32_t *decbits)
+{
+    int bit, err, reg[4] = {1, 1, 1, 1};
+    int errind[15] = {14, 13, 10, 12, 6, 9, 4, 11, 0, 5, 7, 8, 1, 3, 2};
+
+    for (unsigned int i = 0; i < 15; i++)
+        {
+            decbits[i] = bits[i];
+        }
+
+    for (unsigned int i = 0; i < 15; i++)
+        {
+            bit = reg[3];
+            reg[3] = reg[2];
+            reg[2] = reg[1];
+            reg[1] = reg[0];
+            reg[0] = bits[i] * bit;
+            reg[1] *= bit;
+        }
+
+    err = errind[reg[0] + reg[1]*2 + reg[2]*4 + reg[3]*8];
+
+    if (err > 0)
+        {
+            decbits[err - 1] *= -1;
+        }
+}
+
+void beidou_b1i_telemetry_decoder_cc::decode_word(
+		int32_t word_counter,
+		double* enc_word_symbols,
+		int32_t* dec_word_symbols)
+{
+    int32_t bitsbch[30], first_branch[15], second_branch[15];
+
+    if (word_counter == 1)
+        {
+            for (unsigned int j = 0; j < 30; j++)
+	            {
+            	    dec_word_symbols[j] = (int32_t)(enc_word_symbols[j] > 0) ? (1) : (-1);
+	            }
+         }
+    else
+        {
+	        for (unsigned int r = 0; r < 2; r++)
+	     		 {
+	     		 	 for (unsigned int c = 0; c < 15; c++)
+                        {
+	     		 		 	 bitsbch[r*15 + c] = (int32_t)(enc_word_symbols[c*2 + r] > 0) ? (1) : (-1);
+                        }
+	     		 }
+
+            decode_bch15_11_01(&bitsbch[0], first_branch);
+            decode_bch15_11_01(&bitsbch[15], second_branch);
+
+			for (unsigned int j = 0; j < 11; j++)
+				{
+				    dec_word_symbols[j] = first_branch[j];
+				    dec_word_symbols[j + 11] = second_branch[j];
+				}
+
+			for (unsigned int j = 0; j < 4; j++)
+				{
+				    dec_word_symbols[j + 22] = first_branch[11 + j];
+				    dec_word_symbols[j + 26] = second_branch[11 + j];
+				}
+        }
+
+
+}
+
+
 void beidou_b1i_telemetry_decoder_cc::decode_subframe(double *frame_symbols, int32_t frame_length)
 {
-    // 1. Transform from symbols to bits
+	// 1. Transform from symbols to bits
     std::string data_bits;
+    int32_t dec_word_bits[30];
 
-    // we want data_bits = frame_symbols[24:24+288]
-    for (uint32_t ii = 0; ii < (BEIDOU_DNAV_DATA_BITS); ii++) {
-    	data_bits.push_back( (frame_symbols[ii] > 0) ? ('1') : ('0') );
+    // Decode each word in subframe
+    for(uint32_t ii = 0; ii < BEIDOU_DNAV_WORDS_SUBFRAME; ii++)
+    {
+    	// decode the word
+    	decode_word((ii+1), &frame_symbols[ii*30], dec_word_bits);
+
+    	// Save word to string format
+        for (uint32_t jj = 0; jj < (BEIDOU_DNAV_WORD_LENGTH_BITS); jj++)
+            {
+        	    data_bits.push_back( (dec_word_bits[jj] > 0) ? ('1') : ('0') );
+            }
     }
 
     d_nav.subframe_decoder(data_bits);
@@ -207,10 +288,10 @@ void beidou_b1i_telemetry_decoder_cc::decode_subframe(double *frame_symbols, int
         }
     if (d_nav.have_new_almanac() == true)
         {
-            unsigned int slot_nbr = d_nav.i_alm_satellite_PRN;
-            std::shared_ptr<Beidou_Dnav_Almanac> tmp_obj = std::make_shared<Beidou_Dnav_Almanac>(d_nav.get_almanac(slot_nbr));
-            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-            LOG(INFO) << "BEIDOU DNAV Almanac have been received in channel" << d_channel << " in slot number " << slot_nbr;
+//            unsigned int slot_nbr = d_nav.i_alm_satellite_PRN;
+//            std::shared_ptr<Beidou_Dnav_Almanac> tmp_obj = std::make_shared<Beidou_Dnav_Almanac>(d_nav.get_almanac(slot_nbr));
+//            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+            LOG(INFO) << "BEIDOU DNAV Almanac have been received in channel" << d_channel << " from satellite " << d_satellite << std::endl;
             std::cout << "New BEIDOU B1I DNAV almanac received in channel " << d_channel << " from satellite " << d_satellite << std::endl;
         }
 }
@@ -335,7 +416,7 @@ int beidou_b1i_telemetry_decoder_cc::general_work(int noutput_items __attribute_
                                     for (uint32_t m = 0; m < d_samples_per_symbol; m++)
                                         {
                                     	    // because last symbol of the preamble is just received now!
-                                    		d_subframe_symbols[i] += static_cast<float>(d_secondary_code_samples[k]) * d_symbol_history.at(i * d_samples_per_symbol + d_samples_per_preamble + m);
+                                    		d_subframe_symbols[i] += static_cast<float>(d_secondary_code_symbols[k]) * d_symbol_history.at(i * d_samples_per_symbol + m);
                                             k++;
                                             k = k % BEIDOU_B1I_SECONDARY_CODE_LENGTH;
                                         }
@@ -351,7 +432,7 @@ int beidou_b1i_telemetry_decoder_cc::general_work(int noutput_items __attribute_
                                     for (uint32_t m = 0; m < d_samples_per_symbol; m++)
                                         {
                                     	    // because last symbol of the preamble is just received now!
-                                    		d_subframe_symbols[i] -= static_cast<float>(d_secondary_code_samples[k]) * d_symbol_history.at(i * d_samples_per_symbol + d_samples_per_preamble + m);
+                                    		d_subframe_symbols[i] -= static_cast<float>(d_secondary_code_symbols[k]) * d_symbol_history.at(i * d_samples_per_symbol + m);
                                             k++;
                                             k = k % BEIDOU_B1I_SECONDARY_CODE_LENGTH;
                                         }
@@ -359,7 +440,7 @@ int beidou_b1i_telemetry_decoder_cc::general_work(int noutput_items __attribute_
                         }
 
                     //call the decoder
-                    decode_subframe(d_frame_symbols, d_subframe_length_symbols);
+                    decode_subframe(d_subframe_symbols, d_subframe_length_symbols);
                     if (d_nav.flag_crc_test == true)
                         {
                             d_CRC_error_counter = 0;
@@ -380,6 +461,7 @@ int beidou_b1i_telemetry_decoder_cc::general_work(int noutput_items __attribute_
                                     LOG(INFO) << "BeiDou DNAV frame sync lost for SAT " << this->d_satellite;
                                     d_flag_frame_sync = false;
                                     d_stat = 0;
+                                    flag_SOW_set = false;
                                 }
                         }
                 }
@@ -387,27 +469,22 @@ int beidou_b1i_telemetry_decoder_cc::general_work(int noutput_items __attribute_
 
     // UPDATE GNSS SYNCHRO DATA
     //2. Add the telemetry decoder information
-    if (this->d_flag_preamble == true and d_nav.flag_TOW_set == true)
+    if (this->d_flag_preamble == true and d_nav.flag_new_SOW_available == true)
         //update TOW at the preamble instant
         {
-    		if (d_nav.flag_SOW == true)
-    			{
-    				d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_nav.d_SOW * 1000.0);
-    			    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * BEIDOU_B1I_CODE_PERIOD_MS);
-    			    d_nav.flag_SOW = false;
-    			}
-    	    else  //if there is not a new preamble, we define the TOW of the current symbol
-    	        {
-    	            d_TOW_at_current_symbol_ms += static_cast<uint32_t>(BEIDOU_B1I_CODE_PERIOD_MS);;
-    	        }
+    		// Reporting sow as gps time of week
+    		d_TOW_at_Preamble_ms = static_cast<uint32_t>((d_nav.d_SOW + 14) * 1000.0);
+    		d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * BEIDOU_B1I_CODE_PERIOD_MS);
+    		flag_SOW_set = true;
+    		d_nav.flag_new_SOW_available = false;
         }
     else  //if there is not a new preamble, we define the TOW of the current symbol
         {
-        	d_TOW_at_current_symbol_ms += static_cast<uint32_t>(BEIDOU_B1I_CODE_PERIOD_MS);;
+        	d_TOW_at_current_symbol_ms += static_cast<uint32_t>(BEIDOU_B1I_CODE_PERIOD_MS);
         }
 
 
-    if (d_flag_frame_sync == true and d_nav.flag_TOW_set == true)
+    if (d_flag_frame_sync == true and flag_SOW_set == true)
         {
             current_symbol.Flag_valid_word = true;
         }

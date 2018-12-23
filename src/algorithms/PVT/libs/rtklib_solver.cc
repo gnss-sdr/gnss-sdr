@@ -775,7 +775,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         obsd_t newobs = {{0, 0}, '0', '0', {}, {}, {}, {}, {}, {}};
                                         obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                             gnss_observables_iter->second,
-                                            beidou_ephemeris_iter->second.i_BEIDOU_week,
+                                            beidou_ephemeris_iter->second.i_BEIDOU_week + 1356,
                                             0);
                                         valid_obs++;
                                     }

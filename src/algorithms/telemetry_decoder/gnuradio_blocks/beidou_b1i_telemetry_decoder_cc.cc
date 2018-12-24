@@ -136,6 +136,8 @@ beidou_b1i_telemetry_decoder_cc::beidou_b1i_telemetry_decoder_cc(
     d_channel = 0;
     flag_SOW_set = false;
 
+
+
 }
 
 
@@ -265,6 +267,7 @@ void beidou_b1i_telemetry_decoder_cc::decode_subframe(double *frame_symbols, int
     if (d_nav.have_new_ephemeris() == true)
         {
             // get object for this SV (mandatory)
+    		d_nav.i_satellite_PRN = d_satellite.get_PRN();
             std::shared_ptr<Beidou_Dnav_Ephemeris> tmp_obj = std::make_shared<Beidou_Dnav_Ephemeris>(d_nav.get_ephemeris());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "BEIDOU DNAV Ephemeris have been received in channel" << d_channel << " from satellite " << d_satellite;

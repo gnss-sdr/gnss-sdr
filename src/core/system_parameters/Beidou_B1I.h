@@ -56,6 +56,7 @@ const double BEIDOU_B1I_CHIP_PERIOD          = 4.8875e-07;     //!< beidou b1I c
 const int BEIDOU_B1I_SECONDARY_CODE_LENGTH = 20;
 const std::string BEIDOU_B1I_SECONDARY_CODE = "00000100110101001110";
 const std::string BEIDOU_B1I_SECONDARY_CODE_STR = "00000100110101001110";
+const std::string BEIDOU_B1I_D2_SECONDARY_CODE_STR = "00";
 
 /*!
  * \brief Maximum Time-Of-Arrival (TOA) difference between satellites for a receiver operated on Earth surface is 20 ms

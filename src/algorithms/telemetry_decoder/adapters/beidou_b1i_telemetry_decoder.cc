@@ -34,10 +34,10 @@
 #include "configuration_interface.h"
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
-#include "../../../core/system_parameters/beidou_dnav_almanac.h"
-#include "../../../core/system_parameters/beidou_dnav_ephemeris.h"
-#include "../../../core/system_parameters/beidou_dnav_iono.h"
-#include "../../../core/system_parameters/beidou_dnav_utc_model.h"
+#include "beidou_dnav_almanac.h"
+#include "beidou_dnav_ephemeris.h"
+#include "beidou_dnav_iono.h"
+#include "beidou_dnav_utc_model.h"
 
 
 using google::LogMessage;

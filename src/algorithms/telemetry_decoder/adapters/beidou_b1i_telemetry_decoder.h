@@ -35,12 +35,12 @@
 
 #include "telemetry_decoder_interface.h"
 #include <string>
-#include "../gnuradio_blocks/beidou_b1i_telemetry_decoder_cc_old.h"
+#include "beidou_b1i_telemetry_decoder_cc.h"
 
 class ConfigurationInterface;
 
 /*!
- * \brief This class implements a NAV data decoder for GPS L1 C/A
+ * \brief This class implements a NAV data decoder for BEIDOU B1I
  */
 class BeidouB1iTelemetryDecoder : public TelemetryDecoderInterface
 {
@@ -57,7 +57,7 @@ public:
         return role_;
     }
 
-    //! Returns "GPS_L1_CA_Telemetry_Decoder"
+    //! Returns "BEIDOU_B1I_Telemetry_Decoder"
     inline std::string implementation() override
     {
         return "BEIDOU_B1I_Telemetry_Decoder";

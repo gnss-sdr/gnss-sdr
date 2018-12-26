@@ -100,7 +100,8 @@ const double BEIDOU_DNAV_DATA_BITS = 300;
 const double BEIDOU_DNAV_WORDS_SUBFRAME = 10;
 const double BEIDOU_DNAV_WORD_LENGTH_BITS = 30;
 
-const double BEIDOU_B1I_SYMBOL_RATE_SPS = 50;		//BEIDOU symbol rate
+const double BEIDOU_D1NAV_SYMBOL_RATE_SPS = 50;
+const double BEIDOU_D2NAV_SYMBOL_RATE_SPS = 500;
 const double BEIDOU_B1I_PREAMBLE_PERIOD_SYMBOLS = 300;
 
 // BEIDOU D1 NAVIGATION MESSAGE STRUCTURE
@@ -110,99 +111,111 @@ const std::vector<std::pair<int,int> > D1_FRAID( { {16,3} } );
 const std::vector<std::pair<int,int> > D1_SOW( { {19,8},{31,12} } );
 const std::vector<std::pair<int,int> > D1_PNUM( { {44,7} } );
 
+// DNAV SCALE FACTORS
+// EPH
+const double D1_TOC_LSB = TWO_P3;
+const double D1_TGD1_LSB = 0.1;
+const double D1_TGD2_LSB = 0.1;
+const double D1_ALPHA0_LSB = TWO_N30;
+const double D1_ALPHA1_LSB = TWO_N27;
+const double D1_ALPHA2_LSB = TWO_N24;
+const double D1_ALPHA3_LSB = TWO_N24;
+const double D1_BETA0_LSB = TWO_P11;
+const double D1_BETA1_LSB = TWO_P14;
+const double D1_BETA2_LSB = TWO_P16;
+const double D1_BETA3_LSB = TWO_P16;
+const double D1_A2_LSB = TWO_N66;
+const double D1_A0_LSB = TWO_N33;
+const double D1_A1_LSB = TWO_N50;
+const double D1_DELTA_N_LSB =  PI_TWO_N43;
+const double D1_CUC_LSB = TWO_N31;
+const double D1_M0_LSB =  PI_TWO_N31;
+const double D1_E_LSB = TWO_N33;
+const double D1_CUS_LSB = TWO_N31;
+const double D1_CRC_LSB = TWO_N6;
+const double D1_CRS_LSB = TWO_N6;
+const double D1_SQRT_A_LSB = TWO_N19;
+const double D1_TOE_LSB = TWO_P3;
+const double D1_I0_LSB =  PI_TWO_N31;
+const double D1_CIC_LSB = TWO_N31;
+const double D1_OMEGA_DOT_LSB =  PI_TWO_N43;
+const double D1_CIS_LSB = TWO_N31;
+const double D1_IDOT_LSB =  PI_TWO_N43;
+const double D1_OMEGA0_LSB =  PI_TWO_N31;
+const double D1_OMEGA_LSB =  PI_TWO_N31;
+//ALM
+const double D1_SQRT_A_ALMANAC_LSB = TWO_N11;
+const double D1_A1_ALMANAC_LSB = TWO_N38;
+const double D1_A0_ALMANAC_LSB = TWO_N20;
+const double D1_OMEGA0_ALMANAC_LSB =  PI_TWO_N23;
+const double D1_E_ALMANAC_LSB = TWO_N21;
+const double D1_DELTA_I_LSB =  PI_TWO_N19;
+const double D1_TOA_LSB = TWO_P12;
+const double D1_OMEGA_DOT_ALMANAC_LSB =  PI_TWO_N38;
+const double D1_OMEGA_ALMANAC_LSB =  PI_TWO_N23;
+const double D1_M0_ALMANAC_LSB =  PI_TWO_N23;
+const double D1_A0GPS_LSB =  0.1;
+const double D1_A1GPS_LSB =  0.1;
+const double D1_A0GAL_LSB =  0.1;
+const double D1_A1GAL_LSB =  0.1;
+const double D1_A0GLO_LSB =  0.1;
+const double D1_A1GLO_LSB =  0.1;
+const double D1_A0UTC_LSB =  TWO_N30;
+const double D1_A1UTC_LSB =  TWO_N50;
+
 // SUBFRAME 1
 const std::vector<std::pair<int,int> > D1_SAT_H1( { {43,1} } );
 const std::vector<std::pair<int,int> > D1_AODC( { {44,5} } );
 const std::vector<std::pair<int,int> > D1_URAI( { {49,4} } );
 const std::vector<std::pair<int,int> > D1_WN( { {61,13} } );
 const std::vector<std::pair<int,int> > D1_TOC( { {74,9},{91,8} } );
-const double D1_TOC_LSB = TWO_P3;
 const std::vector<std::pair<int,int> > D1_TGD1( { {99,10} } );
-const double D1_TGD1_LSB = 0.1;
 const std::vector<std::pair<int,int> > D1_TGD2( { {121,6} } );
-const double D1_TGD2_LSB = 0.1;
 const std::vector<std::pair<int,int> > D1_ALPHA0( { {127,8} } );
-const double D1_ALPHA0_LSB = TWO_N30;
 const std::vector<std::pair<int,int> > D1_ALPHA1( { {135,8} } );
-const double D1_ALPHA1_LSB = TWO_N27;
 const std::vector<std::pair<int,int> > D1_ALPHA2( { {151,8} } );
-const double D1_ALPHA2_LSB = TWO_N24;
 const std::vector<std::pair<int,int> > D1_ALPHA3( { {159,8} } );
-const double D1_ALPHA3_LSB = TWO_N24;
 const std::vector<std::pair<int,int> > D1_BETA0( { {167,6}, {181,2} } );
-const double D1_BETA0_LSB = TWO_P11;
 const std::vector<std::pair<int,int> > D1_BETA1( { {183,8} } );
-const double D1_BETA1_LSB = TWO_P14;
 const std::vector<std::pair<int,int> > D1_BETA2( { {191,8} } );
-const double D1_BETA2_LSB = TWO_P16;
 const std::vector<std::pair<int,int> > D1_BETA3( { {199,4},{211,4} } );
-const double D1_BETA3_LSB = TWO_P16;
 const std::vector<std::pair<int,int> > D1_A2( { {215,11} } );
-const double D1_A2_LSB = TWO_N66;
 const std::vector<std::pair<int,int> > D1_A0( { {226,7},{241,17} } );
-const double D1_A0_LSB = TWO_N33;
 const std::vector<std::pair<int,int> > D1_A1( { {258,5},{271,17} } );
-const double D1_A1_LSB = TWO_N50;
 const std::vector<std::pair<int,int> > D1_AODE( { {288,5} } );
 
 //SUBFRAME 2
 const std::vector<std::pair<int,int> > D1_DELTA_N( { {43,10},{61,6} } );
-const double D1_DELTA_N_LSB =  PI_TWO_N43;
 const std::vector<std::pair<int,int> > D1_CUC( { {67,16},{91,2} } );
-const double D1_CUC_LSB = TWO_N31;
 const std::vector<std::pair<int,int> > D1_M0( { {93,20}, {121,12} } );
-const double D1_M0_LSB =  PI_TWO_N31;
 const std::vector<std::pair<int,int> > D1_E( { {133,10},{151,22} } );
-const double D1_E_LSB = TWO_N33;
 const std::vector<std::pair<int,int> > D1_CUS( { {181,18} } );
-const double D1_CUS_LSB = TWO_N31;
 const std::vector<std::pair<int,int> > D1_CRC( { {199,4},{211,14} } );
-const double D1_CRC_LSB = TWO_N6;
 const std::vector<std::pair<int,int> > D1_CRS( { {225,8},{241,10} } );
-const double D1_CRS_LSB = TWO_N6;
 const std::vector<std::pair<int,int> > D1_SQRT_A( { {251,12},{271,20} } );
-const double D1_SQRT_A_LSB = TWO_N19;
 const std::vector<std::pair<int,int> > D1_TOE_SF2( { {291,2} } );
-const double D1_TOE_LSB = TWO_P3;
 
 //SUBFRAME 3
 const std::vector<std::pair<int,int> > D1_TOE_SF3( { {43,10},{61,5} } );
 const std::vector<std::pair<int,int> > D1_I0( { {66,17},{91,15} } );
-const double D1_I0_LSB =  PI_TWO_N31;
 const std::vector<std::pair<int,int> > D1_CIC( { {106,7},{121,11} } );
-const double D1_CIC_LSB = TWO_N31;
 const std::vector<std::pair<int,int> > D1_OMEGA_DOT( { {132,11},{151,13} } );
-const double D1_OMEGA_DOT_LSB =  PI_TWO_N43;
 const std::vector<std::pair<int,int> > D1_CIS( { {164,9},{181,9} } );
-const double D1_CIS_LSB = TWO_N31;
 const std::vector<std::pair<int,int> > D1_IDOT( { {190,13},{211,1} } );
-const double D1_IDOT_LSB =  PI_TWO_N43;
 const std::vector<std::pair<int,int> > D1_OMEGA0( { {212,21},{241,11} } );
-const double D1_OMEGA0_LSB =  PI_TWO_N31;
 const std::vector<std::pair<int,int> > D1_OMEGA( { {252,11},{271,21} } );
-const double D1_OMEGA_LSB =  PI_TWO_N31;
 
 //SUBFRAME 4 AND PAGES 1 THROUGH 6 IN SUBFRAME 5
 const std::vector<std::pair<int,int> > D1_SQRT_A_ALMANAC( { {51,2},{61,22} } );
-const double D1_SQRT_A_ALMANAC_LSB = TWO_N11;
 const std::vector<std::pair<int,int> > D1_A1_ALMANAC( { {91,11} } );
-const double D1_A1_ALMANAC_LSB = TWO_N38;
 const std::vector<std::pair<int,int> > D1_A0_ALMANAC( { {102,11} } );
-const double D1_A0_ALMANAC_LSB = TWO_N20;
 const std::vector<std::pair<int,int> > D1_OMEGA0_ALMANAC( { {121,22},{151,2} } );
-const double D1_OMEGA0_ALMANAC_LSB =  PI_TWO_N23;
 const std::vector<std::pair<int,int> > D1_E_ALMANAC( { {153,17} } );
-const double D1_E_ALMANAC_LSB = TWO_N21;
 const std::vector<std::pair<int,int> > D1_DELTA_I( { {170,3},{181,13} } );
-const double D1_DELTA_I_LSB =  PI_TWO_N19;
 const std::vector<std::pair<int,int> > D1_TOA( { {194,8} } );
-const double D1_TOA_LSB = TWO_P12;
 const std::vector<std::pair<int,int> > D1_OMEGA_DOT_ALMANAC( { {202,1}, {211,16} } );
-const double D1_OMEGA_DOT_ALMANAC_LSB =  PI_TWO_N38;
 const std::vector<std::pair<int,int> > D1_OMEGA_ALMANAC( { {227,6},{241,18} } );
-const double D1_OMEGA_ALMANAC_LSB =  PI_TWO_N23;
 const std::vector<std::pair<int,int> > D1_M0_ALMANAC( { {259,4},{271,20} } );
-const double D1_M0_ALMANAC_LSB =  PI_TWO_N23;
 
 //SUBFRAME 5 PAGE 7
 const std::vector<std::pair<int,int> > D1_HEA1( { {51,2},{61,7} } );
@@ -225,8 +238,6 @@ const std::vector<std::pair<int,int> > D1_HEA17( { {251,9} } );
 const std::vector<std::pair<int,int> > D1_HEA18( { {260,3},{271,6} } );
 const std::vector<std::pair<int,int> > D1_HEA19( { {277,9} } );
 
-
-
 //SUBFRAME 5 PAGE 8
 const std::vector<std::pair<int,int> > D1_HEA20( { {51,2},{61,7} } );
 const std::vector<std::pair<int,int> > D1_HEA21( { {68,9} } );
@@ -244,26 +255,86 @@ const std::vector<std::pair<int,int> > D1_TOA2( { {198,5},{211,3} } );
 
 //SUBFRAME 5 PAGE 9
 const std::vector<std::pair<int,int> > D1_A0GPS( { {97,14} } );
-const double D1_A0GPS_LSB =  0.1;
 const std::vector<std::pair<int,int> > D1_A1GPS( { {111,2},{121,14} } );
-const double D1_A1GPS_LSB =  0.1;
 const std::vector<std::pair<int,int> > D1_A0GAL( { {135,8},{151,6} } );
-const double D1_A0GAL_LSB =  0.1;
 const std::vector<std::pair<int,int> > D1_A1GAL( { {157,16} } );
-const double D1_A1GAL_LSB =  0.1;
 const std::vector<std::pair<int,int> > D1_A0GLO( { {181,14} } );
-const double D1_A0GLO_LSB =  0.1;
 const std::vector<std::pair<int,int> > D1_A1GLO( { {195,8},{211,8} } );
-const double D1_A1GLO_LSB =  0.1;
 
 //SUBFRAME 5 PAGE 10
 const std::vector<std::pair<int,int> > D1_DELTA_T_LS( { {51,2},{61,6} } );
 const std::vector<std::pair<int,int> > D1_DELTA_T_LSF( { {67,8} } );
 const std::vector<std::pair<int,int> > D1_WN_LSF( { {75,8} } );
 const std::vector<std::pair<int,int> > D1_A0UTC( { {91,22},{121,10} } );
-const double D1_A0UTC_LSB =  TWO_N30;
 const std::vector<std::pair<int,int> > D1_A1UTC( { {131,12},{151,12} } );
-const double D1_A1UTC_LSB =  TWO_N50;
 const std::vector<std::pair<int,int> > D1_DN( { {163,8} } );
+
+// D2 NAV Message Decoding Information
+const std::vector<std::pair<int,int> > D2_PRE( { {1,11} } );
+const std::vector<std::pair<int,int> > D2_FRAID( { {16,3} } );
+const std::vector<std::pair<int,int> > D2_SOW( { {19,8},{31,12} } );
+const std::vector<std::pair<int,int> > D2_PNUM( { {43,4} } );
+
+// D2 NAV, SUBFRAME 1, PAGE 1
+const std::vector<std::pair<int,int> > D2_SAT_H1( { {47,1} } );
+const std::vector<std::pair<int,int> > D2_AODC( { {48,5} } );
+const std::vector<std::pair<int,int> > D2_URAI( { {61,4} } );
+const std::vector<std::pair<int,int> > D2_WN( { {65,13} } );
+const std::vector<std::pair<int,int> > D2_TOC( { {78,5},{91,12} } );
+const std::vector<std::pair<int,int> > D2_TGD1( { {103,10} } );
+const std::vector<std::pair<int,int> > D2_TGD2( { {121,10} } );
+
+// D2 NAV, SUBFRAME 1, PAGE 2
+const std::vector<std::pair<int,int> > D2_ALPHA0( { {47,6}, {61,2} } );
+const std::vector<std::pair<int,int> > D2_ALPHA1( { {63,8} } );
+const std::vector<std::pair<int,int> > D2_ALPHA2( { {71,8} } );
+const std::vector<std::pair<int,int> > D2_ALPHA3( { {79,4}, {91,4} } );
+const std::vector<std::pair<int,int> > D2_BETA0( { {95,8} } );
+const std::vector<std::pair<int,int> > D2_BETA1( { {103,8} } );
+const std::vector<std::pair<int,int> > D2_BETA2( { {111,2}, {121,6} } );
+const std::vector<std::pair<int,int> > D2_BETA3( { {127,8} } );
+
+// D2 NAV, SUBFRAME 1, PAGE 3
+const std::vector<std::pair<int,int> > D2_A0( { {101,12},{121,12} } );
+const std::vector<std::pair<int,int> > D2_A1_MSB( { {133,4} } );
+
+// D2 NAV, SUBFRAME 1, PAGE 4
+const std::vector<std::pair<int,int> > D2_A1_LSB( { {47,6}, {121, 12} } );
+const std::vector<std::pair<int,int> > D2_A2( { {73,10}, {91,1} } );
+const std::vector<std::pair<int,int> > D2_AODE( { {92,5} } );
+const std::vector<std::pair<int,int> > D2_DELTA_N( { {97,16} } );
+const std::vector<std::pair<int,int> > D2_CUC_MSB( { {121,14} } );
+
+// D2 NAV, SUBFRAME 1, PAGE 5
+const std::vector<std::pair<int,int> > D2_CUC_LSB( { {47,4} } );
+const std::vector<std::pair<int,int> > D2_M0( { {51,2}, {61,22}, {91,8} } );
+const std::vector<std::pair<int,int> > D2_CUS( { {99,14}, {121, 4} } );
+const std::vector<std::pair<int,int> > D2_E_MSB( { {125,10} } );
+
+// D2 NAV, SUBFRAME 1, PAGE 6
+const std::vector<std::pair<int,int> > D2_E_LSB( { {47,6}, {61, 16} } );
+const std::vector<std::pair<int,int> > D2_SQRT_A( { {77,6},{91,22}, {121,4} } );
+const std::vector<std::pair<int,int> > D2_CIC_MSB( { {125,10} } );
+
+// D2 NAV, SUBFRAME 1, PAGE 7
+const std::vector<std::pair<int,int> > D2_CIC_LSB( { {47,6}, {61,2} } );
+const std::vector<std::pair<int,int> > D2_CIS( { {63,18} } );
+const std::vector<std::pair<int,int> > D2_TOE( { {81,2},{91,15} } );
+const std::vector<std::pair<int,int> > D2_I0_MSB( { {106,7},{121,14} } );
+
+// D2 NAV, SUBFRAME 1, PAGE 8
+const std::vector<std::pair<int,int> > D2_I0_LSB( { {47,6},{61,5} } );
+const std::vector<std::pair<int,int> > D2_CRC( { {66,17},{91,1} } );
+const std::vector<std::pair<int,int> > D2_CRS( { {92,18} } );
+const std::vector<std::pair<int,int> > D2_OMEGA_DOT_MSB( { {110,3},{121,16} } );
+
+// D2 NAV, SUBFRAME 1, PAGE 9
+const std::vector<std::pair<int,int> > D2_OMEGA_DOT_LSB( { {47,5} } );
+const std::vector<std::pair<int,int> > D2_OMEGA0( { {52,1},{61,22},{91,9} } );
+const std::vector<std::pair<int,int> > D2_OMEGA_MSB( { {100,13},{121,14} } );
+
+// D2 NAV, SUBFRAME 1, PAGE 10
+const std::vector<std::pair<int,int> > D2_OMEGA_LSB( { {47,5} } );
+const std::vector<std::pair<int,int> > D2_IDOT( { {52,1},{61,13} } );
 
 #endif /* GNSS_SDR_BEIDOU_B1I_H_ */

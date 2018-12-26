@@ -1,7 +1,8 @@
 /*!
  * \file beidou_navigation_message.h
- * \brief  Interface of a BeiDou D1 NAV Data message decoder
+ * \brief  Interface of a BeiDou DNAV Data message decoder
  * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.com
+ * \author Damian Miralles, 2018. dmiralles2009@gmail.com
  *
  * -------------------------------------------------------------------------
  *
@@ -72,14 +73,25 @@ public:
     bool flag_eph_valid;
     bool flag_utc_model_valid;
     bool flag_iono_valid;
-    bool flag_sf_1;
-    bool flag_sf_2;
+    bool flag_sf1;
+    bool flag_sf2;
     bool flag_sf_3;
     bool flag_sf_4;
     bool flag_sf_5;
     bool flag_new_SOW_available;
     bool flag_crc_test;
     double d_previous_aode;
+
+    bool flag_sf1_p1;		//!< D2 NAV Message, Subframe 1, Pagge 1 decoded indicator
+    bool flag_sf1_p2;		//!< D2 NAV Message, Subframe 1, Pagge 2 decoded indicator
+    bool flag_sf1_p3;		//!< D2 NAV Message, Subframe 1, Pagge 3 decoded indicator
+    bool flag_sf1_p4;		//!< D2 NAV Message, Subframe 1, Pagge 4 decoded indicator
+    bool flag_sf1_p5;		//!< D2 NAV Message, Subframe 1, Pagge 5 decoded indicator
+    bool flag_sf1_p6;		//!< D2 NAV Message, Subframe 1, Pagge 6 decoded indicator
+    bool flag_sf1_p7;		//!< D2 NAV Message, Subframe 1, Pagge 7 decoded indicator
+    bool flag_sf1_p8;		//!< D2 NAV Message, Subframe 1, Pagge 8 decoded indicator
+    bool flag_sf1_p9;		//!< D2 NAV Message, Subframe 1, Pagge 9 decoded indicator
+    bool flag_sf1_p10;		//!< D2 NAV Message, Subframe 1, Pagge 10 decoded indicator
 
     //broadcast orbit 1
     double d_SOW; //!< Time of BeiDou Week of the ephemeris set (taken from subframes SOW) [s]
@@ -95,13 +107,13 @@ public:
     double d_M_0;            //!< Mean Anomaly at Reference Time [semi-circles]
     //broadcast orbit 2
     double d_Cuc;            //!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
-    double d_e_eccentricity; //!< Eccentricity [dimensionless]
+    double d_eccentricity; //!< Eccentricity [dimensionless]
     double d_Cus;            //!< Amplitude of the Sine Harmonic Correction Term to the Argument of Latitude [rad]
     double d_sqrt_A;         //!< Square Root of the Semi-Major Axis [sqrt(m)]
     //broadcast orbit 3
-    double d_Toe_sf2;        //!< Ephemeris data reference time of week in subframe 2
-    double d_Toe_sf3;        //!< Ephemeris data reference time of week in subframe 3
-    double d_Toe2;
+    double d_Toe_sf2;        //!< Ephemeris data reference time of week in subframe 2, D1 Message
+    double d_Toe_sf3;        //!< Ephemeris data reference time of week in subframe 3, D1 Message
+    double d_Toe;			 //!< Ephemeris data reference time of week in subframe 1, D2 Message
     double d_Toc;            //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200E) [s]
     double d_Cic;            //!< Amplitude of the Cosine Harmonic Correction Term to the Angle of Inclination [rad]
     double d_OMEGA0;         //!< Longitude of Ascending Node of Orbit Plane at Weekly Epoch [semi-circles]
@@ -131,11 +143,27 @@ public:
     double d_A_f1;          //!< Coefficient 1 of code phase offset model [s/s]
     double d_A_f2;          //!< Coefficient 2 of code phase offset model [s/s^2]
 
-    double d_a0;
-    double d_a1;
-    double d_a2;
+    double d_a0;			//!< Clock correction parameters
+    double d_a1;			//!< Clock correction parameters
+    double d_a2;			//!< Clock correction parameters
 
-    // Almanac
+    // D2 NAV Message Decoding
+    double d_a1_msb;			//!< Clock correction parameters, D2 NAV MSB
+    double d_a1_lsb;			//!< Clock correction parameters, D2 NAV LSB
+	double d_Cuc_msb;		//!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
+    double d_Cuc_lsb;		//!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
+    double d_eccentricity_msb; //!< Eccentricity [dimensionless]
+    double d_eccentricity_lsb; //!< Eccentricity [dimensionless]
+    double d_Cic_msb;		//!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
+    double d_Cic_lsb;		//!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
+    double d_i_0_msb;            //!< Inclination Angle at Reference Time [semi-circles]
+    double d_i_0_lsb;            //!< Inclination Angle at Reference Time [semi-circles]
+    double d_OMEGA_msb;          //!< Argument of Perigee [semi-cicles]
+    double d_OMEGA_lsb;          //!< Argument of Perigee [semi-cicles]
+    double d_OMEGA_DOT_msb;      //!< Rate of Right Ascension [semi-circles/s]
+    double d_OMEGA_DOT_lsb;      //!< Rate of Right Ascension [semi-circles/s]
+
+	// Almanac
     double d_Toa;           //!< Almanac reference time [s]
     int i_WN_A;             //!< Modulo 256 of the GPS week number to which the almanac reference time (d_Toa) is referenced
     std::map<int,int> almanacHealth; //!< Map that stores the health information stored in the almanac
@@ -242,9 +270,14 @@ public:
 
 
     /*!
-     * \brief Decodes the GPS NAV message
+     * \brief Decodes the BDS D1 NAV message
      */
-    int subframe_decoder(std::string const &subframe);
+    int d1_subframe_decoder(std::string const &subframe);
+
+    /*!
+     * \brief Decodes the BDS D2 NAV message
+     */
+    int d2_subframe_decoder(std::string const &subframe);
 
     /*!
      * \brief Computes the position of the satellite

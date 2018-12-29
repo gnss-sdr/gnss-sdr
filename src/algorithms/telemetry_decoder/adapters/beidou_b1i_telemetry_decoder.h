@@ -2,6 +2,7 @@
  * \file beidou_b1i_telemetry_decoder.h
  * \brief Interface of an adapter of a Beidou B1I NAV data decoder block
  * to a TelemetryDecoderInterface
+ * \author Damian Miralles, 2018. dmiralles2009@gmail.com
  * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.com
  *
  * -------------------------------------------------------------------------

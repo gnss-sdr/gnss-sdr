@@ -63,7 +63,7 @@ public:
     double d_Delta_n;        //!< Mean Motion Difference From Computed Value [semi-circles/s]
     double d_M_0;            //!< Mean Anomaly at Reference Time [semi-circles]
     double d_Cuc;            //!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
-    double d_e_eccentricity; //!< Eccentricity [dimensionless]
+    double d_eccentricity; //!< Eccentricity [dimensionless]
     double d_Cus;            //!< Amplitude of the Sine Harmonic Correction Term to the Argument of Latitude [rad]
     double d_sqrt_A;         //!< Square Root of the Semi-Major Axis [sqrt(m)]
     double d_Toe;            //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
@@ -85,6 +85,9 @@ public:
     double d_AODE;           //!< Age of Data, Ephemeris
     int i_AODO;              //!< Age of Data Offset (AODO) term for the navigation message correction table (NMCT) contained in subframe 4 (reference paragraph 20.3.3.5.1.9) [s]
 
+    int i_sig_type;          //!< BDS: data source (0:unknown,1:B1I,2:B1Q,3:B2I,4:B2Q,5:B3I,6:B3Q) */
+    int i_nav_type;          //!< BDS: nav type (0:unknown,1:IGSO/MEO,2:GEO) */
+
     bool b_fit_interval_flag;//!< indicates the curve-fit interval used by the CS (Block II/IIA/IIR/IIR-M/IIF) and SS (Block IIIA) in determining the ephemeris parameters, as follows: 0 = 4 hours, 1 = greater than 4 hours.
     double d_spare1;
     double d_spare2;
@@ -92,8 +95,6 @@ public:
     double d_A_f0;          //!< Coefficient 0 of code phase offset model [s]
     double d_A_f1;          //!< Coefficient 1 of code phase offset model [s/s]
     double d_A_f2;          //!< Coefficient 2 of code phase offset model [s/s^2]
-
-    // Flags
 
     /*! \brief If true, enhanced level of integrity assurance.
      *
@@ -142,7 +143,7 @@ public:
         archive & make_nvp("d_Delta_n", d_Delta_n);  //!< Mean Motion Difference From Computed Value [semi-circles/s]
         archive & make_nvp("d_M_0", d_M_0);          //!< Mean Anomaly at Reference Time [semi-circles]
         archive & make_nvp("d_Cuc", d_Cuc);          //!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
-        archive & make_nvp("d_e_eccentricity", d_e_eccentricity); //!< Eccentricity [dimensionless]
+        archive & make_nvp("d_e_eccentricity", d_eccentricity); //!< Eccentricity [dimensionless]
         archive & make_nvp("d_Cus", d_Cus);          //!< Amplitude of the Sine Harmonic Correction Term to the Argument of Latitude [rad]
         archive & make_nvp("d_sqrt_A", d_sqrt_A);    //!< Square Root of the Semi-Major Axis [sqrt(m)]
         archive & make_nvp("d_Toe", d_Toe);          //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]

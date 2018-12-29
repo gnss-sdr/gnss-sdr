@@ -255,12 +255,12 @@ eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph)
     rtklib_sat.omg = bei_eph.d_OMEGA;
     rtklib_sat.i0 = bei_eph.d_i_0;
     rtklib_sat.idot = bei_eph.d_IDOT;
-    rtklib_sat.e = bei_eph.d_e_eccentricity;
+    rtklib_sat.e = bei_eph.d_eccentricity;
     rtklib_sat.Adot = 0;  //only in CNAV;
     rtklib_sat.ndot = 0;  //only in CNAV;
 
-    rtklib_sat.code = 1;		/*B1I data*/
-    rtklib_sat.flag = 1;		/*MEO/IGSO satellite*/
+    rtklib_sat.code = bei_eph.i_sig_type;		/*B1I data*/
+    rtklib_sat.flag = bei_eph.i_nav_type;		/*MEO/IGSO satellite*/
     rtklib_sat.iode=(int32_t)bei_eph.d_AODE;      /* AODE */
     rtklib_sat.iodc=(int32_t)bei_eph.d_AODC;      /* AODC */
 

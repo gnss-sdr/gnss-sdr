@@ -1,8 +1,8 @@
 /*!
  * \file beidou_b1I.h
- * \brief  Defines system parameters for BeiDou B1I signal and D1 NAV data
+ * \brief  Defines system parameters for BeiDou B1I signal and DNAV data
  * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.com
- *
+ * \author Damian Miralles, 2018. dmiralles2009@gmail.com
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
@@ -114,8 +114,8 @@ const std::vector<std::pair<int,int> > D1_PNUM( { {44,7} } );
 // DNAV SCALE FACTORS
 // EPH
 const double D1_TOC_LSB = TWO_P3;
-const double D1_TGD1_LSB = 0.1;
-const double D1_TGD2_LSB = 0.1;
+const double D1_TGD1_LSB = 0.1e-9;
+const double D1_TGD2_LSB = 0.1e-9;
 const double D1_ALPHA0_LSB = TWO_N30;
 const double D1_ALPHA1_LSB = TWO_N27;
 const double D1_ALPHA2_LSB = TWO_N24;
@@ -299,7 +299,7 @@ const std::vector<std::pair<int,int> > D2_A0( { {101,12},{121,12} } );
 const std::vector<std::pair<int,int> > D2_A1_MSB( { {133,4} } );
 
 // D2 NAV, SUBFRAME 1, PAGE 4
-const std::vector<std::pair<int,int> > D2_A1_LSB( { {47,6}, {121, 12} } );
+const std::vector<std::pair<int,int> > D2_A1_LSB( { {47,6}, {61, 12} } );
 const std::vector<std::pair<int,int> > D2_A2( { {73,10}, {91,1} } );
 const std::vector<std::pair<int,int> > D2_AODE( { {92,5} } );
 const std::vector<std::pair<int,int> > D2_DELTA_N( { {97,16} } );

@@ -73,11 +73,11 @@ public:
     bool flag_eph_valid;
     bool flag_utc_model_valid;
     bool flag_iono_valid;
-    bool flag_sf1;
-    bool flag_sf2;
-    bool flag_sf_3;
-    bool flag_sf_4;
-    bool flag_sf_5;
+    bool flag_d1_sf1;
+    bool flag_d1_sf2;
+    bool flag_d1_sf3;
+    bool flag_d1_sf4;
+    bool flag_d1_sf5;
     bool flag_new_SOW_available;
     bool flag_crc_test;
     double d_previous_aode;
@@ -129,8 +129,8 @@ public:
     //broadcast orbit 6
     int i_SV_accuracy;       //!< User Range Accuracy (URA) index of the SV 
     int i_SV_health;
-    double d_TGD1;            //!< Estimated Group Delay Differential in B1
-    double d_TGD2;            //!< Estimated Group Delay Differential in B2
+    double d_TGD1;            //!< Estimated Group Delay Differential in B1 [s]
+    double d_TGD2;            //!< Estimated Group Delay Differential in B2 [s]
     double d_AODC;           //!< Age of Data, Clock
     //broadcast orbit 7
 //    int i_AODO;              //!< Age of Data Offset (AODO) term for the navigation message correction table (NMCT) contained in subframe 4 (reference paragraph 20.3.3.5.1.9) [s]
@@ -139,17 +139,13 @@ public:
     double d_spare1;
     double d_spare2;
 
-    double d_A_f0;          //!< Coefficient 0 of code phase offset model [s]
-    double d_A_f1;          //!< Coefficient 1 of code phase offset model [s/s]
-    double d_A_f2;          //!< Coefficient 2 of code phase offset model [s/s^2]
-
-    double d_a0;			//!< Clock correction parameters
-    double d_a1;			//!< Clock correction parameters
-    double d_a2;			//!< Clock correction parameters
+    double d_A_f0;          //!< Clock correction parameters. Coefficient 0 of code phase offset model [s]
+    double d_A_f1;          //!< Clock correction parameters. Coefficient 1 of code phase offset model [s/s]
+    double d_A_f2;          //!< Clock correction parameters. Coefficient 2 of code phase offset model [s/s^2]
 
     // D2 NAV Message Decoding
-    double d_a1_msb;			//!< Clock correction parameters, D2 NAV MSB
-    double d_a1_lsb;			//!< Clock correction parameters, D2 NAV LSB
+    double d_A_f1_msb;			//!< Clock correction parameters, D2 NAV MSB
+    double d_A_f1_lsb;			//!< Clock correction parameters, D2 NAV LSB
 	double d_Cuc_msb;		//!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
     double d_Cuc_lsb;		//!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
     double d_eccentricity_msb; //!< Eccentricity [dimensionless]

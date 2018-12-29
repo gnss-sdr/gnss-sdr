@@ -44,7 +44,7 @@ Beidou_Dnav_Ephemeris::Beidou_Dnav_Ephemeris()
     d_Delta_n = 0;
     d_M_0 = 0;
     d_Cuc = 0;
-    d_e_eccentricity = 0;
+    d_eccentricity = 0;
     d_Cus = 0;
     d_sqrt_A = 0;
     d_Toe = 0;
@@ -69,6 +69,9 @@ Beidou_Dnav_Ephemeris::Beidou_Dnav_Ephemeris()
     b_fit_interval_flag = false; // indicates the curve-fit interval used by the CS (Block II/IIA/IIR/IIR-M/IIF) and SS (Block IIIA) in determining the ephemeris parameters, as follows: 0  =  4 hours, 1  =  greater than 4 hours.
     d_spare1 = 0;
     d_spare2 = 0;
+
+    i_sig_type = 0;
+    i_nav_type = 0;
 
     d_A_f0 = 0;          // Coefficient 0 of code phase offset model [s]
     d_A_f1 = 0;          // Coefficient 1 of code phase offset model [s/s]
@@ -164,7 +167,7 @@ double Beidou_Dnav_Ephemeris::sv_clock_relativistic_term(double transmitTime)
     for (int ii = 1; ii < 20; ii++)
         {
             E_old   = E;
-            E       = M + d_e_eccentricity * sin(E);
+            E       = M + d_eccentricity * sin(E);
             dE      = fmod(E - E_old, 2.0 * BEIDOU_PI);
             if (fabs(dE) < 1e-12)
                 {
@@ -174,7 +177,7 @@ double Beidou_Dnav_Ephemeris::sv_clock_relativistic_term(double transmitTime)
         }
 
     // Compute relativistic correction term
-    d_dtr = BEIDOU_F * d_e_eccentricity * d_sqrt_A * sin(E);
+    d_dtr = BEIDOU_F * d_eccentricity * d_sqrt_A * sin(E);
     return d_dtr;
 }
 
@@ -223,7 +226,7 @@ double Beidou_Dnav_Ephemeris::satellitePosition(double transmitTime)
     for (int ii = 1; ii < 20; ii++)
         {
             E_old   = E;
-            E       = M + d_e_eccentricity * sin(E);
+            E       = M + d_eccentricity * sin(E);
             dE      = fmod(E - E_old, 2.0 * BEIDOU_PI);
             if (fabs(dE) < 1e-12)
                 {
@@ -233,8 +236,8 @@ double Beidou_Dnav_Ephemeris::satellitePosition(double transmitTime)
         }
 
     // Compute the true anomaly
-    double tmp_Y = sqrt(1.0 - d_e_eccentricity * d_e_eccentricity) * sin(E);
-    double tmp_X = cos(E) - d_e_eccentricity;
+    double tmp_Y = sqrt(1.0 - d_eccentricity * d_eccentricity) * sin(E);
+    double tmp_X = cos(E) - d_eccentricity;
     nu = atan2(tmp_Y, tmp_X);
 
     // Compute angle phi (argument of Latitude)
@@ -247,7 +250,7 @@ double Beidou_Dnav_Ephemeris::satellitePosition(double transmitTime)
     u = phi + d_Cuc * cos(2.0 * phi) +  d_Cus * sin(2.0 * phi);
 
     // Correct radius
-    r = a * (1.0 - d_e_eccentricity*cos(E)) +  d_Crc * cos(2.0 * phi) +  d_Crs * sin(2.0 * phi);
+    r = a * (1.0 - d_eccentricity*cos(E)) +  d_Crc * cos(2.0 * phi) +  d_Crs * sin(2.0 * phi);
 
     // Correct inclination
     i = d_i_0 + d_IDOT * tk + d_Cic * cos(2.0 * phi) + d_Cis * sin(2.0 * phi);
@@ -275,7 +278,7 @@ double Beidou_Dnav_Ephemeris::satellitePosition(double transmitTime)
     double dtr_s = d_A_f0 + d_A_f1 * tk + d_A_f2 * tk * tk;
 
     /* relativity correction */
-    dtr_s -= 2.0 * sqrt(BEIDOU_GM * a) * d_e_eccentricity * sin(E) / (BEIDOU_C_m_s * BEIDOU_C_m_s);
+    dtr_s -= 2.0 * sqrt(BEIDOU_GM * a) * d_eccentricity * sin(E) / (BEIDOU_C_m_s * BEIDOU_C_m_s);
 
     return dtr_s;
 }

@@ -1638,6 +1638,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Beidou_Dnav_Iono& 
     out << line << std::endl;
 
     // -------- Line 5 system time correction
+    line.clear();
 	line += std::string("BDUT");
 	line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A0, 16, 2), 18);
 	line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A1, 15, 2), 16);
@@ -3770,7 +3771,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Bei
             std::string minutes(timestring, 11, 2);
             std::string seconds(timestring, 13, 2);
 
-			line += satelliteSystem["BDS"];
+			line += satelliteSystem["Beidou"];
 			if (bds_ephemeris_iter->second.i_satellite_PRN < 10) line += std::string("0");
 			line += boost::lexical_cast<std::string>(bds_ephemeris_iter->second.i_satellite_PRN);
 			std::string year(timestring, 0, 4);
@@ -3813,7 +3814,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Bei
             line += std::string(5, ' ');
             line += Rinex_Printer::doub2for(bds_ephemeris_iter->second.d_Cuc, 18, 2);
             line += std::string(1, ' ');
-            line += Rinex_Printer::doub2for(bds_ephemeris_iter->second.d_e_eccentricity, 18, 2);
+            line += Rinex_Printer::doub2for(bds_ephemeris_iter->second.d_eccentricity, 18, 2);
             line += std::string(1, ' ');
             line += Rinex_Printer::doub2for(bds_ephemeris_iter->second.d_Cus, 18, 2);
             line += std::string(1, ' ');
@@ -7204,7 +7205,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
 }
 
 
-void Rinex_Printer::Rinex_Printer::rinex_obs_header(std::fstream& out, const Beidou_Dnav_Ephemeris& eph, const double d_TOW_first_observation, const std::string bands)
+void Rinex_Printer::rinex_obs_header(std::fstream& out, const Beidou_Dnav_Ephemeris& eph, const double d_TOW_first_observation, const std::string bands)
 {
     std::string line;
     version = 3;
@@ -7214,7 +7215,7 @@ void Rinex_Printer::Rinex_Printer::rinex_obs_header(std::fstream& out, const Bei
     line += "3.02";
     line += std::string(11, ' ');
     line += Rinex_Printer::leftJustify("OBSERVATION DATA", 20);
-    line += satelliteSystem["BeiDou "];
+    line += satelliteSystem["Beidou"];
     line += std::string(19, ' ');
     line += std::string("RINEX VERSION / TYPE");
     Rinex_Printer::lengthCheck(line);
@@ -10414,8 +10415,6 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
 
 void Rinex_Printer::log_rinex_obs(std::fstream& out, const Beidou_Dnav_Ephemeris& eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, const std::string bds_bands)
 {
-    // RINEX observations timestamps are Galileo timestamps.
-    // See http://gage14.upc.es/gLAB/HTML/Observation_Rinex_v3.01.html
     std::string line;
 
     boost::posix_time::ptime p_bds_time = Rinex_Printer::compute_BDS_time(eph, obs_time);
@@ -10468,11 +10467,11 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Beidou_Dnav_Ephemeris
         {
             std::string system_(&observables_iter->second.System, 1);
             std::string sig_(observables_iter->second.Signal);
-            if ((system_.compare("C") == 0) && (sig_.compare("B1") == 0))
+            if ((system_ == "C") && (sig_ == "B1"))
                 {
                     observablesB1I.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                 }
-            if ((system_.compare("C") == 0) && (sig_.compare("B3") == 0))
+            if ((system_ == "C") && (sig_ == "B3"))
                 {
                     observablesB3I.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter->first, observables_iter->second));
                 }

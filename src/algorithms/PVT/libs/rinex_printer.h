@@ -406,7 +406,7 @@ public:
 
     void update_obs_header(std::fstream& out, const Beidou_Dnav_Utc_Model& utc_model);
 
-    std::map<std::string, std::string> satelliteSystem;  //<! GPS, GLONASS, SBAS payload, Galileo or Compass
+    std::map<std::string, std::string> satelliteSystem;  //<! GPS, GLONASS, SBAS payload, Galileo or Beidou
     std::map<std::string, std::string> observationType;  //<! PSEUDORANGE, CARRIER_PHASE, DOPPLER, SIGNAL_STRENGTH
     std::map<std::string, std::string> observationCode;  //<! GNSS observation descriptors
     std::string stringVersion;                           //<! RINEX version (2.10/2.11 or 3.01/3.02)

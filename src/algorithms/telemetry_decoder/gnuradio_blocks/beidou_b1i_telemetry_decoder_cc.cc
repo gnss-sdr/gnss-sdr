@@ -331,7 +331,6 @@ void beidou_b1i_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satell
 			int32_t n = 0;
 			for (int32_t i = 0; i < d_symbols_per_preamble; i++)
 				{
-					int32_t m = 0;
 					if (BEIDOU_DNAV_PREAMBLE.at(i) == '1')
 						{
 							for (uint32_t j = 0; j < d_samples_per_symbol; j++)

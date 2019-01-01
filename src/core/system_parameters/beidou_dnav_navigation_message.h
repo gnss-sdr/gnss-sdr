@@ -82,16 +82,22 @@ public:
     bool flag_crc_test;
     double d_previous_aode;
 
-    bool flag_sf1_p1;		//!< D2 NAV Message, Subframe 1, Pagge 1 decoded indicator
-    bool flag_sf1_p2;		//!< D2 NAV Message, Subframe 1, Pagge 2 decoded indicator
-    bool flag_sf1_p3;		//!< D2 NAV Message, Subframe 1, Pagge 3 decoded indicator
-    bool flag_sf1_p4;		//!< D2 NAV Message, Subframe 1, Pagge 4 decoded indicator
-    bool flag_sf1_p5;		//!< D2 NAV Message, Subframe 1, Pagge 5 decoded indicator
-    bool flag_sf1_p6;		//!< D2 NAV Message, Subframe 1, Pagge 6 decoded indicator
-    bool flag_sf1_p7;		//!< D2 NAV Message, Subframe 1, Pagge 7 decoded indicator
-    bool flag_sf1_p8;		//!< D2 NAV Message, Subframe 1, Pagge 8 decoded indicator
-    bool flag_sf1_p9;		//!< D2 NAV Message, Subframe 1, Pagge 9 decoded indicator
-    bool flag_sf1_p10;		//!< D2 NAV Message, Subframe 1, Pagge 10 decoded indicator
+    bool flag_d1_sf5_p7;	//!< D1 NAV Message, Subframe 5, Page 09 decoded indicator
+    bool flag_d1_sf5_p8;	//!< D1 NAV Message, Subframe 5, Page 09 decoded indicator
+    bool flag_d1_sf5_p9;	//!< D1 NAV Message, Subframe 5, Page 09 decoded indicator
+    bool flag_d1_sf5_p10;   //!< D1 NAV Message, Subframe 5, Page 10 decoded indicator
+
+
+    bool flag_sf1_p1;		//!< D2 NAV Message, Subframe 1, Page 1 decoded indicator
+    bool flag_sf1_p2;		//!< D2 NAV Message, Subframe 1, Page 2 decoded indicator
+    bool flag_sf1_p3;		//!< D2 NAV Message, Subframe 1, Page 3 decoded indicator
+    bool flag_sf1_p4;		//!< D2 NAV Message, Subframe 1, Page 4 decoded indicator
+    bool flag_sf1_p5;		//!< D2 NAV Message, Subframe 1, Page 5 decoded indicator
+    bool flag_sf1_p6;		//!< D2 NAV Message, Subframe 1, Page 6 decoded indicator
+    bool flag_sf1_p7;		//!< D2 NAV Message, Subframe 1, Page 7 decoded indicator
+    bool flag_sf1_p8;		//!< D2 NAV Message, Subframe 1, Page 8 decoded indicator
+    bool flag_sf1_p9;		//!< D2 NAV Message, Subframe 1, Page 9 decoded indicator
+    bool flag_sf1_p10;		//!< D2 NAV Message, Subframe 1, Page 10 decoded indicator
 
     //broadcast orbit 1
     double d_SOW; //!< Time of BeiDou Week of the ephemeris set (taken from subframes SOW) [s]
@@ -211,11 +217,8 @@ public:
     double d_beta3;       //!< Coefficient 3 of a cubic equation representing the period of the model [s(semi-circle)^3]
 
     // UTC parameters
-    double d_A2UTC; 
     double d_A1UTC;          //!< 1st order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s/s]
     double d_A0UTC;          //!< Constant of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s]
-    double d_t_OT;        //!< Reference time for UTC data (reference 20.3.4.5 and 20.3.3.5.2.4 IS-GPS-200E) [s]
-    int i_WN_T;           //!< UTC reference week number [weeks]
     double d_DeltaT_LS;   //!< delta time due to leap seconds [s]. Number of leap seconds since 6-Jan-1980 as transmitted by the GPS almanac.
     int i_WN_LSF;         //!< Week number at the end of which the leap second becomes effective [weeks]
     int i_DN;             //!< Day number (DN) at the end of which the leap second becomes effective [days]

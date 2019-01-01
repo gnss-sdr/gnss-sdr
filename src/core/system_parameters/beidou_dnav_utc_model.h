@@ -1,7 +1,8 @@
 /*!
- * \file gps_utc_model.h
- * \brief  Interface of a GPS UTC MODEL storage
- * \author Javier Arribas, 2013. jarribas(at)cttc.es
+ * \file beidou_dnav_utc_model.h
+ * \brief  Interface of a BeiDou UTC MODEL storage
+ * \author Damian Miralles, 2018. dmiralles2009@gmail.com
+ * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.com
  *
  * -------------------------------------------------------------------------
  *
@@ -37,27 +38,35 @@
 
 
 /*!
- * \brief This class is a storage for the GPS UTC MODEL data as described in IS-GPS-200E
+ * \brief This class is a storage for the BeiDou DNAV UTC Model.
+ * \details Implementation follows the interface described in the Open Service Signal (Version 2.1)
  *
- * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
  */
 class Beidou_Dnav_Utc_Model
 {
 public:
     bool valid;
-    // UTC parameters
-    double d_A1;          //!< 1st order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s/s]
-    double d_A0;          //!< Constant of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s]
-    double d_t_OT;        //!< Reference time for UTC data (reference 20.3.4.5 and 20.3.3.5.2.4 IS-GPS-200E) [s]
-    int i_WN_T;           //!< UTC reference week number [weeks]
-    double d_DeltaT_LS;   //!< delta time due to leap seconds [s]. Number of leap seconds since 6-Jan-1980 as transmitted by the GPS almanac.
-    int i_WN_LSF;         //!< Week number at the end of which the leap second becomes effective [weeks]
-    int i_DN;             //!< Day number (DN) at the end of which the leap second becomes effective [days]
-    double d_DeltaT_LSF;  //!< Scheduled future or recent past (relative to NAV message upload) value of the delta time due to leap seconds [s]
 
-    /*!
-     * Default constructor
-     */
+    // BeiDou UTC parameters
+    double d_A0_UTC;          //!< BDT clock bias relative to UTC [s]
+    double d_A1_UTC;          //!< BDT clock rate relative to UTC [s/s]
+    double d_DeltaT_LS;   //!< Delta time due to leap seconds before the new leap second effective
+    int i_WN_LSF;         //!< Week number of the new leap second
+    int i_DN;             //!< Day number of week of the new leap second
+    double d_DeltaT_LSF;  //!< Delta time due to leap seconds after the new leap second effective [s]
+
+    // BeiDou to GPS time corrections
+    double d_A0_GPS;          //!< BDT clock bias relative to GPS time [s]
+    double d_A1_GPS;          //!< BDT clock rate relative to GPS time [s/s]
+
+    // BeiDou to Galileo time corrections
+    double d_A0_GAL;          //!< BDT clock bias relative to GAL time [s]
+    double d_A1_GAL;          //!< BDT clock rate relative to GAL time [s/s]
+
+    // BeiDou to GLONASS time corrections
+    double d_A0_GLO;          //!< BDT clock bias relative to GLO time [s]
+    double d_A1_GLO;          //!< BDT clock rate relative to GLO time [s/s]
+
     Beidou_Dnav_Utc_Model();
 
     template <class Archive>
@@ -71,21 +80,20 @@ public:
             {
             };
         archive& make_nvp("valid", valid);
-        archive& make_nvp("d_A1", d_A1);
-        archive& make_nvp("d_A0", d_A0);
-        archive& make_nvp("d_t_OT", d_t_OT);
-        archive& make_nvp("i_WN_T", i_WN_T);
+        archive& make_nvp("d_A1", d_A1_UTC);
+        archive& make_nvp("d_A0", d_A0_UTC);
         archive& make_nvp("d_DeltaT_LS", d_DeltaT_LS);
         archive& make_nvp("i_WN_LSF", i_WN_LSF);
         archive& make_nvp("i_DN", i_DN);
         archive& make_nvp("d_DeltaT_LSF", d_DeltaT_LSF);
+        archive& make_nvp("d_A0_GPS", d_A0_GPS);
+        archive& make_nvp("d_A0_GPS", d_A1_GPS);
+        archive& make_nvp("d_A0_GPS", d_A0_GAL);
+        archive& make_nvp("d_A0_GPS", d_A1_GAL);
+        archive& make_nvp("d_A0_GPS", d_A0_GLO);
+        archive& make_nvp("d_A0_GPS", d_A1_GLO);
     }
 
-    /*!
-     * \brief Computes the Coordinated Universal Time (UTC) and
-     * returns it in [s] (IS-GPS-200E, 20.3.3.5.2.4)
-     */
-    double utc_time(double beidoutime_corrected, int i_BEIDOU_week);
 };
 
 #endif

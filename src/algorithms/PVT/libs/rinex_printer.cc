@@ -1640,11 +1640,9 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Beidou_Dnav_Iono& 
     // -------- Line 5 system time correction
     line.clear();
 	line += std::string("BDUT");
-	line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A0, 16, 2), 18);
-	line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A1, 15, 2), 16);
-	line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.d_t_OT), 7);
-	line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.i_WN_T + 1024), 5);  // valid until 2019
-	line += std::string(10, ' ');
+	line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A0_UTC, 16, 2), 18);
+	line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A1_UTC, 15, 2), 16);
+	line += std::string(23, ' ');
 	line += Rinex_Printer::leftJustify("TIME SYSTEM CORR", 20);
 
     Rinex_Printer::lengthCheck(line);
@@ -2819,11 +2817,9 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Beidou_Dnav_Utc_M
 					else if (line_str.find("BDUT", 0) != std::string::npos)
 						{
 							line_aux += std::string("GPUT");
-							line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A0, 16, 2), 18);
-							line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A1, 15, 2), 16);
-							line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.d_t_OT), 7);
-							line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.i_WN_T + 1024), 5);  // valid until 2019
-							line_aux += std::string(10, ' ');
+							line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A0_UTC, 16, 2), 18);
+							line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A1_UTC, 15, 2), 16);
+							line_aux += std::string(23, ' ');
 							line_aux += Rinex_Printer::leftJustify("TIME SYSTEM CORR", 20);
 							data.push_back(line_aux);
 						}

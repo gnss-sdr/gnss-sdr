@@ -2,7 +2,6 @@
  * \file beidou_dnav_almanac.h
  * \brief  Interface of a Beidou DNAV Almanac storage
  *
- * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
  * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.com
  *
  * -------------------------------------------------------------------------
@@ -39,16 +38,14 @@
 
 
 /*!
- * \brief This class is a storage for the GPS SV ALMANAC data as described in IS-GPS-200E
- *
- * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
+ * \brief This class is a storage for the BeiDou D1 almanac
  */
 class Beidou_Dnav_Almanac
 {
 public:
     unsigned int i_satellite_PRN;  //!< SV PRN NUMBER
     double d_Delta_i;
-    double d_Toa;             //!< Almanac data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
+    double d_Toa;             //!< Almanac data reference time of week [s]
     double d_M_0;             //!< Mean Anomaly at Reference Time [semi-circles]
     double d_e_eccentricity;  //!< Eccentricity [dimensionless]
     double d_sqrt_A;          //!< Square Root of the Semi-Major Axis [sqrt(m)]

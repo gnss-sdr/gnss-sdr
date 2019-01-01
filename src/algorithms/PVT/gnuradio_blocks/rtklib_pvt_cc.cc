@@ -1972,7 +1972,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                         {
                                                                             rp->log_rinex_obs(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, gnss_observables_map, "B1");
                                                                         }
-                                                                    if (!b_rinex_header_updated and (d_pvt_solver->beidou_dnav_utc_model.d_A0 != 0))
+                                                                    if (!b_rinex_header_updated and (d_pvt_solver->beidou_dnav_utc_model.d_A0_UTC != 0))
                                                                         {
                                                                             rp->update_obs_header(rp->obsFile, d_pvt_solver->beidou_dnav_utc_model);
                                                                             rp->update_nav_header(rp->navFile, d_pvt_solver->beidou_dnav_utc_model, d_pvt_solver->beidou_dnav_iono);

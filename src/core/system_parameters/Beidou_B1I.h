@@ -297,16 +297,18 @@ const std::vector<std::pair<int,int> > D2_BETA3( { {127,8} } );
 // D2 NAV, SUBFRAME 1, PAGE 3
 const std::vector<std::pair<int,int> > D2_A0( { {101,12},{121,12} } );
 const std::vector<std::pair<int,int> > D2_A1_MSB( { {133,4} } );
+const std::vector<std::pair<int,int> > D2_A1_LSB( { {47,6}, {61, 12} } );
+const std::vector<std::pair<int,int> > D2_A1( { {279,22} } );
 
 // D2 NAV, SUBFRAME 1, PAGE 4
-const std::vector<std::pair<int,int> > D2_A1_LSB( { {47,6}, {61, 12} } );
 const std::vector<std::pair<int,int> > D2_A2( { {73,10}, {91,1} } );
 const std::vector<std::pair<int,int> > D2_AODE( { {92,5} } );
 const std::vector<std::pair<int,int> > D2_DELTA_N( { {97,16} } );
 const std::vector<std::pair<int,int> > D2_CUC_MSB( { {121,14} } );
+const std::vector<std::pair<int,int> > D2_CUC_LSB( { {47,4} } );
+const std::vector<std::pair<int,int> > D2_CUC( { {283,18} } );
 
 // D2 NAV, SUBFRAME 1, PAGE 5
-const std::vector<std::pair<int,int> > D2_CUC_LSB( { {47,4} } );
 const std::vector<std::pair<int,int> > D2_M0( { {51,2}, {61,22}, {91,8} } );
 const std::vector<std::pair<int,int> > D2_CUS( { {99,14}, {121, 4} } );
 const std::vector<std::pair<int,int> > D2_E_MSB( { {125,10} } );
@@ -315,26 +317,30 @@ const std::vector<std::pair<int,int> > D2_E_MSB( { {125,10} } );
 const std::vector<std::pair<int,int> > D2_E_LSB( { {47,6}, {61, 16} } );
 const std::vector<std::pair<int,int> > D2_SQRT_A( { {77,6},{91,22}, {121,4} } );
 const std::vector<std::pair<int,int> > D2_CIC_MSB( { {125,10} } );
+const std::vector<std::pair<int,int> > D2_CIC_LSB( { {47,6}, {61,2} } );
+const std::vector<std::pair<int,int> > D2_CIC( { {283,18} } );
 
 // D2 NAV, SUBFRAME 1, PAGE 7
-const std::vector<std::pair<int,int> > D2_CIC_LSB( { {47,6}, {61,2} } );
 const std::vector<std::pair<int,int> > D2_CIS( { {63,18} } );
 const std::vector<std::pair<int,int> > D2_TOE( { {81,2},{91,15} } );
 const std::vector<std::pair<int,int> > D2_I0_MSB( { {106,7},{121,14} } );
+const std::vector<std::pair<int,int> > D2_I0_LSB( { {47,6},{61,5} } );
+const std::vector<std::pair<int,int> > D2_I0( { {269,32} } );
 
 // D2 NAV, SUBFRAME 1, PAGE 8
-const std::vector<std::pair<int,int> > D2_I0_LSB( { {47,6},{61,5} } );
 const std::vector<std::pair<int,int> > D2_CRC( { {66,17},{91,1} } );
 const std::vector<std::pair<int,int> > D2_CRS( { {92,18} } );
 const std::vector<std::pair<int,int> > D2_OMEGA_DOT_MSB( { {110,3},{121,16} } );
+const std::vector<std::pair<int,int> > D2_OMEGA_DOT_LSB( { {47,5} } );
+const std::vector<std::pair<int,int> > D2_OMEGA_DOT( { {277,24} } );
 
 // D2 NAV, SUBFRAME 1, PAGE 9
-const std::vector<std::pair<int,int> > D2_OMEGA_DOT_LSB( { {47,5} } );
 const std::vector<std::pair<int,int> > D2_OMEGA0( { {52,1},{61,22},{91,9} } );
 const std::vector<std::pair<int,int> > D2_OMEGA_MSB( { {100,13},{121,14} } );
+const std::vector<std::pair<int,int> > D2_OMEGA_LSB( { {47,5} } );
+const std::vector<std::pair<int,int> > D2_OMEGA( { {269,32} } );
 
 // D2 NAV, SUBFRAME 1, PAGE 10
-const std::vector<std::pair<int,int> > D2_OMEGA_LSB( { {47,5} } );
 const std::vector<std::pair<int,int> > D2_IDOT( { {52,1},{61,13} } );
 
 #endif /* GNSS_SDR_BEIDOU_B1I_H_ */

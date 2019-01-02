@@ -33,6 +33,8 @@
 
 #include <cmath>
 #include <iostream>
+#include <cstring>
+#include <string>
 #include <boost/crc.hpp>  // for boost::crc_basic, boost::crc_optimal
 #include <boost/dynamic_bitset.hpp>
 #include <glog/logging.h>
@@ -71,20 +73,24 @@ void Beidou_Dnav_Navigation_Message::reset()
     flag_sf1_p10 = false;
 
     // D2 NAV Decoding UNique Attributes
-    d_A_f1_msb = 0;
-	d_A_f1_lsb = 0;
-	d_Cuc_msb = 0;
-	d_Cuc_lsb = 0;
+	d_A_f1_msb_bits = 0;
+	d_A_f1_lsb_bits = 0;
+	d_Cuc_msb_bits = 0;
+	d_Cuc_lsb_bits = 0;
+	d_eccentricity_msb_bits = 0;
+	d_eccentricity_lsb_bits = 0;
+	d_Cic_msb_bits = 0;
+	d_Cic_lsb_bits = 0;
+	d_i_0_msb_bits = 0;
+	d_i_0_lsb_bits = 0;
+	d_OMEGA_msb_bits = 0;
+	d_OMEGA_lsb_bits = 0;
+	d_OMEGA_DOT_msb_bits = 0;
+	d_OMEGA_DOT_lsb_bits = 0;
+
+    // D2 NAV Decoding UNique Attributes
 	d_eccentricity_msb = 0;
 	d_eccentricity_lsb = 0;
-	d_Cic_msb = 0;
-	d_Cic_lsb = 0;
-	d_i_0_msb = 0;
-	d_i_0_lsb = 0;
-	d_OMEGA_msb = 0;
-	d_OMEGA_lsb = 0;
-	d_OMEGA_DOT_msb = 0;
-	d_OMEGA_DOT_lsb = 0;
 
     d_SOW = 0;
     d_SOW_SF1 = 0;
@@ -783,9 +789,9 @@ int Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const &subfr
     	case 3:
     		d_SOW = static_cast<double>(read_navigation_unsigned(subframe_bits, D2_SOW));
     		d_A_f0 = static_cast<double>(read_navigation_signed(subframe_bits, D2_A0))*D1_A0_LSB;
-    		d_A_f1_msb = static_cast<double>(read_navigation_signed(subframe_bits, D2_A1_MSB));
+    		d_A_f1_msb_bits = (read_navigation_unsigned(subframe_bits, D2_A1_MSB));
     		// Adjust for lsb in next page
-    		d_A_f1_msb = static_cast<double>((static_cast<int>(d_A_f1_msb) <<  18));
+    		d_A_f1_msb_bits = d_A_f1_msb_bits << 18;
 
     		// Set system flags for message reception
     		flag_sf1_p3 = true;
@@ -794,13 +800,13 @@ int Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const &subfr
     		break;
     	case 4:
     		d_SOW = static_cast<double>(read_navigation_unsigned(subframe_bits, D2_SOW));
-    		d_A_f1_lsb 	= static_cast<double>(read_navigation_signed(subframe_bits, D2_A1_LSB));
+    		d_A_f1_lsb_bits 	= (read_navigation_unsigned(subframe_bits, D2_A1_LSB));
     		d_A_f2 		= static_cast<double>(read_navigation_signed(subframe_bits, D1_A2))*D1_A2_LSB;
 			d_AODE 		= static_cast<double>(read_navigation_unsigned(subframe_bits, D2_AODE));
 			d_Delta_n 	= static_cast<double>(read_navigation_signed(subframe_bits, D2_DELTA_N))*D1_DELTA_N_LSB;
-			d_Cuc_msb 	= static_cast<double>(read_navigation_signed(subframe_bits, D2_CUC_MSB));
+			d_Cuc_msb_bits 	= (read_navigation_unsigned(subframe_bits, D2_CUC_MSB));
 			// Adjust for lsb in next page
-			d_Cuc_msb = static_cast<double>((static_cast<int>(d_Cuc_msb) <<  4));
+			d_Cuc_msb_bits = d_Cuc_msb_bits << 4;
 
 			// Set system flags for message reception
 			flag_sf1_p4 = true;
@@ -809,12 +815,14 @@ int Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const &subfr
     		break;
     	case 5:
     		d_SOW = static_cast<double>(read_navigation_unsigned(subframe_bits, D2_SOW));
-			d_Cuc_lsb 	= static_cast<double>(read_navigation_signed(subframe_bits, D2_CUC_LSB));
+			d_Cuc_lsb_bits 	= (read_navigation_unsigned(subframe_bits, D2_CUC_LSB));
 			d_M_0 = static_cast<double>(read_navigation_signed(subframe_bits, D2_M0))*D1_M0_LSB;
 			d_Cus = static_cast<double>(read_navigation_signed(subframe_bits, D2_CUS))*D1_CUS_LSB;
 			d_eccentricity_msb = static_cast<double>(read_navigation_unsigned(subframe_bits, D2_E_MSB));
+			d_eccentricity_msb_bits = (read_navigation_unsigned(subframe_bits, D2_E_MSB));
 			// Adjust for lsb in next page (shift number of lsb to the left)
 			d_eccentricity_msb = static_cast<double>((static_cast<int>(d_eccentricity_msb) <<  22));
+			d_eccentricity_msb_bits = d_eccentricity_msb_bits << 22;
 
 			// Set system flags for message reception
 			flag_sf1_p5 = true;
@@ -824,10 +832,11 @@ int Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const &subfr
     	case 6:
     		d_SOW = static_cast<double>(read_navigation_unsigned(subframe_bits, D2_SOW));
     		d_eccentricity_lsb = static_cast<double>(read_navigation_unsigned(subframe_bits, D2_E_LSB));
+    		d_eccentricity_lsb_bits = (read_navigation_unsigned(subframe_bits, D2_E_LSB));
     		d_sqrt_A = static_cast<double>(read_navigation_unsigned(subframe_bits, D2_SQRT_A))*D1_SQRT_A_LSB;
-            d_Cic_msb = static_cast<double>(read_navigation_signed(subframe_bits, D2_CIC_MSB));
+            d_Cic_msb_bits = (read_navigation_unsigned(subframe_bits, D2_CIC_MSB));
 			// Adjust for lsb in next page (shift number of lsb to the left)
-            d_Cic_msb = static_cast<double>((static_cast<int>(d_Cic_msb) <<  8));
+            d_Cic_msb_bits = d_Cic_msb_bits << 8;
 
 			// Set system flags for message reception
 			flag_sf1_p6 = true;
@@ -836,12 +845,12 @@ int Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const &subfr
     		break;
     	case 7:
     		d_SOW = static_cast<double>(read_navigation_unsigned(subframe_bits, D2_SOW));
-    		d_Cic_lsb = static_cast<double>(read_navigation_signed(subframe_bits, D2_CIC_LSB));
+    		d_Cic_lsb_bits = (read_navigation_unsigned(subframe_bits, D2_CIC_LSB));
     		d_Cis = static_cast<double>(read_navigation_signed(subframe_bits, D2_CIS))*D1_CIS_LSB;
             d_Toe = static_cast<double>(read_navigation_unsigned(subframe_bits, D2_TOE))*D1_TOE_LSB;
-            d_i_0_msb = static_cast<double>(read_navigation_signed(subframe_bits, D2_I0_MSB));
+            d_i_0_msb_bits = (read_navigation_unsigned(subframe_bits, D2_I0_MSB));
 			// Adjust for lsb in next page (shift number of lsb to the left)
-            d_i_0_msb = static_cast<double>((static_cast<int>(d_i_0_msb) <<  11));
+            d_i_0_msb_bits = d_i_0_msb_bits << 11;
 
             // Set system flags for message reception
             flag_sf1_p7 = true;
@@ -850,12 +859,12 @@ int Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const &subfr
     		break;
     	case 8:
     		d_SOW = static_cast<double>(read_navigation_unsigned(subframe_bits, D2_SOW));
-    		d_i_0_lsb = static_cast<double>(read_navigation_signed(subframe_bits, D2_I0_LSB));
+    		d_i_0_lsb_bits = (read_navigation_unsigned(subframe_bits, D2_I0_LSB));
     		d_Crc = static_cast<double>(read_navigation_signed(subframe_bits, D2_CRC))*D1_CRC_LSB;
     		d_Crs = static_cast<double>(read_navigation_signed(subframe_bits, D2_CRS))*D1_CRS_LSB;
-    		d_OMEGA_DOT_msb = static_cast<double>(read_navigation_signed(subframe_bits, D2_OMEGA_DOT_MSB));
+    		d_OMEGA_DOT_msb_bits = (read_navigation_unsigned(subframe_bits, D2_OMEGA_DOT_MSB));
 			// Adjust for lsb in next page (shift number of lsb to the left)
-    		d_OMEGA_DOT_msb = static_cast<double>((static_cast<int>(d_OMEGA_DOT_msb) <<  5));
+    		d_OMEGA_DOT_msb_bits =  d_OMEGA_DOT_msb_bits << 5;
 
             // Set system flags for message reception
             flag_sf1_p8 = true;
@@ -864,11 +873,11 @@ int Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const &subfr
     		break;
     	case 9:
     		d_SOW = static_cast<double>(read_navigation_unsigned(subframe_bits, D2_SOW));
-    		d_OMEGA_DOT_lsb = static_cast<double>(read_navigation_signed(subframe_bits, D2_OMEGA_DOT_LSB));
+    		d_OMEGA_DOT_lsb_bits = (read_navigation_unsigned(subframe_bits, D2_OMEGA_DOT_LSB));
     		d_OMEGA0 = static_cast<double>(read_navigation_signed(subframe_bits, D2_OMEGA0))*D1_OMEGA0_LSB;
-    		d_OMEGA_msb = static_cast<double>(read_navigation_signed(subframe_bits, D2_OMEGA_MSB));
+    		d_OMEGA_msb_bits = (read_navigation_unsigned(subframe_bits, D2_OMEGA_MSB));
 			// Adjust for lsb in next page (shift number of lsb to the left)
-    		d_OMEGA_msb = static_cast<double>((static_cast<int>(d_OMEGA_msb) <<  5));
+    		d_OMEGA_msb_bits = d_OMEGA_msb_bits << 5;
 
             // Set system flags for message reception
             flag_sf1_p9 = true;
@@ -877,7 +886,7 @@ int Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const &subfr
     		break;
     	case 10:
     		d_SOW = static_cast<double>(read_navigation_unsigned(subframe_bits, D2_SOW));
-    		d_OMEGA_lsb = static_cast<double>(read_navigation_unsigned(subframe_bits, D2_OMEGA_LSB));
+    		d_OMEGA_lsb_bits = (read_navigation_unsigned(subframe_bits, D2_OMEGA_LSB));
     		d_IDOT = static_cast<double>(read_navigation_signed(subframe_bits, D2_IDOT))*D1_IDOT_LSB;
 
     		// Set system flags for message reception
@@ -967,6 +976,8 @@ Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris()
 
     if(i_satellite_PRN > 0 and i_satellite_PRN < 6)
 		{
+    		std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> subframe_bits;
+
     		// Order as given by eph_t in rtklib
 			eph.i_satellite_PRN = i_satellite_PRN;
 			eph.d_AODC = d_AODC;
@@ -983,26 +994,34 @@ Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris()
 
 			eph.d_sqrt_A = d_sqrt_A;
 			eph.d_eccentricity = (d_eccentricity_msb + d_eccentricity_lsb)*D1_E_LSB;
-			eph.d_i_0 = (d_i_0_msb + d_i_0_lsb)*D1_I0_LSB;
+			subframe_bits = std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>(d_i_0_msb_bits + d_i_0_lsb_bits);
+			eph.d_i_0 = static_cast<double>(read_navigation_signed(subframe_bits, D2_I0))*D1_I0_LSB;
 			eph.d_OMEGA0 = d_OMEGA0;
-			d_OMEGA_lsb = (d_OMEGA_msb < 0)?-d_OMEGA_lsb:d_OMEGA_lsb;
-			eph.d_OMEGA = (d_OMEGA_msb + d_OMEGA_lsb)*D1_OMEGA_LSB;
+			subframe_bits = std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>(d_OMEGA_msb_bits + d_OMEGA_lsb_bits);
+			eph.d_OMEGA = static_cast<double>(read_navigation_signed(subframe_bits, D2_OMEGA))*D1_OMEGA_LSB;
 			eph.d_M_0 = d_M_0;
 			eph.d_Delta_n = d_Delta_n;
 
-			eph.d_OMEGA_DOT = (d_OMEGA_DOT_msb + d_OMEGA_DOT_lsb)*D1_OMEGA_DOT_LSB;
+			subframe_bits = std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>(d_OMEGA_DOT_msb_bits + d_OMEGA_DOT_lsb_bits);
+			eph.d_OMEGA_DOT = static_cast<double>(read_navigation_signed(subframe_bits, D2_OMEGA_DOT))*D1_OMEGA_DOT_LSB;
 			eph.d_IDOT = d_IDOT;
 
 			eph.d_Crc = d_Crc;
 			eph.d_Crs = d_Crs;
-			eph.d_Cuc = (d_Cuc_msb + d_Cuc_lsb)*D1_CUC_LSB;
+			subframe_bits = std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>(d_Cuc_msb_bits + d_Cuc_lsb_bits);
+			eph.d_Cuc = static_cast<double>(read_navigation_signed(subframe_bits, D2_CUC))*D1_CUC_LSB;
 			eph.d_Cus = d_Cus;
-			eph.d_Cic = (d_Cic_msb + d_Cic_lsb)*D1_CIC_LSB;
+			subframe_bits = std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>(d_Cic_msb_bits + d_Cic_lsb_bits);
+			eph.d_Cic = static_cast<double>(read_navigation_signed(subframe_bits, D2_CIC))*D1_CIC_LSB;
 			eph.d_Cis = d_Cis;
 
 			eph.d_A_f0 = d_A_f0;
-			eph.d_A_f1 = (d_A_f1_msb + d_A_f1_lsb)*D1_A1_LSB;
+			subframe_bits = std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>(d_A_f1_msb_bits + d_A_f1_lsb_bits);
+			eph.d_A_f1 = static_cast<double>(read_navigation_signed(subframe_bits, D2_A1))*D1_A1_LSB;
 			eph.d_A_f2 = d_A_f2;
+
+
+
 
 			eph.d_TGD1 = d_TGD1;
 			eph.d_TGD2 = d_TGD2;

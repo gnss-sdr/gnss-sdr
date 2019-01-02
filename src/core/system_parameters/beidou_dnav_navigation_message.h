@@ -150,20 +150,22 @@ public:
     double d_A_f2;          //!< Clock correction parameters. Coefficient 2 of code phase offset model [s/s^2]
 
     // D2 NAV Message Decoding
-    double d_A_f1_msb;			//!< Clock correction parameters, D2 NAV MSB
-    double d_A_f1_lsb;			//!< Clock correction parameters, D2 NAV LSB
-	double d_Cuc_msb;		//!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
-    double d_Cuc_lsb;		//!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
-    double d_eccentricity_msb; //!< Eccentricity [dimensionless]
-    double d_eccentricity_lsb; //!< Eccentricity [dimensionless]
-    double d_Cic_msb;		//!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
-    double d_Cic_lsb;		//!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
-    double d_i_0_msb;            //!< Inclination Angle at Reference Time [semi-circles]
-    double d_i_0_lsb;            //!< Inclination Angle at Reference Time [semi-circles]
-    double d_OMEGA_msb;          //!< Argument of Perigee [semi-cicles]
-    double d_OMEGA_lsb;          //!< Argument of Perigee [semi-cicles]
-    double d_OMEGA_DOT_msb;      //!< Rate of Right Ascension [semi-circles/s]
-    double d_OMEGA_DOT_lsb;      //!< Rate of Right Ascension [semi-circles/s]
+    unsigned long int d_A_f1_msb_bits;			//!< Clock correction parameters, D2 NAV MSB
+	unsigned long int d_A_f1_lsb_bits;			//!< Clock correction parameters, D2 NAV LSB
+	unsigned long int d_Cuc_msb_bits;		//!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
+	unsigned long int d_Cuc_lsb_bits;		//!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
+	unsigned long int d_eccentricity_msb; //!< Eccentricity [dimensionless]
+	unsigned long int d_eccentricity_lsb; //!< Eccentricity [dimensionless]
+    unsigned long int d_Cic_msb_bits;		//!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
+	unsigned long int d_Cic_lsb_bits;		//!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
+    unsigned long int d_eccentricity_msb_bits; //!< Eccentricity [dimensionless]
+    unsigned long int d_eccentricity_lsb_bits;
+    unsigned long int d_i_0_msb_bits;            //!< Inclination Angle at Reference Time [semi-circles]
+    unsigned long int d_i_0_lsb_bits;            //!< Inclination Angle at Reference Time [semi-circles]
+    unsigned long int d_OMEGA_msb_bits;          //!< Argument of Perigee [semi-cicles]
+    unsigned long int d_OMEGA_lsb_bits;          //!< Argument of Perigee [semi-cicles]
+    unsigned long int d_OMEGA_DOT_msb_bits;      //!< Rate of Right Ascension [semi-circles/s]
+    unsigned long int d_OMEGA_DOT_lsb_bits;      //!< Rate of Right Ascension [semi-circles/s]
 
 	// Almanac
     double d_Toa;           //!< Almanac reference time [s]

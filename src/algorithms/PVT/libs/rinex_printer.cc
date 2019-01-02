@@ -1642,7 +1642,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Beidou_Dnav_Iono& 
 	line += std::string("BDUT");
 	line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A0_UTC, 16, 2), 18);
 	line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A1_UTC, 15, 2), 16);
-	line += std::string(23, ' ');
+	line += std::string(22, ' ');
 	line += Rinex_Printer::leftJustify("TIME SYSTEM CORR", 20);
 
     Rinex_Printer::lengthCheck(line);
@@ -2819,7 +2819,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Beidou_Dnav_Utc_M
 							line_aux += std::string("GPUT");
 							line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A0_UTC, 16, 2), 18);
 							line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A1_UTC, 15, 2), 16);
-							line_aux += std::string(23, ' ');
+							line_aux += std::string(22, ' ');
 							line_aux += Rinex_Printer::leftJustify("TIME SYSTEM CORR", 20);
 							data.push_back(line_aux);
 						}

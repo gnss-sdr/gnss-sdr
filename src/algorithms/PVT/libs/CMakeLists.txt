@@ -30,6 +30,7 @@ set(PVT_LIB_SOURCES
     geojson_printer.cc
     rtklib_solver.cc
     pvt_conf.cc
+    monitor_pvt_udp_sink.cc
 )
 
 set(PVT_LIB_HEADERS
@@ -44,6 +45,8 @@ set(PVT_LIB_HEADERS
     geojson_printer.h
     rtklib_solver.h
     pvt_conf.h
+    monitor_pvt_udp_sink.h
+    monitor_pvt.h
 )
 
 include_directories(

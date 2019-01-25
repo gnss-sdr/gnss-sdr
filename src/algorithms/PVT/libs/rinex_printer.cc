@@ -172,6 +172,10 @@ Rinex_Printer::Rinex_Printer(int32_t conf_version, const std::string& base_path)
     observationCode["COMPASS_E6_IQ"] = "6X";
     observationCode["BEIDOU_B1_I"] = "1I";
     observationCode["BEIDOU_B1_Q"] = "1Q";
+    observationCode["BEIDOU_B1_IQ"] = "1X";
+    observationCode["BEIDOU_B3_I"] = "6I";
+    observationCode["BEIDOU_B3_Q"] = "6Q";
+    observationCode["BEIDOU_B3_IQ"] = "6X";
 
     observationType["PSEUDORANGE"] = "C";
     observationType["CARRIER_PHASE"] = "L";

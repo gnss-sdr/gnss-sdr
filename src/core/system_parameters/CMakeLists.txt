@@ -97,6 +97,8 @@ set(SYSTEM_PARAMETERS_HEADERS
      GPS_L2C.h
      GPS_L5.h
      Beidou_B1I.h
+     Beidou_B3I.h
+     Beidou_DNAV.h
      MATH_CONSTANTS.h     
 )
 

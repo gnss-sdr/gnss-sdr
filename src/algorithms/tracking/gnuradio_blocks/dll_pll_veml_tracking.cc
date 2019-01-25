@@ -41,11 +41,13 @@
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
 #include "Beidou_B1I.h"
+#include "Beidou_B3I.h"
 #include "MATH_CONSTANTS.h"
 #include "control_message_factory.h"
 #include "galileo_e1_signal_processing.h"
 #include "galileo_e5_signal_processing.h"
 #include "beidou_b1i_signal_processing.h"
+#include "beidou_b3i_signal_processing.h"
 #include "gnss_sdr_create_directory.h"
 #include "gps_l2c_signal.h"
 #include "gps_l5_signal.h"
@@ -110,6 +112,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     map_signal_pretty_name["5X"] = "E5a";
     map_signal_pretty_name["L5"] = "L5";
     map_signal_pretty_name["B1"] = "B1I";
+    map_signal_pretty_name["B3"] = "B3I";
 
     signal_pretty_name = map_signal_pretty_name[signal_type];
 
@@ -293,6 +296,22 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
 					d_secondary_code_length = static_cast<unsigned int>(BEIDOU_B1I_SECONDARY_CODE_LENGTH);
 					d_secondary_code_string = const_cast<std::string *>(&BEIDOU_B1I_SECONDARY_CODE_STR);
                 }
+            else if (signal_type == "B3")
+            {
+        		// GEO Satellites use different secondary code
+        	    d_signal_carrier_freq = BEIDOU_B3I_FREQ_HZ;
+				d_code_period = BEIDOU_B3I_CODE_PERIOD;
+				d_code_chip_rate = BEIDOU_B3I_CODE_RATE_HZ;
+				d_code_length_chips = static_cast<unsigned int>(BEIDOU_B3I_CODE_LENGTH_CHIPS);
+				d_symbols_per_bit = BEIDOU_B3I_TELEMETRY_SYMBOLS_PER_BIT;
+				d_correlation_length_ms = 1;
+				d_code_samples_per_chip = 1;
+				d_secondary = true;
+				trk_parameters.track_pilot = false;
+				interchange_iq = false;
+				d_secondary_code_length = static_cast<unsigned int>(BEIDOU_B3I_SECONDARY_CODE_LENGTH);
+				d_secondary_code_string = const_cast<std::string *>(&BEIDOU_B3I_SECONDARY_CODE_STR);
+            }
             else
                 {
                     LOG(WARNING) << "Invalid Signal argument when instantiating tracking blocks";
@@ -591,6 +610,47 @@ void dll_pll_veml_tracking::start_tracking()
 					d_preambles_symbols = static_cast<int32_t *>(volk_gnsssdr_malloc(22 * sizeof(int32_t), volk_gnsssdr_get_alignment()));
 					int32_t n = 0;
 					uint16_t preambles_bits[BEIDOU_B1I_PREAMBLE_LENGTH_BITS] = {1,1,1,0,0,0,1,0,0,1,0};
+					for (uint16_t preambles_bit : preambles_bits)
+						{
+							for (uint32_t j = 0; j < d_symbols_per_bit; j++)
+								{
+									if (preambles_bit == 1)
+										{
+											d_preambles_symbols[n] = 1;
+										}
+									else
+										{
+											d_preambles_symbols[n] = -1;
+										}
+									n++;
+								}
+						}
+					d_symbol_history.resize(22);  // Change fixed buffer size
+					d_symbol_history.clear();
+                }
+
+        }
+
+    else if (systemName == "Beidou" and signal_type == "B3")
+        {
+            beidou_b3i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
+            // Update secondary code settings for geo satellites
+            if(d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6)
+                {
+            		d_symbols_per_bit = 2;
+					d_correlation_length_ms = 1;
+					d_code_samples_per_chip = 1;
+					d_secondary = false;
+					trk_parameters.track_pilot = false;
+					interchange_iq = false;
+					d_secondary_code_length = 0;
+					d_secondary_code_string = const_cast<std::string *>(&BEIDOU_B3I_D2_SECONDARY_CODE_STR);
+
+					// preamble bits to sampled symbols
+					d_preamble_length_symbols = 22;
+					d_preambles_symbols = static_cast<int32_t *>(volk_gnsssdr_malloc(22 * sizeof(int32_t), volk_gnsssdr_get_alignment()));
+					int32_t n = 0;
+					uint16_t preambles_bits[BEIDOU_B3I_PREAMBLE_LENGTH_BITS] = {1,1,1,0,0,0,1,0,0,1,0};
 					for (uint16_t preambles_bit : preambles_bits)
 						{
 							for (uint32_t j = 0; j < d_symbols_per_bit; j++)

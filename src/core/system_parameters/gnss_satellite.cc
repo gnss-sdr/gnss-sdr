@@ -226,7 +226,7 @@ void Gnss_Satellite::set_PRN(uint32_t PRN_)
         }
     else if (system == "Beidou")
         {
-            if (PRN_ < 1 or PRN_ > 37)
+            if (PRN_ < 1 or PRN_ > 63)
                 {
                     DLOG(INFO) << "This PRN is not defined";
                     PRN = 0;
@@ -616,11 +616,47 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
                     block_ = std::string("Unknown(Simulated)");
                 }
         }
-    if (system_.compare("Beidou") == 0)
+    if (system_ == "Beidou")
         {
             // Check https://en.wikipedia.org/wiki/List_of_BeiDou_satellites
             switch ( PRN_ )
             	{
+			case 1:
+				block_ = std::string("Compass-G1"); //!<GEO 140.0°E; launched 2010/01/16
+				break;
+			case 2:
+				block_ = std::string("Compass-G6"); //!<GEO 80°E; launched 2012/10/25
+				break;
+			case 3:
+				block_ = std::string("Compass-G7"); //!<GEO 110.5°E; launched 2016/06/12
+				break;
+			case 4:
+				block_ = std::string("Compass-G4"); //!<GEO 160.0°E; launched 2010/10/31
+				break;
+			case 5:
+				block_ = std::string("Compass-G5"); //!<GEO 58.75°E; launched 2012/02/24
+				break;
+			case 6:
+				block_ = std::string("Compass-IGS01"); //!<55° inclination IGSO 118°E; launched 2010/07/31
+				break;
+			case 7:
+				block_ = std::string("Compass-IGS02"); //!<55° inclination IGSO 118°E; launched 2010/12/17
+				break;
+			case 8:
+				block_ = std::string("Compass-IGS03"); //!<55° inclination IGSO 118°E; launched 2011/04/09
+				break;
+			case 9:
+				block_ = std::string("Compass-IGS04"); //!<55° inclination IGSO 95°E; launched 2011/07/27
+				break;
+			case 10:
+				block_ = std::string("Compass-IGS05"); //!<55° inclination IGSO 118°E; launched 2011/12/01
+				break;
+			case 11:
+				block_ = std::string("Compass-M3"); //!<Slot A07; launched 2012/04/29
+				break;
+			case 12:
+				block_ = std::string("Compass-M4"); //!<Slot A08; launched 2012/04/29
+				break;
 			case 19:
 				block_ = std::string("BEIDOU-3 M1"); //!<Slot B-7; launched 2017/11/05
 				break;
@@ -662,6 +698,18 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
 				break;
         	case 33:
 				block_ = std::string("BEIDOU 3M14");  //!<Slot B-3; launched 2018/09/19
+				break;
+        	case 34:
+				block_ = std::string("BEIDOU 3M15");  //!<Slot B-3; launched 2018/10/15
+				break;
+        	case 35:
+				block_ = std::string("BEIDOU 3M16");  //!<Slot B-3; launched 2018/10/15
+				break;
+        	case 36:
+				block_ = std::string("BEIDOU 3M17");  //!<Slot B-3; launched 2018/11/18
+				break;
+        	case 37:
+				block_ = std::string("BEIDOU 3M18");  //!<Slot B-3; launched 2018/11/18
 				break;
             default:
                 block_ = std::string("Unknown(Simulated)");

@@ -31,6 +31,7 @@ set(GNSS_SPLIBS_SOURCES
     pass_through.cc
     galileo_e5_signal_processing.cc
     beidou_b1i_signal_processing.cc
+    beidou_b3i_signal_processing.cc
     complex_byte_to_float_x2.cc
     byte_x2_to_complex_byte.cc
     cshort_to_float_x2.cc
@@ -55,6 +56,7 @@ set(GNSS_SPLIBS_HEADERS
     glonass_l2_signal_processing.h
     pass_through.h
     galileo_e5_signal_processing.h
+    beidou_b1i_signal_processing.h
     beidou_b1i_signal_processing.h
     complex_byte_to_float_x2.h
     byte_x2_to_complex_byte.h

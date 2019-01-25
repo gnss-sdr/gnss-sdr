@@ -146,6 +146,7 @@ void Beidou_Dnav_Navigation_Message::reset()
     // info
     i_channel_ID = 0;
     i_satellite_PRN = 0;
+    i_signal_type = 0;
 
     // time synchro
     d_subframe_timestamp_ms = 0;
@@ -985,7 +986,7 @@ Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris()
 			eph.i_SV_accuracy = i_SV_accuracy;
 			eph.i_SV_health = i_SV_health;
 			eph.i_BEIDOU_week = i_BEIDOU_week;
-			eph.i_sig_type = 1;
+			eph.i_sig_type = i_signal_type;
 			eph.i_nav_type = 2;
 
 			eph.d_TOW = d_SOW;
@@ -1034,7 +1035,7 @@ Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris()
 			eph.i_SV_accuracy = i_SV_accuracy;
 			eph.i_SV_health = i_SV_health;
 			eph.i_BEIDOU_week = i_BEIDOU_week;
-			eph.i_sig_type = 1;
+			eph.i_sig_type = i_signal_type;
 			eph.i_nav_type = 1; // MEO/IGSO
 
 			eph.d_TOW = d_SOW;

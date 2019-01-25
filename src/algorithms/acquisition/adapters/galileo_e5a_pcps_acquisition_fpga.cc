@@ -29,11 +29,10 @@
  */
 
 #include "galileo_e5a_pcps_acquisition_fpga.h"
+#include "Galileo_E5a.h"
 #include "configuration_interface.h"
 #include "galileo_e5_signal_processing.h"
-#include "Galileo_E5a.h"
 #include "gnss_sdr_flags.h"
-#include <boost/lexical_cast.hpp>
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
@@ -41,12 +40,13 @@
 
 using google::LogMessage;
 
-void GalileoE5aPcpsAcquisitionFpga::stop_acquisition()
-{
-}
 
 GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(role),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams)
 {
     //printf("creating the E5A acquisition");
     pcpsconf_fpga_t acq_parameters;
@@ -58,8 +58,9 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
 
     //item_type_ = configuration_->property(role + ".item_type", default_item_type);
 
-    long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 12500000);
-    long fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+
+	int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 32000000);
+	int64_t fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
 
     float downsampling_factor = configuration_->property(role + ".downsampling_factor", 1.0);
     acq_parameters.downsampling_factor = downsampling_factor;
@@ -97,7 +98,7 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
             acq_pilot_ = false;
         }
 
-    unsigned int code_length = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / Galileo_E5a_CODE_CHIP_RATE_HZ * static_cast<double>(Galileo_E5a_CODE_LENGTH_CHIPS)));
+    auto code_length = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / Galileo_E5a_CODE_CHIP_RATE_HZ * static_cast<double>(Galileo_E5a_CODE_LENGTH_CHIPS)));
     acq_parameters.code_length = code_length;
     // The FPGA can only use FFT lengths that are a power of two.
     float nbits = ceilf(log2f((float)code_length*2));
@@ -122,9 +123,9 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
 
     // compute all the GALILEO E5 PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
-    gr::fft::fft_complex* fft_if = new gr::fft::fft_complex(nsamples_total, true);  // Direct FFT
-    std::complex<float>* code = new std::complex<float>[nsamples_total];            // buffer for the local code
-    gr_complex* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    auto* fft_if = new gr::fft::fft_complex(nsamples_total, true);  // Direct FFT
+    auto* code = new std::complex<float>[nsamples_total];           // buffer for the local code
+    auto* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     d_all_fft_codes_ = new lv_16sc_t[nsamples_total * Galileo_E5a_NUMBER_OF_CODES];  // memory containing all the possible fft codes for PRN 0 to 32
     float max;                                                                       // temporary maxima search
 
@@ -166,7 +167,7 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
             // fill in zero padding
             for (int s = 2*code_length; s < nsamples_total; s++)
                 {
-                    code[s] = std::complex<float>(static_cast<float>(0, 0));
+                    code[s] = std::complex<float>(0.0, 0.0);
                     //code[s] = 0;
                 }
 
@@ -239,7 +240,7 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     channel_ = 0;
     //threshold_ = 0.0;
     doppler_step_ = 0;
-    gnss_synchro_ = 0;
+    gnss_synchro_ = nullptr;
     //printf("creating the E5A acquisition end");
 }
 
@@ -248,6 +249,11 @@ GalileoE5aPcpsAcquisitionFpga::~GalileoE5aPcpsAcquisitionFpga()
 {
     //delete[] code_;
     delete[] d_all_fft_codes_;
+}
+
+
+void GalileoE5aPcpsAcquisitionFpga::stop_acquisition()
+{
 }
 
 
@@ -261,7 +267,7 @@ void GalileoE5aPcpsAcquisitionFpga::set_channel(unsigned int channel)
 
 void GalileoE5aPcpsAcquisitionFpga::set_threshold(float threshold)
 {
-    //    float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
+    //    float pfa = configuration_->property(role_ + std::to_string(channel_) + ".pfa", 0.0);
     //
     //    if (pfa == 0.0)
     //        {

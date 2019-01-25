@@ -30,16 +30,16 @@
  * -------------------------------------------------------------------------
  */
 
-#include "galileo_navigation_message.h"
-#include "galileo_fnav_message.h"
 #include "convolutional.h"
-#include <unistd.h>
+#include "galileo_fnav_message.h"
+#include "galileo_navigation_message.h"
+#include <armadillo>
+#include <gtest/gtest.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include <chrono>
 #include <exception>
 #include <string>
-#include <armadillo>
-#include <volk_gnsssdr/volk_gnsssdr.h>
-#include <gtest/gtest.h>
+#include <unistd.h>
 
 
 class Galileo_FNAV_INAV_test : public ::testing::Test

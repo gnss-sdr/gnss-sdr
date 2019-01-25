@@ -55,14 +55,15 @@
 #define GNSS_SDR_RTKLIB_SOLVER_H_
 
 
-#include "rtklib_rtkpos.h"
-#include "galileo_navigation_message.h"
-#include "gps_navigation_message.h"
-#include "gps_cnav_navigation_message.h"
-#include "glonass_gnav_navigation_message.h"
 #include "galileo_almanac.h"
+#include "galileo_navigation_message.h"
+#include "glonass_gnav_navigation_message.h"
 #include "gnss_synchro.h"
+#include "gps_cnav_navigation_message.h"
+#include "gps_navigation_message.h"
 #include "pvt_solution.h"
+#include "rtklib_rtkpos.h"
+#include <array>
 #include <fstream>
 #include <map>
 #include <string>
@@ -82,12 +83,12 @@ private:
     bool d_flag_dump_enabled;
     bool d_flag_dump_mat_enabled;
     int d_nchannels;  // Number of available channels for positioning
-    double dop_[4];
+    std::array<double, 4> dop_;
 
 public:
     sol_t pvt_sol;
     ssat_t pvt_ssat[MAXSAT];
-    rtklib_solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, rtk_t& rtk);
+    rtklib_solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, const rtk_t& rtk);
     ~rtklib_solver();
 
     bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, bool flag_averaging);
@@ -99,7 +100,7 @@ public:
     std::map<int, Galileo_Ephemeris> galileo_ephemeris_map;            //!< Map storing new Galileo_Ephemeris
     std::map<int, Gps_Ephemeris> gps_ephemeris_map;                    //!< Map storing new GPS_Ephemeris
     std::map<int, Gps_CNAV_Ephemeris> gps_cnav_ephemeris_map;          //!< Map storing new GPS_CNAV_Ephemeris
-    std::map<int, Glonass_Gnav_Ephemeris> glonass_gnav_ephemeris_map;  //!< Map storing new GLONASS GNAV Ephmeris
+    std::map<int, Glonass_Gnav_Ephemeris> glonass_gnav_ephemeris_map;  //!< Map storing new GLONASS GNAV Ephemeris
 
     Galileo_Utc_Model galileo_utc_model;
     Galileo_Iono galileo_iono;

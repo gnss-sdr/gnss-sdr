@@ -62,12 +62,12 @@ bool systemIsBigEndian()
 
 bool systemBytesAreBigEndian()
 {
-    byte_and_samples b;
+    byte_and_samples b{};
     b.byte = static_cast<int8_t>(0x01);
-    if (*(char *)&b.byte == 1)
+    if (*reinterpret_cast<char *>(&b.byte) == 1)
         return false;
-    else
-        return true;
+
+    return true;
 }
 
 
@@ -131,17 +131,15 @@ unpack_2bit_samples::unpack_2bit_samples(bool big_endian_bytes,
 }
 
 
-unpack_2bit_samples::~unpack_2bit_samples()
-{
-}
+unpack_2bit_samples::~unpack_2bit_samples() = default;
 
 
 int unpack_2bit_samples::work(int noutput_items,
     gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items)
 {
-    signed char const *in = reinterpret_cast<signed char const *>(input_items[0]);
-    int8_t *out = reinterpret_cast<int8_t *>(output_items[0]);
+    auto const *in = reinterpret_cast<signed char const *>(input_items[0]);
+    auto *out = reinterpret_cast<int8_t *>(output_items[0]);
 
     size_t ninput_bytes = noutput_items / 4;
     size_t ninput_items = ninput_bytes / item_size_;
@@ -160,7 +158,7 @@ int unpack_2bit_samples::work(int noutput_items,
     // 1) The samples in a byte are in big endian order
     // 2) The samples in a byte are in little endian order
 
-    byte_and_samples raw_byte;
+    byte_and_samples raw_byte{};
     int n = 0;
 
     if (!reverse_interleaving_)

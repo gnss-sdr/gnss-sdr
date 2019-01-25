@@ -38,8 +38,8 @@
 #ifndef GNSS_SDR_gps_l2_m_dll_pll_tracking_H_
 #define GNSS_SDR_gps_l2_m_dll_pll_tracking_H_
 
-#include "tracking_interface.h"
 #include "dll_pll_veml_tracking.h"
+#include "tracking_interface.h"
 #include <string>
 
 class ConfigurationInterface;
@@ -51,7 +51,7 @@ class GpsL2MDllPllTracking : public TrackingInterface
 {
 public:
     GpsL2MDllPllTracking(ConfigurationInterface* configuration,
-        std::string role,
+        const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 

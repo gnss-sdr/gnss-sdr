@@ -31,16 +31,16 @@
 
 #include "agnss_ref_location.h"
 #include "agnss_ref_time.h"
-#include "concurrent_queue.h"
 #include "concurrent_map.h"
-#include "gps_navigation_message.h"
-#include "gps_ephemeris.h"
+#include "concurrent_queue.h"
+#include "galileo_navigation_message.h"
+#include "gps_acq_assist.h"
 #include "gps_cnav_ephemeris.h"
 #include "gps_cnav_iono.h"
-#include "gps_acq_assist.h"
-#include "galileo_navigation_message.h"
-#include <boost/thread.hpp>
+#include "gps_ephemeris.h"
+#include "gps_navigation_message.h"
 #include <boost/filesystem.hpp>
+#include <boost/thread.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 #include <gnuradio/msg_queue.h>

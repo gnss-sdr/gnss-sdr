@@ -30,10 +30,10 @@
  * -------------------------------------------------------------------------
  */
 
+#include <armadillo>
+#include <gnuradio/fft/fft.h>
 #include <chrono>
 #include <memory>
-#include <gnuradio/fft/fft.h>
-#include <armadillo>
 
 DEFINE_int32(fft_speed_iterations_test, 100, "Number of averaged iterations in FFT length timing test");
 

@@ -86,11 +86,6 @@ if(OPENCL_FOUND)
         opencl/fft_setup.cc # Needs OpenCL
         opencl/fft_kernelstring.cc # Needs OpenCL
     )
-    set(GNSS_SPLIBS_HEADERS ${GNSS_SPLIBS_HEADERS}
-        opencl/fft_execute.h # Needs OpenCL
-        opencl/fft_setup.h # Needs OpenCL
-        opencl/fft_kernelstring.h # Needs OpenCL
-    )
 endif()
 
 include_directories(

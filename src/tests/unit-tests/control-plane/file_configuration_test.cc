@@ -30,8 +30,8 @@
  */
 
 
-#include <string>
 #include "file_configuration.h"
+#include <string>
 
 
 TEST(FileConfigurationTest, OverridedProperties)

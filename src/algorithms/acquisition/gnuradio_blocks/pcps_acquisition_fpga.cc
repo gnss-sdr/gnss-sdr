@@ -39,9 +39,10 @@
  */
 
 
+#include "pcps_acquisition_fpga.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
-#include "pcps_acquisition_fpga.h"
+#include <utility>
 
 #include <unistd.h> // for the usleep function only (debug)
 
@@ -51,7 +52,7 @@ using google::LogMessage;
 
 pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_)
 {
-    return pcps_acquisition_fpga_sptr(new pcps_acquisition_fpga(conf_));
+    return pcps_acquisition_fpga_sptr(new pcps_acquisition_fpga(std::move(conf_)));
 }
 
 
@@ -62,7 +63,7 @@ pcps_acquisition_fpga::pcps_acquisition_fpga(pcpsconf_fpga_t conf_) : gr::block(
     //   printf("acq constructor start\n");
     this->message_port_register_out(pmt::mp("events"));
 
-    acq_parameters = conf_;
+    acq_parameters = std::move(conf_);
     d_sample_counter = 0ULL;  // SAMPLE COUNTER
     d_active = false;
     d_state = 0;
@@ -75,7 +76,7 @@ pcps_acquisition_fpga::pcps_acquisition_fpga(pcpsconf_fpga_t conf_) : gr::block(
     d_doppler_step = 0U;
     d_test_statistics = 0.0;
     d_channel = 0U;
-    d_gnss_synchro = 0;
+    d_gnss_synchro = nullptr;
     d_single_doppler_flag = false;
 
     d_downsampling_factor = acq_parameters.downsampling_factor;

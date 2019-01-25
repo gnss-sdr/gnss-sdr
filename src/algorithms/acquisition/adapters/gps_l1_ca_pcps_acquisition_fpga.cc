@@ -34,13 +34,13 @@
  * -------------------------------------------------------------------------
  */
 
+#include "gps_l1_ca_pcps_acquisition_fpga.h"
+#include "GPS_L1_CA.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
-#include "gps_l1_ca_pcps_acquisition_fpga.h"
 #include "gps_sdr_signal_processing.h"
-#include "GPS_L1_CA.h"
-#include <gnuradio/fft/fft.h>
 #include <glog/logging.h>
+#include <gnuradio/fft/fft.h>
 #include <new>
 
 
@@ -48,13 +48,14 @@
 
 using google::LogMessage;
 
-void GpsL1CaPcpsAcquisitionFpga::stop_acquisition()
-{
-}
 
 GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
-    ConfigurationInterface* configuration, std::string role,
-    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration,
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(role),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams)
 {
     pcpsconf_fpga_t acq_parameters;
     configuration_ = configuration;
@@ -62,12 +63,13 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
 
     DLOG(INFO) << "role " << role;
 
-    long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
-    long fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+	int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
+	int64_t fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
 
     float downsampling_factor = configuration_->property(role + ".downsampling_factor", 4.0);
     printf("downsampling_factor = %f\n", downsampling_factor);
     acq_parameters.downsampling_factor = downsampling_factor;
+
     //fs_in = fs_in/2.0; // downampling filter
     //printf("fs_in pre downsampling = %ld\n", fs_in);
 
@@ -82,7 +84,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     acq_parameters.doppler_max = doppler_max_;
     unsigned int sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 4);
     acq_parameters.sampled_ms = sampled_ms;
-    unsigned int code_length = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
+    auto code_length = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
     acq_parameters.code_length = code_length;
     //printf("acq adapter code_length = %d\n", code_length);
     // The FPGA can only use FFT lengths that are a power of two.
@@ -104,10 +106,10 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     //printf("excludelimit = %d\n", (int) acq_parameters.excludelimit);
     // compute all the GPS L1 PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
-    gr::fft::fft_complex* fft_if = new gr::fft::fft_complex(vector_length, true);  // Direct FFT
+    auto* fft_if = new gr::fft::fft_complex(vector_length, true);  // Direct FFT
     // allocate memory to compute all the PRNs and compute all the possible codes
-    std::complex<float>* code = new std::complex<float>[nsamples_total];  // buffer for the local code
-    gr_complex* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    auto* code = new std::complex<float>[nsamples_total];  // buffer for the local code
+    auto* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     d_all_fft_codes_ = new lv_16sc_t[nsamples_total * NUM_PRNs];  // memory containing all the possible fft codes for PRN 0 to 32
     float max;                                                    // temporary maxima search
     for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
@@ -123,7 +125,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
             // fill in zero padding
             for (int s = 2*code_length; s < nsamples_total; s++)
                 {
-                    code[s] = std::complex<float>(static_cast<float>(0, 0));
+                    code[s] = std::complex<float>(0.0, 0.0);
                     //code[s] = 0;
                 }
 
@@ -198,13 +200,18 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
 
     channel_ = 0;
     doppler_step_ = 0;
-    gnss_synchro_ = 0;
+    gnss_synchro_ = nullptr;
 }
 
 
 GpsL1CaPcpsAcquisitionFpga::~GpsL1CaPcpsAcquisitionFpga()
 {
     delete[] d_all_fft_codes_;
+}
+
+
+void GpsL1CaPcpsAcquisitionFpga::stop_acquisition()
+{
 }
 
 

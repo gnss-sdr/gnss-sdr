@@ -74,9 +74,7 @@ Bayesian_estimator::Bayesian_estimator(const arma::vec& mu_prior_0, int kappa_pr
     Psi_est = Psi_prior;
 }
 
-Bayesian_estimator::~Bayesian_estimator()
-{
-}
+Bayesian_estimator::~Bayesian_estimator() = default;
 
 void Bayesian_estimator::init(const arma::mat& mu_prior_0, int kappa_prior_0, int nu_prior_0, const arma::mat& Psi_prior_0)
 {

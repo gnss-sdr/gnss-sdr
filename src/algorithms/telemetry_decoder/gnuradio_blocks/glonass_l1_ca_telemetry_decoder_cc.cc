@@ -33,8 +33,8 @@
 
 #include "glonass_l1_ca_telemetry_decoder_cc.h"
 #include <boost/lexical_cast.hpp>
-#include <gnuradio/io_signature.h>
 #include <glog/logging.h>
+#include <gnuradio/io_signature.h>
 
 
 #define CRC_ERROR_LIMIT 6
@@ -74,11 +74,11 @@ glonass_l1_ca_telemetry_decoder_cc::glonass_l1_ca_telemetry_decoder_cc(
     // preamble bits to sampled symbols
     d_preambles_symbols = static_cast<int32_t *>(malloc(sizeof(int32_t) * d_symbols_per_preamble));
     int32_t n = 0;
-    for (int32_t i = 0; i < GLONASS_GNAV_PREAMBLE_LENGTH_BITS; i++)
+    for (uint16_t d_preambles_bit : d_preambles_bits)
         {
             for (uint32_t j = 0; j < GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_PREAMBLE_BIT; j++)
                 {
-                    if (d_preambles_bits[i] == 1)
+                    if (d_preambles_bit == 1)
                         {
                             d_preambles_symbols[n] = 1;
                         }
@@ -124,7 +124,7 @@ glonass_l1_ca_telemetry_decoder_cc::~glonass_l1_ca_telemetry_decoder_cc()
 }
 
 
-void glonass_l1_ca_telemetry_decoder_cc::decode_string(double *frame_symbols, int32_t frame_length)
+void glonass_l1_ca_telemetry_decoder_cc::decode_string(const double *frame_symbols, int32_t frame_length)
 {
     double chip_acc = 0.0;
     int32_t chip_acc_counter = 0;
@@ -244,7 +244,7 @@ void glonass_l1_ca_telemetry_decoder_cc::set_channel(int32_t channel)
                     try
                         {
                             d_dump_filename = "telemetry";
-                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
+                            d_dump_filename.append(std::to_string(d_channel));
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
@@ -265,10 +265,10 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
     int32_t corr_value = 0;
     int32_t preamble_diff = 0;
 
-    Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);            // Get the output buffer pointer
-    const Gnss_Synchro **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);  // Get the input buffer pointer
+    auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);            // Get the output buffer pointer
+    const auto **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);  // Get the input buffer pointer
 
-    Gnss_Synchro current_symbol;  // structure to save the synchronization information and send the output object to the next block
+    Gnss_Synchro current_symbol{};  // structure to save the synchronization information and send the output object to the next block
     // 1. Copy the current tracking output
     current_symbol = in[0][0];
     d_symbol_history.push_back(current_symbol);  // add new symbol to the symbol queue

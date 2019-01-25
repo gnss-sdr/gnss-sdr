@@ -37,9 +37,10 @@
 #include "GPS_L1_CA.h"
 #include "gps_sdr_signal_processing.h"
 #include <glog/logging.h>
+#include <fcntl.h>  // libraries used by the GIPO
 #include <iostream>
-#include <fcntl.h>     // libraries used by the GIPO
 #include <sys/mman.h>  // libraries used by the GIPO
+#include <utility>
 
 #include <unistd.h> // for the usleep function only (debug)
 
@@ -122,7 +123,7 @@ fpga_acquisition::fpga_acquisition(std::string device_name,
 
     //printf("AAA- vector_length = %d\n ", vector_length);
     // initial values
-    d_device_name = device_name;
+    d_device_name = std::move(device_name);
     //d_freq = freq;
     d_fs_in = fs_in;
     d_vector_length = vector_length;
@@ -483,6 +484,7 @@ void fpga_acquisition::set_doppler_sweep(uint32_t num_sweeps)
 	    d_map_base[5] = 1;  // 1 sweep
 
 	}
+
 
 }
 /*

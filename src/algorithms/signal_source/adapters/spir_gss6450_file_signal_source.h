@@ -35,12 +35,12 @@
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
 #include "unpack_spir_gss6450_samples.h"
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/blocks/file_sink.h>
-#include <gnuradio/blocks/throttle.h>
 #include <gnuradio/blocks/deinterleave.h>
-#include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/endian_swap.h>
+#include <gnuradio/blocks/file_sink.h>
+#include <gnuradio/blocks/file_source.h>
+#include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/blocks/throttle.h>
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/msg_queue.h>
 #include <cstdint>
@@ -57,7 +57,7 @@ class ConfigurationInterface;
 class SpirGSS6450FileSignalSource : public GNSSBlockInterface
 {
 public:
-    SpirGSS6450FileSignalSource(ConfigurationInterface* configuration, std::string role,
+    SpirGSS6450FileSignalSource(ConfigurationInterface* configuration, const std::string& role,
         uint32_t in_streams, uint32_t out_streams, gr::msg_queue::sptr queue);
 
     virtual ~SpirGSS6450FileSignalSource();

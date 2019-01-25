@@ -51,7 +51,7 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs, const Gnss_Synchro& gnss_synchro
     double CN0_dB_Hz_est = gnss_synchro.CN0_dB_hz;
     if (CN0_dB_Hz_est > 63.75) CN0_dB_Hz_est = 63.75;
     if (CN0_dB_Hz_est < 0.0) CN0_dB_Hz_est = 0.0;
-    unsigned char CN0_dB_Hz = static_cast<unsigned char>(std::round(CN0_dB_Hz_est / 0.25));
+    auto CN0_dB_Hz = static_cast<unsigned char>(std::round(CN0_dB_Hz_est / 0.25));
     rtklib_obs.SNR[band] = CN0_dB_Hz;
     //Galileo is the third satellite system for RTKLIB, so, add the required offset to discriminate Galileo ephemeris
     switch (gnss_synchro.System)
@@ -152,7 +152,7 @@ eph_t eph_to_rtklib(const Galileo_Ephemeris& gal_eph)
     /* adjustment for week handover */
     double tow, toc;
     tow = time2gpst(rtklib_sat.ttr, &rtklib_sat.week);
-    toc = time2gpst(rtklib_sat.toc, NULL);
+    toc = time2gpst(rtklib_sat.toc, nullptr);
     if (rtklib_sat.toes < tow - 302400.0)
         {
             rtklib_sat.week++;
@@ -209,7 +209,7 @@ eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph)
     /* adjustment for week handover */
     double tow, toc;
     tow = time2gpst(rtklib_sat.ttr, &rtklib_sat.week);
-    toc = time2gpst(rtklib_sat.toc, NULL);
+    toc = time2gpst(rtklib_sat.toc, nullptr);
     if (rtklib_sat.toes < tow - 302400.0)
         {
             rtklib_sat.week++;
@@ -274,7 +274,7 @@ eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph)
     /* adjustment for week handover */
     double tow, toc;
     tow = time2gpst(rtklib_sat.ttr, &rtklib_sat.week);
-    toc = time2gpst(rtklib_sat.toc, NULL);
+    toc = time2gpst(rtklib_sat.toc, nullptr);
     if (rtklib_sat.toes < tow - 302400.0)
         {
             rtklib_sat.week++;

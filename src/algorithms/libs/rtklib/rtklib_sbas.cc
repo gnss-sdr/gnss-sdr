@@ -66,7 +66,7 @@
 char *getfield(char *p, int pos)
 {
     for (pos--; pos > 0; pos--, p++)
-        if (!(p = strchr(p, ','))) return NULL;
+        if (!(p = strchr(p, ','))) return nullptr;
     return p;
 }
 
@@ -148,7 +148,7 @@ int decode_sbstype2(const sbsmsg_t *msg, sbssat_t *sbssat)
 
     trace(4, "decode_sbstype2:\n");
 
-    if (sbssat->iodp != (int)getbitu(msg->msg, 16, 2)) return 0;
+    if (sbssat->iodp != static_cast<int>(getbitu(msg->msg, 16, 2))) return 0;
 
     type = getbitu(msg->msg, 8, 6);
     iodf = getbitu(msg->msg, 14, 2);
@@ -209,7 +209,7 @@ int decode_sbstype7(const sbsmsg_t *msg, sbssat_t *sbssat)
 
     trace(4, "decode_sbstype7\n");
 
-    if (sbssat->iodp != (int)getbitu(msg->msg, 18, 2)) return 0;
+    if (sbssat->iodp != static_cast<int>(getbitu(msg->msg, 18, 2))) return 0;
 
     sbssat->tlat = getbitu(msg->msg, 14, 4);
 
@@ -234,7 +234,7 @@ int decode_sbstype9(const sbsmsg_t *msg, nav_t *nav)
             trace(2, "invalid prn in sbas type 9: prn=%3d\n", msg->prn);
             return 0;
         }
-    t = (int)getbitu(msg->msg, 22, 13) * 16 - (int)msg->tow % 86400;
+    t = static_cast<int>(getbitu(msg->msg, 22, 13)) * 16 - msg->tow % 86400;
     if (t <= -43200)
         t += 86400;
     else if (t > 43200)
@@ -292,7 +292,7 @@ int decode_sbstype18(const sbsmsg_t *msg, sbsion_t *sbsion)
     else
         return 0;
 
-    sbsion[band].iodi = (short)getbitu(msg->msg, 22, 2);
+    sbsion[band].iodi = static_cast<int16_t>(getbitu(msg->msg, 22, 2));
 
     for (i = 1, n = 0; i <= 201; i++)
         {
@@ -355,7 +355,7 @@ int decode_longcorr1(const sbsmsg_t *msg, int p, sbssat_t *sbssat)
         }
     sbssat->sat[n - 1].lcorr.daf0 = getbits(msg->msg, p + 47, 11) * TWO_N31;
     sbssat->sat[n - 1].lcorr.daf1 = getbits(msg->msg, p + 82, 8) * TWO_N39;
-    t = (int)getbitu(msg->msg, p + 90, 13) * 16 - (int)msg->tow % 86400;
+    t = static_cast<int>(getbitu(msg->msg, p + 90, 13)) * 16 - msg->tow % 86400;
     if (t <= -43200)
         t += 86400;
     else if (t > 43200)
@@ -374,13 +374,13 @@ int decode_longcorrh(const sbsmsg_t *msg, int p, sbssat_t *sbssat)
 
     if (getbitu(msg->msg, p, 1) == 0)
         { /* vel code=0 */
-            if (sbssat->iodp == (int)getbitu(msg->msg, p + 103, 2))
+            if (sbssat->iodp == static_cast<int>(getbitu(msg->msg, p + 103, 2)))
                 {
                     return decode_longcorr0(msg, p + 1, sbssat) &&
                            decode_longcorr0(msg, p + 52, sbssat);
                 }
         }
-    else if (sbssat->iodp == (int)getbitu(msg->msg, p + 104, 2))
+    else if (sbssat->iodp == static_cast<int>(getbitu(msg->msg, p + 104, 2)))
         {
             return decode_longcorr1(msg, p + 1, sbssat);
         }
@@ -395,7 +395,7 @@ int decode_sbstype24(const sbsmsg_t *msg, sbssat_t *sbssat)
 
     trace(4, "decode_sbstype24:\n");
 
-    if (sbssat->iodp != (int)getbitu(msg->msg, 110, 2)) return 0; /* check IODP */
+    if (sbssat->iodp != static_cast<int>(getbitu(msg->msg, 110, 2))) return 0; /* check IODP */
 
     blk = getbitu(msg->msg, 112, 2);
     iodf = getbitu(msg->msg, 114, 2);
@@ -430,7 +430,7 @@ int decode_sbstype26(const sbsmsg_t *msg, sbsion_t *sbsion)
 
     trace(4, "decode_sbstype26:\n");
 
-    if (band > MAXBAND || sbsion[band].iodi != (int)getbitu(msg->msg, 217, 2)) return 0;
+    if (band > MAXBAND || sbsion[band].iodi != static_cast<int>(getbitu(msg->msg, 217, 2))) return 0;
 
     block = getbitu(msg->msg, 18, 4);
 
@@ -529,7 +529,7 @@ void readmsgs(const char *file, int sel, gtime_t ts, gtime_t te,
 
     trace(3, "readmsgs: file=%s sel=%d\n", file, sel);
 
-    if (!(fp = fopen(file, "r")))
+    if (!(fp = fopen(file, "re")))
         {
             trace(2, "sbas message file open error: %s\n", file);
             return;
@@ -575,11 +575,11 @@ void readmsgs(const char *file, int sel, gtime_t ts, gtime_t te,
             if (sbs->n >= sbs->nmax)
                 {
                     sbs->nmax = sbs->nmax == 0 ? 1024 : sbs->nmax * 2;
-                    if (!(sbs_msgs = (sbsmsg_t *)realloc(sbs->msgs, sbs->nmax * sizeof(sbsmsg_t))))
+                    if (!(sbs_msgs = static_cast<sbsmsg_t *>(realloc(sbs->msgs, sbs->nmax * sizeof(sbsmsg_t)))))
                         {
                             trace(1, "readsbsmsg malloc error: nmax=%d\n", sbs->nmax);
                             free(sbs->msgs);
-                            sbs->msgs = NULL;
+                            sbs->msgs = nullptr;
                             sbs->n = sbs->nmax = 0;
                             fclose(fp);
                             return;
@@ -587,12 +587,12 @@ void readmsgs(const char *file, int sel, gtime_t ts, gtime_t te,
                     sbs->msgs = sbs_msgs;
                 }
             sbs->msgs[sbs->n].week = week;
-            sbs->msgs[sbs->n].tow = (int)(tow + 0.5);
+            sbs->msgs[sbs->n].tow = static_cast<int>(tow + 0.5);
             sbs->msgs[sbs->n].prn = prn;
             for (i = 0; i < 29; i++) sbs->msgs[sbs->n].msg[i] = 0;
             for (i = 0; *(p - 1) && *p && i < 29; p += 2, i++)
                 {
-                    if (sscanf(p, "%2X", &b) == 1) sbs->msgs[sbs->n].msg[i] = (unsigned char)b;
+                    if (sscanf(p, "%2X", &b) == 1) sbs->msgs[sbs->n].msg[i] = static_cast<unsigned char>(b);
                 }
             sbs->msgs[sbs->n++].msg[28] &= 0xC0;
         }
@@ -603,7 +603,7 @@ void readmsgs(const char *file, int sel, gtime_t ts, gtime_t te,
 /* compare sbas messages -----------------------------------------------------*/
 int cmpmsgs(const void *p1, const void *p2)
 {
-    sbsmsg_t *q1 = (sbsmsg_t *)p1, *q2 = (sbsmsg_t *)p2;
+    auto *q1 = (sbsmsg_t *)p1, *q2 = (sbsmsg_t *)p2;
     return q1->week != q2->week ? q1->week - q2->week : (q1->tow < q2->tow ? -1 : (q1->tow > q2->tow ? 1 : q1->prn - q2->prn));
 }
 
@@ -633,7 +633,7 @@ int sbsreadmsgt(const char *file, int sel, gtime_t ts, gtime_t te,
 
     for (i = 0; i < MAXEXFILE; i++)
         {
-            if (!(efiles[i] = (char *)malloc(1024)))
+            if (!(efiles[i] = static_cast<char *>(malloc(1024))))
                 {
                     for (i--; i >= 0; i--) free(efiles[i]);
                     return 0;
@@ -645,8 +645,8 @@ int sbsreadmsgt(const char *file, int sel, gtime_t ts, gtime_t te,
     for (i = 0; i < n; i++)
         {
             if (!(ext = strrchr(efiles[i], '.'))) continue;
-            if (strcmp(ext, ".sbs") && strcmp(ext, ".SBS") &&
-                strcmp(ext, ".ems") && strcmp(ext, ".EMS")) continue;
+            if (strcmp(ext, ".sbs") != 0 && strcmp(ext, ".SBS") != 0 &&
+                strcmp(ext, ".ems") != 0 && strcmp(ext, ".EMS") != 0) continue;
 
             readmsgs(efiles[i], sel, ts, te, sbs);
         }
@@ -702,38 +702,38 @@ void searchigp(gtime_t time __attribute__((unused)), const double *pos, const sb
     if (lon >= 180.0) lon -= 360.0;
     if (-55.0 <= lat && lat < 55.0)
         {
-            latp[0] = (int)floor(lat / 5.0) * 5;
+            latp[0] = static_cast<int>(floor(lat / 5.0)) * 5;
             latp[1] = latp[0] + 5;
-            lonp[0] = lonp[1] = (int)floor(lon / 5.0) * 5;
+            lonp[0] = lonp[1] = static_cast<int>(floor(lon / 5.0)) * 5;
             lonp[2] = lonp[3] = lonp[0] + 5;
             *x = (lon - lonp[0]) / 5.0;
             *y = (lat - latp[0]) / 5.0;
         }
     else
         {
-            latp[0] = (int)floor((lat - 5.0) / 10.0) * 10 + 5;
+            latp[0] = static_cast<int>(floor((lat - 5.0) / 10.0)) * 10 + 5;
             latp[1] = latp[0] + 10;
-            lonp[0] = lonp[1] = (int)floor(lon / 10.0) * 10;
+            lonp[0] = lonp[1] = static_cast<int>(floor(lon / 10.0)) * 10;
             lonp[2] = lonp[3] = lonp[0] + 10;
             *x = (lon - lonp[0]) / 10.0;
             *y = (lat - latp[0]) / 10.0;
             if (75.0 <= lat && lat < 85.0)
                 {
-                    lonp[1] = (int)floor(lon / 90.0) * 90;
+                    lonp[1] = static_cast<int>(floor(lon / 90.0)) * 90;
                     lonp[3] = lonp[1] + 90;
                 }
             else if (-85.0 <= lat && lat < -75.0)
                 {
-                    lonp[0] = (int)floor((lon - 50.0) / 90.0) * 90 + 40;
+                    lonp[0] = static_cast<int>(floor((lon - 50.0) / 90.0)) * 90 + 40;
                     lonp[2] = lonp[0] + 90;
                 }
             else if (lat >= 85.0)
                 {
-                    for (i = 0; i < 4; i++) lonp[i] = (int)floor(lon / 90.0) * 90;
+                    for (i = 0; i < 4; i++) lonp[i] = static_cast<int>(floor(lon / 90.0)) * 90;
                 }
             else if (lat < -85.0)
                 {
-                    for (i = 0; i < 4; i++) lonp[i] = (int)floor((lon - 50.0) / 90.0) * 90 + 40;
+                    for (i = 0; i < 4; i++) lonp[i] = static_cast<int>(floor((lon - 50.0) / 90.0)) * 90 + 40;
                 }
         }
     for (i = 0; i < 4; i++)
@@ -864,7 +864,7 @@ void getmet(double lat, double *met)
         for (i = 0; i < 10; i++) met[i] = metprm[4][i];
     else
         {
-            j = (int)(lat / 15.0);
+            j = static_cast<int>(lat / 15.0);
             a = (lat - j * 15.0) / 15.0;
             for (i = 0; i < 10; i++) met[i] = (1.0 - a) * metprm[j - 1][i] + a * metprm[j][i];
         }
@@ -942,7 +942,7 @@ int sbslongcorr(gtime_t time, int sat, const sbssat_t *sbssat,
             return 1;
         }
     /* if sbas satellite without correction, no correction applied */
-    if (satsys(sat, NULL) == SYS_SBS) return 1;
+    if (satsys(sat, nullptr) == SYS_SBS) return 1;
 
     trace(2, "no sbas long-term correction: %s sat=%2d\n", time_str(time, 0), sat);
     return 0;
@@ -1049,14 +1049,14 @@ int sbsdecodemsg(gtime_t time, int prn, const unsigned int *words,
 
     if (time.time == 0) return 0;
     tow = time2gpst(time, &sbsmsg->week);
-    sbsmsg->tow = (int)(tow + DTTOL);
+    sbsmsg->tow = static_cast<int>(tow + DTTOL);
     sbsmsg->prn = prn;
     for (i = 0; i < 7; i++)
         for (j = 0; j < 4; j++)
             {
-                sbsmsg->msg[i * 4 + j] = (unsigned char)(words[i] >> ((3 - j) * 8));
+                sbsmsg->msg[i * 4 + j] = static_cast<unsigned char>(words[i] >> ((3 - j) * 8));
             }
-    sbsmsg->msg[28] = (unsigned char)(words[7] >> 18) & 0xC0;
+    sbsmsg->msg[28] = static_cast<unsigned char>(words[7] >> 18) & 0xC0;
     for (i = 28; i > 0; i--) f[i] = (sbsmsg->msg[i] >> 6) + (sbsmsg->msg[i - 1] << 2);
     f[0] = sbsmsg->msg[0] >> 6;
 

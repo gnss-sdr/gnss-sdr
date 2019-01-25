@@ -16,9 +16,8 @@
  * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "volk_gnsssdr/volk_gnsssdr.h"  // for volk_gnsssdr_func_desc_t
 #include "qa_utils.h"
-
+#include "volk_gnsssdr/volk_gnsssdr.h"         // for volk_gnsssdr_func_desc_t
 #include <volk_gnsssdr/volk_gnsssdr_malloc.h>  // for volk_gnsssdr_free, volk_gnsssdr_malloc
 #include <cassert>                             // for assert
 #include <chrono>                              // for system_clock, duration,...

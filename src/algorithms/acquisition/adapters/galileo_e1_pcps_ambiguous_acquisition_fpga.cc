@@ -30,9 +30,9 @@
  */
 
 #include "galileo_e1_pcps_ambiguous_acquisition_fpga.h"
+#include "Galileo_E1.h"
 #include "configuration_interface.h"
 #include "galileo_e1_signal_processing.h"
-#include "Galileo_E1.h"
 #include "gnss_sdr_flags.h"
 #include <boost/lexical_cast.hpp>
 #include <boost/math/distributions/exponential.hpp>
@@ -41,13 +41,14 @@
 
 using google::LogMessage;
 
-void GalileoE1PcpsAmbiguousAcquisitionFpga::stop_acquisition()
-{
-}
 
 GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
-    ConfigurationInterface* configuration, std::string role,
-    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration,
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(role),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams)
 {
     //printf("top acq constructor start\n");
     pcpsconf_fpga_t acq_parameters;
@@ -61,8 +62,8 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
 
     //    item_type_ = configuration_->property(role + ".item_type", default_item_type);
 
-    long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
-    long fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+	int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
+	int64_t fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
 
     float downsampling_factor = configuration_->property(role + ".downsampling_factor", 4.0);
     acq_parameters.downsampling_factor = downsampling_factor;
@@ -76,7 +77,6 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     printf("fs_in post downsampling = %ld\n", fs_in);
 
     //printf("fs_in post downsampling = %ld\n", fs_in);
-
 
     acq_parameters.fs_in = fs_in;
     //if_ = configuration_->property(role + ".if", 0);
@@ -105,7 +105,7 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     //   dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
     //   acq_parameters.dump_filename = dump_filename_;
     //--- Find number of samples per spreading code (4 ms)  -----------------
-    unsigned int code_length = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
+    auto code_length = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
     //acq_parameters.samples_per_code = code_length_;
     //int samples_per_ms = static_cast<int>(std::round(static_cast<double>(fs_in_) * 0.001));
     //acq_parameters.samples_per_ms = samples_per_ms;
@@ -140,9 +140,9 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
 
     // compute all the GALILEO E1 PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
-    gr::fft::fft_complex* fft_if = new gr::fft::fft_complex(nsamples_total, true);  // Direct FFT
-    std::complex<float>* code = new std::complex<float>[nsamples_total];            // buffer for the local code
-    gr_complex* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    auto* fft_if = new gr::fft::fft_complex(nsamples_total, true);  // Direct FFT
+    auto* code = new std::complex<float>[nsamples_total];           // buffer for the local code
+    auto* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     d_all_fft_codes_ = new lv_16sc_t[nsamples_total * Galileo_E1_NUMBER_OF_CODES];  // memory containing all the possible fft codes for PRN 0 to 32
     float max;                                                                      // temporary maxima search
 
@@ -150,7 +150,6 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
 
     for (unsigned int PRN = 1; PRN <= Galileo_E1_NUMBER_OF_CODES; PRN++)
         {
-
 
         //code_ = new gr_complex[vector_length_];
 
@@ -330,7 +329,7 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     channel_ = 0;
     //threshold_ = 0.0;
     doppler_step_ = 0;
-    gnss_synchro_ = 0;
+    gnss_synchro_ = nullptr;
     //printf("top acq constructor end\n");
 }
 
@@ -341,6 +340,11 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::~GalileoE1PcpsAmbiguousAcquisitionFpga()
     //delete[] code_;
     delete[] d_all_fft_codes_;
     //printf("top acq destructor end\n");
+}
+
+
+void GalileoE1PcpsAmbiguousAcquisitionFpga::stop_acquisition()
+{
 }
 
 

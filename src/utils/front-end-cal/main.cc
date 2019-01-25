@@ -32,47 +32,48 @@
 #define FRONT_END_CAL_VERSION "0.0.1"
 #endif
 
-#include "front_end_cal.h"
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
 #include "file_configuration.h"
-#include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
-#include "gnss_signal.h"
-#include "gnss_synchro.h"
-#include "gnss_block_factory.h"
-#include "gps_navigation_message.h"
-#include "gps_ephemeris.h"
-#include "gps_cnav_ephemeris.h"
-#include "gps_almanac.h"
-#include "gps_iono.h"
-#include "gps_cnav_iono.h"
-#include "gps_utc_model.h"
-#include "galileo_ephemeris.h"
+#include "front_end_cal.h"
 #include "galileo_almanac.h"
+#include "galileo_ephemeris.h"
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
-#include "sbas_ephemeris.h"
-#include "gnss_sdr_supl_client.h"
+#include "gnss_block_factory.h"
 #include "gnss_sdr_flags.h"
+#include "gnss_sdr_supl_client.h"
+#include "gnss_signal.h"
+#include "gnss_synchro.h"
+#include "gps_almanac.h"
+#include "gps_cnav_ephemeris.h"
+#include "gps_cnav_iono.h"
+#include "gps_ephemeris.h"
+#include "gps_iono.h"
+#include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
+#include "gps_navigation_message.h"
+#include "gps_utc_model.h"
+#include "sbas_ephemeris.h"
+#include <boost/exception/detail/exception_ptr.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread.hpp>
-#include <boost/exception/detail/exception_ptr.hpp>
 #include <glog/logging.h>
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/top_block.h>
+#include <gnuradio/blocks/file_sink.h>
+#include <gnuradio/blocks/file_source.h>
+#include <gnuradio/blocks/head.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/skiphead.h>
-#include <gnuradio/blocks/head.h>
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/blocks/file_sink.h>
-#include <stdlib.h>
+#include <gnuradio/msg_queue.h>
+#include <gnuradio/top_block.h>
 #include <chrono>
 #include <cstdint>
+#include <cstdlib>
 #include <ctime>  // for ctime
 #include <exception>
 #include <memory>
 #include <queue>
+#include <utility>
 #include <vector>
 
 
@@ -96,7 +97,7 @@ std::vector<Gnss_Synchro> gnss_sync_vector;
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class FrontEndCal_msg_rx;
 
-typedef boost::shared_ptr<FrontEndCal_msg_rx> FrontEndCal_msg_rx_sptr;
+using FrontEndCal_msg_rx_sptr = boost::shared_ptr<FrontEndCal_msg_rx>;
 
 FrontEndCal_msg_rx_sptr FrontEndCal_msg_rx_make();
 
@@ -124,7 +125,7 @@ void FrontEndCal_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
             channel_internal_queue.push(rx_message);
         }
@@ -144,7 +145,9 @@ FrontEndCal_msg_rx::FrontEndCal_msg_rx() : gr::block("FrontEndCal_msg_rx", gr::i
 }
 
 
-FrontEndCal_msg_rx::~FrontEndCal_msg_rx() {}
+FrontEndCal_msg_rx::~FrontEndCal_msg_rx() = default;
+
+
 void wait_message()
 {
     while (!stop)
@@ -171,7 +174,7 @@ void wait_message()
 }
 
 
-bool front_end_capture(std::shared_ptr<ConfigurationInterface> configuration)
+bool front_end_capture(const std::shared_ptr<ConfigurationInterface>& configuration)
 {
     gr::top_block_sptr top_block;
     GNSSBlockFactory block_factory;
@@ -188,7 +191,7 @@ bool front_end_capture(std::shared_ptr<ConfigurationInterface> configuration)
     catch (const boost::exception_ptr& e)
         {
             std::cout << "Exception caught in creating source " << e << std::endl;
-            return 0;
+            return false;
         }
 
     std::shared_ptr<GNSSBlockInterface> conditioner;
@@ -199,7 +202,7 @@ bool front_end_capture(std::shared_ptr<ConfigurationInterface> configuration)
     catch (const boost::exception_ptr& e)
         {
             std::cout << "Exception caught in creating signal conditioner " << e << std::endl;
-            return 0;
+            return false;
         }
     gr::block_sptr sink;
     sink = gr::blocks::file_sink::make(sizeof(gr_complex), "tmp_capture.dat");
@@ -399,7 +402,7 @@ int main(int argc, char** argv)
 
     // record startup time
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    std::chrono::duration<double> elapsed_seconds;
+    std::chrono::duration<double> elapsed_seconds{};
     start = std::chrono::system_clock::now();
 
     bool start_msg = true;
@@ -427,13 +430,13 @@ int main(int argc, char** argv)
                     std::cout << "[";
                     start_msg = false;
                 }
-            if (gnss_sync_vector.size() > 0)
+            if (!gnss_sync_vector.empty())
                 {
                     std::cout << " " << PRN << " ";
                     double doppler_measurement_hz = 0;
-                    for (std::vector<Gnss_Synchro>::iterator it = gnss_sync_vector.begin(); it != gnss_sync_vector.end(); ++it)
+                    for (auto& it : gnss_sync_vector)
                         {
-                            doppler_measurement_hz += (*it).Acq_doppler_hz;
+                            doppler_measurement_hz += it.Acq_doppler_hz;
                         }
                     doppler_measurement_hz = doppler_measurement_hz / gnss_sync_vector.size();
                     doppler_measurements_map.insert(std::pair<int, double>(PRN, doppler_measurement_hz));
@@ -520,7 +523,7 @@ int main(int argc, char** argv)
     std::cout << "Longitude=" << lon_deg << " [º]" << std::endl;
     std::cout << "Altitude=" << altitude_m << " [m]" << std::endl;
 
-    if (doppler_measurements_map.size() == 0)
+    if (doppler_measurements_map.empty())
         {
             std::cout << "Sorry, no GPS satellites detected in the front-end capture, please check the antenna setup..." << std::endl;
             delete acquisition;
@@ -538,21 +541,21 @@ int main(int argc, char** argv)
 
     std::cout << "SV ID  Measured [Hz]   Predicted [Hz]" << std::endl;
 
-    for (std::map<int, double>::iterator it = doppler_measurements_map.begin(); it != doppler_measurements_map.end(); ++it)
+    for (auto& it : doppler_measurements_map)
         {
             try
                 {
                     double doppler_estimated_hz;
-                    doppler_estimated_hz = front_end_cal.estimate_doppler_from_eph(it->first, current_TOW, lat_deg, lon_deg, altitude_m);
-                    std::cout << "  " << it->first << "   " << it->second << "   " << doppler_estimated_hz << std::endl;
+                    doppler_estimated_hz = front_end_cal.estimate_doppler_from_eph(it.first, current_TOW, lat_deg, lon_deg, altitude_m);
+                    std::cout << "  " << it.first << "   " << it.second << "   " << doppler_estimated_hz << std::endl;
                     // 7. Compute front-end IF and sampling frequency estimation
                     // Compare with the measurements and compute clock drift using FE model
                     double estimated_fs_Hz, estimated_f_if_Hz, f_osc_err_ppm;
-                    front_end_cal.GPS_L1_front_end_model_E4000(doppler_estimated_hz, it->second, fs_in_, &estimated_fs_Hz, &estimated_f_if_Hz, &f_osc_err_ppm);
+                    front_end_cal.GPS_L1_front_end_model_E4000(doppler_estimated_hz, it.second, fs_in_, &estimated_fs_Hz, &estimated_f_if_Hz, &f_osc_err_ppm);
 
-                    f_if_estimation_Hz_map.insert(std::pair<int, double>(it->first, estimated_f_if_Hz));
-                    f_fs_estimation_Hz_map.insert(std::pair<int, double>(it->first, estimated_fs_Hz));
-                    f_ppm_estimation_Hz_map.insert(std::pair<int, double>(it->first, f_osc_err_ppm));
+                    f_if_estimation_Hz_map.insert(std::pair<int, double>(it.first, estimated_f_if_Hz));
+                    f_fs_estimation_Hz_map.insert(std::pair<int, double>(it.first, estimated_fs_Hz));
+                    f_ppm_estimation_Hz_map.insert(std::pair<int, double>(it.first, f_osc_err_ppm));
                 }
             catch (const std::logic_error& e)
                 {
@@ -564,7 +567,7 @@ int main(int argc, char** argv)
                 }
             catch (int ex)
                 {
-                    std::cout << "  " << it->first << "   " << it->second << "  (Eph not found)" << std::endl;
+                    std::cout << "  " << it.first << "   " << it.second << "  (Eph not found)" << std::endl;
                 }
         }
 
@@ -574,11 +577,11 @@ int main(int argc, char** argv)
     double mean_osc_err_ppm = 0;
     int n_elements = f_if_estimation_Hz_map.size();
 
-    for (std::map<int, double>::iterator it = f_if_estimation_Hz_map.begin(); it != f_if_estimation_Hz_map.end(); ++it)
+    for (auto& it : f_if_estimation_Hz_map)
         {
-            mean_f_if_Hz += (*it).second;
-            mean_fs_Hz += f_fs_estimation_Hz_map.find((*it).first)->second;
-            mean_osc_err_ppm += f_ppm_estimation_Hz_map.find((*it).first)->second;
+            mean_f_if_Hz += it.second;
+            mean_fs_Hz += f_fs_estimation_Hz_map.find(it.first)->second;
+            mean_osc_err_ppm += f_ppm_estimation_Hz_map.find(it.first)->second;
         }
 
     mean_f_if_Hz /= n_elements;
@@ -595,13 +598,13 @@ int main(int argc, char** argv)
               << "Corrected Doppler vs. Predicted" << std::endl;
     std::cout << "SV ID  Corrected [Hz]   Predicted [Hz]" << std::endl;
 
-    for (std::map<int, double>::iterator it = doppler_measurements_map.begin(); it != doppler_measurements_map.end(); ++it)
+    for (auto& it : doppler_measurements_map)
         {
             try
                 {
                     double doppler_estimated_hz;
-                    doppler_estimated_hz = front_end_cal.estimate_doppler_from_eph(it->first, current_TOW, lat_deg, lon_deg, altitude_m);
-                    std::cout << "  " << it->first << "   " << it->second - mean_f_if_Hz << "   " << doppler_estimated_hz << std::endl;
+                    doppler_estimated_hz = front_end_cal.estimate_doppler_from_eph(it.first, current_TOW, lat_deg, lon_deg, altitude_m);
+                    std::cout << "  " << it.first << "   " << it.second - mean_f_if_Hz << "   " << doppler_estimated_hz << std::endl;
                 }
             catch (const std::logic_error& e)
                 {
@@ -613,7 +616,7 @@ int main(int argc, char** argv)
                 }
             catch (int ex)
                 {
-                    std::cout << "  " << it->first << "   " << it->second - mean_f_if_Hz << "  (Eph not found)" << std::endl;
+                    std::cout << "  " << it.first << "   " << it.second - mean_f_if_Hz << "  (Eph not found)" << std::endl;
                 }
         }
 

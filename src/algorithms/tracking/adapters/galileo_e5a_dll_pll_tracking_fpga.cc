@@ -37,11 +37,11 @@
  */
 
 #include "galileo_e5a_dll_pll_tracking_fpga.h"
-#include "configuration_interface.h"
 #include "Galileo_E5a.h"
+#include "configuration_interface.h"
+#include "display.h"
 #include "galileo_e5_signal_processing.h"
 #include "gnss_sdr_flags.h"
-#include "display.h"
 #include <glog/logging.h>
 
 using google::LogMessage;
@@ -51,7 +51,7 @@ void GalileoE5aDllPllTrackingFpga::stop_tracking()
 }
 
 GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
-    ConfigurationInterface *configuration, std::string role,
+    ConfigurationInterface *configuration, const std::string &role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     //printf("creating the E5A tracking");
@@ -136,9 +136,9 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
 
     //################# PRE-COMPUTE ALL THE CODES #################
     unsigned int code_samples_per_chip = 1;
-    unsigned int code_length_chips = static_cast<unsigned int>(Galileo_E5a_CODE_LENGTH_CHIPS);
+    auto code_length_chips = static_cast<unsigned int>(Galileo_E5a_CODE_LENGTH_CHIPS);
 
-    gr_complex *aux_code = static_cast<gr_complex *>(volk_gnsssdr_malloc(sizeof(gr_complex) * code_length_chips * code_samples_per_chip, volk_gnsssdr_get_alignment()));
+    auto *aux_code = static_cast<gr_complex *>(volk_gnsssdr_malloc(sizeof(gr_complex) * code_length_chips * code_samples_per_chip, volk_gnsssdr_get_alignment()));
 
     float *tracking_code;
     float *data_code;

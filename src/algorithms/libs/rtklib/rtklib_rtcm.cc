@@ -88,7 +88,7 @@ int init_rtcm(rtcm_t *rtcm)
             rtcm->sta.pos[i] = rtcm->sta.del[i] = 0.0;
         }
     rtcm->sta.hgt = 0.0;
-    rtcm->dgps = NULL;
+    rtcm->dgps = nullptr;
     for (i = 0; i < MAXSAT; i++)
         {
             rtcm->ssr[i] = ssr0;
@@ -108,14 +108,14 @@ int init_rtcm(rtcm_t *rtcm)
     for (i = 0; i < 100; i++) rtcm->nmsg2[i] = 0;
     for (i = 0; i < 300; i++) rtcm->nmsg3[i] = 0;
 
-    rtcm->obs.data = NULL;
-    rtcm->nav.eph = NULL;
-    rtcm->nav.geph = NULL;
+    rtcm->obs.data = nullptr;
+    rtcm->nav.eph = nullptr;
+    rtcm->nav.geph = nullptr;
 
     /* reallocate memory for observation and ephemris buffer */
-    if (!(rtcm->obs.data = (obsd_t *)malloc(sizeof(obsd_t) * MAXOBS)) ||
-        !(rtcm->nav.eph = (eph_t *)malloc(sizeof(eph_t) * MAXSAT)) ||
-        !(rtcm->nav.geph = (geph_t *)malloc(sizeof(geph_t) * MAXPRNGLO)))
+    if (!(rtcm->obs.data = static_cast<obsd_t *>(malloc(sizeof(obsd_t) * MAXOBS))) ||
+        !(rtcm->nav.eph = static_cast<eph_t *>(malloc(sizeof(eph_t) * MAXSAT))) ||
+        !(rtcm->nav.geph = static_cast<geph_t *>(malloc(sizeof(geph_t) * MAXPRNGLO))))
         {
             free_rtcm(rtcm);
             return 0;
@@ -141,13 +141,13 @@ void free_rtcm(rtcm_t *rtcm)
 
     /* free memory for observation and ephemeris buffer */
     free(rtcm->obs.data);
-    rtcm->obs.data = NULL;
+    rtcm->obs.data = nullptr;
     rtcm->obs.n = 0;
     free(rtcm->nav.eph);
-    rtcm->nav.eph = NULL;
+    rtcm->nav.eph = nullptr;
     rtcm->nav.n = 0;
     free(rtcm->nav.geph);
-    rtcm->nav.geph = NULL;
+    rtcm->nav.geph = nullptr;
     rtcm->nav.ng = 0;
 }
 
@@ -182,7 +182,7 @@ int input_rtcm2(rtcm_t *rtcm, unsigned char data)
             /* synchronize frame */
             if (rtcm->nbyte == 0)
                 {
-                    preamb = (unsigned char)(rtcm->word >> 22);
+                    preamb = static_cast<unsigned char>(rtcm->word >> 22);
                     if (rtcm->word & 0x40000000) preamb ^= 0xFF; /* decode preamble */
                     if (preamb != RTCM2PREAMB) continue;
 
@@ -194,8 +194,8 @@ int input_rtcm2(rtcm_t *rtcm, unsigned char data)
                 }
             if (++rtcm->nbit < 30)
                 continue;
-            else
-                rtcm->nbit = 0;
+
+            rtcm->nbit = 0;
 
             /* check parity */
             if (!decode_word(rtcm->word, rtcm->buff + rtcm->nbyte))
@@ -330,7 +330,7 @@ int input_rtcm2f(rtcm_t *rtcm, FILE *fp)
     for (i = 0; i < 4096; i++)
         {
             if ((data = fgetc(fp)) == EOF) return -2;
-            if ((ret = input_rtcm2(rtcm, (unsigned char)data))) return ret;
+            if ((ret = input_rtcm2(rtcm, static_cast<unsigned char>(data)))) return ret;
         }
     return 0; /* return at every 4k bytes */
 }
@@ -352,7 +352,7 @@ int input_rtcm3f(rtcm_t *rtcm, FILE *fp)
     for (i = 0; i < 4096; i++)
         {
             if ((data = fgetc(fp)) == EOF) return -2;
-            if ((ret = input_rtcm3(rtcm, (unsigned char)data))) return ret;
+            if ((ret = input_rtcm3(rtcm, static_cast<unsigned char>(data)))) return ret;
         }
     return 0; /* return at every 4k bytes */
 }

@@ -36,8 +36,8 @@
 #define INCLUDED_volk_gnsssdr_s32f_sincospuppet_32fc_H
 
 
-#include <volk_gnsssdr/volk_gnsssdr_complex.h>
 #include "volk_gnsssdr/volk_gnsssdr_s32f_sincos_32fc.h"
+#include <volk_gnsssdr/volk_gnsssdr_complex.h>
 #include <math.h>
 
 

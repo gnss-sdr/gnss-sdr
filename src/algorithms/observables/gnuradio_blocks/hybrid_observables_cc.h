@@ -34,10 +34,10 @@
 #ifndef GNSS_SDR_HYBRID_OBSERVABLES_CC_H
 #define GNSS_SDR_HYBRID_OBSERVABLES_CC_H
 
-#include "gnss_synchro.h"
 #include "gnss_circular_deque.h"
-#include <gnuradio/block.h>
+#include "gnss_synchro.h"
 #include <boost/dynamic_bitset.hpp>
+#include <gnuradio/block.h>
 #include <fstream>
 #include <string>
 #include <utility>

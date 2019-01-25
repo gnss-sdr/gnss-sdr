@@ -17,8 +17,9 @@
 
 # - Try to find GFlags
 #
-# The following variables are optionally searched for defaults
-# GFlags_ROOT_DIR: Base directory where all GFlags components are found
+# The following CMake and environment variables are optionally searched
+# for defaults:
+# GFLAGS_ROOT: Base directory where all GFlags components are found
 #
 # The following are set after configuration is done:
 # GFlags_FOUND
@@ -30,39 +31,45 @@ if(APPLE)
     find_path(GFlags_ROOT_DIR
       libgflags.dylib
       PATHS
-      /opt/local/lib
-      /usr/local/lib
+        /opt/local/lib
+        /usr/local/lib
+        ${GFLAGS_ROOT}/lib
+        $ENV{GFLAGS_ROOT}/lib
     )
 else()
     find_path(GFlags_ROOT_DIR
       libgflags.so
       HINTS
-      /usr/local/lib
-      /usr/lib/x86_64-linux-gnu
-      /usr/lib/i386-linux-gnu
-      /usr/lib/arm-linux-gnueabihf
-      /usr/lib/arm-linux-gnueabi
-      /usr/lib/aarch64-linux-gnu
-      /usr/lib/mipsel-linux-gnu
-      /usr/lib/mips-linux-gnu
-      /usr/lib/mips64el-linux-gnuabi64
-      /usr/lib/powerpc-linux-gnu
-      /usr/lib/powerpc64-linux-gnu
-      /usr/lib/powerpc64le-linux-gnu
-      /usr/lib/powerpc-linux-gnuspe
-      /usr/lib/hppa-linux-gnu
-      /usr/lib/s390x-linux-gnu
-      /usr/lib/i386-gnu
-      /usr/lib/hppa-linux-gnu
-      /usr/lib/x86_64-kfreebsd-gnu
-      /usr/lib/i386-kfreebsd-gnu
-      /usr/lib/m68k-linux-gnu
-      /usr/lib/sh4-linux-gnu
-      /usr/lib/sparc64-linux-gnu
-      /usr/lib/x86_64-linux-gnux32
-      /usr/lib/alpha-linux-gnu
-      /usr/lib64
-      /usr/lib
+        /usr/local/lib
+        /usr/lib/x86_64-linux-gnu
+        /usr/lib/i386-linux-gnu
+        /usr/lib/arm-linux-gnueabihf
+        /usr/lib/arm-linux-gnueabi
+        /usr/lib/aarch64-linux-gnu
+        /usr/lib/mipsel-linux-gnu
+        /usr/lib/mips-linux-gnu
+        /usr/lib/mips64el-linux-gnuabi64
+        /usr/lib/powerpc-linux-gnu
+        /usr/lib/powerpc64-linux-gnu
+        /usr/lib/powerpc64le-linux-gnu
+        /usr/lib/powerpc-linux-gnuspe
+        /usr/lib/hppa-linux-gnu
+        /usr/lib/s390x-linux-gnu
+        /usr/lib/i386-gnu
+        /usr/lib/hppa-linux-gnu
+        /usr/lib/x86_64-kfreebsd-gnu
+        /usr/lib/i386-kfreebsd-gnu
+        /usr/lib/m68k-linux-gnu
+        /usr/lib/sh4-linux-gnu
+        /usr/lib/sparc64-linux-gnu
+        /usr/lib/x86_64-linux-gnux32
+        /usr/lib/alpha-linux-gnu
+        /usr/lib64
+        /usr/lib
+        ${GFLAGS_ROOT}/lib
+        $ENV{GFLAGS_ROOT}/lib
+        ${GFLAGS_ROOT}/lib64
+        $ENV{GFLAGS_ROOT}/lib64
     )
 endif()
 
@@ -71,10 +78,12 @@ if(GFlags_ROOT_DIR)
     find_path(GFlags_INCLUDE_DIRS
       gflags/gflags.h
       HINTS
-      /opt/local/include
-      /usr/local/include
-      /usr/include
-      ${GFlags_ROOT_DIR}/src
+        /opt/local/include
+        /usr/local/include
+        /usr/include
+        ${GFlags_ROOT_DIR}/src
+        ${GFLAGS_ROOT}/include
+        $ENV{GFLAGS_ROOT}/include
     )
 
     # Find the libraries

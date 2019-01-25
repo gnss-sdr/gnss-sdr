@@ -29,23 +29,27 @@
  */
 
 #include "pcps_quicksync_acquisition_cc.h"
-#include "control_message_factory.h"
 #include "GPS_L1_CA.h"
-#include <gnuradio/io_signature.h>
+#include "control_message_factory.h"
 #include <glog/logging.h>
+#include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cmath>
 #include <sstream>
+#include <utility>
 
 
 using google::LogMessage;
 
 pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(
-    unsigned int folding_factor,
-    unsigned int sampled_ms, unsigned int max_dwells,
-    unsigned int doppler_max, long fs_in,
-    int samples_per_ms, int samples_per_code,
+    uint32_t folding_factor,
+    uint32_t sampled_ms,
+    uint32_t max_dwells,
+    uint32_t doppler_max,
+    int64_t fs_in,
+    int32_t samples_per_ms,
+    int32_t samples_per_code,
     bool bit_transition_flag,
     bool dump,
     std::string dump_filename)
@@ -57,15 +61,15 @@ pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(
             fs_in, samples_per_ms,
             samples_per_code,
             bit_transition_flag,
-            dump, dump_filename));
+            dump, std::move(dump_filename)));
 }
 
 
 pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
-    unsigned int folding_factor,
-    unsigned int sampled_ms, unsigned int max_dwells,
-    unsigned int doppler_max, long fs_in,
-    int samples_per_ms, int samples_per_code,
+    uint32_t folding_factor,
+    uint32_t sampled_ms, uint32_t max_dwells,
+    uint32_t doppler_max, int64_t fs_in,
+    int32_t samples_per_ms, int32_t samples_per_code,
     bool bit_transition_flag,
     bool dump,
     std::string dump_filename) : gr::block("pcps_quicksync_acquisition_cc",
@@ -96,7 +100,7 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
     d_magnitude = static_cast<float*>(volk_gnsssdr_malloc(d_samples_per_code * d_folding_factor * sizeof(float), volk_gnsssdr_get_alignment()));
     d_magnitude_folded = static_cast<float*>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
 
-    d_possible_delay = new unsigned int[d_folding_factor];
+    d_possible_delay = new uint32_t[d_folding_factor];
     d_corr_output_f = new float[d_folding_factor];
 
     /*Create the d_code signal , which would store the values of the code in its
@@ -110,18 +114,18 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
 
     // For dumping samples into a file
     d_dump = dump;
-    d_dump_filename = dump_filename;
+    d_dump_filename = std::move(dump_filename);
 
-    d_corr_acumulator = 0;
-    d_signal_folded = 0;
+    d_corr_acumulator = nullptr;
+    d_signal_folded = nullptr;
     d_code_folded = new gr_complex[d_fft_size]();
     d_noise_floor_power = 0;
     d_doppler_resolution = 0;
     d_threshold = 0;
     d_doppler_step = 0;
-    d_grid_doppler_wipeoffs = 0;
-    d_fft_if2 = 0;
-    d_gnss_synchro = 0;
+    d_grid_doppler_wipeoffs = nullptr;
+    d_fft_if2 = nullptr;
+    d_gnss_synchro = nullptr;
     d_code_phase = 0;
     d_doppler_freq = 0;
     d_test_statistics = 0;
@@ -137,7 +141,7 @@ pcps_quicksync_acquisition_cc::~pcps_quicksync_acquisition_cc()
     //DLOG(INFO) << "START DESTROYER";
     if (d_num_doppler_bins > 0)
         {
-            for (unsigned int i = 0; i < d_num_doppler_bins; i++)
+            for (uint32_t i = 0; i < d_num_doppler_bins; i++)
                 {
                     volk_gnsssdr_free(d_grid_doppler_wipeoffs[i]);
                 }
@@ -175,7 +179,7 @@ void pcps_quicksync_acquisition_cc::set_local_code(std::complex<float>* code)
     /*perform folding of the code by the factorial factor parameter. Notice that
     folding of the code in the time stage would result in a downsampled spectrum
     in the frequency domain after applying the fftw operation*/
-    for (unsigned int i = 0; i < d_folding_factor; i++)
+    for (uint32_t i = 0; i < d_folding_factor; i++)
         {
             std::transform((code + i * d_fft_size), (code + ((i + 1) * d_fft_size)),
                 d_fft_if->get_inbuf(), d_fft_if->get_inbuf(),
@@ -208,8 +212,8 @@ void pcps_quicksync_acquisition_cc::init()
 
     // Count the number of bins
     d_num_doppler_bins = 0;
-    for (int doppler = static_cast<int>(-d_doppler_max);
-         doppler <= static_cast<int>(d_doppler_max);
+    for (auto doppler = static_cast<int32_t>(-d_doppler_max);
+         doppler <= static_cast<int32_t>(d_doppler_max);
          doppler += d_doppler_step)
         {
             d_num_doppler_bins++;
@@ -217,10 +221,10 @@ void pcps_quicksync_acquisition_cc::init()
 
     // Create the carrier Doppler wipeoff signals
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
-    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+    for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_samples_per_code * d_folding_factor * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-            int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
+            int32_t doppler = -static_cast<int32_t>(d_doppler_max) + d_doppler_step * doppler_index;
             float phase_step_rad = GPS_TWO_PI * doppler / static_cast<float>(d_fs_in);
             float _phase[1];
             _phase[0] = 0;
@@ -230,7 +234,7 @@ void pcps_quicksync_acquisition_cc::init()
 }
 
 
-void pcps_quicksync_acquisition_cc::set_state(int state)
+void pcps_quicksync_acquisition_cc::set_state(int32_t state)
 {
     d_state = state;
     if (d_state == 1)
@@ -243,7 +247,7 @@ void pcps_quicksync_acquisition_cc::set_state(int state)
             d_mag = 0.0;
             d_input_power = 0.0;
             d_test_statistics = 0.0;
-            d_active = 1;
+            d_active = true;
         }
     else if (d_state == 0)
         {
@@ -269,7 +273,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
      * 6. Declare positive or negative acquisition using a message queue
      */
     //DLOG(INFO) << "START GENERAL WORK";
-    int acquisition_message = -1;  //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
+    int32_t acquisition_message = -1;  //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
     //std::cout<<"general_work in quicksync gnuradio block"<<std::endl;
     switch (d_state)
         {
@@ -301,21 +305,21 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
             {
                 /* initialize acquisition  implementing the QuickSync algorithm*/
                 //DLOG(INFO) << "START CASE 1";
-                int doppler;
+                int32_t doppler;
                 uint32_t indext = 0;
                 float magt = 0.0;
-                const gr_complex* in = reinterpret_cast<const gr_complex*>(input_items[0]);  //Get the input samples pointer
+                const auto* in = reinterpret_cast<const gr_complex*>(input_items[0]);  //Get the input samples pointer
 
-                gr_complex* in_temp = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_samples_per_code * d_folding_factor * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-                gr_complex* in_temp_folded = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+                auto* in_temp = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_samples_per_code * d_folding_factor * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+                auto* in_temp_folded = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
                 /*Create a signal to store a signal of size 1ms, to perform correlation
             in time. No folding on this data is required*/
-                gr_complex* in_1code = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_samples_per_code * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+                auto* in_1code = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_samples_per_code * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
                 /*Stores the values of the correlation output between the local code
             and the signal with doppler shift corrected */
-                gr_complex* corr_output = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_samples_per_code * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+                auto* corr_output = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_samples_per_code * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
                 /*Stores a copy of the folded version of the signal.This is used for
             the FFT operations in future steps of execution*/
@@ -348,7 +352,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                 volk_32f_accumulator_s32f(&d_input_power, d_magnitude, d_samples_per_code * d_folding_factor);
                 d_input_power /= static_cast<float>(d_samples_per_code * d_folding_factor);
 
-                for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+                for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
                     {
                         /*Ensure that the signal is going to start with all samples
                     at zero. This is done to avoid over acumulation when performing
@@ -359,7 +363,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                         /*Doppler search steps and then multiplication of the incoming
                     signal with the doppler wipeoffs to eliminate frequency offset
                      */
-                        doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
+                        doppler = -static_cast<int32_t>(d_doppler_max) + d_doppler_step * doppler_index;
 
                         /*Perform multiplication of the incoming signal with the
                    complex exponential vector. This removes the frequency doppler
@@ -371,7 +375,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                         /*Perform folding of the carrier wiped-off incoming signal. Since
                    superlinear method is being used the folding factor in the
                    incoming raw data signal is of d_folding_factor^2*/
-                        for (int i = 0; i < static_cast<int>(d_folding_factor * d_folding_factor); i++)
+                        for (int32_t i = 0; i < static_cast<int32_t>(d_folding_factor * d_folding_factor); i++)
                             {
                                 std::transform((in_temp + i * d_fft_size),
                                     (in_temp + ((i + 1) * d_fft_size)),
@@ -422,17 +426,17 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                             restarted between consecutive dwells in multidwell operation.*/
                                 if (d_test_statistics < (d_mag / d_input_power) || !d_bit_transition_flag)
                                     {
-                                        unsigned int detected_delay_samples_folded = 0;
+                                        uint32_t detected_delay_samples_folded = 0;
                                         detected_delay_samples_folded = (indext % d_samples_per_code);
                                         gr_complex complex_acumulator[100];
                                         //gr_complex complex_acumulator[d_folding_factor];
 
-                                        for (int i = 0; i < static_cast<int>(d_folding_factor); i++)
+                                        for (int32_t i = 0; i < static_cast<int32_t>(d_folding_factor); i++)
                                             {
                                                 d_possible_delay[i] = detected_delay_samples_folded + (i)*d_fft_size;
                                             }
 
-                                        for (int i = 0; i < static_cast<int>(d_folding_factor); i++)
+                                        for (int32_t i = 0; i < static_cast<int32_t>(d_folding_factor); i++)
                                             {
                                                 /*Copy a signal of 1 code length into suggested buffer.
                                                                       The copied signal must have doppler effect corrected*/
@@ -446,7 +450,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                                                               of a shift*/
                                                 volk_32fc_x2_multiply_32fc(corr_output, in_1code, d_code, d_samples_per_code);
 
-                                                for (int j = 0; j < d_samples_per_code; j++)
+                                                for (int32_t j = 0; j < d_samples_per_code; j++)
                                                     {
                                                         complex_acumulator[i] += (corr_output[j]);
                                                     }
@@ -531,7 +535,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                 DLOG(INFO) << "test statistics threshold " << d_threshold;
                 DLOG(INFO) << "folding factor " << d_folding_factor;
                 DLOG(INFO) << "possible delay correlation output";
-                for (int i = 0; i < static_cast<int>(d_folding_factor); i++) DLOG(INFO) << d_possible_delay[i] << "\t\t\t" << d_corr_output_f[i];
+                for (int32_t i = 0; i < static_cast<int32_t>(d_folding_factor); i++) DLOG(INFO) << d_possible_delay[i] << "\t\t\t" << d_corr_output_f[i];
                 DLOG(INFO) << "code phase " << d_gnss_synchro->Acq_delay_samples;
                 DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
                 DLOG(INFO) << "magnitude folded " << d_mag;
@@ -560,7 +564,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                 DLOG(INFO) << "test statistics threshold " << d_threshold;
                 DLOG(INFO) << "folding factor " << d_folding_factor;
                 DLOG(INFO) << "possible delay    corr output";
-                for (int i = 0; i < static_cast<int>(d_folding_factor); i++) DLOG(INFO) << d_possible_delay[i] << "\t\t\t" << d_corr_output_f[i];
+                for (int32_t i = 0; i < static_cast<int32_t>(d_folding_factor); i++) DLOG(INFO) << d_possible_delay[i] << "\t\t\t" << d_corr_output_f[i];
                 DLOG(INFO) << "code phase " << d_gnss_synchro->Acq_delay_samples;
                 DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
                 DLOG(INFO) << "magnitude folded " << d_mag;

@@ -62,6 +62,30 @@
 #include <sstream>
 #include <numeric>
 
+//#include "GPS_L1_CA.h"
+//#include "gps_sdr_signal_processing.h"
+//#include "GPS_L2C.h"
+//#include "GPS_L5.h"
+//#include "Galileo_E1.h"
+//#include "Galileo_E5a.h"
+//#include "MATH_CONSTANTS.h"
+//#include "control_message_factory.h"
+//#include "gnss_sdr_create_directory.h"
+//#include "gps_l2c_signal.h"
+//#include "gps_l5_signal.h"
+//#include "lock_detectors.h"
+//#include "tracking_discriminators.h"
+//#include <boost/filesystem/path.hpp>
+//#include <glog/logging.h>
+//#include <gnuradio/io_signature.h>
+//#include <matio.h>
+//#include <volk_gnsssdr/volk_gnsssdr.h>
+//#include <algorithm>
+//#include <cmath>
+//#include <iostream>
+//#include <sstream>
+//#include <numeric>
+
 using google::LogMessage;
 
 dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(const Dll_Pll_Conf_Fpga &conf_)
@@ -107,7 +131,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     if (trk_parameters.system == 'G')
         {
             systemName = "GPS";
-            if (signal_type.compare("1C") == 0)
+            if (signal_type == "1C")
                 {
                     d_signal_carrier_freq = GPS_L1_FREQ_HZ;
                     d_code_period = GPS_L1_CA_CODE_PERIOD;
@@ -127,11 +151,11 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                     // preamble bits to sampled symbols
                     d_gps_l1ca_preambles_symbols = static_cast<int32_t *>(volk_gnsssdr_malloc(GPS_CA_PREAMBLE_LENGTH_SYMBOLS * sizeof(int32_t), volk_gnsssdr_get_alignment()));
                     int32_t n = 0;
-                    for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
+                    for (unsigned short preambles_bit : preambles_bits)
                         {
                             for (uint32_t j = 0; j < GPS_CA_TELEMETRY_SYMBOLS_PER_BIT; j++)
                                 {
-                                    if (preambles_bits[i] == 1)
+                                    if (preambles_bit == 1)
                                         {
                                             d_gps_l1ca_preambles_symbols[n] = 1;
                                         }
@@ -145,7 +169,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                     d_symbol_history.resize(GPS_CA_PREAMBLE_LENGTH_SYMBOLS);  // Change fixed buffer size
                     d_symbol_history.clear();                                 // Clear all the elements in the buffer
                 }
-            else if (signal_type.compare("2S") == 0)
+            else if (signal_type == "2S")
                 {
                     d_signal_carrier_freq = GPS_L2_FREQ_HZ;
                     d_code_period = GPS_L2_M_PERIOD;
@@ -159,7 +183,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                     trk_parameters.track_pilot = false;
                     interchange_iq = false;
                 }
-            else if (signal_type.compare("L5") == 0)
+            else if (signal_type == "L5")
                 {
                     d_signal_carrier_freq = GPS_L5_FREQ_HZ;
                     d_code_period = GPS_L5i_PERIOD;
@@ -201,7 +225,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     else if (trk_parameters.system == 'E')
         {
             systemName = "Galileo";
-            if (signal_type.compare("1B") == 0)
+            if (signal_type == "1B")
                 {
                     d_signal_carrier_freq = Galileo_E1_FREQ_HZ;
                     d_code_period = Galileo_E1_CODE_PERIOD;
@@ -225,7 +249,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                         }
                     interchange_iq = false;  // Note that E1-B and E1-C are in anti-phase, NOT IN QUADRATURE. See Galileo ICD.
                 }
-            else if (signal_type.compare("5X") == 0)
+            else if (signal_type == "5X")
                 {
                     d_signal_carrier_freq = Galileo_E5a_FREQ_HZ;
                     d_code_period = GALILEO_E5a_CODE_PERIOD;
@@ -423,8 +447,8 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
             // Get path
             if (d_dump_filename.find_last_of("/") != std::string::npos)
                 {
-                    std::string dump_filename_ = d_dump_filename.substr(d_dump_filename.find_last_of("/") + 1);
-                    dump_path = d_dump_filename.substr(0, d_dump_filename.find_last_of("/"));
+                    std::string dump_filename_ = d_dump_filename.substr(d_dump_filename.find_last_of('/') + 1);
+                    dump_path = d_dump_filename.substr(0, d_dump_filename.find_last_of('/'));
                     d_dump_filename = dump_filename_;
                 }
             else
@@ -436,9 +460,9 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                     d_dump_filename = "trk_channel_";
                 }
             // remove extension if any
-            if (d_dump_filename.substr(1).find_last_of(".") != std::string::npos)
+            if (d_dump_filename.substr(1).find_last_of('.') != std::string::npos)
                 {
-                    d_dump_filename = d_dump_filename.substr(0, d_dump_filename.find_last_of("."));
+                    d_dump_filename = d_dump_filename.substr(0, d_dump_filename.find_last_of('.'));
                 }
 
             d_dump_filename = dump_path + boost::filesystem::path::preferred_separator + d_dump_filename;
@@ -481,15 +505,15 @@ void dll_pll_veml_tracking_fpga::start_tracking()
     d_carrier_loop_filter.initialize();  // initialize the carrier filter
     d_code_loop_filter.initialize();     // initialize the code filter
 
-    if (systemName.compare("GPS") == 0 and signal_type.compare("1C") == 0)
+    if (systemName == "GPS" and signal_type == "1C")
         {
             //gps_l1_ca_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
         }
-    else if (systemName.compare("GPS") == 0 and signal_type.compare("2S") == 0)
+    else if (systemName == "GPS" and signal_type == "2S")
         {
             //gps_l2c_m_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
         }
-    else if (systemName.compare("GPS") == 0 and signal_type.compare("L5") == 0)
+    else if (systemName == "GPS" and signal_type == "L5")
         {
             if (trk_parameters.track_pilot)
                 {
@@ -503,7 +527,7 @@ void dll_pll_veml_tracking_fpga::start_tracking()
                     //gps_l5i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
                 }
         }
-    else if (systemName.compare("Galileo") == 0 and signal_type.compare("1B") == 0)
+    else if (systemName == "Galileo" and signal_type == "1B")
         {
             if (trk_parameters.track_pilot)
                 {
@@ -518,7 +542,7 @@ void dll_pll_veml_tracking_fpga::start_tracking()
                     //galileo_e1_code_gen_sinboc11_float(d_tracking_code, d_acquisition_gnss_synchro->Signal, d_acquisition_gnss_synchro->PRN);
                 }
         }
-    else if (systemName.compare("Galileo") == 0 and signal_type.compare("5X") == 0)
+    else if (systemName == "Galileo" and signal_type == "5X")
         {
             //gr_complex *aux_code = static_cast<gr_complex *>(volk_gnsssdr_malloc(sizeof(gr_complex) * d_code_length_chips, volk_gnsssdr_get_alignment()));
             //galileo_e5_a_code_gen_complex_primary(aux_code, d_acquisition_gnss_synchro->PRN, const_cast<char *>(signal_type.c_str()));
@@ -590,7 +614,6 @@ void dll_pll_veml_tracking_fpga::start_tracking()
 
 dll_pll_veml_tracking_fpga::~dll_pll_veml_tracking_fpga()
 {
-
     if (signal_type.compare("1C") == 0)
         {
             volk_gnsssdr_free(d_gps_l1ca_preambles_symbols);
@@ -1152,6 +1175,7 @@ int32_t dll_pll_veml_tracking_fpga::save_matfile()
     double *aux2 = new double[num_epoch];
     uint32_t *PRN = new uint32_t[num_epoch];
 
+
     try
         {
             if (dump_file.is_open())
@@ -1218,8 +1242,8 @@ int32_t dll_pll_veml_tracking_fpga::save_matfile()
     std::string filename = dump_filename_;
     filename.erase(filename.length() - 4, 4);
     filename.append(".mat");
-    matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
-    if (reinterpret_cast<int64_t *>(matfp) != NULL)
+    matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT73);
+    if (reinterpret_cast<int64_t *>(matfp) != nullptr)
         {
             size_t dims[2] = {1, static_cast<size_t>(num_epoch)};
             matvar = Mat_VarCreate("abs_VE", MAT_C_SINGLE, MAT_T_SINGLE, 2, dims, abs_VE, 0);
@@ -1390,6 +1414,7 @@ void dll_pll_veml_tracking_fpga::stop_tracking()
 int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items,
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
+
 
     //gr::thread::scoped_lock l(d_setlock);
     //const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);

@@ -32,13 +32,13 @@
 #define GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_CC_H
 
 #include "GPS_L1_CA.h"
-#include "gps_navigation_message.h"
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
+#include "gps_navigation_message.h"
+#include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>
 #include <fstream>
 #include <string>
-#include <boost/circular_buffer.hpp>
 
 class gps_l1_ca_telemetry_decoder_cc;
 
@@ -82,7 +82,7 @@ private:
 
     // symbols
     boost::circular_buffer<Gnss_Synchro> d_symbol_history;
-    float d_subframe_symbols[GPS_SUBFRAME_MS];  // symbols per subframe
+    float d_subframe_symbols[GPS_SUBFRAME_MS]{};  // symbols per subframe
     int d_current_subframe_symbol;
 
     // bits and frame

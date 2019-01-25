@@ -31,12 +31,12 @@
 #ifndef GNSS_SDR_GALILEO_E5A_H_
 #define GNSS_SDR_GALILEO_E5A_H_
 
-#include "gnss_frequencies.h"
 #include "MATH_CONSTANTS.h"
+#include "gnss_frequencies.h"
 #include <cstdint>
 #include <string>
-#include <vector>
 #include <utility>  // std::pair
+#include <vector>
 
 
 // Carrier and code frequencies
@@ -56,6 +56,9 @@ const int32_t Galileo_E5a_NUMBER_OF_CODES = 50;
 // OBSERVABLE HISTORY DEEP FOR INTERPOLATION AND CRC ERROR LIMIT
 const int32_t GALILEO_E5A_HISTORY_DEEP = 20;
 const int32_t GALILEO_E5A_CRC_ERROR_LIMIT = 6;
+
+//optimum parameters
+const uint32_t Galileo_E5a_OPT_ACQ_FS_HZ = 10000000;  //!< Sampling frequncy that maximizes the acquisition SNR while using a non-multiple of chip rate
 
 // F/NAV message structure
 
@@ -80,7 +83,7 @@ const std::vector<std::pair<int32_t, int32_t>> FNAV_PAGE_TYPE_bit({{1, 6}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_SV_ID_PRN_1_bit({{7, 6}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_IODnav_1_bit({{13, 10}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_t0c_1_bit({{23, 14}});
-const double FNAV_t0c_1_LSB = 60;
+const int32_t FNAV_t0c_1_LSB = 60;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_af0_1_bit({{37, 31}});
 const double FNAV_af0_1_LSB = TWO_N34;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_af1_1_bit({{68, 21}});
@@ -140,7 +143,7 @@ const double FNAV_Crc_3_LSB = TWO_N5;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_Crs_3_bit({{145, 16}});
 const double FNAV_Crs_3_LSB = TWO_N5;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_t0e_3_bit({{161, 14}});
-const double FNAV_t0e_3_LSB = 60;
+const int32_t FNAV_t0e_3_LSB = 60;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_WN_3_bit({{175, 12}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_TOW_3_bit({{187, 20}});
 
@@ -156,13 +159,13 @@ const std::vector<std::pair<int32_t, int32_t>> FNAV_A1_4_bit({{81, 24}});
 const double FNAV_A1_4_LSB = TWO_N50;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_deltatls_4_bit({{105, 8}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_t0t_4_bit({{113, 8}});
-const double FNAV_t0t_4_LSB = 3600;
+const int32_t FNAV_t0t_4_LSB = 3600;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_WNot_4_bit({{121, 8}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_WNlsf_4_bit({{129, 8}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_DN_4_bit({{137, 3}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_deltatlsf_4_bit({{140, 8}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_t0g_4_bit({{148, 8}});
-const double FNAV_t0g_4_LSB = 3600;
+const int32_t FNAV_t0g_4_LSB = 3600;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_A0g_4_bit({{156, 16}});
 const double FNAV_A0g_4_LSB = TWO_N35;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_A1g_4_bit({{172, 12}});
@@ -174,7 +177,7 @@ const std::vector<std::pair<int32_t, int32_t>> FNAV_TOW_4_bit({{190, 20}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_IODa_5_bit({{7, 4}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_WNa_5_bit({{11, 2}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_t0a_5_bit({{13, 10}});
-const double FNAV_t0a_5_LSB = 600;
+const int32_t FNAV_t0a_5_LSB = 600;
 const std::vector<std::pair<int32_t, int32_t>> FNAV_SVID1_5_bit({{23, 6}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_Deltaa12_1_5_bit({{29, 13}});
 const double FNAV_Deltaa12_5_LSB = TWO_N9;

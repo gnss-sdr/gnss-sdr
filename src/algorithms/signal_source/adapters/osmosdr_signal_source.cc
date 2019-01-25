@@ -30,21 +30,22 @@
  */
 
 #include "osmosdr_signal_source.h"
+#include "GPS_L1_CA.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_valve.h"
-#include "GPS_L1_CA.h"
 #include <boost/format.hpp>
 #include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <iostream>
+#include <utility>
 
 
 using google::LogMessage;
 
 
 OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_stream, unsigned int out_stream,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+    const std::string& role, unsigned int in_stream, unsigned int out_stream,
+    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
 {
     // DUMP PARAMETERS
     std::string empty = "";
@@ -66,11 +67,11 @@ OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
     osmosdr_args_ = configuration->property(role + ".osmosdr_args", std::string());
     antenna_ = configuration->property(role + ".antenna", empty);
 
-    if (item_type_.compare("short") == 0)
+    if (item_type_ == "short")
         {
-            item_size_ = sizeof(short);
+            item_size_ = sizeof(int16_t);
         }
-    else if (item_type_.compare("gr_complex") == 0)
+    else if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             // 1. Make the driver instance
@@ -130,7 +131,7 @@ OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
     else
         {
             LOG(WARNING) << item_type_ << " unrecognized item type. Using short.";
-            item_size_ = sizeof(short);
+            item_size_ = sizeof(int16_t);
         }
 
     if (samples_ != 0)
@@ -157,9 +158,7 @@ OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
 }
 
 
-OsmosdrSignalSource::~OsmosdrSignalSource()
-{
-}
+OsmosdrSignalSource::~OsmosdrSignalSource() = default;
 
 
 void OsmosdrSignalSource::driver_instance()

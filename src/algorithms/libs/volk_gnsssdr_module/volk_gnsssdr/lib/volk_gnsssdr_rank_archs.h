@@ -19,8 +19,8 @@
 #ifndef GNSS_SDR_VOLK_GNSSSDR_RANK_ARCHS_H
 #define GNSS_SDR_VOLK_GNSSSDR_RANK_ARCHS_H
 
-#include <stdlib.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 #ifdef __cplusplus
 extern "C"

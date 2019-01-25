@@ -30,11 +30,11 @@
 
 
 #include "rtklib_pvt.h"
-#include "pvt_conf.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
-#include <boost/archive/xml_oarchive.hpp>
+#include "pvt_conf.h"
 #include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
 #include <boost/serialization/map.hpp>
 #include <glog/logging.h>
 #if OLD_BOOST
@@ -49,30 +49,10 @@ namespace bc = boost::integer;
 using google::LogMessage;
 
 
-bool RtklibPvt::get_latest_PVT(double* longitude_deg,
-    double* latitude_deg,
-    double* height_m,
-    double* ground_speed_kmh,
-    double* course_over_ground_deg,
-    time_t* UTC_time)
-{
-    return pvt_->get_latest_PVT(longitude_deg,
-        latitude_deg,
-        height_m,
-        ground_speed_kmh,
-        course_over_ground_deg,
-        UTC_time);
-}
-
-void RtklibPvt::clear_ephemeris()
-{
-    pvt_->clear_ephemeris();
-}
-
 RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
-    std::string role,
+    const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams) : role_(role),
+    unsigned int out_streams) : role_(std::move(role)),
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {
@@ -100,27 +80,27 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
 
     // RINEX version
     pvt_output_parameters.rinex_version = configuration->property(role + ".rinex_version", 3);
-    if (FLAGS_RINEX_version.compare("3.01") == 0)
+    if (FLAGS_RINEX_version == "3.01")
         {
             pvt_output_parameters.rinex_version = 3;
         }
-    else if (FLAGS_RINEX_version.compare("3.02") == 0)
+    else if (FLAGS_RINEX_version == "3.02")
         {
             pvt_output_parameters.rinex_version = 3;
         }
-    else if (FLAGS_RINEX_version.compare("3") == 0)
+    else if (FLAGS_RINEX_version == "3")
         {
             pvt_output_parameters.rinex_version = 3;
         }
-    else if (FLAGS_RINEX_version.compare("2.11") == 0)
+    else if (FLAGS_RINEX_version == "2.11")
         {
             pvt_output_parameters.rinex_version = 2;
         }
-    else if (FLAGS_RINEX_version.compare("2.10") == 0)
+    else if (FLAGS_RINEX_version == "2.10")
         {
             pvt_output_parameters.rinex_version = 2;
         }
-    else if (FLAGS_RINEX_version.compare("2") == 0)
+    else if (FLAGS_RINEX_version == "2")
         {
             pvt_output_parameters.rinex_version = 2;
         }
@@ -234,17 +214,18 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     if ((gps_1C_count == 0) && (gps_2S_count != 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count != 0)) pvt_output_parameters.type_of_receiver = 31;
 
     if ((gps_1C_count != 0) && (gps_2S_count == 0) && (gps_L5_count != 0) && (gal_1B_count != 0) && (gal_E5a_count != 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) pvt_output_parameters.type_of_receiver = 32;  // L1+E1+L5+E5a
+    if ((gps_1C_count != 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count != 0) && (gal_E5a_count != 0) && (gal_E5b_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0)) pvt_output_parameters.type_of_receiver = 33;  // L1+E1+E5a
 
     // RTKLIB PVT solver options
     // Settings 1
     int positioning_mode = -1;
     std::string default_pos_mode("Single");
     std::string positioning_mode_str = configuration->property(role + ".positioning_mode", default_pos_mode);  //  (PMODE_XXX) see src/algorithms/libs/rtklib/rtklib.h
-    if (positioning_mode_str.compare("Single") == 0) positioning_mode = PMODE_SINGLE;
-    if (positioning_mode_str.compare("Static") == 0) positioning_mode = PMODE_STATIC;
-    if (positioning_mode_str.compare("Kinematic") == 0) positioning_mode = PMODE_KINEMA;
-    if (positioning_mode_str.compare("PPP_Static") == 0) positioning_mode = PMODE_PPP_STATIC;
-    if (positioning_mode_str.compare("PPP_Kinematic") == 0) positioning_mode = PMODE_PPP_KINEMA;
+    if (positioning_mode_str == "Single") positioning_mode = PMODE_SINGLE;
+    if (positioning_mode_str == "Static") positioning_mode = PMODE_STATIC;
+    if (positioning_mode_str == "Kinematic") positioning_mode = PMODE_KINEMA;
+    if (positioning_mode_str == "PPP_Static") positioning_mode = PMODE_PPP_STATIC;
+    if (positioning_mode_str == "PPP_Kinematic") positioning_mode = PMODE_PPP_KINEMA;
 
     if (positioning_mode == -1)
         {
@@ -289,12 +270,12 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     std::string default_iono_model("OFF");
     std::string iono_model_str = configuration->property(role + ".iono_model", default_iono_model); /*  (IONOOPT_XXX) see src/algorithms/libs/rtklib/rtklib.h */
     int iono_model = -1;
-    if (iono_model_str.compare("OFF") == 0) iono_model = IONOOPT_OFF;
-    if (iono_model_str.compare("Broadcast") == 0) iono_model = IONOOPT_BRDC;
-    if (iono_model_str.compare("SBAS") == 0) iono_model = IONOOPT_SBAS;
-    if (iono_model_str.compare("Iono-Free-LC") == 0) iono_model = IONOOPT_IFLC;
-    if (iono_model_str.compare("Estimate_STEC") == 0) iono_model = IONOOPT_EST;
-    if (iono_model_str.compare("IONEX") == 0) iono_model = IONOOPT_TEC;
+    if (iono_model_str == "OFF") iono_model = IONOOPT_OFF;
+    if (iono_model_str == "Broadcast") iono_model = IONOOPT_BRDC;
+    if (iono_model_str == "SBAS") iono_model = IONOOPT_SBAS;
+    if (iono_model_str == "Iono-Free-LC") iono_model = IONOOPT_IFLC;
+    if (iono_model_str == "Estimate_STEC") iono_model = IONOOPT_EST;
+    if (iono_model_str == "IONEX") iono_model = IONOOPT_TEC;
     if (iono_model == -1)
         {
             //warn user and set the default
@@ -308,11 +289,11 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     std::string default_trop_model("OFF");
     int trop_model = -1;
     std::string trop_model_str = configuration->property(role + ".trop_model", default_trop_model); /*  (TROPOPT_XXX) see src/algorithms/libs/rtklib/rtklib.h */
-    if (trop_model_str.compare("OFF") == 0) trop_model = TROPOPT_OFF;
-    if (trop_model_str.compare("Saastamoinen") == 0) trop_model = TROPOPT_SAAS;
-    if (trop_model_str.compare("SBAS") == 0) trop_model = TROPOPT_SBAS;
-    if (trop_model_str.compare("Estimate_ZTD") == 0) trop_model = TROPOPT_EST;
-    if (trop_model_str.compare("Estimate_ZTD_Grad") == 0) trop_model = TROPOPT_ESTG;
+    if (trop_model_str == "OFF") trop_model = TROPOPT_OFF;
+    if (trop_model_str == "Saastamoinen") trop_model = TROPOPT_SAAS;
+    if (trop_model_str == "SBAS") trop_model = TROPOPT_SBAS;
+    if (trop_model_str == "Estimate_ZTD") trop_model = TROPOPT_EST;
+    if (trop_model_str == "Estimate_ZTD_Grad") trop_model = TROPOPT_ESTG;
     if (trop_model == -1)
         {
             //warn user and set the default
@@ -357,11 +338,11 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     std::string default_gps_ar("Continuous");
     std::string integer_ambiguity_resolution_gps_str = configuration->property(role + ".AR_GPS", default_gps_ar); /* Integer Ambiguity Resolution mode for GPS (0:off,1:continuous,2:instantaneous,3:fix and hold,4:ppp-ar) */
     int integer_ambiguity_resolution_gps = -1;
-    if (integer_ambiguity_resolution_gps_str.compare("OFF") == 0) integer_ambiguity_resolution_gps = ARMODE_OFF;
-    if (integer_ambiguity_resolution_gps_str.compare("Continuous") == 0) integer_ambiguity_resolution_gps = ARMODE_CONT;
-    if (integer_ambiguity_resolution_gps_str.compare("Instantaneous") == 0) integer_ambiguity_resolution_gps = ARMODE_INST;
-    if (integer_ambiguity_resolution_gps_str.compare("Fix-and-Hold") == 0) integer_ambiguity_resolution_gps = ARMODE_FIXHOLD;
-    if (integer_ambiguity_resolution_gps_str.compare("PPP-AR") == 0) integer_ambiguity_resolution_gps = ARMODE_PPPAR;
+    if (integer_ambiguity_resolution_gps_str == "OFF") integer_ambiguity_resolution_gps = ARMODE_OFF;
+    if (integer_ambiguity_resolution_gps_str == "Continuous") integer_ambiguity_resolution_gps = ARMODE_CONT;
+    if (integer_ambiguity_resolution_gps_str == "Instantaneous") integer_ambiguity_resolution_gps = ARMODE_INST;
+    if (integer_ambiguity_resolution_gps_str == "Fix-and-Hold") integer_ambiguity_resolution_gps = ARMODE_FIXHOLD;
+    if (integer_ambiguity_resolution_gps_str == "PPP-AR") integer_ambiguity_resolution_gps = ARMODE_PPPAR;
     if (integer_ambiguity_resolution_gps == -1)
         {
             //warn user and set the default
@@ -391,7 +372,7 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     double min_ratio_to_fix_ambiguity = configuration->property(role + ".min_ratio_to_fix_ambiguity", 3.0); /* Set the integer ambiguity validation threshold for ratio‐test,
                                                                                                                which uses the ratio of squared residuals of the best integer vector to the second‐best vector. */
 
-    int min_lock_to_fix_ambiguity = configuration->property(role + ".min_lock_to_fix_ambiguity", 0); /* Set the minimum lock count to fix integer ambiguity.
+    int min_lock_to_fix_ambiguity = configuration->property(role + ".min_lock_to_fix_ambiguity", 0); /* Set the minimum lock count to fix integer ambiguity.FLAGS_RINEX_version.
                                                                                                          If the lock count is less than the value, the ambiguity is excluded from the fixed integer vector. */
 
     double min_elevation_to_fix_ambiguity = configuration->property(role + ".min_elevation_to_fix_ambiguity", 0.0); /* Set the minimum elevation (deg) to fix integer ambiguity.
@@ -534,6 +515,28 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
 RtklibPvt::~RtklibPvt()
 {
     rtkfree(&rtk);
+}
+
+
+bool RtklibPvt::get_latest_PVT(double* longitude_deg,
+    double* latitude_deg,
+    double* height_m,
+    double* ground_speed_kmh,
+    double* course_over_ground_deg,
+    time_t* UTC_time)
+{
+    return pvt_->get_latest_PVT(longitude_deg,
+        latitude_deg,
+        height_m,
+        ground_speed_kmh,
+        course_over_ground_deg,
+        UTC_time);
+}
+
+
+void RtklibPvt::clear_ephemeris()
+{
+    pvt_->clear_ephemeris();
 }
 
 

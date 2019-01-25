@@ -32,10 +32,10 @@
  */
 
 #include "gps_l5i_pcps_acquisition_fpga.h"
-#include "configuration_interface.h"
-#include "gps_l5_signal.h"
 #include "GPS_L5.h"
+#include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
+#include "gps_l5_signal.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
 
@@ -43,13 +43,14 @@
 
 using google::LogMessage;
 
-void GpsL5iPcpsAcquisitionFpga::stop_acquisition()
-{
-}
 
 GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
-    ConfigurationInterface* configuration, std::string role,
-    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration,
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(role),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams)
 {
     //printf("L5 ACQ CLASS CREATED\n");
     pcpsconf_fpga_t acq_parameters;
@@ -61,13 +62,14 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
 
     //item_type_ = configuration_->property(role + ".item_type", default_item_type);
 
-    long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
-    long fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+	int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
+	int64_t fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
 
     float downsampling_factor = configuration_->property(role + ".downsampling_factor", 1.0);
     acq_parameters.downsampling_factor = downsampling_factor;
 
     fs_in = fs_in/downsampling_factor;
+
 
     acq_parameters.fs_in = fs_in;
     //if_ = configuration_->property(role + ".if", 0);
@@ -94,7 +96,7 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     //dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
     //acq_parameters.dump_filename = dump_filename_;
     //--- Find number of samples per spreading code -------------------------
-    unsigned int code_length = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / (GPS_L5i_CODE_RATE_HZ / static_cast<double>(GPS_L5i_CODE_LENGTH_CHIPS))));
+    auto code_length = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / (GPS_L5i_CODE_RATE_HZ / static_cast<double>(GPS_L5i_CODE_LENGTH_CHIPS))));
     acq_parameters.code_length = code_length;
     // The FPGA can only use FFT lengths that are a power of two.
     float nbits = ceilf(log2f((float)code_length*2));
@@ -122,7 +124,7 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     //printf("L5 ACQ CLASS MID 02\n");
     std::complex<float>* code = new gr_complex[nsamples_total];
     //printf("L5 ACQ CLASS MID 03\n");
-    gr_complex* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    auto* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     //printf("L5 ACQ CLASS MID 04\n");
     d_all_fft_codes_ = new lv_16sc_t[nsamples_total * NUM_PRNs];  // memory containing all the possible fft codes for PRN 0 to 32
 
@@ -179,6 +181,7 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     }
 
 
+
     //printf("L5 ACQ CLASS MID 2\n");
 
     //acq_parameters
@@ -232,7 +235,7 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     channel_ = 0;
     //    threshold_ = 0.0;
     doppler_step_ = 0;
-    gnss_synchro_ = 0;
+    gnss_synchro_ = nullptr;
     //printf("L5 ACQ CLASS FINISHED\n");
 }
 
@@ -241,6 +244,11 @@ GpsL5iPcpsAcquisitionFpga::~GpsL5iPcpsAcquisitionFpga()
 {
     //delete[] code_;
     delete[] d_all_fft_codes_;
+}
+
+
+void GpsL5iPcpsAcquisitionFpga::stop_acquisition()
+{
 }
 
 
@@ -253,7 +261,7 @@ void GpsL5iPcpsAcquisitionFpga::set_channel(unsigned int channel)
 
 void GpsL5iPcpsAcquisitionFpga::set_threshold(float threshold)
 {
-    //    float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
+    //    float pfa = configuration_->property(role_ + std::to_string(channel_) + ".pfa", 0.0);
     //
     //    if (pfa == 0.0)
     //        {

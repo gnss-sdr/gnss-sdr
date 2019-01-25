@@ -53,7 +53,8 @@ class GpsL1CaPcpsAcquisitionFpga : public AcquisitionInterface
 {
 public:
     GpsL1CaPcpsAcquisitionFpga(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role,
+        unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~GpsL1CaPcpsAcquisitionFpga();
@@ -158,6 +159,8 @@ public:
      * \brief Stop running acquisition
      */
     void stop_acquisition() override;
+
+    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
 
 private:
     ConfigurationInterface* configuration_;

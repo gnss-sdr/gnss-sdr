@@ -22,26 +22,30 @@
 include(FindPkgConfig)
 pkg_check_modules(PC_VOLK_GNSSSDR volk_gnsssdr)
 
-find_path(
-    VOLK_GNSSSDR_INCLUDE_DIRS
+find_path(VOLK_GNSSSDR_INCLUDE_DIRS
     NAMES volk_gnsssdr/volk_gnsssdr.h
     HINTS $ENV{VOLK_GNSSSDR_DIR}/include
-        ${PC_VOLK_GNSSSDR_INCLUDEDIR}
+          ${PC_VOLK_GNSSSDR_INCLUDEDIR}
     PATHS /usr/local/include
           /usr/include
           ${GNURADIO_INSTALL_PREFIX}/include
+          ${VOLKGNSSSDR_ROOT}/include
+          $ENV{VOLKGNSSSDR_ROOT}/include
 )
 
-find_library(
-    VOLK_GNSSSDR_LIBRARIES
+find_library(VOLK_GNSSSDR_LIBRARIES
     NAMES volk_gnsssdr
     HINTS $ENV{VOLK_GNSSSDR_DIR}/lib
-        ${PC_VOLK_GNSSSDR_LIBDIR}
+          ${PC_VOLK_GNSSSDR_LIBDIR}
     PATHS /usr/local/lib
           /usr/local/lib64
           /usr/lib
           /usr/lib64
           ${GNURADIO_INSTALL_PREFIX}/lib
+          ${VOLKGNSSSDR_ROOT}/lib
+          $ENV{VOLKGNSSSDR_ROOT}/lib
+          ${VOLKGNSSSDR_ROOT}/lib64
+          $ENV{VOLKGNSSSDR_ROOT}/lib64
 )
 
 include(FindPackageHandleStandardArgs)

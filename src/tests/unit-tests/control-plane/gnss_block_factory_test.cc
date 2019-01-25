@@ -33,18 +33,18 @@
  * -------------------------------------------------------------------------
  */
 
-#include <vector>
-#include <gnuradio/msg_queue.h>
-#include <gtest/gtest.h>
-#include "in_memory_configuration.h"
-#include "gnss_block_interface.h"
 #include "acquisition_interface.h"
-#include "tracking_interface.h"
-#include "telemetry_decoder_interface.h"
+#include "channel.h"
+#include "gnss_block_factory.h"
+#include "gnss_block_interface.h"
+#include "in_memory_configuration.h"
 #include "observables_interface.h"
 #include "pvt_interface.h"
-#include "gnss_block_factory.h"
-#include "channel.h"
+#include "telemetry_decoder_interface.h"
+#include "tracking_interface.h"
+#include <gnuradio/msg_queue.h>
+#include <gtest/gtest.h>
+#include <vector>
 
 TEST(GNSSBlockFactoryTest, InstantiateFileSignalSource)
 {

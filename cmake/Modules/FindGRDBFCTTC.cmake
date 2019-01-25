@@ -30,6 +30,8 @@ find_path(
     PATHS ${CMAKE_INSTALL_PREFIX}/include
           /usr/include
           /usr/local/include
+          ${GRDBFCTTC_ROOT}/include
+          $ENV{GRDBFCTTC_ROOT}/include
 )
 
 find_library(
@@ -43,6 +45,10 @@ find_library(
           /usr/lib64
           /usr/local/lib
           /usr/local/lib64
+          ${GRDBFCTTC_ROOT}/lib
+          $ENV{GRDBFCTTC_ROOT}/lib
+          ${GRDBFCTTC_ROOT}/lib64
+          $ENV{GRDBFCTTC_ROOT}/lib64
 )
 
 include(FindPackageHandleStandardArgs)

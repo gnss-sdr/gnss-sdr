@@ -32,17 +32,17 @@
 
 #include "glonass_l2_ca_telemetry_decoder.h"
 #include "configuration_interface.h"
-#include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_almanac.h"
+#include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_utc_model.h"
-#include <gnuradio/io_signature.h>
 #include <glog/logging.h>
+#include <gnuradio/io_signature.h>
 
 
 using google::LogMessage;
 
 GlonassL2CaTelemetryDecoder::GlonassL2CaTelemetryDecoder(ConfigurationInterface* configuration,
-    std::string role,
+    const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
                                 in_streams_(in_streams),
@@ -67,9 +67,7 @@ GlonassL2CaTelemetryDecoder::GlonassL2CaTelemetryDecoder(ConfigurationInterface*
 }
 
 
-GlonassL2CaTelemetryDecoder::~GlonassL2CaTelemetryDecoder()
-{
-}
+GlonassL2CaTelemetryDecoder::~GlonassL2CaTelemetryDecoder() = default;
 
 
 void GlonassL2CaTelemetryDecoder::set_satellite(const Gnss_Satellite& satellite)

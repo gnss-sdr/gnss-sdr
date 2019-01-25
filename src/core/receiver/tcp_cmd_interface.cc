@@ -1,7 +1,7 @@
 /*!
  * \file tcp_cmd_interface.cc
  *
- * \brief Class that implements a TCP telecontrol command line interface
+ * \brief Class that implements a TCP/IP telecommand command line interface
  * for GNSS-SDR
  * \author Javier Arribas jarribas (at) cttc.es
  * -------------------------------------------------------------------------
@@ -47,9 +47,7 @@ TcpCmdInterface::TcpCmdInterface()
 }
 
 
-TcpCmdInterface::~TcpCmdInterface()
-{
-}
+TcpCmdInterface::~TcpCmdInterface() = default;
 
 
 void TcpCmdInterface::register_functions()
@@ -142,7 +140,7 @@ std::string TcpCmdInterface::status(const std::vector<std::string> &commandLine 
             &course_over_ground_deg,
             &UTC_time) == true)
         {
-            struct tm tstruct;
+            struct tm tstruct = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, nullptr};
             char buf1[80];
             tstruct = *gmtime(&UTC_time);
             strftime(buf1, sizeof(buf1), "%d/%m/%Y %H:%M:%S", &tstruct);
@@ -173,7 +171,7 @@ std::string TcpCmdInterface::hotstart(const std::vector<std::string> &commandLin
     if (commandLine.size() > 5)
         {
             // Read commandline time parameter
-            struct tm tm;
+            struct tm tm = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, nullptr};
             if (strptime(commandLine.at(1).c_str(), "%d/%m/%Y %H:%M:%S", &tm) == nullptr)
                 {
                     response = "ERROR: time parameter malformed\n";
@@ -219,7 +217,7 @@ std::string TcpCmdInterface::warmstart(const std::vector<std::string> &commandLi
         {
             std::string tmp_str;
             // Read commandline time parameter
-            struct tm tm;
+            struct tm tm = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, nullptr};
             tmp_str = commandLine.at(1) + commandLine.at(2);
             if (strptime(commandLine.at(1).c_str(), "%d/%m/%Y %H:%M:%S", &tm) == nullptr)
                 {
@@ -336,7 +334,7 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
                                         {
                                             try
                                                 {
-                                                    if (cmd_vector.at(0).compare("exit") == 0)
+                                                    if (cmd_vector.at(0) == "exit")
                                                         {
                                                             error = boost::asio::error::eof;
                                                             // send cmd response

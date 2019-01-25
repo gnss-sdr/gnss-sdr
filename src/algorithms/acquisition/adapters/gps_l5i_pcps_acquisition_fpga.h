@@ -35,11 +35,11 @@
 #define GNSS_SDR_GPS_L5i_PCPS_ACQUISITION_FPGA_H_
 
 #include "acquisition_interface.h"
+#include "complex_byte_to_float_x2.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition_fpga.h"
-#include "complex_byte_to_float_x2.h"
-#include <gnuradio/blocks/stream_to_vector.h>
 #include <gnuradio/blocks/float_to_complex.h>
+#include <gnuradio/blocks/stream_to_vector.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <string>
 
@@ -54,7 +54,8 @@ class GpsL5iPcpsAcquisitionFpga : public AcquisitionInterface
 {
 public:
     GpsL5iPcpsAcquisitionFpga(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role,
+        unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~GpsL5iPcpsAcquisitionFpga();
@@ -160,6 +161,8 @@ public:
      */
     void stop_acquisition() override;
 
+    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
+
 private:
     ConfigurationInterface* configuration_;
     //pcps_acquisition_sptr acquisition_;
@@ -178,7 +181,7 @@ private:
     unsigned int doppler_max_;
     unsigned int doppler_step_;
     unsigned int max_dwells_;
-    long fs_in_;
+    int64_t fs_in_;
     //long if_;
     bool dump_;
     bool blocking_;

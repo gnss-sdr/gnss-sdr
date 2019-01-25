@@ -45,7 +45,8 @@ class GalileoE5aPcpsAcquisitionFpga : public AcquisitionInterface
 {
 public:
     GalileoE5aPcpsAcquisitionFpga(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role,
+        unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~GalileoE5aPcpsAcquisitionFpga();
@@ -150,6 +151,8 @@ public:
      */
     void stop_acquisition() override;
 
+    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
+
 private:
     //float calculate_threshold(float pfa);
 
@@ -181,7 +184,7 @@ private:
     unsigned int in_streams_;
     unsigned int out_streams_;
 
-    long fs_in_;
+    int64_t fs_in_;
 
 
     float threshold_;

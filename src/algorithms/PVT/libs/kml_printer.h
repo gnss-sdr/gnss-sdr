@@ -60,7 +60,7 @@ private:
 public:
     Kml_Printer(const std::string& base_path = std::string("."));
     ~Kml_Printer();
-    bool set_headers(std::string filename, bool time_tag_name = true);
+    bool set_headers(const std::string& filename, bool time_tag_name = true);
     bool print_position(const std::shared_ptr<rtklib_solver>& position, bool print_average_values);
     bool close_file();
 };

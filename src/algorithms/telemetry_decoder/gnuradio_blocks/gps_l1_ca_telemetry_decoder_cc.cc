@@ -38,7 +38,7 @@
 
 
 #ifndef _rotl
-#define _rotl(X, N) ((X << N) ^ (X >> (32 - N)))  // Used in the parity check algorithm
+#define _rotl(X, N) (((X) << (N)) ^ ((X) >> (32 - (N))))  // Used in the parity check algorithm
 #endif
 
 using google::LogMessage;
@@ -67,11 +67,11 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     // preamble bits to sampled symbols
     d_preambles_symbols = static_cast<int32_t *>(volk_gnsssdr_malloc(GPS_CA_PREAMBLE_LENGTH_SYMBOLS * sizeof(int32_t), volk_gnsssdr_get_alignment()));
     int32_t n = 0;
-    for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
+    for (uint16_t preambles_bit : preambles_bits)
         {
             for (uint32_t j = 0; j < GPS_CA_TELEMETRY_SYMBOLS_PER_BIT; j++)
                 {
-                    if (preambles_bits[i] == 1)
+                    if (preambles_bit == 1)
                         {
                             d_preambles_symbols[n] = 1;
                         }
@@ -136,9 +136,11 @@ bool gps_l1_ca_telemetry_decoder_cc::gps_word_parityCheck(uint32_t gpsword)
     parity = t ^ _rotl(t, 6) ^ _rotl(t, 12) ^ _rotl(t, 18) ^ _rotl(t, 24);
     parity = parity & 0x3F;
     if (parity == (gpsword & 0x3F))
-        return (true);
-    else
-        return (false);
+        {
+            return (true);
+        }
+
+    return (false);
 }
 
 
@@ -165,7 +167,7 @@ void gps_l1_ca_telemetry_decoder_cc::set_channel(int32_t channel)
                     try
                         {
                             d_dump_filename = "telemetry";
-                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
+                            d_dump_filename.append(std::to_string(d_channel));
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
@@ -193,11 +195,11 @@ bool gps_l1_ca_telemetry_decoder_cc::decode_subframe()
     bool subframe_synchro_confirmation = false;
     bool CRC_ok = true;
 
-    for (int32_t n = 0; n < GPS_SUBFRAME_MS; n++)
+    for (float d_subframe_symbol : d_subframe_symbols)
         {
             // ******* SYMBOL TO BIT *******
             // extended correlation to bit period is enabled in tracking!
-            symbol_accumulator += d_subframe_symbols[n];  // accumulate the input value in d_symbol_accumulator
+            symbol_accumulator += d_subframe_symbol;  // accumulate the input value in d_symbol_accumulator
             symbol_accumulator_counter++;
             if (symbol_accumulator_counter == 20)
                 {
@@ -311,15 +313,15 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
 {
     int32_t preamble_diff_ms = 0;
 
-    Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);            // Get the output buffer pointer
-    const Gnss_Synchro **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);  // Get the input buffer pointer
+    auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);            // Get the output buffer pointer
+    const auto **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);  // Get the input buffer pointer
 
-    Gnss_Synchro current_symbol;  // structure to save the synchronization information and send the output object to the next block
+    Gnss_Synchro current_symbol{};  // structure to save the synchronization information and send the output object to the next block
     // 1. Copy the current tracking output
     current_symbol = in[0][0];
 
     // record the oldest subframe symbol before inserting a new symbol into the circular buffer
-    if (d_current_subframe_symbol < GPS_SUBFRAME_MS and d_symbol_history.size() > 0)
+    if (d_current_subframe_symbol < GPS_SUBFRAME_MS and !d_symbol_history.empty())
         {
             d_subframe_symbols[d_current_subframe_symbol] = d_symbol_history[0].Prompt_I;
             d_current_subframe_symbol++;
@@ -474,8 +476,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
 
             return 1;
         }
-    else
-        {
-            return 0;
-        }
+
+
+    return 0;
 }

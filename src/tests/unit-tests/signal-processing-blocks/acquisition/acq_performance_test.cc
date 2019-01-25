@@ -29,29 +29,29 @@
  * -------------------------------------------------------------------------
  */
 
-#include "gps_l1_ca_pcps_acquisition.h"
-#include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
+#include "acquisition_dump_reader.h"
+#include "display.h"
+#include "file_configuration.h"
 #include "galileo_e1_pcps_ambiguous_acquisition.h"
 #include "galileo_e5a_pcps_acquisition.h"
 #include "glonass_l1_ca_pcps_acquisition.h"
 #include "glonass_l2_ca_pcps_acquisition.h"
+#include "gnss_sdr_valve.h"
+#include "gnuplot_i.h"
+#include "gps_l1_ca_pcps_acquisition.h"
+#include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
 #include "gps_l2_m_pcps_acquisition.h"
 #include "gps_l5i_pcps_acquisition.h"
 #include "in_memory_configuration.h"
-#include "file_configuration.h"
-#include "gnss_sdr_valve.h"
-#include "acquisition_dump_reader.h"
-#include "display.h"
-#include "gnuplot_i.h"
 #include "signal_generator_flags.h"
 #include "test_flags.h"
 #include "tracking_true_obs_reader.h"
 #include "true_observables_reader.h"
 #include <boost/filesystem.hpp>
-#include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
 #include <gnuradio/blocks/skiphead.h>
+#include <gnuradio/top_block.h>
 
 
 DEFINE_string(config_file_ptest, std::string(""), "File containing alternative configuration parameters for the acquisition performance test.");
@@ -86,6 +86,8 @@ DEFINE_int32(acq_test_fake_PRN, 33, "PRN number of a non-present satellite");
 DEFINE_int32(acq_test_iterations, 1, "Number of iterations (same signal, different noise realization)");
 DEFINE_bool(plot_acq_test, false, "Plots results with gnuplot, if available");
 DEFINE_int32(acq_test_skiphead, 0, "Number of samples to skip in the input file");
+
+DEFINE_bool(acq_test_dump, false, "Dump the results of an acquisition block into .mat files.");
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class AcqPerfTest_msg_rx;
@@ -523,8 +525,15 @@ int AcquisitionPerformanceTest::configure_receiver(double cn0, float pfa, unsign
                     config->set_property("Acquisition.make_two_steps", "false");
                 }
 
+            if (FLAGS_acq_test_dump)
+                {
+                    config->set_property("Acquisition.dump", "true");
+                }
+            else
+                {
+                    config->set_property("Acquisition.dump", "false");
+                }
 
-            config->set_property("Acquisition.dump", "true");
             std::string dump_file = path_str + std::string("/acquisition_") + std::to_string(cn0) + "_" + std::to_string(iter) + "_" + std::to_string(pfa);
             config->set_property("Acquisition.dump_filename", dump_file);
             config->set_property("Acquisition.dump_channel", std::to_string(dump_channel));

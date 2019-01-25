@@ -65,7 +65,7 @@ public:
     double carrier_lock_th;
     bool track_pilot;
     char system;
-    char signal[3];
+    char signal[3]{};
 
     Dll_Pll_Conf();
 };

@@ -33,22 +33,23 @@
  */
 
 #include "gps_l1_ca_pcps_assisted_acquisition.h"
-#include <glog/logging.h>
-#include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
+#include "gps_sdr_signal_processing.h"
+#include <glog/logging.h>
 
 
 using google::LogMessage;
 
-void GpsL1CaPcpsAssistedAcquisition::stop_acquisition()
-{
-}
 
 GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
-    ConfigurationInterface* configuration, std::string role,
-    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration,
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(role),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams)
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_filename = "./data/acquisition.dat";
@@ -56,7 +57,7 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
     DLOG(INFO) << "role " << role;
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-    long fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
+    int64_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     dump_ = configuration->property(role + ".dump", false);
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
@@ -71,7 +72,7 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
 
     code_ = new gr_complex[vector_length_];
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             acquisition_cc_ = pcps_make_assisted_acquisition_cc(max_dwells_, sampled_ms_,
@@ -87,7 +88,7 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
     channel_ = 0;
     threshold_ = 0.0;
     doppler_step_ = 0;
-    gnss_synchro_ = 0;
+    gnss_synchro_ = nullptr;
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
@@ -102,6 +103,11 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
 GpsL1CaPcpsAssistedAcquisition::~GpsL1CaPcpsAssistedAcquisition()
 {
     delete[] code_;
+}
+
+
+void GpsL1CaPcpsAssistedAcquisition::stop_acquisition()
+{
 }
 
 

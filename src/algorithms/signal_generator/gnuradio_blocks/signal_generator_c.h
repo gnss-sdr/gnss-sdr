@@ -35,9 +35,9 @@
 #include <boost/scoped_array.hpp>
 //#include <gnuradio/random.h>
 #include <gnuradio/block.h>
+#include <random>
 #include <string>
 #include <vector>
-#include <random>
 
 
 class signal_generator_c;
@@ -87,8 +87,8 @@ private:
         unsigned int fs_in, unsigned int vector_length, float BW_BB);
 
     signal_generator_c(std::vector<std::string> signal1, std::vector<std::string> system, const std::vector<unsigned int> &PRN,
-        const std::vector<float> &CN0_dB, const std::vector<float> &doppler_Hz,
-        const std::vector<unsigned int> &delay_chips, const std::vector<unsigned int> &delay_sec, bool data_flag, bool noise_flag,
+        std::vector<float> CN0_dB, std::vector<float> doppler_Hz,
+        std::vector<unsigned int> delay_chips, std::vector<unsigned int> delay_sec, bool data_flag, bool noise_flag,
         unsigned int fs_in, unsigned int vector_length, float BW_BB);
 
     void init();

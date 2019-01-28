@@ -224,6 +224,19 @@ void Gnss_Satellite::set_PRN(uint32_t PRN_)
                     PRN = PRN_;
                 }
         }
+    else if (system == "Beidou")
+        {
+            if (PRN_ < 1 or PRN_ > 37)
+                {
+                    DLOG(INFO) << "This PRN is not defined";
+                    PRN = 0;
+                }
+            else
+                {
+                    PRN = PRN_;
+                }
+        }
+
     else
         {
             DLOG(INFO) << "System " << system << " is not defined";
@@ -598,6 +611,57 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
                     break;
                 case 36:
                     block_ = std::string("FOC-FM19");  // Galileo Full Operational Capability (FOC) satellite FM19 / GSAT0219, launched on Jul. 25, 2018. UNDER COMMISSIONING.
+                    break;
+                default:
+                    block_ = std::string("Unknown(Simulated)");
+                }
+        }
+    if (system_ == "Beidou")
+        {
+            // Check https://en.wikipedia.org/wiki/List_of_BeiDou_satellites
+            switch (PRN_)
+                {
+                case 19:
+                    block_ = std::string("BEIDOU-3 M1");  //!<Slot B-7; launched 2017/11/05
+                    break;
+                case 20:
+                    block_ = std::string("BEIDOU-3 M2");  //!<Slot B-5; launched 2017/11/05
+                    break;
+                case 21:
+                    block_ = std::string("BEIDOU 3M5");  //!<Slot B-?; launched 2018/02/12
+                    break;
+                case 22:
+                    block_ = std::string("BEIDOU 3M6");  //!<Slot B-6; launched 2018/02/12
+                    break;
+                case 23:
+                    block_ = std::string("BEIDOU 3M9");  //!<Slot C-7; launched 2018/07/29
+                    break;
+                case 24:
+                    block_ = std::string("BEIDOU 3M10");  //!<Slot C-1; launched 2018/07/29
+                    break;
+                case 25:
+                    block_ = std::string("BEIDOU 3M12");  //!<Slot C-8; launched 2018/08/24
+                    break;
+                case 26:
+                    block_ = std::string("BEIDOU 3M11");  //!<Slot C-2; launched 2018/08/24
+                    break;
+                case 27:
+                    block_ = std::string("BEIDOU 3M3");  //!<Slot A-?; launched 2018/01/11
+                    break;
+                case 28:
+                    block_ = std::string("BEIDOU 3M4");  //!<Slot A-?; launched 2018/01/11
+                    break;
+                case 29:
+                    block_ = std::string("BEIDOU 3M7");  //!<Slot A-?; launched 2018/03/29
+                    break;
+                case 30:
+                    block_ = std::string("BEIDOU 3M8");  //!<Slot A-?; launched 2018/03/29
+                    break;
+                case 32:
+                    block_ = std::string("BEIDOU 3M13");  //!<Slot B-1?; launched 2018/09/19
+                    break;
+                case 33:
+                    block_ = std::string("BEIDOU 3M14");  //!<Slot B-3; launched 2018/09/19
                     break;
                 default:
                     block_ = std::string("Unknown(Simulated)");

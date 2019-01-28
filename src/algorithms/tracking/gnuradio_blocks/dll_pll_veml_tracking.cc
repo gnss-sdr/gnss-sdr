@@ -593,7 +593,7 @@ void dll_pll_veml_tracking::start_tracking()
                     uint16_t preambles_bits[BEIDOU_B1I_PREAMBLE_LENGTH_BITS] = {1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0};
                     for (uint16_t preambles_bit : preambles_bits)
                         {
-                            for (uint32_t j = 0; j < d_symbols_per_bit; j++)
+                            for (int32_t j = 0; j < d_symbols_per_bit; j++)
                                 {
                                     if (preambles_bit == 1)
                                         {

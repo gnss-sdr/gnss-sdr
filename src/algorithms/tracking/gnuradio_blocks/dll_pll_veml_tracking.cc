@@ -1508,9 +1508,9 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                         d_symbol_history.push_back(d_Prompt->real());
                                         //******* preamble correlation ********
                                         int32_t corr_value = 0;
-                                        if ((d_symbol_history.size() == d_preamble_length_symbols))  // and (d_make_correlation or !d_flag_frame_sync))
+                                        if ((static_cast<int32_t>(d_symbol_history.size()) == d_preamble_length_symbols))  // and (d_make_correlation or !d_flag_frame_sync))
                                             {
-                                                for (uint32_t i = 0; i < d_preamble_length_symbols; i++)
+                                                for (int32_t i = 0; i < d_preamble_length_symbols; i++)
                                                     {
                                                         if (d_symbol_history.at(i) < 0)  // symbols clipping
                                                             {

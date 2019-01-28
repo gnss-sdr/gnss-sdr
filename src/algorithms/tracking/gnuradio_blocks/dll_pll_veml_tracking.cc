@@ -593,7 +593,7 @@ void dll_pll_veml_tracking::start_tracking()
                     uint16_t preambles_bits[BEIDOU_B1I_PREAMBLE_LENGTH_BITS] = {1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0};
                     for (uint16_t preambles_bit : preambles_bits)
                         {
-                            for (uint32_t j = 0; j < d_symbols_per_bit; j++)
+                            for (int32_t j = 0; j < d_symbols_per_bit; j++)
                                 {
                                     if (preambles_bit == 1)
                                         {
@@ -1508,9 +1508,9 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                         d_symbol_history.push_back(d_Prompt->real());
                                         //******* preamble correlation ********
                                         int32_t corr_value = 0;
-                                        if ((d_symbol_history.size() == d_preamble_length_symbols))  // and (d_make_correlation or !d_flag_frame_sync))
+                                        if ((static_cast<int32_t>(d_symbol_history.size()) == d_preamble_length_symbols))  // and (d_make_correlation or !d_flag_frame_sync))
                                             {
-                                                for (uint32_t i = 0; i < d_preamble_length_symbols; i++)
+                                                for (int32_t i = 0; i < d_preamble_length_symbols; i++)
                                                     {
                                                         if (d_symbol_history.at(i) < 0)  // symbols clipping
                                                             {

@@ -49,4 +49,3 @@ Beidou_Dnav_Utc_Model::Beidou_Dnav_Utc_Model()
     d_A0_GLO = 0;
     d_A1_GLO = 0;
 }
-

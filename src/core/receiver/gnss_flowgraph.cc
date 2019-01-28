@@ -1024,13 +1024,13 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                             break;
 
                         case evBDS_B1:
-                        	available_BDS_B1_signals_.push_back(channels_[who]->get_signal());
+                            available_BDS_B1_signals_.push_back(channels_[who]->get_signal());
                             break;
 
                         default:
                             LOG(ERROR) << "This should not happen :-(";
                             break;
-                }
+                        }
                 }
             channels_state_[who] = 0;
             acq_channels_count_--;
@@ -1561,7 +1561,7 @@ void GNSSFlowgraph::set_signals_list()
 
     std::set<unsigned int> available_beidou_prn = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
         11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
-	30, 31, 32, 33, 34, 35, 36, 37};
+        30, 31, 32, 33, 34, 35, 36, 37};
 
     std::string sv_list = configuration_->property("Galileo.prns", std::string(""));
 
@@ -1627,7 +1627,7 @@ void GNSSFlowgraph::set_signals_list()
                 }
         }
     sv_list = configuration_->property("Beidou.prns", std::string(""));
- 
+
 
     if (sv_list.length() > 0)
         {
@@ -1760,10 +1760,8 @@ void GNSSFlowgraph::set_signals_list()
                     available_BDS_B1_signals_.push_back(Gnss_Signal(
                         Gnss_Satellite(std::string("Beidou"), *available_gnss_prn_iter),
                         std::string("B1")));
-
                 }
         }
-
 }
 
 
@@ -1806,7 +1804,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
             if (!pop)
                 {
                     available_GPS_1C_signals_.push_back(result);
-        }
+                }
             if (tracked)
                 {
                     if ((configuration_->property("Channels_2S.count", 0) > 0) or (configuration_->property("Channels_L5.count", 0) > 0))
@@ -2002,28 +2000,28 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                 }
             if (tracked)
                 {
-            	// In the near future Beidou B2a will be added
-//                    if (configuration_->property("Channels_5C.count", 0) > 0)
-//                        {
-//                            for (unsigned int ch = 0; ch < channels_count_; ch++)
-//                                {
-//                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str().compare("5C") != 0)) untracked_satellite = false;
-//                                }
-//                            if (untracked_satellite)
-//                                {
-//                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "5C");
-//                                    available_BDS_5C_signals_.remove(gs);
-//                                    available_BDS_5C_signals_.push_front(gs);
-//                                }
-//                        }
+                    // In the near future Beidou B2a will be added
+                    //                    if (configuration_->property("Channels_5C.count", 0) > 0)
+                    //                        {
+                    //                            for (unsigned int ch = 0; ch < channels_count_; ch++)
+                    //                                {
+                    //                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str().compare("5C") != 0)) untracked_satellite = false;
+                    //                                }
+                    //                            if (untracked_satellite)
+                    //                                {
+                    //                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "5C");
+                    //                                    available_BDS_5C_signals_.remove(gs);
+                    //                                    available_BDS_5C_signals_.push_front(gs);
+                    //                                }
+                    //                        }
                 }
             break;
 
         default:
             LOG(ERROR) << "This should not happen :-(";
             result = available_GPS_1C_signals_.front();
-    if (pop)
-        {
+            if (pop)
+                {
                     available_GPS_1C_signals_.pop_front();
                 }
             break;

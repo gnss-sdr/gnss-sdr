@@ -70,7 +70,7 @@
 #define FIVE_SECONDS 5000000          // five seconds in microseconds
 
 void send_tracking_gps_input_samples(FILE *rx_signal_file,
-    int num_remaining_samples, const gr::top_block_sptr& top_block)
+    int num_remaining_samples, const gr::top_block_sptr &top_block)
 {
     int num_samples_transferred = 0;   // number of samples that have been transferred to the DMA so far
     static int flowgraph_stopped = 0;  // flag to indicate if the flowgraph is stopped already

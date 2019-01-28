@@ -36,11 +36,11 @@
 
 #include "acq_conf.h"
 #include "acquisition_interface.h"
+#include "complex_byte_to_float_x2.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition.h"
-#include "complex_byte_to_float_x2.h"
-#include <gnuradio/blocks/stream_to_vector.h>
 #include <gnuradio/blocks/float_to_complex.h>
+#include <gnuradio/blocks/stream_to_vector.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <string>
 
@@ -55,7 +55,7 @@ class BeidouB1iPcpsAcquisition : public AcquisitionInterface
 {
 public:
     BeidouB1iPcpsAcquisition(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role, unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~BeidouB1iPcpsAcquisition();

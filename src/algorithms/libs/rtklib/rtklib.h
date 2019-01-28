@@ -223,8 +223,8 @@ const int NSYSQZS = 0;
 
 #define ENABDS
 #ifdef ENABDS
-const int MINPRNBDS = 1;                         //!<   min satellite sat number of BeiDou
-const int MAXPRNBDS = 35;                        //!<   max satellite sat number of BeiDou
+const int MINPRNBDS = 1;                          //!<   min satellite sat number of BeiDou
+const int MAXPRNBDS = 35;                         //!<   max satellite sat number of BeiDou
 const int NSATBDS = (MAXPRNBDS - MINPRNBDS + 1);  //!<   number of BeiDou satellites
 const int NSYSBDS = 1;
 #else

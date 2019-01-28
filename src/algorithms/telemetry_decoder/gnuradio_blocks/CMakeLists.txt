@@ -17,38 +17,38 @@
 #
 
 set(TELEMETRY_DECODER_GR_BLOCKS_SOURCES
-     gps_l1_ca_telemetry_decoder_cc.cc
-     gps_l2c_telemetry_decoder_cc.cc
-     gps_l5_telemetry_decoder_cc.cc
-     sbas_l1_telemetry_decoder_cc.cc
-     glonass_l1_ca_telemetry_decoder_cc.cc
-     glonass_l2_ca_telemetry_decoder_cc.cc
-     galileo_telemetry_decoder_cc.cc
-     beidou_b1i_telemetry_decoder_cc.cc
+    gps_l1_ca_telemetry_decoder_cc.cc
+    gps_l2c_telemetry_decoder_cc.cc
+    gps_l5_telemetry_decoder_cc.cc
+    sbas_l1_telemetry_decoder_cc.cc
+    glonass_l1_ca_telemetry_decoder_cc.cc
+    glonass_l2_ca_telemetry_decoder_cc.cc
+    galileo_telemetry_decoder_cc.cc
+    beidou_b1i_telemetry_decoder_cc.cc
 )
 
 set(TELEMETRY_DECODER_GR_BLOCKS_HEADERS
-     gps_l1_ca_telemetry_decoder_cc.h
-     gps_l2c_telemetry_decoder_cc.h
-     gps_l5_telemetry_decoder_cc.h
-     sbas_l1_telemetry_decoder_cc.h
-     glonass_l1_ca_telemetry_decoder_cc.h
-     glonass_l2_ca_telemetry_decoder_cc.h
-     galileo_telemetry_decoder_cc.h
-     beidou_b1i_telemetry_decoder_cc.h
+    gps_l1_ca_telemetry_decoder_cc.h
+    gps_l2c_telemetry_decoder_cc.h
+    gps_l5_telemetry_decoder_cc.h
+    sbas_l1_telemetry_decoder_cc.h
+    glonass_l1_ca_telemetry_decoder_cc.h
+    glonass_l2_ca_telemetry_decoder_cc.h
+    galileo_telemetry_decoder_cc.h
+    beidou_b1i_telemetry_decoder_cc.h
 )
 
 include_directories(
-     ${CMAKE_CURRENT_SOURCE_DIR}
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/libs
-     ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/libs/libswiftcnav
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${Boost_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-     ${VOLK_GNSSSDR_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+    ${CMAKE_SOURCE_DIR}/src/core/receiver
+    ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/libs
+    ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/libs/libswiftcnav
+    ${GLOG_INCLUDE_DIRS}
+    ${GFlags_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
+    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+    ${VOLK_GNSSSDR_INCLUDE_DIRS}
 )
 
 list(SORT TELEMETRY_DECODER_GR_BLOCKS_HEADERS)
@@ -70,5 +70,5 @@ target_link_libraries(telemetry_decoder_gr_blocks
 )
 
 if(NOT VOLKGNSSSDR_FOUND)
-     add_dependencies(telemetry_decoder_gr_blocks volk_gnsssdr_module)
+    add_dependencies(telemetry_decoder_gr_blocks volk_gnsssdr_module)
 endif()

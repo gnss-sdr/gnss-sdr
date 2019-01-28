@@ -39,8 +39,8 @@ void beidou_b1i_code_gen_int(int* _dest, signed int _prn, unsigned int _chip_shi
     const unsigned int _code_length = 2046;
     bool G1[_code_length];
     bool G2[_code_length];
-    bool G1_register[11] = {0,1,0,1,0,1,0,1,0,1,0};
-    bool G2_register[11] = {0,1,0,1,0,1,0,1,0,1,0};
+    bool G1_register[11] = {false, true, false, true, false, true, false, true, false, true, false};
+    bool G2_register[11] = {false, true, false, true, false, true, false, true, false, true, false};
     bool feedback1, feedback2;
     bool aux;
     unsigned int lcv, lcv2;
@@ -70,7 +70,7 @@ void beidou_b1i_code_gen_int(int* _dest, signed int _prn, unsigned int _chip_shi
     for (lcv = 0; lcv < _code_length; lcv++)
         {
             G1[lcv] = G1_register[0];
-            G2[lcv] = G2_register[-(phase1[prn_idx] - 11) ] ^ G2_register[-(phase2[prn_idx] - 11) ];
+            G2[lcv] = G2_register[-(phase1[prn_idx] - 11)] ^ G2_register[-(phase2[prn_idx] - 11)];
 
             feedback1 = (G1_register[0] + G1_register[1] + G1_register[2] + G1_register[3] + G1_register[4] + G1_register[10]) & 0x1;
             feedback2 = (G2_register[0] + G2_register[2] + G2_register[3] + G2_register[6] + G2_register[7] + G2_register[8] + G2_register[9] + G2_register[10]) & 0x1;
@@ -86,7 +86,7 @@ void beidou_b1i_code_gen_int(int* _dest, signed int _prn, unsigned int _chip_shi
         }
 
     /* Set the delay */
-    delay = _code_length - delays[prn_idx]*0; //**********************************
+    delay = _code_length - delays[prn_idx] * 0;  //**********************************
     delay += _chip_shift;
     delay %= _code_length;
 
@@ -104,7 +104,7 @@ void beidou_b1i_code_gen_int(int* _dest, signed int _prn, unsigned int _chip_shi
                 }
 
             delay++;
-//std::cout  << _dest[lcv] << " ";
+            //std::cout  << _dest[lcv] << " ";
             delay %= _code_length;
         }
 }
@@ -156,8 +156,8 @@ void beidou_b1i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned in
     _samplesPerCode = static_cast<signed int>(static_cast<double>(_fs) / static_cast<double>(_codeFreqBasis / _codeLength));
 
     //--- Find time constants --------------------------------------------------
-    _ts = 1.0 / static_cast<float>(_fs);                   // Sampling period in sec
-    _tc = 1.0 / static_cast<float>(_codeFreqBasis);        // C/A chip period in sec
+    _ts = 1.0 / static_cast<float>(_fs);                    // Sampling period in sec
+    _tc = 1.0 / static_cast<float>(_codeFreqBasis);         // C/A chip period in sec
     beidou_b1i_code_gen_complex(_code, _prn, _chip_shift);  //generate C/A code 1 sample per chip
 
     for (signed int i = 0; i < _samplesPerCode; i++)

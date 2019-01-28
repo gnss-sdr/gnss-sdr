@@ -321,8 +321,8 @@ void rtklib_pvt_cc::clear_ephemeris()
 rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
     const Pvt_Conf& conf_,
     const rtk_t& rtk) : gr::sync_block("rtklib_pvt_cc",
-                      gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
-                      gr::io_signature::make(0, 0, 0))
+                            gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
+                            gr::io_signature::make(0, 0, 0))
 {
     d_output_rate_ms = conf_.output_rate_ms;
     d_display_rate_ms = conf_.display_rate_ms;
@@ -1018,8 +1018,8 @@ bool rtklib_pvt_cc::save_gnss_synchro_map_xml(const std::string& file_name)
             return true;
         }
 
-            LOG(WARNING) << "Failed to save gnss_synchro, map is empty";
-            return false;
+    LOG(WARNING) << "Failed to save gnss_synchro, map is empty";
+    return false;
 }
 
 
@@ -1064,7 +1064,7 @@ bool rtklib_pvt_cc::get_latest_PVT(double* longitude_deg,
             return true;
         }
 
-            return false;
+    return false;
 }
 
 
@@ -1564,7 +1564,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     rp->rinex_nav_header(rp->navMixFile, d_pvt_solver->gps_iono, d_pvt_solver->gps_utc_model, d_pvt_solver->galileo_iono, d_pvt_solver->galileo_utc_model);
                                                                     b_rinex_header_written = true;  // do not write header anymore
                                                                 }
-                                                            break;                                                       
+                                                            break;
                                                         case 50:  // BDS B1I only
                                                             if (beidou_dnav_ephemeris_iter != d_pvt_solver->beidou_dnav_ephemeris_map.cend())
                                                                 {
@@ -2149,10 +2149,10 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                                         {
                                                                                             // This is a channel with valid GPS signal
                                                                                             gps_cnav_eph_iter = d_pvt_solver->gps_cnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
-                                                                    if (gps_cnav_eph_iter != d_pvt_solver->gps_cnav_ephemeris_map.cend())
-                                                                        {
+                                                                                            if (gps_cnav_eph_iter != d_pvt_solver->gps_cnav_ephemeris_map.cend())
+                                                                                                {
                                                                                                     gps_channel = 1;
-                                                                        }
+                                                                                                }
                                                                                         }
                                                                                 }
                                                                             if (gal_channel == 0)
@@ -2160,8 +2160,8 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                                     if (system == "E")
                                                                                         {
                                                                                             gal_eph_iter = d_pvt_solver->galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
-                                                                    if (gal_eph_iter != d_pvt_solver->galileo_ephemeris_map.cend())
-                                                                        {
+                                                                                            if (gal_eph_iter != d_pvt_solver->galileo_ephemeris_map.cend())
+                                                                                                {
                                                                                                     gal_channel = 1;
                                                                                                 }
                                                                                         }

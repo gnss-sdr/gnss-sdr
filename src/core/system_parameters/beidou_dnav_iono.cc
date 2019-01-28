@@ -43,4 +43,3 @@ Beidou_Dnav_Iono::Beidou_Dnav_Iono()
     d_beta2 = 0.0;
     d_beta3 = 0.0;
 }
-

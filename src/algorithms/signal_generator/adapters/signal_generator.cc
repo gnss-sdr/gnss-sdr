@@ -31,11 +31,11 @@
 
 
 #include "signal_generator.h"
+#include "Beidou_B1I.h"
 #include "GLONASS_L1_L2_CA.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
-#include "Beidou_B1I.h"
 #include "configuration_interface.h"
 #include <glog/logging.h>
 #include <cstdint>

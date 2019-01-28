@@ -55,13 +55,13 @@
 #define GNSS_SDR_RTKLIB_SOLVER_H_
 
 
+#include "beidou_dnav_navigation_message.h"
 #include "galileo_almanac.h"
 #include "galileo_navigation_message.h"
 #include "glonass_gnav_navigation_message.h"
 #include "gnss_synchro.h"
 #include "gps_cnav_navigation_message.h"
 #include "gps_navigation_message.h"
-#include "beidou_dnav_navigation_message.h"
 #include "pvt_solution.h"
 #include "rtklib_rtkpos.h"
 #include <array>
@@ -102,7 +102,7 @@ public:
     std::map<int, Gps_Ephemeris> gps_ephemeris_map;                    //!< Map storing new GPS_Ephemeris
     std::map<int, Gps_CNAV_Ephemeris> gps_cnav_ephemeris_map;          //!< Map storing new GPS_CNAV_Ephemeris
     std::map<int, Glonass_Gnav_Ephemeris> glonass_gnav_ephemeris_map;  //!< Map storing new GLONASS GNAV Ephemeris
-    std::map<int, Beidou_Dnav_Ephemeris> beidou_dnav_ephemeris_map;  //!< Map storing new GLONASS GNAV Ephmeris
+    std::map<int, Beidou_Dnav_Ephemeris> beidou_dnav_ephemeris_map;    //!< Map storing new GLONASS GNAV Ephmeris
 
     Galileo_Utc_Model galileo_utc_model;
     Galileo_Iono galileo_iono;

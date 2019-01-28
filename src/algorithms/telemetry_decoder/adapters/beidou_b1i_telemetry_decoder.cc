@@ -31,19 +31,19 @@
 
 
 #include "beidou_b1i_telemetry_decoder.h"
-#include "configuration_interface.h"
-#include <gnuradio/io_signature.h>
-#include <glog/logging.h>
 #include "beidou_dnav_almanac.h"
 #include "beidou_dnav_ephemeris.h"
 #include "beidou_dnav_iono.h"
 #include "beidou_dnav_utc_model.h"
+#include "configuration_interface.h"
+#include <glog/logging.h>
+#include <gnuradio/io_signature.h>
 
 
 using google::LogMessage;
 
 BeidouB1iTelemetryDecoder::BeidouB1iTelemetryDecoder(ConfigurationInterface* configuration,
-    std::string role,
+    const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
                                 in_streams_(in_streams),
@@ -68,9 +68,7 @@ BeidouB1iTelemetryDecoder::BeidouB1iTelemetryDecoder(ConfigurationInterface* con
 }
 
 
-BeidouB1iTelemetryDecoder::~BeidouB1iTelemetryDecoder()
-{
-}
+BeidouB1iTelemetryDecoder::~BeidouB1iTelemetryDecoder() = default;
 
 
 void BeidouB1iTelemetryDecoder::set_satellite(const Gnss_Satellite& satellite)

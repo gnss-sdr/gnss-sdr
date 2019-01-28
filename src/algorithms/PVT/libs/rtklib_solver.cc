@@ -52,10 +52,10 @@
  * -----------------------------------------------------------------------*/
 
 #include "rtklib_solver.h"
+#include "Beidou_B1I.h"
 #include "GLONASS_L1_L2_CA.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
-#include "Beidou_B1I.h"
 #include "rtklib_conversions.h"
 #include "rtklib_solution.h"
 #include <glog/logging.h>
@@ -785,7 +785,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     }
                             }
                         break;
-                     }
+                    }
 
                 default:
                     DLOG(INFO) << "Hybrid observables: Unknown GNSS";

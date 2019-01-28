@@ -2,13 +2,13 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-link to website: https://gnsssdrbeidoub1igsoc2018.wordpress.com/
 
 **Welcome to GNSS-SDR!**
 
 This program is a software-defined receiver which is able to process (that is, to perform detection, synchronization, demodulation and decoding of the navigation message, computation of observables and, finally, computation of position fixes) the following Global Navigation Satellite System's signals:
 
 In the L1 band:
+ - &#128752; BeiDou B1I (centered at 1561.098 MHz) :white_check_mark:
  - &#128752; GPS L1 C/A  (centered at 1575.42 MHz) :white_check_mark:
  - &#128752; Galileo E1b/c  (centered at 1575.42 MHz) :white_check_mark:
  - &#128752; GLONASS L1 C/A (centered at 1601.72 MHz) :white_check_mark:

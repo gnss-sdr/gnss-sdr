@@ -65,6 +65,7 @@ set(TRACKING_ADAPTER_SOURCES
     gps_l5_dll_pll_tracking.cc
     glonass_l2_ca_dll_pll_tracking.cc
     glonass_l2_ca_dll_pll_c_aid_tracking.cc
+    beidou_b1i_dll_pll_tracking.cc
     ${OPT_TRACKING_ADAPTERS_SOURCES}
 )
 
@@ -82,23 +83,24 @@ set(TRACKING_ADAPTER_HEADERS
     gps_l5_dll_pll_tracking.h
     glonass_l2_ca_dll_pll_tracking.h
     glonass_l2_ca_dll_pll_c_aid_tracking.h
+    beidou_b1i_dll_pll_tracking.h
     ${OPT_TRACKING_ADAPTERS_HEADERS}
 )
 
 include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces
-    ${CMAKE_SOURCE_DIR}/src/core/receiver
-    ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/gnuradio_blocks
-    ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs
-    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-    ${ARMADILLO_INCLUDE_DIRS}
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-    ${VOLK_GNSSSDR_INCLUDE_DIRS}
-    ${OPT_TRACKING_INCLUDE_DIRS}
+     ${CMAKE_CURRENT_SOURCE_DIR}
+     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+     ${CMAKE_SOURCE_DIR}/src/core/interfaces
+     ${CMAKE_SOURCE_DIR}/src/core/receiver
+     ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/gnuradio_blocks
+     ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs
+     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+     ${ARMADILLO_INCLUDE_DIRS}
+     ${GLOG_INCLUDE_DIRS}
+     ${GFlags_INCLUDE_DIRS}
+     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+     ${VOLK_GNSSSDR_INCLUDE_DIRS}
+     ${OPT_TRACKING_INCLUDE_DIRS}
 )
 
 list(SORT TRACKING_ADAPTER_HEADERS)

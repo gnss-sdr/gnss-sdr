@@ -221,6 +221,45 @@ void rtklib_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                     DLOG(INFO) << "New GLONASS GNAV Almanac has arrived "
                                << ", GLONASS GNAV Slot Number =" << glonass_gnav_almanac->d_n_A;
                 }
+
+            // ************* BeiDou telemetry *****************
+            if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Dnav_Ephemeris>))
+                {
+                    // ### Beidou EPHEMERIS ###
+                    std::shared_ptr<Beidou_Dnav_Ephemeris> bds_dnav_eph;
+                    bds_dnav_eph = boost::any_cast<std::shared_ptr<Beidou_Dnav_Ephemeris>>(pmt::any_ref(msg));
+                    DLOG(INFO) << "Ephemeris record has arrived from SAT ID "
+                               << bds_dnav_eph->i_satellite_PRN << " (Block "
+                               << bds_dnav_eph->satelliteBlock[bds_dnav_eph->i_satellite_PRN] << ")"
+                               << "inserted with Toe=" << bds_dnav_eph->d_Toe << " and BDS Week="
+                               << bds_dnav_eph->i_BEIDOU_week;
+                    // update/insert new ephemeris record to the global ephemeris map
+                    d_pvt_solver->beidou_dnav_ephemeris_map[bds_dnav_eph->i_satellite_PRN] = *bds_dnav_eph;
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Dnav_Iono>))
+                {
+                    // ### BeiDou IONO ###
+                    std::shared_ptr<Beidou_Dnav_Iono> bds_dnav_iono;
+                    bds_dnav_iono = boost::any_cast<std::shared_ptr<Beidou_Dnav_Iono>>(pmt::any_ref(msg));
+                    d_pvt_solver->beidou_dnav_iono = *bds_dnav_iono;
+                    DLOG(INFO) << "New BeiDou DNAV IONO record has arrived ";
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Dnav_Utc_Model>))
+                {
+                    // ### GPS UTC MODEL ###
+                    std::shared_ptr<Beidou_Dnav_Utc_Model> bds_dnav_utc_model;
+                    bds_dnav_utc_model = boost::any_cast<std::shared_ptr<Beidou_Dnav_Utc_Model>>(pmt::any_ref(msg));
+                    d_pvt_solver->beidou_dnav_utc_model = *bds_dnav_utc_model;
+                    DLOG(INFO) << "New BeiDou DNAV UTC record has arrived ";
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Dnav_Almanac>))
+                {
+                    // ### GPS ALMANAC ###
+                    std::shared_ptr<Beidou_Dnav_Almanac> bds_dnav_almanac;
+                    bds_dnav_almanac = boost::any_cast<std::shared_ptr<Beidou_Dnav_Almanac>>(pmt::any_ref(msg));
+                    d_pvt_solver->beidou_dnav_almanac_map[bds_dnav_almanac->i_satellite_PRN] = *bds_dnav_almanac;
+                    DLOG(INFO) << "New BeiDou DNAV almanac record has arrived ";
+                }
             else
                 {
                     LOG(WARNING) << "msg_handler_telemetry unknown object type!";
@@ -257,12 +296,25 @@ std::map<int, Galileo_Almanac> rtklib_pvt_cc::get_galileo_almanac_map() const
 }
 
 
+std::map<int, Beidou_Dnav_Ephemeris> rtklib_pvt_cc::get_beidou_dnav_ephemeris_map() const
+{
+    return d_pvt_solver->beidou_dnav_ephemeris_map;
+}
+
+
+std::map<int, Beidou_Dnav_Almanac> rtklib_pvt_cc::get_beidou_dnav_almanac_map() const
+{
+    return d_pvt_solver->beidou_dnav_almanac_map;
+}
+
 void rtklib_pvt_cc::clear_ephemeris()
 {
     d_pvt_solver->gps_ephemeris_map.clear();
     d_pvt_solver->gps_almanac_map.clear();
     d_pvt_solver->galileo_ephemeris_map.clear();
     d_pvt_solver->galileo_almanac_map.clear();
+    d_pvt_solver->beidou_dnav_ephemeris_map.clear();
+    d_pvt_solver->beidou_dnav_almanac_map.clear();
 }
 
 
@@ -832,6 +884,94 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                 {
                     LOG(INFO) << "Failed to save GLONASS GNAV ephemeris, not valid data";
                 }
+
+            // save BeiDou DNAV ephemeris to XML file
+            file_name = xml_base_path + "bds_dnav_ephemeris.xml";
+            if (d_pvt_solver->beidou_dnav_ephemeris_map.empty() == false)
+                {
+                    std::ofstream ofs;
+                    try
+                        {
+                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                            boost::archive::xml_oarchive xml(ofs);
+                            xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_ephemeris_map", d_pvt_solver->beidou_dnav_ephemeris_map);
+                            LOG(INFO) << "Saved BeiDou DNAV Ephemeris map data";
+                        }
+                    catch (const std::exception& e)
+                        {
+                            LOG(WARNING) << e.what();
+                        }
+                }
+            else
+                {
+                    LOG(INFO) << "Failed to save BeiDou DNAV Ephemeris, map is empty";
+                }
+
+            // Save BeiDou DNAV iono parameters
+            file_name = xml_base_path + "bds_dnav_iono.xml";
+            if (d_pvt_solver->beidou_dnav_iono.valid)
+                {
+                    std::ofstream ofs;
+                    try
+                        {
+                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                            boost::archive::xml_oarchive xml(ofs);
+                            xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_iono_model", d_pvt_solver->beidou_dnav_iono);
+                            LOG(INFO) << "Saved BeiDou DNAV ionospheric model parameters";
+                        }
+                    catch (std::exception& e)
+                        {
+                            LOG(WARNING) << e.what();
+                        }
+                }
+            else
+                {
+                    LOG(INFO) << "Failed to save BeiDou DNAV ionospheric model parameters, not valid data";
+                }
+
+            // save BeiDou DNAV almanac to XML file
+            file_name = xml_base_path + "bds_dnav_almanac.xml";
+            if (d_pvt_solver->beidou_dnav_almanac_map.empty() == false)
+                {
+                    std::ofstream ofs;
+                    try
+                        {
+                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                            boost::archive::xml_oarchive xml(ofs);
+                            xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_almanac_map", d_pvt_solver->beidou_dnav_almanac_map);
+                            LOG(INFO) << "Saved BeiDou DNAV almanac map data";
+                        }
+                    catch (const std::exception& e)
+                        {
+                            LOG(WARNING) << e.what();
+                        }
+                }
+            else
+                {
+                    LOG(INFO) << "Failed to save BeiDou DNAV almanac, map is empty";
+                }
+
+            // Save BeiDou UTC model parameters
+            file_name = xml_base_path + "bds_dnav_utc_model.xml";
+            if (d_pvt_solver->beidou_dnav_utc_model.valid)
+                {
+                    std::ofstream ofs;
+                    try
+                        {
+                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                            boost::archive::xml_oarchive xml(ofs);
+                            xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_utc_model", d_pvt_solver->beidou_dnav_utc_model);
+                            LOG(INFO) << "Saved BeiDou DNAV UTC model parameters";
+                        }
+                    catch (std::exception& e)
+                        {
+                            LOG(WARNING) << e.what();
+                        }
+                }
+            else
+                {
+                    LOG(INFO) << "Failed to save BeiDou DNAV UTC model parameters, not valid data";
+                }
         }
 }
 
@@ -955,13 +1095,16 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                             std::map<int, Galileo_Ephemeris>::const_iterator tmp_eph_iter_gal = d_pvt_solver->galileo_ephemeris_map.find(in[i][epoch].PRN);
                             std::map<int, Gps_CNAV_Ephemeris>::const_iterator tmp_eph_iter_cnav = d_pvt_solver->gps_cnav_ephemeris_map.find(in[i][epoch].PRN);
                             std::map<int, Glonass_Gnav_Ephemeris>::const_iterator tmp_eph_iter_glo_gnav = d_pvt_solver->glonass_gnav_ephemeris_map.find(in[i][epoch].PRN);
+                            std::map<int, Beidou_Dnav_Ephemeris>::const_iterator tmp_eph_iter_bds_dnav = d_pvt_solver->beidou_dnav_ephemeris_map.find(in[i][epoch].PRN);
+
                             if (((tmp_eph_iter_gps->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "1C")) or
                                 ((tmp_eph_iter_cnav->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "2S")) or
                                 ((tmp_eph_iter_gal->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "1B")) or
                                 ((tmp_eph_iter_gal->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "5X")) or
                                 ((tmp_eph_iter_glo_gnav->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "1G")) or
                                 ((tmp_eph_iter_glo_gnav->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "2G")) or
-                                ((tmp_eph_iter_cnav->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "L5")))
+                                ((tmp_eph_iter_cnav->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "L5")) or
+                                ((tmp_eph_iter_bds_dnav->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "B1")))
                                 {
                                     // store valid observables in a map.
                                     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(i, in[i][epoch]));
@@ -1170,12 +1313,14 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                             std::map<int, Gps_Ephemeris>::const_iterator gps_ephemeris_iter;
                                             std::map<int, Gps_CNAV_Ephemeris>::const_iterator gps_cnav_ephemeris_iter;
                                             std::map<int, Glonass_Gnav_Ephemeris>::const_iterator glonass_gnav_ephemeris_iter;
+                                            std::map<int, Beidou_Dnav_Ephemeris>::const_iterator beidou_dnav_ephemeris_iter;
                                             if (!b_rinex_header_written)  //  & we have utc data in nav message!
                                                 {
                                                     galileo_ephemeris_iter = d_pvt_solver->galileo_ephemeris_map.cbegin();
                                                     gps_ephemeris_iter = d_pvt_solver->gps_ephemeris_map.cbegin();
                                                     gps_cnav_ephemeris_iter = d_pvt_solver->gps_cnav_ephemeris_map.cbegin();
                                                     glonass_gnav_ephemeris_iter = d_pvt_solver->glonass_gnav_ephemeris_map.cbegin();
+                                                    beidou_dnav_ephemeris_iter = d_pvt_solver->beidou_dnav_ephemeris_map.cbegin();
                                                     switch (type_of_rx)
                                                         {
                                                         case 1:  // GPS L1 C/A only
@@ -1420,6 +1565,15 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     b_rinex_header_written = true;  // do not write header anymore
                                                                 }
                                                             break;
+                                                        case 50:  // BDS B1I only
+                                                            if (beidou_dnav_ephemeris_iter != d_pvt_solver->beidou_dnav_ephemeris_map.cend())
+                                                                {
+                                                                    rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B1");
+                                                                    rp->rinex_nav_header(rp->navFile, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
+                                                                    b_rinex_header_written = true;  // do not write header anymore
+                                                                }
+
+                                                            break;
                                                         default:
                                                             break;
                                                         }
@@ -1503,6 +1657,9 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 case 33:  // L1+E1+E5a
                                                                     rp->log_rinex_nav(rp->navMixFile, d_pvt_solver->gps_ephemeris_map, d_pvt_solver->galileo_ephemeris_map);
                                                                     break;
+                                                                case 50:  // BDS B1I only
+                                                                    rp->log_rinex_nav(rp->navFile, d_pvt_solver->beidou_dnav_ephemeris_map);
+                                                                    break;
                                                                 default:
                                                                     break;
                                                                 }
@@ -1511,6 +1668,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                     gps_ephemeris_iter = d_pvt_solver->gps_ephemeris_map.cbegin();
                                                     gps_cnav_ephemeris_iter = d_pvt_solver->gps_cnav_ephemeris_map.cbegin();
                                                     glonass_gnav_ephemeris_iter = d_pvt_solver->glonass_gnav_ephemeris_map.cbegin();
+                                                    beidou_dnav_ephemeris_iter = d_pvt_solver->beidou_dnav_ephemeris_map.cbegin();
 
                                                     // Log observables into the RINEX file
                                                     if (flag_write_RINEX_obs_output)
@@ -1809,6 +1967,18 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                             b_rinex_header_updated = true;  // do not write header anymore
                                                                         }
                                                                     break;
+                                                                case 50:  // BDS B1I only
+                                                                    if (beidou_dnav_ephemeris_iter != d_pvt_solver->beidou_dnav_ephemeris_map.cend())
+                                                                        {
+                                                                            rp->log_rinex_obs(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, gnss_observables_map, "B1");
+                                                                        }
+                                                                    if (!b_rinex_header_updated and (d_pvt_solver->beidou_dnav_utc_model.d_A0_UTC != 0))
+                                                                        {
+                                                                            rp->update_obs_header(rp->obsFile, d_pvt_solver->beidou_dnav_utc_model);
+                                                                            rp->update_nav_header(rp->navFile, d_pvt_solver->beidou_dnav_utc_model, d_pvt_solver->beidou_dnav_iono);
+                                                                            b_rinex_header_updated = true;
+                                                                        }
+                                                                    break;
                                                                 default:
                                                                     break;
                                                                 }
@@ -1922,7 +2092,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                             std::string system(&gnss_observables_iter->second.System, 1);
                                                                             if (gps_channel == 0)
                                                                                 {
-                                                                                    if (system == "G")
+                                                                                    if (system.compare("G") == 0)
                                                                                         {
                                                                                             // This is a channel with valid GPS signal
                                                                                             gps_eph_iter = d_pvt_solver->gps_ephemeris_map.find(gnss_observables_iter->second.PRN);
@@ -1934,7 +2104,7 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                                 }
                                                                             if (gal_channel == 0)
                                                                                 {
-                                                                                    if (system == "E")
+                                                                                    if (system.compare("E") == 0)
                                                                                         {
                                                                                             gal_eph_iter = d_pvt_solver->galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                                                                             if (gal_eph_iter != d_pvt_solver->galileo_ephemeris_map.cend())

@@ -269,10 +269,10 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
 
     int num_bands = 0;
 
-    if ((gps_1C_count > 0) || (gal_1B_count > 0) || (glo_1G_count > 0) || (bds_B1_count > 0)) num_bands = 1;
-    if (((gps_1C_count > 0) || (gal_1B_count > 0) || (glo_1G_count > 0)) && ((gps_2S_count > 0) || (glo_2G_count > 0) || (bds_B1_count > 0))) num_bands = 2;
-    if (((gps_1C_count > 0) || (gal_1B_count > 0) || (glo_1G_count > 0)) && ((gal_E5a_count > 0) || (gal_E5b_count > 0) || (gps_L5_count > 0))) num_bands = 2;
-    if (((gps_1C_count > 0) || (gal_1B_count > 0) || (glo_1G_count > 0)) && ((gps_2S_count > 0) || (glo_2G_count > 0) || (bds_B1_count > 0)) && ((gal_E5a_count > 0) || (gal_E5b_count > 0) || (gps_L5_count > 0))) num_bands = 3;
+    if (( gps_1C_count > 0) || (gal_1B_count > 0) || (glo_1G_count > 0) || (bds_B1_count > 0)) num_bands = 1;
+    if (((gps_1C_count > 0) || (gal_1B_count > 0) || (glo_1G_count > 0) || (bds_B1_count > 0)) && ((gps_2S_count > 0) || (glo_2G_count > 0) || (bds_B3_count > 0))) num_bands = 2;
+    if (((gps_1C_count > 0) || (gal_1B_count > 0) || (glo_1G_count > 0) || (bds_B1_count > 0)) && ((gal_E5a_count > 0) || (gal_E5b_count > 0) || (gps_L5_count > 0))) num_bands = 2;
+    if (((gps_1C_count > 0) || (gal_1B_count > 0) || (glo_1G_count > 0) || (bds_B1_count > 0)) && ((gps_2S_count > 0) || (glo_2G_count > 0) || (bds_B3_count > 0)) && ((gal_E5a_count > 0) || (gal_E5b_count > 0) || (gps_L5_count > 0))) num_bands = 3;
 
     int number_of_frequencies = configuration->property(role + ".num_bands", num_bands); /* (1:L1, 2:L1+L2, 3:L1+L2+L5) */
     if ((number_of_frequencies < 1) || (number_of_frequencies > 3))
@@ -356,7 +356,7 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     if ((gps_1C_count > 0) || (gps_2S_count > 0) || (gps_L5_count > 0)) nsys += SYS_GPS;
     if ((gal_1B_count > 0) || (gal_E5a_count > 0) || (gal_E5b_count > 0)) nsys += SYS_GAL;
     if ((glo_1G_count > 0) || (glo_2G_count > 0)) nsys += SYS_GLO;
-    if ((bds_B1_count > 0)) nsys += SYS_BDS;
+    if ((bds_B1_count > 0) || (bds_B3_count > 0)) nsys += SYS_BDS;
 
     int navigation_system = configuration->property(role + ".navigation_system", nsys); /* (SYS_XXX) see src/algorithms/libs/rtklib/rtklib.h */
     if ((navigation_system < 1) || (navigation_system > 255))                           /* GPS: 1   SBAS: 2   GPS+SBAS: 3 Galileo: 8  Galileo+GPS: 9 GPS+SBAS+Galileo: 11 All: 255 */

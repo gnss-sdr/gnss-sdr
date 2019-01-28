@@ -102,7 +102,7 @@ BeidouB3iDllPllTracking::BeidouB3iDllPllTracking(
     trk_param.very_early_late_space_narrow_chips = 0.0;
     trk_param.track_pilot = false;
     trk_param.system = 'C';
-    char sig_[3] = "B1";
+    char sig_[3] = "B3";
     std::memcpy(trk_param.signal, sig_, 3);
     int cn0_samples = configuration->property(role + ".cn0_samples", 20);
     if (FLAGS_cn0_samples != 20) cn0_samples = FLAGS_cn0_samples;

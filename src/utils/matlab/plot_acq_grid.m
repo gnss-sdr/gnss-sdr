@@ -28,13 +28,13 @@
 
 %%%%%%%%% ?????? CONFIGURE !!! %%%%%%%%%%%%%
 
-path = '/home/dmiralles/Documents/gnss-sdr/';
-file = 'bds_acq';
+path = '/archive/';
+file = 'bds_b3i_acq';
 
-sat = 32;
+sat = 27;
 
 channel = 0;
-execution = 3;
+execution = 6;
 % Signal:
 %     1 GPS  L1
 %     2 GPS  L2M
@@ -44,7 +44,7 @@ execution = 3;
 %     6 Glo. 1G
 %     7 BDS  B1
 
-signal_type = 7;
+signal_type = 8;
 
 %%% True for light acq_grid representation
 lite_view = true;
@@ -83,6 +83,10 @@ switch(signal_type)
         n_chips = 2046;
         system = 'C';
         signal = 'B1';
+    case 8
+        n_chips = 10230;
+        system = 'C';
+        signal = 'B3';
 end
 filename = [path file '_' system '_' signal '_ch_' num2str(channel) '_' num2str(execution) '_sat_' num2str(sat) '.mat'];
 load(filename);

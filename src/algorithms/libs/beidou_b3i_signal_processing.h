@@ -37,6 +37,7 @@
 #include <iostream>
 #include <cstdint>
 #include <array>
+#include <algorithm>
 
 //!Generates int BeiDou B3I code for the desired SV ID and code shift
 void beidou_b3i_code_gen_int(int* _dest, signed int _prn, unsigned int _chip_shift);

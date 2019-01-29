@@ -29,7 +29,7 @@ from six.moves import configparser, input
 
 class volk_gnsssdr_modtool_config(object):
     def key_val_sub(self, num, stuff, section):
-        return re.sub('\$' + 'k' + str(num), stuff[num][0], (re.sub('\$' + str(num), stuff[num][1], section[1][num])));
+        return re.sub(r'\$' + 'k' + str(num), stuff[num][0], (re.sub(r'\$' + str(num), stuff[num][1], section[1][num])));
 
     def verify(self):
         for i in self.verification:
@@ -95,4 +95,3 @@ class volk_gnsssdr_modtool_config(object):
         for i in stuff:
             retval[i[0]] = i[1]
         return retval
-

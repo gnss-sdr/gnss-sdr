@@ -35,12 +35,14 @@
  */
 
 #include "dll_pll_veml_tracking.h"
+#include "Beidou_B1I.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
 #include "GPS_L5.h"
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
 #include "MATH_CONSTANTS.h"
+#include "beidou_b1i_signal_processing.h"
 #include "control_message_factory.h"
 #include "galileo_e1_signal_processing.h"
 #include "galileo_e5_signal_processing.h"
@@ -96,7 +98,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     d_code_chip_rate = 0.0;
     d_secondary_code_length = 0U;
     d_secondary_code_string = nullptr;
-    d_gps_l1ca_preambles_symbols = nullptr;
+    d_preambles_symbols = nullptr;
     signal_type = std::string(trk_parameters.signal);
 
     std::map<std::string, std::string> map_signal_pretty_name;
@@ -107,6 +109,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     map_signal_pretty_name["2G"] = "L2 C/A";
     map_signal_pretty_name["5X"] = "E5a";
     map_signal_pretty_name["L5"] = "L5";
+    map_signal_pretty_name["B1"] = "B1I";
 
     signal_pretty_name = map_signal_pretty_name[signal_type];
 
@@ -131,7 +134,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                     uint16_t preambles_bits[GPS_CA_PREAMBLE_LENGTH_BITS] = GPS_PREAMBLE;
 
                     // preamble bits to sampled symbols
-                    d_gps_l1ca_preambles_symbols = static_cast<int32_t *>(volk_gnsssdr_malloc(GPS_CA_PREAMBLE_LENGTH_SYMBOLS * sizeof(int32_t), volk_gnsssdr_get_alignment()));
+                    d_preamble_length_symbols = GPS_CA_PREAMBLE_LENGTH_SYMBOLS;
+                    d_preambles_symbols = static_cast<int32_t *>(volk_gnsssdr_malloc(GPS_CA_PREAMBLE_LENGTH_SYMBOLS * sizeof(int32_t), volk_gnsssdr_get_alignment()));
                     int32_t n = 0;
                     for (uint16_t preambles_bit : preambles_bits)
                         {
@@ -139,11 +143,11 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                                 {
                                     if (preambles_bit == 1)
                                         {
-                                            d_gps_l1ca_preambles_symbols[n] = 1;
+                                            d_preambles_symbols[n] = 1;
                                         }
                                     else
                                         {
-                                            d_gps_l1ca_preambles_symbols[n] = -1;
+                                            d_preambles_symbols[n] = -1;
                                         }
                                     n++;
                                 }
@@ -270,6 +274,40 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                     d_symbols_per_bit = 0;
                 }
         }
+    else if (trk_parameters.system == 'C')
+        {
+            systemName = "Beidou";
+            if (signal_type == "B1")
+                {
+                    // GEO Satellites use different secondary code
+                    d_signal_carrier_freq = BEIDOU_B1I_FREQ_HZ;
+                    d_code_period = BEIDOU_B1I_CODE_PERIOD;
+                    d_code_chip_rate = BEIDOU_B1I_CODE_RATE_HZ;
+                    d_code_length_chips = static_cast<unsigned int>(BEIDOU_B1I_CODE_LENGTH_CHIPS);
+                    d_symbols_per_bit = BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT;
+                    d_correlation_length_ms = 1;
+                    d_code_samples_per_chip = 1;
+                    d_secondary = true;
+                    trk_parameters.track_pilot = false;
+                    interchange_iq = false;
+                    d_secondary_code_length = static_cast<unsigned int>(BEIDOU_B1I_SECONDARY_CODE_LENGTH);
+                    d_secondary_code_string = const_cast<std::string *>(&BEIDOU_B1I_SECONDARY_CODE_STR);
+                }
+            else
+                {
+                    LOG(WARNING) << "Invalid Signal argument when instantiating tracking blocks";
+                    std::cout << "Invalid Signal argument when instantiating tracking blocks" << std::endl;
+                    d_correlation_length_ms = 1;
+                    d_secondary = false;
+                    interchange_iq = false;
+                    d_signal_carrier_freq = 0.0;
+                    d_code_period = 0.0;
+                    d_code_length_chips = 0;
+                    d_code_samples_per_chip = 0;
+                    d_symbols_per_bit = 0;
+                }
+        }
+
     else
         {
             LOG(WARNING) << "Invalid System argument when instantiating tracking blocks";
@@ -533,6 +571,45 @@ void dll_pll_veml_tracking::start_tracking()
                 }
             volk_gnsssdr_free(aux_code);
         }
+    else if (systemName == "Beidou" and signal_type == "B1")
+        {
+            beidou_b1i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
+            // Update secondary code settings for geo satellites
+            if (d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6)
+                {
+                    d_symbols_per_bit = 2;
+                    d_correlation_length_ms = 1;
+                    d_code_samples_per_chip = 1;
+                    d_secondary = false;
+                    trk_parameters.track_pilot = false;
+                    interchange_iq = false;
+                    d_secondary_code_length = 0;
+                    d_secondary_code_string = const_cast<std::string *>(&BEIDOU_B1I_D2_SECONDARY_CODE_STR);
+
+                    // preamble bits to sampled symbols
+                    d_preamble_length_symbols = 22;
+                    d_preambles_symbols = static_cast<int32_t *>(volk_gnsssdr_malloc(22 * sizeof(int32_t), volk_gnsssdr_get_alignment()));
+                    int32_t n = 0;
+                    uint16_t preambles_bits[BEIDOU_B1I_PREAMBLE_LENGTH_BITS] = {1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0};
+                    for (uint16_t preambles_bit : preambles_bits)
+                        {
+                            for (int32_t j = 0; j < d_symbols_per_bit; j++)
+                                {
+                                    if (preambles_bit == 1)
+                                        {
+                                            d_preambles_symbols[n] = 1;
+                                        }
+                                    else
+                                        {
+                                            d_preambles_symbols[n] = -1;
+                                        }
+                                    n++;
+                                }
+                        }
+                    d_symbol_history.resize(22);  // Change fixed buffer size
+                    d_symbol_history.clear();
+                }
+        }
 
     multicorrelator_cpu.set_local_code_and_taps(d_code_samples_per_chip * d_code_length_chips, d_tracking_code, d_local_code_shift_chips);
     std::fill_n(d_correlator_outs, d_n_correlator_taps, gr_complex(0.0, 0.0));
@@ -580,7 +657,7 @@ dll_pll_veml_tracking::~dll_pll_veml_tracking()
 {
     if (signal_type == "1C")
         {
-            volk_gnsssdr_free(d_gps_l1ca_preambles_symbols);
+            volk_gnsssdr_free(d_preambles_symbols);
         }
 
     if (d_dump_file.is_open())
@@ -1414,6 +1491,8 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                         next_state = acquire_secondary();
                                         if (next_state)
                                             {
+                                                LOG(INFO) << systemName << " " << signal_pretty_name << " secondary code locked in channel " << d_channel
+                                                          << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
                                                 std::cout << systemName << " " << signal_pretty_name << " secondary code locked in channel " << d_channel
                                                           << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
                                             }
@@ -1429,23 +1508,24 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                         d_symbol_history.push_back(d_Prompt->real());
                                         //******* preamble correlation ********
                                         int32_t corr_value = 0;
-                                        if ((d_symbol_history.size() == GPS_CA_PREAMBLE_LENGTH_SYMBOLS))  // and (d_make_correlation or !d_flag_frame_sync))
+                                        if ((static_cast<int32_t>(d_symbol_history.size()) == d_preamble_length_symbols))  // and (d_make_correlation or !d_flag_frame_sync))
                                             {
-                                                for (uint32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_SYMBOLS; i++)
+                                                for (int32_t i = 0; i < d_preamble_length_symbols; i++)
                                                     {
                                                         if (d_symbol_history.at(i) < 0)  // symbols clipping
                                                             {
-                                                                corr_value -= d_gps_l1ca_preambles_symbols[i];
+                                                                corr_value -= d_preambles_symbols[i];
                                                             }
                                                         else
                                                             {
-                                                                corr_value += d_gps_l1ca_preambles_symbols[i];
+                                                                corr_value += d_preambles_symbols[i];
                                                             }
                                                     }
                                             }
-                                        if (corr_value == GPS_CA_PREAMBLE_LENGTH_SYMBOLS)
+                                        if (corr_value == d_preamble_length_symbols)
                                             {
-                                                //std::cout << "Preamble detected at tracking!" << std::endl;
+                                                LOG(INFO) << systemName << " " << signal_pretty_name << " tracking preamble detected in channel " << d_channel
+                                                          << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
                                                 next_state = true;
                                             }
                                         else
@@ -1492,6 +1572,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                         current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt).imag());
                                     }
                             }
+
                         current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
                         current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
                         current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;

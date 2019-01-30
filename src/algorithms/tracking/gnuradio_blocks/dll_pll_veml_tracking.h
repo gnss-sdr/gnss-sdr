@@ -107,7 +107,8 @@ private:
     std::string *d_secondary_code_string;
     std::string signal_pretty_name;
 
-    int32_t *d_gps_l1ca_preambles_symbols;
+    int32_t *d_preambles_symbols;
+    int32_t d_preamble_length_symbols;
     boost::circular_buffer<float> d_symbol_history;
 
     //tracking state machine

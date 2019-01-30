@@ -161,6 +161,10 @@ public:
 
     std::map<int, Galileo_Almanac> get_galileo_almanac_map() const;
 
+    std::map<int, Beidou_Dnav_Ephemeris> get_beidou_dnav_ephemeris_map() const;
+
+    std::map<int, Beidou_Dnav_Almanac> get_beidou_dnav_almanac_map() const;
+
     /*!
      * \brief Clear all ephemeris information and the almanacs for GPS and Galileo
      *

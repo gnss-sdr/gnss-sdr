@@ -55,6 +55,7 @@
 #define GNSS_SDR_RTKLIB_SOLVER_H_
 
 
+#include "beidou_dnav_navigation_message.h"
 #include "galileo_almanac.h"
 #include "galileo_navigation_message.h"
 #include "glonass_gnav_navigation_message.h"
@@ -101,6 +102,7 @@ public:
     std::map<int, Gps_Ephemeris> gps_ephemeris_map;                    //!< Map storing new GPS_Ephemeris
     std::map<int, Gps_CNAV_Ephemeris> gps_cnav_ephemeris_map;          //!< Map storing new GPS_CNAV_Ephemeris
     std::map<int, Glonass_Gnav_Ephemeris> glonass_gnav_ephemeris_map;  //!< Map storing new GLONASS GNAV Ephemeris
+    std::map<int, Beidou_Dnav_Ephemeris> beidou_dnav_ephemeris_map;    //!< Map storing new GLONASS GNAV Ephmeris
 
     Galileo_Utc_Model galileo_utc_model;
     Galileo_Iono galileo_iono;
@@ -115,6 +117,10 @@ public:
 
     Glonass_Gnav_Utc_Model glonass_gnav_utc_model;  //!< Map storing GLONASS GNAV UTC Model
     Glonass_Gnav_Almanac glonass_gnav_almanac;      //!< Map storing GLONASS GNAV Almanac Model
+
+    Beidou_Dnav_Utc_Model beidou_dnav_utc_model;
+    Beidou_Dnav_Iono beidou_dnav_iono;
+    std::map<int, Beidou_Dnav_Almanac> beidou_dnav_almanac_map;
 
     int count_valid_position;
 };

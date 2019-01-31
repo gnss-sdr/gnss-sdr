@@ -23,7 +23,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
     message(WARNING "In-tree build is bad practice. Try 'cd build && cmake ../' ")
 endif()
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.12)
 project(gnss-sdr CXX C)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 file(RELATIVE_PATH RELATIVE_CMAKE_CALL ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
@@ -324,7 +324,7 @@ endif()
 ################################################################################
 # Minimum required versions
 ################################################################################
-set(GNSSSDR_CMAKE_MIN_VERSION "2.8.8")
+set(GNSSSDR_CMAKE_MIN_VERSION "2.8.12")
 set(GNSSSDR_GCC_MIN_VERSION "4.7.2")
 set(GNSSSDR_CLANG_MIN_VERSION "3.4.0")
 set(GNSSSDR_APPLECLANG_MIN_VERSION "500")

@@ -82,7 +82,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
     if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
     acq_parameters.doppler_max = doppler_max_;
-    unsigned int sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 4);
+    unsigned int sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 1);
     acq_parameters.sampled_ms = sampled_ms;
     auto code_length = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
     acq_parameters.code_length = code_length;

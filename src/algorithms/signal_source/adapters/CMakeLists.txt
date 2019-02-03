@@ -197,7 +197,6 @@ set(SIGNAL_SOURCE_ADAPTER_HEADERS
     ${OPT_DRIVER_HEADERS}
 )
 
-
 if(PC_GNURADIO_RUNTIME_VERSION VERSION_GREATER 3.7.3)
     set(SIGNAL_SOURCE_ADAPTER_SOURCES ${SIGNAL_SOURCE_ADAPTER_SOURCES}
         two_bit_cpx_file_signal_source.cc
@@ -226,7 +225,6 @@ target_link_libraries(signal_source_adapters
         Boost::boost
         Gnuradio::runtime
         signal_source_gr_blocks
-        ${Boost_LIBRARIES}
         ${GNURADIO_PMT_LIBRARIES}
         ${GNURADIO_BLOCKS_LIBRARIES}
         ${OPT_LIBRARIES}
@@ -234,6 +232,7 @@ target_link_libraries(signal_source_adapters
         gnss_rx
         signal_source_lib
     PRIVATE
+        Gflags::gflags
         Glog::glog
         Volk::volk
 )

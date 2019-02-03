@@ -57,12 +57,6 @@ set(SIGNAL_SOURCE_GR_BLOCKS_HEADERS
 
 
 include_directories(
-    #${CMAKE_CURRENT_SOURCE_DIR}
-    #${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/libs
-    #${GLOG_INCLUDE_DIRS}
-    #${GFlags_INCLUDE_DIRS}
-    #${GNURADIO_RUNTIME_INCLUDE_DIRS}
-    #${Boost_INCLUDE_DIRS}
     ${OPT_DRIVER_INCLUDE_DIRS}
 )
 
@@ -83,6 +77,7 @@ target_link_libraries(signal_source_gr_blocks
         Boost::thread
         ${OPT_LIBRARIES}
     PRIVATE
+        Gflags::gflags
         Glog::glog
 )
 

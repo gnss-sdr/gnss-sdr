@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -79,25 +79,8 @@ set(TRACKING_GR_BLOCKS_HEADERS
 )
 
 include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces
-    ${CMAKE_SOURCE_DIR}/src/core/receiver
-    ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs
-    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-    ${ARMADILLO_INCLUDE_DIRS}
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
-    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-    ${VOLK_GNSSSDR_INCLUDE_DIRS}
     ${OPT_TRACKING_INCLUDES}
-    ${MATIO_INCLUDE_DIRS}
 )
-
-if(ENABLE_GENERIC_ARCH)
-    add_definitions(-DGENERIC_ARCH=1)
-endif()
 
 list(SORT TRACKING_GR_BLOCKS_HEADERS)
 list(SORT TRACKING_GR_BLOCKS_SOURCES)
@@ -110,27 +93,23 @@ add_library(tracking_gr_blocks
 source_group(Headers FILES ${TRACKING_GR_BLOCKS_HEADERS})
 
 target_link_libraries(tracking_gr_blocks
-    tracking_lib
-    ${GNURADIO_RUNTIME_LIBRARIES}
-    gnss_sdr_flags gnss_sp_libs
-    ${Boost_LIBRARIES}
-    ${VOLK_GNSSSDR_LIBRARIES}
-    ${MATIO_LIBRARIES}
-    ${OPT_TRACKING_LIBRARIES}
+    PUBLIC
+        Boost::boost
+        tracking_lib
+        Gnuradio::blocks
+        Volkgnsssdr::volkgnsssdr
+        gnss_sdr_flags
+        gnss_sp_libs
+        gnss_rx
+        Matio::matio
+        ${OPT_TRACKING_LIBRARIES}
 )
 
-if(NOT VOLKGNSSSDR_FOUND)
-    if(MATIO_FOUND)
-        add_dependencies(tracking_gr_blocks volk_gnsssdr_module)
-    else()
-        add_dependencies(tracking_gr_blocks volk_gnsssdr_module
-            matio-${GNSSSDR_MATIO_LOCAL_VERSION}
-        )
-    endif()
-else()
-    if(NOT MATIO_FOUND)
-        add_dependencies(tracking_gr_blocks
-            matio-${GNSSSDR_MATIO_LOCAL_VERSION}
-        )
-    endif()
+if(ENABLE_GENERIC_ARCH)
+    target_compile_definitions(tracking_gr_blocks PUBLIC -DGENERIC_ARCH=1)
 endif()
+
+set_property(TARGET tracking_gr_blocks
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

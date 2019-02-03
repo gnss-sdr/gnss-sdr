@@ -54,6 +54,7 @@
 
 #include "rtklib_rtcm3.h"
 #include "rtklib_rtkcmn.h"
+#include <cstring>
 
 
 /* msm signal id table -------------------------------------------------------*/

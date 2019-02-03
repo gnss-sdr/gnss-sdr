@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -25,25 +25,28 @@ set(SUPL_SOURCES
     supl.c
 )
 
-if(OPENSSL_FOUND)
-    add_definitions(-DUSE_OPENSSL_FALLBACK=1)
-endif()
-
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/core/libs/supl
-    ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
-    ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
-    ${GNUTLS_INCLUDE_DIR}
-)
-
 if(CMAKE_C_COMPILER_ID MATCHES "Clang")
     if(CMAKE_BUILD_TYPE MATCHES "Release")
         set(MY_C_FLAGS "${MY_C_FLAGS} -Wno-parentheses-equality")
     endif()
 endif()
+
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MY_C_FLAGS}")
 
 add_library(supl_library STATIC ${ASN_RRLP_SOURCES} ${ASN_SUPL_SOURCES} ${SUPL_SOURCES})
-target_link_libraries(supl_library ${GNUTLS_LIBRARIES} ${GNUTLS_OPENSSL_LIBRARY} gnss_system_parameters)
-set_target_properties(supl_library PROPERTIES LINKER_LANGUAGE C)
+
+target_link_libraries(supl_library
+    PUBLIC
+        ${GNUTLS_LIBRARIES}
+        ${GNUTLS_OPENSSL_LIBRARY}
+        gnss_system_parameters
+)
+
+set_target_properties(supl_library PROPERTIES
+    LINKER_LANGUAGE C
+    INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR};${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl;${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp;${GNUTLS_INCLUDE_DIR}"
+)
+
+if(OPENSSL_FOUND)
+    target_compile_definitions(supl_library PUBLIC -DUSE_OPENSSL_FALLBACK=1)
+endif()

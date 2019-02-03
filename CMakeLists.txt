@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -503,6 +503,70 @@ if(NOT Boost_FOUND)
     message(FATAL_ERROR "Fatal error: Boost (version >=${GNSSSDR_BOOST_MIN_VERSION}) required.")
 endif()
 
+if(CMAKE_VERSION VERSION_LESS 3.5)
+    if(NOT TARGET Boost::boost)
+        add_library(Boost::boost SHARED IMPORTED) # Trick for CMake 2.8.12
+        set_property(TARGET Boost::boost PROPERTY
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
+        set_property(TARGET Boost::boost PROPERTY
+            IMPORTED_LOCATION ${Boost_DATE_TIME_LIBRARIES})
+    endif()
+    if(NOT TARGET Boost::date_time)
+        add_library(Boost::date_time SHARED IMPORTED)
+        set_property(TARGET Boost::date_time PROPERTY
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
+        set_property(TARGET Boost::date_time PROPERTY
+            INTERFACE_LINK_LIBRARIES ${Boost_DATE_TIME_LIBRARIES})
+        set_property(TARGET Boost::date_time PROPERTY
+            IMPORTED_LOCATION ${Boost_DATE_TIME_LIBRARIES})
+    endif()
+    if(NOT TARGET Boost::system)
+        add_library(Boost::system SHARED IMPORTED)
+        set_property(TARGET Boost::system PROPERTY
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
+        set_property(TARGET Boost::system PROPERTY
+            INTERFACE_LINK_LIBRARIES ${Boost_SYSTEM_LIBRARIES})
+        set_property(TARGET Boost::system PROPERTY
+            IMPORTED_LOCATION ${Boost_SYSTEM_LIBRARIES})
+    endif()
+    if(NOT TARGET Boost::filesystem)
+        add_library(Boost::filesystem SHARED IMPORTED)
+        set_property(TARGET Boost::filesystem PROPERTY
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
+        set_property(TARGET Boost::filesystem PROPERTY
+            INTERFACE_LINK_LIBRARIES ${Boost_FILESYSTEM_LIBRARIES})
+        set_property(TARGET Boost::filesystem PROPERTY
+            IMPORTED_LOCATION ${Boost_FILESYSTEM_LIBRARIES})
+    endif()
+    if(NOT TARGET Boost::thread)
+        add_library(Boost::thread SHARED IMPORTED)
+        set_property(TARGET Boost::thread PROPERTY
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
+        set_property(TARGET Boost::thread PROPERTY
+            INTERFACE_LINK_LIBRARIES ${Boost_THREAD_LIBRARIES})
+        set_property(TARGET Boost::thread PROPERTY
+            IMPORTED_LOCATION ${Boost_THREAD_LIBRARIES})
+    endif()
+    if(NOT TARGET Boost::serialization)
+        add_library(Boost::serialization SHARED IMPORTED)
+        set_property(TARGET Boost::serialization PROPERTY
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
+        set_property(TARGET Boost::serialization PROPERTY
+            INTERFACE_LINK_LIBRARIES ${Boost_SERIALIZATION_LIBRARIES})
+        set_property(TARGET Boost::serialization PROPERTY
+            IMPORTED_LOCATION ${Boost_SERIALIZATION_LIBRARIES})
+    endif()
+    if(NOT TARGET Boost::chrono)
+        add_library(Boost::chrono SHARED IMPORTED)
+        set_property(TARGET Boost::chrono PROPERTY
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
+        set_property(TARGET Boost::chrono PROPERTY
+            INTERFACE_LINK_LIBRARIES ${Boost_CHRONO_LIBRARIES})
+        set_property(TARGET Boost::chrono PROPERTY
+            IMPORTED_LOCATION ${Boost_CHRONO_LIBRARIES})
+    endif()
+endif()
+
 
 
 ################################################################################
@@ -530,22 +594,98 @@ if(NOT GNURADIO_RUNTIME_FOUND)
         message("  brew install gnuradio")
         message(FATAL_ERROR "GNU Radio ${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr")
     endif()
+else()
+    if(NOT TARGET Gnuradio::runtime)
+        add_library(Gnuradio::runtime SHARED IMPORTED)
+        list(GET GNURADIO_RUNTIME_LIBRARIES 0 FIRST_DIR)
+        get_filename_component(GNURADIO_RUNTIME_DIR ${FIRST_DIR} ABSOLUTE)
+        set_target_properties(Gnuradio::runtime PROPERTIES
+          IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+          IMPORTED_LOCATION "${GNURADIO_RUNTIME_DIR}"
+          INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_RUNTIME_INCLUDE_DIRS}"
+          INTERFACE_LINK_LIBRARIES "${GNURADIO_RUNTIME_LIBRARIES}"
+        )
+    endif()
 endif()
 
 if(NOT GNURADIO_ANALOG_FOUND)
     message(FATAL_ERROR "*** The gnuradio-analog library v${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr")
+else()
+    if(NOT TARGET Gnuradio::analog)
+        add_library(Gnuradio::analog SHARED IMPORTED)
+        list(GET GNURADIO_ANALOG_LIBRARIES 0 FIRST_DIR)
+        get_filename_component(GNURADIO_ANALOG_DIR ${FIRST_DIR} ABSOLUTE)
+        set_target_properties(Gnuradio::analog PROPERTIES
+          IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+          IMPORTED_LOCATION "${GNURADIO_ANALOG_DIR}"
+          INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_ANALOG_INCLUDE_DIRS}"
+          INTERFACE_LINK_LIBRARIES "${GNURADIO_ANALOG_LIBRARIES}"
+        )
+    endif()
 endif()
+
 if(NOT GNURADIO_BLOCKS_FOUND)
     message(FATAL_ERROR "*** The gnuradio-blocks library v${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr")
+else()
+    if(NOT TARGET Gnuradio::blocks)
+        add_library(Gnuradio::blocks SHARED IMPORTED)
+        list(GET GNURADIO_BLOCKS_LIBRARIES 0 FIRST_DIR)
+        get_filename_component(GNURADIO_BLOCKS_DIR ${FIRST_DIR} ABSOLUTE)
+        set_target_properties(Gnuradio::blocks PROPERTIES
+          IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+          IMPORTED_LOCATION "${GNURADIO_BLOCKS_DIR}"
+          INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_BLOCKS_INCLUDE_DIRS}"
+          INTERFACE_LINK_LIBRARIES "${GNURADIO_BLOCKS_LIBRARIES}"
+        )
+    endif()
 endif()
+
 if(NOT GNURADIO_FILTER_FOUND)
     message(FATAL_ERROR "*** The gnuradio-filter library v${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr")
+else()
+    if(NOT TARGET Gnuradio::filter)
+        add_library(Gnuradio::filter SHARED IMPORTED)
+        list(GET GNURADIO_FILTER_LIBRARIES 0 FIRST_DIR)
+        get_filename_component(GNURADIO_FILTER_DIR ${FIRST_DIR} ABSOLUTE)
+        set_target_properties(Gnuradio::filter PROPERTIES
+          IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+          IMPORTED_LOCATION "${GNURADIO_FILTER_DIR}"
+          INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_FILTER_INCLUDE_DIRS}"
+          INTERFACE_LINK_LIBRARIES "${GNURADIO_FILTER_LIBRARIES}"
+        )
+    endif()
 endif()
+
 if(NOT GNURADIO_FFT_FOUND)
     message(FATAL_ERROR "*** The gnuradio-fft library v${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr")
+else()
+    if(NOT TARGET Gnuradio::fft)
+        add_library(Gnuradio::fft SHARED IMPORTED)
+        list(GET GNURADIO_FFT_LIBRARIES 0 FIRST_DIR)
+        get_filename_component(GNURADIO_FFT_DIR ${FIRST_DIR} ABSOLUTE)
+        set_target_properties(Gnuradio::fft PROPERTIES
+          IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+          IMPORTED_LOCATION "${GNURADIO_FFT_DIR}"
+          INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_FFT_INCLUDE_DIRS}"
+          INTERFACE_LINK_LIBRARIES "${GNURADIO_FFT_LIBRARIES}"
+        )
+    endif()
 endif()
+
 if(NOT GNURADIO_PMT_FOUND)
     message(FATAL_ERROR "*** The gnuradio-pmt library v${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr")
+else()
+    if(NOT TARGET Gnuradio::pmt)
+        add_library(Gnuradio::pmt SHARED IMPORTED)
+        list(GET GNURADIO_PMT_LIBRARIES 0 FIRST_DIR)
+        get_filename_component(GNURADIO_PMT_DIR ${FIRST_DIR} ABSOLUTE)
+        set_target_properties(Gnuradio::pmt PROPERTIES
+          IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+          IMPORTED_LOCATION "${GNURADIO_PMT_DIR}"
+          INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_PMT_INCLUDE_DIRS}"
+          INTERFACE_LINK_LIBRARIES "${GNURADIO_PMT_LIBRARIES}"
+        )
+    endif()
 endif()
 
 
@@ -695,6 +835,19 @@ if(NOT VOLKGNSSSDR_FOUND)
     set(VOLK_GNSSSDR_INCLUDE_DIRS "${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build/include/;${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/include;${ORC_INCLUDE_DIRS}")
     set(VOLK_GNSSSDR_LIBRARIES volk_gnsssdr ${ORC_LIBRARIES})
 
+    if(NOT TARGET Volkgnsssdr::volkgnsssdr)
+        file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build/include)
+        add_library(Volkgnsssdr::volkgnsssdr STATIC IMPORTED)
+        add_dependencies(Volkgnsssdr::volkgnsssdr volk_gnsssdr_module)
+        set_target_properties(Volkgnsssdr::volkgnsssdr PROPERTIES
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/lib/libvolk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}"
+            INCLUDE_DIRECTORIES "${VOLK_GNSSSDR_INCLUDE_DIRS}"
+            INTERFACE_INCLUDE_DIRECTORIES "${VOLK_GNSSSDR_INCLUDE_DIRS}"
+            INTERFACE_LINK_LIBRARIES "${VOLK_GNSSSDR_LIBRARIES}"
+        )
+    endif()
+
     if(CMAKE_VERSION VERSION_LESS 3.2)
         add_custom_command(TARGET volk_gnsssdr_module POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
@@ -756,16 +909,23 @@ if(NOT GFLAGS_FOUND)
         ${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/include CACHE PATH "Local Gflags headers"
     )
 
-    add_library(gflags UNKNOWN IMPORTED)
-    set_property(TARGET gflags PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_STATIC_LIBRARY_SUFFIX})
-    add_dependencies(gflags gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION})
-    set(GFlags_LIBS gflags)
-    file(GLOB GFlags_SHARED_LIBS "${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_SHARED_LIBRARY_SUFFIX}*")
-    set(GFlags_LIBRARY gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION})
-    set(GFlags_LIBRARY_PATH ${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib)
-    link_directories(${GFlags_LIBRARY_PATH})
-    set(GFlags_lib ${GFlags_LIBS} CACHE FILEPATH "Local Gflags library")
-    set(GFlags_LIBRARY_PATH ${GFlags_LIBS})
+    file(GLOB GFlags_SHARED_LIBS
+        "${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_SHARED_LIBRARY_SUFFIX}*"
+    )
+
+    if(NOT TARGET Gflags::gflags)
+        file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/include)
+        add_library(Gflags::gflags STATIC IMPORTED)
+        add_dependencies(Gflags::gflags gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION})
+        set_target_properties(Gflags::gflags PROPERTIES
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_STATIC_LIBRARY_SUFFIX}"
+            INCLUDE_DIRECTORIES "${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/include"
+            INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/include"
+            INTERFACE_LINK_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_STATIC_LIBRARY_SUFFIX}"
+        )
+    endif()
+
     set(LOCAL_GFLAGS true CACHE STRING "GFlags downloaded and built automatically" FORCE)
 endif()
 
@@ -899,6 +1059,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
             INSTALL_COMMAND ""
         )
     endif()
+    add_dependencies(glog-${GNSSSDR_GLOG_LOCAL_VERSION} Gflags::gflags)
 
     # Set up variables
     set(GLOG_INCLUDE_DIRS
@@ -908,15 +1069,28 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
     set(GLOG_LIBRARIES
         ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
     )
+
+    # Create Glog::glog target
+    if(NOT TARGET Glog::glog)
+        file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src)
+        file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src)
+        add_library(Glog::glog STATIC IMPORTED)
+        add_dependencies(Glog::glog glog-${GNSSSDR_GLOG_LOCAL_VERSION})
+        set_target_properties(Glog::glog PROPERTIES
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}"
+            INCLUDE_DIRECTORIES "${GLOG_INCLUDE_DIRS}"
+            INTERFACE_INCLUDE_DIRECTORIES "${GLOG_INCLUDE_DIRS}"
+            INTERFACE_LINK_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}"
+        )
+    endif()
+
     set(LOCAL_GLOG true CACHE STRING "Glog downloaded and built automatically" FORCE)
-else()
-    add_library(glog-${GNSSSDR_GLOG_LOCAL_VERSION} UNKNOWN IMPORTED)
-    set_property(TARGET glog-${GNSSSDR_GLOG_LOCAL_VERSION} PROPERTY IMPORTED_LOCATION "${GLOG_LIBRARIES}")
 endif()
 
 if(NOT ENABLE_LOG)
     message(STATUS "Logging is not enabled")
-    add_definitions(-DGOOGLE_STRIP_LOG=1)
+    target_compile_definitions(Glog::glog PUBLIC -DGOOGLE_STRIP_LOG=1)
 endif()
 
 
@@ -967,6 +1141,14 @@ if(ARMADILLO_FOUND)
     if(${ARMADILLO_VERSION_STRING} VERSION_LESS ${GNSSSDR_ARMADILLO_MIN_VERSION})
         set(ARMADILLO_FOUND false)
         set(ENABLE_OWN_ARMADILLO true)
+    else()
+        add_library(Armadillo::armadillo SHARED IMPORTED)
+        set_target_properties(Armadillo::armadillo PROPERTIES
+          IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+          IMPORTED_LOCATION "${ARMADILLO_LIBRARIES}"
+          INTERFACE_INCLUDE_DIRECTORIES "${ARMADILLO_INCLUDE_DIRS}"
+          INTERFACE_LINK_LIBRARIES "${ARMADILLO_LIBRARIES}"
+        )
     endif()
 endif()
 
@@ -1028,17 +1210,22 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
 
     # Set up variables
     ExternalProject_Get_Property(armadillo-${armadillo_RELEASE} binary_dir)
-    set(ARMADILLO_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}/include)
+    #set(ARMADILLO_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}/include)
     if(NOT GFORTRAN)
         set(GFORTRAN "")
     endif()
     set(ARMADILLO_LIBRARIES ${BLAS} ${LAPACK} ${GFORTRAN} ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo${CMAKE_STATIC_LIBRARY_SUFFIX})
     set(LOCAL_ARMADILLO true CACHE STRING "Armadillo downloaded and built automatically" FORCE)
     set(ARMADILLO_VERSION_STRING ${armadillo_RELEASE})
-else()
-    set(armadillo_RELEASE ${ARMADILLO_VERSION_STRING})
-    add_library(armadillo-${armadillo_RELEASE} UNKNOWN IMPORTED)
-    set_property(TARGET armadillo-${armadillo_RELEASE} PROPERTY IMPORTED_LOCATION "${ARMADILLO_LIBRARIES}")
+    file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}/include)
+    add_library(Armadillo::armadillo STATIC IMPORTED)
+    add_dependencies(Armadillo::armadillo armadillo-${armadillo_RELEASE})
+    set_target_properties(Armadillo::armadillo PROPERTIES
+      IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+      IMPORTED_LOCATION "${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo${CMAKE_STATIC_LIBRARY_SUFFIX}"
+      INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}/include"
+      INTERFACE_LINK_LIBRARIES "${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo${CMAKE_STATIC_LIBRARY_SUFFIX}"
+    )
 endif()
 
 
@@ -1165,6 +1352,7 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
                     set(HDF5_BASE_DIR /usr/local)
                 endif()
             endif()
+
             if(CMAKE_VERSION VERSION_LESS 3.2)
                 ExternalProject_Add(matio-${GNSSSDR_MATIO_LOCAL_VERSION}
                     PREFIX ${CMAKE_CURRENT_BINARY_DIR}/matio
@@ -1173,7 +1361,7 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
                     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}
                     UPDATE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/autogen.sh
                     CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/configure --with-hdf5=${HDF5_BASE_DIR} --with-zlib=${ZLIB_BASE_DIR} --with-default-file-ver=7.3 --enable-mat73=yes --prefix=<INSTALL_DIR>
-                    BUILD_COMMAND make
+                    BUILD_COMMAND $(MAKE)
                 )
             else()
                 ExternalProject_Add(matio-${GNSSSDR_MATIO_LOCAL_VERSION}
@@ -1183,13 +1371,23 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
                     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}
                     UPDATE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/autogen.sh
                     CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/configure --with-hdf5=${HDF5_BASE_DIR} --with-zlib=${ZLIB_BASE_DIR} --with-default-file-ver=7.3 --enable-mat73=yes --prefix=<INSTALL_DIR>
-                    BUILD_COMMAND make
+                    BUILD_COMMAND $(MAKE)
                     BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_STATIC_LIBRARY_SUFFIX}
                 )
             endif()
-            set(MATIO_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_STATIC_LIBRARY_SUFFIX} ${HDF5_LIBRARIES} ${ZLIB_LIBRARIES})
-            set(MATIO_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/matio/include)
             set(MATIO_LOCAL true)
+            if(NOT TARGET Matio::matio)
+                file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/matio/include)
+                file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/matio/lib)
+                add_library(Matio::matio SHARED IMPORTED)
+                add_dependencies(Matio::matio matio-${GNSSSDR_MATIO_LOCAL_VERSION})
+                set_target_properties(Matio::matio PROPERTIES
+                  IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+                  IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_SHARED_LIBRARY_SUFFIX}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_BINARY_DIR}/matio/include"
+                  INTERFACE_LINK_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_SHARED_LIBRARY_SUFFIX}"
+                )
+            endif()
         else()
             message(STATUS " The hdf5 library has not been found in your system.")
             message(STATUS " Please try to install it by doing:")
@@ -1250,9 +1448,18 @@ else()
             INSTALL_COMMAND ""
         )
     endif()
-    set(PUGIXML_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}pugixml${CMAKE_STATIC_LIBRARY_SUFFIX})
-    set(PUGIXML_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/pugixml/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}/src)
-    set(PUGIXML_LOCAL true)
+
+    if(NOT TARGET Pugixml::pugixml)
+        file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/pugixml/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}/src)
+        add_library(Pugixml::pugixml STATIC IMPORTED)
+        add_dependencies(Pugixml::pugixml pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION})
+        set_target_properties(Pugixml::pugixml PROPERTIES
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}pugixml${CMAKE_STATIC_LIBRARY_SUFFIX}"
+            INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/pugixml/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}/src"
+            INTERFACE_LINK_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}pugixml${CMAKE_STATIC_LIBRARY_SUFFIX}"
+        )
+    endif()
 endif()
 
 
@@ -1581,7 +1788,7 @@ endif()
 if(NOT ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang")) AND NOT WIN32)
     if(NOT (CMAKE_VERSION VERSION_LESS "3.1"))
         set(CMAKE_C_STANDARD 11)
-        set(CMAKE_CXX_STANDARD 14)
+        set(CMAKE_CXX_STANDARD 11)
     endif()
 endif()
 

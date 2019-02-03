@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -46,29 +46,6 @@ if(ORC_FOUND)
     set(GNSS_SDR_OPTIONAL_HEADERS ${GNSS_SDR_OPTIONAL_HEADERS} ${ORC_INCLUDE_DIRS})
 endif()
 
-include_directories(
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces
-    ${CMAKE_SOURCE_DIR}/src/core/receiver
-    ${CMAKE_SOURCE_DIR}/src/core/monitor
-    ${CMAKE_SOURCE_DIR}/src/core/libs
-    ${CMAKE_SOURCE_DIR}/src/core/libs/supl
-    ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
-    ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
-    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${ARMADILLO_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
-    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-    ${PUGIXML_INCLUDE_DIR}
-    ${GNSS_SDR_OPTIONAL_HEADERS}
-    ${VOLK_GNSSSDR_INCLUDE_DIRS}
-    ${OPT_GNSSSDR_INCLUDE_DIRS}
-)
-
-add_definitions(-DGNSS_SDR_VERSION="${VERSION}")
-
 if(OS_IS_MACOSX)
     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         set(MAC_LIBRARIES "-framework Accelerate -lc++")
@@ -77,28 +54,37 @@ endif()
 
 add_executable(gnss-sdr ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
 
+target_include_directories(gnss-sdr PRIVATE
+    ${GNSS_SDR_OPTIONAL_HEADERS}
+    ${OPT_GNSSSDR_INCLUDE_DIRS}
+)
+
+target_compile_definitions(gnss-sdr PUBLIC -DGNSS_SDR_VERSION="${VERSION}")
+
 add_custom_command(TARGET gnss-sdr
     POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:gnss-sdr>
         ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:gnss-sdr>
 )
 
 target_link_libraries(gnss-sdr
-    ${MAC_LIBRARIES}
-    ${THREAD_LIBRARIES}
-    ${Boost_LIBRARIES}
-    ${GNURADIO_RUNTIME_LIBRARIES}
-    ${GNURADIO_BLOCKS_LIBRARIES}
-    ${GNURADIO_FFT_LIBRARIES}
-    ${GNURADIO_FILTER_LIBRARIES}
-    ${GFlags_LIBS}
-    ${GLOG_LIBRARIES}
-    ${ARMADILLO_LIBRARIES}
-    ${VOLK_GNSSSDR_LIBRARIES}
-    ${GNSS_SDR_OPTIONAL_LIBS}
-    gnss_sp_libs
-    gnss_sdr_flags
-    gnss_rx
+    PUBLIC
+        Boost::filesystem
+        Boost::system
+        gnss_sdr_flags
+        gnss_system_parameters
+        gnss_sp_libs
+        gnss_rx
+        ${MAC_LIBRARIES}
+        ${THREAD_LIBRARIES}
+        ${GNSS_SDR_OPTIONAL_LIBS}
+    PRIVATE
+        rtklib_lib
+        Gflags::gflags
+        Glog::glog
+        Armadillo::armadillo
+        Volkgnsssdr::volkgnsssdr
 )
+
 
 install(TARGETS gnss-sdr
     RUNTIME DESTINATION bin

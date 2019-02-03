@@ -57,12 +57,12 @@ set(SIGNAL_SOURCE_GR_BLOCKS_HEADERS
 
 
 include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/libs
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
+    #${CMAKE_CURRENT_SOURCE_DIR}
+    #${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/libs
+    #${GLOG_INCLUDE_DIRS}
+    #${GFlags_INCLUDE_DIRS}
+    #${GNURADIO_RUNTIME_INCLUDE_DIRS}
+    #${Boost_INCLUDE_DIRS}
     ${OPT_DRIVER_INCLUDE_DIRS}
 )
 
@@ -77,10 +77,18 @@ add_library(signal_source_gr_blocks
 source_group(Headers FILES ${SIGNAL_SOURCE_GR_BLOCKS_HEADERS})
 
 target_link_libraries(signal_source_gr_blocks
-    signal_source_lib
-    ${GNURADIO_RUNTIME_LIBRARIES}
-    ${Boost_LIBRARIES}
-    ${OPT_LIBRARIES}
+    PUBLIC
+        signal_source_lib
+        Gnuradio::runtime
+        Boost::thread
+        ${OPT_LIBRARIES}
+    PRIVATE
+        Glog::glog
 )
 
-add_dependencies(signal_source_gr_blocks glog-${glog_RELEASE})
+target_include_directories(signal_source_gr_blocks PUBLIC ${OPT_DRIVER_INCLUDE_DIRS})
+
+set_property(TARGET signal_source_gr_blocks APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${OPT_DRIVER_INCLUDE_DIRS}>
+)

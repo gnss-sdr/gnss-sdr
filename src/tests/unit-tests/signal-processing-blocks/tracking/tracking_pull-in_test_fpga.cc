@@ -31,6 +31,7 @@
  */
 
 #include "GPS_L1_CA.h"
+#include "acquisition_msg_rx.h"
 #include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
 #include "galileo_e5a_pcps_acquisition.h"
 #include "gnss_block_factory.h"
@@ -60,59 +61,6 @@
 #include <vector>
 
 
-// ######## GNURADIO ACQUISITION BLOCK MESSAGE RECEVER #########
-class Acquisition_msg_rx;
-
-typedef boost::shared_ptr<Acquisition_msg_rx> Acquisition_msg_rx_sptr;
-
-Acquisition_msg_rx_sptr Acquisition_msg_rx_make();
-
-
-class Acquisition_msg_rx : public gr::block
-{
-private:
-    friend Acquisition_msg_rx_sptr Acquisition_msg_rx_make();
-    void msg_handler_events(pmt::pmt_t msg);
-    Acquisition_msg_rx();
-
-public:
-    int rx_message;
-    gr::top_block_sptr top_block;
-    ~Acquisition_msg_rx();  //!< Default destructor
-};
-
-
-Acquisition_msg_rx_sptr Acquisition_msg_rx_make()
-{
-    return Acquisition_msg_rx_sptr(new Acquisition_msg_rx());
-}
-
-
-void Acquisition_msg_rx::msg_handler_events(pmt::pmt_t msg)
-{
-    try
-        {
-            int64_t message = pmt::to_long(msg);
-            rx_message = message;
-            top_block->stop();  //stop the flowgraph
-        }
-    catch (boost::bad_any_cast& e)
-        {
-            LOG(WARNING) << "msg_handler_acquisition Bad cast!\n";
-            rx_message = 0;
-        }
-}
-
-
-Acquisition_msg_rx::Acquisition_msg_rx() : gr::block("Acquisition_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
-{
-    this->message_port_register_in(pmt::mp("events"));
-    this->set_msg_handler(pmt::mp("events"), boost::bind(&Acquisition_msg_rx::msg_handler_events, this, _1));
-    rx_message = 0;
-}
-
-
-Acquisition_msg_rx::~Acquisition_msg_rx() {}
 // ######## GNURADIO TRACKING BLOCK MESSAGE RECEVER #########
 class TrackingPullInTestFpga_msg_rx;
 

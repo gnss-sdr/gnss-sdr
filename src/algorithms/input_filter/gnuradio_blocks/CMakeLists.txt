@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -31,15 +31,6 @@ set(INPUT_FILTER_GR_BLOCKS_HEADERS
     notch_lite_cc.h
 )
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-    ${GNURADIO_BLOCKS_INCLUDE_DIRS}
-    ${VOLK_GNSSSDR_INCLUDE_DIRS}
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-)
-
 list(SORT INPUT_FILTER_GR_BLOCKS_HEADERS)
 list(SORT INPUT_FILTER_GR_BLOCKS_SOURCES)
 
@@ -50,12 +41,17 @@ add_library(input_filter_gr_blocks
 source_group(Headers FILES ${INPUT_FILTER_GR_BLOCKS_HEADERS})
 
 target_link_libraries(input_filter_gr_blocks
-    ${GNURADIO_FILTER_LIBRARIES}
-    ${VOLK_GNSSSDR_LIBRARIES}
-    ${LOG4CPP_LIBRARIES})
+    PUBLIC
+        Gnuradio::filter
+        Gnuradio::blocks
+        Volkgnsssdr::volkgnsssdr
+    PRIVATE
+        Gflags::gflags
+        Glog::glog
+        ${LOG4CPP_LIBRARIES}
+)
 
-if(NOT VOLKGNSSSDR_FOUND)
-    add_dependencies(input_filter_gr_blocks volk_gnsssdr_module glog-${glog_RELEASE})
-else()
-    add_dependencies(input_filter_gr_blocks glog-${glog_RELEASE})
-endif()
+set_property(TARGET input_filter_gr_blocks
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

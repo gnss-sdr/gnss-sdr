@@ -30,12 +30,12 @@
  */
 
 #include "beidou_dnav_navigation_message.h"
+#include "gnss_satellite.h"
 #include <boost/crc.hpp>  // for boost::crc_basic, boost::crc_optimal
 #include <boost/dynamic_bitset.hpp>
 #include <glog/logging.h>
 #include <cmath>
 #include <cstring>
-#include <gnss_satellite.h>
 #include <iostream>
 #include <string>
 

@@ -88,16 +88,16 @@ set(TRACKING_ADAPTER_HEADERS
 )
 
 include_directories(
-     ${CMAKE_CURRENT_SOURCE_DIR}
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/gnuradio_blocks
-     ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${ARMADILLO_INCLUDE_DIRS}
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
+     #${CMAKE_CURRENT_SOURCE_DIR}
+     #${CMAKE_SOURCE_DIR}/src/core/system_parameters
+     #${CMAKE_SOURCE_DIR}/src/core/interfaces
+     #${CMAKE_SOURCE_DIR}/src/core/receiver
+     #${CMAKE_SOURCE_DIR}/src/algorithms/tracking/gnuradio_blocks
+     #${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs
+     #${CMAKE_SOURCE_DIR}/src/algorithms/libs
+     #${ARMADILLO_INCLUDE_DIRS}
+     #${GLOG_INCLUDE_DIRS}
+     #${GFlags_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
      ${VOLK_GNSSSDR_INCLUDE_DIRS}
      ${OPT_TRACKING_INCLUDE_DIRS}
@@ -114,7 +114,13 @@ add_library(tracking_adapters
 source_group(Headers FILES ${TRACKING_ADAPTER_HEADERS})
 
 target_link_libraries(tracking_adapters
-    tracking_gr_blocks
-    gnss_sp_libs
-    gnss_sdr_flags
+    PUBLIC
+        tracking_gr_blocks
+        gnss_sp_libs
+        gnss_sdr_flags
+)
+
+set_property(TARGET tracking_adapters
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

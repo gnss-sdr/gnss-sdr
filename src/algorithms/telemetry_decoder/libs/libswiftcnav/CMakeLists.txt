@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -31,16 +31,17 @@ set(TELEMETRY_DECODER_LIBSWIFTCNAV_HEADERS
     fec.h
 )
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
 list(SORT TELEMETRY_DECODER_LIBSWIFTCNAV_HEADERS)
 list(SORT TELEMETRY_DECODER_LIBSWIFTCNAV_SOURCES)
 
 add_library(telemetry_decoder_libswiftcnav STATIC
     ${TELEMETRY_DECODER_LIBSWIFTCNAV_SOURCES}
     ${TELEMETRY_DECODER_LIBSWIFTCNAV_HEADERS}
+)
+
+set_property(TARGET telemetry_decoder_libswiftcnav
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
 source_group(Headers FILES ${TELEMETRY_DECODER_LIBSWIFTCNAV_HEADERS})

@@ -61,6 +61,7 @@
 
 #include "rtklib_sbas.h"
 #include "rtklib_rtkcmn.h"
+#include <cstring>
 
 /* extract field from line ---------------------------------------------------*/
 char *getfield(char *p, int pos)

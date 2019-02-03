@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -16,11 +16,6 @@
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
-
-if(Boost_VERSION LESS 105800)
-    add_definitions(-DOLD_BOOST=1)
-endif()
-
 set(PVT_GR_BLOCKS_SOURCES
     rtklib_pvt_cc.cc
 )
@@ -29,21 +24,35 @@ set(PVT_GR_BLOCKS_HEADERS
     rtklib_pvt_cc.h
 )
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces
-    ${CMAKE_SOURCE_DIR}/src/core/receiver
-    ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
-    ${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib
-    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-    ${ARMADILLO_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+add_library(pvt_gr_blocks ${PVT_GR_BLOCKS_SOURCES} ${PVT_GR_BLOCKS_HEADERS})
+
+source_group(Headers FILES ${PVT_GR_BLOCKS_HEADERS})
+
+target_link_libraries(pvt_gr_blocks
+    PUBLIC
+        Boost::date_time
+        pvt_lib
+        Gnuradio::runtime
+        gnss_system_parameters
+        gnss_rx
+    PRIVATE
+        Glog::glog
+        Boost::filesystem
+        Boost::system
 )
 
-add_library(pvt_gr_blocks ${PVT_GR_BLOCKS_SOURCES} ${PVT_GR_BLOCKS_HEADERS})
-source_group(Headers FILES ${PVT_GR_BLOCKS_HEADERS})
-target_link_libraries(pvt_gr_blocks pvt_lib ${ARMADILLO_LIBRARIES})
+target_include_directories(pvt_gr_blocks
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
+        ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+)
+
+if(Boost_VERSION LESS 105800)
+    target_compile_definitions(pvt_gr_blocks PUBLIC -DOLD_BOOST=1)
+endif()
+
+set_property(TARGET pvt_gr_blocks
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/core/system_parameters>
+)

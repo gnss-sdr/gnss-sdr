@@ -7,6 +7,7 @@
 #include "rtklib_sbas.h"
 #include "rtklib_solution.h"
 #include "rtklib_stream.h"
+#include <cstring>
 
 /* write solution header to output stream ------------------------------------*/
 void writesolhead(stream_t *stream, const solopt_t *solopt)

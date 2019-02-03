@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -40,136 +40,30 @@ set(GNSS_RECEIVER_HEADERS
     control_message.h
 )
 
-if(PC_GNURADIO_RUNTIME_VERSION VERSION_GREATER 3.7.3)
-    add_definitions(-DMODERN_GNURADIO=1)
-endif()
 
-if(ENABLE_CUDA)
-    add_definitions(-DCUDA_GPU_ACCEL=1)
-    set(OPT_RECEIVER_INCLUDE_DIRS
-        ${OPT_RECEIVER_INCLUDE_DIRS} ${CUDA_INCLUDE_DIRS}
-    )
-endif()
-
-if(ENABLE_FPGA)
-    add_definitions(-DENABLE_FPGA=1)
-endif()
-
-if(ENABLE_RAW_UDP)
-    add_definitions(-DRAW_UDP=1)
-endif()
-
-if(Boost_VERSION LESS 105000)
-    add_definitions(-DOLD_BOOST=1)
-endif()
-
-if(OPENSSL_FOUND)
-    add_definitions(-DUSE_OPENSSL_FALLBACK=1)
-endif()
-
-if(ENABLE_GN3S)
-    add_definitions(-DGN3S_DRIVER=1)
-endif()
-
-if(ENABLE_ARRAY)
-    add_definitions(-DRAW_ARRAY_DRIVER=1)
-endif()
-
-if(ENABLE_FLEXIBAND)
-    add_definitions(-DFLEXIBAND_DRIVER=1)
-endif()
-
-if(ENABLE_OSMOSDR)
-    if(GROSMOSDR_FOUND)
-        add_definitions(-DOSMOSDR_DRIVER=1)
-    endif()
-endif()
-
-if(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
-    add_definitions(-DUHD_DRIVER=1)
-endif()
-
-#Enable OpenCL if found in the system
-if(OPENCL_FOUND)
-    message(STATUS "Adding processing blocks implemented using OpenCL")
-    add_definitions(-DOPENCL_BLOCKS=1)
-else()
-    add_definitions(-DOPENCL_BLOCKS=0)
-endif()
-
-#enable SDR Hardware based on fmcomms2
 if(ENABLE_PLUTOSDR)
-    add_definitions(-DPLUTOSDR_DRIVER=1)
     set(OPT_RECEIVER_INCLUDE_DIRS
         ${OPT_RECEIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS}
     )
 endif()
 
 if(ENABLE_FMCOMMS2)
-    add_definitions(-DFMCOMMS2_DRIVER=1)
     set(OPT_RECEIVER_INCLUDE_DIRS
         ${OPT_RECEIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS}
     )
 endif()
 
 if(ENABLE_AD9361)
-    add_definitions(-DAD9361_DRIVER=1)
     set(OPT_RECEIVER_INCLUDE_DIRS
         ${OPT_RECEIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS}
     )
 endif()
 
-if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13.4")
-    add_definitions(-DGR_GREATER_38=1)
+if(ENABLE_CUDA)
+    set(OPT_RECEIVER_INCLUDE_DIRS
+        ${OPT_RECEIVER_INCLUDE_DIRS} ${CUDA_INCLUDE_DIRS}
+    )
 endif()
-
-
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces
-    ${CMAKE_SOURCE_DIR}/src/core/libs
-    ${CMAKE_SOURCE_DIR}/src/core/libs/supl
-    ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
-    ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
-    ${CMAKE_SOURCE_DIR}/src/core/monitor
-    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-    ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/libs
-    ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/adapters
-    ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/gnuradio_blocks
-    ${CMAKE_SOURCE_DIR}/src/algorithms/channel/adapters
-    ${CMAKE_SOURCE_DIR}/src/algorithms/channel/libs
-    ${CMAKE_SOURCE_DIR}/src/algorithms/conditioner/adapters
-    ${CMAKE_SOURCE_DIR}/src/algorithms/data_type_adapter/adapters
-    ${CMAKE_SOURCE_DIR}/src/algorithms/data_type_adapter/gnuradio_blocks
-    ${CMAKE_SOURCE_DIR}/src/algorithms/resampler/adapters
-    ${CMAKE_SOURCE_DIR}/src/algorithms/input_filter/adapters
-    ${CMAKE_SOURCE_DIR}/src/algorithms/input_filter/gnuradio_blocks
-    ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/adapters
-    ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/gnuradio_blocks
-    ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/libs
-    ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/adapters
-    ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/gnuradio_blocks
-    ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs
-    ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/adapters
-    ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/gnuradio_blocks
-    ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/libs
-    ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/libs/libswiftcnav
-    ${CMAKE_SOURCE_DIR}/src/algorithms/observables/adapters
-    ${CMAKE_SOURCE_DIR}/src/algorithms/observables/gnuradio_blocks
-    ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/adapters
-    ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/gnuradio_blocks
-    ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
-    ${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib
-    ${ARMADILLO_INCLUDE_DIRS}
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
-    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-    ${PUGIXML_INCLUDE_DIR}
-    ${OPT_RECEIVER_INCLUDE_DIRS}
-    ${VOLK_GNSSSDR_INCLUDE_DIRS}
-)
 
 list(SORT GNSS_RECEIVER_HEADERS)
 list(SORT GNSS_RECEIVER_SOURCES)
@@ -196,29 +90,104 @@ add_library(gnss_rx
 source_group(Headers FILES ${GNSS_RECEIVER_HEADERS}
     ${GNSS_RECEIVER_INTERFACE_HEADERS})
 
+if(ENABLE_FPGA)
+    target_compile_definitions(gnss_rx PUBLIC -DENABLE_FPGA=1)
+endif()
+
+if(ENABLE_RAW_UDP)
+    target_compile_definitions(gnss_rx PUBLIC -DRAW_UDP=1)
+endif()
+
+if(Boost_VERSION LESS 105000)
+    target_compile_definitions(gnss_rx PUBLIC -DOLD_BOOST=1)
+endif()
+
+if(OPENSSL_FOUND)
+    target_compile_definitions(gnss_rx PUBLIC -DUSE_OPENSSL_FALLBACK=1)
+endif()
+
+if(PC_GNURADIO_RUNTIME_VERSION VERSION_GREATER 3.7.3)
+    target_compile_definitions(gnss_rx PUBLIC -DMODERN_GNURADIO=1)
+endif()
+
+if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13.4")
+    target_compile_definitions(gnss_rx PUBLIC -DGR_GREATER_38=1)
+endif()
+
+if(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
+    target_compile_definitions(gnss_rx PUBLIC -DUHD_DRIVER=1)
+endif()
+
+if(ENABLE_PLUTOSDR)
+    target_compile_definitions(gnss_rx PUBLIC -DPLUTOSDR_DRIVER=1)
+endif()
+
+if(ENABLE_FMCOMMS2)
+    target_compile_definitions(gnss_rx PUBLIC -DFMCOMMS2_DRIVER=1)
+endif()
+
+if(ENABLE_AD9361)
+    target_compile_definitions(gnss_rx PUBLIC -DAD9361_DRIVER=1)
+endif()
+
+if(ENABLE_OSMOSDR)
+    if(GROSMOSDR_FOUND)
+        target_compile_definitions(gnss_rx PUBLIC -DOSMOSDR_DRIVER=1)
+    endif()
+endif()
+
+if(ENABLE_GN3S)
+    target_compile_definitions(gnss_rx PUBLIC -DGN3S_DRIVER=1)
+endif()
+
+if(ENABLE_ARRAY)
+    target_compile_definitions(gnss_rx PUBLIC -DRAW_ARRAY_DRIVER=1)
+endif()
+
+if(ENABLE_FLEXIBAND)
+    target_compile_definitions(gnss_rx PUBLIC -DFLEXIBAND_DRIVER=1)
+endif()
+
+if(OPENCL_FOUND)
+    message(STATUS "Adding processing blocks implemented using OpenCL")
+    target_compile_definitions(gnss_rx PUBLIC -DOPENCL_BLOCKS=1)
+else()
+    target_compile_definitions(gnss_rx PUBLIC -DOPENCL_BLOCKS=0)
+endif()
+
+if(ENABLE_CUDA)
+    target_compile_definitions(gnss_rx PUBLIC -DCUDA_GPU_ACCEL=1)
+endif()
+
+
 target_link_libraries(gnss_rx
-    ${Boost_LIBRARIES}
-    ${ARMADILLO_LIBRARIES}
-    ${GNURADIO_RUNTIME_LIBRARIES}
-    ${GNURADIO_BLOCKS_LIBRARIES}
-    ${GNURADIO_FFT_LIBRARIES}
-    ${GNURADIO_FILTER_LIBRARIES}
-    gnss_system_parameters
-    gnss_sp_libs
-    signal_source_adapters
-    datatype_adapters
-    input_filter_adapters
-    conditioner_adapters
-    resampler_adapters
-    acq_adapters
-    tracking_adapters
-    channel_adapters
-    telemetry_decoder_libswiftcnav
-    telemetry_decoder_lib
-    telemetry_decoder_adapters
-    obs_adapters
-    pvt_adapters
-    pvt_lib
-    rx_core_lib
-    core_monitor_lib
+    PUBLIC
+        Boost::boost
+        Boost::thread
+        Gnuradio::runtime
+        gnss_system_parameters
+        rx_core_lib
+        core_monitor_lib
+        gnss_sp_libs
+    PRIVATE
+        Glog::glog
+        signal_source_adapters
+        datatype_adapters
+        input_filter_adapters
+        conditioner_adapters
+        resampler_adapters
+        acq_adapters
+        tracking_adapters
+        channel_adapters
+        telemetry_decoder_adapters
+        obs_adapters
+        pvt_adapters
+        Volkgnsssdr::volkgnsssdr
+)
+
+set_property(TARGET gnss_rx APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/core/receiver>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/core/interfaces>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/algorithms/libs>
+    $<BUILD_INTERFACE:${OPT_RECEIVER_INCLUDE_DIRS}>
 )

@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -29,12 +29,6 @@ set(DATA_TYPE_GR_BLOCKS_HEADERS
     interleaved_byte_to_complex_short.h
 )
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-    ${VOLK_INCLUDE_DIRS}
-)
-
 list(SORT DATA_TYPE_GR_BLOCKS_HEADERS)
 list(SORT DATA_TYPE_GR_BLOCKS_SOURCES)
 
@@ -46,6 +40,15 @@ add_library(data_type_gr_blocks
 source_group(Headers FILES ${DATA_TYPE_GR_BLOCKS_HEADERS})
 
 target_link_libraries(data_type_gr_blocks
-    ${GNURADIO_RUNTIME_LIBRARIES}
-    ${VOLK_LIBRARIES}
+    PUBLIC
+        Gnuradio::runtime
+        Boost::boost
+        gnss_sp_libs
+    PRIVATE
+        Volk::volk
+)
+
+set_property(TARGET data_type_gr_blocks
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

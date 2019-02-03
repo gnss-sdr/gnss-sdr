@@ -207,21 +207,6 @@ if(PC_GNURADIO_RUNTIME_VERSION VERSION_GREATER 3.7.3)
         two_bit_packed_file_signal_source.h)
 endif()
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${OPT_DRIVER_INCLUDE_DIRS}
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces
-    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-    ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/libs
-    ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/gnuradio_blocks
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
-    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-    ${VOLK_INCLUDE_DIRS}
-)
-
 if(ARCH_64BITS)
     add_definitions(-DARCH_64BITS=1)
 endif()
@@ -233,10 +218,27 @@ list(SORT SIGNAL_SOURCE_ADAPTER_SOURCES)
 
 add_library(signal_source_adapters ${SIGNAL_SOURCE_ADAPTER_SOURCES} ${SIGNAL_SOURCE_ADAPTER_HEADERS})
 source_group(Headers FILES ${SIGNAL_SOURCE_ADAPTER_HEADERS})
-target_link_libraries(signal_source_adapters signal_source_gr_blocks
-    ${Boost_LIBRARIES}
-    ${GNURADIO_PMT_LIBRARIES}
-    ${GNURADIO_BLOCKS_LIBRARIES}
-    ${OPT_LIBRARIES}
-    gnss_sp_libs
+
+target_include_directories(signal_source_adapters PUBLIC ${CMAKE_SOURCE_DIR}/src/algorithms/libs)
+
+target_link_libraries(signal_source_adapters
+    PUBLIC
+        Boost::boost
+        Gnuradio::runtime
+        signal_source_gr_blocks
+        ${Boost_LIBRARIES}
+        ${GNURADIO_PMT_LIBRARIES}
+        ${GNURADIO_BLOCKS_LIBRARIES}
+        ${OPT_LIBRARIES}
+        gnss_sp_libs
+        gnss_rx
+        signal_source_lib
+    PRIVATE
+        Glog::glog
+        Volk::volk
+)
+
+set_property(TARGET signal_source_adapters APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${OPT_DRIVER_INCLUDE_DIRS}>
 )

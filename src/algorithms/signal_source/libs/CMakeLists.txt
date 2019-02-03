@@ -57,14 +57,6 @@ if(ENABLE_FPGA OR ENABLE_AD9361)
     set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} fpga_switch.h)
 endif()
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${Boost_INCLUDE_DIRS}
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${OPT_DRIVER_INCLUDE_DIRS}
-)
-
 set(SIGNAL_SOURCE_LIB_SOURCES
     rtl_tcp_commands.cc
     rtl_tcp_dongle_info.cc
@@ -81,6 +73,20 @@ list(SORT SIGNAL_SOURCE_LIB_HEADERS)
 list(SORT SIGNAL_SOURCE_LIB_SOURCES)
 
 add_library(signal_source_lib ${SIGNAL_SOURCE_LIB_SOURCES} ${SIGNAL_SOURCE_LIB_HEADERS})
+
 source_group(Headers FILES ${SIGNAL_SOURCE_LIB_HEADERS})
-target_link_libraries(signal_source_lib ${OPT_LIBRARIES})
-add_dependencies(signal_source_lib glog-${glog_RELEASE})
+
+target_link_libraries(signal_source_lib
+    PUBLIC
+        Boost::boost
+        ${OPT_LIBRARIES}
+    PRIVATE
+        Glog::glog
+)
+
+target_include_directories(signal_source_lib PUBLIC ${OPT_DRIVER_INCLUDE_DIRS})
+
+set_property(TARGET signal_source_lib APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${OPT_DRIVER_INCLUDE_DIRS}>
+)

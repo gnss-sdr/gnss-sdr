@@ -40,9 +40,11 @@ source_group(Headers FILES ${CORE_MONITOR_LIBS_HEADERS})
 target_link_libraries(core_monitor_lib
     PUBLIC
         Boost::serialization
+        Boost::system
         gnss_system_parameters
         Gnuradio::runtime
     PRIVATE
+        Gnuradio::pmt
         Glog::glog
 )
 

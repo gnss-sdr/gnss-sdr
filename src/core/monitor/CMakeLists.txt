@@ -45,6 +45,7 @@ target_link_libraries(core_monitor_lib
         Gnuradio::runtime
     PRIVATE
         Gnuradio::pmt
+        Gflags::gflags
         Glog::glog
 )
 

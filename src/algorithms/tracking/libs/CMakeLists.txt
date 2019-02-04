@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -66,18 +66,6 @@ if(ENABLE_FPGA)
     set(TRACKING_LIB_HEADERS ${TRACKING_LIB_HEADERS} fpga_multicorrelator.h dll_pll_conf_fpga.h)
 endif()
 
-include_directories(
-    ${OPT_TRACKING_INCLUDES}
-)
-
-if(ENABLE_GENERIC_ARCH)
-    add_definitions(-DGENERIC_ARCH=1)
-endif()
-
-if(SSE3_AVAILABLE)
-    add_definitions(-DHAVE_SSE3=1)
-endif()
-
 list(SORT TRACKING_LIB_HEADERS)
 list(SORT TRACKING_LIB_SOURCES)
 
@@ -96,6 +84,11 @@ target_link_libraries(tracking_lib
     PRIVATE
         Gflags::gflags
         Glog::glog
+)
+
+target_include_directories(tracking_lib
+    PUBLIC
+        ${OPT_TRACKING_INCLUDES}
 )
 
 set_property(TARGET tracking_lib

@@ -61,7 +61,6 @@ target_link_libraries(telemetry_decoder_adapters
         telemetry_decoder_lib
 )
 
-
 set_property(TARGET telemetry_decoder_adapters
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

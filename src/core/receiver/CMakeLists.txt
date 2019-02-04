@@ -121,9 +121,9 @@ if(ENABLE_ARRAY)
     target_compile_definitions(gnss_rx PRIVATE -DRAW_ARRAY_DRIVER=1)
 endif()
 
-#if(ENABLE_FLEXIBAND)
-#    target_compile_definitions(gnss_rx PRIVATE -DFLEXIBAND_DRIVER=1)
-#endif()
+if(ENABLE_FLEXIBAND)
+    target_compile_definitions(gnss_rx PRIVATE -DFLEXIBAND_DRIVER=1)
+endif()
 
 if(OPENCL_FOUND)
     message(STATUS "Adding processing blocks implemented using OpenCL")
@@ -142,10 +142,8 @@ target_link_libraries(gnss_rx
         Boost::boost
         Boost::thread
         Gnuradio::runtime
-        gnss_system_parameters
         rx_core_lib
         core_monitor_lib
-        gnss_sp_libs
     PRIVATE
         Glog::glog
         signal_source_adapters
@@ -159,19 +157,10 @@ target_link_libraries(gnss_rx
         telemetry_decoder_adapters
         obs_adapters
         pvt_adapters
-        Volkgnsssdr::volkgnsssdr
 )
-
-if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2 OR ENABLE_AD9361)
-    target_link_libraries(gnss_rx
-        PRIVATE
-            Iio::iio
-    )
-endif()
 
 set_property(TARGET gnss_rx APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/core/receiver>
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/core/interfaces>
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/algorithms/libs>
     $<BUILD_INTERFACE:${OPT_RECEIVER_INCLUDE_DIRS}>
 )

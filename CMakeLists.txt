@@ -1475,33 +1475,6 @@ else()
 endif()
 
 
-################################################################################
-# USRP Hardware Driver (UHD) - OPTIONAL
-################################################################################
-if(ENABLE_UHD)
-    find_package(UHD)
-    if(NOT UHD_FOUND)
-        set(ENABLE_UHD OFF)
-        message(STATUS " The USRP Hardware Driver (UHD) signal source will not be built,")
-        message(STATUS " so all USRP-based front-ends will not be usable.")
-        message(STATUS " Please check https://files.ettus.com/manual/")
-    else()
-        set(GR_REQUIRED_COMPONENTS UHD)
-        find_package(Gnuradio)
-        if(NOT TARGET Gnuradio::uhd)
-            add_library(Gnuradio::uhd SHARED IMPORTED)
-            list(GET GNURADIO_UHD_LIBRARIES 0 FIRST_DIR)
-            get_filename_component(GNURADIO_UHD_DIR ${FIRST_DIR} ABSOLUTE)
-            set_target_properties(Gnuradio::uhd PROPERTIES
-              IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-              IMPORTED_LOCATION "${GNURADIO_UHD_DIR}"
-              INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_UHD_INCLUDE_DIRS}"
-              INTERFACE_LINK_LIBRARIES "${GNURADIO_UHD_LIBRARIES}"
-            )
-        endif()
-    endif()
-endif()
-
 
 ################################################################################
 # Doxygen - http://www.stack.nl/~dimitri/doxygen/index.html (OPTIONAL, used if found)
@@ -1619,12 +1592,14 @@ endif()
 # CUSTOM UDP PACKET SOURCE (OPTIONAL)
 ###############################################################################
 if(ENABLE_RAW_UDP)
-    message(STATUS "High-optimized custom UDP ip packet source will be enabled.")
+    message(STATUS "High-optimized custom UDP IP packet source is enabled.")
     message(STATUS "You can disable it with 'cmake -DENABLE_RAW_UDP=OFF ../'")
-else()
-    message(STATUS "High-optimized custom UDP ip packet source will be enabled.")
-    message(STATUS "You can disable it with 'cmake -DENABLE_RAW_UDP=OFF ../'")
+    find_package(PCAP)
+    if(NOT PCAP_FOUND)
+        message(FATAL_ERROR "PCAP required to compile custom UDP packet sample source (with ENABLE_RAW_UDP=ON)")
+    endif()
 endif()
+
 
 
 ###############################################################################
@@ -1643,40 +1618,38 @@ endif()
 ################################################################################
 # Setup of optional drivers
 ################################################################################
-if($ENV{GN3S_DRIVER})
-    message(STATUS "GN3S_DRIVER environment variable found.")
-    set(ENABLE_GN3S ON)
-endif()
-if(GN3S_DRIVER)
-    set(ENABLE_GN3S ON)
-endif()
-if(ENABLE_GN3S)
-    message(STATUS "The GN3S driver will be compiled.")
-    message(STATUS "You can disable it with 'cmake -DENABLE_GN3S=OFF ../'")
-else()
-    message(STATUS "The (optional and experimental) GN3S driver is not enabled.")
-    message(STATUS "Enable it with 'cmake -DENABLE_GN3S=ON ../' to add support for the GN3S dongle.")
+
+################################################################################
+# USRP Hardware Driver (UHD) - OPTIONAL
+################################################################################
+if(ENABLE_UHD)
+    find_package(UHD)
+    if(NOT UHD_FOUND)
+        set(ENABLE_UHD OFF)
+        message(STATUS " The USRP Hardware Driver (UHD) signal source will not be built,")
+        message(STATUS " so all USRP-based front-ends will not be usable.")
+        message(STATUS " Please check https://files.ettus.com/manual/")
+    else()
+        set(GR_REQUIRED_COMPONENTS UHD)
+        find_package(Gnuradio)
+        if(NOT TARGET Gnuradio::uhd)
+            add_library(Gnuradio::uhd SHARED IMPORTED)
+            list(GET GNURADIO_UHD_LIBRARIES 0 FIRST_DIR)
+            get_filename_component(GNURADIO_UHD_DIR ${FIRST_DIR} ABSOLUTE)
+            set_target_properties(Gnuradio::uhd PROPERTIES
+              IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+              IMPORTED_LOCATION "${GNURADIO_UHD_DIR}"
+              INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_UHD_INCLUDE_DIRS}"
+              INTERFACE_LINK_LIBRARIES "${GNURADIO_UHD_LIBRARIES}"
+            )
+        endif()
+    endif()
 endif()
 
-if($ENV{RAW_ARRAY_DRIVER})
-    message(STATUS "RAW_ARRAY_DRIVER environment variable found.")
-    set(ENABLE_ARRAY ON)
-endif()
 
-if(RAW_ARRAY_DRIVER)
-    set(ENABLE_ARRAY ON)
-endif()
-
-if(ENABLE_ARRAY)
-    message(STATUS "CTTC's Antenna Array front-end driver will be compiled.")
-    message(STATUS "You can disable it with 'cmake -DENABLE_ARRAY=OFF ../'")
-    # copy firmware to install folder
-    # Build project gr-dbfcttc
-else()
-    message(STATUS "The (optional) CTTC's Antenna Array front-end driver is not enabled.")
-    message(STATUS "Enable it with 'cmake -DENABLE_ARRAY=ON ../' to add support for the CTTC experimental array front-end.")
-endif()
-
+##############################################
+# gr-osmosdr - OPTIONAL
+##############################################
 if($ENV{RTLSDR_DRIVER})
     message(STATUS "RTLSDR_DRIVER environment variable found.")
     set(ENABLE_OSMOSDR ON)
@@ -1699,6 +1672,26 @@ else()
     message(STATUS "Enable it with 'cmake -DENABLE_OSMOSDR=ON ../' to add support for OsmoSDR and other front-ends (HackRF, bladeRF, Realtek's RTL2832U-based USB dongles, etc.)")
 endif()
 
+
+##############################################
+# gr-iio - OPTIONAL
+##############################################
+if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
+    find_package(GRIIO)
+endif()
+
+
+##############################################
+# libiio - OPTIONAL
+##############################################
+if(ENABLE_AD9361)
+    find_package(LIBIIO)
+endif()
+
+
+##############################################
+# TELEORBIT FLEXIBAND FRONTEND - OPTIONAL
+##############################################
 if($ENV{FLEXIBAND_DRIVER})
     message(STATUS "FLEXIBAND_DRIVER environment variable found.")
     set(ENABLE_FLEXIBAND ON)
@@ -1714,6 +1707,54 @@ if(ENABLE_FLEXIBAND)
 else()
     message(STATUS "The (optional) Teleorbit Flexiband front-end driver adapter is not enabled.")
     message(STATUS "Enable it with 'cmake -DENABLE_FLEXIBAND=ON ../' to add support for the Teleorbit Flexiband front-end.")
+endif()
+if(ENABLE_FLEXIBAND)
+    find_package(TELEORBIT)
+    if(NOT TELEORBIT_FOUND)
+        message(FATAL_ERROR "Teleorbit Flexiband GNU Radio driver required to build gnss-sdr with the optional FLEXIBAND adapter")
+    endif()
+endif()
+
+
+##############################################
+# GN3S - OPTIONAL
+##############################################
+if($ENV{GN3S_DRIVER})
+    message(STATUS "GN3S_DRIVER environment variable found.")
+    set(ENABLE_GN3S ON)
+endif()
+if(GN3S_DRIVER)
+    set(ENABLE_GN3S ON)
+endif()
+if(ENABLE_GN3S)
+    message(STATUS "The GN3S driver will be compiled.")
+    message(STATUS "You can disable it with 'cmake -DENABLE_GN3S=OFF ../'")
+    find_package(GRGN3S QUIET)
+else()
+    message(STATUS "The (optional and experimental) GN3S driver is not enabled.")
+    message(STATUS "Enable it with 'cmake -DENABLE_GN3S=ON ../' to add support for the GN3S dongle.")
+endif()
+
+
+##############################################
+# CTTC ARRAY - OPTIONAL
+##############################################
+if($ENV{RAW_ARRAY_DRIVER})
+    message(STATUS "RAW_ARRAY_DRIVER environment variable found.")
+    set(ENABLE_ARRAY ON)
+endif()
+
+if(RAW_ARRAY_DRIVER)
+    set(ENABLE_ARRAY ON)
+endif()
+
+if(ENABLE_ARRAY)
+    message(STATUS "CTTC's Antenna Array front-end driver will be compiled.")
+    message(STATUS "You can disable it with 'cmake -DENABLE_ARRAY=OFF ../'")
+    find_package(GRDBFCTTC QUIET)
+else()
+    message(STATUS "The (optional) CTTC's Antenna Array front-end driver is not enabled.")
+    message(STATUS "Enable it with 'cmake -DENABLE_ARRAY=ON ../' to add support for the CTTC experimental array front-end.")
 endif()
 
 

@@ -47,4 +47,15 @@ find_library(TELEORBIT_LIBRARIES
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(TELEORBIT DEFAULT_MSG TELEORBIT_LIBRARIES TELEORBIT_INCLUDE_DIRS)
+
+if(TELEORBIT_FOUND AND NOT TARGET Gnuradio:teleorbit)
+    add_library(Gnuradio:teleorbit SHARED IMPORTED)
+    set_target_properties(Gnuradio:teleorbit PROPERTIES
+        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+        IMPORTED_LOCATION "${TELEORBIT_LIBRARIES}"
+        INTERFACE_INCLUDE_DIRECTORIES "${TELEORBIT_INCLUDE_DIRS};${TELEORBIT_INCLUDE_DIR}/teleorbit"
+        INTERFACE_LINK_LIBRARIES "${TELEORBIT_LIBRARIES}"
+    )
+endif()
+
 mark_as_advanced(TELEORBIT_LIBRARIES TELEORBIT_INCLUDE_DIRS)

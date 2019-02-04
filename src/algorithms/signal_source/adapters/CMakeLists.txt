@@ -19,17 +19,13 @@
 
 # Optional drivers
 
-if(ENABLE_RAW_UDP)
-    find_package(PCAP)
-    if(NOT PCAP_FOUND)
-        message(FATAL_ERROR "PCAP required to compile custom UDP packet sample source (ENABLE_RAW_UDP)")
-    endif()
+if(ENABLE_RAW_UDP AND PCAP_FOUND)
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} custom_udp_signal_source.cc)
     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} custom_udp_signal_source.h)
 endif()
 
+
 if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
-    find_package(GRIIO REQUIRED)
     if(NOT GRIIO_FOUND)
         message(STATUS "gnuradio-iio not found, its installation is required.")
         message(STATUS "Please build and install the following projects:")
@@ -40,8 +36,8 @@ if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
     endif()
 endif()
 
+
 if(ENABLE_AD9361)
-    find_package(LIBIIO REQUIRED)
     if(NOT LIBIIO_FOUND)
         message(STATUS "libiio not found, its installation is required.")
         message(STATUS "Please build and install the following projects:")
@@ -90,33 +86,16 @@ if(ENABLE_GN3S)
     ##############################################
     # GN3S (USB dongle)
     ##############################################
-    find_package(GRGN3S REQUIRED)
     if(NOT GRGN3S_FOUND)
         message(" gr-gn3s not found, install it from https://github.com/gnss-sdr/gr-gn3s ")
         message(FATAL_ERROR "gr-gn3s required for building gnss-sdr with this option enabled")
     endif()
-    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GR_GN3S_LIBRARIES})
-    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${GR_GN3S_INCLUDE_DIRS})
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} gn3s_signal_source.cc)
     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} gn3s_signal_source.h)
 endif()
 
 
-if(ENABLE_FLEXIBAND)
-    ##############################################
-    # TELEORBIT FLEXIBAND FRONTEND ADAPTER
-    ##############################################
-    find_package(TELEORBIT REQUIRED)
-    if(NOT TELEORBIT_FOUND)
-        message(FATAL_ERROR "Teleorbit Flexiband GNU Radio driver required to build gnss-sdr with the optional FLEXIBAND adapter")
-    endif()
-    # Set up variables
-    set(FLEXIBAND_DRIVER_INCLUDE_DIRS
-        ${OPT_DRIVER_INCLUDE_DIRS}
-        ${TELEORBIT_INCLUDE_DIR}/teleorbit
-    )
-    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${TELEORBIT_LIBRARIES})
-    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${FLEXIBAND_DRIVER_INCLUDE_DIRS})
+if(ENABLE_FLEXIBAND AND TELEORBIT_FOUND)
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} flexiband_signal_source.cc)
     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} flexiband_signal_source.h)
 endif()
@@ -126,7 +105,6 @@ if(ENABLE_ARRAY)
     ##############################################
     # DBFCTTC GNSS EXPERIMENTAL ARRAY PROTOTYPE
     ##############################################
-    find_package(GRDBFCTTC REQUIRED)
     if(NOT GRDBFCTTC_FOUND)
         message(" gr-dbfcttc not found, install it from https://github.com/gnss-sdr/gr-dbfcttc ")
         message(FATAL_ERROR "gr-dbfcttc required for building gnss-sdr with this option enabled")
@@ -208,7 +186,6 @@ target_link_libraries(signal_source_adapters
         gnss_sp_libs
         gnss_rx
         signal_source_lib
-        ${OPT_LIBRARIES}
     PRIVATE
         Gflags::gflags
         Glog::glog
@@ -228,8 +205,6 @@ if(ENABLE_OSMOSDR AND GROSMOSDR_FOUND)
     target_link_libraries(signal_source_adapters
         PUBLIC
             Gnuradio::osmosdr
-        PRIVATE
-            Osmosdr::osmosdr
     )
 endif()
 
@@ -247,9 +222,29 @@ if(ENABLE_RAW_UDP AND PCAP_FOUND)
     )
 endif()
 
+if(ENABLE_FLEXIBAND AND TELEORBIT_FOUND)
+    target_link_libraries(signal_source_adapters
+        PRIVATE
+            Gnuradio::teleorbit
+    )
+endif()
+
+if(ENABLE_GN3S AND GRGN3S_FOUND)
+    target_link_libraries(signal_source_adapters
+        PRIVATE
+            Gnuradio::gn3s
+    )
+endif()
+
+if(ENABLE_ARRAY AND GRDBFCTTC_FOUND)
+    target_link_libraries(signal_source_adapters
+        PRIVATE
+            Gnuradio::dbfcttc
+    )
+endif()
+
 target_compile_definitions(signal_source_adapters PRIVATE -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}")
 
 set_property(TARGET signal_source_adapters APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-    $<BUILD_INTERFACE:${OPT_DRIVER_INCLUDE_DIRS}>
 )

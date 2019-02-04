@@ -95,9 +95,9 @@ find_library(GROSMOSDR_LIBRARIES
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GROSMOSDR DEFAULT_MSG GROSMOSDR_LIBRARIES GROSMOSDR_INCLUDE_DIR)
 
-if(GROSMOSDR_FOUND AND NOT TARGET Gnuradio:osmosdr)
-    add_library(Gnuradio:osmosdr SHARED IMPORTED)
-    set_target_properties(Gnuradio:osmosdr PROPERTIES
+if(GROSMOSDR_FOUND AND NOT TARGET Gnuradio::osmosdr)
+    add_library(Gnuradio::osmosdr SHARED IMPORTED)
+    set_target_properties(Gnuradio::osmosdr PROPERTIES
         IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
         IMPORTED_LOCATION "${GROSMOSDR_LIBRARIES}"
         INTERFACE_INCLUDE_DIRECTORIES "${GROSMOSDR_INCLUDE_DIR};${GROSMOSDR_INCLUDE_DIR}/osmosdr"

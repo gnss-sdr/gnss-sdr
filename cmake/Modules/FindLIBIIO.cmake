@@ -79,9 +79,9 @@ find_library(
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(LIBIIO DEFAULT_MSG LIBIIO_LIBRARIES LIBIIO_INCLUDE_DIRS)
 
-if(LIBIIO_FOUND AND NOT TARGET Iio:iio)
-    add_library(Iio:iio SHARED IMPORTED)
-    set_target_properties(Iio:iio PROPERTIES
+if(LIBIIO_FOUND AND NOT TARGET Iio::iio)
+    add_library(Iio::iio SHARED IMPORTED)
+    set_target_properties(Iio::iio PROPERTIES
         IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
         IMPORTED_LOCATION "${LIBIIO_LIBRARIES}"
         INTERFACE_INCLUDE_DIRECTORIES "${LIBIIO_INCLUDE_DIRS}"

@@ -47,4 +47,5 @@ set_property(TARGET telemetry_decoder_libswiftcnav
 source_group(Headers FILES ${TELEMETRY_DECODER_LIBSWIFTCNAV_HEADERS})
 
 set_target_properties(telemetry_decoder_libswiftcnav
-    PROPERTIES LINKER_LANGUAGE C)
+    PROPERTIES LINKER_LANGUAGE C
+)

@@ -1619,9 +1619,9 @@ endif()
 # Setup of optional drivers
 ################################################################################
 
-################################################################################
+########################################
 # USRP Hardware Driver (UHD) - OPTIONAL
-################################################################################
+########################################
 if(ENABLE_UHD)
     find_package(UHD)
     if(NOT UHD_FOUND)
@@ -1647,9 +1647,10 @@ if(ENABLE_UHD)
 endif()
 
 
-##############################################
+##########################################
 # gr-osmosdr - OPTIONAL
-##############################################
+# https://github.com/osmocom/gr-osmosdr
+##########################################
 if($ENV{RTLSDR_DRIVER})
     message(STATUS "RTLSDR_DRIVER environment variable found.")
     set(ENABLE_OSMOSDR ON)
@@ -1675,15 +1676,19 @@ endif()
 
 ##############################################
 # gr-iio - OPTIONAL
+# IIO blocks for GNU Radio
+# https://github.com/analogdevicesinc/gr-iio
 ##############################################
 if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
     find_package(GRIIO)
 endif()
 
 
-##############################################
+###################################################################################
 # libiio - OPTIONAL
-##############################################
+# A cross platform library for interfacing with local and remote Linux IIO devices
+# https://github.com/analogdevicesinc/libiio
+###################################################################################
 if(ENABLE_AD9361)
     find_package(LIBIIO)
 endif()
@@ -1736,9 +1741,9 @@ else()
 endif()
 
 
-##############################################
-# CTTC ARRAY - OPTIONAL
-##############################################
+#######################################################
+# CTTC's digital array beamformer prototype - OPTIONAL
+#######################################################
 if($ENV{RAW_ARRAY_DRIVER})
     message(STATUS "RAW_ARRAY_DRIVER environment variable found.")
     set(ENABLE_ARRAY ON)
@@ -1760,7 +1765,7 @@ endif()
 
 
 ################################################################################
-# GPerftools - https://github.com/gperftools/gperftools (OPTIONAL)
+# GPerftools - https://github.com/gperftools/gperftools - OPTIONAL)
 ################################################################################
 if(ENABLE_GPERFTOOLS)
     find_package(GPERFTOOLS)

@@ -62,14 +62,15 @@ set(GNSS_RECEIVER_INTERFACE_HEADERS
 
 list(SORT GNSS_RECEIVER_INTERFACE_HEADERS)
 
+source_group(Headers FILES ${GNSS_RECEIVER_HEADERS}
+    ${GNSS_RECEIVER_INTERFACE_HEADERS}
+)
+
 add_library(gnss_rx
     ${GNSS_RECEIVER_SOURCES}
     ${GNSS_RECEIVER_HEADERS}
     ${GNSS_RECEIVER_INTERFACE_HEADERS}
 )
-
-source_group(Headers FILES ${GNSS_RECEIVER_HEADERS}
-    ${GNSS_RECEIVER_INTERFACE_HEADERS})
 
 if(ENABLE_FPGA)
     target_compile_definitions(gnss_rx PUBLIC -DENABLE_FPGA=1)
@@ -139,12 +140,14 @@ endif()
 
 target_link_libraries(gnss_rx
     PUBLIC
+        Armadillo::armadillo
         Boost::boost
         Boost::thread
         Gnuradio::runtime
         rx_core_lib
         core_monitor_lib
     PRIVATE
+        Gflags::gflags
         Glog::glog
         signal_source_adapters
         datatype_adapters

@@ -34,16 +34,16 @@ set(INPUT_FILTER_GR_BLOCKS_HEADERS
 list(SORT INPUT_FILTER_GR_BLOCKS_HEADERS)
 list(SORT INPUT_FILTER_GR_BLOCKS_SOURCES)
 
+source_group(Headers FILES ${INPUT_FILTER_GR_BLOCKS_HEADERS})
+
 add_library(input_filter_gr_blocks
     ${INPUT_FILTER_GR_BLOCKS_SOURCES}
     ${INPUT_FILTER_GR_BLOCKS_HEADERS})
 
-source_group(Headers FILES ${INPUT_FILTER_GR_BLOCKS_HEADERS})
-
 target_link_libraries(input_filter_gr_blocks
     PUBLIC
-        Gnuradio::filter
         Gnuradio::blocks
+        Gnuradio::filter
         Volkgnsssdr::volkgnsssdr
     PRIVATE
         Gflags::gflags

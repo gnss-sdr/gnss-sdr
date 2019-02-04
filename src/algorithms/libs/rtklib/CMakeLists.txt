@@ -61,8 +61,9 @@ set(RTKLIB_LIB_HEADERS
 list(SORT RTKLIB_LIB_HEADERS)
 list(SORT RTKLIB_LIB_SOURCES)
 
-add_library(rtklib_lib ${RTKLIB_LIB_SOURCES} ${RTKLIB_LIB_HEADERS})
 source_group(Headers FILES ${RTKLIB_LIB_HEADERS})
+
+add_library(rtklib_lib ${RTKLIB_LIB_SOURCES} ${RTKLIB_LIB_HEADERS})
 
 if(OS_IS_MACOSX)
     set(MAC_LIBRARIES "-framework Accelerate")

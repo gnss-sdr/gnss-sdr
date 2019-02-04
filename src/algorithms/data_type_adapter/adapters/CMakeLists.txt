@@ -38,21 +38,22 @@ set(DATATYPE_ADAPTER_HEADERS
 list(SORT DATATYPE_ADAPTER_HEADERS)
 list(SORT DATATYPE_ADAPTER_SOURCES)
 
+source_group(Headers FILES ${DATATYPE_ADAPTER_HEADERS})
+
 add_library(datatype_adapters
     ${DATATYPE_ADAPTER_SOURCES}
     ${DATATYPE_ADAPTER_HEADERS}
 )
 
-source_group(Headers FILES ${DATATYPE_ADAPTER_HEADERS})
-
 target_link_libraries(datatype_adapters
     PUBLIC
+        Gnuradio::blocks
         gnss_system_parameters
         gnss_rx
         data_type_gr_blocks
         gnss_sp_libs
-        Gnuradio::blocks
     PRIVATE
+        Gflags::gflags
         Glog::glog
         Volk::volk
 )

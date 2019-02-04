@@ -31,17 +31,20 @@ set(TELEMETRY_DECODER_LIB_HEADERS
 list(SORT TELEMETRY_DECODER_LIB_HEADERS)
 list(SORT TELEMETRY_DECODER_LIB_SOURCES)
 
+source_group(Headers FILES ${TELEMETRY_DECODER_LIB_HEADERS})
+
 add_library(telemetry_decoder_lib
     ${TELEMETRY_DECODER_LIB_SOURCES}
     ${TELEMETRY_DECODER_LIB_HEADERS}
 )
 
-source_group(Headers FILES ${TELEMETRY_DECODER_LIB_HEADERS})
-
 target_link_libraries(telemetry_decoder_lib
     PUBLIC
         gnss_system_parameters
         gnss_rx
+    PRIVATE
+        Gflags::gflags
+        Glog::glog
 )
 
 set_property(TARGET telemetry_decoder_lib

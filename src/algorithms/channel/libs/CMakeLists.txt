@@ -29,14 +29,16 @@ set(CHANNEL_FSM_HEADERS
 list(SORT CHANNEL_FSM_HEADERS)
 list(SORT CHANNEL_FSM_SOURCES)
 
-add_library(channel_fsm ${CHANNEL_FSM_SOURCES} ${CHANNEL_FSM_HEADERS})
 source_group(Headers FILES ${CHANNEL_FSM_HEADERS})
+
+add_library(channel_fsm ${CHANNEL_FSM_SOURCES} ${CHANNEL_FSM_HEADERS})
 
 target_link_libraries(channel_fsm
     PUBLIC
         gnss_rx
         Gnuradio::runtime
     PRIVATE
+        Gflags::gflags
         Glog::glog
 )
 

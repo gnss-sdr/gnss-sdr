@@ -61,14 +61,15 @@ set(SIGNAL_SOURCE_LIB_HEADERS
 list(SORT SIGNAL_SOURCE_LIB_HEADERS)
 list(SORT SIGNAL_SOURCE_LIB_SOURCES)
 
-add_library(signal_source_lib ${SIGNAL_SOURCE_LIB_SOURCES} ${SIGNAL_SOURCE_LIB_HEADERS})
-
 source_group(Headers FILES ${SIGNAL_SOURCE_LIB_HEADERS})
+
+add_library(signal_source_lib ${SIGNAL_SOURCE_LIB_SOURCES} ${SIGNAL_SOURCE_LIB_HEADERS})
 
 target_link_libraries(signal_source_lib
     PUBLIC
         Boost::boost
     PRIVATE
+        Gflags::gflags
         Glog::glog
 )
 

@@ -86,9 +86,9 @@ endif()
 list(SORT ACQ_ADAPTER_HEADERS)
 list(SORT ACQ_ADAPTER_SOURCES)
 
-add_library(acq_adapters ${ACQ_ADAPTER_SOURCES} ${ACQ_ADAPTER_HEADERS})
-
 source_group(Headers FILES ${ACQ_ADAPTER_HEADERS})
+
+add_library(acq_adapters ${ACQ_ADAPTER_SOURCES} ${ACQ_ADAPTER_HEADERS})
 
 target_link_libraries(acq_adapters
     PUBLIC
@@ -100,6 +100,7 @@ target_link_libraries(acq_adapters
         gnss_system_parameters
     PRIVATE
         Boost::boost
+        Gflags::gflags
         Glog::glog
         Volkgnsssdr::volkgnsssdr
         acquisition_lib

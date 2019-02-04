@@ -32,8 +32,9 @@ target_link_libraries(channel_adapters
         channel_fsm
         gnss_rx
     PRIVATE
-        gnss_sdr_flags
+        Gflags::gflags
         Glog::glog
+        gnss_sdr_flags
 )
 
 set_property(TARGET channel_adapters

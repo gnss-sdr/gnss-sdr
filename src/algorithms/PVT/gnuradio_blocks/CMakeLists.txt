@@ -24,9 +24,9 @@ set(PVT_GR_BLOCKS_HEADERS
     rtklib_pvt_cc.h
 )
 
-add_library(pvt_gr_blocks ${PVT_GR_BLOCKS_SOURCES} ${PVT_GR_BLOCKS_HEADERS})
-
 source_group(Headers FILES ${PVT_GR_BLOCKS_HEADERS})
+
+add_library(pvt_gr_blocks ${PVT_GR_BLOCKS_SOURCES} ${PVT_GR_BLOCKS_HEADERS})
 
 target_link_libraries(pvt_gr_blocks
     PUBLIC
@@ -36,6 +36,7 @@ target_link_libraries(pvt_gr_blocks
         gnss_system_parameters
         gnss_rx
     PRIVATE
+        Gflags::gflags
         Glog::glog
         Boost::filesystem
         Boost::system

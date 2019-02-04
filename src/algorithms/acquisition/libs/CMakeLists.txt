@@ -27,18 +27,19 @@ set(ACQUISITION_LIB_SOURCES ${ACQUISITION_LIB_SOURCES} acq_conf.cc)
 list(SORT ACQUISITION_LIB_HEADERS)
 list(SORT ACQUISITION_LIB_SOURCES)
 
+source_group(Headers FILES ${ACQUISITION_LIB_HEADERS})
+
 add_library(acquisition_lib
     ${ACQUISITION_LIB_SOURCES}
     ${ACQUISITION_LIB_HEADERS}
 )
-
-source_group(Headers FILES ${ACQUISITION_LIB_HEADERS})
 
 target_link_libraries(acquisition_lib
     PUBLIC
         Volk::volk
         Gnuradio::fft
     PRIVATE
+        Gflags::gflags
         Glog::glog
         gnss_system_parameters
         gnss_rx

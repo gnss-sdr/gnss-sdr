@@ -19,12 +19,12 @@
 set(SIGNAL_GENERATOR_ADAPTER_SOURCES signal_generator.cc)
 set(SIGNAL_GENERATOR_ADAPTER_HEADERS signal_generator.h)
 
+source_group(Headers FILES ${SIGNAL_GENERATOR_ADAPTER_HEADERS})
+
 add_library(signal_generator_adapters
     ${SIGNAL_GENERATOR_ADAPTER_SOURCES}
     ${SIGNAL_GENERATOR_ADAPTER_HEADERS}
 )
-
-source_group(Headers FILES ${SIGNAL_GENERATOR_ADAPTER_HEADERS})
 
 target_link_libraries(signal_generator_adapters
     PUBLIC
@@ -33,6 +33,7 @@ target_link_libraries(signal_generator_adapters
         Gnuradio::blocks
         gnss_rx
     PRIVATE
+        Gflags::gflags
         Glog::glog
         gnss_sp_libs
 )

@@ -30,14 +30,16 @@ set(COND_ADAPTER_HEADERS
 list(SORT COND_ADAPTER_HEADERS)
 list(SORT COND_ADAPTER_SOURCES)
 
-add_library(conditioner_adapters ${COND_ADAPTER_SOURCES} ${COND_ADAPTER_HEADERS})
 source_group(Headers FILES ${COND_ADAPTER_HEADERS})
+
+add_library(conditioner_adapters ${COND_ADAPTER_SOURCES} ${COND_ADAPTER_HEADERS})
 
 target_link_libraries(conditioner_adapters
     PUBLIC
         gnss_rx
         Gnuradio::runtime
     PRIVATE
+        Gflags::gflags
         Glog::glog
 )
 

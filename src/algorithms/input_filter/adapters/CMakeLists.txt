@@ -37,26 +37,27 @@ set(INPUT_FILTER_ADAPTER_HEADERS
 list(SORT INPUT_FILTER_ADAPTER_HEADERS)
 list(SORT INPUT_FILTER_ADAPTER_SOURCES)
 
+source_group(Headers FILES ${INPUT_FILTER_ADAPTER_HEADERS})
+
 add_library(input_filter_adapters
     ${INPUT_FILTER_ADAPTER_SOURCES}
     ${INPUT_FILTER_ADAPTER_HEADERS}
 )
 
-source_group(Headers FILES ${INPUT_FILTER_ADAPTER_HEADERS})
-
 target_link_libraries(input_filter_adapters
     PUBLIC
-        input_filter_gr_blocks
-        Gnuradio::filter
         Gnuradio::blocks
+        Gnuradio::filter
+        input_filter_gr_blocks
         gnss_sp_libs
         gnss_rx
     PRIVATE
         Volk::volk
 )
 
-target_include_directories(input_filter_adapters PUBLIC ${CMAKE_SOURCE_DIR}/src/algorithms/libs)
-
+target_include_directories(input_filter_adapters
+    PUBLIC ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+)
 
 if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13.4")
     target_compile_definitions(input_filter_adapters PUBLIC -DGR_GREATER_38=1)

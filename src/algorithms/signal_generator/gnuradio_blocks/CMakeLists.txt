@@ -19,12 +19,12 @@
 set(SIGNAL_GENERATOR_BLOCK_SOURCES signal_generator_c.cc)
 set(SIGNAL_GENERATOR_BLOCK_HEADERS signal_generator_c.h)
 
+source_group(Headers FILES ${SIGNAL_GENERATOR_BLOCK_HEADERS})
+
 add_library(signal_generator_blocks
     ${SIGNAL_GENERATOR_BLOCK_SOURCES}
     ${SIGNAL_GENERATOR_BLOCK_HEADERS}
 )
-
-source_group(Headers FILES ${SIGNAL_GENERATOR_BLOCK_HEADERS})
 
 target_link_libraries(signal_generator_blocks
     PUBLIC

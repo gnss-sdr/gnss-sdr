@@ -24,11 +24,14 @@ set(OBS_ADAPTER_HEADERS
     hybrid_observables.h
 )
 
-add_library(obs_adapters ${OBS_ADAPTER_SOURCES} ${OBS_ADAPTER_HEADERS})
-
 source_group(Headers FILES ${OBS_ADAPTER_HEADERS})
 
-target_include_directories(obs_adapters PUBLIC ${CMAKE_SOURCE_DIR}/src/algorithms/libs)
+add_library(obs_adapters ${OBS_ADAPTER_SOURCES} ${OBS_ADAPTER_HEADERS})
+
+target_include_directories(obs_adapters
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+)
 
 target_link_libraries(obs_adapters
     PUBLIC
@@ -36,6 +39,7 @@ target_link_libraries(obs_adapters
         gnss_rx
         gnss_sp_libs
     PRIVATE
+        Gflags::gflags
         Glog::glog
 )
 

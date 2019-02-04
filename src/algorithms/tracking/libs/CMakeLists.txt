@@ -69,9 +69,9 @@ endif()
 list(SORT TRACKING_LIB_HEADERS)
 list(SORT TRACKING_LIB_SOURCES)
 
-add_library(tracking_lib ${TRACKING_LIB_SOURCES} ${TRACKING_LIB_HEADERS})
-
 source_group(Headers FILES ${TRACKING_LIB_HEADERS})
+
+add_library(tracking_lib ${TRACKING_LIB_SOURCES} ${TRACKING_LIB_HEADERS})
 
 target_link_libraries(tracking_lib
     PUBLIC

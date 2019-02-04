@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -173,9 +173,14 @@ list(SORT SIGNAL_SOURCE_ADAPTER_SOURCES)
 
 source_group(Headers FILES ${SIGNAL_SOURCE_ADAPTER_HEADERS})
 
-add_library(signal_source_adapters ${SIGNAL_SOURCE_ADAPTER_SOURCES} ${SIGNAL_SOURCE_ADAPTER_HEADERS})
+add_library(signal_source_adapters
+    ${SIGNAL_SOURCE_ADAPTER_SOURCES}
+    ${SIGNAL_SOURCE_ADAPTER_HEADERS}
+)
 
-target_include_directories(signal_source_adapters PUBLIC ${CMAKE_SOURCE_DIR}/src/algorithms/libs)
+target_include_directories(signal_source_adapters
+    PUBLIC ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+)
 
 target_link_libraries(signal_source_adapters
     PUBLIC
@@ -243,7 +248,9 @@ if(ENABLE_ARRAY AND GRDBFCTTC_FOUND)
     )
 endif()
 
-target_compile_definitions(signal_source_adapters PRIVATE -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}")
+target_compile_definitions(signal_source_adapters
+    PRIVATE -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}"
+)
 
 set_property(TARGET signal_source_adapters APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

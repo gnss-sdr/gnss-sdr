@@ -103,19 +103,19 @@ set(SYSTEM_PARAMETERS_HEADERS
 list(SORT SYSTEM_PARAMETERS_HEADERS)
 list(SORT SYSTEM_PARAMETERS_SOURCES)
 
+source_group(Headers FILES ${SYSTEM_PARAMETERS_HEADERS})
+
 add_library(gnss_system_parameters
     ${SYSTEM_PARAMETERS_SOURCES}
     ${SYSTEM_PARAMETERS_HEADERS}
 )
 
-source_group(Headers FILES ${SYSTEM_PARAMETERS_HEADERS})
-
 target_link_libraries(gnss_system_parameters
     PUBLIC
         Boost::date_time
         Boost::serialization
-        gnss_rx
         Glog::glog
+        gnss_rx
     PRIVATE
         Gflags::gflags
 )

@@ -30,23 +30,23 @@ set(CORE_MONITOR_LIBS_HEADERS
 list(SORT CORE_MONITOR_LIBS_HEADERS)
 list(SORT CORE_MONITOR_LIBS_SOURCES)
 
+source_group(Headers FILES ${CORE_MONITOR_LIBS_HEADERS})
+
 add_library(core_monitor_lib
     ${CORE_MONITOR_LIBS_SOURCES}
     ${CORE_MONITOR_LIBS_HEADERS}
 )
 
-source_group(Headers FILES ${CORE_MONITOR_LIBS_HEADERS})
-
 target_link_libraries(core_monitor_lib
     PUBLIC
         Boost::serialization
         Boost::system
-        gnss_system_parameters
         Gnuradio::runtime
+        gnss_system_parameters
     PRIVATE
-        Gnuradio::pmt
         Gflags::gflags
         Glog::glog
+        Gnuradio::pmt
 )
 
 set_property(TARGET core_monitor_lib

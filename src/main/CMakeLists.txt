@@ -16,75 +16,58 @@
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
-set(GNSS_SDR_OPTIONAL_LIBS "")
-set(GNSS_SDR_OPTIONAL_HEADERS "")
-
-if(ENABLE_GPERFTOOLS)
-    if(GPERFTOOLS_FOUND)
-        set(GNSS_SDR_OPTIONAL_LIBS "${GNSS_SDR_OPTIONAL_LIBS};${GPERFTOOLS_PROFILER};${GPERFTOOLS_TCMALLOC}")
-        set(GNSS_SDR_OPTIONAL_HEADERS "${GNSS_SDR_OPTIONAL_HEADERS};${GPERFTOOLS_INCLUDE_DIR}")
-    endif()
-endif()
-
-if(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
-    set(GNSS_SDR_OPTIONAL_LIBS ${GNSS_SDR_OPTIONAL_LIBS} ${UHD_LIBRARIES} ${GNURADIO_UHD_LIBRARIES})
-    set(GNSS_SDR_OPTIONAL_HEADERS ${GNSS_SDR_OPTIONAL_HEADERS} ${UHD_INCLUDE_DIRS})
-endif()
-
-if(OPENSSL_FOUND)
-    add_definitions(-DUSE_OPENSSL_FALLBACK=1)
-endif()
-
-if(ENABLE_CUDA)
-    add_definitions(-DCUDA_GPU_ACCEL=1)
-    set(GNSS_SDR_OPTIONAL_LIBS ${GNSS_SDR_OPTIONAL_LIBS} ${CUDA_LIBRARIES})
-    set(GNSS_SDR_OPTIONAL_HEADERS ${GNSS_SDR_OPTIONAL_HEADERS} ${CUDA_INCLUDE_DIRS})
-endif()
-
-if(ORC_FOUND)
-    set(GNSS_SDR_OPTIONAL_LIBS ${GNSS_SDR_OPTIONAL_LIBS} ${ORC_LIBRARIES})
-    set(GNSS_SDR_OPTIONAL_HEADERS ${GNSS_SDR_OPTIONAL_HEADERS} ${ORC_INCLUDE_DIRS})
-endif()
 
 if(OS_IS_MACOSX)
     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        set(MAC_LIBRARIES "-framework Accelerate -lc++")
+        set(MAC_LIBRARIES "-lc++")
     endif()
 endif()
 
 add_executable(gnss-sdr ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
 
-target_include_directories(gnss-sdr PRIVATE
-    ${GNSS_SDR_OPTIONAL_HEADERS}
-    ${OPT_GNSSSDR_INCLUDE_DIRS}
+target_link_libraries(gnss-sdr
+    PUBLIC
+        Boost::filesystem
+        Boost::system
+        Gflags::gflags
+        Glog::glog
+        gnss_rx
+        gnss_sdr_flags
+        ${MAC_LIBRARIES}
 )
 
 target_compile_definitions(gnss-sdr PUBLIC -DGNSS_SDR_VERSION="${VERSION}")
+
+if(ENABLE_CUDA)
+    target_link_libraries(gnss-sdr
+        PUBLIC
+            ${CUDA_LIBRARIES}
+    )
+    target_include_directories(gnss-sdr
+        PUBLIC
+            ${CUDA_INCLUDE_DIRS}
+    )
+    target_compile_definitions(gnss-sdr PRIVATE -DCUDA_GPU_ACCEL=1)
+endif()
+
+if(ENABLE_GPERFTOOLS)
+    if(GPERFTOOLS_FOUND)
+        target_link_libraries(gnss-sdr
+            PUBLIC
+                ${GPERFTOOLS_PROFILER}
+                ${GPERFTOOLS_TCMALLOC}
+        )
+        target_include_directories(gnss-sdr
+            PRIVATE
+                ${GPERFTOOLS_INCLUDE_DIR}
+        )
+    endif()
+endif()
 
 add_custom_command(TARGET gnss-sdr
     POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:gnss-sdr>
         ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:gnss-sdr>
 )
-
-target_link_libraries(gnss-sdr
-    PUBLIC
-        Boost::filesystem
-        Boost::system
-        gnss_sdr_flags
-        gnss_system_parameters
-        gnss_sp_libs
-        gnss_rx
-        ${MAC_LIBRARIES}
-        ${THREAD_LIBRARIES}
-        ${GNSS_SDR_OPTIONAL_LIBS}
-    PRIVATE
-        rtklib_lib
-        Gflags::gflags
-        Glog::glog
-        Armadillo::armadillo
-        Volkgnsssdr::volkgnsssdr
-)
-
 
 install(TARGETS gnss-sdr
     RUNTIME DESTINATION bin

@@ -103,8 +103,9 @@ endif()
 list(SORT GNSS_SPLIBS_HEADERS)
 list(SORT GNSS_SPLIBS_SOURCES)
 
-add_library(gnss_sp_libs ${GNSS_SPLIBS_SOURCES} ${GNSS_SPLIBS_HEADERS})
 source_group(Headers FILES ${GNSS_SPLIBS_HEADERS})
+
+add_library(gnss_sp_libs ${GNSS_SPLIBS_SOURCES} ${GNSS_SPLIBS_HEADERS})
 
 target_link_libraries(gnss_sp_libs
     PUBLIC
@@ -119,11 +120,14 @@ target_link_libraries(gnss_sp_libs
         ${OPT_LIBRARIES}
     PRIVATE
         Boost::filesystem
+        Gflags::gflags
         Glog::glog
         gnss_rx
 )
 
-target_compile_definitions(gnss_sp_libs PUBLIC -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}")
+target_compile_definitions(gnss_sp_libs
+    PUBLIC -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}"
+)
 
 if(${GFLAGS_GREATER_20})
     target_compile_definitions(gnss_sp_libs PUBLIC -DGFLAGS_GREATER_2_0=1)
@@ -134,8 +138,12 @@ set_property(TARGET gnss_sp_libs
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
-add_library(gnss_sdr_flags gnss_sdr_flags.cc gnss_sdr_flags.h)
+
+###############################################################################
+
 source_group(Headers FILES gnss_sdr_flags.h)
+
+add_library(gnss_sdr_flags gnss_sdr_flags.cc gnss_sdr_flags.h)
 
 target_link_libraries(gnss_sdr_flags
     PUBLIC
@@ -148,7 +156,9 @@ if(${GFLAGS_GREATER_20})
     target_compile_definitions(gnss_sdr_flags PUBLIC -DGFLAGS_GREATER_2_0=1)
 endif()
 
-target_compile_definitions(gnss_sdr_flags PUBLIC -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}")
+target_compile_definitions(gnss_sdr_flags
+    PUBLIC -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}"
+)
 
 set_property(TARGET gnss_sdr_flags
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES

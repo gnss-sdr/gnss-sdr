@@ -90,12 +90,12 @@ set(TRACKING_ADAPTER_HEADERS
 list(SORT TRACKING_ADAPTER_HEADERS)
 list(SORT TRACKING_ADAPTER_SOURCES)
 
+source_group(Headers FILES ${TRACKING_ADAPTER_HEADERS})
+
 add_library(tracking_adapters
     ${TRACKING_ADAPTER_SOURCES}
     ${TRACKING_ADAPTER_HEADERS}
 )
-
-source_group(Headers FILES ${TRACKING_ADAPTER_HEADERS})
 
 target_link_libraries(tracking_adapters
     PUBLIC

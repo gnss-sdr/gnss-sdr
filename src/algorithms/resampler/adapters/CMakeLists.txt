@@ -30,12 +30,12 @@ set(RESAMPLER_ADAPTER_HEADERS
 list(SORT RESAMPLER_ADAPTER_HEADERS)
 list(SORT RESAMPLER_ADAPTER_SOURCES)
 
+source_group(Headers FILES ${RESAMPLER_ADAPTER_HEADERS})
+
 add_library(resampler_adapters
     ${RESAMPLER_ADAPTER_SOURCES}
     ${RESAMPLER_ADAPTER_HEADERS}
 )
-
-source_group(Headers FILES ${RESAMPLER_ADAPTER_HEADERS})
 
 target_link_libraries(resampler_adapters
     PUBLIC
@@ -43,6 +43,7 @@ target_link_libraries(resampler_adapters
         resampler_gr_blocks
         gnss_rx
     PRIVATE
+        Gflags::gflags
         Glog::glog
         Volk::volk
 )

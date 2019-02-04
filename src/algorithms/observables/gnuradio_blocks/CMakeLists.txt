@@ -24,22 +24,26 @@ set(OBS_GR_BLOCKS_HEADERS
     hybrid_observables_cc.h
 )
 
+source_group(Headers FILES ${OBS_GR_BLOCKS_HEADERS})
+
 add_library(obs_gr_blocks ${OBS_GR_BLOCKS_SOURCES} ${OBS_GR_BLOCKS_HEADERS})
 
-target_include_directories(obs_gr_blocks PUBLIC ${CMAKE_SOURCE_DIR}/src/algorithms/libs)
-
-source_group(Headers FILES ${OBS_GR_BLOCKS_HEADERS})
+target_include_directories(obs_gr_blocks
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+)
 
 target_link_libraries(obs_gr_blocks
     PUBLIC
-        Gnuradio::blocks
         Boost::boost
+        Gnuradio::blocks
         gnss_system_parameters
     PRIVATE
-        gnss_sp_libs
+        Gflags::gflags
         Glog::glog
         Boost::filesystem
         Matio::matio
+        gnss_sp_libs
 )
 
 set_property(TARGET obs_gr_blocks

@@ -48,9 +48,9 @@ set(PVT_LIB_HEADERS
 list(SORT PVT_LIB_HEADERS)
 list(SORT PVT_LIB_SOURCES)
 
-add_library(pvt_lib ${PVT_LIB_SOURCES} ${PVT_LIB_HEADERS})
-
 source_group(Headers FILES ${PVT_LIB_HEADERS})
+
+add_library(pvt_lib ${PVT_LIB_SOURCES} ${PVT_LIB_HEADERS})
 
 target_link_libraries(pvt_lib
     PUBLIC
@@ -63,11 +63,16 @@ target_link_libraries(pvt_lib
     PRIVATE
         Boost::filesystem
         Boost::system
+        Gflags::gflags
         Glog::glog
         Matio::matio
 )
 
-target_include_directories(pvt_lib PUBLIC ${CMAKE_SOURCE_DIR}/src/algorithms/libs ${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib)
+target_include_directories(pvt_lib
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+        ${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib
+)
 
 target_compile_definitions(pvt_lib PUBLIC -DGNSS_SDR_VERSION="${VERSION}")
 

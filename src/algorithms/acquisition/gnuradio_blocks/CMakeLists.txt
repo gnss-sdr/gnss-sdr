@@ -61,8 +61,10 @@ endif()
 
 list(SORT ACQ_GR_BLOCKS_HEADERS)
 list(SORT ACQ_GR_BLOCKS_SOURCES)
-add_library(acq_gr_blocks ${ACQ_GR_BLOCKS_SOURCES} ${ACQ_GR_BLOCKS_HEADERS})
+
 source_group(Headers FILES ${ACQ_GR_BLOCKS_HEADERS})
+
+add_library(acq_gr_blocks ${ACQ_GR_BLOCKS_SOURCES} ${ACQ_GR_BLOCKS_HEADERS})
 
 target_link_libraries(acq_gr_blocks
     PUBLIC
@@ -73,11 +75,12 @@ target_link_libraries(acq_gr_blocks
         acquisition_lib
         ${OPT_LIBRARIES}
     PRIVATE
-        gnss_sp_libs
-        Glog::glog
         Boost::filesystem
+        Gflags::gflags
+        Glog::glog
         Matio::matio
         Volkgnsssdr::volkgnsssdr
+        gnss_sp_libs
         gnss_rx
 )
 

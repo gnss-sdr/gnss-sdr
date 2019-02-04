@@ -44,12 +44,12 @@ set(TELEMETRY_DECODER_ADAPTER_HEADERS
 list(SORT TELEMETRY_DECODER_ADAPTER_HEADERS)
 list(SORT TELEMETRY_DECODER_ADAPTER_SOURCES)
 
+source_group(Headers FILES ${TELEMETRY_DECODER_ADAPTER_HEADERS})
+
 add_library(telemetry_decoder_adapters
     ${TELEMETRY_DECODER_ADAPTER_SOURCES}
     ${TELEMETRY_DECODER_ADAPTER_HEADERS}
 )
-
-source_group(Headers FILES ${TELEMETRY_DECODER_ADAPTER_HEADERS})
 
 target_link_libraries(telemetry_decoder_adapters
     PUBLIC
@@ -57,6 +57,8 @@ target_link_libraries(telemetry_decoder_adapters
         gnss_system_parameters
         gnss_rx
     PRIVATE
+        Gflags::gflags
+        Glog::glog
         Gnuradio::runtime
         telemetry_decoder_lib
 )

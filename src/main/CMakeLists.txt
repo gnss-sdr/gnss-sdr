@@ -33,6 +33,7 @@ target_link_libraries(gnss-sdr
         Glog::glog
         gnss_rx
         gnss_sdr_flags
+        ${THREAD_LIBRARIES}
         ${MAC_LIBRARIES}
 )
 

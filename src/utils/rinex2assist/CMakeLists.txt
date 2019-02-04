@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -24,7 +24,6 @@ if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
     set(GPSTK_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/include)
 endif()
 
-set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${GPSTK_INCLUDE_DIR}/gpstk)
 
 find_package(Boost COMPONENTS iostreams serialization QUIET)
 if(CMAKE_VERSION VERSION_LESS 3.5)
@@ -56,11 +55,6 @@ find_program(UNCOMPRESS_EXECUTABLE uncompress
 )
 
 if(Boost_FOUND)
-    include_directories(
-        ${GPSTK_INCLUDE_DIR}/gpstk
-        ${GPSTK_INCLUDE_DIR}
-    )
-
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
 
     add_executable(rinex2assist ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
@@ -74,6 +68,12 @@ if(Boost_FOUND)
             gnss_system_parameters
             gnss_sp_libs
             gnss_rx
+    )
+
+    target_include_directories(rinex2assist
+        PUBLIC
+            ${GPSTK_INCLUDE_DIR}/gpstk
+            ${GPSTK_INCLUDE_DIR}
     )
 
     if(NOT UNCOMPRESS_EXECUTABLE-NOTFOUND)

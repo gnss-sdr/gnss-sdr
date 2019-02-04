@@ -206,10 +206,6 @@ if(PC_GNURADIO_RUNTIME_VERSION VERSION_GREATER 3.7.3)
         two_bit_packed_file_signal_source.h)
 endif()
 
-if(ARCH_64BITS)
-    add_definitions(-DARCH_64BITS=1)
-endif()
-
 add_definitions(-DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}")
 
 list(SORT SIGNAL_SOURCE_ADAPTER_HEADERS)
@@ -224,18 +220,19 @@ target_link_libraries(signal_source_adapters
     PUBLIC
         Boost::boost
         Gnuradio::runtime
+        Gnuradio::blocks
         signal_source_gr_blocks
-        ${GNURADIO_PMT_LIBRARIES}
-        ${GNURADIO_BLOCKS_LIBRARIES}
-        ${OPT_LIBRARIES}
         gnss_sp_libs
         gnss_rx
         signal_source_lib
+        ${OPT_LIBRARIES}
     PRIVATE
         Gflags::gflags
         Glog::glog
         Volk::volk
 )
+
+target_compile_definitions(signal_source_adapters PRIVATE -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}")
 
 set_property(TARGET signal_source_adapters APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

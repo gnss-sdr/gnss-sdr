@@ -26,11 +26,9 @@ source_group(Headers FILES ${FRONT_END_CAL_HEADERS})
 target_link_libraries(front_end_cal_lib
     PUBLIC
         Armadillo::armadillo
-        ${MAC_LIBRARIES}
         ${THREAD_LIBRARIES}
         acq_adapters
         Volkgnsssdr::volkgnsssdr ${ORC_LIBRARIES}
-        ${GNSS_SDR_OPTIONAL_LIBS}
         rx_core_lib
         gnss_sdr_flags
         gnss_rx
@@ -48,9 +46,7 @@ add_executable(front-end-cal ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
 
 target_link_libraries(front-end-cal
     PUBLIC
-        ${MAC_LIBRARIES}
         Volkgnsssdr::volkgnsssdr ${ORC_LIBRARIES}
-        ${GNSS_SDR_OPTIONAL_LIBS}
         rx_core_lib
         gnss_rx
         front_end_cal_lib

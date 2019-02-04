@@ -7,7 +7,6 @@
  *
  *
  * -------------------------------------------------------------------------
- *
  * Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
@@ -80,8 +79,8 @@
 #define MAX_INPUT_COMPLEX_SAMPLES_TOTAL 8192 	// maximum DMA sample block size in complex samples
 #define COMPLEX_SAMPLE_SIZE 2					// sample size in bytes
 #define NUM_QUEUES 2							// number of queues (1 for GPS L1/Galileo E1, and 1 for GPS L5/Galileo E5)
-#define NSAMPLES_TRACKING 850000000				// number of samples during which we test the tracking module
-#define NSAMPLES_FINAL 50000					// number of samples sent after running tracking to unblock the SW if it is waiting for an interrupt of the tracking module
+#define NSAMPLES_TRACKING 1000000000				// number of samples during which we test the tracking module
+#define NSAMPLES_FINAL 60000					// number of samples sent after running tracking to unblock the SW if it is waiting for an interrupt of the tracking module
 #define NSAMPLES_ACQ_DOPPLER_SWEEP 50000000		// number of samples sent to the acquisition module when running acquisition when the HW controls the doppler loop
 #define DOWNAMPLING_FILTER_INIT_SAMPLES 100		// some samples to initialize the state of the downsampling filter
 #define DOWNSAMPLING_FILTER_DELAY 48
@@ -478,7 +477,6 @@ void *handler_DMA(void *arguments)
 	struct DMA_handler_args *args = (struct DMA_handler_args *) arguments;
 
 	unsigned int nsamples_tx = args->nsamples_tx;
-	//printf("in handler DMA to send %d\n", nsamples_tx);
 	std::string file = args->file; // input filename
 	unsigned int skip_used_samples = args->skip_used_samples;
 
@@ -486,7 +484,7 @@ void *handler_DMA(void *arguments)
 	tx_fd = open("/dev/loop_tx", O_WRONLY);
 	if ( tx_fd < 0 )
 	{
-		printf("DMA can't open loop device\n");
+		std::cout << "DMA can't open loop device" << std::endl;
 		exit(1);
 	}
 	else
@@ -495,33 +493,21 @@ void *handler_DMA(void *arguments)
 	rx_signal_file_id = fopen(file.c_str(), "rb");
 	if (rx_signal_file_id < 0)
 	{
-		printf("DMA can't open input file\n");
+		std::cout << "DMA can't open input file" << std::endl;
 		exit(1);
 	}
-	//printf("in handler DMA waiting for send samples start\n");
-	while(send_samples_start == 0); // wait until acquisition starts
-	//printf("in handler DMA going to send samples\n");
+	while(send_samples_start == 0); // wait until main thread tells the DMA to start
+
 	// skip initial samples
 	int skip_samples = (int) FLAGS_skip_samples;
 
 	fseek( rx_signal_file_id, (skip_samples + skip_used_samples)*2, SEEK_SET );
-	//printf("sending %d samples starting at position %d\n", nsamples_tx,skip_samples + skip_used_samples);
-	//printf("\n dma skip_samples = %d\n", skip_samples);
-	//printf("\n dma skip used samples = %d\n", skip_used_samples);
-	//printf("dma skip_samples = %d\n", skip_samples);
-	//printf("dma skip used samples = %d\n", skip_used_samples);
-	//printf("dma file_completed = %d\n", file_completed);
-	//printf("dma nsamples = %d\n", nsamples);
-	//printf("dma nsamples_tx = %d\n", nsamples_tx);
 
 	usleep(50000); // wait some time to give time to the main thread to start the acquisition module
 	unsigned int kk;
-	//printf("enter kk");
-	//scanf("%d", &kk);
 
 	while (file_completed == false)
 	{
-		//printf("samples sent = %d\n", nsamples);
 		if (nsamples_tx - nsamples > MAX_INPUT_COMPLEX_SAMPLES_TOTAL)
 		{
 			nsamples_block = MAX_INPUT_COMPLEX_SAMPLES_TOTAL;
@@ -536,7 +522,7 @@ void *handler_DMA(void *arguments)
 
 		if (nread_elements != nsamples_block * COMPLEX_SAMPLE_SIZE)
 		{
-			printf("could not read the desired number of samples from the input file\n");
+			std::cout << "file completed" << std::endl;
 			file_completed = true;
 		}
 
@@ -568,9 +554,7 @@ void *handler_DMA(void *arguments)
 				}
 				dma_index += 4;
 			}
-			//printf("writing samples to send\n");
 			nsamples_transmitted = write(tx_fd, &input_samples_dma[0], nread_elements*NUM_QUEUES);
-			//printf("exited writing samples to send\n");
 			if (nsamples_transmitted != nread_elements*NUM_QUEUES)
 			{
 				std::cout << "Error : DMA could not send all the requested samples" << std::endl;
@@ -581,7 +565,6 @@ void *handler_DMA(void *arguments)
 
 	close(tx_fd);
 	fclose(rx_signal_file_id);
-	//printf("DMA finished\n");
 	return NULL;
 }
 
@@ -599,12 +582,10 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 	if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
 	{
 		baseband_sampling_freq_acquisition = baseband_sampling_freq/4;	// downsampling filter in L1/E1
-		//printf(" aaaaaa baseband_sampling_freq_acquisition = %d\n", baseband_sampling_freq_acquisition);
 	}
 	else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
 	{
 		baseband_sampling_freq_acquisition = baseband_sampling_freq/4;  // downsampling filter in L1/E1
-		//printf(" aaaaaa baseband_sampling_freq_acquisition = %d\n", baseband_sampling_freq_acquisition);
 	}
 	else
 	{
@@ -620,22 +601,24 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
     tmp_gnss_synchro.Channel_ID = 0;
     config = std::make_shared<InMemoryConfiguration>();
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(baseband_sampling_freq));
-    config->set_property("Acquisition.blocking_on_standby", "true");
-    config->set_property("Acquisition.blocking", "true");
-    config->set_property("Acquisition.dump", "false");
-    config->set_property("Acquisition.dump_filename", "./data/acquisition.dat");
-    config->set_property("Acquisition.use_CFAR_algorithm", "false");
+    //config->set_property("Acquisition.blocking_on_standby", "true");
+    //config->set_property("Acquisition.blocking", "true");
+    //config->set_property("Acquisition.dump", "false");
+    //config->set_property("Acquisition.dump_filename", "./data/acquisition.dat");
+    //config->set_property("Acquisition.use_CFAR_algorithm", "false");
 
-    config->set_property("Acquisition.item_type", "cshort");
-    config->set_property("Acquisition.if", "0");
+    //config->set_property("Acquisition.item_type", "cshort");
+    //config->set_property("Acquisition.if", "0");
     //config->set_property("Acquisition.sampled_ms", "4");
     //config->set_property("Acquisition.select_queue_Fpga", "0");
-    config->set_property("Acquisition.devicename", "/dev/uio0");
+    //config->set_property("Acquisition.devicename", "/dev/uio0");
 
-    if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
-    {
-    	config->set_property("Acquisition.acquire_pilot", "false");
-    }
+    //config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
+
+    //if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
+    //{
+    //	config->set_property("Acquisition.acquire_pilot", "false");
+    //}
     std::shared_ptr<GpsL1CaPcpsAcquisitionFpga> acquisition_GpsL1Ca_Fpga;
     std::shared_ptr<GalileoE1PcpsAmbiguousAcquisitionFpga> acquisition_GpsE1_Fpga;
     std::shared_ptr<GalileoE5aPcpsAcquisitionFpga> acquisition_GpsE5a_Fpga;
@@ -646,10 +629,10 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 
     if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
         {
-    		config->set_property("Acquisition.sampled_ms", "1");
-    		config->set_property("Acquisition.select_queue_Fpga", "0");
+    		//config->set_property("Acquisition.sampled_ms", "1");
+    		//config->set_property("Acquisition.select_queue_Fpga", "0");
 
-    		tmp_gnss_synchro.System = 'G';
+    	    tmp_gnss_synchro.System = 'G';
             std::string signal = "1C";
             const char* str = signal.c_str();                                  // get a C style null terminated string
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
@@ -666,8 +649,8 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 
     else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
         {
-    		config->set_property("Acquisition.sampled_ms", "4");
-    		config->set_property("Acquisition.select_queue_Fpga", "0");
+    		//config->set_property("Acquisition.sampled_ms", "4");
+    		//config->set_property("Acquisition.select_queue_Fpga", "0");
 
             tmp_gnss_synchro.System = 'E';
             std::string signal = "1B";
@@ -683,12 +666,11 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
             acquisition_GpsE1_Fpga->set_channel(0);
             acquisition_GpsE1_Fpga->set_threshold(config->property("Acquisition.threshold", FLAGS_external_signal_acquisition_threshold));
             acquisition_GpsE1_Fpga->connect(top_block);
-            //printf(" bbbbbbbb baseband_sampling_freq_acquisition = %d\n", baseband_sampling_freq_acquisition);
         }
     else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
         {
-    		config->set_property("Acquisition.sampled_ms", "1");
-    		config->set_property("Acquisition.select_queue_Fpga", "1");
+    		//config->set_property("Acquisition.sampled_ms", "1");
+    		//config->set_property("Acquisition.select_queue_Fpga", "1");
             tmp_gnss_synchro.System = 'E';
             std::string signal = "5X";
             const char* str = signal.c_str();                                  // get a C style null terminated string
@@ -706,9 +688,8 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
         }
     else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
         {
-    		config->set_property("Acquisition.sampled_ms", "1");
-    		config->set_property("Acquisition.select_queue_Fpga", "1");
-    		printf("CORRECT L5 A!!!\n");
+    		//config->set_property("Acquisition.sampled_ms", "1");
+    		//config->set_property("Acquisition.select_queue_Fpga", "1");
             tmp_gnss_synchro.System = 'G';
             std::string signal = "L5";
             const char* str = signal.c_str();                                  // get a C style null terminated string
@@ -756,7 +737,6 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
     else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
     {
     	top_block->msg_connect(acquisition_GpsE1_Fpga->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    	//printf(" cccccc baseband_sampling_freq_acquisition = %d\n", baseband_sampling_freq_acquisition);
     }
     else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
     {
@@ -764,7 +744,6 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
     }
     else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
     {
-    	printf("CORRECT L5 B!!!\n");
     	top_block->msg_connect(acquisition_GpsL5_Fpga->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }
 
@@ -811,7 +790,6 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 	    {
 	        code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq_acquisition) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
 	    	nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
-	    	//printf("dddddd code_length = %d nsamples_to_transfer = %d\n", code_length, nsamples_to_transfer);
 	    }
 	    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
 	    {
@@ -820,7 +798,6 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 	    }
 	    else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
 	    {
-	    	printf("CORRECT L5 C !!!!");
 	        code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L5i_CODE_RATE_HZ / static_cast<double>(GPS_L5i_CODE_LENGTH_CHIPS))));
 	    	nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
 	    }
@@ -832,12 +809,10 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 		int acq_doppler_max = config->property("Acquisition.doppler_max", FLAGS_external_signal_acquisition_doppler_max_hz);
 		int acq_doppler_step = config->property("Acquisition.doppler_step", FLAGS_external_signal_acquisition_doppler_step_hz);
 
-		printf("acq_doppler_max = %d\n", acq_doppler_max);
-		printf("acq_doppler_step = %d\n", acq_doppler_step);
 
 
 
-
+/*
 	    if (doppler_loop_control_in_sw == 1)
 	    {
 
@@ -1192,7 +1167,7 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 	    }
 	    else // DOPPLER CONTROL IN HW
 	    {
-
+*/
 			for (unsigned int PRN = 1; PRN < MAX_PRN_IDX; PRN++)
 			//for (unsigned int PRN = 0; PRN < 17; PRN++)
 				{
@@ -1230,7 +1205,6 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 				}
 				else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
 				{
-					//printf("starting configuring acquisition\n");
 					acquisition_GpsE1_Fpga->reset_acquisition(); // reset the whole system including the sample counters
 					acquisition_GpsE1_Fpga->set_doppler_max(acq_doppler_max);
 					acquisition_GpsE1_Fpga->set_doppler_step(acq_doppler_step);
@@ -1239,7 +1213,6 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 					acquisition_GpsE1_Fpga->init();
 					acquisition_GpsE1_Fpga->set_local_code();
 					args.freq_band = 0;
-					//printf("ffffffffffff ending configuring acquisition\n");
 				}
 				else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
 				{
@@ -1269,7 +1242,6 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 
 				if ((implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0) or (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0))
 				{
-					//printf("gggggggg \n");
 					//----------------------------------------------------------------------------------
 					// send the previous samples to set the downsampling filter in a good condition
 					send_samples_start = 0;
@@ -1278,18 +1250,15 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 
 					args.nsamples_tx = DOWNAMPLING_FILTER_INIT_SAMPLES + DOWNSAMPLING_FILTER_DELAY + DOWNSAMPLING_FILTER_OFFSET_SAMPLES; //50000;		// max size of the FFT
 
-					//printf("sending pre init %d\n", args.nsamples_tx);
-
 					if (pthread_create(&thread_DMA, NULL, handler_DMA, (void *)&args) < 0)
 					{
-						printf("ERROR cannot create DMA Process\n");
+						std::cout << "ERROR cannot create DMA Process" << std::endl;
 					}
 					pthread_mutex_lock(&mutex);
 					send_samples_start = 1;
 					pthread_mutex_unlock(&mutex);
 					pthread_join(thread_DMA, NULL);
 					send_samples_start = 0;
-					//printf("finished sending samples init filter status\n");
 					//-----------------------------------------------------------------------------------
 
 					// debug
@@ -1309,12 +1278,10 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 
 
 
-				// create DMA child process
-				//printf("||||||||1 args freq_band = %d\n", args.freq_band);
-				//printf("sending samples main DMA %d\n", args.nsamples_tx);
+
 				if (pthread_create(&thread_DMA, NULL, handler_DMA, (void *)&args) < 0)
 				{
-					printf("ERROR cannot create DMA Process\n");
+					std::cout << "ERROR cannot create DMA Process" << std::endl;
 				}
 
 				msg_rx->rx_message = 0;
@@ -1330,7 +1297,6 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 				}
 				else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
 				{
-					//printf("hhhhhhhhhhhh\n");
 					acquisition_GpsE1_Fpga->reset(); // set active
 				}
 				else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
@@ -1342,9 +1308,6 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 					acquisition_GpsL5_Fpga->reset(); // set active
 				}
 
-	//					pthread_mutex_lock(&mutex); // it doesn't work if it is done here
-	//					send_samples_start = 1;
-	//					pthread_mutex_unlock(&mutex);
 
 				if (start_msg == true)
 					{
@@ -1354,7 +1317,6 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 						start_msg = false;
 					}
 
-				//printf("wait for DMA to finish\n");
 				// wait for the child DMA process to finish
 				pthread_join(thread_DMA, NULL);
 
@@ -1362,10 +1324,19 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 				send_samples_start = 0;
 				pthread_mutex_unlock(&mutex);
 
-	            while (msg_rx->rx_message == 0)
-	                {
-	                    usleep(100000);
-	                }
+//	            while (msg_rx->rx_message == 0)
+//	                {
+//	                    usleep(100000);
+//	                }
+
+				// the DMA sends the exact number of samples needed for the acquisition.
+				// however because of the LPF in the GPS L1/Gal E1 acquisition, this calculation is approximate
+				// and some extra samples might be sent. Wait at least once to give time the HW to consume any extra
+				// sample the DMA might have sent.
+	            do {
+	            	usleep(100000);
+	            } while (msg_rx->rx_message == 0);
+
 	            if (msg_rx->rx_message == 1)
 	                {
 	                    std::cout << " " << PRN << " ";
@@ -1379,81 +1350,16 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 	                    std::cout << " . ";
 	                }
 
-//				while (msg_rx->rx_message == 0)
-//					{
-//						usleep(100000);
-//					}
 
-//				if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
-//				{
-//					acquisition_GpsL1Ca_Fpga->read_acquisition_results(&max_index_iteration, &max_magnitude_iteration, &second_magnitude_iteration, &initial_sample_iteration, &doppler_index_iteration, &total_fft_scaling_factor);
-//					//acquisition_GpsL1Ca_Fpga->read_fpga_total_scale_factor(&total_fft_scaling_factor, &fw_fft_scaling_factor);
-//				}
-//				else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
-//				{
-//					//printf("iiiiiiiiiiiiii\n");
-//					acquisition_GpsE1_Fpga->read_acquisition_results(&max_index_iteration, &max_magnitude_iteration, &second_magnitude_iteration, &initial_sample_iteration, &doppler_index_iteration, &total_fft_scaling_factor);
-//					//acquisition_GpsE1_Fpga->read_fpga_total_scale_factor(&total_fft_scaling_factor, &fw_fft_scaling_factor);
-//				}
-//				else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
-//				{
-//					acquisition_GpsE5a_Fpga->read_acquisition_results(&max_index_iteration, &max_magnitude_iteration, &second_magnitude_iteration, &initial_sample_iteration, &doppler_index_iteration, &total_fft_scaling_factor);
-//					//acquisition_GpsE5a_Fpga->read_fpga_total_scale_factor(&total_fft_scaling_factor, &fw_fft_scaling_factor);
-//				}
-//				else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
-//				{
-//					acquisition_GpsL5_Fpga->read_acquisition_results(&max_index_iteration, &max_magnitude_iteration, &second_magnitude_iteration, &initial_sample_iteration, &doppler_index_iteration, &total_fft_scaling_factor);
-//					//acquisition_GpsL5_Fpga->read_fpga_total_scale_factor(&total_fft_scaling_factor, &fw_fft_scaling_factor);
-//				}
-//
-//				if ((implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0) or (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0))
-//				{
-//					int interpolation_factor = 4;
-//					//index_debug[PRN - 1] = max_index_iteration;
-//					max_index = max_index_iteration; // - interpolation_factor*(DOWNSAMPLING_FILTER_DELAY - 1);
-//					max_magnitude = max_magnitude_iteration;
-//					second_magnitude = second_magnitude_iteration;
-//					//samplestamp_debug[PRN - 1] = initial_sample_iteration;
-//					initial_sample = 0; //initial_sample_iteration;
-//					doppler_index = doppler_index_iteration;
-//					doppler_shift_selected = -acq_doppler_max + acq_doppler_step * (doppler_index_iteration - 1);
-//				}
-//				else
-//				{
-//					max_index = max_index_iteration;
-//					max_magnitude = max_magnitude_iteration;
-//					second_magnitude = second_magnitude_iteration;
-//					initial_sample = initial_sample_iteration;
-//					doppler_index = doppler_index_iteration;
-//					doppler_shift_selected = -acq_doppler_max + acq_doppler_step * (doppler_index_iteration - 1);
-//				}
 				top_block->stop();
-
-
-//				float test_statistics = max_magnitude/second_magnitude;
-//				float threshold = config->property("Acquisition.threshold", FLAGS_external_signal_acquisition_threshold);
-//				if (test_statistics > threshold)
-//					{
-//						//printf("XXXXXXXXXXXXXXXXXXXXXXXXXXX max index = %d = %d \n", max_index, max_index % nsamples_total);
-//						std::cout << " " << PRN << " ";
-//						doppler_measurements_map.insert(std::pair<int, double>(PRN, static_cast<double>(doppler_shift_selected)));
-//						code_delay_measurements_map.insert(std::pair<int, double>(PRN, static_cast<double>(max_index % nsamples_total)));
-//						code_delay_measurements_map.insert(std::pair<int, double>(PRN, static_cast<double>(max_index)));
-//						acq_samplestamp_map.insert(std::pair<int, double>(PRN, initial_sample)); // should be 0 (first sample upon which acq starts is always 0 in this case)
-//					}
-//				else
-//					{
-//						std::cout << " . ";
-//					}
 
 				std::cout.flush();
 
-			}
+/*			} */
 
 
 	    }
 
-//		}
     std::cout << "]" << std::endl;
     std::cout << "-------------------------------------------\n";
 
@@ -1463,11 +1369,6 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
         }
 
 
-//    for (unsigned k=0;k<MAX_PRN_IDX;k++)
-//    {
-//    	printf("index_debug %d = %d\n", k+1, (int) index_debug[k]);
-//    	printf("samplestamp_debug %d = %d\n", k+1, (int) samplestamp_debug[k]);
-//    }
 
     // report the elapsed time
     end = std::chrono::system_clock::now();
@@ -1485,10 +1386,9 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
 	// pointer to the DMA thread that sends the samples to the acquisition engine
 	pthread_t thread_DMA;
 
-	//printf("AAAA000\n");
 
 	struct DMA_handler_args args;
-
+/*
 	int interpolation_factor;
 	if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
 	{
@@ -1498,7 +1398,7 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
 	{
 		interpolation_factor = 4;  // downsampling filter in L1/E1
 	}
-
+*/
 
 
 
@@ -1523,7 +1423,6 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
             acq_delay_error_chips_values.push_back(tmp_vector);
         }
 
-    //printf("BBB\n");
 
     //***********************************************************
     //***** STEP 2: Generate the input signal (if required) *****
@@ -1548,9 +1447,7 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                 }
         }
 
-    //printf("CCC\n");
 
-    // DEBUG
 
     // use generator or use an external capture file
     if (FLAGS_enable_external_signal_file)
@@ -1575,14 +1472,12 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                 }
         }
 
-    //printf("#################################### CONFIGURE \n");
     configure_receiver(FLAGS_PLL_bw_hz_start,
         FLAGS_DLL_bw_hz_start,
         FLAGS_PLL_narrow_bw_hz,
         FLAGS_DLL_narrow_bw_hz,
         FLAGS_extend_correlation_symbols);
 
-    //printf("DDD\n");
 
     //******************************************************************************************
     //***** Obtain the initial signal sinchronization parameters (emulating an acquisition) ****
@@ -1592,7 +1487,6 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
     double true_acq_delay_samples = 0.0;
     uint64_t acq_samplestamp_samples = 0;
 
-    //printf("#################################### NEXT\n");
     tracking_true_obs_reader true_obs_data;
     if (!FLAGS_enable_external_signal_file)
         {
@@ -1648,8 +1542,36 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
 	float nbits = ceilf(log2f((float)code_length));
 	unsigned int fft_size = pow(2, nbits);
 
+	// The HW has been reset after the acquisition phase when the acquisition class was destroyed.
+	// No more samples remained in the DMA. Therefore any intermediate state in the LPF of the
+	// GPS L1 / Galileo E1 filter has been cleared.
+	// During this test all the samples coming from the DMA are consumed so in principle there would be
+	// no need to reset the HW. However we need to clear the sample counter in each test. Therefore we have
+	// to reset the HW at the beginning of each test.
 
-	//printf("####################################\n");
+	// instantiate the acquisition modules in order to use them to reset the HW.
+	// (note that the constructor of the acquisition modules resets the HW too)
+    std::shared_ptr<GpsL1CaPcpsAcquisitionFpga> acquisition_GpsL1Ca_Fpga;
+    std::shared_ptr<GalileoE1PcpsAmbiguousAcquisitionFpga> acquisition_GpsE1_Fpga;
+    std::shared_ptr<GalileoE5aPcpsAcquisitionFpga> acquisition_GpsE5a_Fpga;
+    std::shared_ptr<GpsL5iPcpsAcquisitionFpga> acquisition_GpsL5_Fpga;
+	if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
+	{
+		acquisition_GpsL1Ca_Fpga = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+	}
+	else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
+	{
+		acquisition_GpsE1_Fpga = std::make_shared<GalileoE1PcpsAmbiguousAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+	}
+	else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
+	{
+		acquisition_GpsE5a_Fpga = std::make_shared<GalileoE5aPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+	}
+	else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
+	{
+		acquisition_GpsL5_Fpga = std::make_shared<GpsL5iPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+	}
+
     for (unsigned int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
         {
             std::vector<double> pull_in_results_v;
@@ -1658,11 +1580,25 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                     for (unsigned int current_acq_code_error_idx = 0; current_acq_code_error_idx < acq_delay_error_chips_values.at(current_acq_doppler_error_idx).size(); current_acq_code_error_idx++)
                         {
 
+                    		// reset the HW to clear the sample counters
+							if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
+							{
+								acquisition_GpsL1Ca_Fpga->reset_acquisition();
+							}
+							else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
+							{
+								acquisition_GpsE1_Fpga->reset_acquisition();
+							}
+							else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
+							{
+								acquisition_GpsE5a_Fpga->reset_acquisition();
+							}
+							else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
+							{
+								acquisition_GpsL5_Fpga->reset_acquisition();
+							}
 
 
-
-							printf("acq_samplestamp_samples = %d\n", (int)acq_samplestamp_samples);
-							printf("true_acq_delay_samples = %d\n", (int)true_acq_delay_samples);
 
 							gnss_synchro.Acq_samplestamp_samples = acq_samplestamp_samples;
                             //simulate a Doppler error in acquisition
@@ -1670,20 +1606,11 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                             //simulate Code Delay error in acquisition
                             gnss_synchro.Acq_delay_samples = true_acq_delay_samples + (acq_delay_error_chips_values.at(current_acq_doppler_error_idx).at(current_acq_code_error_idx) / GPS_L1_CA_CODE_RATE_HZ) * static_cast<double>(baseband_sampling_freq);
 
-                            // debug
-                            //printf("forcing data\n");
-                            //gnss_synchro.Acq_samplestamp_samples = 37500;
-                            //gnss_synchro.Acq_delay_samples = 2933;
-							//printf("acq_samplestamp_samples = %d\n", (int)gnss_synchro.Acq_samplestamp_samples);
-							//printf("true_acq_delay_samples = %d\n", (int)gnss_synchro.Acq_delay_samples);
-
-
                             //create flowgraph
                             top_block = gr::make_top_block("Tracking test");
                             std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking", config->property("Tracking.implementation", std::string("undefined")), 1, 1);
                             std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
                             boost::shared_ptr<TrackingPullInTestFpga_msg_rx> msg_rx = TrackingPullInTestFpga_msg_rx_make();
-                            //printf("loop part b2\n");
 
                             if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
                             {
@@ -1753,13 +1680,14 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                             //********************************************************************
 
 
-                            args.nsamples_tx = NSAMPLES_TRACKING;		// number of samples to transfer
+                            //args.nsamples_tx = NSAMPLES_TRACKING;		// number of samples to transfer
+                            args.nsamples_tx = baseband_sampling_freq*FLAGS_duration;
 
 
                             //if (pthread_create(&thread_DMA, NULL, handler_DMA_tracking, (void *)&args) < 0)
                             if (pthread_create(&thread_DMA, NULL, handler_DMA, (void *)&args) < 0)
                         	{
-                        		printf("ERROR cannot create DMA Process\n");
+                        		std::cout << "ERROR cannot create DMA Process" << std::endl;
                         	}
 
                             std::cout << "--- START TRACKING WITH PULL-IN ERROR: " << acq_doppler_error_hz_values.at(current_acq_doppler_error_idx) << " [Hz] and " << acq_delay_error_chips_values.at(current_acq_doppler_error_idx).at(current_acq_code_error_idx) << " [Chips] ---" << std::endl;
@@ -1777,8 +1705,15 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
 
                         	top_block->stop();
 
-                        	printf("going to send more samples\n");
                         	// send more samples to unblock the tracking process in case it was waiting for samples
+                        	// In this case the DMA may finish sending the current file while the signal is being
+                        	// tracked by the HW accelerators. Some tracking HW accelerators may be left in a state
+                        	// where they are waiting for more samples. In this case we can not bring them back to their
+                        	// default state using a HW reset because the SW would be waiting forever to receive the
+                        	// HW interrupt from those accelerators. The correct way to bring the system back to the default state
+                        	// is to send some extra samples that will ensure that all the aforementioned accelerators
+                        	// trigger an interrupt to the SW. After this last interrupt all the HW accelerators go back to their
+                        	// default state.
                             args.file = file;
                             if (skip_samples_already_used == 1)
                             {
@@ -1790,15 +1725,18 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                             	args.skip_used_samples = 0;
                             }
                             args.nsamples_tx = NSAMPLES_FINAL;
-                            //printf("||||||||1 args freq_band = %d\n", args.freq_band);
+
                             if (pthread_create(&thread_DMA, NULL, handler_DMA, (void *)&args) < 0)
                         	{
-                        		printf("ERROR cannot create DMA Process\n");
+                        		std::cout << "ERROR cannot create DMA Process" << std::endl;
                         	}
                         	pthread_join(thread_DMA, NULL);
+
+
                         	pthread_mutex_lock(&mutex);
                         	send_samples_start = 0;
                         	pthread_mutex_unlock(&mutex);
+
 
                             pull_in_results_v.push_back(msg_rx->rx_message != 3);  //save last asynchronous tracking message in order to detect a loss of lock
 
@@ -1968,6 +1906,9 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                                 }  //end plot
 
                         }  //end acquisition Delay errors loop
+
+                    usleep(100000); // give time to the HW to consume all the remaining samples
+
                 }          //end acquisition Doppler errors loop
 
             pull_in_results_v_v.push_back(pull_in_results_v);

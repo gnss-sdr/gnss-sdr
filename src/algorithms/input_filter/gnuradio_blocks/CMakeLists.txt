@@ -48,7 +48,7 @@ target_link_libraries(input_filter_gr_blocks
     PRIVATE
         Gflags::gflags
         Glog::glog
-        ${LOG4CPP_LIBRARIES}
+        Log4cpp::log4cpp
 )
 
 set_property(TARGET input_filter_gr_blocks

@@ -551,16 +551,10 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResults)
                 {
                     EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
                 }
-#ifdef OLD_BOOST
-            ASSERT_NO_THROW({
-                ch_thread.timed_join(boost::posix_time::seconds(1));
-            }) << "Failure while waiting the queue to stop";
-#endif
-#ifndef OLD_BOOST
+
             ASSERT_NO_THROW({
                 ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
             }) << "Failure while waiting the queue to stop";
-#endif
         }
 }
 

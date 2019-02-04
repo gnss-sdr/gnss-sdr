@@ -80,10 +80,6 @@ if(ENABLE_RAW_UDP)
     target_compile_definitions(gnss_rx PRIVATE -DRAW_UDP=1)
 endif()
 
-if(Boost_VERSION LESS 105000)
-    target_compile_definitions(gnss_rx PRIVATE -DOLD_BOOST=1)
-endif()
-
 if(PC_GNURADIO_RUNTIME_VERSION VERSION_GREATER 3.7.3)
     target_compile_definitions(gnss_rx PRIVATE -DMODERN_GNURADIO=1)
 endif()

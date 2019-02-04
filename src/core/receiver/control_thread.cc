@@ -276,17 +276,10 @@ int ControlThread::run()
     stop_ = true;
     flowgraph_->disconnect();
 
-// Join keyboard thread
-#ifdef OLD_BOOST
-    keyboard_thread_.timed_join(boost::posix_time::seconds(1));
-    sysv_queue_thread_.timed_join(boost::posix_time::seconds(1));
-    cmd_interface_thread_.timed_join(boost::posix_time::seconds(1));
-#endif
-#ifndef OLD_BOOST
+    // Join keyboard thread
     keyboard_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
     sysv_queue_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
     cmd_interface_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
-#endif
 
     LOG(INFO) << "Flowgraph stopped";
 

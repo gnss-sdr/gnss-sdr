@@ -133,9 +133,6 @@ if(ENABLE_GPERFTOOLS)
     endif()
 endif()
 
-if(Boost_VERSION LESS 105000)
-    add_definitions(-DOLD_BOOST=1)
-endif()
 
 if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13.4")
     add_definitions(-DGR_GREATER_38=1)

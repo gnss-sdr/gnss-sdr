@@ -49,7 +49,7 @@ target_include_directories(pvt_gr_blocks
 )
 
 if(Boost_VERSION LESS 105800)
-    target_compile_definitions(pvt_gr_blocks PUBLIC -DOLD_BOOST=1)
+    target_compile_definitions(pvt_gr_blocks PRIVATE -DOLD_BOOST=1)
 endif()
 
 set_property(TARGET pvt_gr_blocks

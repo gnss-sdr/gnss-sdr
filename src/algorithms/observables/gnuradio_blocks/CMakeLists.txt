@@ -42,6 +42,7 @@ target_link_libraries(obs_gr_blocks
         Matio::matio
 )
 
-set_property(TARGET obs_gr_blocks APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+set_property(TARGET obs_gr_blocks
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

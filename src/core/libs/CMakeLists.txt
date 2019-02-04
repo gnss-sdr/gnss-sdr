@@ -41,12 +41,13 @@ source_group(Headers FILES ${CORE_LIBS_HEADERS})
 
 target_link_libraries(rx_core_lib
     PUBLIC
+        Boost::boost
         supl_library
         gnss_system_parameters
-        Boost::boost
     PRIVATE
-        Glog::glog
         Boost::serialization
+        Gflags::gflags
+        Glog::glog
         Pugixml::pugixml
 )
 

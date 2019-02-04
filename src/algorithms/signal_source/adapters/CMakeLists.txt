@@ -192,6 +192,13 @@ target_link_libraries(signal_source_adapters
         Volk::volk
 )
 
+if(ENABLE_RAW_UDP AND PCAP_FOUND)
+    target_link_libraries(signal_source_adapters
+        PRIVATE
+            Pcap::pcap
+    )
+endif()
+
 if(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
     target_link_libraries(signal_source_adapters
         PUBLIC
@@ -211,14 +218,7 @@ endif()
 if(ENABLE_AD9361 AND LIBIIO_FOUND)
     target_link_libraries(signal_source_adapters
         PRIVATE
-            Osmosdr::osmosdr
-    )
-endif()
-
-if(ENABLE_RAW_UDP AND PCAP_FOUND)
-    target_link_libraries(signal_source_adapters
-        PRIVATE
-            Pcap::pcap
+            Iio::iio
     )
 endif()
 

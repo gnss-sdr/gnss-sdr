@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -110,7 +110,7 @@ else()
         add_library(gtest ${GTEST_DIR}/src/gtest-all.cc ${GTEST_DIR}/src/gtest_main.cc)
         set(GTEST_LIBRARIES gtest)
     endif()
-    target_link_libraries(gtest ${THREAD_LIBRARIES})
+    target_link_libraries(gtest PUBLIC ${THREAD_LIBRARIES})
 endif()
 
 
@@ -133,15 +133,8 @@ if(ENABLE_GPERFTOOLS)
     endif()
 endif()
 
-if(Boost_VERSION LESS 105000)
-    add_definitions(-DOLD_BOOST=1)
-endif()
 
 if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13.4")
-    add_definitions(-DGR_GREATER_38=1)
-endif()
-
-if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.15")
     add_definitions(-DGR_GREATER_38=1)
 endif()
 
@@ -234,7 +227,6 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
           set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
       endif()
       include(GNUInstallDirs)
-      string(REGEX REPLACE /[^/]*$ "" LIBDIR ${CMAKE_INSTALL_LIBDIR})
       if(CMAKE_VERSION VERSION_LESS 3.2)
           ExternalProject_Add(
             gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
@@ -254,28 +246,32 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
             CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install -DBUILD_EXT=OFF -DBUILD_PYTHON=OFF
-            BUILD_BYPRODUCTS ${CMAKE_SOURCE_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX}
+            BUILD_BYPRODUCTS ${CMAKE_SOURCE_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX}
             UPDATE_COMMAND ""
             PATCH_COMMAND ""
           )
       endif()
       set(GPSTK_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/include CACHE PATH "Local GPSTK headers")
-      set(GPSTK_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
+      set(GPSTK_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
       set(GPSTK_BINDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/bin/)
       add_definitions(-DGPSTK_BINDIR="${GPSTK_BINDIR}")
       set(OWN_GPSTK True)
+      add_library(Gpstk::gpstk SHARED IMPORTED)
+      add_dependencies(Gpstk::gpstk gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION})
+      file(MAKE_DIRECTORY ${GPSTK_INCLUDE_DIRS})
+      file(MAKE_DIRECTORY ${GPSTK_INCLUDE_DIRS}/gpstk)
+      set_target_properties(Gpstk::gpstk PROPERTIES
+          IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+          IMPORTED_LOCATION "${GPSTK_LIBRARY}"
+          INTERFACE_INCLUDE_DIRECTORIES "${GPSTK_INCLUDE_DIRS};${GPSTK_INCLUDE_DIRS}/gpstk"
+          INTERFACE_LINK_LIBRARIES "${GPSTK_LIBRARY}"
+      )
     else()
-      set(GPSTK_INCLUDE_DIRS ${GPSTK_INCLUDE_DIR})
-      set(GPSTK_BINDIR ${GPSTK_LIBRARY}/../bin/)
+      set(GPSTK_BINDIR ${GPSTK_INCLUDE_DIR}/../bin/)
       add_definitions(-DGPSTK_BINDIR="${GPSTK_BINDIR}")
     endif()
 endif()
 
-
-if(ENABLE_UNIT_TESTING_EXTRA)
-    set(GNSS_SDR_TEST_OPTIONAL_LIBS ${GNSS_SDR_TEST_OPTIONAL_LIBS} ${GPSTK_LIBRARY})
-    set(GNSS_SDR_TEST_OPTIONAL_HEADERS ${GNSS_SDR_TEST_OPTIONAL_HEADERS} ${GPSTK_INCLUDE_DIRS} ${GPSTK_INCLUDE_DIRS}/gpstk)
-endif()
 
 if(ENABLE_UNIT_TESTING_EXTRA)
     add_definitions(-DEXTRA_TESTS)
@@ -317,52 +313,7 @@ endif()
 
 set(LIST_INCLUDE_DIRS
     ${GTEST_INCLUDE_DIRECTORIES}
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces
-    ${CMAKE_SOURCE_DIR}/src/core/receiver
-    ${CMAKE_SOURCE_DIR}/src/core/libs
-    ${CMAKE_SOURCE_DIR}/src/core/libs/supl
-    ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
-    ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
-    ${CMAKE_SOURCE_DIR}/src/core/monitor
-    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-    ${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib
-    ${CMAKE_SOURCE_DIR}/src/algorithms/data_type_adapter/adapters
-    ${CMAKE_SOURCE_DIR}/src/algorithms/data_type_adapter/gnuradio_blocks
-    ${CMAKE_SOURCE_DIR}/src/algorithms/resampler/adapters
-    ${CMAKE_SOURCE_DIR}/src/algorithms/resampler/gnuradio_blocks
-    ${CMAKE_SOURCE_DIR}/src/algorithms/channel/adapters
-    ${CMAKE_SOURCE_DIR}/src/algorithms/channel/libs
-    ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs
-    ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/adapters
-    ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/gnuradio_blocks
-    ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/adapters
-    ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/gnuradio_blocks
-    ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/libs
-    ${CMAKE_SOURCE_DIR}/src/algorithms/observables/adapters
-    ${CMAKE_SOURCE_DIR}/src/algorithms/observables/gnuradio_blocks
-    ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/adapters
-    ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/gnuradio_blocks
-    ${CMAKE_SOURCE_DIR}/src/algorithms/signal_generator/adapters
-    ${CMAKE_SOURCE_DIR}/src/algorithms/signal_generator/gnuradio_blocks
-    ${CMAKE_SOURCE_DIR}/src/algorithms/input_filter/adapters
-    ${CMAKE_SOURCE_DIR}/src/algorithms/input_filter/gnuradio_blocks
-    ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/libs
-    ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/adapters
-    ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/gnuradio_blocks
-    ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
-    ${CMAKE_SOURCE_DIR}/src/tests/unit-tests/signal-processing-blocks/libs
-    ${CMAKE_SOURCE_DIR}/src/tests/system-tests/libs
     ${CMAKE_SOURCE_DIR}/src/tests/common-files
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
-    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-    ${ARMADILLO_INCLUDE_DIRS}
-    ${VOLK_INCLUDE_DIRS}
-    ${VOLK_GNSSSDR_INCLUDE_DIRS}
-    ${MATIO_INCLUDE_DIRS}
-    ${PUGIXML_INCLUDE_DIR}
     ${GNSS_SDR_TEST_OPTIONAL_HEADERS}
 )
 
@@ -374,34 +325,47 @@ include_directories(${LIST_INCLUDE_DIRS})
 if(ENABLE_UNIT_TESTING)
     add_executable(run_tests ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc)
 
-    target_link_libraries(run_tests ${CLANG_FLAGS}
-                                ${Boost_LIBRARIES}
-                                ${GFlags_LIBS}
-                                ${GLOG_LIBRARIES}
-                                ${GTEST_LIBRARIES}
-                                ${GNURADIO_RUNTIME_LIBRARIES}
-                                ${GNURADIO_BLOCKS_LIBRARIES}
-                                ${GNURADIO_FILTER_LIBRARIES}
-                                ${GNURADIO_ANALOG_LIBRARIES}
-                                ${ARMADILLO_LIBRARIES}
-                                ${VOLK_LIBRARIES}
-                                channel_fsm
-                                gnss_sp_libs
-                                gnss_rx
-                                gnss_system_parameters
-                                signal_generator_blocks
-                                signal_generator_adapters
-                                pvt_gr_blocks
-                                signal_processing_testing_lib
-                                system_testing_lib
-                                ${VOLK_GNSSSDR_LIBRARIES}
-                                ${MATIO_LIBRARIES}
-                                ${GNSS_SDR_TEST_OPTIONAL_LIBS}
+    target_link_libraries(run_tests
+        PUBLIC
+            ${CLANG_FLAGS}
+            Boost::filesystem
+            Armadillo::armadillo
+            Gflags::gflags
+            Glog::glog
+            Gnuradio::runtime
+            Gnuradio::blocks
+            Gnuradio::filter
+            Gnuradio::analog
+            Matio::matio
+            Volk::volk
+            Volkgnsssdr::volkgnsssdr
+            ${GTEST_LIBRARIES}
+            gnss_sp_libs
+            gnss_rx
+            gnss_system_parameters
+            core_monitor_lib
+            signal_source_adapters
+            datatype_adapters
+            input_filter_adapters
+            resampler_adapters
+            channel_adapters
+            acq_adapters
+            tracking_adapters
+            tracking_lib
+            telemetry_decoder_adapters
+            obs_adapters
+            signal_generator_adapters
+            pvt_adapters
+            signal_processing_testing_lib
+            system_testing_lib
+            ${GNSS_SDR_TEST_OPTIONAL_LIBS}
     )
     if(NOT ${GTEST_DIR_LOCAL})
         add_dependencies(run_tests gtest-${GNSSSDR_GTEST_LOCAL_VERSION})
     endif()
-
+    if(ENABLE_UNIT_TESTING_EXTRA)
+        target_link_libraries(run_tests PUBLIC Gpstk::gpstk)
+    endif()
     if(ENABLE_INSTALL_TESTS)
         if(EXISTS ${CMAKE_SOURCE_DIR}/install/run_tests)
             file(REMOVE ${CMAKE_SOURCE_DIR}/install/run_tests)
@@ -420,27 +384,29 @@ if(ENABLE_FPGA)
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/gps_l1_ca_dll_pll_tracking_test_fpga.cc
     )
     target_link_libraries(gps_l1_ca_dll_pll_tracking_test_fpga
-        ${Boost_LIBRARIES}
-        ${GFlags_LIBS}
-        ${GLOG_LIBRARIES}
-        ${GTEST_LIBRARIES}
-        ${GNURADIO_RUNTIME_LIBRARIES}
-        ${GNURADIO_BLOCKS_LIBRARIES}
-        ${ARMADILLO_LIBRARIES}
-        ${VOLK_LIBRARIES}
-        ${MATIO_LIBRARIES}
-        channel_fsm
-        gnss_sp_libs
-        gnss_rx
-        gnss_system_parameters
-        signal_processing_testing_lib
+        PUBLIC
+            ${Boost_LIBRARIES}
+            Gflags::gflags
+            Glog::glog
+            ${GTEST_LIBRARIES}
+            Gnuradio::runtime
+            Gnuradio::blocks
+            Armadillo::armadillo
+            Volk::volk
+            Matio::matio
+            channel_fsm
+            gnss_sp_libs
+            gnss_rx
+            datatype_adapters
+            gnss_system_parameters
+            signal_processing_testing_lib
+            tracking_adapters
     )
     install(TARGETS gps_l1_ca_dll_pll_tracking_test_fpga
         RUNTIME DESTINATION bin
         COMPONENT "fpga-test"
     )
 endif()
-
 
 
 ################################################################################
@@ -462,8 +428,8 @@ function(add_system_test executable)
         add_dependencies(${executable} gtest)
     endif()
 
-    include_directories(${OPT_INCLUDES_})
-    target_link_libraries(${executable} ${OPT_LIBS_})
+    target_include_directories(${executable} PUBLIC ${OPT_INCLUDES_} ${CMAKE_SOURCES_DIR}/src/algorithms/libs)
+    target_link_libraries(${executable} PUBLIC ${OPT_LIBS_} gnss_sp_libs)
 
     if(ENABLE_INSTALL_TESTS)
         if(EXISTS ${CMAKE_SOURCE_DIR}/install/${executable})
@@ -491,22 +457,21 @@ if(ENABLE_SYSTEM_TESTING)
     add_definitions(-DHOST_SYSTEM="${HOST_SYSTEM}")
 
     #### TTFF
-    set(OPT_LIBS_ ${Boost_LIBRARIES} ${THREAD_LIBRARIES} ${GFlags_LIBS} ${GLOG_LIBRARIES}
-                  ${GNURADIO_RUNTIME_LIBRARIES} ${GTEST_LIBRARIES}
-                  ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES}
-                  ${GNURADIO_ANALOG_LIBRARIES} gnss_sp_libs
+    set(OPT_LIBS_ ${Boost_LIBRARIES} ${THREAD_LIBRARIES} Gflags::gflags Glog::glog
+                  Gnuradio::runtime ${GTEST_LIBRARIES}
+                  Gnuradio::blocks Gnuradio::filter
+                  Gnuradio::analog gnss_sp_libs
                   gnss_rx gnss_system_parameters)
-
     add_system_test(ttff)
 
     if(ENABLE_SYSTEM_TESTING_EXTRA)
         #### POSITION_TEST
-        set(OPT_LIBS_ ${Boost_LIBRARIES} ${THREAD_LIBRARIES} ${GFlags_LIBS} ${GLOG_LIBRARIES}
-                      ${GTEST_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES}
-                      ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES}
-                      ${GNURADIO_ANALOG_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES}
+        set(OPT_LIBS_ ${Boost_LIBRARIES} ${THREAD_LIBRARIES} Gflags::gflags Glog::glog
+                      ${GTEST_LIBRARIES} Gnuradio::runtime
+                      Gnuradio::blocks Gnuradio::filter
+                      Gnuradio::analog Matio::matio Volkgnsssdr::volkgnsssdr
                       gnss_sp_libs gnss_rx gnss_system_parameters
-                      system_testing_lib)
+                      system_testing_lib signal_processing_testing_lib)
         add_system_test(position_test)
     else()
         # Avoid working with old executables if they were switched ON and then OFF
@@ -534,16 +499,22 @@ add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
 add_executable(flowgraph_test ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/control-plane/gnss_flowgraph_test.cc)
 
-target_link_libraries(flowgraph_test ${Boost_LIBRARIES}
-    ${GFlags_LIBS}
-    ${GLOG_LIBRARIES}
-    ${GNURADIO_RUNTIME_LIBRARIES}
+target_link_libraries(flowgraph_test PUBLIC ${Boost_LIBRARIES}
+    Gflags::gflags
+    Glog::glog
+    Gnuradio::runtime
     ${GTEST_LIBRARIES}
     gnss_sp_libs
     gnss_rx
     gnss_system_parameters
-    ${VOLK_GNSSSDR_LIBRARIES}
+    signal_source_adapters
+    signal_source_gr_blocks
+    input_filter_adapters
+    channel_adapters
+    Volkgnsssdr::volkgnsssdr
 )
+
+target_include_directories(flowgraph_test PUBLIC ${CMAKE_SOURCE_DIR}/src/algorithms/libs)
 
 add_test(flowgraph_test flowgraph_test)
 if(NOT ${GTEST_DIR_LOCAL})
@@ -565,19 +536,24 @@ add_executable(gnss_block_test ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/adapter/adapter_test.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/control-plane/gnss_block_factory_test.cc
 )
-target_link_libraries(gnss_block_test ${Boost_LIBRARIES}
-    ${GFlags_LIBS}
-    ${GLOG_LIBRARIES}
+target_link_libraries(gnss_block_test PUBLIC ${Boost_LIBRARIES}
+    Gflags::gflags
+    Glog::glog
     ${GTEST_LIBRARIES}
-    ${GNURADIO_RUNTIME_LIBRARIES}
-    ${GNURADIO_BLOCKS_LIBRARIES}
-    ${GNURADIO_FILTER_LIBRARIES}
-    ${GNURADIO_ANALOG_LIBRARIES}
+    Gnuradio::runtime
+    Gnuradio::blocks
+    Gnuradio::filter
+    Gnuradio::analog
+    signal_source_adapters
+    datatype_adapters
+    input_filter_adapters
+    channel_adapters
     gnss_sp_libs
     gnss_rx
     gnss_system_parameters
-    ${VOLK_GNSSSDR_LIBRARIES}
+    Volkgnsssdr::volkgnsssdr
 )
+target_include_directories(gnss_block_test PUBLIC ${CMAKE_SOURCE_DIR}/src/algorithms/libs)
 add_test(gnss_block_test gnss_block_test)
 if(NOT ${GTEST_DIR_LOCAL})
     add_dependencies(gnss_block_test gtest-${GNSSSDR_GTEST_LOCAL_VERSION})
@@ -592,17 +568,18 @@ add_executable(gnuradio_block_test ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.
     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/sources/unpack_2bit_samples_test.cc
 )
 target_link_libraries(gnuradio_block_test ${Boost_LIBRARIES}
-    ${GFlags_LIBS}
-    ${GLOG_LIBRARIES}
+    Gflags::gflags
+    Glog::glog
     ${GTEST_LIBRARIES}
-    ${GNURADIO_RUNTIME_LIBRARIES}
-    ${GNURADIO_BLOCKS_LIBRARIES}
-    ${GNURADIO_FILTER_LIBRARIES}
-    ${GNURADIO_ANALOG_LIBRARIES}
+    Gnuradio::runtime
+    Gnuradio::blocks
+    Gnuradio::filter
+    Gnuradio::analog
     gnss_sp_libs
     gnss_rx
     gnss_system_parameters
-    ${VOLK_GNSSSDR_LIBRARIES}
+    signal_source_gr_blocks
+    Volkgnsssdr::volkgnsssdr
 )
 add_test(gnuradio_block_test gnuradio_block_test)
 if(NOT ${GTEST_DIR_LOCAL})
@@ -617,27 +594,18 @@ set_property(TEST gnuradio_block_test PROPERTY TIMEOUT 30)
 add_executable(matio_test ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/arithmetic/matio_test.cc
 )
-target_link_libraries(matio_test ${Boost_LIBRARIES}
-    ${GFlags_LIBS}
-    ${GLOG_LIBRARIES}
-    ${GTEST_LIBRARIES}
-    ${MATIO_LIBRARIES}
-    gnss_system_parameters
+target_link_libraries(matio_test
+    PUBLIC
+        Gflags::gflags
+        Glog::glog
+        gnss_rx
+        ${GTEST_LIBRARIES}
+        gnss_system_parameters
+        Matio::matio
 )
+
 add_test(matio_test matio_test)
-if(NOT ${GTEST_DIR_LOCAL})
-    if(MATIO_FOUND)
-        add_dependencies(matio_test gtest-${GNSSSDR_GTEST_LOCAL_VERSION})
-    else()
-        add_dependencies(matio_test gtest-${GNSSSDR_GTEST_LOCAL_VERSION} matio-${GNSSSDR_MATIO_LOCAL_VERSION})
-    endif()
-else()
-    if(MATIO_FOUND)
-        add_dependencies(matio_test gtest)
-    else()
-        add_dependencies(matio_test gtest matio-${GNSSSDR_MATIO_LOCAL_VERSION})
-    endif()
-endif()
+
 set_property(TEST matio_test PROPERTY TIMEOUT 30)
 
 #########################################################
@@ -645,20 +613,25 @@ set_property(TEST matio_test PROPERTY TIMEOUT 30)
 add_executable(acq_test
     ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_test.cc)
-target_link_libraries(acq_test ${Boost_LIBRARIES}
-    ${GFlags_LIBS}
-    ${GLOG_LIBRARIES}
-    ${GTEST_LIBRARIES}
-    ${GNURADIO_RUNTIME_LIBRARIES}
-    ${GNURADIO_BLOCKS_LIBRARIES}
-    ${GNURADIO_FILTER_LIBRARIES}
-    ${GNURADIO_ANALOG_LIBRARIES}
-    gnss_sp_libs
-    gnss_rx
-    gnss_system_parameters
-    signal_generator_blocks
-    signal_processing_testing_lib
-    ${VOLK_GNSSSDR_LIBRARIES})
+target_link_libraries(acq_test
+    PUBLIC
+        ${Boost_LIBRARIES}
+        Gflags::gflags
+        Glog::glog
+        ${GTEST_LIBRARIES}
+        Gnuradio::runtime
+        Gnuradio::blocks
+        Gnuradio::filter
+        Gnuradio::analog
+        gnss_sp_libs
+        gnss_rx
+        gnss_system_parameters
+        signal_generator_blocks
+        acq_adapters
+        signal_processing_testing_lib
+        Volkgnsssdr::volkgnsssdr
+)
+
 add_test(acq_test acq_test)
 if(NOT ${GTEST_DIR_LOCAL})
     add_dependencies(acq_test acq_test gtest-${GNSSSDR_GTEST_LOCAL_VERSION})
@@ -676,19 +649,22 @@ add_executable(trk_test ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/bayesian_estimation_test.cc
 )
 
-target_link_libraries(trk_test ${Boost_LIBRARIES}
-    ${GFlags_LIBS}
-    ${GLOG_LIBRARIES}
-    ${GTEST_LIBRARIES}
-    ${GNURADIO_RUNTIME_LIBRARIES}
-    ${GNURADIO_BLOCKS_LIBRARIES}
-    ${GNURADIO_FILTER_LIBRARIES}
-    ${GNURADIO_ANALOG_LIBRARIES}
-    gnss_sp_libs
-    gnss_rx
-    gnss_system_parameters
-    signal_generator_blocks
-    ${VOLK_GNSSSDR_LIBRARIES}
+target_link_libraries(trk_test
+    PUBLIC
+        ${Boost_LIBRARIES}
+        Gflags::gflags
+        Glog::glog
+        ${GTEST_LIBRARIES}
+        Gnuradio::runtime
+        Gnuradio::blocks
+        Gnuradio::filter
+        Gnuradio::analog
+        gnss_sp_libs
+        gnss_rx
+        tracking_adapters
+        gnss_system_parameters
+        signal_generator_blocks
+        Volkgnsssdr::volkgnsssdr
 )
 add_test(trk_test trk_test)
 if(NOT ${GTEST_DIR_LOCAL})
@@ -708,8 +684,10 @@ if(NOT ENABLE_PACKAGING)
     )
 
     target_link_libraries(control_thread_test ${Boost_LIBRARIES}
-        ${GFlags_LIBS}
-        ${GLOG_LIBRARIES}
+        Gflags::gflags
+        Glog::glog
+        signal_source_adapters
+        gnss_sp_libs
         ${GTEST_LIBRARIES}
         gnss_rx
     )
@@ -726,8 +704,7 @@ endif()
 #########################################################
 
 if(ENABLE_PACKAGING)
-    add_dependencies(check flowgraph_test gnss_block_test
-        gnuradio_block_test acq_test trk_test matio_test)
+    add_dependencies(check matio_test)
 else()
     add_dependencies(check control_thread_test flowgraph_test gnss_block_test
         gnuradio_block_test acq_test trk_test matio_test)

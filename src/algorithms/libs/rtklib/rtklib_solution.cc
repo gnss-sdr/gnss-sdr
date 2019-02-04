@@ -55,6 +55,7 @@
 #include "rtklib_rtkcmn.h"
 #include "rtklib_rtksvr.h"
 #include <cctype>
+#include <cstring>
 
 
 /* constants and macros ------------------------------------------------------*/

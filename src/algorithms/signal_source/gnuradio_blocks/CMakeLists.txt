@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -17,14 +17,7 @@
 #
 
 
-if(ENABLE_RAW_UDP)
-    find_package(PCAP)
-    if(NOT PCAP_FOUND)
-        message(FATAL_ERROR "PCAP required to compile custom UDP packet sample source")
-    endif()
-    get_filename_component(PCAP_LIBRARY_DIRS ${PCAP_LIBRARY} DIRECTORY CACHE)
-    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${PCAP_LIBRARIES})
-    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${PCAP_INCLUDE_DIRS})
+if(ENABLE_RAW_UDP AND PCAP_FOUND)
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} gr_complex_ip_packet_source.cc)
     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} gr_complex_ip_packet_source.h)
 endif()
@@ -55,32 +48,33 @@ set(SIGNAL_SOURCE_GR_BLOCKS_HEADERS
     ${OPT_DRIVER_HEADERS}
 )
 
-
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/libs
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
-    ${OPT_DRIVER_INCLUDE_DIRS}
-)
-
 list(SORT SIGNAL_SOURCE_GR_BLOCKS_HEADERS)
 list(SORT SIGNAL_SOURCE_GR_BLOCKS_SOURCES)
+
+source_group(Headers FILES ${SIGNAL_SOURCE_GR_BLOCKS_HEADERS})
 
 add_library(signal_source_gr_blocks
     ${SIGNAL_SOURCE_GR_BLOCKS_SOURCES}
     ${SIGNAL_SOURCE_GR_BLOCKS_HEADERS}
 )
 
-source_group(Headers FILES ${SIGNAL_SOURCE_GR_BLOCKS_HEADERS})
-
 target_link_libraries(signal_source_gr_blocks
-    signal_source_lib
-    ${GNURADIO_RUNTIME_LIBRARIES}
-    ${Boost_LIBRARIES}
-    ${OPT_LIBRARIES}
+    PUBLIC
+        signal_source_lib
+        Gnuradio::runtime
+        Boost::thread
+    PRIVATE
+        Gflags::gflags
+        Glog::glog
 )
 
-add_dependencies(signal_source_gr_blocks glog-${glog_RELEASE})
+if(ENABLE_RAW_UDP AND PCAP_FOUND)
+    target_link_libraries(signal_source_gr_blocks
+        PUBLIC
+            Pcap::pcap
+    )
+endif()
+
+set_property(TARGET signal_source_gr_blocks APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

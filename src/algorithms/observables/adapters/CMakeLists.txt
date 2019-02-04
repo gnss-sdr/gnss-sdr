@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -24,19 +24,26 @@ set(OBS_ADAPTER_HEADERS
     hybrid_observables.h
 )
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces
-    ${CMAKE_SOURCE_DIR}/src/core/receiver
-    ${CMAKE_SOURCE_DIR}/src/algorithms/observables/gnuradio_blocks
-    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-    ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-)
+source_group(Headers FILES ${OBS_ADAPTER_HEADERS})
 
 add_library(obs_adapters ${OBS_ADAPTER_SOURCES} ${OBS_ADAPTER_HEADERS})
-source_group(Headers FILES ${OBS_ADAPTER_HEADERS})
-target_link_libraries(obs_adapters obs_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES})
+
+target_include_directories(obs_adapters
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+)
+
+target_link_libraries(obs_adapters
+    PUBLIC
+        obs_gr_blocks
+        gnss_rx
+        gnss_sp_libs
+    PRIVATE
+        Gflags::gflags
+        Glog::glog
+)
+
+set_property(TARGET obs_adapters
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

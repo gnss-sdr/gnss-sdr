@@ -34,7 +34,6 @@
 #include "pvt_interface.h"
 #include <armadillo>
 #include <boost/asio.hpp>
-#include <glog/logging.h>
 #include <gnuradio/message.h>
 #include <gnuradio/msg_queue.h>
 #include <algorithm>

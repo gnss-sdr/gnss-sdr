@@ -57,6 +57,7 @@
 #include "rtklib_pntpos.h"
 #include "rtklib_ppp.h"
 #include "rtklib_tides.h"
+#include <cstring>
 
 static int resamb_WLNL(rtk_t *rtk __attribute((unused)), const obsd_t *obs __attribute((unused)), const int *sat __attribute((unused)),
     const int *iu __attribute((unused)), const int *ir __attribute((unused)), int ns __attribute__((unused)), const nav_t *nav __attribute((unused)),

@@ -1,4 +1,4 @@
-# Copyright (C) 2011-2018 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2011-2019 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -14,6 +14,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
+
+#
+# Provides the following imported target:
+# Volk::volk
+#
 
 ########################################################################
 # Find VOLK (Vector-Optimized Library of Kernels)
@@ -74,3 +79,13 @@ find_library(VOLK_LIBRARIES
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(VOLK DEFAULT_MSG VOLK_LIBRARIES VOLK_INCLUDE_DIRS)
 mark_as_advanced(VOLK_LIBRARIES VOLK_INCLUDE_DIRS VOLK_VERSION)
+
+if(VOLK_FOUND AND NOT TARGET Volk::volk)
+    add_library(Volk::volk SHARED IMPORTED)
+    set_target_properties(Volk::volk PROPERTIES
+        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+        IMPORTED_LOCATION "${VOLK_LIBRARIES}"
+        INTERFACE_INCLUDE_DIRECTORIES "${VOLK_INCLUDE_DIRS}"
+        INTERFACE_LINK_LIBRARIES "${VOLK_LIBRARIES}"
+    )
+endif()

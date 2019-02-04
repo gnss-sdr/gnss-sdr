@@ -501,7 +501,7 @@ set(Boost_ADDITIONAL_VERSIONS
 )
 set(Boost_USE_MULTITHREAD ON)
 set(Boost_USE_STATIC_LIBS OFF)
-find_package(Boost COMPONENTS date_time system filesystem thread serialization chrono REQUIRED)
+find_package(Boost COMPONENTS date_time system filesystem thread serialization chrono atomic REQUIRED)
 if(NOT Boost_FOUND)
     message(FATAL_ERROR "Fatal error: Boost (version >=${GNSSSDR_BOOST_MIN_VERSION}) required.")
 endif()
@@ -567,6 +567,15 @@ if(CMAKE_VERSION VERSION_LESS 3.5)
             INTERFACE_LINK_LIBRARIES ${Boost_CHRONO_LIBRARIES})
         set_property(TARGET Boost::chrono PROPERTY
             IMPORTED_LOCATION ${Boost_CHRONO_LIBRARIES})
+    endif()
+    if(NOT TARGET Boost::atomic)
+        add_library(Boost::atomic SHARED IMPORTED)
+        set_property(TARGET Boost::atomic PROPERTY
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
+        set_property(TARGET Boost::atomic PROPERTY
+        INTERFACE_LINK_LIBRARIES ${Boost_ATOMIC_LIBRARIES})
+        set_property(TARGET Boost::atomic PROPERTY
+            IMPORTED_LOCATION ${Boost_ATOMIC_LIBRARIES})
     endif()
 endif()
 

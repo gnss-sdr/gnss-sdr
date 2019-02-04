@@ -40,16 +40,11 @@ target_link_libraries(front_end_cal_lib
         Glog::glog
         Gnuradio::blocks
         Gnuradio::runtime
-        Boost::boost
         Boost::serialization
         Boost::thread
 )
 
 add_executable(front-end-cal ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
-
-add_custom_command(TARGET front-end-cal POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:front-end-cal>
-        ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:front-end-cal>)
 
 target_link_libraries(front-end-cal
     PUBLIC
@@ -69,6 +64,10 @@ target_compile_definitions(front-end-cal
     PUBLIC -DGNSS_SDR_VERSION="${VERSION}"
     PUBLIC -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}"
 )
+
+add_custom_command(TARGET front-end-cal POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:front-end-cal>
+        ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:front-end-cal>)
 
 install(TARGETS front-end-cal
     RUNTIME DESTINATION bin

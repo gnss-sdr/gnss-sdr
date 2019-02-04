@@ -262,6 +262,7 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
       add_library(Gpstk::gpstk SHARED IMPORTED)
       add_dependencies(Gpstk::gpstk gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION})
       file(MAKE_DIRECTORY ${GPSTK_INCLUDE_DIRS})
+      file(MAKE_DIRECTORY ${GPSTK_INCLUDE_DIRS}/gpstk)
       set_target_properties(Gpstk::gpstk PROPERTIES
           IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
           IMPORTED_LOCATION "${GPSTK_LIBRARY}"

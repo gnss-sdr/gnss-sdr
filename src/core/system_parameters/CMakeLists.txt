@@ -115,10 +115,9 @@ target_link_libraries(gnss_system_parameters
         Boost::date_time
         Boost::serialization
         gnss_rx
-        rtklib_lib
-    PRIVATE    
-        Gflags::gflags
         Glog::glog
+    PRIVATE
+        Gflags::gflags
 )
 
 set_property(TARGET gnss_system_parameters

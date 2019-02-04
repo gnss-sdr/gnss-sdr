@@ -32,6 +32,7 @@
  */
 
 #include "gnss_sdr_supl_client.h"
+#include <glog/logging.h>
 #include <pugixml.hpp>
 #include <cmath>
 #include <utility>

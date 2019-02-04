@@ -32,8 +32,6 @@
 #ifndef GNSS_SDR_BEIDOU_DNAV_IONO_H_
 #define GNSS_SDR_BEIDOU_DNAV_IONO_H_
 
-
-#include "boost/assign.hpp"
 #include <boost/serialization/nvp.hpp>
 
 

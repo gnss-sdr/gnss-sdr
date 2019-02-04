@@ -24,9 +24,6 @@ if(ENABLE_RAW_UDP)
     if(NOT PCAP_FOUND)
         message(FATAL_ERROR "PCAP required to compile custom UDP packet sample source (ENABLE_RAW_UDP)")
     endif()
-    get_filename_component(PCAP_LIBRARY_DIRS ${PCAP_LIBRARY} DIRECTORY CACHE)
-    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${PCAP_LIBRARIES})
-    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${PCAP_INCLUDE_DIRS})
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} custom_udp_signal_source.cc)
     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} custom_udp_signal_source.h)
 endif()
@@ -41,8 +38,6 @@ if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
         message(STATUS " * gnuradio-iio from https://github.com/analogdevicesinc/gr-iio")
         message(FATAL_ERROR "gnuradio-iio is required for building gnss-sdr with this option enabled.")
     endif()
-    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${IIO_LIBRARIES})
-    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS})
 endif()
 
 if(ENABLE_AD9361)
@@ -55,8 +50,6 @@ if(ENABLE_AD9361)
         message(STATUS " * gnuradio-iio from https://github.com/analogdevicesinc/gr-iio")
         message(FATAL_ERROR "libiio is required for building gnss-sdr with this option enabled.")
     endif()
-    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${LIBIIO_LIBRARIES})
-    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${LIBIIO_INCLUDE_DIRS})
 endif()
 
 
@@ -154,15 +147,8 @@ if(ENABLE_OSMOSDR)
             list(REMOVE_ITEM SIGNAL_SOURCE_ADAPTER_HEADERS ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/adapters/osmosdr_signal_source.h)
         endif()
     else()
-        # set OSMO include dirs
-        set(OSMO_DRIVER_INCLUDE_DIRS
-            ${OPT_DRIVER_INCLUDE_DIRS}
-            ${GROSMOSDR_INCLUDE_DIR}/osmosdr
-        )
         set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} osmosdr_signal_source.cc)
         set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} osmosdr_signal_source.h)
-        set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GROSMOSDR_LIBRARIES})
-        set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${OSMO_DRIVER_INCLUDE_DIRS})
     endif()
 endif()
 
@@ -170,8 +156,6 @@ endif()
 if(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} uhd_signal_source.cc)
     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} uhd_signal_source.h)
-    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${UHD_LIBRARIES} ${GNURADIO_UHD_LIBRARIES})
-    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${UHD_INCLUDE_DIRS})
 endif()
 
 
@@ -206,13 +190,12 @@ if(PC_GNURADIO_RUNTIME_VERSION VERSION_GREATER 3.7.3)
         two_bit_packed_file_signal_source.h)
 endif()
 
-add_definitions(-DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}")
-
 list(SORT SIGNAL_SOURCE_ADAPTER_HEADERS)
 list(SORT SIGNAL_SOURCE_ADAPTER_SOURCES)
 
-add_library(signal_source_adapters ${SIGNAL_SOURCE_ADAPTER_SOURCES} ${SIGNAL_SOURCE_ADAPTER_HEADERS})
 source_group(Headers FILES ${SIGNAL_SOURCE_ADAPTER_HEADERS})
+
+add_library(signal_source_adapters ${SIGNAL_SOURCE_ADAPTER_SOURCES} ${SIGNAL_SOURCE_ADAPTER_HEADERS})
 
 target_include_directories(signal_source_adapters PUBLIC ${CMAKE_SOURCE_DIR}/src/algorithms/libs)
 
@@ -231,6 +214,38 @@ target_link_libraries(signal_source_adapters
         Glog::glog
         Volk::volk
 )
+
+if(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
+    target_link_libraries(signal_source_adapters
+        PUBLIC
+            Gnuradio::uhd
+        PRIVATE
+            Uhd::uhd
+    )
+endif()
+
+if(ENABLE_OSMOSDR AND GROSMOSDR_FOUND)
+    target_link_libraries(signal_source_adapters
+        PUBLIC
+            Gnuradio::osmosdr
+        PRIVATE
+            Osmosdr::osmosdr
+    )
+endif()
+
+if(ENABLE_AD9361 AND LIBIIO_FOUND)
+    target_link_libraries(signal_source_adapters
+        PRIVATE
+            Osmosdr::osmosdr
+    )
+endif()
+
+if(ENABLE_RAW_UDP AND PCAP_FOUND)
+    target_link_libraries(signal_source_adapters
+        PRIVATE
+            Pcap::pcap
+    )
+endif()
 
 target_compile_definitions(signal_source_adapters PRIVATE -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}")
 

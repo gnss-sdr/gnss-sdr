@@ -26,27 +26,18 @@ if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
             message(STATUS " * gnuradio-iio from https://github.com/analogdevicesinc/gr-iio")
             message(FATAL_ERROR "gnuradio-iio is required for building gnss-sdr with this option enabled")
         endif()
-    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${IIO_LIBRARIES})
-    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS})
 endif()
 
 if(ENABLE_FMCOMMS2 OR ENABLE_AD9361)
     find_package(LIBIIO REQUIRED)
-        if(NOT LIBIIO_FOUND)
-            message(STATUS "libiio not found, its installation is required.")
-            message(STATUS "Please build and install the following projects:")
-            message(STATUS " * libiio from https://github.com/analogdevicesinc/libiio")
-            message(STATUS " * libad9361-iio from https://github.com/analogdevicesinc/libad9361-iio")
-            message(STATUS " * gnuradio-iio from https://github.com/analogdevicesinc/gr-iio")
-            message(FATAL_ERROR "libiio is required for building gnss-sdr with this option enabled")
-        endif()
-    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${LIBIIO_LIBRARIES})
-    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${LIBIIO_INCLUDE_DIRS})
-
-    ###############################################
-    # FMCOMMS2 based SDR Hardware
-    ###############################################
-    if(LIBIIO_FOUND)
+    if(NOT LIBIIO_FOUND)
+        message(STATUS "libiio not found, its installation is required.")
+        message(STATUS "Please build and install the following projects:")
+        message(STATUS " * libiio from https://github.com/analogdevicesinc/libiio")
+        message(STATUS " * libad9361-iio from https://github.com/analogdevicesinc/libad9361-iio")
+        message(STATUS " * gnuradio-iio from https://github.com/analogdevicesinc/gr-iio")
+        message(FATAL_ERROR "libiio is required for building gnss-sdr with this option enabled")
+    else()
         set(OPT_SIGNAL_SOURCE_LIB_SOURCES ad9361_manager.cc)
         set(OPT_SIGNAL_SOURCE_LIB_HEADERS ad9361_manager.h)
     endif()
@@ -79,14 +70,26 @@ source_group(Headers FILES ${SIGNAL_SOURCE_LIB_HEADERS})
 target_link_libraries(signal_source_lib
     PUBLIC
         Boost::boost
-        ${OPT_LIBRARIES}
     PRIVATE
         Glog::glog
 )
 
-target_include_directories(signal_source_lib PUBLIC ${OPT_DRIVER_INCLUDE_DIRS})
+if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
+    target_link_libraries(signal_source_lib
+        PUBLIC
+            Gnuradio::iio
+        PRIVATE
+            Iio::iio
+    )
+endif()
+
+if(ENABLE_FMCOMMS2 OR ENABLE_AD9361)
+    target_link_libraries(signal_source_lib
+        PUBLIC
+            Iio::iio
+    )
+endif()
 
 set_property(TARGET signal_source_lib APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-    $<BUILD_INTERFACE:${OPT_DRIVER_INCLUDE_DIRS}>
 )

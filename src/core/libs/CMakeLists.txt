@@ -44,11 +44,10 @@ target_link_libraries(rx_core_lib
         supl_library
         gnss_system_parameters
         Boost::boost
-        Glog::glog
     PRIVATE
+        Glog::glog
         Boost::serialization
         Pugixml::pugixml
-        Gflags::gflags
 )
 
 set_property(TARGET rx_core_lib

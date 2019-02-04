@@ -50,6 +50,9 @@
  *
  *----------------------------------------------------------------------------*/
 
+#include "rtklib_stream.h"
+#include "rtklib_rtkcmn.h"
+#include "rtklib_solution.h"
 #include <arpa/inet.h>
 #include <cctype>
 #include <cerrno>
@@ -57,9 +60,6 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <netinet/tcp.h>
-#include <rtklib_rtkcmn.h>
-#include <rtklib_solution.h>
-#include <rtklib_stream.h>
 #include <string>
 #include <sys/socket.h>
 #include <sys/stat.h>

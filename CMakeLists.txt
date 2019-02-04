@@ -1488,6 +1488,17 @@ if(ENABLE_UHD)
     else()
         set(GR_REQUIRED_COMPONENTS UHD)
         find_package(Gnuradio)
+        if(NOT TARGET Gnuradio::uhd)
+            add_library(Gnuradio::uhd SHARED IMPORTED)
+            list(GET GNURADIO_UHD_LIBRARIES 0 FIRST_DIR)
+            get_filename_component(GNURADIO_UHD_DIR ${FIRST_DIR} ABSOLUTE)
+            set_target_properties(Gnuradio::uhd PROPERTIES
+              IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+              IMPORTED_LOCATION "${GNURADIO_UHD_DIR}"
+              INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_UHD_INCLUDE_DIRS}"
+              INTERFACE_LINK_LIBRARIES "${GNURADIO_UHD_LIBRARIES}"
+            )
+        endif()
     endif()
 endif()
 

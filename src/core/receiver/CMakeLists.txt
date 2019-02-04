@@ -40,25 +40,6 @@ set(GNSS_RECEIVER_HEADERS
     control_message.h
 )
 
-
-if(ENABLE_PLUTOSDR)
-    set(OPT_RECEIVER_INCLUDE_DIRS
-        ${OPT_RECEIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS}
-    )
-endif()
-
-if(ENABLE_FMCOMMS2)
-    set(OPT_RECEIVER_INCLUDE_DIRS
-        ${OPT_RECEIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS}
-    )
-endif()
-
-if(ENABLE_AD9361)
-    set(OPT_RECEIVER_INCLUDE_DIRS
-        ${OPT_RECEIVER_INCLUDE_DIRS} ${IIO_INCLUDE_DIRS}
-    )
-endif()
-
 if(ENABLE_CUDA)
     set(OPT_RECEIVER_INCLUDE_DIRS
         ${OPT_RECEIVER_INCLUDE_DIRS} ${CUDA_INCLUDE_DIRS}
@@ -95,68 +76,64 @@ if(ENABLE_FPGA)
 endif()
 
 if(ENABLE_RAW_UDP)
-    target_compile_definitions(gnss_rx PUBLIC -DRAW_UDP=1)
+    target_compile_definitions(gnss_rx PRIVATE -DRAW_UDP=1)
 endif()
 
 if(Boost_VERSION LESS 105000)
-    target_compile_definitions(gnss_rx PUBLIC -DOLD_BOOST=1)
-endif()
-
-if(OPENSSL_FOUND)
-    target_compile_definitions(gnss_rx PUBLIC -DUSE_OPENSSL_FALLBACK=1)
+    target_compile_definitions(gnss_rx PRIVATE -DOLD_BOOST=1)
 endif()
 
 if(PC_GNURADIO_RUNTIME_VERSION VERSION_GREATER 3.7.3)
-    target_compile_definitions(gnss_rx PUBLIC -DMODERN_GNURADIO=1)
+    target_compile_definitions(gnss_rx PRIVATE -DMODERN_GNURADIO=1)
 endif()
 
 if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13.4")
-    target_compile_definitions(gnss_rx PUBLIC -DGR_GREATER_38=1)
+    target_compile_definitions(gnss_rx PRIVATE -DGR_GREATER_38=1)
 endif()
 
 if(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
-    target_compile_definitions(gnss_rx PUBLIC -DUHD_DRIVER=1)
+    target_compile_definitions(gnss_rx PRIVATE -DUHD_DRIVER=1)
 endif()
 
 if(ENABLE_PLUTOSDR)
-    target_compile_definitions(gnss_rx PUBLIC -DPLUTOSDR_DRIVER=1)
+    target_compile_definitions(gnss_rx PRIVATE -DPLUTOSDR_DRIVER=1)
 endif()
 
 if(ENABLE_FMCOMMS2)
-    target_compile_definitions(gnss_rx PUBLIC -DFMCOMMS2_DRIVER=1)
+    target_compile_definitions(gnss_rx PRIVATE -DFMCOMMS2_DRIVER=1)
 endif()
 
 if(ENABLE_AD9361)
-    target_compile_definitions(gnss_rx PUBLIC -DAD9361_DRIVER=1)
+    target_compile_definitions(gnss_rx PRIVATE -DAD9361_DRIVER=1)
 endif()
 
 if(ENABLE_OSMOSDR)
     if(GROSMOSDR_FOUND)
-        target_compile_definitions(gnss_rx PUBLIC -DOSMOSDR_DRIVER=1)
+        target_compile_definitions(gnss_rx PRIVATE -DOSMOSDR_DRIVER=1)
     endif()
 endif()
 
 if(ENABLE_GN3S)
-    target_compile_definitions(gnss_rx PUBLIC -DGN3S_DRIVER=1)
+    target_compile_definitions(gnss_rx PRIVATE -DGN3S_DRIVER=1)
 endif()
 
 if(ENABLE_ARRAY)
-    target_compile_definitions(gnss_rx PUBLIC -DRAW_ARRAY_DRIVER=1)
+    target_compile_definitions(gnss_rx PRIVATE -DRAW_ARRAY_DRIVER=1)
 endif()
 
-if(ENABLE_FLEXIBAND)
-    target_compile_definitions(gnss_rx PUBLIC -DFLEXIBAND_DRIVER=1)
-endif()
+#if(ENABLE_FLEXIBAND)
+#    target_compile_definitions(gnss_rx PRIVATE -DFLEXIBAND_DRIVER=1)
+#endif()
 
 if(OPENCL_FOUND)
     message(STATUS "Adding processing blocks implemented using OpenCL")
-    target_compile_definitions(gnss_rx PUBLIC -DOPENCL_BLOCKS=1)
+    target_compile_definitions(gnss_rx PRIVATE -DOPENCL_BLOCKS=1)
 else()
-    target_compile_definitions(gnss_rx PUBLIC -DOPENCL_BLOCKS=0)
+    target_compile_definitions(gnss_rx PRIVATE -DOPENCL_BLOCKS=0)
 endif()
 
 if(ENABLE_CUDA)
-    target_compile_definitions(gnss_rx PUBLIC -DCUDA_GPU_ACCEL=1)
+    target_compile_definitions(gnss_rx PRIVATE -DCUDA_GPU_ACCEL=1)
 endif()
 
 
@@ -184,6 +161,13 @@ target_link_libraries(gnss_rx
         pvt_adapters
         Volkgnsssdr::volkgnsssdr
 )
+
+if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2 OR ENABLE_AD9361)
+    target_link_libraries(gnss_rx
+        PRIVATE
+            Iio::iio
+    )
+endif()
 
 set_property(TARGET gnss_rx APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/core/receiver>

@@ -57,7 +57,6 @@ extern "C"
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/serialization/map.hpp>
-#include <glog/logging.h>
 #include <fstream>
 #include <map>
 #include <string>

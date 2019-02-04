@@ -559,6 +559,19 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
 
     d_last_status_print_seg = 0;
 
+    // PVT MONITOR
+    flag_monitor_pvt_enabled = conf_.monitor_enabled;
+    if (flag_monitor_pvt_enabled)
+        {
+            std::string address_string = conf_.udp_addresses;
+            std::vector<std::string> udp_addr_vec = split_string(address_string, '_');
+            std::sort(udp_addr_vec.begin(), udp_addr_vec.end());
+            udp_addr_vec.erase(std::unique(udp_addr_vec.begin(), udp_addr_vec.end()), udp_addr_vec.end());
+
+            udp_sink_ptr = std::unique_ptr<Monitor_Pvt_Udp_Sink>(new Monitor_Pvt_Udp_Sink(udp_addr_vec, conf_.udp_port));
+        }
+
+
     // Create Sys V message queue
     first_fix = true;
     sysv_msg_key = 1101;
@@ -3086,8 +3099,29 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                          << d_pvt_solver->get_vdop()
                                          << " GDOP = " << d_pvt_solver->get_gdop() << std::endl; */
                         }
+
+                    // PVT MONITOR
+                    if (d_pvt_solver->is_valid_position() and flag_monitor_pvt_enabled)
+                        {
+                            Monitor_Pvt monitor_pvt = d_pvt_solver->get_monitor_pvt();
+                            udp_sink_ptr->write_monitor_pvt(monitor_pvt);
+                        }
                 }
         }
 
     return noutput_items;
+}
+
+std::vector<std::string> rtklib_pvt_cc::split_string(const std::string& s, char delim)
+{
+    std::vector<std::string> v;
+    std::stringstream ss(s);
+    std::string item;
+
+    while (std::getline(ss, item, delim))
+        {
+            *(std::back_inserter(v)++) = item;
+        }
+
+    return v;
 }

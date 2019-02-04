@@ -520,6 +520,11 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     pvt_output_parameters.nmea_output_file_path = configuration->property(role + ".nmea_output_file_path", default_output_path);
     pvt_output_parameters.rtcm_output_file_path = configuration->property(role + ".rtcm_output_file_path", default_output_path);
 
+    // Read PVT MONITOR Configuration
+    pvt_output_parameters.monitor_enabled = configuration->property(role + ".enable_monitor", false);
+    pvt_output_parameters.udp_addresses = configuration->property(role + ".monitor_client_addresses", std::string("127.0.0.1"));
+    pvt_output_parameters.udp_port = configuration->property(role + ".monitor_udp_port", 1234);
+
     // make PVT object
     pvt_ = rtklib_make_pvt_cc(in_streams_, pvt_output_parameters, rtk);
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";

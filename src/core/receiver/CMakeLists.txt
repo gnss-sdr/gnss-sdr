@@ -143,6 +143,7 @@ target_link_libraries(gnss_rx
         rx_core_lib
         core_monitor_lib
     PRIVATE
+        Boost::chrono
         Gflags::gflags
         Glog::glog
         signal_source_adapters

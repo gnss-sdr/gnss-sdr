@@ -72,7 +72,7 @@ private:
         const Pvt_Conf& conf_,
         const rtk_t& rtk);
 
-    void msg_handler_telemetry(pmt::pmt_t msg);
+    void msg_handler_telemetry(const pmt::pmt_t& msg);
 
     bool d_dump;
     bool d_dump_mat;

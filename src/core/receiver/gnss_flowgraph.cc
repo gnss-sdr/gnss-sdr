@@ -66,8 +66,8 @@ GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configurati
 {
     connected_ = false;
     running_ = false;
-    configuration_ = configuration;
-    queue_ = std::move(queue);
+    configuration_ = std::move(configuration);
+    queue_ = queue;
     init();
 }
 
@@ -1344,11 +1344,11 @@ void GNSSFlowgraph::priorize_satellites(std::vector<std::pair<int, Gnss_Satellit
 {
     size_t old_size;
     Gnss_Signal gs;
-    for (std::vector<std::pair<int, Gnss_Satellite>>::iterator it = visible_satellites.begin(); it != visible_satellites.end(); ++it)
+    for (auto & visible_satellite : visible_satellites)
         {
-            if (it->second.get_system() == "GPS")
+            if (visible_satellite.second.get_system() == "GPS")
                 {
-                    gs = Gnss_Signal(it->second, "1C");
+                    gs = Gnss_Signal(visible_satellite.second, "1C");
                     old_size = available_GPS_1C_signals_.size();
                     available_GPS_1C_signals_.remove(gs);
                     if (old_size > available_GPS_1C_signals_.size())
@@ -1356,7 +1356,7 @@ void GNSSFlowgraph::priorize_satellites(std::vector<std::pair<int, Gnss_Satellit
                             available_GPS_1C_signals_.push_front(gs);
                         }
 
-                    gs = Gnss_Signal(it->second, "2S");
+                    gs = Gnss_Signal(visible_satellite.second, "2S");
                     old_size = available_GPS_2S_signals_.size();
                     available_GPS_2S_signals_.remove(gs);
                     if (old_size > available_GPS_2S_signals_.size())
@@ -1364,7 +1364,7 @@ void GNSSFlowgraph::priorize_satellites(std::vector<std::pair<int, Gnss_Satellit
                             available_GPS_2S_signals_.push_front(gs);
                         }
 
-                    gs = Gnss_Signal(it->second, "L5");
+                    gs = Gnss_Signal(visible_satellite.second, "L5");
                     old_size = available_GPS_L5_signals_.size();
                     available_GPS_L5_signals_.remove(gs);
                     if (old_size > available_GPS_L5_signals_.size())
@@ -1372,9 +1372,9 @@ void GNSSFlowgraph::priorize_satellites(std::vector<std::pair<int, Gnss_Satellit
                             available_GPS_L5_signals_.push_front(gs);
                         }
                 }
-            else if (it->second.get_system() == "Galileo")
+            else if (visible_satellite.second.get_system() == "Galileo")
                 {
-                    gs = Gnss_Signal(it->second, "1B");
+                    gs = Gnss_Signal(visible_satellite.second, "1B");
                     old_size = available_GAL_1B_signals_.size();
                     available_GAL_1B_signals_.remove(gs);
                     if (old_size > available_GAL_1B_signals_.size())
@@ -1382,7 +1382,7 @@ void GNSSFlowgraph::priorize_satellites(std::vector<std::pair<int, Gnss_Satellit
                             available_GAL_1B_signals_.push_front(gs);
                         }
 
-                    gs = Gnss_Signal(it->second, "5X");
+                    gs = Gnss_Signal(visible_satellite.second, "5X");
                     old_size = available_GAL_5X_signals_.size();
                     available_GAL_5X_signals_.remove(gs);
                     if (old_size > available_GAL_5X_signals_.size())
@@ -1405,7 +1405,7 @@ void GNSSFlowgraph::set_configuration(std::shared_ptr<ConfigurationInterface> co
         {
             LOG(WARNING) << "Unable to update configuration while flowgraph connected";
         }
-    configuration_ = configuration;
+    configuration_ = std::move(configuration);
 }
 
 
@@ -1574,7 +1574,7 @@ void GNSSFlowgraph::set_signals_list()
             std::transform(tok.begin(), tok.end(), std::inserter(tmp_set, tmp_set.begin()),
                 boost::lexical_cast<unsigned int, std::string>);
 
-            if (tmp_set.size() > 0)
+            if (!tmp_set.empty())
                 {
                     available_galileo_prn = tmp_set;
                 }
@@ -1590,7 +1590,7 @@ void GNSSFlowgraph::set_signals_list()
             std::transform(tok.begin(), tok.end(), std::inserter(tmp_set, tmp_set.begin()),
                 boost::lexical_cast<unsigned int, std::string>);
 
-            if (tmp_set.size() > 0)
+            if (!tmp_set.empty())
                 {
                     available_gps_prn = tmp_set;
                 }
@@ -1606,7 +1606,7 @@ void GNSSFlowgraph::set_signals_list()
             std::transform(tok.begin(), tok.end(), std::inserter(tmp_set, tmp_set.begin()),
                 boost::lexical_cast<unsigned int, std::string>);
 
-            if (tmp_set.size() > 0)
+            if (!tmp_set.empty())
                 {
                     available_sbas_prn = tmp_set;
                 }
@@ -1622,7 +1622,7 @@ void GNSSFlowgraph::set_signals_list()
             std::transform(tok.begin(), tok.end(), std::inserter(tmp_set, tmp_set.begin()),
                 boost::lexical_cast<unsigned int, std::string>);
 
-            if (tmp_set.size() > 0)
+            if (!tmp_set.empty())
                 {
                     available_glonass_prn = tmp_set;
                 }
@@ -1638,7 +1638,7 @@ void GNSSFlowgraph::set_signals_list()
             std::transform(tok.begin(), tok.end(), std::inserter(tmp_set, tmp_set.begin()),
                 boost::lexical_cast<unsigned int, std::string>);
 
-            if (tmp_set.size() > 0)
+            if (!tmp_set.empty())
                 {
                     available_beidou_prn = tmp_set;
                 }

@@ -94,7 +94,7 @@ ControlThread::ControlThread()
 
 ControlThread::ControlThread(std::shared_ptr<ConfigurationInterface> configuration)
 {
-    configuration_ = configuration;
+    configuration_ = std::move(configuration);
     delete_configuration_ = false;
     restart_ = false;
     init();
@@ -129,7 +129,7 @@ void ControlThread::init()
     std::string empty_string = "";
     std::string ref_location_str = configuration_->property("GNSS-SDR.AGNSS_ref_location", empty_string);
     std::string ref_time_str = configuration_->property("GNSS-SDR.AGNSS_ref_utc_time", empty_string);
-    if (ref_location_str.compare(empty_string) != 0)
+    if (ref_location_str != empty_string)
         {
             std::vector<double> vect;
             std::stringstream ss(ref_location_str);
@@ -156,7 +156,7 @@ void ControlThread::init()
                         }
                 }
         }
-    if (ref_time_str.compare(empty_string) == 0)
+    if (ref_time_str == empty_string)
         {
             // Make an educated guess
             time_t rawtime;
@@ -191,7 +191,7 @@ void ControlThread::init()
 
 ControlThread::~ControlThread()  // NOLINT(modernize-use-equals-default)
 {
-    if (msqid != -1) msgctl(msqid, IPC_RMID, NULL);
+    if (msqid != -1) msgctl(msqid, IPC_RMID, nullptr);
 }
 
 
@@ -269,7 +269,7 @@ int ControlThread::run()
         {
             //TODO re-enable the blocking read messages functions and fork the process
             read_control_messages();
-            if (control_messages_ != 0) process_control_messages();
+            if (control_messages_ != nullptr) process_control_messages();
         }
     std::cout << "Stopping GNSS-SDR, please wait!" << std::endl;
     flowgraph_->stop();
@@ -299,7 +299,7 @@ void ControlThread::set_control_queue(const gr::msg_queue::sptr &control_queue)
             LOG(WARNING) << "Unable to set control queue while flowgraph is running";
             return;
         }
-    control_queue_ = std::move(control_queue);
+    control_queue_ = control_queue;
     cmd_interface_.set_msg_queue(control_queue_);
 }
 
@@ -762,7 +762,7 @@ void ControlThread::read_control_messages()
 {
     DLOG(INFO) << "Reading control messages from queue";
     gr::message::sptr queue_message = control_queue_->delete_head();
-    if (queue_message != 0)
+    if (queue_message != nullptr)
         {
             control_messages_ = control_message_factory_->GetControlMessages(queue_message);
         }
@@ -776,20 +776,20 @@ void ControlThread::read_control_messages()
 // Apply the corresponding control actions
 void ControlThread::process_control_messages()
 {
-    for (unsigned int i = 0; i < control_messages_->size(); i++)
+    for (auto & i : *control_messages_)
         {
             if (stop_) break;
-            if (control_messages_->at(i)->who == 200)
+            if (i->who == 200)
                 {
-                    apply_action(control_messages_->at(i)->what);
+                    apply_action(i->what);
                 }
             else
                 {
-                    if (control_messages_->at(i)->who == 300)  // some TC commands require also actions from control_thread
+                    if (i->who == 300)  // some TC commands require also actions from control_thread
                         {
-                            apply_action(control_messages_->at(i)->what);
+                            apply_action(i->what);
                         }
-                    flowgraph_->apply_action(control_messages_->at(i)->who, control_messages_->at(i)->what);
+                    flowgraph_->apply_action(i->who, i->what);
                 }
             processed_control_messages_++;
         }
@@ -881,9 +881,9 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
               << "UTC, assuming RX position " << LLH(0) << " [deg], " << LLH(1) << " [deg], " << LLH(2) << " [m]" << std::endl;
 
     std::map<int, Gps_Ephemeris> gps_eph_map = pvt_ptr->get_gps_ephemeris();
-    for (std::map<int, Gps_Ephemeris>::iterator it = gps_eph_map.begin(); it != gps_eph_map.end(); ++it)
+    for (auto & it : gps_eph_map)
         {
-            eph_t rtklib_eph = eph_to_rtklib(it->second);
+            eph_t rtklib_eph = eph_to_rtklib(it.second);
             double r_sat[3];
             double clock_bias_s;
             double sat_pos_variance_m2;
@@ -896,17 +896,17 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
             // push sat
             if (El > 0)
                 {
-                    std::cout << "Using GPS Ephemeris: Sat " << it->second.i_satellite_PRN << " Az: " << Az << " El: " << El << std::endl;
+                    std::cout << "Using GPS Ephemeris: Sat " << it.second.i_satellite_PRN << " Az: " << Az << " El: " << El << std::endl;
                     available_satellites.push_back(std::pair<int, Gnss_Satellite>(floor(El),
-                        (Gnss_Satellite(std::string("GPS"), it->second.i_satellite_PRN))));
-                    visible_gps.push_back(it->second.i_satellite_PRN);
+                        (Gnss_Satellite(std::string("GPS"), it.second.i_satellite_PRN))));
+                    visible_gps.push_back(it.second.i_satellite_PRN);
                 }
         }
 
     std::map<int, Galileo_Ephemeris> gal_eph_map = pvt_ptr->get_galileo_ephemeris();
-    for (std::map<int, Galileo_Ephemeris>::iterator it = gal_eph_map.begin(); it != gal_eph_map.end(); ++it)
+    for (auto & it : gal_eph_map)
         {
-            eph_t rtklib_eph = eph_to_rtklib(it->second);
+            eph_t rtklib_eph = eph_to_rtklib(it.second);
             double r_sat[3];
             double clock_bias_s;
             double sat_pos_variance_m2;
@@ -919,17 +919,17 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
             // push sat
             if (El > 0)
                 {
-                    std::cout << "Using Galileo Ephemeris: Sat " << it->second.i_satellite_PRN << " Az: " << Az << " El: " << El << std::endl;
+                    std::cout << "Using Galileo Ephemeris: Sat " << it.second.i_satellite_PRN << " Az: " << Az << " El: " << El << std::endl;
                     available_satellites.push_back(std::pair<int, Gnss_Satellite>(floor(El),
-                        (Gnss_Satellite(std::string("Galileo"), it->second.i_satellite_PRN))));
-                    visible_gal.push_back(it->second.i_satellite_PRN);
+                        (Gnss_Satellite(std::string("Galileo"), it.second.i_satellite_PRN))));
+                    visible_gal.push_back(it.second.i_satellite_PRN);
                 }
         }
 
     std::map<int, Gps_Almanac> gps_alm_map = pvt_ptr->get_gps_almanac();
-    for (std::map<int, Gps_Almanac>::iterator it = gps_alm_map.begin(); it != gps_alm_map.end(); ++it)
+    for (auto & it : gps_alm_map)
         {
-            alm_t rtklib_alm = alm_to_rtklib(it->second);
+            alm_t rtklib_alm = alm_to_rtklib(it.second);
             double r_sat[3];
             double clock_bias_s;
             gtime_t aux_gtime;
@@ -943,20 +943,20 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
             std::vector<unsigned int>::iterator it2;
             if (El > 0)
                 {
-                    it2 = std::find(visible_gps.begin(), visible_gps.end(), it->second.i_satellite_PRN);
+                    it2 = std::find(visible_gps.begin(), visible_gps.end(), it.second.i_satellite_PRN);
                     if (it2 == visible_gps.end())
                         {
-                            std::cout << "Using GPS Almanac:  Sat " << it->second.i_satellite_PRN << " Az: " << Az << " El: " << El << std::endl;
+                            std::cout << "Using GPS Almanac:  Sat " << it.second.i_satellite_PRN << " Az: " << Az << " El: " << El << std::endl;
                             available_satellites.push_back(std::pair<int, Gnss_Satellite>(floor(El),
-                                (Gnss_Satellite(std::string("GPS"), it->second.i_satellite_PRN))));
+                                (Gnss_Satellite(std::string("GPS"), it.second.i_satellite_PRN))));
                         }
                 }
         }
 
     std::map<int, Galileo_Almanac> gal_alm_map = pvt_ptr->get_galileo_almanac();
-    for (std::map<int, Galileo_Almanac>::iterator it = gal_alm_map.begin(); it != gal_alm_map.end(); ++it)
+    for (auto & it : gal_alm_map)
         {
-            alm_t rtklib_alm = alm_to_rtklib(it->second);
+            alm_t rtklib_alm = alm_to_rtklib(it.second);
             double r_sat[3];
             double clock_bias_s;
             gtime_t gal_gtime;
@@ -970,12 +970,12 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
             std::vector<unsigned int>::iterator it2;
             if (El > 0)
                 {
-                    it2 = std::find(visible_gal.begin(), visible_gal.end(), it->second.i_satellite_PRN);
+                    it2 = std::find(visible_gal.begin(), visible_gal.end(), it.second.i_satellite_PRN);
                     if (it2 == visible_gal.end())
                         {
-                            std::cout << "Using Galileo Almanac:  Sat " << it->second.i_satellite_PRN << " Az: " << Az << " El: " << El << std::endl;
+                            std::cout << "Using Galileo Almanac:  Sat " << it.second.i_satellite_PRN << " Az: " << Az << " El: " << El << std::endl;
                             available_satellites.push_back(std::pair<int, Gnss_Satellite>(floor(El),
-                                (Gnss_Satellite(std::string("Galileo"), it->second.i_satellite_PRN))));
+                                (Gnss_Satellite(std::string("Galileo"), it.second.i_satellite_PRN))));
                         }
                 }
         }

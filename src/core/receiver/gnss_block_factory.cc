@@ -169,6 +169,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <utility>
 
 
 using google::LogMessage;
@@ -181,7 +182,7 @@ GNSSBlockFactory::~GNSSBlockFactory() = default;
 
 
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalSource(
-    std::shared_ptr<ConfigurationInterface> configuration, gr::msg_queue::sptr queue, int ID)
+    const std::shared_ptr<ConfigurationInterface>& configuration, gr::msg_queue::sptr queue, int ID)
 {
     std::string default_implementation = "File_Signal_Source";
     std::string role = "SignalSource";  //backwards compatibility for old conf files
@@ -198,12 +199,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalSource(
         }
     std::string implementation = configuration->property(role + ".implementation", default_implementation);
     LOG(INFO) << "Getting SignalSource with implementation " << implementation;
-    return GetBlock(configuration, role, implementation, 0, 1, queue);
+    return GetBlock(configuration, role, implementation, 0, 1, std::move(queue));
 }
 
 
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
-    std::shared_ptr<ConfigurationInterface> configuration, int ID)
+    const std::shared_ptr<ConfigurationInterface>& configuration, int ID)
 {
     std::string default_implementation = "Pass_Through";
     //backwards compatibility for old conf files
@@ -271,7 +272,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
 }
 
 
-std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(std::shared_ptr<ConfigurationInterface> configuration)
+std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(const std::shared_ptr<ConfigurationInterface>& configuration)
 {
     std::string default_implementation = "Hybrid_Observables";
     std::string implementation = configuration->property("Observables.implementation", default_implementation);
@@ -298,7 +299,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(std::shared
 }
 
 
-std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(std::shared_ptr<ConfigurationInterface> configuration)
+std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(const std::shared_ptr<ConfigurationInterface>& configuration)
 {
     std::string default_implementation = "RTKLIB_PVT";
     std::string implementation = configuration->property("PVT.implementation", default_implementation);
@@ -318,8 +319,8 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(std::shared_ptr<Con
 
 //********* GPS L1 C/A CHANNEL *****************
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1C(
-    std::shared_ptr<ConfigurationInterface> configuration,
-    std::string acq, std::string trk, std::string tlm, int channel,
+    const std::shared_ptr<ConfigurationInterface>& configuration,
+    const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
     gr::msg_queue::sptr queue)
 {
     //"appendix" is added to the "role" with the aim of Acquisition, Tracking and Telemetry Decoder adapters
@@ -378,7 +379,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1C(
         std::move(acq_),
         std::move(trk_),
         std::move(tlm_),
-        "Channel", "1C", queue));
+        "Channel", "1C", std::move(queue)));
 
     return channel_;
 }
@@ -386,8 +387,8 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1C(
 
 //********* GPS L2C (M) CHANNEL *****************
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2S(
-    std::shared_ptr<ConfigurationInterface> configuration,
-    std::string acq, std::string trk, std::string tlm, int channel,
+    const std::shared_ptr<ConfigurationInterface>& configuration,
+    const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
     gr::msg_queue::sptr queue)
 {
     LOG(INFO) << "Instantiating Channel " << channel << " with Acquisition Implementation: "
@@ -442,7 +443,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2S(
         std::move(acq_),
         std::move(trk_),
         std::move(tlm_),
-        "Channel", "2S", queue));
+        "Channel", "2S", std::move(queue)));
 
     return channel_;
 }
@@ -450,8 +451,8 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2S(
 
 //********* GALILEO E1 B CHANNEL *****************
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1B(
-    std::shared_ptr<ConfigurationInterface> configuration,
-    std::string acq, std::string trk, std::string tlm, int channel,
+    const std::shared_ptr<ConfigurationInterface>& configuration,
+    const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
     gr::msg_queue::sptr queue)
 {
     std::stringstream stream;
@@ -509,7 +510,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1B(
         std::move(acq_),
         std::move(trk_),
         std::move(tlm_),
-        "Channel", "1B", queue));
+        "Channel", "1B", std::move(queue)));
 
     return channel_;
 }
@@ -517,8 +518,8 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1B(
 
 //********* GALILEO E5a  CHANNEL *****************
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_5X(
-    std::shared_ptr<ConfigurationInterface> configuration,
-    std::string acq, std::string trk, std::string tlm, int channel,
+    const std::shared_ptr<ConfigurationInterface>& configuration,
+    const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
     gr::msg_queue::sptr queue)
 {
     std::stringstream stream;
@@ -576,7 +577,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_5X(
         std::move(acq_),
         std::move(trk_),
         std::move(tlm_),
-        "Channel", "5X", queue));
+        "Channel", "5X", std::move(queue)));
 
     return channel_;
 }
@@ -584,8 +585,8 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_5X(
 
 //********* GLONASS L1 C/A CHANNEL *****************
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1G(
-    std::shared_ptr<ConfigurationInterface> configuration,
-    std::string acq, std::string trk, std::string tlm, int channel,
+    const std::shared_ptr<ConfigurationInterface>& configuration,
+    const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
     boost::shared_ptr<gr::msg_queue> queue)
 {
     std::stringstream stream;
@@ -644,7 +645,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1G(
         std::move(acq_),
         std::move(trk_),
         std::move(tlm_),
-        "Channel", "1G", queue));
+        "Channel", "1G", std::move(queue)));
 
     return channel_;
 }
@@ -652,8 +653,8 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1G(
 
 //********* GLONASS L2 C/A CHANNEL *****************
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2G(
-    std::shared_ptr<ConfigurationInterface> configuration,
-    std::string acq, std::string trk, std::string tlm, int channel,
+    const std::shared_ptr<ConfigurationInterface>& configuration,
+    const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
     boost::shared_ptr<gr::msg_queue> queue)
 {
     std::stringstream stream;
@@ -712,7 +713,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2G(
         std::move(acq_),
         std::move(trk_),
         std::move(tlm_),
-        "Channel", "2G", queue));
+        "Channel", "2G", std::move(queue)));
 
     return channel_;
 }
@@ -720,8 +721,8 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2G(
 
 //********* GPS L5  CHANNEL *****************
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_L5(
-    std::shared_ptr<ConfigurationInterface> configuration,
-    std::string acq, std::string trk, std::string tlm, int channel,
+    const std::shared_ptr<ConfigurationInterface>& configuration,
+    const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
     gr::msg_queue::sptr queue)
 {
     std::stringstream stream;
@@ -779,7 +780,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_L5(
         std::move(acq_),
         std::move(trk_),
         std::move(tlm_),
-        "Channel", "L5", queue));
+        "Channel", "L5", std::move(queue)));
 
     return channel_;
 }
@@ -787,8 +788,8 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_L5(
 
 //********* BeiDou B1I  CHANNEL *****************
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_B1(
-    std::shared_ptr<ConfigurationInterface> configuration,
-    std::string acq, std::string trk, std::string tlm, int channel,
+    const std::shared_ptr<ConfigurationInterface>& configuration,
+    const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
     gr::msg_queue::sptr queue)
 {
     std::stringstream stream;
@@ -846,13 +847,13 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_B1(
         std::move(acq_),
         std::move(trk_),
         std::move(tlm_),
-        "Channel", "B1", queue));
+        "Channel", "B1", std::move(queue)));
 
     return channel_;
 }
 
 std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFactory::GetChannels(
-    std::shared_ptr<ConfigurationInterface> configuration, gr::msg_queue::sptr queue)
+    const std::shared_ptr<ConfigurationInterface>& configuration, const gr::msg_queue::sptr& queue)
 {
     std::string default_implementation = "Pass_Through";
     std::string tracking_implementation;
@@ -1137,10 +1138,10 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
  * (see below)
  */
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
-    std::shared_ptr<ConfigurationInterface> configuration,
-    std::string role,
-    std::string implementation, unsigned int in_streams,
-    unsigned int out_streams, gr::msg_queue::sptr queue)
+    const std::shared_ptr<ConfigurationInterface>& configuration,
+    const std::string& role,
+    const std::string& implementation, unsigned int in_streams,
+    unsigned int out_streams, const gr::msg_queue::sptr& queue)
 {
     std::unique_ptr<GNSSBlockInterface> block;
 
@@ -1825,9 +1826,9 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
  */
 
 std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
-    std::shared_ptr<ConfigurationInterface> configuration,
-    std::string role,
-    std::string implementation, unsigned int in_streams,
+    const std::shared_ptr<ConfigurationInterface>& configuration,
+    const std::string& role,
+    const std::string& implementation, unsigned int in_streams,
     unsigned int out_streams)
 {
     std::unique_ptr<AcquisitionInterface> block;
@@ -1996,9 +1997,9 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
 
 
 std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
-    std::shared_ptr<ConfigurationInterface> configuration,
-    std::string role,
-    std::string implementation, unsigned int in_streams,
+    const std::shared_ptr<ConfigurationInterface>& configuration,
+    const std::string& role,
+    const std::string& implementation, unsigned int in_streams,
     unsigned int out_streams)
 {
     std::unique_ptr<TrackingInterface> block;
@@ -2147,9 +2148,9 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
 
 
 std::unique_ptr<TelemetryDecoderInterface> GNSSBlockFactory::GetTlmBlock(
-    std::shared_ptr<ConfigurationInterface> configuration,
-    std::string role,
-    std::string implementation, unsigned int in_streams,
+    const std::shared_ptr<ConfigurationInterface>& configuration,
+    const std::string& role,
+    const std::string& implementation, unsigned int in_streams,
     unsigned int out_streams)
 {
     std::unique_ptr<TelemetryDecoderInterface> block;

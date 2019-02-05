@@ -305,12 +305,12 @@ int PositionSystemTest::configure_receiver()
             config->set_property("PVT.AR_GPS", "PPP-AR");
             config->set_property("PVT.elevation_mask", std::to_string(15));
 
-            config_f = 0;
+            config_f = nullptr;
         }
     else
         {
             config_f = std::make_shared<FileConfiguration>(FLAGS_config_file_ptest);
-            config = 0;
+            config = nullptr;
         }
     return 0;
 }
@@ -374,8 +374,8 @@ bool PositionSystemTest::save_mat_xy(std::vector<double>* x, std::vector<double>
             matvar_t* matvar;
             filename.append(".mat");
             std::cout << "save_mat_xy write " << filename << std::endl;
-            matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT5);
-            if (reinterpret_cast<int64_t*>(matfp) != NULL)
+            matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT5);
+            if (reinterpret_cast<int64_t*>(matfp) != nullptr)
                 {
                     size_t dims[2] = {1, x->size()};
                     matvar = Mat_VarCreate("x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, &x[0], 0);
@@ -409,8 +409,8 @@ bool PositionSystemTest::save_mat_x(std::vector<double>* x, std::string filename
             matvar_t* matvar;
             filename.append(".mat");
             std::cout << "save_mat_x write " << filename << std::endl;
-            matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT5);
-            if (reinterpret_cast<int64_t*>(matfp) != NULL)
+            matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT5);
+            if (reinterpret_cast<int64_t*>(matfp) != nullptr)
                 {
                     size_t dims[2] = {1, x->size()};
                     matvar = Mat_VarCreate("x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, &x[0], 0);

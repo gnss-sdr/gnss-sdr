@@ -48,10 +48,10 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_stream,
     unsigned int out_stream,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(std::move(role)),
+    boost::shared_ptr<gr::msg_queue> queue) : role_(role),
                                               in_stream_(in_stream),
                                               out_stream_(out_stream),
-                                              queue_(queue)
+                                              queue_(std::move(std::move(queue)))
 {
     // DUMP PARAMETERS
     std::string empty = "";

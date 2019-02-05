@@ -81,8 +81,6 @@ target_link_libraries(rtklib_lib
         ${MAC_LIBRARIES}
 )
 
-target_compile_definitions(rtklib_lib PUBLIC -DGNSS_SDR_VERSION="${VERSION}")
-
 set_property(TARGET rtklib_lib
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

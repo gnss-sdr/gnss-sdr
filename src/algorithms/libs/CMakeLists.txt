@@ -129,10 +129,6 @@ target_compile_definitions(gnss_sp_libs
     PUBLIC -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}"
 )
 
-if(${GFLAGS_GREATER_20})
-    target_compile_definitions(gnss_sp_libs PUBLIC -DGFLAGS_GREATER_2_0=1)
-endif()
-
 set_property(TARGET gnss_sp_libs
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -153,11 +149,11 @@ target_link_libraries(gnss_sdr_flags
 )
 
 if(${GFLAGS_GREATER_20})
-    target_compile_definitions(gnss_sdr_flags PUBLIC -DGFLAGS_GREATER_2_0=1)
+    target_compile_definitions(gnss_sdr_flags PRIVATE -DGFLAGS_GREATER_2_0=1)
 endif()
 
 target_compile_definitions(gnss_sdr_flags
-    PUBLIC -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}"
+    PRIVATE -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}"
 )
 
 set_property(TARGET gnss_sdr_flags

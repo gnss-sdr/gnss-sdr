@@ -77,7 +77,7 @@ target_include_directories(pvt_lib
         ${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib
 )
 
-target_compile_definitions(pvt_lib PUBLIC -DGNSS_SDR_VERSION="${VERSION}")
+target_compile_definitions(pvt_lib PRIVATE -DGNSS_SDR_VERSION="${VERSION}")
 
 set_property(TARGET pvt_lib APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

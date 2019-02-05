@@ -75,15 +75,15 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs, const Gnss_Synchro& gnss_synchro
 
     // Mote that BeiDou week numbers do not need adjustment for foreseeable future. Consider change
     // to more elegant solution
-//    if(gnss_synchro.System == 'C')
-//		{
-//    		rtklib_obs.time = bdt2gpst(bdt2time(week, gnss_synchro.RX_time));
-//		}
-//    else
-//    	{
-//    		rtklib_obs.time = gpst2time(adjgpsweek(week), gnss_synchro.RX_time);
-//    	}
-//
+    //    if(gnss_synchro.System == 'C')
+    //		{
+    //    		rtklib_obs.time = bdt2gpst(bdt2time(week, gnss_synchro.RX_time));
+    //		}
+    //    else
+    //    	{
+    //    		rtklib_obs.time = gpst2time(adjgpsweek(week), gnss_synchro.RX_time);
+    //    	}
+    //
     rtklib_obs.time = gpst2time(adjgpsweek(week), gnss_synchro.RX_time);
     rtklib_obs.rcv = 1;
     return rtklib_obs;
@@ -245,8 +245,8 @@ eph_t eph_to_rtklib(const Gps_Ephemeris& gps_eph)
 eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph)
 {
     eph_t rtklib_sat = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0 };
-    rtklib_sat.sat = bei_eph.i_satellite_PRN + NSATGPS + NSATGLO + NSATGAL + NSATQZS ;
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0};
+    rtklib_sat.sat = bei_eph.i_satellite_PRN + NSATGPS + NSATGLO + NSATGAL + NSATQZS;
     rtklib_sat.A = bei_eph.d_sqrt_A * bei_eph.d_sqrt_A;
     rtklib_sat.M0 = bei_eph.d_M_0;
     rtklib_sat.deln = bei_eph.d_Delta_n;
@@ -259,10 +259,10 @@ eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph)
     rtklib_sat.Adot = 0;  //only in CNAV;
     rtklib_sat.ndot = 0;  //only in CNAV;
 
-    rtklib_sat.code = bei_eph.i_sig_type;		/*B1I data*/
-    rtklib_sat.flag = bei_eph.i_nav_type;		/*MEO/IGSO satellite*/
-    rtklib_sat.iode=(int32_t)bei_eph.d_AODE;      /* AODE */
-    rtklib_sat.iodc=(int32_t)bei_eph.d_AODC;      /* AODC */
+    rtklib_sat.code = bei_eph.i_sig_type;                   /*B1I data*/
+    rtklib_sat.flag = bei_eph.i_nav_type;                   /*MEO/IGSO satellite*/
+    rtklib_sat.iode = static_cast<int32_t>(bei_eph.d_AODE); /* AODE */
+    rtklib_sat.iodc = static_cast<int32_t>(bei_eph.d_AODC); /* AODC */
 
     rtklib_sat.week = bei_eph.i_BEIDOU_week; /* week of tow */
     rtklib_sat.cic = bei_eph.d_Cic;
@@ -285,8 +285,8 @@ eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph)
     /* adjustment for week handover */
     double tow, toc, toe;
     tow = time2gpst(rtklib_sat.ttr, &rtklib_sat.week);
-    toc = time2gpst(rtklib_sat.toc, NULL);
-    toe = time2gpst(rtklib_sat.toe, NULL);
+    toc = time2gpst(rtklib_sat.toc, nullptr);
+    toe = time2gpst(rtklib_sat.toe, nullptr);
 
     if (rtklib_sat.toes < tow - 302400.0)
         {
@@ -304,7 +304,6 @@ eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph)
 
     return rtklib_sat;
 }
-
 
 
 eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph)

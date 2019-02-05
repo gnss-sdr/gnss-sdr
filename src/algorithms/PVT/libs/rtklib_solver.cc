@@ -52,10 +52,10 @@
  * -----------------------------------------------------------------------*/
 
 #include "rtklib_solver.h"
+#include "Beidou_B1I.h"
 #include "GLONASS_L1_L2_CA.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
-#include "Beidou_B1I.h"
 #include "rtklib_conversions.h"
 #include "rtklib_solution.h"
 #include <glog/logging.h>
@@ -440,6 +440,10 @@ double rtklib_solver::get_vdop() const
     return dop_[3];
 }
 
+Monitor_Pvt rtklib_solver::get_monitor_pvt() const
+{
+    return monitor_pvt;
+}
 
 bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, bool flag_averaging)
 {
@@ -785,7 +789,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     }
                             }
                         break;
-                     }
+                    }
 
                 default:
                     DLOG(INFO) << "Hybrid observables: Unknown GNSS";
@@ -906,6 +910,58 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                << " is Lat = " << this->get_latitude() << " [deg], Long = " << this->get_longitude()
                                << " [deg], Height= " << this->get_height() << " [m]"
                                << " RX time offset= " << this->get_time_offset_s() << " [s]";
+
+                    // PVT MONITOR
+
+                    // TOW
+                    monitor_pvt.TOW_at_current_symbol_ms = gnss_observables_map.begin()->second.TOW_at_current_symbol_ms;
+                    // WEEK
+                    monitor_pvt.week = adjgpsweek(nav_data.eph[0].week);
+                    // PVT GPS time
+                    monitor_pvt.RX_time = gnss_observables_map.begin()->second.RX_time;
+                    // User clock offset [s]
+                    monitor_pvt.user_clk_offset = rx_position_and_time(3);
+
+                    // ECEF POS X,Y,X [m] + ECEF VEL X,Y,X [m/s] (6 x double)
+                    monitor_pvt.pos_x = pvt_sol.rr[0];
+                    monitor_pvt.pos_y = pvt_sol.rr[1];
+                    monitor_pvt.pos_z = pvt_sol.rr[2];
+                    monitor_pvt.vel_x = pvt_sol.rr[3];
+                    monitor_pvt.vel_y = pvt_sol.rr[4];
+                    monitor_pvt.vel_z = pvt_sol.rr[5];
+
+                    // position variance/covariance (m^2) {c_xx,c_yy,c_zz,c_xy,c_yz,c_zx} (6 x double)
+                    monitor_pvt.cov_xx = pvt_sol.qr[0];
+                    monitor_pvt.cov_yy = pvt_sol.qr[1];
+                    monitor_pvt.cov_zz = pvt_sol.qr[2];
+                    monitor_pvt.cov_xy = pvt_sol.qr[3];
+                    monitor_pvt.cov_yz = pvt_sol.qr[4];
+                    monitor_pvt.cov_zx = pvt_sol.qr[5];
+
+                    // GEO user position Latitude [deg]
+                    monitor_pvt.latitude = get_latitude();
+                    // GEO user position Longitude [deg]
+                    monitor_pvt.longitude = get_longitude();
+                    // GEO user position Height [m]
+                    monitor_pvt.height = get_height();
+
+                    // NUMBER OF VALID SATS
+                    monitor_pvt.valid_sats = pvt_sol.ns;
+                    // RTKLIB solution status
+                    monitor_pvt.solution_status = pvt_sol.stat;
+                    // RTKLIB solution type (0:xyz-ecef,1:enu-baseline)
+                    monitor_pvt.solution_type = pvt_sol.type;
+                    // AR ratio factor for validation
+                    monitor_pvt.AR_ratio_factor = pvt_sol.ratio;
+                    // AR ratio threshold for validation
+                    monitor_pvt.AR_ratio_threshold = pvt_sol.thres;
+
+                    // GDOP / PDOP/ HDOP/ VDOP
+                    monitor_pvt.gdop = dop_[0];
+                    monitor_pvt.pdop = dop_[1];
+                    monitor_pvt.hdop = dop_[2];
+                    monitor_pvt.vdop = dop_[3];
+
 
                     // ######## LOG FILE #########
                     if (d_flag_dump_enabled == true)

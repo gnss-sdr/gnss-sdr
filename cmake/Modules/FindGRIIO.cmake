@@ -1,4 +1,4 @@
-# Copyright (C) 2011-2018 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2011-2019 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -14,6 +14,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
+
+#
+# Provides the following imported target:
+# Gnuradio::iio
+#
+
 
 include(FindPkgConfig)
 pkg_check_modules(PC_IIO gnuradio-iio)
@@ -69,4 +75,15 @@ find_library(IIO_LIBRARIES
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GRIIO DEFAULT_MSG IIO_LIBRARIES IIO_INCLUDE_DIRS)
+
+if(GRIIO_FOUND AND NOT TARGET Gnuradio::iio)
+    add_library(Gnuradio::iio SHARED IMPORTED)
+    set_target_properties(Gnuradio::iio PROPERTIES
+        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+        IMPORTED_LOCATION "${IIO_LIBRARIES}"
+        INTERFACE_INCLUDE_DIRECTORIES "${IIO_INCLUDE_DIRS}"
+        INTERFACE_LINK_LIBRARIES "${IIO_LIBRARIES}"
+    )
+endif()
+
 mark_as_advanced(IIO_LIBRARIES IIO_INCLUDE_DIRS)

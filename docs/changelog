@@ -1,3 +1,14 @@
+## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
+
+### Improvements in Interoperability:
+
+- Added the BeiDou B1I receiver chain.
+
+### Improvements in Portability:
+
+- CMake scripts now follow a modern approach (targets and properties) but still work in 2.8.12
+
+
 ## [0.0.10](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.10)
 
 This release has several improvements in different dimensions, addition of new features and bug fixes:

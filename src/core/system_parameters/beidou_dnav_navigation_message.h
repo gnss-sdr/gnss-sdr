@@ -34,19 +34,18 @@
 #define GNSS_SDR_BEIDOU_DNAV_NAVIGATION_MESSAGE_H_
 
 
+#include "Beidou_B1I.h"
+#include "Beidou_B3I.h"
+#include "Beidou_DNAV.h"
+#include "beidou_dnav_almanac.h"
+#include "beidou_dnav_ephemeris.h"
+#include "beidou_dnav_iono.h"
+#include "beidou_dnav_utc_model.h"
 #include <bitset>
 #include <map>
 #include <string>
 #include <utility>
 #include <vector>
-#include "beidou_dnav_almanac.h"
-#include "beidou_dnav_ephemeris.h"
-#include "beidou_dnav_iono.h"
-#include "beidou_dnav_utc_model.h"
-#include "Beidou_B1I.h"
-#include "Beidou_B3I.h"
-#include "Beidou_DNAV.h"
-
 
 
 /*!
@@ -57,9 +56,9 @@
 class Beidou_Dnav_Navigation_Message
 {
 private:
-    unsigned long int read_navigation_unsigned(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int,int>> parameter);
-    signed long int read_navigation_signed(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int,int>> parameter);
-    bool read_navigation_bool(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int,int>> parameter);
+    unsigned long int read_navigation_unsigned(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int, int>>& parameter);
+    signed long int read_navigation_signed(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int, int>>& parameter);
+    bool read_navigation_bool(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int, int>>& parameter);
     void print_beidou_word_bytes(unsigned int BEIDOU_word);
     /*
      * Accounts for the beginning or end of week crossover

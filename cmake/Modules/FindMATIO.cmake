@@ -1,4 +1,4 @@
-# Copyright (C) 2011-2018 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2011-2019 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -25,6 +25,9 @@
 #  MATIO_LIBRARIES - MATIO libraries.
 #  MATIO_INCLUDE_DIRS - where to find matio.h, etc..
 #  MATIO_VERSION_STRING - version number as a string (e.g.: "1.3.4")
+#
+# Provides the following imported target:
+# Matio::matio
 #
 #=============================================================================
 # Copyright 2015 Avtech Scientific <http://avtechscientific.com>
@@ -126,4 +129,14 @@ if(MATIO_FOUND)
 else()
   set(MATIO_LIBRARIES)
   set(MATIO_INCLUDE_DIRS)
+endif()
+
+if(MATIO_FOUND AND NOT TARGET Matio::matio)
+    add_library(Matio::matio SHARED IMPORTED)
+    set_target_properties(Matio::matio PROPERTIES
+        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+        IMPORTED_LOCATION "${MATIO_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${MATIO_INCLUDE_DIR}"
+        INTERFACE_LINK_LIBRARIES "${MATIO_LIBRARY}"
+    )
 endif()

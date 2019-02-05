@@ -32,9 +32,9 @@
 #ifndef GNSS_SDR_BEIDOU_B1I_H_
 #define GNSS_SDR_BEIDOU_B1I_H_
 
-#include <vector>
-#include <utility> // std::pair
 #include "MATH_CONSTANTS.h"
+#include <utility>  // std::pair
+#include <vector>
 
 // Physical constants
 const double BEIDOU_C_m_s       = 299792458.0;      //!< The speed of light, [m/s]

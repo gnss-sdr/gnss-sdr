@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -102,26 +102,27 @@ set(SYSTEM_PARAMETERS_HEADERS
      MATH_CONSTANTS.h     
 )
 
-include_directories(
-     ${CMAKE_CURRENT_SOURCE_DIR}
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib
-     ${GLOG_INCLUDE_DIRS}
-     ${Boost_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-)
-
 list(SORT SYSTEM_PARAMETERS_HEADERS)
 list(SORT SYSTEM_PARAMETERS_SOURCES)
+
+source_group(Headers FILES ${SYSTEM_PARAMETERS_HEADERS})
 
 add_library(gnss_system_parameters
     ${SYSTEM_PARAMETERS_SOURCES}
     ${SYSTEM_PARAMETERS_HEADERS}
 )
 
-source_group(Headers FILES ${SYSTEM_PARAMETERS_HEADERS})
+target_link_libraries(gnss_system_parameters
+    PUBLIC
+        Boost::date_time
+        Boost::serialization
+        Glog::glog
+        gnss_rx
+    PRIVATE
+        Gflags::gflags
+)
 
-add_dependencies(gnss_system_parameters rtklib_lib glog-${glog_RELEASE})
-
-target_link_libraries(gnss_system_parameters rtklib_lib ${Boost_LIBRARIES})
+set_property(TARGET gnss_system_parameters
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

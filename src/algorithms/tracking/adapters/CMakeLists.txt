@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -89,34 +89,29 @@ set(TRACKING_ADAPTER_HEADERS
      ${OPT_TRACKING_ADAPTERS_HEADERS}
 )
 
-include_directories(
-     ${CMAKE_CURRENT_SOURCE_DIR}
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/gnuradio_blocks
-     ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${ARMADILLO_INCLUDE_DIRS}
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-     ${VOLK_GNSSSDR_INCLUDE_DIRS}
-     ${OPT_TRACKING_INCLUDE_DIRS}
-)
-
 list(SORT TRACKING_ADAPTER_HEADERS)
 list(SORT TRACKING_ADAPTER_SOURCES)
+
+source_group(Headers FILES ${TRACKING_ADAPTER_HEADERS})
 
 add_library(tracking_adapters
     ${TRACKING_ADAPTER_SOURCES}
     ${TRACKING_ADAPTER_HEADERS}
 )
 
-source_group(Headers FILES ${TRACKING_ADAPTER_HEADERS})
-
 target_link_libraries(tracking_adapters
+    PUBLIC
     tracking_gr_blocks
     gnss_sp_libs
     gnss_sdr_flags
+)
+
+target_include_directories(tracking_adapters
+    PUBLIC
+        ${OPT_TRACKING_INCLUDE_DIRS}
+)
+
+set_property(TARGET tracking_adapters
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

@@ -143,7 +143,7 @@ Rtcm_Printer::Rtcm_Printer(const std::string& filename, bool flag_rtcm_file_dump
                 }
         }
 
-    rtcm_devname = std::move(rtcm_dump_devname);
+    rtcm_devname = rtcm_dump_devname;
     if (flag_rtcm_tty_port == true)
         {
             rtcm_dev_descriptor = init_serial(rtcm_devname.c_str());

@@ -33,7 +33,6 @@
 
 #include "gnss_signal.h"
 #include <boost/scoped_array.hpp>
-//#include <gnuradio/random.h>
 #include <gnuradio/block.h>
 #include <random>
 #include <string>

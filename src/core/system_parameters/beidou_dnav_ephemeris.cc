@@ -30,11 +30,9 @@
  */
 
 #include "beidou_dnav_ephemeris.h"
-
-#include <cmath>
-
 #include "Beidou_B1I.h"
 #include "gnss_satellite.h"
+#include <cmath>
 
 Beidou_Dnav_Ephemeris::Beidou_Dnav_Ephemeris()
 {
@@ -63,27 +61,27 @@ Beidou_Dnav_Ephemeris::Beidou_Dnav_Ephemeris()
     d_AODE = 0;
     d_TGD1 = 0;
     d_TGD2 = 0;
-    d_AODC = 0;           // Issue of Data, Clock
-    i_AODO = 0;           // Age of Data Offset (AODO) term for the navigation message correction table (NMCT) contained in subframe 4 (reference paragraph 20.3.3.5.1.9) [s]
+    d_AODC = 0;  // Issue of Data, Clock
+    i_AODO = 0;  // Age of Data Offset (AODO) term for the navigation message correction table (NMCT) contained in subframe 4 (reference paragraph 20.3.3.5.1.9) [s]
     d_AODC = 0;
-    b_fit_interval_flag = false; // indicates the curve-fit interval used by the CS (Block II/IIA/IIR/IIR-M/IIF) and SS (Block IIIA) in determining the ephemeris parameters, as follows: 0  =  4 hours, 1  =  greater than 4 hours.
+    b_fit_interval_flag = false;  // indicates the curve-fit interval used by the CS (Block II/IIA/IIR/IIR-M/IIF) and SS (Block IIIA) in determining the ephemeris parameters, as follows: 0  =  4 hours, 1  =  greater than 4 hours.
     d_spare1 = 0;
     d_spare2 = 0;
 
     i_sig_type = 0;
     i_nav_type = 0;
 
-    d_A_f0 = 0;          // Coefficient 0 of code phase offset model [s]
-    d_A_f1 = 0;          // Coefficient 1 of code phase offset model [s/s]
-    d_A_f2 = 0;          // Coefficient 2 of code phase offset model [s/s^2]
+    d_A_f0 = 0;  // Coefficient 0 of code phase offset model [s]
+    d_A_f1 = 0;  // Coefficient 1 of code phase offset model [s/s]
+    d_A_f2 = 0;  // Coefficient 2 of code phase offset model [s/s^2]
 
     b_integrity_status_flag = false;
     b_alert_flag = false;         // If true, indicates  that the SV URA may be worse than indicated in d_SV_accuracy, use that SV at our own risk.
     b_antispoofing_flag = false;  //  If true, the AntiSpoofing mode is ON in that SV
 
     auto gnss_sat = Gnss_Satellite();
-    std::string _system ("Beidou");
-    for(unsigned int i = 1; i < 36; i++)
+    std::string _system("Beidou");
+    for (unsigned int i = 1; i < 36; i++)
         {
             satelliteBlock[i] = gnss_sat.what_block(_system, i);
         }
@@ -102,7 +100,7 @@ Beidou_Dnav_Ephemeris::Beidou_Dnav_Ephemeris()
 double Beidou_Dnav_Ephemeris::check_t(double time)
 {
     double corrTime;
-    double half_week = 302400.0;     // seconds
+    double half_week = 302400.0;  // seconds
     corrTime = time;
     if (time > half_week)
         {
@@ -166,9 +164,9 @@ double Beidou_Dnav_Ephemeris::sv_clock_relativistic_term(double transmitTime)
     // --- Iteratively compute eccentric anomaly ----------------------------
     for (int ii = 1; ii < 20; ii++)
         {
-            E_old   = E;
-            E       = M + d_eccentricity * sin(E);
-            dE      = fmod(E - E_old, 2.0 * BEIDOU_PI);
+            E_old = E;
+            E = M + d_eccentricity * sin(E);
+            dE = fmod(E - E_old, 2.0 * BEIDOU_PI);
             if (fabs(dE) < 1e-12)
                 {
                     //Necessary precision is reached, exit from the loop
@@ -225,9 +223,9 @@ double Beidou_Dnav_Ephemeris::satellitePosition(double transmitTime)
     // --- Iteratively compute eccentric anomaly ----------------------------
     for (int ii = 1; ii < 20; ii++)
         {
-            E_old   = E;
-            E       = M + d_eccentricity * sin(E);
-            dE      = fmod(E - E_old, 2.0 * BEIDOU_PI);
+            E_old = E;
+            E = M + d_eccentricity * sin(E);
+            dE = fmod(E - E_old, 2.0 * BEIDOU_PI);
             if (fabs(dE) < 1e-12)
                 {
                     //Necessary precision is reached, exit from the loop
@@ -247,16 +245,16 @@ double Beidou_Dnav_Ephemeris::satellitePosition(double transmitTime)
     phi = fmod((phi), (2.0 * BEIDOU_PI));
 
     // Correct argument of latitude
-    u = phi + d_Cuc * cos(2.0 * phi) +  d_Cus * sin(2.0 * phi);
+    u = phi + d_Cuc * cos(2.0 * phi) + d_Cus * sin(2.0 * phi);
 
     // Correct radius
-    r = a * (1.0 - d_eccentricity*cos(E)) +  d_Crc * cos(2.0 * phi) +  d_Crs * sin(2.0 * phi);
+    r = a * (1.0 - d_eccentricity * cos(E)) + d_Crc * cos(2.0 * phi) + d_Crs * sin(2.0 * phi);
 
     // Correct inclination
     i = d_i_0 + d_IDOT * tk + d_Cic * cos(2.0 * phi) + d_Cis * sin(2.0 * phi);
 
     // Compute the angle between the ascending node and the Greenwich meridian
-    Omega = d_OMEGA0 + (d_OMEGA_DOT - BEIDOU_OMEGA_EARTH_DOT)*tk - BEIDOU_OMEGA_EARTH_DOT * d_Toe;
+    Omega = d_OMEGA0 + (d_OMEGA_DOT - BEIDOU_OMEGA_EARTH_DOT) * tk - BEIDOU_OMEGA_EARTH_DOT * d_Toe;
 
     // Reduce to between 0 and 2*pi rad
     Omega = fmod((Omega + 2.0 * BEIDOU_PI), (2.0 * BEIDOU_PI));
@@ -268,7 +266,7 @@ double Beidou_Dnav_Ephemeris::satellitePosition(double transmitTime)
 
     // Satellite's velocity. Can be useful for Vector Tracking loops
     double Omega_dot = d_OMEGA_DOT - BEIDOU_OMEGA_EARTH_DOT;
-    d_satvel_X = - Omega_dot * (cos(u) * r + sin(u) * r * cos(i)) + d_satpos_X * cos(Omega) - d_satpos_Y * cos(i) * sin(Omega);
+    d_satvel_X = -Omega_dot * (cos(u) * r + sin(u) * r * cos(i)) + d_satpos_X * cos(Omega) - d_satpos_Y * cos(i) * sin(Omega);
     d_satvel_Y = Omega_dot * (cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega)) + d_satpos_X * sin(Omega) + d_satpos_Y * cos(i) * cos(Omega);
     d_satvel_Z = d_satpos_Y * sin(i);
 

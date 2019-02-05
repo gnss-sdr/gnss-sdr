@@ -95,7 +95,7 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
     d_dump = dump;
     d_fs_in = fs_in;
     d_vector_length = vector_length;
-    d_dump_filename = std::move(dump_filename);
+    d_dump_filename = dump_filename;
 
     //--- DLL variables --------------------------------------------------------
     d_early_late_spc_chips = early_late_space_chips;  // Define early-late offset (in chips)
@@ -300,7 +300,7 @@ void Gps_L1_Ca_Tcp_Connector_Tracking_cc::set_channel(uint32_t channel)
                 {
                     try
                         {
-                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
+                            d_dump_filename.append(std::to_string(d_channel));
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
@@ -341,8 +341,8 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
 
     // Block input data and block output stream pointers
-    const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);
-    Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
+    const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);
+    auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
 
     if (d_enable_tracking == true)
         {

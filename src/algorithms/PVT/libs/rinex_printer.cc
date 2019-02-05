@@ -31,7 +31,6 @@
 #include "rinex_printer.h"
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/local_time/local_time.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/time_zone_base.hpp>
 #include <boost/filesystem/operations.hpp>   // for create_directories, exists
 #include <boost/filesystem/path.hpp>         // for path, operator<<
@@ -251,9 +250,9 @@ Rinex_Printer::~Rinex_Printer()
             if (remove(navGlofilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
         }
     if (posnc == 0)
-		{
-			if (remove(navBdsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
-		}
+        {
+            if (remove(navBdsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
+        }
 }
 
 
@@ -1371,8 +1370,8 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& iono, co
             line += std::string(3, ' ');
             line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A0, 18, 2), 19);
             line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A1, 18, 2), 19);
-            line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.d_t_OT), 9);
-            line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.i_WN_T + 1024), 9);  // valid until 2019
+            line += Rinex_Printer::rightJustify(std::to_string(utc_model.d_t_OT), 9);
+            line += Rinex_Printer::rightJustify(std::to_string(utc_model.i_WN_T + 1024), 9);  // valid until 2019
             line += std::string(1, ' ');
             line += Rinex_Printer::leftJustify("DELTA-UTC: A0,A1,T,W", 20);
         }
@@ -1382,8 +1381,8 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& iono, co
             line += std::string("GPUT");
             line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A0, 16, 2), 18);
             line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A1, 15, 2), 16);
-            line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.d_t_OT), 7);
-            line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.i_WN_T + 1024), 5);  // valid until 2019
+            line += Rinex_Printer::rightJustify(std::to_string(utc_model.d_t_OT), 7);
+            line += Rinex_Printer::rightJustify(std::to_string(utc_model.i_WN_T + 1024), 5);  // valid until 2019
             /*  if ( SBAS )
         {
           line += string(1, ' ');
@@ -1403,16 +1402,16 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& iono, co
     // -------- Line 6 leap seconds
     // For leap second information, see http://www.endruntechnologies.com/leap.htm
     line.clear();
-    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.d_DeltaT_LS), 6);
+    line += Rinex_Printer::rightJustify(std::to_string(utc_model.d_DeltaT_LS), 6);
     if (version == 2)
         {
             line += std::string(54, ' ');
         }
     if (version == 3)
         {
-            line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.d_DeltaT_LSF), 6);
-            line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.i_WN_LSF), 6);
-            line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.i_DN), 6);
+            line += Rinex_Printer::rightJustify(std::to_string(utc_model.d_DeltaT_LSF), 6);
+            line += Rinex_Printer::rightJustify(std::to_string(utc_model.i_WN_LSF), 6);
+            line += Rinex_Printer::rightJustify(std::to_string(utc_model.i_DN), 6);
             line += std::string(36, ' ');
         }
     line += Rinex_Printer::leftJustify("LEAP SECONDS", 20);
@@ -1616,38 +1615,38 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Beidou_Dnav_Iono& 
     // -------- Line ionospheric info 1, only version 3 supported
     line.clear();
     line += std::string("BDSA");
-	line += std::string(1, ' ');
-	line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_alpha0, 10, 2), 12);
-	line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_alpha1, 10, 2), 12);
-	line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_alpha2, 10, 2), 12);
-	line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_alpha3, 10, 2), 12);
-	line += std::string(7, ' ');
-	line += Rinex_Printer::leftJustify("IONOSPHERIC CORR", 20);
+    line += std::string(1, ' ');
+    line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_alpha0, 10, 2), 12);
+    line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_alpha1, 10, 2), 12);
+    line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_alpha2, 10, 2), 12);
+    line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_alpha3, 10, 2), 12);
+    line += std::string(7, ' ');
+    line += Rinex_Printer::leftJustify("IONOSPHERIC CORR", 20);
 
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
 
     // -------- Line ionospheric info 2
     line.clear();
-	line += std::string("BDSB");
-	line += std::string(1, ' ');
-	line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_beta0, 10, 2), 12);
-	line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_beta1, 10, 2), 12);
-	line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_beta2, 10, 2), 12);
-	line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_beta3, 10, 2), 12);
-	line += std::string(7, ' ');
-	line += Rinex_Printer::leftJustify("IONOSPHERIC CORR", 20);
+    line += std::string("BDSB");
+    line += std::string(1, ' ');
+    line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_beta0, 10, 2), 12);
+    line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_beta1, 10, 2), 12);
+    line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_beta2, 10, 2), 12);
+    line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_beta3, 10, 2), 12);
+    line += std::string(7, ' ');
+    line += Rinex_Printer::leftJustify("IONOSPHERIC CORR", 20);
 
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
 
     // -------- Line 5 system time correction
     line.clear();
-	line += std::string("BDUT");
-	line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A0_UTC, 16, 2), 18);
-	line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A1_UTC, 15, 2), 16);
-	line += std::string(22, ' ');
-	line += Rinex_Printer::leftJustify("TIME SYSTEM CORR", 20);
+    line += std::string("BDUT");
+    line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A0_UTC, 16, 2), 18);
+    line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A1_UTC, 15, 2), 16);
+    line += std::string(22, ' ');
+    line += Rinex_Printer::leftJustify("TIME SYSTEM CORR", 20);
 
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
@@ -1656,9 +1655,9 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Beidou_Dnav_Iono& 
     // For leap second information, see http://www.endruntechnologies.com/leap.htm
     line.clear();
     line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.d_DeltaT_LS), 6);
-	line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.d_DeltaT_LSF), 6);
-	line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.i_WN_LSF), 6);
-	line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.i_DN), 6);
+    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.d_DeltaT_LSF), 6);
+    line += Rinex_Printer::rightJustify(std::to_string(utc_model.i_WN_LSF), 6);
+    line += Rinex_Printer::rightJustify(std::to_string(utc_model.i_DN), 6);
     line += std::string(36, ' ');
     line += Rinex_Printer::leftJustify("LEAP SECONDS", 20);
     Rinex_Printer::lengthCheck(line);
@@ -2794,59 +2793,58 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Beidou_Dnav_Utc_M
                 {
                     line_aux.clear();
 
-					if (line_str.find("BDSA", 0) != std::string::npos)
-						{
-							line_aux += std::string("GPSA");
-							line_aux += std::string(1, ' ');
-							line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_alpha0, 10, 2), 12);
-							line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_alpha1, 10, 2), 12);
-							line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_alpha2, 10, 2), 12);
-							line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_alpha3, 10, 2), 12);
-							line_aux += std::string(7, ' ');
-							line_aux += Rinex_Printer::leftJustify("IONOSPHERIC CORR", 20);
-							data.push_back(line_aux);
-						}
-					else if (line_str.find("BDSB", 0) != std::string::npos)
-						{
-							line_aux += std::string("GPSB");
-							line_aux += std::string(1, ' ');
-							line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_beta0, 10, 2), 12);
-							line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_beta1, 10, 2), 12);
-							line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_beta2, 10, 2), 12);
-							line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_beta3, 10, 2), 12);
-							line_aux += std::string(7, ' ');
-							line_aux += Rinex_Printer::leftJustify("IONOSPHERIC CORR", 20);
-							data.push_back(line_aux);
-						}
-					else if (line_str.find("BDUT", 0) != std::string::npos)
-						{
-							line_aux += std::string("GPUT");
-							line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A0_UTC, 16, 2), 18);
-							line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A1_UTC, 15, 2), 16);
-							line_aux += std::string(22, ' ');
-							line_aux += Rinex_Printer::leftJustify("TIME SYSTEM CORR", 20);
-							data.push_back(line_aux);
-						}
-					else if (line_str.find("LEAP SECONDS", 59) != std::string::npos)
-						{
-							line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.d_DeltaT_LS), 6);
-							line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.d_DeltaT_LSF), 6);
-							line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.i_WN_LSF), 6);
-							line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.i_DN), 6);
-							line_aux += std::string(36, ' ');
-							line_aux += Rinex_Printer::leftJustify("LEAP SECONDS", 20);
-							data.push_back(line_aux);
-						}
-					else if (line_str.find("END OF HEADER", 59) != std::string::npos)
-						{
-							data.push_back(line_str);
-							no_more_finds = true;
-						}
-					else
-						{
-							data.push_back(line_str);
-						}
-
+                    if (line_str.find("BDSA", 0) != std::string::npos)
+                        {
+                            line_aux += std::string("GPSA");
+                            line_aux += std::string(1, ' ');
+                            line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_alpha0, 10, 2), 12);
+                            line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_alpha1, 10, 2), 12);
+                            line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_alpha2, 10, 2), 12);
+                            line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_alpha3, 10, 2), 12);
+                            line_aux += std::string(7, ' ');
+                            line_aux += Rinex_Printer::leftJustify("IONOSPHERIC CORR", 20);
+                            data.push_back(line_aux);
+                        }
+                    else if (line_str.find("BDSB", 0) != std::string::npos)
+                        {
+                            line_aux += std::string("GPSB");
+                            line_aux += std::string(1, ' ');
+                            line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_beta0, 10, 2), 12);
+                            line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_beta1, 10, 2), 12);
+                            line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_beta2, 10, 2), 12);
+                            line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_beta3, 10, 2), 12);
+                            line_aux += std::string(7, ' ');
+                            line_aux += Rinex_Printer::leftJustify("IONOSPHERIC CORR", 20);
+                            data.push_back(line_aux);
+                        }
+                    else if (line_str.find("BDUT", 0) != std::string::npos)
+                        {
+                            line_aux += std::string("GPUT");
+                            line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A0_UTC, 16, 2), 18);
+                            line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A1_UTC, 15, 2), 16);
+                            line_aux += std::string(22, ' ');
+                            line_aux += Rinex_Printer::leftJustify("TIME SYSTEM CORR", 20);
+                            data.push_back(line_aux);
+                        }
+                    else if (line_str.find("LEAP SECONDS", 59) != std::string::npos)
+                        {
+                            line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.d_DeltaT_LS), 6);
+                            line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.d_DeltaT_LSF), 6);
+                            line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.i_WN_LSF), 6);
+                            line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.i_DN), 6);
+                            line_aux += std::string(36, ' ');
+                            line_aux += Rinex_Printer::leftJustify("LEAP SECONDS", 20);
+                            data.push_back(line_aux);
+                        }
+                    else if (line_str.find("END OF HEADER", 59) != std::string::npos)
+                        {
+                            data.push_back(line_str);
+                            no_more_finds = true;
+                        }
+                    else
+                        {
+                            data.push_back(line_str);
+                        }
                 }
             else
                 {
@@ -3759,7 +3757,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Bei
     std::map<int32_t, Beidou_Dnav_Ephemeris>::const_iterator bds_ephemeris_iter;
 
     for (bds_ephemeris_iter = eph_map.cbegin();
-    	 bds_ephemeris_iter != eph_map.cend();
+         bds_ephemeris_iter != eph_map.cend();
          bds_ephemeris_iter++)
         {
             // -------- SV / EPOCH / SV CLK
@@ -3771,28 +3769,28 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Bei
             std::string minutes(timestring, 11, 2);
             std::string seconds(timestring, 13, 2);
 
-			line += satelliteSystem["Beidou"];
-			if (bds_ephemeris_iter->second.i_satellite_PRN < 10) line += std::string("0");
-			line += boost::lexical_cast<std::string>(bds_ephemeris_iter->second.i_satellite_PRN);
-			std::string year(timestring, 0, 4);
-			line += std::string(1, ' ');
-			line += year;
-			line += std::string(1, ' ');
-			line += month;
-			line += std::string(1, ' ');
-			line += day;
-			line += std::string(1, ' ');
-			line += hour;
-			line += std::string(1, ' ');
-			line += minutes;
-			line += std::string(1, ' ');
-			line += seconds;
-			line += std::string(1, ' ');
-			line += Rinex_Printer::doub2for(bds_ephemeris_iter->second.d_A_f0, 18, 2);
-			line += std::string(1, ' ');
-			line += Rinex_Printer::doub2for(bds_ephemeris_iter->second.d_A_f1, 18, 2);
-			line += std::string(1, ' ');
-			line += Rinex_Printer::doub2for(bds_ephemeris_iter->second.d_A_f2, 18, 2);
+            line += satelliteSystem["Beidou"];
+            if (bds_ephemeris_iter->second.i_satellite_PRN < 10) line += std::string("0");
+            line += std::to_string(bds_ephemeris_iter->second.i_satellite_PRN);
+            std::string year(timestring, 0, 4);
+            line += std::string(1, ' ');
+            line += year;
+            line += std::string(1, ' ');
+            line += month;
+            line += std::string(1, ' ');
+            line += day;
+            line += std::string(1, ' ');
+            line += hour;
+            line += std::string(1, ' ');
+            line += minutes;
+            line += std::string(1, ' ');
+            line += seconds;
+            line += std::string(1, ' ');
+            line += Rinex_Printer::doub2for(bds_ephemeris_iter->second.d_A_f0, 18, 2);
+            line += std::string(1, ' ');
+            line += Rinex_Printer::doub2for(bds_ephemeris_iter->second.d_A_f1, 18, 2);
+            line += std::string(1, ' ');
+            line += Rinex_Printer::doub2for(bds_ephemeris_iter->second.d_A_f2, 18, 2);
             Rinex_Printer::lengthCheck(line);
             out << line << std::endl;
 
@@ -3855,7 +3853,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Bei
             line += std::string(1, ' ');
             line += std::string(18, ' ');  // spare
             line += std::string(1, ' ');
-            double BDS_week_continuous_number = static_cast<double>(bds_ephemeris_iter->second.i_BEIDOU_week);
+            auto BDS_week_continuous_number = static_cast<double>(bds_ephemeris_iter->second.i_BEIDOU_week);
             line += Rinex_Printer::doub2for(BDS_week_continuous_number, 18, 2);
             line += std::string(1, ' ');
             line += std::string(18, ' ');  // spare
@@ -7205,7 +7203,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
 }
 
 
-void Rinex_Printer::rinex_obs_header(std::fstream& out, const Beidou_Dnav_Ephemeris& eph, const double d_TOW_first_observation, const std::string bands)
+void Rinex_Printer::rinex_obs_header(std::fstream& out, const Beidou_Dnav_Ephemeris& eph, const double d_TOW_first_observation, const std::string& bands)
 {
     std::string line;
     version = 3;
@@ -7662,27 +7660,26 @@ void Rinex_Printer::update_obs_header(std::fstream& out, const Beidou_Dnav_Utc_M
                 {
                     line_aux.clear();
 
-					if (line_str.find("TIME OF FIRST OBS", 59) != std::string::npos)
-						{
-							data.push_back(line_str);
-							line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.d_DeltaT_LS), 6);
-							line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.d_DeltaT_LSF), 6);
-							line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.i_WN_LSF), 6);
-							line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.i_DN), 6);
-							line_aux += std::string(36, ' ');
-							line_aux += Rinex_Printer::leftJustify("LEAP SECONDS", 20);
-							data.push_back(line_aux);
-						}
-					else if (line_str.find("END OF HEADER", 59) != std::string::npos)
-						{
-							data.push_back(line_str);
-							no_more_finds = true;
-						}
-					else
-						{
-							data.push_back(line_str);
-						}
-
+                    if (line_str.find("TIME OF FIRST OBS", 59) != std::string::npos)
+                        {
+                            data.push_back(line_str);
+                            line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.d_DeltaT_LS), 6);
+                            line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.d_DeltaT_LSF), 6);
+                            line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.i_WN_LSF), 6);
+                            line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.i_DN), 6);
+                            line_aux += std::string(36, ' ');
+                            line_aux += Rinex_Printer::leftJustify("LEAP SECONDS", 20);
+                            data.push_back(line_aux);
+                        }
+                    else if (line_str.find("END OF HEADER", 59) != std::string::npos)
+                        {
+                            data.push_back(line_str);
+                            no_more_finds = true;
+                        }
+                    else
+                        {
+                            data.push_back(line_str);
+                        }
                 }
             else
                 {
@@ -10413,7 +10410,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
 }
 
 
-void Rinex_Printer::log_rinex_obs(std::fstream& out, const Beidou_Dnav_Ephemeris& eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, const std::string bds_bands)
+void Rinex_Printer::log_rinex_obs(std::fstream& out, const Beidou_Dnav_Ephemeris& eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, const std::string& bds_bands)
 {
     std::string line;
 
@@ -10524,7 +10521,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Beidou_Dnav_Ephemeris
         }
 
     int32_t numSatellitesObserved = available_prns.size();
-    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(numSatellitesObserved), 3);
+    line += Rinex_Printer::rightJustify(std::to_string(numSatellitesObserved), 3);
     // Receiver clock offset (optional)
     //line += rightJustify(asString(clockOffset, 12), 15);
     line += std::string(80 - line.size(), ' ');
@@ -10540,9 +10537,9 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Beidou_Dnav_Ephemeris
             lineObs.clear();
             lineObs += satelliteSystem["Beidou"];
             if (static_cast<int32_t>(*it) < 10) lineObs += std::string(1, '0');
-            lineObs += boost::lexical_cast<std::string>(static_cast<int32_t>(*it));
+            lineObs += std::to_string(static_cast<int32_t>(*it));
             ret = total_map.equal_range(*it);
-            for (std::multimap<uint32_t, Gnss_Synchro>::iterator iter = ret.first; iter != ret.second; ++iter)
+            for (auto iter = ret.first; iter != ret.second; ++iter)
                 {
                     lineObs += Rinex_Printer::rightJustify(asString(iter->second.Pseudorange_m, 3), 14);
 

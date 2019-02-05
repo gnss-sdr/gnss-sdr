@@ -51,21 +51,19 @@
 #ifndef GNSS_SDR_RINEX_PRINTER_H_
 #define GNSS_SDR_RINEX_PRINTER_H_
 
-#include "gps_navigation_message.h"
-#include "gps_cnav_navigation_message.h"
-#include "galileo_navigation_message.h"
-#include "glonass_gnav_navigation_message.h"
-#include "beidou_dnav_navigation_message.h"
+#include "Beidou_B1I.h"
+#include "GLONASS_L1_L2_CA.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
-#include "GLONASS_L1_L2_CA.h"
-#include "Beidou_B1I.h"
+#include "beidou_dnav_navigation_message.h"
+#include "galileo_navigation_message.h"
+#include "glonass_gnav_navigation_message.h"
 #include "gnss_synchro.h"
+#include "gps_cnav_navigation_message.h"
+#include "gps_navigation_message.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <cstdint>
-#include <string>
 #include <fstream>
-#include <sstream>  // for stringstream
 #include <iomanip>  // for setprecision
 #include <map>
 #include <sstream>  // for stringstream
@@ -203,7 +201,7 @@ public:
     /*!
      *  \brief Generates the a Beidou B1I Observation data header. Example: beidou_bands("B1")
      */
-    void rinex_obs_header(std::fstream& out, const Beidou_Dnav_Ephemeris& eph, const double d_TOW_first_observation, const std::string bands);
+    void rinex_obs_header(std::fstream& out, const Beidou_Dnav_Ephemeris& eph, const double d_TOW_first_observation, const std::string& bands);
 
     /*!
      *  \brief Generates the SBAS raw data header
@@ -363,7 +361,7 @@ public:
     /*!
      *  \brief Writes BDS B1I observables into the RINEX file
      */
-    void log_rinex_obs(std::fstream& out, const Beidou_Dnav_Ephemeris& eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, const std::string bds_bands);
+    void log_rinex_obs(std::fstream& out, const Beidou_Dnav_Ephemeris& eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, const std::string& bds_bands);
 
 
     /*!

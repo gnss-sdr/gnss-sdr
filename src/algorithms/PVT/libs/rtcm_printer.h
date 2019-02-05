@@ -36,8 +36,8 @@
 
 #include "rtcm.h"
 #include <fstream>  // std::ofstream
-#include <memory>   // std::shared_ptr
-
+#include <map>
+#include <memory>  // std::shared_ptr
 
 /*!
  * \brief This class provides a implementation of a subset of the RTCM Standard 10403.2 messages

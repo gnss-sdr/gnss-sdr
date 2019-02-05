@@ -34,9 +34,9 @@
 #ifndef GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_H_
 #define GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_H_
 
+#include "beidou_b1i_telemetry_decoder_cc.h"
 #include "telemetry_decoder_interface.h"
 #include <string>
-#include "beidou_b1i_telemetry_decoder_cc.h"
 
 class ConfigurationInterface;
 
@@ -47,7 +47,7 @@ class BeidouB1iTelemetryDecoder : public TelemetryDecoderInterface
 {
 public:
     BeidouB1iTelemetryDecoder(ConfigurationInterface* configuration,
-        std::string role,
+        const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 

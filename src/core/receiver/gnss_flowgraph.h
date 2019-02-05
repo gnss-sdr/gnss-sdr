@@ -55,7 +55,6 @@
 #include <queue>
 #include <string>
 #include <vector>
-#include <map>
 
 #if ENABLE_FPGA
 #include "gnss_sdr_fpga_sample_counter.h"
@@ -196,8 +195,8 @@ private:
         evGAL_5X,
         evGLO_1G,
         evGLO_2G,
-		evBDS_B1,
-		evBDS_B3
+		    evBDS_B1,
+		    evBDS_B3
     };
     std::map<std::string, StringValue> mapStringValues_;
 

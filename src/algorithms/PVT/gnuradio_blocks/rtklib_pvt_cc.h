@@ -35,6 +35,7 @@
 #include "gps_ephemeris.h"
 #include "gpx_printer.h"
 #include "kml_printer.h"
+#include "monitor_pvt_udp_sink.h"
 #include "nmea_printer.h"
 #include "pvt_conf.h"
 #include "rinex_printer.h"
@@ -71,7 +72,7 @@ private:
         const Pvt_Conf& conf_,
         const rtk_t& rtk);
 
-    void msg_handler_telemetry(pmt::pmt_t msg);
+    void msg_handler_telemetry(const pmt::pmt_t& msg);
 
     bool d_dump;
     bool d_dump_mat;
@@ -143,6 +144,9 @@ private:
         return (pt - boost::posix_time::ptime(boost::gregorian::date(1970, 1, 1))).total_seconds();
     }
 
+    bool flag_monitor_pvt_enabled;
+    std::unique_ptr<Monitor_Pvt_Udp_Sink> udp_sink_ptr;
+    std::vector<std::string> split_string(const std::string& s, char delim);
 
 public:
     rtklib_pvt_cc(uint32_t nchannels,

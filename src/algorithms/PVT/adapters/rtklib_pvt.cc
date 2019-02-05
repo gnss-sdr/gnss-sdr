@@ -52,7 +52,7 @@ using google::LogMessage;
 RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams) : role_(std::move(role)),
+    unsigned int out_streams) : role_(role),
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {
@@ -533,6 +533,11 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     pvt_output_parameters.xml_output_path = configuration->property(role + ".xml_output_path", default_output_path);
     pvt_output_parameters.nmea_output_file_path = configuration->property(role + ".nmea_output_file_path", default_output_path);
     pvt_output_parameters.rtcm_output_file_path = configuration->property(role + ".rtcm_output_file_path", default_output_path);
+
+    // Read PVT MONITOR Configuration
+    pvt_output_parameters.monitor_enabled = configuration->property(role + ".enable_monitor", false);
+    pvt_output_parameters.udp_addresses = configuration->property(role + ".monitor_client_addresses", std::string("127.0.0.1"));
+    pvt_output_parameters.udp_port = configuration->property(role + ".monitor_udp_port", 1234);
 
     // make PVT object
     pvt_ = rtklib_make_pvt_cc(in_streams_, pvt_output_parameters, rtk);

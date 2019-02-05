@@ -636,12 +636,7 @@ int AcquisitionPerformanceTest::run_receiver()
 
     top_block->run();  // Start threads and wait
 
-#ifdef OLD_BOOST
-    ch_thread.timed_join(boost::posix_time::seconds(1));
-#endif
-#ifndef OLD_BOOST
     ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-#endif
 
     return 0;
 }

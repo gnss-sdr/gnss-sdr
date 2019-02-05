@@ -30,15 +30,14 @@
  */
 
 #include "beidou_dnav_navigation_message.h"
-
-#include <cmath>
-#include <iostream>
-#include <cstring>
-#include <string>
+#include "gnss_satellite.h"
 #include <boost/crc.hpp>  // for boost::crc_basic, boost::crc_optimal
 #include <boost/dynamic_bitset.hpp>
 #include <glog/logging.h>
-#include <gnss_satellite.h>
+#include <cmath>
+#include <cstring>
+#include <iostream>
+#include <string>
 
 
 void Beidou_Dnav_Navigation_Message::reset()
@@ -228,7 +227,7 @@ void Beidou_Dnav_Navigation_Message::print_beidou_word_bytes(unsigned int BEIDOU
     std::cout << std::endl;
 }
 
-bool Beidou_Dnav_Navigation_Message::read_navigation_bool(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int,int>> parameter)
+bool Beidou_Dnav_Navigation_Message::read_navigation_bool(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int, int>>& parameter)
 {
     bool value;
 
@@ -243,7 +242,7 @@ bool Beidou_Dnav_Navigation_Message::read_navigation_bool(std::bitset<BEIDOU_DNA
     return value;
 }
 
-unsigned long int Beidou_Dnav_Navigation_Message::read_navigation_unsigned(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int,int>> parameter)
+unsigned long int Beidou_Dnav_Navigation_Message::read_navigation_unsigned(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int, int>>& parameter)
 {
     unsigned long int value = 0;
     int num_of_slices = parameter.size();
@@ -261,7 +260,7 @@ unsigned long int Beidou_Dnav_Navigation_Message::read_navigation_unsigned(std::
     return value;
 }
 
-signed long int Beidou_Dnav_Navigation_Message::read_navigation_signed(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int,int>> parameter)
+signed long int Beidou_Dnav_Navigation_Message::read_navigation_signed(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int, int>>& parameter)
 {
     signed long int value = 0;
     int num_of_slices = parameter.size();
@@ -655,7 +654,6 @@ int Beidou_Dnav_Navigation_Message::d1_subframe_decoder(std::string const &subfr
 
 				d_M0_ALMANAC = static_cast<double>(read_navigation_signed(subframe_bits, D1_M0));
 				d_M0_ALMANAC = d_M0_ALMANAC * D1_M0_ALMANAC_LSB;
-
             }
 
         if (SV_page_5 == 7)
@@ -1020,8 +1018,6 @@ Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris()
 			subframe_bits = std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>(d_A_f1_msb_bits + d_A_f1_lsb_bits);
 			eph.d_A_f1 = static_cast<double>(read_navigation_signed(subframe_bits, D2_A1))*D1_A1_LSB;
 			eph.d_A_f2 = d_A_f2;
-
-
 
 
 			eph.d_TGD1 = d_TGD1;

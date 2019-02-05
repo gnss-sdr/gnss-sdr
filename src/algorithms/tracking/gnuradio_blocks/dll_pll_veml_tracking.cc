@@ -35,19 +35,20 @@
  */
 
 #include "dll_pll_veml_tracking.h"
+#include "Beidou_B1I.h"
+#include "Beidou_B3I.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
 #include "GPS_L5.h"
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
 #include "Beidou_B1I.h"
-#include "Beidou_B3I.h"
 #include "MATH_CONSTANTS.h"
+#include "beidou_b3i_signal_processing.h"
+#include "beidou_b1i_signal_processing.h"
 #include "control_message_factory.h"
 #include "galileo_e1_signal_processing.h"
 #include "galileo_e5_signal_processing.h"
-#include "beidou_b1i_signal_processing.h"
-#include "beidou_b3i_signal_processing.h"
 #include "gnss_sdr_create_directory.h"
 #include "gps_l2c_signal.h"
 #include "gps_l5_signal.h"
@@ -612,7 +613,7 @@ void dll_pll_veml_tracking::start_tracking()
 					uint16_t preambles_bits[BEIDOU_B1I_PREAMBLE_LENGTH_BITS] = {1,1,1,0,0,0,1,0,0,1,0};
 					for (uint16_t preambles_bit : preambles_bits)
 						{
-							for (uint32_t j = 0; j < d_symbols_per_bit; j++)
+							for (int32_t j = 0; j < d_symbols_per_bit; j++)
 								{
 									if (preambles_bit == 1)
 										{
@@ -653,7 +654,7 @@ void dll_pll_veml_tracking::start_tracking()
 					uint16_t preambles_bits[BEIDOU_B3I_PREAMBLE_LENGTH_BITS] = {1,1,1,0,0,0,1,0,0,1,0};
 					for (uint16_t preambles_bit : preambles_bits)
 						{
-							for (uint32_t j = 0; j < d_symbols_per_bit; j++)
+							for (int32_t j = 0; j < d_symbols_per_bit; j++)
 								{
 									if (preambles_bit == 1)
 										{
@@ -669,7 +670,6 @@ void dll_pll_veml_tracking::start_tracking()
 					d_symbol_history.resize(22);  // Change fixed buffer size
 					d_symbol_history.clear();
                 }
-
         }
 
     multicorrelator_cpu.set_local_code_and_taps(d_code_samples_per_chip * d_code_length_chips, d_tracking_code, d_local_code_shift_chips);
@@ -1569,9 +1569,9 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                         d_symbol_history.push_back(d_Prompt->real());
                                         //******* preamble correlation ********
                                         int32_t corr_value = 0;
-                                        if ((d_symbol_history.size() == d_preamble_length_symbols))  // and (d_make_correlation or !d_flag_frame_sync))
+                                        if ((static_cast<int32_t>(d_symbol_history.size()) == d_preamble_length_symbols))  // and (d_make_correlation or !d_flag_frame_sync))
                                             {
-                                                for (uint32_t i = 0; i < d_preamble_length_symbols; i++)
+                                                for (int32_t i = 0; i < d_preamble_length_symbols; i++)
                                                     {
                                                         if (d_symbol_history.at(i) < 0)  // symbols clipping
                                                             {

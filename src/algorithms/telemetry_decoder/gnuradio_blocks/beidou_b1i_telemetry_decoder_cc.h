@@ -35,14 +35,14 @@
 #ifndef GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_CC_H
 #define GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_CC_H
 
-#include "beidou_dnav_navigation_message.h"
-#include "beidou_dnav_ephemeris.h"
+#include "Beidou_DNAV.h"
+#include "Beidou_B1I.h"
 #include "beidou_dnav_almanac.h"
+#include "beidou_dnav_ephemeris.h"
+#include "beidou_dnav_navigation_message.h"
 #include "beidou_dnav_utc_model.h"
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
-#include "Beidou_B1I.h"
-#include "Beidou_DNAV.h"
 #include <gnuradio/block.h>
 #include <fstream>
 #include <string>
@@ -80,8 +80,8 @@ private:
     beidou_b1i_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
 
     void decode_subframe(double *symbols, int32_t frame_length);
-    void decode_word(int32_t word_counter, double* enc_word_symbols, int32_t* dec_word_symbols);
-    void decode_bch15_11_01(int32_t *bits, int32_t *decbits);
+    void decode_word(int32_t word_counter, const double *enc_word_symbols, int32_t *dec_word_symbols);
+    void decode_bch15_11_01(const int32_t *bits, int32_t *decbits);
 
 
     //!< Preamble decoding

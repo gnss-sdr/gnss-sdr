@@ -33,6 +33,7 @@
 #include "control_message_factory.h"
 #include <functional>
 #include <sstream>
+#include <utility>
 
 
 TcpCmdInterface::TcpCmdInterface()
@@ -64,7 +65,7 @@ void TcpCmdInterface::register_functions()
 
 void TcpCmdInterface::set_pvt(std::shared_ptr<PvtInterface> PVT_sptr)
 {
-    PVT_sptr_ = PVT_sptr;
+    PVT_sptr_ = std::move(PVT_sptr);
 }
 
 
@@ -284,7 +285,7 @@ std::string TcpCmdInterface::set_ch_satellite(const std::vector<std::string> &co
 
 void TcpCmdInterface::set_msg_queue(gr::msg_queue::sptr control_queue)
 {
-    control_queue_ = control_queue;
+    control_queue_ = std::move(control_queue);
 }
 
 
@@ -330,7 +331,7 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
                                     std::vector<std::string> cmd_vector(std::istream_iterator<std::string>{iss},
                                         std::istream_iterator<std::string>());
 
-                                    if (cmd_vector.size() > 0)
+                                    if (!cmd_vector.empty())
                                         {
                                             try
                                                 {

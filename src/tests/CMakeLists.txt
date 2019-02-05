@@ -328,7 +328,9 @@ if(ENABLE_UNIT_TESTING)
     target_link_libraries(run_tests
         PUBLIC
             ${CLANG_FLAGS}
+            Boost::chrono
             Boost::filesystem
+            Boost::system
             Armadillo::armadillo
             Gflags::gflags
             Glog::glog

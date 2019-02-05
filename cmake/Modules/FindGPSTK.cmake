@@ -1,4 +1,4 @@
-# Copyright (C) 2011-2018 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2011-2019 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -32,18 +32,30 @@ find_path(GPSTK_INCLUDE_DIR gpstk/Rinex3ObsBase.hpp
 
 set(GPSTK_NAMES ${GPSTK_NAMES} gpstk libgpstk)
 
+include(GNUInstallDirs)
+
 find_library(GPSTK_LIBRARY NAMES ${GPSTK_NAMES}
     HINTS /usr/lib
           /usr/local/lib
+          /usr/${CMAKE_INSTALL_LIBDIR}
+          /usr/local/${CMAKE_INSTALL_LIBDIR}
           /opt/local/lib
-          ${GPSTK_ROOT}/lib
-          $ENV{GPSTK_ROOT}/lib
-          ${GPSTK_ROOT}/lib64
-          $ENV{GPSTK_ROOT}/lib64
+          ${GPSTK_ROOT}/${CMAKE_INSTALL_LIBDIR}
+          $ENV{GPSTK_ROOT}/${CMAKE_INSTALL_LIBDIR}
 )
 
 # handle the QUIETLY and REQUIRED arguments and set GPSTK_FOUND to TRUE if
 # all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GPSTK DEFAULT_MSG GPSTK_LIBRARY GPSTK_INCLUDE_DIR)
-mark_as_advanced(GPSTK_INCLUDE_DIR GPSTK_LIBRARY GPSTK_INCLUDE_DIR)
+mark_as_advanced(GPSTK_LIBRARY GPSTK_INCLUDE_DIR)
+
+if(GPSTK_FOUND AND NOT TARGET Gpstk::gpstk)
+    add_library(Gpstk::gpstk SHARED IMPORTED)
+    set_target_properties(Gpstk::gpstk PROPERTIES
+        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+        IMPORTED_LOCATION "${GPSTK_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${GPSTK_INCLUDE_DIR};${GPSTK_INCLUDE_DIR}/gpstk"
+        INTERFACE_LINK_LIBRARIES "${GPSTK_LIBRARY}"
+    )
+endif()

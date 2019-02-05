@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -38,37 +38,31 @@ set(TELEMETRY_DECODER_GR_BLOCKS_HEADERS
     beidou_b1i_telemetry_decoder_cc.h
 )
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${CMAKE_SOURCE_DIR}/src/core/receiver
-    ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/libs
-    ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/libs/libswiftcnav
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
-    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-    ${VOLK_GNSSSDR_INCLUDE_DIRS}
-)
-
 list(SORT TELEMETRY_DECODER_GR_BLOCKS_HEADERS)
 list(SORT TELEMETRY_DECODER_GR_BLOCKS_SOURCES)
+
+source_group(Headers FILES ${TELEMETRY_DECODER_GR_BLOCKS_HEADERS})
 
 add_library(telemetry_decoder_gr_blocks
     ${TELEMETRY_DECODER_GR_BLOCKS_SOURCES}
     ${TELEMETRY_DECODER_GR_BLOCKS_HEADERS}
 )
 
-source_group(Headers FILES ${TELEMETRY_DECODER_GR_BLOCKS_HEADERS})
-
 target_link_libraries(telemetry_decoder_gr_blocks
-    telemetry_decoder_libswiftcnav
-    telemetry_decoder_lib
-    gnss_system_parameters
-    ${GNURADIO_RUNTIME_LIBRARIES}
-    ${VOLK_GNSSSDR_LIBRARIES}
+    PUBLIC
+        telemetry_decoder_libswiftcnav
+        telemetry_decoder_lib
+        gnss_system_parameters
+        gnss_rx
+        Gnuradio::runtime
+        Volkgnsssdr::volkgnsssdr
+    PRIVATE
+        Boost::boost
+        Gflags::gflags
+        Glog::glog
 )
 
-if(NOT VOLKGNSSSDR_FOUND)
-    add_dependencies(telemetry_decoder_gr_blocks volk_gnsssdr_module)
-endif()
+set_property(TARGET telemetry_decoder_gr_blocks
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -19,17 +19,6 @@
 if(ENABLE_FPGA)
     set(ACQUISITION_LIB_SOURCES fpga_acquisition.cc)
     set(ACQUISITION_LIB_HEADERS fpga_acquisition.h)
-    include_directories(
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-        ${CMAKE_SOURCE_DIR}/src/core/interfaces
-        ${CMAKE_SOURCE_DIR}/src/core/receiver
-        ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-        ${VOLK_INCLUDE_DIRS}
-        ${GLOG_INCLUDE_DIRS}
-        ${GFlags_INCLUDE_DIRS}
-        ${VOLK_GNSSSDR_INCLUDE_DIRS}
-    )
 endif()
 
 set(ACQUISITION_LIB_HEADERS ${ACQUISITION_LIB_HEADERS} acq_conf.h)
@@ -38,21 +27,26 @@ set(ACQUISITION_LIB_SOURCES ${ACQUISITION_LIB_SOURCES} acq_conf.cc)
 list(SORT ACQUISITION_LIB_HEADERS)
 list(SORT ACQUISITION_LIB_SOURCES)
 
+source_group(Headers FILES ${ACQUISITION_LIB_HEADERS})
+
 add_library(acquisition_lib
     ${ACQUISITION_LIB_SOURCES}
     ${ACQUISITION_LIB_HEADERS}
 )
 
-source_group(Headers FILES ${ACQUISITION_LIB_HEADERS})
-
 target_link_libraries(acquisition_lib
-    ${VOLK_LIBRARIES}
-    ${VOLK_GNSSSDR_LIBRARIES}
-    ${GNURADIO_RUNTIME_LIBRARIES}
+    PUBLIC
+        Volk::volk
+        Gnuradio::fft
+    PRIVATE
+        Gflags::gflags
+        Glog::glog
+        gnss_system_parameters
+        gnss_rx
+        gnss_sp_libs
 )
 
-if(VOLKGNSSSDR_FOUND)
-    add_dependencies(acquisition_lib glog-${glog_RELEASE})
-else()
-    add_dependencies(acquisition_lib glog-${glog_RELEASE} volk_gnsssdr_module)
-endif()
+set_property(TARGET acquisition_lib
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

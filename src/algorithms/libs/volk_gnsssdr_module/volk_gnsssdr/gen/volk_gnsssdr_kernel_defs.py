@@ -53,7 +53,7 @@ def split_into_nested_ifdef_sections(code):
     header = 'text'
     in_section_depth = 0
     for i, line in enumerate(code.splitlines()):
-        m = re.match('^(\s*)#(\s*)(\w+)(.*)$', line)
+        m = re.match(r'^(\s*)#(\s*)(\w+)(.*)$', line)
         line_is = 'normal'
         if m:
             p0, p1, fcn, stuff = m.groups()
@@ -121,11 +121,11 @@ def flatten_section_text(sections):
 class impl_class(object):
     def __init__(self, kern_name, header, body):
         #extract LV_HAVE_*
-        self.deps = set(res.lower() for res in re.findall('LV_HAVE_(\w+)', header))
+        self.deps = set(res.lower() for res in re.findall(r'LV_HAVE_(\w+)', header))
         #extract function suffix and args
         body = flatten_section_text(body)
         try:
-            fcn_matcher = re.compile('^.*(%s\\w*)\\s*\\((.*)$'%kern_name, re.DOTALL | re.MULTILINE)
+            fcn_matcher = re.compile(r'^.*(%s\w*)\s*\((.*)$'%kern_name, re.DOTALL | re.MULTILINE)
             body = body.split('{')[0].rsplit(')', 1)[0] #get the part before the open ){ bracket
             m = fcn_matcher.match(body)
             impl_name, the_rest = m.groups()
@@ -133,7 +133,7 @@ class impl_class(object):
             self.args = list()
             fcn_args = the_rest.split(',')
             for fcn_arg in fcn_args:
-                arg_matcher = re.compile('^\s*(.*\\W)\s*(\w+)\s*$', re.DOTALL | re.MULTILINE)
+                arg_matcher = re.compile(r'^\s*(.*\W)\s*(\w+)\s*$', re.DOTALL | re.MULTILINE)
                 m = arg_matcher.match(fcn_arg)
                 arg_type, arg_name = m.groups()
                 self.args.append((arg_type, arg_name))
@@ -153,7 +153,7 @@ def extract_lv_haves(code):
     haves = list()
     for line in code.splitlines():
         if not line.strip().startswith('#'): continue
-        have_set = set(res.lower() for res in  re.findall('LV_HAVE_(\w+)', line))
+        have_set = set(res.lower() for res in  re.findall(r'LV_HAVE_(\w+)', line))
         if have_set: haves.append(have_set)
     return haves
 

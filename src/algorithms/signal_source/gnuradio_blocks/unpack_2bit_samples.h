@@ -39,7 +39,7 @@
  *
  *   Value_0, Value_1, Value_2, ..., Value_n, Value_n+1, Value_n+2, ...
  *
- * \author Cillian O'Driscoll cillian.odriscoll (at) gmail . com 
+ * \author Cillian O'Driscoll cillian.odriscoll (at) gmail . com
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)

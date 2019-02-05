@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -27,25 +27,29 @@ set(CORE_MONITOR_LIBS_HEADERS
     gnss_synchro_udp_sink.h
 )
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
-)
-
 list(SORT CORE_MONITOR_LIBS_HEADERS)
 list(SORT CORE_MONITOR_LIBS_SOURCES)
+
+source_group(Headers FILES ${CORE_MONITOR_LIBS_HEADERS})
 
 add_library(core_monitor_lib
     ${CORE_MONITOR_LIBS_SOURCES}
     ${CORE_MONITOR_LIBS_HEADERS}
 )
 
-source_group(Headers FILES ${CORE_MONITOR_LIBS_HEADERS})
+target_link_libraries(core_monitor_lib
+    PUBLIC
+        Boost::serialization
+        Boost::system
+        Gnuradio::runtime
+        gnss_system_parameters
+    PRIVATE
+        Gflags::gflags
+        Glog::glog
+        Gnuradio::pmt
+)
 
-target_link_libraries(core_monitor_lib ${Boost_LIBRARIES})
-
-add_dependencies(core_monitor_lib glog-${glog_RELEASE})
+set_property(TARGET core_monitor_lib
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

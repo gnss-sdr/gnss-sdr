@@ -1,4 +1,4 @@
-# Copyright (C) 2011-2018 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2011-2019 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -33,6 +33,11 @@
 # GROSMOSDR_FOUND System has gr-osmosdr libs/headers
 # GROSMOSDR_LIBRARIES The gr-osmosdr libraries (gnuradio-osmosdr)
 # GROSMOSDR_INCLUDE_DIR The location of gr-osmosdr headers
+#
+# Provides the following imported target:
+# Gnuradio::osmosdr
+#
+
 
 include(FindPkgConfig)
 pkg_check_modules(GROSMOSDR_PKG gnuradio-osmosdr)
@@ -89,4 +94,15 @@ find_library(GROSMOSDR_LIBRARIES
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GROSMOSDR DEFAULT_MSG GROSMOSDR_LIBRARIES GROSMOSDR_INCLUDE_DIR)
+
+if(GROSMOSDR_FOUND AND NOT TARGET Gnuradio::osmosdr)
+    add_library(Gnuradio::osmosdr SHARED IMPORTED)
+    set_target_properties(Gnuradio::osmosdr PROPERTIES
+        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+        IMPORTED_LOCATION "${GROSMOSDR_LIBRARIES}"
+        INTERFACE_INCLUDE_DIRECTORIES "${GROSMOSDR_INCLUDE_DIR};${GROSMOSDR_INCLUDE_DIR}/osmosdr"
+        INTERFACE_LINK_LIBRARIES "${GROSMOSDR_LIBRARIES}"
+    )
+endif()
+
 mark_as_advanced(GROSMOSDR_LIBRARIES GROSMOSDR_INCLUDE_DIR)

@@ -52,6 +52,7 @@
 
 #include "rtklib_lambda.h"
 #include "rtklib_rtkcmn.h"
+#include <cstring>
 
 /* LD factorization (Q=L'*diag(D)*L) -----------------------------------------*/
 int LD(int n, const double *Q, double *L, double *D)

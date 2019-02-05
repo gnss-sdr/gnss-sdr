@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -49,21 +49,6 @@ if(OPENCL_FOUND)
     set(ACQ_GR_BLOCKS_HEADERS ${ACQ_GR_BLOCKS_HEADERS} pcps_opencl_acquisition_cc.h)
 endif()
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces
-    ${CMAKE_SOURCE_DIR}/src/core/receiver
-    ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/libs
-    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-    ${Boost_INCLUDE_DIRS}
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${ARMADILLO_INCLUDE_DIRS}
-    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-    ${VOLK_GNSSSDR_INCLUDE_DIRS}
-    ${MATIO_INCLUDE_DIRS}
-)
 
 if(OPENCL_FOUND)
     include_directories(${OPENCL_INCLUDE_DIRS})
@@ -76,35 +61,36 @@ endif()
 
 list(SORT ACQ_GR_BLOCKS_HEADERS)
 list(SORT ACQ_GR_BLOCKS_SOURCES)
-add_library(acq_gr_blocks ${ACQ_GR_BLOCKS_SOURCES} ${ACQ_GR_BLOCKS_HEADERS})
+
 source_group(Headers FILES ${ACQ_GR_BLOCKS_HEADERS})
 
-if(ENABLE_FPGA)
-    target_link_libraries(acq_gr_blocks
+add_library(acq_gr_blocks ${ACQ_GR_BLOCKS_SOURCES} ${ACQ_GR_BLOCKS_HEADERS})
+
+target_link_libraries(acq_gr_blocks
+    PUBLIC
+        Gnuradio::runtime
+        Gnuradio::fft
+        Volk::volk
+        gnss_system_parameters
         acquisition_lib
-        gnss_sp_libs
-        gnss_system_parameters
-        ${GNURADIO_RUNTIME_LIBRARIES}
-        ${GNURADIO_FFT_LIBRARIES}
-        ${VOLK_LIBRARIES}
-        ${VOLK_GNSSSDR_LIBRARIES}
         ${OPT_LIBRARIES}
-        ${OPT_ACQUISITION_LIBRARIES}
-    )
-else()
-    target_link_libraries(acq_gr_blocks
+    PRIVATE
+        Boost::filesystem
+        Gflags::gflags
+        Glog::glog
+        Matio::matio
+        Volkgnsssdr::volkgnsssdr
         gnss_sp_libs
-        gnss_system_parameters
-        ${GNURADIO_RUNTIME_LIBRARIES}
-        ${GNURADIO_FFT_LIBRARIES}
-        ${VOLK_LIBRARIES}
-        ${VOLK_GNSSSDR_LIBRARIES}
-        ${OPT_LIBRARIES}
-        ${MATIO_LIBRARIES}
-        ${OPT_ACQUISITION_LIBRARIES}
-    )
+        gnss_rx
+)
+
+if(OPENCL_FOUND)
+    target_include_directories(acq_gr_blocks PUBLIC ${OPENCL_INCLUDE_DIRS})
 endif()
 
-if(NOT VOLKGNSSSDR_FOUND)
-    add_dependencies(acq_gr_blocks volk_gnsssdr_module)
-endif()
+target_include_directories(acq_gr_blocks PUBLIC ${CMAKE_SOURCE_DIR}/src/algorithms/libs)
+
+set_property(TARGET acq_gr_blocks
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

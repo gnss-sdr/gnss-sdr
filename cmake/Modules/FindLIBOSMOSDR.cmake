@@ -27,6 +27,10 @@
 # LIBOSMOSDR_FOUND System has libosmosdr libs/headers
 # LIBOSMOSDR_LIBRARIES The libosmosdr libraries
 # LIBOSMOSDR_INCLUDE_DIR The location of libosmosdr headers
+#
+# Provides the following imported target:
+# Osmosdr::osmosdr
+#
 
 include(FindPkgConfig)
 pkg_check_modules(LIBOSMOSDR_PKG libosmosdr)
@@ -77,4 +81,15 @@ find_library(LIBOSMOSDR_LIBRARIES NAMES osmosdr
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(LIBOSMOSDR DEFAULT_MSG LIBOSMOSDR_INCLUDE_DIR LIBOSMOSDR_LIBRARIES)
+
+if(LIBOSMOSDR_FOUND AND NOT TARGET Osmosdr::osmosdr)
+    add_library(Osmosdr::osmosdr SHARED IMPORTED)
+    set_target_properties(Osmosdr::osmosdr PROPERTIES
+        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+        IMPORTED_LOCATION "${LIBOSMOSDR_LIBRARIES}"
+        INTERFACE_INCLUDE_DIRECTORIES "${LIBOSMOSDR_INCLUDE_DIR}"
+        INTERFACE_LINK_LIBRARIES "${LIBOSMOSDR_LIBRARIES}"
+    )
+endif()
+
 mark_as_advanced(LIBOSMOSDR_INCLUDE_DIR LIBOSMOSDR_LIBRARIES)

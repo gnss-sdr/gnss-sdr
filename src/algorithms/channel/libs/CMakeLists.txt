@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -26,23 +26,23 @@ set(CHANNEL_FSM_HEADERS
     channel_msg_receiver_cc.h
 )
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces
-    ${CMAKE_SOURCE_DIR}/src/core/receiver
-    ${CMAKE_SOURCE_DIR}/src/algorithms/channel/adapters
-    ${Boost_INCLUDE_DIRS}
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-)
-
 list(SORT CHANNEL_FSM_HEADERS)
 list(SORT CHANNEL_FSM_SOURCES)
 
-add_library(channel_fsm ${CHANNEL_FSM_SOURCES} ${CHANNEL_FSM_HEADERS})
 source_group(Headers FILES ${CHANNEL_FSM_HEADERS})
-add_dependencies(channel_fsm glog-${glog_RELEASE})
 
-target_link_libraries(channel_fsm gnss_rx)
+add_library(channel_fsm ${CHANNEL_FSM_SOURCES} ${CHANNEL_FSM_HEADERS})
+
+target_link_libraries(channel_fsm
+    PUBLIC
+        gnss_rx
+        Gnuradio::runtime
+    PRIVATE
+        Gflags::gflags
+        Glog::glog
+)
+
+set_property(TARGET channel_fsm
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

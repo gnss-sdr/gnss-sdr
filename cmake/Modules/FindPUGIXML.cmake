@@ -1,4 +1,4 @@
-# Copyright (C) 2011-2018 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2011-2019 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -22,6 +22,10 @@
 # PUGIXML_INCLUDE_DIR - header location
 # PUGIXML_LIBRARIES - library to link against
 # PUGIXML_FOUND - true if pugixml was found.
+#
+# Provides the following imported target:
+# Pugixml::pugixml
+#
 
 find_path(PUGIXML_INCLUDE_DIR
     NAMES pugixml.hpp
@@ -73,3 +77,13 @@ else()
 endif()
 
 mark_as_advanced(PUGIXML_LIBRARY PUGIXML_INCLUDE_DIR)
+
+if(PUGIXML_FOUND AND NOT TARGET Pugixml::pugixml)
+    add_library(Pugixml::pugixml SHARED IMPORTED)
+    set_target_properties(Pugixml::pugixml PROPERTIES
+        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+        IMPORTED_LOCATION "${PUGIXML_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${PUGIXML_INCLUDE_DIR}"
+        INTERFACE_LINK_LIBRARIES "${PUGIXML_LIBRARY}"
+    )
+endif()

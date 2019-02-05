@@ -1,4 +1,4 @@
-# Copyright (C) 2011-2018 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2011-2019 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -26,6 +26,9 @@
 # This module accepts the following variables
 #
 # GLOG_ROOT - Can be set to Glog install path or Windows build path
+#
+# Provides the following imported target:
+# Glog::glog
 #
 
 if(NOT DEFINED GLOG_ROOT)
@@ -135,6 +138,12 @@ else()
     string(REGEX REPLACE "/libglog.so" "" GLOG_LIBRARIES_DIR ${GLOG_LIBRARIES})
 endif()
 
-if(GLOG_FOUND)
-    # _GLOG_APPEND_LIBRARIES(GLOG GLOG_LIBRARIES)
+if(GLOG_FOUND AND NOT TARGET Glog::glog)
+    add_library(Glog::glog SHARED IMPORTED)
+    set_target_properties(Glog::glog PROPERTIES
+        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+        IMPORTED_LOCATION "${GLOG_LIBRARIES}"
+        INTERFACE_INCLUDE_DIRECTORIES "${GLOG_INCLUDE_DIRS}"
+        INTERFACE_LINK_LIBRARIES "${GLOG_LIBRARIES}"
+    )
 endif()

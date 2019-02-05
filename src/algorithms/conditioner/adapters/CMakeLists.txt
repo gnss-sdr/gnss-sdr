@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -27,21 +27,23 @@ set(COND_ADAPTER_HEADERS
     array_signal_conditioner.h
 )
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces
-    ${CMAKE_SOURCE_DIR}/src/core/receiver
-    ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/gnuradio_blocks
-    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-)
-
 list(SORT COND_ADAPTER_HEADERS)
 list(SORT COND_ADAPTER_SOURCES)
 
-add_library(conditioner_adapters ${COND_ADAPTER_SOURCES} ${COND_ADAPTER_HEADERS})
 source_group(Headers FILES ${COND_ADAPTER_HEADERS})
-add_dependencies(conditioner_adapters glog-${glog_RELEASE})
+
+add_library(conditioner_adapters ${COND_ADAPTER_SOURCES} ${COND_ADAPTER_HEADERS})
+
+target_link_libraries(conditioner_adapters
+    PUBLIC
+        gnss_rx
+        Gnuradio::runtime
+    PRIVATE
+        Gflags::gflags
+        Glog::glog
+)
+
+set_property(TARGET conditioner_adapters
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

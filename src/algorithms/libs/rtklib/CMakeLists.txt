@@ -16,7 +16,6 @@
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
-add_definitions(-DGNSS_SDR_VERSION="${VERSION}")
 
 set(RTKLIB_LIB_SOURCES
     rtklib_rtkcmn.cc
@@ -59,33 +58,32 @@ set(RTKLIB_LIB_HEADERS
     rtklib.h
 )
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces
-    ${CMAKE_SOURCE_DIR}/src/core/receiver
-    ${Boost_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${GLOG_INCLUDE_DIRS}
-)
-
 list(SORT RTKLIB_LIB_HEADERS)
 list(SORT RTKLIB_LIB_SOURCES)
 
-add_library(rtklib_lib ${RTKLIB_LIB_SOURCES} ${RTKLIB_LIB_HEADERS})
 source_group(Headers FILES ${RTKLIB_LIB_HEADERS})
-add_dependencies(rtklib_lib glog-${glog_RELEASE})
+
+add_library(rtklib_lib ${RTKLIB_LIB_SOURCES} ${RTKLIB_LIB_HEADERS})
 
 if(OS_IS_MACOSX)
     set(MAC_LIBRARIES "-framework Accelerate")
 endif()
 
-target_link_libraries(
-    rtklib_lib
-    ${Boost_LIBRARIES}
-    ${GFlags_LIBS}
-    ${GLOG_LIBRARIES}
-    ${BLAS}
-    ${LAPACK}
-    ${MAC_LIBRARIES}
+target_link_libraries(rtklib_lib
+    PUBLIC
+        gnss_rx
+        gnss_system_parameters
+    PRIVATE
+        Gflags::gflags
+        Glog::glog
+        ${BLAS}
+        ${LAPACK}
+        ${MAC_LIBRARIES}
+)
+
+target_compile_definitions(rtklib_lib PUBLIC -DGNSS_SDR_VERSION="${VERSION}")
+
+set_property(TARGET rtklib_lib
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

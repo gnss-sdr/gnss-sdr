@@ -57,6 +57,7 @@
 #include "rtklib_rtkcmn.h"
 #include "rtklib_sbas.h"
 #include "rtklib_tides.h"
+#include <cstring>
 
 /* wave length of LC (m) -----------------------------------------------------*/
 double lam_LC(int i, int j, int k)

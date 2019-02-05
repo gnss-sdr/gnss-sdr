@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -34,36 +34,36 @@ set(INPUT_FILTER_ADAPTER_HEADERS
     notch_filter_lite.h
 )
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces
-    ${CMAKE_SOURCE_DIR}/src/algorithms/input_filter/gnuradio_blocks
-    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-    ${VOLK_INCLUDE_DIRS}
-)
-
-if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13.4")
-    add_definitions(-DGR_GREATER_38=1)
-endif()
-
 list(SORT INPUT_FILTER_ADAPTER_HEADERS)
 list(SORT INPUT_FILTER_ADAPTER_SOURCES)
+
+source_group(Headers FILES ${INPUT_FILTER_ADAPTER_HEADERS})
 
 add_library(input_filter_adapters
     ${INPUT_FILTER_ADAPTER_SOURCES}
     ${INPUT_FILTER_ADAPTER_HEADERS}
 )
 
-source_group(Headers FILES ${INPUT_FILTER_ADAPTER_HEADERS})
-add_dependencies(input_filter_adapters glog-${glog_RELEASE} gnss_sp_libs)
 target_link_libraries(input_filter_adapters
-    input_filter_gr_blocks
-    ${GNURADIO_RUNTIME_LIBRARIES}
-    ${GNURADIO_BLOCKS_LIBRARIES}
-    ${GNURADIO_FILTER_LIBRARIES}
-    gnss_sp_libs
+    PUBLIC
+        Gnuradio::blocks
+        Gnuradio::filter
+        input_filter_gr_blocks
+        gnss_sp_libs
+        gnss_rx
+    PRIVATE
+        Volk::volk
+)
+
+target_include_directories(input_filter_adapters
+    PUBLIC ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+)
+
+if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13.4")
+    target_compile_definitions(input_filter_adapters PUBLIC -DGR_GREATER_38=1)
+endif()
+
+set_property(TARGET input_filter_adapters
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

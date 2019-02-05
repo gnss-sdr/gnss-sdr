@@ -11,11 +11,11 @@ In the L1 band:
  - &#128752; BeiDou B1I (centered at 1561.098 MHz) :white_check_mark:
  - &#128752; GPS L1 C/A  (centered at 1575.42 MHz) :white_check_mark:
  - &#128752; Galileo E1b/c  (centered at 1575.42 MHz) :white_check_mark:
- - &#128752; GLONASS L1 C/A (centered at 1601.72 MHz) :white_check_mark:
+ - &#128752; GLONASS L1 C/A (centered at 1602.00 MHz) :white_check_mark:
 
 In the L2 band:
  - &#128752; GPS L2C (centered at 1227.60 MHz) :white_check_mark:
- - &#128752; GLONASS L2 C/A (centered at 1246 MHz) :white_check_mark:
+ - &#128752; GLONASS L2 C/A (centered at 1246.00 MHz) :white_check_mark:
 
 In the L5 band:
  - &#128752; GPS L5 (centered at 1176.45 MHz) :white_check_mark:
@@ -189,9 +189,9 @@ $ sudo apt-get install libblas-dev liblapack-dev       # For Debian/Ubuntu/Linux
 $ sudo yum install lapack-devel blas-devel             # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
 $ sudo pacman -S blas lapack                           # For Arch Linux
-$ wget https://sourceforge.net/projects/arma/files/armadillo-9.100.5.tar.xz
-$ tar xvfz armadillo-9.100.5.tar.xz
-$ cd armadillo-9.100.5
+$ wget https://sourceforge.net/projects/arma/files/armadillo-9.200.7.tar.xz
+$ tar xvfz armadillo-9.200.7.tar.xz
+$ cd armadillo-9.200.7
 $ cmake .
 $ make
 $ sudo make install
@@ -1118,6 +1118,7 @@ Each channel must be assigned to a GNSS signal, according to the following ident
 | GPS L1 C/A        |      1C         |
 | Galileo E1b/c     |      1B         |
 | Glonass L1 C/A    |      1G         |
+| Beidou B1I        |      B1         |
 | GPS L2 L2C(M)     |      2S         |
 | Glonass L2 C/A    |      2G         |
 | GPS L5            |      L5         |

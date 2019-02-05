@@ -1,8 +1,8 @@
 /*!
- * \file gnss_synchro_udp_sink.h
- * \brief Interface of a class that sends serialized Gnss_Synchro objects
- * over udp to one or multiple endponits
- * \author Álvaro Cebrián Juan, 2018. acebrianjuan(at)gmail.com
+ * \file monitor_pvt_udp_sink.h
+ * \brief Interface of a class that sends serialized Monitor_Pvt objects
+ * over udp to one or multiple endpoints
+ * \author Álvaro Cebrián Juan, 2019. acebrianjuan(at)gmail.com
  *
  * -------------------------------------------------------------------------
  *
@@ -29,25 +29,25 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SYNCHRO_UDP_SINK_H_
-#define GNSS_SYNCHRO_UDP_SINK_H_
+#ifndef MONITOR_PVT_UDP_SINK_H_
+#define MONITOR_PVT_UDP_SINK_H_
 
-#include "gnss_synchro.h"
+#include "monitor_pvt.h"
 #include <boost/asio.hpp>
 
-class Gnss_Synchro_Udp_Sink
+class Monitor_Pvt_Udp_Sink
 {
 public:
-    Gnss_Synchro_Udp_Sink(std::vector<std::string> addresses, const uint16_t &port);
-    bool write_gnss_synchro(const std::vector<Gnss_Synchro>& stocks);
+    Monitor_Pvt_Udp_Sink(std::vector<std::string> addresses, const uint16_t &port);
+    bool write_monitor_pvt(Monitor_Pvt monitor_pvt);
 
 private:
     boost::asio::io_service io_service;
     boost::asio::ip::udp::socket socket;
     boost::system::error_code error;
     std::vector<boost::asio::ip::udp::endpoint> endpoints;
-    std::vector<Gnss_Synchro> stocks;
+    Monitor_Pvt monitor_pvt;
 };
 
 
-#endif /* GNSS_SYNCHRO_UDP_SINK_H_ */
+#endif /* MONITOR_PVT_UDP_SINK_H_ */

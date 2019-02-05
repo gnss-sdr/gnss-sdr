@@ -38,6 +38,7 @@
 
 #include "rtklib_solver.h"
 #include <fstream>
+#include <memory>
 #include <string>
 
 

@@ -1,8 +1,8 @@
 /*!
- * \file gnss_synchro_udp_sink.cc
- * \brief Implementation of a class that sends serialized Gnss_Synchro
- * objects over udp to one or multiple endponits
- * \author Álvaro Cebrián Juan, 2018. acebrianjuan(at)gmail.com
+ * \file monitor_pvt_udp_sink.cc
+ * \brief Implementation of a class that sends serialized Monitor_Pvt
+ * objects over udp to one or multiple endpoints
+ * \author Álvaro Cebrián Juan, 2019. acebrianjuan(at)gmail.com
  *
  * -------------------------------------------------------------------------
  *
@@ -29,13 +29,13 @@
  * -------------------------------------------------------------------------
  */
 
-#include "gnss_synchro_udp_sink.h"
+#include "monitor_pvt_udp_sink.h"
 #include <boost/archive/binary_oarchive.hpp>
-#include <boost/serialization/vector.hpp>
+//#include <boost/serialization/vector.hpp>
 #include <iostream>
 #include <sstream>
 
-Gnss_Synchro_Udp_Sink::Gnss_Synchro_Udp_Sink(std::vector<std::string> addresses, const uint16_t& port) : socket{io_service}
+Monitor_Pvt_Udp_Sink::Monitor_Pvt_Udp_Sink(std::vector<std::string> addresses, const uint16_t& port) : socket{io_service}
 {
     for (auto address : addresses)
         {
@@ -44,11 +44,11 @@ Gnss_Synchro_Udp_Sink::Gnss_Synchro_Udp_Sink(std::vector<std::string> addresses,
         }
 }
 
-bool Gnss_Synchro_Udp_Sink::write_gnss_synchro(const std::vector<Gnss_Synchro>& stocks)
+bool Monitor_Pvt_Udp_Sink::write_monitor_pvt(Monitor_Pvt monitor_pvt)
 {
     std::ostringstream archive_stream;
     boost::archive::binary_oarchive oa{archive_stream};
-    oa << stocks;
+    oa << monitor_pvt;
     std::string outbound_data = archive_stream.str();
 
     for (auto endpoint : endpoints)

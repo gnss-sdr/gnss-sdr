@@ -36,6 +36,7 @@
 #include <glog/logging.h>
 #include <algorithm>
 #include <iostream>
+#include <utility>
 
 
 using google::LogMessage;
@@ -49,7 +50,7 @@ gnss_synchro_monitor_sptr gnss_synchro_make_monitor(unsigned int n_channels,
     return gnss_synchro_monitor_sptr(new gnss_synchro_monitor(n_channels,
         output_rate_ms,
         udp_port,
-        udp_addresses));
+        std::move(udp_addresses)));
 }
 
 
@@ -63,7 +64,7 @@ gnss_synchro_monitor::gnss_synchro_monitor(unsigned int n_channels,
     d_output_rate_ms = output_rate_ms;
     d_nchannels = n_channels;
 
-    udp_sink_ptr = std::unique_ptr<Gnss_Synchro_Udp_Sink>(new Gnss_Synchro_Udp_Sink(udp_addresses, udp_port));
+    udp_sink_ptr = std::unique_ptr<Gnss_Synchro_Udp_Sink>(new Gnss_Synchro_Udp_Sink(std::move(udp_addresses), udp_port));
 
     count = 0;
 }
@@ -75,7 +76,7 @@ gnss_synchro_monitor::~gnss_synchro_monitor() = default;
 int gnss_synchro_monitor::work(int noutput_items, gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items __attribute__((unused)))
 {
-    const Gnss_Synchro** in = reinterpret_cast<const Gnss_Synchro**>(&input_items[0]);  // Get the input buffer pointer
+    const auto** in = reinterpret_cast<const Gnss_Synchro**>(&input_items[0]);  // Get the input buffer pointer
     for (int epoch = 0; epoch < noutput_items; epoch++)
         {
             count++;

@@ -500,7 +500,7 @@ set(Boost_ADDITIONAL_VERSIONS
 )
 set(Boost_USE_MULTITHREAD ON)
 set(Boost_USE_STATIC_LIBS OFF)
-find_package(Boost COMPONENTS atomic chrono date_time filesystem serialization system thread REQUIRED)
+find_package(Boost ${GNSSSDR_BOOST_MIN_VERSION} COMPONENTS atomic chrono date_time filesystem serialization system thread REQUIRED)
 if(NOT Boost_FOUND)
     message(FATAL_ERROR "Fatal error: Boost (version >=${GNSSSDR_BOOST_MIN_VERSION}) required.")
 endif()

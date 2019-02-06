@@ -37,7 +37,12 @@ target_link_libraries(gnss-sdr
         ${MAC_LIBRARIES}
 )
 
-target_compile_definitions(gnss-sdr PUBLIC -DGNSS_SDR_VERSION="${VERSION}")
+# Disable internal logging
+if(NOT ENABLE_LOG)
+    target_compile_definitions(gnss-sdr PRIVATE -DGOOGLE_STRIP_LOG=1)
+endif()
+
+target_compile_definitions(gnss-sdr PRIVATE -DGNSS_SDR_VERSION="${VERSION}")
 
 if(ENABLE_CUDA)
     target_link_libraries(gnss-sdr

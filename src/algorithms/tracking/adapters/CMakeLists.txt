@@ -26,10 +26,6 @@ if(ENABLE_CUDA)
         ${OPT_TRACKING_ADAPTERS_HEADERS}
         gps_l1_ca_dll_pll_tracking_gpu.h
     )
-    set(OPT_TRACKING_INCLUDE_DIRS
-        ${OPT_TRACKING_INCLUDE_DIRS}
-        ${CUDA_INCLUDE_DIRS}
-    )
 endif()
 
 if(ENABLE_FPGA)
@@ -104,10 +100,16 @@ target_link_libraries(tracking_adapters
         gnss_sdr_flags
 )
 
-target_include_directories(tracking_adapters
-    PUBLIC
-        ${OPT_TRACKING_INCLUDE_DIRS}
-)
+if(ENABLE_CUDA)
+    target_link_libraries(tracking_adapters
+        PUBLIC
+            ${CUDA_LIBRARIES}
+    )
+    target_include_directories(tracking_adapters
+        PUBLIC
+            ${CUDA_INCLUDE_DIRS}
+    )
+endif()
 
 set_property(TARGET tracking_adapters
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES

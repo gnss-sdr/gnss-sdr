@@ -30,12 +30,12 @@ target_link_libraries(gnss-sdr
         gnss_sdr_flags
 )
 
+target_compile_definitions(gnss-sdr PRIVATE -DGNSS_SDR_VERSION="${VERSION}")
+
 # Disable internal logging
 if(NOT ENABLE_LOG)
     target_compile_definitions(gnss-sdr PRIVATE -DGOOGLE_STRIP_LOG=1)
 endif()
-
-target_compile_definitions(gnss-sdr PRIVATE -DGNSS_SDR_VERSION="${VERSION}")
 
 if(ENABLE_CUDA)
     target_link_libraries(gnss-sdr
@@ -53,12 +53,8 @@ if(ENABLE_GPERFTOOLS)
     if(GPERFTOOLS_FOUND)
         target_link_libraries(gnss-sdr
             PUBLIC
-                ${GPERFTOOLS_PROFILER}
-                ${GPERFTOOLS_TCMALLOC}
-        )
-        target_include_directories(gnss-sdr
-            PRIVATE
-                ${GPERFTOOLS_INCLUDE_DIR}
+                Gperftools::profiler
+                Gperftools::tcmalloc
         )
     endif()
 endif()

@@ -59,9 +59,9 @@ target_link_libraries(pvt_lib
     PUBLIC
         Armadillo::armadillo
         Boost::date_time
-        gnss_system_parameters
         gnss_sp_libs
         rtklib_lib
+        gnss_system_parameters
         gnss_rx
     PRIVATE
         Boost::filesystem

@@ -419,7 +419,9 @@ if(ENABLE_FPGA)
     )
     target_link_libraries(gps_l1_ca_dll_pll_tracking_test_fpga
         PUBLIC
-            ${Boost_LIBRARIES}
+            Boost::filesystem
+            Boost::system
+            Boost::thread
             Gflags::gflags
             Glog::glog
             GTest::GTest GTest::Main
@@ -485,21 +487,25 @@ if(ENABLE_SYSTEM_TESTING)
     add_definitions(-DHOST_SYSTEM="${HOST_SYSTEM}")
 
     #### TTFF
-    set(OPT_LIBS_ ${Boost_LIBRARIES} Threads::Threads Gflags::gflags Glog::glog
-                  Gnuradio::runtime GTest::GTest GTest::Main
-                  Gnuradio::blocks Gnuradio::filter
-                  Gnuradio::analog gnss_sp_libs
-                  gnss_rx gnss_system_parameters)
+    set(OPT_LIBS_ Boost::filesystem Boost::system Boost::thread Boost::date_time
+        Threads::Threads Gflags::gflags Glog::glog
+        Gnuradio::runtime GTest::GTest GTest::Main
+        Gnuradio::blocks Gnuradio::filter
+        Gnuradio::analog gnss_sp_libs
+        gnss_rx gnss_system_parameters
+    )
     add_system_test(ttff)
 
     if(ENABLE_SYSTEM_TESTING_EXTRA)
         #### POSITION_TEST
-        set(OPT_LIBS_ ${Boost_LIBRARIES} Threads::Threads Gflags::gflags Glog::glog
-                      GTest::GTest GTest::Main Gnuradio::runtime
-                      Gnuradio::blocks Gnuradio::filter
-                      Gnuradio::analog Matio::matio Volkgnsssdr::volkgnsssdr
-                      gnss_sp_libs gnss_rx gnss_system_parameters
-                      system_testing_lib signal_processing_testing_lib)
+        set(OPT_LIBS_ Boost::filesystem Boost::system Boost::thread
+            Threads::Threads Gflags::gflags Glog::glog
+            GTest::GTest GTest::Main Gnuradio::runtime
+            Gnuradio::blocks Gnuradio::filter
+            Gnuradio::analog Matio::matio Volkgnsssdr::volkgnsssdr
+            gnss_sp_libs gnss_rx gnss_system_parameters
+            system_testing_lib signal_processing_testing_lib
+        )
         add_system_test(position_test)
     else()
         # Avoid working with old executables if they were switched ON and then OFF
@@ -527,7 +533,10 @@ add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
 add_executable(flowgraph_test ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/control-plane/gnss_flowgraph_test.cc)
 
-target_link_libraries(flowgraph_test PUBLIC ${Boost_LIBRARIES}
+target_link_libraries(flowgraph_test PUBLIC
+    Boost::filesystem
+    Boost::system
+    Boost::thread
     Gflags::gflags
     Glog::glog
     Gnuradio::runtime
@@ -560,7 +569,10 @@ add_executable(gnss_block_test ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/adapter/adapter_test.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/control-plane/gnss_block_factory_test.cc
 )
-target_link_libraries(gnss_block_test PUBLIC ${Boost_LIBRARIES}
+target_link_libraries(gnss_block_test PUBLIC
+    Boost::filesystem
+    Boost::system
+    Boost::thread
     Gflags::gflags
     Glog::glog
     GTest::GTest GTest::Main
@@ -577,8 +589,11 @@ target_link_libraries(gnss_block_test PUBLIC ${Boost_LIBRARIES}
     gnss_system_parameters
     Volkgnsssdr::volkgnsssdr
 )
+
 target_include_directories(gnss_block_test PUBLIC ${CMAKE_SOURCE_DIR}/src/algorithms/libs)
+
 add_test(gnss_block_test gnss_block_test)
+
 set_property(TEST gnss_block_test PROPERTY TIMEOUT 60)
 
 #########################################################
@@ -586,7 +601,10 @@ set_property(TEST gnss_block_test PROPERTY TIMEOUT 60)
 add_executable(gnuradio_block_test ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/sources/unpack_2bit_samples_test.cc
 )
-target_link_libraries(gnuradio_block_test ${Boost_LIBRARIES}
+target_link_libraries(gnuradio_block_test PUBLIC
+    Boost::filesystem
+    Boost::system
+    Boost::thread
     Gflags::gflags
     Glog::glog
     GTest::GTest GTest::Main
@@ -600,7 +618,9 @@ target_link_libraries(gnuradio_block_test ${Boost_LIBRARIES}
     signal_source_gr_blocks
     Volkgnsssdr::volkgnsssdr
 )
+
 add_test(gnuradio_block_test gnuradio_block_test)
+
 set_property(TEST gnuradio_block_test PROPERTY TIMEOUT 30)
 
 #########################################################
@@ -629,7 +649,9 @@ add_executable(acq_test
     ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_test.cc)
 target_link_libraries(acq_test
     PUBLIC
-        ${Boost_LIBRARIES}
+        Boost::filesystem
+        Boost::system
+        Boost::thread
         Gflags::gflags
         Glog::glog
         GTest::GTest GTest::Main
@@ -661,7 +683,9 @@ add_executable(trk_test ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
 
 target_link_libraries(trk_test
     PUBLIC
-        ${Boost_LIBRARIES}
+        Boost::filesystem
+        Boost::system
+        Boost::thread
         Gflags::gflags
         Glog::glog
         GTest::GTest GTest::Main
@@ -689,7 +713,10 @@ if(NOT ENABLE_PACKAGING)
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/control-plane/control_thread_test.cc
     )
 
-    target_link_libraries(control_thread_test ${Boost_LIBRARIES}
+    target_link_libraries(control_thread_test PUBLIC
+        Boost::filesystem
+        Boost::system
+        Boost::thread
         Gflags::gflags
         Glog::glog
         signal_source_adapters

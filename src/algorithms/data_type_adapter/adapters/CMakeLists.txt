@@ -48,10 +48,10 @@ add_library(datatype_adapters
 target_link_libraries(datatype_adapters
     PUBLIC
         Gnuradio::blocks
-        gnss_system_parameters
-        gnss_rx
         data_type_gr_blocks
         gnss_sp_libs
+        gnss_system_parameters
+        gnss_rx
     PRIVATE
         Gflags::gflags
         Glog::glog

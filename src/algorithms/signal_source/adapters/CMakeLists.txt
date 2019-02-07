@@ -188,9 +188,9 @@ target_link_libraries(signal_source_adapters
         Gnuradio::runtime
         Gnuradio::blocks
         signal_source_gr_blocks
+        signal_source_lib
         gnss_sp_libs
         gnss_rx
-        signal_source_lib
     PRIVATE
         Gflags::gflags
         Glog::glog

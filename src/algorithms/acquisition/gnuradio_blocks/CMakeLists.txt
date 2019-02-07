@@ -71,8 +71,8 @@ target_link_libraries(acq_gr_blocks
         Gnuradio::runtime
         Gnuradio::fft
         Volk::volk
-        gnss_system_parameters
         acquisition_lib
+        gnss_system_parameters
         ${OPT_LIBRARIES}
     PRIVATE
         Boost::filesystem

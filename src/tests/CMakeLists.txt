@@ -151,23 +151,8 @@ endif()
 
 
 ################################################################################
-# Optional libraries
+# Definitions
 ################################################################################
-set(GNSS_SDR_TEST_OPTIONAL_LIBS "")
-set(GNSS_SDR_TEST_OPTIONAL_HEADERS "")
-
-if(ENABLE_CUDA)
-    set(GNSS_SDR_TEST_OPTIONAL_HEADERS ${GNSS_SDR_TEST_OPTIONAL_HEADERS} ${CUDA_INCLUDE_DIRS})
-    set(GNSS_SDR_TEST_OPTIONAL_LIBS ${GNSS_SDR_TEST_OPTIONAL_LIBS} ${CUDA_LIBRARIES})
-endif()
-
-if(ENABLE_GPERFTOOLS)
-    if(GPERFTOOLS_FOUND)
-        set(GNSS_SDR_TEST_OPTIONAL_LIBS "${GNSS_SDR_TEST_OPTIONAL_LIBS};${GPERFTOOLS_LIBRARIES}")
-        set(GNSS_SDR_TEST_OPTIONAL_HEADERS "${GNSS_SDR_TEST_OPTIONAL_HEADERS};${GPERFTOOLS_INCLUDE_DIR}")
-    endif()
-endif()
-
 
 if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13.4")
     add_definitions(-DGR_GREATER_38=1)
@@ -348,7 +333,6 @@ endif()
 
 set(LIST_INCLUDE_DIRS
     ${CMAKE_SOURCE_DIR}/src/tests/common-files
-    ${GNSS_SDR_TEST_OPTIONAL_HEADERS}
 )
 
 include_directories(${LIST_INCLUDE_DIRS})
@@ -395,7 +379,6 @@ if(ENABLE_UNIT_TESTING)
             pvt_adapters
             signal_processing_testing_lib
             system_testing_lib
-            ${GNSS_SDR_TEST_OPTIONAL_LIBS}
     )
     if(ENABLE_UNIT_TESTING_EXTRA)
         target_link_libraries(run_tests PUBLIC Gpstk::gpstk)
@@ -409,6 +392,24 @@ if(ENABLE_UNIT_TESTING)
         add_custom_command(TARGET run_tests POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:run_tests>
             ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:run_tests>)
+    endif()
+    if(ENABLE_GPERFTOOLS)
+        if(GPERFTOOLS_FOUND)
+            target_link_libraries(run_tests
+                PUBLIC
+                    Gperftools::gperftools
+            )
+        endif()
+    endif()
+    if(ENABLE_CUDA)
+        target_link_libraries(run_tests
+            PUBLIC
+                ${CUDA_LIBRARIES}
+        )
+        target_include_directories(run_tests
+            PUBLIC
+                ${CUDA_INCLUDE_DIRS}
+        )
     endif()
 endif()
 

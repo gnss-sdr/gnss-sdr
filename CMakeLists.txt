@@ -437,7 +437,7 @@ endif()
 ################################################################################
 if(CMAKE_VERSION VERSION_LESS 3.1)
     find_package(Threads REQUIRED)
-    set(THREAD_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
+    add_library(Threads::Threads ALIAS ${CMAKE_THREAD_LIBS_INIT})
 else()
     set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
     if(CMAKE_CROSSCOMPILING)
@@ -446,7 +446,6 @@ else()
         set(THREADS_PREFER_PTHREAD_FLAG TRUE)
     endif()
     find_package(Threads REQUIRED)
-    set(THREAD_LIBRARIES Threads::Threads)
 endif()
 
 
@@ -1101,7 +1100,6 @@ endif()
 
 if(NOT ENABLE_LOG)
     message(STATUS "Logging is not enabled")
-    target_compile_definitions(Glog::glog PUBLIC -DGOOGLE_STRIP_LOG=1)
 endif()
 
 

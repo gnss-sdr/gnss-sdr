@@ -17,12 +17,6 @@
 #
 
 
-if(OS_IS_MACOSX)
-    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        set(MAC_LIBRARIES "-lc++")
-    endif()
-endif()
-
 add_executable(gnss-sdr ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
 
 target_link_libraries(gnss-sdr
@@ -33,11 +27,15 @@ target_link_libraries(gnss-sdr
         Glog::glog
         gnss_rx
         gnss_sdr_flags
-        ${THREAD_LIBRARIES}
-        ${MAC_LIBRARIES}
+        Threads::Threads
 )
 
-target_compile_definitions(gnss-sdr PUBLIC -DGNSS_SDR_VERSION="${VERSION}")
+# Disable internal logging
+if(NOT ENABLE_LOG)
+    target_compile_definitions(gnss-sdr PRIVATE -DGOOGLE_STRIP_LOG=1)
+endif()
+
+target_compile_definitions(gnss-sdr PRIVATE -DGNSS_SDR_VERSION="${VERSION}")
 
 if(ENABLE_CUDA)
     target_link_libraries(gnss-sdr
@@ -61,6 +59,15 @@ if(ENABLE_GPERFTOOLS)
         target_include_directories(gnss-sdr
             PRIVATE
                 ${GPERFTOOLS_INCLUDE_DIR}
+        )
+    endif()
+endif()
+
+if(OS_IS_MACOSX)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        target_link_libraries(gnss-sdr
+            PUBLIC
+                "-lc++"
         )
     endif()
 endif()

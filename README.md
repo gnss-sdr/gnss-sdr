@@ -573,7 +573,7 @@ First, install [Homebrew](https://brew.sh/). Paste this in a terminal prompt:
 $ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 ~~~~~~
 
-The script explains what it will do and then pauses before it does it. There are more installation options [here](https://docs.brew.sh/Installation.html).
+The script explains what it will do, and then it pauses before doing it. There are more installation options [here](https://docs.brew.sh/Installation.html).
 
 Install pip:
 
@@ -584,16 +584,25 @@ $ sudo easy_install pip
 Install the required dependencies:
 
 ~~~~~~
-$ brew tap homebrew/science
-$ brew install cmake hdf5 arpack superlu
-$ brew install armadillo
-$ brew install glog gflags gnutls
+$ brew install cmake
+$ brew install hdf5 arpack superlu armadillo
+$ brew install glog gflags
 $ brew install gnuradio
 $ brew install libmatio
+$ brew install log4cpp
 $ brew install pugixml
 $ pip install mako
 $ pip install six
+$ brew install openssl
 ~~~~~~
+
+In the last step, Homebrew installs OpenSSL but it does not link it into `/usr/local`. Thus, you must manually link it instead:
+
+~~~~~~
+$ ln -s /usr/local/opt/openssl/include/openssl /usr/local/include
+$ ln -s /usr/local/opt/openssl/lib/libssl.1.0.0.dylib /usr/local/lib/
+~~~~~~
+
 
 #### Build GNSS-SDR
 

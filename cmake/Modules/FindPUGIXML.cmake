@@ -32,9 +32,12 @@ find_path(PUGIXML_INCLUDE_DIR
     PATHS ${PUGIXML_HOME}/include
           /usr/include
           /usr/local/include
+          /usr/local/include/pugixml-1.9
           /opt/local/include
           ${PUGIXML_ROOT}/include
           $ENV{PUGIXML_ROOT}/include
+          ${PUGIXML_ROOT}/include/pugixml-1.9
+          $ENV{PUGIXML_ROOT}/include/pugixml-1.9
 )
 
 find_library(PUGIXML_LIBRARY
@@ -51,6 +54,7 @@ find_library(PUGIXML_LIBRARY
           /usr/lib/powerpc64le-linux-gnu
           /usr/lib/s390x-linux-gnu
           /usr/local/lib
+          /usr/local/lib/pugixml-1.9
           /opt/local/lib
           /usr/lib
           /usr/lib64
@@ -59,6 +63,10 @@ find_library(PUGIXML_LIBRARY
           $ENV{PUGIXML_ROOT}/lib
           ${PUGIXML_ROOT}/lib64
           $ENV{PUGIXML_ROOT}/lib64
+          ${PUGIXML_ROOT}/lib/pugixml-1.9
+          $ENV{PUGIXML_ROOT}/lib/pugixml-1.9
+          ${PUGIXML_ROOT}/lib64/pugixml-1.9
+          $ENV{PUGIXML_ROOT}/lib64/pugixml-1.9
 )
 
 # Support the REQUIRED and QUIET arguments, and set PUGIXML_FOUND if found.

@@ -35,8 +35,8 @@ add_library(channel_fsm ${CHANNEL_FSM_SOURCES} ${CHANNEL_FSM_HEADERS})
 
 target_link_libraries(channel_fsm
     PUBLIC
-        gnss_rx
         Gnuradio::runtime
+        gnss_rx
     PRIVATE
         Gflags::gflags
         Glog::glog

@@ -60,9 +60,9 @@ add_library(signal_source_gr_blocks
 
 target_link_libraries(signal_source_gr_blocks
     PUBLIC
-        signal_source_lib
-        Gnuradio::runtime
         Boost::thread
+        Gnuradio::runtime
+        signal_source_lib
     PRIVATE
         Gflags::gflags
         Glog::glog

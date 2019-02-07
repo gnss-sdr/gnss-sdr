@@ -92,11 +92,11 @@ add_library(acq_adapters ${ACQ_ADAPTER_SOURCES} ${ACQ_ADAPTER_HEADERS})
 
 target_link_libraries(acq_adapters
     PUBLIC
+        Gnuradio::blocks
         gnss_sp_libs
         gnss_sdr_flags
         acq_gr_blocks
         rx_core_lib
-        Gnuradio::blocks
         gnss_system_parameters
     PRIVATE
         Boost::boost

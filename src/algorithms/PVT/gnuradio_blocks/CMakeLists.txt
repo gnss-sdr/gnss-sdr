@@ -31,8 +31,8 @@ add_library(pvt_gr_blocks ${PVT_GR_BLOCKS_SOURCES} ${PVT_GR_BLOCKS_HEADERS})
 target_link_libraries(pvt_gr_blocks
     PUBLIC
         Boost::date_time
-        pvt_lib
         Gnuradio::runtime
+        pvt_lib
         gnss_system_parameters
         gnss_rx
     PRIVATE

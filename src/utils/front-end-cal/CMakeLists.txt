@@ -26,7 +26,7 @@ source_group(Headers FILES ${FRONT_END_CAL_HEADERS})
 target_link_libraries(front_end_cal_lib
     PUBLIC
         Armadillo::armadillo
-        ${THREAD_LIBRARIES}
+        Threads::Threads
         acq_adapters
         Volkgnsssdr::volkgnsssdr ${ORC_LIBRARIES}
         rx_core_lib
@@ -35,6 +35,7 @@ target_link_libraries(front_end_cal_lib
         channel_fsm
         gnss_sp_libs
     PRIVATE
+        Gflags::gflags
         Glog::glog
         Gnuradio::blocks
         Gnuradio::runtime

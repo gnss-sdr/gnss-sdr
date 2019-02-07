@@ -96,7 +96,7 @@ if(NOT ${GTEST_DIR_LOCAL})
     set(GTEST_LIBRARIES
         ${binary_dir}/googletest/${ADD_DEBUG}${CMAKE_FIND_LIBRARY_PREFIXES}gtest${FINAL_D}${CMAKE_STATIC_LIBRARY_SUFFIX}
         ${binary_dir}/googletest/${ADD_DEBUG}${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${FINAL_D}${CMAKE_STATIC_LIBRARY_SUFFIX}
-        ${THREAD_LIBRARIES})
+        Threads::Threads)
     set(GTEST_LIB_DIR "${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/googletest")
 else()
     if(GTEST_INCLUDE_DIRS)
@@ -110,7 +110,7 @@ else()
         add_library(gtest ${GTEST_DIR}/src/gtest-all.cc ${GTEST_DIR}/src/gtest_main.cc)
         set(GTEST_LIBRARIES gtest)
     endif()
-    target_link_libraries(gtest PUBLIC ${THREAD_LIBRARIES})
+    target_link_libraries(gtest PUBLIC Threads::Threads)
 endif()
 
 
@@ -459,7 +459,7 @@ if(ENABLE_SYSTEM_TESTING)
     add_definitions(-DHOST_SYSTEM="${HOST_SYSTEM}")
 
     #### TTFF
-    set(OPT_LIBS_ ${Boost_LIBRARIES} ${THREAD_LIBRARIES} Gflags::gflags Glog::glog
+    set(OPT_LIBS_ ${Boost_LIBRARIES} Threads::Threads Gflags::gflags Glog::glog
                   Gnuradio::runtime ${GTEST_LIBRARIES}
                   Gnuradio::blocks Gnuradio::filter
                   Gnuradio::analog gnss_sp_libs
@@ -468,7 +468,7 @@ if(ENABLE_SYSTEM_TESTING)
 
     if(ENABLE_SYSTEM_TESTING_EXTRA)
         #### POSITION_TEST
-        set(OPT_LIBS_ ${Boost_LIBRARIES} ${THREAD_LIBRARIES} Gflags::gflags Glog::glog
+        set(OPT_LIBS_ ${Boost_LIBRARIES} Threads::Threads Gflags::gflags Glog::glog
                       ${GTEST_LIBRARIES} Gnuradio::runtime
                       Gnuradio::blocks Gnuradio::filter
                       Gnuradio::analog Matio::matio Volkgnsssdr::volkgnsssdr

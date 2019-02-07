@@ -25,14 +25,6 @@ if(ENABLE_CUDA)
         ${OPT_TRACKING_BLOCKS_HEADERS}
         gps_l1_ca_dll_pll_tracking_gpu_cc.h
     )
-    set(OPT_TRACKING_INCLUDES
-        ${OPT_TRACKING_INCLUDES}
-        ${CUDA_INCLUDE_DIRS}
-    )
-    set(OPT_TRACKING_LIBRARIES
-        ${OPT_TRACKING_LIBRARIES}
-        ${CUDA_LIBRARIES}
-    )
 endif()
 
 if(ENABLE_FPGA)
@@ -91,20 +83,25 @@ add_library(tracking_gr_blocks
 target_link_libraries(tracking_gr_blocks
     PUBLIC
         Boost::boost
-        tracking_lib
         Gnuradio::blocks
+        Matio::matio
         Volkgnsssdr::volkgnsssdr
         gnss_sdr_flags
         gnss_sp_libs
         gnss_rx
-        Matio::matio
-        ${OPT_TRACKING_LIBRARIES}
+        tracking_lib
 )
 
-target_include_directories(tracking_gr_blocks
-    PUBLIC
-        ${OPT_TRACKING_INCLUDES}
-)
+if(ENABLE_CUDA)
+    target_link_libraries(tracking_gr_blocks
+        PUBLIC
+            ${CUDA_LIBRARIES}
+    )
+    target_include_directories(tracking_gr_blocks
+        PUBLIC
+            ${CUDA_INCLUDE_DIRS}
+    )
+endif()
 
 set_property(TARGET tracking_gr_blocks
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES

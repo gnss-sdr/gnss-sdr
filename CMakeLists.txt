@@ -436,8 +436,13 @@ endif()
 # Find the POSIX thread (pthread) libraries
 ################################################################################
 if(CMAKE_VERSION VERSION_LESS 3.1)
+    # Workaround for CMake < 3.1
     find_package(Threads REQUIRED)
-    add_library(Threads::Threads ALIAS ${CMAKE_THREAD_LIBS_INIT})
+    add_library(Threads::Threads SHARED IMPORTED)
+    set_property(TARGET Threads::Threads PROPERTY INTERFACE_LINK_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}")
+    set_property(TARGET Threads::Threads PROPERTY IMPORTED_LINK_INTERFACE_LANGUAGES "CXX")
+    include(GNUInstallDirs)
+    set_property(TARGET Threads::Threads PROPERTY IMPORTED_LOCATION /usr/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}$pthread${CMAKE_SHARED_LIBRARY_SUFFIX})
 else()
     set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
     if(CMAKE_CROSSCOMPILING)

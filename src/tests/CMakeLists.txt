@@ -363,8 +363,6 @@ if(ENABLE_UNIT_TESTING)
             Volk::volk
             Volkgnsssdr::volkgnsssdr
             gnss_sp_libs
-            gnss_rx
-            gnss_system_parameters
             core_monitor_lib
             signal_source_adapters
             datatype_adapters
@@ -378,8 +376,11 @@ if(ENABLE_UNIT_TESTING)
             obs_adapters
             signal_generator_adapters
             pvt_adapters
+            pvt_lib
             signal_processing_testing_lib
             system_testing_lib
+            gnss_system_parameters
+            gnss_rx
     )
     if(ENABLE_UNIT_TESTING_EXTRA)
         target_link_libraries(run_tests PUBLIC Gpstk::gpstk)
@@ -435,11 +436,11 @@ if(ENABLE_FPGA)
             Volk::volk
             channel_fsm
             gnss_sp_libs
-            gnss_rx
             datatype_adapters
-            gnss_system_parameters
             signal_processing_testing_lib
             tracking_adapters
+            gnss_system_parameters
+            gnss_rx
     )
     install(TARGETS gps_l1_ca_dll_pll_tracking_test_fpga
         RUNTIME DESTINATION bin
@@ -495,7 +496,7 @@ if(ENABLE_SYSTEM_TESTING)
         Gnuradio::runtime GTest::GTest GTest::Main
         Gnuradio::blocks Gnuradio::filter
         Gnuradio::analog gnss_sp_libs
-        gnss_rx gnss_system_parameters
+        gnss_system_parameters gnss_rx
     )
     add_system_test(ttff)
 
@@ -506,7 +507,7 @@ if(ENABLE_SYSTEM_TESTING)
             GTest::GTest GTest::Main Gnuradio::runtime
             Gnuradio::blocks Gnuradio::filter
             Gnuradio::analog Matio::matio Volkgnsssdr::volkgnsssdr
-            gnss_sp_libs gnss_rx gnss_system_parameters
+            gnss_sp_libs gnss_system_parameters gnss_rx
             system_testing_lib signal_processing_testing_lib
         )
         add_system_test(position_test)
@@ -591,8 +592,8 @@ target_link_libraries(gnss_block_test PUBLIC
     input_filter_adapters
     channel_adapters
     gnss_sp_libs
-    gnss_rx
     gnss_system_parameters
+    gnss_rx
 )
 
 target_include_directories(gnss_block_test PUBLIC ${CMAKE_SOURCE_DIR}/src/algorithms/libs)
@@ -620,9 +621,9 @@ target_link_libraries(gnuradio_block_test PUBLIC
     GTest::Main
     Volkgnsssdr::volkgnsssdr
     gnss_sp_libs
-    gnss_rx
-    gnss_system_parameters
     signal_source_gr_blocks
+    gnss_system_parameters
+    gnss_rx
 )
 
 add_test(gnuradio_block_test gnuradio_block_test)
@@ -641,8 +642,8 @@ target_link_libraries(matio_test
         GTest::GTest
         GTest::Main
         Matio::matio
-        gnss_rx
         gnss_system_parameters
+        gnss_rx
 )
 
 add_test(matio_test matio_test)
@@ -669,11 +670,11 @@ target_link_libraries(acq_test
         GTest::Main
         Volkgnsssdr::volkgnsssdr
         gnss_sp_libs
-        gnss_rx
-        gnss_system_parameters
         signal_generator_blocks
         acq_adapters
         signal_processing_testing_lib
+        gnss_system_parameters
+        gnss_rx
 )
 
 add_test(acq_test acq_test)
@@ -704,10 +705,10 @@ target_link_libraries(trk_test
         GTest::Main
         Volkgnsssdr::volkgnsssdr
         gnss_sp_libs
-        gnss_rx
         tracking_adapters
-        gnss_system_parameters
         signal_generator_blocks
+        gnss_system_parameters
+        gnss_rx
 )
 add_test(trk_test trk_test)
 
@@ -732,8 +733,8 @@ if(NOT ENABLE_PACKAGING)
         GTest::Main
         signal_source_adapters
         gnss_sp_libs
-        gnss_rx
         gnss_system_parameters
+        gnss_rx
     )
 
     add_test(control_thread_test control_thread_test)

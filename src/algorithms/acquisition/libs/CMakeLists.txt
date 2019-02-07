@@ -41,9 +41,9 @@ target_link_libraries(acquisition_lib
     PRIVATE
         Gflags::gflags
         Glog::glog
+        gnss_sp_libs
         gnss_system_parameters
         gnss_rx
-        gnss_sp_libs
 )
 
 set_property(TARGET acquisition_lib

@@ -669,9 +669,10 @@ target_link_libraries(acq_test
         GTest::GTest
         GTest::Main
         Volkgnsssdr::volkgnsssdr
-        gnss_sp_libs
         signal_generator_blocks
         acq_adapters
+        acq_gr_blocks
+        gnss_sp_libs
         signal_processing_testing_lib
         gnss_system_parameters
         gnss_rx

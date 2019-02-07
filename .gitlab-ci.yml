@@ -59,7 +59,7 @@ stages:
 
 # Stage "build"
 archlinux:
-  image: archlinux/devel:latest
+  image: archlinux/base:latest
   stage: build
   before_script:
     - pwd

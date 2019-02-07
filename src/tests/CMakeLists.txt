@@ -85,6 +85,7 @@ if(NOT ${GTEST_DIR_LOCAL})
     endif()
 
     if(NOT TARGET GTest::GTest)
+        file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/googletest/include)
         add_library(GTest::GTest STATIC IMPORTED)
         add_dependencies(GTest::GTest gtest-${GNSSSDR_GTEST_LOCAL_VERSION})
         set_target_properties(GTest::GTest PROPERTIES
@@ -114,20 +115,19 @@ else()
         add_library(gtest STATIC ${LIBGTEST_DEV_DIR}/googletest/src/gtest-all.cc)
         target_include_directories(gtest
             PUBLIC
-                ${LIBGTEST_DEV_DIR}/googletest/include
-                ${LIBGTEST_DEV_DIR}/googletest
+                ${GTEST_INCLUDE_DIRECTORIES}
         )
         add_library(gtest_main STATIC ${LIBGTEST_DEV_DIR}/googletest/src/gtest_main.cc)
         target_include_directories(gtest_main
             PUBLIC
-                ${LIBGTEST_DEV_DIR}/googletest/include
+                ${GTEST_INCLUDE_DIRECTORIES}
         )
         if(NOT TARGET GTest::GTest)
             add_library(GTest::GTest STATIC IMPORTED)
             add_dependencies(GTest::GTest gtest)
             set_target_properties(GTest::GTest PROPERTIES
                 IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-                INTERFACE_INCLUDE_DIRECTORIES "${LIBGTEST_DEV_DIR}/googletest/include"
+                INTERFACE_INCLUDE_DIRECTORIES "${GTEST_INCLUDE_DIRS}"
                 INTERFACE_LINK_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/${ADD_DEBUG}${CMAKE_FIND_LIBRARY_PREFIXES}gtest${FINAL_D}${CMAKE_STATIC_LIBRARY_SUFFIX}"
                 IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/${ADD_DEBUG}${CMAKE_FIND_LIBRARY_PREFIXES}gtest${FINAL_D}${CMAKE_STATIC_LIBRARY_SUFFIX}"
             )
@@ -140,7 +140,7 @@ else()
             add_dependencies(GTest::Main gtest_main)
             set_target_properties(GTest::Main PROPERTIES
                 IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-                INTERFACE_INCLUDE_DIRECTORIES "${LIBGTEST_DEV_DIR}/googletest/include"
+                INTERFACE_INCLUDE_DIRECTORIES "${GTEST_INCLUDE_DIRS}"
                 INTERFACE_LINK_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/${ADD_DEBUG}${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${FINAL_D}${CMAKE_STATIC_LIBRARY_SUFFIX}"
                 IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/${ADD_DEBUG}${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${FINAL_D}${CMAKE_STATIC_LIBRARY_SUFFIX}"
         )

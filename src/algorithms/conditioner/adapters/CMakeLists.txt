@@ -36,8 +36,8 @@ add_library(conditioner_adapters ${COND_ADAPTER_SOURCES} ${COND_ADAPTER_HEADERS}
 
 target_link_libraries(conditioner_adapters
     PUBLIC
-        gnss_rx
         Gnuradio::runtime
+        gnss_rx
     PRIVATE
         Gflags::gflags
         Glog::glog

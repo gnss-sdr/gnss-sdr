@@ -28,9 +28,8 @@ add_library(signal_generator_adapters
 
 target_link_libraries(signal_generator_adapters
     PUBLIC
-        signal_generator_blocks
-        Gnuradio::runtime
         Gnuradio::blocks
+        signal_generator_blocks
         gnss_rx
     PRIVATE
         Gflags::gflags

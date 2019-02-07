@@ -32,8 +32,8 @@ target_link_libraries(signal_generator_blocks
         Gnuradio::runtime
         gnss_system_parameters
     PRIVATE
-        gnss_sp_libs
         Volkgnsssdr::volkgnsssdr
+        gnss_sp_libs
 )
 
 target_include_directories(signal_generator_blocks

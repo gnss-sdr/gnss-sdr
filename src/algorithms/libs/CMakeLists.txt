@@ -109,9 +109,9 @@ add_library(gnss_sp_libs ${GNSS_SPLIBS_SOURCES} ${GNSS_SPLIBS_HEADERS})
 
 target_link_libraries(gnss_sp_libs
     PUBLIC
+        Armadillo::armadillo
         Boost::boost
         Gflags::gflags
-        Armadillo::armadillo
         Gnuradio::runtime
         Gnuradio::blocks
         Volk::volk ${ORC_LIBRARIES}

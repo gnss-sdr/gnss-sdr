@@ -31,12 +31,12 @@ add_library(pvt_adapters ${PVT_ADAPTER_SOURCES} ${PVT_ADAPTER_HEADERS})
 
 target_link_libraries(pvt_adapters
     PUBLIC
-        pvt_gr_blocks
         Armadillo::armadillo
         Gnuradio::runtime
         gnss_system_parameters
         gnss_rx
         pvt_lib
+        pvt_gr_blocks
     PRIVATE
         Boost::serialization
 )

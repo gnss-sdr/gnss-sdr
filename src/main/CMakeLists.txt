@@ -25,9 +25,9 @@ target_link_libraries(gnss-sdr
         Boost::system
         Gflags::gflags
         Glog::glog
+        Threads::Threads
         gnss_rx
         gnss_sdr_flags
-        Threads::Threads
 )
 
 # Disable internal logging

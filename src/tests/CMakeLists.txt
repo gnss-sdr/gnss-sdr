@@ -112,12 +112,12 @@ if(NOT ${GTEST_DIR_LOCAL})
 else()
     if(GTEST_INCLUDE_DIRS)
         set(GTEST_INCLUDE_DIRECTORIES ${GTEST_INCLUDE_DIRS} ${LIBGTEST_DEV_DIR})
-        add_library(gtest STATIC ${LIBGTEST_DEV_DIR}/googletest/src/gtest-all.cc)
+        add_library(gtest STATIC ${LIBGTEST_DEV_DIR}/src/gtest-all.cc)
         target_include_directories(gtest
             PUBLIC
                 ${GTEST_INCLUDE_DIRECTORIES}
         )
-        add_library(gtest_main STATIC ${LIBGTEST_DEV_DIR}/googletest/src/gtest_main.cc)
+        add_library(gtest_main STATIC ${LIBGTEST_DEV_DIR}/src/gtest_main.cc)
         target_include_directories(gtest_main
             PUBLIC
                 ${GTEST_INCLUDE_DIRECTORIES}

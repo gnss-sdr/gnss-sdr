@@ -357,10 +357,11 @@ if(ENABLE_UNIT_TESTING)
             Gnuradio::blocks
             Gnuradio::filter
             Gnuradio::analog
+            GTest::GTest
+            GTest::Main
             Matio::matio
             Volk::volk
             Volkgnsssdr::volkgnsssdr
-            GTest::GTest GTest::Main
             gnss_sp_libs
             gnss_rx
             gnss_system_parameters
@@ -420,17 +421,18 @@ if(ENABLE_FPGA)
     )
     target_link_libraries(gps_l1_ca_dll_pll_tracking_test_fpga
         PUBLIC
+            Armadillo::armadillo
             Boost::filesystem
             Boost::system
             Boost::thread
             Gflags::gflags
             Glog::glog
-            GTest::GTest GTest::Main
             Gnuradio::runtime
             Gnuradio::blocks
-            Armadillo::armadillo
-            Volk::volk
+            GTest::GTest
+            GTest::Main
             Matio::matio
+            Volk::volk
             channel_fsm
             gnss_sp_libs
             gnss_rx
@@ -541,7 +543,9 @@ target_link_libraries(flowgraph_test PUBLIC
     Gflags::gflags
     Glog::glog
     Gnuradio::runtime
-    GTest::GTest GTest::Main
+    GTest::GTest
+    GTest::Main
+    Volkgnsssdr::volkgnsssdr
     gnss_sp_libs
     gnss_rx
     gnss_system_parameters
@@ -549,7 +553,6 @@ target_link_libraries(flowgraph_test PUBLIC
     signal_source_gr_blocks
     input_filter_adapters
     channel_adapters
-    Volkgnsssdr::volkgnsssdr
 )
 
 target_include_directories(flowgraph_test PUBLIC ${CMAKE_SOURCE_DIR}/src/algorithms/libs)
@@ -576,11 +579,13 @@ target_link_libraries(gnss_block_test PUBLIC
     Boost::thread
     Gflags::gflags
     Glog::glog
-    GTest::GTest GTest::Main
     Gnuradio::runtime
     Gnuradio::blocks
     Gnuradio::filter
     Gnuradio::analog
+    GTest::GTest
+    GTest::Main
+    Volkgnsssdr::volkgnsssdr
     signal_source_adapters
     datatype_adapters
     input_filter_adapters
@@ -588,7 +593,6 @@ target_link_libraries(gnss_block_test PUBLIC
     gnss_sp_libs
     gnss_rx
     gnss_system_parameters
-    Volkgnsssdr::volkgnsssdr
 )
 
 target_include_directories(gnss_block_test PUBLIC ${CMAKE_SOURCE_DIR}/src/algorithms/libs)
@@ -608,16 +612,17 @@ target_link_libraries(gnuradio_block_test PUBLIC
     Boost::thread
     Gflags::gflags
     Glog::glog
-    GTest::GTest GTest::Main
     Gnuradio::runtime
     Gnuradio::blocks
     Gnuradio::filter
     Gnuradio::analog
+    GTest::GTest
+    GTest::Main
+    Volkgnsssdr::volkgnsssdr
     gnss_sp_libs
     gnss_rx
     gnss_system_parameters
     signal_source_gr_blocks
-    Volkgnsssdr::volkgnsssdr
 )
 
 add_test(gnuradio_block_test gnuradio_block_test)
@@ -633,10 +638,11 @@ target_link_libraries(matio_test
     PUBLIC
         Gflags::gflags
         Glog::glog
-        gnss_rx
-        GTest::GTest GTest::Main
-        gnss_system_parameters
+        GTest::GTest
+        GTest::Main
         Matio::matio
+        gnss_rx
+        gnss_system_parameters
 )
 
 add_test(matio_test matio_test)
@@ -655,18 +661,19 @@ target_link_libraries(acq_test
         Boost::thread
         Gflags::gflags
         Glog::glog
-        GTest::GTest GTest::Main
         Gnuradio::runtime
         Gnuradio::blocks
         Gnuradio::filter
         Gnuradio::analog
+        GTest::GTest
+        GTest::Main
+        Volkgnsssdr::volkgnsssdr
         gnss_sp_libs
         gnss_rx
         gnss_system_parameters
         signal_generator_blocks
         acq_adapters
         signal_processing_testing_lib
-        Volkgnsssdr::volkgnsssdr
 )
 
 add_test(acq_test acq_test)
@@ -689,17 +696,18 @@ target_link_libraries(trk_test
         Boost::thread
         Gflags::gflags
         Glog::glog
-        GTest::GTest GTest::Main
         Gnuradio::runtime
         Gnuradio::blocks
         Gnuradio::filter
         Gnuradio::analog
+        GTest::GTest
+        GTest::Main
+        Volkgnsssdr::volkgnsssdr
         gnss_sp_libs
         gnss_rx
         tracking_adapters
         gnss_system_parameters
         signal_generator_blocks
-        Volkgnsssdr::volkgnsssdr
 )
 add_test(trk_test trk_test)
 
@@ -720,10 +728,12 @@ if(NOT ENABLE_PACKAGING)
         Boost::thread
         Gflags::gflags
         Glog::glog
+        GTest::GTest
+        GTest::Main
         signal_source_adapters
         gnss_sp_libs
-        GTest::GTest GTest::Main
         gnss_rx
+        gnss_system_parameters
     )
 
     add_test(control_thread_test control_thread_test)

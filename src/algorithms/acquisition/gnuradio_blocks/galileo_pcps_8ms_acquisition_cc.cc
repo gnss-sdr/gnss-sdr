@@ -30,7 +30,6 @@
  */
 
 #include "galileo_pcps_8ms_acquisition_cc.h"
-#include "control_message_factory.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>

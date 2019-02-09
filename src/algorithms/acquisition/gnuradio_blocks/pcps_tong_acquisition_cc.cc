@@ -50,7 +50,6 @@
 
 #include "pcps_tong_acquisition_cc.h"
 #include "GPS_L1_CA.h"  // for GPS_TWO_PI
-#include "control_message_factory.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>

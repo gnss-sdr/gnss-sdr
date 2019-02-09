@@ -28,8 +28,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef MONITOR_PVT_H_
-#define MONITOR_PVT_H_
+#ifndef GNSS_SDR_MONITOR_PVT_H_
+#define GNSS_SDR_MONITOR_PVT_H_
 
 #include <boost/serialization/nvp.hpp>
 #include <cstdint>
@@ -137,4 +137,4 @@ public:
     }
 };
 
-#endif /* MONITOR_PVT_H_ */
+#endif /* GNSS_SDR_MONITOR_PVT_H_ */

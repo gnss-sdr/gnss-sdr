@@ -34,12 +34,11 @@
 #ifndef GNSS_SDR_GNSS_SYNCHRO_MONITOR_H
 #define GNSS_SDR_GNSS_SYNCHRO_MONITOR_H
 
-
 #include "gnss_synchro_udp_sink.h"
 #include <gnuradio/sync_block.h>
-#include <fstream>
+#include <memory>
 #include <string>
-#include <utility>
+#include <vector>
 
 
 class gnss_synchro_monitor;

@@ -182,7 +182,7 @@ GNSSBlockFactory::~GNSSBlockFactory() = default;
 
 
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalSource(
-    const std::shared_ptr<ConfigurationInterface>& configuration, gr::msg_queue::sptr queue, int ID)
+    const std::shared_ptr<ConfigurationInterface>& configuration, const gr::msg_queue::sptr& queue, int ID)
 {
     std::string default_implementation = "File_Signal_Source";
     std::string role = "SignalSource";  //backwards compatibility for old conf files

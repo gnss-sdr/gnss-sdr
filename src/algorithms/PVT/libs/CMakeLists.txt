@@ -53,15 +53,15 @@ list(SORT PVT_LIB_SOURCES)
 
 source_group(Headers FILES ${PVT_LIB_HEADERS})
 
-add_library(pvt_lib ${PVT_LIB_SOURCES} ${PVT_LIB_HEADERS})
+add_library(pvt_libs ${PVT_LIB_SOURCES} ${PVT_LIB_HEADERS})
 
-target_link_libraries(pvt_lib
+target_link_libraries(pvt_libs
     PUBLIC
         Armadillo::armadillo
         Boost::date_time
-        gnss_sp_libs
-        rtklib_lib
-        gnss_system_parameters
+        algorithms_libs
+        algorithms_libs_rtklib
+        core_system_parameters
     PRIVATE
         Boost::filesystem
         Boost::system
@@ -70,16 +70,16 @@ target_link_libraries(pvt_lib
         Matio::matio
 )
 
-target_include_directories(pvt_lib
+target_include_directories(pvt_libs
     PUBLIC
         ${CMAKE_SOURCE_DIR}/src/algorithms/libs
         ${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib
         ${CMAKE_SOURCE_DIR}/src/core/receiver
 )
 
-target_compile_definitions(pvt_lib PRIVATE -DGNSS_SDR_VERSION="${VERSION}")
+target_compile_definitions(pvt_libs PRIVATE -DGNSS_SDR_VERSION="${VERSION}")
 
-set_property(TARGET pvt_lib APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+set_property(TARGET pvt_libs APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/algorithms/libs>
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib>

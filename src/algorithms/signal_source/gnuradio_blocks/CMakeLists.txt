@@ -62,7 +62,7 @@ target_link_libraries(signal_source_gr_blocks
     PUBLIC
         Boost::thread
         Gnuradio::runtime
-        signal_source_lib
+        signal_source_libs
     PRIVATE
         Gflags::gflags
         Glog::glog

@@ -32,24 +32,24 @@ list(SORT CORE_MONITOR_LIBS_SOURCES)
 
 source_group(Headers FILES ${CORE_MONITOR_LIBS_HEADERS})
 
-add_library(core_monitor_lib
+add_library(core_monitor
     ${CORE_MONITOR_LIBS_SOURCES}
     ${CORE_MONITOR_LIBS_HEADERS}
 )
 
-target_link_libraries(core_monitor_lib
+target_link_libraries(core_monitor
     PUBLIC
         Boost::serialization
         Boost::system
         Gnuradio::runtime
-        gnss_system_parameters
+        core_system_parameters
     PRIVATE
         Gflags::gflags
         Glog::glog
         Gnuradio::pmt
 )
 
-set_property(TARGET core_monitor_lib
+set_property(TARGET core_monitor
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

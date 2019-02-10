@@ -105,9 +105,9 @@ list(SORT GNSS_SPLIBS_SOURCES)
 
 source_group(Headers FILES ${GNSS_SPLIBS_HEADERS})
 
-add_library(gnss_sp_libs ${GNSS_SPLIBS_SOURCES} ${GNSS_SPLIBS_HEADERS})
+add_library(algorithms_libs ${GNSS_SPLIBS_SOURCES} ${GNSS_SPLIBS_HEADERS})
 
-target_link_libraries(gnss_sp_libs
+target_link_libraries(algorithms_libs
     PUBLIC
         Armadillo::armadillo
         Boost::boost
@@ -116,7 +116,7 @@ target_link_libraries(gnss_sp_libs
         Gnuradio::blocks
         Volk::volk ${ORC_LIBRARIES}
         Volkgnsssdr::volkgnsssdr
-        gnss_system_parameters
+        core_system_parameters
         ${OPT_LIBRARIES}
     PRIVATE
         Boost::filesystem
@@ -124,17 +124,17 @@ target_link_libraries(gnss_sp_libs
         Glog::glog
 )
 
-target_include_directories(gnss_sp_libs
+target_include_directories(algorithms_libs
     PUBLIC
         ${CMAKE_SOURCE_DIR}/src/core/interfaces
         ${CMAKE_SOURCE_DIR}/src/core/receiver
 )
 
-target_compile_definitions(gnss_sp_libs
+target_compile_definitions(algorithms_libs
     PUBLIC -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}"
 )
 
-set_property(TARGET gnss_sp_libs
+set_property(TARGET algorithms_libs
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

@@ -29,23 +29,23 @@ list(SORT ACQUISITION_LIB_SOURCES)
 
 source_group(Headers FILES ${ACQUISITION_LIB_HEADERS})
 
-add_library(acquisition_lib
+add_library(acquisition_libs
     ${ACQUISITION_LIB_SOURCES}
     ${ACQUISITION_LIB_HEADERS}
 )
 
-target_link_libraries(acquisition_lib
+target_link_libraries(acquisition_libs
     PUBLIC
         Volk::volk
         Gnuradio::fft
     PRIVATE
         Gflags::gflags
         Glog::glog
-        gnss_sp_libs
-        gnss_system_parameters
+        algorithms_libs
+        core_system_parameters
 )
 
-set_property(TARGET acquisition_lib
+set_property(TARGET acquisition_libs
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

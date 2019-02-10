@@ -33,19 +33,19 @@ endif()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MY_C_FLAGS}")
 
-add_library(supl_library STATIC ${ASN_RRLP_SOURCES} ${ASN_SUPL_SOURCES} ${SUPL_SOURCES})
+add_library(core_libs_supl STATIC ${ASN_RRLP_SOURCES} ${ASN_SUPL_SOURCES} ${SUPL_SOURCES})
 
 if(OPENSSL_FOUND)
-    target_compile_definitions(supl_library PUBLIC -DUSE_OPENSSL_FALLBACK=1)
+    target_compile_definitions(core_libs_supl PUBLIC -DUSE_OPENSSL_FALLBACK=1)
 endif()
 
-target_link_libraries(supl_library
+target_link_libraries(core_libs_supl
     PUBLIC
         ${GNUTLS_LIBRARIES}
         ${GNUTLS_OPENSSL_LIBRARY}
 )
 
-target_include_directories(supl_library
+target_include_directories(core_libs_supl
     PUBLIC
         ${GNUTLS_INCLUDE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}
@@ -53,7 +53,7 @@ target_include_directories(supl_library
         ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
 )
 
-set_target_properties(supl_library PROPERTIES
+set_target_properties(core_libs_supl PROPERTIES
     LINKER_LANGUAGE C
     INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR};${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl;${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp;${GNUTLS_INCLUDE_DIR}"
 )

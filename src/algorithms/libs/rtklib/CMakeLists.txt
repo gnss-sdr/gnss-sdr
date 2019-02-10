@@ -63,11 +63,11 @@ list(SORT RTKLIB_LIB_SOURCES)
 
 source_group(Headers FILES ${RTKLIB_LIB_HEADERS})
 
-add_library(rtklib_lib ${RTKLIB_LIB_SOURCES} ${RTKLIB_LIB_HEADERS})
+add_library(algorithms_libs_rtklib ${RTKLIB_LIB_SOURCES} ${RTKLIB_LIB_HEADERS})
 
-target_link_libraries(rtklib_lib
+target_link_libraries(algorithms_libs_rtklib
     PUBLIC
-        gnss_system_parameters
+        core_system_parameters
     PRIVATE
         Gflags::gflags
         Glog::glog
@@ -75,7 +75,7 @@ target_link_libraries(rtklib_lib
         ${LAPACK}
 )
 
-set_property(TARGET rtklib_lib
+set_property(TARGET algorithms_libs_rtklib
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

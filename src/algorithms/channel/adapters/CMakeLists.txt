@@ -29,7 +29,7 @@ source_group(Headers FILES ${CHANNEL_ADAPTER_HEADERS})
 target_link_libraries(channel_adapters
     PUBLIC
         Gnuradio::runtime
-        channel_fsm
+        channel_libs
     PRIVATE
         Gflags::gflags
         Glog::glog

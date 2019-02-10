@@ -37,13 +37,13 @@ target_link_libraries(obs_gr_blocks
     PUBLIC
         Boost::boost
         Gnuradio::blocks
-        gnss_system_parameters
+        core_system_parameters
     PRIVATE
         Gflags::gflags
         Glog::glog
         Boost::filesystem
         Matio::matio
-        gnss_sp_libs
+        algorithms_libs
 )
 
 set_property(TARGET obs_gr_blocks

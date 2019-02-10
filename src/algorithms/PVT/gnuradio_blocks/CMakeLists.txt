@@ -32,13 +32,13 @@ target_link_libraries(pvt_gr_blocks
     PUBLIC
         Boost::date_time
         Gnuradio::runtime
-        pvt_lib
+        pvt_libs
     PRIVATE
         Gflags::gflags
         Glog::glog
         Boost::filesystem
         Boost::system
-        gnss_system_parameters
+        core_system_parameters
 )
 
 target_include_directories(pvt_gr_blocks

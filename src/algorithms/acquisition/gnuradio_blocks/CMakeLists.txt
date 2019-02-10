@@ -64,15 +64,15 @@ list(SORT ACQ_GR_BLOCKS_SOURCES)
 
 source_group(Headers FILES ${ACQ_GR_BLOCKS_HEADERS})
 
-add_library(acq_gr_blocks ${ACQ_GR_BLOCKS_SOURCES} ${ACQ_GR_BLOCKS_HEADERS})
+add_library(acquisition_gr_blocks ${ACQ_GR_BLOCKS_SOURCES} ${ACQ_GR_BLOCKS_HEADERS})
 
-target_link_libraries(acq_gr_blocks
+target_link_libraries(acquisition_gr_blocks
     PUBLIC
         Gnuradio::runtime
         Gnuradio::fft
         Volk::volk
-        acquisition_lib
-        gnss_system_parameters
+        acquisition_libs
+        core_system_parameters
         ${OPT_LIBRARIES}
     PRIVATE
         Boost::filesystem
@@ -80,10 +80,10 @@ target_link_libraries(acq_gr_blocks
         Glog::glog
         Matio::matio
         Volkgnsssdr::volkgnsssdr
-        gnss_sp_libs
+        algorithms_libs
 )
 
-target_include_directories(acq_gr_blocks
+target_include_directories(acquisition_gr_blocks
     PUBLIC
         ${CMAKE_SOURCE_DIR}/src/algorithms/libs
     PRIVATE
@@ -91,10 +91,10 @@ target_include_directories(acq_gr_blocks
 )
 
 if(OPENCL_FOUND)
-    target_include_directories(acq_gr_blocks PUBLIC ${OPENCL_INCLUDE_DIRS})
+    target_include_directories(acquisition_gr_blocks PUBLIC ${OPENCL_INCLUDE_DIRS})
 endif()
 
-set_property(TARGET acq_gr_blocks
+set_property(TARGET acquisition_gr_blocks
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

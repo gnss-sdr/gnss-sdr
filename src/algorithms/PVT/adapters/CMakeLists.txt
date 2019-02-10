@@ -34,8 +34,8 @@ target_link_libraries(pvt_adapters
         Armadillo::armadillo
         Gnuradio::runtime
         pvt_gr_blocks
-        pvt_lib
-        gnss_system_parameters
+        pvt_libs
+        core_system_parameters
     PRIVATE
         Boost::serialization
 )

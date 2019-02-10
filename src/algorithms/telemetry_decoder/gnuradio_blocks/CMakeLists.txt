@@ -53,8 +53,8 @@ target_link_libraries(telemetry_decoder_gr_blocks
         Gnuradio::runtime
         Volkgnsssdr::volkgnsssdr
         telemetry_decoder_libswiftcnav
-        telemetry_decoder_lib
-        gnss_system_parameters
+        telemetry_decoder_libs
+        core_system_parameters
     PRIVATE
         Boost::boost
         Gflags::gflags

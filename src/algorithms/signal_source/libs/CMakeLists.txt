@@ -65,20 +65,20 @@ list(SORT SIGNAL_SOURCE_LIB_SOURCES)
 
 source_group(Headers FILES ${SIGNAL_SOURCE_LIB_HEADERS})
 
-add_library(signal_source_lib ${SIGNAL_SOURCE_LIB_SOURCES} ${SIGNAL_SOURCE_LIB_HEADERS})
+add_library(signal_source_libs ${SIGNAL_SOURCE_LIB_SOURCES} ${SIGNAL_SOURCE_LIB_HEADERS})
 
-target_link_libraries(signal_source_lib
+target_link_libraries(signal_source_libs
     PUBLIC
         Boost::boost
         Gnuradio::runtime
     PRIVATE
         Gflags::gflags
         Glog::glog
-        gnss_rx
+        core_receiver
 )
 
 if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
-    target_link_libraries(signal_source_lib
+    target_link_libraries(signal_source_libs
         PUBLIC
             Gnuradio::iio
         PRIVATE
@@ -87,12 +87,12 @@ if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
 endif()
 
 if(ENABLE_FMCOMMS2 OR ENABLE_AD9361)
-    target_link_libraries(signal_source_lib
+    target_link_libraries(signal_source_libs
         PUBLIC
             Iio::iio
     )
 endif()
 
-set_property(TARGET signal_source_lib APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+set_property(TARGET signal_source_libs APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

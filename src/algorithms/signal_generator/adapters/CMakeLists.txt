@@ -33,7 +33,7 @@ target_link_libraries(signal_generator_adapters
     PRIVATE
         Gflags::gflags
         Glog::glog
-        gnss_sp_libs
+        algorithms_libs
 )
 
 target_include_directories(signal_generator_adapters

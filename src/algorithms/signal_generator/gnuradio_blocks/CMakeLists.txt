@@ -30,10 +30,10 @@ target_link_libraries(signal_generator_blocks
     PUBLIC
         Boost::boost
         Gnuradio::runtime
-        gnss_system_parameters
+        core_system_parameters
     PRIVATE
         Volkgnsssdr::volkgnsssdr
-        gnss_sp_libs
+        algorithms_libs
 )
 
 target_include_directories(signal_generator_blocks

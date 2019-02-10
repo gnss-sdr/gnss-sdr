@@ -364,25 +364,25 @@ if(ENABLE_UNIT_TESTING)
             Volkgnsssdr::volkgnsssdr
             signal_source_adapters
             signal_source_gr_blocks
-            signal_source_lib
-            datatype_adapters
+            signal_source_libs
+            data_type_adapters
             input_filter_adapters
             resampler_adapters
             channel_adapters
-            acq_adapters
+            acquisition_adapters
             tracking_adapters
-            tracking_lib
+            tracking_libs
             telemetry_decoder_adapters
             obs_adapters
             signal_generator_adapters
             pvt_adapters
-            pvt_lib
-            gnss_sp_libs
-            core_monitor_lib
+            pvt_libs
+            algorithms_libs
+            core_monitor
             signal_processing_testing_lib
             system_testing_lib
-            gnss_rx
-            gnss_system_parameters
+            core_receiver
+            core_system_parameters
     )
     if(ENABLE_UNIT_TESTING_EXTRA)
         target_link_libraries(run_tests PUBLIC Gpstk::gpstk)
@@ -436,13 +436,13 @@ if(ENABLE_FPGA)
             GTest::Main
             Matio::matio
             Volk::volk
-            channel_fsm
-            datatype_adapters
+            channel_libs
+            data_type_adapters
             tracking_adapters
             signal_processing_testing_lib
-            gnss_sp_libs
-            gnss_rx
-            gnss_system_parameters
+            algorithms_libs
+            core_receiver
+            core_system_parameters
     )
     install(TARGETS gps_l1_ca_dll_pll_tracking_test_fpga
         RUNTIME DESTINATION bin
@@ -465,7 +465,7 @@ function(add_system_test executable)
     add_executable(${executable} ${SYSTEM_TEST_SOURCES})
 
     target_include_directories(${executable} PUBLIC ${OPT_INCLUDES_} ${CMAKE_SOURCES_DIR}/src/algorithms/libs)
-    target_link_libraries(${executable} PUBLIC ${OPT_LIBS_} gnss_sp_libs)
+    target_link_libraries(${executable} PUBLIC ${OPT_LIBS_} algorithms_libs)
 
     if(ENABLE_INSTALL_TESTS)
         if(EXISTS ${CMAKE_SOURCE_DIR}/install/${executable})
@@ -497,8 +497,8 @@ if(ENABLE_SYSTEM_TESTING)
         Threads::Threads Gflags::gflags Glog::glog
         Gnuradio::runtime GTest::GTest GTest::Main
         Gnuradio::blocks Gnuradio::filter
-        Gnuradio::analog gnss_sp_libs
-        gnss_rx gnss_system_parameters
+        Gnuradio::analog algorithms_libs
+        core_receiver core_system_parameters
     )
     add_system_test(ttff)
 
@@ -509,7 +509,7 @@ if(ENABLE_SYSTEM_TESTING)
             GTest::GTest GTest::Main Gnuradio::runtime
             Gnuradio::blocks Gnuradio::filter
             Gnuradio::analog Matio::matio Volkgnsssdr::volkgnsssdr
-            gnss_sp_libs gnss_rx gnss_system_parameters
+            algorithms_libs core_receiver core_system_parameters
             system_testing_lib signal_processing_testing_lib
         )
         add_system_test(position_test)
@@ -555,12 +555,12 @@ if(NOT ENABLE_PACKAGING)
             Volkgnsssdr::volkgnsssdr
             signal_source_adapters
             signal_source_gr_blocks
-            signal_source_lib
+            signal_source_libs
             input_filter_adapters
             channel_adapters
-            gnss_rx
-            gnss_sp_libs
-            gnss_system_parameters
+            core_receiver
+            algorithms_libs
+            core_system_parameters
     )
 
     target_include_directories(flowgraph_test
@@ -604,13 +604,13 @@ if(NOT ENABLE_PACKAGING)
             Volkgnsssdr::volkgnsssdr
             signal_source_adapters
             signal_source_gr_blocks
-            signal_source_lib
-            datatype_adapters
+            signal_source_libs
+            data_type_adapters
             input_filter_adapters
             channel_adapters
-            gnss_rx
-            gnss_sp_libs
-            gnss_system_parameters
+            core_receiver
+            algorithms_libs
+            core_system_parameters
     )
 
     target_include_directories(gnss_block_test PUBLIC ${CMAKE_SOURCE_DIR}/src/algorithms/libs)
@@ -647,10 +647,10 @@ if(NOT ENABLE_PACKAGING)
             GTest::Main
             Volkgnsssdr::volkgnsssdr
             signal_source_gr_blocks
-            signal_source_lib
-            gnss_rx
-            gnss_sp_libs
-            gnss_system_parameters
+            signal_source_libs
+            core_receiver
+            algorithms_libs
+            core_system_parameters
     )
 
     add_test(gnuradio_block_test gnuradio_block_test)
@@ -672,8 +672,8 @@ target_link_libraries(matio_test
         GTest::GTest
         GTest::Main
         Matio::matio
-        gnss_rx
-        gnss_system_parameters
+        core_receiver
+        core_system_parameters
 )
 
 add_test(matio_test matio_test)
@@ -704,13 +704,13 @@ if(NOT ENABLE_PACKAGING)
             Volkgnsssdr::volkgnsssdr
             signal_generator_blocks
             signal_source_gr_blocks
-            signal_source_lib
-            acq_adapters
-            acq_gr_blocks
-            gnss_sp_libs
+            signal_source_libs
+            acquisition_adapters
+            acquisition_gr_blocks
+            algorithms_libs
             signal_processing_testing_lib
-            gnss_rx
-            gnss_system_parameters
+            core_receiver
+            core_system_parameters
     )
 
     add_test(acq_test acq_test)
@@ -744,12 +744,12 @@ if(NOT ENABLE_PACKAGING)
             GTest::Main
             Volkgnsssdr::volkgnsssdr
             signal_source_gr_blocks
-            signal_source_lib
-            gnss_sp_libs
+            signal_source_libs
+            algorithms_libs
             tracking_adapters
             signal_generator_blocks
-            gnss_rx
-            gnss_system_parameters
+            core_receiver
+            core_system_parameters
     )
 
     add_test(trk_test trk_test)
@@ -777,10 +777,10 @@ if(NOT ENABLE_PACKAGING)
             GTest::Main
             signal_source_adapters
             signal_source_gr_blocks
-            signal_source_lib
-            gnss_sp_libs
-            gnss_rx
-            gnss_system_parameters
+            signal_source_libs
+            algorithms_libs
+            core_receiver
+            core_system_parameters
     )
 
     add_test(control_thread_test control_thread_test)

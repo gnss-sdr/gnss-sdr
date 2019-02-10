@@ -27,16 +27,16 @@ target_link_libraries(front_end_cal_lib
     PUBLIC
         Armadillo::armadillo
         Threads::Threads
-        acq_adapters
         Volkgnsssdr::volkgnsssdr ${ORC_LIBRARIES}
         signal_source_adapters
         signal_source_gr_blocks
-        signal_source_lib
-        rx_core_lib
+        signal_source_libs
+        acquisition_adapters
         gnss_sdr_flags
-        gnss_rx
-        channel_fsm
-        gnss_sp_libs
+        channel_libs
+        algorithms_libs
+        core_receiver
+        core_libs
     PRIVATE
         Gflags::gflags
         Glog::glog
@@ -51,8 +51,8 @@ add_executable(front-end-cal ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
 target_link_libraries(front-end-cal
     PUBLIC
         Volkgnsssdr::volkgnsssdr ${ORC_LIBRARIES}
-        rx_core_lib
-        gnss_rx
+        core_libs
+        core_receiver
         front_end_cal_lib
         gnss_sdr_flags
     PRIVATE

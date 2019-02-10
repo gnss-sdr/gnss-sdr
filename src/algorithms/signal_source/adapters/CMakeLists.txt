@@ -189,10 +189,10 @@ target_link_libraries(signal_source_adapters
         Gnuradio::runtime
         Gnuradio::blocks
         signal_source_gr_blocks
-        signal_source_lib
+        signal_source_libs
     PRIVATE
         gnss_sdr_flags
-        gnss_system_parameters
+        core_system_parameters
         Gflags::gflags
         Glog::glog
         Volk::volk

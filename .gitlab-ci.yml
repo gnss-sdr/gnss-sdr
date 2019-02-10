@@ -127,8 +127,8 @@ crosscompile:
       - binaries/*
 
 
-debian8.11:
-  image: debian:8.11-slim
+debian8:
+  image: debian:jessie-slim
   stage: build
   script:
     - apt-get update
@@ -142,8 +142,8 @@ debian8.11:
   allow_failure: true
 
 
-debian9.5:
-  image: debian:9.5-slim
+debian9:
+  image: debian:stretch-slim
   stage: build
   script:
     - apt-get update
@@ -157,7 +157,7 @@ debian9.5:
 
 
 debian10:
-  image: debian:buster
+  image: debian:buster-slim
   stage: build
   script:
     - apt-get update

@@ -22,7 +22,6 @@ set(GNSS_SPLIBS_SOURCES
     gps_l2c_signal.cc
     gps_l5_signal.cc
     galileo_e1_signal_processing.cc
-    gnss_sdr_valve.cc
     gnss_sdr_sample_counter.cc
     gnss_signal_processing.cc
     gps_sdr_signal_processing.cc
@@ -41,13 +40,13 @@ set(GNSS_SPLIBS_SOURCES
     conjugate_ic.cc
     gnss_sdr_create_directory.cc
     geofunctions.cc
+    rtcm.cc
 )
 
 set(GNSS_SPLIBS_HEADERS
     gps_l2c_signal.h
     gps_l5_signal.h
     galileo_e1_signal_processing.h
-    gnss_sdr_valve.h
     gnss_sdr_sample_counter.h
     gnss_signal_processing.h
     gps_sdr_signal_processing.h
@@ -67,6 +66,7 @@ set(GNSS_SPLIBS_HEADERS
     gnss_sdr_create_directory.h
     gnss_circular_deque.h
     geofunctions.h
+    rtcm.h
 )
 
 if(ENABLE_FPGA)
@@ -122,7 +122,12 @@ target_link_libraries(gnss_sp_libs
         Boost::filesystem
         Gflags::gflags
         Glog::glog
-        gnss_rx
+)
+
+target_include_directories(gnss_sp_libs
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+        ${CMAKE_SOURCE_DIR}/src/core/receiver
 )
 
 target_compile_definitions(gnss_sp_libs

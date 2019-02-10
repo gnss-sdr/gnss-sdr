@@ -30,11 +30,15 @@ target_link_libraries(channel_adapters
     PUBLIC
         Gnuradio::runtime
         channel_fsm
-        gnss_rx
     PRIVATE
         Gflags::gflags
         Glog::glog
         gnss_sdr_flags
+)
+
+target_include_directories(channel_adapters
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
 )
 
 set_property(TARGET channel_adapters

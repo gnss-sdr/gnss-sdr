@@ -100,6 +100,11 @@ target_link_libraries(tracking_adapters
         gnss_sdr_flags
 )
 
+target_include_directories(tracking_adapters
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+)
+
 if(ENABLE_CUDA)
     target_link_libraries(tracking_adapters
         PUBLIC

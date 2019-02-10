@@ -39,9 +39,6 @@ add_library(telemetry_decoder_lib
 )
 
 target_link_libraries(telemetry_decoder_lib
-    PUBLIC
-        gnss_system_parameters
-        gnss_rx
     PRIVATE
         Gflags::gflags
         Glog::glog

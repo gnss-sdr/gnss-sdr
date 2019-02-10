@@ -96,7 +96,6 @@ target_link_libraries(acq_adapters
         gnss_sp_libs
         gnss_sdr_flags
         acq_gr_blocks
-        rx_core_lib
         gnss_system_parameters
     PRIVATE
         Boost::boost
@@ -104,6 +103,11 @@ target_link_libraries(acq_adapters
         Glog::glog
         Volkgnsssdr::volkgnsssdr
         acquisition_lib
+)
+
+target_include_directories(acq_adapters
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
 )
 
 set_property(TARGET acq_adapters

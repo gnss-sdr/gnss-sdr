@@ -51,7 +51,6 @@ target_link_libraries(datatype_adapters
         data_type_gr_blocks
         gnss_sp_libs
         gnss_system_parameters
-        gnss_rx
     PRIVATE
         Gflags::gflags
         Glog::glog
@@ -61,6 +60,7 @@ target_link_libraries(datatype_adapters
 target_include_directories(datatype_adapters
     PUBLIC
         ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
 )
 
 set_property(TARGET datatype_adapters

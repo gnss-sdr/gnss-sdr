@@ -34,7 +34,7 @@ target_compile_definitions(gnss-sdr PRIVATE -DGNSS_SDR_VERSION="${VERSION}")
 
 # Disable internal logging
 if(NOT ENABLE_LOG)
-    target_compile_definitions(gnss-sdr PRIVATE -DGOOGLE_STRIP_LOG=1)
+    target_compile_definitions(gnss-sdr PUBLIC -DGOOGLE_STRIP_LOG=1)
 endif()
 
 if(ENABLE_CUDA)

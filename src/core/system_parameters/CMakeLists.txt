@@ -45,7 +45,6 @@ set(SYSTEM_PARAMETERS_SOURCES
     gps_cnav_navigation_message.cc
     gps_cnav_iono.cc
     gps_cnav_utc_model.cc
-    rtcm.cc
     glonass_gnav_ephemeris.cc
     glonass_gnav_almanac.cc
     glonass_gnav_utc_model.cc
@@ -75,7 +74,6 @@ set(SYSTEM_PARAMETERS_HEADERS
     gps_cnav_navigation_message.h
     gps_cnav_iono.h
     gps_cnav_utc_model.h
-    rtcm.h
     glonass_gnav_ephemeris.h
     glonass_gnav_almanac.h
     glonass_gnav_utc_model.h
@@ -115,7 +113,6 @@ target_link_libraries(gnss_system_parameters
         Boost::date_time
         Boost::serialization
         Glog::glog
-        gnss_rx
     PRIVATE
         Gflags::gflags
 )

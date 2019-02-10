@@ -55,12 +55,16 @@ target_link_libraries(telemetry_decoder_adapters
     PUBLIC
         telemetry_decoder_gr_blocks
         gnss_system_parameters
-        gnss_rx
     PRIVATE
         Gflags::gflags
         Glog::glog
         Gnuradio::runtime
         telemetry_decoder_lib
+)
+
+target_include_directories(telemetry_decoder_adapters
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
 )
 
 set_property(TARGET telemetry_decoder_adapters

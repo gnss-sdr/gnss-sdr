@@ -1657,8 +1657,8 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Beidou_Dnav_Iono& 
     // -------- Line 6 leap seconds
     // For leap second information, see http://www.endruntechnologies.com/leap.htm
     line.clear();
-    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.d_DeltaT_LS), 6);
-    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.d_DeltaT_LSF), 6);
+    line += Rinex_Printer::rightJustify(std::to_string(utc_model.d_DeltaT_LS), 6);
+    line += Rinex_Printer::rightJustify(std::to_string(utc_model.d_DeltaT_LSF), 6);
     line += Rinex_Printer::rightJustify(std::to_string(utc_model.i_WN_LSF), 6);
     line += Rinex_Printer::rightJustify(std::to_string(utc_model.i_DN), 6);
     line += std::string(36, ' ');
@@ -2831,8 +2831,8 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Beidou_Dnav_Utc_M
                         }
                     else if (line_str.find("LEAP SECONDS", 59) != std::string::npos)
                         {
-                            line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.d_DeltaT_LS), 6);
-                            line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.d_DeltaT_LSF), 6);
+                            line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.d_DeltaT_LS), 6);
+                            line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.d_DeltaT_LSF), 6);
                             line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.i_WN_LSF), 6);
                             line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.i_DN), 6);
                             line_aux += std::string(36, ' ');
@@ -7666,8 +7666,8 @@ void Rinex_Printer::update_obs_header(std::fstream& out, const Beidou_Dnav_Utc_M
                     if (line_str.find("TIME OF FIRST OBS", 59) != std::string::npos)
                         {
                             data.push_back(line_str);
-                            line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.d_DeltaT_LS), 6);
-                            line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.d_DeltaT_LSF), 6);
+                            line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.d_DeltaT_LS), 6);
+                            line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.d_DeltaT_LSF), 6);
                             line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.i_WN_LSF), 6);
                             line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.i_DN), 6);
                             line_aux += std::string(36, ' ');

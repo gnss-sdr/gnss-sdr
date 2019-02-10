@@ -33,7 +33,6 @@
 #include "pcps_assisted_acquisition_cc.h"
 #include "GPS_L1_CA.h"
 #include "concurrent_map.h"
-#include "control_message_factory.h"
 #include "gps_acq_assist.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>

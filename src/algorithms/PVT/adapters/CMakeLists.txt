@@ -36,9 +36,13 @@ target_link_libraries(pvt_adapters
         pvt_gr_blocks
         pvt_lib
         gnss_system_parameters
-        gnss_rx
     PRIVATE
         Boost::serialization
+)
+
+target_include_directories(pvt_adapters
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
 )
 
 if(Boost_VERSION LESS 105800)

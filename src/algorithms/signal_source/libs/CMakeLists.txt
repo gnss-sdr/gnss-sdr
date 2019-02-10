@@ -49,12 +49,14 @@ endif()
 set(SIGNAL_SOURCE_LIB_SOURCES
     rtl_tcp_commands.cc
     rtl_tcp_dongle_info.cc
+    gnss_sdr_valve.cc
     ${OPT_SIGNAL_SOURCE_LIB_SOURCES}
 )
 
 set(SIGNAL_SOURCE_LIB_HEADERS
     rtl_tcp_commands.h
     rtl_tcp_dongle_info.h
+    gnss_sdr_valve.h
     ${OPT_SIGNAL_SOURCE_LIB_HEADERS}
 )
 
@@ -68,9 +70,11 @@ add_library(signal_source_lib ${SIGNAL_SOURCE_LIB_SOURCES} ${SIGNAL_SOURCE_LIB_H
 target_link_libraries(signal_source_lib
     PUBLIC
         Boost::boost
+        Gnuradio::runtime
     PRIVATE
         Gflags::gflags
         Glog::glog
+        gnss_rx
 )
 
 if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)

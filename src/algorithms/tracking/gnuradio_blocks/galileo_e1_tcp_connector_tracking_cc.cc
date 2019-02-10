@@ -39,7 +39,6 @@
 #include "galileo_e1_tcp_connector_tracking_cc.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
-#include "control_message_factory.h"
 #include "galileo_e1_signal_processing.h"
 #include "gnss_sdr_flags.h"
 #include "lock_detectors.h"

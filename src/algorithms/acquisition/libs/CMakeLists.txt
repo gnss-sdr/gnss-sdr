@@ -43,7 +43,6 @@ target_link_libraries(acquisition_lib
         Glog::glog
         gnss_sp_libs
         gnss_system_parameters
-        gnss_rx
 )
 
 set_property(TARGET acquisition_lib

@@ -37,7 +37,6 @@
 
 #include "gps_l1_ca_tcp_connector_tracking_cc.h"
 #include "GPS_L1_CA.h"
-#include "control_message_factory.h"
 #include "gnss_sdr_flags.h"
 #include "gps_sdr_signal_processing.h"
 #include "lock_detectors.h"

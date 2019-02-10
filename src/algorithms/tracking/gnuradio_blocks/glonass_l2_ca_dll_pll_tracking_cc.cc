@@ -38,7 +38,6 @@
 
 #include "glonass_l2_ca_dll_pll_tracking_cc.h"
 #include "GLONASS_L1_L2_CA.h"
-#include "control_message_factory.h"
 #include "glonass_l2_signal_processing.h"
 #include "gnss_sdr_flags.h"
 #include "lock_detectors.h"

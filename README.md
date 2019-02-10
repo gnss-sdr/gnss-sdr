@@ -112,12 +112,12 @@ Once you have installed these packages, you can jump directly to [download the s
 
 #### Arch Linux
 
-If you are using Arch Linux (with base-devel group installed):
+If you are using Arch Linux:
 
 ~~~~~~
-$ pacman -S cmake git boost boost-libs log4cpp libvolk gnuradio gnuradio-osmosdr \
-       blas lapack gflags google-glog openssl pugixml python-mako python-six \
-       libmatio libpcap gtest
+$ pacman -S gcc make cmake git boost boost-libs log4cpp libvolk gnuradio \
+       gnuradio-osmosdr blas lapack gflags google-glog openssl pugixml \
+       python-mako python-six libmatio libpcap gtest
 ~~~~~~
 
 Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
@@ -596,7 +596,7 @@ $ pip install six
 $ brew install openssl
 ~~~~~~
 
-In the last step, Homebrew installs OpenSSL but it does not link it into `/usr/local`. Thus, you must manually link it instead:
+In the last step, Homebrew installs OpenSSL but it does not link it to `/usr/local`. Thus, you must manually link it instead:
 
 ~~~~~~
 $ ln -s /usr/local/opt/openssl/include/openssl /usr/local/include

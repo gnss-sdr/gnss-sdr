@@ -87,8 +87,8 @@ target_link_libraries(tracking_gr_blocks
         Matio::matio
         Volkgnsssdr::volkgnsssdr
         gnss_sdr_flags
-        gnss_sp_libs
-        tracking_lib
+        algorithms_libs
+        tracking_libs
 )
 
 if(ENABLE_CUDA)

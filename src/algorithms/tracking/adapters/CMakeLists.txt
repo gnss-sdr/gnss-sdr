@@ -96,7 +96,7 @@ add_library(tracking_adapters
 target_link_libraries(tracking_adapters
     PUBLIC
         tracking_gr_blocks
-        gnss_sp_libs
+        algorithms_libs
         gnss_sdr_flags
 )
 

@@ -26,7 +26,7 @@ target_link_libraries(gnss-sdr
         Gflags::gflags
         Glog::glog
         Threads::Threads
-        gnss_rx
+        core_receiver
         gnss_sdr_flags
 )
 

@@ -40,30 +40,30 @@ list(SORT DATATYPE_ADAPTER_SOURCES)
 
 source_group(Headers FILES ${DATATYPE_ADAPTER_HEADERS})
 
-add_library(datatype_adapters
+add_library(data_type_adapters
     ${DATATYPE_ADAPTER_SOURCES}
     ${DATATYPE_ADAPTER_HEADERS}
 )
 
-target_link_libraries(datatype_adapters
+target_link_libraries(data_type_adapters
     PUBLIC
         Gnuradio::blocks
         data_type_gr_blocks
-        gnss_sp_libs
-        gnss_system_parameters
+        algorithms_libs
+        core_system_parameters
     PRIVATE
         Gflags::gflags
         Glog::glog
         Volk::volk
 )
 
-target_include_directories(datatype_adapters
+target_include_directories(data_type_adapters
     PUBLIC
         ${CMAKE_SOURCE_DIR}/src/algorithms/libs
         ${CMAKE_SOURCE_DIR}/src/core/interfaces
 )
 
-set_property(TARGET datatype_adapters
+set_property(TARGET data_type_adapters
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

@@ -54,12 +54,12 @@ add_library(telemetry_decoder_adapters
 target_link_libraries(telemetry_decoder_adapters
     PUBLIC
         telemetry_decoder_gr_blocks
-        gnss_system_parameters
+        core_system_parameters
     PRIVATE
         Gflags::gflags
         Glog::glog
         Gnuradio::runtime
-        telemetry_decoder_lib
+        telemetry_decoder_libs
 )
 
 target_include_directories(telemetry_decoder_adapters

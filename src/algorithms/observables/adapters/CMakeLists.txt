@@ -37,7 +37,7 @@ target_include_directories(obs_adapters
 target_link_libraries(obs_adapters
     PUBLIC
         obs_gr_blocks
-        gnss_sp_libs
+        algorithms_libs
     PRIVATE
         Gflags::gflags
         Glog::glog

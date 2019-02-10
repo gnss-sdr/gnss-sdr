@@ -31,19 +31,19 @@ list(SORT CHANNEL_FSM_SOURCES)
 
 source_group(Headers FILES ${CHANNEL_FSM_HEADERS})
 
-add_library(channel_fsm ${CHANNEL_FSM_SOURCES} ${CHANNEL_FSM_HEADERS})
+add_library(channel_libs ${CHANNEL_FSM_SOURCES} ${CHANNEL_FSM_HEADERS})
 
-target_link_libraries(channel_fsm
+target_link_libraries(channel_libs
     PUBLIC
         Gnuradio::runtime
-        gnss_system_parameters
+        core_system_parameters
     PRIVATE
         Gflags::gflags
         Glog::glog
-        gnss_rx
+        core_receiver
 )
 
-set_property(TARGET channel_fsm
+set_property(TARGET channel_libs
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

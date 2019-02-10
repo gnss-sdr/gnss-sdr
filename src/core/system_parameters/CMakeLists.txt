@@ -103,12 +103,12 @@ list(SORT SYSTEM_PARAMETERS_SOURCES)
 
 source_group(Headers FILES ${SYSTEM_PARAMETERS_HEADERS})
 
-add_library(gnss_system_parameters
+add_library(core_system_parameters
     ${SYSTEM_PARAMETERS_SOURCES}
     ${SYSTEM_PARAMETERS_HEADERS}
 )
 
-target_link_libraries(gnss_system_parameters
+target_link_libraries(core_system_parameters
     PUBLIC
         Boost::date_time
         Boost::serialization
@@ -117,7 +117,7 @@ target_link_libraries(gnss_system_parameters
         Gflags::gflags
 )
 
-set_property(TARGET gnss_system_parameters
+set_property(TARGET core_system_parameters
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

@@ -49,7 +49,7 @@ target_link_libraries(input_filter_adapters
         Gnuradio::blocks
         Gnuradio::filter
         input_filter_gr_blocks
-        gnss_sp_libs
+        algorithms_libs
     PRIVATE
         Volk::volk
 )

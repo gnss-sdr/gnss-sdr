@@ -3309,7 +3309,7 @@ std::map<std::string, int> Rtcm::galileo_signal_map = [] {
 boost::posix_time::ptime Rtcm::compute_GPS_time(const Gps_Ephemeris& eph, double obs_time) const
 {
     const double gps_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>((gps_t + 604800 * static_cast<double>(eph.i_GPS_week % 1024)) * 1000));
+    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>((gps_t + 604800 * static_cast<double>(eph.i_GPS_week % 1024)) * 1000));  // NOLINT(google-runtime-int)
     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
     return p_time;
 }
@@ -3318,7 +3318,7 @@ boost::posix_time::ptime Rtcm::compute_GPS_time(const Gps_Ephemeris& eph, double
 boost::posix_time::ptime Rtcm::compute_GPS_time(const Gps_CNAV_Ephemeris& eph, double obs_time) const
 {
     const double gps_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>((gps_t + 604800 * static_cast<double>(eph.i_GPS_week % 1024)) * 1000));
+    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>((gps_t + 604800 * static_cast<double>(eph.i_GPS_week % 1024)) * 1000));  // NOLINT(google-runtime-int)
     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
     return p_time;
 }
@@ -3327,7 +3327,7 @@ boost::posix_time::ptime Rtcm::compute_GPS_time(const Gps_CNAV_Ephemeris& eph, d
 boost::posix_time::ptime Rtcm::compute_Galileo_time(const Galileo_Ephemeris& eph, double obs_time) const
 {
     double galileo_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>((galileo_t + 604800 * static_cast<double>(eph.WN_5)) * 1000));
+    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>((galileo_t + 604800 * static_cast<double>(eph.WN_5)) * 1000));  // NOLINT(google-runtime-int)
     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
     return p_time;
 }
@@ -5233,19 +5233,19 @@ int32_t Rtcm::set_DF401(const Gnss_Synchro& gnss_synchro)
         {
             lambda = GPS_C_m_s / GPS_L1_FREQ_HZ;
         }
-    if ((sig.compare("2S")) == 0 && (sys == "G"))
+    if ((sig == "2S") && (sys == "G"))
         {
             lambda = GPS_C_m_s / GPS_L2_FREQ_HZ;
         }
-    if ((sig.compare("5X")) == 0 && (sys == "E"))
+    if ((sig == "5X") && (sys == "E"))
         {
             lambda = GPS_C_m_s / Galileo_E5a_FREQ_HZ;
         }
-    if ((sig.compare("1B")) == 0 && (sys == "E"))
+    if ((sig == "1B") && (sys == "E"))
         {
             lambda = GPS_C_m_s / Galileo_E1_FREQ_HZ;
         }
-    if ((sig.compare("7X")) == 0 && (sys == "E"))
+    if ((sig == "7X") && (sys == "E"))
         {
             lambda = GPS_C_m_s / 1.207140e9;  // Galileo_E1b_FREQ_HZ;
         }
@@ -5303,7 +5303,7 @@ int32_t Rtcm::set_DF402(const Gps_Ephemeris& ephNAV, const Gps_CNAV_Ephemeris& e
             lock_time_period_s = Rtcm::lock_time(ephCNAV, obs_time, gnss_synchro);
         }
     // TODO Should add system for galileo satellites
-    if (sig_.compare("1B") || sig_.compare("5X") || sig_.compare("7X") || sig_.compare("8X"))
+    if ((sig_ == "1B") || (sig_ == "5X") || (sig_ == "7X") || (sig_ == "8X"))
         {
             lock_time_period_s = Rtcm::lock_time(ephFNAV, obs_time, gnss_synchro);
         }
@@ -5490,15 +5490,15 @@ int32_t Rtcm::set_DF407(const Gps_Ephemeris& ephNAV, const Gps_CNAV_Ephemeris& e
 
     std::string sig_(gnss_synchro.Signal);
     std::string sys_(&gnss_synchro.System, 1);
-    if ((sig_.compare("1C")) && (sys_ == "G"))
+    if ((sig_ == "1C") && (sys_ == "G"))
         {
             lock_time_period_s = Rtcm::lock_time(ephNAV, obs_time, gnss_synchro);
         }
-    if ((sig_.compare("2S")) && (sys_ == "G"))
+    if ((sig_ == "2S") && (sys_ == "G"))
         {
             lock_time_period_s = Rtcm::lock_time(ephCNAV, obs_time, gnss_synchro);
         }
-    if ((sig_.compare("1B") || sig_.compare("5X") || sig_.compare("7X") || sig_.compare("8X")) && (sys_ == "E"))
+    if (((sig_ == "1B") || (sig_ == "5X") || (sig_ == "7X") || (sig_ == "8X")) && (sys_ == "E"))
         {
             lock_time_period_s = Rtcm::lock_time(ephFNAV, obs_time, gnss_synchro);
         }

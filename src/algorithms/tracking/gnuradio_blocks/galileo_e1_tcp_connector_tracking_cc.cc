@@ -45,8 +45,6 @@
 #include "tcp_communication.h"
 #include "tcp_packet_data.h"
 #include "tracking_discriminators.h"
-#include <boost/asio.hpp>
-#include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>

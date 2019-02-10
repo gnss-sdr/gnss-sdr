@@ -615,6 +615,10 @@ if(NOT ENABLE_PACKAGING)
 
     target_include_directories(gnss_block_test PUBLIC ${CMAKE_SOURCE_DIR}/src/algorithms/libs)
 
+    if(ENABLE_FPGA)
+        target_compile_definitions(gnss_block_test PUBLIC -DENABLE_FPGA=1)
+    endif()
+
     add_test(gnss_block_test gnss_block_test)
 
     set_property(TEST gnss_block_test PROPERTY TIMEOUT 60)

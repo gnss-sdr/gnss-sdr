@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,26 +32,26 @@
 
 #include "beidou_b1i_signal_processing.h"
 
-auto auxCeil = [](float x) { return static_cast<int>(static_cast<long>((x) + 1)); };
+auto auxCeil = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
 
-void beidou_b1i_code_gen_int(int* _dest, signed int _prn, unsigned int _chip_shift)
+void beidou_b1i_code_gen_int(int32_t* _dest, int32_t _prn, uint32_t _chip_shift)
 {
-    const unsigned int _code_length = 2046;
+    const uint32_t _code_length = 2046;
     bool G1[_code_length];
     bool G2[_code_length];
     bool G1_register[11] = {false, true, false, true, false, true, false, true, false, true, false};
     bool G2_register[11] = {false, true, false, true, false, true, false, true, false, true, false};
     bool feedback1, feedback2;
     bool aux;
-    unsigned int lcv, lcv2;
-    unsigned int delay;
-    signed int prn_idx;
+    uint32_t lcv, lcv2;
+    uint32_t delay;
+    int32_t prn_idx;
     /* G2 Delays as defined in GPS-ISD-200D */
-    const signed int delays[33] = {712 /*PRN1*/, 1581, 1414, 1550, 581, 771, 1311, 1043, 1549, 359, 710, 1579, 1548, 1103, 579, 769, 358, 709, 1411, 1547,
+    const int32_t delays[33] = {712 /*PRN1*/, 1581, 1414, 1550, 581, 771, 1311, 1043, 1549, 359, 710, 1579, 1548, 1103, 579, 769, 358, 709, 1411, 1547,
         1102, 578, 357, 1577, 1410, 1546, 1101, 707, 1576, 1409, 1545, 354 /*PRN32*/,
         705};
-    const signed int phase1[37] = {1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 8, 8, 8, 9, 9, 10};
-    const signed int phase2[37] = {3, 4, 5, 6, 8, 9, 10, 11, 7, 4, 5, 6, 8, 9, 10, 11, 5, 6, 8, 9, 10, 11, 6, 8, 9, 10, 11, 8, 9, 10, 11, 9, 10, 11, 10, 11, 11};
+    const int32_t phase1[37] = {1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 8, 8, 8, 9, 9, 10};
+    const int32_t phase2[37] = {3, 4, 5, 6, 8, 9, 10, 11, 7, 4, 5, 6, 8, 9, 10, 11, 5, 6, 8, 9, 10, 11, 6, 8, 9, 10, 11, 8, 9, 10, 11, 9, 10, 11, 10, 11, 11};
 
     // compute delay array index for given PRN number
     prn_idx = _prn - 1;
@@ -110,28 +110,28 @@ void beidou_b1i_code_gen_int(int* _dest, signed int _prn, unsigned int _chip_shi
 }
 
 
-void beidou_b1i_code_gen_float(float* _dest, signed int _prn, unsigned int _chip_shift)
+void beidou_b1i_code_gen_float(float* _dest, int32_t _prn, uint32_t _chip_shift)
 {
-    unsigned int _code_length = 2046;
-    int b1i_code_int[_code_length];
+    uint32_t _code_length = 2046;
+    int32_t b1i_code_int[_code_length];
 
     beidou_b1i_code_gen_int(b1i_code_int, _prn, _chip_shift);
 
-    for (unsigned int ii = 0; ii < _code_length; ++ii)
+    for (uint32_t ii = 0; ii < _code_length; ++ii)
         {
             _dest[ii] = static_cast<float>(b1i_code_int[ii]);
         }
 }
 
 
-void beidou_b1i_code_gen_complex(std::complex<float>* _dest, signed int _prn, unsigned int _chip_shift)
+void beidou_b1i_code_gen_complex(std::complex<float>* _dest, int32_t _prn, uint32_t _chip_shift)
 {
-    unsigned int _code_length = 2046;
-    int b1i_code_int[_code_length];
+    uint32_t _code_length = 2046;
+    int32_t b1i_code_int[_code_length];
 
     beidou_b1i_code_gen_int(b1i_code_int, _prn, _chip_shift);
 
-    for (unsigned int ii = 0; ii < _code_length; ++ii)
+    for (uint32_t ii = 0; ii < _code_length; ++ii)
         {
             _dest[ii] = std::complex<float>(static_cast<float>(b1i_code_int[ii]), 0.0f);
         }
@@ -141,26 +141,26 @@ void beidou_b1i_code_gen_complex(std::complex<float>* _dest, signed int _prn, un
 /*
  *  Generates complex GPS L1 C/A code for the desired SV ID and sampled to specific sampling frequency
  */
-void beidou_b1i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, int _fs, unsigned int _chip_shift)
+void beidou_b1i_code_gen_complex_sampled(std::complex<float>* _dest, uint32_t _prn, int32_t _fs, uint32_t _chip_shift)
 {
     // This function is based on the GNU software GPS for MATLAB in the Kay Borre book
     std::complex<float> _code[2046];
-    signed int _samplesPerCode, _codeValueIndex;
+    int32_t _samplesPerCode, _codeValueIndex;
     float _ts;
     float _tc;
     float aux;
-    const signed int _codeFreqBasis = 2046000;  //Hz
-    const signed int _codeLength = 2046;
+    const int32_t _codeFreqBasis = 2046000;  //Hz
+    const int32_t _codeLength = 2046;
 
     //--- Find number of samples per spreading code ----------------------------
-    _samplesPerCode = static_cast<signed int>(static_cast<double>(_fs) / static_cast<double>(_codeFreqBasis / _codeLength));
+    _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / static_cast<double>(_codeFreqBasis / _codeLength));
 
     //--- Find time constants --------------------------------------------------
     _ts = 1.0 / static_cast<float>(_fs);                    // Sampling period in sec
     _tc = 1.0 / static_cast<float>(_codeFreqBasis);         // C/A chip period in sec
     beidou_b1i_code_gen_complex(_code, _prn, _chip_shift);  //generate C/A code 1 sample per chip
 
-    for (signed int i = 0; i < _samplesPerCode; i++)
+    for (int32_t i = 0; i < _samplesPerCode; i++)
         {
             //=== Digitizing =======================================================
 

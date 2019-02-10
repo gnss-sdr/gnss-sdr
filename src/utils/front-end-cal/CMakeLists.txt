@@ -29,6 +29,9 @@ target_link_libraries(front_end_cal_lib
         Threads::Threads
         acq_adapters
         Volkgnsssdr::volkgnsssdr ${ORC_LIBRARIES}
+        signal_source_adapters
+        signal_source_gr_blocks
+        signal_source_lib
         rx_core_lib
         gnss_sdr_flags
         gnss_rx

@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,25 +30,26 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef BEIDOU_B1I_SDR_SIGNAL_PROCESSING_H_
-#define BEIDOU_B1I_SDR_SIGNAL_PROCESSING_H_
+#ifndef GNSS_SDR_BEIDOU_B1I_SDR_SIGNAL_PROCESSING_H_
+#define GNSS_SDR_BEIDOU_B1I_SDR_SIGNAL_PROCESSING_H_
 
 #include <complex>
 #include <iostream>
+#include <cstdint>
 
-//!Generates int GPS L1 C/A code for the desired SV ID and code shift
-void beidou_b1i_code_gen_int(int* _dest, signed int _prn, unsigned int _chip_shift);
+//! Generates int32_t GPS L1 C/A code for the desired SV ID and code shift
+void beidou_b1i_code_gen_int(int32_t* _dest, int32_t _prn, uint32_t _chip_shift);
 
-//!Generates float GPS L1 C/A code for the desired SV ID and code shift
-void beidou_b1i_code_gen_float(float* _dest, signed int _prn, unsigned int _chip_shift);
+//! Generates float GPS L1 C/A code for the desired SV ID and code shift
+void beidou_b1i_code_gen_float(float* _dest, int32_t _prn, uint32_t _chip_shift);
 
-//!Generates complex GPS L1 C/A code for the desired SV ID and code shift, and sampled to specific sampling frequency
-void beidou_b1i_code_gen_complex(std::complex<float>* _dest, signed int _prn, unsigned int _chip_shift);
+//! Generates complex GPS L1 C/A code for the desired SV ID and code shift, and sampled to specific sampling frequency
+void beidou_b1i_code_gen_complex(std::complex<float>* _dest, int32_t _prn, uint32_t _chip_shift);
 
 //! Generates N complex GPS L1 C/A codes for the desired SV ID and code shift
-void beidou_b1i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, int _fs, unsigned int _chip_shift, unsigned int _ncodes);
+void beidou_b1i_code_gen_complex_sampled(std::complex<float>* _dest, uint32_t _prn, int32_t _fs, uint32_t _chip_shift, uint32_t _ncodes);
 
 //! Generates complex GPS L1 C/A code for the desired SV ID and code shift
-void beidou_b1i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, int _fs, unsigned int _chip_shift);
+void beidou_b1i_code_gen_complex_sampled(std::complex<float>* _dest, uint32_t _prn, int32_t _fs, uint32_t _chip_shift);
 
 #endif /* BEIDOU_B1I_SDR_SIGNAL_PROCESSING_H_ */

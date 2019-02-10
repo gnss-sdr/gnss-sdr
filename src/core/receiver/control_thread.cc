@@ -78,7 +78,7 @@ using google::LogMessage;
 
 ControlThread::ControlThread()
 {
-    if (!FLAGS_c.compare("-"))
+    if (FLAGS_c == "-")
         {
             configuration_ = std::make_shared<FileConfiguration>(FLAGS_config_file);
         }
@@ -776,7 +776,7 @@ void ControlThread::read_control_messages()
 // Apply the corresponding control actions
 void ControlThread::process_control_messages()
 {
-    for (auto & i : *control_messages_)
+    for (auto &i : *control_messages_)
         {
             if (stop_) break;
             if (i->who == 200)
@@ -881,7 +881,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
               << "UTC, assuming RX position " << LLH(0) << " [deg], " << LLH(1) << " [deg], " << LLH(2) << " [m]" << std::endl;
 
     std::map<int, Gps_Ephemeris> gps_eph_map = pvt_ptr->get_gps_ephemeris();
-    for (auto & it : gps_eph_map)
+    for (auto &it : gps_eph_map)
         {
             eph_t rtklib_eph = eph_to_rtklib(it.second);
             double r_sat[3];
@@ -904,7 +904,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
         }
 
     std::map<int, Galileo_Ephemeris> gal_eph_map = pvt_ptr->get_galileo_ephemeris();
-    for (auto & it : gal_eph_map)
+    for (auto &it : gal_eph_map)
         {
             eph_t rtklib_eph = eph_to_rtklib(it.second);
             double r_sat[3];
@@ -927,7 +927,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
         }
 
     std::map<int, Gps_Almanac> gps_alm_map = pvt_ptr->get_gps_almanac();
-    for (auto & it : gps_alm_map)
+    for (auto &it : gps_alm_map)
         {
             alm_t rtklib_alm = alm_to_rtklib(it.second);
             double r_sat[3];
@@ -954,7 +954,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
         }
 
     std::map<int, Galileo_Almanac> gal_alm_map = pvt_ptr->get_galileo_almanac();
-    for (auto & it : gal_alm_map)
+    for (auto &it : gal_alm_map)
         {
             alm_t rtklib_alm = alm_to_rtklib(it.second);
             double r_sat[3];

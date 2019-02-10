@@ -388,7 +388,7 @@ coverity-scan:
 
 # Stage "test"
 run-tests-x86_64:
-  image: debian:9.3-slim
+  image: debian:stretch-slim
   stage: test
   script:
     - apt-get update
@@ -414,7 +414,7 @@ run-tests-x86_64:
 
 
 run-tests-i386:
-  image: i386/debian:9.3-slim
+  image: i386/debian:stretch-slim
   stage: test
   script:
     - apt-get update

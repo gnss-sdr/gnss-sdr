@@ -54,10 +54,10 @@
 class Beidou_Dnav_Navigation_Message
 {
 private:
-    unsigned long int read_navigation_unsigned(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int, int>>& parameter);
-    signed long int read_navigation_signed(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int, int>>& parameter);
-    bool read_navigation_bool(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int, int>>& parameter);
-    void print_beidou_word_bytes(unsigned int BEIDOU_word);
+    uint64_t read_navigation_unsigned(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
+    int64_t read_navigation_signed(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
+    bool read_navigation_bool(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter);
+    void print_beidou_word_bytes(uint32_t BEIDOU_word);
     /*
      * Accounts for the beginning or end of week crossover
      *
@@ -130,15 +130,15 @@ public:
     double d_OMEGA_DOT;  //!< Rate of Right Ascension [semi-circles/s]
     //broadcast orbit 5
     double d_IDOT;      //!< Rate of Inclination Angle [semi-circles/s]
-    int i_BEIDOU_week;  //!< BeiDou week number, aka WN [week]
+    int32_t i_BEIDOU_week;  //!< BeiDou week number, aka WN [week]
     //broadcast orbit 6
-    int i_SV_accuracy;  //!< User Range Accuracy (URA) index of the SV
-    int i_SV_health;
+    int32_t i_SV_accuracy;  //!< User Range Accuracy (URA) index of the SV
+    int32_t i_SV_health;
     double d_TGD1;  //!< Estimated Group Delay Differential in B1 [s]
     double d_TGD2;  //!< Estimated Group Delay Differential in B2 [s]
     double d_AODC;  //!< Age of Data, Clock
     //broadcast orbit 7
-    //    int i_AODO;              //!< Age of Data Offset (AODO) term for the navigation message correction table (NMCT) contained in subframe 4 (reference paragraph 20.3.3.5.1.9) [s]
+    //    int32_t i_AODO;              //!< Age of Data Offset (AODO) term for the navigation message correction table (NMCT) contained in subframe 4 (reference paragraph 20.3.3.5.1.9) [s]
 
     bool b_fit_interval_flag;  //!< indicates the curve-fit interval used by the CS (Block II/IIA/IIR/IIR-M/IIF) and SS (Block IIIA) in determining the ephemeris parameters, as follows: 0 = 4 hours, 1 = greater than 4 hours.
     double d_spare1;
@@ -149,29 +149,29 @@ public:
     double d_A_f2;  //!< Clock correction parameters. Coefficient 2 of code phase offset model [s/s^2]
 
     // D2 NAV Message Decoding
-    unsigned long int d_A_f1_msb_bits;          //!< Clock correction parameters, D2 NAV MSB
-    unsigned long int d_A_f1_lsb_bits;          //!< Clock correction parameters, D2 NAV LSB
-    unsigned long int d_Cuc_msb_bits;           //!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
-    unsigned long int d_Cuc_lsb_bits;           //!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
-    unsigned long int d_eccentricity_msb;       //!< Eccentricity [dimensionless]
-    unsigned long int d_eccentricity_lsb;       //!< Eccentricity [dimensionless]
-    unsigned long int d_Cic_msb_bits;           //!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
-    unsigned long int d_Cic_lsb_bits;           //!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
-    unsigned long int d_eccentricity_msb_bits;  //!< Eccentricity [dimensionless]
-    unsigned long int d_eccentricity_lsb_bits;
-    unsigned long int d_i_0_msb_bits;        //!< Inclination Angle at Reference Time [semi-circles]
-    unsigned long int d_i_0_lsb_bits;        //!< Inclination Angle at Reference Time [semi-circles]
-    unsigned long int d_OMEGA_msb_bits;      //!< Argument of Perigee [semi-cicles]
-    unsigned long int d_OMEGA_lsb_bits;      //!< Argument of Perigee [semi-cicles]
-    unsigned long int d_OMEGA_DOT_msb_bits;  //!< Rate of Right Ascension [semi-circles/s]
-    unsigned long int d_OMEGA_DOT_lsb_bits;  //!< Rate of Right Ascension [semi-circles/s]
+    uint64_t d_A_f1_msb_bits;          //!< Clock correction parameters, D2 NAV MSB
+    uint64_t d_A_f1_lsb_bits;          //!< Clock correction parameters, D2 NAV LSB
+    uint64_t d_Cuc_msb_bits;           //!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
+    uint64_t d_Cuc_lsb_bits;           //!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
+    uint64_t d_eccentricity_msb;       //!< Eccentricity [dimensionless]
+    uint64_t d_eccentricity_lsb;       //!< Eccentricity [dimensionless]
+    uint64_t d_Cic_msb_bits;           //!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
+    uint64_t d_Cic_lsb_bits;           //!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
+    uint64_t d_eccentricity_msb_bits;  //!< Eccentricity [dimensionless]
+    uint64_t d_eccentricity_lsb_bits;
+    uint64_t d_i_0_msb_bits;        //!< Inclination Angle at Reference Time [semi-circles]
+    uint64_t d_i_0_lsb_bits;        //!< Inclination Angle at Reference Time [semi-circles]
+    uint64_t d_OMEGA_msb_bits;      //!< Argument of Perigee [semi-cicles]
+    uint64_t d_OMEGA_lsb_bits;      //!< Argument of Perigee [semi-cicles]
+    uint64_t d_OMEGA_DOT_msb_bits;  //!< Rate of Right Ascension [semi-circles/s]
+    uint64_t d_OMEGA_DOT_lsb_bits;  //!< Rate of Right Ascension [semi-circles/s]
 
     // Almanac
     double d_Toa;                      //!< Almanac reference time [s]
-    int i_WN_A;                        //!< Modulo 256 of the GPS week number to which the almanac reference time (d_Toa) is referenced
-    std::map<int, int> almanacHealth;  //!< Map that stores the health information stored in the almanac
+    int32_t i_WN_A;                        //!< Modulo 256 of the GPS week number to which the almanac reference time (d_Toa) is referenced
+    std::map<int32_t, int32_t> almanacHealth;  //!< Map that stores the health information stored in the almanac
 
-    std::map<int, std::string> satelliteBlock;  //!< Map that stores to which block the PRN belongs http://www.navcen.uscg.gov/?Do=constellationStatus
+    std::map<int32_t, std::string> satelliteBlock;  //!< Map that stores to which block the PRN belongs http://www.navcen.uscg.gov/?Do=constellationStatus
 
     // Flags
 
@@ -201,8 +201,8 @@ public:
     double d_satpos_Z;  //!< Earth-fixed coordinate z of the satellite [m]. The direction of the IERS (International Earth Rotation and Reference Systems Service) Reference Pole (IRP).
 
     // satellite identification info
-    int i_channel_ID;
-    unsigned int i_satellite_PRN;
+    int32_t i_channel_ID;
+    uint32_t i_satellite_PRN;
 
     // time synchro
     double d_subframe_timestamp_ms;  //[ms]
@@ -221,8 +221,8 @@ public:
     double d_A1UTC;       //!< 1st order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s/s]
     double d_A0UTC;       //!< Constant of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s]
     double d_DeltaT_LS;   //!< delta time due to leap seconds [s]. Number of leap seconds since 6-Jan-1980 as transmitted by the GPS almanac.
-    int i_WN_LSF;         //!< Week number at the end of which the leap second becomes effective [weeks]
-    int i_DN;             //!< Day number (DN) at the end of which the leap second becomes effective [days]
+    int32_t i_WN_LSF;         //!< Week number at the end of which the leap second becomes effective [weeks]
+    int32_t i_DN;             //!< Day number (DN) at the end of which the leap second becomes effective [days]
     double d_DeltaT_LSF;  //!< Scheduled future or recent past (relative to NAV message upload) value of the delta time due to leap seconds [s]
     double d_A1GPS;
     double d_A0GPS;
@@ -241,7 +241,7 @@ public:
     double d_OMEGA_DOT_ALMANAC;
     double d_OMEGA_ALMANAC;
     double d_M0_ALMANAC;
-    int almanac_WN;
+    int32_t almanac_WN;
     double d_toa2;
 
     // Satellite velocity
@@ -272,12 +272,12 @@ public:
     /*!
      * \brief Decodes the BDS D1 NAV message
      */
-    int d1_subframe_decoder(std::string const& subframe);
+    int32_t d1_subframe_decoder(std::string const& subframe);
 
     /*!
      * \brief Decodes the BDS D2 NAV message
      */
-    int d2_subframe_decoder(std::string const& subframe);
+    int32_t d2_subframe_decoder(std::string const& subframe);
 
     /*!
      * \brief Computes the position of the satellite

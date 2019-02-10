@@ -35,6 +35,7 @@
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cmath>
+#include <exception>
 #include <sstream>
 #include <utility>
 
@@ -158,11 +159,21 @@ pcps_quicksync_acquisition_cc::~pcps_quicksync_acquisition_cc()
     delete d_corr_output_f;
     delete[] d_code_folded;
 
-    if (d_dump)
+    try
         {
-            d_dump_file.close();
+            if (d_dump)
+                {
+                    d_dump_file.close();
+                }
         }
-    // DLOG(INFO) << "END DESTROYER";
+    catch (const std::ofstream::failure& e)
+        {
+            std::cerr << "Problem closing Acquisition dump file: " << d_dump_filename << '\n';
+        }
+    catch (const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+        }
 }
 
 

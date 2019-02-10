@@ -30,6 +30,7 @@
 
 #include "spirent_motion_csv_dump_reader.h"
 #include <boost/tokenizer.hpp>
+#include <exception>
 #include <iostream>
 #include <utility>
 
@@ -80,9 +81,20 @@ spirent_motion_csv_dump_reader::spirent_motion_csv_dump_reader()
 
 spirent_motion_csv_dump_reader::~spirent_motion_csv_dump_reader()
 {
-    if (d_dump_file.is_open() == true)
+    try
         {
-            d_dump_file.close();
+            if (d_dump_file.is_open() == true)
+                {
+                    d_dump_file.close();
+                }
+        }
+    catch (const std::ifstream::failure &e)
+        {
+            std::cerr << "Problem closing Spirent CSV dump Log file: " << d_dump_filename << '\n';
+        }
+    catch (const std::exception &e)
+        {
+            std::cerr << e.what() << '\n';
         }
 }
 
@@ -225,7 +237,7 @@ bool spirent_motion_csv_dump_reader::open_obs_file(std::string out_file)
                 }
             catch (const std::ifstream::failure &e)
                 {
-                    std::cout << "Problem opening Spirent CSV dump Log file: " << d_dump_filename.c_str() << std::endl;
+                    std::cout << "Problem opening Spirent CSV dump Log file: " << d_dump_filename << std::endl;
                     return false;
                 }
         }
@@ -238,8 +250,19 @@ bool spirent_motion_csv_dump_reader::open_obs_file(std::string out_file)
 
 void spirent_motion_csv_dump_reader::close_obs_file()
 {
-    if (d_dump_file.is_open() == false)
+    try
         {
-            d_dump_file.close();
+            if (d_dump_file.is_open() == true)
+                {
+                    d_dump_file.close();
+                }
+        }
+    catch (const std::ifstream::failure &e)
+        {
+            std::cerr << "Problem closing Spirent CSV dump Log file: " << d_dump_filename << '\n';
+        }
+    catch (const std::exception &e)
+        {
+            std::cerr << e.what() << '\n';
         }
 }

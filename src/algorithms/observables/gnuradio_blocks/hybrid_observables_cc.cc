@@ -40,6 +40,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
+#include <exception>
 #include <iostream>
 #include <limits>
 #include <utility>
@@ -140,7 +141,14 @@ hybrid_observables_cc::~hybrid_observables_cc()
         }
     if (d_dump_mat)
         {
-            save_matfile();
+            try
+                {
+                    save_matfile();
+                }
+            catch (const std::exception &ex)
+                {
+                    LOG(WARNING) << "Error saving the .mat file: " << ex.what();
+                }
         }
 }
 

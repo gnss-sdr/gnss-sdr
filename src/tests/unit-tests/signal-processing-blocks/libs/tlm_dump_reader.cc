@@ -29,6 +29,7 @@
  */
 
 #include "tlm_dump_reader.h"
+#include <exception>
 #include <iostream>
 #include <utility>
 
@@ -90,7 +91,7 @@ bool tlm_dump_reader::open_obs_file(std::string out_file)
                 }
             catch (const std::ifstream::failure &e)
                 {
-                    std::cout << "Problem opening TLM dump Log file: " << d_dump_filename.c_str() << std::endl;
+                    std::cout << "Problem opening TLM dump Log file: " << d_dump_filename << std::endl;
                     return false;
                 }
         }
@@ -103,8 +104,19 @@ bool tlm_dump_reader::open_obs_file(std::string out_file)
 
 tlm_dump_reader::~tlm_dump_reader()
 {
-    if (d_dump_file.is_open() == true)
+    try
         {
-            d_dump_file.close();
+            if (d_dump_file.is_open() == true)
+                {
+                    d_dump_file.close();
+                }
+        }
+    catch (const std::ifstream::failure &e)
+        {
+            std::cerr << "Problem closing TLM dump Log file: " << d_dump_filename << '\n';
+        }
+    catch (const std::exception &e)
+        {
+            std::cerr << e.what() << '\n';
         }
 }

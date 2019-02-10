@@ -41,6 +41,7 @@
 #include <boost/filesystem/path_traits.hpp>  // for filesystem
 #include <glog/logging.h>
 #include <cstdint>
+#include <exception>
 #include <fcntl.h>
 #include <termios.h>
 
@@ -118,11 +119,29 @@ Nmea_Printer::Nmea_Printer(const std::string& filename, bool flag_nmea_output_fi
 
 Nmea_Printer::~Nmea_Printer()
 {
-    if (nmea_file_descriptor.is_open())
+    try
         {
-            nmea_file_descriptor.close();
+            if (nmea_file_descriptor.is_open())
+                {
+                    nmea_file_descriptor.close();
+                }
         }
-    close_serial();
+    catch (const std::ofstream::failure& e)
+        {
+            std::cerr << "Problem closing NMEA dump file: " << nmea_filename << '\n';
+        }
+    catch (const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+        }
+    try
+        {
+            close_serial();
+        }
+    catch (const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+        }
 }
 
 

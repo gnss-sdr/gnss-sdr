@@ -81,14 +81,18 @@ target_link_libraries(acq_gr_blocks
         Matio::matio
         Volkgnsssdr::volkgnsssdr
         gnss_sp_libs
-        gnss_rx
+)
+
+target_include_directories(acq_gr_blocks
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+    PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/core/receiver
 )
 
 if(OPENCL_FOUND)
     target_include_directories(acq_gr_blocks PUBLIC ${OPENCL_INCLUDE_DIRS})
 endif()
-
-target_include_directories(acq_gr_blocks PUBLIC ${CMAKE_SOURCE_DIR}/src/algorithms/libs)
 
 set_property(TARGET acq_gr_blocks
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES

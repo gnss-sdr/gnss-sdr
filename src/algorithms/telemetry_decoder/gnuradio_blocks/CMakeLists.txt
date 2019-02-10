@@ -55,7 +55,6 @@ target_link_libraries(telemetry_decoder_gr_blocks
         telemetry_decoder_libswiftcnav
         telemetry_decoder_lib
         gnss_system_parameters
-        gnss_rx
     PRIVATE
         Boost::boost
         Gflags::gflags

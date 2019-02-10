@@ -179,7 +179,8 @@ add_library(signal_source_adapters
 )
 
 target_include_directories(signal_source_adapters
-    PUBLIC ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
 )
 
 target_link_libraries(signal_source_adapters
@@ -189,9 +190,9 @@ target_link_libraries(signal_source_adapters
         Gnuradio::blocks
         signal_source_gr_blocks
         signal_source_lib
-        gnss_sp_libs
-        gnss_rx
     PRIVATE
+        gnss_sdr_flags
+        gnss_system_parameters
         Gflags::gflags
         Glog::glog
         Volk::volk

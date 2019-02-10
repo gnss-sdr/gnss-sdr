@@ -33,7 +33,6 @@
 
 
 #include "beidou_b1i_telemetry_decoder_cc.h"
-#include "control_message_factory.h"
 #include "convolutional.h"
 #include "display.h"
 #include "gnss_synchro.h"

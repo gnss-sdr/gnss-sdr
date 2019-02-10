@@ -50,7 +50,6 @@
 
 #include "pcps_opencl_acquisition_cc.h"
 #include "GPS_L1_CA.h"  //GPS_TWO_PI
-#include "control_message_factory.h"
 #include "opencl/fft_base_kernels.h"
 #include "opencl/fft_internal.h"
 #include <glog/logging.h>

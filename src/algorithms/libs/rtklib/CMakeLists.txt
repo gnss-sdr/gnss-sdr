@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -65,20 +65,14 @@ source_group(Headers FILES ${RTKLIB_LIB_HEADERS})
 
 add_library(rtklib_lib ${RTKLIB_LIB_SOURCES} ${RTKLIB_LIB_HEADERS})
 
-if(OS_IS_MACOSX)
-    set(MAC_LIBRARIES "-framework Accelerate")
-endif()
-
 target_link_libraries(rtklib_lib
     PUBLIC
-        gnss_rx
         gnss_system_parameters
     PRIVATE
         Gflags::gflags
         Glog::glog
         ${BLAS}
         ${LAPACK}
-        ${MAC_LIBRARIES}
 )
 
 set_property(TARGET rtklib_lib

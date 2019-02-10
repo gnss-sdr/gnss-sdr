@@ -50,13 +50,14 @@ target_link_libraries(input_filter_adapters
         Gnuradio::filter
         input_filter_gr_blocks
         gnss_sp_libs
-        gnss_rx
     PRIVATE
         Volk::volk
 )
 
 target_include_directories(input_filter_adapters
-    PUBLIC ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
 )
 
 if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13.4")

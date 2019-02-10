@@ -29,7 +29,6 @@
  */
 
 #include "sbas_l1_telemetry_decoder_cc.h"
-#include "control_message_factory.h"
 #include "gnss_synchro.h"
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>

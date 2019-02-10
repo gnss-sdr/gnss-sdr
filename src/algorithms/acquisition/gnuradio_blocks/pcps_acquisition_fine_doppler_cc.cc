@@ -32,7 +32,6 @@
 
 #include "pcps_acquisition_fine_doppler_cc.h"
 #include "GPS_L1_CA.h"
-#include "control_message_factory.h"
 #include "gnss_sdr_create_directory.h"
 #include "gps_sdr_signal_processing.h"
 #include <boost/filesystem/path.hpp>

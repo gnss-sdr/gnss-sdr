@@ -62,7 +62,6 @@ target_link_libraries(pvt_lib
         gnss_sp_libs
         rtklib_lib
         gnss_system_parameters
-        gnss_rx
     PRIVATE
         Boost::filesystem
         Boost::system
@@ -75,6 +74,7 @@ target_include_directories(pvt_lib
     PUBLIC
         ${CMAKE_SOURCE_DIR}/src/algorithms/libs
         ${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib
+        ${CMAKE_SOURCE_DIR}/src/core/receiver
 )
 
 target_compile_definitions(pvt_lib PRIVATE -DGNSS_SDR_VERSION="${VERSION}")

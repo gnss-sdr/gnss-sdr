@@ -29,16 +29,20 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SYNCHRO_UDP_SINK_H_
-#define GNSS_SYNCHRO_UDP_SINK_H_
+#ifndef GNSS_SDR_GNSS_SYNCHRO_UDP_SINK_H_
+#define GNSS_SDR_GNSS_SYNCHRO_UDP_SINK_H_
 
 #include "gnss_synchro.h"
 #include <boost/asio.hpp>
+#include <boost/system/error_code.hpp>
+#include <string>
+#include <vector>
+
 
 class Gnss_Synchro_Udp_Sink
 {
 public:
-    Gnss_Synchro_Udp_Sink(std::vector<std::string> addresses, const uint16_t &port);
+    Gnss_Synchro_Udp_Sink(std::vector<std::string> addresses, const uint16_t& port);
     bool write_gnss_synchro(const std::vector<Gnss_Synchro>& stocks);
 
 private:
@@ -50,4 +54,4 @@ private:
 };
 
 
-#endif /* GNSS_SYNCHRO_UDP_SINK_H_ */
+#endif /* GNSS_SDR_GNSS_SYNCHRO_UDP_SINK_H_ */

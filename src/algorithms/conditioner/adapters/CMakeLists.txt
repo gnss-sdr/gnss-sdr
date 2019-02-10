@@ -37,10 +37,14 @@ add_library(conditioner_adapters ${COND_ADAPTER_SOURCES} ${COND_ADAPTER_HEADERS}
 target_link_libraries(conditioner_adapters
     PUBLIC
         Gnuradio::runtime
-        gnss_rx
     PRIVATE
         Gflags::gflags
         Glog::glog
+)
+
+target_include_directories(conditioner_adapters
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
 )
 
 set_property(TARGET conditioner_adapters

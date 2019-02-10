@@ -33,19 +33,17 @@ target_link_libraries(pvt_gr_blocks
         Boost::date_time
         Gnuradio::runtime
         pvt_lib
-        gnss_system_parameters
-        gnss_rx
     PRIVATE
         Gflags::gflags
         Glog::glog
         Boost::filesystem
         Boost::system
+        gnss_system_parameters
 )
 
 target_include_directories(pvt_gr_blocks
     PUBLIC
         ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
-        ${CMAKE_SOURCE_DIR}/src/core/system_parameters
 )
 
 if(Boost_VERSION LESS 105800)

@@ -42,7 +42,6 @@
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
 #include "MATH_CONSTANTS.h"
-#include "control_message_factory.h"
 #include "gnss_sdr_create_directory.h"
 #include "gps_l2c_signal.h"
 #include "gps_l5_signal.h"

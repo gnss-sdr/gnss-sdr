@@ -29,8 +29,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef MONITOR_PVT_UDP_SINK_H_
-#define MONITOR_PVT_UDP_SINK_H_
+#ifndef GNSS_SDR_MONITOR_PVT_UDP_SINK_H_
+#define GNSS_SDR_MONITOR_PVT_UDP_SINK_H_
 
 #include "monitor_pvt.h"
 #include <boost/asio.hpp>
@@ -50,4 +50,4 @@ private:
 };
 
 
-#endif /* MONITOR_PVT_UDP_SINK_H_ */
+#endif /* GNSS_SDR_MONITOR_PVT_UDP_SINK_H_ */

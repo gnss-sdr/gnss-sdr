@@ -30,11 +30,15 @@ target_link_libraries(signal_generator_adapters
     PUBLIC
         Gnuradio::blocks
         signal_generator_blocks
-        gnss_rx
     PRIVATE
         Gflags::gflags
         Glog::glog
         gnss_sp_libs
+)
+
+target_include_directories(signal_generator_adapters
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
 )
 
 set_property(TARGET signal_generator_adapters

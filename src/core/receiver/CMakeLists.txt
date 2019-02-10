@@ -142,7 +142,6 @@ target_link_libraries(gnss_rx
         Gnuradio::runtime
         rx_core_lib
         core_monitor_lib
-        gnss_system_parameters
     PRIVATE
         Boost::chrono
         Gflags::gflags

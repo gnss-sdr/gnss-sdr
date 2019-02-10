@@ -1121,6 +1121,9 @@ endif()
 # Check that BLAS (Basic Linear Algebra Subprograms) is found in the system
 # See http://www.netlib.org/blas/
 #############################################################################
+if(OS_IS_MACOSX)
+    set(BLA_VENDOR "Apple")
+endif()
 find_library(BLAS blas)
 if(NOT BLAS)
     message(" The BLAS library has not been found.")

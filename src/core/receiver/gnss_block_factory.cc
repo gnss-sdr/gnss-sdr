@@ -199,7 +199,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalSource(
         }
     std::string implementation = configuration->property(role + ".implementation", default_implementation);
     LOG(INFO) << "Getting SignalSource with implementation " << implementation;
-    return GetBlock(configuration, role, implementation, 0, 1, std::move(queue));
+    return GetBlock(configuration, role, implementation, 0, 1, queue);
 }
 
 

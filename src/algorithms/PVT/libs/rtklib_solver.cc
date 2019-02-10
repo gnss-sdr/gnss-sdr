@@ -60,6 +60,7 @@
 #include "rtklib_solution.h"
 #include <glog/logging.h>
 #include <matio.h>
+#include <exception>
 #include <utility>
 
 
@@ -397,6 +398,7 @@ bool rtklib_solver::save_matfile()
     return true;
 }
 
+
 rtklib_solver::~rtklib_solver()
 {
     if (d_dump_file.is_open() == true)
@@ -412,7 +414,14 @@ rtklib_solver::~rtklib_solver()
         }
     if (d_flag_dump_mat_enabled)
         {
-            save_matfile();
+            try
+                {
+                    save_matfile();
+                }
+            catch (const std::exception &ex)
+                {
+                    LOG(WARNING) << "Exception in destructor saving the PVT .mat dump file " << ex.what();
+                }
         }
 }
 

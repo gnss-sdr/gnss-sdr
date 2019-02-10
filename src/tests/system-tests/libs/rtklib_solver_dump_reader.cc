@@ -29,6 +29,7 @@
  */
 
 #include "rtklib_solver_dump_reader.h"
+#include <exception>
 #include <iostream>
 #include <utility>
 
@@ -113,7 +114,7 @@ bool rtklib_solver_dump_reader::open_obs_file(std::string out_file)
                 }
             catch (const std::ifstream::failure &e)
                 {
-                    std::cout << "Problem opening rtklib_solver dump Log file: " << d_dump_filename.c_str() << std::endl;
+                    std::cout << "Problem opening rtklib_solver dump Log file: " << d_dump_filename << std::endl;
                     return false;
                 }
         }
@@ -126,8 +127,19 @@ bool rtklib_solver_dump_reader::open_obs_file(std::string out_file)
 
 rtklib_solver_dump_reader::~rtklib_solver_dump_reader()
 {
-    if (d_dump_file.is_open() == true)
+    try
         {
-            d_dump_file.close();
+            if (d_dump_file.is_open() == true)
+                {
+                    d_dump_file.close();
+                }
+        }
+    catch (const std::ifstream::failure &e)
+        {
+            std::cerr << "Problem closing rtklib_solver dump Log file: " << d_dump_filename << '\n';
+        }
+    catch (const std::exception &e)
+        {
+            std::cerr << e.what() << '\n';
         }
 }

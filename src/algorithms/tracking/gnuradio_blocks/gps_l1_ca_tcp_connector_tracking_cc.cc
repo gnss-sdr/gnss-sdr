@@ -47,6 +47,7 @@
 #include <gnuradio/io_signature.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cmath>
+#include <exception>
 #include <iostream>
 #include <sstream>
 #include <utility>

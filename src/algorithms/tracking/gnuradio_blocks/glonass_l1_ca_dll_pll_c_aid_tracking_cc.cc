@@ -49,6 +49,7 @@
 #include <pmt/pmt.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cmath>
+#include <exception>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -325,7 +326,14 @@ glonass_l1_ca_dll_pll_c_aid_tracking_cc::~glonass_l1_ca_dll_pll_c_aid_tracking_c
                 {
                     std::cout << "Writing .mat files ...";
                 }
-            glonass_l1_ca_dll_pll_c_aid_tracking_cc::save_matfile();
+            try
+                {
+                    glonass_l1_ca_dll_pll_c_aid_tracking_cc::save_matfile();
+                }
+            catch (const std::exception &ex)
+                {
+                    LOG(WARNING) << "Error saving the .mat file: " << ex.what();
+                }
             if (d_channel == 0)
                 {
                     std::cout << " done." << std::endl;

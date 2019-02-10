@@ -40,6 +40,7 @@
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <exception>
 #include <sstream>
 #include <utility>
 
@@ -117,6 +118,7 @@ pcps_cccwsr_acquisition_cc::pcps_cccwsr_acquisition_cc(
     d_channel = 0;
 }
 
+
 pcps_cccwsr_acquisition_cc::~pcps_cccwsr_acquisition_cc()
 {
     if (d_num_doppler_bins > 0)
@@ -139,11 +141,23 @@ pcps_cccwsr_acquisition_cc::~pcps_cccwsr_acquisition_cc()
     delete d_ifft;
     delete d_fft_if;
 
-    if (d_dump)
+    try
         {
-            d_dump_file.close();
+            if (d_dump)
+                {
+                    d_dump_file.close();
+                }
+        }
+    catch (const std::ofstream::failure &e)
+        {
+            std::cerr << "Problem closing Acquisition dump file: " << d_dump_filename << '\n';
+        }
+    catch (const std::exception &e)
+        {
+            std::cerr << e.what() << '\n';
         }
 }
+
 
 void pcps_cccwsr_acquisition_cc::set_local_code(std::complex<float> *code_data,
     std::complex<float> *code_pilot)
@@ -164,6 +178,7 @@ void pcps_cccwsr_acquisition_cc::set_local_code(std::complex<float> *code_data,
     //Conjugate the local code,
     volk_32fc_conjugate_32fc(d_fft_code_pilot, d_fft_if->get_outbuf(), d_fft_size);
 }
+
 
 void pcps_cccwsr_acquisition_cc::init()
 {

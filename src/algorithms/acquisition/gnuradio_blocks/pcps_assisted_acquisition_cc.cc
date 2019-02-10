@@ -38,6 +38,7 @@
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <exception>
 #include <sstream>
 #include <utility>
 
@@ -131,9 +132,20 @@ pcps_assisted_acquisition_cc::~pcps_assisted_acquisition_cc()
     volk_gnsssdr_free(d_fft_codes);
     delete d_ifft;
     delete d_fft_if;
-    if (d_dump)
+    try
         {
-            d_dump_file.close();
+            if (d_dump)
+                {
+                    d_dump_file.close();
+                }
+        }
+    catch (const std::ofstream::failure &e)
+        {
+            std::cerr << "Problem closing Acquisition dump file: " << d_dump_filename << '\n';
+        }
+    catch (const std::exception &e)
+        {
+            std::cerr << e.what() << '\n';
         }
 }
 

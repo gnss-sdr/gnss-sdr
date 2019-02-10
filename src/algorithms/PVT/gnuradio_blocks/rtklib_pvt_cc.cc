@@ -46,6 +46,7 @@
 #include <exception>
 #include <iostream>
 #include <map>
+#include <stdexcept>
 #if OLD_BOOST
 #include <boost/math/common_factor_rt.hpp>
 namespace bc = boost::math;
@@ -588,403 +589,546 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
 rtklib_pvt_cc::~rtklib_pvt_cc()
 {
     msgctl(sysv_msqid, IPC_RMID, nullptr);
-    if (d_xml_storage)
+    try
         {
-            // save GPS L2CM ephemeris to XML file
-            std::string file_name = xml_base_path + "gps_cnav_ephemeris.xml";
-            if (d_pvt_solver->gps_cnav_ephemeris_map.empty() == false)
+            if (d_xml_storage)
                 {
-                    std::ofstream ofs;
-                    try
+                    // save GPS L2CM ephemeris to XML file
+                    std::string file_name = xml_base_path + "gps_cnav_ephemeris.xml";
+                    if (d_pvt_solver->gps_cnav_ephemeris_map.empty() == false)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_cnav_ephemeris_map", d_pvt_solver->gps_cnav_ephemeris_map);
-                            LOG(INFO) << "Saved GPS L2CM or L5 Ephemeris map data";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_cnav_ephemeris_map", d_pvt_solver->gps_cnav_ephemeris_map);
+                                    LOG(INFO) << "Saved GPS L2CM or L5 Ephemeris map data";
+                                }
+                            catch (const boost::archive::archive_exception e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save GPS L2CM or L5 Ephemeris, map is empty";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save GPS L2CM or L5 Ephemeris, map is empty";
-                }
 
-            // save GPS L1 CA ephemeris to XML file
-            file_name = xml_base_path + "gps_ephemeris.xml";
-            if (d_pvt_solver->gps_ephemeris_map.empty() == false)
-                {
-                    std::ofstream ofs;
-                    try
+                    // save GPS L1 CA ephemeris to XML file
+                    file_name = xml_base_path + "gps_ephemeris.xml";
+                    if (d_pvt_solver->gps_ephemeris_map.empty() == false)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", d_pvt_solver->gps_ephemeris_map);
-                            LOG(INFO) << "Saved GPS L1 CA Ephemeris map data";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", d_pvt_solver->gps_ephemeris_map);
+                                    LOG(INFO) << "Saved GPS L1 CA Ephemeris map data";
+                                }
+                            catch (const boost::archive::archive_exception e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (const std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save GPS L1 CA Ephemeris, map is empty";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save GPS L1 CA Ephemeris, map is empty";
-                }
 
-            // save Galileo E1 ephemeris to XML file
-            file_name = xml_base_path + "gal_ephemeris.xml";
-            if (d_pvt_solver->galileo_ephemeris_map.empty() == false)
-                {
-                    std::ofstream ofs;
-                    try
+                    // save Galileo E1 ephemeris to XML file
+                    file_name = xml_base_path + "gal_ephemeris.xml";
+                    if (d_pvt_solver->galileo_ephemeris_map.empty() == false)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_gal_ephemeris_map", d_pvt_solver->galileo_ephemeris_map);
-                            LOG(INFO) << "Saved Galileo E1 Ephemeris map data";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_ephemeris_map", d_pvt_solver->galileo_ephemeris_map);
+                                    LOG(INFO) << "Saved Galileo E1 Ephemeris map data";
+                                }
+                            catch (const boost::archive::archive_exception e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (const std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save Galileo E1 Ephemeris, map is empty";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save Galileo E1 Ephemeris, map is empty";
-                }
 
-            // save GLONASS GNAV ephemeris to XML file
-            file_name = xml_base_path + "eph_GLONASS_GNAV.xml";
-            if (d_pvt_solver->glonass_gnav_ephemeris_map.empty() == false)
-                {
-                    std::ofstream ofs;
-                    try
+                    // save GLONASS GNAV ephemeris to XML file
+                    file_name = xml_base_path + "eph_GLONASS_GNAV.xml";
+                    if (d_pvt_solver->glonass_gnav_ephemeris_map.empty() == false)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_gnav_ephemeris_map", d_pvt_solver->glonass_gnav_ephemeris_map);
-                            LOG(INFO) << "Saved GLONASS GNAV Ephemeris map data";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_gnav_ephemeris_map", d_pvt_solver->glonass_gnav_ephemeris_map);
+                                    LOG(INFO) << "Saved GLONASS GNAV Ephemeris map data";
+                                }
+                            catch (const boost::archive::archive_exception e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save GLONASS GNAV Ephemeris, map is empty";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save GLONASS GNAV Ephemeris, map is empty";
-                }
 
-            // Save GPS UTC model parameters
-            file_name = xml_base_path + "gps_utc_model.xml";
-            if (d_pvt_solver->gps_utc_model.valid)
-                {
-                    std::ofstream ofs;
-                    try
+                    // Save GPS UTC model parameters
+                    file_name = xml_base_path + "gps_utc_model.xml";
+                    if (d_pvt_solver->gps_utc_model.valid)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_utc_model", d_pvt_solver->gps_utc_model);
-                            LOG(INFO) << "Saved GPS UTC model parameters";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_utc_model", d_pvt_solver->gps_utc_model);
+                                    LOG(INFO) << "Saved GPS UTC model parameters";
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const boost::archive::archive_exception e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save GPS UTC model parameters, not valid data";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save GPS UTC model parameters, not valid data";
-                }
 
-            // Save Galileo UTC model parameters
-            file_name = xml_base_path + "gal_utc_model.xml";
-            if (d_pvt_solver->galileo_utc_model.Delta_tLS_6 != 0.0)
-                {
-                    std::ofstream ofs;
-                    try
+                    // Save Galileo UTC model parameters
+                    file_name = xml_base_path + "gal_utc_model.xml";
+                    if (d_pvt_solver->galileo_utc_model.Delta_tLS_6 != 0.0)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_gal_utc_model", d_pvt_solver->galileo_utc_model);
-                            LOG(INFO) << "Saved Galileo UTC model parameters";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_utc_model", d_pvt_solver->galileo_utc_model);
+                                    LOG(INFO) << "Saved Galileo UTC model parameters";
+                                }
+                            catch (const boost::archive::archive_exception e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save Galileo UTC model parameters, not valid data";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save Galileo UTC model parameters, not valid data";
-                }
 
-            // Save GPS iono parameters
-            file_name = xml_base_path + "gps_iono.xml";
-            if (d_pvt_solver->gps_iono.valid == true)
-                {
-                    std::ofstream ofs;
-                    try
+                    // Save GPS iono parameters
+                    file_name = xml_base_path + "gps_iono.xml";
+                    if (d_pvt_solver->gps_iono.valid == true)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_iono_model", d_pvt_solver->gps_iono);
-                            LOG(INFO) << "Saved GPS ionospheric model parameters";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_iono_model", d_pvt_solver->gps_iono);
+                                    LOG(INFO) << "Saved GPS ionospheric model parameters";
+                                }
+                            catch (const boost::archive::archive_exception e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save GPS ionospheric model parameters, not valid data";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save GPS ionospheric model parameters, not valid data";
-                }
 
-            // Save GPS CNAV iono parameters
-            file_name = xml_base_path + "gps_cnav_iono.xml";
-            if (d_pvt_solver->gps_cnav_iono.valid == true)
-                {
-                    std::ofstream ofs;
-                    try
+                    // Save GPS CNAV iono parameters
+                    file_name = xml_base_path + "gps_cnav_iono.xml";
+                    if (d_pvt_solver->gps_cnav_iono.valid == true)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_cnav_iono_model", d_pvt_solver->gps_cnav_iono);
-                            LOG(INFO) << "Saved GPS CNAV ionospheric model parameters";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_cnav_iono_model", d_pvt_solver->gps_cnav_iono);
+                                    LOG(INFO) << "Saved GPS CNAV ionospheric model parameters";
+                                }
+                            catch (const boost::archive::archive_exception e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save GPS CNAV ionospheric model parameters, not valid data";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save GPS CNAV ionospheric model parameters, not valid data";
-                }
 
-            // Save Galileo iono parameters
-            file_name = xml_base_path + "gal_iono.xml";
-            if (d_pvt_solver->galileo_iono.ai0_5 != 0.0)
-                {
-                    std::ofstream ofs;
-                    try
+                    // Save Galileo iono parameters
+                    file_name = xml_base_path + "gal_iono.xml";
+                    if (d_pvt_solver->galileo_iono.ai0_5 != 0.0)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_gal_iono_model", d_pvt_solver->galileo_iono);
-                            LOG(INFO) << "Saved Galileo ionospheric model parameters";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_iono_model", d_pvt_solver->galileo_iono);
+                                    LOG(INFO) << "Saved Galileo ionospheric model parameters";
+                                }
+                            catch (const boost::archive::archive_exception e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save Galileo ionospheric model parameters, not valid data";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save Galileo ionospheric model parameters, not valid data";
-                }
 
-            // save GPS almanac to XML file
-            file_name = xml_base_path + "gps_almanac.xml";
-            if (d_pvt_solver->gps_almanac_map.empty() == false)
-                {
-                    std::ofstream ofs;
-                    try
+                    // save GPS almanac to XML file
+                    file_name = xml_base_path + "gps_almanac.xml";
+                    if (d_pvt_solver->gps_almanac_map.empty() == false)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_gps_almanac_map", d_pvt_solver->gps_almanac_map);
-                            LOG(INFO) << "Saved GPS almanac map data";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_gps_almanac_map", d_pvt_solver->gps_almanac_map);
+                                    LOG(INFO) << "Saved GPS almanac map data";
+                                }
+                            catch (const boost::archive::archive_exception e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (const std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save GPS almanac, map is empty";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save GPS almanac, map is empty";
-                }
 
-            // Save Galileo almanac
-            file_name = xml_base_path + "gal_almanac.xml";
-            if (d_pvt_solver->galileo_almanac_map.empty() == false)
-                {
-                    std::ofstream ofs;
-                    try
+                    // Save Galileo almanac
+                    file_name = xml_base_path + "gal_almanac.xml";
+                    if (d_pvt_solver->galileo_almanac_map.empty() == false)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_gal_almanac_map", d_pvt_solver->galileo_almanac_map);
-                            LOG(INFO) << "Saved Galileo almanac data";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_almanac_map", d_pvt_solver->galileo_almanac_map);
+                                    LOG(INFO) << "Saved Galileo almanac data";
+                                }
+                            catch (const boost::archive::archive_exception e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save Galileo almanac, not valid data";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save Galileo almanac, not valid data";
-                }
 
-            // Save GPS CNAV UTC model parameters
-            file_name = xml_base_path + "gps_cnav_utc_model.xml";
-            if (d_pvt_solver->gps_cnav_utc_model.valid)
-                {
-                    std::ofstream ofs;
-                    try
+                    // Save GPS CNAV UTC model parameters
+                    file_name = xml_base_path + "gps_cnav_utc_model.xml";
+                    if (d_pvt_solver->gps_cnav_utc_model.valid)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_cnav_utc_model", d_pvt_solver->gps_cnav_utc_model);
-                            LOG(INFO) << "Saved GPS CNAV UTC model parameters";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_cnav_utc_model", d_pvt_solver->gps_cnav_utc_model);
+                                    LOG(INFO) << "Saved GPS CNAV UTC model parameters";
+                                }
+                            catch (const boost::archive::archive_exception e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save GPS CNAV UTC model parameters, not valid data";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save GPS CNAV UTC model parameters, not valid data";
-                }
 
-            // save GLONASS GNAV ephemeris to XML file
-            file_name = xml_base_path + "glo_gnav_ephemeris.xml";
-            if (d_pvt_solver->glonass_gnav_ephemeris_map.empty() == false)
-                {
-                    std::ofstream ofs;
-                    try
+                    // save GLONASS GNAV ephemeris to XML file
+                    file_name = xml_base_path + "glo_gnav_ephemeris.xml";
+                    if (d_pvt_solver->glonass_gnav_ephemeris_map.empty() == false)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_gnav_ephemeris_map", d_pvt_solver->glonass_gnav_ephemeris_map);
-                            LOG(INFO) << "Saved GLONASS GNAV ephemeris map data";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_gnav_ephemeris_map", d_pvt_solver->glonass_gnav_ephemeris_map);
+                                    LOG(INFO) << "Saved GLONASS GNAV ephemeris map data";
+                                }
+                            catch (const boost::archive::archive_exception e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save GLONASS GNAV ephemeris, map is empty";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save GLONASS GNAV ephemeris, map is empty";
-                }
 
-            // save GLONASS UTC model parameters to XML file
-            file_name = xml_base_path + "glo_utc_model.xml";
-            if (d_pvt_solver->glonass_gnav_utc_model.valid)
-                {
-                    std::ofstream ofs;
-                    try
+                    // save GLONASS UTC model parameters to XML file
+                    file_name = xml_base_path + "glo_utc_model.xml";
+                    if (d_pvt_solver->glonass_gnav_utc_model.valid)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_gnav_utc_model", d_pvt_solver->glonass_gnav_utc_model);
-                            LOG(INFO) << "Saved GLONASS UTC model parameters";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_gnav_utc_model", d_pvt_solver->glonass_gnav_utc_model);
+                                    LOG(INFO) << "Saved GLONASS UTC model parameters";
+                                }
+                            catch (const boost::archive::archive_exception e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save GLONASS GNAV ephemeris, not valid data";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save GLONASS GNAV ephemeris, not valid data";
-                }
 
-            // save BeiDou DNAV ephemeris to XML file
-            file_name = xml_base_path + "bds_dnav_ephemeris.xml";
-            if (d_pvt_solver->beidou_dnav_ephemeris_map.empty() == false)
-                {
-                    std::ofstream ofs;
-                    try
+                    // save BeiDou DNAV ephemeris to XML file
+                    file_name = xml_base_path + "bds_dnav_ephemeris.xml";
+                    if (d_pvt_solver->beidou_dnav_ephemeris_map.empty() == false)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_ephemeris_map", d_pvt_solver->beidou_dnav_ephemeris_map);
-                            LOG(INFO) << "Saved BeiDou DNAV Ephemeris map data";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_ephemeris_map", d_pvt_solver->beidou_dnav_ephemeris_map);
+                                    LOG(INFO) << "Saved BeiDou DNAV Ephemeris map data";
+                                }
+                            catch (const boost::archive::archive_exception e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (const std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save BeiDou DNAV Ephemeris, map is empty";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save BeiDou DNAV Ephemeris, map is empty";
-                }
 
-            // Save BeiDou DNAV iono parameters
-            file_name = xml_base_path + "bds_dnav_iono.xml";
-            if (d_pvt_solver->beidou_dnav_iono.valid)
-                {
-                    std::ofstream ofs;
-                    try
+                    // Save BeiDou DNAV iono parameters
+                    file_name = xml_base_path + "bds_dnav_iono.xml";
+                    if (d_pvt_solver->beidou_dnav_iono.valid)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_iono_model", d_pvt_solver->beidou_dnav_iono);
-                            LOG(INFO) << "Saved BeiDou DNAV ionospheric model parameters";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_iono_model", d_pvt_solver->beidou_dnav_iono);
+                                    LOG(INFO) << "Saved BeiDou DNAV ionospheric model parameters";
+                                }
+                            catch (const boost::archive::archive_exception e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save BeiDou DNAV ionospheric model parameters, not valid data";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save BeiDou DNAV ionospheric model parameters, not valid data";
-                }
 
-            // save BeiDou DNAV almanac to XML file
-            file_name = xml_base_path + "bds_dnav_almanac.xml";
-            if (d_pvt_solver->beidou_dnav_almanac_map.empty() == false)
-                {
-                    std::ofstream ofs;
-                    try
+                    // save BeiDou DNAV almanac to XML file
+                    file_name = xml_base_path + "bds_dnav_almanac.xml";
+                    if (d_pvt_solver->beidou_dnav_almanac_map.empty() == false)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_almanac_map", d_pvt_solver->beidou_dnav_almanac_map);
-                            LOG(INFO) << "Saved BeiDou DNAV almanac map data";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_almanac_map", d_pvt_solver->beidou_dnav_almanac_map);
+                                    LOG(INFO) << "Saved BeiDou DNAV almanac map data";
+                                }
+                            catch (const boost::archive::archive_exception e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (const std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save BeiDou DNAV almanac, map is empty";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save BeiDou DNAV almanac, map is empty";
-                }
 
-            // Save BeiDou UTC model parameters
-            file_name = xml_base_path + "bds_dnav_utc_model.xml";
-            if (d_pvt_solver->beidou_dnav_utc_model.valid)
-                {
-                    std::ofstream ofs;
-                    try
+                    // Save BeiDou UTC model parameters
+                    file_name = xml_base_path + "bds_dnav_utc_model.xml";
+                    if (d_pvt_solver->beidou_dnav_utc_model.valid)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_utc_model", d_pvt_solver->beidou_dnav_utc_model);
-                            LOG(INFO) << "Saved BeiDou DNAV UTC model parameters";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_utc_model", d_pvt_solver->beidou_dnav_utc_model);
+                                    LOG(INFO) << "Saved BeiDou DNAV UTC model parameters";
+                                }
+                            catch (const boost::archive::archive_exception e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save BeiDou DNAV UTC model parameters, not valid data";
                         }
                 }
-            else
-                {
-                    LOG(INFO) << "Failed to save BeiDou DNAV UTC model parameters, not valid data";
-                }
+        }
+    catch (std::length_error& e)
+        {
+            LOG(WARNING) << e.what();
         }
 }
 

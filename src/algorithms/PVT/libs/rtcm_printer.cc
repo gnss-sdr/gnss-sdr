@@ -38,6 +38,7 @@
 #include <boost/filesystem/path_traits.hpp>  // for filesystem
 #include <glog/logging.h>
 #include <cstdint>
+#include <exception>
 #include <fcntl.h>  // for O_RDWR
 #include <iomanip>
 #include <termios.h>  // for tcgetattr
@@ -190,13 +191,27 @@ Rtcm_Printer::~Rtcm_Printer()
         {
             int64_t pos;
             pos = rtcm_file_descriptor.tellp();
-            rtcm_file_descriptor.close();
+            try
+                {
+                    rtcm_file_descriptor.close();
+                }
+            catch (const std::exception& e)
+                {
+                    std::cerr << e.what() << '\n';
+                }
             if (pos == 0)
                 {
                     if (remove(rtcm_filename.c_str()) != 0) LOG(INFO) << "Error deleting temporary RTCM file";
                 }
         }
-    close_serial();
+    try
+        {
+            close_serial();
+        }
+    catch (const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+        }
 }
 
 

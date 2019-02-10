@@ -47,6 +47,7 @@
 #include <matio.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cmath>
+#include <exception>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -278,7 +279,15 @@ Glonass_L2_Ca_Dll_Pll_Tracking_cc::~Glonass_L2_Ca_Dll_Pll_Tracking_cc()
                 {
                     std::cout << "Writing .mat files ...";
                 }
-            Glonass_L2_Ca_Dll_Pll_Tracking_cc::save_matfile();
+            try
+                {
+                    Glonass_L2_Ca_Dll_Pll_Tracking_cc::save_matfile();
+                }
+            catch (const std::exception &ex)
+                {
+                    LOG(WARNING) << "Error saving the .mat file: " << ex.what();
+                }
+
             if (d_channel == 0)
                 {
                     std::cout << " done." << std::endl;

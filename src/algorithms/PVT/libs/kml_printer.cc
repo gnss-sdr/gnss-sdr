@@ -36,6 +36,7 @@
 #include <boost/filesystem/path.hpp>         // for path, operator<<
 #include <boost/filesystem/path_traits.hpp>  // for filesystem
 #include <glog/logging.h>
+#include <exception>
 #include <sstream>
 
 using google::LogMessage;
@@ -319,7 +320,14 @@ bool Kml_Printer::close_file()
 
 Kml_Printer::~Kml_Printer()
 {
-    close_file();
+    try
+        {
+            close_file();
+        }
+    catch (const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+        }
     if (!positions_printed)
         {
             if (remove(kml_filename.c_str()) != 0) LOG(INFO) << "Error deleting temporary KML file";

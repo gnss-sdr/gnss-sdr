@@ -46,6 +46,7 @@
 #include <matio.h>
 #include <pmt/pmt.h>
 #include <cmath>
+#include <exception>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -527,7 +528,15 @@ glonass_l2_ca_dll_pll_c_aid_tracking_sc::~glonass_l2_ca_dll_pll_c_aid_tracking_s
                 {
                     std::cout << "Writing .mat files ...";
                 }
-            glonass_l2_ca_dll_pll_c_aid_tracking_sc::save_matfile();
+            try
+                {
+                    glonass_l2_ca_dll_pll_c_aid_tracking_sc::save_matfile();
+                }
+            catch (const std::exception &ex)
+                {
+                    LOG(WARNING) << "Error saving the .mat file: " << ex.what();
+                }
+
             if (d_channel == 0)
                 {
                     std::cout << " done." << std::endl;

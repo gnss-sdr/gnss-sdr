@@ -39,6 +39,7 @@
 #include <algorithm>  // for min and max
 #include <cmath>      // for floor
 #include <cstdlib>    // for getenv()
+#include <exception>
 #include <iterator>
 #include <ostream>
 #include <set>
@@ -213,13 +214,19 @@ Rinex_Printer::~Rinex_Printer()
     posmn = navMixFile.tellp();
     posnr = navGloFile.tellp();
     posnc = navBdsFile.tellp();
-
-    Rinex_Printer::navFile.close();
-    Rinex_Printer::obsFile.close();
-    Rinex_Printer::sbsFile.close();
-    Rinex_Printer::navGalFile.close();
-    Rinex_Printer::navGloFile.close();
-    Rinex_Printer::navBdsFile.close();
+    try
+        {
+            Rinex_Printer::navFile.close();
+            Rinex_Printer::obsFile.close();
+            Rinex_Printer::sbsFile.close();
+            Rinex_Printer::navGalFile.close();
+            Rinex_Printer::navGloFile.close();
+            Rinex_Printer::navBdsFile.close();
+        }
+    catch (const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+        }
     // If nothing written, erase the files.
     if (posn == 0)
         {

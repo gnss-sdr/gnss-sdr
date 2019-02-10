@@ -48,6 +48,7 @@
 #include <matio.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cmath>
+#include <exception>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -374,7 +375,15 @@ Gps_L1_Ca_Kf_Tracking_cc::~Gps_L1_Ca_Kf_Tracking_cc()
                 {
                     std::cout << "Writing .mat files ...";
                 }
-            Gps_L1_Ca_Kf_Tracking_cc::save_matfile();
+            try
+                {
+                    Gps_L1_Ca_Kf_Tracking_cc::save_matfile();
+                }
+            catch (const std::exception &ex)
+                {
+                    LOG(WARNING) << "Error saving the .mat file: " << ex.what();
+                }
+
             if (d_channel == 0)
                 {
                     std::cout << " done." << std::endl;

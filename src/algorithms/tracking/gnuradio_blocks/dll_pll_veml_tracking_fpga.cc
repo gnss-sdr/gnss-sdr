@@ -54,6 +54,7 @@
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <algorithm>
 #include <cmath>
+#include <exception>
 #include <iostream>
 #include <sstream>
 
@@ -621,7 +622,14 @@ dll_pll_veml_tracking_fpga::~dll_pll_veml_tracking_fpga()
         }
     if (d_dump_mat)
         {
-            save_matfile();
+            try
+                {
+                    save_matfile();
+                }
+            catch (const std::exception &ex)
+                {
+                    LOG(WARNING) << "Error saving the .mat file: " << ex.what();
+                }
         }
     try
         {

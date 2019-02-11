@@ -614,7 +614,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                     xml << boost::serialization::make_nvp("GNSS-SDR_cnav_ephemeris_map", d_pvt_solver->gps_cnav_ephemeris_map);
                                     LOG(INFO) << "Saved GPS L2CM or L5 Ephemeris map data";
                                 }
-                            catch (const boost::archive::archive_exception e)
+                            catch (const boost::archive::archive_exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -640,7 +640,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                     xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", d_pvt_solver->gps_ephemeris_map);
                                     LOG(INFO) << "Saved GPS L1 CA Ephemeris map data";
                                 }
-                            catch (const boost::archive::archive_exception e)
+                            catch (const boost::archive::archive_exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -666,7 +666,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                     xml << boost::serialization::make_nvp("GNSS-SDR_gal_ephemeris_map", d_pvt_solver->galileo_ephemeris_map);
                                     LOG(INFO) << "Saved Galileo E1 Ephemeris map data";
                                 }
-                            catch (const boost::archive::archive_exception e)
+                            catch (const boost::archive::archive_exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -696,7 +696,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                     xml << boost::serialization::make_nvp("GNSS-SDR_gnav_ephemeris_map", d_pvt_solver->glonass_gnav_ephemeris_map);
                                     LOG(INFO) << "Saved GLONASS GNAV Ephemeris map data";
                                 }
-                            catch (const boost::archive::archive_exception e)
+                            catch (const boost::archive::archive_exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -730,7 +730,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                 {
                                     LOG(WARNING) << "Problem opening output XML file";
                                 }
-                            catch (const boost::archive::archive_exception e)
+                            catch (const boost::archive::archive_exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -756,7 +756,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                     xml << boost::serialization::make_nvp("GNSS-SDR_gal_utc_model", d_pvt_solver->galileo_utc_model);
                                     LOG(INFO) << "Saved Galileo UTC model parameters";
                                 }
-                            catch (const boost::archive::archive_exception e)
+                            catch (const boost::archive::archive_exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -786,7 +786,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                     xml << boost::serialization::make_nvp("GNSS-SDR_iono_model", d_pvt_solver->gps_iono);
                                     LOG(INFO) << "Saved GPS ionospheric model parameters";
                                 }
-                            catch (const boost::archive::archive_exception e)
+                            catch (const boost::archive::archive_exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -816,7 +816,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                     xml << boost::serialization::make_nvp("GNSS-SDR_cnav_iono_model", d_pvt_solver->gps_cnav_iono);
                                     LOG(INFO) << "Saved GPS CNAV ionospheric model parameters";
                                 }
-                            catch (const boost::archive::archive_exception e)
+                            catch (const boost::archive::archive_exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -846,7 +846,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                     xml << boost::serialization::make_nvp("GNSS-SDR_gal_iono_model", d_pvt_solver->galileo_iono);
                                     LOG(INFO) << "Saved Galileo ionospheric model parameters";
                                 }
-                            catch (const boost::archive::archive_exception e)
+                            catch (const boost::archive::archive_exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -876,7 +876,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                     xml << boost::serialization::make_nvp("GNSS-SDR_gps_almanac_map", d_pvt_solver->gps_almanac_map);
                                     LOG(INFO) << "Saved GPS almanac map data";
                                 }
-                            catch (const boost::archive::archive_exception e)
+                            catch (const boost::archive::archive_exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -906,7 +906,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                     xml << boost::serialization::make_nvp("GNSS-SDR_gal_almanac_map", d_pvt_solver->galileo_almanac_map);
                                     LOG(INFO) << "Saved Galileo almanac data";
                                 }
-                            catch (const boost::archive::archive_exception e)
+                            catch (const boost::archive::archive_exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -936,7 +936,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                     xml << boost::serialization::make_nvp("GNSS-SDR_cnav_utc_model", d_pvt_solver->gps_cnav_utc_model);
                                     LOG(INFO) << "Saved GPS CNAV UTC model parameters";
                                 }
-                            catch (const boost::archive::archive_exception e)
+                            catch (const boost::archive::archive_exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -966,7 +966,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                     xml << boost::serialization::make_nvp("GNSS-SDR_gnav_ephemeris_map", d_pvt_solver->glonass_gnav_ephemeris_map);
                                     LOG(INFO) << "Saved GLONASS GNAV ephemeris map data";
                                 }
-                            catch (const boost::archive::archive_exception e)
+                            catch (const boost::archive::archive_exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -996,7 +996,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                     xml << boost::serialization::make_nvp("GNSS-SDR_gnav_utc_model", d_pvt_solver->glonass_gnav_utc_model);
                                     LOG(INFO) << "Saved GLONASS UTC model parameters";
                                 }
-                            catch (const boost::archive::archive_exception e)
+                            catch (const boost::archive::archive_exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -1026,7 +1026,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                     xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_ephemeris_map", d_pvt_solver->beidou_dnav_ephemeris_map);
                                     LOG(INFO) << "Saved BeiDou DNAV Ephemeris map data";
                                 }
-                            catch (const boost::archive::archive_exception e)
+                            catch (const boost::archive::archive_exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -1056,7 +1056,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                     xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_iono_model", d_pvt_solver->beidou_dnav_iono);
                                     LOG(INFO) << "Saved BeiDou DNAV ionospheric model parameters";
                                 }
-                            catch (const boost::archive::archive_exception e)
+                            catch (const boost::archive::archive_exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -1086,7 +1086,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                     xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_almanac_map", d_pvt_solver->beidou_dnav_almanac_map);
                                     LOG(INFO) << "Saved BeiDou DNAV almanac map data";
                                 }
-                            catch (const boost::archive::archive_exception e)
+                            catch (const boost::archive::archive_exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -1116,7 +1116,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                     xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_utc_model", d_pvt_solver->beidou_dnav_utc_model);
                                     LOG(INFO) << "Saved BeiDou DNAV UTC model parameters";
                                 }
-                            catch (const boost::archive::archive_exception e)
+                            catch (const boost::archive::archive_exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }

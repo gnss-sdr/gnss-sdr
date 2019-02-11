@@ -138,7 +138,9 @@ void ControlThread::init()
                 {
                     vect.push_back(d);
                     if ((ss.peek() == ',') or (ss.peek() == ' '))
-                        ss.ignore();
+                        {
+                            ss.ignore();
+                        }
                 }
             // fill agnss_ref_location_
             if (vect.size() >= 2)
@@ -191,7 +193,10 @@ void ControlThread::init()
 
 ControlThread::~ControlThread()  // NOLINT(modernize-use-equals-default)
 {
-    if (msqid != -1) msgctl(msqid, IPC_RMID, nullptr);
+    if (msqid != -1)
+        {
+            msgctl(msqid, IPC_RMID, nullptr);
+        }
 }
 
 
@@ -269,7 +274,10 @@ int ControlThread::run()
         {
             //TODO re-enable the blocking read messages functions and fork the process
             read_control_messages();
-            if (control_messages_ != nullptr) process_control_messages();
+            if (control_messages_ != nullptr)
+                {
+                    process_control_messages();
+                }
         }
     std::cout << "Stopping GNSS-SDR, please wait!" << std::endl;
     flowgraph_->stop();
@@ -778,7 +786,10 @@ void ControlThread::process_control_messages()
 {
     for (auto &i : *control_messages_)
         {
-            if (stop_) break;
+            if (stop_)
+                {
+                    break;
+                }
             if (i->who == 200)
                 {
                     apply_action(i->what);
@@ -998,7 +1009,10 @@ void ControlThread::gps_acq_assist_data_collector()
     while (stop_ == false)
         {
             global_gps_acq_assist_queue.wait_and_pop(gps_acq);
-            if (gps_acq.i_satellite_PRN == 0) break;
+            if (gps_acq.i_satellite_PRN == 0)
+                {
+                    break;
+                }
 
             // DEBUG MESSAGE
             std::cout << "Acquisition assistance record has arrived from SAT ID "

@@ -110,8 +110,7 @@ GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx::GlonassL1CaPcpsAcquisitionGSoC201
 }
 
 
-GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx::~GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx()
-= default;
+GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx::~GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx() = default;
 
 
 // ###########################################################
@@ -129,8 +128,7 @@ protected:
         init();
     }
 
-    ~GlonassL1CaPcpsAcquisitionGSoC2017Test()
-    = default;
+    ~GlonassL1CaPcpsAcquisitionGSoC2017Test() = default;
 
     void init();
     void config_1();

@@ -651,7 +651,10 @@ public:
     //----------------------------------------------------------------------------------
     inline Gnuplot &replot(void)
     {
-        if (nplots > 0) cmd("replot");
+        if (nplots > 0)
+            {
+                cmd("replot");
+            }
         return *this;
     };
 
@@ -795,13 +798,17 @@ Gnuplot &Gnuplot::plot_x(const X &x, const std::string &title)
     std::ofstream tmp;
     std::string name = create_tmpfile(tmp);
     if (name.empty())
-        return *this;
+        {
+            return *this;
+        }
 
     //
     // write the data to file
     //
     for (unsigned int i = 0; i < x.size(); i++)
-        tmp << x[i] << std::endl;
+        {
+            tmp << x[i] << std::endl;
+        }
 
     tmp.flush();
     tmp.close();
@@ -834,13 +841,17 @@ Gnuplot &Gnuplot::plot_xy(const X &x, const Y &y, const std::string &title, cons
     std::ofstream tmp;
     std::string name = create_tmpfile(tmp);
     if (name.empty())
-        return *this;
+        {
+            return *this;
+        }
 
     //
     // write the data to file
     //
     for (unsigned int i = 0; i < x.size(); i++)
-        tmp << x[i] << " " << y[i] << std::endl;
+        {
+            tmp << x[i] << " " << y[i] << std::endl;
+        }
 
     tmp.flush();
     tmp.close();
@@ -876,13 +887,17 @@ Gnuplot &Gnuplot::plot_xy_err(const X &x,
     std::ofstream tmp;
     std::string name = create_tmpfile(tmp);
     if (name.empty())
-        return *this;
+        {
+            return *this;
+        }
 
     //
     // write the data to file
     //
     for (unsigned int i = 0; i < x.size(); i++)
-        tmp << x[i] << " " << y[i] << " " << dy[i] << std::endl;
+        {
+            tmp << x[i] << " " << y[i] << " " << dy[i] << std::endl;
+        }
 
     tmp.flush();
     tmp.close();
@@ -912,7 +927,9 @@ Gnuplot &Gnuplot::plot_grid3d(const X &x,
     std::ofstream tmp;
     std::string name = create_tmpfile(tmp);
     if (name.empty())
-        return *this;
+        {
+            return *this;
+        }
 
     //
     // write the data to file
@@ -938,9 +955,13 @@ Gnuplot &Gnuplot::plot_grid3d(const X &x,
     cmdstr << " splot \"" << name << "\" u 1:2:3";
 
     if (title.empty())
-        cmdstr << " notitle with " << pstyle << " palette";
+        {
+            cmdstr << " notitle with " << pstyle << " palette";
+        }
     else
-        cmdstr << " title \"" << title << "\" with " << pstyle << " palette";
+        {
+            cmdstr << " title \"" << title << "\" with " << pstyle << " palette";
+        }
     cmdstr << "\n";
 
     //
@@ -976,13 +997,17 @@ Gnuplot &Gnuplot::plot_xyz(const X &x,
     std::ofstream tmp;
     std::string name = create_tmpfile(tmp);
     if (name.empty())
-        return *this;
+        {
+            return *this;
+        }
 
     //
     // write the data to file
     //
     for (unsigned int i = 0; i < x.size(); i++)
-        tmp << x[i] << " " << y[i] << " " << z[i] << std::endl;
+        {
+            tmp << x[i] << " " << y[i] << " " << z[i] << std::endl;
+        }
 
     tmp.flush();
     tmp.close();
@@ -1055,7 +1080,9 @@ void stringtok(Container &container,
             i = in.find_first_not_of(delimiters, i);
 
             if (i == std::string::npos)
-                return;  // nothing left but white space
+                {
+                    return;  // nothing left but white space
+                }
 
             // find the end of the token
             std::string::size_type j = in.find_first_of(delimiters, i);
@@ -1084,17 +1111,18 @@ void stringtok(Container &container,
 Gnuplot::~Gnuplot()
 {
 //  remove_tmpfiles();
-
 // A stream opened by popen() should be closed by pclose()
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
     if (_pclose(gnucmd) == -1)
+        {
 #elif defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
     if (pclose(gnucmd) == -1)
+        {
 #endif
-        // throw GnuplotException("Problem closing communication to gnuplot");
-        std::cout << "Gnuplot window left open." << std::endl;
+            // throw GnuplotException("Problem closing communication to gnuplot");
+            std::cout << "Gnuplot window left open." << std::endl;
+        }
 }
-
 
 //------------------------------------------------------------------------------
 //
@@ -1107,7 +1135,6 @@ Gnuplot &Gnuplot::reset_plot()
 
     return *this;
 }
-
 
 //------------------------------------------------------------------------------
 //
@@ -1125,7 +1152,6 @@ Gnuplot &Gnuplot::reset_all()
 
     return *this;
 }
-
 
 //------------------------------------------------------------------------------
 //
@@ -1171,7 +1197,6 @@ Gnuplot &Gnuplot::set_style(const std::string &stylestr)
 
     return *this;
 }
-
 
 //------------------------------------------------------------------------------
 //
@@ -1501,16 +1526,24 @@ Gnuplot &Gnuplot::plot_slope(const double a,
     // command to be sent to gnuplot
     //
     if (nplots > 0 && two_dim == true)
-        cmdstr << "replot ";
+        {
+            cmdstr << "replot ";
+        }
     else
-        cmdstr << "plot ";
+        {
+            cmdstr << "plot ";
+        }
 
     cmdstr << a << " * x + " << b << " title \"";
 
     if (title.empty())
-        cmdstr << "f(x) = " << a << " * x + " << b;
+        {
+            cmdstr << "f(x) = " << a << " * x + " << b;
+        }
     else
-        cmdstr << title;
+        {
+            cmdstr << title;
+        }
 
     cmdstr << "\" with " << pstyle;
 
@@ -1535,16 +1568,24 @@ Gnuplot &Gnuplot::plot_equation(const std::string &equation,
     // command to be sent to gnuplot
     //
     if (nplots > 0 && two_dim == true)
-        cmdstr << "replot ";
+        {
+            cmdstr << "replot ";
+        }
     else
-        cmdstr << "plot ";
+        {
+            cmdstr << "plot ";
+        }
 
     cmdstr << equation << " title \"";
 
     if (title.empty())
-        cmdstr << "f(x) = " << equation;
+        {
+            cmdstr << "f(x) = " << equation;
+        }
     else
-        cmdstr << title;
+        {
+            cmdstr << title;
+        }
 
     cmdstr << "\" with " << pstyle;
 
@@ -1569,16 +1610,24 @@ Gnuplot &Gnuplot::plot_equation3d(const std::string &equation,
     // command to be sent to gnuplot
     //
     if (nplots > 0 && two_dim == false)
-        cmdstr << "replot ";
+        {
+            cmdstr << "replot ";
+        }
     else
-        cmdstr << "splot ";
+        {
+            cmdstr << "splot ";
+        }
 
     cmdstr << equation << " title \"";
 
     if (title.empty())
-        cmdstr << "f(x,y) = " << equation;
+        {
+            cmdstr << "f(x,y) = " << equation;
+        }
     else
-        cmdstr << title;
+        {
+            cmdstr << title;
+        }
 
     cmdstr << "\" with " << pstyle;
 
@@ -1609,21 +1658,33 @@ Gnuplot &Gnuplot::plotfile_x(const std::string &filename,
     // command to be sent to gnuplot
     //
     if (nplots > 0 && two_dim == true)
-        cmdstr << "replot ";
+        {
+            cmdstr << "replot ";
+        }
     else
-        cmdstr << "plot ";
+        {
+            cmdstr << "plot ";
+        }
 
     cmdstr << "\"" << filename << "\" using " << column;
 
     if (title.empty())
-        cmdstr << " notitle ";
+        {
+            cmdstr << " notitle ";
+        }
     else
-        cmdstr << " title \"" << title << "\" ";
+        {
+            cmdstr << " title \"" << title << "\" ";
+        }
 
     if (smooth.empty())
-        cmdstr << "with " << pstyle;
+        {
+            cmdstr << "with " << pstyle;
+        }
     else
-        cmdstr << "smooth " << smooth;
+        {
+            cmdstr << "smooth " << smooth;
+        }
 
     //
     // Do the actual plot
@@ -1654,21 +1715,33 @@ Gnuplot &Gnuplot::plotfile_xy(const std::string &filename,
     // command to be sent to gnuplot
     //
     if (nplots > 0 && two_dim == true)
-        cmdstr << "replot ";
+        {
+            cmdstr << "replot ";
+        }
     else
-        cmdstr << "plot ";
+        {
+            cmdstr << "plot ";
+        }
 
     cmdstr << "\"" << filename << "\" using " << column_x << ":" << column_y << " every " << std::to_string(decimate);
 
     if (title.empty())
-        cmdstr << " notitle ";
+        {
+            cmdstr << " notitle ";
+        }
     else
-        cmdstr << " title \"" << title << "\" ";
+        {
+            cmdstr << " title \"" << title << "\" ";
+        }
 
     if (smooth.empty())
-        cmdstr << "with " << pstyle;
+        {
+            cmdstr << "with " << pstyle;
+        }
     else
-        cmdstr << "smooth " << smooth;
+        {
+            cmdstr << "smooth " << smooth;
+        }
 
     //
     // Do the actual plot
@@ -1699,18 +1772,26 @@ Gnuplot &Gnuplot::plotfile_xy_err(const std::string &filename,
     // command to be sent to gnuplot
     //
     if (nplots > 0 && two_dim == true)
-        cmdstr << "replot ";
+        {
+            cmdstr << "replot ";
+        }
     else
-        cmdstr << "plot ";
+        {
+            cmdstr << "plot ";
+        }
 
     cmdstr << "\"" << filename << "\" using "
            << column_x << ":" << column_y << ":" << column_dy
            << " with errorbars ";
 
     if (title.empty())
-        cmdstr << " notitle ";
+        {
+            cmdstr << " notitle ";
+        }
     else
-        cmdstr << " title \"" << title << "\" ";
+        {
+            cmdstr << " title \"" << title << "\" ";
+        }
 
     //
     // Do the actual plot
@@ -1741,17 +1822,25 @@ Gnuplot &Gnuplot::plotfile_xyz(const std::string &filename,
     // command to be sent to gnuplot
     //
     if (nplots > 0 && two_dim == false)
-        cmdstr << "replot ";
+        {
+            cmdstr << "replot ";
+        }
     else
-        cmdstr << "splot ";
+        {
+            cmdstr << "splot ";
+        }
 
     cmdstr << "\"" << filename << "\" using " << column_x << ":" << column_y
            << ":" << column_z;
 
     if (title.empty())
-        cmdstr << " notitle with " << pstyle;
+        {
+            cmdstr << " notitle with " << pstyle;
+        }
     else
-        cmdstr << " title \"" << title << "\" with " << pstyle;
+        {
+            cmdstr << " title \"" << title << "\" with " << pstyle;
+        }
 
     //
     // Do the actual plot
@@ -1774,7 +1863,9 @@ Gnuplot &Gnuplot::plot_image(const unsigned char *ucPicBuf,
     std::ofstream tmp;
     std::string name = create_tmpfile(tmp);
     if (name.empty())
-        return *this;
+        {
+            return *this;
+        }
 
     //
     // write the data to file
@@ -1797,14 +1888,22 @@ Gnuplot &Gnuplot::plot_image(const unsigned char *ucPicBuf,
     // command to be sent to gnuplot
     //
     if (nplots > 0 && two_dim == true)
-        cmdstr << "replot ";
+        {
+            cmdstr << "replot ";
+        }
     else
-        cmdstr << "plot ";
+        {
+            cmdstr << "plot ";
+        }
 
     if (title.empty())
-        cmdstr << "\"" << name << "\" with image";
+        {
+            cmdstr << "\"" << name << "\" with image";
+        }
     else
-        cmdstr << "\"" << name << "\" title \"" << title << "\" with image";
+        {
+            cmdstr << "\"" << name << "\" title \"" << title << "\" with image";
+        }
 
     //
     // Do the actual plot
@@ -1832,9 +1931,13 @@ Gnuplot &Gnuplot::plot_circle(double east, double north, double radius, const st
                           ", " + std::to_string(north_label) + " norotate back nopoint offset 0,0\n";
         }
     if (nplots > 0)
-        cmdstr << "replot ";
+        {
+            cmdstr << "replot ";
+        }
     else
-        cmdstr << "plot ";
+        {
+            cmdstr << "plot ";
+        }
 
     //
     // Do the actual plot
@@ -2154,8 +2257,12 @@ void Gnuplot::remove_tmpfiles()
     if (!(tmpfile_list).empty())
         {
             for (auto &i : tmpfile_list)
-                if (remove(i.c_str()) != 0)
-                    std::cout << "Problem closing files" << std::endl;
+                {
+                    if (remove(i.c_str()) != 0)
+                        {
+                            std::cout << "Problem closing files" << std::endl;
+                        }
+                }
 
             Gnuplot::tmpfile_num -= tmpfile_list.size();
         }

@@ -104,7 +104,10 @@ int PositionSystemTest::configure_generator()
     if (FLAGS_dynamic_position.empty())
         {
             p2 = std::string("-static_position=") + FLAGS_static_position + std::string(",") + std::to_string(std::min(FLAGS_duration * 10, 3000));
-            if (FLAGS_duration > 300) std::cout << "WARNING: Duration has been set to its maximum value of 300 s" << std::endl;
+            if (FLAGS_duration > 300)
+                {
+                    std::cout << "WARNING: Duration has been set to its maximum value of 300 s" << std::endl;
+                }
         }
     else
         {
@@ -126,7 +129,9 @@ int PositionSystemTest::generate_signal()
 
     int pid;
     if ((pid = fork()) == -1)
-        perror("fork error");
+        {
+            perror("fork error");
+        }
     else if (pid == 0)
         {
             execv(&generator_binary[0], parmList);
@@ -135,7 +140,10 @@ int PositionSystemTest::generate_signal()
         }
 
     wait_result = waitpid(pid, &child_status, 0);
-    if (wait_result == -1) perror("waitpid error");
+    if (wait_result == -1)
+        {
+            perror("waitpid error");
+        }
     return 0;
 }
 

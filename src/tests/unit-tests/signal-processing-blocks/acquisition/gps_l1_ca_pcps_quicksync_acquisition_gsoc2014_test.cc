@@ -112,8 +112,7 @@ GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx::GpsL1CaPcpsQuickSyncAcquisit
 }
 
 
-GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx::~GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx()
-= default;
+GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx::~GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx() = default;
 
 
 // ###########################################################
@@ -130,8 +129,7 @@ protected:
         gnss_synchro = Gnss_Synchro();
     }
 
-    ~GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test()
-    = default;
+    ~GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test() = default;
 
     void init();
     void config_1();

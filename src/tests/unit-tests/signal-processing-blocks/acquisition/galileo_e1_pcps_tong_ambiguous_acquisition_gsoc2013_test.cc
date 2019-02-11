@@ -108,8 +108,7 @@ GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx::GalileoE1PcpsTongAmbig
 }
 
 
-GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx::~GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx()
-= default;
+GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx::~GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx() = default;
 
 
 class GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test : public ::testing::Test
@@ -125,8 +124,7 @@ protected:
         init();
     }
 
-    ~GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test()
-    = default;
+    ~GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test() = default;
 
     void init();
     void config_1();

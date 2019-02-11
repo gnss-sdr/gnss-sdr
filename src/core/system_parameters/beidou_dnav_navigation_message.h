@@ -129,7 +129,7 @@ public:
     double d_OMEGA;      //!< Argument of Perigee [semi-cicles]
     double d_OMEGA_DOT;  //!< Rate of Right Ascension [semi-circles/s]
     //broadcast orbit 5
-    double d_IDOT;      //!< Rate of Inclination Angle [semi-circles/s]
+    double d_IDOT;          //!< Rate of Inclination Angle [semi-circles/s]
     int32_t i_BEIDOU_week;  //!< BeiDou week number, aka WN [week]
     //broadcast orbit 6
     int32_t i_SV_accuracy;  //!< User Range Accuracy (URA) index of the SV
@@ -167,8 +167,8 @@ public:
     uint64_t d_OMEGA_DOT_lsb_bits;  //!< Rate of Right Ascension [semi-circles/s]
 
     // Almanac
-    double d_Toa;                      //!< Almanac reference time [s]
-    int32_t i_WN_A;                        //!< Modulo 256 of the GPS week number to which the almanac reference time (d_Toa) is referenced
+    double d_Toa;                              //!< Almanac reference time [s]
+    int32_t i_WN_A;                            //!< Modulo 256 of the GPS week number to which the almanac reference time (d_Toa) is referenced
     std::map<int32_t, int32_t> almanacHealth;  //!< Map that stores the health information stored in the almanac
 
     std::map<int32_t, std::string> satelliteBlock;  //!< Map that stores to which block the PRN belongs http://www.navcen.uscg.gov/?Do=constellationStatus
@@ -221,8 +221,8 @@ public:
     double d_A1UTC;       //!< 1st order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s/s]
     double d_A0UTC;       //!< Constant of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s]
     double d_DeltaT_LS;   //!< delta time due to leap seconds [s]. Number of leap seconds since 6-Jan-1980 as transmitted by the GPS almanac.
-    int32_t i_WN_LSF;         //!< Week number at the end of which the leap second becomes effective [weeks]
-    int32_t i_DN;             //!< Day number (DN) at the end of which the leap second becomes effective [days]
+    int32_t i_WN_LSF;     //!< Week number at the end of which the leap second becomes effective [weeks]
+    int32_t i_DN;         //!< Day number (DN) at the end of which the leap second becomes effective [days]
     double d_DeltaT_LSF;  //!< Scheduled future or recent past (relative to NAV message upload) value of the delta time due to leap seconds [s]
     double d_A1GPS;
     double d_A0GPS;

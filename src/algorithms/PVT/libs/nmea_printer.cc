@@ -161,10 +161,16 @@ int Nmea_Printer::init_serial(const std::string& serial_device)
     int64_t PARITY;
 
     fd = open(serial_device.c_str(), O_RDWR | O_NOCTTY | O_NDELAY | O_CLOEXEC);
-    if (fd == -1) return fd;  // failed to open TTY port
+    if (fd == -1)
+        {
+            return fd;  // failed to open TTY port
+        }
 
-    if (fcntl(fd, F_SETFL, 0) == -1) LOG(INFO) << "Error enabling direct I/O";  // clear all flags on descriptor, enable direct I/O
-    tcgetattr(fd, &options);                                                    // read serial port options
+    if (fcntl(fd, F_SETFL, 0) == -1)
+        {
+            LOG(INFO) << "Error enabling direct I/O";  // clear all flags on descriptor, enable direct I/O
+        }
+    tcgetattr(fd, &options);  // read serial port options
 
     BAUD = B9600;
     // BAUD  =  B38400;
@@ -367,13 +373,22 @@ std::string Nmea_Printer::get_UTC_NMEA_time(boost::posix_time::ptime d_position_
     utc_seconds = td.seconds();
     utc_milliseconds = td.total_milliseconds() - td.total_seconds() * 1000;
 
-    if (utc_hours < 10) sentence_str << "0";  //  two digits for hours
+    if (utc_hours < 10)
+        {
+            sentence_str << "0";  //  two digits for hours
+        }
     sentence_str << utc_hours;
 
-    if (utc_mins < 10) sentence_str << "0";  //  two digits for minutes
+    if (utc_mins < 10)
+        {
+            sentence_str << "0";  //  two digits for minutes
+        }
     sentence_str << utc_mins;
 
-    if (utc_seconds < 10) sentence_str << "0";  //  two digits for seconds
+    if (utc_seconds < 10)
+        {
+            sentence_str << "0";  //  two digits for seconds
+        }
     sentence_str << utc_seconds;
 
     if (utc_milliseconds < 10)

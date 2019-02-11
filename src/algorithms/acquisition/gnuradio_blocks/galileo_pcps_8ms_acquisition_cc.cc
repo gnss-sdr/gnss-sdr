@@ -134,7 +134,7 @@ galileo_pcps_8ms_acquisition_cc::~galileo_pcps_8ms_acquisition_cc()
                     d_dump_file.close();
                 }
         }
-    catch (const std::ifstream::failure &e)
+    catch (const std::ofstream::failure &e)
         {
             std::cerr << "Problem closing Acquisition dump file: " << d_dump_filename << '\n';
         }

@@ -553,7 +553,9 @@ private:
         {
             body_length_ = new_length;
             if (body_length_ > max_body_length)
-                body_length_ = max_body_length;
+                {
+                    body_length_ = max_body_length;
+                }
         }
 
         inline bool decode_header()
@@ -609,7 +611,9 @@ private:
         {
             participants_.insert(participant);
             for (auto msg : recent_msgs_)
-                participant->deliver(msg);
+                {
+                    participant->deliver(msg);
+                }
         }
 
         inline void leave(const std::shared_ptr<Rtcm_Listener>& participant)
@@ -621,10 +625,14 @@ private:
         {
             recent_msgs_.push_back(msg);
             while (recent_msgs_.size() > max_recent_msgs)
-                recent_msgs_.pop_front();
+                {
+                    recent_msgs_.pop_front();
+                }
 
             for (auto participant : participants_)
-                participant->deliver(msg);
+                {
+                    participant->deliver(msg);
+                }
         }
 
     private:
@@ -854,7 +862,11 @@ private:
                     std::string message;
                     Rtcm_Message msg;
                     queue_->wait_and_pop(message);  //message += '\n';
-                    if (message == "Goodbye") break;
+                    if (message == "Goodbye")
+                        {
+                            break;
+                        }
+
                     const char* char_msg = message.c_str();
                     msg.body_length(message.length());
                     std::memcpy(msg.body(), char_msg, msg.body_length());
@@ -918,7 +930,10 @@ private:
                                         LOG(INFO) << "Serving client from " << remote_addr;
                                     }
                             }
-                        if (start_session) std::make_shared<Rtcm_Session>(std::move(socket_), room_)->start();
+                        if (start_session)
+                            {
+                                std::make_shared<Rtcm_Session>(std::move(socket_), room_)->start();
+                            }
                     }
                 else
                     {

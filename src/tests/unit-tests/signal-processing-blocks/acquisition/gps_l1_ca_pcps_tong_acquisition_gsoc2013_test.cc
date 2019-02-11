@@ -107,8 +107,7 @@ GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx::GpsL1CaPcpsTongAcquisitionGSoC201
     rx_message = 0;
 }
 
-GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx::~GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx()
-= default;
+GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx::~GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx() = default;
 
 
 // ###########################################################
@@ -124,8 +123,7 @@ protected:
         gnss_synchro = Gnss_Synchro();
     }
 
-    ~GpsL1CaPcpsTongAcquisitionGSoC2013Test()
-    = default;
+    ~GpsL1CaPcpsTongAcquisitionGSoC2013Test() = default;
 
     void init();
     void config_1();

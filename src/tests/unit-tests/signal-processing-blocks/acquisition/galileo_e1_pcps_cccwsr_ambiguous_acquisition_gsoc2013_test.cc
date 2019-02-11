@@ -105,8 +105,7 @@ GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx::GalileoE1PcpsCccwsrAmbiguous
     rx_message = 0;
 }
 
-GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx::~GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx()
-= default;
+GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx::~GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx() = default;
 
 
 // ###########################################################
@@ -124,8 +123,7 @@ protected:
         init();
     }
 
-    ~GalileoE1PcpsCccwsrAmbiguousAcquisitionTest()
-    = default;
+    ~GalileoE1PcpsCccwsrAmbiguousAcquisitionTest() = default;
 
     void init();
     void config_1();

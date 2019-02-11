@@ -576,7 +576,10 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
                         }
                 }
 
-            if (n_valid > 0) compute_pranges(epoch_data);
+            if (n_valid > 0)
+                {
+                    compute_pranges(epoch_data);
+                }
 
             for (uint32_t n = 0; n < d_nchannels_out; n++)
                 {

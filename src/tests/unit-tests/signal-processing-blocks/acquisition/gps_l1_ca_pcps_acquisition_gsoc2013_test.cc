@@ -109,8 +109,7 @@ GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx::GpsL1CaPcpsAcquisitionGSoC2013Test_ms
     rx_message = 0;
 }
 
-GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx::~GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx()
-= default;
+GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx::~GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx() = default;
 
 
 // ###########################################################
@@ -128,8 +127,7 @@ protected:
         init();
     }
 
-    ~GpsL1CaPcpsAcquisitionGSoC2013Test()
-    = default;
+    ~GpsL1CaPcpsAcquisitionGSoC2013Test() = default;
 
     void init();
     void config_1();

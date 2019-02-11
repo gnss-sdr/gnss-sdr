@@ -79,7 +79,7 @@ class TtffTest : public ::testing::Test
 public:
     void config_1();
     void config_2();
-    void print_TTFF_report(const std::vector<double> &ttff_v, const std::shared_ptr<ConfigurationInterface>& config_);
+    void print_TTFF_report(const std::vector<double> &ttff_v, const std::shared_ptr<ConfigurationInterface> &config_);
 
     std::shared_ptr<InMemoryConfiguration> config;
     std::shared_ptr<FileConfiguration> config2;
@@ -297,7 +297,7 @@ void receive_msg()
 }
 
 
-void TtffTest::print_TTFF_report(const std::vector<double> &ttff_v, const std::shared_ptr<ConfigurationInterface>& config_)
+void TtffTest::print_TTFF_report(const std::vector<double> &ttff_v, const std::shared_ptr<ConfigurationInterface> &config_)
 {
     std::ofstream ttff_report_file;
     std::string filename = "ttff_report";
@@ -385,7 +385,10 @@ void TtffTest::print_TTFF_report(const std::vector<double> &ttff_v, const std::s
             stm << "Disabled." << std::endl;
         }
     stm << "Valid measurements (" << ttff.size() << "/" << FLAGS_num_measurements << "): ";
-    for (double ttff_ : ttff) stm << ttff_ << " ";
+    for (double ttff_ : ttff)
+        {
+            stm << ttff_ << " ";
+        }
     stm << std::endl;
     stm << "TTFF mean: " << mean << " [s]" << std::endl;
     if (!ttff.empty())

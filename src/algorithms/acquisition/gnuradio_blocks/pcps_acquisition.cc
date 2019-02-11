@@ -317,7 +317,10 @@ void pcps_acquisition::init()
     d_num_doppler_bins = static_cast<uint32_t>(std::ceil(static_cast<double>(static_cast<int32_t>(acq_parameters.doppler_max) - static_cast<int32_t>(-acq_parameters.doppler_max)) / static_cast<double>(d_doppler_step)));
 
     // Create the carrier Doppler wipeoff signals
-    if (d_grid_doppler_wipeoffs == nullptr) d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
+    if (d_grid_doppler_wipeoffs == nullptr)
+        {
+            d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
+        }
     if (acq_parameters.make_2_steps && (d_grid_doppler_wipeoffs_step_two == nullptr))
         {
             d_grid_doppler_wipeoffs_step_two = new gr_complex*[d_num_doppler_bins_step2];
@@ -629,7 +632,10 @@ float pcps_acquisition::first_vs_second_peak_statistic(uint32_t& indext, int32_t
         {
             d_tmp_buffer[idx] = 0.0;
             idx++;
-            if (idx == static_cast<int32_t>(d_fft_size)) idx = 0;
+            if (idx == static_cast<int32_t>(d_fft_size))
+                {
+                    idx = 0;
+                }
         }
     while (idx != excludeRangeIndex2);
 
@@ -842,7 +848,10 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
 
             if (d_num_noncoherent_integrations_counter == acq_parameters.max_dwells)
                 {
-                    if (d_state != 0) send_negative_acquisition();
+                    if (d_state != 0)
+                        {
+                            send_negative_acquisition();
+                        }
                     d_state = 0;
                     d_active = false;
                     d_step_two = false;

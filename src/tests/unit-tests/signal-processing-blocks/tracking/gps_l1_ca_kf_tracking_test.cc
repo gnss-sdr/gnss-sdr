@@ -51,6 +51,7 @@
 #include <gtest/gtest.h>
 #include <chrono>
 #include <unistd.h>
+#include <utility>
 #include <vector>
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
@@ -91,7 +92,7 @@ void GpsL1CAKfTrackingTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            long int message = pmt::to_long(msg);
+            long int message = pmt::to_long(std::move(msg));
             rx_message = message;
         }
     catch (boost::bad_any_cast& e)
@@ -111,8 +112,7 @@ GpsL1CAKfTrackingTest_msg_rx::GpsL1CAKfTrackingTest_msg_rx() : gr::block("GpsL1C
 
 
 GpsL1CAKfTrackingTest_msg_rx::~GpsL1CAKfTrackingTest_msg_rx()
-{
-}
+= default;
 
 
 // ###########################################################
@@ -158,8 +158,7 @@ public:
     }
 
     ~GpsL1CAKfTrackingTest()
-    {
-    }
+    = default;
 
     void configure_receiver();
 
@@ -196,7 +195,7 @@ int GpsL1CAKfTrackingTest::generate_signal()
 {
     int child_status;
 
-    char* const parmList[] = {&generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0], NULL};
+    char* const parmList[] = {&generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0], nullptr};
 
     int pid;
     if ((pid = fork()) == -1)
@@ -528,7 +527,7 @@ TEST_F(GpsL1CAKfTrackingTest, ValidationOfResults)
                         {
                             boost::filesystem::path p(gnuplot_executable);
                             boost::filesystem::path dir = p.parent_path();
-                            std::string gnuplot_path = dir.native();
+                            const std::string& gnuplot_path = dir.native();
                             Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                             std::vector<double> timevec;
@@ -544,7 +543,7 @@ TEST_F(GpsL1CAKfTrackingTest, ValidationOfResults)
                             g1.set_xlabel("Time [s]");
                             g1.set_ylabel("Correlators' output");
                             g1.cmd("set key box opaque");
-                            unsigned int decimate = static_cast<unsigned int>(FLAGS_plot_decimate);
+                            auto decimate = static_cast<unsigned int>(FLAGS_plot_decimate);
                             g1.plot_xy(timevec, prompt, "Prompt", decimate);
                             g1.plot_xy(timevec, early, "Early", decimate);
                             g1.plot_xy(timevec, late, "Late", decimate);

@@ -37,6 +37,7 @@
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/top_block.h>
 #include <chrono>
+#include <utility>
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
@@ -87,7 +88,7 @@ void GpsL2MPcpsAcquisitionTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
         }
     catch (boost::bad_any_cast &e)
@@ -105,8 +106,7 @@ GpsL2MPcpsAcquisitionTest_msg_rx::GpsL2MPcpsAcquisitionTest_msg_rx() : gr::block
 }
 
 GpsL2MPcpsAcquisitionTest_msg_rx::~GpsL2MPcpsAcquisitionTest_msg_rx()
-{
-}
+= default;
 
 
 // ###########################################################
@@ -127,8 +127,7 @@ protected:
     }
 
     ~GpsL2MPcpsAcquisitionTest()
-    {
-    }
+    = default;
 
     void init();
     void plot_grid();
@@ -181,9 +180,9 @@ void GpsL2MPcpsAcquisitionTest::plot_grid()
 {
     //load the measured values
     std::string basename = "./tmp-acq-gps2/acquisition_test_G_2S";
-    unsigned int sat = static_cast<unsigned int>(gnss_synchro.PRN);
+    auto sat = static_cast<unsigned int>(gnss_synchro.PRN);
 
-    unsigned int samples_per_code = static_cast<unsigned int>(floor(static_cast<double>(sampling_frequency_hz) / (GPS_L2_M_CODE_RATE_HZ / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS))));
+    auto samples_per_code = static_cast<unsigned int>(floor(static_cast<double>(sampling_frequency_hz) / (GPS_L2_M_CODE_RATE_HZ / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS))));
     acquisition_dump_reader acq_dump(basename, sat, doppler_max, doppler_step, samples_per_code, 1);
     if (!acq_dump.read_binary_acq()) std::cout << "Error reading files" << std::endl;
 
@@ -205,7 +204,7 @@ void GpsL2MPcpsAcquisitionTest::plot_grid()
                 {
                     boost::filesystem::path p(gnuplot_executable);
                     boost::filesystem::path dir = p.parent_path();
-                    std::string gnuplot_path = dir.native();
+                    const std::string& gnuplot_path = dir.native();
                     Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                     Gnuplot g1("impulses");
@@ -362,7 +361,7 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
     ASSERT_EQ(1, msg_rx->rx_message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 
     double delay_error_samples = std::abs(expected_delay_samples - gnss_synchro.Acq_delay_samples);
-    float delay_error_chips = static_cast<float>(delay_error_samples * 1023 / 4000);
+    auto delay_error_chips = static_cast<float>(delay_error_samples * 1023 / 4000);
     double doppler_error_hz = std::abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
 
     EXPECT_LE(doppler_error_hz, 200) << "Doppler error exceeds the expected value: 2/(3*integration period)";

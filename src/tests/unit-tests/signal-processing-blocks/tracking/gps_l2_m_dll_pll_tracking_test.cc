@@ -46,6 +46,7 @@
 #include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
 #include <chrono>
+#include <utility>
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
@@ -83,7 +84,7 @@ void GpsL2MDllPllTrackingTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
         }
     catch (boost::bad_any_cast& e)
@@ -103,8 +104,7 @@ GpsL2MDllPllTrackingTest_msg_rx::GpsL2MDllPllTrackingTest_msg_rx() : gr::block("
 
 
 GpsL2MDllPllTrackingTest_msg_rx::~GpsL2MDllPllTrackingTest_msg_rx()
-{
-}
+= default;
 
 
 // ###########################################################
@@ -121,8 +121,7 @@ protected:
     }
 
     ~GpsL2MDllPllTrackingTest()
-    {
-    }
+    = default;
 
     void init();
 

@@ -51,7 +51,7 @@
 
 class Galileo_E1_Tcp_Connector_Tracking_cc;
 
-typedef boost::shared_ptr<Galileo_E1_Tcp_Connector_Tracking_cc> galileo_e1_tcp_connector_tracking_cc_sptr;
+using galileo_e1_tcp_connector_tracking_cc_sptr = boost::shared_ptr<Galileo_E1_Tcp_Connector_Tracking_cc>;
 
 galileo_e1_tcp_connector_tracking_cc_sptr
 galileo_e1_tcp_connector_make_tracking_cc(

@@ -60,7 +60,7 @@
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx;
 
-typedef boost::shared_ptr<GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx> GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx_sptr;
+using GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx_sptr = boost::shared_ptr<GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx>;
 
 GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx_sptr GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx_make(concurrent_queue<int>& queue);
 

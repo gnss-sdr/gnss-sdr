@@ -43,7 +43,7 @@
 
 class gnss_synchro_monitor;
 
-typedef boost::shared_ptr<gnss_synchro_monitor> gnss_synchro_monitor_sptr;
+using gnss_synchro_monitor_sptr = boost::shared_ptr<gnss_synchro_monitor>;
 
 gnss_synchro_monitor_sptr gnss_synchro_make_monitor(unsigned int n_channels,
     int output_rate_ms,

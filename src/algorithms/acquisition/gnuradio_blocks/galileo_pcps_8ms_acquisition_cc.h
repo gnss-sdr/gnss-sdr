@@ -41,7 +41,7 @@
 
 class galileo_pcps_8ms_acquisition_cc;
 
-typedef boost::shared_ptr<galileo_pcps_8ms_acquisition_cc> galileo_pcps_8ms_acquisition_cc_sptr;
+using galileo_pcps_8ms_acquisition_cc_sptr = boost::shared_ptr<galileo_pcps_8ms_acquisition_cc>;
 
 galileo_pcps_8ms_acquisition_cc_sptr
 galileo_pcps_8ms_make_acquisition_cc(uint32_t sampled_ms,

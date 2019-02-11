@@ -51,7 +51,7 @@ class signal_generator_c;
 *
 * As a convention, the _sptr suffix indicates a boost::shared_ptr
 */
-typedef boost::shared_ptr<signal_generator_c> signal_generator_c_sptr;
+using signal_generator_c_sptr = boost::shared_ptr<signal_generator_c>;
 
 /*!
 * \brief Return a shared_ptr to a new instance of gen_source.

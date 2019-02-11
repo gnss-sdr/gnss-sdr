@@ -37,7 +37,7 @@
 
 class cshort_to_float_x2;
 
-typedef boost::shared_ptr<cshort_to_float_x2> cshort_to_float_x2_sptr;
+using cshort_to_float_x2_sptr = boost::shared_ptr<cshort_to_float_x2>;
 
 cshort_to_float_x2_sptr make_cshort_to_float_x2();
 

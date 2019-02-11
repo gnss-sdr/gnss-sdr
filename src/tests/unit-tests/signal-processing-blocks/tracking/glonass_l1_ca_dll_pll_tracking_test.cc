@@ -56,7 +56,7 @@
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GlonassL1CaDllPllTrackingTest_msg_rx;
 
-typedef boost::shared_ptr<GlonassL1CaDllPllTrackingTest_msg_rx> GlonassL1CaDllPllTrackingTest_msg_rx_sptr;
+using GlonassL1CaDllPllTrackingTest_msg_rx_sptr = boost::shared_ptr<GlonassL1CaDllPllTrackingTest_msg_rx>;
 
 GlonassL1CaDllPllTrackingTest_msg_rx_sptr GlonassL1CaDllPllTrackingTest_msg_rx_make();
 

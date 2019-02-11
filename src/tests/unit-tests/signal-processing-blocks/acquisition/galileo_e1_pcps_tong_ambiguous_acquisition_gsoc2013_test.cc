@@ -58,7 +58,7 @@
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx;
 
-typedef boost::shared_ptr<GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx> GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx_sptr;
+using GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx_sptr = boost::shared_ptr<GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx>;
 
 GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx_sptr GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test_msg_rx_make(concurrent_queue<int>& queue);
 

@@ -38,7 +38,7 @@
 
 class gnss_sdr_sample_counter;
 
-typedef boost::shared_ptr<gnss_sdr_sample_counter> gnss_sdr_sample_counter_sptr;
+using gnss_sdr_sample_counter_sptr = boost::shared_ptr<gnss_sdr_sample_counter>;
 
 gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter(
     double _fs,

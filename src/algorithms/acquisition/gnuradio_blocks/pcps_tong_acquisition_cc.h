@@ -61,7 +61,7 @@
 
 class pcps_tong_acquisition_cc;
 
-typedef boost::shared_ptr<pcps_tong_acquisition_cc> pcps_tong_acquisition_cc_sptr;
+using pcps_tong_acquisition_cc_sptr = boost::shared_ptr<pcps_tong_acquisition_cc>;
 
 pcps_tong_acquisition_cc_sptr
 pcps_tong_make_acquisition_cc(

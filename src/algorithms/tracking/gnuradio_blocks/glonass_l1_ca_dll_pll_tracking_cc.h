@@ -50,8 +50,7 @@
 
 class Glonass_L1_Ca_Dll_Pll_Tracking_cc;
 
-typedef boost::shared_ptr<Glonass_L1_Ca_Dll_Pll_Tracking_cc>
-    glonass_l1_ca_dll_pll_tracking_cc_sptr;
+using glonass_l1_ca_dll_pll_tracking_cc_sptr = boost::shared_ptr<Glonass_L1_Ca_Dll_Pll_Tracking_cc>;
 
 glonass_l1_ca_dll_pll_tracking_cc_sptr
 glonass_l1_ca_dll_pll_make_tracking_cc(

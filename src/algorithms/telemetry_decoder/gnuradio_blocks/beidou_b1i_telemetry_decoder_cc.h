@@ -49,7 +49,7 @@
 
 class beidou_b1i_telemetry_decoder_cc;
 
-typedef boost::shared_ptr<beidou_b1i_telemetry_decoder_cc> beidou_b1i_telemetry_decoder_cc_sptr;
+using beidou_b1i_telemetry_decoder_cc_sptr = boost::shared_ptr<beidou_b1i_telemetry_decoder_cc>;
 
 beidou_b1i_telemetry_decoder_cc_sptr beidou_b1i_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
 

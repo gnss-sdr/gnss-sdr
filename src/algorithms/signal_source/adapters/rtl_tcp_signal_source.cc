@@ -215,8 +215,5 @@ gr::basic_block_sptr RtlTcpSignalSource::get_right_block()
         {
             return valve_;
         }
-    else
-        {
-            return signal_source_;
-        }
+    return signal_source_;
 }

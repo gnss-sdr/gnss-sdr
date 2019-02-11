@@ -180,10 +180,7 @@ public:
                 std::cout << "Galileo E5a FNAV PAGE CRC correct \n";
                 return true;
             }
-        else
-            {
-                return false;
-            }
+        return false;
     }
 
     Galileo_FNAV_INAV_test()

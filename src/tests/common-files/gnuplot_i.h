@@ -861,7 +861,7 @@ Gnuplot &Gnuplot::plot_xy_err(const X &x,
     const E &dy,
     const std::string &title)
 {
-    if (x.size() == 0 || y.size() == 0 || dy.size() == 0)
+    if (x.empty() || y.empty() || dy.empty())
         {
             throw GnuplotException("std::vectors too small");
             return *this;

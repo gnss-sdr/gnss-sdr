@@ -34,7 +34,7 @@ extern "C"
  * Return values correspond to their libc counterparts (if any).
  */
     ssize_t ber_tlv_tag_snprint(ber_tlv_tag_t tag, char *buf, size_t buflen);
-    ssize_t ber_tlv_tag_fwrite(ber_tlv_tag_t tag, FILE *);
+    ssize_t ber_tlv_tag_fwrite(ber_tlv_tag_t tag, FILE * /*f*/);
     char *ber_tlv_tag_string(ber_tlv_tag_t tag);
 
 

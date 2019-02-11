@@ -605,14 +605,14 @@ private:
     class Rtcm_Listener_Room
     {
     public:
-        inline void join(std::shared_ptr<Rtcm_Listener> participant)
+        inline void join(const std::shared_ptr<Rtcm_Listener>& participant)
         {
             participants_.insert(participant);
             for (auto msg : recent_msgs_)
                 participant->deliver(msg);
         }
 
-        inline void leave(std::shared_ptr<Rtcm_Listener> participant)
+        inline void leave(const std::shared_ptr<Rtcm_Listener>& participant)
         {
             participants_.erase(participant);
         }
@@ -754,7 +754,7 @@ private:
             boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
             : io_context_(io_context), socket_(io_context)
         {
-            do_connect(endpoint_iterator);
+            do_connect(std::move(endpoint_iterator));
         }
 
         inline void close()
@@ -778,7 +778,7 @@ private:
     private:
         inline void do_connect(boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
         {
-            boost::asio::async_connect(socket_, endpoint_iterator,
+            boost::asio::async_connect(socket_, std::move(endpoint_iterator),
                 [this](boost::system::error_code ec, boost::asio::ip::tcp::resolver::iterator) {
                     if (!ec)
                         {

@@ -88,7 +88,7 @@ inline static int parity_counter(int symbol, int length)
 inline static int nsc_enc_bit(int state_out_p[],
     int input,
     int state_in,
-    int g[],
+    const int g[],
     int KK,
     int nn)
 {
@@ -144,7 +144,7 @@ inline static void nsc_transit(int output_p[],
  *  \param[in] nn            The length of the received vector
  *
  */
-inline static float Gamma(float rec_array[],
+inline static float Gamma(const float rec_array[],
     int symbol,
     int nn)
 {
@@ -175,11 +175,11 @@ inline static float Gamma(float rec_array[],
  *
  */
 inline static void Viterbi(int output_u_int[],
-    int out0[],
-    int state0[],
-    int out1[],
-    int state1[],
-    double input_c[],
+    const int out0[],
+    const int state0[],
+    const int out1[],
+    const int state1[],
+    const double input_c[],
     int KK,
     int nn,
     int LL)

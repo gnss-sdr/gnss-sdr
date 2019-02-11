@@ -55,6 +55,7 @@
 #include <gnuradio/block.h>
 #include <gnuradio/fft/fft.h>
 #include <gnuradio/gr_complex.h>
+#include <cstdint>
 #include <fstream>
 #include <string>
 
@@ -86,7 +87,7 @@ private:
     bool start();
 
     Acq_Conf acq_parameters;
-    long d_fs_in;
+    int64_t d_fs_in;
     int d_samples_per_ms;
     int d_max_dwells;
     int d_gnuradio_forecast_samples;

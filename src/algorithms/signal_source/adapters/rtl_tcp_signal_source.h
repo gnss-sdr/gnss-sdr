@@ -105,7 +105,7 @@ private:
 
     std::string item_type_;
     size_t item_size_;
-    long samples_;
+    uint64_t samples_;
     bool dump_;
     std::string dump_filename_;
 

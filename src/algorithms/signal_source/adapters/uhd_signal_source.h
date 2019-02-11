@@ -37,6 +37,7 @@
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/uhd/usrp_source.h>
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -99,7 +100,7 @@ private:
     std::vector<double> freq_;
     std::vector<double> gain_;
     std::vector<double> IF_bandwidth_hz_;
-    std::vector<long> samples_;
+    std::vector<uint64_t> samples_;
     std::vector<bool> dump_;
     std::vector<std::string> dump_filename_;
 

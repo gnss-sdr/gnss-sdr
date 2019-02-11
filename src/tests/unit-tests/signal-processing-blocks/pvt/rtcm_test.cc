@@ -295,7 +295,7 @@ TEST(RtcmTest, MT1020)
     // Bit distribution per fields dependent on other factors
     gnav_ephemeris.d_t_b = 8100;
     // Binary flag representation
-    gnav_ephemeris.d_P_3 = 1;
+    gnav_ephemeris.d_P_3 = true;
 
     std::string tx_msg = rtcm->print_MT1020(gnav_ephemeris, gnav_utc_model);
 

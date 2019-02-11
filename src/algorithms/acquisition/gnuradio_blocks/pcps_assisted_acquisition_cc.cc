@@ -392,7 +392,10 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
     switch (d_state)
         {
         case 0:  // S0. StandBy
-            if (d_active == true) d_state = 1;
+            if (d_active == true)
+                {
+                    d_state = 1;
+                }
             d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
             consume_each(ninput_items[0]);
             break;

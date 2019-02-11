@@ -179,7 +179,10 @@ void GpsL1CaPcpsAcquisitionTest::plot_grid()
     auto samples_per_code = static_cast<unsigned int>(round(4000000 / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));  // !!
     acquisition_dump_reader acq_dump(basename, sat, doppler_max, doppler_step, samples_per_code, 1);
 
-    if (!acq_dump.read_binary_acq()) std::cout << "Error reading files" << std::endl;
+    if (!acq_dump.read_binary_acq())
+        {
+            std::cout << "Error reading files" << std::endl;
+        }
 
     std::vector<int> *doppler = &acq_dump.doppler;
     std::vector<unsigned int> *samples = &acq_dump.samples;

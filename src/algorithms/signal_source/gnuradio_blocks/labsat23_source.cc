@@ -198,7 +198,10 @@ int labsat23_source::general_work(int noutput_items,
                     bool preamble_ok = true;
                     for (int i = 0; i < 8; i++)
                         {
-                            if (memblock[byte_counter] != 0x00) preamble_ok = false;
+                            if (memblock[byte_counter] != 0x00)
+                                {
+                                    preamble_ok = false;
+                                }
                             //std::cout << "H[" << i << "]:" << (int)memblock[byte_counter] << std::endl;
                             byte_counter++;
                         }

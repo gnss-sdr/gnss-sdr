@@ -58,7 +58,9 @@ void beidou_b1i_code_gen_int(int32_t* _dest, int32_t _prn, uint32_t _chip_shift)
 
     /* A simple error check */
     if ((prn_idx < 0) || (prn_idx > 51))
-        return;
+        {
+            return;
+        }
 
     /*for (lcv = 0; lcv < 11; lcv++)
         {

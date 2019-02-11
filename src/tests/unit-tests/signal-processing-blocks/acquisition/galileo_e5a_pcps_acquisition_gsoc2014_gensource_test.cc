@@ -105,8 +105,7 @@ GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx::GalileoE5aPcpsAcquisition
 }
 
 
-GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx::~GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx()
-= default;
+GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx::~GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx() = default;
 
 
 class GalileoE5aPcpsAcquisitionGSoC2014GensourceTest : public ::testing::Test
@@ -121,8 +120,7 @@ protected:
         init();
     }
 
-    ~GalileoE5aPcpsAcquisitionGSoC2014GensourceTest()
-    = default;
+    ~GalileoE5aPcpsAcquisitionGSoC2014GensourceTest() = default;
 
     void init();
     void config_1();

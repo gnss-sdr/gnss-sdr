@@ -253,7 +253,10 @@ arma::vec Ls_Pvt::leastSquarePos(const arma::mat& satpos, const arma::vec& obs, 
                                         {
                                             //--- Find delay due to troposphere (in meters)
                                             Ls_Pvt::tropo(&trop, sin(*elev * GPS_PI / 180.0), h / 1000.0, 1013.0, 293.0, 50.0, 0.0, 0.0, 0.0);
-                                            if (trop > 5.0) trop = 0.0;  //check for erratic values
+                                            if (trop > 5.0)
+                                                {
+                                                    trop = 0.0;  //check for erratic values
+                                                }
                                         }
                                 }
                         }

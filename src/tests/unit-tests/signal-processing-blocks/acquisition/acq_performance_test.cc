@@ -141,8 +141,7 @@ AcqPerfTest_msg_rx::AcqPerfTest_msg_rx(concurrent_queue<int>& queue) : gr::block
 }
 
 
-AcqPerfTest_msg_rx::~AcqPerfTest_msg_rx()
-= default;
+AcqPerfTest_msg_rx::~AcqPerfTest_msg_rx() = default;
 
 // -----------------------------------------
 
@@ -288,15 +287,23 @@ protected:
             }
 
         Pd.resize(cn0_vector.size());
-        for (int i = 0; i < static_cast<int>(cn0_vector.size()); i++) Pd[i].reserve(num_thresholds);
+        for (int i = 0; i < static_cast<int>(cn0_vector.size()); i++)
+            {
+                Pd[i].reserve(num_thresholds);
+            }
         Pfa.resize(cn0_vector.size());
-        for (int i = 0; i < static_cast<int>(cn0_vector.size()); i++) Pfa[i].reserve(num_thresholds);
+        for (int i = 0; i < static_cast<int>(cn0_vector.size()); i++)
+            {
+                Pfa[i].reserve(num_thresholds);
+            }
         Pd_correct.resize(cn0_vector.size());
-        for (int i = 0; i < static_cast<int>(cn0_vector.size()); i++) Pd_correct[i].reserve(num_thresholds);
+        for (int i = 0; i < static_cast<int>(cn0_vector.size()); i++)
+            {
+                Pd_correct[i].reserve(num_thresholds);
+            }
     }
 
-    ~AcquisitionPerformanceTest()
-    = default;
+    ~AcquisitionPerformanceTest() = default;
 
     std::vector<double> cn0_vector;
     std::vector<float> pfa_vector;
@@ -453,7 +460,9 @@ int AcquisitionPerformanceTest::generate_signal()
 
     int pid;
     if ((pid = fork()) == -1)
-        perror("fork error");
+        {
+            perror("fork error");
+        }
     else if (pid == 0)
         {
             execv(&generator_binary[0], parmList);
@@ -462,7 +471,10 @@ int AcquisitionPerformanceTest::generate_signal()
         }
 
     wait_result = waitpid(pid, &child_status, 0);
-    if (wait_result == -1) perror("waitpid error");
+    if (wait_result == -1)
+        {
+            perror("waitpid error");
+        }
     return 0;
 }
 
@@ -783,7 +795,10 @@ TEST_F(AcquisitionPerformanceTest, ROC)
             std::vector<double> meas_Pd_correct_;
             std::vector<double> meas_Pfa_;
 
-            if (FLAGS_acq_test_input_file.empty()) std::cout << "Execution for CN0 = " << it << " dB-Hz" << std::endl;
+            if (FLAGS_acq_test_input_file.empty())
+                {
+                    std::cout << "Execution for CN0 = " << it << " dB-Hz" << std::endl;
+                }
 
             // Do N_iterations of the experiment
             for (int pfa_iter = 0; pfa_iter < static_cast<int>(pfa_vector.size()); pfa_iter++)
@@ -798,12 +813,18 @@ TEST_F(AcquisitionPerformanceTest, ROC)
                         }
 
                     // Configure the signal generator
-                    if (FLAGS_acq_test_input_file.empty()) configure_generator(it);
+                    if (FLAGS_acq_test_input_file.empty())
+                        {
+                            configure_generator(it);
+                        }
 
                     for (int iter = 0; iter < N_iterations; iter++)
                         {
                             // Generate signal raw signal samples and observations RINEX file
-                            if (FLAGS_acq_test_input_file.empty()) generate_signal();
+                            if (FLAGS_acq_test_input_file.empty())
+                                {
+                                    generate_signal();
+                                }
 
                             for (unsigned k = 0; k < 2; k++)
                                 {

@@ -109,8 +109,7 @@ GpsL1CADllPllTelemetryDecoderTest_msg_rx::GpsL1CADllPllTelemetryDecoderTest_msg_
     rx_message = 0;
 }
 
-GpsL1CADllPllTelemetryDecoderTest_msg_rx::~GpsL1CADllPllTelemetryDecoderTest_msg_rx()
-= default;
+GpsL1CADllPllTelemetryDecoderTest_msg_rx::~GpsL1CADllPllTelemetryDecoderTest_msg_rx() = default;
 
 
 // ###########################################################
@@ -161,8 +160,7 @@ GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx::GpsL1CADllPllTelemetryDecoderTest_
     rx_message = 0;
 }
 
-GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx::~GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx()
-= default;
+GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx::~GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx() = default;
 
 
 // ###########################################################
@@ -198,8 +196,7 @@ public:
         gnss_synchro = Gnss_Synchro();
     }
 
-    ~GpsL1CATelemetryDecoderTest()
-    = default;
+    ~GpsL1CATelemetryDecoderTest() = default;
 
     void configure_receiver();
 
@@ -240,7 +237,9 @@ int GpsL1CATelemetryDecoderTest::generate_signal()
 
     int pid;
     if ((pid = fork()) == -1)
-        perror("fork err");
+        {
+            perror("fork err");
+        }
     else if (pid == 0)
         {
             execv(&generator_binary[0], parmList);

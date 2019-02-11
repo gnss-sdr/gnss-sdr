@@ -111,8 +111,7 @@ GpsL1CAKfTrackingTest_msg_rx::GpsL1CAKfTrackingTest_msg_rx() : gr::block("GpsL1C
 }
 
 
-GpsL1CAKfTrackingTest_msg_rx::~GpsL1CAKfTrackingTest_msg_rx()
-= default;
+GpsL1CAKfTrackingTest_msg_rx::~GpsL1CAKfTrackingTest_msg_rx() = default;
 
 
 // ###########################################################
@@ -157,8 +156,7 @@ public:
         gnss_synchro = Gnss_Synchro();
     }
 
-    ~GpsL1CAKfTrackingTest()
-    = default;
+    ~GpsL1CAKfTrackingTest() = default;
 
     void configure_receiver();
 
@@ -199,7 +197,9 @@ int GpsL1CAKfTrackingTest::generate_signal()
 
     int pid;
     if ((pid = fork()) == -1)
-        perror("fork err");
+        {
+            perror("fork err");
+        }
     else if (pid == 0)
         {
             execv(&generator_binary[0], parmList);

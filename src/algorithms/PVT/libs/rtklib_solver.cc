@@ -76,7 +76,10 @@ rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag
     count_valid_position = 0;
     this->set_averaging_flag(false);
     rtk_ = rtk;
-    for (double &i : dop_) i = 0.0;
+    for (double &i : dop_)
+        {
+            i = 0.0;
+        }
     pvt_sol = {{0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, '0', '0', '0', 0, 0, 0};
     ssat_t ssat0 = {0, 0, {0.0}, {0.0}, {0.0}, {'0'}, {'0'}, {'0'}, {'0'}, {'0'}, {}, {}, {}, {}, 0.0, 0.0, 0.0, 0.0, {{{0, 0}}, {{0, 0}}}, {{}, {}}};
     for (auto &i : pvt_ssat)
@@ -505,7 +508,10 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     }
                 }
         }
-    if (band1 == true and band2 == true) gps_dual_band = true;
+    if (band1 == true and band2 == true)
+        {
+            gps_dual_band = true;
+        }
 
     for (gnss_observables_iter = gnss_observables_map.cbegin();
          gnss_observables_iter != gnss_observables_map.cend();
@@ -864,7 +870,10 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                 }
                         }
 
-                    if (index_aux > 0) dops(index_aux, azel.data(), 0.0, dop_.data());
+                    if (index_aux > 0)
+                        {
+                            dops(index_aux, azel.data(), 0.0, dop_.data());
+                        }
                     this->set_valid_position(true);
                     arma::vec rx_position_and_time(4);
                     rx_position_and_time(0) = pvt_sol.rr[0];  // [m]
@@ -893,7 +902,10 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     if (ground_speed_ms >= 1.0)
                         {
                             new_cog = atan2(enuv[0], enuv[1]) * R2D;
-                            if (new_cog < 0.0) new_cog += 360.0;
+                            if (new_cog < 0.0)
+                                {
+                                    new_cog += 360.0;
+                                }
                             this->set_course_over_ground(new_cog);
                         }
 

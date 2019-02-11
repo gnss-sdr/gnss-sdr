@@ -60,8 +60,14 @@ bool acquisition_dump_reader::read_binary_acq()
     if ((var_->dims[0] != d_samples_per_code) or (var_->dims[1] != d_num_doppler_bins))
         {
             std::cout << "Invalid Acquisition dump file: dimension matrix error" << std::endl;
-            if (var_->dims[0] != d_samples_per_code) std::cout << "Expected " << d_samples_per_code << " samples per code. Obtained " << var_->dims[0] << std::endl;
-            if (var_->dims[1] != d_num_doppler_bins) std::cout << "Expected " << d_num_doppler_bins << " Doppler bins. Obtained " << var_->dims[1] << std::endl;
+            if (var_->dims[0] != d_samples_per_code)
+                {
+                    std::cout << "Expected " << d_samples_per_code << " samples per code. Obtained " << var_->dims[0] << std::endl;
+                }
+            if (var_->dims[1] != d_num_doppler_bins)
+                {
+                    std::cout << "Expected " << d_num_doppler_bins << " Doppler bins. Obtained " << var_->dims[1] << std::endl;
+                }
             Mat_VarFree(var_);
             Mat_Close(matfile);
             return false;
@@ -218,7 +224,10 @@ acquisition_dump_reader::acquisition_dump_reader(const std::string& basename,
     sample_counter = 0;
     num_dwells = 0;
     PRN = 0;
-    if (d_doppler_step == 0) d_doppler_step = 1;
+    if (d_doppler_step == 0)
+        {
+            d_doppler_step = 1;
+        }
     d_num_doppler_bins = static_cast<unsigned int>(ceil(static_cast<double>(static_cast<int>(d_doppler_max) - static_cast<int>(-d_doppler_max)) / static_cast<double>(d_doppler_step)));
     std::vector<std::vector<float> > mag_aux(d_num_doppler_bins, std::vector<float>(d_samples_per_code));
     mag = mag_aux;

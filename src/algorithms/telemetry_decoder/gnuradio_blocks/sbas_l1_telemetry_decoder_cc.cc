@@ -299,13 +299,17 @@ void sbas_l1_telemetry_decoder_cc::frame_detector::get_frame_candidates(const st
                                 {
                                     // invert bits
                                     for (int &candidate_bit_it : candidate)
-                                        candidate_bit_it = candidate_bit_it == 0 ? 1 : 0;
+                                        {
+                                            candidate_bit_it = candidate_bit_it == 0 ? 1 : 0;
+                                        }
                                 }
                             msg_candidates.emplace_back(relative_preamble_start, candidate);
                             ss.str("");
                             ss << "preamble " << preample_it - preambles.begin() << (inv_preamble_detected ? " inverted" : " normal") << " detected! candidate=";
                             for (auto bit_it = candidate.begin(); bit_it < candidate.end(); ++bit_it)
-                                ss << *bit_it;
+                                {
+                                    ss << *bit_it;
+                                }
                             VLOG(EVENT) << ss.str();
                         }
                 }

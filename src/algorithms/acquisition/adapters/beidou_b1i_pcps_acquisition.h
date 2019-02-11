@@ -41,8 +41,8 @@
 #include <gnuradio/blocks/float_to_complex.h>
 #include <gnuradio/blocks/stream_to_vector.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include <string>
 #include <cstdint>
+#include <string>
 
 
 class ConfigurationInterface;
@@ -164,7 +164,7 @@ private:
     uint32_t doppler_step_;
     uint32_t sampled_ms_;
     uint32_t max_dwells_;
-    int64_t  fs_in_;
+    int64_t fs_in_;
     bool dump_;
     bool blocking_;
     std::string dump_filename_;

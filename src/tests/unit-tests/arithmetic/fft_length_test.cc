@@ -151,7 +151,10 @@ TEST(FFTLengthTest, MeasureExecutionTime)
                             g2.set_style("points").plot_xy(powers_of_two, execution_times_powers_of_two, "Power of 2");
                             g2.savetops("FFT_execution_times");
                             g2.savetopdf("FFT_execution_times", 18);
-                            if (FLAGS_show_plots) g2.showonscreen();  // window output
+                            if (FLAGS_show_plots)
+                                {
+                                    g2.showonscreen();  // window output
+                                }
                         }
                     catch (const GnuplotException& ge)
                         {

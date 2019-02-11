@@ -344,8 +344,14 @@ int32_t Rtcm::bin_to_sint(const std::string& s) const
 // Find the sign for glonass data fields (neg = 1, pos = 0)
 static inline uint64_t glo_sgn(double val)
 {
-    if (val < 0) return 1;   // If value is negative return 1
-    if (val == 0) return 0;  // Positive or equal to zero return 0
+    if (val < 0)
+        {
+            return 1;  // If value is negative return 1
+        }
+    if (val == 0)
+        {
+            return 0;  // Positive or equal to zero return 0
+        }
     return 0;
 }
 
@@ -2283,10 +2289,22 @@ std::string Rtcm::print_MSM_1(const Gps_Ephemeris& gps_eph,
     bool more_messages)
 {
     uint32_t msg_number = 0;
-    if (gps_eph.i_satellite_PRN != 0) msg_number = 1071;
-    if (gps_cnav_eph.i_satellite_PRN != 0) msg_number = 1071;
-    if (glo_gnav_eph.i_satellite_PRN != 0) msg_number = 1081;
-    if (gal_eph.i_satellite_PRN != 0) msg_number = 1091;
+    if (gps_eph.i_satellite_PRN != 0)
+        {
+            msg_number = 1071;
+        }
+    if (gps_cnav_eph.i_satellite_PRN != 0)
+        {
+            msg_number = 1071;
+        }
+    if (glo_gnav_eph.i_satellite_PRN != 0)
+        {
+            msg_number = 1081;
+        }
+    if (gal_eph.i_satellite_PRN != 0)
+        {
+            msg_number = 1091;
+        }
     if (((gps_eph.i_satellite_PRN != 0) || (gps_cnav_eph.i_satellite_PRN != 0)) && (gal_eph.i_satellite_PRN != 0) && (glo_gnav_eph.i_satellite_PRN != 0))
         {
             LOG(WARNING) << "MSM messages for observables from different systems are not defined";  //print two messages?
@@ -2466,10 +2484,22 @@ std::string Rtcm::print_MSM_2(const Gps_Ephemeris& gps_eph,
     bool more_messages)
 {
     uint32_t msg_number = 0;
-    if (gps_eph.i_satellite_PRN != 0) msg_number = 1072;
-    if (gps_cnav_eph.i_satellite_PRN != 0) msg_number = 1072;
-    if (glo_gnav_eph.i_satellite_PRN != 0) msg_number = 1082;
-    if (gal_eph.i_satellite_PRN != 0) msg_number = 1092;
+    if (gps_eph.i_satellite_PRN != 0)
+        {
+            msg_number = 1072;
+        }
+    if (gps_cnav_eph.i_satellite_PRN != 0)
+        {
+            msg_number = 1072;
+        }
+    if (glo_gnav_eph.i_satellite_PRN != 0)
+        {
+            msg_number = 1082;
+        }
+    if (gal_eph.i_satellite_PRN != 0)
+        {
+            msg_number = 1092;
+        }
     if (((gps_eph.i_satellite_PRN != 0) || (gps_cnav_eph.i_satellite_PRN != 0)) && (gal_eph.i_satellite_PRN != 0) && (glo_gnav_eph.i_satellite_PRN != 0))
         {
             LOG(WARNING) << "MSM messages for observables from different systems are not defined";  //print two messages?
@@ -2567,10 +2597,22 @@ std::string Rtcm::print_MSM_3(const Gps_Ephemeris& gps_eph,
     bool more_messages)
 {
     uint32_t msg_number = 0;
-    if (gps_eph.i_satellite_PRN != 0) msg_number = 1073;
-    if (gps_cnav_eph.i_satellite_PRN != 0) msg_number = 1073;
-    if (glo_gnav_eph.i_satellite_PRN != 0) msg_number = 1083;
-    if (gal_eph.i_satellite_PRN != 0) msg_number = 1093;
+    if (gps_eph.i_satellite_PRN != 0)
+        {
+            msg_number = 1073;
+        }
+    if (gps_cnav_eph.i_satellite_PRN != 0)
+        {
+            msg_number = 1073;
+        }
+    if (glo_gnav_eph.i_satellite_PRN != 0)
+        {
+            msg_number = 1083;
+        }
+    if (gal_eph.i_satellite_PRN != 0)
+        {
+            msg_number = 1093;
+        }
     if (((gps_eph.i_satellite_PRN != 0) || (gps_cnav_eph.i_satellite_PRN != 0)) && (gal_eph.i_satellite_PRN != 0) && (glo_gnav_eph.i_satellite_PRN != 0))
         {
             LOG(WARNING) << "MSM messages for observables from different systems are not defined";  //print two messages?
@@ -2671,10 +2713,22 @@ std::string Rtcm::print_MSM_4(const Gps_Ephemeris& gps_eph,
     bool more_messages)
 {
     uint32_t msg_number = 0;
-    if (gps_eph.i_satellite_PRN != 0) msg_number = 1074;
-    if (gps_cnav_eph.i_satellite_PRN != 0) msg_number = 1074;
-    if (glo_gnav_eph.i_satellite_PRN != 0) msg_number = 1084;
-    if (gal_eph.i_satellite_PRN != 0) msg_number = 1094;
+    if (gps_eph.i_satellite_PRN != 0)
+        {
+            msg_number = 1074;
+        }
+    if (gps_cnav_eph.i_satellite_PRN != 0)
+        {
+            msg_number = 1074;
+        }
+    if (glo_gnav_eph.i_satellite_PRN != 0)
+        {
+            msg_number = 1084;
+        }
+    if (gal_eph.i_satellite_PRN != 0)
+        {
+            msg_number = 1094;
+        }
     if (((gps_eph.i_satellite_PRN != 0) || (gps_cnav_eph.i_satellite_PRN != 0)) && (gal_eph.i_satellite_PRN != 0) && (glo_gnav_eph.i_satellite_PRN != 0))
         {
             LOG(WARNING) << "MSM messages for observables from different systems are not defined";  //print two messages?
@@ -2818,10 +2872,22 @@ std::string Rtcm::print_MSM_5(const Gps_Ephemeris& gps_eph,
     bool more_messages)
 {
     uint32_t msg_number = 0;
-    if (gps_eph.i_satellite_PRN != 0) msg_number = 1075;
-    if (gps_cnav_eph.i_satellite_PRN != 0) msg_number = 1075;
-    if (glo_gnav_eph.i_satellite_PRN != 0) msg_number = 1085;
-    if (gal_eph.i_satellite_PRN != 0) msg_number = 1095;
+    if (gps_eph.i_satellite_PRN != 0)
+        {
+            msg_number = 1075;
+        }
+    if (gps_cnav_eph.i_satellite_PRN != 0)
+        {
+            msg_number = 1075;
+        }
+    if (glo_gnav_eph.i_satellite_PRN != 0)
+        {
+            msg_number = 1085;
+        }
+    if (gal_eph.i_satellite_PRN != 0)
+        {
+            msg_number = 1095;
+        }
     if (((gps_eph.i_satellite_PRN != 0) || (gps_cnav_eph.i_satellite_PRN != 0)) && (gal_eph.i_satellite_PRN != 0) && (glo_gnav_eph.i_satellite_PRN != 0))
         {
             LOG(WARNING) << "MSM messages for observables from different systems are not defined";  //print two messages?
@@ -2974,10 +3040,22 @@ std::string Rtcm::print_MSM_6(const Gps_Ephemeris& gps_eph,
     bool more_messages)
 {
     uint32_t msg_number = 0;
-    if (gps_eph.i_satellite_PRN != 0) msg_number = 1076;
-    if (gps_cnav_eph.i_satellite_PRN != 0) msg_number = 1076;
-    if (glo_gnav_eph.i_satellite_PRN != 0) msg_number = 1086;
-    if (gal_eph.i_satellite_PRN != 0) msg_number = 1096;
+    if (gps_eph.i_satellite_PRN != 0)
+        {
+            msg_number = 1076;
+        }
+    if (gps_cnav_eph.i_satellite_PRN != 0)
+        {
+            msg_number = 1076;
+        }
+    if (glo_gnav_eph.i_satellite_PRN != 0)
+        {
+            msg_number = 1086;
+        }
+    if (gal_eph.i_satellite_PRN != 0)
+        {
+            msg_number = 1096;
+        }
     if (((gps_eph.i_satellite_PRN != 0) || (gps_cnav_eph.i_satellite_PRN != 0)) && (gal_eph.i_satellite_PRN != 0) && (glo_gnav_eph.i_satellite_PRN != 0))
         {
             LOG(WARNING) << "MSM messages for observables from different systems are not defined";  //print two messages?
@@ -3081,10 +3159,22 @@ std::string Rtcm::print_MSM_7(const Gps_Ephemeris& gps_eph,
     bool more_messages)
 {
     uint32_t msg_number = 0;
-    if (gps_eph.i_satellite_PRN != 0) msg_number = 1077;
-    if (gps_cnav_eph.i_satellite_PRN != 0) msg_number = 1077;
-    if (glo_gnav_eph.i_satellite_PRN != 0) msg_number = 1087;
-    if (gal_eph.i_satellite_PRN != 0) msg_number = 1097;
+    if (gps_eph.i_satellite_PRN != 0)
+        {
+            msg_number = 1077;
+        }
+    if (gps_cnav_eph.i_satellite_PRN != 0)
+        {
+            msg_number = 1077;
+        }
+    if (glo_gnav_eph.i_satellite_PRN != 0)
+        {
+            msg_number = 1087;
+        }
+    if (gal_eph.i_satellite_PRN != 0)
+        {
+            msg_number = 1097;
+        }
     if (((gps_eph.i_satellite_PRN != 0) || (gps_cnav_eph.i_satellite_PRN != 0)) && (glo_gnav_eph.i_satellite_PRN != 0) && (gal_eph.i_satellite_PRN != 0))
         {
             LOG(WARNING) << "MSM messages for observables from different systems are not defined";  //print two messages?
@@ -3461,13 +3551,34 @@ uint32_t Rtcm::lock_time(const Glonass_Gnav_Ephemeris& eph, double obs_time, con
 uint32_t Rtcm::lock_time_indicator(uint32_t lock_time_period_s)
 {
     // Table 3.4-2
-    if (lock_time_period_s <= 0) return 0;
-    if (lock_time_period_s < 24) return lock_time_period_s;
-    if (lock_time_period_s < 72) return (lock_time_period_s + 24) / 2;
-    if (lock_time_period_s < 168) return (lock_time_period_s + 120) / 4;
-    if (lock_time_period_s < 360) return (lock_time_period_s + 408) / 8;
-    if (lock_time_period_s < 744) return (lock_time_period_s + 1176) / 16;
-    if (lock_time_period_s < 937) return (lock_time_period_s + 3096) / 32;
+    if (lock_time_period_s <= 0)
+        {
+            return 0;
+        }
+    if (lock_time_period_s < 24)
+        {
+            return lock_time_period_s;
+        }
+    if (lock_time_period_s < 72)
+        {
+            return (lock_time_period_s + 24) / 2;
+        }
+    if (lock_time_period_s < 168)
+        {
+            return (lock_time_period_s + 120) / 4;
+        }
+    if (lock_time_period_s < 360)
+        {
+            return (lock_time_period_s + 408) / 8;
+        }
+    if (lock_time_period_s < 744)
+        {
+            return (lock_time_period_s + 1176) / 16;
+        }
+    if (lock_time_period_s < 937)
+        {
+            return (lock_time_period_s + 3096) / 32;
+        }
     return 127;
 }
 
@@ -3475,21 +3586,66 @@ uint32_t Rtcm::lock_time_indicator(uint32_t lock_time_period_s)
 uint32_t Rtcm::msm_lock_time_indicator(uint32_t lock_time_period_s)
 {
     // Table 3.5-74
-    if (lock_time_period_s < 32) return 0;
-    if (lock_time_period_s < 64) return 1;
-    if (lock_time_period_s < 128) return 2;
-    if (lock_time_period_s < 256) return 3;
-    if (lock_time_period_s < 512) return 4;
-    if (lock_time_period_s < 1024) return 5;
-    if (lock_time_period_s < 2048) return 6;
-    if (lock_time_period_s < 4096) return 7;
-    if (lock_time_period_s < 8192) return 8;
-    if (lock_time_period_s < 16384) return 9;
-    if (lock_time_period_s < 32768) return 10;
-    if (lock_time_period_s < 65536) return 11;
-    if (lock_time_period_s < 131072) return 12;
-    if (lock_time_period_s < 262144) return 13;
-    if (lock_time_period_s < 524288) return 14;
+    if (lock_time_period_s < 32)
+        {
+            return 0;
+        }
+    if (lock_time_period_s < 64)
+        {
+            return 1;
+        }
+    if (lock_time_period_s < 128)
+        {
+            return 2;
+        }
+    if (lock_time_period_s < 256)
+        {
+            return 3;
+        }
+    if (lock_time_period_s < 512)
+        {
+            return 4;
+        }
+    if (lock_time_period_s < 1024)
+        {
+            return 5;
+        }
+    if (lock_time_period_s < 2048)
+        {
+            return 6;
+        }
+    if (lock_time_period_s < 4096)
+        {
+            return 7;
+        }
+    if (lock_time_period_s < 8192)
+        {
+            return 8;
+        }
+    if (lock_time_period_s < 16384)
+        {
+            return 9;
+        }
+    if (lock_time_period_s < 32768)
+        {
+            return 10;
+        }
+    if (lock_time_period_s < 65536)
+        {
+            return 11;
+        }
+    if (lock_time_period_s < 131072)
+        {
+            return 12;
+        }
+    if (lock_time_period_s < 262144)
+        {
+            return 13;
+        }
+    if (lock_time_period_s < 524288)
+        {
+            return 14;
+        }
     return 15;
 }
 
@@ -3520,8 +3676,8 @@ uint32_t Rtcm::msm_extended_lock_time_indicator(uint32_t lock_time_period_s)
     if( 16777216 <= lock_time_period_s && lock_time_period_s < 33554432 ) return (640 + (lock_time_period_s - 16777216) / 524288 );
     if( 33554432 <= lock_time_period_s && lock_time_period_s < 67108864 ) return (672 + (lock_time_period_s - 33554432) / 1048576);
     if( 67108864 <= lock_time_period_s                                  ) return (704                                            );
-    return 1023; // will never happen
-}
+     return 1023; // will never happen
+ }
 // clang-format on
 
 // *****************************************************************************************************
@@ -5182,8 +5338,14 @@ int32_t Rtcm::set_DF399(const Gnss_Synchro& gnss_synchro)
         }
 
     double rough_phase_range_rate_ms = std::round(-gnss_synchro.Carrier_Doppler_hz * lambda);
-    if (rough_phase_range_rate_ms < -8191) rough_phase_range_rate_ms = -8192;
-    if (rough_phase_range_rate_ms > 8191) rough_phase_range_rate_ms = -8192;
+    if (rough_phase_range_rate_ms < -8191)
+        {
+            rough_phase_range_rate_ms = -8192;
+        }
+    if (rough_phase_range_rate_ms > 8191)
+        {
+            rough_phase_range_rate_ms = -8192;
+        }
 
     DF399 = std::bitset<14>(static_cast<int32_t>(rough_phase_range_rate_ms));
     return 0;

@@ -114,8 +114,7 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test_msg_rx::GalileoE1PcpsQuic
 }
 
 
-GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test_msg_rx::~GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test_msg_rx()
-= default;
+GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test_msg_rx::~GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test_msg_rx() = default;
 
 
 // ###########################################################
@@ -132,8 +131,7 @@ protected:
         gnss_synchro = Gnss_Synchro();
         init();
     }
-    ~GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test()
-    = default;
+    ~GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test() = default;
 
     void init();
     void config_1();

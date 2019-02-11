@@ -176,9 +176,18 @@ void rtklib_pvt_cc::msg_handler_telemetry(const pmt::pmt_t& msg)
                     Galileo_Almanac sv2 = galileo_almanac_helper->get_almanac(2);
                     Galileo_Almanac sv3 = galileo_almanac_helper->get_almanac(3);
 
-                    if (sv1.i_satellite_PRN != 0) d_pvt_solver->galileo_almanac_map[sv1.i_satellite_PRN] = sv1;
-                    if (sv2.i_satellite_PRN != 0) d_pvt_solver->galileo_almanac_map[sv2.i_satellite_PRN] = sv2;
-                    if (sv3.i_satellite_PRN != 0) d_pvt_solver->galileo_almanac_map[sv3.i_satellite_PRN] = sv3;
+                    if (sv1.i_satellite_PRN != 0)
+                        {
+                            d_pvt_solver->galileo_almanac_map[sv1.i_satellite_PRN] = sv1;
+                        }
+                    if (sv2.i_satellite_PRN != 0)
+                        {
+                            d_pvt_solver->galileo_almanac_map[sv2.i_satellite_PRN] = sv2;
+                        }
+                    if (sv3.i_satellite_PRN != 0)
+                        {
+                            d_pvt_solver->galileo_almanac_map[sv3.i_satellite_PRN] = sv3;
+                        }
                     DLOG(INFO) << "New Galileo Almanac data have arrived ";
                 }
             else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Almanac>))
@@ -1421,10 +1430,22 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                             send_sys_v_ttff_msg(ttff);
                                             first_fix = false;
                                         }
-                                    if (d_kml_output_enabled) d_kml_dump->print_position(d_pvt_solver, false);
-                                    if (d_gpx_output_enabled) d_gpx_dump->print_position(d_pvt_solver, false);
-                                    if (d_geojson_output_enabled) d_geojson_printer->print_position(d_pvt_solver, false);
-                                    if (d_nmea_output_file_enabled) d_nmea_printer->Print_Nmea_Line(d_pvt_solver, false);
+                                    if (d_kml_output_enabled)
+                                        {
+                                            d_kml_dump->print_position(d_pvt_solver, false);
+                                        }
+                                    if (d_gpx_output_enabled)
+                                        {
+                                            d_gpx_dump->print_position(d_pvt_solver, false);
+                                        }
+                                    if (d_geojson_output_enabled)
+                                        {
+                                            d_geojson_printer->print_position(d_pvt_solver, false);
+                                        }
+                                    if (d_nmea_output_file_enabled)
+                                        {
+                                            d_nmea_printer->Print_Nmea_Line(d_pvt_solver, false);
+                                        }
 
                                     /*
                                      *   TYPE  |  RECEIVER
@@ -1638,7 +1659,9 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     std::string glo_signal("1G");
                                                                     rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, glo_signal);
                                                                     if (d_rinex_version == 3)
-                                                                        rp->rinex_nav_header(rp->navMixFile, d_pvt_solver->gps_iono, d_pvt_solver->gps_utc_model, d_pvt_solver->glonass_gnav_utc_model, d_pvt_solver->glonass_gnav_almanac);
+                                                                        {
+                                                                            rp->rinex_nav_header(rp->navMixFile, d_pvt_solver->gps_iono, d_pvt_solver->gps_utc_model, d_pvt_solver->glonass_gnav_utc_model, d_pvt_solver->glonass_gnav_almanac);
+                                                                        }
                                                                     if (d_rinex_version == 2)
                                                                         {
                                                                             rp->rinex_nav_header(rp->navFile, d_pvt_solver->gps_iono, d_pvt_solver->gps_utc_model);
@@ -1672,7 +1695,9 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     std::string glo_signal("2G");
                                                                     rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, glo_signal);
                                                                     if (d_rinex_version == 3)
-                                                                        rp->rinex_nav_header(rp->navMixFile, d_pvt_solver->gps_iono, d_pvt_solver->gps_utc_model, d_pvt_solver->glonass_gnav_utc_model, d_pvt_solver->glonass_gnav_almanac);
+                                                                        {
+                                                                            rp->rinex_nav_header(rp->navMixFile, d_pvt_solver->gps_iono, d_pvt_solver->gps_utc_model, d_pvt_solver->glonass_gnav_utc_model, d_pvt_solver->glonass_gnav_almanac);
+                                                                        }
                                                                     if (d_rinex_version == 2)
                                                                         {
                                                                             rp->rinex_nav_header(rp->navFile, d_pvt_solver->gps_iono, d_pvt_solver->gps_utc_model);
@@ -1780,7 +1805,9 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     break;
                                                                 case 26:  //  GPS L1 C/A + GLONASS L1 C/A
                                                                     if (d_rinex_version == 3)
-                                                                        rp->log_rinex_nav(rp->navMixFile, d_pvt_solver->gps_ephemeris_map, d_pvt_solver->glonass_gnav_ephemeris_map);
+                                                                        {
+                                                                            rp->log_rinex_nav(rp->navMixFile, d_pvt_solver->gps_ephemeris_map, d_pvt_solver->glonass_gnav_ephemeris_map);
+                                                                        }
                                                                     if (d_rinex_version == 2)
                                                                         {
                                                                             rp->log_rinex_nav(rp->navFile, d_pvt_solver->gps_ephemeris_map);
@@ -1795,7 +1822,9 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     break;
                                                                 case 29:  //  GPS L1 C/A + GLONASS L2 C/A
                                                                     if (d_rinex_version == 3)
-                                                                        rp->log_rinex_nav(rp->navMixFile, d_pvt_solver->gps_ephemeris_map, d_pvt_solver->glonass_gnav_ephemeris_map);
+                                                                        {
+                                                                            rp->log_rinex_nav(rp->navMixFile, d_pvt_solver->gps_ephemeris_map, d_pvt_solver->glonass_gnav_ephemeris_map);
+                                                                        }
                                                                     if (d_rinex_version == 2)
                                                                         {
                                                                             rp->log_rinex_nav(rp->navFile, d_pvt_solver->gps_ephemeris_map);

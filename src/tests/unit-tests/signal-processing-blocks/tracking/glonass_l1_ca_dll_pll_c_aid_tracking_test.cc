@@ -98,8 +98,7 @@ GlonassL1CaDllPllCAidTrackingTest_msg_rx::GlonassL1CaDllPllCAidTrackingTest_msg_
     rx_message = 0;
 }
 
-GlonassL1CaDllPllCAidTrackingTest_msg_rx::~GlonassL1CaDllPllCAidTrackingTest_msg_rx()
-= default;
+GlonassL1CaDllPllCAidTrackingTest_msg_rx::~GlonassL1CaDllPllCAidTrackingTest_msg_rx() = default;
 
 
 // ###########################################################
@@ -116,8 +115,7 @@ protected:
         gnss_synchro = Gnss_Synchro();
     }
 
-    ~GlonassL1CaDllPllCAidTrackingTest()
-    = default;
+    ~GlonassL1CaDllPllCAidTrackingTest() = default;
 
     void init();
 

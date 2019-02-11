@@ -35,6 +35,7 @@
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/top_block.h>
 #include <chrono>
+#include <utility>
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
@@ -89,7 +90,7 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx::msg_handler_events(pmt::pmt_
 {
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
             channel_internal_queue.push(rx_message);
         }
@@ -110,8 +111,7 @@ GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx::GlonassL1CaPcpsAcquisitionGSoC201
 
 
 GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx::~GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx()
-{
-}
+= default;
 
 
 // ###########################################################
@@ -125,13 +125,12 @@ protected:
         stop = false;
         message = 0;
         gnss_synchro = Gnss_Synchro();
-        acquisition = 0;
+        acquisition = nullptr;
         init();
     }
 
     ~GlonassL1CaPcpsAcquisitionGSoC2017Test()
-    {
-    }
+    = default;
 
     void init();
     void config_1();
@@ -370,12 +369,12 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::wait_message()
         {
             acquisition->reset();
 
-            gettimeofday(&tv, NULL);
+            gettimeofday(&tv, nullptr);
             begin = tv.tv_sec * 1e6 + tv.tv_usec;
 
             channel_internal_queue.wait_and_pop(message);
 
-            gettimeofday(&tv, NULL);
+            gettimeofday(&tv, nullptr);
             end = tv.tv_sec * 1e6 + tv.tv_usec;
 
             mean_acq_time_us += (end - begin);

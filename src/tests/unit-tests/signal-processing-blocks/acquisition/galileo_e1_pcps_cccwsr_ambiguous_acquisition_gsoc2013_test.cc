@@ -36,6 +36,7 @@
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/top_block.h>
 #include <chrono>
+#include <utility>
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
@@ -85,7 +86,7 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx::msg_handler_events(pmt:
 {
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
             channel_internal_queue.push(rx_message);
         }
@@ -105,8 +106,7 @@ GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx::GalileoE1PcpsCccwsrAmbiguous
 }
 
 GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx::~GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx()
-{
-}
+= default;
 
 
 // ###########################################################
@@ -125,8 +125,7 @@ protected:
     }
 
     ~GalileoE1PcpsCccwsrAmbiguousAcquisitionTest()
-    {
-    }
+    = default;
 
     void init();
     void config_1();

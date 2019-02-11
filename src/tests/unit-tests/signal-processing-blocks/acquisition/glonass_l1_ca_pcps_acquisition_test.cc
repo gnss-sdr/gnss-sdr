@@ -37,6 +37,7 @@
 #include <gnuradio/top_block.h>
 #include <chrono>
 #include <cstdlib>
+#include <utility>
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
@@ -84,7 +85,7 @@ void GlonassL1CaPcpsAcquisitionTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
         }
     catch (boost::bad_any_cast& e)
@@ -104,8 +105,7 @@ GlonassL1CaPcpsAcquisitionTest_msg_rx::GlonassL1CaPcpsAcquisitionTest_msg_rx() :
 
 
 GlonassL1CaPcpsAcquisitionTest_msg_rx::~GlonassL1CaPcpsAcquisitionTest_msg_rx()
-{
-}
+= default;
 
 
 // ###########################################################
@@ -122,8 +122,7 @@ protected:
     }
 
     ~GlonassL1CaPcpsAcquisitionTest()
-    {
-    }
+    = default;
 
     void init();
 

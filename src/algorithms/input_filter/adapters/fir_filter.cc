@@ -299,11 +299,8 @@ gr::basic_block_sptr FirFilter::get_left_block()
         {
             return cshort_to_float_x2_;
         }
-    else
-        {
-            return nullptr;
-            LOG(ERROR) << " Unknown item type conversion";
-        }
+    LOG(WARNING) << "Unknown item type conversion";
+    return nullptr;
 }
 
 
@@ -329,11 +326,8 @@ gr::basic_block_sptr FirFilter::get_right_block()
         {
             return float_to_complex_;
         }
-    else
-        {
-            return nullptr;
-            LOG(ERROR) << " unknown input filter item type";
-        }
+    LOG(WARNING) << "Unknown input filter taps item type";
+    return nullptr;
 }
 
 

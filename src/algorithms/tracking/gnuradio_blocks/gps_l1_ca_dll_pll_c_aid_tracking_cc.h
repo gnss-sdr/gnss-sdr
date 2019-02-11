@@ -51,8 +51,7 @@
 
 class gps_l1_ca_dll_pll_c_aid_tracking_cc;
 
-typedef boost::shared_ptr<gps_l1_ca_dll_pll_c_aid_tracking_cc>
-    gps_l1_ca_dll_pll_c_aid_tracking_cc_sptr;
+using gps_l1_ca_dll_pll_c_aid_tracking_cc_sptr = boost::shared_ptr<gps_l1_ca_dll_pll_c_aid_tracking_cc>;
 
 gps_l1_ca_dll_pll_c_aid_tracking_cc_sptr
 gps_l1_ca_dll_pll_c_aid_make_tracking_cc(

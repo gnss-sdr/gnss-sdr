@@ -193,7 +193,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalSource(
                     role = "SignalSource" + std::to_string(ID);
                 }
         }
-    catch (const std::exception &e)
+    catch (const std::exception& e)
         {
             LOG(WARNING) << e.what();
         }
@@ -222,7 +222,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
                     role_resampler = "Resampler" + std::to_string(ID);
                 }
         }
-    catch (const std::exception &e)
+    catch (const std::exception& e)
         {
             LOG(WARNING) << e.what();
         }
@@ -259,16 +259,14 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
                 role_conditioner, "Signal_Conditioner"));
             return conditioner_;
         }
-    else
-        {
-            //single-antenna version
-            std::unique_ptr<GNSSBlockInterface> conditioner_(new SignalConditioner(configuration.get(),
-                GetBlock(configuration, role_datatypeadapter, data_type_adapter, 1, 1),
-                GetBlock(configuration, role_inputfilter, input_filter, 1, 1),
-                GetBlock(configuration, role_resampler, resampler, 1, 1),
-                role_conditioner, "Signal_Conditioner"));
-            return conditioner_;
-        }
+
+    //single-antenna version
+    std::unique_ptr<GNSSBlockInterface> conditioner_(new SignalConditioner(configuration.get(),
+        GetBlock(configuration, role_datatypeadapter, data_type_adapter, 1, 1),
+        GetBlock(configuration, role_inputfilter, input_filter, 1, 1),
+        GetBlock(configuration, role_resampler, resampler, 1, 1),
+        role_conditioner, "Signal_Conditioner"));
+    return conditioner_;
 }
 
 
@@ -1119,7 +1117,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                     channel_absolute_id++;
                 }
         }
-    catch (const std::exception &e)
+    catch (const std::exception& e)
         {
             LOG(WARNING) << e.what();
         }
@@ -1162,7 +1160,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     block = std::move(block_);
                 }
 
-            catch (const std::exception &e)
+            catch (const std::exception& e)
                 {
                     std::cout << "GNSS-SDR program ended." << std::endl;
                     exit(1);
@@ -1178,7 +1176,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     block = std::move(block_);
                 }
 
-            catch (const std::exception &e)
+            catch (const std::exception& e)
                 {
                     std::cout << "GNSS-SDR program ended." << std::endl;
                     exit(1);
@@ -1193,7 +1191,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                         out_streams, queue));
                     block = std::move(block_);
                 }
-            catch (const std::exception &e)
+            catch (const std::exception& e)
                 {
                     std::cout << "GNSS-SDR program ended." << std::endl;
                     exit(1);
@@ -1208,7 +1206,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                         out_streams, queue));
                     block = std::move(block_);
                 }
-            catch (const std::exception &e)
+            catch (const std::exception& e)
                 {
                     std::cout << "GNSS-SDR program ended." << std::endl;
                     exit(1);
@@ -1222,7 +1220,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                         out_streams, queue));
                     block = std::move(block_);
                 }
-            catch (const std::exception &e)
+            catch (const std::exception& e)
                 {
                     std::cout << "GNSS-SDR program ended." << std::endl;
                     exit(1);
@@ -1237,7 +1235,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                         out_streams, queue));
                     block = std::move(block_);
                 }
-            catch (const std::exception &e)
+            catch (const std::exception& e)
                 {
                     std::cout << "GNSS-SDR program ended." << std::endl;
                     exit(1);
@@ -1251,7 +1249,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                         out_streams, queue));
                     block = std::move(block_);
                 }
-            catch (const std::exception &e)
+            catch (const std::exception& e)
                 {
                     std::cout << "GNSS-SDR program ended." << std::endl;
                     exit(1);
@@ -1265,7 +1263,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                         out_streams, queue));
                     block = std::move(block_);
                 }
-            catch (const std::exception &e)
+            catch (const std::exception& e)
                 {
                     std::cout << "GNSS-SDR program ended." << std::endl;
                     exit(1);
@@ -1280,7 +1278,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     block = std::move(block_);
                 }
 
-            catch (const std::exception &e)
+            catch (const std::exception& e)
                 {
                     std::cout << "GNSS-SDR program ended." << std::endl;
                     exit(1);

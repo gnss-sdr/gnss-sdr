@@ -37,7 +37,7 @@
 
 class interleaved_byte_to_complex_byte;
 
-typedef boost::shared_ptr<interleaved_byte_to_complex_byte> interleaved_byte_to_complex_byte_sptr;
+using interleaved_byte_to_complex_byte_sptr = boost::shared_ptr<interleaved_byte_to_complex_byte>;
 
 interleaved_byte_to_complex_byte_sptr make_interleaved_byte_to_complex_byte();
 

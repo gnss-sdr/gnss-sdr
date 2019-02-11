@@ -43,8 +43,7 @@ protected:
         this->conf();
     }
     ~NmeaPrinterTest()
-    {
-    }
+    = default;
     void conf();
     rtk_t rtk;
 };

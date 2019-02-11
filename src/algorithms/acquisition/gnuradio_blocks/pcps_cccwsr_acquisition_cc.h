@@ -47,7 +47,7 @@
 
 class pcps_cccwsr_acquisition_cc;
 
-typedef boost::shared_ptr<pcps_cccwsr_acquisition_cc> pcps_cccwsr_acquisition_cc_sptr;
+using pcps_cccwsr_acquisition_cc_sptr = boost::shared_ptr<pcps_cccwsr_acquisition_cc>;
 
 pcps_cccwsr_acquisition_cc_sptr
 pcps_cccwsr_make_acquisition_cc(

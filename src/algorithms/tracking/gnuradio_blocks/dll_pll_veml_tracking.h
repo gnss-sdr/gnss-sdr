@@ -47,7 +47,7 @@
 
 class dll_pll_veml_tracking;
 
-typedef boost::shared_ptr<dll_pll_veml_tracking> dll_pll_veml_tracking_sptr;
+using dll_pll_veml_tracking_sptr = boost::shared_ptr<dll_pll_veml_tracking>;
 
 dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_);
 

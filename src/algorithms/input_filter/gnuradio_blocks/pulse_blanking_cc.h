@@ -37,7 +37,7 @@
 
 class pulse_blanking_cc;
 
-typedef boost::shared_ptr<pulse_blanking_cc> pulse_blanking_cc_sptr;
+using pulse_blanking_cc_sptr = boost::shared_ptr<pulse_blanking_cc>;
 
 pulse_blanking_cc_sptr make_pulse_blanking_cc(float pfa, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset);
 

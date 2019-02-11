@@ -36,8 +36,7 @@
 #include <volk/volk.h>
 
 class direct_resampler_conditioner_cb;
-typedef boost::shared_ptr<direct_resampler_conditioner_cb>
-    direct_resampler_conditioner_cb_sptr;
+using direct_resampler_conditioner_cb_sptr = boost::shared_ptr<direct_resampler_conditioner_cb>;
 
 direct_resampler_conditioner_cb_sptr
 direct_resampler_make_conditioner_cb(double sample_freq_in,

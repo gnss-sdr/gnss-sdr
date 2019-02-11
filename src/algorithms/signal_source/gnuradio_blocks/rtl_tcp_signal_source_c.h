@@ -50,8 +50,7 @@
 
 class rtl_tcp_signal_source_c;
 
-typedef boost::shared_ptr<rtl_tcp_signal_source_c>
-    rtl_tcp_signal_source_c_sptr;
+using rtl_tcp_signal_source_c_sptr = boost::shared_ptr<rtl_tcp_signal_source_c>;
 
 rtl_tcp_signal_source_c_sptr
 rtl_tcp_make_signal_source_c(const std::string &address,
@@ -78,7 +77,7 @@ public:
     void set_if_gain(int gain);
 
 private:
-    typedef boost::circular_buffer_space_optimized<float> buffer_type;
+    using buffer_type = boost::circular_buffer_space_optimized<float>;
 
     friend rtl_tcp_signal_source_c_sptr
     rtl_tcp_make_signal_source_c(const std::string &address,

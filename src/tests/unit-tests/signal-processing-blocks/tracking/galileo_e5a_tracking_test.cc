@@ -66,8 +66,7 @@ protected:
     }
 
     ~GalileoE5aTrackingTest()
-    {
-    }
+    = default;
 
     void init();
 

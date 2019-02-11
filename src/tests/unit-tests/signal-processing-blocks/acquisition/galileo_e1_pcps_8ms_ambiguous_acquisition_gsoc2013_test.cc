@@ -35,6 +35,7 @@
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/top_block.h>
 #include <chrono>
+#include <utility>
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
@@ -55,7 +56,7 @@
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx;
 
-typedef boost::shared_ptr<GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx> GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx_sptr;
+using GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx_sptr = boost::shared_ptr<GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx>;
 
 GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx_sptr GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx_make(concurrent_queue<int>& queue);
 
@@ -84,7 +85,7 @@ void GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx::msg_handler_events
 {
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
             channel_internal_queue.push(rx_message);
         }
@@ -104,8 +105,7 @@ GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx::GalileoE1Pcps8msAmbiguo
 }
 
 GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx::~GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test_msg_rx()
-{
-}
+= default;
 
 
 // ###########################################################
@@ -124,8 +124,7 @@ protected:
     }
 
     ~GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test()
-    {
-    }
+    = default;
 
     void init();
     void config_1();

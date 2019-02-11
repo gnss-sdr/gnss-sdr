@@ -46,6 +46,7 @@
 #include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
 #include <chrono>
+#include <utility>
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
@@ -56,7 +57,7 @@
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GlonassL1CaDllPllTrackingTest_msg_rx;
 
-typedef boost::shared_ptr<GlonassL1CaDllPllTrackingTest_msg_rx> GlonassL1CaDllPllTrackingTest_msg_rx_sptr;
+using GlonassL1CaDllPllTrackingTest_msg_rx_sptr = boost::shared_ptr<GlonassL1CaDllPllTrackingTest_msg_rx>;
 
 GlonassL1CaDllPllTrackingTest_msg_rx_sptr GlonassL1CaDllPllTrackingTest_msg_rx_make();
 
@@ -81,7 +82,7 @@ void GlonassL1CaDllPllTrackingTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
         }
     catch (boost::bad_any_cast& e)
@@ -99,8 +100,7 @@ GlonassL1CaDllPllTrackingTest_msg_rx::GlonassL1CaDllPllTrackingTest_msg_rx() : g
 }
 
 GlonassL1CaDllPllTrackingTest_msg_rx::~GlonassL1CaDllPllTrackingTest_msg_rx()
-{
-}
+= default;
 
 
 // ###########################################################
@@ -118,8 +118,7 @@ protected:
     }
 
     ~GlonassL1CaDllPllTrackingTest()
-    {
-    }
+    = default;
 
     void init();
 

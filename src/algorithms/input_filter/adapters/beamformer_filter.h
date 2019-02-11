@@ -34,6 +34,7 @@
 
 #include "gnss_block_interface.h"
 #include <gnuradio/hier_block2.h>
+#include <cstdint>
 #include <string>
 
 class ConfigurationInterface;
@@ -78,7 +79,7 @@ private:
     unsigned int out_stream_;
     std::string item_type_;
     size_t item_size_;
-    unsigned long long samples_;
+    uint64_t samples_;
     bool dump_;
     std::string dump_filename_;
     gr::block_sptr beamformer_;

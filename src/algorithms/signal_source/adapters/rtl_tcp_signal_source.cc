@@ -57,7 +57,7 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
     std::string empty = "";
     std::string default_dump_file = "./data/signal_source.dat";
     std::string default_item_type = "gr_complex";
-    samples_ = configuration->property(role + ".samples", 0);
+    samples_ = configuration->property(role + ".samples", 0ULL);
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename",
         default_dump_file);
@@ -122,7 +122,7 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
             item_size_ = sizeof(int16_t);
         }
 
-    if (samples_ != 0)
+    if (samples_ != 0ULL)
         {
             DLOG(INFO) << "Send STOP signal after " << samples_ << " samples";
             valve_ = gnss_sdr_make_valve(item_size_, samples_, queue_);
@@ -167,7 +167,7 @@ void RtlTcpSignalSource::MakeBlock()
 
 void RtlTcpSignalSource::connect(gr::top_block_sptr top_block)
 {
-    if (samples_)
+    if (samples_ != 0ULL)
         {
             top_block->connect(signal_source_, 0, valve_, 0);
             DLOG(INFO) << "connected rtl tcp source to valve";
@@ -187,7 +187,7 @@ void RtlTcpSignalSource::connect(gr::top_block_sptr top_block)
 
 void RtlTcpSignalSource::disconnect(gr::top_block_sptr top_block)
 {
-    if (samples_)
+    if (samples_ != 0ULL)
         {
             top_block->disconnect(signal_source_, 0, valve_, 0);
             if (dump_)
@@ -211,12 +211,9 @@ gr::basic_block_sptr RtlTcpSignalSource::get_left_block()
 
 gr::basic_block_sptr RtlTcpSignalSource::get_right_block()
 {
-    if (samples_ != 0)
+    if (samples_ != 0ULL)
         {
             return valve_;
         }
-    else
-        {
-            return signal_source_;
-        }
+    return signal_source_;
 }

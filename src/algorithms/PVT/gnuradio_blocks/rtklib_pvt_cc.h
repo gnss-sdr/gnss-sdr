@@ -56,7 +56,7 @@
 
 class rtklib_pvt_cc;
 
-typedef boost::shared_ptr<rtklib_pvt_cc> rtklib_pvt_cc_sptr;
+using rtklib_pvt_cc_sptr = boost::shared_ptr<rtklib_pvt_cc>;
 
 rtklib_pvt_cc_sptr rtklib_make_pvt_cc(uint32_t n_channels,
     const Pvt_Conf& conf_,

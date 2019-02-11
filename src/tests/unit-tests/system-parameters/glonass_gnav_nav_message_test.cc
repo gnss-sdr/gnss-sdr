@@ -126,7 +126,7 @@ TEST(GlonassGnavNavigationMessageTest, String2Decoder)
 
     // Fill out ephemeris values for truth
     gnav_ephemeris.d_B_n = 0;
-    gnav_ephemeris.d_P_2 = 1;
+    gnav_ephemeris.d_P_2 = true;
     gnav_ephemeris.d_t_b = 8100;
     gnav_ephemeris.d_VYn = -2.69022750854492;
     gnav_ephemeris.d_AYn = 0;
@@ -162,10 +162,10 @@ TEST(GlonassGnavNavigationMessageTest, String3Decoder)
     Glonass_Gnav_Ephemeris gnav_ephemeris;
 
     // Fill out ephemeris values for truth
-    gnav_ephemeris.d_P_3 = 1;
+    gnav_ephemeris.d_P_3 = true;
     gnav_ephemeris.d_gamma_n = 1.81898940354586e-12;
     gnav_ephemeris.d_P = 3;
-    gnav_ephemeris.d_l3rd_n = 0;
+    gnav_ephemeris.d_l3rd_n = false;
     gnav_ephemeris.d_VZn = -1.82016849517822;
     gnav_ephemeris.d_AZn = -2.79396772384644e-09;
     gnav_ephemeris.d_Zn = 19929.2377929688;
@@ -203,7 +203,7 @@ TEST(GlonassGnavNavigationMessageTest, String4Decoder)
     gnav_ephemeris.d_tau_n = -8.30907374620438e-05;
     gnav_ephemeris.d_Delta_tau_n = 9.31322574615479e-10;
     gnav_ephemeris.d_E_n = 0;
-    gnav_ephemeris.d_P_4 = 0;
+    gnav_ephemeris.d_P_4 = false;
     gnav_ephemeris.d_F_T = 6;
     gnav_ephemeris.d_N_T = 268;
     gnav_ephemeris.d_n = 21;

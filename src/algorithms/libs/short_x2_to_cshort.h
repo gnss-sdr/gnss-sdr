@@ -37,7 +37,7 @@
 
 class short_x2_to_cshort;
 
-typedef boost::shared_ptr<short_x2_to_cshort> short_x2_to_cshort_sptr;
+using short_x2_to_cshort_sptr = boost::shared_ptr<short_x2_to_cshort>;
 
 short_x2_to_cshort_sptr make_short_x2_to_cshort();
 

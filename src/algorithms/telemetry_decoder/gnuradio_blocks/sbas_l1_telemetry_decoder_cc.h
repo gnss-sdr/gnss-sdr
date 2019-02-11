@@ -46,7 +46,7 @@
 
 class sbas_l1_telemetry_decoder_cc;
 
-typedef boost::shared_ptr<sbas_l1_telemetry_decoder_cc> sbas_l1_telemetry_decoder_cc_sptr;
+using sbas_l1_telemetry_decoder_cc_sptr = boost::shared_ptr<sbas_l1_telemetry_decoder_cc>;
 
 sbas_l1_telemetry_decoder_cc_sptr
 sbas_l1_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);

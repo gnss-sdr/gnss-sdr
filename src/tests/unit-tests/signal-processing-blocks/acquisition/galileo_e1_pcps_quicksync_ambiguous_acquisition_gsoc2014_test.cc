@@ -39,6 +39,7 @@
 #include <chrono>
 #include <fstream>
 #include <stdexcept>
+#include <utility>
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
@@ -64,7 +65,7 @@ using google::LogMessage;
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test_msg_rx;
 
-typedef boost::shared_ptr<GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test_msg_rx> GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test_msg_rx_sptr;
+using GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test_msg_rx_sptr = boost::shared_ptr<GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test_msg_rx>;
 
 GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test_msg_rx_sptr GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test_msg_rx_make(concurrent_queue<int>& queue);
 
@@ -93,7 +94,7 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test_msg_rx::msg_handler_
 {
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
             channel_internal_queue.push(rx_message);
         }
@@ -114,8 +115,7 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test_msg_rx::GalileoE1PcpsQuic
 
 
 GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test_msg_rx::~GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test_msg_rx()
-{
-}
+= default;
 
 
 // ###########################################################
@@ -133,8 +133,7 @@ protected:
         init();
     }
     ~GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test()
-    {
-    }
+    = default;
 
     void init();
     void config_1();

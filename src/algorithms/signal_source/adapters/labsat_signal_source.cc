@@ -50,7 +50,7 @@ LabsatSignalSource::LabsatSignalSource(ConfigurationInterface* configuration,
     int channel_selector = configuration->property(role + ".selected_channel", 1);
     std::string default_filename = "./example_capture.LS3";
 
-    samples_ = configuration->property(role + ".samples", 0ULL);
+    samples_ = configuration->property(role + ".samples", 0);
     filename_ = configuration->property(role + ".filename", default_filename);
 
     if (item_type_ == "gr_complex")

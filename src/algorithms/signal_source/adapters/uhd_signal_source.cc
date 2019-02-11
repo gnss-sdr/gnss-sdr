@@ -77,7 +77,7 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
     if (RF_channels_ == 1)
         {
             // Single RF channel UHD operation (backward compatible config file format)
-            samples_.push_back(configuration->property(role + ".samples", 0ULL));
+            samples_.push_back(configuration->property(role + ".samples", 0));
             dump_.push_back(configuration->property(role + ".dump", false));
             dump_filename_.push_back(configuration->property(role + ".dump_filename", default_dump_file));
 
@@ -92,7 +92,7 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
             for (int i = 0; i < RF_channels_; i++)
                 {
                     // Single RF channel UHD operation (backward compatible config file format)
-                    samples_.push_back(configuration->property(role + ".samples" + std::to_string(i), 0ULL));
+                    samples_.push_back(configuration->property(role + ".samples" + std::to_string(i), 0));
                     dump_.push_back(configuration->property(role + ".dump" + std::to_string(i), false));
                     dump_filename_.push_back(configuration->property(role + ".dump_filename" + std::to_string(i), default_dump_file));
 

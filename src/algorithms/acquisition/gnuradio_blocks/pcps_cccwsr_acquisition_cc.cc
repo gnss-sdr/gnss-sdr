@@ -53,7 +53,7 @@ pcps_cccwsr_acquisition_cc_sptr pcps_cccwsr_make_acquisition_cc(
     int64_t fs_in,
     int32_t samples_per_ms,
     int32_t samples_per_code,
-    bool dump, std::string dump_filename)
+    bool dump, const std::string &dump_filename)
 {
     return pcps_cccwsr_acquisition_cc_sptr(
         new pcps_cccwsr_acquisition_cc(sampled_ms, max_dwells, doppler_max, fs_in,
@@ -69,9 +69,9 @@ pcps_cccwsr_acquisition_cc::pcps_cccwsr_acquisition_cc(
     int32_t samples_per_ms,
     int32_t samples_per_code,
     bool dump,
-    std::string dump_filename) : gr::block("pcps_cccwsr_acquisition_cc",
-                                     gr::io_signature::make(1, 1, sizeof(gr_complex) * sampled_ms * samples_per_ms),
-                                     gr::io_signature::make(0, 0, sizeof(gr_complex) * sampled_ms * samples_per_ms))
+    const std::string &dump_filename) : gr::block("pcps_cccwsr_acquisition_cc",
+                                            gr::io_signature::make(1, 1, sizeof(gr_complex) * sampled_ms * samples_per_ms),
+                                            gr::io_signature::make(0, 0, sizeof(gr_complex) * sampled_ms * samples_per_ms))
 {
     this->message_port_register_out(pmt::mp("events"));
     d_sample_counter = 0ULL;  // SAMPLE COUNTER

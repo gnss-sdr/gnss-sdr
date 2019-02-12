@@ -42,7 +42,7 @@
 class Gnss_Synchro_Udp_Sink
 {
 public:
-    Gnss_Synchro_Udp_Sink(std::vector<std::string> addresses, const uint16_t& port);
+    Gnss_Synchro_Udp_Sink(const std::vector<std::string>& addresses, const uint16_t& port);
     bool write_gnss_synchro(const std::vector<Gnss_Synchro>& stocks);
 
 private:

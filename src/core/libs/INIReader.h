@@ -67,7 +67,7 @@ public:
 
     //! Get a string value from INI file, returning default_value if not found.
     std::string Get(const std::string& section, const std::string& name,
-        std::string default_value);
+        const std::string& default_value);
 
     //! Get an integer (long) value from INI file, returning default_value if not found.
     int64_t GetInteger(const std::string& section, const std::string& name, int64_t default_value);

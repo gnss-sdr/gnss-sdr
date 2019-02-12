@@ -34,7 +34,7 @@
 #include <iostream>
 #include <sstream>
 
-Monitor_Pvt_Udp_Sink::Monitor_Pvt_Udp_Sink(std::vector<std::string> addresses, const uint16_t& port) : socket{io_service}
+Monitor_Pvt_Udp_Sink::Monitor_Pvt_Udp_Sink(const std::vector<std::string>& addresses, const uint16_t& port) : socket{io_service}
 {
     for (auto address : addresses)
         {

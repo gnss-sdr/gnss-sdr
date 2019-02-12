@@ -269,7 +269,7 @@ bool Nmea_Printer::Print_Nmea_Line(const std::shared_ptr<rtklib_solver>& pvt_dat
 }
 
 
-char Nmea_Printer::checkSum(std::string sentence)
+char Nmea_Printer::checkSum(const std::string& sentence)
 {
     char check = 0;
     // iterate over the string, XOR each byte with the total sum:

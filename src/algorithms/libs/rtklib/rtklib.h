@@ -343,7 +343,7 @@ const int POSOPT_RINEX = 3;   //!< pos option: rinex header pos
 const int MAXSTRPATH = 1024;  //!<  max length of stream path
 const int MAXSTRMSG = 1024;   //!<  max length of stream message
 
-using fatalfunc_t = void (const char *);  //!<  fatal callback function type
+using fatalfunc_t = void(const char *);  //!<  fatal callback function type
 
 #define STR_MODE_R 0x1  /* stream mode: read */
 #define STR_MODE_W 0x2  /* stream mode: write */

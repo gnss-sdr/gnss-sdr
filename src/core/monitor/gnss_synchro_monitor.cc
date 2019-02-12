@@ -45,26 +45,26 @@ using google::LogMessage;
 gnss_synchro_monitor_sptr gnss_synchro_make_monitor(unsigned int n_channels,
     int output_rate_ms,
     int udp_port,
-    std::vector<std::string> udp_addresses)
+    const std::vector<std::string>& udp_addresses)
 {
     return gnss_synchro_monitor_sptr(new gnss_synchro_monitor(n_channels,
         output_rate_ms,
         udp_port,
-        std::move(udp_addresses)));
+        udp_addresses));
 }
 
 
 gnss_synchro_monitor::gnss_synchro_monitor(unsigned int n_channels,
     int output_rate_ms,
     int udp_port,
-    std::vector<std::string> udp_addresses) : gr::sync_block("gnss_synchro_monitor",
+    const std::vector<std::string>& udp_addresses) : gr::sync_block("gnss_synchro_monitor",
                                                   gr::io_signature::make(n_channels, n_channels, sizeof(Gnss_Synchro)),
                                                   gr::io_signature::make(0, 0, 0))
 {
     d_output_rate_ms = output_rate_ms;
     d_nchannels = n_channels;
 
-    udp_sink_ptr = std::unique_ptr<Gnss_Synchro_Udp_Sink>(new Gnss_Synchro_Udp_Sink(std::move(udp_addresses), udp_port));
+    udp_sink_ptr = std::unique_ptr<Gnss_Synchro_Udp_Sink>(new Gnss_Synchro_Udp_Sink(udp_addresses, udp_port));
 
     count = 0;
 }

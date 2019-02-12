@@ -199,7 +199,9 @@ int Viterbi_Decoder::do_acs(const double sym[], int nbits)
         {
             /* Temporarily store the received symbols current decoding step */
             for (i = 0; i < d_nn; i++)
-                d_rec_array[i] = static_cast<float>(sym[d_nn * t + i]);
+                {
+                    d_rec_array[i] = static_cast<float>(sym[d_nn * t + i]);
+                }
 
             /* precompute all possible branch metrics */
             for (i = 0; i < d_number_symbols; i++)

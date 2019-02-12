@@ -68,7 +68,7 @@ glonass_l1_ca_dll_pll_make_tracking_cc(
     float early_late_space_chips)
 {
     return glonass_l1_ca_dll_pll_tracking_cc_sptr(new Glonass_L1_Ca_Dll_Pll_Tracking_cc(
-        fs_in, vector_length, dump, std::move(dump_filename), pll_bw_hz, dll_bw_hz, early_late_space_chips));
+        fs_in, vector_length, dump, dump_filename, pll_bw_hz, dll_bw_hz, early_late_space_chips));
 }
 
 
@@ -98,7 +98,7 @@ Glonass_L1_Ca_Dll_Pll_Tracking_cc::Glonass_L1_Ca_Dll_Pll_Tracking_cc(
     d_dump = dump;
     d_fs_in = fs_in;
     d_vector_length = vector_length;
-    d_dump_filename = std::move(dump_filename);
+    d_dump_filename = dump_filename;
 
     d_current_prn_length_samples = static_cast<int32_t>(d_vector_length);
 
@@ -667,7 +667,10 @@ int Glonass_L1_Ca_Dll_Pll_Tracking_cc::general_work(int noutput_items __attribut
                         }
                     else
                         {
-                            if (d_carrier_lock_fail_counter > 0) d_carrier_lock_fail_counter--;
+                            if (d_carrier_lock_fail_counter > 0)
+                                {
+                                    d_carrier_lock_fail_counter--;
+                                }
                         }
                     if (d_carrier_lock_fail_counter > FLAGS_max_lock_fail)
                         {

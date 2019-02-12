@@ -133,8 +133,7 @@ HybridObservablesTest_msg_rx::HybridObservablesTest_msg_rx() : gr::block("Hybrid
     rx_message = 0;
 }
 
-HybridObservablesTest_msg_rx::~HybridObservablesTest_msg_rx()
-= default;
+HybridObservablesTest_msg_rx::~HybridObservablesTest_msg_rx() = default;
 
 
 // ###########################################################
@@ -185,8 +184,7 @@ HybridObservablesTest_tlm_msg_rx::HybridObservablesTest_tlm_msg_rx() : gr::block
     rx_message = 0;
 }
 
-HybridObservablesTest_tlm_msg_rx::~HybridObservablesTest_tlm_msg_rx()
-= default;
+HybridObservablesTest_tlm_msg_rx::~HybridObservablesTest_tlm_msg_rx() = default;
 
 
 // ###########################################################
@@ -278,8 +276,7 @@ public:
         mapStringValues_["2G"] = evGLO_2G;
     }
 
-    ~HybridObservablesTest()
-    = default;
+    ~HybridObservablesTest() = default;
 
     bool ReadRinexObs(std::vector<arma::mat>* obs_vec, Gnss_Synchro gnss);
 
@@ -330,7 +327,9 @@ int HybridObservablesTest::generate_signal()
 
     int pid;
     if ((pid = fork()) == -1)
-        perror("fork err");
+        {
+            perror("fork err");
+        }
     else if (pid == 0)
         {
             execv(&generator_binary[0], parmList);
@@ -662,9 +661,13 @@ void HybridObservablesTest::configure_receiver(
     config = std::make_shared<InMemoryConfiguration>();
     config->set_property("Tracking.dump", "true");
     if (high_dyn)
-        config->set_property("Tracking.high_dyn", "true");
+        {
+            config->set_property("Tracking.high_dyn", "true");
+        }
     else
-        config->set_property("Tracking.high_dyn", "false");
+        {
+            config->set_property("Tracking.high_dyn", "false");
+        }
     config->set_property("Tracking.smoother_length", std::to_string(smoother_length));
     config->set_property("Tracking.dump_filename", "./tracking_ch_");
     config->set_property("Tracking.implementation", implementation);
@@ -1677,7 +1680,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
         FLAGS_high_dyn);
 
 
-    for (auto & n : gnss_synchro_vec)
+    for (auto& n : gnss_synchro_vec)
         {
             //setup the signal synchronization, simulating an acquisition
             if (!FLAGS_enable_external_signal_file)
@@ -1775,7 +1778,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
     //Observables
     std::shared_ptr<ObservablesInterface> observables(new HybridObservables(config.get(), "Observables", tracking_ch_vec.size() + 1, tracking_ch_vec.size()));
 
-    for (auto & n : tracking_ch_vec)
+    for (auto& n : tracking_ch_vec)
         {
             ASSERT_NO_THROW({
                 n->connect(top_block);
@@ -1815,7 +1818,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
         file_source->seek(2 * FLAGS_skip_samples, 0);  //skip head. ibyte, two bytes per complex sample
     }) << "Failure connecting the blocks.";
 
-    for (auto & n : tracking_ch_vec)
+    for (auto& n : tracking_ch_vec)
         {
             n->start_tracking();
         }
@@ -1921,7 +1924,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
 
     //Cut measurement tail zeros
     arma::uvec index;
-    for (auto & n : measured_obs_vec)
+    for (auto& n : measured_obs_vec)
         {
             index = arma::find(n.col(0) > 0.0, 1, "last");
             if ((!index.empty()) and index(0) < (nepoch - 1))
@@ -1961,7 +1964,9 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                 {
                     prn_pairs.push_back(i);
                     if (ss.peek() == ',')
-                        ss.ignore();
+                        {
+                            ss.ignore();
+                        }
                 }
 
             if (prn_pairs.size() % 2 != 0)

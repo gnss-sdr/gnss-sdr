@@ -313,7 +313,10 @@ double pcps_acquisition_fine_doppler_cc::compute_CAF()
         {
             d_grid_data[index_doppler][idx] = 0.0;
             idx++;
-            if (idx == static_cast<int>(d_fft_size)) idx = 0;
+            if (idx == static_cast<int>(d_fft_size))
+                {
+                    idx = 0;
+                }
         }
     while (idx != excludeRangeIndex2);
 

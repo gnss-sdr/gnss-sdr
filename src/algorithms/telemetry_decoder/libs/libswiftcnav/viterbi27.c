@@ -30,8 +30,8 @@
  */
 
 
-#include <stdlib.h>
 #include "fec.h"
+#include <stdlib.h>
 
 static inline int parity(int x)
 {
@@ -52,10 +52,10 @@ void v27_poly_init(v27_poly_t *poly, const signed char polynomial[2])
 {
     int state;
 
-    for(state = 0; state < 32; state++)
+    for (state = 0; state < 32; state++)
         {
-            poly->c0[state] = (polynomial[0] < 0) ^ parity((2*state) & abs(polynomial[0])) ? 255 : 0;
-            poly->c1[state] = (polynomial[1] < 0) ^ parity((2*state) & abs(polynomial[1])) ? 255 : 0;
+            poly->c0[state] = (polynomial[0] < 0) ^ parity((2 * state) & abs(polynomial[0])) ? 255 : 0;
+            poly->c1[state] = (polynomial[1] < 0) ^ parity((2 * state) & abs(polynomial[1])) ? 255 : 0;
         }
 }
 
@@ -72,7 +72,7 @@ void v27_poly_init(v27_poly_t *poly, const signed char polynomial[2])
  * \param initial_state Initial state of the decoder shift register. Usually zero.
  */
 void v27_init(v27_t *v, v27_decision_t *decisions, unsigned int decisions_count,
-              const v27_poly_t *poly, unsigned char initial_state)
+    const v27_poly_t *poly, unsigned char initial_state)
 {
     int i;
 
@@ -83,28 +83,31 @@ void v27_init(v27_t *v, v27_decision_t *decisions, unsigned int decisions_count,
     v->decisions_index = 0;
     v->decisions_count = decisions_count;
 
-    for(i = 0; i < 64; i++)
-        v->old_metrics[i] = 63;
+    for (i = 0; i < 64; i++)
+        {
+            v->old_metrics[i] = 63;
+        }
 
     v->old_metrics[initial_state & 63] = 0; /* Bias known start state */
 }
 
 
 /* C-language butterfly */
-#define BFLY(i) {\
-        unsigned int metric,m0,m1,decision;\
-        metric = (v->poly->c0[i] ^ sym0) + (v->poly->c1[i] ^ sym1);\
-        m0 = v->old_metrics[i] + metric;\
-        m1 = v->old_metrics[(i)+32] + (510 - metric);\
-        decision = (signed int)(m0-m1) > 0;\
-        v->new_metrics[2*(i)] = decision ? m1 : m0;\
-        d->w[(i)/16] |= decision << ((2*(i))&31);\
-        m0 -= (metric+metric-510);\
-        m1 += (metric+metric-510);\
-        decision = (signed int)(m0-m1) > 0;\
-        v->new_metrics[2*(i)+1] = decision ? m1 : m0;\
-        d->w[(i)/16] |= decision << ((2*(i)+1)&31);\
-}
+#define BFLY(i)                                                     \
+    {                                                               \
+        unsigned int metric, m0, m1, decision;                      \
+        metric = (v->poly->c0[i] ^ sym0) + (v->poly->c1[i] ^ sym1); \
+        m0 = v->old_metrics[i] + metric;                            \
+        m1 = v->old_metrics[(i) + 32] + (510 - metric);             \
+        decision = (signed int)(m0 - m1) > 0;                       \
+        v->new_metrics[2 * (i)] = decision ? m1 : m0;               \
+        d->w[(i) / 16] |= decision << ((2 * (i)) & 31);             \
+        m0 -= (metric + metric - 510);                              \
+        m1 += (metric + metric - 510);                              \
+        decision = (signed int)(m0 - m1) > 0;                       \
+        v->new_metrics[2 * (i) + 1] = decision ? m1 : m0;           \
+        d->w[(i) / 16] |= decision << ((2 * (i) + 1) & 31);         \
+    }
 
 /** Update a v27_t decoder with a block of symbols.
  *
@@ -119,7 +122,7 @@ void v27_update(v27_t *v, const unsigned char *syms, int nbits)
     unsigned int *tmp;
     int normalize = 0;
 
-    while(nbits--)
+    while (nbits--)
         {
             v27_decision_t *d = &v->decisions[v->decisions_index];
 
@@ -161,26 +164,32 @@ void v27_update(v27_t *v, const unsigned char *syms, int nbits)
             BFLY(31);
 
             /* Normalize metrics if they are nearing overflow */
-            if(v->new_metrics[0] > (1 << 30))
+            if (v->new_metrics[0] > (1 << 30))
                 {
                     int i;
                     unsigned int minmetric = 1 << 31;
 
-                    for(i = 0; i < 64; i++)
+                    for (i = 0; i < 64; i++)
                         {
-                            if(v->new_metrics[i] < minmetric)
-                                minmetric = v->new_metrics[i];
+                            if (v->new_metrics[i] < minmetric)
+                                {
+                                    minmetric = v->new_metrics[i];
+                                }
                         }
 
-                    for(i = 0; i < 64; i++)
-                        v->new_metrics[i] -= minmetric;
+                    for (i = 0; i < 64; i++)
+                        {
+                            v->new_metrics[i] -= minmetric;
+                        }
 
                     normalize += minmetric;
                 }
 
             /* Advance decision index */
-            if(++v->decisions_index >= v->decisions_count)
-                v->decisions_index = 0;
+            if (++v->decisions_index >= v->decisions_count)
+                {
+                    v->decisions_index = 0;
+                }
 
             /* Swap pointers to old and new metrics */
             tmp = v->old_metrics;
@@ -199,7 +208,7 @@ void v27_update(v27_t *v, const unsigned char *syms, int nbits)
  * \param final_state Known final state of the decoder shift register.
  */
 void v27_chainback_fixed(v27_t *v, unsigned char *data, unsigned int nbits,
-                         unsigned char final_state)
+    unsigned char final_state)
 {
     int k;
     unsigned int decisions_index = v->decisions_index;
@@ -207,12 +216,10 @@ void v27_chainback_fixed(v27_t *v, unsigned char *data, unsigned int nbits,
     final_state %= 64;
     final_state <<= 2;
 
-    while(nbits-- != 0)
+    while (nbits-- != 0)
         {
-
             /* Decrement decision index */
-            decisions_index = (decisions_index == 0) ?
-                    v->decisions_count-1 : decisions_index-1;
+            decisions_index = (decisions_index == 0) ? v->decisions_count - 1 : decisions_index - 1;
 
             v27_decision_t *d = &v->decisions[decisions_index];
             k = (d->w[(final_state >> 2) / 32] >> ((final_state >> 2) % 32)) & 1;
@@ -239,9 +246,9 @@ void v27_chainback_likely(v27_t *v, unsigned char *data, unsigned int nbits)
     int i;
     unsigned int best_metric = 0xffffffff;
     unsigned char best_state = 0;
-    for(i = 0; i < 64; i++)
+    for (i = 0; i < 64; i++)
         {
-            if(v->new_metrics[i] < best_metric)
+            if (v->new_metrics[i] < best_metric)
                 {
                     best_metric = v->new_metrics[i];
                     best_state = i;

@@ -53,7 +53,7 @@ pcps_assisted_acquisition_cc_sptr pcps_make_assisted_acquisition_cc(
 {
     return pcps_assisted_acquisition_cc_sptr(
         new pcps_assisted_acquisition_cc(max_dwells, sampled_ms, doppler_max, doppler_min,
-            fs_in, samples_per_ms, dump, std::move(dump_filename)));
+            fs_in, samples_per_ms, dump, dump_filename));
 }
 
 
@@ -90,7 +90,7 @@ pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(
 
     // For dumping samples into a file
     d_dump = dump;
-    d_dump_filename = std::move(dump_filename);
+    d_dump_filename = dump_filename;
 
     d_doppler_resolution = 0;
     d_threshold = 0;
@@ -392,7 +392,10 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
     switch (d_state)
         {
         case 0:  // S0. StandBy
-            if (d_active == true) d_state = 1;
+            if (d_active == true)
+                {
+                    d_state = 1;
+                }
             d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
             consume_each(ninput_items[0]);
             break;

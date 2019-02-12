@@ -103,8 +103,7 @@ GpsL2MDllPllTrackingTest_msg_rx::GpsL2MDllPllTrackingTest_msg_rx() : gr::block("
 }
 
 
-GpsL2MDllPllTrackingTest_msg_rx::~GpsL2MDllPllTrackingTest_msg_rx()
-= default;
+GpsL2MDllPllTrackingTest_msg_rx::~GpsL2MDllPllTrackingTest_msg_rx() = default;
 
 
 // ###########################################################
@@ -120,8 +119,7 @@ protected:
         gnss_synchro = Gnss_Synchro();
     }
 
-    ~GpsL2MDllPllTrackingTest()
-    = default;
+    ~GpsL2MDllPllTrackingTest() = default;
 
     void init();
 

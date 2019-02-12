@@ -107,8 +107,7 @@ GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx::GalileoE1PcpsAmbiguousAcquisitionT
 }
 
 
-GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx::~GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx()
-= default;
+GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx::~GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx() = default;
 
 
 // ###########################################################
@@ -126,8 +125,7 @@ protected:
         doppler_step = 250;
     }
 
-    ~GalileoE1PcpsAmbiguousAcquisitionTest()
-    = default;
+    ~GalileoE1PcpsAmbiguousAcquisitionTest() = default;
 
     void init();
     void plot_grid();
@@ -180,7 +178,10 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::plot_grid()
     auto samples_per_code = static_cast<unsigned int>(round(4000000 / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));  // !!
     acquisition_dump_reader acq_dump(basename, sat, doppler_max, doppler_step, samples_per_code);
 
-    if (!acq_dump.read_binary_acq()) std::cout << "Error reading files" << std::endl;
+    if (!acq_dump.read_binary_acq())
+        {
+            std::cout << "Error reading files" << std::endl;
+        }
 
     std::vector<int>* doppler = &acq_dump.doppler;
     std::vector<unsigned int>* samples = &acq_dump.samples;

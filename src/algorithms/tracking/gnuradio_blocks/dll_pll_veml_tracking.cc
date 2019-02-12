@@ -764,7 +764,10 @@ bool dll_pll_veml_tracking::cn0_and_tracking_lock_status(double coh_integration_
         }
     else
         {
-            if (d_carrier_lock_fail_counter > 0) d_carrier_lock_fail_counter--;
+            if (d_carrier_lock_fail_counter > 0)
+                {
+                    d_carrier_lock_fail_counter--;
+                }
         }
     if (d_carrier_lock_fail_counter > trk_parameters.max_lock_fail)
         {
@@ -853,7 +856,10 @@ void dll_pll_veml_tracking::run_dll_pll()
 void dll_pll_veml_tracking::clear_tracking_vars()
 {
     std::fill_n(d_correlator_outs, d_n_correlator_taps, gr_complex(0.0, 0.0));
-    if (trk_parameters.track_pilot) d_Prompt_Data[0] = gr_complex(0.0, 0.0);
+    if (trk_parameters.track_pilot)
+        {
+            d_Prompt_Data[0] = gr_complex(0.0, 0.0);
+        }
     d_carr_error_hz = 0.0;
     d_carr_error_filt_hz = 0.0;
     d_code_error_chips = 0.0;
@@ -989,9 +995,13 @@ void dll_pll_veml_tracking::save_correlation_results()
         }
     // If tracking pilot, disable Costas loop
     if (trk_parameters.track_pilot)
-        d_cloop = false;
+        {
+            d_cloop = false;
+        }
     else
-        d_cloop = true;
+        {
+            d_cloop = true;
+        }
 }
 
 

@@ -87,7 +87,9 @@ std::string INIReader::MakeKey(const std::string& section, const std::string& na
     std::string key = section + "." + name;
     // Convert to lower case to make lookups case-insensitive
     for (char& i : key)
-        i = tolower(i);
+        {
+            i = tolower(i);
+        }
     return key;
 }
 

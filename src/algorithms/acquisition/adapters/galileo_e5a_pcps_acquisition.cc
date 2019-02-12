@@ -70,7 +70,10 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
     acq_parameters_.dump = dump_;
     acq_parameters_.dump_channel = configuration_->property(role + ".dump_channel", 0);
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
-    if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
+    if (FLAGS_doppler_max != 0)
+        {
+            doppler_max_ = FLAGS_doppler_max;
+        }
     acq_parameters_.doppler_max = doppler_max_;
     sampled_ms_ = 1;
     max_dwells_ = configuration_->property(role + ".max_dwells", 1);

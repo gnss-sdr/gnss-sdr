@@ -94,7 +94,10 @@ int gnss_sdr_valve::work(int noutput_items,
                     return 0;  // do not produce or consume
                 }
             uint64_t n = std::min(d_nitems - d_ncopied_items, static_cast<uint64_t>(noutput_items));
-            if (n == 0) return 0;
+            if (n == 0)
+                {
+                    return 0;
+                }
             memcpy(output_items[0], input_items[0], n * input_signature()->sizeof_stream_item(0));
             d_ncopied_items += n;
             return n;

@@ -104,8 +104,7 @@ GlonassL1CaPcpsAcquisitionTest_msg_rx::GlonassL1CaPcpsAcquisitionTest_msg_rx() :
 }
 
 
-GlonassL1CaPcpsAcquisitionTest_msg_rx::~GlonassL1CaPcpsAcquisitionTest_msg_rx()
-= default;
+GlonassL1CaPcpsAcquisitionTest_msg_rx::~GlonassL1CaPcpsAcquisitionTest_msg_rx() = default;
 
 
 // ###########################################################
@@ -121,8 +120,7 @@ protected:
         gnss_synchro = Gnss_Synchro();
     }
 
-    ~GlonassL1CaPcpsAcquisitionTest()
-    = default;
+    ~GlonassL1CaPcpsAcquisitionTest() = default;
 
     void init();
 

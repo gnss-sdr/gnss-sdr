@@ -113,8 +113,7 @@ GalileoE1PcpsAmbiguousAcquisitionGSoCTest_msg_rx::GalileoE1PcpsAmbiguousAcquisit
     rx_message = 0;
 }
 
-GalileoE1PcpsAmbiguousAcquisitionGSoCTest_msg_rx::~GalileoE1PcpsAmbiguousAcquisitionGSoCTest_msg_rx()
-= default;
+GalileoE1PcpsAmbiguousAcquisitionGSoCTest_msg_rx::~GalileoE1PcpsAmbiguousAcquisitionGSoCTest_msg_rx() = default;
 
 
 // ###########################################################
@@ -133,8 +132,7 @@ protected:
         gnss_synchro = Gnss_Synchro();
     }
 
-    ~GalileoE1PcpsAmbiguousAcquisitionGSoCTest()
-    = default;
+    ~GalileoE1PcpsAmbiguousAcquisitionGSoCTest() = default;
 
     void init();
     void start_queue();

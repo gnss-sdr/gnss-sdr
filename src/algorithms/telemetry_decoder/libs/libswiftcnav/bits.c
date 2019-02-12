@@ -30,7 +30,6 @@
  */
 
 #include "bits.h"
-
 #include <limits.h>
 #include <string.h>
 
@@ -72,11 +71,11 @@ u8 parity(u32 x)
 u32 getbitu(const u8 *buff, u32 pos, u8 len)
 {
     u32 bits = 0;
-    u32 i=0;
+    u32 i = 0;
     for (i = pos; i < pos + len; i++)
         {
             bits = (bits << 1) +
-                    ((buff[i/8] >> (7 - i%8)) & 1u);
+                   ((buff[i / 8] >> (7 - i % 8)) & 1u);
         }
 
     return bits;
@@ -118,14 +117,20 @@ void setbitu(u8 *buff, u32 pos, u32 len, u32 data)
     u32 mask = 1u << (len - 1);
 
     if (len <= 0 || 32 < len)
-        return;
+        {
+            return;
+        }
     u32 i = 0;
     for (i = pos; i < pos + len; i++, mask >>= 1)
         {
             if (data & mask)
-                buff[i/8] |= 1u << (7 - i % 8);
+                {
+                    buff[i / 8] |= 1u << (7 - i % 8);
+                }
             else
-                buff[i/8] &= ~(1u << (7 - i % 8));
+                {
+                    buff[i / 8] &= ~(1u << (7 - i % 8));
+                }
         }
 }
 
@@ -162,12 +167,12 @@ void bitshl(void *buf, u32 size, u32 shift)
             return;
         }
 
-    unsigned char       *dst = buf;                /* Destination byte. */
+    unsigned char *dst = buf;                          /* Destination byte. */
     const unsigned char *src = dst + shift / CHAR_BIT; /* First source byte, possibly incomplete. */
 
-    u32 copy_bits  = size * CHAR_BIT - shift; /* Number of bits to move */
-    u32 byte_shift = copy_bits % CHAR_BIT;    /* Shift of data */
-    u32 full_bytes = copy_bits / CHAR_BIT;    /* Number of bytes to move */
+    u32 copy_bits = size * CHAR_BIT - shift; /* Number of bits to move */
+    u32 byte_shift = copy_bits % CHAR_BIT;   /* Shift of data */
+    u32 full_bytes = copy_bits / CHAR_BIT;   /* Number of bytes to move */
 
     if (0 == byte_shift)
         {
@@ -211,7 +216,7 @@ void bitshl(void *buf, u32 size, u32 shift)
  *       proper native type like long.
  */
 void bitcopy(void *dst, u32 dst_index, const void *src, u32 src_index,
-              u32 count)
+    u32 count)
 {
     u32 limit1 = count / 32;
     u32 limit2 = count % 32;
@@ -243,7 +248,9 @@ u8 count_bits_u64(u64 v, u8 bv)
     u8 r = 0;
     int i = 0;
     for (i = 0; i < 16; i++)
-        r += bitn[(v >> (i*4)) & 0xf];
+        {
+            r += bitn[(v >> (i * 4)) & 0xf];
+        }
     return bv == 1 ? r : 64 - r;
 }
 
@@ -260,7 +267,9 @@ u8 count_bits_u32(u32 v, u8 bv)
     u8 r = 0;
     int i = 0;
     for (i = 0; i < 8; i++)
-        r += bitn[(v >> (i*4)) & 0xf];
+        {
+            r += bitn[(v >> (i * 4)) & 0xf];
+        }
     return bv == 1 ? r : 32 - r;
 }
 
@@ -276,8 +285,10 @@ u8 count_bits_u16(u16 v, u8 bv)
 {
     u8 r = 0;
     int i = 0;
-    for (i= 0; i < 4; i++)
-        r += bitn[(v >> (i*4)) & 0xf];
+    for (i = 0; i < 4; i++)
+        {
+            r += bitn[(v >> (i * 4)) & 0xf];
+        }
     return bv == 1 ? r : 16 - r;
 }
 
@@ -294,7 +305,9 @@ u8 count_bits_u8(u8 v, u8 bv)
     u8 r = 0;
     int i = 0;
     for (i = 0; i < 2; i++)
-        r += bitn[(v >> (i*4)) & 0xf];
+        {
+            r += bitn[(v >> (i * 4)) & 0xf];
+        }
     return bv == 1 ? r : 8 - r;
 }
 

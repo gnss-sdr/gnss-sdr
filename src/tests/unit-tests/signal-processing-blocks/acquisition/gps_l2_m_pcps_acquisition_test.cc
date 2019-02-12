@@ -105,8 +105,7 @@ GpsL2MPcpsAcquisitionTest_msg_rx::GpsL2MPcpsAcquisitionTest_msg_rx() : gr::block
     rx_message = 0;
 }
 
-GpsL2MPcpsAcquisitionTest_msg_rx::~GpsL2MPcpsAcquisitionTest_msg_rx()
-= default;
+GpsL2MPcpsAcquisitionTest_msg_rx::~GpsL2MPcpsAcquisitionTest_msg_rx() = default;
 
 
 // ###########################################################
@@ -126,8 +125,7 @@ protected:
         gnss_synchro = Gnss_Synchro();
     }
 
-    ~GpsL2MPcpsAcquisitionTest()
-    = default;
+    ~GpsL2MPcpsAcquisitionTest() = default;
 
     void init();
     void plot_grid();
@@ -184,7 +182,10 @@ void GpsL2MPcpsAcquisitionTest::plot_grid()
 
     auto samples_per_code = static_cast<unsigned int>(floor(static_cast<double>(sampling_frequency_hz) / (GPS_L2_M_CODE_RATE_HZ / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS))));
     acquisition_dump_reader acq_dump(basename, sat, doppler_max, doppler_step, samples_per_code, 1);
-    if (!acq_dump.read_binary_acq()) std::cout << "Error reading files" << std::endl;
+    if (!acq_dump.read_binary_acq())
+        {
+            std::cout << "Error reading files" << std::endl;
+        }
 
     std::vector<int> *doppler = &acq_dump.doppler;
     std::vector<unsigned int> *samples = &acq_dump.samples;
@@ -204,7 +205,7 @@ void GpsL2MPcpsAcquisitionTest::plot_grid()
                 {
                     boost::filesystem::path p(gnuplot_executable);
                     boost::filesystem::path dir = p.parent_path();
-                    const std::string& gnuplot_path = dir.native();
+                    const std::string &gnuplot_path = dir.native();
                     Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                     Gnuplot g1("impulses");

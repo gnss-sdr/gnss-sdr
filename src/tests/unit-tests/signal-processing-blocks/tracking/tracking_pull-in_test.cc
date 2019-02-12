@@ -126,8 +126,7 @@ TrackingPullInTest_msg_rx::TrackingPullInTest_msg_rx() : gr::block("TrackingPull
 }
 
 
-TrackingPullInTest_msg_rx::~TrackingPullInTest_msg_rx()
-= default;
+TrackingPullInTest_msg_rx::~TrackingPullInTest_msg_rx() = default;
 
 
 // ###########################################################
@@ -202,8 +201,7 @@ public:
         mapStringValues_["2G"] = evGLO_2G;
     }
 
-    ~TrackingPullInTest()
-    = default;
+    ~TrackingPullInTest() = default;
 
     void configure_receiver(double PLL_wide_bw_hz,
         double DLL_wide_bw_hz,
@@ -252,7 +250,9 @@ int TrackingPullInTest::generate_signal()
 
     int pid;
     if ((pid = fork()) == -1)
-        perror("fork err");
+        {
+            perror("fork err");
+        }
     else if (pid == 0)
         {
             execv(&generator_binary[0], parmList);
@@ -716,7 +716,10 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
             ASSERT_EQ(acquire_signal(FLAGS_test_satellite_PRN), true);
             bool found_satellite = doppler_measurements_map.find(FLAGS_test_satellite_PRN) != doppler_measurements_map.end();
             EXPECT_TRUE(found_satellite) << "Error: satellite SV: " << FLAGS_test_satellite_PRN << " is not acquired";
-            if (!found_satellite) return;
+            if (!found_satellite)
+                {
+                    return;
+                }
         }
     else
         {

@@ -221,7 +221,10 @@ bool GeoJSON_Printer::close_file()
             // if nothing is written, erase the file
             if (first_pos == true)
                 {
-                    if (remove(filename_.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
+                    if (remove(filename_.c_str()) != 0)
+                        {
+                            LOG(INFO) << "Error deleting temporary file";
+                        }
                 }
             return true;
         }

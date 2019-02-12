@@ -155,7 +155,9 @@ inline static float Gamma(const float rec_array[],
     for (i = 0; i < nn; i++)
         {
             if (symbol & mask)
-                rm += rec_array[nn - i - 1];
+                {
+                    rm += rec_array[nn - i - 1];
+                }
             mask = mask << 1;
         }
     return (rm);
@@ -219,11 +221,15 @@ inline static void Viterbi(int output_u_int[],
     for (t = 0; t < LL + mm; t++)
         {
             for (i = 0; i < nn; i++)
-                rec_array[i] = static_cast<float>(input_c[nn * t + i]);
+                {
+                    rec_array[i] = static_cast<float>(input_c[nn * t + i]);
+                }
 
             /* precompute all possible branch metrics */
             for (i = 0; i < number_symbols; i++)
-                metric_c[i] = Gamma(rec_array, i, nn);
+                {
+                    metric_c[i] = Gamma(rec_array, i, nn);
+                }
 
             /* step through all states */
             for (state = 0; state < states; state++)

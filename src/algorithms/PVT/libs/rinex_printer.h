@@ -676,8 +676,15 @@ inline std::string Rinex_Printer::doub2for(const double& d,
     short exponentLength = expLen;
 
     /* Validate the assumptions regarding the input arguments */
-    if (exponentLength < 0) exponentLength = 1;
-    if (exponentLength > 3 && checkSwitch) exponentLength = 3;
+    if (exponentLength < 0)
+        {
+            exponentLength = 1;
+        }
+
+    if (exponentLength > 3 && checkSwitch)
+        {
+            exponentLength = 3;
+        }
 
     std::string toReturn = doub2sci(d, length, exponentLength, true, checkSwitch);
     sci2for(toReturn, 0, length, exponentLength, checkSwitch);
@@ -696,8 +703,15 @@ inline std::string Rinex_Printer::doub2sci(const double& d,
     short exponentLength = expLen;
 
     /* Validate the assumptions regarding the input arguments */
-    if (exponentLength < 0) exponentLength = 1;
-    if (exponentLength > 3 && checkSwitch) exponentLength = 3;
+    if (exponentLength < 0)
+        {
+            exponentLength = 1;
+        }
+
+    if (exponentLength > 3 && checkSwitch)
+        {
+            exponentLength = 3;
+        }
 
     std::stringstream c;
     c.setf(std::ios::scientific, std::ios::floatfield);
@@ -709,7 +723,10 @@ inline std::string Rinex_Printer::doub2sci(const double& d,
     //    an extra -1 for '-' or ' ' if it's positive or negative
     int expSize = 0;
     if (showSign)
-        expSize = 1;
+        {
+            expSize = 1;
+        }
+
     c.precision(length - 3 - exponentLength - 1 - expSize);
     c << d;
     c >> toReturn;
@@ -751,7 +768,9 @@ inline std::string& Rinex_Printer::sci2for(std::string& aStr,
             aStr[idx - 1] = '.';
             // Only add one to the exponent if the number is non-zero
             if (asDouble(aStr.substr(startPos, length)) != 0.0)
-                expAdd = 1;
+                {
+                    expAdd = 1;
+                }
         }
 
     idx = aStr.find('e', startPos);
@@ -766,9 +785,13 @@ inline std::string& Rinex_Printer::sci2for(std::string& aStr,
 
     // Change the exponent character to D normally, or E of checkSwitch is false.
     if (checkSwitch)
-        aStr[idx] = 'D';
+        {
+            aStr[idx] = 'D';
+        }
     else
-        aStr[idx] = 'E';
+        {
+            aStr[idx] = 'E';
+        }
 
     // Change the exponent itself
     if (redoexp)
@@ -784,7 +807,10 @@ inline std::string& Rinex_Printer::sci2for(std::string& aStr,
                     iexp -= iexp * 2;
                 }
             else
-                aStr += "+";
+                {
+                    aStr += "+";
+                }
+
             aStr += Rinex_Printer::rightJustify(asString(iexp), expLen, '0');
         }
 

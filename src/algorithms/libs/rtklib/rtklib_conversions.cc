@@ -49,8 +49,14 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs, const Gnss_Synchro& gnss_synchro
             break;
         }
     double CN0_dB_Hz_est = gnss_synchro.CN0_dB_hz;
-    if (CN0_dB_Hz_est > 63.75) CN0_dB_Hz_est = 63.75;
-    if (CN0_dB_Hz_est < 0.0) CN0_dB_Hz_est = 0.0;
+    if (CN0_dB_Hz_est > 63.75)
+        {
+            CN0_dB_Hz_est = 63.75;
+        }
+    if (CN0_dB_Hz_est < 0.0)
+        {
+            CN0_dB_Hz_est = 0.0;
+        }
     auto CN0_dB_Hz = static_cast<unsigned char>(std::round(CN0_dB_Hz_est / 0.25));
     rtklib_obs.SNR[band] = CN0_dB_Hz;
     //Galileo is the third satellite system for RTKLIB, so, add the required offset to discriminate Galileo ephemeris

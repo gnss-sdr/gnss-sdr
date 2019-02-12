@@ -171,7 +171,10 @@ bool Gpx_Printer::print_position(const std::shared_ptr<rtklib_solver>& position,
     double vdop = position_->get_vdop();
     double pdop = position_->get_pdop();
     std::string utc_time = to_iso_extended_string(position_->get_position_UTC_time());
-    if (utc_time.length() < 23) utc_time += ".";
+    if (utc_time.length() < 23)
+        {
+            utc_time += ".";
+        }
     utc_time.resize(23, '0');  // time up to ms
     utc_time.append("Z");      // UTC time zone
 
@@ -229,6 +232,9 @@ Gpx_Printer::~Gpx_Printer()
         }
     if (!positions_printed)
         {
-            if (remove(gpx_filename.c_str()) != 0) LOG(INFO) << "Error deleting temporary GPX file";
+            if (remove(gpx_filename.c_str()) != 0)
+                {
+                    LOG(INFO) << "Error deleting temporary GPX file";
+                }
         }
 }

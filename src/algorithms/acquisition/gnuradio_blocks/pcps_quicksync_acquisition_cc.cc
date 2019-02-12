@@ -61,7 +61,7 @@ pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(
             fs_in, samples_per_ms,
             samples_per_code,
             bit_transition_flag,
-            dump, std::move(dump_filename)));
+            dump, dump_filename));
 }
 
 
@@ -114,7 +114,7 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
 
     // For dumping samples into a file
     d_dump = dump;
-    d_dump_filename = std::move(dump_filename);
+    d_dump_filename = dump_filename;
 
     d_corr_acumulator = nullptr;
     d_signal_folded = nullptr;
@@ -218,7 +218,10 @@ void pcps_quicksync_acquisition_cc::init()
     d_mag = 0.0;
     d_input_power = 0.0;
 
-    if (d_doppler_step == 0) d_doppler_step = 250;
+    if (d_doppler_step == 0)
+        {
+            d_doppler_step = 250;
+        }
 
     // Count the number of bins
     d_num_doppler_bins = 0;
@@ -545,7 +548,10 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                 DLOG(INFO) << "test statistics threshold " << d_threshold;
                 DLOG(INFO) << "folding factor " << d_folding_factor;
                 DLOG(INFO) << "possible delay correlation output";
-                for (int32_t i = 0; i < static_cast<int32_t>(d_folding_factor); i++) DLOG(INFO) << d_possible_delay[i] << "\t\t\t" << d_corr_output_f[i];
+                for (int32_t i = 0; i < static_cast<int32_t>(d_folding_factor); i++)
+                    {
+                        DLOG(INFO) << d_possible_delay[i] << "\t\t\t" << d_corr_output_f[i];
+                    }
                 DLOG(INFO) << "code phase " << d_gnss_synchro->Acq_delay_samples;
                 DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
                 DLOG(INFO) << "magnitude folded " << d_mag;
@@ -574,7 +580,10 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                 DLOG(INFO) << "test statistics threshold " << d_threshold;
                 DLOG(INFO) << "folding factor " << d_folding_factor;
                 DLOG(INFO) << "possible delay    corr output";
-                for (int32_t i = 0; i < static_cast<int32_t>(d_folding_factor); i++) DLOG(INFO) << d_possible_delay[i] << "\t\t\t" << d_corr_output_f[i];
+                for (int32_t i = 0; i < static_cast<int32_t>(d_folding_factor); i++)
+                    {
+                        DLOG(INFO) << d_possible_delay[i] << "\t\t\t" << d_corr_output_f[i];
+                    }
                 DLOG(INFO) << "code phase " << d_gnss_synchro->Acq_delay_samples;
                 DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
                 DLOG(INFO) << "magnitude folded " << d_mag;

@@ -55,7 +55,7 @@ class BeidouB1iPcpsAcquisition : public AcquisitionInterface
 {
 public:
     BeidouB1iPcpsAcquisition(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role, unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~BeidouB1iPcpsAcquisition();

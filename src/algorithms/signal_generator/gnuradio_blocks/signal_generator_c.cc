@@ -48,7 +48,7 @@
 * a boost shared_ptr. This is effectively the public constructor.
 */
 signal_generator_c_sptr
-signal_make_generator_c(const std::vector<std::string> &signal1, const std::vector<std::string> &system, const std::vector<unsigned int> &PRN,
+signal_make_generator_c(std::vector<std::string> signal1, std::vector<std::string> system, const std::vector<unsigned int> &PRN,
     const std::vector<float> &CN0_dB, const std::vector<float> &doppler_Hz,
     const std::vector<unsigned int> &delay_chips, const std::vector<unsigned int> &delay_sec, bool data_flag, bool noise_flag,
     unsigned int fs_in, unsigned int vector_length, float BW_BB)

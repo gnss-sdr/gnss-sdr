@@ -62,7 +62,7 @@ glonass_l1_ca_dll_pll_make_tracking_cc(
     int64_t fs_in,
     uint32_t vector_length,
     bool dump,
-    const std::string &dump_filename,
+    std::string dump_filename,
     float pll_bw_hz,
     float dll_bw_hz,
     float early_late_space_chips)
@@ -86,7 +86,7 @@ Glonass_L1_Ca_Dll_Pll_Tracking_cc::Glonass_L1_Ca_Dll_Pll_Tracking_cc(
     int64_t fs_in,
     uint32_t vector_length,
     bool dump,
-    const std::string &dump_filename,
+    std::string dump_filename,
     float pll_bw_hz,
     float dll_bw_hz,
     float early_late_space_chips) : gr::block("Glonass_L1_Ca_Dll_Pll_Tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),

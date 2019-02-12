@@ -76,7 +76,7 @@ pcps_quicksync_make_acquisition_cc(
     int32_t samples_per_code,
     bool bit_transition_flag,
     bool dump,
-    const std::string& dump_filename);
+    std::string dump_filename);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition with
@@ -95,7 +95,7 @@ private:
         int32_t samples_per_ms, int32_t samples_per_code,
         bool bit_transition_flag,
         bool dump,
-        const std::string& dump_filename);
+        std::string dump_filename);
 
     pcps_quicksync_acquisition_cc(uint32_t folding_factor,
         uint32_t sampled_ms, uint32_t max_dwells,
@@ -103,7 +103,7 @@ private:
         int32_t samples_per_ms, int32_t samples_per_code,
         bool bit_transition_flag,
         bool dump,
-        const std::string& dump_filename);
+        std::string dump_filename);
 
     void calculate_magnitudes(gr_complex* fft_begin, int32_t doppler_shift,
         int32_t doppler_offset);

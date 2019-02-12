@@ -52,7 +52,7 @@ pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(
     int32_t samples_per_code,
     bool bit_transition_flag,
     bool dump,
-    const std::string& dump_filename)
+    std::string dump_filename)
 {
     return pcps_quicksync_acquisition_cc_sptr(
         new pcps_quicksync_acquisition_cc(
@@ -72,9 +72,9 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
     int32_t samples_per_ms, int32_t samples_per_code,
     bool bit_transition_flag,
     bool dump,
-    const std::string& dump_filename) : gr::block("pcps_quicksync_acquisition_cc",
-                                            gr::io_signature::make(1, 1, (sizeof(gr_complex) * sampled_ms * samples_per_ms)),
-                                            gr::io_signature::make(0, 0, (sizeof(gr_complex) * sampled_ms * samples_per_ms)))
+    std::string dump_filename) : gr::block("pcps_quicksync_acquisition_cc",
+                                     gr::io_signature::make(1, 1, (sizeof(gr_complex) * sampled_ms * samples_per_ms)),
+                                     gr::io_signature::make(0, 0, (sizeof(gr_complex) * sampled_ms * samples_per_ms)))
 {
     this->message_port_register_out(pmt::mp("events"));
     d_sample_counter = 0ULL;  // SAMPLE COUNTER

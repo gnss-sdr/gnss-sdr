@@ -37,7 +37,6 @@
 #include "gnss_sdr_flags.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
-#include <utility>
 
 
 using google::LogMessage;
@@ -45,9 +44,9 @@ using google::LogMessage;
 
 GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     ConfigurationInterface* configuration,
-    std::string role,
+    const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams) : role_(std::move(role)),
+    unsigned int out_streams) : role_(role),
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {

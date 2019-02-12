@@ -53,7 +53,7 @@ pcps_assisted_acquisition_cc_sptr pcps_make_assisted_acquisition_cc(
 {
     return pcps_assisted_acquisition_cc_sptr(
         new pcps_assisted_acquisition_cc(max_dwells, sampled_ms, doppler_max, doppler_min,
-            fs_in, samples_per_ms, dump, dump_filename));
+            fs_in, samples_per_ms, dump, std::move(dump_filename)));
 }
 
 
@@ -90,7 +90,7 @@ pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(
 
     // For dumping samples into a file
     d_dump = dump;
-    d_dump_filename = dump_filename;
+    d_dump_filename = std::move(dump_filename);
 
     d_doppler_resolution = 0;
     d_threshold = 0;

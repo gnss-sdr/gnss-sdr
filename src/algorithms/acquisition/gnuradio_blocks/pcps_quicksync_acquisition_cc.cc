@@ -61,7 +61,7 @@ pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(
             fs_in, samples_per_ms,
             samples_per_code,
             bit_transition_flag,
-            dump, dump_filename));
+            dump, std::move(dump_filename)));
 }
 
 
@@ -114,7 +114,7 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
 
     // For dumping samples into a file
     d_dump = dump;
-    d_dump_filename = dump_filename;
+    d_dump_filename = std::move(dump_filename);
 
     d_corr_acumulator = nullptr;
     d_signal_folded = nullptr;

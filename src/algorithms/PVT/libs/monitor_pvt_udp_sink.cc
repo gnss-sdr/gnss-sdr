@@ -36,7 +36,7 @@
 
 Monitor_Pvt_Udp_Sink::Monitor_Pvt_Udp_Sink(const std::vector<std::string>& addresses, const uint16_t& port) : socket{io_service}
 {
-    for (auto address : addresses)
+    for (const auto& address : addresses)
         {
             boost::asio::ip::udp::endpoint endpoint(boost::asio::ip::address::from_string(address, error), port);
             endpoints.push_back(endpoint);
@@ -50,7 +50,7 @@ bool Monitor_Pvt_Udp_Sink::write_monitor_pvt(Monitor_Pvt monitor_pvt)
     oa << monitor_pvt;
     std::string outbound_data = archive_stream.str();
 
-    for (auto endpoint : endpoints)
+    for (const auto& endpoint : endpoints)
         {
             socket.open(endpoint.protocol(), error);
             socket.connect(endpoint, error);

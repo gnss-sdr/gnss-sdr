@@ -48,7 +48,7 @@ using gnss_synchro_monitor_sptr = boost::shared_ptr<gnss_synchro_monitor>;
 gnss_synchro_monitor_sptr gnss_synchro_make_monitor(unsigned int n_channels,
     int output_rate_ms,
     int udp_port,
-    std::vector<std::string> udp_addresses);
+    const std::vector<std::string>& udp_addresses);
 
 /*!
  * \brief This class implements a block that computes the PVT solution with Galileo E1 signals
@@ -59,7 +59,7 @@ private:
     friend gnss_synchro_monitor_sptr gnss_synchro_make_monitor(unsigned int nchannels,
         int output_rate_ms,
         int udp_port,
-        std::vector<std::string> udp_addresses);
+        const std::vector<std::string>& udp_addresses);
 
     unsigned int d_nchannels;
 

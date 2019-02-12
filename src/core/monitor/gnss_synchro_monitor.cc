@@ -45,12 +45,12 @@ using google::LogMessage;
 gnss_synchro_monitor_sptr gnss_synchro_make_monitor(unsigned int n_channels,
     int output_rate_ms,
     int udp_port,
-    std::vector<std::string> udp_addresses)
+    const std::vector<std::string>& udp_addresses)
 {
     return gnss_synchro_monitor_sptr(new gnss_synchro_monitor(n_channels,
         output_rate_ms,
         udp_port,
-        std::move(udp_addresses)));
+        udp_addresses));
 }
 
 

@@ -57,7 +57,7 @@ gnss_synchro_monitor_sptr gnss_synchro_make_monitor(unsigned int n_channels,
 gnss_synchro_monitor::gnss_synchro_monitor(unsigned int n_channels,
     int output_rate_ms,
     int udp_port,
-    std::vector<std::string> udp_addresses) : gr::sync_block("gnss_synchro_monitor",
+    const std::vector<std::string>& udp_addresses) : gr::sync_block("gnss_synchro_monitor",
                                                   gr::io_signature::make(n_channels, n_channels, sizeof(Gnss_Synchro)),
                                                   gr::io_signature::make(0, 0, 0))
 {

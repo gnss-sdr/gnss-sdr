@@ -74,7 +74,7 @@ public:
     gnss_synchro_monitor(unsigned int nchannels,
         int output_rate_ms,
         int udp_port,
-        std::vector<std::string> udp_addresses);
+        const std::vector<std::string>& udp_addresses);
 
     ~gnss_synchro_monitor();  //!< Default destructor
 

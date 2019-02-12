@@ -64,7 +64,7 @@ gnss_synchro_monitor::gnss_synchro_monitor(unsigned int n_channels,
     d_output_rate_ms = output_rate_ms;
     d_nchannels = n_channels;
 
-    udp_sink_ptr = std::unique_ptr<Gnss_Synchro_Udp_Sink>(new Gnss_Synchro_Udp_Sink(std::move(udp_addresses), udp_port));
+    udp_sink_ptr = std::unique_ptr<Gnss_Synchro_Udp_Sink>(new Gnss_Synchro_Udp_Sink(udp_addresses, udp_port));
 
     count = 0;
 }

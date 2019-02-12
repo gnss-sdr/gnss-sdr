@@ -73,7 +73,7 @@ pcps_tong_acquisition_cc_sptr pcps_tong_make_acquisition_cc(
 {
     return pcps_tong_acquisition_cc_sptr(
         new pcps_tong_acquisition_cc(sampled_ms, doppler_max, fs_in, samples_per_ms, samples_per_code,
-            tong_init_val, tong_max_val, tong_max_dwells, dump, std::move(dump_filename)));
+            tong_init_val, tong_max_val, tong_max_dwells, dump, dump_filename));
 }
 
 
@@ -121,7 +121,7 @@ pcps_tong_acquisition_cc::pcps_tong_acquisition_cc(
 
     // For dumping samples into a file
     d_dump = dump;
-    d_dump_filename = std::move(dump_filename);
+    d_dump_filename = dump_filename;
 
     d_doppler_resolution = 0;
     d_threshold = 0;

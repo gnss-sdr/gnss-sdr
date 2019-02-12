@@ -53,7 +53,7 @@ signal_make_generator_c(const std::vector<std::string> &signal1, const std::vect
     const std::vector<unsigned int> &delay_chips, const std::vector<unsigned int> &delay_sec, bool data_flag, bool noise_flag,
     unsigned int fs_in, unsigned int vector_length, float BW_BB)
 {
-    return gnuradio::get_initial_sptr(new signal_generator_c(std::move(signal1), std::move(system), PRN, CN0_dB, doppler_Hz, delay_chips, delay_sec,
+    return gnuradio::get_initial_sptr(new signal_generator_c(signal1, system, PRN, CN0_dB, doppler_Hz, delay_chips, delay_sec,
         data_flag, noise_flag, fs_in, vector_length, BW_BB));
 }
 

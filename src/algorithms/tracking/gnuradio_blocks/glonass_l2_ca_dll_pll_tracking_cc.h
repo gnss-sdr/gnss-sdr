@@ -54,7 +54,7 @@ glonass_l2_ca_dll_pll_tracking_cc_sptr
 glonass_l2_ca_dll_pll_make_tracking_cc(
     int64_t fs_in, uint32_t vector_length,
     bool dump,
-    std::string dump_filename,
+    const std::string& dump_filename,
     float pll_bw_hz,
     float dll_bw_hz,
     float early_late_space_chips);
@@ -82,7 +82,7 @@ private:
     glonass_l2_ca_dll_pll_make_tracking_cc(
         int64_t fs_in, uint32_t vector_length,
         bool dump,
-        std::string dump_filename,
+        const std::string& dump_filename,
         float pll_bw_hz,
         float dll_bw_hz,
         float early_late_space_chips);
@@ -90,7 +90,7 @@ private:
     Glonass_L2_Ca_Dll_Pll_Tracking_cc(
         int64_t fs_in, uint32_t vector_length,
         bool dump,
-        std::string dump_filename,
+        const std::string& dump_filename,
         float pll_bw_hz,
         float dll_bw_hz,
         float early_late_space_chips);

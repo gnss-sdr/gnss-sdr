@@ -143,7 +143,7 @@ void sending_thread(gr::top_block_sptr top_block, const char *file_name)
     usleep(FIVE_SECONDS);  // wait for some time to give time to the other thread to program the device
 
     //send_tracking_gps_input_samples(dma_descr, rx_signal_file, file_length);
-    send_tracking_gps_input_samples(rx_signal_file, file_length, std::move(top_block));
+    send_tracking_gps_input_samples(rx_signal_file, file_length, top_block);
 
     fclose(rx_signal_file);
 }

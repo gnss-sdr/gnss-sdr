@@ -629,7 +629,7 @@ private:
                     recent_msgs_.pop_front();
                 }
 
-            for (auto participant : participants_)
+            for (const auto& participant : participants_)
                 {
                     participant->deliver(msg);
                 }

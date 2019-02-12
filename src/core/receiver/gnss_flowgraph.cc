@@ -1340,7 +1340,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
 }
 
 
-void GNSSFlowgraph::priorize_satellites(std::vector<std::pair<int, Gnss_Satellite>> visible_satellites)
+void GNSSFlowgraph::priorize_satellites(const std::vector<std::pair<int, Gnss_Satellite>>& visible_satellites)
 {
     size_t old_size;
     Gnss_Signal gs;

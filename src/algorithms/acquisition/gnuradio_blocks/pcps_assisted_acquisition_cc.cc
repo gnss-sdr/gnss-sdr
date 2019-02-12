@@ -49,7 +49,7 @@ using google::LogMessage;
 pcps_assisted_acquisition_cc_sptr pcps_make_assisted_acquisition_cc(
     int32_t max_dwells, uint32_t sampled_ms, int32_t doppler_max, int32_t doppler_min,
     int64_t fs_in, int32_t samples_per_ms, bool dump,
-    std::string dump_filename)
+    const std::string &dump_filename)
 {
     return pcps_assisted_acquisition_cc_sptr(
         new pcps_assisted_acquisition_cc(max_dwells, sampled_ms, doppler_max, doppler_min,
@@ -60,9 +60,9 @@ pcps_assisted_acquisition_cc_sptr pcps_make_assisted_acquisition_cc(
 pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(
     int32_t max_dwells, uint32_t sampled_ms, int32_t doppler_max, int32_t doppler_min,
     int64_t fs_in, int32_t samples_per_ms, bool dump,
-    std::string dump_filename) : gr::block("pcps_assisted_acquisition_cc",
-                                     gr::io_signature::make(1, 1, sizeof(gr_complex)),
-                                     gr::io_signature::make(0, 0, sizeof(gr_complex)))
+    const std::string &dump_filename) : gr::block("pcps_assisted_acquisition_cc",
+                                            gr::io_signature::make(1, 1, sizeof(gr_complex)),
+                                            gr::io_signature::make(0, 0, sizeof(gr_complex)))
 {
     this->message_port_register_out(pmt::mp("events"));
     d_sample_counter = 0ULL;  // SAMPLE COUNTER

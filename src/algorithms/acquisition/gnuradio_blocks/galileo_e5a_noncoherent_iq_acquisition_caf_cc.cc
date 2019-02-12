@@ -53,7 +53,7 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr galileo_e5a_noncoherentIQ_make
     int samples_per_ms, int samples_per_code,
     bool bit_transition_flag,
     bool dump,
-    std::string dump_filename,
+    const std::string &dump_filename,
     bool both_signal_components_,
     int CAF_window_hz_,
     int Zero_padding_)
@@ -73,7 +73,7 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
     int samples_per_code,
     bool bit_transition_flag,
     bool dump,
-    std::string dump_filename,
+    const std::string &dump_filename,
     bool both_signal_components_,
     int CAF_window_hz_,
     int Zero_padding_) : gr::block("galileo_e5a_noncoherentIQ_acquisition_caf_cc",

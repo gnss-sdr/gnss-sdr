@@ -52,7 +52,7 @@ class GalileoE1PcpsAmbiguousAcquisition : public AcquisitionInterface
 {
 public:
     GalileoE1PcpsAmbiguousAcquisition(ConfigurationInterface* configuration,
-        const std::string& role,
+        std::string role,
         unsigned int in_streams,
         unsigned int out_streams);
 

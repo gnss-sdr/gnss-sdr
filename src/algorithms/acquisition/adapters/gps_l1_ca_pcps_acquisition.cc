@@ -41,6 +41,7 @@
 #include "gps_sdr_signal_processing.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
+#include <utility>
 
 
 using google::LogMessage;
@@ -48,9 +49,9 @@ using google::LogMessage;
 
 GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     ConfigurationInterface* configuration,
-    const std::string& role,
+    std::string role,
     unsigned int in_streams,
-    unsigned int out_streams) : role_(role),
+    unsigned int out_streams) : role_(std::move(role)),
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {

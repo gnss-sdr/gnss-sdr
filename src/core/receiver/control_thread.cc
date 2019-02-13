@@ -258,12 +258,15 @@ int ControlThread::run()
     cmd_interface_.set_pvt(flowgraph_->get_pvt());
     cmd_interface_thread_ = boost::thread(&ControlThread::telecommand_listener, this);
 
-    bool enable_FPGA = configuration_->property("Channel.enable_FPGA", false);
-    if (enable_FPGA == true)
-        {
-            flowgraph_->start_acquisition_helper();
-        }
-
+#ifdef ENABLE_FPGA
+//    bool enable_FPGA = configuration_->property("Channel.enable_FPGA", false);
+//    if (enable_FPGA == true)
+//        {
+            // Create a task for the acquisition such that id doesn't block the flow of the control thread
+            fpga_helper_thread_=boost::thread(&GNSSFlowgraph::start_acquisition_helper,
+            		flowgraph_);
+//        }
+#endif
     // Main loop to read and process the control messages
     while (flowgraph_->running() && !stop_)
         {
@@ -276,17 +279,39 @@ int ControlThread::run()
     stop_ = true;
     flowgraph_->disconnect();
 
+#ifdef ENABLE_FPGA
+    // trigger a HW reset
+    // The HW reset causes any HW accelerator module that is waiting for more samples to complete its calculations
+    // to trigger an interrupt and finish its signal processing tasks immediately. In this way all SW threads that
+    // are waiting for interrupts in the HW can exit in a normal way.
+	flowgraph_->perform_hw_reset();
+#endif
+
 // Join keyboard thread
 #ifdef OLD_BOOST
     keyboard_thread_.timed_join(boost::posix_time::seconds(1));
     sysv_queue_thread_.timed_join(boost::posix_time::seconds(1));
     cmd_interface_thread_.timed_join(boost::posix_time::seconds(1));
+#ifdef ENABLE_FPGA
+//    if (enable_FPGA == true)
+//        {
+    	fpga_helper_thread_.timed_join(boost::posix_time::seconds(1));
+//        }
+#endif
+
 #endif
 #ifndef OLD_BOOST
     keyboard_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
     sysv_queue_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
     cmd_interface_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
+#ifdef ENABLE_FPGA
+//    if (enable_FPGA == true)
+//        {
+    	fpga_helper_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
+//        }
 #endif
+
+    #endif
 
     LOG(INFO) << "Flowgraph stopped";
 

@@ -2501,6 +2501,8 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
 
 	//printf("55555555555 TOP BLOCK STOPPED\n");
 
+
+	/*
 	// send more samples to unblock the tracking process in case it was waiting for samples
 	args.file = file;
 	//if (test_observables_skip_samples_already_used == 1 && test_observables_doppler_control_in_sw == 1)
@@ -2520,7 +2522,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
 	}
 	pthread_join(thread_DMA, NULL);
 	//printf("777777777 PROCESS FINISHED \n");
-
+*/
 
     // reset the HW AGAIN
 	if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
@@ -2541,7 +2543,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
 	}
 
 
-/*
+
 
 	//	pthread_mutex_lock(&mutex_obs_test);
 	//	send_samples_start_obs_test = 0;
@@ -2785,7 +2787,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
 					std::cout << "PRN " << gnss_synchro_vec.at(n).PRN << " has NO observations!\n";
 				}
 		}
-*/
+
 
 	std::cout << "Test completed in " << elapsed_seconds.count() << " [s]" << std::endl;
 }

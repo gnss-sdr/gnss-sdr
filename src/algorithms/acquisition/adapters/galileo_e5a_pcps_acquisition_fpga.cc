@@ -254,6 +254,8 @@ GalileoE5aPcpsAcquisitionFpga::~GalileoE5aPcpsAcquisitionFpga()
 
 void GalileoE5aPcpsAcquisitionFpga::stop_acquisition()
 {
+	// this command causes the SW to reset the HW.
+	acquisition_fpga_->reset_acquisition();
 }
 
 

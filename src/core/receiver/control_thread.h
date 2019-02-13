@@ -171,6 +171,7 @@ private:
     boost::thread keyboard_thread_;
     boost::thread sysv_queue_thread_;
     boost::thread gps_acq_assist_data_collector_thread_;
+    boost::thread fpga_helper_thread_;
 
     void keyboard_listener();
     void sysv_queue_listener();

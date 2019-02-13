@@ -1704,7 +1704,7 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                         	pthread_join(thread_DMA, NULL);
 
                         	top_block->stop();
-
+/*
                         	// send more samples to unblock the tracking process in case it was waiting for samples
                         	// In this case the DMA may finish sending the current file while the signal is being
                         	// tracked by the HW accelerators. Some tracking HW accelerators may be left in a state
@@ -1731,6 +1731,26 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                         		std::cout << "ERROR cannot create DMA Process" << std::endl;
                         	}
                         	pthread_join(thread_DMA, NULL);
+*/
+
+
+                    		// reset the HW to launch the pending interrupts
+							if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
+							{
+								acquisition_GpsL1Ca_Fpga->reset_acquisition();
+							}
+							else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
+							{
+								acquisition_GpsE1_Fpga->reset_acquisition();
+							}
+							else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
+							{
+								acquisition_GpsE5a_Fpga->reset_acquisition();
+							}
+							else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
+							{
+								acquisition_GpsL5_Fpga->reset_acquisition();
+							}
 
 
                         	pthread_mutex_lock(&mutex);

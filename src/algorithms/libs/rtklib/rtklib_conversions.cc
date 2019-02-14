@@ -388,6 +388,7 @@ alm_t alm_to_rtklib(const Gps_Almanac& gps_alm)
     rtklib_alm.week = gps_alm.i_WNa;
     gtime_t toa;
     toa.time = gps_alm.i_Toa;
+    toa.sec = 0.0;
     rtklib_alm.toa = toa;
     rtklib_alm.A = gps_alm.d_sqrt_A * gps_alm.d_sqrt_A;
     rtklib_alm.e = gps_alm.d_e_eccentricity;
@@ -416,6 +417,7 @@ alm_t alm_to_rtklib(const Galileo_Almanac& gal_alm)
     rtklib_alm.week = gal_alm.i_WNa;
     gtime_t toa;
     toa.time = gal_alm.i_Toa;
+    toa.sec = 0.0;
     rtklib_alm.toa = toa;
     rtklib_alm.A = 5440.588203494 + gal_alm.d_Delta_sqrt_A;
     rtklib_alm.A = rtklib_alm.A * rtklib_alm.A;

@@ -34,6 +34,7 @@
 #include <iostream>
 #include <sstream>
 
+
 Monitor_Pvt_Udp_Sink::Monitor_Pvt_Udp_Sink(std::vector<std::string> addresses, const uint16_t& port) : socket{io_service}
 {
     for (const auto& address : addresses)
@@ -41,9 +42,38 @@ Monitor_Pvt_Udp_Sink::Monitor_Pvt_Udp_Sink(std::vector<std::string> addresses, c
             boost::asio::ip::udp::endpoint endpoint(boost::asio::ip::address::from_string(address, error), port);
             endpoints.push_back(endpoint);
         }
+    monitor_pvt.TOW_at_current_symbol_ms = 0U;
+    monitor_pvt.week = 0U;
+    monitor_pvt.RX_time = 0.0;
+    monitor_pvt.user_clk_offset = 0.0;
+    monitor_pvt.pos_x = 0.0;
+    monitor_pvt.pos_y = 0.0;
+    monitor_pvt.pos_z = 0.0;
+    monitor_pvt.vel_x = 0.0;
+    monitor_pvt.vel_y = 0.0;
+    monitor_pvt.vel_z = 0.0;
+    monitor_pvt.cov_xx = 0.0;
+    monitor_pvt.cov_yy = 0.0;
+    monitor_pvt.cov_zz = 0.0;
+    monitor_pvt.cov_xy = 0.0;
+    monitor_pvt.cov_yz = 0.0;
+    monitor_pvt.cov_zx = 0.0;
+    monitor_pvt.latitude = 0.0;
+    monitor_pvt.longitude = 0.0;
+    monitor_pvt.height = 0.0;
+    monitor_pvt.valid_sats = 0;
+    monitor_pvt.solution_status = 0;
+    monitor_pvt.solution_type = 0;
+    monitor_pvt.AR_ratio_factor = 0.0;
+    monitor_pvt.AR_ratio_threshold = 0.0;
+    monitor_pvt.gdop = 0.0;
+    monitor_pvt.pdop = 0.0;
+    monitor_pvt.hdop = 0.0;
+    monitor_pvt.vdop = 0.0;
 }
 
-bool Monitor_Pvt_Udp_Sink::write_monitor_pvt(Monitor_Pvt monitor_pvt)
+
+bool Monitor_Pvt_Udp_Sink::write_monitor_pvt(const Monitor_Pvt& monitor_pvt)
 {
     std::ostringstream archive_stream;
     boost::archive::binary_oarchive oa{archive_stream};

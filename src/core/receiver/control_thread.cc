@@ -879,7 +879,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
     // 2. Compute rx GPS time from UTC time
     gtime_t utc_gtime;
     utc_gtime.time = rx_utc_time;
-    utc_gtime.sec = 0;
+    utc_gtime.sec = 0.0;
     gtime_t gps_gtime = utc2gpst(utc_gtime);
 
     // 3. loop through all the available ephemeris or almanac and compute satellite positions and elevations
@@ -950,6 +950,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
             double clock_bias_s;
             gtime_t aux_gtime;
             aux_gtime.time = fmod(utc2gpst(gps_gtime).time + 345600, 604800);
+            aux_gtime.sec = 0.0;
             alm2pos(aux_gtime, &rtklib_alm, &r_sat[0], &clock_bias_s);
             double Az, El, dist_m;
             arma::vec r_sat_eb_e = arma::vec{r_sat[0], r_sat[1], r_sat[2]};
@@ -977,6 +978,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
             double clock_bias_s;
             gtime_t gal_gtime;
             gal_gtime.time = fmod(utc2gpst(gps_gtime).time + 345600, 604800);
+            gal_gtime.sec = 0.0;
             alm2pos(gal_gtime, &rtklib_alm, &r_sat[0], &clock_bias_s);
             double Az, El, dist_m;
             arma::vec r_sat_eb_e = arma::vec{r_sat[0], r_sat[1], r_sat[2]};

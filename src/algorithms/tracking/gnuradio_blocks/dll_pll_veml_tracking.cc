@@ -99,6 +99,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     d_secondary_code_length = 0U;
     d_secondary_code_string = nullptr;
     d_preambles_symbols = nullptr;
+    d_preamble_length_symbols = 0;
     signal_type = std::string(trk_parameters.signal);
 
     std::map<std::string, std::string> map_signal_pretty_name;

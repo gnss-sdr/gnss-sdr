@@ -601,36 +601,16 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
     tmp_gnss_synchro.Channel_ID = 0;
     config = std::make_shared<InMemoryConfiguration>();
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(baseband_sampling_freq));
-    //config->set_property("Acquisition.blocking_on_standby", "true");
-    //config->set_property("Acquisition.blocking", "true");
-    //config->set_property("Acquisition.dump", "false");
-    //config->set_property("Acquisition.dump_filename", "./data/acquisition.dat");
-    //config->set_property("Acquisition.use_CFAR_algorithm", "false");
 
-    //config->set_property("Acquisition.item_type", "cshort");
-    //config->set_property("Acquisition.if", "0");
-    //config->set_property("Acquisition.sampled_ms", "4");
-    //config->set_property("Acquisition.select_queue_Fpga", "0");
-    //config->set_property("Acquisition.devicename", "/dev/uio0");
 
-    //config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
-
-    //if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
-    //{
-    //	config->set_property("Acquisition.acquire_pilot", "false");
-    //}
-    std::shared_ptr<GpsL1CaPcpsAcquisitionFpga> acquisition_GpsL1Ca_Fpga;
-    std::shared_ptr<GalileoE1PcpsAmbiguousAcquisitionFpga> acquisition_GpsE1_Fpga;
-    std::shared_ptr<GalileoE5aPcpsAcquisitionFpga> acquisition_GpsE5a_Fpga;
-    std::shared_ptr<GpsL5iPcpsAcquisitionFpga> acquisition_GpsL5_Fpga;
+    std::shared_ptr<AcquisitionInterface> acquisition;
 
     std::string System_and_Signal;
 
+    struct DMA_handler_args args;
 
     if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
         {
-    		//config->set_property("Acquisition.sampled_ms", "1");
-    		//config->set_property("Acquisition.select_queue_Fpga", "0");
 
     	    tmp_gnss_synchro.System = 'G';
             std::string signal = "1C";
@@ -638,19 +618,16 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "GPS L1 CA";
-            acquisition_GpsL1Ca_Fpga = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
 
-            acquisition_GpsL1Ca_Fpga->set_channel(0);
-            acquisition_GpsL1Ca_Fpga->set_threshold(config->property("Acquisition.threshold", FLAGS_external_signal_acquisition_threshold));
-            acquisition_GpsL1Ca_Fpga->connect(top_block);
+            args.freq_band = 0;
+
+    		acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
 
         }
 
 
     else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
         {
-    		//config->set_property("Acquisition.sampled_ms", "4");
-    		//config->set_property("Acquisition.select_queue_Fpga", "0");
 
             tmp_gnss_synchro.System = 'E';
             std::string signal = "1B";
@@ -658,14 +635,11 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "Galileo E1B";
-            //config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
-            //acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisition>(config.get(), "Acquisition", 1, 0);
-            //std::shared_ptr<GalileoE1PcpsAmbiguousAcquisitionFpga> acquisition_Fpga;
-            acquisition_GpsE1_Fpga = std::make_shared<GalileoE1PcpsAmbiguousAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
 
-            acquisition_GpsE1_Fpga->set_channel(0);
-            acquisition_GpsE1_Fpga->set_threshold(config->property("Acquisition.threshold", FLAGS_external_signal_acquisition_threshold));
-            acquisition_GpsE1_Fpga->connect(top_block);
+            args.freq_band = 0;
+
+            acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+
         }
     else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
         {
@@ -677,33 +651,25 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "Galileo E5a";
-            //config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
-            //acquisition = std::make_shared<GalileoE5aPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
-            //std::shared_ptr<GalileoE5aPcpsAcquisitionFpga> acquisition_Fpga;
-            acquisition_GpsE5a_Fpga = std::make_shared<GalileoE5aPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
 
-            acquisition_GpsE5a_Fpga->set_channel(0);
-            acquisition_GpsE5a_Fpga->set_threshold(config->property("Acquisition.threshold", FLAGS_external_signal_acquisition_threshold));
-            acquisition_GpsE5a_Fpga->connect(top_block);
+            args.freq_band = 1;
+
+            acquisition = std::make_shared<GalileoE5aPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+
+
         }
     else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
         {
-    		//config->set_property("Acquisition.sampled_ms", "1");
-    		//config->set_property("Acquisition.select_queue_Fpga", "1");
             tmp_gnss_synchro.System = 'G';
             std::string signal = "L5";
             const char* str = signal.c_str();                                  // get a C style null terminated string
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "GPS L5I";
-            //config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
-            //acquisition = std::make_shared<GpsL5iPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
-            //std::shared_ptr<GpsL5iPcpsAcquisitionFpga> acquisition_Fpga;
-            acquisition_GpsL5_Fpga = std::make_shared<GpsL5iPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
 
-            acquisition_GpsL5_Fpga->set_channel(0);
-            acquisition_GpsL5_Fpga->set_threshold(config->property("Acquisition.threshold", FLAGS_external_signal_acquisition_threshold));
-            acquisition_GpsL5_Fpga->connect(top_block);
+            args.freq_band = 1;
+            acquisition = std::make_shared<GpsL5iPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+
         }
     else
         {
@@ -711,9 +677,14 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
             throw(std::exception());
         }
 
+
+    acquisition->set_channel(0);
+    acquisition->set_threshold(config->property("Acquisition.threshold", FLAGS_external_signal_acquisition_threshold));
+    acquisition->connect(top_block);
+
     std::string file = FLAGS_signal_file;
 
-    struct DMA_handler_args args;
+    //struct DMA_handler_args args;
 
 	const char* file_name = file.c_str();
 
@@ -730,22 +701,9 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 
     msg_rx->top_block = top_block;
 
-    if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
-    {
-    	top_block->msg_connect(acquisition_GpsL1Ca_Fpga->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    }
-    else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
-    {
-    	top_block->msg_connect(acquisition_GpsE1_Fpga->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    }
-    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
-    {
-    	top_block->msg_connect(acquisition_GpsE5a_Fpga->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    }
-    else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
-    {
-    	top_block->msg_connect(acquisition_GpsL5_Fpga->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    }
+
+	top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
+
 
     // 5. Run the flowgraph
     // Get visible GPS satellites (positive acquisitions with Doppler measurements)
@@ -774,40 +732,37 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
             MAX_PRN_IDX = 33;
         }
 
-    // debug
-    //MAX_PRN_IDX = 10;
-
     setup_fpga_switch();
 
-    	unsigned int code_length;
-    	unsigned int nsamples_to_transfer;
-	    if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
-	    {
-	    	code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq_acquisition) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
-	    	nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
-	    }
-	    else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
-	    {
-	        code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq_acquisition) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
-	    	nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
-	    }
-	    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
-	    {
-	        code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / Galileo_E5a_CODE_CHIP_RATE_HZ * static_cast<double>(Galileo_E5a_CODE_LENGTH_CHIPS)));
-	    	nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
-	    }
-	    else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
-	    {
-	        code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L5i_CODE_RATE_HZ / static_cast<double>(GPS_L5i_CODE_LENGTH_CHIPS))));
-	    	nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
-	    }
+	unsigned int code_length;
+	unsigned int nsamples_to_transfer;
+	if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
+	{
+		code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq_acquisition) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
+		nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
+	}
+	else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
+	{
+		code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq_acquisition) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
+		nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
+	}
+	else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
+	{
+		code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / Galileo_E5a_CODE_CHIP_RATE_HZ * static_cast<double>(Galileo_E5a_CODE_LENGTH_CHIPS)));
+		nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
+	}
+	else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
+	{
+		code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L5i_CODE_RATE_HZ / static_cast<double>(GPS_L5i_CODE_LENGTH_CHIPS))));
+		nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
+	}
 
-		float nbits = ceilf(log2f((float)code_length*2));
-		unsigned int fft_size = pow(2, nbits);
-		unsigned int nsamples_total = fft_size;
+	float nbits = ceilf(log2f((float)code_length*2));
+	unsigned int fft_size = pow(2, nbits);
+	unsigned int nsamples_total = fft_size;
 
-		int acq_doppler_max = config->property("Acquisition.doppler_max", FLAGS_external_signal_acquisition_doppler_max_hz);
-		int acq_doppler_step = config->property("Acquisition.doppler_step", FLAGS_external_signal_acquisition_doppler_step_hz);
+	int acq_doppler_max = config->property("Acquisition.doppler_max", FLAGS_external_signal_acquisition_doppler_max_hz);
+	int acq_doppler_step = config->property("Acquisition.doppler_step", FLAGS_external_signal_acquisition_doppler_step_hz);
 
 
 
@@ -1169,7 +1124,6 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 	    {
 */
 			for (unsigned int PRN = 1; PRN < MAX_PRN_IDX; PRN++)
-			//for (unsigned int PRN = 0; PRN < 17; PRN++)
 				{
 
 				uint32_t max_index = 0;
@@ -1192,48 +1146,27 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 
 				tmp_gnss_synchro.PRN = PRN;
 
+				acquisition->stop_acquisition(); // reset the whole system including the sample counters
+				acquisition->set_doppler_max(acq_doppler_max);
+				acquisition->set_doppler_step(acq_doppler_step);
+				acquisition->set_gnss_synchro(&tmp_gnss_synchro);
+				acquisition->init();
+				acquisition->set_local_code();
+
 				if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
 				{
-					acquisition_GpsL1Ca_Fpga->reset_acquisition(); // reset the whole system including the sample counters
-					acquisition_GpsL1Ca_Fpga->set_doppler_max(acq_doppler_max);
-					acquisition_GpsL1Ca_Fpga->set_doppler_step(acq_doppler_step);
-
-					acquisition_GpsL1Ca_Fpga->set_gnss_synchro(&tmp_gnss_synchro);
-					acquisition_GpsL1Ca_Fpga->init();
-					acquisition_GpsL1Ca_Fpga->set_local_code();
 					args.freq_band = 0;
 				}
 				else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
 				{
-					acquisition_GpsE1_Fpga->reset_acquisition(); // reset the whole system including the sample counters
-					acquisition_GpsE1_Fpga->set_doppler_max(acq_doppler_max);
-					acquisition_GpsE1_Fpga->set_doppler_step(acq_doppler_step);
-
-					acquisition_GpsE1_Fpga->set_gnss_synchro(&tmp_gnss_synchro);
-					acquisition_GpsE1_Fpga->init();
-					acquisition_GpsE1_Fpga->set_local_code();
 					args.freq_band = 0;
 				}
 				else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
 				{
-					acquisition_GpsE5a_Fpga->reset_acquisition(); // reset the whole system including the sample counters
-					acquisition_GpsE5a_Fpga->set_doppler_max(acq_doppler_max);
-					acquisition_GpsE5a_Fpga->set_doppler_step(acq_doppler_step);
-
-					acquisition_GpsE5a_Fpga->set_gnss_synchro(&tmp_gnss_synchro);
-					acquisition_GpsE5a_Fpga->init();
-					acquisition_GpsE5a_Fpga->set_local_code();
 					args.freq_band = 1;
 				}
 				else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
 				{
-					acquisition_GpsL5_Fpga->reset_acquisition(); // reset the whole system including the sample counters
-					acquisition_GpsL5_Fpga->set_doppler_max(acq_doppler_max);
-					acquisition_GpsL5_Fpga->set_doppler_step(acq_doppler_step);
-
-					acquisition_GpsL5_Fpga->set_gnss_synchro(&tmp_gnss_synchro);
-					acquisition_GpsL5_Fpga->init();
-					acquisition_GpsL5_Fpga->set_local_code();
 					args.freq_band = 1;
 				}
 
@@ -1291,23 +1224,8 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 				send_samples_start = 1;
 				pthread_mutex_unlock(&mutex);
 
-				if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
-				{
-					acquisition_GpsL1Ca_Fpga->reset(); // set active
-				}
-				else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
-				{
-					acquisition_GpsE1_Fpga->reset(); // set active
-				}
-				else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
-				{
-					acquisition_GpsE5a_Fpga->reset(); // set active
-				}
-				else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
-				{
-					acquisition_GpsL5_Fpga->reset(); // set active
-				}
 
+				acquisition->reset(); // set active
 
 				if (start_msg == true)
 					{
@@ -1323,11 +1241,6 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 				pthread_mutex_lock(&mutex);
 				send_samples_start = 0;
 				pthread_mutex_unlock(&mutex);
-
-//	            while (msg_rx->rx_message == 0)
-//	                {
-//	                    usleep(100000);
-//	                }
 
 				// the DMA sends the exact number of samples needed for the acquisition.
 				// however because of the LPF in the GPS L1/Gal E1 acquisition, this calculation is approximate
@@ -1388,20 +1301,6 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
 
 
 	struct DMA_handler_args args;
-/*
-	int interpolation_factor;
-	if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
-	{
-		interpolation_factor = 4;	// downsampling filter in L1/E1
-	}
-	else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
-	{
-		interpolation_factor = 4;  // downsampling filter in L1/E1
-	}
-*/
-
-
-
 
 
     //*************************************************
@@ -1551,26 +1450,35 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
 
 	// instantiate the acquisition modules in order to use them to reset the HW.
 	// (note that the constructor of the acquisition modules resets the HW too)
-    std::shared_ptr<GpsL1CaPcpsAcquisitionFpga> acquisition_GpsL1Ca_Fpga;
-    std::shared_ptr<GalileoE1PcpsAmbiguousAcquisitionFpga> acquisition_GpsE1_Fpga;
-    std::shared_ptr<GalileoE5aPcpsAcquisitionFpga> acquisition_GpsE5a_Fpga;
-    std::shared_ptr<GpsL5iPcpsAcquisitionFpga> acquisition_GpsL5_Fpga;
+
+	std::shared_ptr<AcquisitionInterface> acquisition;
+
+
 	if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
 	{
-		acquisition_GpsL1Ca_Fpga = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+		acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+		args.freq_band = 0;
 	}
 	else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
 	{
-		acquisition_GpsE1_Fpga = std::make_shared<GalileoE1PcpsAmbiguousAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+		acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+		args.freq_band = 0;
 	}
 	else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
 	{
-		acquisition_GpsE5a_Fpga = std::make_shared<GalileoE5aPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+		acquisition = std::make_shared<GalileoE5aPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+		args.freq_band = 1;
 	}
 	else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
 	{
-		acquisition_GpsL5_Fpga = std::make_shared<GpsL5iPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+		acquisition = std::make_shared<GpsL5iPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+		args.freq_band = 1;
 	}
+    else
+    {
+        std::cout << "The test can not run with the selected tracking implementation\n ";
+        throw(std::exception());
+    }
 
     for (unsigned int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
         {
@@ -1581,24 +1489,7 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                         {
 
                     		// reset the HW to clear the sample counters
-							if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
-							{
-								acquisition_GpsL1Ca_Fpga->reset_acquisition();
-							}
-							else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
-							{
-								acquisition_GpsE1_Fpga->reset_acquisition();
-							}
-							else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
-							{
-								acquisition_GpsE5a_Fpga->reset_acquisition();
-							}
-							else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
-							{
-								acquisition_GpsL5_Fpga->reset_acquisition();
-							}
-
-
+                    		acquisition->stop_acquisition();
 
 							gnss_synchro.Acq_samplestamp_samples = acq_samplestamp_samples;
                             //simulate a Doppler error in acquisition
@@ -1611,36 +1502,6 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                             std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking", config->property("Tracking.implementation", std::string("undefined")), 1, 1);
                             std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
                             boost::shared_ptr<TrackingPullInTestFpga_msg_rx> msg_rx = TrackingPullInTestFpga_msg_rx_make();
-
-                            if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
-                            {
-                            	std::shared_ptr<GpsL1CaPcpsAcquisitionFpga> acquisition_Fpga;
-                            	acquisition_Fpga = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
-                            	args.freq_band = 0;
-                            }
-                            else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
-                            {
-                            	std::shared_ptr<GalileoE1PcpsAmbiguousAcquisitionFpga> acquisition_Fpga;
-                            	acquisition_Fpga = std::make_shared<GalileoE1PcpsAmbiguousAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
-                            	args.freq_band = 0;
-                            }
-                            else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
-                            {
-                            	std::shared_ptr<GalileoE5aPcpsAcquisitionFpga> acquisition_Fpga;
-                            	acquisition_Fpga = std::make_shared<GalileoE5aPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
-                            	args.freq_band = 1;
-                            }
-                            else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
-                            {
-                            	std::shared_ptr<GpsL5iPcpsAcquisitionFpga> acquisition_Fpga;
-                            	acquisition_Fpga = std::make_shared<GpsL5iPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
-                            	args.freq_band = 1;
-                            }
-                            else
-                            {
-                                std::cout << "The test can not run with the selected tracking implementation\n ";
-                                throw(std::exception());
-                            }
 
                             ASSERT_NO_THROW({
                                 tracking->set_channel(gnss_synchro.Channel_ID);
@@ -1704,54 +1565,9 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                         	pthread_join(thread_DMA, NULL);
 
                         	top_block->stop();
-/*
-                        	// send more samples to unblock the tracking process in case it was waiting for samples
-                        	// In this case the DMA may finish sending the current file while the signal is being
-                        	// tracked by the HW accelerators. Some tracking HW accelerators may be left in a state
-                        	// where they are waiting for more samples. In this case we can not bring them back to their
-                        	// default state using a HW reset because the SW would be waiting forever to receive the
-                        	// HW interrupt from those accelerators. The correct way to bring the system back to the default state
-                        	// is to send some extra samples that will ensure that all the aforementioned accelerators
-                        	// trigger an interrupt to the SW. After this last interrupt all the HW accelerators go back to their
-                        	// default state.
-                            args.file = file;
-                            if (skip_samples_already_used == 1)
-                            {
-                            	// skip the samples that have already been used
-                            	args.skip_used_samples = (gnss_synchro.PRN - 1)*fft_size + args.nsamples_tx;
-                            }
-                            else
-                            {
-                            	args.skip_used_samples = 0;
-                            }
-                            args.nsamples_tx = NSAMPLES_FINAL;
-
-                            if (pthread_create(&thread_DMA, NULL, handler_DMA, (void *)&args) < 0)
-                        	{
-                        		std::cout << "ERROR cannot create DMA Process" << std::endl;
-                        	}
-                        	pthread_join(thread_DMA, NULL);
-*/
-
 
                     		// reset the HW to launch the pending interrupts
-							if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
-							{
-								acquisition_GpsL1Ca_Fpga->reset_acquisition();
-							}
-							else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
-							{
-								acquisition_GpsE1_Fpga->reset_acquisition();
-							}
-							else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
-							{
-								acquisition_GpsE5a_Fpga->reset_acquisition();
-							}
-							else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
-							{
-								acquisition_GpsL5_Fpga->reset_acquisition();
-							}
-
+                        	acquisition->stop_acquisition();
 
                         	pthread_mutex_lock(&mutex);
                         	send_samples_start = 0;

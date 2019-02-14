@@ -132,16 +132,21 @@ int main(int argc, char** argv)
                 }
         }
 
-    std::unique_ptr<ControlThread> control_thread(new ControlThread());
-
-    // record startup time
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
-
-    int return_code;
+    int return_code = 0;
     try
         {
+            std::unique_ptr<ControlThread> control_thread(new ControlThread());
+            // record startup time
+            start = std::chrono::system_clock::now();
             return_code = control_thread->run();
+        }
+    catch (const boost::thread_resource_error& e)
+        {
+            std::cout << "Failed to create boost thread." << std::endl;
+            google::ShutDownCommandLineFlags();
+            return 1;
         }
     catch (const boost::exception& e)
         {

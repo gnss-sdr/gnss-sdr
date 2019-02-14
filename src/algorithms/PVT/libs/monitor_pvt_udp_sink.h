@@ -39,7 +39,7 @@ class Monitor_Pvt_Udp_Sink
 {
 public:
     Monitor_Pvt_Udp_Sink(std::vector<std::string> addresses, const uint16_t &port);
-    bool write_monitor_pvt(Monitor_Pvt monitor_pvt);
+    bool write_monitor_pvt(const Monitor_Pvt &monitor_pvt);
 
 private:
     boost::asio::io_service io_service;

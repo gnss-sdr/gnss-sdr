@@ -839,7 +839,10 @@ void GNSSFlowgraph::disconnect()
             for (unsigned int i = 0; i < channels_count_; i++)
                 {
                     top_block_->disconnect(observables_->get_right_block(), i, pvt_->get_left_block(), i);
-                    top_block_->disconnect(observables_->get_right_block(), i, GnssSynchroMonitor_, i);
+                    if (enable_monitor_)
+                        {
+                            top_block_->disconnect(observables_->get_right_block(), i, GnssSynchroMonitor_, i);
+                        }
                     top_block_->msg_disconnect(channels_.at(i)->get_right_block(), pmt::mp("telemetry"), pvt_->get_left_block(), pmt::mp("telemetry"));
                 }
         }

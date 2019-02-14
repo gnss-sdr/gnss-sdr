@@ -72,7 +72,7 @@ public:
     /*!
      * \brief Constructor that initializes the receiver flow graph
      */
-    GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration, const gr::msg_queue::sptr& queue);
+    GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration, const gr::msg_queue::sptr queue);  // NOLINT(performance-unnecessary-value-param)
 
     /*!
      * \brief Destructor
@@ -141,7 +141,7 @@ public:
     /*!
      * \brief Priorize visible satellites in the specified vector
      */
-    void priorize_satellites(const std::vector<std::pair<int, Gnss_Satellite>>& visible_satellites);
+    void priorize_satellites(std::vector<std::pair<int, Gnss_Satellite>> visible_satellites);
 
 private:
     void init();  // Populates the SV PRN list available for acquisition and tracking

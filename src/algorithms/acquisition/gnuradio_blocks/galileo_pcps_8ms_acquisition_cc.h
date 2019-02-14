@@ -51,7 +51,7 @@ galileo_pcps_8ms_make_acquisition_cc(uint32_t sampled_ms,
     int32_t samples_per_ms,
     int32_t samples_per_code,
     bool dump,
-    const std::string& dump_filename);
+    std::string dump_filename);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition for
@@ -69,7 +69,7 @@ private:
         int32_t samples_per_ms,
         int32_t samples_per_code,
         bool dump,
-        const std::string& dump_filename);
+        std::string dump_filename);
 
     galileo_pcps_8ms_acquisition_cc(
         uint32_t sampled_ms,
@@ -79,7 +79,7 @@ private:
         int32_t samples_per_ms,
         int32_t samples_per_code,
         bool dump,
-        const std::string& dump_filename);
+        std::string dump_filename);
 
     void calculate_magnitudes(
         gr_complex* fft_begin,

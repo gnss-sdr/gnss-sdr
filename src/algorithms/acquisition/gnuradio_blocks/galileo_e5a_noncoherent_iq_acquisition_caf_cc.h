@@ -56,7 +56,7 @@ galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(unsigned int sampled_ms,
     int samples_per_ms, int samples_per_code,
     bool bit_transition_flag,
     bool dump,
-    const std::string& dump_filename,
+    std::string dump_filename,
     bool both_signal_components_,
     int CAF_window_hz_,
     int Zero_padding_);
@@ -78,7 +78,7 @@ private:
         int samples_per_ms, int samples_per_code,
         bool bit_transition_flag,
         bool dump,
-        const std::string& dump_filename,
+        std::string dump_filename,
         bool both_signal_components_,
         int CAF_window_hz_,
         int Zero_padding_);
@@ -90,7 +90,7 @@ private:
         int samples_per_ms, int samples_per_code,
         bool bit_transition_flag,
         bool dump,
-        const std::string& dump_filename,
+        std::string dump_filename,
         bool both_signal_components_,
         int CAF_window_hz_,
         int Zero_padding_);

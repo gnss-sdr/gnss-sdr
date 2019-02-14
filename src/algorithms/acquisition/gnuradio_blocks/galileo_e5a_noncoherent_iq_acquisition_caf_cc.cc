@@ -53,14 +53,14 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr galileo_e5a_noncoherentIQ_make
     int samples_per_ms, int samples_per_code,
     bool bit_transition_flag,
     bool dump,
-    const std::string &dump_filename,
+    std::string dump_filename,
     bool both_signal_components_,
     int CAF_window_hz_,
     int Zero_padding_)
 {
     return galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr(
         new galileo_e5a_noncoherentIQ_acquisition_caf_cc(sampled_ms, max_dwells, doppler_max, fs_in, samples_per_ms,
-            samples_per_code, bit_transition_flag, dump, dump_filename, both_signal_components_, CAF_window_hz_, Zero_padding_));
+            samples_per_code, bit_transition_flag, dump, std::move(dump_filename), both_signal_components_, CAF_window_hz_, Zero_padding_));
 }
 
 
@@ -73,7 +73,7 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
     int samples_per_code,
     bool bit_transition_flag,
     bool dump,
-    const std::string &dump_filename,
+    std::string dump_filename,
     bool both_signal_components_,
     int CAF_window_hz_,
     int Zero_padding_) : gr::block("galileo_e5a_noncoherentIQ_acquisition_caf_cc",
@@ -153,7 +153,7 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
 
     // For dumping samples into a file
     d_dump = dump;
-    d_dump_filename = dump_filename;
+    d_dump_filename = std::move(dump_filename);
 
     d_doppler_resolution = 0;
     d_threshold = 0;

@@ -618,7 +618,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                 {
                                     LOG(WARNING) << e.what();
                                 }
-                            catch (std::exception& e)
+                            catch (const std::exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -704,7 +704,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                 {
                                     LOG(WARNING) << "Problem opening output XML file";
                                 }
-                            catch (std::exception& e)
+                            catch (const std::exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -734,7 +734,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                 {
                                     LOG(WARNING) << e.what();
                                 }
-                            catch (std::exception& e)
+                            catch (const std::exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -764,7 +764,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                 {
                                     LOG(WARNING) << "Problem opening output XML file";
                                 }
-                            catch (std::exception& e)
+                            catch (const std::exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -794,7 +794,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                 {
                                     LOG(WARNING) << "Problem opening output XML file";
                                 }
-                            catch (std::exception& e)
+                            catch (const std::exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -824,7 +824,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                 {
                                     LOG(WARNING) << "Problem opening output XML file";
                                 }
-                            catch (std::exception& e)
+                            catch (const std::exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -854,7 +854,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                 {
                                     LOG(WARNING) << "Problem opening output XML file";
                                 }
-                            catch (std::exception& e)
+                            catch (const std::exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -914,7 +914,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                 {
                                     LOG(WARNING) << "Problem opening output XML file";
                                 }
-                            catch (std::exception& e)
+                            catch (const std::exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -944,7 +944,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                 {
                                     LOG(WARNING) << "Problem opening output XML file";
                                 }
-                            catch (std::exception& e)
+                            catch (const std::exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -974,7 +974,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                 {
                                     LOG(WARNING) << "Problem opening output XML file";
                                 }
-                            catch (std::exception& e)
+                            catch (const std::exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -1004,7 +1004,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                 {
                                     LOG(WARNING) << "Problem opening output XML file";
                                 }
-                            catch (std::exception& e)
+                            catch (const std::exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -1064,7 +1064,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                 {
                                     LOG(WARNING) << "Problem opening output XML file";
                                 }
-                            catch (std::exception& e)
+                            catch (const std::exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -1124,7 +1124,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
                                 {
                                     LOG(WARNING) << "Problem opening output XML file";
                                 }
-                            catch (std::exception& e)
+                            catch (const std::exception& e)
                                 {
                                     LOG(WARNING) << e.what();
                                 }
@@ -1176,7 +1176,7 @@ bool rtklib_pvt_cc::save_gnss_synchro_map_xml(const std::string& file_name)
                     xml << boost::serialization::make_nvp("GNSS-SDR_gnss_synchro_map", gnss_observables_map);
                     LOG(INFO) << "Saved gnss_sychro map data";
                 }
-            catch (std::exception& e)
+            catch (const std::exception& e)
                 {
                     LOG(WARNING) << e.what();
                     return false;
@@ -1201,7 +1201,7 @@ bool rtklib_pvt_cc::load_gnss_synchro_map_xml(const std::string& file_name)
             xml >> boost::serialization::make_nvp("GNSS-SDR_gnss_synchro_map", gnss_observables_map);
             //std::cout << "Loaded gnss_synchro map data with " << gnss_synchro_map.size() << " pseudoranges" << std::endl;
         }
-    catch (std::exception& e)
+    catch (const std::exception& e)
         {
             std::cout << e.what() << "File: " << file_name;
             return false;

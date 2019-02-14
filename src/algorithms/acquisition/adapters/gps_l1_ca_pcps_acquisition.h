@@ -56,7 +56,7 @@ class GpsL1CaPcpsAcquisition : public AcquisitionInterface
 {
 public:
     GpsL1CaPcpsAcquisition(ConfigurationInterface* configuration,
-        std::string role,
+        const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 

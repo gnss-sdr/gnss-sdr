@@ -182,7 +182,7 @@ GNSSBlockFactory::~GNSSBlockFactory() = default;
 
 
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalSource(
-    const std::shared_ptr<ConfigurationInterface>& configuration, const gr::msg_queue::sptr& queue, int ID)
+    const std::shared_ptr<ConfigurationInterface>& configuration, const gr::msg_queue::sptr queue, int ID)  // NOLINT(performance-unnecessary-value-param)
 {
     std::string default_implementation = "File_Signal_Source";
     std::string role = "SignalSource";  //backwards compatibility for old conf files
@@ -851,7 +851,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_B1(
 }
 
 std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFactory::GetChannels(
-    const std::shared_ptr<ConfigurationInterface>& configuration, const gr::msg_queue::sptr& queue)
+    const std::shared_ptr<ConfigurationInterface>& configuration, const gr::msg_queue::sptr queue)  // NOLINT(performance-unnecessary-value-param)
 {
     std::string default_implementation = "Pass_Through";
     std::string tracking_implementation;
@@ -1139,7 +1139,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
     const std::shared_ptr<ConfigurationInterface>& configuration,
     const std::string& role,
     const std::string& implementation, unsigned int in_streams,
-    unsigned int out_streams, const gr::msg_queue::sptr& queue)
+    unsigned int out_streams, const gr::msg_queue::sptr queue)  // NOLINT(performance-unnecessary-value-param)
 {
     std::unique_ptr<GNSSBlockInterface> block;
 

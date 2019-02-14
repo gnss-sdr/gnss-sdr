@@ -70,7 +70,7 @@ class GpsL1CaPcpsAcquisitionTest_msg_rx : public gr::block
 {
 private:
     friend GpsL1CaPcpsAcquisitionTest_msg_rx_sptr GpsL1CaPcpsAcquisitionTest_msg_rx_make();
-    void msg_handler_events(const pmt::pmt_t &msg);
+    void msg_handler_events(pmt::pmt_t msg);
     GpsL1CaPcpsAcquisitionTest_msg_rx();
 
 public:
@@ -85,11 +85,11 @@ GpsL1CaPcpsAcquisitionTest_msg_rx_sptr GpsL1CaPcpsAcquisitionTest_msg_rx_make()
 }
 
 
-void GpsL1CaPcpsAcquisitionTest_msg_rx::msg_handler_events(const pmt::pmt_t &msg)
+void GpsL1CaPcpsAcquisitionTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
         }
     catch (boost::bad_any_cast &e)
@@ -236,14 +236,14 @@ void GpsL1CaPcpsAcquisitionTest::plot_grid()
 }
 
 
-TEST_F(GpsL1CaPcpsAcquisitionTest /*unused*/, Instantiate /*unused*/)
+TEST_F(GpsL1CaPcpsAcquisitionTest, Instantiate)
 {
     init();
     boost::shared_ptr<GpsL1CaPcpsAcquisition> acquisition = boost::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition_1C", 1, 0);
 }
 
 
-TEST_F(GpsL1CaPcpsAcquisitionTest /*unused*/, ConnectAndRun /*unused*/)
+TEST_F(GpsL1CaPcpsAcquisitionTest, ConnectAndRun)
 {
     int fs_in = 4000000;
     int nsamples = 4000;
@@ -276,7 +276,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTest /*unused*/, ConnectAndRun /*unused*/)
 }
 
 
-TEST_F(GpsL1CaPcpsAcquisitionTest /*unused*/, ValidationOfResults /*unused*/)
+TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0.0);

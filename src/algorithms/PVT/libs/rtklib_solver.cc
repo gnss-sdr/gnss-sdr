@@ -93,11 +93,11 @@ rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag
                 {
                     try
                         {
-                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+                            d_dump_file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
                             LOG(INFO) << "PVT lib dump enabled Log file: " << d_dump_filename.c_str();
                         }
-                    catch (const std::ifstream::failure &e)
+                    catch (const std::ofstream::failure &e)
                         {
                             LOG(WARNING) << "Exception opening RTKLIB dump file " << e.what();
                         }

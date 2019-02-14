@@ -58,7 +58,7 @@ public:
     GNSSBlockFactory();
     virtual ~GNSSBlockFactory();
     std::unique_ptr<GNSSBlockInterface> GetSignalSource(const std::shared_ptr<ConfigurationInterface>& configuration,
-        const gr::msg_queue::sptr& queue, int ID = -1);
+        const gr::msg_queue::sptr queue, int ID = -1); // NOLINT(performance-unnecessary-value-param)
 
     std::unique_ptr<GNSSBlockInterface> GetSignalConditioner(const std::shared_ptr<ConfigurationInterface>& configuration, int ID = -1);
 
@@ -67,7 +67,7 @@ public:
     std::unique_ptr<GNSSBlockInterface> GetObservables(const std::shared_ptr<ConfigurationInterface>& configuration);
 
     std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GetChannels(const std::shared_ptr<ConfigurationInterface>& configuration,
-        const gr::msg_queue::sptr& queue);
+        const gr::msg_queue::sptr queue); // NOLINT(performance-unnecessary-value-param)
 
     /*
      * \brief Returns the block with the required configuration and implementation
@@ -75,7 +75,7 @@ public:
     std::unique_ptr<GNSSBlockInterface> GetBlock(const std::shared_ptr<ConfigurationInterface>& configuration,
         const std::string& role, const std::string& implementation,
         unsigned int in_streams, unsigned int out_streams,
-        const gr::msg_queue::sptr& queue = nullptr);
+        const gr::msg_queue::sptr queue = nullptr); // NOLINT(performance-unnecessary-value-param)
 
 private:
     std::unique_ptr<GNSSBlockInterface> GetChannel_1C(const std::shared_ptr<ConfigurationInterface>& configuration,

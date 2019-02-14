@@ -285,11 +285,16 @@ int ControlThread::run()
     flowgraph_->disconnect();
 
     // Join keyboard thread
-    keyboard_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
-    sysv_queue_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
-    cmd_interface_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
-
-    LOG(INFO) << "Flowgraph stopped";
+    try
+        {
+            keyboard_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
+            sysv_queue_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
+            cmd_interface_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
+        }
+    catch (const boost::thread_interrupted &interrupt)
+        {
+            DLOG(INFO) << "Thread interrupted";
+        }
 
     if (restart_)
         {
@@ -300,7 +305,7 @@ int ControlThread::run()
 }
 
 
-void ControlThread::set_control_queue(const gr::msg_queue::sptr &control_queue)
+void ControlThread::set_control_queue(const gr::msg_queue::sptr control_queue)  // NOLINT(performance-unnecessary-value-param)
 {
     if (flowgraph_->running())
         {

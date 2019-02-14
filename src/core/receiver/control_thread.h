@@ -93,7 +93,7 @@ public:
      *
      * \param[in] boost::shared_ptr<gr::msg_queue> control_queue
      */
-    void set_control_queue(const gr::msg_queue::sptr& control_queue);
+    void set_control_queue(const gr::msg_queue::sptr control_queue); // NOLINT(performance-unnecessary-value-param)
 
 
     unsigned int processed_control_messages()

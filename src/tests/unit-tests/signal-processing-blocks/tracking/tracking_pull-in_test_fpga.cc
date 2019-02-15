@@ -1153,23 +1153,6 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 				acquisition->init();
 				acquisition->set_local_code();
 
-				if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
-				{
-					args.freq_band = 0;
-				}
-				else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
-				{
-					args.freq_band = 0;
-				}
-				else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
-				{
-					args.freq_band = 1;
-				}
-				else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
-				{
-					args.freq_band = 1;
-				}
-
 				args.file = file;
 
 

@@ -562,14 +562,12 @@ bool HybridObservablesTestFpga::acquire_signal()
     //	config->set_property("Acquisition.acquire_pilot", "false"); -- ALREADY THE DEFAULT VALUE
     //}
 
-    //std::shared_ptr<AcquisitionInterface> acquisition;
-
-    std::shared_ptr<GpsL1CaPcpsAcquisitionFpga> acquisition_GpsL1Ca_Fpga;
-    std::shared_ptr<GalileoE1PcpsAmbiguousAcquisitionFpga> acquisition_GpsE1_Fpga;
-    std::shared_ptr<GalileoE5aPcpsAcquisitionFpga> acquisition_GpsE5a_Fpga;
-    std::shared_ptr<GpsL5iPcpsAcquisitionFpga> acquisition_GpsL5_Fpga;
+    std::shared_ptr<AcquisitionInterface> acquisition;
 
     std::string System_and_Signal;
+
+    struct DMA_handler_args_obs_test args;
+
     //create the correspondign acquisition block according to the desired tracking signal
     //printf("AAAAAAAAAAAAAAAAAAAAA\n");
     if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
@@ -585,11 +583,10 @@ bool HybridObservablesTestFpga::acquire_signal()
             //config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
             ////acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFineDoppler>(config.get(), "Acquisition", 1, 0);
             //acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
-            acquisition_GpsL1Ca_Fpga = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
 
-            acquisition_GpsL1Ca_Fpga->set_channel(0);
-            acquisition_GpsL1Ca_Fpga->set_threshold(config->property("Acquisition.threshold", FLAGS_external_signal_acquisition_threshold));
-            acquisition_GpsL1Ca_Fpga->connect(top_block);
+            args.freq_band = 0;
+
+            acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
 
         }
     else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
@@ -603,11 +600,10 @@ bool HybridObservablesTestFpga::acquire_signal()
             System_and_Signal = "Galileo E1B";
             //config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
             //acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisition>(config.get(), "Acquisition", 1, 0);
-            acquisition_GpsE1_Fpga = std::make_shared<GalileoE1PcpsAmbiguousAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
 
-            acquisition_GpsE1_Fpga->set_channel(0);
-            acquisition_GpsE1_Fpga->set_threshold(config->property("Acquisition.threshold", FLAGS_external_signal_acquisition_threshold));
-            acquisition_GpsE1_Fpga->connect(top_block);
+            args.freq_band = 0;
+
+            acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
 
         }
 
@@ -622,11 +618,10 @@ bool HybridObservablesTestFpga::acquire_signal()
             System_and_Signal = "Galileo E5a";
             //config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
             //acquisition = std::make_shared<GalileoE5aPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
-            acquisition_GpsE5a_Fpga = std::make_shared<GalileoE5aPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
 
-            acquisition_GpsE5a_Fpga->set_channel(0);
-            acquisition_GpsE5a_Fpga->set_threshold(config->property("Acquisition.threshold", FLAGS_external_signal_acquisition_threshold));
-            acquisition_GpsE5a_Fpga->connect(top_block);
+            args.freq_band = 1;
+
+            acquisition = std::make_shared<GalileoE5aPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
 
         }
     else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
@@ -640,11 +635,10 @@ bool HybridObservablesTestFpga::acquire_signal()
             System_and_Signal = "GPS L5I";
             //config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
             //acquisition = std::make_shared<GpsL5iPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
-            acquisition_GpsL5_Fpga = std::make_shared<GpsL5iPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
 
-            acquisition_GpsL5_Fpga->set_channel(0);
-            acquisition_GpsL5_Fpga->set_threshold(config->property("Acquisition.threshold", FLAGS_external_signal_acquisition_threshold));
-            acquisition_GpsL5_Fpga->connect(top_block);
+            args.freq_band = 1;
+
+            acquisition = std::make_shared<GpsL5iPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
 
         }
     else
@@ -653,10 +647,14 @@ bool HybridObservablesTestFpga::acquire_signal()
             throw(std::exception());
         }
 
+    acquisition->set_channel(0);
+    acquisition->set_threshold(config->property("Acquisition.threshold", FLAGS_external_signal_acquisition_threshold));
+    acquisition->connect(top_block);
+
     std::string file = FLAGS_signal_file;
     const char* file_name = file.c_str();
 
-    struct DMA_handler_args_obs_test args;
+//    struct DMA_handler_args_obs_test args;
 
     boost::shared_ptr<Acquisition_msg_rx> msg_rx;
     try
@@ -670,24 +668,8 @@ bool HybridObservablesTestFpga::acquire_signal()
         }
 
     msg_rx->top_block = top_block;
-    //top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
 
-    if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
-    {
-    	top_block->msg_connect(acquisition_GpsL1Ca_Fpga->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    }
-    else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
-    {
-    	top_block->msg_connect(acquisition_GpsE1_Fpga->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    }
-    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
-    {
-    	top_block->msg_connect(acquisition_GpsE5a_Fpga->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    }
-    else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
-    {
-    	top_block->msg_connect(acquisition_GpsL5_Fpga->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    }
+    top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
 
 
     // 5. Run the flowgraph
@@ -1124,52 +1106,12 @@ bool HybridObservablesTestFpga::acquire_signal()
 
 			tmp_gnss_synchro.PRN = PRN;
 
-			if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
-			{
-				acquisition_GpsL1Ca_Fpga->reset_acquisition(); // reset the whole system including the sample counters
-				acquisition_GpsL1Ca_Fpga->set_doppler_max(acq_doppler_max);
-				acquisition_GpsL1Ca_Fpga->set_doppler_step(acq_doppler_step);
-
-				acquisition_GpsL1Ca_Fpga->set_gnss_synchro(&tmp_gnss_synchro);
-				acquisition_GpsL1Ca_Fpga->init();
-				acquisition_GpsL1Ca_Fpga->set_local_code();
-				args.freq_band = 0;
-			}
-			else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
-			{
-				//printf("starting configuring acquisition\n");
-				acquisition_GpsE1_Fpga->reset_acquisition(); // reset the whole system including the sample counters
-				acquisition_GpsE1_Fpga->set_doppler_max(acq_doppler_max);
-				acquisition_GpsE1_Fpga->set_doppler_step(acq_doppler_step);
-
-				acquisition_GpsE1_Fpga->set_gnss_synchro(&tmp_gnss_synchro);
-				acquisition_GpsE1_Fpga->init();
-				acquisition_GpsE1_Fpga->set_local_code();
-				args.freq_band = 0;
-				//printf("ffffffffffff ending configuring acquisition\n");
-			}
-			else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
-			{
-				acquisition_GpsE5a_Fpga->reset_acquisition(); // reset the whole system including the sample counters
-				acquisition_GpsE5a_Fpga->set_doppler_max(acq_doppler_max);
-				acquisition_GpsE5a_Fpga->set_doppler_step(acq_doppler_step);
-
-				acquisition_GpsE5a_Fpga->set_gnss_synchro(&tmp_gnss_synchro);
-				acquisition_GpsE5a_Fpga->init();
-				acquisition_GpsE5a_Fpga->set_local_code();
-				args.freq_band = 1;
-			}
-			else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
-			{
-				acquisition_GpsL5_Fpga->reset_acquisition(); // reset the whole system including the sample counters
-				acquisition_GpsL5_Fpga->set_doppler_max(acq_doppler_max);
-				acquisition_GpsL5_Fpga->set_doppler_step(acq_doppler_step);
-
-				acquisition_GpsL5_Fpga->set_gnss_synchro(&tmp_gnss_synchro);
-				acquisition_GpsL5_Fpga->init();
-				acquisition_GpsL5_Fpga->set_local_code();
-				args.freq_band = 1;
-			}
+			acquisition->stop_acquisition(); // reset the whole system including the sample counters
+			acquisition->set_doppler_max(acq_doppler_max);
+			acquisition->set_doppler_step(acq_doppler_step);
+			acquisition->set_gnss_synchro(&tmp_gnss_synchro);
+			acquisition->init();
+			acquisition->set_local_code();
 
 			args.file = file;
 
@@ -1234,23 +1176,7 @@ bool HybridObservablesTestFpga::acquire_signal()
 			send_samples_start_obs_test = 1;
 			pthread_mutex_unlock(&mutex);
 
-			if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
-			{
-				acquisition_GpsL1Ca_Fpga->reset(); // set active
-			}
-			else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
-			{
-				//printf("hhhhhhhhhhhh\n");
-				acquisition_GpsE1_Fpga->reset(); // set active
-			}
-			else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
-			{
-				acquisition_GpsE5a_Fpga->reset(); // set active
-			}
-			else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
-			{
-				acquisition_GpsL5_Fpga->reset(); // set active
-			}
+			acquisition->reset(); // set active
 
 //					pthread_mutex_lock(&mutex); // it doesn't work if it is done here
 //					send_samples_start = 1;
@@ -2284,28 +2210,37 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
 
 	// instantiate the acquisition modules in order to use them to reset the HW.
 	// (note that the constructor of the acquisition modules resets the HW too)
-    std::shared_ptr<GpsL1CaPcpsAcquisitionFpga> acquisition_GpsL1Ca_Fpga;
-    std::shared_ptr<GalileoE1PcpsAmbiguousAcquisitionFpga> acquisition_GpsE1_Fpga;
-    std::shared_ptr<GalileoE5aPcpsAcquisitionFpga> acquisition_GpsE5a_Fpga;
-    std::shared_ptr<GpsL5iPcpsAcquisitionFpga> acquisition_GpsL5_Fpga;
+
+
+	std::shared_ptr<AcquisitionInterface> acquisition;
+
     // reset the HW to clear the sample counters: the acquisition constructor generates a reset
 	if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
 	{
-		acquisition_GpsL1Ca_Fpga = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+		acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+		args.freq_band = 0;
+
 	}
 	else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
 	{
-		acquisition_GpsE1_Fpga = std::make_shared<GalileoE1PcpsAmbiguousAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+		acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+		args.freq_band = 0;
 	}
 	else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
 	{
-		acquisition_GpsE5a_Fpga = std::make_shared<GalileoE5aPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+		acquisition = std::make_shared<GalileoE5aPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+		args.freq_band = 1;
 	}
 	else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
 	{
-		acquisition_GpsL5_Fpga = std::make_shared<GpsL5iPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+		acquisition = std::make_shared<GpsL5iPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+		args.freq_band = 1;
 	}
-
+	else
+	{
+		std::cout << "The test can not run with the selected tracking implementation\n ";
+		throw(std::exception());
+	}
 
 
     std::vector<std::shared_ptr<TrackingInterface>> tracking_ch_vec;
@@ -2410,39 +2345,6 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
 	}) << "Failure connecting the blocks.";
 
 
-	// create acquisition class such that a global Reset is produced for all the HW and the sample counters are reset to 0
-	if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
-	{
-		//printf("111111111111\n");
-		//std::shared_ptr<GpsL1CaPcpsAcquisitionFpga> acquisition_Fpga;
-		//acquisition_Fpga = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
-		args.freq_band = 0;
-	}
-	else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
-	{
-		//std::shared_ptr<GalileoE1PcpsAmbiguousAcquisitionFpga> acquisition_Fpga;
-		//acquisition_Fpga = std::make_shared<GalileoE1PcpsAmbiguousAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
-		args.freq_band = 0;
-	}
-	else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
-	{
-		//std::shared_ptr<GalileoE5aPcpsAcquisitionFpga> acquisition_Fpga;
-		//acquisition_Fpga = std::make_shared<GalileoE5aPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
-		args.freq_band = 1;
-	}
-	else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
-	{
-		//std::shared_ptr<GpsL5iPcpsAcquisitionFpga> acquisition_Fpga;
-		//acquisition_Fpga = std::make_shared<GpsL5iPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
-		args.freq_band = 1;
-	}
-	else
-	{
-		std::cout << "The test can not run with the selected tracking implementation\n ";
-		throw(std::exception());
-	}
-
-
 	args.file = file;
 	//args.nsamples_tx = TEST_OBS_NSAMPLES_TRACKING;		// number of samples to transfer
 	args.nsamples_tx = baseband_sampling_freq*FLAGS_duration;;
@@ -2525,24 +2427,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
 */
 
     // reset the HW AGAIN
-	if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
-	{
-		acquisition_GpsL1Ca_Fpga->reset_acquisition();
-	}
-	else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
-	{
-		acquisition_GpsE1_Fpga->reset_acquisition();
-	}
-	else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
-	{
-		acquisition_GpsE5a_Fpga->reset_acquisition();
-	}
-	else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
-	{
-		acquisition_GpsL5_Fpga->reset_acquisition();
-	}
-
-
+	acquisition->stop_acquisition();
 
 
 	//	pthread_mutex_lock(&mutex_obs_test);

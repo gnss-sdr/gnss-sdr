@@ -58,7 +58,7 @@ void Beidou_Dnav_Navigation_Message::reset()
     flag_d1_sf5_p9 = false;
     flag_d1_sf5_p10 = false;
     flag_new_SOW_available = false;
-    d_previous_aode = 0;
+    d_previous_aode = 0.0;
 
     flag_sf1_p1 = false;
     flag_sf1_p2 = false;
@@ -91,63 +91,65 @@ void Beidou_Dnav_Navigation_Message::reset()
     d_eccentricity_msb = 0;
     d_eccentricity_lsb = 0;
 
-    d_SOW = 0;
-    d_SOW_SF1 = 0;
-    d_SOW_SF2 = 0;
-    d_SOW_SF3 = 0;
-    d_SOW_SF4 = 0;
-    d_SOW_SF5 = 0;
-    d_AODE = 0;
-    d_Crs = 0;
-    d_Delta_n = 0;
-    d_M_0 = 0;
-    d_Cuc = 0;
-    d_eccentricity = 0;
-    d_Cus = 0;
-    d_sqrt_A = 0;
-    d_Toe_sf2 = 0;
-    d_Toc = 0;
-    d_Cic = 0;
-    d_OMEGA0 = 0;
-    d_Cis = 0;
-    d_i_0 = 0;
-    d_Crc = 0;
-    d_OMEGA = 0;
-    d_OMEGA_DOT = 0;
-    d_IDOT = 0;
+    d_SOW = 0.0;
+    d_SOW_SF1 = 0.0;
+    d_SOW_SF2 = 0.0;
+    d_SOW_SF3 = 0.0;
+    d_SOW_SF4 = 0.0;
+    d_SOW_SF5 = 0.0;
+    d_AODE = 0.0;
+    d_Crs = 0.0;
+    d_Delta_n = 0.0;
+    d_M_0 = 0.0;
+    d_Cuc = 0.0;
+    d_eccentricity = 0.0;
+    d_Cus = 0.0;
+    d_sqrt_A = 0.0;
+    d_Toe_sf2 = 0.0;
+    d_Toe_sf3 = 0.0;
+    d_Toe = 0.0;
+    d_Toc = 0.0;
+    d_Cic = 0.0;
+    d_OMEGA0 = 0.0;
+    d_Cis = 0.0;
+    d_i_0 = 0.0;
+    d_Crc = 0.0;
+    d_OMEGA = 0.0;
+    d_OMEGA_DOT = 0.0;
+    d_IDOT = 0.0;
     i_BEIDOU_week = 0;
     i_SV_accuracy = 0;
     i_SV_health = 0;
-    d_TGD1 = 0;
-    d_TGD2 = 0;
-    d_AODC = -1;
+    d_TGD1 = 0.0;
+    d_TGD2 = 0.0;
+    d_AODC = -1.0;
     //    i_AODO = 0;
 
     b_fit_interval_flag = false;
-    d_spare1 = 0;
-    d_spare2 = 0;
+    d_spare1 = 0.0;
+    d_spare2 = 0.0;
 
-    d_A_f0 = 0;
-    d_A_f1 = 0;
-    d_A_f2 = 0;
+    d_A_f0 = 0.0;
+    d_A_f1 = 0.0;
+    d_A_f2 = 0.0;
 
     //clock terms
     //d_master_clock=0;
-    d_dtr = 0;
-    d_satClkCorr = 0;
-    d_satClkDrift = 0;
+    d_dtr = 0.0;
+    d_satClkCorr = 0.0;
+    d_satClkDrift = 0.0;
 
     // satellite positions
-    d_satpos_X = 0;
-    d_satpos_Y = 0;
-    d_satpos_Z = 0;
+    d_satpos_X = 0.0;
+    d_satpos_Y = 0.0;
+    d_satpos_Z = 0.0;
 
     // info
     i_channel_ID = 0;
     i_satellite_PRN = 0;
 
     // time synchro
-    d_subframe_timestamp_ms = 0;
+    d_subframe_timestamp_ms = 0.0;
 
     // flags
     b_alert_flag = false;
@@ -157,23 +159,23 @@ void Beidou_Dnav_Navigation_Message::reset()
     // Ionosphere and UTC
     flag_iono_valid = false;
     flag_utc_model_valid = false;
-    d_alpha0 = 0;
-    d_alpha1 = 0;
-    d_alpha2 = 0;
-    d_alpha3 = 0;
-    d_beta0 = 0;
-    d_beta1 = 0;
-    d_beta2 = 0;
-    d_beta3 = 0;
-    d_A1UTC = 0;
-    d_A0UTC = 0;
-    d_DeltaT_LS = 0;
+    d_alpha0 = 0.0;
+    d_alpha1 = 0.0;
+    d_alpha2 = 0.0;
+    d_alpha3 = 0.0;
+    d_beta0 = 0.0;
+    d_beta1 = 0.0;
+    d_beta2 = 0.0;
+    d_beta3 = 0.0;
+    d_A1UTC = 0.0;
+    d_A0UTC = 0.0;
+    d_DeltaT_LS = 0.0;
     i_WN_LSF = 0;
     i_DN = 0;
-    d_DeltaT_LSF = 0;
+    d_DeltaT_LSF = 0.0;
 
     //Almanac
-    d_Toa = 0;
+    d_Toa = 0.0;
     i_WN_A = 0;
     for (int32_t i = 1; i < 36; i++)
         {
@@ -181,30 +183,30 @@ void Beidou_Dnav_Navigation_Message::reset()
         }
 
     // Satellite velocity
-    d_satvel_X = 0;
-    d_satvel_Y = 0;
-    d_satvel_Z = 0;
-    d_A1GPS = 0;
-    d_A0GPS = 0;
-    d_A1GAL = 0;
-    d_A0GAL = 0;
-    d_A1GLO = 0;
-    d_A0GLO = 0;
-    d_SQRT_A_ALMANAC = 0;
-    d_A1_ALMANAC = 0;
-    d_A0_ALMANAC = 0;
-    d_OMEGA0_ALMANAC = 0;
-    d_E_ALMANAC = 0;
-    d_DELTA_I = 0;
-    d_TOA = 0;
-    d_OMEGA_DOT_ALMANAC = 0;
-    d_OMEGA_ALMANAC = 0;
-    d_M0_ALMANAC = 0;
+    d_satvel_X = 0.0;
+    d_satvel_Y = 0.0;
+    d_satvel_Z = 0.0;
+    d_A1GPS = 0.0;
+    d_A0GPS = 0.0;
+    d_A1GAL = 0.0;
+    d_A0GAL = 0.0;
+    d_A1GLO = 0.0;
+    d_A0GLO = 0.0;
+    d_SQRT_A_ALMANAC = 0.0;
+    d_A1_ALMANAC = 0.0;
+    d_A0_ALMANAC = 0.0;
+    d_OMEGA0_ALMANAC = 0.0;
+    d_E_ALMANAC = 0.0;
+    d_DELTA_I = 0.0;
+    d_TOA = 0.0;
+    d_OMEGA_DOT_ALMANAC = 0.0;
+    d_OMEGA_ALMANAC = 0.0;
+    d_M0_ALMANAC = 0.0;
     almanac_WN = 0;
-    d_toa2 = 0;
-    d_A_f0 = 0;
-    d_A_f1 = 0;
-    d_A_f2 = 0;
+    d_toa2 = 0.0;
+    d_A_f0 = 0.0;
+    d_A_f1 = 0.0;
+    d_A_f2 = 0.0;
 
     auto gnss_sat = Gnss_Satellite();
     std::string _system("Beidou");

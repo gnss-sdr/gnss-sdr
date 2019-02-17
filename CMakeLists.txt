@@ -408,6 +408,86 @@ endif()
 
 
 ################################################################################
+# Set C and C++ standard
+################################################################################
+# Support of C++17 is still not possible due to pm_remez.h (solved in GNU Radio 3.8)
+# Enable C++14 support in GCC >= 6.1.1
+# Fallback to C++11 when using GCC < 6.1.1
+
+if(NOT (CMAKE_VERSION VERSION_LESS "3.1"))
+    set(CMAKE_C_STANDARD 11)
+    if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
+        if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
+            set(CMAKE_CXX_STANDARD 11)
+        else()
+            set(CMAKE_CXX_STANDARD 14)
+        endif()
+    endif()
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        if(OS_IS_MACOSX)
+            # See https://trac.macports.org/wiki/XcodeVersionInfo for Apple Clang version equivalences
+            if(CLANG_VERSION VERSION_LESS "600")
+                set(CMAKE_CXX_STANDARD 11)
+            else()
+                set(CMAKE_CXX_STANDARD 14)
+            endif()
+        else()
+            if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
+                set(CMAKE_CXX_STANDARD 11)
+            else()
+                # if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.0.0")
+                set(CMAKE_CXX_STANDARD 14)
+                # else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.0.0")
+                # set(CMAKE_CXX_STANDARD 17)
+                # endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.0.0")
+            endif()
+        endif()
+    endif()
+    if((NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang") AND (NOT ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)))
+        set(CMAKE_CXX_STANDARD 11)
+    endif()
+    set(CMAKE_C_EXTENSIONS OFF)
+    set(CMAKE_CXX_EXTENSIONS OFF)
+else()
+    if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
+        if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
+            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
+        else()
+            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
+        endif()
+    endif()
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        if(OS_IS_MACOSX)
+            if(CLANG_VERSION VERSION_LESS "600")
+                set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
+            else()
+                set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
+            endif()
+        else()
+            if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
+                set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
+            else()
+                set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
+            endif()
+        endif()
+    endif()
+endif()
+
+# Visibility
+# See https://gcc.gnu.org/wiki/Visibility
+if(POLICY CMP0053)
+    cmake_policy(SET CMP0063 NEW)
+    set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+    set(CMAKE_C_VISIBILITY_PRESET hidden)
+    set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+else()
+    if((CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
+        add_definitions(-fvisibility=hidden)
+    endif()
+endif()
+
+
+################################################################################
 # Check if the compiler defines the architecture as ARM
 ################################################################################
 if(NOT OS_IS_MACOSX)
@@ -1121,9 +1201,6 @@ endif()
 # Check that BLAS (Basic Linear Algebra Subprograms) is found in the system
 # See http://www.netlib.org/blas/
 #############################################################################
-if(OS_IS_MACOSX)
-    set(BLA_VENDOR "Apple")
-endif()
 find_library(BLAS blas)
 if(NOT BLAS)
     message(" The BLAS library has not been found.")
@@ -1819,58 +1896,13 @@ endif()
 ########################################################################
 # Set compiler flags
 ########################################################################
-# Support of C++17 is still not possible due to pm_remez.h (solved in GNU Radio 3.8)
-# Enable C++14 support in GCC >= 6.1.1
-# Fallback to C++11 when using GCC < 6.1.1
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
-        set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
-    else()
-        # if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
-            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
-        # else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
-            # set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++17")
-        # endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
-    endif()
     set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wall -Wextra")  #Add warning flags: For "-Wall" see https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
 endif()
 
-# Support of C++17 is still not possible due to pm_remez.h (solved in GNU Radio 3.8)
-# Enable C++14 support in Clang >= 3.5.0 or AppleClang >= 600
-# Fallback to C++11 if older version
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     if(OS_IS_MACOSX)
-        # See https://trac.macports.org/wiki/XcodeVersionInfo for Apple Clang version equivalences
-        if(CLANG_VERSION VERSION_LESS "600")
-            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
-        else()
-            # if(CLANG_VERSION VERSION_LESS "900")
-            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
-            # else(CLANG_VERSION VERSION_LESS "900")
-            # set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++17")
-            # endif(CLANG_VERSION VERSION_LESS "900")
-        endif()
-    else()
-        if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
-            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
-        else()
-            # if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.0.0")
-            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
-            # else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.0.0")
-            # set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++17")
-            # endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.0.0")
-        endif()
-    endif()
-
-    if(OS_IS_MACOSX)
         set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -stdlib=libc++")
-    endif()
-endif()
-
-if(NOT ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang")) AND NOT WIN32)
-    if(NOT (CMAKE_VERSION VERSION_LESS "3.1"))
-        set(CMAKE_C_STANDARD 11)
-        set(CMAKE_CXX_STANDARD 11)
     endif()
 endif()
 
@@ -1901,10 +1933,6 @@ endif()
 set(MY_CXX_FLAGS "${MY_CXX_FLAGS} ${ARCH_COMPILER_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MY_CXX_FLAGS}")
 
-if((CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
-    # https://gcc.gnu.org/wiki/Visibility
-    add_definitions(-fvisibility=hidden)
-endif()
 
 
 ########################################################################

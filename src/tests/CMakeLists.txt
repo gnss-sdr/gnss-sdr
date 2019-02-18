@@ -58,6 +58,7 @@ if(NOT ${GTEST_DIR_LOCAL})
     if(OS_IS_MACOSX)
         if(CMAKE_GENERATOR STREQUAL Xcode)
             set(DEBUG_PREFIX "Debug/")
+            set(DEBUG_POSTFIX "d")
         endif()
     endif()
 
@@ -165,12 +166,6 @@ endif()
 
 if(OPENSSL_FOUND)
     add_definitions(-DUSE_OPENSSL_FALLBACK=1)
-endif()
-
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    if(OS_IS_MACOSX)
-        set(CLANG_FLAGS "-stdlib=libc++ -lc++")
-    endif()
 endif()
 
 if(OPENCL_FOUND)
@@ -350,7 +345,6 @@ if(ENABLE_UNIT_TESTING)
 
     target_link_libraries(run_tests
         PUBLIC
-            ${CLANG_FLAGS}
             Boost::chrono
             Boost::filesystem
             Boost::system

@@ -85,15 +85,15 @@ private:
 
     bool b_rtcm_writing_started;
     bool b_rtcm_enabled;
-    int32_t d_rtcm_MT1045_rate_ms;  //!< Galileo Broadcast Ephemeris
-    int32_t d_rtcm_MT1019_rate_ms;  //!< GPS Broadcast Ephemeris (orbits)
-    int32_t d_rtcm_MT1020_rate_ms;  //!< GLONASS Broadcast Ephemeris (orbits)
-    int32_t d_rtcm_MT1077_rate_ms;  //!< The type 7 Multiple Signal Message format for the USA’s GPS system, popular
-    int32_t d_rtcm_MT1087_rate_ms;  //!< GLONASS MSM7. The type 7 Multiple Signal Message format for the Russian GLONASS system
-    int32_t d_rtcm_MT1097_rate_ms;  //!< Galileo MSM7. The type 7 Multiple Signal Message format for Europe’s Galileo system
+    int32_t d_rtcm_MT1045_rate_ms;  // Galileo Broadcast Ephemeris
+    int32_t d_rtcm_MT1019_rate_ms;  // GPS Broadcast Ephemeris (orbits)
+    int32_t d_rtcm_MT1020_rate_ms;  // GLONASS Broadcast Ephemeris (orbits)
+    int32_t d_rtcm_MT1077_rate_ms;  // The type 7 Multiple Signal Message format for the USA’s GPS system, popular
+    int32_t d_rtcm_MT1087_rate_ms;  // GLONASS MSM7. The type 7 Multiple Signal Message format for the Russian GLONASS system
+    int32_t d_rtcm_MT1097_rate_ms;  // Galileo MSM7. The type 7 Multiple Signal Message format for Europe’s Galileo system
     int32_t d_rtcm_MSM_rate_ms;
 
-    int32_t d_last_status_print_seg;  //for status printer
+    int32_t d_last_status_print_seg;  // for status printer
 
     uint32_t d_nchannels;
     std::string d_dump_filename;
@@ -132,14 +132,14 @@ private:
     bool send_sys_v_ttff_msg(ttff_msgbuf ttff);
     std::chrono::time_point<std::chrono::system_clock> start, end;
 
-    bool save_gnss_synchro_map_xml(const std::string& file_name);  //debug helper function
+    bool save_gnss_synchro_map_xml(const std::string& file_name);  // debug helper function
 
-    bool load_gnss_synchro_map_xml(const std::string& file_name);  //debug helper function
+    bool load_gnss_synchro_map_xml(const std::string& file_name);  // debug helper function
 
     bool d_xml_storage;
     std::string xml_base_path;
 
-    inline std::time_t to_time_t(boost::posix_time::ptime pt)
+    inline std::time_t convert_to_time_t(const boost::posix_time::ptime pt) const
     {
         return (pt - boost::posix_time::ptime(boost::gregorian::date(1970, 1, 1))).total_seconds();
     }
@@ -153,8 +153,10 @@ public:
         const Pvt_Conf& conf_,
         const rtk_t& rtk);
 
+    ~rtklib_pvt_cc();  //!< Default destructor
+
     /*!
-     * \brief Get latest set of ephemeris from PVT block
+     * \brief Get latest set of GPS ephemeris from PVT block
      *
      */
     std::map<int, Gps_Ephemeris> get_gps_ephemeris_map() const;
@@ -183,9 +185,7 @@ public:
         double* height_m,
         double* ground_speed_kmh,
         double* course_over_ground_deg,
-        time_t* UTC_time);
-
-    ~rtklib_pvt_cc();  //!< Default destructor
+        time_t* UTC_time) const;
 
     int work(int noutput_items, gr_vector_const_void_star& input_items,
         gr_vector_void_star& output_items);  //!< PVT Signal Processing

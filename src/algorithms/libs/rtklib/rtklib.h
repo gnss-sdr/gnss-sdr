@@ -221,7 +221,9 @@ const int NSATQZS = 0;
 const int NSYSQZS = 0;
 #endif
 
+#ifndef __APPLE__
 #define ENABDS
+#endif
 #ifdef ENABDS
 const int MINPRNBDS = 1;                          //!<   min satellite sat number of BeiDou
 const int MAXPRNBDS = 37;                         //!<   max satellite sat number of BeiDou

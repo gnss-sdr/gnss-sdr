@@ -562,8 +562,6 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
             xml_base_path = xml_base_path + boost::filesystem::path::preferred_separator;
         }
 
-    d_pvt_solver = std::make_shared<rtklib_solver>(static_cast<int32_t>(nchannels), dump_ls_pvt_filename, d_dump, d_dump_mat, rtk);
-    d_pvt_solver->set_averaging_depth(1);
 
     d_rx_time = 0.0;
 
@@ -580,7 +578,10 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
 
             udp_sink_ptr = std::unique_ptr<Monitor_Pvt_Udp_Sink>(new Monitor_Pvt_Udp_Sink(udp_addr_vec, conf_.udp_port));
         }
-
+    else
+        {
+            udp_sink_ptr = nullptr;
+        }
 
     // Create Sys V message queue
     first_fix = true;
@@ -591,6 +592,9 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
             std::cout << "GNSS-SDR can not create message queues!" << std::endl;
             throw std::exception();
         }
+
+    d_pvt_solver = std::make_shared<rtklib_solver>(static_cast<int32_t>(nchannels), dump_ls_pvt_filename, d_dump, d_dump_mat, rtk);
+    d_pvt_solver->set_averaging_depth(1);
     start = std::chrono::system_clock::now();
 }
 
@@ -1210,14 +1214,28 @@ bool rtklib_pvt_cc::load_gnss_synchro_map_xml(const std::string& file_name)
 }
 
 
+std::vector<std::string> rtklib_pvt_cc::split_string(const std::string& s, char delim)
+{
+    std::vector<std::string> v;
+    std::stringstream ss(s);
+    std::string item;
+
+    while (std::getline(ss, item, delim))
+        {
+            *(std::back_inserter(v)++) = item;
+        }
+
+    return v;
+}
+
+
 bool rtklib_pvt_cc::get_latest_PVT(double* longitude_deg,
     double* latitude_deg,
     double* height_m,
     double* ground_speed_kmh,
     double* course_over_ground_deg,
-    time_t* UTC_time)
+    time_t* UTC_time) const
 {
-    gr::thread::scoped_lock lock(d_setlock);
     if (d_pvt_solver->is_valid_position())
         {
             *latitude_deg = d_pvt_solver->get_latitude();
@@ -1225,7 +1243,7 @@ bool rtklib_pvt_cc::get_latest_PVT(double* longitude_deg,
             *height_m = d_pvt_solver->get_height();
             *ground_speed_kmh = d_pvt_solver->get_speed_over_ground() * 3600.0 / 1000.0;
             *course_over_ground_deg = d_pvt_solver->get_course_over_ground();
-            *UTC_time = to_time_t(d_pvt_solver->get_position_UTC_time());
+            *UTC_time = convert_to_time_t(d_pvt_solver->get_position_UTC_time());
 
             return true;
         }
@@ -1237,8 +1255,6 @@ bool rtklib_pvt_cc::get_latest_PVT(double* longitude_deg,
 int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items __attribute__((unused)))
 {
-    gr::thread::scoped_lock l(d_setlock);
-
     for (int32_t epoch = 0; epoch < noutput_items; epoch++)
         {
             bool flag_display_pvt = false;
@@ -3283,18 +3299,4 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
         }
 
     return noutput_items;
-}
-
-std::vector<std::string> rtklib_pvt_cc::split_string(const std::string& s, char delim)
-{
-    std::vector<std::string> v;
-    std::stringstream ss(s);
-    std::string item;
-
-    while (std::getline(ss, item, delim))
-        {
-            *(std::back_inserter(v)++) = item;
-        }
-
-    return v;
 }

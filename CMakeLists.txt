@@ -470,15 +470,6 @@ endif()
 
 
 ################################################################################
-# Check for availability of SSE
-################################################################################
-if(NOT ENABLE_GENERIC_ARCH)
-    include(TestForSSE)
-endif()
-
-
-
-################################################################################
 # Find the POSIX thread (pthread) libraries
 ################################################################################
 if(CMAKE_VERSION VERSION_LESS 3.1)
@@ -1864,12 +1855,6 @@ endif()
 ########################################################################
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
     set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wall -Wextra")  #Add warning flags: For "-Wall" see https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
-endif()
-
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    if(OS_IS_MACOSX)
-        set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -stdlib=libc++")
-    endif()
 endif()
 
 # Processor-architecture related flags

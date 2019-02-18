@@ -293,7 +293,11 @@ int ControlThread::run()
         }
     catch (const boost::thread_interrupted &interrupt)
         {
-            DLOG(INFO) << "Thread interrupted";
+            DLOG(WARNING) << "Thread interrupted";
+        }
+    catch (const boost::system::system_error &e)
+        {
+            LOG(WARNING) << "System error";
         }
 
     if (restart_)

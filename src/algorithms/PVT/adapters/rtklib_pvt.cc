@@ -802,5 +802,5 @@ gr::basic_block_sptr RtklibPvt::get_left_block()
 
 gr::basic_block_sptr RtklibPvt::get_right_block()
 {
-    return pvt_;  // this is a sink, nothing downstream
+    return nullptr;  // this is a sink, nothing downstream
 }

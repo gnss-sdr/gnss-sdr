@@ -46,7 +46,7 @@ class gnss_synchro_monitor;
 using gnss_synchro_monitor_sptr = boost::shared_ptr<gnss_synchro_monitor>;
 
 gnss_synchro_monitor_sptr gnss_synchro_make_monitor(unsigned int n_channels,
-    int output_rate_ms,
+    int decimation_factor,
     int udp_port,
     const std::vector<std::string>& udp_addresses);
 
@@ -57,13 +57,13 @@ class gnss_synchro_monitor : public gr::sync_block
 {
 private:
     friend gnss_synchro_monitor_sptr gnss_synchro_make_monitor(unsigned int nchannels,
-        int output_rate_ms,
+        int decimation_factor,
         int udp_port,
         const std::vector<std::string>& udp_addresses);
 
     unsigned int d_nchannels;
 
-    int d_output_rate_ms;
+    int d_decimation_factor;
 
     std::unique_ptr<Gnss_Synchro_Udp_Sink> udp_sink_ptr;
 
@@ -72,7 +72,7 @@ private:
 
 public:
     gnss_synchro_monitor(unsigned int nchannels,
-        int output_rate_ms,
+        int decimation_factor,
         int udp_port,
         const std::vector<std::string>& udp_addresses);
 

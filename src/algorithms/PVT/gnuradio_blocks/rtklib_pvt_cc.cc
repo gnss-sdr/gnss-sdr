@@ -233,7 +233,7 @@ void rtklib_pvt_cc::msg_handler_telemetry(const pmt::pmt_t& msg)
                 }
 
             // ************* BeiDou telemetry *****************
-            if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Dnav_Ephemeris>))
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Dnav_Ephemeris>))
                 {
                     // ### Beidou EPHEMERIS ###
                     std::shared_ptr<Beidou_Dnav_Ephemeris> bds_dnav_eph;
@@ -316,6 +316,7 @@ std::map<int, Beidou_Dnav_Almanac> rtklib_pvt_cc::get_beidou_dnav_almanac_map() 
 {
     return d_pvt_solver->beidou_dnav_almanac_map;
 }
+
 
 void rtklib_pvt_cc::clear_ephemeris()
 {

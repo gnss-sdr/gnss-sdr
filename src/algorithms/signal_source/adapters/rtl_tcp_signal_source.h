@@ -90,7 +90,7 @@ private:
 
     // rtl_tcp settings
     std::string address_;
-    short port_;
+    int16_t port_;
     bool AGC_enabled_;
     double sample_rate_;
     bool flip_iq_;

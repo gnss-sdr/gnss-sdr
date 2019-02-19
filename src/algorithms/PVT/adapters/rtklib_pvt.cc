@@ -42,6 +42,7 @@
 namespace bc = boost::math;
 #else
 #include <boost/integer/common_factor_rt.hpp>
+#include <utility>
 namespace bc = boost::integer;
 #endif
 
@@ -52,7 +53,7 @@ using google::LogMessage;
 RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams) : role_(role),
+    unsigned int out_streams) : role_(std::move(role)),
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {

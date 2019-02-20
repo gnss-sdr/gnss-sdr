@@ -56,7 +56,7 @@ gnss_synchro_monitor_sptr gnss_synchro_make_monitor(unsigned int n_channels,
 class gnss_synchro_monitor : public gr::sync_block
 {
 private:
-    friend gnss_synchro_monitor_sptr gnss_synchro_make_monitor(unsigned int nchannels,
+    friend gnss_synchro_monitor_sptr gnss_synchro_make_monitor(unsigned int n_channels,
         int decimation_factor,
         int udp_port,
         const std::vector<std::string>& udp_addresses);
@@ -71,7 +71,7 @@ private:
 
 
 public:
-    gnss_synchro_monitor(unsigned int nchannels,
+    gnss_synchro_monitor(unsigned int n_channels,
         int decimation_factor,
         int udp_port,
         const std::vector<std::string>& udp_addresses);

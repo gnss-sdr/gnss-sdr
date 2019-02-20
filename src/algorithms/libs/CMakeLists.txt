@@ -139,6 +139,14 @@ set_property(TARGET algorithms_libs
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
+if(OS_IS_MACOSX)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")  # not AppleClang
+        target_compile_definitions(algorithms_libs
+            PUBLIC
+                -DBOOST_ASIO_HAS_STD_STRING_VIEW
+        )
+    endif()
+endif()
 
 ###############################################################################
 

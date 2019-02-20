@@ -75,6 +75,15 @@ if(ENABLE_RAW_UDP AND PCAP_FOUND)
     )
 endif()
 
+if(OS_IS_MACOSX)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")  # not AppleClang
+        target_compile_definitions(signal_source_gr_blocks
+            PUBLIC
+                -DBOOST_ASIO_HAS_STD_STRING_VIEW
+        )
+    endif()
+endif()
+
 set_property(TARGET signal_source_gr_blocks APPEND PROPERTY
     INTERFACE_INCLUDE_DIRECTORIES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

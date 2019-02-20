@@ -91,6 +91,15 @@ target_include_directories(tracking_libs
         ${OPT_TRACKING_INCLUDES}
 )
 
+if(OS_IS_MACOSX)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")  # not AppleClang
+        target_compile_definitions(tracking_libs
+            PUBLIC
+                -DBOOST_ASIO_HAS_STD_STRING_VIEW
+        )
+    endif()
+endif()
+
 set_property(TARGET tracking_libs
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

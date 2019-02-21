@@ -241,7 +241,7 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
     ################################################################################
     find_package(GPSTK)
     if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
-      message(STATUS "GPSTk v${GNSSSDR_GPSTK_LOCAL_VERSION} will be automatically downloaded and built when doing 'make'.")
+      message(STATUS " GPSTk v${GNSSSDR_GPSTK_LOCAL_VERSION} will be automatically downloaded and built when doing 'make'.")
       if("${TOOLCHAIN_ARG}" STREQUAL "")
           set(TOOLCHAIN_ARG "-DCMAKE_CXX_FLAGS=\"-Wno-deprecated\"")
           set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")

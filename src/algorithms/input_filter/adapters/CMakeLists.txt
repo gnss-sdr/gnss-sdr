@@ -51,6 +51,8 @@ target_link_libraries(input_filter_adapters
         input_filter_gr_blocks
         algorithms_libs
     PRIVATE
+        Gflags::gflags
+        Glog::glog
         Volk::volk
 )
 

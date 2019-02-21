@@ -46,6 +46,15 @@ target_link_libraries(front_end_cal_lib
         Boost::thread
 )
 
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(front_end_cal_lib
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
 add_executable(front-end-cal ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
 
 target_link_libraries(front-end-cal
@@ -64,6 +73,15 @@ target_compile_definitions(front-end-cal
     PUBLIC -DGNSS_SDR_VERSION="${VERSION}"
     PUBLIC -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}"
 )
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(front-end-cal
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
 
 add_custom_command(TARGET front-end-cal POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:front-end-cal>

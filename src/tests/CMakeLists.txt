@@ -404,6 +404,14 @@ if(ENABLE_UNIT_TESTING)
             )
         endif()
     endif()
+    if(ENABLE_CLANG_TIDY)
+        if(CLANG_TIDY_EXE)
+            set_target_properties(run_tests
+                PROPERTIES
+                    CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+            )
+        endif()
+    endif()
     if(ENABLE_CUDA)
         target_link_libraries(run_tests
             PUBLIC
@@ -475,6 +483,14 @@ function(add_system_test executable)
         add_custom_command(TARGET ${executable} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${executable}>
             ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:${executable}>)
+    endif()
+    if(ENABLE_CLANG_TIDY)
+        if(CLANG_TIDY_EXE)
+            set_target_properties(${executable}
+                PROPERTIES
+                    CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+            )
+        endif()
     endif()
 endfunction()
 

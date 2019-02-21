@@ -2003,7 +2003,7 @@ void Gnuplot::init()
 // whose name is specified as argument.  If the requested variable is not
 // part of the environment list, the function returns a NULL pointer.
 #if (defined(unix) || defined(__unix) || defined(__unix__)) && !defined(__APPLE__)
-    if (std::getenv("DISPLAY") == NULL)
+    if (std::getenv("DISPLAY") == nullptr)
         {
             valid = false;
             throw GnuplotException("Can't find DISPLAY variable");

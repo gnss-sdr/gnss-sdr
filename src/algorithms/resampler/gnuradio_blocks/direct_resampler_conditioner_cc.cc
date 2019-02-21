@@ -37,8 +37,6 @@
 #include <gnuradio/io_signature.h>
 
 
-using google::LogMessage;
-
 direct_resampler_conditioner_cc_sptr direct_resampler_make_conditioner_cc(
     double sample_freq_in, double sample_freq_out)
 {

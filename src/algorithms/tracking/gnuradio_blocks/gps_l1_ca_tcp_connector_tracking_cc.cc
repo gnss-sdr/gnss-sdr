@@ -204,7 +204,7 @@ void Gps_L1_Ca_Tcp_Connector_Tracking_cc::start_tracking()
     T_prn_mod_seconds = T_chip_mod_seconds * GPS_L1_CA_CODE_LENGTH_CHIPS;
     T_prn_mod_samples = T_prn_mod_seconds * static_cast<float>(d_fs_in);
 
-    d_next_prn_length_samples = round(T_prn_mod_samples);
+    d_next_prn_length_samples = std::round(T_prn_mod_samples);
 
     float T_prn_true_seconds = GPS_L1_CA_CODE_LENGTH_CHIPS / GPS_L1_CA_CODE_RATE_HZ;
     float T_prn_true_samples = T_prn_true_seconds * static_cast<float>(d_fs_in);
@@ -213,7 +213,7 @@ void Gps_L1_Ca_Tcp_Connector_Tracking_cc::start_tracking()
     float N_prn_diff;
     N_prn_diff = acq_trk_diff_seconds / T_prn_true_seconds;
     float corrected_acq_phase_samples, delay_correction_samples;
-    corrected_acq_phase_samples = fmod((d_acq_code_phase_samples + T_prn_diff_seconds * N_prn_diff * static_cast<float>(d_fs_in)), T_prn_true_samples);
+    corrected_acq_phase_samples = std::fmod((d_acq_code_phase_samples + T_prn_diff_seconds * N_prn_diff * static_cast<float>(d_fs_in)), T_prn_true_samples);
     if (corrected_acq_phase_samples < 0)
         {
             corrected_acq_phase_samples = T_prn_mod_samples + corrected_acq_phase_samples;
@@ -357,8 +357,8 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
                     float acq_trk_shif_correction_samples;
                     int32_t acq_to_trk_delay_samples;
                     acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
-                    acq_trk_shif_correction_samples = d_next_prn_length_samples - fmod(static_cast<float>(acq_to_trk_delay_samples), static_cast<float>(d_next_prn_length_samples));
-                    samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
+                    acq_trk_shif_correction_samples = d_next_prn_length_samples - std::fmod(static_cast<float>(acq_to_trk_delay_samples), static_cast<float>(d_next_prn_length_samples));
+                    samples_offset = std::round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
                     current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(samples_offset);
                     current_synchro_data.fs = d_fs_in;
                     *out[0] = current_synchro_data;

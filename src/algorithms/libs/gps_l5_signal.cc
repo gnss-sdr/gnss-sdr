@@ -240,7 +240,7 @@ void gps_l5i_code_gen_complex_sampled(std::complex<float>* _dest, uint32_t _prn,
 
             //--- Make index array to read L5 code values -------------------------
             //TODO: Check this formula! Seems to start with an extra sample
-            _codeValueIndex = ceil((_ts * (static_cast<float>(i) + 1)) / _tc) - 1;
+            _codeValueIndex = std::ceil((_ts * (static_cast<float>(i) + 1)) / _tc) - 1;
             //aux = (_ts * (i + 1)) / _tc;
             //_codeValueIndex = static_cast<int32_t> (static_cast<long>(aux)) - 1;
 
@@ -325,7 +325,7 @@ void gps_l5q_code_gen_complex_sampled(std::complex<float>* _dest, uint32_t _prn,
 
             //--- Make index array to read L5 code values -------------------------
             //TODO: Check this formula! Seems to start with an extra sample
-            _codeValueIndex = ceil((_ts * (static_cast<float>(i) + 1)) / _tc) - 1;
+            _codeValueIndex = std::ceil((_ts * (static_cast<float>(i) + 1)) / _tc) - 1;
             //aux = (_ts * (i + 1)) / _tc;
             //_codeValueIndex = static_cast<int32_t> (static_cast<long>(aux)) - 1;
 

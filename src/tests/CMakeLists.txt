@@ -241,7 +241,7 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
     ################################################################################
     find_package(GPSTK)
     if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
-      message(STATUS "GPSTk v${GNSSSDR_GPSTK_LOCAL_VERSION} will be automatically downloaded and built when doing 'make'.")
+      message(STATUS " GPSTk v${GNSSSDR_GPSTK_LOCAL_VERSION} will be automatically downloaded and built when doing 'make'.")
       if("${TOOLCHAIN_ARG}" STREQUAL "")
           set(TOOLCHAIN_ARG "-DCMAKE_CXX_FLAGS=\"-Wno-deprecated\"")
           set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
@@ -404,6 +404,14 @@ if(ENABLE_UNIT_TESTING)
             )
         endif()
     endif()
+    if(ENABLE_CLANG_TIDY)
+        if(CLANG_TIDY_EXE)
+            set_target_properties(run_tests
+                PROPERTIES
+                    CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+            )
+        endif()
+    endif()
     if(ENABLE_CUDA)
         target_link_libraries(run_tests
             PUBLIC
@@ -475,6 +483,14 @@ function(add_system_test executable)
         add_custom_command(TARGET ${executable} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${executable}>
             ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:${executable}>)
+    endif()
+    if(ENABLE_CLANG_TIDY)
+        if(CLANG_TIDY_EXE)
+            set_target_properties(${executable}
+                PROPERTIES
+                    CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+            )
+        endif()
     endif()
 endfunction()
 

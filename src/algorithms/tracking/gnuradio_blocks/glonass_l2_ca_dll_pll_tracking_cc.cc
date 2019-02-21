@@ -574,7 +574,7 @@ int Glonass_L2_Ca_Dll_Pll_Tracking_cc::general_work(int noutput_items __attribut
                     double acq_trk_shif_correction_samples;
                     int32_t acq_to_trk_delay_samples;
                     acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
-                    acq_trk_shif_correction_samples = d_current_prn_length_samples - fmod(static_cast<float>(acq_to_trk_delay_samples), static_cast<float>(d_current_prn_length_samples));
+                    acq_trk_shif_correction_samples = d_current_prn_length_samples - std::fmod(static_cast<float>(acq_to_trk_delay_samples), static_cast<float>(d_current_prn_length_samples));
                     samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
                     current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(samples_offset);
                     d_sample_counter = d_sample_counter + static_cast<uint64_t>(samples_offset);  // count for the processed samples

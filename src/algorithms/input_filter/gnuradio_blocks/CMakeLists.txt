@@ -46,8 +46,6 @@ target_link_libraries(input_filter_gr_blocks
         Gnuradio::filter
         Volkgnsssdr::volkgnsssdr
     PRIVATE
-        Gflags::gflags
-        Glog::glog
         Log4cpp::log4cpp
 )
 

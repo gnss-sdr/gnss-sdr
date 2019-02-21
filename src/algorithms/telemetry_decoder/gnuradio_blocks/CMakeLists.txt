@@ -61,6 +61,15 @@ target_link_libraries(telemetry_decoder_gr_blocks
         Glog::glog
 )
 
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(telemetry_decoder_gr_blocks
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
 set_property(TARGET telemetry_decoder_gr_blocks
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

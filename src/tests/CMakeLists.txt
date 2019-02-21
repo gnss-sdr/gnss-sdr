@@ -701,7 +701,7 @@ if(NOT ENABLE_PACKAGING)
             GTest::GTest
             GTest::Main
             Volkgnsssdr::volkgnsssdr
-            signal_generator_blocks
+            signal_generator_gr_blocks
             signal_source_gr_blocks
             signal_source_libs
             acquisition_adapters
@@ -746,7 +746,7 @@ if(NOT ENABLE_PACKAGING)
             signal_source_libs
             algorithms_libs
             tracking_adapters
-            signal_generator_blocks
+            signal_generator_gr_blocks
             core_receiver
             core_system_parameters
     )

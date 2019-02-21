@@ -33,13 +33,9 @@
 
 #include "gnss_synchro_monitor.h"
 #include "gnss_synchro.h"
-#include <glog/logging.h>
 #include <algorithm>
 #include <iostream>
 #include <utility>
-
-
-using google::LogMessage;
 
 
 gnss_synchro_monitor_sptr gnss_synchro_make_monitor(unsigned int n_channels,

@@ -68,6 +68,15 @@ if(OS_IS_MACOSX)
     endif()
 endif()
 
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(gnss-sdr
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
 add_custom_command(TARGET gnss-sdr
     POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:gnss-sdr>
         ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:gnss-sdr>

@@ -3867,9 +3867,9 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
 }
 
 
-void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps_CNAV_Ephemeris>& gps_eph_map, const std::map<int32_t, Glonass_Gnav_Ephemeris>& glonass_gnav_eph_map)
+void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps_CNAV_Ephemeris>& gps_cnav_eph_map, const std::map<int32_t, Glonass_Gnav_Ephemeris>& glonass_gnav_eph_map)
 {
-    Rinex_Printer::log_rinex_nav(out, gps_eph_map);
+    Rinex_Printer::log_rinex_nav(out, gps_cnav_eph_map);
     Rinex_Printer::log_rinex_nav(out, glonass_gnav_eph_map);
 }
 
@@ -4715,7 +4715,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
 }
 
 
-void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris& gps_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const double d_TOW_first_observation, const std::string& glonass_bands)
+void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris& gps_cnav_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const double d_TOW_first_observation, const std::string& glonass_bands)
 {
     if (glonass_gnav_eph.d_m)
         {
@@ -4962,7 +4962,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
 
     // -------- TIME OF FIRST OBS
     line.clear();
-    boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(gps_eph, d_TOW_first_observation);
+    boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(gps_cnav_eph, d_TOW_first_observation);
     std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
     std::string year(timestring, 0, 4);
     std::string month(timestring, 4, 2);

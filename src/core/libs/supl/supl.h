@@ -243,7 +243,7 @@ void supl_set_wcdma_cell(supl_ctx_t *ctx, int mcc, int mns, int uc);
 void supl_set_gsm_cell_known(supl_ctx_t *ctx, int mcc, int mns, int lac, int ci, double lat, double lon, int uncert);
 void supl_set_server(supl_ctx_t *ctx, char *server);
 void supl_set_fd(supl_ctx_t *ctx, int fd);
-void supl_request(supl_ctx_t *ctx, int flags);
+void supl_request(supl_ctx_t *ctx, int request);
 
 int supl_get_assist(supl_ctx_t *ctx, char *server, supl_assist_t *assist);
 void supl_set_debug(FILE *log, int flags);

@@ -159,6 +159,24 @@ target_link_libraries(core_receiver
         pvt_adapters
 )
 
+if(OS_IS_MACOSX)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")  # not AppleClang
+        target_compile_definitions(core_receiver
+            PUBLIC
+                -DBOOST_ASIO_HAS_STD_STRING_VIEW
+        )
+    endif()
+endif()
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(core_receiver
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
 set_property(TARGET core_receiver APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/core/receiver>
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/core/interfaces>

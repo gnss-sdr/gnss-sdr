@@ -1051,7 +1051,7 @@ void ControlThread::sysv_queue_listener()
 {
     typedef struct
     {
-        long mtype;  // required by SysV queue messaging
+        long mtype;  // NOLINT(google-runtime-int) required by SysV queue messaging
         double stop_message;
     } stop_msgbuf;
 

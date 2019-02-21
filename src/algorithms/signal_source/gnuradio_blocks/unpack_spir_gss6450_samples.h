@@ -47,7 +47,7 @@ public:
     int work(int noutput_items,
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
     friend unpack_spir_gss6450_samples_sptr make_unpack_spir_gss6450_samples_sptr(unsigned int adc_nbit);
-    void decode_4bits_word(uint32_t input_int32, gr_complex *out, int adc_bits);
+    void decode_4bits_word(uint32_t input_uint32, gr_complex *out, int adc_bits);
     unpack_spir_gss6450_samples(unsigned int adc_nbit);
     ~unpack_spir_gss6450_samples();
 

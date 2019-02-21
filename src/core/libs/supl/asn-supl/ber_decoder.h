@@ -23,7 +23,7 @@ extern "C"
     asn_dec_rval_t ber_decode(struct asn_codec_ctx_s *opt_codec_ctx,
         struct asn_TYPE_descriptor_s *type_descriptor,
         void **struct_ptr,  /* Pointer to a target structure's pointer */
-        const void *buffer, /* Data to be decoded */
+        const void *ptr, /* Data to be decoded */
         size_t size         /* Size of that buffer */
     );
 
@@ -49,7 +49,7 @@ extern "C"
  */
     asn_dec_rval_t ber_check_tags(
         struct asn_codec_ctx_s *opt_codec_ctx, /* codec options */
-        struct asn_TYPE_descriptor_s *type_descriptor,
+        struct asn_TYPE_descriptor_s *td,
         asn_struct_ctx_t *opt_ctx, /* saved decoding context */
         const void *ptr, size_t size,
         int tag_mode,      /* {-1,0,1}: IMPLICIT, no, EXPLICIT */

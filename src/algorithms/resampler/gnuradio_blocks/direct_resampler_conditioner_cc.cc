@@ -33,7 +33,6 @@
 
 
 #include "direct_resampler_conditioner_cc.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 
 

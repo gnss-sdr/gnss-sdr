@@ -46,6 +46,15 @@ target_link_libraries(obs_gr_blocks
         algorithms_libs
 )
 
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(obs_gr_blocks
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
 set_property(TARGET obs_gr_blocks
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

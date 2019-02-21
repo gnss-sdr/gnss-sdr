@@ -44,8 +44,6 @@ target_link_libraries(core_monitor
         Gnuradio::runtime
         core_system_parameters
     PRIVATE
-        Gflags::gflags
-        Glog::glog
         Gnuradio::pmt
 )
 
@@ -54,6 +52,15 @@ if(OS_IS_MACOSX)
         target_compile_definitions(core_monitor
             PUBLIC
                 -DBOOST_ASIO_HAS_STD_STRING_VIEW
+        )
+    endif()
+endif()
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(core_monitor
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
         )
     endif()
 endif()

@@ -148,6 +148,15 @@ if(OS_IS_MACOSX)
     endif()
 endif()
 
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(algorithms_libs
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
 ###############################################################################
 
 source_group(Headers FILES gnss_sdr_flags.h)
@@ -168,6 +177,15 @@ endif()
 target_compile_definitions(gnss_sdr_flags
     PRIVATE -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}"
 )
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(gnss_sdr_flags
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
 
 set_property(TARGET gnss_sdr_flags
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES

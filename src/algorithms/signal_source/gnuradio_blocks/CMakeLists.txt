@@ -84,6 +84,15 @@ if(OS_IS_MACOSX)
     endif()
 endif()
 
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(signal_source_gr_blocks
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
 set_property(TARGET signal_source_gr_blocks APPEND PROPERTY
     INTERFACE_INCLUDE_DIRECTORIES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

@@ -41,6 +41,15 @@ target_link_libraries(pvt_gr_blocks
         core_system_parameters
 )
 
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(pvt_gr_blocks
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
 target_include_directories(pvt_gr_blocks
     PUBLIC
         ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs

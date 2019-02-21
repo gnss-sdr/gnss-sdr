@@ -296,7 +296,7 @@ public:
      * \brief Computes the Coordinated Universal Time (UTC) and
      * returns it in [s] (IS-GPS-200E, 20.3.3.5.2.4)
      */
-    double utc_time(const double gpstime_corrected) const;
+    double utc_time(const double beidoutime_corrected) const;
 
     bool satellite_validation();
 

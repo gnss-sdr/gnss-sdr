@@ -33,7 +33,7 @@
 #include <iostream>
 #include <utility>
 
-bool tlm_dump_reader::read_binary_obs()
+bool Tlm_Dump_Reader::read_binary_obs()
 {
     try
         {
@@ -49,7 +49,7 @@ bool tlm_dump_reader::read_binary_obs()
 }
 
 
-bool tlm_dump_reader::restart()
+bool Tlm_Dump_Reader::restart()
 {
     if (d_dump_file.is_open())
         {
@@ -61,7 +61,7 @@ bool tlm_dump_reader::restart()
 }
 
 
-int64_t tlm_dump_reader::num_epochs()
+int64_t Tlm_Dump_Reader::num_epochs()
 {
     std::ifstream::pos_type size;
     int number_of_vars_in_epoch = 2;
@@ -77,7 +77,7 @@ int64_t tlm_dump_reader::num_epochs()
 }
 
 
-bool tlm_dump_reader::open_obs_file(std::string out_file)
+bool Tlm_Dump_Reader::open_obs_file(std::string out_file)
 {
     if (d_dump_file.is_open() == false)
         {
@@ -102,7 +102,7 @@ bool tlm_dump_reader::open_obs_file(std::string out_file)
 }
 
 
-tlm_dump_reader::~tlm_dump_reader()
+Tlm_Dump_Reader::~Tlm_Dump_Reader()
 {
     try
         {

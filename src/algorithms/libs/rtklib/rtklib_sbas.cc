@@ -319,12 +319,12 @@ int decode_sbstype18(const sbsmsg_t *msg, sbsion_t *sbsion)
 
     if (0 <= band && band <= 8)
         {
-            p = igpband1[band];
+            p = IGPBAND1[band];
             m = 8;
         }
     else if (9 <= band && band <= 10)
         {
-            p = igpband2[band - 9];
+            p = IGPBAND2[band - 9];
             m = 5;
         }
     else

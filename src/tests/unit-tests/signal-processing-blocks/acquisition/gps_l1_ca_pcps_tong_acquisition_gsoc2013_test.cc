@@ -61,16 +61,16 @@ class GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx;
 
 using GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_sptr = boost::shared_ptr<GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx>;
 
-GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_sptr GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_make(concurrent_queue<int>& queue);
+GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_sptr GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_make(Concurrent_Queue<int>& queue);
 
 
 class GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx : public gr::block
 {
 private:
-    friend GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_sptr GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_make(concurrent_queue<int>& queue);
+    friend GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_sptr GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_make(Concurrent_Queue<int>& queue);
     void msg_handler_events(pmt::pmt_t msg);
-    GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx(concurrent_queue<int>& queue);
-    concurrent_queue<int>& channel_internal_queue;
+    GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx(Concurrent_Queue<int>& queue);
+    Concurrent_Queue<int>& channel_internal_queue;
 
 public:
     int rx_message;
@@ -78,7 +78,7 @@ public:
 };
 
 
-GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_sptr GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_make(concurrent_queue<int>& queue)
+GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_sptr GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_make(Concurrent_Queue<int>& queue)
 {
     return GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_sptr(new GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx(queue));
 }
@@ -100,7 +100,7 @@ void GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx::msg_handler_events(pmt::pmt_
 }
 
 
-GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx::GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx(concurrent_queue<int>& queue) : gr::block("GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue)
+GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx::GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx(Concurrent_Queue<int>& queue) : gr::block("GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue)
 {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"), boost::bind(&GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx::msg_handler_events, this, _1));
@@ -133,7 +133,7 @@ protected:
     void process_message();
     void stop_queue();
 
-    concurrent_queue<int> channel_internal_queue;
+    Concurrent_Queue<int> channel_internal_queue;
     gr::msg_queue::sptr queue;
     gr::top_block_sptr top_block;
     std::shared_ptr<GpsL1CaPcpsTongAcquisition> acquisition;

@@ -594,7 +594,7 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
             throw std::exception();
         }
 
-    d_pvt_solver = std::make_shared<rtklib_solver>(static_cast<int32_t>(nchannels), dump_ls_pvt_filename, d_dump, d_dump_mat, rtk);
+    d_pvt_solver = std::make_shared<Rtklib_Solver>(static_cast<int32_t>(nchannels), dump_ls_pvt_filename, d_dump, d_dump_mat, rtk);
     d_pvt_solver->set_averaging_depth(1);
     start = std::chrono::system_clock::now();
 }

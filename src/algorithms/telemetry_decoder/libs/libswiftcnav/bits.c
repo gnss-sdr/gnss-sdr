@@ -34,7 +34,7 @@
 #include <string.h>
 
 
-static const u8 bitn[16] = {0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4};
+static const uint8_t BITN[16] = {0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4};
 
 /** \defgroup bits Bit Utils
  * Bit field packing, unpacking and utility functions.
@@ -49,7 +49,7 @@ static const u8 bitn[16] = {0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4};
  * \return 1 if there are an odd number of bits set.
  *         0 if there are an even number of bits set.
  */
-u8 parity(u32 x)
+uint8_t parity(uint32_t x)
 {
     x ^= x >> 16;
     x ^= x >> 8;
@@ -68,10 +68,10 @@ u8 parity(u32 x)
  * \param len Length of bit field in bits.
  * \return Bit field as an unsigned value.
  */
-u32 getbitu(const u8 *buff, u32 pos, u8 len)
+uint32_t getbitu(const uint8_t *buff, uint32_t pos, uint8_t len)
 {
-    u32 bits = 0;
-    u32 i = 0;
+    uint32_t bits = 0;
+    uint32_t i = 0;
     for (i = pos; i < pos + len; i++)
         {
             bits = (bits << 1) +
@@ -92,14 +92,14 @@ u32 getbitu(const u8 *buff, u32 pos, u8 len)
  * \param len Length of bit field in bits.
  * \return Bit field as a signed value.
  */
-s32 getbits(const u8 *buff, u32 pos, u8 len)
+int32_t getbits(const uint8_t *buff, uint32_t pos, uint8_t len)
 {
-    s32 bits = (s32)getbitu(buff, pos, len);
+    int32_t bits = (int32_t)getbitu(buff, pos, len);
 
     /* Sign extend, taken from:
      * http://graphics.stanford.edu/~seander/bithacks.html#VariableSignExtend
      */
-    s32 m = 1u << (len - 1);
+    int32_t m = 1u << (len - 1);
     return (bits ^ m) - m;
 }
 
@@ -112,15 +112,15 @@ s32 getbits(const u8 *buff, u32 pos, u8 len)
  * \param len Length of bit field in bits.
  * \param data Unsigned integer to be packed into bit field.
  */
-void setbitu(u8 *buff, u32 pos, u32 len, u32 data)
+void setbitu(uint8_t *buff, uint32_t pos, uint32_t len, uint32_t data)
 {
-    u32 mask = 1u << (len - 1);
+    uint32_t mask = 1u << (len - 1);
 
     if (len <= 0 || 32 < len)
         {
             return;
         }
-    u32 i = 0;
+    uint32_t i = 0;
     for (i = pos; i < pos + len; i++, mask >>= 1)
         {
             if (data & mask)
@@ -143,9 +143,9 @@ void setbitu(u8 *buff, u32 pos, u32 len, u32 data)
  * \param len Length of bit field in bits.
  * \param data Signed integer to be packed into bit field.
  */
-void setbits(u8 *buff, u32 pos, u32 len, s32 data)
+void setbits(uint8_t *buff, uint32_t pos, uint32_t len, int32_t data)
 {
-    setbitu(buff, pos, len, (u32)data);
+    setbitu(buff, pos, len, (uint32_t)data);
 }
 
 /**
@@ -158,7 +158,7 @@ void setbits(u8 *buff, u32 pos, u32 len, s32 data)
  *
  * \return None
  */
-void bitshl(void *buf, u32 size, u32 shift)
+void bitshl(void *buf, uint32_t size, uint32_t shift)
 {
     if (shift > size * CHAR_BIT)
         {
@@ -170,9 +170,9 @@ void bitshl(void *buf, u32 size, u32 shift)
     unsigned char *dst = buf;                          /* Destination byte. */
     const unsigned char *src = dst + shift / CHAR_BIT; /* First source byte, possibly incomplete. */
 
-    u32 copy_bits = size * CHAR_BIT - shift; /* Number of bits to move */
-    u32 byte_shift = copy_bits % CHAR_BIT;   /* Shift of data */
-    u32 full_bytes = copy_bits / CHAR_BIT;   /* Number of bytes to move */
+    uint32_t copy_bits = size * CHAR_BIT - shift; /* Number of bits to move */
+    uint32_t byte_shift = copy_bits % CHAR_BIT;   /* Shift of data */
+    uint32_t full_bytes = copy_bits / CHAR_BIT;   /* Number of bytes to move */
 
     if (0 == byte_shift)
         {
@@ -184,8 +184,8 @@ void bitshl(void *buf, u32 size, u32 shift)
     else
         {
             /* Create an accumulator: it will hold a value of two consecutive bytes */
-            u32 acc = *src++;
-            u32 i = 0;
+            uint32_t acc = *src++;
+            uint32_t i = 0;
             for (i = 0; i < full_bytes; ++i)
                 {
                     acc = (acc << CHAR_BIT) | *src++;
@@ -215,22 +215,22 @@ void bitshl(void *buf, u32 size, u32 shift)
  * \todo This function can be optimized for copying aligned data and using
  *       proper native type like long.
  */
-void bitcopy(void *dst, u32 dst_index, const void *src, u32 src_index,
-    u32 count)
+void bitcopy(void *dst, uint32_t dst_index, const void *src, uint32_t src_index,
+    uint32_t count)
 {
-    u32 limit1 = count / 32;
-    u32 limit2 = count % 32;
-    u32 idx = 0;
+    uint32_t limit1 = count / 32;
+    uint32_t limit2 = count % 32;
+    uint32_t idx = 0;
     for (idx = 0; idx < limit1; ++idx)
         {
-            u32 tmp = getbitu(src, src_index, 32);
+            uint32_t tmp = getbitu(src, src_index, 32);
             setbitu(dst, dst_index, 32, tmp);
             src_index += 32;
             dst_index += 32;
         }
     if (0 != limit2)
         {
-            u32 tmp = getbitu(src, src_index, limit2);
+            uint32_t tmp = getbitu(src, src_index, limit2);
             setbitu(dst, dst_index, limit2, tmp);
         }
 }
@@ -243,13 +243,13 @@ void bitcopy(void *dst, u32 dst_index, const void *src, u32 src_index,
  *
  * \return        Number of bits set to one or zero.
  */
-u8 count_bits_u64(u64 v, u8 bv)
+uint8_t count_bits_u64(uint64_t v, uint8_t bv)
 {
-    u8 r = 0;
+    uint8_t r = 0;
     int i = 0;
     for (i = 0; i < 16; i++)
         {
-            r += bitn[(v >> (i * 4)) & 0xf];
+            r += BITN[(v >> (i * 4)) & 0xf];
         }
     return bv == 1 ? r : 64 - r;
 }
@@ -262,13 +262,13 @@ u8 count_bits_u64(u64 v, u8 bv)
  *
  * \return        Number of bits set to one or zero.
  */
-u8 count_bits_u32(u32 v, u8 bv)
+uint8_t count_bits_u32(uint32_t v, uint8_t bv)
 {
-    u8 r = 0;
+    uint8_t r = 0;
     int i = 0;
     for (i = 0; i < 8; i++)
         {
-            r += bitn[(v >> (i * 4)) & 0xf];
+            r += BITN[(v >> (i * 4)) & 0xf];
         }
     return bv == 1 ? r : 32 - r;
 }
@@ -281,13 +281,13 @@ u8 count_bits_u32(u32 v, u8 bv)
  *
  * \return        Number of bits set to one or zero.
  */
-u8 count_bits_u16(u16 v, u8 bv)
+uint8_t count_bits_u16(uint16_t v, uint8_t bv)
 {
-    u8 r = 0;
+    uint8_t r = 0;
     int i = 0;
     for (i = 0; i < 4; i++)
         {
-            r += bitn[(v >> (i * 4)) & 0xf];
+            r += BITN[(v >> (i * 4)) & 0xf];
         }
     return bv == 1 ? r : 16 - r;
 }
@@ -300,13 +300,13 @@ u8 count_bits_u16(u16 v, u8 bv)
  *
  * \return        Number of bits set to one or zero.
  */
-u8 count_bits_u8(u8 v, u8 bv)
+uint8_t count_bits_u8(uint8_t v, uint8_t bv)
 {
-    u8 r = 0;
+    uint8_t r = 0;
     int i = 0;
     for (i = 0; i < 2; i++)
         {
-            r += bitn[(v >> (i * 4)) & 0xf];
+            r += BITN[(v >> (i * 4)) & 0xf];
         }
     return bv == 1 ? r : 8 - r;
 }

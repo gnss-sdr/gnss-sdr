@@ -447,7 +447,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
     int test_satellite_PRN = 0;
     double acq_delay_samples = 0.0;
     double acq_doppler_hz = 0.0;
-    tracking_true_obs_reader true_obs_data;
+    Tracking_True_Obs_Reader true_obs_data;
 
 
     // CONFIG PARAM SWEEP LOOP
@@ -645,7 +645,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
 
                     //check results
                     //load the measured values
-                    tracking_dump_reader trk_dump;
+                    Tracking_Dump_Reader trk_dump;
                     ASSERT_EQ(trk_dump.open_obs_file(std::string("./tracking_ch_0.dat")), true)
                         << "Failure opening tracking dump file";
 
@@ -751,7 +751,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                             code_phase_error_chips = check_results_codephase(true_timestamp_s, true_prn_delay_chips, trk_timestamp_s, trk_prn_delay_chips, mean_error, std_dev_error, rmse);
                                             for (double code_phase_error_chip : code_phase_error_chips)
                                                 {
-                                                    code_phase_error_meters.push_back(GPS_L1_CA_CHIP_PERIOD * code_phase_error_chip * GPS_C_m_s);
+                                                    code_phase_error_meters.push_back(GPS_L1_CA_CHIP_PERIOD * code_phase_error_chip * GPS_C_M_S);
                                                 }
                                             mean_code_phase_error.push_back(mean_error);
                                             std_dev_code_phase_error.push_back(std_dev_error);

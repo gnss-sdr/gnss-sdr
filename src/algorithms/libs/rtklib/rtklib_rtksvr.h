@@ -57,7 +57,7 @@
 #include "rtklib.h"
 
 
-const solopt_t solopt_default = {
+const solopt_t SOLOPT_DEFAULT = {
     /* defaults solution output options */
     SOLF_LLH, TIMES_GPST, 1, 3, /* posf, times, timef, timeu */
     0, 1, 0, 0, 0, 0,           /* degf, outhead, outopt, datum, height, geoid */
@@ -66,7 +66,7 @@ const solopt_t solopt_default = {
     " ", "", 0                  /* separator/program name */
 };
 
-const prcopt_t prcopt_default = {            /* defaults processing options */
+const prcopt_t PRCOPT_DEFAULT = {            /* defaults processing options */
     PMODE_SINGLE, 0, 2, SYS_GPS,             /* mode, soltype, nf, navsys */
     15.0 * D2R, {{}, {{}, {}}},              /* elmin, snrmask */
     0, 1, 1, 1,                              /* sateph, modear, glomodear, bdsmodear */

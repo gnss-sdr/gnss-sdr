@@ -1731,6 +1731,7 @@ endif()
 ##############################################
 if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
     find_package(GRIIO)
+    find_package(LIBIIO)
 endif()
 
 

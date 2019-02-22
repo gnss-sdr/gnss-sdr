@@ -94,7 +94,7 @@ UseMultipleSets_encode_uper(asn_TYPE_descriptor_t *td,
 	return td->uper_encoder(td, constraints, structure, per_out);
 }
 
-static asn_per_constraints_t asn_PER_type_UseMultipleSets_constr_1 = {
+static asn_per_constraints_t ASN_PER_TYPE_USE_MULTIPLE_SETS_CONSTR_1 = {
 	{ APC_CONSTRAINED,	 1,  1,  0,  1 }	/* (0..1) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -138,7 +138,7 @@ asn_TYPE_descriptor_t asn_DEF_UseMultipleSets = {
 	asn_DEF_UseMultipleSets_tags_1,	/* Same as above */
 	sizeof(asn_DEF_UseMultipleSets_tags_1)
 		/sizeof(asn_DEF_UseMultipleSets_tags_1[0]), /* 1 */
-	&asn_PER_type_UseMultipleSets_constr_1,
+	&ASN_PER_TYPE_USE_MULTIPLE_SETS_CONSTR_1,
 	0, 0,	/* Defined elsewhere */
 	&asn_SPC_UseMultipleSets_specs_1	/* Additional specs */
 };

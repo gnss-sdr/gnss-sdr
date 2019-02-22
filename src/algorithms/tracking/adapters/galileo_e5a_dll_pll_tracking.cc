@@ -93,7 +93,7 @@ GalileoE5aDllPllTracking::GalileoE5aDllPllTracking(
     trk_param.dll_bw_narrow_hz = dll_bw_narrow_hz;
     float early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     trk_param.early_late_space_chips = early_late_space_chips;
-    int vector_length = std::round(fs_in / (Galileo_E5a_CODE_CHIP_RATE_HZ / Galileo_E5a_CODE_LENGTH_CHIPS));
+    int vector_length = std::round(fs_in / (GALILEO_E5A_CODE_CHIP_RATE_HZ / GALILEO_E5A_CODE_LENGTH_CHIPS));
     trk_param.vector_length = vector_length;
     int extend_correlation_symbols = configuration->property(role + ".extend_correlation_symbols", 1);
     float early_late_space_narrow_chips = configuration->property(role + ".early_late_space_narrow_chips", 0.15);
@@ -104,9 +104,9 @@ GalileoE5aDllPllTracking::GalileoE5aDllPllTracking(
             extend_correlation_symbols = 1;
             std::cout << TEXT_RED << "WARNING: Galileo E5a. extend_correlation_symbols must be bigger than 0. Coherent integration has been set to 1 symbol (1 ms)" << TEXT_RESET << std::endl;
         }
-    else if (!track_pilot and extend_correlation_symbols > Galileo_E5a_I_SECONDARY_CODE_LENGTH)
+    else if (!track_pilot and extend_correlation_symbols > GALILEO_E5A_I_SECONDARY_CODE_LENGTH)
         {
-            extend_correlation_symbols = Galileo_E5a_I_SECONDARY_CODE_LENGTH;
+            extend_correlation_symbols = GALILEO_E5A_I_SECONDARY_CODE_LENGTH;
             std::cout << TEXT_RED << "WARNING: Galileo E5a. extend_correlation_symbols must be lower than 21 when tracking the data component. Coherent integration has been set to 20 symbols (20 ms)" << TEXT_RESET << std::endl;
         }
     if ((extend_correlation_symbols > 1) and (pll_bw_narrow_hz > pll_bw_hz or dll_bw_narrow_hz > dll_bw_hz))

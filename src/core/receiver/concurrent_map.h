@@ -43,7 +43,7 @@ template <typename Data>
  * \brief This class implements a thread-safe std::map
  *
  */
-class concurrent_map
+class Concurrent_Map
 {
     typedef typename std::map<int, Data>::iterator Data_iterator;  // iterator is scope dependent
 private:

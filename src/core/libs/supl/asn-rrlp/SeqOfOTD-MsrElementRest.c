@@ -6,7 +6,7 @@
 
 #include "SeqOfOTD-MsrElementRest.h"
 
-static asn_per_constraints_t asn_PER_type_SeqOfOTD_MsrElementRest_constr_1 = {
+static asn_per_constraints_t ASN_PER_TYPE_SEQ_OF_OTD_MSR_ELEMENT_REST_CONSTR_1 = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 1,  1,  1,  2 }	/* (SIZE(1..2)) */,
 	0, 0	/* No PER value map */
@@ -49,7 +49,7 @@ asn_TYPE_descriptor_t asn_DEF_SeqOfOTD_MsrElementRest = {
 	asn_DEF_SeqOfOTD_MsrElementRest_tags_1,	/* Same as above */
 	sizeof(asn_DEF_SeqOfOTD_MsrElementRest_tags_1)
 		/sizeof(asn_DEF_SeqOfOTD_MsrElementRest_tags_1[0]), /* 1 */
-	&asn_PER_type_SeqOfOTD_MsrElementRest_constr_1,
+	&ASN_PER_TYPE_SEQ_OF_OTD_MSR_ELEMENT_REST_CONSTR_1,
 	asn_MBR_SeqOfOTD_MsrElementRest_1,
 	1,	/* Single element */
 	&asn_SPC_SeqOfOTD_MsrElementRest_specs_1	/* Additional specs */

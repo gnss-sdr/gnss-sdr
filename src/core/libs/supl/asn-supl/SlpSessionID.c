@@ -37,7 +37,7 @@ memb_sessionID_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
         }
 }
 
-static asn_per_constraints_t asn_PER_memb_sessionID_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_SESSION_ID_CONSTR_2 = {
     {APC_UNCONSTRAINED, -1, -1, 0, 0},
     {APC_CONSTRAINED, 0, 0, 4, 4} /* (SIZE(4..4)) */,
     0, 0 /* No PER value map */
@@ -48,7 +48,7 @@ static asn_TYPE_member_t asn_MBR_SlpSessionID_1[] = {
         -1, /* IMPLICIT tag at current level */
         &asn_DEF_OCTET_STRING,
         memb_sessionID_constraint_1,
-        &asn_PER_memb_sessionID_constr_2,
+        &ASN_PER_MEMB_SESSION_ID_CONSTR_2,
         0,
         "sessionID"},
     {ATF_NOFLAGS, 0, offsetof(struct SlpSessionID, slpId),

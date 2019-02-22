@@ -52,7 +52,7 @@ boost::shared_ptr<gr::block> gnss_sdr_make_valve(size_t sizeof_stream_item,
  * \brief Implementation of a GNU Radio block that sends a STOP message to the
  * control queue right after a specific number of samples have passed through it.
  */
-class gnss_sdr_valve : public gr::sync_block
+class Gnss_Sdr_Valve : public gr::sync_block
 {
     friend boost::shared_ptr<gr::block> gnss_sdr_make_valve(size_t sizeof_stream_item,
         uint64_t nitems,
@@ -69,7 +69,7 @@ class gnss_sdr_valve : public gr::sync_block
     bool d_open_valve;
 
 public:
-    gnss_sdr_valve(size_t sizeof_stream_item,
+    Gnss_Sdr_Valve(size_t sizeof_stream_item,
         uint64_t nitems,
         gr::msg_queue::sptr queue, bool stop_flowgraph);
     void open_valve();

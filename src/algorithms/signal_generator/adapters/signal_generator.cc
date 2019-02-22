@@ -90,11 +90,11 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
         {
             if (signal1[0].at(0) == '5')
                 {
-                    vector_length = round(static_cast<float>(fs_in) / (Galileo_E5a_CODE_CHIP_RATE_HZ / Galileo_E5a_CODE_LENGTH_CHIPS));
+                    vector_length = round(static_cast<float>(fs_in) / (GALILEO_E5A_CODE_CHIP_RATE_HZ / GALILEO_E5A_CODE_LENGTH_CHIPS));
                 }
             else
                 {
-                    vector_length = round(static_cast<float>(fs_in) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)) * Galileo_E1_C_SECONDARY_CODE_LENGTH;
+                    vector_length = round(static_cast<float>(fs_in) / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS)) * GALILEO_E1_C_SECONDARY_CODE_LENGTH;
                 }
         }
     else if (std::find(system.begin(), system.end(), "G") != system.end())

@@ -35,7 +35,7 @@
 #include <utility>
 
 
-spirent_motion_csv_dump_reader::spirent_motion_csv_dump_reader()
+Spirent_Motion_Csv_Dump_Reader::Spirent_Motion_Csv_Dump_Reader()
 {
     header_lines = 2;
     TOW_ms = 0.0;
@@ -79,7 +79,7 @@ spirent_motion_csv_dump_reader::spirent_motion_csv_dump_reader()
 }
 
 
-spirent_motion_csv_dump_reader::~spirent_motion_csv_dump_reader()
+Spirent_Motion_Csv_Dump_Reader::~Spirent_Motion_Csv_Dump_Reader()
 {
     try
         {
@@ -99,7 +99,7 @@ spirent_motion_csv_dump_reader::~spirent_motion_csv_dump_reader()
 }
 
 
-bool spirent_motion_csv_dump_reader::read_csv_obs()
+bool Spirent_Motion_Csv_Dump_Reader::read_csv_obs()
 {
     try
         {
@@ -133,7 +133,7 @@ bool spirent_motion_csv_dump_reader::read_csv_obs()
 }
 
 
-bool spirent_motion_csv_dump_reader::parse_vector(std::vector<double> &vec)
+bool Spirent_Motion_Csv_Dump_Reader::parse_vector(std::vector<double> &vec)
 {
     try
         {
@@ -185,7 +185,7 @@ bool spirent_motion_csv_dump_reader::parse_vector(std::vector<double> &vec)
 }
 
 
-bool spirent_motion_csv_dump_reader::restart()
+bool Spirent_Motion_Csv_Dump_Reader::restart()
 {
     if (d_dump_file.is_open())
         {
@@ -202,7 +202,7 @@ bool spirent_motion_csv_dump_reader::restart()
 }
 
 
-int64_t spirent_motion_csv_dump_reader::num_epochs()
+int64_t Spirent_Motion_Csv_Dump_Reader::num_epochs()
 {
     int64_t nepoch = 0LL;
     std::string line;
@@ -219,7 +219,7 @@ int64_t spirent_motion_csv_dump_reader::num_epochs()
 }
 
 
-bool spirent_motion_csv_dump_reader::open_obs_file(std::string out_file)
+bool Spirent_Motion_Csv_Dump_Reader::open_obs_file(std::string out_file)
 {
     if (d_dump_file.is_open() == false)
         {
@@ -248,7 +248,7 @@ bool spirent_motion_csv_dump_reader::open_obs_file(std::string out_file)
 }
 
 
-void spirent_motion_csv_dump_reader::close_obs_file()
+void Spirent_Motion_Csv_Dump_Reader::close_obs_file()
 {
     try
         {

@@ -48,11 +48,11 @@
 #include <memory>
 #include <utility>
 
-extern concurrent_map<Gps_Ephemeris> global_gps_ephemeris_map;
-extern concurrent_map<Gps_Iono> global_gps_iono_map;
-extern concurrent_map<Gps_Utc_Model> global_gps_utc_model_map;
-extern concurrent_map<Gps_Almanac> global_gps_almanac_map;
-extern concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
+extern Concurrent_Map<Gps_Ephemeris> global_gps_ephemeris_map;
+extern Concurrent_Map<Gps_Iono> global_gps_iono_map;
+extern Concurrent_Map<Gps_Utc_Model> global_gps_utc_model_map;
+extern Concurrent_Map<Gps_Almanac> global_gps_almanac_map;
+extern Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
 FrontEndCal::FrontEndCal() = default;
 
@@ -60,7 +60,7 @@ FrontEndCal::~FrontEndCal() = default;
 
 bool FrontEndCal::read_assistance_from_XML()
 {
-    gnss_sdr_supl_client supl_client_ephemeris_;
+    Gnss_Sdr_Supl_Client supl_client_ephemeris_;
     std::string eph_xml_filename = "gps_ephemeris.xml";
     std::cout << "SUPL: Trying to read GPS ephemeris from XML file " << eph_xml_filename << std::endl;
     LOG(INFO) << "SUPL: Trying to read GPS ephemeris from XML file " << eph_xml_filename;
@@ -87,8 +87,8 @@ bool FrontEndCal::read_assistance_from_XML()
 int FrontEndCal::Get_SUPL_Assist()
 {
     //######### GNSS Assistance #################################
-    gnss_sdr_supl_client supl_client_acquisition_;
-    gnss_sdr_supl_client supl_client_ephemeris_;
+    Gnss_Sdr_Supl_Client supl_client_acquisition_;
+    Gnss_Sdr_Supl_Client supl_client_ephemeris_;
     int supl_mcc;  // Current network MCC (Mobile country code), 3 digits.
     int supl_mns;  //Current network MNC (Mobile Network code), 2 or 3 digits.
     int supl_lac;  // Current network LAC (Location area code),16 bits, 1-65520 are valid values.
@@ -358,7 +358,7 @@ double FrontEndCal::estimate_doppler_from_eph(unsigned int PRN, double TOW, doub
 
             //Doppler estimation
             arma::vec Doppler_Hz;
-            Doppler_Hz = (obs_to_sat_velocity / GPS_C_m_s) * GPS_L1_FREQ_HZ;
+            Doppler_Hz = (obs_to_sat_velocity / GPS_C_M_S) * GPS_L1_FREQ_HZ;
             double mean_Doppler_Hz;
             mean_Doppler_Hz = arma::mean(Doppler_Hz);
             return mean_Doppler_Hz;

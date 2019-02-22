@@ -36,11 +36,11 @@
 #include <string>
 #include <vector>
 
-class spirent_motion_csv_dump_reader
+class Spirent_Motion_Csv_Dump_Reader
 {
 public:
-    spirent_motion_csv_dump_reader();
-    ~spirent_motion_csv_dump_reader();
+    Spirent_Motion_Csv_Dump_Reader();
+    ~Spirent_Motion_Csv_Dump_Reader();
     bool read_csv_obs();
     bool restart();
     int64_t num_epochs();

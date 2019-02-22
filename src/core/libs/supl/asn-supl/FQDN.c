@@ -155,7 +155,7 @@ FQDN_encode_uper(asn_TYPE_descriptor_t *td,
 	return td->uper_encoder(td, constraints, structure, per_out);
 }
 
-static asn_per_constraints_t asn_PER_type_FQDN_constr_1 = {
+static asn_per_constraints_t ASN_PER_TYPE_FQDN_CONSTR_1 = {
 	{ APC_CONSTRAINED,	 6,  6,  45,  122 }	/* (45..122) */,
 	{ APC_CONSTRAINED,	 8,  8,  1,  255 }	/* (SIZE(1..255)) */,
 	asn_PER_MAP_FQDN_1_v2c,	/* Value to PER code map */
@@ -183,7 +183,7 @@ asn_TYPE_descriptor_t asn_DEF_FQDN = {
 	asn_DEF_FQDN_tags_1,	/* Same as above */
 	sizeof(asn_DEF_FQDN_tags_1)
 		/sizeof(asn_DEF_FQDN_tags_1[0]), /* 1 */
-	&asn_PER_type_FQDN_constr_1,
+	&ASN_PER_TYPE_FQDN_CONSTR_1,
 	0, 0,	/* No members */
 	0	/* No specifics */
 };

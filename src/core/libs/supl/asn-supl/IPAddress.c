@@ -68,17 +68,17 @@ memb_ipv6Address_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
         }
 }
 
-static asn_per_constraints_t asn_PER_memb_ipv4Address_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_IPV4_ADDRESS_CONSTR_2 = {
     {APC_UNCONSTRAINED, -1, -1, 0, 0},
     {APC_CONSTRAINED, 0, 0, 4, 4} /* (SIZE(4..4)) */,
     0, 0 /* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ipv6Address_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_IPV6_ADDRESS_CONSTR_3 = {
     {APC_UNCONSTRAINED, -1, -1, 0, 0},
     {APC_CONSTRAINED, 0, 0, 16, 16} /* (SIZE(16..16)) */,
     0, 0 /* No PER value map */
 };
-static asn_per_constraints_t asn_PER_type_IPAddress_constr_1 = {
+static asn_per_constraints_t ASN_PER_TYPE_IP_ADDRESS_CONSTR_1 = {
     {APC_CONSTRAINED, 1, 1, 0, 1} /* (0..1) */,
     {APC_UNCONSTRAINED, -1, -1, 0, 0},
     0, 0 /* No PER value map */
@@ -89,7 +89,7 @@ static asn_TYPE_member_t asn_MBR_IPAddress_1[] = {
         -1, /* IMPLICIT tag at current level */
         &asn_DEF_OCTET_STRING,
         memb_ipv4Address_constraint_1,
-        &asn_PER_memb_ipv4Address_constr_2,
+        &ASN_PER_MEMB_IPV4_ADDRESS_CONSTR_2,
         0,
         "ipv4Address"},
     {ATF_NOFLAGS, 0, offsetof(struct IPAddress, choice.ipv6Address),
@@ -97,7 +97,7 @@ static asn_TYPE_member_t asn_MBR_IPAddress_1[] = {
         -1, /* IMPLICIT tag at current level */
         &asn_DEF_OCTET_STRING,
         memb_ipv6Address_constraint_1,
-        &asn_PER_memb_ipv6Address_constr_3,
+        &ASN_PER_MEMB_IPV6_ADDRESS_CONSTR_3,
         0,
         "ipv6Address"},
 };
@@ -132,7 +132,7 @@ asn_TYPE_descriptor_t asn_DEF_IPAddress = {
     0, /* No effective tags (count) */
     0, /* No tags (pointer) */
     0, /* No tags (count) */
-    &asn_PER_type_IPAddress_constr_1,
+    &ASN_PER_TYPE_IP_ADDRESS_CONSTR_1,
     asn_MBR_IPAddress_1,
     2,                         /* Elements count */
     &asn_SPC_IPAddress_specs_1 /* Additional specs */

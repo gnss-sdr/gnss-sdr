@@ -493,10 +493,10 @@ bool HybridObservablesTest::acquire_signal()
                     opt_fs = GPS_L1_CA_OPT_ACQ_FS_HZ;
                     break;
                 case evGAL_1B:
-                    opt_fs = Galileo_E1_OPT_ACQ_FS_HZ;
+                    opt_fs = GALILEO_E1_OPT_ACQ_FS_HZ;
                     break;
                 case evGAL_5X:
-                    opt_fs = Galileo_E5a_OPT_ACQ_FS_HZ;
+                    opt_fs = GALILEO_E5A_OPT_ACQ_FS_HZ;
                     break;
                 case evGLO_1G:
                     opt_fs = baseband_sampling_freq;
@@ -1687,9 +1687,9 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                 {
                     //based on true observables metadata (for custom sdr generator)
                     //open true observables log file written by the simulator or based on provided RINEX obs
-                    std::vector<std::shared_ptr<tracking_true_obs_reader>> true_reader_vec;
+                    std::vector<std::shared_ptr<Tracking_True_Obs_Reader>> true_reader_vec;
                     //read true data from the generator logs
-                    true_reader_vec.push_back(std::make_shared<tracking_true_obs_reader>());
+                    true_reader_vec.push_back(std::make_shared<Tracking_True_Obs_Reader>());
                     std::cout << "Loading true observable data for PRN " << n.PRN << std::endl;
                     std::string true_obs_file = std::string("./gps_l1_ca_obs_prn");
                     true_obs_file.append(std::to_string(n.PRN));
@@ -1837,7 +1837,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
     if (!FLAGS_enable_external_signal_file)
         {
             //load the true values
-            true_observables_reader true_observables;
+            True_Observables_Reader true_observables;
             ASSERT_NO_THROW({
                 if (true_observables.open_obs_file(std::string("./obs_out.bin")) == false)
                     {
@@ -1885,7 +1885,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                 }
         }
     //read measured values
-    observables_dump_reader estimated_observables(tracking_ch_vec.size());
+    Observables_Dump_Reader estimated_observables(tracking_ch_vec.size());
     ASSERT_NO_THROW({
         if (estimated_observables.open_obs_file(std::string("./observables.dat")) == false)
             {
@@ -2040,7 +2040,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                 }
 
             arma::vec receiver_time_offset_ref_channel_s;
-            receiver_time_offset_ref_channel_s = (true_obs_vec.at(min_pr_ch_id).col(1)(0) - measured_obs_vec.at(min_pr_ch_id).col(4)(0)) / GPS_C_m_s;
+            receiver_time_offset_ref_channel_s = (true_obs_vec.at(min_pr_ch_id).col(1)(0) - measured_obs_vec.at(min_pr_ch_id).col(4)(0)) / GPS_C_M_S;
             std::cout << "Ref. channel initial Receiver time offset " << receiver_time_offset_ref_channel_s(0) * 1e3 << " [ms]" << std::endl;
 
             for (unsigned int n = 0; n < measured_obs_vec.size(); n++)

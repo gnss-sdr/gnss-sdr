@@ -33,7 +33,7 @@
 #include <iostream>
 #include <utility>
 
-bool rtklib_solver_dump_reader::read_binary_obs()
+bool Rtklib_Solver_Dump_Reader::read_binary_obs()
 {
     try
         {
@@ -74,7 +74,7 @@ bool rtklib_solver_dump_reader::read_binary_obs()
 }
 
 
-bool rtklib_solver_dump_reader::restart()
+bool Rtklib_Solver_Dump_Reader::restart()
 {
     if (d_dump_file.is_open())
         {
@@ -86,7 +86,7 @@ bool rtklib_solver_dump_reader::restart()
 }
 
 
-int64_t rtklib_solver_dump_reader::num_epochs()
+int64_t Rtklib_Solver_Dump_Reader::num_epochs()
 {
     std::ifstream::pos_type size;
     int epoch_size_bytes = 2 * sizeof(uint32_t) + 21 * sizeof(double) + 3 * sizeof(uint8_t) + 2 * sizeof(float);
@@ -101,7 +101,7 @@ int64_t rtklib_solver_dump_reader::num_epochs()
 }
 
 
-bool rtklib_solver_dump_reader::open_obs_file(std::string out_file)
+bool Rtklib_Solver_Dump_Reader::open_obs_file(std::string out_file)
 {
     if (d_dump_file.is_open() == false)
         {
@@ -125,7 +125,7 @@ bool rtklib_solver_dump_reader::open_obs_file(std::string out_file)
 }
 
 
-rtklib_solver_dump_reader::~rtklib_solver_dump_reader()
+Rtklib_Solver_Dump_Reader::~Rtklib_Solver_Dump_Reader()
 {
     try
         {

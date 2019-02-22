@@ -106,22 +106,22 @@ memb_toeLimit_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_gpsWeek_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_GPS_WEEK_CONSTR_2 = {
 	{ APC_CONSTRAINED,	 10,  10,  0,  1023 }	/* (0..1023) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_gpsToe_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_GPS_TOE_CONSTR_3 = {
 	{ APC_CONSTRAINED,	 8,  8,  0,  167 }	/* (0..167) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_nSAT_constr_4 = {
+static asn_per_constraints_t ASN_PER_MEMB_N_SAT_CONSTR_4 = {
 	{ APC_CONSTRAINED,	 5,  5,  0,  31 }	/* (0..31) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_toeLimit_constr_5 = {
+static asn_per_constraints_t ASN_PER_MEMB_TOE_LIMIT_CONSTR_5 = {
 	{ APC_CONSTRAINED,	 4,  4,  0,  10 }	/* (0..10) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -132,7 +132,7 @@ static asn_TYPE_member_t asn_MBR_XNavigationModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_gpsWeek_constraint_1,
-		&asn_PER_memb_gpsWeek_constr_2,
+		&ASN_PER_MEMB_GPS_WEEK_CONSTR_2,
 		0,
 		"gpsWeek"
 		},
@@ -141,7 +141,7 @@ static asn_TYPE_member_t asn_MBR_XNavigationModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_gpsToe_constraint_1,
-		&asn_PER_memb_gpsToe_constr_3,
+		&ASN_PER_MEMB_GPS_TOE_CONSTR_3,
 		0,
 		"gpsToe"
 		},
@@ -150,7 +150,7 @@ static asn_TYPE_member_t asn_MBR_XNavigationModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_nSAT_constraint_1,
-		&asn_PER_memb_nSAT_constr_4,
+		&ASN_PER_MEMB_N_SAT_CONSTR_4,
 		0,
 		"nSAT"
 		},
@@ -159,7 +159,7 @@ static asn_TYPE_member_t asn_MBR_XNavigationModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_toeLimit_constraint_1,
-		&asn_PER_memb_toeLimit_constr_5,
+		&ASN_PER_MEMB_TOE_LIMIT_CONSTR_5,
 		0,
 		"toeLimit"
 		},

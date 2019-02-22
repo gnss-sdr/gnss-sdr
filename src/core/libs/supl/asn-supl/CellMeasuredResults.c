@@ -31,12 +31,12 @@ memb_cellIdentity_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_type_modeSpecificInfo_constr_3 = {
+static asn_per_constraints_t ASN_PER_TYPE_MODE_SPECIFIC_INFO_CONSTR_3 = {
 	{ APC_CONSTRAINED,	 1,  1,  0,  1 }	/* (0..1) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_cellIdentity_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_CELL_IDENTITY_CONSTR_2 = {
 	{ APC_CONSTRAINED,	 28, -1,  0,  268435455 }	/* (0..268435455) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -273,7 +273,7 @@ asn_TYPE_descriptor_t asn_DEF_modeSpecificInfo_3 = {
 	0,	/* No effective tags (count) */
 	0,	/* No tags (pointer) */
 	0,	/* No tags (count) */
-	&asn_PER_type_modeSpecificInfo_constr_3,
+	&ASN_PER_TYPE_MODE_SPECIFIC_INFO_CONSTR_3,
 	asn_MBR_modeSpecificInfo_3,
 	2,	/* Elements count */
 	&asn_SPC_modeSpecificInfo_specs_3	/* Additional specs */
@@ -285,7 +285,7 @@ static asn_TYPE_member_t asn_MBR_CellMeasuredResults_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_cellIdentity_constraint_1,
-		&asn_PER_memb_cellIdentity_constr_2,
+		&ASN_PER_MEMB_CELL_IDENTITY_CONSTR_2,
 		0,
 		"cellIdentity"
 		},

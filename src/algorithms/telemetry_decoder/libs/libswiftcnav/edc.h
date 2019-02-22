@@ -35,7 +35,7 @@
 
 #include "swift_common.h"
 
-u32 crc24q(const u8 *buf, u32 len, u32 crc);
-u32 crc24q_bits(u32 crc, const u8 *buf, u32 n_bits, bool invert);
+uint32_t crc24q(const uint8_t *buf, uint32_t len, uint32_t crc);
+uint32_t crc24q_bits(uint32_t crc, const uint8_t *buf, uint32_t n_bits, bool invert);
 
 #endif /* LIBSWIFTNAV_EDC_H */

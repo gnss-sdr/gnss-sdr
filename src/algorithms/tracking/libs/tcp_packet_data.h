@@ -35,11 +35,11 @@
 /*!
  * \brief Class that implements a TCP data packet
  */
-class tcp_packet_data
+class Tcp_Packet_Data
 {
 public:
-    tcp_packet_data();
-    ~tcp_packet_data();
+    Tcp_Packet_Data();
+    ~Tcp_Packet_Data();
     float proc_pack_code_error;
     float proc_pack_carr_error;
     float proc_pack_carrier_doppler_hz;

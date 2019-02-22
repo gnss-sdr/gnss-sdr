@@ -35,7 +35,7 @@
 #include <cmath>
 #include <iostream>
 
-bool acquisition_dump_reader::read_binary_acq()
+bool Acquisition_Dump_Reader::read_binary_acq()
 {
     mat_t* matfile = Mat_Open(d_dump_filename.c_str(), MAT_ACC_RDONLY);
     if (matfile == nullptr)
@@ -143,7 +143,7 @@ bool acquisition_dump_reader::read_binary_acq()
 }
 
 
-acquisition_dump_reader::acquisition_dump_reader(const std::string& basename,
+Acquisition_Dump_Reader::Acquisition_Dump_Reader(const std::string& basename,
     int channel,
     int execution)
 {
@@ -192,7 +192,7 @@ acquisition_dump_reader::acquisition_dump_reader(const std::string& basename,
     d_num_doppler_bins = 0;
     num_dwells = 0;
 
-    acquisition_dump_reader(basename,
+    Acquisition_Dump_Reader(basename,
         sat_,
         doppler_max_,
         doppler_step_,
@@ -202,7 +202,7 @@ acquisition_dump_reader::acquisition_dump_reader(const std::string& basename,
 }
 
 
-acquisition_dump_reader::acquisition_dump_reader(const std::string& basename,
+Acquisition_Dump_Reader::Acquisition_Dump_Reader(const std::string& basename,
     unsigned int sat,
     unsigned int doppler_max,
     unsigned int doppler_step,
@@ -243,4 +243,4 @@ acquisition_dump_reader::acquisition_dump_reader(const std::string& basename,
 }
 
 
-acquisition_dump_reader::~acquisition_dump_reader() = default;
+Acquisition_Dump_Reader::~Acquisition_Dump_Reader() = default;

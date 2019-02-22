@@ -123,17 +123,17 @@ memb_uncertspeed_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
         }
 }
 
-static asn_per_constraints_t asn_PER_memb_bearing_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_BEARING_CONSTR_2 = {
     {APC_UNCONSTRAINED, -1, -1, 0, 0},
     {APC_CONSTRAINED, 0, 0, 9, 9} /* (SIZE(9..9)) */,
     0, 0 /* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_horspeed_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_HORSPEED_CONSTR_3 = {
     {APC_UNCONSTRAINED, -1, -1, 0, 0},
     {APC_CONSTRAINED, 0, 0, 16, 16} /* (SIZE(16..16)) */,
     0, 0 /* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_uncertspeed_constr_4 = {
+static asn_per_constraints_t ASN_PER_MEMB_UNCERTSPEED_CONSTR_4 = {
     {APC_UNCONSTRAINED, -1, -1, 0, 0},
     {APC_CONSTRAINED, 0, 0, 8, 8} /* (SIZE(8..8)) */,
     0, 0 /* No PER value map */
@@ -144,7 +144,7 @@ static asn_TYPE_member_t asn_MBR_Horveluncert_1[] = {
         -1, /* IMPLICIT tag at current level */
         &asn_DEF_BIT_STRING,
         memb_bearing_constraint_1,
-        &asn_PER_memb_bearing_constr_2,
+        &ASN_PER_MEMB_BEARING_CONSTR_2,
         0,
         "bearing"},
     {ATF_NOFLAGS, 0, offsetof(struct Horveluncert, horspeed),
@@ -152,7 +152,7 @@ static asn_TYPE_member_t asn_MBR_Horveluncert_1[] = {
         -1, /* IMPLICIT tag at current level */
         &asn_DEF_BIT_STRING,
         memb_horspeed_constraint_1,
-        &asn_PER_memb_horspeed_constr_3,
+        &ASN_PER_MEMB_HORSPEED_CONSTR_3,
         0,
         "horspeed"},
     {ATF_NOFLAGS, 0, offsetof(struct Horveluncert, uncertspeed),
@@ -160,7 +160,7 @@ static asn_TYPE_member_t asn_MBR_Horveluncert_1[] = {
         -1, /* IMPLICIT tag at current level */
         &asn_DEF_BIT_STRING,
         memb_uncertspeed_constraint_1,
-        &asn_PER_memb_uncertspeed_constr_4,
+        &ASN_PER_MEMB_UNCERTSPEED_CONSTR_4,
         0,
         "uncertspeed"},
 };

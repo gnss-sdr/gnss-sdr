@@ -39,7 +39,7 @@
 #include <cstring>    // for memcpy
 #include <utility>
 
-gnss_sdr_valve::gnss_sdr_valve(size_t sizeof_stream_item,
+Gnss_Sdr_Valve::Gnss_Sdr_Valve(size_t sizeof_stream_item,
     uint64_t nitems,
     gr::msg_queue::sptr queue,
     bool stop_flowgraph) : gr::sync_block("valve",
@@ -56,25 +56,25 @@ gnss_sdr_valve::gnss_sdr_valve(size_t sizeof_stream_item,
 
 boost::shared_ptr<gr::block> gnss_sdr_make_valve(size_t sizeof_stream_item, uint64_t nitems, gr::msg_queue::sptr queue, bool stop_flowgraph)
 {
-    boost::shared_ptr<gnss_sdr_valve> valve_(new gnss_sdr_valve(sizeof_stream_item, nitems, std::move(queue), stop_flowgraph));
+    boost::shared_ptr<Gnss_Sdr_Valve> valve_(new Gnss_Sdr_Valve(sizeof_stream_item, nitems, std::move(queue), stop_flowgraph));
     return valve_;
 }
 
 
 boost::shared_ptr<gr::block> gnss_sdr_make_valve(size_t sizeof_stream_item, uint64_t nitems, gr::msg_queue::sptr queue)
 {
-    boost::shared_ptr<gnss_sdr_valve> valve_(new gnss_sdr_valve(sizeof_stream_item, nitems, std::move(queue), true));
+    boost::shared_ptr<Gnss_Sdr_Valve> valve_(new Gnss_Sdr_Valve(sizeof_stream_item, nitems, std::move(queue), true));
     return valve_;
 }
 
 
-void gnss_sdr_valve::open_valve()
+void Gnss_Sdr_Valve::open_valve()
 {
     d_open_valve = true;
 }
 
 
-int gnss_sdr_valve::work(int noutput_items,
+int Gnss_Sdr_Valve::work(int noutput_items,
     gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items)
 {

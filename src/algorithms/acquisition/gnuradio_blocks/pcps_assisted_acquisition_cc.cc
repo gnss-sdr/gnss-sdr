@@ -42,7 +42,7 @@
 #include <sstream>
 #include <utility>
 
-extern concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
+extern Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
 using google::LogMessage;
 

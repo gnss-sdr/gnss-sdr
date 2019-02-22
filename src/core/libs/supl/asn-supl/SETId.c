@@ -184,32 +184,32 @@ memb_nai_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
         }
 }
 
-static asn_per_constraints_t asn_PER_memb_msisdn_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_MSISDN_CONSTR_2 = {
     {APC_UNCONSTRAINED, -1, -1, 0, 0},
     {APC_CONSTRAINED, 0, 0, 8, 8} /* (SIZE(8..8)) */,
     0, 0 /* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_mdn_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_MDN_CONSTR_3 = {
     {APC_UNCONSTRAINED, -1, -1, 0, 0},
     {APC_CONSTRAINED, 0, 0, 8, 8} /* (SIZE(8..8)) */,
     0, 0 /* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_min_constr_4 = {
+static asn_per_constraints_t ASN_PER_MEMB_MIN_CONSTR_4 = {
     {APC_UNCONSTRAINED, -1, -1, 0, 0},
     {APC_CONSTRAINED, 0, 0, 34, 34} /* (SIZE(34..34)) */,
     0, 0 /* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_imsi_constr_5 = {
+static asn_per_constraints_t ASN_PER_MEMB_IMSI_CONSTR_5 = {
     {APC_UNCONSTRAINED, -1, -1, 0, 0},
     {APC_CONSTRAINED, 0, 0, 8, 8} /* (SIZE(8..8)) */,
     0, 0 /* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_nai_constr_6 = {
+static asn_per_constraints_t ASN_PER_MEMB_NAI_CONSTR_6 = {
     {APC_CONSTRAINED, 7, 7, 0, 127} /* (0..127) */,
     {APC_CONSTRAINED, 10, 10, 1, 1000} /* (SIZE(1..1000)) */,
     0, 0 /* No PER character map necessary */
 };
-static asn_per_constraints_t asn_PER_type_SETId_constr_1 = {
+static asn_per_constraints_t ASN_PER_TYPE_SET_ID_CONSTR_1 = {
     {APC_CONSTRAINED | APC_EXTENSIBLE, 3, 3, 0, 5} /* (0..5,...) */,
     {APC_UNCONSTRAINED, -1, -1, 0, 0},
     0, 0 /* No PER value map */
@@ -220,7 +220,7 @@ static asn_TYPE_member_t asn_MBR_SETId_1[] = {
         -1, /* IMPLICIT tag at current level */
         &asn_DEF_OCTET_STRING,
         memb_msisdn_constraint_1,
-        &asn_PER_memb_msisdn_constr_2,
+        &ASN_PER_MEMB_MSISDN_CONSTR_2,
         0,
         "msisdn"},
     {ATF_NOFLAGS, 0, offsetof(struct SETId, choice.mdn),
@@ -228,7 +228,7 @@ static asn_TYPE_member_t asn_MBR_SETId_1[] = {
         -1, /* IMPLICIT tag at current level */
         &asn_DEF_OCTET_STRING,
         memb_mdn_constraint_1,
-        &asn_PER_memb_mdn_constr_3,
+        &ASN_PER_MEMB_MDN_CONSTR_3,
         0,
         "mdn"},
     {ATF_NOFLAGS, 0, offsetof(struct SETId, choice.min),
@@ -236,7 +236,7 @@ static asn_TYPE_member_t asn_MBR_SETId_1[] = {
         -1, /* IMPLICIT tag at current level */
         &asn_DEF_BIT_STRING,
         memb_min_constraint_1,
-        &asn_PER_memb_min_constr_4,
+        &ASN_PER_MEMB_MIN_CONSTR_4,
         0,
         "min"},
     {ATF_NOFLAGS, 0, offsetof(struct SETId, choice.imsi),
@@ -244,7 +244,7 @@ static asn_TYPE_member_t asn_MBR_SETId_1[] = {
         -1, /* IMPLICIT tag at current level */
         &asn_DEF_OCTET_STRING,
         memb_imsi_constraint_1,
-        &asn_PER_memb_imsi_constr_5,
+        &ASN_PER_MEMB_IMSI_CONSTR_5,
         0,
         "imsi"},
     {ATF_NOFLAGS, 0, offsetof(struct SETId, choice.nai),
@@ -252,7 +252,7 @@ static asn_TYPE_member_t asn_MBR_SETId_1[] = {
         -1, /* IMPLICIT tag at current level */
         &asn_DEF_IA5String,
         memb_nai_constraint_1,
-        &asn_PER_memb_nai_constr_6,
+        &ASN_PER_MEMB_NAI_CONSTR_6,
         0,
         "nai"},
     {ATF_NOFLAGS, 0, offsetof(struct SETId, choice.iPAddress),
@@ -299,7 +299,7 @@ asn_TYPE_descriptor_t asn_DEF_SETId = {
     0, /* No effective tags (count) */
     0, /* No tags (pointer) */
     0, /* No tags (count) */
-    &asn_PER_type_SETId_constr_1,
+    &ASN_PER_TYPE_SET_ID_CONSTR_1,
     asn_MBR_SETId_1,
     6,                     /* Elements count */
     &asn_SPC_SETId_specs_1 /* Additional specs */

@@ -488,7 +488,7 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
             /* GPS-L1 -> L1/B1 */
             if ((lam_L1 = nav->lam[obs[i].sat - 1][0]) > 0.0)
                 {
-                    dion *= std::pow(lam_L1 / lam_carr[0], 2.0);
+                    dion *= std::pow(lam_L1 / LAM_CARR[0], 2.0);
                 }
             /* tropospheric corrections */
             if (!tropcorr(obs[i].time, nav, pos, azel + i * 2,
@@ -571,9 +571,9 @@ int valsol(const double *azel, const int *vsat, int n,
 
     /* chi-square validation of residuals */
     vv = dot(v, v, nv);
-    if (nv > nx && vv > chisqr[nv - nx - 1])
+    if (nv > nx && vv > CHISQR[nv - nx - 1])
         {
-            sprintf(msg, "chi-square error nv=%d vv=%.1f cs=%.1f", nv, vv, chisqr[nv - nx - 1]);
+            sprintf(msg, "chi-square error nv=%d vv=%.1f cs=%.1f", nv, vv, CHISQR[nv - nx - 1]);
             return 0;
         }
     /* large gdop check */

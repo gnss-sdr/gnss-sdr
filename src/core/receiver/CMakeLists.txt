@@ -169,16 +169,23 @@ if(OS_IS_MACOSX)
 endif()
 
 if(ENABLE_FLEXIBAND AND TELEORBIT_FOUND)
-    target_compile_definitions(core_receiver
+    target_link_libraries(core_receiver
         PRIVATE
             Gnuradio::teleorbit
     )
 endif()
 
 if(ENABLE_GN3S AND GRGN3S_FOUND)
-    target_compile_definitions(core_receiver
+    target_link_libraries(core_receiver
         PRIVATE
             Gnuradio::gn3s
+    )
+endif()
+
+if(ENABLE_ARRAY AND GRDBFCTTC_FOUND)
+    target_link_libraries(core_receiver
+        PRIVATE
+            Gnuradio::dbfcttc
     )
 endif()
 

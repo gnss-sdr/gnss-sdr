@@ -168,6 +168,13 @@ if(OS_IS_MACOSX)
     endif()
 endif()
 
+if(ENABLE_FLEXIBAND AND TELEORBIT_FOUND)
+    target_compile_definitions(core_receiver
+        PRIVATE
+            Gnuradio::teleorbit
+    )
+endif()
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(core_receiver

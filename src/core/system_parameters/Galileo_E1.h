@@ -93,8 +93,6 @@ const int32_t GALILEO_PAGE_TYPE_BITS = 6;
 const int32_t GALILEO_DATA_JK_BITS = 128;
 const int32_t GALILEO_DATA_FRAME_BITS = 196;
 const int32_t GALILEO_DATA_FRAME_BYTES = 25;
-//const double GALILEO_E1_CODE_PERIOD = 0.004;
-//const int32_t GALILEO_E1_CODE_PERIOD_MS = 4;
 
 const std::vector<std::pair<int32_t, int32_t>> TYPE({{1, 6}});
 const std::vector<std::pair<int32_t, int32_t>> PAGE_TYPE_BIT({{1, 6}});

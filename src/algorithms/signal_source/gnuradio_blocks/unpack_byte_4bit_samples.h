@@ -30,8 +30,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_unpack_byte_4bit_samples_H
-#define GNSS_SDR_unpack_byte_4bit_samples_H
+#ifndef GNSS_SDR_UNPACK_BYTE_4BIT_SAMPLES_H
+#define GNSS_SDR_UNPACK_BYTE_4BIT_SAMPLES_H
 
 #include <gnuradio/sync_interpolator.h>
 

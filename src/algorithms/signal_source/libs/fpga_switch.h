@@ -41,11 +41,11 @@
 
 #define MAX_LENGTH_DEVICEIO_NAME 50
 
-class fpga_switch
+class Fpga_Switch
 {
 public:
-    fpga_switch(const std::string& device_name);
-    ~fpga_switch();
+    Fpga_Switch(const std::string& device_name);
+    ~Fpga_Switch();
     void set_switch_position(int switch_position);
 
 private:

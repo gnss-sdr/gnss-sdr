@@ -97,7 +97,7 @@ private:
     bool dump_;
     std::string dump_filename_;
     std::vector<boost::shared_ptr<gr::block>> null_sinks_;
-    gr_complex_ip_packet_source::sptr udp_gnss_rx_source_;
+    Gr_Complex_Ip_Packet_Source::sptr udp_gnss_rx_source_;
     std::vector<boost::shared_ptr<gr::block>> file_sink_;
     boost::shared_ptr<gr::msg_queue> queue_;
 };

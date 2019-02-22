@@ -57,6 +57,7 @@
 #include "rtklib_pntpos.h"
 #include "rtklib_ppp.h"
 #include "rtklib_tides.h"
+#include <cmath>
 #include <cstring>
 
 static int resamb_WLNL(rtk_t *rtk __attribute((unused)), const obsd_t *obs __attribute((unused)), const int *sat __attribute((unused)),
@@ -2672,7 +2673,7 @@ int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
                 }
             rtk->sol.age = static_cast<float>(timediff(rtk->sol.time, solb.time));
 
-            if (fabs(rtk->sol.age) > TTOL_MOVEB)
+            if (std::fabs(rtk->sol.age) > TTOL_MOVEB)
                 {
                     errmsg(rtk, "time sync error for moving-base (age=%.1f)\n", rtk->sol.age);
                     return 0;
@@ -2692,7 +2693,7 @@ int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
         {
             rtk->sol.age = static_cast<float>(timediff(obs[0].time, obs[nu].time));
 
-            if (fabs(rtk->sol.age) > opt->maxtdiff)
+            if (std::fabs(rtk->sol.age) > opt->maxtdiff)
                 {
                     errmsg(rtk, "age of differential error (age=%.1f)\n", rtk->sol.age);
                     outsolstat(rtk);

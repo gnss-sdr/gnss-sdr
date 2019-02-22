@@ -343,7 +343,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
     configure_receiver();
 
     //open true observables log file written by the simulator
-    tracking_true_obs_reader true_obs_data;
+    Tracking_True_Obs_Reader true_obs_data;
     int test_satellite_PRN = FLAGS_test_satellite_PRN;
     std::cout << "Testing satellite PRN=" << test_satellite_PRN << std::endl;
     std::string true_obs_file = std::string("./gps_l1_ca_obs_prn");
@@ -440,7 +440,7 @@ TEST_F(GpsL1CATelemetryDecoderTest, ValidationOfResults)
         }
 
     //load the measured values
-    tlm_dump_reader tlm_dump;
+    Tlm_Dump_Reader tlm_dump;
     ASSERT_NO_THROW({
         if (tlm_dump.open_obs_file(std::string("./telemetry0.dat")) == false)
             {

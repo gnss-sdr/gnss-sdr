@@ -36,7 +36,7 @@
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/msg_queue.h>
 #include <teleorbit/frontend.h>
-
+#include <utility>
 
 using google::LogMessage;
 
@@ -47,7 +47,7 @@ FlexibandSignalSource::FlexibandSignalSource(ConfigurationInterface* configurati
     gr::msg_queue::sptr queue) : role_(role),
                                  in_stream_(in_stream),
                                  out_stream_(out_stream),
-                                 queue_(queue)
+                                 queue_(std::move(queue))
 {
     std::string default_item_type = "byte";
     item_type_ = configuration->property(role + ".item_type", default_item_type);

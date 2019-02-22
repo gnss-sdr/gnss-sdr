@@ -43,7 +43,7 @@
 #include <string>
 #include <sys/ioctl.h>
 
-class gr_complex_ip_packet_source : virtual public gr::sync_block
+class Gr_Complex_Ip_Packet_Source : virtual public gr::sync_block
 {
 private:
     boost::mutex d_mutex;
@@ -82,7 +82,7 @@ private:
     static void static_pcap_callback(u_char *args, const struct pcap_pkthdr *pkthdr, const u_char *packet);
 
 public:
-    typedef boost::shared_ptr<gr_complex_ip_packet_source> sptr;
+    typedef boost::shared_ptr<Gr_Complex_Ip_Packet_Source> sptr;
     static sptr make(std::string src_device,
         const std::string &origin_address,
         int udp_port,
@@ -91,7 +91,7 @@ public:
         const std::string &wire_sample_type,
         size_t item_size,
         bool IQ_swap_);
-    gr_complex_ip_packet_source(std::string src_device,
+    Gr_Complex_Ip_Packet_Source(std::string src_device,
         const std::string &origin_address,
         int udp_port,
         int udp_packet_size,
@@ -99,7 +99,7 @@ public:
         const std::string &wire_sample_type,
         size_t item_size,
         bool IQ_swap_);
-    ~gr_complex_ip_packet_source();
+    ~Gr_Complex_Ip_Packet_Source();
 
     // Where all the action really happens
     int work(int noutput_items,

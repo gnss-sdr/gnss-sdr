@@ -29,8 +29,8 @@
  */
 
 
-#ifndef RAW_ARRAY_SIGNAL_SOURCE_H_
-#define RAW_ARRAY_SIGNAL_SOURCE_H_
+#ifndef GNSS_SDR_RAW_ARRAY_SIGNAL_SOURCE_H_
+#define GNSS_SDR_RAW_ARRAY_SIGNAL_SOURCE_H_
 
 #include "gnss_block_interface.h"
 #include <gnuradio/blocks/file_sink.h>
@@ -90,4 +90,4 @@ private:
     boost::shared_ptr<gr::msg_queue> queue_;
 };
 
-#endif /*RAW_ARRAY_SIGNAL_SOURCE_H_*/
+#endif /*GNSS_SDR_RAW_ARRAY_SIGNAL_SOURCE_H_*/

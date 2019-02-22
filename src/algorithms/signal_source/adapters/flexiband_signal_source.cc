@@ -1,6 +1,8 @@
-(item_type_ == "gr_complex") /*!
- * \file raw_array_signal_source.cc
- * \brief CTTC Experimental GNSS 8 channels array signal source
+/*!
+ * \file flexiband_signal_source.cc
+ * \brief ignal Source adapter for the Teleorbit Flexiband front-end device.
+ * This adapter requires a Flexiband GNU Radio driver
+ * installed (not included with GNSS-SDR)
  * \author Javier Arribas, jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
@@ -36,10 +38,16 @@
 #include <teleorbit/frontend.h>
 
 
-    using google::LogMessage;
+using google::LogMessage;
 
 FlexibandSignalSource::FlexibandSignalSource(ConfigurationInterface* configuration,
-    const std::string& role, unsigned int in_stream, unsigned int out_stream, gr::msg_queue::sptr queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+    const std::string& role,
+    unsigned int in_stream,
+    unsigned int out_stream,
+    gr::msg_queue::sptr queue) : role_(role),
+                                 in_stream_(in_stream),
+                                 out_stream_(out_stream),
+                                 queue_(queue)
 {
     std::string default_item_type = "byte";
     item_type_ = configuration->property(role + ".item_type", default_item_type);

@@ -1,7 +1,8 @@
 /*!
- * \file raw_array_signal_source.h
- * \brief Signal Source adapter for the Teleorbit Flexiband front-end device.
- * This adapter requires a Flexiband GNURadio driver installed (not included with GNSS-SDR)
+ * \file flexiband_signal_source.h
+ * \brief ignal Source adapter for the Teleorbit Flexiband front-end device.
+ * This adapter requires a Flexiband GNU Radio driver
+ * installed (not included with GNSS-SDR)
  * \author Javier Arribas, jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
@@ -30,8 +31,8 @@
  */
 
 
-#ifndef FLEXIBAND_SIGNAL_SOURCE_H_
-#define FLEXIBAND_SIGNAL_SOURCE_H_
+#ifndef GNSS_SDR_FLEXIBAND_SIGNAL_SOURCE_H_
+#define GNSS_SDR_FLEXIBAND_SIGNAL_SOURCE_H_
 
 #include "gnss_block_interface.h"
 #include <gnuradio/blocks/char_to_float.h>
@@ -108,4 +109,4 @@ private:
     boost::shared_ptr<gr::msg_queue> queue_;
 };
 
-#endif /*FLEXIBAND_SIGNAL_SOURCE_H_*/
+#endif  // GNSS_SDR_FLEXIBAND_SIGNAL_SOURCE_H_

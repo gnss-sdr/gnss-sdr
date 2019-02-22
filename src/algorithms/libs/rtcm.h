@@ -368,8 +368,8 @@ public:
     void run_server();   //<! Starts running the server
     void stop_server();  //<! Stops the server
 
-    void send_message(const std::string& msg);      //<! Sends a message through the server to all connected clients
-    bool is_server_running() const;                 //<! Returns true if the server is running, false otherwise
+    void send_message(const std::string& msg);  //<! Sends a message through the server to all connected clients
+    bool is_server_running() const;             //<! Returns true if the server is running, false otherwise
 
 private:
     //

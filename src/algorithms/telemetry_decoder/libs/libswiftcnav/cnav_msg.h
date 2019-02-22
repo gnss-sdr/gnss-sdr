@@ -63,7 +63,7 @@ typedef struct
     uint8_t prn;                                                       /**< SV PRN. 0..31 */
     uint8_t msg_id;                                                    /**< Message id. 0..31 */
     uint32_t tow;                                                      /**< GPS ToW in 6-second units. Multiply to 6 to get seconds. */
-    bool alert;                                                   /**< CNAV message alert flag */
+    bool alert;                                                        /**< CNAV message alert flag */
     uint8_t raw_msg[GPS_L2C_V27_DECODE_BITS + GPS_L2C_V27_DELAY_BITS]; /**< RAW MSG for GNSS-SDR */
 } cnav_msg_t;
 

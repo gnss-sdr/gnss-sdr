@@ -514,10 +514,10 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
                     opt_fs = GPS_L1_CA_OPT_ACQ_FS_HZ;
                     break;
                 case evGAL_1B:
-                    opt_fs = Galileo_E1_OPT_ACQ_FS_HZ;
+                    opt_fs = GALILEO_E1_OPT_ACQ_FS_HZ;
                     break;
                 case evGAL_5X:
-                    opt_fs = Galileo_E5a_OPT_ACQ_FS_HZ;
+                    opt_fs = GALILEO_E5A_OPT_ACQ_FS_HZ;
                     break;
                 case evGLO_1G:
                     opt_fs = baseband_sampling_freq;
@@ -750,7 +750,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
     double true_acq_delay_samples = 0.0;
     uint64_t acq_samplestamp_samples = 0;
 
-    tracking_true_obs_reader true_obs_data;
+    Tracking_True_Obs_Reader true_obs_data;
     if (!FLAGS_enable_external_signal_file)
         {
             test_satellite_PRN = FLAGS_test_satellite_PRN;
@@ -783,9 +783,9 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
     // create the msg queue for valve
 
     queue = gr::msg_queue::make(0);
-    boost::shared_ptr<gnss_sdr_valve> reseteable_valve;
+    boost::shared_ptr<Gnss_Sdr_Valve> reseteable_valve;
     long long int acq_to_trk_delay_samples = ceil(static_cast<double>(FLAGS_fs_gen_sps) * FLAGS_acq_to_trk_delay_s);
-    boost::shared_ptr<gnss_sdr_valve> resetable_valve_(new gnss_sdr_valve(sizeof(gr_complex), acq_to_trk_delay_samples, queue, false));
+    boost::shared_ptr<Gnss_Sdr_Valve> resetable_valve_(new Gnss_Sdr_Valve(sizeof(gr_complex), acq_to_trk_delay_samples, queue, false));
 
     std::shared_ptr<ControlMessageFactory> control_message_factory_;
     std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>> control_messages_;
@@ -910,7 +910,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                             if (FLAGS_plot_detail_level >= 2 and FLAGS_show_plots)
                                 {
                                     //load the measured values
-                                    tracking_dump_reader trk_dump;
+                                    Tracking_Dump_Reader trk_dump;
                                     ASSERT_EQ(trk_dump.open_obs_file(std::string("./tracking_ch_0.dat")), true)
                                         << "Failure opening tracking dump file";
 

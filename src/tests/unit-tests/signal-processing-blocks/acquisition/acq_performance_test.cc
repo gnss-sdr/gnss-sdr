@@ -95,15 +95,15 @@ class AcqPerfTest_msg_rx;
 
 typedef boost::shared_ptr<AcqPerfTest_msg_rx> AcqPerfTest_msg_rx_sptr;
 
-AcqPerfTest_msg_rx_sptr AcqPerfTest_msg_rx_make(concurrent_queue<int>& queue);
+AcqPerfTest_msg_rx_sptr AcqPerfTest_msg_rx_make(Concurrent_Queue<int>& queue);
 
 class AcqPerfTest_msg_rx : public gr::block
 {
 private:
-    friend AcqPerfTest_msg_rx_sptr AcqPerfTest_msg_rx_make(concurrent_queue<int>& queue);
+    friend AcqPerfTest_msg_rx_sptr AcqPerfTest_msg_rx_make(Concurrent_Queue<int>& queue);
     void msg_handler_events(pmt::pmt_t msg);
-    AcqPerfTest_msg_rx(concurrent_queue<int>& queue);
-    concurrent_queue<int>& channel_internal_queue;
+    AcqPerfTest_msg_rx(Concurrent_Queue<int>& queue);
+    Concurrent_Queue<int>& channel_internal_queue;
 
 public:
     int rx_message;
@@ -111,7 +111,7 @@ public:
 };
 
 
-AcqPerfTest_msg_rx_sptr AcqPerfTest_msg_rx_make(concurrent_queue<int>& queue)
+AcqPerfTest_msg_rx_sptr AcqPerfTest_msg_rx_make(Concurrent_Queue<int>& queue)
 {
     return AcqPerfTest_msg_rx_sptr(new AcqPerfTest_msg_rx(queue));
 }
@@ -133,7 +133,7 @@ void AcqPerfTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 }
 
 
-AcqPerfTest_msg_rx::AcqPerfTest_msg_rx(concurrent_queue<int>& queue) : gr::block("AcqPerfTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue)
+AcqPerfTest_msg_rx::AcqPerfTest_msg_rx(Concurrent_Queue<int>& queue) : gr::block("AcqPerfTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue)
 {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"), boost::bind(&AcqPerfTest_msg_rx::msg_handler_events, this, _1));
@@ -323,7 +323,7 @@ protected:
     void check_results();
     void plot_results();
 
-    concurrent_queue<int> channel_internal_queue;
+    Concurrent_Queue<int> channel_internal_queue;
 
     gr::msg_queue::sptr queue;
     gr::top_block_sptr top_block;
@@ -779,7 +779,7 @@ void AcquisitionPerformanceTest::plot_results()
 
 TEST_F(AcquisitionPerformanceTest, ROC)
 {
-    tracking_true_obs_reader true_trk_data;
+    Tracking_True_Obs_Reader true_trk_data;
 
     if (boost::filesystem::exists(path_str))
         {
@@ -872,7 +872,7 @@ TEST_F(AcquisitionPerformanceTest, ROC)
 
                                     for (int execution = 1; execution <= num_executions; execution++)
                                         {
-                                            acquisition_dump_reader acq_dump(basename,
+                                            Acquisition_Dump_Reader acq_dump(basename,
                                                 observed_satellite,
                                                 config->property("Acquisition.doppler_max", 0),
                                                 config->property("Acquisition.doppler_step", 0),

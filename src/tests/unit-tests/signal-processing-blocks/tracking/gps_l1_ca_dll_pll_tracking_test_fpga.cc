@@ -453,7 +453,7 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
     configure_receiver();
 
     //open true observables log file written by the simulator
-    tracking_true_obs_reader true_obs_data;
+    Tracking_True_Obs_Reader true_obs_data;
     int test_satellite_PRN = FLAGS_test_satellite_PRN;
     std::cout << "Testing satellite PRN=" << test_satellite_PRN << std::endl;
     std::string true_obs_file = std::string("./gps_l1_ca_obs_prn");
@@ -566,7 +566,7 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
         }
 
     //load the measured values
-    tracking_dump_reader trk_dump;
+    Tracking_Dump_Reader trk_dump;
     ASSERT_NO_THROW(
         {
             if (trk_dump.open_obs_file(std::string("./tracking_ch_0.dat")) == false)

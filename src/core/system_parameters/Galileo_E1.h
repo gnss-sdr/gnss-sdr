@@ -169,18 +169,18 @@ const double AI1_5_LSB = TWO_N8;
 const std::vector<std::pair<int32_t, int32_t>> AI2_5_BIT({{29, 14}});  //
 const double AI2_5_LSB = TWO_N15;
 /*Ionospheric disturbance flag*/
-const std::vector<std::pair<int32_t, int32_t>> REGION1_5_BIT({{43, 1}});     //
-const std::vector<std::pair<int32_t, int32_t>> REGION2_5_BIT({{44, 1}});     //
-const std::vector<std::pair<int32_t, int32_t>> REGION3_5_BIT({{45, 1}});     //
-const std::vector<std::pair<int32_t, int32_t>> REGION4_5_BIT({{46, 1}});     //
-const std::vector<std::pair<int32_t, int32_t>> REGION5_5_BIT({{47, 1}});     //
+const std::vector<std::pair<int32_t, int32_t>> REGION1_5_BIT({{43, 1}});      //
+const std::vector<std::pair<int32_t, int32_t>> REGION2_5_BIT({{44, 1}});      //
+const std::vector<std::pair<int32_t, int32_t>> REGION3_5_BIT({{45, 1}});      //
+const std::vector<std::pair<int32_t, int32_t>> REGION4_5_BIT({{46, 1}});      //
+const std::vector<std::pair<int32_t, int32_t>> REGION5_5_BIT({{47, 1}});      //
 const std::vector<std::pair<int32_t, int32_t>> BGD_E1_E5A_5_BIT({{48, 10}});  //
 const double BGD_E1_E5A_5_LSB = TWO_N32;
 const std::vector<std::pair<int32_t, int32_t>> BGD_E1_E5B_5_BIT({{58, 10}});  //
 const double BGD_E1_E5B_5_LSB = TWO_N32;
-const std::vector<std::pair<int32_t, int32_t>> E5B_HS_5_BIT({{68, 2}});   //
+const std::vector<std::pair<int32_t, int32_t>> E5B_HS_5_BIT({{68, 2}});    //
 const std::vector<std::pair<int32_t, int32_t>> E1_B_HS_5_BIT({{70, 2}});   //
-const std::vector<std::pair<int32_t, int32_t>> E5B_DVS_5_BIT({{72, 1}});  //
+const std::vector<std::pair<int32_t, int32_t>> E5B_DVS_5_BIT({{72, 1}});   //
 const std::vector<std::pair<int32_t, int32_t>> E1_B_DVS_5_BIT({{73, 1}});  //
 /*GST*/
 const std::vector<std::pair<int32_t, int32_t>> WN_5_BIT({{74, 12}});

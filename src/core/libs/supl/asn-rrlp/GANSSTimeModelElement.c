@@ -81,17 +81,17 @@ memb_weekNumber_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_ganssTimeModelRefTime_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_GANSS_TIME_MODEL_REF_TIME_CONSTR_2 = {
 	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_gnssTOID_constr_6 = {
+static asn_per_constraints_t ASN_PER_MEMB_GNSS_TOID_CONSTR_6 = {
 	{ APC_CONSTRAINED,	 3,  3,  0,  7 }	/* (0..7) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_weekNumber_constr_7 = {
+static asn_per_constraints_t ASN_PER_MEMB_WEEK_NUMBER_CONSTR_7 = {
 	{ APC_CONSTRAINED,	 13,  13,  0,  8191 }	/* (0..8191) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -102,7 +102,7 @@ static asn_TYPE_member_t asn_MBR_GANSSTimeModelElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ganssTimeModelRefTime_constraint_1,
-		&asn_PER_memb_ganssTimeModelRefTime_constr_2,
+		&ASN_PER_MEMB_GANSS_TIME_MODEL_REF_TIME_CONSTR_2,
 		0,
 		"ganssTimeModelRefTime"
 		},
@@ -138,7 +138,7 @@ static asn_TYPE_member_t asn_MBR_GANSSTimeModelElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_gnssTOID_constraint_1,
-		&asn_PER_memb_gnssTOID_constr_6,
+		&ASN_PER_MEMB_GNSS_TOID_CONSTR_6,
 		0,
 		"gnssTOID"
 		},
@@ -147,7 +147,7 @@ static asn_TYPE_member_t asn_MBR_GANSSTimeModelElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_weekNumber_constraint_1,
-		&asn_PER_memb_weekNumber_constr_7,
+		&ASN_PER_MEMB_WEEK_NUMBER_CONSTR_7,
 		0,
 		"weekNumber"
 		},

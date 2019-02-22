@@ -67,7 +67,7 @@ const int MAXFIELD = 64; /* max number of fields in a record */
 
 const double KNOT2M = 0.514444444; /* m/knot */
 
-static const int solq_nmea[] = {/* nmea quality flags to rtklib sol quality */
+static const int SOLQ_NMEA[] = {/* nmea quality flags to rtklib sol quality */
     /* nmea 0183 v.2.3 quality flags: */
     /*  0=invalid, 1=gps fix (sps), 2=dgps fix, 3=pps fix, 4=rtk, 5=float rtk */
     /*  6=estimated (dead reckoning), 7=manual input, 8=simulation */
@@ -326,7 +326,7 @@ int decode_nmeagga(char **val, int n, sol_t *sol)
             sol->time = time;
         }
     pos2ecef(pos, sol->rr);
-    sol->stat = 0 <= solq && solq <= 8 ? solq_nmea[solq] : SOLQ_NONE;
+    sol->stat = 0 <= solq && solq <= 8 ? SOLQ_NMEA[solq] : SOLQ_NONE;
     sol->ns = nrcv;
 
     sol->type = 0; /* position type = xyz */
@@ -1005,7 +1005,7 @@ int readsolt(char *files[], int nfile, gtime_t ts, gtime_t te,
     double tint, int qflag, solbuf_t *solbuf)
 {
     FILE *fp;
-    solopt_t opt = solopt_default;
+    solopt_t opt = SOLOPT_DEFAULT;
     int i;
 
     trace(3, "readsolt: nfile=%d\n", nfile);
@@ -1537,7 +1537,7 @@ int outnmea_gga(unsigned char *buff, const sol_t *sol)
         }
     for (solq = 0; solq < 8; solq++)
         {
-            if (solq_nmea[solq] == sol->stat)
+            if (SOLQ_NMEA[solq] == sol->stat)
                 {
                     break;
                 }

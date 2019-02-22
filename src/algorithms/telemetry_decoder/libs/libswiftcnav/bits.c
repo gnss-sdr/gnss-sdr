@@ -34,7 +34,7 @@
 #include <string.h>
 
 
-static const u8 bitn[16] = {0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4};
+static const u8 BITN[16] = {0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4};
 
 /** \defgroup bits Bit Utils
  * Bit field packing, unpacking and utility functions.
@@ -249,7 +249,7 @@ u8 count_bits_u64(u64 v, u8 bv)
     int i = 0;
     for (i = 0; i < 16; i++)
         {
-            r += bitn[(v >> (i * 4)) & 0xf];
+            r += BITN[(v >> (i * 4)) & 0xf];
         }
     return bv == 1 ? r : 64 - r;
 }
@@ -268,7 +268,7 @@ u8 count_bits_u32(u32 v, u8 bv)
     int i = 0;
     for (i = 0; i < 8; i++)
         {
-            r += bitn[(v >> (i * 4)) & 0xf];
+            r += BITN[(v >> (i * 4)) & 0xf];
         }
     return bv == 1 ? r : 32 - r;
 }
@@ -287,7 +287,7 @@ u8 count_bits_u16(u16 v, u8 bv)
     int i = 0;
     for (i = 0; i < 4; i++)
         {
-            r += bitn[(v >> (i * 4)) & 0xf];
+            r += BITN[(v >> (i * 4)) & 0xf];
         }
     return bv == 1 ? r : 16 - r;
 }
@@ -306,7 +306,7 @@ u8 count_bits_u8(u8 v, u8 bv)
     int i = 0;
     for (i = 0; i < 2; i++)
         {
-            r += bitn[(v >> (i * 4)) & 0xf];
+            r += BITN[(v >> (i * 4)) & 0xf];
         }
     return bv == 1 ? r : 8 - r;
 }

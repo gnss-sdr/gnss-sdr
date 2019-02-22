@@ -144,17 +144,17 @@ memb_altUncertainty_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_type_altitudeDirection_constr_2 = {
+static asn_per_constraints_t ASN_PER_TYPE_ALTITUDE_DIRECTION_CONSTR_2 = {
 	{ APC_CONSTRAINED,	 1,  1,  0,  1 }	/* (0..1) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_altitude_constr_5 = {
+static asn_per_constraints_t ASN_PER_MEMB_ALTITUDE_CONSTR_5 = {
 	{ APC_CONSTRAINED,	 15,  15,  0,  32767 }	/* (0..32767) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_altUncertainty_constr_6 = {
+static asn_per_constraints_t ASN_PER_MEMB_ALT_UNCERTAINTY_CONSTR_6 = {
 	{ APC_CONSTRAINED,	 7,  7,  0,  127 }	/* (0..127) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -200,7 +200,7 @@ asn_TYPE_descriptor_t asn_DEF_altitudeDirection_2 = {
 	asn_DEF_altitudeDirection_tags_2,	/* Same as above */
 	sizeof(asn_DEF_altitudeDirection_tags_2)
 		/sizeof(asn_DEF_altitudeDirection_tags_2[0]), /* 2 */
-	&asn_PER_type_altitudeDirection_constr_2,
+	&ASN_PER_TYPE_ALTITUDE_DIRECTION_CONSTR_2,
 	0, 0,	/* Defined elsewhere */
 	&asn_SPC_altitudeDirection_specs_2	/* Additional specs */
 };
@@ -220,7 +220,7 @@ static asn_TYPE_member_t asn_MBR_AltitudeInfo_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_altitude_constraint_1,
-		&asn_PER_memb_altitude_constr_5,
+		&ASN_PER_MEMB_ALTITUDE_CONSTR_5,
 		0,
 		"altitude"
 		},
@@ -229,7 +229,7 @@ static asn_TYPE_member_t asn_MBR_AltitudeInfo_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_altUncertainty_constraint_1,
-		&asn_PER_memb_altUncertainty_constr_6,
+		&ASN_PER_MEMB_ALT_UNCERTAINTY_CONSTR_6,
 		0,
 		"altUncertainty"
 		},

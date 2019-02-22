@@ -36,10 +36,10 @@
 #include <string>
 #include <vector>
 
-class tracking_true_obs_reader
+class Tracking_True_Obs_Reader
 {
 public:
-    ~tracking_true_obs_reader();
+    ~Tracking_True_Obs_Reader();
     bool read_binary_obs();
     bool restart();
     int64_t num_epochs();

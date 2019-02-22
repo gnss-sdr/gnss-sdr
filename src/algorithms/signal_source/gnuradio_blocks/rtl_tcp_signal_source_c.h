@@ -88,7 +88,7 @@ private:
         int16_t port,
         bool flip_iq);
 
-    rtl_tcp_dongle_info info_;
+    Rtl_Tcp_Dongle_Info info_;
 
     // IO members
     boost::asio::io_service io_service_;

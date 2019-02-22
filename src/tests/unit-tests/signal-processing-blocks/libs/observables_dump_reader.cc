@@ -33,7 +33,7 @@
 #include <iostream>
 #include <utility>
 
-bool observables_dump_reader::read_binary_obs()
+bool Observables_Dump_Reader::read_binary_obs()
 {
     try
         {
@@ -56,7 +56,7 @@ bool observables_dump_reader::read_binary_obs()
 }
 
 
-bool observables_dump_reader::restart()
+bool Observables_Dump_Reader::restart()
 {
     if (d_dump_file.is_open())
         {
@@ -68,7 +68,7 @@ bool observables_dump_reader::restart()
 }
 
 
-int64_t observables_dump_reader::num_epochs()
+int64_t Observables_Dump_Reader::num_epochs()
 {
     std::ifstream::pos_type size;
     int number_of_vars_in_epoch = n_channels * 7;
@@ -84,7 +84,7 @@ int64_t observables_dump_reader::num_epochs()
 }
 
 
-bool observables_dump_reader::open_obs_file(std::string out_file)
+bool Observables_Dump_Reader::open_obs_file(std::string out_file)
 {
     if (d_dump_file.is_open() == false)
         {
@@ -108,7 +108,7 @@ bool observables_dump_reader::open_obs_file(std::string out_file)
 }
 
 
-void observables_dump_reader::close_obs_file()
+void Observables_Dump_Reader::close_obs_file()
 {
     if (d_dump_file.is_open() == false)
         {
@@ -117,7 +117,7 @@ void observables_dump_reader::close_obs_file()
 }
 
 
-observables_dump_reader::observables_dump_reader(int n_channels_)
+Observables_Dump_Reader::Observables_Dump_Reader(int n_channels_)
 {
     n_channels = n_channels_;
     RX_time = new double[n_channels];
@@ -130,7 +130,7 @@ observables_dump_reader::observables_dump_reader(int n_channels_)
 }
 
 
-observables_dump_reader::~observables_dump_reader()
+Observables_Dump_Reader::~Observables_Dump_Reader()
 {
     try
         {

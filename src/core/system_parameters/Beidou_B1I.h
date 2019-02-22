@@ -38,8 +38,8 @@
 #include <vector>
 
 // Physical constants
-const double BEIDOU_C_m_s = 299792458.0;             //!< The speed of light, [m/s]
-const double BEIDOU_C_m_ms = 299792.4580;            //!< The speed of light, [m/ms]
+const double BEIDOU_C_M_S = 299792458.0;             //!< The speed of light, [m/s]
+const double BEIDOU_C_M_MS = 299792.4580;            //!< The speed of light, [m/ms]
 const double BEIDOU_PI = 3.1415926535898;            //!< Pi
 const double BEIDOU_TWO_PI = 6.283185307179586;      //!< 2Pi
 const double BEIDOU_OMEGA_EARTH_DOT = 7.2921150e-5;  //!< Earth rotation rate, [rad/s] as defined in CGCS2000
@@ -70,7 +70,7 @@ const std::string BEIDOU_B1I_D2_SECONDARY_CODE_STR = "00";
 const double BEIDOU_MAX_TOA_DELAY_MS = 20;  //******************
 
 //#define NAVIGATION_SOLUTION_RATE_MS 1000 // this cannot go here
-const double BEIDOU_STARTOFFSET_ms = 68.802;  //**************[ms] Initial sign. travel time (this cannot go here)
+const double BEIDOU_STARTOFFSET_MS = 68.802;  //**************[ms] Initial sign. travel time (this cannot go here)
 
 
 // OBSERVABLE HISTORY DEEP FOR INTERPOLATION

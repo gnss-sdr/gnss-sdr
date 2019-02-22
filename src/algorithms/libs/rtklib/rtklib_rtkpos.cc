@@ -1613,8 +1613,8 @@ int ddres(rtk_t *rtk, const nav_t *nav, double dt, const double *x,
                             /* double-differenced ionospheric delay term */
                             if (opt->ionoopt == IONOOPT_EST)
                                 {
-                                    fi = lami / lam_carr[0];
-                                    fj = lamj / lam_carr[0];
+                                    fi = lami / LAM_CARR[0];
+                                    fj = lamj / LAM_CARR[0];
                                     didxi = (f < nf ? -1.0 : 1.0) * fi * fi * im[i];
                                     didxj = (f < nf ? -1.0 : 1.0) * fj * fj * im[j];
                                     v[nv] -= didxi * x[II_RTK(sat[i], opt)] - didxj * x[II_RTK(sat[j], opt)];

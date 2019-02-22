@@ -222,7 +222,7 @@ void rtl_tcp_signal_source_c::set_if_gain(int gain)
     {
         double start, stop, step;
     };
-    if (info_.get_tuner_type() != rtl_tcp_dongle_info::TUNER_E4000)
+    if (info_.get_tuner_type() != Rtl_Tcp_Dongle_Info::TUNER_E4000)
         {
             return;
         }

@@ -35,7 +35,7 @@ void saveoutbuf(rtksvr_t *svr, unsigned char *buff, int n, int index)
 /* write solution to output stream -------------------------------------------*/
 void writesol(rtksvr_t *svr, int index)
 {
-    solopt_t solopt = solopt_default;
+    solopt_t solopt = SOLOPT_DEFAULT;
     unsigned char buff[1024];
     int i, n;
 
@@ -672,10 +672,10 @@ int rtksvrinit(rtksvr_t *svr)
         }
     for (i = 0; i < 2; i++)
         {
-            svr->solopt[i] = solopt_default;
+            svr->solopt[i] = SOLOPT_DEFAULT;
         }
     svr->navsel = svr->nsbs = svr->nsol = 0;
-    rtkinit(&svr->rtk, &prcopt_default);
+    rtkinit(&svr->rtk, &PRCOPT_DEFAULT);
     for (i = 0; i < 3; i++)
         {
             svr->nb[i] = 0;

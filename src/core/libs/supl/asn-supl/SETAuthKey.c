@@ -84,17 +84,17 @@ memb_longKey_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
         }
 }
 
-static asn_per_constraints_t asn_PER_memb_shortKey_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_SHORT_KEY_CONSTR_2 = {
     {APC_UNCONSTRAINED, -1, -1, 0, 0},
     {APC_CONSTRAINED, 0, 0, 128, 128} /* (SIZE(128..128)) */,
     0, 0 /* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_longKey_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_LONG_KEY_CONSTR_3 = {
     {APC_UNCONSTRAINED, -1, -1, 0, 0},
     {APC_CONSTRAINED, 0, 0, 256, 256} /* (SIZE(256..256)) */,
     0, 0 /* No PER value map */
 };
-static asn_per_constraints_t asn_PER_type_SETAuthKey_constr_1 = {
+static asn_per_constraints_t ASN_PER_TYPE_SET_AUTH_KEY_CONSTR_1 = {
     {APC_CONSTRAINED | APC_EXTENSIBLE, 1, 1, 0, 1} /* (0..1,...) */,
     {APC_UNCONSTRAINED, -1, -1, 0, 0},
     0, 0 /* No PER value map */
@@ -105,7 +105,7 @@ static asn_TYPE_member_t asn_MBR_SETAuthKey_1[] = {
         -1, /* IMPLICIT tag at current level */
         &asn_DEF_BIT_STRING,
         memb_shortKey_constraint_1,
-        &asn_PER_memb_shortKey_constr_2,
+        &ASN_PER_MEMB_SHORT_KEY_CONSTR_2,
         0,
         "shortKey"},
     {ATF_NOFLAGS, 0, offsetof(struct SETAuthKey, choice.longKey),
@@ -113,7 +113,7 @@ static asn_TYPE_member_t asn_MBR_SETAuthKey_1[] = {
         -1, /* IMPLICIT tag at current level */
         &asn_DEF_BIT_STRING,
         memb_longKey_constraint_1,
-        &asn_PER_memb_longKey_constr_3,
+        &ASN_PER_MEMB_LONG_KEY_CONSTR_3,
         0,
         "longKey"},
 };
@@ -148,7 +148,7 @@ asn_TYPE_descriptor_t asn_DEF_SETAuthKey = {
     0, /* No effective tags (count) */
     0, /* No tags (pointer) */
     0, /* No tags (count) */
-    &asn_PER_type_SETAuthKey_constr_1,
+    &ASN_PER_TYPE_SET_AUTH_KEY_CONSTR_1,
     asn_MBR_SETAuthKey_1,
     2,                          /* Elements count */
     &asn_SPC_SETAuthKey_specs_1 /* Additional specs */

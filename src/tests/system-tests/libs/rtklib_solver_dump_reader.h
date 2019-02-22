@@ -36,10 +36,10 @@
 #include <string>
 #include <vector>
 
-class rtklib_solver_dump_reader
+class Rtklib_Solver_Dump_Reader
 {
 public:
-    ~rtklib_solver_dump_reader();
+    ~Rtklib_Solver_Dump_Reader();
     bool read_binary_obs();
     bool restart();
     int64_t num_epochs();

@@ -81,14 +81,14 @@ using google::LogMessage;
 
 DECLARE_string(log_dir);
 
-concurrent_map<Gps_Ephemeris> global_gps_ephemeris_map;
-concurrent_map<Gps_Iono> global_gps_iono_map;
-concurrent_map<Gps_Utc_Model> global_gps_utc_model_map;
-concurrent_map<Gps_Almanac> global_gps_almanac_map;
-concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
+Concurrent_Map<Gps_Ephemeris> global_gps_ephemeris_map;
+Concurrent_Map<Gps_Iono> global_gps_iono_map;
+Concurrent_Map<Gps_Utc_Model> global_gps_utc_model_map;
+Concurrent_Map<Gps_Almanac> global_gps_almanac_map;
+Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
 bool stop;
-concurrent_queue<int> channel_internal_queue;
+Concurrent_Queue<int> channel_internal_queue;
 GpsL1CaPcpsAcquisitionFineDoppler* acquisition;
 Gnss_Synchro* gnss_synchro;
 std::vector<Gnss_Synchro> gnss_sync_vector;

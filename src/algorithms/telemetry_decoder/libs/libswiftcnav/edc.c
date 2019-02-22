@@ -39,7 +39,7 @@
  * Cyclic redundancy checks.
  * \{ */
 
-static const u32 crc24qtab[256] = {
+static const u32 CRC24QTAB[256] = {
     0x000000, 0x864CFB, 0x8AD50D, 0x0C99F6, 0x93E6E1, 0x15AA1A, 0x1933EC, 0x9F7F17,
     0xA18139, 0x27CDC2, 0x2B5434, 0xAD18CF, 0x3267D8, 0xB42B23, 0xB8B2D5, 0x3EFE2E,
     0xC54E89, 0x430272, 0x4F9B84, 0xC9D77F, 0x56A868, 0xD0E493, 0xDC7D65, 0x5A319E,
@@ -93,7 +93,7 @@ u32 crc24q(const u8 *buf, u32 len, u32 crc)
     u32 i = 0;
     for (i = 0; i < len; i++)
         {
-            crc = ((crc << 8) & 0xFFFFFF) ^ crc24qtab[((crc >> 16) ^ buf[i]) & 0xff];
+            crc = ((crc << 8) & 0xFFFFFF) ^ CRC24QTAB[((crc >> 16) ^ buf[i]) & 0xff];
         }
     return crc;
 }
@@ -128,7 +128,7 @@ u32 crc24q_bits(u32 crc, const u8 *buf, u32 n_bits, bool invert)
                     acc ^= 0xFFu;
                 }
             b = (acc >> shift) & 0xFFu;
-            crc = ((crc << 8) & 0xFFFFFFu) ^ crc24qtab[((crc >> 16) ^ b) & 0xFFu];
+            crc = ((crc << 8) & 0xFFFFFFu) ^ CRC24QTAB[((crc >> 16) ^ b) & 0xFFu];
         }
     acc = (acc << 8) | *buf;
     if (invert)
@@ -136,7 +136,7 @@ u32 crc24q_bits(u32 crc, const u8 *buf, u32 n_bits, bool invert)
             acc ^= 0xFFu;
         }
     b = (acc >> shift) & 0xFFu;
-    crc = ((crc << 8) & 0xFFFFFFu) ^ crc24qtab[((crc >> 16) ^ b) & 0xFFu];
+    crc = ((crc << 8) & 0xFFFFFFu) ^ CRC24QTAB[((crc >> 16) ^ b) & 0xFFu];
 
     return crc;
 }

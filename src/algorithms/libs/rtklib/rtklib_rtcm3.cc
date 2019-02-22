@@ -385,8 +385,8 @@ int decode_type1002(rtcm_t *rtcm)
             if (ppr1 != static_cast<int>(0xFFF80000))
                 {
                     rtcm->obs.data[index].P[0] = pr1;
-                    cp1 = adjcp(rtcm, sat, 0, ppr1 * 0.0005 / lam_carr[0]);
-                    rtcm->obs.data[index].L[0] = pr1 / lam_carr[0] + cp1;
+                    cp1 = adjcp(rtcm, sat, 0, ppr1 * 0.0005 / LAM_CARR[0]);
+                    rtcm->obs.data[index].L[0] = pr1 / LAM_CARR[0] + cp1;
                 }
             rtcm->obs.data[index].LLI[0] = lossoflock(rtcm, sat, 0, lock1);
             rtcm->obs.data[index].SNR[0] = snratio(cnr1 * 0.25);
@@ -475,8 +475,8 @@ int decode_type1004(rtcm_t *rtcm)
             if (ppr1 != static_cast<int>(0xFFF80000))
                 {
                     rtcm->obs.data[index].P[0] = pr1;
-                    cp1 = adjcp(rtcm, sat, 0, ppr1 * 0.0005 / lam_carr[0]);
-                    rtcm->obs.data[index].L[0] = pr1 / lam_carr[0] + cp1;
+                    cp1 = adjcp(rtcm, sat, 0, ppr1 * 0.0005 / LAM_CARR[0]);
+                    rtcm->obs.data[index].L[0] = pr1 / LAM_CARR[0] + cp1;
                 }
             rtcm->obs.data[index].LLI[0] = lossoflock(rtcm, sat, 0, lock1);
             rtcm->obs.data[index].SNR[0] = snratio(cnr1 * 0.25);
@@ -488,8 +488,8 @@ int decode_type1004(rtcm_t *rtcm)
                 }
             if (ppr2 != static_cast<int>(0xFFF80000))
                 {
-                    cp2 = adjcp(rtcm, sat, 1, ppr2 * 0.0005 / lam_carr[1]);
-                    rtcm->obs.data[index].L[1] = pr1 / lam_carr[1] + cp2;
+                    cp2 = adjcp(rtcm, sat, 1, ppr2 * 0.0005 / LAM_CARR[1]);
+                    rtcm->obs.data[index].L[1] = pr1 / LAM_CARR[1] + cp2;
                 }
             rtcm->obs.data[index].LLI[1] = lossoflock(rtcm, sat, 1, lock2);
             rtcm->obs.data[index].SNR[1] = snratio(cnr2 * 0.25);
@@ -1986,7 +1986,7 @@ int decode_ssr1_head(rtcm_t *rtcm, int sys, int *sync, int *iod,
     i += 4; /* solution id */
     nsat = getbitu(rtcm->buff, i, ns);
     i += ns;
-    *udint = ssrudint[udi];
+    *udint = SSRUDINT[udi];
 
     trace(4, "decode_ssr1_head: time=%s sys=%d nsat=%d sync=%d iod=%d provid=%d solid=%d\n",
         time_str(rtcm->time, 2), sys, nsat, *sync, *iod, provid, solid);
@@ -2042,7 +2042,7 @@ int decode_ssr2_head(rtcm_t *rtcm, int sys, int *sync, int *iod,
     i += 4; /* solution id */
     nsat = getbitu(rtcm->buff, i, ns);
     i += ns;
-    *udint = ssrudint[udi];
+    *udint = SSRUDINT[udi];
 
     trace(4, "decode_ssr2_head: time=%s sys=%d nsat=%d sync=%d iod=%d provid=%d solid=%d\n",
         time_str(rtcm->time, 2), sys, nsat, *sync, *iod, provid, solid);
@@ -2102,7 +2102,7 @@ int decode_ssr7_head(rtcm_t *rtcm, int sys, int *sync, int *iod,
     i += 1; /* MW consistency indicator */
     nsat = getbitu(rtcm->buff, i, ns);
     i += ns;
-    *udint = ssrudint[udi];
+    *udint = SSRUDINT[udi];
 
     trace(4, "decode_ssr7_head: time=%s sys=%d nsat=%d sync=%d iod=%d provid=%d solid=%d\n",
         time_str(rtcm->time, 2), sys, nsat, *sync, *iod, provid, solid);
@@ -2307,37 +2307,37 @@ int decode_ssr3(rtcm_t *rtcm, int sys)
         case SYS_GPS:
             np = 6;
             offp = 0;
-            codes = codes_gps;
+            codes = CODES_GPS;
             ncode = 17;
             break;
         case SYS_GLO:
             np = 5;
             offp = 0;
-            codes = codes_glo;
+            codes = CODES_GLO;
             ncode = 4;
             break;
         case SYS_GAL:
             np = 6;
             offp = 0;
-            codes = codes_gal;
+            codes = CODES_GAL;
             ncode = 19;
             break;
         case SYS_QZS:
             np = 4;
             offp = 192;
-            codes = codes_qzs;
+            codes = CODES_QZS;
             ncode = 13;
             break;
         case SYS_BDS:
             np = 6;
             offp = 1;
-            codes = codes_bds;
+            codes = CODES_BDS;
             ncode = 9;
             break;
         case SYS_SBS:
             np = 6;
             offp = 120;
-            codes = codes_sbs;
+            codes = CODES_SBS;
             ncode = 4;
             break;
         default:
@@ -2642,31 +2642,31 @@ int decode_ssr7(rtcm_t *rtcm, int sys)
         case SYS_GPS:
             np = 6;
             offp = 0;
-            codes = codes_gps;
+            codes = CODES_GPS;
             ncode = 17;
             break;
         case SYS_GLO:
             np = 5;
             offp = 0;
-            codes = codes_glo;
+            codes = CODES_GLO;
             ncode = 4;
             break;
         case SYS_GAL:
             np = 6;
             offp = 0;
-            codes = codes_gal;
+            codes = CODES_GAL;
             ncode = 19;
             break;
         case SYS_QZS:
             np = 4;
             offp = 192;
-            codes = codes_qzs;
+            codes = CODES_QZS;
             ncode = 13;
             break;
         case SYS_BDS:
             np = 6;
             offp = 1;
-            codes = codes_bds;
+            codes = CODES_BDS;
             ncode = 9;
             break;
         default:

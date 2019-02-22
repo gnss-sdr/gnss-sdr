@@ -66,7 +66,7 @@
 
 using google::LogMessage;
 
-rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, const rtk_t &rtk)
+Rtklib_Solver::Rtklib_Solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, const rtk_t &rtk)
 {
     // init empty ephemeris for all the available GNSS channels
     d_nchannels = nchannels;
@@ -134,7 +134,7 @@ rtklib_solver::rtklib_solver(int nchannels, std::string dump_filename, bool flag
     monitor_pvt.vdop = 0.0;
 }
 
-bool rtklib_solver::save_matfile()
+bool Rtklib_Solver::save_matfile()
 {
     // READ DUMP FILE
     std::string dump_filename = d_dump_filename;
@@ -431,7 +431,7 @@ bool rtklib_solver::save_matfile()
 }
 
 
-rtklib_solver::~rtklib_solver()
+Rtklib_Solver::~Rtklib_Solver()
 {
     if (d_dump_file.is_open() == true)
         {
@@ -458,35 +458,35 @@ rtklib_solver::~rtklib_solver()
 }
 
 
-double rtklib_solver::get_gdop() const
+double Rtklib_Solver::get_gdop() const
 {
     return dop_[0];
 }
 
 
-double rtklib_solver::get_pdop() const
+double Rtklib_Solver::get_pdop() const
 {
     return dop_[1];
 }
 
 
-double rtklib_solver::get_hdop() const
+double Rtklib_Solver::get_hdop() const
 {
     return dop_[2];
 }
 
 
-double rtklib_solver::get_vdop() const
+double Rtklib_Solver::get_vdop() const
 {
     return dop_[3];
 }
 
-Monitor_Pvt rtklib_solver::get_monitor_pvt() const
+Monitor_Pvt Rtklib_Solver::get_monitor_pvt() const
 {
     return monitor_pvt;
 }
 
-bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, bool flag_averaging)
+bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, bool flag_averaging)
 {
     std::map<int, Gnss_Synchro>::const_iterator gnss_observables_iter;
     std::map<int, Galileo_Ephemeris>::const_iterator galileo_ephemeris_iter;
@@ -916,7 +916,7 @@ bool rtklib_solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                         }
                     else
                         {
-                            rx_position_and_time(3) = pvt_sol.dtr[0] / GPS_C_m_s;  // the receiver clock offset is expressed in [meters], so we convert it into [s]
+                            rx_position_and_time(3) = pvt_sol.dtr[0] / GPS_C_M_S;  // the receiver clock offset is expressed in [meters], so we convert it into [s]
                         }
                     this->set_rx_pos(rx_position_and_time.rows(0, 2));  // save ECEF position for the next iteration
 

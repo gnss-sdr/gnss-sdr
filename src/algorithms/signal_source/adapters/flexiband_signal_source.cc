@@ -1,4 +1,4 @@
-/*!
+(item_type_ == "gr_complex") /*!
  * \file raw_array_signal_source.cc
  * \brief CTTC Experimental GNSS 8 channels array signal source
  * \author Javier Arribas, jarribas(at)cttc.es
@@ -36,10 +36,10 @@
 #include <teleorbit/frontend.h>
 
 
-using google::LogMessage;
+    using google::LogMessage;
 
 FlexibandSignalSource::FlexibandSignalSource(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_stream, unsigned int out_stream, gr::msg_queue::sptr queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+    const std::string& role, unsigned int in_stream, unsigned int out_stream, gr::msg_queue::sptr queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
 {
     std::string default_item_type = "byte";
     item_type_ = configuration->property(role + ".item_type", default_item_type);
@@ -60,7 +60,7 @@ FlexibandSignalSource::FlexibandSignalSource(ConfigurationInterface* configurati
 
     RF_channels_ = configuration->property(role + ".RF_channels", 1);
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             flexiband_source_ = gr::teleorbit::frontend::make(firmware_filename_.c_str(), gain1_, gain2_, gain3_, AGC_, usb_packet_buffer_size_, signal_file.c_str(), flag_read_file);
@@ -96,9 +96,7 @@ FlexibandSignalSource::FlexibandSignalSource(ConfigurationInterface* configurati
 }
 
 
-FlexibandSignalSource::~FlexibandSignalSource()
-{
-}
+FlexibandSignalSource::~FlexibandSignalSource() = default;
 
 
 void FlexibandSignalSource::connect(gr::top_block_sptr top_block)

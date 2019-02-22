@@ -175,6 +175,13 @@ if(ENABLE_FLEXIBAND AND TELEORBIT_FOUND)
     )
 endif()
 
+if(ENABLE_GN3S AND GRGN3S_FOUND)
+    target_compile_definitions(core_receiver
+        PRIVATE
+            Gnuradio::gn3s
+    )
+endif()
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(core_receiver

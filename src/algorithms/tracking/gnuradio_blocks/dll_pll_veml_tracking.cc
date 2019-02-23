@@ -173,24 +173,24 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
             else if (signal_type == "L5")
                 {
                     d_signal_carrier_freq = GPS_L5_FREQ_HZ;
-                    d_code_period = GPS_L5i_PERIOD;
-                    d_code_chip_rate = GPS_L5i_CODE_RATE_HZ;
+                    d_code_period = GPS_L5I_PERIOD;
+                    d_code_chip_rate = GPS_L5I_CODE_RATE_HZ;
                     d_symbols_per_bit = GPS_L5_SAMPLES_PER_SYMBOL;
                     d_correlation_length_ms = 1;
                     d_code_samples_per_chip = 1;
-                    d_code_length_chips = static_cast<uint32_t>(GPS_L5i_CODE_LENGTH_CHIPS);
+                    d_code_length_chips = static_cast<uint32_t>(GPS_L5I_CODE_LENGTH_CHIPS);
                     d_secondary = true;
                     if (trk_parameters.track_pilot)
                         {
-                            d_secondary_code_length = static_cast<uint32_t>(GPS_L5q_NH_CODE_LENGTH);
-                            d_secondary_code_string = const_cast<std::string *>(&GPS_L5q_NH_CODE_STR);
+                            d_secondary_code_length = static_cast<uint32_t>(GPS_L5Q_NH_CODE_LENGTH);
+                            d_secondary_code_string = const_cast<std::string *>(&GPS_L5Q_NH_CODE_STR);
                             signal_pretty_name = signal_pretty_name + "Q";
                             interchange_iq = true;
                         }
                     else
                         {
-                            d_secondary_code_length = static_cast<uint32_t>(GPS_L5i_NH_CODE_LENGTH);
-                            d_secondary_code_string = const_cast<std::string *>(&GPS_L5i_NH_CODE_STR);
+                            d_secondary_code_length = static_cast<uint32_t>(GPS_L5I_NH_CODE_LENGTH);
+                            d_secondary_code_string = const_cast<std::string *>(&GPS_L5I_NH_CODE_STR);
                             signal_pretty_name = signal_pretty_name + "I";
                             interchange_iq = false;
                         }
@@ -214,10 +214,10 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
             systemName = "Galileo";
             if (signal_type == "1B")
                 {
-                    d_signal_carrier_freq = Galileo_E1_FREQ_HZ;
-                    d_code_period = Galileo_E1_CODE_PERIOD;
-                    d_code_chip_rate = Galileo_E1_CODE_CHIP_RATE_HZ;
-                    d_code_length_chips = static_cast<uint32_t>(Galileo_E1_B_CODE_LENGTH_CHIPS);
+                    d_signal_carrier_freq = GALILEO_E1_FREQ_HZ;
+                    d_code_period = GALILEO_E1_CODE_PERIOD;
+                    d_code_chip_rate = GALILEO_E1_CODE_CHIP_RATE_HZ;
+                    d_code_length_chips = static_cast<uint32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS);
                     d_symbols_per_bit = 1;
                     d_correlation_length_ms = 4;
                     d_code_samples_per_chip = 2;  // CBOC disabled: 2 samples per chip. CBOC enabled: 12 samples per chip
@@ -225,8 +225,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                     if (trk_parameters.track_pilot)
                         {
                             d_secondary = true;
-                            d_secondary_code_length = static_cast<uint32_t>(Galileo_E1_C_SECONDARY_CODE_LENGTH);
-                            d_secondary_code_string = const_cast<std::string *>(&Galileo_E1_C_SECONDARY_CODE);
+                            d_secondary_code_length = static_cast<uint32_t>(GALILEO_E1_C_SECONDARY_CODE_LENGTH);
+                            d_secondary_code_string = const_cast<std::string *>(&GALILEO_E1_C_SECONDARY_CODE);
                             signal_pretty_name = signal_pretty_name + "C";
                         }
                     else
@@ -238,18 +238,18 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                 }
             else if (signal_type == "5X")
                 {
-                    d_signal_carrier_freq = Galileo_E5a_FREQ_HZ;
-                    d_code_period = GALILEO_E5a_CODE_PERIOD;
-                    d_code_chip_rate = Galileo_E5a_CODE_CHIP_RATE_HZ;
+                    d_signal_carrier_freq = GALILEO_E5A_FREQ_HZ;
+                    d_code_period = GALILEO_E5A_CODE_PERIOD;
+                    d_code_chip_rate = GALILEO_E5A_CODE_CHIP_RATE_HZ;
                     d_symbols_per_bit = 20;
                     d_correlation_length_ms = 1;
                     d_code_samples_per_chip = 1;
-                    d_code_length_chips = static_cast<uint32_t>(Galileo_E5a_CODE_LENGTH_CHIPS);
+                    d_code_length_chips = static_cast<uint32_t>(GALILEO_E5A_CODE_LENGTH_CHIPS);
 
                     if (trk_parameters.track_pilot)
                         {
                             d_secondary = true;
-                            d_secondary_code_length = static_cast<uint32_t>(Galileo_E5a_Q_SECONDARY_CODE_LENGTH);
+                            d_secondary_code_length = static_cast<uint32_t>(GALILEO_E5A_Q_SECONDARY_CODE_LENGTH);
                             signal_pretty_name = signal_pretty_name + "Q";
                             interchange_iq = true;
                         }
@@ -554,7 +554,7 @@ void dll_pll_veml_tracking::start_tracking()
             galileo_e5_a_code_gen_complex_primary(aux_code, d_acquisition_gnss_synchro->PRN, const_cast<char *>(signal_type.c_str()));
             if (trk_parameters.track_pilot)
                 {
-                    d_secondary_code_string = const_cast<std::string *>(&Galileo_E5a_Q_SECONDARY_CODE[d_acquisition_gnss_synchro->PRN - 1]);
+                    d_secondary_code_string = const_cast<std::string *>(&GALILEO_E5A_Q_SECONDARY_CODE[d_acquisition_gnss_synchro->PRN - 1]);
                     for (uint32_t i = 0; i < d_code_length_chips; i++)
                         {
                             d_tracking_code[i] = aux_code[i].imag();

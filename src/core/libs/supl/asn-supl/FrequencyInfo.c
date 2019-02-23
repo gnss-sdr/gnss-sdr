@@ -6,7 +6,7 @@
 
 #include "FrequencyInfo.h"
 
-static asn_per_constraints_t asn_PER_type_fmodeSpecificInfo_constr_2 = {
+static asn_per_constraints_t ASN_PER_TYPE_FMODE_SPECIFIC_INFO_CONSTR_2 = {
 	{ APC_CONSTRAINED | APC_EXTENSIBLE,  1,  1,  0,  1 }	/* (0..1,...) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -63,7 +63,7 @@ asn_TYPE_descriptor_t asn_DEF_fmodeSpecificInfo_2 = {
 	0,	/* No effective tags (count) */
 	0,	/* No tags (pointer) */
 	0,	/* No tags (count) */
-	&asn_PER_type_fmodeSpecificInfo_constr_2,
+	&ASN_PER_TYPE_FMODE_SPECIFIC_INFO_CONSTR_2,
 	asn_MBR_fmodeSpecificInfo_2,
 	2,	/* Elements count */
 	&asn_SPC_fmodeSpecificInfo_specs_2	/* Additional specs */

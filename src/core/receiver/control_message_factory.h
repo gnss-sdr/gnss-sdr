@@ -36,7 +36,7 @@
 #include <vector>
 
 //! Message described by who sent it and what it says
-typedef struct ControlMessage_
+typedef struct control_message
 {
     unsigned int who;
     unsigned int what;

@@ -281,57 +281,57 @@ memb_almanacAF1_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_almanacE_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_ALMANAC_E_CONSTR_3 = {
 	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_alamanacToa_constr_4 = {
+static asn_per_constraints_t ASN_PER_MEMB_ALAMANAC_TOA_CONSTR_4 = {
 	{ APC_CONSTRAINED,	 8,  8,  0,  255 }	/* (0..255) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_almanacKsii_constr_5 = {
+static asn_per_constraints_t ASN_PER_MEMB_ALMANAC_KSII_CONSTR_5 = {
 	{ APC_CONSTRAINED,	 16,  16, -32768,  32767 }	/* (-32768..32767) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_almanacOmegaDot_constr_6 = {
+static asn_per_constraints_t ASN_PER_MEMB_ALMANAC_OMEGA_DOT_CONSTR_6 = {
 	{ APC_CONSTRAINED,	 16,  16, -32768,  32767 }	/* (-32768..32767) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_almanacSVhealth_constr_7 = {
+static asn_per_constraints_t ASN_PER_MEMB_ALMANAC_S_VHEALTH_CONSTR_7 = {
 	{ APC_CONSTRAINED,	 8,  8,  0,  255 }	/* (0..255) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_almanacAPowerHalf_constr_8 = {
+static asn_per_constraints_t ASN_PER_MEMB_ALMANAC_A_POWER_HALF_CONSTR_8 = {
 	{ APC_CONSTRAINED,	 24, -1,  0,  16777215 }	/* (0..16777215) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_almanacOmega0_constr_9 = {
+static asn_per_constraints_t ASN_PER_MEMB_ALMANAC_OMEGA0_CONSTR_9 = {
 	{ APC_CONSTRAINED,	 24, -1, -8388608,  8388607 }	/* (-8388608..8388607) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_almanacW_constr_10 = {
+static asn_per_constraints_t ASN_PER_MEMB_ALMANAC_W_CONSTR_10 = {
 	{ APC_CONSTRAINED,	 24, -1, -8388608,  8388607 }	/* (-8388608..8388607) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_almanacM0_constr_11 = {
+static asn_per_constraints_t ASN_PER_MEMB_ALMANAC_M0_CONSTR_11 = {
 	{ APC_CONSTRAINED,	 24, -1, -8388608,  8388607 }	/* (-8388608..8388607) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_almanacAF0_constr_12 = {
+static asn_per_constraints_t ASN_PER_MEMB_ALMANAC_A_F0_CONSTR_12 = {
 	{ APC_CONSTRAINED,	 11,  11, -1024,  1023 }	/* (-1024..1023) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_almanacAF1_constr_13 = {
+static asn_per_constraints_t ASN_PER_MEMB_ALMANAC_A_F1_CONSTR_13 = {
 	{ APC_CONSTRAINED,	 11,  11, -1024,  1023 }	/* (-1024..1023) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -351,7 +351,7 @@ static asn_TYPE_member_t asn_MBR_AlmanacElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_almanacE_constraint_1,
-		&asn_PER_memb_almanacE_constr_3,
+		&ASN_PER_MEMB_ALMANAC_E_CONSTR_3,
 		0,
 		"almanacE"
 		},
@@ -360,7 +360,7 @@ static asn_TYPE_member_t asn_MBR_AlmanacElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_alamanacToa_constraint_1,
-		&asn_PER_memb_alamanacToa_constr_4,
+		&ASN_PER_MEMB_ALAMANAC_TOA_CONSTR_4,
 		0,
 		"alamanacToa"
 		},
@@ -369,7 +369,7 @@ static asn_TYPE_member_t asn_MBR_AlmanacElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_almanacKsii_constraint_1,
-		&asn_PER_memb_almanacKsii_constr_5,
+		&ASN_PER_MEMB_ALMANAC_KSII_CONSTR_5,
 		0,
 		"almanacKsii"
 		},
@@ -378,7 +378,7 @@ static asn_TYPE_member_t asn_MBR_AlmanacElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_almanacOmegaDot_constraint_1,
-		&asn_PER_memb_almanacOmegaDot_constr_6,
+		&ASN_PER_MEMB_ALMANAC_OMEGA_DOT_CONSTR_6,
 		0,
 		"almanacOmegaDot"
 		},
@@ -387,7 +387,7 @@ static asn_TYPE_member_t asn_MBR_AlmanacElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_almanacSVhealth_constraint_1,
-		&asn_PER_memb_almanacSVhealth_constr_7,
+		&ASN_PER_MEMB_ALMANAC_S_VHEALTH_CONSTR_7,
 		0,
 		"almanacSVhealth"
 		},
@@ -396,7 +396,7 @@ static asn_TYPE_member_t asn_MBR_AlmanacElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_almanacAPowerHalf_constraint_1,
-		&asn_PER_memb_almanacAPowerHalf_constr_8,
+		&ASN_PER_MEMB_ALMANAC_A_POWER_HALF_CONSTR_8,
 		0,
 		"almanacAPowerHalf"
 		},
@@ -405,7 +405,7 @@ static asn_TYPE_member_t asn_MBR_AlmanacElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_almanacOmega0_constraint_1,
-		&asn_PER_memb_almanacOmega0_constr_9,
+		&ASN_PER_MEMB_ALMANAC_OMEGA0_CONSTR_9,
 		0,
 		"almanacOmega0"
 		},
@@ -414,7 +414,7 @@ static asn_TYPE_member_t asn_MBR_AlmanacElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_almanacW_constraint_1,
-		&asn_PER_memb_almanacW_constr_10,
+		&ASN_PER_MEMB_ALMANAC_W_CONSTR_10,
 		0,
 		"almanacW"
 		},
@@ -423,7 +423,7 @@ static asn_TYPE_member_t asn_MBR_AlmanacElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_almanacM0_constraint_1,
-		&asn_PER_memb_almanacM0_constr_11,
+		&ASN_PER_MEMB_ALMANAC_M0_CONSTR_11,
 		0,
 		"almanacM0"
 		},
@@ -432,7 +432,7 @@ static asn_TYPE_member_t asn_MBR_AlmanacElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_almanacAF0_constraint_1,
-		&asn_PER_memb_almanacAF0_constr_12,
+		&ASN_PER_MEMB_ALMANAC_A_F0_CONSTR_12,
 		0,
 		"almanacAF0"
 		},
@@ -441,7 +441,7 @@ static asn_TYPE_member_t asn_MBR_AlmanacElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_almanacAF1_constraint_1,
-		&asn_PER_memb_almanacAF1_constr_13,
+		&ASN_PER_MEMB_ALMANAC_A_F1_CONSTR_13,
 		0,
 		"almanacAF1"
 		},

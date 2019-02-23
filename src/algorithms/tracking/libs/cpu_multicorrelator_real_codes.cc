@@ -37,7 +37,7 @@
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cmath>
 
-cpu_multicorrelator_real_codes::cpu_multicorrelator_real_codes()
+Cpu_Multicorrelator_Real_Codes::Cpu_Multicorrelator_Real_Codes()
 {
     d_sig_in = nullptr;
     d_local_code_in = nullptr;
@@ -50,16 +50,16 @@ cpu_multicorrelator_real_codes::cpu_multicorrelator_real_codes()
 }
 
 
-cpu_multicorrelator_real_codes::~cpu_multicorrelator_real_codes()
+Cpu_Multicorrelator_Real_Codes::~Cpu_Multicorrelator_Real_Codes()
 {
     if (d_local_codes_resampled != nullptr)
         {
-            cpu_multicorrelator_real_codes::free();
+            Cpu_Multicorrelator_Real_Codes::free();
         }
 }
 
 
-bool cpu_multicorrelator_real_codes::init(
+bool Cpu_Multicorrelator_Real_Codes::init(
     int max_signal_length_samples,
     int n_correlators)
 {
@@ -76,7 +76,7 @@ bool cpu_multicorrelator_real_codes::init(
 }
 
 
-bool cpu_multicorrelator_real_codes::set_local_code_and_taps(
+bool Cpu_Multicorrelator_Real_Codes::set_local_code_and_taps(
     int code_length_chips,
     const float* local_code_in,
     float* shifts_chips)
@@ -89,7 +89,7 @@ bool cpu_multicorrelator_real_codes::set_local_code_and_taps(
 }
 
 
-bool cpu_multicorrelator_real_codes::set_input_output_vectors(std::complex<float>* corr_out, const std::complex<float>* sig_in)
+bool Cpu_Multicorrelator_Real_Codes::set_input_output_vectors(std::complex<float>* corr_out, const std::complex<float>* sig_in)
 {
     // Save CPU pointers
     d_sig_in = sig_in;
@@ -98,7 +98,7 @@ bool cpu_multicorrelator_real_codes::set_input_output_vectors(std::complex<float
 }
 
 
-void cpu_multicorrelator_real_codes::update_local_code(int correlator_length_samples, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips)
+void Cpu_Multicorrelator_Real_Codes::update_local_code(int correlator_length_samples, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips)
 {
     if (d_use_high_dynamics_resampler)
         {
@@ -126,7 +126,7 @@ void cpu_multicorrelator_real_codes::update_local_code(int correlator_length_sam
 }
 
 // Overload Carrier_wipeoff_multicorrelator_resampler to ensure back compatibility
-bool cpu_multicorrelator_real_codes::Carrier_wipeoff_multicorrelator_resampler(
+bool Cpu_Multicorrelator_Real_Codes::Carrier_wipeoff_multicorrelator_resampler(
     float rem_carrier_phase_in_rad,
     float phase_step_rad,
     float phase_rate_step_rad,
@@ -151,7 +151,7 @@ bool cpu_multicorrelator_real_codes::Carrier_wipeoff_multicorrelator_resampler(
     return true;
 }
 // Overload Carrier_wipeoff_multicorrelator_resampler to ensure back compatibility
-bool cpu_multicorrelator_real_codes::Carrier_wipeoff_multicorrelator_resampler(
+bool Cpu_Multicorrelator_Real_Codes::Carrier_wipeoff_multicorrelator_resampler(
     float rem_carrier_phase_in_rad,
     float phase_step_rad,
     float rem_code_phase_chips,
@@ -169,7 +169,7 @@ bool cpu_multicorrelator_real_codes::Carrier_wipeoff_multicorrelator_resampler(
 }
 
 
-bool cpu_multicorrelator_real_codes::free()
+bool Cpu_Multicorrelator_Real_Codes::free()
 {
     // Free memory
     if (d_local_codes_resampled != nullptr)
@@ -185,7 +185,7 @@ bool cpu_multicorrelator_real_codes::free()
 }
 
 
-void cpu_multicorrelator_real_codes::set_high_dynamics_resampler(
+void Cpu_Multicorrelator_Real_Codes::set_high_dynamics_resampler(
     bool use_high_dynamics_resampler)
 {
     d_use_high_dynamics_resampler = use_high_dynamics_resampler;

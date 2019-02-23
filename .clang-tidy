@@ -35,12 +35,13 @@ Checks: '-*,
         performance-unnecessary-copy-initialization,
         performance-unnecessary-value-param,
         readability-container-size-empty,
+        readability-identifier-naming,
         readability-inconsistent-declaration-parameter-name,
         readability-named-parameter,
         readability-non-const-parameter,
         readability-string-compare'
 WarningsAsErrors: ''
-HeaderFilterRegex: '*.h'
+HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
 FormatStyle: 'file'
 CheckOptions:
@@ -96,6 +97,32 @@ CheckOptions:
     value:           llvm
   - key:             performance-unnecessary-value-param.IncludeStyle
     value:           llvm
+  - key:             readability-identifier-naming.AbstractClassCase
+    value:           CamelCase
+  - key:             readability-identifier-naming.AbstractClassPrefix
+    value:           ''
+  - key:             readability-identifier-naming.AbstractClassSuffix
+    value:           ''
+  - key:             readability-identifier-naming.ClassCase
+    value:           Camel_Snake_Case
+  - key:             readability-identifier-naming.ClassPrefix
+    value:           ''
+  - key:             readability-identifier-naming.ClassSuffix
+    value:           ''
+  - key:             readability-identifier-naming.GlobalConstantCase
+    value:           UPPER_CASE
+  - key:             readability-identifier-naming.GlobalConstantPrefix
+    value:           ''
+  - key:             readability-identifier-naming.GlobalConstantSuffix
+    value:           ''
+  - key:             readability-identifier-naming.IgnoreFailedSplit
+    value:           '0'
+  - key:             readability-identifier-naming.StructCase
+    value:           aNy_CasE
+  - key:             readability-identifier-naming.StructPrefix
+    value:           ''
+  - key:             readability-identifier-naming.StructSuffix
+    value:           ''
   - key:             readability-inconsistent-declaration-parameter-name.IgnoreMacros
     value:           '1'
   - key:             readability-inconsistent-declaration-parameter-name.Strict

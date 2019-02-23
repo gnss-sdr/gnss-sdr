@@ -39,7 +39,7 @@
  * \brief This class represents the dongle information
  * which is sent by rtl_tcp.
  */
-class rtl_tcp_dongle_info
+class Rtl_Tcp_Dongle_Info
 {
 private:
     char magic_[4]{};
@@ -58,7 +58,7 @@ public:
         TUNER_R828D
     };
 
-    rtl_tcp_dongle_info();
+    Rtl_Tcp_Dongle_Info();
 
     boost::system::error_code read(boost::asio::ip::tcp::socket &socket);
 

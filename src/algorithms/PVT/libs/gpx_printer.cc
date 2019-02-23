@@ -155,14 +155,14 @@ bool Gpx_Printer::set_headers(const std::string& filename, bool time_tag_name)
 }
 
 
-bool Gpx_Printer::print_position(const std::shared_ptr<rtklib_solver>& position, bool print_average_values)
+bool Gpx_Printer::print_position(const std::shared_ptr<Rtklib_Solver>& position, bool print_average_values)
 {
     double latitude;
     double longitude;
     double height;
 
     positions_printed = true;
-    const std::shared_ptr<rtklib_solver>& position_ = position;
+    const std::shared_ptr<Rtklib_Solver>& position_ = position;
 
     double speed_over_ground = position_->get_speed_over_ground();    // expressed in m/s
     double course_over_ground = position_->get_course_over_ground();  // expressed in deg

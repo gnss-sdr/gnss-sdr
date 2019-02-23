@@ -6,7 +6,7 @@
 
 #include "SeqOfReferenceIdentityType.h"
 
-static asn_per_constraints_t asn_PER_type_SeqOfReferenceIdentityType_constr_1 = {
+static asn_per_constraints_t ASN_PER_TYPE_SEQ_OF_REFERENCE_IDENTITY_TYPE_CONSTR_1 = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 2,  2,  1,  3 }	/* (SIZE(1..3)) */,
 	0, 0	/* No PER value map */
@@ -49,7 +49,7 @@ asn_TYPE_descriptor_t asn_DEF_SeqOfReferenceIdentityType = {
 	asn_DEF_SeqOfReferenceIdentityType_tags_1,	/* Same as above */
 	sizeof(asn_DEF_SeqOfReferenceIdentityType_tags_1)
 		/sizeof(asn_DEF_SeqOfReferenceIdentityType_tags_1[0]), /* 1 */
-	&asn_PER_type_SeqOfReferenceIdentityType_constr_1,
+	&ASN_PER_TYPE_SEQ_OF_REFERENCE_IDENTITY_TYPE_CONSTR_1,
 	asn_MBR_SeqOfReferenceIdentityType_1,
 	1,	/* Single element */
 	&asn_SPC_SeqOfReferenceIdentityType_specs_1	/* Additional specs */

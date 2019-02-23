@@ -70,8 +70,8 @@
 #include <utility>
 
 
-extern concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
-extern concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
+extern Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
+extern Concurrent_Queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 
 using google::LogMessage;
 

@@ -368,8 +368,8 @@ public:
     void run_server();   //<! Starts running the server
     void stop_server();  //<! Stops the server
 
-    void send_message(const std::string& msg);      //<! Sends a message through the server to all connected clients
-    bool is_server_running() const;                 //<! Returns true if the server is running, false otherwise
+    void send_message(const std::string& msg);  //<! Sends a message through the server to all connected clients
+    bool is_server_running() const;             //<! Returns true if the server is running, false otherwise
 
 private:
     //
@@ -596,10 +596,10 @@ private:
     };
 
 
-    class Rtcm_Listener
+    class RtcmListener
     {
     public:
-        virtual ~Rtcm_Listener() = default;
+        virtual ~RtcmListener() = default;
         virtual void deliver(const Rtcm_Message& msg) = 0;
     };
 
@@ -607,7 +607,7 @@ private:
     class Rtcm_Listener_Room
     {
     public:
-        inline void join(const std::shared_ptr<Rtcm_Listener>& participant)
+        inline void join(const std::shared_ptr<RtcmListener>& participant)
         {
             participants_.insert(participant);
             for (auto msg : recent_msgs_)
@@ -616,7 +616,7 @@ private:
                 }
         }
 
-        inline void leave(const std::shared_ptr<Rtcm_Listener>& participant)
+        inline void leave(const std::shared_ptr<RtcmListener>& participant)
         {
             participants_.erase(participant);
         }
@@ -636,7 +636,7 @@ private:
         }
 
     private:
-        std::set<std::shared_ptr<Rtcm_Listener> > participants_;
+        std::set<std::shared_ptr<RtcmListener> > participants_;
         enum
         {
             max_recent_msgs = 1
@@ -646,7 +646,7 @@ private:
 
 
     class Rtcm_Session
-        : public Rtcm_Listener,
+        : public RtcmListener,
           public std::enable_shared_from_this<Rtcm_Session>
     {
     public:
@@ -846,7 +846,7 @@ private:
     class Queue_Reader
     {
     public:
-        Queue_Reader(boost::asio::io_service& io_context, std::shared_ptr<concurrent_queue<std::string> >& queue, int32_t port) : queue_(queue)
+        Queue_Reader(boost::asio::io_service& io_context, std::shared_ptr<Concurrent_Queue<std::string> >& queue, int32_t port) : queue_(queue)
         {
             boost::asio::ip::tcp::resolver resolver(io_context);
             std::string host("localhost");
@@ -877,7 +877,7 @@ private:
 
     private:
         std::shared_ptr<Tcp_Internal_Client> c;
-        std::shared_ptr<concurrent_queue<std::string> >& queue_;
+        std::shared_ptr<Concurrent_Queue<std::string> >& queue_;
     };
 
 
@@ -952,7 +952,7 @@ private:
     };
 
     boost::asio::io_service io_context;
-    std::shared_ptr<concurrent_queue<std::string> > rtcm_message_queue;
+    std::shared_ptr<Concurrent_Queue<std::string> > rtcm_message_queue;
     std::thread t;
     std::thread tq;
     std::list<Rtcm::Tcp_Server> servers;

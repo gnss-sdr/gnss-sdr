@@ -175,8 +175,8 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::plot_grid()
     std::string basename = "./tmp-acq-gal1/acquisition_E_1B";
     auto sat = static_cast<unsigned int>(gnss_synchro.PRN);
 
-    auto samples_per_code = static_cast<unsigned int>(round(4000000 / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));  // !!
-    acquisition_dump_reader acq_dump(basename, sat, doppler_max, doppler_step, samples_per_code);
+    auto samples_per_code = static_cast<unsigned int>(round(4000000 / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS)));  // !!
+    Acquisition_Dump_Reader acq_dump(basename, sat, doppler_max, doppler_step, samples_per_code);
 
     if (!acq_dump.read_binary_acq())
         {

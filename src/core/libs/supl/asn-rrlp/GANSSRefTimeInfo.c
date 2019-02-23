@@ -56,12 +56,12 @@ memb_ganssTimeID_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_ganssDay_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_GANSS_DAY_CONSTR_2 = {
 	{ APC_CONSTRAINED,	 13,  13,  0,  8191 }	/* (0..8191) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ganssTimeID_constr_5 = {
+static asn_per_constraints_t ASN_PER_MEMB_GANSS_TIME_ID_CONSTR_5 = {
 	{ APC_CONSTRAINED,	 3,  3,  0,  7 }	/* (0..7) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -72,7 +72,7 @@ static asn_TYPE_member_t asn_MBR_GANSSRefTimeInfo_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ganssDay_constraint_1,
-		&asn_PER_memb_ganssDay_constr_2,
+		&ASN_PER_MEMB_GANSS_DAY_CONSTR_2,
 		0,
 		"ganssDay"
 		},
@@ -99,7 +99,7 @@ static asn_TYPE_member_t asn_MBR_GANSSRefTimeInfo_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ganssTimeID_constraint_1,
-		&asn_PER_memb_ganssTimeID_constr_5,
+		&ASN_PER_MEMB_GANSS_TIME_ID_CONSTR_5,
 		0,
 		"ganssTimeID"
 		},

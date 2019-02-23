@@ -6,7 +6,7 @@
 
 #include "CellMeasuredResultsList.h"
 
-static asn_per_constraints_t asn_PER_type_CellMeasuredResultsList_constr_1 = {
+static asn_per_constraints_t ASN_PER_TYPE_CELL_MEASURED_RESULTS_LIST_CONSTR_1 = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 5,  5,  1,  32 }	/* (SIZE(1..32)) */,
 	0, 0	/* No PER value map */
@@ -49,7 +49,7 @@ asn_TYPE_descriptor_t asn_DEF_CellMeasuredResultsList = {
 	asn_DEF_CellMeasuredResultsList_tags_1,	/* Same as above */
 	sizeof(asn_DEF_CellMeasuredResultsList_tags_1)
 		/sizeof(asn_DEF_CellMeasuredResultsList_tags_1[0]), /* 1 */
-	&asn_PER_type_CellMeasuredResultsList_constr_1,
+	&ASN_PER_TYPE_CELL_MEASURED_RESULTS_LIST_CONSTR_1,
 	asn_MBR_CellMeasuredResultsList_1,
 	1,	/* Single element */
 	&asn_SPC_CellMeasuredResultsList_specs_1	/* Additional specs */

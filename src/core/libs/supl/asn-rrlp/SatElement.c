@@ -206,42 +206,42 @@ memb_deltaRangeRateCor3_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_iode_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_IODE_CONSTR_3 = {
 	{ APC_CONSTRAINED,	 8,  8,  0,  239 }	/* (0..239) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_udre_constr_4 = {
+static asn_per_constraints_t ASN_PER_MEMB_UDRE_CONSTR_4 = {
 	{ APC_CONSTRAINED,	 2,  2,  0,  3 }	/* (0..3) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_pseudoRangeCor_constr_5 = {
+static asn_per_constraints_t ASN_PER_MEMB_PSEUDO_RANGE_COR_CONSTR_5 = {
 	{ APC_CONSTRAINED,	 12,  12, -2047,  2047 }	/* (-2047..2047) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_rangeRateCor_constr_6 = {
+static asn_per_constraints_t ASN_PER_MEMB_RANGE_RATE_COR_CONSTR_6 = {
 	{ APC_CONSTRAINED,	 8,  8, -127,  127 }	/* (-127..127) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_deltaPseudoRangeCor2_constr_7 = {
+static asn_per_constraints_t ASN_PER_MEMB_DELTA_PSEUDO_RANGE_COR2_CONSTR_7 = {
 	{ APC_CONSTRAINED,	 8,  8, -127,  127 }	/* (-127..127) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_deltaRangeRateCor2_constr_8 = {
+static asn_per_constraints_t ASN_PER_MEMB_DELTA_RANGE_RATE_COR2_CONSTR_8 = {
 	{ APC_CONSTRAINED,	 4,  4, -7,  7 }	/* (-7..7) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_deltaPseudoRangeCor3_constr_9 = {
+static asn_per_constraints_t ASN_PER_MEMB_DELTA_PSEUDO_RANGE_COR3_CONSTR_9 = {
 	{ APC_CONSTRAINED,	 8,  8, -127,  127 }	/* (-127..127) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_deltaRangeRateCor3_constr_10 = {
+static asn_per_constraints_t ASN_PER_MEMB_DELTA_RANGE_RATE_COR3_CONSTR_10 = {
 	{ APC_CONSTRAINED,	 4,  4, -7,  7 }	/* (-7..7) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -261,7 +261,7 @@ static asn_TYPE_member_t asn_MBR_SatElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_iode_constraint_1,
-		&asn_PER_memb_iode_constr_3,
+		&ASN_PER_MEMB_IODE_CONSTR_3,
 		0,
 		"iode"
 		},
@@ -270,7 +270,7 @@ static asn_TYPE_member_t asn_MBR_SatElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_udre_constraint_1,
-		&asn_PER_memb_udre_constr_4,
+		&ASN_PER_MEMB_UDRE_CONSTR_4,
 		0,
 		"udre"
 		},
@@ -279,7 +279,7 @@ static asn_TYPE_member_t asn_MBR_SatElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_pseudoRangeCor_constraint_1,
-		&asn_PER_memb_pseudoRangeCor_constr_5,
+		&ASN_PER_MEMB_PSEUDO_RANGE_COR_CONSTR_5,
 		0,
 		"pseudoRangeCor"
 		},
@@ -288,7 +288,7 @@ static asn_TYPE_member_t asn_MBR_SatElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_rangeRateCor_constraint_1,
-		&asn_PER_memb_rangeRateCor_constr_6,
+		&ASN_PER_MEMB_RANGE_RATE_COR_CONSTR_6,
 		0,
 		"rangeRateCor"
 		},
@@ -297,7 +297,7 @@ static asn_TYPE_member_t asn_MBR_SatElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_deltaPseudoRangeCor2_constraint_1,
-		&asn_PER_memb_deltaPseudoRangeCor2_constr_7,
+		&ASN_PER_MEMB_DELTA_PSEUDO_RANGE_COR2_CONSTR_7,
 		0,
 		"deltaPseudoRangeCor2"
 		},
@@ -306,7 +306,7 @@ static asn_TYPE_member_t asn_MBR_SatElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_deltaRangeRateCor2_constraint_1,
-		&asn_PER_memb_deltaRangeRateCor2_constr_8,
+		&ASN_PER_MEMB_DELTA_RANGE_RATE_COR2_CONSTR_8,
 		0,
 		"deltaRangeRateCor2"
 		},
@@ -315,7 +315,7 @@ static asn_TYPE_member_t asn_MBR_SatElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_deltaPseudoRangeCor3_constraint_1,
-		&asn_PER_memb_deltaPseudoRangeCor3_constr_9,
+		&ASN_PER_MEMB_DELTA_PSEUDO_RANGE_COR3_CONSTR_9,
 		0,
 		"deltaPseudoRangeCor3"
 		},
@@ -324,7 +324,7 @@ static asn_TYPE_member_t asn_MBR_SatElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_deltaRangeRateCor3_constraint_1,
-		&asn_PER_memb_deltaRangeRateCor3_constr_10,
+		&ASN_PER_MEMB_DELTA_RANGE_RATE_COR3_CONSTR_10,
 		0,
 		"deltaRangeRateCor3"
 		},

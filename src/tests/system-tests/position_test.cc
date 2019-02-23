@@ -60,8 +60,8 @@
 #include <thread>
 
 // For GPS NAVIGATION (L1)
-concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
-concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
+Concurrent_Queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
+Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
 class PositionSystemTest : public ::testing::Test
 {
@@ -470,7 +470,7 @@ void PositionSystemTest::check_results()
     arma::vec ref_r_enu = {0, 0, 0};
     cart2utm(true_r_eb_e, utm_zone, ref_r_enu);
 
-    rtklib_solver_dump_reader pvt_reader;
+    Rtklib_Solver_Dump_Reader pvt_reader;
     pvt_reader.open_obs_file(FLAGS_pvt_solver_dump_filename);
     int64_t n_epochs = pvt_reader.num_epochs();
     R_eb_e = arma::zeros(3, n_epochs);
@@ -596,7 +596,7 @@ void PositionSystemTest::check_results()
     else
         {
             //dynamic position
-            spirent_motion_csv_dump_reader ref_reader;
+            Spirent_Motion_Csv_Dump_Reader ref_reader;
             ref_reader.open_obs_file(FLAGS_ref_motion_filename);
             int64_t n_epochs = ref_reader.num_epochs();
             ref_R_eb_e = arma::zeros(3, n_epochs);

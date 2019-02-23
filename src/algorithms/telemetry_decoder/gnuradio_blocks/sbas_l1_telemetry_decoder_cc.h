@@ -76,9 +76,9 @@ private:
     void viterbi_decoder(double *page_part_symbols, int32_t *page_part_bits);
     void align_samples();
 
-    static const int32_t d_samples_per_symbol = 2;
-    static const int32_t d_symbols_per_bit = 2;
-    static const int32_t d_block_size_in_bits = 30;
+    static const int32_t D_SAMPLES_PER_SYMBOL = 2;
+    static const int32_t D_SYMBOLS_PER_BIT = 2;
+    static const int32_t D_BLOCK_SIZE_IN_BITS = 30;
 
     bool d_dump;
     Gnss_Satellite d_satellite;
@@ -94,11 +94,11 @@ private:
     typedef std::pair<int32_t, std::vector<uint8_t>> msg_candiate_char_t;
 
     // helper class for sample alignment
-    class sample_aligner
+    class Sample_Aligner
     {
     public:
-        sample_aligner();
-        ~sample_aligner();
+        Sample_Aligner();
+        ~Sample_Aligner();
         void reset();
         /*
          * samples length must be a multiple of two
@@ -116,11 +116,11 @@ private:
     } d_sample_aligner;
 
     // helper class for symbol alignment and Viterbi decoding
-    class symbol_aligner_and_decoder
+    class Symbol_Aligner_And_Decoder
     {
     public:
-        symbol_aligner_and_decoder();
-        ~symbol_aligner_and_decoder();
+        Symbol_Aligner_And_Decoder();
+        ~Symbol_Aligner_And_Decoder();
         void reset();
         bool get_bits(const std::vector<double> &symbols, std::vector<int32_t> &bits);
 
@@ -133,7 +133,7 @@ private:
 
 
     // helper class for detecting the preamble and collect the corresponding message candidates
-    class frame_detector
+    class Frame_Detector
     {
     public:
         void reset();
@@ -145,7 +145,7 @@ private:
 
 
     // helper class for checking the CRC of the message candidates
-    class crc_verifier
+    class Crc_Verifier
     {
     public:
         void reset();

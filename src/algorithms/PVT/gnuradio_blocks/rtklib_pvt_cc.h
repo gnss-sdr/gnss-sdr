@@ -114,7 +114,7 @@ private:
     bool d_kml_output_enabled;
     bool d_nmea_output_file_enabled;
 
-    std::shared_ptr<rtklib_solver> d_pvt_solver;
+    std::shared_ptr<Rtklib_Solver> d_pvt_solver;
 
     std::map<int, Gnss_Synchro> gnss_observables_map;
     bool observables_pairCompare_min(const std::pair<int, Gnss_Synchro>& a, const std::pair<int, Gnss_Synchro>& b);

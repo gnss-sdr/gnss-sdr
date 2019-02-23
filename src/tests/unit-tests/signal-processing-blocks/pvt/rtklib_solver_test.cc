@@ -396,12 +396,12 @@ TEST(RTKLibSolverTest, test1)
     bool save_to_mat = false;
     rtk_t rtk = configure_rtklib_options();
 
-    std::unique_ptr<rtklib_solver> d_ls_pvt(new rtklib_solver(nchannels, dump_filename, flag_dump_to_file, save_to_mat, rtk));
+    std::unique_ptr<Rtklib_Solver> d_ls_pvt(new Rtklib_Solver(nchannels, dump_filename, flag_dump_to_file, save_to_mat, rtk));
     d_ls_pvt->set_averaging_depth(1);
 
     // load ephemeris
     std::string eph_xml_filename = path + "data/rtklib_test/eph_GPS_L1CA_test1.xml";
-    gnss_sdr_supl_client supl_client_ephemeris_;
+    Gnss_Sdr_Supl_Client supl_client_ephemeris_;
 
     std::cout << "SUPL: Try read GPS ephemeris from XML file " << eph_xml_filename << std::endl;
     if (supl_client_ephemeris_.load_ephemeris_xml(eph_xml_filename) == true)

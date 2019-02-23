@@ -244,37 +244,37 @@ memb_confidence_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_type_latitudeSign_constr_2 = {
+static asn_per_constraints_t ASN_PER_TYPE_LATITUDE_SIGN_CONSTR_2 = {
 	{ APC_CONSTRAINED,	 1,  1,  0,  1 }	/* (0..1) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_uncertaintySemiMajor_constr_8 = {
+static asn_per_constraints_t ASN_PER_MEMB_UNCERTAINTY_SEMI_MAJOR_CONSTR_8 = {
 	{ APC_CONSTRAINED,	 7,  7,  0,  127 }	/* (0..127) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_uncertaintySemiMinor_constr_9 = {
+static asn_per_constraints_t ASN_PER_MEMB_UNCERTAINTY_SEMI_MINOR_CONSTR_9 = {
 	{ APC_CONSTRAINED,	 7,  7,  0,  127 }	/* (0..127) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_orientationMajorAxis_constr_10 = {
+static asn_per_constraints_t ASN_PER_MEMB_ORIENTATION_MAJOR_AXIS_CONSTR_10 = {
 	{ APC_CONSTRAINED,	 8,  8,  0,  180 }	/* (0..180) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_latitude_constr_5 = {
+static asn_per_constraints_t ASN_PER_MEMB_LATITUDE_CONSTR_5 = {
 	{ APC_CONSTRAINED,	 23, -1,  0,  8388607 }	/* (0..8388607) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_longitude_constr_6 = {
+static asn_per_constraints_t ASN_PER_MEMB_LONGITUDE_CONSTR_6 = {
 	{ APC_CONSTRAINED,	 24, -1, -8388608,  8388607 }	/* (-8388608..8388607) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_confidence_constr_11 = {
+static asn_per_constraints_t ASN_PER_MEMB_CONFIDENCE_CONSTR_11 = {
 	{ APC_CONSTRAINED,	 7,  7,  0,  100 }	/* (0..100) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -320,7 +320,7 @@ asn_TYPE_descriptor_t asn_DEF_latitudeSign_2 = {
 	asn_DEF_latitudeSign_tags_2,	/* Same as above */
 	sizeof(asn_DEF_latitudeSign_tags_2)
 		/sizeof(asn_DEF_latitudeSign_tags_2[0]), /* 2 */
-	&asn_PER_type_latitudeSign_constr_2,
+	&ASN_PER_TYPE_LATITUDE_SIGN_CONSTR_2,
 	0, 0,	/* Defined elsewhere */
 	&asn_SPC_latitudeSign_specs_2	/* Additional specs */
 };
@@ -331,7 +331,7 @@ static asn_TYPE_member_t asn_MBR_uncertainty_7[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_uncertaintySemiMajor_constraint_7,
-		&asn_PER_memb_uncertaintySemiMajor_constr_8,
+		&ASN_PER_MEMB_UNCERTAINTY_SEMI_MAJOR_CONSTR_8,
 		0,
 		"uncertaintySemiMajor"
 		},
@@ -340,7 +340,7 @@ static asn_TYPE_member_t asn_MBR_uncertainty_7[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_uncertaintySemiMinor_constraint_7,
-		&asn_PER_memb_uncertaintySemiMinor_constr_9,
+		&ASN_PER_MEMB_UNCERTAINTY_SEMI_MINOR_CONSTR_9,
 		0,
 		"uncertaintySemiMinor"
 		},
@@ -349,7 +349,7 @@ static asn_TYPE_member_t asn_MBR_uncertainty_7[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_orientationMajorAxis_constraint_7,
-		&asn_PER_memb_orientationMajorAxis_constr_10,
+		&ASN_PER_MEMB_ORIENTATION_MAJOR_AXIS_CONSTR_10,
 		0,
 		"orientationMajorAxis"
 		},
@@ -413,7 +413,7 @@ static asn_TYPE_member_t asn_MBR_PositionEstimate_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_latitude_constraint_1,
-		&asn_PER_memb_latitude_constr_5,
+		&ASN_PER_MEMB_LATITUDE_CONSTR_5,
 		0,
 		"latitude"
 		},
@@ -422,7 +422,7 @@ static asn_TYPE_member_t asn_MBR_PositionEstimate_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_longitude_constraint_1,
-		&asn_PER_memb_longitude_constr_6,
+		&ASN_PER_MEMB_LONGITUDE_CONSTR_6,
 		0,
 		"longitude"
 		},
@@ -440,7 +440,7 @@ static asn_TYPE_member_t asn_MBR_PositionEstimate_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_confidence_constraint_1,
-		&asn_PER_memb_confidence_constr_11,
+		&ASN_PER_MEMB_CONFIDENCE_CONSTR_11,
 		0,
 		"confidence"
 		},

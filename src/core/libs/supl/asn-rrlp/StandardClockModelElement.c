@@ -156,32 +156,32 @@ memb_stanModelID_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_stanClockTocLSB_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_STAN_CLOCK_TOC_LSB_CONSTR_2 = {
 	{ APC_CONSTRAINED,	 9,  9,  0,  511 }	/* (0..511) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_stanClockAF2_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_STAN_CLOCK_A_F2_CONSTR_3 = {
 	{ APC_CONSTRAINED,	 12,  12, -2048,  2047 }	/* (-2048..2047) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_stanClockAF1_constr_4 = {
+static asn_per_constraints_t ASN_PER_MEMB_STAN_CLOCK_A_F1_CONSTR_4 = {
 	{ APC_CONSTRAINED,	 18, -1, -131072,  131071 }	/* (-131072..131071) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_stanClockAF0_constr_5 = {
+static asn_per_constraints_t ASN_PER_MEMB_STAN_CLOCK_A_F0_CONSTR_5 = {
 	{ APC_CONSTRAINED,	 28, -1, -134217728,  134217727 }	/* (-134217728..134217727) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_stanClockTgd_constr_6 = {
+static asn_per_constraints_t ASN_PER_MEMB_STAN_CLOCK_TGD_CONSTR_6 = {
 	{ APC_CONSTRAINED,	 10,  10, -512,  511 }	/* (-512..511) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_stanModelID_constr_7 = {
+static asn_per_constraints_t ASN_PER_MEMB_STAN_MODEL_ID_CONSTR_7 = {
 	{ APC_CONSTRAINED,	 1,  1,  0,  1 }	/* (0..1) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -192,7 +192,7 @@ static asn_TYPE_member_t asn_MBR_StandardClockModelElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_stanClockTocLSB_constraint_1,
-		&asn_PER_memb_stanClockTocLSB_constr_2,
+		&ASN_PER_MEMB_STAN_CLOCK_TOC_LSB_CONSTR_2,
 		0,
 		"stanClockTocLSB"
 		},
@@ -201,7 +201,7 @@ static asn_TYPE_member_t asn_MBR_StandardClockModelElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_stanClockAF2_constraint_1,
-		&asn_PER_memb_stanClockAF2_constr_3,
+		&ASN_PER_MEMB_STAN_CLOCK_A_F2_CONSTR_3,
 		0,
 		"stanClockAF2"
 		},
@@ -210,7 +210,7 @@ static asn_TYPE_member_t asn_MBR_StandardClockModelElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_stanClockAF1_constraint_1,
-		&asn_PER_memb_stanClockAF1_constr_4,
+		&ASN_PER_MEMB_STAN_CLOCK_A_F1_CONSTR_4,
 		0,
 		"stanClockAF1"
 		},
@@ -219,7 +219,7 @@ static asn_TYPE_member_t asn_MBR_StandardClockModelElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_stanClockAF0_constraint_1,
-		&asn_PER_memb_stanClockAF0_constr_5,
+		&ASN_PER_MEMB_STAN_CLOCK_A_F0_CONSTR_5,
 		0,
 		"stanClockAF0"
 		},
@@ -228,7 +228,7 @@ static asn_TYPE_member_t asn_MBR_StandardClockModelElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_stanClockTgd_constraint_1,
-		&asn_PER_memb_stanClockTgd_constr_6,
+		&ASN_PER_MEMB_STAN_CLOCK_TGD_CONSTR_6,
 		0,
 		"stanClockTgd"
 		},
@@ -237,7 +237,7 @@ static asn_TYPE_member_t asn_MBR_StandardClockModelElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_stanModelID_constraint_1,
-		&asn_PER_memb_stanModelID_constr_7,
+		&ASN_PER_MEMB_STAN_MODEL_ID_CONSTR_7,
 		0,
 		"stanModelID"
 		},

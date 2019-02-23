@@ -121,7 +121,7 @@ private:
     gr_complex* d_ca_code;
     float* d_local_code_shift_chips;
     gr_complex* d_correlator_outs;
-    cpu_multicorrelator multicorrelator_cpu;
+    Cpu_Multicorrelator multicorrelator_cpu;
 
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;

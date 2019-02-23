@@ -56,12 +56,12 @@ memb_dopplerUncertainty_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_doppler1_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_DOPPLER1_CONSTR_2 = {
 	{ APC_CONSTRAINED,	 6,  6,  0,  63 }	/* (0..63) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_dopplerUncertainty_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_DOPPLER_UNCERTAINTY_CONSTR_3 = {
 	{ APC_CONSTRAINED,	 3,  3,  0,  7 }	/* (0..7) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -72,7 +72,7 @@ static asn_TYPE_member_t asn_MBR_AddionalDopplerFields_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_doppler1_constraint_1,
-		&asn_PER_memb_doppler1_constr_2,
+		&ASN_PER_MEMB_DOPPLER1_CONSTR_2,
 		0,
 		"doppler1"
 		},
@@ -81,7 +81,7 @@ static asn_TYPE_member_t asn_MBR_AddionalDopplerFields_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_dopplerUncertainty_constraint_1,
-		&asn_PER_memb_dopplerUncertainty_constr_3,
+		&ASN_PER_MEMB_DOPPLER_UNCERTAINTY_CONSTR_3,
 		0,
 		"dopplerUncertainty"
 		},

@@ -128,7 +128,7 @@ private:
     // correlator
     float *d_local_code_shift_chips;
     gr_complex *d_correlator_outs;
-    cpu_multicorrelator multicorrelator_cpu;
+    Cpu_Multicorrelator multicorrelator_cpu;
 
     // tracking vars
     double d_code_freq_hz;
@@ -139,7 +139,7 @@ private:
     size_t d_port;
     int32_t d_listen_connection;
     float d_control_id;
-    tcp_communication d_tcp_com;
+    Tcp_Communication d_tcp_com;
 
     //PRN period in samples
     int32_t d_current_prn_length_samples;

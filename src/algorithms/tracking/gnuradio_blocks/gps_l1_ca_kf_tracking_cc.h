@@ -173,7 +173,7 @@ private:
     float* d_ca_code;
     float* d_local_code_shift_chips;
     gr_complex* d_correlator_outs;
-    cpu_multicorrelator_real_codes multicorrelator_cpu;
+    Cpu_Multicorrelator_Real_Codes multicorrelator_cpu;
 
     // tracking vars
     double d_code_freq_chips;

@@ -392,10 +392,10 @@ void GNSSFlowgraph::connect()
                                             acq_fs = GPS_L1_CA_OPT_ACQ_FS_HZ;
                                             break;
                                         case evGAL_1B:
-                                            acq_fs = Galileo_E1_OPT_ACQ_FS_HZ;
+                                            acq_fs = GALILEO_E1_OPT_ACQ_FS_HZ;
                                             break;
                                         case evGAL_5X:
-                                            acq_fs = Galileo_E5a_OPT_ACQ_FS_HZ;
+                                            acq_fs = GALILEO_E5A_OPT_ACQ_FS_HZ;
                                             break;
                                         case evGLO_1G:
                                             acq_fs = fs;

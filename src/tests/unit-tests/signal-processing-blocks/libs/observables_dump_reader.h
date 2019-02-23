@@ -36,11 +36,11 @@
 #include <string>
 #include <vector>
 
-class observables_dump_reader
+class Observables_Dump_Reader
 {
 public:
-    observables_dump_reader(int n_channels);
-    ~observables_dump_reader();
+    Observables_Dump_Reader(int n_channels);
+    ~Observables_Dump_Reader();
     bool read_binary_obs();
     bool restart();
     int64_t num_epochs();

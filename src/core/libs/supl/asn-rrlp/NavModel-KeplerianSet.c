@@ -406,82 +406,82 @@ memb_keplerCuc_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_keplerToeLSB_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_KEPLER_TOE_LSB_CONSTR_2 = {
 	{ APC_CONSTRAINED,	 9,  9,  0,  511 }	/* (0..511) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_keplerW_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_KEPLER_W_CONSTR_3 = {
 	{ APC_CONSTRAINED,	 32, -1, (-2147483647L - 1),  2147483647 }	/* (-2147483648..2147483647) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_keplerDeltaN_constr_4 = {
+static asn_per_constraints_t ASN_PER_MEMB_KEPLER_DELTA_N_CONSTR_4 = {
 	{ APC_CONSTRAINED,	 16,  16, -32768,  32767 }	/* (-32768..32767) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_keplerM0_constr_5 = {
+static asn_per_constraints_t ASN_PER_MEMB_KEPLER_M0_CONSTR_5 = {
 	{ APC_CONSTRAINED,	 32, -1, (-2147483647L - 1),  2147483647 }	/* (-2147483648..2147483647) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_keplerOmegaDot_constr_6 = {
+static asn_per_constraints_t ASN_PER_MEMB_KEPLER_OMEGA_DOT_CONSTR_6 = {
 	{ APC_CONSTRAINED,	 24, -1, -8388608,  8388607 }	/* (-8388608..8388607) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_keplerELSB_constr_7 = {
+static asn_per_constraints_t ASN_PER_MEMB_KEPLER_ELSB_CONSTR_7 = {
 	{ APC_CONSTRAINED,	 25, -1,  0,  33554431 }	/* (0..33554431) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_keplerIDot_constr_8 = {
+static asn_per_constraints_t ASN_PER_MEMB_KEPLER_I_DOT_CONSTR_8 = {
 	{ APC_CONSTRAINED,	 14,  14, -8192,  8191 }	/* (-8192..8191) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_keplerAPowerHalfLSB_constr_9 = {
+static asn_per_constraints_t ASN_PER_MEMB_KEPLER_A_POWER_HALF_LSB_CONSTR_9 = {
 	{ APC_CONSTRAINED,	 26, -1,  0,  67108863 }	/* (0..67108863) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_keplerI0_constr_10 = {
+static asn_per_constraints_t ASN_PER_MEMB_KEPLER_I0_CONSTR_10 = {
 	{ APC_CONSTRAINED,	 32, -1, (-2147483647L - 1),  2147483647 }	/* (-2147483648..2147483647) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_keplerOmega0_constr_11 = {
+static asn_per_constraints_t ASN_PER_MEMB_KEPLER_OMEGA0_CONSTR_11 = {
 	{ APC_CONSTRAINED,	 32, -1, (-2147483647L - 1),  2147483647 }	/* (-2147483648..2147483647) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_keplerCrs_constr_12 = {
+static asn_per_constraints_t ASN_PER_MEMB_KEPLER_CRS_CONSTR_12 = {
 	{ APC_CONSTRAINED,	 16,  16, -32768,  32767 }	/* (-32768..32767) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_keplerCis_constr_13 = {
+static asn_per_constraints_t ASN_PER_MEMB_KEPLER_CIS_CONSTR_13 = {
 	{ APC_CONSTRAINED,	 16,  16, -32768,  32767 }	/* (-32768..32767) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_keplerCus_constr_14 = {
+static asn_per_constraints_t ASN_PER_MEMB_KEPLER_CUS_CONSTR_14 = {
 	{ APC_CONSTRAINED,	 16,  16, -32768,  32767 }	/* (-32768..32767) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_keplerCrc_constr_15 = {
+static asn_per_constraints_t ASN_PER_MEMB_KEPLER_CRC_CONSTR_15 = {
 	{ APC_CONSTRAINED,	 16,  16, -32768,  32767 }	/* (-32768..32767) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_keplerCic_constr_16 = {
+static asn_per_constraints_t ASN_PER_MEMB_KEPLER_CIC_CONSTR_16 = {
 	{ APC_CONSTRAINED,	 16,  16, -32768,  32767 }	/* (-32768..32767) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_keplerCuc_constr_17 = {
+static asn_per_constraints_t ASN_PER_MEMB_KEPLER_CUC_CONSTR_17 = {
 	{ APC_CONSTRAINED,	 16,  16, -32768,  32767 }	/* (-32768..32767) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -492,7 +492,7 @@ static asn_TYPE_member_t asn_MBR_NavModel_KeplerianSet_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_keplerToeLSB_constraint_1,
-		&asn_PER_memb_keplerToeLSB_constr_2,
+		&ASN_PER_MEMB_KEPLER_TOE_LSB_CONSTR_2,
 		0,
 		"keplerToeLSB"
 		},
@@ -501,7 +501,7 @@ static asn_TYPE_member_t asn_MBR_NavModel_KeplerianSet_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_keplerW_constraint_1,
-		&asn_PER_memb_keplerW_constr_3,
+		&ASN_PER_MEMB_KEPLER_W_CONSTR_3,
 		0,
 		"keplerW"
 		},
@@ -510,7 +510,7 @@ static asn_TYPE_member_t asn_MBR_NavModel_KeplerianSet_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_keplerDeltaN_constraint_1,
-		&asn_PER_memb_keplerDeltaN_constr_4,
+		&ASN_PER_MEMB_KEPLER_DELTA_N_CONSTR_4,
 		0,
 		"keplerDeltaN"
 		},
@@ -519,7 +519,7 @@ static asn_TYPE_member_t asn_MBR_NavModel_KeplerianSet_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_keplerM0_constraint_1,
-		&asn_PER_memb_keplerM0_constr_5,
+		&ASN_PER_MEMB_KEPLER_M0_CONSTR_5,
 		0,
 		"keplerM0"
 		},
@@ -528,7 +528,7 @@ static asn_TYPE_member_t asn_MBR_NavModel_KeplerianSet_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_keplerOmegaDot_constraint_1,
-		&asn_PER_memb_keplerOmegaDot_constr_6,
+		&ASN_PER_MEMB_KEPLER_OMEGA_DOT_CONSTR_6,
 		0,
 		"keplerOmegaDot"
 		},
@@ -537,7 +537,7 @@ static asn_TYPE_member_t asn_MBR_NavModel_KeplerianSet_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_keplerELSB_constraint_1,
-		&asn_PER_memb_keplerELSB_constr_7,
+		&ASN_PER_MEMB_KEPLER_ELSB_CONSTR_7,
 		0,
 		"keplerELSB"
 		},
@@ -546,7 +546,7 @@ static asn_TYPE_member_t asn_MBR_NavModel_KeplerianSet_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_keplerIDot_constraint_1,
-		&asn_PER_memb_keplerIDot_constr_8,
+		&ASN_PER_MEMB_KEPLER_I_DOT_CONSTR_8,
 		0,
 		"keplerIDot"
 		},
@@ -555,7 +555,7 @@ static asn_TYPE_member_t asn_MBR_NavModel_KeplerianSet_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_keplerAPowerHalfLSB_constraint_1,
-		&asn_PER_memb_keplerAPowerHalfLSB_constr_9,
+		&ASN_PER_MEMB_KEPLER_A_POWER_HALF_LSB_CONSTR_9,
 		0,
 		"keplerAPowerHalfLSB"
 		},
@@ -564,7 +564,7 @@ static asn_TYPE_member_t asn_MBR_NavModel_KeplerianSet_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_keplerI0_constraint_1,
-		&asn_PER_memb_keplerI0_constr_10,
+		&ASN_PER_MEMB_KEPLER_I0_CONSTR_10,
 		0,
 		"keplerI0"
 		},
@@ -573,7 +573,7 @@ static asn_TYPE_member_t asn_MBR_NavModel_KeplerianSet_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_keplerOmega0_constraint_1,
-		&asn_PER_memb_keplerOmega0_constr_11,
+		&ASN_PER_MEMB_KEPLER_OMEGA0_CONSTR_11,
 		0,
 		"keplerOmega0"
 		},
@@ -582,7 +582,7 @@ static asn_TYPE_member_t asn_MBR_NavModel_KeplerianSet_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_keplerCrs_constraint_1,
-		&asn_PER_memb_keplerCrs_constr_12,
+		&ASN_PER_MEMB_KEPLER_CRS_CONSTR_12,
 		0,
 		"keplerCrs"
 		},
@@ -591,7 +591,7 @@ static asn_TYPE_member_t asn_MBR_NavModel_KeplerianSet_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_keplerCis_constraint_1,
-		&asn_PER_memb_keplerCis_constr_13,
+		&ASN_PER_MEMB_KEPLER_CIS_CONSTR_13,
 		0,
 		"keplerCis"
 		},
@@ -600,7 +600,7 @@ static asn_TYPE_member_t asn_MBR_NavModel_KeplerianSet_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_keplerCus_constraint_1,
-		&asn_PER_memb_keplerCus_constr_14,
+		&ASN_PER_MEMB_KEPLER_CUS_CONSTR_14,
 		0,
 		"keplerCus"
 		},
@@ -609,7 +609,7 @@ static asn_TYPE_member_t asn_MBR_NavModel_KeplerianSet_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_keplerCrc_constraint_1,
-		&asn_PER_memb_keplerCrc_constr_15,
+		&ASN_PER_MEMB_KEPLER_CRC_CONSTR_15,
 		0,
 		"keplerCrc"
 		},
@@ -618,7 +618,7 @@ static asn_TYPE_member_t asn_MBR_NavModel_KeplerianSet_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_keplerCic_constraint_1,
-		&asn_PER_memb_keplerCic_constr_16,
+		&ASN_PER_MEMB_KEPLER_CIC_CONSTR_16,
 		0,
 		"keplerCic"
 		},
@@ -627,7 +627,7 @@ static asn_TYPE_member_t asn_MBR_NavModel_KeplerianSet_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_keplerCuc_constraint_1,
-		&asn_PER_memb_keplerCuc_constr_17,
+		&ASN_PER_MEMB_KEPLER_CUC_CONSTR_17,
 		0,
 		"keplerCuc"
 		},

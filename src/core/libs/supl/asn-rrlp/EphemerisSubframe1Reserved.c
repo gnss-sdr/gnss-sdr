@@ -106,22 +106,22 @@ memb_reserved4_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_reserved1_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_RESERVED1_CONSTR_2 = {
 	{ APC_CONSTRAINED,	 23, -1,  0,  8388607 }	/* (0..8388607) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_reserved2_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_RESERVED2_CONSTR_3 = {
 	{ APC_CONSTRAINED,	 24, -1,  0,  16777215 }	/* (0..16777215) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_reserved3_constr_4 = {
+static asn_per_constraints_t ASN_PER_MEMB_RESERVED3_CONSTR_4 = {
 	{ APC_CONSTRAINED,	 24, -1,  0,  16777215 }	/* (0..16777215) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_reserved4_constr_5 = {
+static asn_per_constraints_t ASN_PER_MEMB_RESERVED4_CONSTR_5 = {
 	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -132,7 +132,7 @@ static asn_TYPE_member_t asn_MBR_EphemerisSubframe1Reserved_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_reserved1_constraint_1,
-		&asn_PER_memb_reserved1_constr_2,
+		&ASN_PER_MEMB_RESERVED1_CONSTR_2,
 		0,
 		"reserved1"
 		},
@@ -141,7 +141,7 @@ static asn_TYPE_member_t asn_MBR_EphemerisSubframe1Reserved_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_reserved2_constraint_1,
-		&asn_PER_memb_reserved2_constr_3,
+		&ASN_PER_MEMB_RESERVED2_CONSTR_3,
 		0,
 		"reserved2"
 		},
@@ -150,7 +150,7 @@ static asn_TYPE_member_t asn_MBR_EphemerisSubframe1Reserved_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_reserved3_constraint_1,
-		&asn_PER_memb_reserved3_constr_4,
+		&ASN_PER_MEMB_RESERVED3_CONSTR_4,
 		0,
 		"reserved3"
 		},
@@ -159,7 +159,7 @@ static asn_TYPE_member_t asn_MBR_EphemerisSubframe1Reserved_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_reserved4_constraint_1,
-		&asn_PER_memb_reserved4_constr_5,
+		&ASN_PER_MEMB_RESERVED4_CONSTR_5,
 		0,
 		"reserved4"
 		},

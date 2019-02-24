@@ -54,7 +54,6 @@
 #include "rtklib_conversions.h"
 #include "rtklib_ephemeris.h"
 #include "rtklib_rtkcmn.h"
-#include <boost/chrono.hpp>
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
 #include <gnuradio/message.h>
@@ -197,6 +196,16 @@ ControlThread::~ControlThread()  // NOLINT(modernize-use-equals-default)
         {
             msgctl(msqid, IPC_RMID, nullptr);
         }
+
+    if (sysv_queue_thread_.joinable())
+        {
+            sysv_queue_thread_.join();
+        }
+
+    if (cmd_interface_thread_.joinable())
+        {
+            cmd_interface_thread_.join();
+        }
 }
 
 
@@ -256,12 +265,12 @@ int ControlThread::run()
     // launch GNSS assistance process AFTER the flowgraph is running because the GNU Radio asynchronous queues must be already running to transport msgs
     assist_GNSS();
     // start the keyboard_listener thread
-    keyboard_thread_ = boost::thread(&ControlThread::keyboard_listener, this);
-    sysv_queue_thread_ = boost::thread(&ControlThread::sysv_queue_listener, this);
+    keyboard_thread_ = std::thread(&ControlThread::keyboard_listener, this);
+    sysv_queue_thread_ = std::thread(&ControlThread::sysv_queue_listener, this);
 
     // start the telecommand listener thread
     cmd_interface_.set_pvt(flowgraph_->get_pvt());
-    cmd_interface_thread_ = boost::thread(&ControlThread::telecommand_listener, this);
+    cmd_interface_thread_ = std::thread(&ControlThread::telecommand_listener, this);
 
     bool enable_FPGA = configuration_->property("Channel.enable_FPGA", false);
     if (enable_FPGA == true)
@@ -284,21 +293,10 @@ int ControlThread::run()
     stop_ = true;
     flowgraph_->disconnect();
 
-    // Join keyboard thread
-    try
-        {
-            keyboard_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
-            sysv_queue_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
-            cmd_interface_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
-        }
-    catch (const boost::thread_interrupted &interrupt)
-        {
-            DLOG(WARNING) << "Thread interrupted";
-        }
-    catch (const boost::system::system_error &e)
-        {
-            LOG(WARNING) << "System error";
-        }
+    // Terminate keyboard thread
+    pthread_t id = keyboard_thread_.native_handle();
+    keyboard_thread_.detach();
+    pthread_cancel(id);
 
     if (restart_)
         {
@@ -1105,6 +1103,6 @@ void ControlThread::keyboard_listener()
                         }
                     read_keys = false;
                 }
-            usleep(500000);
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
 }

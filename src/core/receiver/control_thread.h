@@ -44,9 +44,9 @@
 #include "gnss_sdr_supl_client.h"
 #include "tcp_cmd_interface.h"
 #include <armadillo>
-#include <boost/thread.hpp>
 #include <gnuradio/msg_queue.h>
 #include <memory>
+#include <thread>
 #include <vector>
 
 
@@ -120,7 +120,7 @@ private:
     //Telecommand TCP interface
     TcpCmdInterface cmd_interface_;
     void telecommand_listener();
-    boost::thread cmd_interface_thread_;
+    std::thread cmd_interface_thread_;
     //SUPL assistance classes
     Gnss_Sdr_Supl_Client supl_client_acquisition_;
     Gnss_Sdr_Supl_Client supl_client_ephemeris_;
@@ -168,9 +168,9 @@ private:
     bool delete_configuration_;
     unsigned int processed_control_messages_;
     unsigned int applied_actions_;
-    boost::thread keyboard_thread_;
-    boost::thread sysv_queue_thread_;
-    boost::thread gps_acq_assist_data_collector_thread_;
+    std::thread keyboard_thread_;
+    std::thread sysv_queue_thread_;
+    std::thread gps_acq_assist_data_collector_thread_;
 
     void keyboard_listener();
     void sysv_queue_listener();

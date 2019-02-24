@@ -38,10 +38,7 @@
 #include "gps_iono.h"
 #include "gps_navigation_message.h"
 #include "gps_utc_model.h"
-#include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
 #include <glog/logging.h>
 #include <cmath>
 #include <exception>

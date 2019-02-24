@@ -58,6 +58,7 @@
 #include <glog/logging.h>
 #include <gnuradio/message.h>
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <iostream>
 #include <limits>
@@ -204,7 +205,7 @@ ControlThread::~ControlThread()  // NOLINT(modernize-use-equals-default)
 
     if (cmd_interface_thread_.joinable())
         {
-            cmd_interface_thread_.join();
+            cmd_interface_thread_.detach();
         }
 }
 

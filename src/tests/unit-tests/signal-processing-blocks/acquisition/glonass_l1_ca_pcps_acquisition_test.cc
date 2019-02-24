@@ -30,11 +30,20 @@
  * -------------------------------------------------------------------------
  */
 
-#include <boost/chrono.hpp>
+#include "freq_xlating_fir_filter.h"
+#include "glonass_l1_ca_pcps_acquisition.h"
+#include "gnss_block_factory.h"
+#include "gnss_block_interface.h"
+#include "gnss_sdr_valve.h"
+#include "gnss_synchro.h"
+#include "in_memory_configuration.h"
 #include <boost/make_shared.hpp>
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/blocks/file_source.h>
+#include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/msg_queue.h>
 #include <gnuradio/top_block.h>
+#include <gtest/gtest.h>
 #include <chrono>
 #include <cstdlib>
 #include <utility>
@@ -43,16 +52,6 @@
 #else
 #include <gnuradio/analog/sig_source_c.h>
 #endif
-#include "freq_xlating_fir_filter.h"
-#include "glonass_l1_ca_pcps_acquisition.h"
-#include "gnss_block_factory.h"
-#include "gnss_block_interface.h"
-#include "gnss_sdr_valve.h"
-#include "gnss_synchro.h"
-#include "in_memory_configuration.h"
-#include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/msg_queue.h>
-#include <gtest/gtest.h>
 
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########

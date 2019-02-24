@@ -345,7 +345,6 @@ if(ENABLE_UNIT_TESTING)
 
     target_link_libraries(run_tests
         PUBLIC
-            Boost::chrono
             Boost::filesystem
             Boost::system
             Boost::thread

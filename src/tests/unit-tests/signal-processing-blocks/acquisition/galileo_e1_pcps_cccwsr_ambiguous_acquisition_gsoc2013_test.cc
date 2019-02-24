@@ -31,17 +31,6 @@
  */
 
 
-#include <boost/shared_ptr.hpp>
-#include <gnuradio/analog/sig_source_waveform.h>
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/top_block.h>
-#include <chrono>
-#include <utility>
-#ifdef GR_GREATER_38
-#include <gnuradio/analog/sig_source.h>
-#else
-#include <gnuradio/analog/sig_source_c.h>
-#endif
 #include "fir_filter.h"
 #include "galileo_e1_pcps_cccwsr_ambiguous_acquisition.h"
 #include "gen_signal_source.h"
@@ -51,8 +40,20 @@
 #include "in_memory_configuration.h"
 #include "signal_generator.h"
 #include "signal_generator_c.h"
+#include <boost/shared_ptr.hpp>
+#include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/msg_queue.h>
+#include <gnuradio/top_block.h>
+#include <chrono>
+#include <thread>
+#include <utility>
+#ifdef GR_GREATER_38
+#include <gnuradio/analog/sig_source.h>
+#else
+#include <gnuradio/analog/sig_source_c.h>
+#endif
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx;
@@ -143,7 +144,7 @@ protected:
     size_t item_size;
     bool stop;
     int message;
-    boost::thread ch_thread;
+    std::thread ch_thread;
 
     unsigned int integration_time_ms = 0;
     unsigned int fs_in = 0;
@@ -346,7 +347,7 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::config_2()
 void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::start_queue()
 {
     stop = false;
-    ch_thread = boost::thread(&GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::wait_message, this);
+    ch_thread = std::thread(&GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::wait_message, this);
 }
 
 
@@ -550,7 +551,7 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResults)
                 }
 
             ASSERT_NO_THROW({
-                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+                ch_thread.join();
             }) << "Failure while waiting the queue to stop";
         }
 }

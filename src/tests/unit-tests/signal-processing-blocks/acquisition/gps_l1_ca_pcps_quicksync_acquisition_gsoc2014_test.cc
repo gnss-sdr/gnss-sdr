@@ -31,18 +31,6 @@
  */
 
 
-#include <glog/logging.h>
-#include <gnuradio/analog/sig_source_waveform.h>
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/top_block.h>
-#include <chrono>
-#include <stdexcept>
-#include <utility>
-#ifdef GR_GREATER_38
-#include <gnuradio/analog/sig_source.h>
-#else
-#include <gnuradio/analog/sig_source_c.h>
-#endif
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
@@ -51,9 +39,22 @@
 #include "in_memory_configuration.h"
 #include "signal_generator.h"
 #include "signal_generator_c.h"
+#include <glog/logging.h>
+#include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/msg_queue.h>
+#include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
+#include <chrono>
+#include <stdexcept>
+#include <thread>
+#include <utility>
+#ifdef GR_GREATER_38
+#include <gnuradio/analog/sig_source.h>
+#else
+#include <gnuradio/analog/sig_source_c.h>
+#endif
 
 DEFINE_double(value_threshold, 1, "Value of the threshold for the acquisition");
 DEFINE_int32(value_CN0_dB_0, 44, "Value for the CN0_dB_0 in channel 0");
@@ -150,7 +151,7 @@ protected:
     size_t item_size;
     bool stop;
     int message;
-    boost::thread ch_thread;
+    std::thread ch_thread;
 
     unsigned int integration_time_ms = 0;
     unsigned int fs_in = 0;
@@ -454,7 +455,7 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_3()
 void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::start_queue()
 {
     stop = false;
-    ch_thread = boost::thread(&GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::wait_message, this);
+    ch_thread = std::thread(&GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::wait_message, this);
 }
 
 

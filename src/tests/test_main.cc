@@ -48,8 +48,7 @@
 #include "gps_utc_model.h"
 #include "sbas_ephemeris.h"
 #include <boost/filesystem.hpp>
-#include <boost/make_shared.hpp>
-#include <boost/thread.hpp>
+#include <boost/shared_ptr.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 #include <gnuradio/msg_queue.h>

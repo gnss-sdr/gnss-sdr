@@ -143,7 +143,7 @@ protected:
     size_t item_size;
     bool stop;
     int message;
-    boost::thread ch_thread;
+    std::thread ch_thread;
 
     unsigned int integration_time_ms = 0;
     unsigned int fs_in = 0;
@@ -348,7 +348,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::config_2()
 void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::start_queue()
 {
     stop = false;
-    ch_thread = boost::thread(&GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::wait_message, this);
+    ch_thread = std::thread(&GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::wait_message, this);
 }
 
 

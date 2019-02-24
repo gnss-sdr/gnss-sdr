@@ -38,12 +38,11 @@ target_link_libraries(front_end_cal_lib
         core_receiver
         core_libs
     PRIVATE
+        Boost::boost
         Gflags::gflags
         Glog::glog
         Gnuradio::blocks
         Gnuradio::runtime
-        Boost::serialization
-        Boost::thread
 )
 
 if(ENABLE_CLANG_TIDY)
@@ -65,8 +64,9 @@ target_link_libraries(front-end-cal
         front_end_cal_lib
         gnss_sdr_flags
     PRIVATE
+        Boost::filesystem
+        Gflags::gflags
         Glog::glog
-        Armadillo::armadillo
 )
 
 target_compile_definitions(front-end-cal

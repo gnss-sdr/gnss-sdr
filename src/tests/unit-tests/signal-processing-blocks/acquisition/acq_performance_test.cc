@@ -52,6 +52,7 @@
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
 #include <gnuradio/blocks/skiphead.h>
 #include <gnuradio/top_block.h>
+#include <thread>
 #include <utility>
 
 
@@ -337,7 +338,7 @@ protected:
     bool stop;
 
     int message;
-    boost::thread ch_thread;
+    std::thread ch_thread;
 
     std::string implementation = FLAGS_acq_test_implementation;
 
@@ -395,7 +396,7 @@ void AcquisitionPerformanceTest::init()
 void AcquisitionPerformanceTest::start_queue()
 {
     stop = false;
-    ch_thread = boost::thread(&AcquisitionPerformanceTest::wait_message, this);
+    ch_thread = std::thread(&AcquisitionPerformanceTest::wait_message, this);
 }
 
 
@@ -647,7 +648,7 @@ int AcquisitionPerformanceTest::run_receiver()
 
     top_block->run();  // Start threads and wait
 
-    ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+    ch_thread.join();
 
     return 0;
 }

@@ -57,7 +57,6 @@
 #include <boost/exception/detail/exception_ptr.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/thread.hpp>
 #include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/file_source.h>
@@ -73,6 +72,7 @@
 #include <exception>
 #include <memory>
 #include <queue>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -398,7 +398,7 @@ int main(int argc, char** argv)
     std::map<int, double> doppler_measurements_map;
     std::map<int, double> cn0_measurements_map;
 
-    boost::thread ch_thread;
+    std::thread ch_thread;
 
     // record startup time
     std::chrono::time_point<std::chrono::system_clock> start, end;
@@ -417,9 +417,9 @@ int main(int argc, char** argv)
             stop = false;
             try
                 {
-                    ch_thread = boost::thread(wait_message);
+                    ch_thread = std::thread(wait_message);
                 }
-            catch (const boost::thread_resource_error& e)
+            catch (const std::exception& e)
                 {
                     LOG(INFO) << "Exception caught (thread resource error)";
                 }
@@ -457,7 +457,7 @@ int main(int argc, char** argv)
                 {
                     ch_thread.join();
                 }
-            catch (const boost::thread_resource_error& e)
+            catch (const std::exception& e)
                 {
                     LOG(INFO) << "Exception caught while joining threads.";
                 }

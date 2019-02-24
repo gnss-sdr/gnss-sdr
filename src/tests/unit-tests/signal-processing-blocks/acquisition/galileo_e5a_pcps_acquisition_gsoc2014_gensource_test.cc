@@ -141,7 +141,7 @@ protected:
     size_t item_size;
     bool stop;
     int message;
-    boost::thread ch_thread;
+    std::thread ch_thread;
 
     unsigned int integration_time_ms = 0;
     unsigned int fs_in = 0;
@@ -426,7 +426,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_3()
 void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::start_queue()
 {
     stop = false;
-    ch_thread = boost::thread(&GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::wait_message, this);
+    ch_thread = std::thread(&GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::wait_message, this);
 }
 
 

@@ -29,30 +29,30 @@
  * -------------------------------------------------------------------------
  */
 
-#include <boost/make_shared.hpp>
-#include <boost/thread.hpp>
-#include <gnuradio/analog/sig_source_waveform.h>
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/top_block.h>
-#include <chrono>
-#include <cstdlib>
-#include <utility>
-#ifdef GR_GREATER_38
-#include <gnuradio/analog/sig_source.h>
-#else
-#include <gnuradio/analog/sig_source_c.h>
-#endif
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
 #include "gps_l1_ca_pcps_acquisition_fpga.h"
 #include "in_memory_configuration.h"
+#include <boost/make_shared.hpp>
+#include <boost/thread.hpp>
+#include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/throttle.h>
 #include <gnuradio/msg_queue.h>
+#include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
+#include <chrono>
+#include <cstdlib>
 #include <unistd.h>
+#include <utility>
+#ifdef GR_GREATER_38
+#include <gnuradio/analog/sig_source.h>
+#else
+#include <gnuradio/analog/sig_source_c.h>
+#endif
 
 #define DMA_ACQ_TRANSFER_SIZE 2046               // DMA transfer size for the acquisition
 #define RX_SIGNAL_MAX_VALUE 127                  // 2^7 - 1 for 8-bit signed values

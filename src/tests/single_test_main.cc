@@ -40,7 +40,6 @@
 #include "gps_ephemeris.h"
 #include "gps_navigation_message.h"
 #include <boost/filesystem.hpp>
-#include <boost/thread.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 #include <gnuradio/msg_queue.h>

@@ -31,18 +31,6 @@
  */
 
 
-#include <boost/make_shared.hpp>
-#include <glog/logging.h>
-#include <gnuradio/analog/sig_source_waveform.h>
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/top_block.h>
-#include <chrono>
-#include <utility>
-#ifdef GR_GREATER_38
-#include <gnuradio/analog/sig_source.h>
-#else
-#include <gnuradio/analog/sig_source_c.h>
-#endif
 #include "Galileo_E1.h"
 #include "acquisition_dump_reader.h"
 #include "galileo_e1_pcps_ambiguous_acquisition.h"
@@ -54,9 +42,21 @@
 #include "gnuplot_i.h"
 #include "in_memory_configuration.h"
 #include "test_flags.h"
+#include <boost/make_shared.hpp>
+#include <glog/logging.h>
+#include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/msg_queue.h>
+#include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
+#include <chrono>
+#include <utility>
+#ifdef GR_GREATER_38
+#include <gnuradio/analog/sig_source.h>
+#else
+#include <gnuradio/analog/sig_source_c.h>
+#endif
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx;

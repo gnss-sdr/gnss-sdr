@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -17,84 +17,75 @@
 #
 
 
-if(OPENSSL_FOUND)
-    add_definitions(-DUSE_OPENSSL_FALLBACK=1)
-endif()
-
 set(FRONT_END_CAL_SOURCES front_end_cal.cc)
 set(FRONT_END_CAL_HEADERS front_end_cal.h)
-
-include_directories(
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces
-    ${CMAKE_SOURCE_DIR}/src/core/receiver
-    ${CMAKE_SOURCE_DIR}/src/core/libs
-    ${CMAKE_SOURCE_DIR}/src/core/libs/supl
-    ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
-    ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
-    ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/adapters
-    ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/gnuradio_blocks
-    ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/libs
-    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-    ${GNURADIO_BLOCKS_INCLUDE_DIRS}
-    ${ARMADILLO_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
-    ${PUGIXML_INCLUDE_DIR}
-    ${VOLK_GNSSSDR_INCLUDE_DIRS}
-)
 
 add_library(front_end_cal_lib ${FRONT_END_CAL_SOURCES} ${FRONT_END_CAL_HEADERS})
 source_group(Headers FILES ${FRONT_END_CAL_HEADERS})
 
 target_link_libraries(front_end_cal_lib
-    ${MAC_LIBRARIES}
-    ${THREAD_LIBRARIES}
-    ${Boost_LIBRARIES}
-    ${GNURADIO_RUNTIME_LIBRARIES}
-    ${GNURADIO_BLOCKS_LIBRARIES}
-    ${GNURADIO_FFT_LIBRARIES}
-    ${GNURADIO_FILTER_LIBRARIES}
-    ${GFlags_LIBS}
-    ${GLOG_LIBRARIES}
-    ${ARMADILLO_LIBRARIES}
-    ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
-    ${GNSS_SDR_OPTIONAL_LIBS}
-    rx_core_lib
-    gnss_sdr_flags
-    gnss_rx
-    channel_fsm
+    PUBLIC
+        Armadillo::armadillo
+        Threads::Threads
+        Volkgnsssdr::volkgnsssdr ${ORC_LIBRARIES}
+        signal_source_adapters
+        signal_source_gr_blocks
+        signal_source_libs
+        acquisition_adapters
+        gnss_sdr_flags
+        channel_libs
+        algorithms_libs
+        core_receiver
+        core_libs
+    PRIVATE
+        Boost::boost
+        Gflags::gflags
+        Glog::glog
+        Gnuradio::blocks
+        Gnuradio::runtime
 )
 
-add_dependencies(front_end_cal_lib glog-${glog_RELEASE} armadillo-${armadillo_RELEASE})
-
-add_definitions(-DGNSS_SDR_VERSION="${VERSION}")
-add_definitions(-DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}")
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(front_end_cal_lib
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
 
 add_executable(front-end-cal ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
+
+target_link_libraries(front-end-cal
+    PUBLIC
+        Volkgnsssdr::volkgnsssdr ${ORC_LIBRARIES}
+        core_libs
+        core_receiver
+        front_end_cal_lib
+        gnss_sdr_flags
+    PRIVATE
+        Boost::filesystem
+        Gflags::gflags
+        Glog::glog
+)
+
+target_compile_definitions(front-end-cal
+    PUBLIC -DGNSS_SDR_VERSION="${VERSION}"
+    PUBLIC -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}"
+)
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(front-end-cal
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
 
 add_custom_command(TARGET front-end-cal POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:front-end-cal>
         ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:front-end-cal>)
-
-target_link_libraries(front-end-cal
-    ${MAC_LIBRARIES}
-    ${Boost_LIBRARIES}
-    ${GNURADIO_RUNTIME_LIBRARIES}
-    ${GNURADIO_BLOCKS_LIBRARIES}
-    ${GNURADIO_FFT_LIBRARIES}
-    ${GNURADIO_FILTER_LIBRARIES}
-    ${GFlags_LIBS}
-    ${GLOG_LIBRARIES}
-    ${ARMADILLO_LIBRARIES}
-    ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
-    ${GNSS_SDR_OPTIONAL_LIBS}
-    rx_core_lib
-    gnss_rx
-    front_end_cal_lib
-)
 
 install(TARGETS front-end-cal
     RUNTIME DESTINATION bin

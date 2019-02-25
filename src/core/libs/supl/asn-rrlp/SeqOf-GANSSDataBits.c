@@ -6,7 +6,7 @@
 
 #include "SeqOf-GANSSDataBits.h"
 
-static asn_per_constraints_t asn_PER_type_SeqOf_GANSSDataBits_constr_1 = {
+static asn_per_constraints_t ASN_PER_TYPE_SEQ_OF_GANSS_DATA_BITS_CONSTR_1 = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 10,  10,  1,  1024 }	/* (SIZE(1..1024)) */,
 	0, 0	/* No PER value map */
@@ -49,7 +49,7 @@ asn_TYPE_descriptor_t asn_DEF_SeqOf_GANSSDataBits = {
 	asn_DEF_SeqOf_GANSSDataBits_tags_1,	/* Same as above */
 	sizeof(asn_DEF_SeqOf_GANSSDataBits_tags_1)
 		/sizeof(asn_DEF_SeqOf_GANSSDataBits_tags_1[0]), /* 1 */
-	&asn_PER_type_SeqOf_GANSSDataBits_constr_1,
+	&ASN_PER_TYPE_SEQ_OF_GANSS_DATA_BITS_CONSTR_1,
 	asn_MBR_SeqOf_GANSSDataBits_1,
 	1,	/* Single element */
 	&asn_SPC_SeqOf_GANSSDataBits_specs_1	/* Additional specs */

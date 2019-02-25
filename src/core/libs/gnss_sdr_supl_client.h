@@ -57,7 +57,6 @@ extern "C"
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/serialization/map.hpp>
-#include <glog/logging.h>
 #include <fstream>
 #include <map>
 #include <string>
@@ -65,7 +64,7 @@ extern "C"
 /*!
  * \brief class that implements a C++ interface to external Secure User Location Protocol (SUPL) client library..
  */
-class gnss_sdr_supl_client
+class Gnss_Sdr_Supl_Client
 {
 private:
     // GSM CELL INFO
@@ -275,8 +274,8 @@ public:
      */
     void print_assistance();
 
-    gnss_sdr_supl_client();
-    ~gnss_sdr_supl_client();
+    Gnss_Sdr_Supl_Client();
+    ~Gnss_Sdr_Supl_Client();
 };
 
 #endif

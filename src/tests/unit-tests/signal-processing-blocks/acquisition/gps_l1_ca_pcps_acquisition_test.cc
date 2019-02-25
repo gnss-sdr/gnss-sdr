@@ -31,19 +31,6 @@
  */
 
 
-#include <boost/filesystem.hpp>
-#include <boost/make_shared.hpp>
-#include <glog/logging.h>
-#include <gnuradio/analog/sig_source_waveform.h>
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/top_block.h>
-#include <chrono>
-#include <utility>
-#ifdef GR_GREATER_38
-#include <gnuradio/analog/sig_source.h>
-#else
-#include <gnuradio/analog/sig_source_c.h>
-#endif
 #include "GPS_L1_CA.h"
 #include "acquisition_dump_reader.h"
 #include "gnss_block_factory.h"
@@ -54,9 +41,22 @@
 #include "gps_l1_ca_pcps_acquisition.h"
 #include "in_memory_configuration.h"
 #include "test_flags.h"
+#include <boost/filesystem.hpp>
+#include <boost/make_shared.hpp>
+#include <glog/logging.h>
+#include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/msg_queue.h>
+#include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
+#include <chrono>
+#include <utility>
+#ifdef GR_GREATER_38
+#include <gnuradio/analog/sig_source.h>
+#else
+#include <gnuradio/analog/sig_source_c.h>
+#endif
 
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
@@ -177,9 +177,12 @@ void GpsL1CaPcpsAcquisitionTest::plot_grid()
     auto sat = static_cast<unsigned int>(gnss_synchro.PRN);
 
     auto samples_per_code = static_cast<unsigned int>(round(4000000 / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));  // !!
-    acquisition_dump_reader acq_dump(basename, sat, doppler_max, doppler_step, samples_per_code, 1);
+    Acquisition_Dump_Reader acq_dump(basename, sat, doppler_max, doppler_step, samples_per_code, 1);
 
-    if (!acq_dump.read_binary_acq()) std::cout << "Error reading files" << std::endl;
+    if (!acq_dump.read_binary_acq())
+        {
+            std::cout << "Error reading files" << std::endl;
+        }
 
     std::vector<int> *doppler = &acq_dump.doppler;
     std::vector<unsigned int> *samples = &acq_dump.samples;

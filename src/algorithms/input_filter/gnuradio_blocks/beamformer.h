@@ -34,7 +34,7 @@
 #include <gnuradio/sync_block.h>
 
 class beamformer;
-typedef boost::shared_ptr<beamformer> beamformer_sptr;
+using beamformer_sptr = boost::shared_ptr<beamformer>;
 
 beamformer_sptr make_beamformer();
 

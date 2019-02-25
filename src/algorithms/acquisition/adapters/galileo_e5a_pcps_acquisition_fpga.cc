@@ -98,7 +98,7 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
             acq_pilot_ = false;
         }
 
-    auto code_length = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / Galileo_E5a_CODE_CHIP_RATE_HZ * static_cast<double>(Galileo_E5a_CODE_LENGTH_CHIPS)));
+    auto code_length = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / GALILEO_E5A_CODE_CHIP_RATE_HZ * static_cast<double>(GALILEO_E5A_CODE_LENGTH_CHIPS)));
     acq_parameters.code_length = code_length;
     // The FPGA can only use FFT lengths that are a power of two.
     float nbits = ceilf(log2f((float)code_length*2));
@@ -117,7 +117,7 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     acq_parameters.samples_per_code = nsamples_total;
 
 
-    acq_parameters.excludelimit = static_cast<unsigned int>(ceil((1.0 / Galileo_E5a_CODE_CHIP_RATE_HZ) * static_cast<float>(acq_parameters.fs_in)));
+    acq_parameters.excludelimit = static_cast<unsigned int>(ceil((1.0 / GALILEO_E5A_CODE_CHIP_RATE_HZ) * static_cast<float>(acq_parameters.fs_in)));
 
     //vector_length_ = code_length_ * sampled_ms_;
 
@@ -126,15 +126,13 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     auto* fft_if = new gr::fft::fft_complex(nsamples_total, true);  // Direct FFT
     auto* code = new std::complex<float>[nsamples_total];           // buffer for the local code
     auto* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-    d_all_fft_codes_ = new lv_16sc_t[nsamples_total * Galileo_E5a_NUMBER_OF_CODES];  // memory containing all the possible fft codes for PRN 0 to 32
+    d_all_fft_codes_ = new lv_16sc_t[nsamples_total * GALILEO_E5A_NUMBER_OF_CODES];  // memory containing all the possible fft codes for PRN 0 to 32
     float max;                                                                       // temporary maxima search
 
     //printf("creating the E5A acquisition CONT");
     //printf("nsamples_total = %d\n", nsamples_total);
 
-    //printf("number of codes = %d\n", Galileo_E5a_NUMBER_OF_CODES);
-
-    for (unsigned int PRN = 1; PRN <= Galileo_E5a_NUMBER_OF_CODES; PRN++)
+    for (unsigned int PRN = 1; PRN <= GALILEO_E5A_NUMBER_OF_CODES; PRN++)
         {
             //    gr_complex* code = new gr_complex[code_length_];
             char signal_[3];

@@ -131,27 +131,27 @@ memb_codePhaseSearchWindow_constraint_1(asn_TYPE_descriptor_t *td, const void *s
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_doppler0_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_DOPPLER0_CONSTR_3 = {
 	{ APC_CONSTRAINED,	 12,  12, -2048,  2047 }	/* (-2048..2047) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_codePhase_constr_5 = {
+static asn_per_constraints_t ASN_PER_MEMB_CODE_PHASE_CONSTR_5 = {
 	{ APC_CONSTRAINED,	 10,  10,  0,  1022 }	/* (0..1022) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_intCodePhase_constr_6 = {
+static asn_per_constraints_t ASN_PER_MEMB_INT_CODE_PHASE_CONSTR_6 = {
 	{ APC_CONSTRAINED,	 5,  5,  0,  19 }	/* (0..19) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_gpsBitNumber_constr_7 = {
+static asn_per_constraints_t ASN_PER_MEMB_GPS_BIT_NUMBER_CONSTR_7 = {
 	{ APC_CONSTRAINED,	 2,  2,  0,  3 }	/* (0..3) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_codePhaseSearchWindow_constr_8 = {
+static asn_per_constraints_t ASN_PER_MEMB_CODE_PHASE_SEARCH_WINDOW_CONSTR_8 = {
 	{ APC_CONSTRAINED,	 4,  4,  0,  15 }	/* (0..15) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -171,7 +171,7 @@ static asn_TYPE_member_t asn_MBR_AcquisElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_doppler0_constraint_1,
-		&asn_PER_memb_doppler0_constr_3,
+		&ASN_PER_MEMB_DOPPLER0_CONSTR_3,
 		0,
 		"doppler0"
 		},
@@ -189,7 +189,7 @@ static asn_TYPE_member_t asn_MBR_AcquisElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_codePhase_constraint_1,
-		&asn_PER_memb_codePhase_constr_5,
+		&ASN_PER_MEMB_CODE_PHASE_CONSTR_5,
 		0,
 		"codePhase"
 		},
@@ -198,7 +198,7 @@ static asn_TYPE_member_t asn_MBR_AcquisElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_intCodePhase_constraint_1,
-		&asn_PER_memb_intCodePhase_constr_6,
+		&ASN_PER_MEMB_INT_CODE_PHASE_CONSTR_6,
 		0,
 		"intCodePhase"
 		},
@@ -207,7 +207,7 @@ static asn_TYPE_member_t asn_MBR_AcquisElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_gpsBitNumber_constraint_1,
-		&asn_PER_memb_gpsBitNumber_constr_7,
+		&ASN_PER_MEMB_GPS_BIT_NUMBER_CONSTR_7,
 		0,
 		"gpsBitNumber"
 		},
@@ -216,7 +216,7 @@ static asn_TYPE_member_t asn_MBR_AcquisElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_codePhaseSearchWindow_constraint_1,
-		&asn_PER_memb_codePhaseSearchWindow_constr_8,
+		&ASN_PER_MEMB_CODE_PHASE_SEARCH_WINDOW_CONSTR_8,
 		0,
 		"codePhaseSearchWindow"
 		},

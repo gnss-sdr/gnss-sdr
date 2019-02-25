@@ -1,3 +1,130 @@
 ---
-Checks: '-*,boost-use-to-string,cert-dcl21-cpp,cert-dcl58-cpp,cert-env33-c,cert-err52-cpp,cert-err60-cpp,cert-flp30-c,clang-analyzer-cplusplus*,cppcoreguidelines-pro-type-static-cast-downcast,cppcoreguidelines-slicing,google-build-namespaces,google-runtime-int,google-runtime-references,llvm-header-guard,misc-misplaced-const,misc-new-delete-overloads,misc-non-copyable-objects,misc-static-assert,misc-throw-by-value-catch-by-reference,misc-uniqueptr-reset-release,modernize-deprecated-headers,modernize-loop-convert,modernize-pass-by-value,modernize-raw-string-literal,modernize-use-auto,modernize-use-bool-literals,modernize-use-equals-default,modernize-use-equals-delete,modernize-use-noexcept,modernize-use-nullptr,modernize-use-using,performance-faster-string-find,performance-inefficient-algorithm,performance-move-const-arg,performance-type-promotion-in-math-fn,performance-unnecessary-copy-initialization,performance-unnecessary-value-param,readability-container-size-empty,readability-named-parameter,readability-non-const-parameter,readability-string-compare'
-HeaderFilterRegex: '.*'
+Checks: '-*,
+        boost-use-to-string,
+        cert-dcl21-cpp,
+        cert-dcl58-cpp,
+        cert-env33-c,
+        cert-err52-cpp,
+        cert-err60-cpp,
+        cert-flp30-c,
+        clang-analyzer-cplusplus*,
+        cppcoreguidelines-pro-type-static-cast-downcast,
+        cppcoreguidelines-slicing,
+        google-build-namespaces,
+        google-runtime-int,
+        misc-misplaced-const,
+        misc-new-delete-overloads,
+        misc-non-copyable-objects,
+        misc-static-assert,
+        misc-throw-by-value-catch-by-reference,
+        misc-uniqueptr-reset-release,
+        misc-unused-using-decls,
+        modernize-loop-convert,
+        modernize-pass-by-value,
+        modernize-raw-string-literal,
+        modernize-use-auto,
+        modernize-use-bool-literals,
+        modernize-use-equals-default,
+        modernize-use-equals-delete,
+        modernize-use-noexcept,
+        modernize-use-nullptr,
+        performance-faster-string-find,
+        performance-inefficient-algorithm,
+        performance-move-const-arg,
+        performance-type-promotion-in-math-fn,
+        performance-unnecessary-copy-initialization,
+        performance-unnecessary-value-param,
+        readability-container-size-empty,
+        readability-identifier-naming,
+        readability-inconsistent-declaration-parameter-name,
+        readability-named-parameter,
+        readability-non-const-parameter,
+        readability-string-compare'
+WarningsAsErrors: ''
+HeaderFilterRegex: ''
+AnalyzeTemporaryDtors: false
+FormatStyle: 'file'
+CheckOptions:
+  - key:             google-build-namespaces.HeaderFileExtensions
+    value:           ',h'
+  - key:             google-readability-braces-around-statements.ShortStatementLines
+    value:           '1'
+  - key:             google-readability-function-size.StatementThreshold
+    value:           '800'
+  - key:             google-readability-namespace-comments.ShortNamespaceLines
+    value:           '10'
+  - key:             google-readability-namespace-comments.SpacesBeforeComments
+    value:           '2'
+  - key:             google-runtime-int.SignedTypePrefix
+    value:           int
+  - key:             google-runtime-int.TypeSuffix
+    value:           _t
+  - key:             google-runtime-int.UnsignedTypePrefix
+    value:           uint
+  - key:             misc-throw-by-value-catch-by-reference.CheckThrowTemporaries
+    value:           '1'
+  - key:             modernize-loop-convert.MaxCopySize
+    value:           '16'
+  - key:             modernize-loop-convert.MinConfidence
+    value:           reasonable
+  - key:             modernize-loop-convert.NamingStyle
+    value:           CamelCase
+  - key:             modernize-pass-by-value.IncludeStyle
+    value:           llvm
+  - key:             modernize-pass-by-value.ValuesOnly
+    value:           '0'
+  - key:             modernize-raw-string-literal.ReplaceShorterLiterals
+    value:           '0'
+  - key:             modernize-replace-auto-ptr.IncludeStyle
+    value:           llvm
+  - key:             modernize-use-auto.MinTypeNameLength
+    value:           '5'
+  - key:             modernize-use-auto.RemoveStars
+    value:           '0'
+  - key:             modernize-use-equals-default.IgnoreMacros
+    value:           '1'
+  - key:             modernize-use-noexcept.ReplacementString
+    value:           ''
+  - key:             modernize-use-noexcept.UseNoexceptFalse
+    value:           '1'
+  - key:             modernize-use-nullptr.NullMacros
+    value:           'NULL'
+  - key:             performance-faster-string-find.StringLikeClasses
+    value:           'std::basic_string'
+  - key:             performance-move-const-arg.CheckTriviallyCopyableMove
+    value:           '1'
+  - key:             performance-type-promotion-in-math-fn.IncludeStyle
+    value:           llvm
+  - key:             performance-unnecessary-value-param.IncludeStyle
+    value:           llvm
+  - key:             readability-identifier-naming.AbstractClassCase
+    value:           CamelCase
+  - key:             readability-identifier-naming.AbstractClassPrefix
+    value:           ''
+  - key:             readability-identifier-naming.AbstractClassSuffix
+    value:           ''
+  - key:             readability-identifier-naming.ClassCase
+    value:           Camel_Snake_Case
+  - key:             readability-identifier-naming.ClassPrefix
+    value:           ''
+  - key:             readability-identifier-naming.ClassSuffix
+    value:           ''
+  - key:             readability-identifier-naming.GlobalConstantCase
+    value:           UPPER_CASE
+  - key:             readability-identifier-naming.GlobalConstantPrefix
+    value:           ''
+  - key:             readability-identifier-naming.GlobalConstantSuffix
+    value:           ''
+  - key:             readability-identifier-naming.IgnoreFailedSplit
+    value:           '0'
+  - key:             readability-identifier-naming.StructCase
+    value:           aNy_CasE
+  - key:             readability-identifier-naming.StructPrefix
+    value:           ''
+  - key:             readability-identifier-naming.StructSuffix
+    value:           ''
+  - key:             readability-inconsistent-declaration-parameter-name.IgnoreMacros
+    value:           '1'
+  - key:             readability-inconsistent-declaration-parameter-name.Strict
+    value:           '0'
+...

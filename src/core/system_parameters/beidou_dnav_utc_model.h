@@ -33,7 +33,6 @@
 #ifndef GNSS_SDR_BEIDOU_DNAV_UTC_MODEL_H_
 #define GNSS_SDR_BEIDOU_DNAV_UTC_MODEL_H_
 
-#include <boost/assign.hpp>
 #include <boost/serialization/nvp.hpp>
 
 

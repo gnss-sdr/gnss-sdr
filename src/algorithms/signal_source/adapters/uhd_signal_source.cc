@@ -215,7 +215,7 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
 
     for (int i = 0; i < RF_channels_; i++)
         {
-            if (samples_.at(i) != 0)
+            if (samples_.at(i) != 0ULL)
                 {
                     LOG(INFO) << "RF_channel " << i << " Send STOP signal after " << samples_.at(i) << " samples";
                     valve_.push_back(gnss_sdr_make_valve(item_size_, samples_.at(i), queue_));
@@ -247,7 +247,7 @@ void UhdSignalSource::connect(gr::top_block_sptr top_block)
 {
     for (int i = 0; i < RF_channels_; i++)
         {
-            if (samples_.at(i) != 0)
+            if (samples_.at(i) != 0ULL)
                 {
                     top_block->connect(uhd_source_, i, valve_.at(i), 0);
                     DLOG(INFO) << "connected usrp source to valve RF Channel " << i;
@@ -273,7 +273,7 @@ void UhdSignalSource::disconnect(gr::top_block_sptr top_block)
 {
     for (int i = 0; i < RF_channels_; i++)
         {
-            if (samples_.at(i) != 0)
+            if (samples_.at(i) != 0ULL)
                 {
                     top_block->disconnect(uhd_source_, i, valve_.at(i), 0);
                     LOG(INFO) << "UHD source disconnected";
@@ -310,7 +310,7 @@ gr::basic_block_sptr UhdSignalSource::get_right_block()
 gr::basic_block_sptr UhdSignalSource::get_right_block(int RF_channel)
 {
     //TODO: There is a incoherence here: Multichannel UHD is a single block with multiple outputs, but if the sample limit is enabled, the output is a multiple block!
-    if (samples_.at(RF_channel) != 0)
+    if (samples_.at(RF_channel) != 0ULL)
         {
             return valve_.at(RF_channel);
         }

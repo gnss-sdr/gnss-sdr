@@ -6,7 +6,7 @@
 
 #include "SeqOfGANSSTimeModel.h"
 
-static asn_per_constraints_t asn_PER_type_SeqOfGANSSTimeModel_constr_1 = {
+static asn_per_constraints_t ASN_PER_TYPE_SEQ_OF_GANSS_TIME_MODEL_CONSTR_1 = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 3,  3,  1,  7 }	/* (SIZE(1..7)) */,
 	0, 0	/* No PER value map */
@@ -49,7 +49,7 @@ asn_TYPE_descriptor_t asn_DEF_SeqOfGANSSTimeModel = {
 	asn_DEF_SeqOfGANSSTimeModel_tags_1,	/* Same as above */
 	sizeof(asn_DEF_SeqOfGANSSTimeModel_tags_1)
 		/sizeof(asn_DEF_SeqOfGANSSTimeModel_tags_1[0]), /* 1 */
-	&asn_PER_type_SeqOfGANSSTimeModel_constr_1,
+	&ASN_PER_TYPE_SEQ_OF_GANSS_TIME_MODEL_CONSTR_1,
 	asn_MBR_SeqOfGANSSTimeModel_1,
 	1,	/* Single element */
 	&asn_SPC_SeqOfGANSSTimeModel_specs_1	/* Additional specs */

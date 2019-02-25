@@ -36,6 +36,7 @@
 #include <boost/filesystem/path.hpp>         // for path, operator<<
 #include <boost/filesystem/path_traits.hpp>  // for filesystem
 #include <glog/logging.h>
+#include <exception>
 #include <iomanip>
 #include <sstream>
 
@@ -79,7 +80,14 @@ GeoJSON_Printer::GeoJSON_Printer(const std::string& base_path)
 
 GeoJSON_Printer::~GeoJSON_Printer()
 {
-    GeoJSON_Printer::close_file();
+    try
+        {
+            GeoJSON_Printer::close_file();
+        }
+    catch (const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+        }
 }
 
 
@@ -213,7 +221,10 @@ bool GeoJSON_Printer::close_file()
             // if nothing is written, erase the file
             if (first_pos == true)
                 {
-                    if (remove(filename_.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
+                    if (remove(filename_.c_str()) != 0)
+                        {
+                            LOG(INFO) << "Error deleting temporary file";
+                        }
                 }
             return true;
         }

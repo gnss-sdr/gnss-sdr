@@ -143,7 +143,7 @@ void sending_thread(gr::top_block_sptr top_block, const char *file_name)
     usleep(FIVE_SECONDS);  // wait for some time to give time to the other thread to program the device
 
     //send_tracking_gps_input_samples(dma_descr, rx_signal_file, file_length);
-    send_tracking_gps_input_samples(rx_signal_file, file_length, std::move(top_block));
+    send_tracking_gps_input_samples(rx_signal_file, file_length, top_block);
 
     fclose(rx_signal_file);
 }
@@ -453,7 +453,7 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
     configure_receiver();
 
     //open true observables log file written by the simulator
-    tracking_true_obs_reader true_obs_data;
+    Tracking_True_Obs_Reader true_obs_data;
     int test_satellite_PRN = FLAGS_test_satellite_PRN;
     std::cout << "Testing satellite PRN=" << test_satellite_PRN << std::endl;
     std::string true_obs_file = std::string("./gps_l1_ca_obs_prn");
@@ -566,7 +566,7 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
         }
 
     //load the measured values
-    tracking_dump_reader trk_dump;
+    Tracking_Dump_Reader trk_dump;
     ASSERT_NO_THROW(
         {
             if (trk_dump.open_obs_file(std::string("./tracking_ch_0.dat")) == false)

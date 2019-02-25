@@ -80,6 +80,10 @@ public:
     std::string xml_output_path;
     std::string rtcm_output_file_path;
 
+    bool monitor_enabled;
+    std::string udp_addresses;
+    int udp_port;
+
     Pvt_Conf();
 };
 

@@ -69,7 +69,10 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
     blocking_ = configuration_->property(role + ".blocking", true);
     acq_parameters_.blocking = blocking_;
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
-    if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
+    if (FLAGS_doppler_max != 0)
+        {
+            doppler_max_ = FLAGS_doppler_max;
+        }
     acq_parameters_.doppler_max = doppler_max_;
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
     acq_parameters_.bit_transition_flag = bit_transition_flag_;
@@ -118,20 +121,20 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
                 }
 
             //--- Find number of samples per spreading code -------------------------
-            code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GPS_L5i_CODE_RATE_HZ / GPS_L5i_CODE_LENGTH_CHIPS)));
+            code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GPS_L5I_CODE_RATE_HZ / GPS_L5I_CODE_LENGTH_CHIPS)));
             acq_parameters_.samples_per_ms = static_cast<float>(acq_parameters_.resampled_fs) * 0.001;
-            acq_parameters_.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / GPS_L5i_CODE_RATE_HZ) * static_cast<float>(acq_parameters_.resampled_fs)));
+            acq_parameters_.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / GPS_L5I_CODE_RATE_HZ) * static_cast<float>(acq_parameters_.resampled_fs)));
         }
     else
         {
             acq_parameters_.resampled_fs = fs_in_;
             //--- Find number of samples per spreading code -------------------------
-            code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(fs_in_) / (GPS_L5i_CODE_RATE_HZ / GPS_L5i_CODE_LENGTH_CHIPS)));
+            code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(fs_in_) / (GPS_L5I_CODE_RATE_HZ / GPS_L5I_CODE_LENGTH_CHIPS)));
             acq_parameters_.samples_per_ms = static_cast<float>(fs_in_) * 0.001;
-            acq_parameters_.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / GPS_L5i_CODE_RATE_HZ) * static_cast<float>(acq_parameters_.fs_in)));
+            acq_parameters_.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / GPS_L5I_CODE_RATE_HZ) * static_cast<float>(acq_parameters_.fs_in)));
         }
 
-    acq_parameters_.samples_per_code = acq_parameters_.samples_per_ms * static_cast<float>(GPS_L5i_PERIOD * 1000.0);
+    acq_parameters_.samples_per_code = acq_parameters_.samples_per_ms * static_cast<float>(GPS_L5I_PERIOD * 1000.0);
     vector_length_ = std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2 : 1);
     code_ = new gr_complex[vector_length_];
     acquisition_ = pcps_make_acquisition(acq_parameters_);

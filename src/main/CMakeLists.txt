@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -16,88 +16,70 @@
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
-set(GNSS_SDR_OPTIONAL_LIBS "")
-set(GNSS_SDR_OPTIONAL_HEADERS "")
 
-if(ENABLE_GPERFTOOLS)
-    if(GPERFTOOLS_FOUND)
-        set(GNSS_SDR_OPTIONAL_LIBS "${GNSS_SDR_OPTIONAL_LIBS};${GPERFTOOLS_PROFILER};${GPERFTOOLS_TCMALLOC}")
-        set(GNSS_SDR_OPTIONAL_HEADERS "${GNSS_SDR_OPTIONAL_HEADERS};${GPERFTOOLS_INCLUDE_DIR}")
-    endif()
-endif()
+add_executable(gnss-sdr ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
 
-if(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
-    set(GNSS_SDR_OPTIONAL_LIBS ${GNSS_SDR_OPTIONAL_LIBS} ${UHD_LIBRARIES} ${GNURADIO_UHD_LIBRARIES})
-    set(GNSS_SDR_OPTIONAL_HEADERS ${GNSS_SDR_OPTIONAL_HEADERS} ${UHD_INCLUDE_DIRS})
-endif()
+target_link_libraries(gnss-sdr
+    PUBLIC
+        Boost::filesystem
+        Boost::system
+        Gflags::gflags
+        Glog::glog
+        Threads::Threads
+        core_receiver
+        gnss_sdr_flags
+)
 
-if(OPENSSL_FOUND)
-    add_definitions(-DUSE_OPENSSL_FALLBACK=1)
+target_compile_definitions(gnss-sdr PRIVATE -DGNSS_SDR_VERSION="${VERSION}")
+
+# Disable internal logging
+if(NOT ENABLE_LOG)
+    target_compile_definitions(gnss-sdr PUBLIC -DGOOGLE_STRIP_LOG=1)
 endif()
 
 if(ENABLE_CUDA)
-    add_definitions(-DCUDA_GPU_ACCEL=1)
-    set(GNSS_SDR_OPTIONAL_LIBS ${GNSS_SDR_OPTIONAL_LIBS} ${CUDA_LIBRARIES})
-    set(GNSS_SDR_OPTIONAL_HEADERS ${GNSS_SDR_OPTIONAL_HEADERS} ${CUDA_INCLUDE_DIRS})
+    target_link_libraries(gnss-sdr
+        PUBLIC
+            ${CUDA_LIBRARIES}
+    )
+    target_include_directories(gnss-sdr
+        PUBLIC
+            ${CUDA_INCLUDE_DIRS}
+    )
+    target_compile_definitions(gnss-sdr PRIVATE -DCUDA_GPU_ACCEL=1)
 endif()
 
-if(ORC_FOUND)
-    set(GNSS_SDR_OPTIONAL_LIBS ${GNSS_SDR_OPTIONAL_LIBS} ${ORC_LIBRARIES})
-    set(GNSS_SDR_OPTIONAL_HEADERS ${GNSS_SDR_OPTIONAL_HEADERS} ${ORC_INCLUDE_DIRS})
-endif()
-
-include_directories(
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces
-    ${CMAKE_SOURCE_DIR}/src/core/receiver
-    ${CMAKE_SOURCE_DIR}/src/core/monitor
-    ${CMAKE_SOURCE_DIR}/src/core/libs
-    ${CMAKE_SOURCE_DIR}/src/core/libs/supl
-    ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
-    ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
-    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${ARMADILLO_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
-    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-    ${PUGIXML_INCLUDE_DIR}
-    ${GNSS_SDR_OPTIONAL_HEADERS}
-    ${VOLK_GNSSSDR_INCLUDE_DIRS}
-    ${OPT_GNSSSDR_INCLUDE_DIRS}
-)
-
-add_definitions(-DGNSS_SDR_VERSION="${VERSION}")
-
-if(OS_IS_MACOSX)
-    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        set(MAC_LIBRARIES "-framework Accelerate -lc++")
+if(ENABLE_GPERFTOOLS)
+    if(GPERFTOOLS_FOUND)
+        target_link_libraries(gnss-sdr
+            PUBLIC
+                Gperftools::profiler
+                Gperftools::tcmalloc
+        )
     endif()
 endif()
 
-add_executable(gnss-sdr ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
+if(OS_IS_MACOSX)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        target_link_libraries(gnss-sdr
+            PUBLIC
+                "-lc++"
+        )
+    endif()
+endif()
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(gnss-sdr
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
 
 add_custom_command(TARGET gnss-sdr
     POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:gnss-sdr>
         ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:gnss-sdr>
-)
-
-target_link_libraries(gnss-sdr
-    ${MAC_LIBRARIES}
-    ${THREAD_LIBRARIES}
-    ${Boost_LIBRARIES}
-    ${GNURADIO_RUNTIME_LIBRARIES}
-    ${GNURADIO_BLOCKS_LIBRARIES}
-    ${GNURADIO_FFT_LIBRARIES}
-    ${GNURADIO_FILTER_LIBRARIES}
-    ${GFlags_LIBS}
-    ${GLOG_LIBRARIES}
-    ${ARMADILLO_LIBRARIES}
-    ${VOLK_GNSSSDR_LIBRARIES}
-    ${GNSS_SDR_OPTIONAL_LIBS}
-    gnss_sp_libs
-    gnss_sdr_flags
-    gnss_rx
 )
 
 install(TARGETS gnss-sdr

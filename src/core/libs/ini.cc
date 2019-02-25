@@ -68,7 +68,9 @@ static char* rstrip(char* s)
 {
     char* p = s + std::char_traits<char>::length(s);
     while (p > s && isspace(*--p))
-        *p = '\0';
+        {
+            *p = '\0';
+        }
     return s;
 }
 
@@ -76,7 +78,9 @@ static char* rstrip(char* s)
 static char* lskip(char* s)
 {
     while (*s && isspace(*s))
-        s++;
+        {
+            s++;
+        }
     return static_cast<char*>(s);
 }
 
@@ -85,7 +89,9 @@ static char* lskip(char* s)
 static char* find_char_or_comment(char* s, char c)
 {
     while (*s && *s != c && *s != ';')
-        s++;
+        {
+            s++;
+        }
     return static_cast<char*>(s);
 }
 
@@ -121,7 +127,9 @@ int ini_parse(const char* filename,
 
     file.open(filename, std::fstream::in);
     if (!file.is_open())
-        return -1;
+        {
+            return -1;
+        }
 
     /* Scan through file line by line */
     while (std::getline(file, line_str))
@@ -129,7 +137,10 @@ int ini_parse(const char* filename,
             lineno++;
             int len_str = line_str.length();
             const char* read_line = line_str.data();
-            if (len_str > (MAX_LINE - 1)) len_str = MAX_LINE - 1;
+            if (len_str > (MAX_LINE - 1))
+                {
+                    len_str = MAX_LINE - 1;
+                }
             int i;
             for (i = 0; i < len_str; i++)
                 {
@@ -144,7 +155,9 @@ int ini_parse(const char* filename,
                     /* Non-black line with leading whitespace, treat as continuation
                 of previous name's value (as per Python ConfigParser). */
                     if (!handler(user, section, prev_name, start) && !error)
-                        error = lineno;
+                        {
+                            error = lineno;
+                        }
                 }
             else
 #endif
@@ -175,13 +188,17 @@ int ini_parse(const char* filename,
                             value = lskip(end + 1);
                             end = find_char_or_comment(value, ';');
                             if (*end == ';')
-                                *end = '\0';
+                                {
+                                    *end = '\0';
+                                }
                             rstrip(value);
 
                             /* Valid name=value pair found, call handler */
                             strncpy0(prev_name, name, sizeof(prev_name));
                             if (!handler(user, section, name, value) && !error)
-                                error = lineno;
+                                {
+                                    error = lineno;
+                                }
                         }
                     else if (!error)
                         {

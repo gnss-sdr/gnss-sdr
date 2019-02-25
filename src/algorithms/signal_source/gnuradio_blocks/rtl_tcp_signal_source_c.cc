@@ -222,7 +222,7 @@ void rtl_tcp_signal_source_c::set_if_gain(int gain)
     {
         double start, stop, step;
     };
-    if (info_.get_tuner_type() != rtl_tcp_dongle_info::TUNER_E4000)
+    if (info_.get_tuner_type() != Rtl_Tcp_Dongle_Info::TUNER_E4000)
         {
             return;
         }
@@ -333,7 +333,7 @@ int rtl_tcp_signal_source_c::work(int noutput_items,
     gr_vector_const_void_star & /*input_items*/,
     gr_vector_void_star &output_items)
 {
-    gr_complex *out = reinterpret_cast<gr_complex *>(output_items[0]);
+    auto *out = reinterpret_cast<gr_complex *>(output_items[0]);
     int i = 0;
     if (io_service_.stopped())
         {

@@ -36,8 +36,8 @@
 
 #include "rtcm.h"
 #include <fstream>  // std::ofstream
-#include <memory>   // std::shared_ptr
-
+#include <map>
+#include <memory>  // std::shared_ptr
 
 /*!
  * \brief This class provides a implementation of a subset of the RTCM Standard 10403.2 messages
@@ -48,7 +48,7 @@ public:
     /*!
      * \brief Default constructor.
      */
-    Rtcm_Printer(const std::string& filename, bool flag_rtcm_file_dump, bool flag_rtcm_server, bool flag_rtcm_tty_port, uint16_t rtcm_tcp_port, uint16_t rtcm_station_id, const std::string& rtcm_dump_filename, bool time_tag_name = true, const std::string& base_path = ".");
+    Rtcm_Printer(const std::string& filename, bool flag_rtcm_file_dump, bool flag_rtcm_server, bool flag_rtcm_tty_port, uint16_t rtcm_tcp_port, uint16_t rtcm_station_id, const std::string& rtcm_dump_devname, bool time_tag_name = true, const std::string& base_path = ".");
 
     /*!
      * \brief Default destructor.
@@ -112,7 +112,7 @@ public:
      * \param utc_model GLONASS GNAV Clock Information broadcast in string 5
      * \return true or false upon operation success
      */
-    bool Print_Rtcm_MT1020(const Glonass_Gnav_Ephemeris& glo_gnav_eph, const Glonass_Gnav_Utc_Model& utc_model);
+    bool Print_Rtcm_MT1020(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const Glonass_Gnav_Utc_Model& utc_model);
 
     bool Print_Rtcm_MSM(uint32_t msm_number,
         const Gps_Ephemeris& gps_eph,

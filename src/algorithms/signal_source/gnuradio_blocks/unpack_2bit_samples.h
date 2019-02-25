@@ -39,7 +39,7 @@
  *
  *   Value_0, Value_1, Value_2, ..., Value_n, Value_n+1, Value_n+2, ...
  *
- * \author Cillian O'Driscoll cillian.odriscoll (at) gmail . com 
+ * \author Cillian O'Driscoll cillian.odriscoll (at) gmail . com
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
@@ -73,7 +73,7 @@
 
 class unpack_2bit_samples;
 
-typedef boost::shared_ptr<unpack_2bit_samples> unpack_2bit_samples_sptr;
+using unpack_2bit_samples_sptr = boost::shared_ptr<unpack_2bit_samples>;
 
 unpack_2bit_samples_sptr make_unpack_2bit_samples(bool big_endian_bytes,
     size_t item_size,
@@ -102,7 +102,7 @@ private:
     std::vector<int8_t> work_buffer_;
 
 public:
-    unpack_2bit_samples(bool big_endianBytes,
+    unpack_2bit_samples(bool big_endian_bytes,
         size_t item_size,
         bool big_endian_items,
         bool reverse_interleaving);

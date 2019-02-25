@@ -137,7 +137,10 @@ TEST_F(FirFilterTest, InstantiateGrComplexGrComplex)
     configure_gr_complex_gr_complex();
     std::unique_ptr<FirFilter> filter(new FirFilter(config.get(), "InputFilter", 1, 1));
     int res = 0;
-    if (filter) res = 1;
+    if (filter)
+        {
+            res = 1;
+        }
     ASSERT_EQ(1, res);
 }
 
@@ -147,7 +150,10 @@ TEST_F(FirFilterTest, InstantiateCshortCshort)
     configure_cshort_cshort();
     std::unique_ptr<FirFilter> filter(new FirFilter(config.get(), "InputFilter", 1, 1));
     int res = 0;
-    if (filter) res = 1;
+    if (filter)
+        {
+            res = 1;
+        }
     ASSERT_EQ(1, res);
 }
 
@@ -158,7 +164,10 @@ TEST_F(FirFilterTest, InstantiateCbyteCbyte)
     configure_cbyte_cbyte();
     std::unique_ptr<FirFilter> filter(new FirFilter(config.get(), "InputFilter", 1, 1));
     int res = 0;
-    if (filter) res = 1;
+    if (filter)
+        {
+            res = 1;
+        }
     ASSERT_EQ(1, res);
 }
 
@@ -169,7 +178,10 @@ TEST_F(FirFilterTest, InstantiateCbyteGrComplex)
     configure_cbyte_gr_complex();
     std::unique_ptr<FirFilter> filter(new FirFilter(config.get(), "InputFilter", 1, 1));
     int res = 0;
-    if (filter) res = 1;
+    if (filter)
+        {
+            res = 1;
+        }
     ASSERT_EQ(1, res);
 }
 

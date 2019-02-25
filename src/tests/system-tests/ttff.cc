@@ -62,8 +62,8 @@ DEFINE_string(subdevice, "A:0", "USRP subdevice");
 DEFINE_string(config_file_ttff, std::string(""), "File containing the configuration parameters for the TTFF test.");
 
 // For GPS NAVIGATION (L1)
-concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
-concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
+Concurrent_Queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
+Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
 std::vector<double> TTFF_v;
 
@@ -79,7 +79,7 @@ class TtffTest : public ::testing::Test
 public:
     void config_1();
     void config_2();
-    void print_TTFF_report(const std::vector<double> &ttff_v, std::shared_ptr<ConfigurationInterface> config_);
+    void print_TTFF_report(const std::vector<double> &ttff_v, const std::shared_ptr<ConfigurationInterface> &config_);
 
     std::shared_ptr<InMemoryConfiguration> config;
     std::shared_ptr<FileConfiguration> config2;
@@ -297,7 +297,7 @@ void receive_msg()
 }
 
 
-void TtffTest::print_TTFF_report(const std::vector<double> &ttff_v, std::shared_ptr<ConfigurationInterface> config_)
+void TtffTest::print_TTFF_report(const std::vector<double> &ttff_v, const std::shared_ptr<ConfigurationInterface> &config_)
 {
     std::ofstream ttff_report_file;
     std::string filename = "ttff_report";
@@ -385,10 +385,13 @@ void TtffTest::print_TTFF_report(const std::vector<double> &ttff_v, std::shared_
             stm << "Disabled." << std::endl;
         }
     stm << "Valid measurements (" << ttff.size() << "/" << FLAGS_num_measurements << "): ";
-    for (double ttff_ : ttff) stm << ttff_ << " ";
+    for (double ttff_ : ttff)
+        {
+            stm << ttff_ << " ";
+        }
     stm << std::endl;
     stm << "TTFF mean: " << mean << " [s]" << std::endl;
-    if (ttff.size() > 0)
+    if (!ttff.empty())
         {
             stm << "TTFF max: " << *max_ttff << " [s]" << std::endl;
             stm << "TTFF min: " << *min_ttff << " [s]" << std::endl;
@@ -629,7 +632,7 @@ int main(int argc, char **argv)
     msgsend_size = sizeof(msg.ttff);
     msgsnd(sysv_msqid, &msg, msgsend_size, IPC_NOWAIT);
     receive_msg_thread.join();
-    msgctl(sysv_msqid, IPC_RMID, NULL);
+    msgctl(sysv_msqid, IPC_RMID, nullptr);
 
     google::ShutDownCommandLineFlags();
     return res;

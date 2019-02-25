@@ -30,11 +30,11 @@
  */
 #include "tcp_packet_data.h"
 
-tcp_packet_data::tcp_packet_data()
+Tcp_Packet_Data::Tcp_Packet_Data()
 {
     proc_pack_code_error = 0;
     proc_pack_carr_error = 0;
     proc_pack_carrier_doppler_hz = 0;
 }
 
-tcp_packet_data::~tcp_packet_data() = default;
+Tcp_Packet_Data::~Tcp_Packet_Data() = default;

@@ -36,10 +36,10 @@
 #include <string>
 #include <vector>
 
-class tracking_dump_reader
+class Tracking_Dump_Reader
 {
 public:
-    ~tracking_dump_reader();
+    ~Tracking_Dump_Reader();
     bool read_binary_obs();
     bool restart();
     int64_t num_epochs();

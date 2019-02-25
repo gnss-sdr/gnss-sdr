@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -23,7 +23,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
     message(WARNING "In-tree build is bad practice. Try 'cd build && cmake ../' ")
 endif()
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.12)
 project(gnss-sdr CXX C)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 file(RELATIVE_PATH RELATIVE_CMAKE_CALL ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
@@ -41,7 +41,7 @@ endif()
 
 ########################################################################
 # Determine optional blocks/libraries to be built (default: not built)
-# Enable them at the command line by doing 'cmake -DENABLE_XXX=ON ../'
+# Enable them at the command line by doing 'cmake -DENABLE_XXX=ON ..'
 ########################################################################
 # Support of optional RF front-ends
 option(ENABLE_UHD "Enable the use of UHD (driver for all USRP devices)" ON)
@@ -57,6 +57,9 @@ option(ENABLE_RAW_UDP "Enable the use of high-optimized custom UDP packet sample
 # Performance analysis tools
 option(ENABLE_GPERFTOOLS "Enable linking to Gperftools libraries (tcmalloc and profiler)" OFF)
 option(ENABLE_GPROF "Enable the use of the GNU profiler tool 'gprof'" OFF)
+
+# Code correctness
+option(ENABLE_CLANG_TIDY "Enable the use of clang-tidy when compiling" OFF)
 
 # Acceleration
 option(ENABLE_PROFILING "Enable execution of volk_gnsssdr_profile at the end of the building" OFF)
@@ -324,12 +327,12 @@ endif()
 ################################################################################
 # Minimum required versions
 ################################################################################
-set(GNSSSDR_CMAKE_MIN_VERSION "2.8.8")
+set(GNSSSDR_CMAKE_MIN_VERSION "2.8.12")
 set(GNSSSDR_GCC_MIN_VERSION "4.7.2")
 set(GNSSSDR_CLANG_MIN_VERSION "3.4.0")
 set(GNSSSDR_APPLECLANG_MIN_VERSION "500")
 set(GNSSSDR_GNURADIO_MIN_VERSION "3.7.3")
-set(GNSSSDR_BOOST_MIN_VERSION "1.45")
+set(GNSSSDR_BOOST_MIN_VERSION "1.53")
 set(GNSSSDR_PYTHON_MIN_VERSION "2.7")
 set(GNSSSDR_PYTHON3_MIN_VERSION "3.4")
 set(GNSSSDR_MAKO_MIN_VERSION "0.4.2")
@@ -408,11 +411,61 @@ endif()
 
 
 ################################################################################
+# Set C and C++ standard
+################################################################################
+if(NOT (CMAKE_VERSION VERSION_LESS "3.1"))
+    set(CMAKE_C_STANDARD 11)
+    set(CMAKE_CXX_STANDARD 14)
+    set(CMAKE_CXX_EXTENSIONS OFF)
+else()
+    add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,C>:-std=gnu11>")
+    if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
+        if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
+            add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:-std=c++11>")
+        else()
+            add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:-std=c++14>")
+        endif()
+    endif()
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        if(OS_IS_MACOSX)
+            if(CLANG_VERSION VERSION_LESS "600")
+                add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:-std=c++11>")
+            else()
+                add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:-std=c++14>")
+            endif()
+        else()
+            if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
+                add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:-std=c++11>")
+            else()
+                add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:-std=c++14>")
+            endif()
+        endif()
+    endif()
+endif()
+
+# Visibility
+# See https://gcc.gnu.org/wiki/Visibility
+if(POLICY CMP0053)
+    cmake_policy(SET CMP0063 NEW)
+    set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+    set(CMAKE_C_VISIBILITY_PRESET hidden)
+    set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+else()
+    if((CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
+        add_definitions(-fvisibility=hidden)
+    endif()
+endif()
+
+
+################################################################################
 # Check if the compiler defines the architecture as ARM
 ################################################################################
 if(NOT OS_IS_MACOSX)
     if(CMAKE_CROSSCOMPILING)
         set(IS_ARM TRUE)
+        if(NOT CMAKE_NO_SYSTEM_FROM_IMPORTED)
+            set(CMAKE_NO_SYSTEM_FROM_IMPORTED TRUE)
+        endif()
     else()
         include(TestForARM)
     endif()
@@ -421,20 +474,24 @@ endif()
 
 
 ################################################################################
-# Check for availability of SSE
-################################################################################
-if(NOT ENABLE_GENERIC_ARCH)
-    include(TestForSSE)
-endif()
-
-
-
-################################################################################
 # Find the POSIX thread (pthread) libraries
 ################################################################################
 if(CMAKE_VERSION VERSION_LESS 3.1)
+    # Workaround for CMake < 3.1
     find_package(Threads REQUIRED)
-    set(THREAD_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
+    add_library(Threads::Threads SHARED IMPORTED)
+    set_property(TARGET Threads::Threads PROPERTY INTERFACE_LINK_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}")
+    set_property(TARGET Threads::Threads PROPERTY IMPORTED_LINK_INTERFACE_LANGUAGES "CXX")
+    include(GNUInstallDirs)
+    # Fix bug in Debian 8.11
+    if(${LINUX_DISTRIBUTION} MATCHES "Debian")
+        if(${LINUX_VER} VERSION_LESS 8.12)
+            if(ARCH_64BITS)
+                set(FIX_PTHREADS_LOCATION "x86_64-linux-gnu/")
+            endif()
+        endif()
+    endif()
+    set_property(TARGET Threads::Threads PROPERTY IMPORTED_LOCATION /usr/${CMAKE_INSTALL_LIBDIR}/${FIX_PTHREADS_LOCATION}${CMAKE_FIND_LIBRARY_PREFIXES}pthread${CMAKE_SHARED_LIBRARY_SUFFIX})
 else()
     set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
     if(CMAKE_CROSSCOMPILING)
@@ -443,7 +500,6 @@ else()
         set(THREADS_PREFER_PTHREAD_FLAG TRUE)
     endif()
     find_package(Threads REQUIRED)
-    set(THREAD_LIBRARIES Threads::Threads)
 endif()
 
 
@@ -458,13 +514,13 @@ if(ENABLE_UNIT_TESTING OR ENABLE_SYSTEM_TESTING)
     endif()
     if(GTEST_DIR)
         message(STATUS "Googletest root folder set at ${GTEST_DIR}")
-        find_path(LIBGTEST_DEV_DIR NAMES src/gtest-all.cc PATHS ${GTEST_DIR})
+        find_path(LIBGTEST_DEV_DIR NAMES src/gtest-all.cc PATHS ${GTEST_DIR} ${GTEST_DIR}/googletest)
         if(LIBGTEST_DEV_DIR)
             message(STATUS "Googletest has been found.")
         else()
             message(FATAL_ERROR " Googletest source code has not been found at ${GTEST_DIR}.")
         endif()
-        find_path(GTEST_INCLUDE_DIRS NAMES gtest/gtest.h PATHS ${GTEST_DIR}/include)
+        find_path(GTEST_INCLUDE_DIRS NAMES gtest/gtest.h PATHS ${GTEST_DIR}/googletest/include)
     else()
         find_path(LIBGTEST_DEV_DIR NAMES src/gtest-all.cc PATHS /usr/src/googletest/googletest /usr/src/gtest /usr/include/gtest /opt/local/src/gtest-1.7.0)
         find_path(GTEST_INCLUDE_DIRS NAMES gtest/gtest.h PATHS /usr/include /opt/local/src/gtest-1.7.0/include)
@@ -487,8 +543,7 @@ if(UNIX AND EXISTS "/usr/lib64")
     list(APPEND BOOST_LIBRARYDIR "/usr/lib64") # Fedora 64-bit fix
 endif()
 set(Boost_ADDITIONAL_VERSIONS
-    "1.45.0" "1.45" "1.46.0" "1.46"                 "1.48.0" "1.48" "1.49.0" "1.49"
-    "1.50.0" "1.50" "1.51.0" "1.51"                 "1.53.0" "1.53" "1.54.0" "1.54"
+    "1.53.0" "1.53" "1.54.0" "1.54"
     "1.55.0" "1.55" "1.56.0" "1.56" "1.57.0" "1.57" "1.58.0" "1.58" "1.59.0" "1.59"
     "1.60.0" "1.60" "1.61.0" "1.61" "1.62.0" "1.62" "1.63.0" "1.63" "1.64.0" "1.64"
     "1.65.0" "1.65" "1.66.0" "1.66" "1.67.0" "1.67" "1.68.0" "1.68" "1.69.0" "1.69"
@@ -498,9 +553,82 @@ set(Boost_ADDITIONAL_VERSIONS
 )
 set(Boost_USE_MULTITHREAD ON)
 set(Boost_USE_STATIC_LIBS OFF)
-find_package(Boost COMPONENTS date_time system filesystem thread serialization chrono REQUIRED)
+find_package(Boost ${GNSSSDR_BOOST_MIN_VERSION} COMPONENTS atomic chrono date_time filesystem serialization system thread REQUIRED)
 if(NOT Boost_FOUND)
     message(FATAL_ERROR "Fatal error: Boost (version >=${GNSSSDR_BOOST_MIN_VERSION}) required.")
+endif()
+
+if(CMAKE_VERSION VERSION_LESS 3.5)
+    if(NOT TARGET Boost::boost)
+        add_library(Boost::boost SHARED IMPORTED) # Trick for CMake 2.8.12
+        set_property(TARGET Boost::boost PROPERTY
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
+        set_property(TARGET Boost::boost PROPERTY
+            IMPORTED_LOCATION ${Boost_DATE_TIME_LIBRARIES})
+    endif()
+    if(NOT TARGET Boost::date_time)
+        add_library(Boost::date_time SHARED IMPORTED)
+        set_property(TARGET Boost::date_time PROPERTY
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
+        set_property(TARGET Boost::date_time PROPERTY
+            INTERFACE_LINK_LIBRARIES ${Boost_DATE_TIME_LIBRARIES})
+        set_property(TARGET Boost::date_time PROPERTY
+            IMPORTED_LOCATION ${Boost_DATE_TIME_LIBRARIES})
+    endif()
+    if(NOT TARGET Boost::system)
+        add_library(Boost::system SHARED IMPORTED)
+        set_property(TARGET Boost::system PROPERTY
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
+        set_property(TARGET Boost::system PROPERTY
+            INTERFACE_LINK_LIBRARIES ${Boost_SYSTEM_LIBRARIES})
+        set_property(TARGET Boost::system PROPERTY
+            IMPORTED_LOCATION ${Boost_SYSTEM_LIBRARIES})
+    endif()
+    if(NOT TARGET Boost::filesystem)
+        add_library(Boost::filesystem SHARED IMPORTED)
+        set_property(TARGET Boost::filesystem PROPERTY
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
+        set_property(TARGET Boost::filesystem PROPERTY
+            INTERFACE_LINK_LIBRARIES ${Boost_FILESYSTEM_LIBRARIES})
+        set_property(TARGET Boost::filesystem PROPERTY
+            IMPORTED_LOCATION ${Boost_FILESYSTEM_LIBRARIES})
+    endif()
+    if(NOT TARGET Boost::thread)
+        add_library(Boost::thread SHARED IMPORTED)
+        set_property(TARGET Boost::thread PROPERTY
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
+        set_property(TARGET Boost::thread PROPERTY
+            INTERFACE_LINK_LIBRARIES ${Boost_THREAD_LIBRARIES})
+        set_property(TARGET Boost::thread PROPERTY
+            IMPORTED_LOCATION ${Boost_THREAD_LIBRARIES})
+    endif()
+    if(NOT TARGET Boost::serialization)
+        add_library(Boost::serialization SHARED IMPORTED)
+        set_property(TARGET Boost::serialization PROPERTY
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
+        set_property(TARGET Boost::serialization PROPERTY
+            INTERFACE_LINK_LIBRARIES ${Boost_SERIALIZATION_LIBRARIES})
+        set_property(TARGET Boost::serialization PROPERTY
+            IMPORTED_LOCATION ${Boost_SERIALIZATION_LIBRARIES})
+    endif()
+    if(NOT TARGET Boost::chrono)
+        add_library(Boost::chrono SHARED IMPORTED)
+        set_property(TARGET Boost::chrono PROPERTY
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
+        set_property(TARGET Boost::chrono PROPERTY
+            INTERFACE_LINK_LIBRARIES ${Boost_CHRONO_LIBRARIES})
+        set_property(TARGET Boost::chrono PROPERTY
+            IMPORTED_LOCATION ${Boost_CHRONO_LIBRARIES})
+    endif()
+    if(NOT TARGET Boost::atomic)
+        add_library(Boost::atomic SHARED IMPORTED)
+        set_property(TARGET Boost::atomic PROPERTY
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
+        set_property(TARGET Boost::atomic PROPERTY
+        INTERFACE_LINK_LIBRARIES ${Boost_ATOMIC_LIBRARIES})
+        set_property(TARGET Boost::atomic PROPERTY
+            IMPORTED_LOCATION ${Boost_ATOMIC_LIBRARIES})
+    endif()
 endif()
 
 
@@ -530,22 +658,98 @@ if(NOT GNURADIO_RUNTIME_FOUND)
         message("  brew install gnuradio")
         message(FATAL_ERROR "GNU Radio ${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr")
     endif()
+else()
+    if(NOT TARGET Gnuradio::runtime)
+        add_library(Gnuradio::runtime SHARED IMPORTED)
+        list(GET GNURADIO_RUNTIME_LIBRARIES 0 FIRST_DIR)
+        get_filename_component(GNURADIO_RUNTIME_DIR ${FIRST_DIR} ABSOLUTE)
+        set_target_properties(Gnuradio::runtime PROPERTIES
+          IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+          IMPORTED_LOCATION "${GNURADIO_RUNTIME_DIR}"
+          INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_RUNTIME_INCLUDE_DIRS}"
+          INTERFACE_LINK_LIBRARIES "${GNURADIO_RUNTIME_LIBRARIES}"
+        )
+    endif()
 endif()
 
 if(NOT GNURADIO_ANALOG_FOUND)
     message(FATAL_ERROR "*** The gnuradio-analog library v${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr")
+else()
+    if(NOT TARGET Gnuradio::analog)
+        add_library(Gnuradio::analog SHARED IMPORTED)
+        list(GET GNURADIO_ANALOG_LIBRARIES 0 FIRST_DIR)
+        get_filename_component(GNURADIO_ANALOG_DIR ${FIRST_DIR} ABSOLUTE)
+        set_target_properties(Gnuradio::analog PROPERTIES
+          IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+          IMPORTED_LOCATION "${GNURADIO_ANALOG_DIR}"
+          INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_ANALOG_INCLUDE_DIRS}"
+          INTERFACE_LINK_LIBRARIES "${GNURADIO_ANALOG_LIBRARIES}"
+        )
+    endif()
 endif()
+
 if(NOT GNURADIO_BLOCKS_FOUND)
     message(FATAL_ERROR "*** The gnuradio-blocks library v${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr")
+else()
+    if(NOT TARGET Gnuradio::blocks)
+        add_library(Gnuradio::blocks SHARED IMPORTED)
+        list(GET GNURADIO_BLOCKS_LIBRARIES 0 FIRST_DIR)
+        get_filename_component(GNURADIO_BLOCKS_DIR ${FIRST_DIR} ABSOLUTE)
+        set_target_properties(Gnuradio::blocks PROPERTIES
+          IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+          IMPORTED_LOCATION "${GNURADIO_BLOCKS_DIR}"
+          INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_BLOCKS_INCLUDE_DIRS}"
+          INTERFACE_LINK_LIBRARIES "${GNURADIO_BLOCKS_LIBRARIES}"
+        )
+    endif()
 endif()
+
 if(NOT GNURADIO_FILTER_FOUND)
     message(FATAL_ERROR "*** The gnuradio-filter library v${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr")
+else()
+    if(NOT TARGET Gnuradio::filter)
+        add_library(Gnuradio::filter SHARED IMPORTED)
+        list(GET GNURADIO_FILTER_LIBRARIES 0 FIRST_DIR)
+        get_filename_component(GNURADIO_FILTER_DIR ${FIRST_DIR} ABSOLUTE)
+        set_target_properties(Gnuradio::filter PROPERTIES
+          IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+          IMPORTED_LOCATION "${GNURADIO_FILTER_DIR}"
+          INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_FILTER_INCLUDE_DIRS}"
+          INTERFACE_LINK_LIBRARIES "${GNURADIO_FILTER_LIBRARIES}"
+        )
+    endif()
 endif()
+
 if(NOT GNURADIO_FFT_FOUND)
     message(FATAL_ERROR "*** The gnuradio-fft library v${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr")
+else()
+    if(NOT TARGET Gnuradio::fft)
+        add_library(Gnuradio::fft SHARED IMPORTED)
+        list(GET GNURADIO_FFT_LIBRARIES 0 FIRST_DIR)
+        get_filename_component(GNURADIO_FFT_DIR ${FIRST_DIR} ABSOLUTE)
+        set_target_properties(Gnuradio::fft PROPERTIES
+          IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+          IMPORTED_LOCATION "${GNURADIO_FFT_DIR}"
+          INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_FFT_INCLUDE_DIRS}"
+          INTERFACE_LINK_LIBRARIES "${GNURADIO_FFT_LIBRARIES}"
+        )
+    endif()
 endif()
+
 if(NOT GNURADIO_PMT_FOUND)
     message(FATAL_ERROR "*** The gnuradio-pmt library v${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr")
+else()
+    if(NOT TARGET Gnuradio::pmt)
+        add_library(Gnuradio::pmt SHARED IMPORTED)
+        list(GET GNURADIO_PMT_LIBRARIES 0 FIRST_DIR)
+        get_filename_component(GNURADIO_PMT_DIR ${FIRST_DIR} ABSOLUTE)
+        set_target_properties(Gnuradio::pmt PROPERTIES
+          IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+          IMPORTED_LOCATION "${GNURADIO_PMT_DIR}"
+          INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_PMT_INCLUDE_DIRS}"
+          INTERFACE_LINK_LIBRARIES "${GNURADIO_PMT_LIBRARIES}"
+        )
+    endif()
 endif()
 
 
@@ -695,6 +899,19 @@ if(NOT VOLKGNSSSDR_FOUND)
     set(VOLK_GNSSSDR_INCLUDE_DIRS "${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build/include/;${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/include;${ORC_INCLUDE_DIRS}")
     set(VOLK_GNSSSDR_LIBRARIES volk_gnsssdr ${ORC_LIBRARIES})
 
+    if(NOT TARGET Volkgnsssdr::volkgnsssdr)
+        file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build/include)
+        add_library(Volkgnsssdr::volkgnsssdr STATIC IMPORTED)
+        add_dependencies(Volkgnsssdr::volkgnsssdr volk_gnsssdr_module)
+        set_target_properties(Volkgnsssdr::volkgnsssdr PROPERTIES
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/lib/libvolk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}"
+            INCLUDE_DIRECTORIES "${VOLK_GNSSSDR_INCLUDE_DIRS}"
+            INTERFACE_INCLUDE_DIRECTORIES "${VOLK_GNSSSDR_INCLUDE_DIRS}"
+            INTERFACE_LINK_LIBRARIES "${VOLK_GNSSSDR_LIBRARIES}"
+        )
+    endif()
+
     if(CMAKE_VERSION VERSION_LESS 3.2)
         add_custom_command(TARGET volk_gnsssdr_module POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
@@ -756,16 +973,23 @@ if(NOT GFLAGS_FOUND)
         ${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/include CACHE PATH "Local Gflags headers"
     )
 
-    add_library(gflags UNKNOWN IMPORTED)
-    set_property(TARGET gflags PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_STATIC_LIBRARY_SUFFIX})
-    add_dependencies(gflags gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION})
-    set(GFlags_LIBS gflags)
-    file(GLOB GFlags_SHARED_LIBS "${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_SHARED_LIBRARY_SUFFIX}*")
-    set(GFlags_LIBRARY gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION})
-    set(GFlags_LIBRARY_PATH ${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib)
-    link_directories(${GFlags_LIBRARY_PATH})
-    set(GFlags_lib ${GFlags_LIBS} CACHE FILEPATH "Local Gflags library")
-    set(GFlags_LIBRARY_PATH ${GFlags_LIBS})
+    file(GLOB GFlags_SHARED_LIBS
+        "${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_SHARED_LIBRARY_SUFFIX}*"
+    )
+
+    if(NOT TARGET Gflags::gflags)
+        file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/include)
+        add_library(Gflags::gflags STATIC IMPORTED)
+        add_dependencies(Gflags::gflags gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION})
+        set_target_properties(Gflags::gflags PROPERTIES
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_STATIC_LIBRARY_SUFFIX}"
+            INCLUDE_DIRECTORIES "${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/include"
+            INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/include"
+            INTERFACE_LINK_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_STATIC_LIBRARY_SUFFIX}"
+        )
+    endif()
+
     set(LOCAL_GFLAGS true CACHE STRING "GFlags downloaded and built automatically" FORCE)
 endif()
 
@@ -899,6 +1123,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
             INSTALL_COMMAND ""
         )
     endif()
+    add_dependencies(glog-${GNSSSDR_GLOG_LOCAL_VERSION} Gflags::gflags)
 
     # Set up variables
     set(GLOG_INCLUDE_DIRS
@@ -908,15 +1133,27 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
     set(GLOG_LIBRARIES
         ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
     )
+
+    # Create Glog::glog target
+    if(NOT TARGET Glog::glog)
+        file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src)
+        file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src)
+        add_library(Glog::glog STATIC IMPORTED)
+        add_dependencies(Glog::glog glog-${GNSSSDR_GLOG_LOCAL_VERSION})
+        set_target_properties(Glog::glog PROPERTIES
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}"
+            INCLUDE_DIRECTORIES "${GLOG_INCLUDE_DIRS}"
+            INTERFACE_INCLUDE_DIRECTORIES "${GLOG_INCLUDE_DIRS}"
+            INTERFACE_LINK_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}"
+        )
+    endif()
+
     set(LOCAL_GLOG true CACHE STRING "Glog downloaded and built automatically" FORCE)
-else()
-    add_library(glog-${GNSSSDR_GLOG_LOCAL_VERSION} UNKNOWN IMPORTED)
-    set_property(TARGET glog-${GNSSSDR_GLOG_LOCAL_VERSION} PROPERTY IMPORTED_LOCATION "${GLOG_LIBRARIES}")
 endif()
 
 if(NOT ENABLE_LOG)
     message(STATUS "Logging is not enabled")
-    add_definitions(-DGOOGLE_STRIP_LOG=1)
 endif()
 
 
@@ -967,6 +1204,14 @@ if(ARMADILLO_FOUND)
     if(${ARMADILLO_VERSION_STRING} VERSION_LESS ${GNSSSDR_ARMADILLO_MIN_VERSION})
         set(ARMADILLO_FOUND false)
         set(ENABLE_OWN_ARMADILLO true)
+    else()
+        add_library(Armadillo::armadillo SHARED IMPORTED)
+        set_target_properties(Armadillo::armadillo PROPERTIES
+          IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+          IMPORTED_LOCATION "${ARMADILLO_LIBRARIES}"
+          INTERFACE_INCLUDE_DIRECTORIES "${ARMADILLO_INCLUDE_DIRS}"
+          INTERFACE_LINK_LIBRARIES "${ARMADILLO_LIBRARIES}"
+        )
     endif()
 endif()
 
@@ -1028,17 +1273,22 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
 
     # Set up variables
     ExternalProject_Get_Property(armadillo-${armadillo_RELEASE} binary_dir)
-    set(ARMADILLO_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}/include)
+    #set(ARMADILLO_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}/include)
     if(NOT GFORTRAN)
         set(GFORTRAN "")
     endif()
     set(ARMADILLO_LIBRARIES ${BLAS} ${LAPACK} ${GFORTRAN} ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo${CMAKE_STATIC_LIBRARY_SUFFIX})
     set(LOCAL_ARMADILLO true CACHE STRING "Armadillo downloaded and built automatically" FORCE)
     set(ARMADILLO_VERSION_STRING ${armadillo_RELEASE})
-else()
-    set(armadillo_RELEASE ${ARMADILLO_VERSION_STRING})
-    add_library(armadillo-${armadillo_RELEASE} UNKNOWN IMPORTED)
-    set_property(TARGET armadillo-${armadillo_RELEASE} PROPERTY IMPORTED_LOCATION "${ARMADILLO_LIBRARIES}")
+    file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}/include)
+    add_library(Armadillo::armadillo STATIC IMPORTED)
+    add_dependencies(Armadillo::armadillo armadillo-${armadillo_RELEASE})
+    set_target_properties(Armadillo::armadillo PROPERTIES
+      IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+      IMPORTED_LOCATION "${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo${CMAKE_STATIC_LIBRARY_SUFFIX}"
+      INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}/include"
+      INTERFACE_LINK_LIBRARIES "${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo${CMAKE_STATIC_LIBRARY_SUFFIX}"
+    )
 endif()
 
 
@@ -1165,6 +1415,7 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
                     set(HDF5_BASE_DIR /usr/local)
                 endif()
             endif()
+
             if(CMAKE_VERSION VERSION_LESS 3.2)
                 ExternalProject_Add(matio-${GNSSSDR_MATIO_LOCAL_VERSION}
                     PREFIX ${CMAKE_CURRENT_BINARY_DIR}/matio
@@ -1173,7 +1424,7 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
                     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}
                     UPDATE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/autogen.sh
                     CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/configure --with-hdf5=${HDF5_BASE_DIR} --with-zlib=${ZLIB_BASE_DIR} --with-default-file-ver=7.3 --enable-mat73=yes --prefix=<INSTALL_DIR>
-                    BUILD_COMMAND make
+                    BUILD_COMMAND $(MAKE)
                 )
             else()
                 ExternalProject_Add(matio-${GNSSSDR_MATIO_LOCAL_VERSION}
@@ -1183,13 +1434,23 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
                     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}
                     UPDATE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/autogen.sh
                     CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/configure --with-hdf5=${HDF5_BASE_DIR} --with-zlib=${ZLIB_BASE_DIR} --with-default-file-ver=7.3 --enable-mat73=yes --prefix=<INSTALL_DIR>
-                    BUILD_COMMAND make
+                    BUILD_COMMAND $(MAKE)
                     BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_STATIC_LIBRARY_SUFFIX}
                 )
             endif()
-            set(MATIO_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_STATIC_LIBRARY_SUFFIX} ${HDF5_LIBRARIES} ${ZLIB_LIBRARIES})
-            set(MATIO_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/matio/include)
             set(MATIO_LOCAL true)
+            if(NOT TARGET Matio::matio)
+                file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/matio/include)
+                file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/matio/lib)
+                add_library(Matio::matio SHARED IMPORTED)
+                add_dependencies(Matio::matio matio-${GNSSSDR_MATIO_LOCAL_VERSION})
+                set_target_properties(Matio::matio PROPERTIES
+                  IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+                  IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_SHARED_LIBRARY_SUFFIX}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_BINARY_DIR}/matio/include"
+                  INTERFACE_LINK_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_SHARED_LIBRARY_SUFFIX}"
+                )
+            endif()
         else()
             message(STATUS " The hdf5 library has not been found in your system.")
             message(STATUS " Please try to install it by doing:")
@@ -1250,27 +1511,20 @@ else()
             INSTALL_COMMAND ""
         )
     endif()
-    set(PUGIXML_LIBRARY ${CMAKE_CURRENT_BINARY_DIR}/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}pugixml${CMAKE_STATIC_LIBRARY_SUFFIX})
-    set(PUGIXML_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/pugixml/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}/src)
-    set(PUGIXML_LOCAL true)
-endif()
 
-
-################################################################################
-# USRP Hardware Driver (UHD) - OPTIONAL
-################################################################################
-if(ENABLE_UHD)
-    find_package(UHD)
-    if(NOT UHD_FOUND)
-        set(ENABLE_UHD OFF)
-        message(STATUS " The USRP Hardware Driver (UHD) signal source will not be built,")
-        message(STATUS " so all USRP-based front-ends will not be usable.")
-        message(STATUS " Please check https://files.ettus.com/manual/")
-    else()
-        set(GR_REQUIRED_COMPONENTS UHD)
-        find_package(Gnuradio)
+    if(NOT TARGET Pugixml::pugixml)
+        file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/pugixml/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}/src)
+        add_library(Pugixml::pugixml STATIC IMPORTED)
+        add_dependencies(Pugixml::pugixml pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION})
+        set_target_properties(Pugixml::pugixml PROPERTIES
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}pugixml${CMAKE_STATIC_LIBRARY_SUFFIX}"
+            INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/pugixml/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}/src"
+            INTERFACE_LINK_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/pugixml-${GNSSSDR_PUGIXML_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}pugixml${CMAKE_STATIC_LIBRARY_SUFFIX}"
+        )
     endif()
 endif()
+
 
 
 ################################################################################
@@ -1279,8 +1533,8 @@ endif()
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
     message(STATUS "Doxygen found.")
-    message(STATUS "You can build the documentation with '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} doc'.")
-    message(STATUS "When done, point your browser to ${CMAKE_BINARY_DIR}/html/index.html")
+    message(STATUS " You can build the documentation with '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} doc'.")
+    message(STATUS " When done, point your browser to ${CMAKE_BINARY_DIR}/html/index.html")
     set(HAVE_DOT ${DOXYGEN_DOT_FOUND})
     file(TO_NATIVE_PATH ${CMAKE_SOURCE_DIR} top_srcdir)
     file(TO_NATIVE_PATH ${CMAKE_BINARY_DIR} top_builddir)
@@ -1302,7 +1556,7 @@ if(DOXYGEN_FOUND)
         COMMENT "Generating API documentation with Doxygen." VERBATIM
     )
     if(LATEX_COMPILER)
-        message(STATUS "'${CMAKE_MAKE_PROGRAM_PRETTY_NAME} pdfmanual' will generate a manual at ${CMAKE_BINARY_DIR}/docs/GNSS-SDR_manual.pdf")
+        message(STATUS " '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} pdfmanual' will generate a manual at ${CMAKE_BINARY_DIR}/docs/GNSS-SDR_manual.pdf")
         add_custom_target(pdfmanual
             COMMAND ${CMAKE_MAKE_PROGRAM}
             COMMAND ${CMAKE_COMMAND} -E copy refman.pdf ${CMAKE_BINARY_DIR}/docs/GNSS-SDR_manual.pdf
@@ -1312,7 +1566,7 @@ if(DOXYGEN_FOUND)
             COMMENT "Generating PDF manual with Doxygen." VERBATIM
         )
     endif()
-    message(STATUS "'${CMAKE_MAKE_PROGRAM_PRETTY_NAME} doc-clean' will clean the documentation.")
+    message(STATUS " '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} doc-clean' will clean the documentation.")
     add_custom_target(doc-clean
         COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/docs/html
         COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/docs/latex
@@ -1350,7 +1604,7 @@ if(ENABLE_OPENCL)
     else()
         if(OPENCL_FOUND)
             message(STATUS "OpenCL has been found and will be used by some processing blocks")
-            message(STATUS "You can disable OpenCL use by doing 'cmake -DENABLE_OPENCL=OFF ../' ")
+            message(STATUS " You can disable OpenCL use by doing 'cmake -DENABLE_OPENCL=OFF ..' ")
         endif()
     endif()
     if(ENABLE_GENERIC_ARCH)
@@ -1377,10 +1631,10 @@ endif()
 if(ENABLE_CUDA)
     find_package(CUDA REQUIRED)
     message(STATUS "NVIDIA CUDA GPU Acceleration will be enabled.")
-    message(STATUS "You can disable it with 'cmake -DENABLE_CUDA=OFF ../'")
+    message(STATUS " You can disable it with 'cmake -DENABLE_CUDA=OFF ..'")
 else()
     message(STATUS "NVIDIA CUDA GPU Acceleration will be not enabled.")
-    message(STATUS "Enable it with 'cmake -DENABLE_CUDA=ON ../' to add support for GPU-based acceleration using CUDA.")
+    message(STATUS " Enable it with 'cmake -DENABLE_CUDA=ON ..' to add support for GPU-based acceleration using CUDA.")
 endif()
 
 
@@ -1389,12 +1643,14 @@ endif()
 # CUSTOM UDP PACKET SOURCE (OPTIONAL)
 ###############################################################################
 if(ENABLE_RAW_UDP)
-    message(STATUS "High-optimized custom UDP ip packet source will be enabled.")
-    message(STATUS "You can disable it with 'cmake -DENABLE_RAW_UDP=OFF ../'")
-else()
-    message(STATUS "High-optimized custom UDP ip packet source will be enabled.")
-    message(STATUS "You can disable it with 'cmake -DENABLE_RAW_UDP=OFF ../'")
+    message(STATUS "High-optimized custom UDP IP packet source is enabled.")
+    message(STATUS " You can disable it with 'cmake -DENABLE_RAW_UDP=OFF ..'")
+    find_package(PCAP)
+    if(NOT PCAP_FOUND)
+        message(FATAL_ERROR "PCAP required to compile custom UDP packet sample source (with ENABLE_RAW_UDP=ON)")
+    endif()
 endif()
+
 
 
 ###############################################################################
@@ -1402,10 +1658,10 @@ endif()
 ###############################################################################
 if(ENABLE_FPGA)
     message(STATUS "FPGA Acceleration will be enabled.")
-    message(STATUS "You can disable it with 'cmake -DENABLE_FPGA=OFF ../'")
+    message(STATUS " You can disable it with 'cmake -DENABLE_FPGA=OFF ..'")
 else()
     message(STATUS "Fpga Acceleration will be not enabled.")
-    message(STATUS "Enable it with 'cmake -DENABLE_FPGA=ON ../' to add support for GPU-based acceleration using the FPGA.")
+    message(STATUS " Enable it with 'cmake -DENABLE_FPGA=ON ..' to add support for GPU-based acceleration using the FPGA.")
 endif()
 
 
@@ -1413,40 +1669,39 @@ endif()
 ################################################################################
 # Setup of optional drivers
 ################################################################################
-if($ENV{GN3S_DRIVER})
-    message(STATUS "GN3S_DRIVER environment variable found.")
-    set(ENABLE_GN3S ON)
-endif()
-if(GN3S_DRIVER)
-    set(ENABLE_GN3S ON)
-endif()
-if(ENABLE_GN3S)
-    message(STATUS "The GN3S driver will be compiled.")
-    message(STATUS "You can disable it with 'cmake -DENABLE_GN3S=OFF ../'")
-else()
-    message(STATUS "The (optional and experimental) GN3S driver is not enabled.")
-    message(STATUS "Enable it with 'cmake -DENABLE_GN3S=ON ../' to add support for the GN3S dongle.")
+
+########################################
+# USRP Hardware Driver (UHD) - OPTIONAL
+########################################
+if(ENABLE_UHD)
+    find_package(UHD)
+    if(NOT UHD_FOUND)
+        set(ENABLE_UHD OFF)
+        message(STATUS " The USRP Hardware Driver (UHD) signal source will not be built,")
+        message(STATUS " so all USRP-based front-ends will not be usable.")
+        message(STATUS " Please check https://files.ettus.com/manual/")
+    else()
+        set(GR_REQUIRED_COMPONENTS UHD)
+        find_package(Gnuradio)
+        if(NOT TARGET Gnuradio::uhd)
+            add_library(Gnuradio::uhd SHARED IMPORTED)
+            list(GET GNURADIO_UHD_LIBRARIES 0 FIRST_DIR)
+            get_filename_component(GNURADIO_UHD_DIR ${FIRST_DIR} ABSOLUTE)
+            set_target_properties(Gnuradio::uhd PROPERTIES
+              IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+              IMPORTED_LOCATION "${GNURADIO_UHD_DIR}"
+              INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_UHD_INCLUDE_DIRS}"
+              INTERFACE_LINK_LIBRARIES "${GNURADIO_UHD_LIBRARIES}"
+            )
+        endif()
+    endif()
 endif()
 
-if($ENV{RAW_ARRAY_DRIVER})
-    message(STATUS "RAW_ARRAY_DRIVER environment variable found.")
-    set(ENABLE_ARRAY ON)
-endif()
 
-if(RAW_ARRAY_DRIVER)
-    set(ENABLE_ARRAY ON)
-endif()
-
-if(ENABLE_ARRAY)
-    message(STATUS "CTTC's Antenna Array front-end driver will be compiled.")
-    message(STATUS "You can disable it with 'cmake -DENABLE_ARRAY=OFF ../'")
-    # copy firmware to install folder
-    # Build project gr-dbfcttc
-else()
-    message(STATUS "The (optional) CTTC's Antenna Array front-end driver is not enabled.")
-    message(STATUS "Enable it with 'cmake -DENABLE_ARRAY=ON ../' to add support for the CTTC experimental array front-end.")
-endif()
-
+##########################################
+# gr-osmosdr - OPTIONAL
+# https://github.com/osmocom/gr-osmosdr
+##########################################
 if($ENV{RTLSDR_DRIVER})
     message(STATUS "RTLSDR_DRIVER environment variable found.")
     set(ENABLE_OSMOSDR ON)
@@ -1456,7 +1711,7 @@ if(ENABLE_OSMOSDR)
     find_package(GROSMOSDR)
     if(GROSMOSDR_FOUND)
         message(STATUS "The driver for OsmoSDR and other front-ends (HackRF, bladeRF, Realtek's RTL2832U-based dongles, etc.) will be compiled.")
-        message(STATUS "You can disable it with 'cmake -DENABLE_OSMOSDR=OFF ../'")
+        message(STATUS " You can disable it with 'cmake -DENABLE_OSMOSDR=OFF ..'")
     else()
         if(ENABLE_PACKAGING)
             message(WARNING "gr-osmosdr has not been found. Source blocks depending on it will NOT be built.")
@@ -1466,9 +1721,34 @@ if(ENABLE_OSMOSDR)
     endif()
 else()
     message(STATUS "The (optional) driver for OsmoSDR and related front-ends is not enabled.")
-    message(STATUS "Enable it with 'cmake -DENABLE_OSMOSDR=ON ../' to add support for OsmoSDR and other front-ends (HackRF, bladeRF, Realtek's RTL2832U-based USB dongles, etc.)")
+    message(STATUS " Enable it with 'cmake -DENABLE_OSMOSDR=ON ..' to add support for OsmoSDR and other front-ends (HackRF, bladeRF, Realtek's RTL2832U-based USB dongles, etc.)")
 endif()
 
+
+##############################################
+# gr-iio - OPTIONAL
+# IIO blocks for GNU Radio
+# https://github.com/analogdevicesinc/gr-iio
+##############################################
+if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
+    find_package(GRIIO)
+    find_package(LIBIIO)
+endif()
+
+
+###################################################################################
+# libiio - OPTIONAL
+# A cross platform library for interfacing with local and remote Linux IIO devices
+# https://github.com/analogdevicesinc/libiio
+###################################################################################
+if(ENABLE_AD9361)
+    find_package(LIBIIO)
+endif()
+
+
+##############################################
+# TELEORBIT FLEXIBAND FRONTEND - OPTIONAL
+##############################################
 if($ENV{FLEXIBAND_DRIVER})
     message(STATUS "FLEXIBAND_DRIVER environment variable found.")
     set(ENABLE_FLEXIBAND ON)
@@ -1480,26 +1760,74 @@ endif()
 
 if(ENABLE_FLEXIBAND)
     message(STATUS "The Teleorbit Flexiband front-end source will be compiled.")
-    message(STATUS "You can disable it with 'cmake -DENABLE_FLEXIBAND=OFF ../'")
+    message(STATUS " You can disable it with 'cmake -DENABLE_FLEXIBAND=OFF ..'")
 else()
     message(STATUS "The (optional) Teleorbit Flexiband front-end driver adapter is not enabled.")
-    message(STATUS "Enable it with 'cmake -DENABLE_FLEXIBAND=ON ../' to add support for the Teleorbit Flexiband front-end.")
+    message(STATUS " Enable it with 'cmake -DENABLE_FLEXIBAND=ON ..' to add support for the Teleorbit Flexiband front-end.")
+endif()
+if(ENABLE_FLEXIBAND)
+    find_package(TELEORBIT)
+    if(NOT TELEORBIT_FOUND)
+        message(FATAL_ERROR "Teleorbit Flexiband GNU Radio driver required to build gnss-sdr with the optional FLEXIBAND adapter")
+    endif()
+endif()
+
+
+##############################################
+# GN3S - OPTIONAL
+##############################################
+if($ENV{GN3S_DRIVER})
+    message(STATUS "GN3S_DRIVER environment variable found.")
+    set(ENABLE_GN3S ON)
+endif()
+if(GN3S_DRIVER)
+    set(ENABLE_GN3S ON)
+endif()
+if(ENABLE_GN3S)
+    message(STATUS "The GN3S driver will be compiled.")
+    message(STATUS " You can disable it with 'cmake -DENABLE_GN3S=OFF ..'")
+    find_package(GRGN3S QUIET)
+else()
+    message(STATUS "The (optional and experimental) GN3S driver is not enabled.")
+    message(STATUS " Enable it with 'cmake -DENABLE_GN3S=ON ..' to add support for the GN3S dongle.")
+endif()
+
+
+#######################################################
+# CTTC's digital array beamformer prototype - OPTIONAL
+#######################################################
+if($ENV{RAW_ARRAY_DRIVER})
+    message(STATUS "RAW_ARRAY_DRIVER environment variable found.")
+    set(ENABLE_ARRAY ON)
+endif()
+
+if(RAW_ARRAY_DRIVER)
+    set(ENABLE_ARRAY ON)
+endif()
+
+if(ENABLE_ARRAY)
+    message(STATUS "CTTC's Antenna Array front-end driver will be compiled.")
+    message(STATUS " You can disable it with 'cmake -DENABLE_ARRAY=OFF ..'")
+    find_package(GRDBFCTTC QUIET)
+else()
+    message(STATUS "The (optional) CTTC's Antenna Array front-end driver is not enabled.")
+    message(STATUS " Enable it with 'cmake -DENABLE_ARRAY=ON ..' to add support for the CTTC experimental array front-end.")
 endif()
 
 
 
 ################################################################################
-# GPerftools - https://github.com/gperftools/gperftools (OPTIONAL)
+# GPerftools - https://github.com/gperftools/gperftools - OPTIONAL)
 ################################################################################
 if(ENABLE_GPERFTOOLS)
     find_package(GPERFTOOLS)
     if(NOT GPERFTOOLS_FOUND)
         message(STATUS "Although ENABLE_GPERFTOOLS has been set to ON, GPerftools has not been found.")
-        message(STATUS "Binaries will be compiled without 'tcmalloc' and 'profiler' libraries.")
-        message(STATUS "You can install GPerftools from https://github.com/gperftools/gperftools")
+        message(STATUS " Binaries will be compiled without 'tcmalloc' and 'profiler' libraries.")
+        message(STATUS " You can install GPerftools from https://github.com/gperftools/gperftools")
     else()
         message(STATUS "GPerftools libraries found.")
-        message(STATUS "Binaries will be compiled with 'tcmalloc' and 'profiler' libraries.")
+        message(STATUS " Binaries will be compiled with 'tcmalloc' and 'profiler' libraries.")
     endif()
 endif()
 if(ENABLE_GPERFTOOLS)
@@ -1507,10 +1835,10 @@ if(ENABLE_GPERFTOOLS)
     # See https://github.com/gperftools/gperftools/blob/master/README
     if(GPERFTOOLS_FOUND)
         if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
-            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free")
+            add_compile_options(-fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free)
         endif()
         if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -fno-builtin")
+            add_compile_options(-fno-builtin)
         endif()
     endif()
 endif()
@@ -1521,7 +1849,7 @@ endif()
 # GNU gprof (OPTIONAL) - https://sourceware.org/binutils/docs/gprof/
 ########################################################################
 if(ENABLE_GPROF)
-    set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -pg")
+    add_compile_options(-pg)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pg")
 endif()
@@ -1530,92 +1858,48 @@ endif()
 ########################################################################
 # Set compiler flags
 ########################################################################
-# Support of C++17 is still not possible due to pm_remez.h (solved in GNU Radio 3.8)
-# Enable C++14 support in GCC >= 6.1.1
-# Fallback to C++11 when using GCC < 6.1.1
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
-        set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
+    # Add warning flags
+    # For "-Wall" see https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
+    set(cxx_warning_flags -Wall -Wextra)
+    if(NOT (CMAKE_VERSION VERSION_LESS "3.3"))
+        add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:${cxx_warning_flags}>")
     else()
-        # if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
-            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
-        # else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
-            # set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++17")
-        # endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
+        add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:${cxx_warning_flags}>")
     endif()
-    set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wall -Wextra")  #Add warning flags: For "-Wall" see https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
-endif()
-
-# Support of C++17 is still not possible due to pm_remez.h (solved in GNU Radio 3.8)
-# Enable C++14 support in Clang >= 3.5.0 or AppleClang >= 600
-# Fallback to C++11 if older version
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    if(OS_IS_MACOSX)
-        # See https://trac.macports.org/wiki/XcodeVersionInfo for Apple Clang version equivalences
-        if(CLANG_VERSION VERSION_LESS "600")
-            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
-        else()
-            # if(CLANG_VERSION VERSION_LESS "900")
-            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
-            # else(CLANG_VERSION VERSION_LESS "900")
-            # set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++17")
-            # endif(CLANG_VERSION VERSION_LESS "900")
-        endif()
-    else()
-        if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
-            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
-        else()
-            # if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.0.0")
-            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
-            # else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.0.0")
-            # set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++17")
-            # endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.0.0")
-        endif()
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.0")
+        add_compile_options(-Wno-missing-field-initializers)
     endif()
-
-    if(OS_IS_MACOSX)
-        set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -stdlib=libc++")
-    endif()
-endif()
-
-if(NOT ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang")) AND NOT WIN32)
-    if(NOT (CMAKE_VERSION VERSION_LESS "3.1"))
-        set(CMAKE_C_STANDARD 11)
-        set(CMAKE_CXX_STANDARD 14)
+    if(CMAKE_CROSSCOMPILING)
+        add_compile_options(-Wno-psabi)
     endif()
 endif()
 
 # Processor-architecture related flags
 # See https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
-if(NOT ARCH_COMPILER_FLAGS)
-    if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
-      if(OS_IS_MACOSX)
-          set(ARCH_COMPILER_FLAGS "-march=corei7 -mfpmath=sse")
-      else()
-          if(NOT ${ENABLE_GENERIC_ARCH})
-              if(IS_ARM) # ARM-specific options (https://gcc.gnu.org/onlinedocs/gcc/ARM-Options.html)
-                  if(NOT CMAKE_CROSSCOMPILING)
-                      if(ARM_VERSION STREQUAL "arm")
-                          # Unknown arm version - try our best to detect
-                          set(ARCH_COMPILER_FLAGS "-mcpu=native")
-                      else()
-                          set(ARCH_COMPILER_FLAGS "-march=${ARM_VERSION}")
-                      endif()
-                  endif()
-              else()
-                  set(ARCH_COMPILER_FLAGS "-march=native -mfpmath=sse")
-              endif()
-          endif()
-      endif()
+if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
+    if(OS_IS_MACOSX)
+        add_compile_options(-march=corei7 -mfpmath=sse)
+    else()
+        if(NOT ENABLE_GENERIC_ARCH)
+            if(IS_ARM)
+                # ARM-specific options
+                # See https://gcc.gnu.org/onlinedocs/gcc/ARM-Options.html
+                if(NOT CMAKE_CROSSCOMPILING)
+                    if(ARM_VERSION STREQUAL "arm")
+                        # Unknown arm version - try our best to detect
+                        add_compile_options(-mcpu=native)
+                    else()
+                        add_compile_options(-march=${ARM_VERSION})
+                    endif()
+                endif()
+            else()
+                add_compile_options(-march=native -mfpmath=sse)
+            endif()
+        endif()
     endif()
 endif()
-set(MY_CXX_FLAGS "${MY_CXX_FLAGS} ${ARCH_COMPILER_FLAGS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MY_CXX_FLAGS}")
 
-if((CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
-    # https://gcc.gnu.org/wiki/Visibility
-    add_definitions(-fvisibility=hidden)
-endif()
 
 
 ########################################################################
@@ -1632,7 +1916,12 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
             message(STATUS "clang-tidy not found.")
         else()
             message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
-            set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" "-checks=*")
+            if(ENABLE_CLANG_TIDY)
+                message(STATUS " clang-tidy will be used in compilation. You can disable it with 'cmake -DENABLE_CLANG_TIDY=OFF ..'")
+            else()
+                message(STATUS " You can enable clang-tidy usage in compilation with 'cmake -DENABLE_CLANG_TIDY=ON ..'")
+            endif()
+            set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" "-fix")
             set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
         endif()
     endif()

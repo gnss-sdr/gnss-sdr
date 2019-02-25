@@ -31,9 +31,15 @@
  */
 
 #include "GPS_L1_CA.h"
-#include "Galileo_E1.h"
-#include "Galileo_E5a.h"
-#include "GPS_L5.h"
+//<<<<<<< HEAD
+//#include "Galileo_E1.h"
+//#include "Galileo_E5a.h"
+//#include "GPS_L5.h"
+//=======
+#include "acquisition_msg_rx.h"
+#include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
+#include "galileo_e5a_pcps_acquisition.h"
+//>>>>>>> 4fe976ba016fa9c1c64ece88b26a9a93d93a84f4
 #include "gnss_block_factory.h"
 #include "tracking_interface.h"
 #include "gps_l1_ca_pcps_acquisition_fpga.h"
@@ -91,6 +97,7 @@ bool skip_samples_already_used = 0;	// if skip_samples_already_used = 1 => for e
 									// (exactly in the same way as the SW)
 bool doppler_loop_control_in_sw = 0;
 
+//<<<<<<< HEAD
 
 
 // ######## GNURADIO ACQUISITION BLOCK MESSAGE RECEVER #########
@@ -141,6 +148,8 @@ Acquisition_msg_rx_Fpga::Acquisition_msg_rx_Fpga() : gr::block("Acquisition_msg_
 }
 
 Acquisition_msg_rx_Fpga::~Acquisition_msg_rx_Fpga() {}
+//=======
+//>>>>>>> 4fe976ba016fa9c1c64ece88b26a9a93d93a84f4
 // ######## GNURADIO TRACKING BLOCK MESSAGE RECEVER #########
 class TrackingPullInTestFpga_msg_rx;
 
@@ -743,17 +752,17 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 	}
 	else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
 	{
-		code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq_acquisition) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
-		nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
+		code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq_acquisition) / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
+		nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
 	}
 	else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
 	{
-		code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / Galileo_E5a_CODE_CHIP_RATE_HZ * static_cast<double>(Galileo_E5a_CODE_LENGTH_CHIPS)));
+		code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / GALILEO_E5A_CODE_CHIP_RATE_HZ * static_cast<double>(GALILEO_E5A_CODE_LENGTH_CHIPS)));
 		nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
 	}
 	else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
 	{
-		code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L5i_CODE_RATE_HZ / static_cast<double>(GPS_L5i_CODE_LENGTH_CHIPS))));
+		code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L5I_CODE_RATE_HZ / static_cast<double>(GPS_L5I_CODE_LENGTH_CHIPS))));
 		nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
 	}
 
@@ -1369,7 +1378,7 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
     double true_acq_delay_samples = 0.0;
     uint64_t acq_samplestamp_samples = 0;
 
-    tracking_true_obs_reader true_obs_data;
+    Tracking_True_Obs_Reader true_obs_data;
     if (!FLAGS_enable_external_signal_file)
         {
             test_satellite_PRN = FLAGS_test_satellite_PRN;
@@ -1409,16 +1418,16 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
 	}
 	else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
 	{
-		code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
+		code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
 	}
 	else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
 	{
-		code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / Galileo_E5a_CODE_CHIP_RATE_HZ * static_cast<double>(Galileo_E5a_CODE_LENGTH_CHIPS)));
+		code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / GALILEO_E5A_CODE_CHIP_RATE_HZ * static_cast<double>(GALILEO_E5A_CODE_LENGTH_CHIPS)));
 
 	}
 	else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
 	{
-		code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L5i_CODE_RATE_HZ / static_cast<double>(GPS_L5i_CODE_LENGTH_CHIPS))));
+		code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L5I_CODE_RATE_HZ / static_cast<double>(GPS_L5I_CODE_LENGTH_CHIPS))));
 	}
 
 	float nbits = ceilf(log2f((float)code_length));
@@ -1565,7 +1574,7 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                             if (FLAGS_plot_detail_level >= 2 and FLAGS_show_plots)
                                 {
                                     //load the measured values
-                                    tracking_dump_reader trk_dump;
+                                    Tracking_Dump_Reader trk_dump;
                                     ASSERT_EQ(trk_dump.open_obs_file(std::string("./tracking_ch_0.dat")), true)
                                         << "Failure opening tracking dump file";
 

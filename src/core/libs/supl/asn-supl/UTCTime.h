@@ -27,10 +27,10 @@ extern "C"
     struct tm; /* <time.h> */
 
     /* See asn_GT2time() in GeneralizedTime.h */
-    time_t asn_UT2time(const UTCTime_t *, struct tm *_optional_tm4fill, int as_gmt);
+    time_t asn_UT2time(const UTCTime_t * /*st*/, struct tm *_tm, int as_gmt);
 
     /* See asn_time2GT() in GeneralizedTime.h */
-    UTCTime_t *asn_time2UT(UTCTime_t *__opt_ut, const struct tm *, int force_gmt);
+    UTCTime_t *asn_time2UT(UTCTime_t *__opt_ut, const struct tm * /*tm*/, int force_gmt);
 
 #ifdef __cplusplus
 }

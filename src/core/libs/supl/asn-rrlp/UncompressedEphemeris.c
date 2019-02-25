@@ -888,152 +888,152 @@ memb_ephemIDot_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_type_ephemE_constr_17 = {
+static asn_per_constraints_t ASN_PER_TYPE_EPHEM_E_CONSTR_17 = {
 	{ APC_CONSTRAINED,	 32, -1,  0,  4294967295 }	/* (0..4294967295) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_type_ephemAPowerHalf_constr_19 = {
+static asn_per_constraints_t ASN_PER_TYPE_EPHEM_A_POWER_HALF_CONSTR_19 = {
 	{ APC_CONSTRAINED,	 32, -1,  0,  4294967295 }	/* (0..4294967295) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ephemCodeOnL2_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_EPHEM_CODE_ON_L2_CONSTR_2 = {
 	{ APC_CONSTRAINED,	 2,  2,  0,  3 }	/* (0..3) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ephemURA_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_EPHEM_URA_CONSTR_3 = {
 	{ APC_CONSTRAINED,	 4,  4,  0,  15 }	/* (0..15) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ephemSVhealth_constr_4 = {
+static asn_per_constraints_t ASN_PER_MEMB_EPHEM_S_VHEALTH_CONSTR_4 = {
 	{ APC_CONSTRAINED,	 6,  6,  0,  63 }	/* (0..63) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ephemIODC_constr_5 = {
+static asn_per_constraints_t ASN_PER_MEMB_EPHEM_IODC_CONSTR_5 = {
 	{ APC_CONSTRAINED,	 10,  10,  0,  1023 }	/* (0..1023) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ephemL2Pflag_constr_6 = {
+static asn_per_constraints_t ASN_PER_MEMB_EPHEM_L2_PFLAG_CONSTR_6 = {
 	{ APC_CONSTRAINED,	 1,  1,  0,  1 }	/* (0..1) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ephemTgd_constr_8 = {
+static asn_per_constraints_t ASN_PER_MEMB_EPHEM_TGD_CONSTR_8 = {
 	{ APC_CONSTRAINED,	 8,  8, -128,  127 }	/* (-128..127) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ephemToc_constr_9 = {
+static asn_per_constraints_t ASN_PER_MEMB_EPHEM_TOC_CONSTR_9 = {
 	{ APC_CONSTRAINED,	 16,  16,  0,  37799 }	/* (0..37799) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ephemAF2_constr_10 = {
+static asn_per_constraints_t ASN_PER_MEMB_EPHEM_A_F2_CONSTR_10 = {
 	{ APC_CONSTRAINED,	 8,  8, -128,  127 }	/* (-128..127) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ephemAF1_constr_11 = {
+static asn_per_constraints_t ASN_PER_MEMB_EPHEM_A_F1_CONSTR_11 = {
 	{ APC_CONSTRAINED,	 16,  16, -32768,  32767 }	/* (-32768..32767) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ephemAF0_constr_12 = {
+static asn_per_constraints_t ASN_PER_MEMB_EPHEM_A_F0_CONSTR_12 = {
 	{ APC_CONSTRAINED,	 22, -1, -2097152,  2097151 }	/* (-2097152..2097151) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ephemCrs_constr_13 = {
+static asn_per_constraints_t ASN_PER_MEMB_EPHEM_CRS_CONSTR_13 = {
 	{ APC_CONSTRAINED,	 16,  16, -32768,  32767 }	/* (-32768..32767) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ephemDeltaN_constr_14 = {
+static asn_per_constraints_t ASN_PER_MEMB_EPHEM_DELTA_N_CONSTR_14 = {
 	{ APC_CONSTRAINED,	 16,  16, -32768,  32767 }	/* (-32768..32767) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ephemM0_constr_15 = {
+static asn_per_constraints_t ASN_PER_MEMB_EPHEM_M0_CONSTR_15 = {
 	{ APC_CONSTRAINED,	 32, -1, (-2147483647L - 1),  2147483647 }	/* (-2147483648..2147483647) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ephemCuc_constr_16 = {
+static asn_per_constraints_t ASN_PER_MEMB_EPHEM_CUC_CONSTR_16 = {
 	{ APC_CONSTRAINED,	 16,  16, -32768,  32767 }	/* (-32768..32767) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ephemE_constr_17 = {
+static asn_per_constraints_t ASN_PER_MEMB_EPHEM_E_CONSTR_17 = {
 	{ APC_CONSTRAINED,	 32, -1,  0,  4294967295 }	/* (0..4294967295) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ephemCus_constr_18 = {
+static asn_per_constraints_t ASN_PER_MEMB_EPHEM_CUS_CONSTR_18 = {
 	{ APC_CONSTRAINED,	 16,  16, -32768,  32767 }	/* (-32768..32767) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ephemAPowerHalf_constr_19 = {
+static asn_per_constraints_t ASN_PER_MEMB_EPHEM_A_POWER_HALF_CONSTR_19 = {
 	{ APC_CONSTRAINED,	 32, -1,  0,  4294967295 }	/* (0..4294967295) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ephemToe_constr_20 = {
+static asn_per_constraints_t ASN_PER_MEMB_EPHEM_TOE_CONSTR_20 = {
 	{ APC_CONSTRAINED,	 16,  16,  0,  37799 }	/* (0..37799) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ephemFitFlag_constr_21 = {
+static asn_per_constraints_t ASN_PER_MEMB_EPHEM_FIT_FLAG_CONSTR_21 = {
 	{ APC_CONSTRAINED,	 1,  1,  0,  1 }	/* (0..1) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ephemAODA_constr_22 = {
+static asn_per_constraints_t ASN_PER_MEMB_EPHEM_AODA_CONSTR_22 = {
 	{ APC_CONSTRAINED,	 5,  5,  0,  31 }	/* (0..31) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ephemCic_constr_23 = {
+static asn_per_constraints_t ASN_PER_MEMB_EPHEM_CIC_CONSTR_23 = {
 	{ APC_CONSTRAINED,	 16,  16, -32768,  32767 }	/* (-32768..32767) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ephemOmegaA0_constr_24 = {
+static asn_per_constraints_t ASN_PER_MEMB_EPHEM_OMEGA_A0_CONSTR_24 = {
 	{ APC_CONSTRAINED,	 32, -1, (-2147483647L - 1),  2147483647 }	/* (-2147483648..2147483647) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ephemCis_constr_25 = {
+static asn_per_constraints_t ASN_PER_MEMB_EPHEM_CIS_CONSTR_25 = {
 	{ APC_CONSTRAINED,	 16,  16, -32768,  32767 }	/* (-32768..32767) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ephemI0_constr_26 = {
+static asn_per_constraints_t ASN_PER_MEMB_EPHEM_I0_CONSTR_26 = {
 	{ APC_CONSTRAINED,	 32, -1, (-2147483647L - 1),  2147483647 }	/* (-2147483648..2147483647) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ephemCrc_constr_27 = {
+static asn_per_constraints_t ASN_PER_MEMB_EPHEM_CRC_CONSTR_27 = {
 	{ APC_CONSTRAINED,	 16,  16, -32768,  32767 }	/* (-32768..32767) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ephemW_constr_28 = {
+static asn_per_constraints_t ASN_PER_MEMB_EPHEM_W_CONSTR_28 = {
 	{ APC_CONSTRAINED,	 32, -1, (-2147483647L - 1),  2147483647 }	/* (-2147483648..2147483647) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ephemOmegaADot_constr_29 = {
+static asn_per_constraints_t ASN_PER_MEMB_EPHEM_OMEGA_A_DOT_CONSTR_29 = {
 	{ APC_CONSTRAINED,	 24, -1, -8388608,  8388607 }	/* (-8388608..8388607) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ephemIDot_constr_30 = {
+static asn_per_constraints_t ASN_PER_MEMB_EPHEM_I_DOT_CONSTR_30 = {
 	{ APC_CONSTRAINED,	 14,  14, -8192,  8191 }	/* (-8192..8191) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -1067,7 +1067,7 @@ asn_TYPE_descriptor_t asn_DEF_ephemE_17 = {
 	asn_DEF_ephemE_tags_17,	/* Same as above */
 	sizeof(asn_DEF_ephemE_tags_17)
 		/sizeof(asn_DEF_ephemE_tags_17[0]), /* 2 */
-	&asn_PER_type_ephemE_constr_17,
+	&ASN_PER_TYPE_EPHEM_E_CONSTR_17,
 	0, 0,	/* No members */
 	&asn_SPC_ephemE_specs_17	/* Additional specs */
 };
@@ -1101,7 +1101,7 @@ asn_TYPE_descriptor_t asn_DEF_ephemAPowerHalf_19 = {
 	asn_DEF_ephemAPowerHalf_tags_19,	/* Same as above */
 	sizeof(asn_DEF_ephemAPowerHalf_tags_19)
 		/sizeof(asn_DEF_ephemAPowerHalf_tags_19[0]), /* 2 */
-	&asn_PER_type_ephemAPowerHalf_constr_19,
+	&ASN_PER_TYPE_EPHEM_A_POWER_HALF_CONSTR_19,
 	0, 0,	/* No members */
 	&asn_SPC_ephemAPowerHalf_specs_19	/* Additional specs */
 };
@@ -1112,7 +1112,7 @@ static asn_TYPE_member_t asn_MBR_UncompressedEphemeris_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ephemCodeOnL2_constraint_1,
-		&asn_PER_memb_ephemCodeOnL2_constr_2,
+		&ASN_PER_MEMB_EPHEM_CODE_ON_L2_CONSTR_2,
 		0,
 		"ephemCodeOnL2"
 		},
@@ -1121,7 +1121,7 @@ static asn_TYPE_member_t asn_MBR_UncompressedEphemeris_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ephemURA_constraint_1,
-		&asn_PER_memb_ephemURA_constr_3,
+		&ASN_PER_MEMB_EPHEM_URA_CONSTR_3,
 		0,
 		"ephemURA"
 		},
@@ -1130,7 +1130,7 @@ static asn_TYPE_member_t asn_MBR_UncompressedEphemeris_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ephemSVhealth_constraint_1,
-		&asn_PER_memb_ephemSVhealth_constr_4,
+		&ASN_PER_MEMB_EPHEM_S_VHEALTH_CONSTR_4,
 		0,
 		"ephemSVhealth"
 		},
@@ -1139,7 +1139,7 @@ static asn_TYPE_member_t asn_MBR_UncompressedEphemeris_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ephemIODC_constraint_1,
-		&asn_PER_memb_ephemIODC_constr_5,
+		&ASN_PER_MEMB_EPHEM_IODC_CONSTR_5,
 		0,
 		"ephemIODC"
 		},
@@ -1148,7 +1148,7 @@ static asn_TYPE_member_t asn_MBR_UncompressedEphemeris_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ephemL2Pflag_constraint_1,
-		&asn_PER_memb_ephemL2Pflag_constr_6,
+		&ASN_PER_MEMB_EPHEM_L2_PFLAG_CONSTR_6,
 		0,
 		"ephemL2Pflag"
 		},
@@ -1166,7 +1166,7 @@ static asn_TYPE_member_t asn_MBR_UncompressedEphemeris_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ephemTgd_constraint_1,
-		&asn_PER_memb_ephemTgd_constr_8,
+		&ASN_PER_MEMB_EPHEM_TGD_CONSTR_8,
 		0,
 		"ephemTgd"
 		},
@@ -1175,7 +1175,7 @@ static asn_TYPE_member_t asn_MBR_UncompressedEphemeris_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ephemToc_constraint_1,
-		&asn_PER_memb_ephemToc_constr_9,
+		&ASN_PER_MEMB_EPHEM_TOC_CONSTR_9,
 		0,
 		"ephemToc"
 		},
@@ -1184,7 +1184,7 @@ static asn_TYPE_member_t asn_MBR_UncompressedEphemeris_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ephemAF2_constraint_1,
-		&asn_PER_memb_ephemAF2_constr_10,
+		&ASN_PER_MEMB_EPHEM_A_F2_CONSTR_10,
 		0,
 		"ephemAF2"
 		},
@@ -1193,7 +1193,7 @@ static asn_TYPE_member_t asn_MBR_UncompressedEphemeris_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ephemAF1_constraint_1,
-		&asn_PER_memb_ephemAF1_constr_11,
+		&ASN_PER_MEMB_EPHEM_A_F1_CONSTR_11,
 		0,
 		"ephemAF1"
 		},
@@ -1202,7 +1202,7 @@ static asn_TYPE_member_t asn_MBR_UncompressedEphemeris_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ephemAF0_constraint_1,
-		&asn_PER_memb_ephemAF0_constr_12,
+		&ASN_PER_MEMB_EPHEM_A_F0_CONSTR_12,
 		0,
 		"ephemAF0"
 		},
@@ -1211,7 +1211,7 @@ static asn_TYPE_member_t asn_MBR_UncompressedEphemeris_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ephemCrs_constraint_1,
-		&asn_PER_memb_ephemCrs_constr_13,
+		&ASN_PER_MEMB_EPHEM_CRS_CONSTR_13,
 		0,
 		"ephemCrs"
 		},
@@ -1220,7 +1220,7 @@ static asn_TYPE_member_t asn_MBR_UncompressedEphemeris_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ephemDeltaN_constraint_1,
-		&asn_PER_memb_ephemDeltaN_constr_14,
+		&ASN_PER_MEMB_EPHEM_DELTA_N_CONSTR_14,
 		0,
 		"ephemDeltaN"
 		},
@@ -1229,7 +1229,7 @@ static asn_TYPE_member_t asn_MBR_UncompressedEphemeris_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ephemM0_constraint_1,
-		&asn_PER_memb_ephemM0_constr_15,
+		&ASN_PER_MEMB_EPHEM_M0_CONSTR_15,
 		0,
 		"ephemM0"
 		},
@@ -1238,7 +1238,7 @@ static asn_TYPE_member_t asn_MBR_UncompressedEphemeris_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ephemCuc_constraint_1,
-		&asn_PER_memb_ephemCuc_constr_16,
+		&ASN_PER_MEMB_EPHEM_CUC_CONSTR_16,
 		0,
 		"ephemCuc"
 		},
@@ -1247,7 +1247,7 @@ static asn_TYPE_member_t asn_MBR_UncompressedEphemeris_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_ephemE_17,
 		memb_ephemE_constraint_1,
-		&asn_PER_memb_ephemE_constr_17,
+		&ASN_PER_MEMB_EPHEM_E_CONSTR_17,
 		0,
 		"ephemE"
 		},
@@ -1256,7 +1256,7 @@ static asn_TYPE_member_t asn_MBR_UncompressedEphemeris_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ephemCus_constraint_1,
-		&asn_PER_memb_ephemCus_constr_18,
+		&ASN_PER_MEMB_EPHEM_CUS_CONSTR_18,
 		0,
 		"ephemCus"
 		},
@@ -1265,7 +1265,7 @@ static asn_TYPE_member_t asn_MBR_UncompressedEphemeris_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_ephemAPowerHalf_19,
 		memb_ephemAPowerHalf_constraint_1,
-		&asn_PER_memb_ephemAPowerHalf_constr_19,
+		&ASN_PER_MEMB_EPHEM_A_POWER_HALF_CONSTR_19,
 		0,
 		"ephemAPowerHalf"
 		},
@@ -1274,7 +1274,7 @@ static asn_TYPE_member_t asn_MBR_UncompressedEphemeris_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ephemToe_constraint_1,
-		&asn_PER_memb_ephemToe_constr_20,
+		&ASN_PER_MEMB_EPHEM_TOE_CONSTR_20,
 		0,
 		"ephemToe"
 		},
@@ -1283,7 +1283,7 @@ static asn_TYPE_member_t asn_MBR_UncompressedEphemeris_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ephemFitFlag_constraint_1,
-		&asn_PER_memb_ephemFitFlag_constr_21,
+		&ASN_PER_MEMB_EPHEM_FIT_FLAG_CONSTR_21,
 		0,
 		"ephemFitFlag"
 		},
@@ -1292,7 +1292,7 @@ static asn_TYPE_member_t asn_MBR_UncompressedEphemeris_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ephemAODA_constraint_1,
-		&asn_PER_memb_ephemAODA_constr_22,
+		&ASN_PER_MEMB_EPHEM_AODA_CONSTR_22,
 		0,
 		"ephemAODA"
 		},
@@ -1301,7 +1301,7 @@ static asn_TYPE_member_t asn_MBR_UncompressedEphemeris_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ephemCic_constraint_1,
-		&asn_PER_memb_ephemCic_constr_23,
+		&ASN_PER_MEMB_EPHEM_CIC_CONSTR_23,
 		0,
 		"ephemCic"
 		},
@@ -1310,7 +1310,7 @@ static asn_TYPE_member_t asn_MBR_UncompressedEphemeris_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ephemOmegaA0_constraint_1,
-		&asn_PER_memb_ephemOmegaA0_constr_24,
+		&ASN_PER_MEMB_EPHEM_OMEGA_A0_CONSTR_24,
 		0,
 		"ephemOmegaA0"
 		},
@@ -1319,7 +1319,7 @@ static asn_TYPE_member_t asn_MBR_UncompressedEphemeris_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ephemCis_constraint_1,
-		&asn_PER_memb_ephemCis_constr_25,
+		&ASN_PER_MEMB_EPHEM_CIS_CONSTR_25,
 		0,
 		"ephemCis"
 		},
@@ -1328,7 +1328,7 @@ static asn_TYPE_member_t asn_MBR_UncompressedEphemeris_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ephemI0_constraint_1,
-		&asn_PER_memb_ephemI0_constr_26,
+		&ASN_PER_MEMB_EPHEM_I0_CONSTR_26,
 		0,
 		"ephemI0"
 		},
@@ -1337,7 +1337,7 @@ static asn_TYPE_member_t asn_MBR_UncompressedEphemeris_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ephemCrc_constraint_1,
-		&asn_PER_memb_ephemCrc_constr_27,
+		&ASN_PER_MEMB_EPHEM_CRC_CONSTR_27,
 		0,
 		"ephemCrc"
 		},
@@ -1346,7 +1346,7 @@ static asn_TYPE_member_t asn_MBR_UncompressedEphemeris_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ephemW_constraint_1,
-		&asn_PER_memb_ephemW_constr_28,
+		&ASN_PER_MEMB_EPHEM_W_CONSTR_28,
 		0,
 		"ephemW"
 		},
@@ -1355,7 +1355,7 @@ static asn_TYPE_member_t asn_MBR_UncompressedEphemeris_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ephemOmegaADot_constraint_1,
-		&asn_PER_memb_ephemOmegaADot_constr_29,
+		&ASN_PER_MEMB_EPHEM_OMEGA_A_DOT_CONSTR_29,
 		0,
 		"ephemOmegaADot"
 		},
@@ -1364,7 +1364,7 @@ static asn_TYPE_member_t asn_MBR_UncompressedEphemeris_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ephemIDot_constraint_1,
-		&asn_PER_memb_ephemIDot_constr_30,
+		&ASN_PER_MEMB_EPHEM_I_DOT_CONSTR_30,
 		0,
 		"ephemIDot"
 		},

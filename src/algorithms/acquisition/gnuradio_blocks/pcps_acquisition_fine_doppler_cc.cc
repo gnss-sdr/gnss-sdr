@@ -32,7 +32,6 @@
 
 #include "pcps_acquisition_fine_doppler_cc.h"
 #include "GPS_L1_CA.h"
-#include "control_message_factory.h"
 #include "gnss_sdr_create_directory.h"
 #include "gps_sdr_signal_processing.h"
 #include <boost/filesystem/path.hpp>
@@ -314,7 +313,10 @@ double pcps_acquisition_fine_doppler_cc::compute_CAF()
         {
             d_grid_data[index_doppler][idx] = 0.0;
             idx++;
-            if (idx == static_cast<int>(d_fft_size)) idx = 0;
+            if (idx == static_cast<int>(d_fft_size))
+                {
+                    idx = 0;
+                }
         }
     while (idx != excludeRangeIndex2);
 

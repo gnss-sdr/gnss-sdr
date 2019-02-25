@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -66,45 +66,50 @@ if(ENABLE_FPGA)
     set(TRACKING_LIB_HEADERS ${TRACKING_LIB_HEADERS} fpga_multicorrelator.h dll_pll_conf_fpga.h)
 endif()
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces
-    ${CMAKE_SOURCE_DIR}/src/core/receiver
-    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-    ${ARMADILLO_INCLUDE_DIRS}
-    ${VOLK_INCLUDE_DIRS}
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${OPT_TRACKING_INCLUDES}
-    ${VOLK_GNSSSDR_INCLUDE_DIRS}
-)
-
-if(ENABLE_GENERIC_ARCH)
-    add_definitions(-DGENERIC_ARCH=1)
-endif()
-
-if(SSE3_AVAILABLE)
-    add_definitions(-DHAVE_SSE3=1)
-endif()
-
 list(SORT TRACKING_LIB_HEADERS)
 list(SORT TRACKING_LIB_SOURCES)
 
-add_library(tracking_lib ${TRACKING_LIB_SOURCES} ${TRACKING_LIB_HEADERS})
-
 source_group(Headers FILES ${TRACKING_LIB_HEADERS})
 
-target_link_libraries(tracking_lib
-    ${OPT_TRACKING_LIBRARIES}
-    ${VOLK_LIBRARIES}
-    ${VOLK_GNSSSDR_LIBRARIES}
-    ${Boost_LIBRARIES}
-    ${GNURADIO_RUNTIME_LIBRARIES}
+add_library(tracking_libs ${TRACKING_LIB_SOURCES} ${TRACKING_LIB_HEADERS})
+
+target_link_libraries(tracking_libs
+    PUBLIC
+        Armadillo::armadillo
+        Boost::boost
+        Gnuradio::runtime
+        Volkgnsssdr::volkgnsssdr
+        core_system_parameters
+        ${OPT_TRACKING_LIBRARIES}
+    PRIVATE
+        Gflags::gflags
+        Glog::glog
 )
 
-if(VOLKGNSSSDR_FOUND)
-    add_dependencies(tracking_lib glog-${glog_RELEASE})
-else()
-    add_dependencies(tracking_lib glog-${glog_RELEASE} volk_gnsssdr_module)
+target_include_directories(tracking_libs
+    PUBLIC
+        ${OPT_TRACKING_INCLUDES}
+)
+
+if(OS_IS_MACOSX)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")  # not AppleClang
+        target_compile_definitions(tracking_libs
+            PUBLIC
+                -DBOOST_ASIO_HAS_STD_STRING_VIEW
+        )
+    endif()
 endif()
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(tracking_libs
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+set_property(TARGET tracking_libs
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

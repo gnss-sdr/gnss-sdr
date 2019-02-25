@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -19,36 +19,38 @@
 set(SIGNAL_GENERATOR_BLOCK_SOURCES signal_generator_c.cc)
 set(SIGNAL_GENERATOR_BLOCK_HEADERS signal_generator_c.h)
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces
-    ${CMAKE_SOURCE_DIR}/src/core/receiver
-    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-    ${VOLK_GNSSSDR_INCLUDE_DIRS}
-)
+source_group(Headers FILES ${SIGNAL_GENERATOR_BLOCK_HEADERS})
 
-add_library(signal_generator_blocks
+add_library(signal_generator_gr_blocks
     ${SIGNAL_GENERATOR_BLOCK_SOURCES}
     ${SIGNAL_GENERATOR_BLOCK_HEADERS}
 )
 
-source_group(Headers FILES ${SIGNAL_GENERATOR_BLOCK_HEADERS})
-
-target_link_libraries(signal_generator_blocks
-    gnss_system_parameters
-    gnss_sp_libs
-    ${GNURADIO_RUNTIME_LIBRARIES}
-    ${GNURADIO_FFT_LIBRARIES}
-    ${VOLK_GNSSSDR_LIBRARIES}
-    ${ORC_LIBRARIES}
+target_link_libraries(signal_generator_gr_blocks
+    PUBLIC
+        Boost::boost
+        Gnuradio::runtime
+        core_system_parameters
+    PRIVATE
+        Volkgnsssdr::volkgnsssdr
+        algorithms_libs
 )
 
-if(VOLKGNSSSDR_FOUND)
-    # add_dependencies(signal_generator_blocks glog-${glog_RELEASE})
-else()
-    add_dependencies(signal_generator_blocks volk_gnsssdr_module)
+target_include_directories(signal_generator_gr_blocks
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+)
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(signal_generator_gr_blocks
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
 endif()
+
+set_property(TARGET signal_generator_gr_blocks
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

@@ -67,4 +67,7 @@ Pvt_Conf::Pvt_Conf()
     kml_output_path = std::string(".");
     xml_output_path = std::string(".");
     rtcm_output_file_path = std::string(".");
+
+    monitor_enabled = false;
+    udp_port = 0;
 }

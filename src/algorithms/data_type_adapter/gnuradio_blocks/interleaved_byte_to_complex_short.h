@@ -36,7 +36,7 @@
 
 class interleaved_byte_to_complex_short;
 
-typedef boost::shared_ptr<interleaved_byte_to_complex_short> interleaved_byte_to_complex_short_sptr;
+using interleaved_byte_to_complex_short_sptr = boost::shared_ptr<interleaved_byte_to_complex_short>;
 
 interleaved_byte_to_complex_short_sptr make_interleaved_byte_to_complex_short();
 

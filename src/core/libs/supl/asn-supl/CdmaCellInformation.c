@@ -206,42 +206,42 @@ memb_refSeconds_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_refNID_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_REF_NID_CONSTR_2 = {
 	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_refSID_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_REF_SID_CONSTR_3 = {
 	{ APC_CONSTRAINED,	 15,  15,  0,  32767 }	/* (0..32767) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_refBASEID_constr_4 = {
+static asn_per_constraints_t ASN_PER_MEMB_REF_BASEID_CONSTR_4 = {
 	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_refBASELAT_constr_5 = {
+static asn_per_constraints_t ASN_PER_MEMB_REF_BASELAT_CONSTR_5 = {
 	{ APC_CONSTRAINED,	 22, -1,  0,  4194303 }	/* (0..4194303) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_reBASELONG_constr_6 = {
+static asn_per_constraints_t ASN_PER_MEMB_RE_BASELONG_CONSTR_6 = {
 	{ APC_CONSTRAINED,	 23, -1,  0,  8388607 }	/* (0..8388607) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_refREFPN_constr_7 = {
+static asn_per_constraints_t ASN_PER_MEMB_REF_REFPN_CONSTR_7 = {
 	{ APC_CONSTRAINED,	 9,  9,  0,  511 }	/* (0..511) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_refWeekNumber_constr_8 = {
+static asn_per_constraints_t ASN_PER_MEMB_REF_WEEK_NUMBER_CONSTR_8 = {
 	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_refSeconds_constr_9 = {
+static asn_per_constraints_t ASN_PER_MEMB_REF_SECONDS_CONSTR_9 = {
 	{ APC_CONSTRAINED,	 22, -1,  0,  4194303 }	/* (0..4194303) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -252,7 +252,7 @@ static asn_TYPE_member_t asn_MBR_CdmaCellInformation_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_refNID_constraint_1,
-		&asn_PER_memb_refNID_constr_2,
+		&ASN_PER_MEMB_REF_NID_CONSTR_2,
 		0,
 		"refNID"
 		},
@@ -261,7 +261,7 @@ static asn_TYPE_member_t asn_MBR_CdmaCellInformation_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_refSID_constraint_1,
-		&asn_PER_memb_refSID_constr_3,
+		&ASN_PER_MEMB_REF_SID_CONSTR_3,
 		0,
 		"refSID"
 		},
@@ -270,7 +270,7 @@ static asn_TYPE_member_t asn_MBR_CdmaCellInformation_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_refBASEID_constraint_1,
-		&asn_PER_memb_refBASEID_constr_4,
+		&ASN_PER_MEMB_REF_BASEID_CONSTR_4,
 		0,
 		"refBASEID"
 		},
@@ -279,7 +279,7 @@ static asn_TYPE_member_t asn_MBR_CdmaCellInformation_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_refBASELAT_constraint_1,
-		&asn_PER_memb_refBASELAT_constr_5,
+		&ASN_PER_MEMB_REF_BASELAT_CONSTR_5,
 		0,
 		"refBASELAT"
 		},
@@ -288,7 +288,7 @@ static asn_TYPE_member_t asn_MBR_CdmaCellInformation_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_reBASELONG_constraint_1,
-		&asn_PER_memb_reBASELONG_constr_6,
+		&ASN_PER_MEMB_RE_BASELONG_CONSTR_6,
 		0,
 		"reBASELONG"
 		},
@@ -297,7 +297,7 @@ static asn_TYPE_member_t asn_MBR_CdmaCellInformation_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_refREFPN_constraint_1,
-		&asn_PER_memb_refREFPN_constr_7,
+		&ASN_PER_MEMB_REF_REFPN_CONSTR_7,
 		0,
 		"refREFPN"
 		},
@@ -306,7 +306,7 @@ static asn_TYPE_member_t asn_MBR_CdmaCellInformation_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_refWeekNumber_constraint_1,
-		&asn_PER_memb_refWeekNumber_constr_8,
+		&ASN_PER_MEMB_REF_WEEK_NUMBER_CONSTR_8,
 		0,
 		"refWeekNumber"
 		},
@@ -315,7 +315,7 @@ static asn_TYPE_member_t asn_MBR_CdmaCellInformation_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_refSeconds_constraint_1,
-		&asn_PER_memb_refSeconds_constr_9,
+		&ASN_PER_MEMB_REF_SECONDS_CONSTR_9,
 		0,
 		"refSeconds"
 		},

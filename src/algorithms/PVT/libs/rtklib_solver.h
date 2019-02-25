@@ -62,6 +62,7 @@
 #include "gnss_synchro.h"
 #include "gps_cnav_navigation_message.h"
 #include "gps_navigation_message.h"
+#include "monitor_pvt.h"
 #include "pvt_solution.h"
 #include "rtklib_rtkpos.h"
 #include <array>
@@ -73,7 +74,7 @@
 /*!
  * \brief This class implements a simple PVT Least Squares solution
  */
-class rtklib_solver : public Pvt_Solution
+class Rtklib_Solver : public Pvt_Solution
 {
 private:
     rtk_t rtk_;
@@ -85,18 +86,20 @@ private:
     bool d_flag_dump_mat_enabled;
     int d_nchannels;  // Number of available channels for positioning
     std::array<double, 4> dop_;
+    Monitor_Pvt monitor_pvt;
 
 public:
     sol_t pvt_sol;
     ssat_t pvt_ssat[MAXSAT];
-    rtklib_solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, const rtk_t& rtk);
-    ~rtklib_solver();
+    Rtklib_Solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, const rtk_t& rtk);
+    ~Rtklib_Solver();
 
     bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, bool flag_averaging);
     double get_hdop() const;
     double get_vdop() const;
     double get_pdop() const;
     double get_gdop() const;
+    Monitor_Pvt get_monitor_pvt() const;
 
     std::map<int, Galileo_Ephemeris> galileo_ephemeris_map;            //!< Map storing new Galileo_Ephemeris
     std::map<int, Gps_Ephemeris> gps_ephemeris_map;                    //!< Map storing new GPS_Ephemeris

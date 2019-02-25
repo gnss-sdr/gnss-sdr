@@ -90,7 +90,7 @@ private:
 
     // rtl_tcp settings
     std::string address_;
-    short port_;
+    int16_t port_;
     bool AGC_enabled_;
     double sample_rate_;
     bool flip_iq_;
@@ -105,7 +105,7 @@ private:
 
     std::string item_type_;
     size_t item_size_;
-    long samples_;
+    uint64_t samples_;
     bool dump_;
     std::string dump_filename_;
 

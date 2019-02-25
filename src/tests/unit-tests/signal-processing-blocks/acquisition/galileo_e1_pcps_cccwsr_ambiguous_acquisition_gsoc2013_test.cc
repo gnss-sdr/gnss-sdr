@@ -31,16 +31,6 @@
  */
 
 
-#include <boost/shared_ptr.hpp>
-#include <gnuradio/analog/sig_source_waveform.h>
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/top_block.h>
-#include <chrono>
-#ifdef GR_GREATER_38
-#include <gnuradio/analog/sig_source.h>
-#else
-#include <gnuradio/analog/sig_source_c.h>
-#endif
 #include "fir_filter.h"
 #include "galileo_e1_pcps_cccwsr_ambiguous_acquisition.h"
 #include "gen_signal_source.h"
@@ -50,24 +40,36 @@
 #include "in_memory_configuration.h"
 #include "signal_generator.h"
 #include "signal_generator_c.h"
+#include <boost/shared_ptr.hpp>
+#include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/msg_queue.h>
+#include <gnuradio/top_block.h>
+#include <chrono>
+#include <thread>
+#include <utility>
+#ifdef GR_GREATER_38
+#include <gnuradio/analog/sig_source.h>
+#else
+#include <gnuradio/analog/sig_source_c.h>
+#endif
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx;
 
-typedef boost::shared_ptr<GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx> GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx_sptr;
+using GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx_sptr = boost::shared_ptr<GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx>;
 
-GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx_sptr GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx_make(concurrent_queue<int>& queue);
+GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx_sptr GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx_make(Concurrent_Queue<int>& queue);
 
 
 class GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx : public gr::block
 {
 private:
-    friend GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx_sptr GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx_make(concurrent_queue<int>& queue);
+    friend GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx_sptr GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx_make(Concurrent_Queue<int>& queue);
     void msg_handler_events(pmt::pmt_t msg);
-    GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx(concurrent_queue<int>& queue);
-    concurrent_queue<int>& channel_internal_queue;
+    GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx(Concurrent_Queue<int>& queue);
+    Concurrent_Queue<int>& channel_internal_queue;
 
 public:
     int rx_message;
@@ -75,7 +77,7 @@ public:
 };
 
 
-GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx_sptr GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx_make(concurrent_queue<int>& queue)
+GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx_sptr GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx_make(Concurrent_Queue<int>& queue)
 {
     return GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx_sptr(new GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx(queue));
 }
@@ -85,7 +87,7 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx::msg_handler_events(pmt:
 {
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
             channel_internal_queue.push(rx_message);
         }
@@ -97,16 +99,14 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx::msg_handler_events(pmt:
 }
 
 
-GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx::GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx(concurrent_queue<int>& queue) : gr::block("GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue)
+GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx::GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx(Concurrent_Queue<int>& queue) : gr::block("GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue)
 {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"), boost::bind(&GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx::msg_handler_events, this, _1));
     rx_message = 0;
 }
 
-GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx::~GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx()
-{
-}
+GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx::~GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx() = default;
 
 
 // ###########################################################
@@ -124,9 +124,7 @@ protected:
         init();
     }
 
-    ~GalileoE1PcpsCccwsrAmbiguousAcquisitionTest()
-    {
-    }
+    ~GalileoE1PcpsCccwsrAmbiguousAcquisitionTest() = default;
 
     void init();
     void config_1();
@@ -136,7 +134,7 @@ protected:
     void process_message();
     void stop_queue();
 
-    concurrent_queue<int> channel_internal_queue;
+    Concurrent_Queue<int> channel_internal_queue;
     gr::msg_queue::sptr queue;
     gr::top_block_sptr top_block;
     std::shared_ptr<GalileoE1PcpsCccwsrAmbiguousAcquisition> acquisition;
@@ -146,7 +144,7 @@ protected:
     size_t item_size;
     bool stop;
     int message;
-    boost::thread ch_thread;
+    std::thread ch_thread;
 
     unsigned int integration_time_ms = 0;
     unsigned int fs_in = 0;
@@ -349,7 +347,7 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::config_2()
 void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::start_queue()
 {
     stop = false;
-    ch_thread = boost::thread(&GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::wait_message, this);
+    ch_thread = std::thread(&GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::wait_message, this);
 }
 
 
@@ -551,16 +549,10 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResults)
                 {
                     EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
                 }
-#ifdef OLD_BOOST
+
             ASSERT_NO_THROW({
-                ch_thread.timed_join(boost::posix_time::seconds(1));
+                ch_thread.join();
             }) << "Failure while waiting the queue to stop";
-#endif
-#ifndef OLD_BOOST
-            ASSERT_NO_THROW({
-                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-            }) << "Failure while waiting the queue to stop";
-#endif
         }
 }
 

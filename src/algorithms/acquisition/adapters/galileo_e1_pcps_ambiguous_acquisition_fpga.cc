@@ -105,7 +105,7 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     //   dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
     //   acq_parameters.dump_filename = dump_filename_;
     //--- Find number of samples per spreading code (4 ms)  -----------------
-    auto code_length = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));
+    auto code_length = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
     //acq_parameters.samples_per_code = code_length_;
     //int samples_per_ms = static_cast<int>(std::round(static_cast<double>(fs_in_) * 0.001));
     //acq_parameters.samples_per_ms = samples_per_ms;
@@ -117,8 +117,8 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     //        }
 
     //printf("fs_in = %d\n", fs_in);
-    //printf("Galileo_E1_B_CODE_LENGTH_CHIPS = %f\n", Galileo_E1_B_CODE_LENGTH_CHIPS);
-    //printf("Galileo_E1_CODE_CHIP_RATE_HZ = %f\n", Galileo_E1_CODE_CHIP_RATE_HZ);
+    //printf("GALILEO_E1_B_CODE_LENGTH_CHIPS = %f\n", GALILEO_E1_B_CODE_LENGTH_CHIPS);
+    //printf("GALILEO_E1_CODE_CHIP_RATE_HZ = %f\n", GALILEO_E1_CODE_CHIP_RATE_HZ);
     //printf("acq adapter code_length = %d\n", code_length);
     acq_parameters.code_length = code_length;
     // The FPGA can only use FFT lengths that are a power of two.
@@ -136,19 +136,19 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     acq_parameters.device_name = device_name;
     acq_parameters.samples_per_ms = nsamples_total / sampled_ms;
     acq_parameters.samples_per_code = nsamples_total;
-    acq_parameters.excludelimit = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / Galileo_E1_CODE_CHIP_RATE_HZ));
+    acq_parameters.excludelimit = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / GALILEO_E1_CODE_CHIP_RATE_HZ));
 
     // compute all the GALILEO E1 PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
     auto* fft_if = new gr::fft::fft_complex(nsamples_total, true);  // Direct FFT
     auto* code = new std::complex<float>[nsamples_total];           // buffer for the local code
     auto* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-    d_all_fft_codes_ = new lv_16sc_t[nsamples_total * Galileo_E1_NUMBER_OF_CODES];  // memory containing all the possible fft codes for PRN 0 to 32
+    d_all_fft_codes_ = new lv_16sc_t[nsamples_total * GALILEO_E1_NUMBER_OF_CODES];  // memory containing all the possible fft codes for PRN 0 to 32
     float max;                                                                      // temporary maxima search
 
     //int tmp_re, tmp_im;
 
-    for (unsigned int PRN = 1; PRN <= Galileo_E1_NUMBER_OF_CODES; PRN++)
+    for (unsigned int PRN = 1; PRN <= GALILEO_E1_NUMBER_OF_CODES; PRN++)
         {
 
         //code_ = new gr_complex[vector_length_];
@@ -288,7 +288,7 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
         }
 
 
-    //    for (unsigned int PRN = 1; PRN <= Galileo_E1_NUMBER_OF_CODES; PRN++)
+    //    for (unsigned int PRN = 1; PRN <= GALILEO_E1_NUMBER_OF_CODES; PRN++)
     //        {
     //                    // debug
     //                    char filename2[25];

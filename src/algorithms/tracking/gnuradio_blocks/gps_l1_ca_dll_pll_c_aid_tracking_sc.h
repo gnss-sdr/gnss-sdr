@@ -52,8 +52,7 @@
 
 class gps_l1_ca_dll_pll_c_aid_tracking_sc;
 
-typedef boost::shared_ptr<gps_l1_ca_dll_pll_c_aid_tracking_sc>
-    gps_l1_ca_dll_pll_c_aid_tracking_sc_sptr;
+using gps_l1_ca_dll_pll_c_aid_tracking_sc_sptr = boost::shared_ptr<gps_l1_ca_dll_pll_c_aid_tracking_sc>;
 
 gps_l1_ca_dll_pll_c_aid_tracking_sc_sptr
 gps_l1_ca_dll_pll_c_aid_make_tracking_sc(
@@ -127,7 +126,7 @@ private:
     //gr_complex* d_correlator_outs;
     lv_16sc_t* d_correlator_outs_16sc;
     //cpu_multicorrelator multicorrelator_cpu;
-    cpu_multicorrelator_16sc multicorrelator_cpu_16sc;
+    Cpu_Multicorrelator_16sc multicorrelator_cpu_16sc;
 
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;

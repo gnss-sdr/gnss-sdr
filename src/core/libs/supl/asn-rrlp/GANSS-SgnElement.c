@@ -181,37 +181,37 @@ memb_adr_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_cNo_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_C_NO_CONSTR_3 = {
 	{ APC_CONSTRAINED,	 6,  6,  0,  63 }	/* (0..63) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_carrierQualityInd_constr_5 = {
+static asn_per_constraints_t ASN_PER_MEMB_CARRIER_QUALITY_IND_CONSTR_5 = {
 	{ APC_CONSTRAINED,	 2,  2,  0,  3 }	/* (0..3) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_codePhase_constr_6 = {
+static asn_per_constraints_t ASN_PER_MEMB_CODE_PHASE_CONSTR_6 = {
 	{ APC_CONSTRAINED,	 21, -1,  0,  2097151 }	/* (0..2097151) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_integerCodePhase_constr_7 = {
+static asn_per_constraints_t ASN_PER_MEMB_INTEGER_CODE_PHASE_CONSTR_7 = {
 	{ APC_CONSTRAINED,	 6,  6,  0,  63 }	/* (0..63) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_codePhaseRMSError_constr_8 = {
+static asn_per_constraints_t ASN_PER_MEMB_CODE_PHASE_RMS_ERROR_CONSTR_8 = {
 	{ APC_CONSTRAINED,	 6,  6,  0,  63 }	/* (0..63) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_doppler_constr_9 = {
+static asn_per_constraints_t ASN_PER_MEMB_DOPPLER_CONSTR_9 = {
 	{ APC_CONSTRAINED,	 16,  16, -32768,  32767 }	/* (-32768..32767) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_adr_constr_10 = {
+static asn_per_constraints_t ASN_PER_MEMB_ADR_CONSTR_10 = {
 	{ APC_CONSTRAINED,	 25, -1,  0,  33554431 }	/* (0..33554431) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -231,7 +231,7 @@ static asn_TYPE_member_t asn_MBR_GANSS_SgnElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_cNo_constraint_1,
-		&asn_PER_memb_cNo_constr_3,
+		&ASN_PER_MEMB_C_NO_CONSTR_3,
 		0,
 		"cNo"
 		},
@@ -249,7 +249,7 @@ static asn_TYPE_member_t asn_MBR_GANSS_SgnElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_carrierQualityInd_constraint_1,
-		&asn_PER_memb_carrierQualityInd_constr_5,
+		&ASN_PER_MEMB_CARRIER_QUALITY_IND_CONSTR_5,
 		0,
 		"carrierQualityInd"
 		},
@@ -258,7 +258,7 @@ static asn_TYPE_member_t asn_MBR_GANSS_SgnElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_codePhase_constraint_1,
-		&asn_PER_memb_codePhase_constr_6,
+		&ASN_PER_MEMB_CODE_PHASE_CONSTR_6,
 		0,
 		"codePhase"
 		},
@@ -267,7 +267,7 @@ static asn_TYPE_member_t asn_MBR_GANSS_SgnElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_integerCodePhase_constraint_1,
-		&asn_PER_memb_integerCodePhase_constr_7,
+		&ASN_PER_MEMB_INTEGER_CODE_PHASE_CONSTR_7,
 		0,
 		"integerCodePhase"
 		},
@@ -276,7 +276,7 @@ static asn_TYPE_member_t asn_MBR_GANSS_SgnElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_codePhaseRMSError_constraint_1,
-		&asn_PER_memb_codePhaseRMSError_constr_8,
+		&ASN_PER_MEMB_CODE_PHASE_RMS_ERROR_CONSTR_8,
 		0,
 		"codePhaseRMSError"
 		},
@@ -285,7 +285,7 @@ static asn_TYPE_member_t asn_MBR_GANSS_SgnElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_doppler_constraint_1,
-		&asn_PER_memb_doppler_constr_9,
+		&ASN_PER_MEMB_DOPPLER_CONSTR_9,
 		0,
 		"doppler"
 		},
@@ -294,7 +294,7 @@ static asn_TYPE_member_t asn_MBR_GANSS_SgnElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_adr_constraint_1,
-		&asn_PER_memb_adr_constr_10,
+		&ASN_PER_MEMB_ADR_CONSTR_10,
 		0,
 		"adr"
 		},

@@ -193,7 +193,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     delete fft_if;
     delete[] fft_codes_padded;
 
-    acq_parameters.total_block_exp = 10;
+    acq_parameters.total_block_exp = 14;
 
     acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters);
     DLOG(INFO) << "acquisition(" << acquisition_fpga_->unique_id() << ")";

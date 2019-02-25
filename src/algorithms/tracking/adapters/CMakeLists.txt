@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -25,10 +25,6 @@ if(ENABLE_CUDA)
     set(OPT_TRACKING_ADAPTERS_HEADERS
         ${OPT_TRACKING_ADAPTERS_HEADERS}
         gps_l1_ca_dll_pll_tracking_gpu.h
-    )
-    set(OPT_TRACKING_INCLUDE_DIRS
-        ${OPT_TRACKING_INCLUDE_DIRS}
-        ${CUDA_INCLUDE_DIRS}
     )
 endif()
 
@@ -87,34 +83,49 @@ set(TRACKING_ADAPTER_HEADERS
     ${OPT_TRACKING_ADAPTERS_HEADERS}
 )
 
-include_directories(
-     ${CMAKE_CURRENT_SOURCE_DIR}
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/gnuradio_blocks
-     ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${ARMADILLO_INCLUDE_DIRS}
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-     ${VOLK_GNSSSDR_INCLUDE_DIRS}
-     ${OPT_TRACKING_INCLUDE_DIRS}
-)
-
 list(SORT TRACKING_ADAPTER_HEADERS)
 list(SORT TRACKING_ADAPTER_SOURCES)
+
+source_group(Headers FILES ${TRACKING_ADAPTER_HEADERS})
 
 add_library(tracking_adapters
     ${TRACKING_ADAPTER_SOURCES}
     ${TRACKING_ADAPTER_HEADERS}
 )
 
-source_group(Headers FILES ${TRACKING_ADAPTER_HEADERS})
-
 target_link_libraries(tracking_adapters
-    tracking_gr_blocks
-    gnss_sp_libs
-    gnss_sdr_flags
+    PUBLIC
+        tracking_gr_blocks
+        algorithms_libs
+        gnss_sdr_flags
+)
+
+target_include_directories(tracking_adapters
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+)
+
+if(ENABLE_CUDA)
+    target_link_libraries(tracking_adapters
+        PUBLIC
+            ${CUDA_LIBRARIES}
+    )
+    target_include_directories(tracking_adapters
+        PUBLIC
+            ${CUDA_INCLUDE_DIRS}
+    )
+endif()
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(tracking_adapters
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+set_property(TARGET tracking_adapters
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

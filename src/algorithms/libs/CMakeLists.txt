@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -22,7 +22,6 @@ set(GNSS_SPLIBS_SOURCES
     gps_l2c_signal.cc
     gps_l5_signal.cc
     galileo_e1_signal_processing.cc
-    gnss_sdr_valve.cc
     gnss_sdr_sample_counter.cc
     gnss_signal_processing.cc
     gps_sdr_signal_processing.cc
@@ -41,13 +40,13 @@ set(GNSS_SPLIBS_SOURCES
     conjugate_ic.cc
     gnss_sdr_create_directory.cc
     geofunctions.cc
+    rtcm.cc
 )
 
 set(GNSS_SPLIBS_HEADERS
     gps_l2c_signal.h
     gps_l5_signal.h
     galileo_e1_signal_processing.h
-    gnss_sdr_valve.h
     gnss_sdr_sample_counter.h
     gnss_signal_processing.h
     gps_sdr_signal_processing.h
@@ -67,6 +66,7 @@ set(GNSS_SPLIBS_HEADERS
     gnss_sdr_create_directory.h
     gnss_circular_deque.h
     geofunctions.h
+    rtcm.h
 )
 
 if(ENABLE_FPGA)
@@ -90,20 +90,6 @@ if(OPENCL_FOUND)
     )
 endif()
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${CMAKE_SOURCE_DIR}/src/core/receiver
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces
-    ${Boost_INCLUDE_DIRS}
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${ARMADILLO_INCLUDE_DIRS}
-    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-    ${GNURADIO_BLOCKS_INCLUDE_DIRS}
-    ${VOLK_INCLUDE_DIRS}
-    ${VOLK_GNSSSDR_INCLUDE_DIRS}
-)
 
 if(OPENCL_FOUND)
     include_directories(${OPENCL_INCLUDE_DIRS})
@@ -114,38 +100,94 @@ if(OPENCL_FOUND)
     endif()
 endif()
 
-add_definitions(-DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}")
-
 list(SORT GNSS_SPLIBS_HEADERS)
 list(SORT GNSS_SPLIBS_SOURCES)
 
-add_library(gnss_sp_libs ${GNSS_SPLIBS_SOURCES} ${GNSS_SPLIBS_HEADERS})
 source_group(Headers FILES ${GNSS_SPLIBS_HEADERS})
 
-target_link_libraries(gnss_sp_libs
-    ${GNURADIO_RUNTIME_LIBRARIES}
-    ${VOLK_LIBRARIES} ${ORC_LIBRARIES}
-    ${VOLK_GNSSSDR_LIBRARIES}  ${ORC_LIBRARIES}
-    ${GFlags_LIBS}
-    ${ARMADILLO_LIBRARIES}
-    ${GNURADIO_BLOCKS_LIBRARIES}
-    ${GNURADIO_FFT_LIBRARIES}
-    ${GNURADIO_FILTER_LIBRARIES}
-    ${OPT_LIBRARIES}
-    gnss_rx
+add_library(algorithms_libs ${GNSS_SPLIBS_SOURCES} ${GNSS_SPLIBS_HEADERS})
+
+target_link_libraries(algorithms_libs
+    PUBLIC
+        Armadillo::armadillo
+        Boost::boost
+        Gflags::gflags
+        Gnuradio::runtime
+        Gnuradio::blocks
+        Volk::volk ${ORC_LIBRARIES}
+        Volkgnsssdr::volkgnsssdr
+        core_system_parameters
+        ${OPT_LIBRARIES}
+    PRIVATE
+        Boost::filesystem
+        Gflags::gflags
+        Glog::glog
 )
 
-if(NOT VOLKGNSSSDR_FOUND)
-    add_dependencies(gnss_sp_libs volk_gnsssdr_module
-        armadillo-${armadillo_RELEASE})
-else()
-    add_dependencies(gnss_sp_libs armadillo-${armadillo_RELEASE})
+target_include_directories(algorithms_libs
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+        ${CMAKE_SOURCE_DIR}/src/core/receiver
+)
+
+target_compile_definitions(algorithms_libs
+    PUBLIC -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}"
+)
+
+set_property(TARGET algorithms_libs
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)
+
+if(OS_IS_MACOSX)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")  # not AppleClang
+        target_compile_definitions(algorithms_libs
+            PUBLIC
+                -DBOOST_ASIO_HAS_STD_STRING_VIEW
+        )
+    endif()
 endif()
 
-if(${GFLAGS_GREATER_20})
-    add_definitions(-DGFLAGS_GREATER_2_0=1)
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(algorithms_libs
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
 endif()
+
+###############################################################################
+
+source_group(Headers FILES gnss_sdr_flags.h)
 
 add_library(gnss_sdr_flags gnss_sdr_flags.cc gnss_sdr_flags.h)
-source_group(Headers FILES gnss_sdr_flags.h)
-target_link_libraries(gnss_sdr_flags ${GFlags_LIBS})
+
+target_link_libraries(gnss_sdr_flags
+    PUBLIC
+        Gflags::gflags
+    PRIVATE
+        Boost::filesystem
+)
+
+if(${GFLAGS_GREATER_20})
+    target_compile_definitions(gnss_sdr_flags PRIVATE -DGFLAGS_GREATER_2_0=1)
+endif()
+
+target_compile_definitions(gnss_sdr_flags
+    PRIVATE -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}"
+)
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(gnss_sdr_flags
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+set_property(TARGET gnss_sdr_flags
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

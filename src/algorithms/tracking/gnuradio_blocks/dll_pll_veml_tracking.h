@@ -47,7 +47,7 @@
 
 class dll_pll_veml_tracking;
 
-typedef boost::shared_ptr<dll_pll_veml_tracking> dll_pll_veml_tracking_sptr;
+using dll_pll_veml_tracking_sptr = boost::shared_ptr<dll_pll_veml_tracking>;
 
 dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_);
 
@@ -121,8 +121,8 @@ private:
     float *d_data_code;
     float *d_local_code_shift_chips;
     float *d_prompt_data_shift;
-    cpu_multicorrelator_real_codes multicorrelator_cpu;
-    cpu_multicorrelator_real_codes correlator_data_cpu;  //for data channel
+    Cpu_Multicorrelator_Real_Codes multicorrelator_cpu;
+    Cpu_Multicorrelator_Real_Codes correlator_data_cpu;  //for data channel
     /*  TODO: currently the multicorrelator does not support adding extra correlator
         with different local code, thus we need extra multicorrelator instance.
         Implement this functionality inside multicorrelator class

@@ -1,4 +1,4 @@
-# Copyright (C) 2011-2018 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2011-2019 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -53,4 +53,15 @@ find_library(
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GRDBFCTTC DEFAULT_MSG GR_DBFCTTC_LIBRARIES GR_DBFCTTC_INCLUDE_DIRS)
+
+if(GRDBFCTTC_FOUND AND NOT TARGET Gnuradio::dbfcttc)
+    add_library(Gnuradio::dbfcttc SHARED IMPORTED)
+    set_target_properties(Gnuradio::dbfcttc PROPERTIES
+        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+        IMPORTED_LOCATION "${GR_DBFCTTC_LIBRARIES}"
+        INTERFACE_INCLUDE_DIRECTORIES "${GR_DBFCTTC_INCLUDE_DIRS}"
+        INTERFACE_LINK_LIBRARIES "${GR_DBFCTTC_LIBRARIES}"
+    )
+endif()
+
 mark_as_advanced(GR_DBFCTTC_LIBRARIES GR_DBFCTTC_INCLUDE_DIRS)

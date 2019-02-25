@@ -49,8 +49,14 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs, const Gnss_Synchro& gnss_synchro
             break;
         }
     double CN0_dB_Hz_est = gnss_synchro.CN0_dB_hz;
-    if (CN0_dB_Hz_est > 63.75) CN0_dB_Hz_est = 63.75;
-    if (CN0_dB_Hz_est < 0.0) CN0_dB_Hz_est = 0.0;
+    if (CN0_dB_Hz_est > 63.75)
+        {
+            CN0_dB_Hz_est = 63.75;
+        }
+    if (CN0_dB_Hz_est < 0.0)
+        {
+            CN0_dB_Hz_est = 0.0;
+        }
     auto CN0_dB_Hz = static_cast<unsigned char>(std::round(CN0_dB_Hz_est / 0.25));
     rtklib_obs.SNR[band] = CN0_dB_Hz;
     //Galileo is the third satellite system for RTKLIB, so, add the required offset to discriminate Galileo ephemeris
@@ -382,6 +388,7 @@ alm_t alm_to_rtklib(const Gps_Almanac& gps_alm)
     rtklib_alm.week = gps_alm.i_WNa;
     gtime_t toa;
     toa.time = gps_alm.i_Toa;
+    toa.sec = 0.0;
     rtklib_alm.toa = toa;
     rtklib_alm.A = gps_alm.d_sqrt_A * gps_alm.d_sqrt_A;
     rtklib_alm.e = gps_alm.d_e_eccentricity;
@@ -410,6 +417,7 @@ alm_t alm_to_rtklib(const Galileo_Almanac& gal_alm)
     rtklib_alm.week = gal_alm.i_WNa;
     gtime_t toa;
     toa.time = gal_alm.i_Toa;
+    toa.sec = 0.0;
     rtklib_alm.toa = toa;
     rtklib_alm.A = 5440.588203494 + gal_alm.d_Delta_sqrt_A;
     rtklib_alm.A = rtklib_alm.A * rtklib_alm.A;

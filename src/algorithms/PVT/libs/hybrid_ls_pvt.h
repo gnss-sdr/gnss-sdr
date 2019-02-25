@@ -46,7 +46,7 @@
 /*!
  * \brief This class implements a simple PVT Least Squares solution
  */
-class hybrid_ls_pvt : public Ls_Pvt
+class Hybrid_Ls_Pvt : public Ls_Pvt
 {
 private:
     int count_valid_position;
@@ -57,10 +57,10 @@ private:
     double d_galileo_current_time;
 
 public:
-    hybrid_ls_pvt(int nchannels, std::string dump_filename, bool flag_dump_to_file);
-    ~hybrid_ls_pvt();
+    Hybrid_Ls_Pvt(int nchannels, std::string dump_filename, bool flag_dump_to_file);
+    ~Hybrid_Ls_Pvt();
 
-    bool get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, double Rx_time, bool flag_averaging);
+    bool get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, double hybrid_current_time, bool flag_averaging);
 
     std::map<int, Galileo_Ephemeris> galileo_ephemeris_map;  //!< Map storing new Galileo_Ephemeris
     std::map<int, Gps_Ephemeris> gps_ephemeris_map;          //!< Map storing new GPS_Ephemeris

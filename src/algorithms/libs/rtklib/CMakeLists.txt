@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -16,7 +16,6 @@
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
-add_definitions(-DGNSS_SDR_VERSION="${VERSION}")
 
 set(RTKLIB_LIB_SOURCES
     rtklib_rtkcmn.cc
@@ -59,33 +58,28 @@ set(RTKLIB_LIB_HEADERS
     rtklib.h
 )
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces
-    ${CMAKE_SOURCE_DIR}/src/core/receiver
-    ${Boost_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${GLOG_INCLUDE_DIRS}
-)
-
 list(SORT RTKLIB_LIB_HEADERS)
 list(SORT RTKLIB_LIB_SOURCES)
 
-add_library(rtklib_lib ${RTKLIB_LIB_SOURCES} ${RTKLIB_LIB_HEADERS})
 source_group(Headers FILES ${RTKLIB_LIB_HEADERS})
-add_dependencies(rtklib_lib glog-${glog_RELEASE})
+
+add_library(algorithms_libs_rtklib ${RTKLIB_LIB_SOURCES} ${RTKLIB_LIB_HEADERS})
+
+target_link_libraries(algorithms_libs_rtklib
+    PUBLIC
+        core_system_parameters
+    PRIVATE
+        Gflags::gflags
+        Glog::glog
+)
 
 if(OS_IS_MACOSX)
-    set(MAC_LIBRARIES "-framework Accelerate")
+    target_link_libraries(algorithms_libs_rtklib PRIVATE "-framework Accelerate")
+else()
+    target_link_libraries(algorithms_libs_rtklib PRIVATE ${LAPACK} ${BLAS})
 endif()
 
-target_link_libraries(
-    rtklib_lib
-    ${Boost_LIBRARIES}
-    ${GFlags_LIBS}
-    ${GLOG_LIBRARIES}
-    ${BLAS}
-    ${LAPACK}
-    ${MAC_LIBRARIES}
+set_property(TARGET algorithms_libs_rtklib
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

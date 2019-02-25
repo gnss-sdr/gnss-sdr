@@ -96,27 +96,27 @@ public:
         return repeat_;
     }
 
-    inline long sampling_frequency() const
+    inline int64_t sampling_frequency() const
     {
         return sampling_frequency_;
     }
 
-    inline long samples() const
+    inline uint64_t samples() const
     {
         return samples_;
     }
 
 private:
-    unsigned long long samples_;
-    long sampling_frequency_;
+    uint64_t samples_;
+    int64_t sampling_frequency_;
     std::string filename_;
     std::string item_type_;
     bool repeat_;
     bool dump_;
     std::string dump_filename_;
     std::string role_;
-    unsigned int in_streams_;
-    unsigned int out_streams_;
+    uint32_t in_streams_;
+    uint32_t out_streams_;
     gr::blocks::file_source::sptr file_source_;
     unpack_byte_2bit_samples_sptr unpack_byte_;
     boost::shared_ptr<gr::block> valve_;

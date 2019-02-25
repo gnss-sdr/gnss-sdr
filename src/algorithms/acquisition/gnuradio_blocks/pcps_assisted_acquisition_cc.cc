@@ -33,16 +33,16 @@
 #include "pcps_assisted_acquisition_cc.h"
 #include "GPS_L1_CA.h"
 #include "concurrent_map.h"
-#include "control_message_factory.h"
 #include "gps_acq_assist.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <exception>
 #include <sstream>
 #include <utility>
 
-extern concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
+extern Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
 using google::LogMessage;
 
@@ -132,9 +132,20 @@ pcps_assisted_acquisition_cc::~pcps_assisted_acquisition_cc()
     volk_gnsssdr_free(d_fft_codes);
     delete d_ifft;
     delete d_fft_if;
-    if (d_dump)
+    try
         {
-            d_dump_file.close();
+            if (d_dump)
+                {
+                    d_dump_file.close();
+                }
+        }
+    catch (const std::ofstream::failure &e)
+        {
+            std::cerr << "Problem closing Acquisition dump file: " << d_dump_filename << '\n';
+        }
+    catch (const std::exception &e)
+        {
+            std::cerr << e.what() << '\n';
         }
 }
 
@@ -381,7 +392,10 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
     switch (d_state)
         {
         case 0:  // S0. StandBy
-            if (d_active == true) d_state = 1;
+            if (d_active == true)
+                {
+                    d_state = 1;
+                }
             d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
             consume_each(ninput_items[0]);
             break;

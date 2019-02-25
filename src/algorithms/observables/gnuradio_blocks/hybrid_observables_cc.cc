@@ -40,6 +40,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
+#include <exception>
 #include <iostream>
 #include <limits>
 #include <utility>
@@ -140,7 +141,14 @@ hybrid_observables_cc::~hybrid_observables_cc()
         }
     if (d_dump_mat)
         {
-            save_matfile();
+            try
+                {
+                    save_matfile();
+                }
+            catch (const std::exception &ex)
+                {
+                    LOG(WARNING) << "Error saving the .mat file: " << ex.what();
+                }
         }
 }
 
@@ -474,9 +482,9 @@ void hybrid_observables_cc::compute_pranges(std::vector<Gnss_Synchro> &data)
         {
             if (it->Flag_valid_word)
                 {
-                    double traveltime_s = (static_cast<double>(T_rx_TOW_ms) - it->interp_TOW_ms + GPS_STARTOFFSET_ms) / 1000.0;
+                    double traveltime_s = (static_cast<double>(T_rx_TOW_ms) - it->interp_TOW_ms + GPS_STARTOFFSET_MS) / 1000.0;
                     //todo: check what happens during the week rollover (TOW rollover at 604800000s)
-                    it->RX_time = (static_cast<double>(T_rx_TOW_ms) + GPS_STARTOFFSET_ms) / 1000.0;
+                    it->RX_time = (static_cast<double>(T_rx_TOW_ms) + GPS_STARTOFFSET_MS) / 1000.0;
                     it->Pseudorange_m = traveltime_s * SPEED_OF_LIGHT;
                     it->Flag_valid_pseudorange = true;
                     // debug code
@@ -568,7 +576,10 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
                         }
                 }
 
-            if (n_valid > 0) compute_pranges(epoch_data);
+            if (n_valid > 0)
+                {
+                    compute_pranges(epoch_data);
+                }
 
             for (uint32_t n = 0; n < d_nchannels_out; n++)
                 {

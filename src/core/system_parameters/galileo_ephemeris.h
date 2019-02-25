@@ -33,7 +33,6 @@
 #ifndef GNSS_SDR_GALILEO_EPHEMERIS_H_
 #define GNSS_SDR_GALILEO_EPHEMERIS_H_
 
-#include <boost/assign.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <cstdint>
 

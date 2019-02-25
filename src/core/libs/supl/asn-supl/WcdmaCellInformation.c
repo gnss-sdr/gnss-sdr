@@ -106,22 +106,22 @@ memb_primaryScramblingCode_constraint_1(asn_TYPE_descriptor_t *td, const void *s
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_refMCC_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_REF_MCC_CONSTR_2 = {
 	{ APC_CONSTRAINED,	 10,  10,  0,  999 }	/* (0..999) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_refMNC_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_REF_MNC_CONSTR_3 = {
 	{ APC_CONSTRAINED,	 10,  10,  0,  999 }	/* (0..999) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_refUC_constr_4 = {
+static asn_per_constraints_t ASN_PER_MEMB_REF_UC_CONSTR_4 = {
 	{ APC_CONSTRAINED,	 28, -1,  0,  268435455 }	/* (0..268435455) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_primaryScramblingCode_constr_6 = {
+static asn_per_constraints_t ASN_PER_MEMB_PRIMARY_SCRAMBLING_CODE_CONSTR_6 = {
 	{ APC_CONSTRAINED,	 9,  9,  0,  511 }	/* (0..511) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -132,7 +132,7 @@ static asn_TYPE_member_t asn_MBR_WcdmaCellInformation_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_refMCC_constraint_1,
-		&asn_PER_memb_refMCC_constr_2,
+		&ASN_PER_MEMB_REF_MCC_CONSTR_2,
 		0,
 		"refMCC"
 		},
@@ -141,7 +141,7 @@ static asn_TYPE_member_t asn_MBR_WcdmaCellInformation_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_refMNC_constraint_1,
-		&asn_PER_memb_refMNC_constr_3,
+		&ASN_PER_MEMB_REF_MNC_CONSTR_3,
 		0,
 		"refMNC"
 		},
@@ -150,7 +150,7 @@ static asn_TYPE_member_t asn_MBR_WcdmaCellInformation_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_refUC_constraint_1,
-		&asn_PER_memb_refUC_constr_4,
+		&ASN_PER_MEMB_REF_UC_CONSTR_4,
 		0,
 		"refUC"
 		},
@@ -168,7 +168,7 @@ static asn_TYPE_member_t asn_MBR_WcdmaCellInformation_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_primaryScramblingCode_constraint_1,
-		&asn_PER_memb_primaryScramblingCode_constr_6,
+		&ASN_PER_MEMB_PRIMARY_SCRAMBLING_CODE_CONSTR_6,
 		0,
 		"primaryScramblingCode"
 		},

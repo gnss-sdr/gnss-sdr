@@ -68,7 +68,10 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
     blocking_ = configuration_->property(role + ".blocking", true);
     acq_parameters.blocking = blocking_;
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
-    if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
+    if (FLAGS_doppler_max != 0)
+        {
+            doppler_max_ = FLAGS_doppler_max;
+        }
     acq_parameters.doppler_max = doppler_max_;
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);
     acq_parameters.sampled_ms = sampled_ms_;
@@ -81,7 +84,7 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
     acq_parameters.dump_filename = dump_filename_;
     //--- Find number of samples per spreading code -------------------------
-    code_length_ = static_cast<unsigned int>(std::round(static_cast<double>(fs_in_) / (BEIDOU_B1I_CODE_RATE_HZ / BEIDOU_B1I_CODE_LENGTH_CHIPS)));
+    code_length_ = static_cast<uint32_t>(std::round(static_cast<double>(fs_in_) / (BEIDOU_B1I_CODE_RATE_HZ / BEIDOU_B1I_CODE_LENGTH_CHIPS)));
 
     vector_length_ = code_length_ * sampled_ms_;
 
@@ -144,7 +147,7 @@ void BeidouB1iPcpsAcquisition::stop_acquisition()
 {
 }
 
-void BeidouB1iPcpsAcquisition::set_channel(unsigned int channel)
+void BeidouB1iPcpsAcquisition::set_channel(uint32_t channel)
 {
     channel_ = channel;
     acquisition_->set_channel(channel_);
@@ -170,7 +173,7 @@ void BeidouB1iPcpsAcquisition::set_threshold(float threshold)
 }
 
 
-void BeidouB1iPcpsAcquisition::set_doppler_max(unsigned int doppler_max)
+void BeidouB1iPcpsAcquisition::set_doppler_max(uint32_t doppler_max)
 {
     doppler_max_ = doppler_max;
 
@@ -178,7 +181,7 @@ void BeidouB1iPcpsAcquisition::set_doppler_max(unsigned int doppler_max)
 }
 
 
-void BeidouB1iPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
+void BeidouB1iPcpsAcquisition::set_doppler_step(uint32_t doppler_step)
 {
     doppler_step_ = doppler_step;
 
@@ -213,7 +216,7 @@ void BeidouB1iPcpsAcquisition::set_local_code()
 
     beidou_b1i_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
 
-    for (unsigned int i = 0; i < sampled_ms_; i++)
+    for (uint32_t i = 0; i < sampled_ms_; i++)
         {
             memcpy(&(code_[i * code_length_]), code,
                 sizeof(gr_complex) * code_length_);
@@ -239,7 +242,7 @@ void BeidouB1iPcpsAcquisition::set_state(int state)
 float BeidouB1iPcpsAcquisition::calculate_threshold(float pfa)
 {
     //Calculate the threshold
-    unsigned int frequency_bins = 0;
+    uint32_t frequency_bins = 0;
     /*
     for (int doppler = (int)(-doppler_max_); doppler <= (int)doppler_max_; doppler += doppler_step_)
         {
@@ -250,7 +253,7 @@ float BeidouB1iPcpsAcquisition::calculate_threshold(float pfa)
     frequency_bins = (2 * doppler_max_ + doppler_step_) / doppler_step_;
 
     DLOG(INFO) << "Channel " << channel_ << "  Pfa = " << pfa;
-    unsigned int ncells = vector_length_ * frequency_bins;
+    uint32_t ncells = vector_length_ * frequency_bins;
     double exponent = 1 / static_cast<double>(ncells);
     double val = pow(1.0 - pfa, exponent);
     auto lambda = static_cast<double>(vector_length_);
@@ -315,7 +318,7 @@ gr::basic_block_sptr BeidouB1iPcpsAcquisition::get_left_block()
         {
             return acquisition_;
         }
-    else if (item_type_ == "cshort")
+    if (item_type_ == "cshort")
         {
             return acquisition_;
         }

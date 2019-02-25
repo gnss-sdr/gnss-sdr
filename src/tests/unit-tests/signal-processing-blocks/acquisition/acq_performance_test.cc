@@ -52,6 +52,8 @@
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
 #include <gnuradio/blocks/skiphead.h>
 #include <gnuradio/top_block.h>
+#include <thread>
+#include <utility>
 
 
 DEFINE_string(config_file_ptest, std::string(""), "File containing alternative configuration parameters for the acquisition performance test.");
@@ -94,15 +96,15 @@ class AcqPerfTest_msg_rx;
 
 typedef boost::shared_ptr<AcqPerfTest_msg_rx> AcqPerfTest_msg_rx_sptr;
 
-AcqPerfTest_msg_rx_sptr AcqPerfTest_msg_rx_make(concurrent_queue<int>& queue);
+AcqPerfTest_msg_rx_sptr AcqPerfTest_msg_rx_make(Concurrent_Queue<int>& queue);
 
 class AcqPerfTest_msg_rx : public gr::block
 {
 private:
-    friend AcqPerfTest_msg_rx_sptr AcqPerfTest_msg_rx_make(concurrent_queue<int>& queue);
+    friend AcqPerfTest_msg_rx_sptr AcqPerfTest_msg_rx_make(Concurrent_Queue<int>& queue);
     void msg_handler_events(pmt::pmt_t msg);
-    AcqPerfTest_msg_rx(concurrent_queue<int>& queue);
-    concurrent_queue<int>& channel_internal_queue;
+    AcqPerfTest_msg_rx(Concurrent_Queue<int>& queue);
+    Concurrent_Queue<int>& channel_internal_queue;
 
 public:
     int rx_message;
@@ -110,7 +112,7 @@ public:
 };
 
 
-AcqPerfTest_msg_rx_sptr AcqPerfTest_msg_rx_make(concurrent_queue<int>& queue)
+AcqPerfTest_msg_rx_sptr AcqPerfTest_msg_rx_make(Concurrent_Queue<int>& queue)
 {
     return AcqPerfTest_msg_rx_sptr(new AcqPerfTest_msg_rx(queue));
 }
@@ -120,7 +122,7 @@ void AcqPerfTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
             channel_internal_queue.push(rx_message);
         }
@@ -132,7 +134,7 @@ void AcqPerfTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 }
 
 
-AcqPerfTest_msg_rx::AcqPerfTest_msg_rx(concurrent_queue<int>& queue) : gr::block("AcqPerfTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue)
+AcqPerfTest_msg_rx::AcqPerfTest_msg_rx(Concurrent_Queue<int>& queue) : gr::block("AcqPerfTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue)
 {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"), boost::bind(&AcqPerfTest_msg_rx::msg_handler_events, this, _1));
@@ -140,9 +142,7 @@ AcqPerfTest_msg_rx::AcqPerfTest_msg_rx(concurrent_queue<int>& queue) : gr::block
 }
 
 
-AcqPerfTest_msg_rx::~AcqPerfTest_msg_rx()
-{
-}
+AcqPerfTest_msg_rx::~AcqPerfTest_msg_rx() = default;
 
 // -----------------------------------------
 
@@ -173,21 +173,21 @@ protected:
                 cn0_vector = {0.0};
             }
 
-        if (implementation.compare("GPS_L1_CA_PCPS_Acquisition") == 0)
+        if (implementation == "GPS_L1_CA_PCPS_Acquisition")
             {
                 signal_id = "1C";
                 system_id = 'G';
                 coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
                 min_integration_ms = 1;
             }
-        else if (implementation.compare("GPS_L1_CA_PCPS_Acquisition_Fine_Doppler") == 0)
+        else if (implementation == "GPS_L1_CA_PCPS_Acquisition_Fine_Doppler")
             {
                 signal_id = "1C";
                 system_id = 'G';
                 coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
                 min_integration_ms = 1;
             }
-        else if (implementation.compare("Galileo_E1_PCPS_Ambiguous_Acquisition") == 0)
+        else if (implementation == "Galileo_E1_PCPS_Ambiguous_Acquisition")
             {
                 signal_id = "1B";
                 system_id = 'E';
@@ -201,21 +201,21 @@ protected:
                         coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
                     }
             }
-        else if (implementation.compare("GLONASS_L1_CA_PCPS_Acquisition") == 0)
+        else if (implementation == "GLONASS_L1_CA_PCPS_Acquisition")
             {
                 signal_id = "1G";
                 system_id = 'R';
                 coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
                 min_integration_ms = 1;
             }
-        else if (implementation.compare("GLONASS_L2_CA_PCPS_Acquisition") == 0)
+        else if (implementation == "GLONASS_L2_CA_PCPS_Acquisition")
             {
                 signal_id = "2G";
                 system_id = 'R';
                 coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
                 min_integration_ms = 1;
             }
-        else if (implementation.compare("GPS_L2_M_PCPS_Acquisition") == 0)
+        else if (implementation == "GPS_L2_M_PCPS_Acquisition")
             {
                 signal_id = "2S";
                 system_id = 'G';
@@ -229,14 +229,14 @@ protected:
                     }
                 min_integration_ms = 20;
             }
-        else if (implementation.compare("Galileo_E5a_Pcps_Acquisition") == 0)
+        else if (implementation == "Galileo_E5a_Pcps_Acquisition")
             {
                 signal_id = "5X";
                 system_id = 'E';
                 coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
                 min_integration_ms = 1;
             }
-        else if (implementation.compare("GPS_L5i_PCPS_Acquisition") == 0)
+        else if (implementation == "GPS_L5i_PCPS_Acquisition")
             {
                 signal_id = "L5";
                 system_id = 'G';
@@ -265,7 +265,7 @@ protected:
             }
         else
             {
-                float aux = static_cast<float>(FLAGS_acq_test_threshold_init);
+                auto aux = static_cast<float>(FLAGS_acq_test_threshold_init);
                 pfa_vector.push_back(aux);
                 aux = aux + static_cast<float>(FLAGS_acq_test_threshold_step);
                 while (aux <= static_cast<float>(FLAGS_acq_test_threshold_final))
@@ -288,16 +288,23 @@ protected:
             }
 
         Pd.resize(cn0_vector.size());
-        for (int i = 0; i < static_cast<int>(cn0_vector.size()); i++) Pd[i].reserve(num_thresholds);
+        for (int i = 0; i < static_cast<int>(cn0_vector.size()); i++)
+            {
+                Pd[i].reserve(num_thresholds);
+            }
         Pfa.resize(cn0_vector.size());
-        for (int i = 0; i < static_cast<int>(cn0_vector.size()); i++) Pfa[i].reserve(num_thresholds);
+        for (int i = 0; i < static_cast<int>(cn0_vector.size()); i++)
+            {
+                Pfa[i].reserve(num_thresholds);
+            }
         Pd_correct.resize(cn0_vector.size());
-        for (int i = 0; i < static_cast<int>(cn0_vector.size()); i++) Pd_correct[i].reserve(num_thresholds);
+        for (int i = 0; i < static_cast<int>(cn0_vector.size()); i++)
+            {
+                Pd_correct[i].reserve(num_thresholds);
+            }
     }
 
-    ~AcquisitionPerformanceTest()
-    {
-    }
+    ~AcquisitionPerformanceTest() = default;
 
     std::vector<double> cn0_vector;
     std::vector<float> pfa_vector;
@@ -317,7 +324,7 @@ protected:
     void check_results();
     void plot_results();
 
-    concurrent_queue<int> channel_internal_queue;
+    Concurrent_Queue<int> channel_internal_queue;
 
     gr::msg_queue::sptr queue;
     gr::top_block_sptr top_block;
@@ -331,7 +338,7 @@ protected:
     bool stop;
 
     int message;
-    boost::thread ch_thread;
+    std::thread ch_thread;
 
     std::string implementation = FLAGS_acq_test_implementation;
 
@@ -389,7 +396,7 @@ void AcquisitionPerformanceTest::init()
 void AcquisitionPerformanceTest::start_queue()
 {
     stop = false;
-    ch_thread = boost::thread(&AcquisitionPerformanceTest::wait_message, this);
+    ch_thread = std::thread(&AcquisitionPerformanceTest::wait_message, this);
 }
 
 
@@ -450,11 +457,13 @@ int AcquisitionPerformanceTest::generate_signal()
     pid_t wait_result;
     int child_status;
     std::cout << "Generating signal for " << p6 << "..." << std::endl;
-    char* const parmList[] = {&generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0], &p6[0], NULL};
+    char* const parmList[] = {&generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0], &p6[0], nullptr};
 
     int pid;
     if ((pid = fork()) == -1)
-        perror("fork error");
+        {
+            perror("fork error");
+        }
     else if (pid == 0)
         {
             execv(&generator_binary[0], parmList);
@@ -463,7 +472,10 @@ int AcquisitionPerformanceTest::generate_signal()
         }
 
     wait_result = waitpid(pid, &child_status, 0);
-    if (wait_result == -1) perror("waitpid error");
+    if (wait_result == -1)
+        {
+            perror("waitpid error");
+        }
     return 0;
 }
 
@@ -539,12 +551,12 @@ int AcquisitionPerformanceTest::configure_receiver(double cn0, float pfa, unsign
             config->set_property("Acquisition.dump_channel", std::to_string(dump_channel));
             config->set_property("Acquisition.blocking_on_standby", "true");
 
-            config_f = 0;
+            config_f = nullptr;
         }
     else
         {
             config_f = std::make_shared<FileConfiguration>(FLAGS_config_file_ptest);
-            config = 0;
+            config = nullptr;
         }
     return 0;
 }
@@ -576,35 +588,35 @@ int AcquisitionPerformanceTest::run_receiver()
 
     int nsamples = floor(config->property("GNSS-SDR.internal_fs_sps", 2000000) * generated_signal_duration_s);
     boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
-    if (implementation.compare("GPS_L1_CA_PCPS_Acquisition") == 0)
+    if (implementation == "GPS_L1_CA_PCPS_Acquisition")
         {
             acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
         }
-    else if (implementation.compare("GPS_L1_CA_PCPS_Acquisition_Fine_Doppler") == 0)
+    else if (implementation == "GPS_L1_CA_PCPS_Acquisition_Fine_Doppler")
         {
             acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFineDoppler>(config.get(), "Acquisition", 1, 0);
         }
-    else if (implementation.compare("Galileo_E1_PCPS_Ambiguous_Acquisition") == 0)
+    else if (implementation == "Galileo_E1_PCPS_Ambiguous_Acquisition")
         {
             acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisition>(config.get(), "Acquisition", 1, 0);
         }
-    else if (implementation.compare("GLONASS_L1_CA_PCPS_Acquisition") == 0)
+    else if (implementation == "GLONASS_L1_CA_PCPS_Acquisition")
         {
             acquisition = std::make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
         }
-    else if (implementation.compare("GLONASS_L2_CA_PCPS_Acquisition") == 0)
+    else if (implementation == "GLONASS_L2_CA_PCPS_Acquisition")
         {
             acquisition = std::make_shared<GlonassL2CaPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
         }
-    else if (implementation.compare("GPS_L2_M_PCPS_Acquisition") == 0)
+    else if (implementation == "GPS_L2_M_PCPS_Acquisition")
         {
             acquisition = std::make_shared<GpsL2MPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
         }
-    else if (implementation.compare("Galileo_E5a_Pcps_Acquisition") == 0)
+    else if (implementation == "Galileo_E5a_Pcps_Acquisition")
         {
             acquisition = std::make_shared<GalileoE5aPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
         }
-    else if (implementation.compare("GPS_L5i_PCPS_Acquisition") == 0)
+    else if (implementation == "GPS_L5i_PCPS_Acquisition")
         {
             acquisition = std::make_shared<GpsL5iPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
         }
@@ -636,12 +648,7 @@ int AcquisitionPerformanceTest::run_receiver()
 
     top_block->run();  // Start threads and wait
 
-#ifdef OLD_BOOST
-    ch_thread.timed_join(boost::posix_time::seconds(1));
-#endif
-#ifndef OLD_BOOST
-    ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-#endif
+    ch_thread.join();
 
     return 0;
 }
@@ -654,12 +661,12 @@ int AcquisitionPerformanceTest::count_executions(const std::string& basename, un
     char buffer[1024];
     fp = popen(&argum2[0], "r");
     int num_executions = 1;
-    if (fp == NULL)
+    if (fp == nullptr)
         {
             std::cout << "Failed to run command: " << argum2 << std::endl;
             return 0;
         }
-    while (fgets(buffer, sizeof(buffer), fp) != NULL)
+    while (fgets(buffer, sizeof(buffer), fp) != nullptr)
         {
             std::string aux = std::string(buffer);
             EXPECT_EQ(aux.empty(), false);
@@ -687,7 +694,7 @@ void AcquisitionPerformanceTest::plot_results()
                         {
                             boost::filesystem::path p(gnuplot_executable);
                             boost::filesystem::path dir = p.parent_path();
-                            std::string gnuplot_path = dir.native();
+                            const std::string& gnuplot_path = dir.native();
                             Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                             Gnuplot g1("linespoints");
@@ -701,7 +708,7 @@ void AcquisitionPerformanceTest::plot_results()
                                 }
                             g1.cmd("set font \"Times,18\"");
                             g1.set_title("Receiver Operating Characteristic for GPS L1 C/A acquisition");
-                            g1.cmd("set label 1 \"" + std::string("Coherent integration time: ") + std::to_string(config->property("Acquisition.coherent_integration_time_ms", 1)) + " ms, Non-coherent integrations: " + std::to_string(config->property("Acquisition.max_dwells", 1)) + " \" at screen 0.12, 0.83 font \"Times,16\"");
+                            g1.cmd("set label 1 \"" + std::string("Coherent integration time: ") + std::to_string(config->property("Acquisition.coherent_integration_time_ms", 1)) + " ms, Non-coherent integrations: " + std::to_string(config->property("Acquisition.max_dwells", 1)) + R"( " at screen 0.12, 0.83 font "Times,16")");
                             g1.cmd("set logscale x");
                             g1.cmd("set yrange [0:1]");
                             g1.cmd("set xrange[0.0001:1]");
@@ -737,7 +744,7 @@ void AcquisitionPerformanceTest::plot_results()
                                 }
                             g2.cmd("set font \"Times,18\"");
                             g2.set_title("Receiver Operating Characteristic for GPS L1 C/A valid acquisition");
-                            g2.cmd("set label 1 \"" + std::string("Coherent integration time: ") + std::to_string(config->property("Acquisition.coherent_integration_time_ms", 1)) + " ms, Non-coherent integrations: " + std::to_string(config->property("Acquisition.max_dwells", 1)) + " \" at screen  0.12, 0.83 font \"Times,16\"");
+                            g2.cmd("set label 1 \"" + std::string("Coherent integration time: ") + std::to_string(config->property("Acquisition.coherent_integration_time_ms", 1)) + " ms, Non-coherent integrations: " + std::to_string(config->property("Acquisition.max_dwells", 1)) + R"( " at screen  0.12, 0.83 font "Times,16")");
                             g2.cmd("set logscale x");
                             g2.cmd("set yrange [0:1]");
                             g2.cmd("set xrange[0.0001:1]");
@@ -773,7 +780,7 @@ void AcquisitionPerformanceTest::plot_results()
 
 TEST_F(AcquisitionPerformanceTest, ROC)
 {
-    tracking_true_obs_reader true_trk_data;
+    Tracking_True_Obs_Reader true_trk_data;
 
     if (boost::filesystem::exists(path_str))
         {
@@ -783,13 +790,16 @@ TEST_F(AcquisitionPerformanceTest, ROC)
     ASSERT_TRUE(boost::filesystem::create_directory(path_str, ec)) << "Could not create the " << path_str << " folder.";
 
     unsigned int cn0_index = 0;
-    for (std::vector<double>::const_iterator it = cn0_vector.cbegin(); it != cn0_vector.cend(); ++it)
+    for (double it : cn0_vector)
         {
             std::vector<double> meas_Pd_;
             std::vector<double> meas_Pd_correct_;
             std::vector<double> meas_Pfa_;
 
-            if (FLAGS_acq_test_input_file.empty()) std::cout << "Execution for CN0 = " << *it << " dB-Hz" << std::endl;
+            if (FLAGS_acq_test_input_file.empty())
+                {
+                    std::cout << "Execution for CN0 = " << it << " dB-Hz" << std::endl;
+                }
 
             // Do N_iterations of the experiment
             for (int pfa_iter = 0; pfa_iter < static_cast<int>(pfa_vector.size()); pfa_iter++)
@@ -804,12 +814,18 @@ TEST_F(AcquisitionPerformanceTest, ROC)
                         }
 
                     // Configure the signal generator
-                    if (FLAGS_acq_test_input_file.empty()) configure_generator(*it);
+                    if (FLAGS_acq_test_input_file.empty())
+                        {
+                            configure_generator(it);
+                        }
 
                     for (int iter = 0; iter < N_iterations; iter++)
                         {
                             // Generate signal raw signal samples and observations RINEX file
-                            if (FLAGS_acq_test_input_file.empty()) generate_signal();
+                            if (FLAGS_acq_test_input_file.empty())
+                                {
+                                    generate_signal();
+                                }
 
                             for (unsigned k = 0; k < 2; k++)
                                 {
@@ -824,13 +840,13 @@ TEST_F(AcquisitionPerformanceTest, ROC)
                                     init();
 
                                     // Configure the receiver
-                                    configure_receiver(*it, pfa_vector[pfa_iter], iter);
+                                    configure_receiver(it, pfa_vector[pfa_iter], iter);
 
                                     // Run it
                                     run_receiver();
 
                                     // count executions
-                                    std::string basename = path_str + std::string("/acquisition_") + std::to_string(*it) + "_" + std::to_string(iter) + "_" + std::to_string(pfa_vector[pfa_iter]) + "_" + gnss_synchro.System + "_" + signal_id;
+                                    std::string basename = path_str + std::string("/acquisition_") + std::to_string(it) + "_" + std::to_string(iter) + "_" + std::to_string(pfa_vector[pfa_iter]) + "_" + gnss_synchro.System + "_" + signal_id;
                                     int num_executions = count_executions(basename, observed_satellite);
 
                                     // Read measured data
@@ -857,7 +873,7 @@ TEST_F(AcquisitionPerformanceTest, ROC)
 
                                     for (int execution = 1; execution <= num_executions; execution++)
                                         {
-                                            acquisition_dump_reader acq_dump(basename,
+                                            Acquisition_Dump_Reader acq_dump(basename,
                                                 observed_satellite,
                                                 config->property("Acquisition.doppler_max", 0),
                                                 config->property("Acquisition.doppler_step", 0),
@@ -973,7 +989,7 @@ TEST_F(AcquisitionPerformanceTest, ROC)
                                                 {
                                                     meas_Pd_.push_back(0.0);
                                                 }
-                                            std::cout << TEXT_BOLD_BLACK << "Probability of detection for channel=" << ch << ", CN0=" << *it << " dBHz"
+                                            std::cout << TEXT_BOLD_BLACK << "Probability of detection for channel=" << ch << ", CN0=" << it << " dBHz"
                                                       << ": " << (num_executions > 0 ? computed_Pd : 0.0) << TEXT_RESET << std::endl;
                                         }
                                     if (num_clean_executions > 0)
@@ -990,7 +1006,7 @@ TEST_F(AcquisitionPerformanceTest, ROC)
                                                 }
                                             double computed_Pd_correct = correctly_detected / static_cast<double>(num_clean_executions);
                                             meas_Pd_correct_.push_back(computed_Pd_correct);
-                                            std::cout << TEXT_BOLD_BLACK << "Probability of correct detection for channel=" << ch << ", CN0=" << *it << " dBHz"
+                                            std::cout << TEXT_BOLD_BLACK << "Probability of correct detection for channel=" << ch << ", CN0=" << it << " dBHz"
                                                       << ": " << computed_Pd_correct << TEXT_RESET << std::endl;
                                         }
                                     else
@@ -1008,7 +1024,7 @@ TEST_F(AcquisitionPerformanceTest, ROC)
                                                         {
                                                             meas_Pfa_.push_back(0.0);
                                                         }
-                                                    std::cout << TEXT_BOLD_BLACK << "Probability of false alarm for channel=" << ch << ", CN0=" << *it << " dBHz"
+                                                    std::cout << TEXT_BOLD_BLACK << "Probability of false alarm for channel=" << ch << ", CN0=" << it << " dBHz"
                                                               << ": " << (num_executions > 0 ? computed_Pfa : 0.0) << TEXT_RESET << std::endl;
                                                 }
                                         }
@@ -1019,14 +1035,14 @@ TEST_F(AcquisitionPerformanceTest, ROC)
                     float sum_pd = static_cast<float>(std::accumulate(meas_Pd_.begin(), meas_Pd_.end(), 0.0));
                     float sum_pd_correct = static_cast<float>(std::accumulate(meas_Pd_correct_.begin(), meas_Pd_correct_.end(), 0.0));
                     float sum_pfa = static_cast<float>(std::accumulate(meas_Pfa_.begin(), meas_Pfa_.end(), 0.0));
-                    if (meas_Pd_.size() > 0 and meas_Pfa_.size() > 0)
+                    if (!meas_Pd_.empty() and !meas_Pfa_.empty())
                         {
                             Pd[cn0_index][pfa_iter] = sum_pd / static_cast<float>(meas_Pd_.size());
                             Pfa[cn0_index][pfa_iter] = sum_pfa / static_cast<float>(meas_Pfa_.size());
                         }
                     else
                         {
-                            if (meas_Pd_.size() > 0)
+                            if (!meas_Pd_.empty())
                                 {
                                     Pd[cn0_index][pfa_iter] = sum_pd / static_cast<float>(meas_Pd_.size());
                                 }
@@ -1034,7 +1050,7 @@ TEST_F(AcquisitionPerformanceTest, ROC)
                                 {
                                     Pd[cn0_index][pfa_iter] = 0.0;
                                 }
-                            if (meas_Pfa_.size() > 0)
+                            if (!meas_Pfa_.empty())
                                 {
                                     Pfa[cn0_index][pfa_iter] = sum_pfa / static_cast<float>(meas_Pfa_.size());
                                 }
@@ -1043,7 +1059,7 @@ TEST_F(AcquisitionPerformanceTest, ROC)
                                     Pfa[cn0_index][pfa_iter] = 0.0;
                                 }
                         }
-                    if (meas_Pd_correct_.size() > 0)
+                    if (!meas_Pd_correct_.empty())
                         {
                             Pd_correct[cn0_index][pfa_iter] = sum_pd_correct / static_cast<float>(meas_Pd_correct_.size());
                         }
@@ -1060,9 +1076,9 @@ TEST_F(AcquisitionPerformanceTest, ROC)
 
     // Compute results
     unsigned int aux_index = 0;
-    for (std::vector<double>::const_iterator it = cn0_vector.cbegin(); it != cn0_vector.cend(); ++it)
+    for (double it : cn0_vector)
         {
-            std::cout << "Results for CN0 = " << *it << " dBHz:" << std::endl;
+            std::cout << "Results for CN0 = " << it << " dBHz:" << std::endl;
             std::cout << "Pd = ";
             for (int pfa_iter = 0; pfa_iter < num_thresholds; pfa_iter++)
                 {

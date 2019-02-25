@@ -40,7 +40,7 @@
 
 using google::LogMessage;
 
-hybrid_ls_pvt::hybrid_ls_pvt(int nchannels, std::string dump_filename, bool flag_dump_to_file) : Ls_Pvt()
+Hybrid_Ls_Pvt::Hybrid_Ls_Pvt(int nchannels, std::string dump_filename, bool flag_dump_to_file) : Ls_Pvt()
 {
     // init empty ephemeris for all the available GNSS channels
     d_nchannels = nchannels;
@@ -69,7 +69,7 @@ hybrid_ls_pvt::hybrid_ls_pvt(int nchannels, std::string dump_filename, bool flag
 }
 
 
-hybrid_ls_pvt::~hybrid_ls_pvt()
+Hybrid_Ls_Pvt::~Hybrid_Ls_Pvt()
 {
     if (d_dump_file.is_open() == true)
         {
@@ -85,7 +85,7 @@ hybrid_ls_pvt::~hybrid_ls_pvt()
 }
 
 
-bool hybrid_ls_pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, double hybrid_current_time, bool flag_averaging)
+bool Hybrid_Ls_Pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, double hybrid_current_time, bool flag_averaging)
 {
     std::map<int, Gnss_Synchro>::iterator gnss_observables_iter;
     std::map<int, Galileo_Ephemeris>::iterator galileo_ephemeris_iter;
@@ -133,7 +133,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
 
                                 // COMMON RX TIME PVT ALGORITHM
                                 double Rx_time = hybrid_current_time;
-                                double Tx_time = Rx_time - gnss_observables_iter->second.Pseudorange_m / GALILEO_C_m_s;
+                                double Tx_time = Rx_time - gnss_observables_iter->second.Pseudorange_m / GALILEO_C_M_S;
 
                                 // 2- compute the clock drift using the clock model (broadcast) for this SV
                                 SV_clock_bias_s = galileo_ephemeris_iter->second.sv_clock_drift(Tx_time);
@@ -150,7 +150,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
 
                                 // 4- fill the observations vector with the corrected observables
                                 obs.resize(valid_obs + 1, 1);
-                                obs(valid_obs) = gnss_observables_iter->second.Pseudorange_m + SV_clock_bias_s * GALILEO_C_m_s - this->get_time_offset_s() * GALILEO_C_m_s;
+                                obs(valid_obs) = gnss_observables_iter->second.Pseudorange_m + SV_clock_bias_s * GALILEO_C_M_S - this->get_time_offset_s() * GALILEO_C_M_S;
 
                                 Galileo_week_number = galileo_ephemeris_iter->second.WN_5;  //for GST
                                 GST = galileo_ephemeris_iter->second.Galileo_System_Time(Galileo_week_number, hybrid_current_time);
@@ -188,7 +188,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
                                         // COMMON RX TIME PVT ALGORITHM MODIFICATION (Like RINEX files)
                                         // first estimate of transmit time
                                         double Rx_time = hybrid_current_time;
-                                        double Tx_time = Rx_time - gnss_observables_iter->second.Pseudorange_m / GPS_C_m_s;
+                                        double Tx_time = Rx_time - gnss_observables_iter->second.Pseudorange_m / GPS_C_M_S;
 
                                         // 2- compute the clock drift using the clock model (broadcast) for this SV, not including relativistic effect
                                         SV_clock_bias_s = gps_ephemeris_iter->second.sv_clock_drift(Tx_time);  //- gps_ephemeris_iter->second.d_TGD;
@@ -208,10 +208,10 @@ bool hybrid_ls_pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
                                         // See IS-GPS-200E section 20.3.3.3.3.2
                                         double sqrt_Gamma = GPS_L1_FREQ_HZ / GPS_L2_FREQ_HZ;
                                         double Gamma = sqrt_Gamma * sqrt_Gamma;
-                                        double P1_P2 = (1.0 - Gamma) * (gps_ephemeris_iter->second.d_TGD * GPS_C_m_s);
+                                        double P1_P2 = (1.0 - Gamma) * (gps_ephemeris_iter->second.d_TGD * GPS_C_M_S);
                                         double Code_bias_m = P1_P2 / (1.0 - Gamma);
                                         obs.resize(valid_obs + 1, 1);
-                                        obs(valid_obs) = gnss_observables_iter->second.Pseudorange_m + dtr * GPS_C_m_s - Code_bias_m - this->get_time_offset_s() * GPS_C_m_s;
+                                        obs(valid_obs) = gnss_observables_iter->second.Pseudorange_m + dtr * GPS_C_M_S - Code_bias_m - this->get_time_offset_s() * GPS_C_M_S;
 
                                         // SV ECEF DEBUG OUTPUT
                                         LOG(INFO) << "(new)ECEF GPS L1 CA satellite SV ID=" << gps_ephemeris_iter->second.i_satellite_PRN
@@ -243,7 +243,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
                                         // COMMON RX TIME PVT ALGORITHM MODIFICATION (Like RINEX files)
                                         // first estimate of transmit time
                                         double Rx_time = hybrid_current_time;
-                                        double Tx_time = Rx_time - gnss_observables_iter->second.Pseudorange_m / GPS_C_m_s;
+                                        double Tx_time = Rx_time - gnss_observables_iter->second.Pseudorange_m / GPS_C_M_S;
 
                                         // 2- compute the clock drift using the clock model (broadcast) for this SV
                                         SV_clock_bias_s = gps_cnav_ephemeris_iter->second.sv_clock_drift(Tx_time);
@@ -261,7 +261,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
 
                                         // 4- fill the observations vector with the corrected observables
                                         obs.resize(valid_obs + 1, 1);
-                                        obs(valid_obs) = gnss_observables_iter->second.Pseudorange_m + dtr * GPS_C_m_s + SV_clock_bias_s * GPS_C_m_s;
+                                        obs(valid_obs) = gnss_observables_iter->second.Pseudorange_m + dtr * GPS_C_M_S + SV_clock_bias_s * GPS_C_M_S;
 
                                         GPS_week = gps_cnav_ephemeris_iter->second.i_GPS_week;
                                         GPS_week = GPS_week % 1024;  //Necessary due to the increase of WN bits in CNAV message (10 in GPS NAV and 13 in CNAV)
@@ -311,17 +311,17 @@ bool hybrid_ls_pvt::get_PVT(std::map<int, Gnss_Synchro> gnss_observables_map, do
                             DLOG(INFO) << " Executing Bancroft algorithm...";
                             rx_position_and_time = bancroftPos(satpos.t(), obs);
                             this->set_rx_pos(rx_position_and_time.rows(0, 2));             // save ECEF position for the next iteration
-                            this->set_time_offset_s(rx_position_and_time(3) / GPS_C_m_s);  // save time for the next iteration [meters]->[seconds]
+                            this->set_time_offset_s(rx_position_and_time(3) / GPS_C_M_S);  // save time for the next iteration [meters]->[seconds]
                         }
 
                     // Execute WLS using previous position as the initialization point
                     rx_position_and_time = leastSquarePos(satpos, obs, W);
 
                     this->set_rx_pos(rx_position_and_time.rows(0, 2));                                         // save ECEF position for the next iteration
-                    this->set_time_offset_s(this->get_time_offset_s() + rx_position_and_time(3) / GPS_C_m_s);  // accumulate the rx time error for the next iteration [meters]->[seconds]
+                    this->set_time_offset_s(this->get_time_offset_s() + rx_position_and_time(3) / GPS_C_M_S);  // accumulate the rx time error for the next iteration [meters]->[seconds]
 
                     DLOG(INFO) << "Hybrid Position at TOW=" << hybrid_current_time << " in ECEF (X,Y,Z,t[meters]) = " << rx_position_and_time;
-                    DLOG(INFO) << "Accumulated rx clock error=" << this->get_time_offset_s() << " clock error for this iteration=" << rx_position_and_time(3) / GPS_C_m_s << " [s]";
+                    DLOG(INFO) << "Accumulated rx clock error=" << this->get_time_offset_s() << " clock error for this iteration=" << rx_position_and_time(3) / GPS_C_M_S << " [s]";
 
                     // Compute GST and Gregorian time
                     if (GST != 0.0)

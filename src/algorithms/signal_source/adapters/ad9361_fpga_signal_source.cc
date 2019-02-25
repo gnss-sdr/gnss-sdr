@@ -110,7 +110,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface* configura
     std::string default_device_name = "/dev/uio1";
     std::string device_name = configuration->property(role + ".devicename", default_device_name);
     int switch_position = configuration->property(role + ".switch_position", 0);
-    switch_fpga = std::make_shared<fpga_switch>(device_name);
+    switch_fpga = std::make_shared<Fpga_Switch>(device_name);
     switch_fpga->set_switch_position(switch_position);
     if (in_stream_ > 0)
         {

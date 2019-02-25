@@ -1,8 +1,27 @@
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
+### Improvements in Efficiency
+
+- Applied clang-tidy checks and fixes related to performance.
+
 ### Improvements in Interoperability:
 
 - Added the BeiDou B1I receiver chain.
+- Fix bug in GLONASS dual frequency receiver.
+
+### Improvements in Maintainability:
+
+- Usage of clang-tidy integrated into CMake scripts. New option -DENABLE_CLANG_TIDY=ON executes clang-tidy along with compilation. Requires clang compiler.
+- Applied clang-tidy checks and fixes related to readability.
+
+### Improvements in Portability:
+
+- CMake scripts now follow a modern approach (targets and properties) but still work in 2.8.12
+
+
+## Improvements in Reliability
+
+- Applied clang-tidy checks and fixes related to High Integrity C++.
 
 
 ## [0.0.10](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.10)

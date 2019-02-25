@@ -94,7 +94,7 @@ ErrorCodes_encode_uper(asn_TYPE_descriptor_t *td,
 	return td->uper_encoder(td, constraints, structure, per_out);
 }
 
-static asn_per_constraints_t asn_PER_type_ErrorCodes_constr_1 = {
+static asn_per_constraints_t ASN_PER_TYPE_ERROR_CODES_CONSTR_1 = {
 	{ APC_CONSTRAINED | APC_EXTENSIBLE,  3,  3,  0,  5 }	/* (0..5,...) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -148,7 +148,7 @@ asn_TYPE_descriptor_t asn_DEF_ErrorCodes = {
 	asn_DEF_ErrorCodes_tags_1,	/* Same as above */
 	sizeof(asn_DEF_ErrorCodes_tags_1)
 		/sizeof(asn_DEF_ErrorCodes_tags_1[0]), /* 1 */
-	&asn_PER_type_ErrorCodes_constr_1,
+	&ASN_PER_TYPE_ERROR_CODES_CONSTR_1,
 	0, 0,	/* Defined elsewhere */
 	&asn_SPC_ErrorCodes_specs_1	/* Additional specs */
 };

@@ -96,7 +96,7 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     //dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
     //acq_parameters.dump_filename = dump_filename_;
     //--- Find number of samples per spreading code -------------------------
-    auto code_length = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / (GPS_L5i_CODE_RATE_HZ / static_cast<double>(GPS_L5i_CODE_LENGTH_CHIPS))));
+    auto code_length = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / (GPS_L5I_CODE_RATE_HZ / static_cast<double>(GPS_L5I_CODE_LENGTH_CHIPS))));
     acq_parameters.code_length = code_length;
     // The FPGA can only use FFT lengths that are a power of two.
     float nbits = ceilf(log2f((float)code_length*2));
@@ -115,7 +115,7 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     acq_parameters.samples_per_code = nsamples_total;
 
     //acq_parameters.excludelimit = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / GPS_L5i_CODE_RATE_HZ));
-    acq_parameters.excludelimit = static_cast<unsigned int>(ceil((1.0 / GPS_L5i_CODE_RATE_HZ) * static_cast<float>(acq_parameters.fs_in)));
+    acq_parameters.excludelimit = static_cast<unsigned int>(ceil((1.0 / GPS_L5I_CODE_RATE_HZ) * static_cast<float>(acq_parameters.fs_in)));
 
     //printf("L5 ACQ CLASS MID 01\n");
     // compute all the GPS L5 PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time

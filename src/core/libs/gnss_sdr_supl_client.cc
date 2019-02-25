@@ -32,11 +32,12 @@
  */
 
 #include "gnss_sdr_supl_client.h"
+#include <glog/logging.h>
 #include <pugixml.hpp>
 #include <cmath>
 #include <utility>
 
-gnss_sdr_supl_client::gnss_sdr_supl_client()
+Gnss_Sdr_Supl_Client::Gnss_Sdr_Supl_Client()
 {
     mcc = 0;
     mns = 0;
@@ -49,10 +50,10 @@ gnss_sdr_supl_client::gnss_sdr_supl_client()
 }
 
 
-gnss_sdr_supl_client::~gnss_sdr_supl_client() = default;
+Gnss_Sdr_Supl_Client::~Gnss_Sdr_Supl_Client() = default;
 
 
-void gnss_sdr_supl_client::print_assistance()
+void Gnss_Sdr_Supl_Client::print_assistance()
 {
     if (assist.set & SUPL_RRLP_ASSIST_REFTIME)
         {
@@ -151,7 +152,7 @@ void gnss_sdr_supl_client::print_assistance()
 }
 
 
-int gnss_sdr_supl_client::get_assistance(int i_mcc, int i_mns, int i_lac, int i_ci)
+int Gnss_Sdr_Supl_Client::get_assistance(int i_mcc, int i_mns, int i_lac, int i_ci)
 {
     // SET SUPL CLIENT INFORMATION
     // GSM CELL PARAMETERS
@@ -193,7 +194,7 @@ int gnss_sdr_supl_client::get_assistance(int i_mcc, int i_mns, int i_lac, int i_
 }
 
 
-void gnss_sdr_supl_client::read_supl_data()
+void Gnss_Sdr_Supl_Client::read_supl_data()
 {
     // READ REFERENCE LOCATION
     if (assist.set & SUPL_RRLP_ASSIST_REFLOC)
@@ -369,7 +370,7 @@ void gnss_sdr_supl_client::read_supl_data()
 }
 
 
-bool gnss_sdr_supl_client::load_ephemeris_xml(const std::string& file_name)
+bool Gnss_Sdr_Supl_Client::load_ephemeris_xml(const std::string& file_name)
 {
     std::ifstream ifs;
     try
@@ -389,7 +390,7 @@ bool gnss_sdr_supl_client::load_ephemeris_xml(const std::string& file_name)
 }
 
 
-bool gnss_sdr_supl_client::save_ephemeris_map_xml(const std::string& file_name, std::map<int, Gps_Ephemeris> eph_map)
+bool Gnss_Sdr_Supl_Client::save_ephemeris_map_xml(const std::string& file_name, std::map<int, Gps_Ephemeris> eph_map)
 {
     if (eph_map.empty() == false)
         {
@@ -416,7 +417,7 @@ bool gnss_sdr_supl_client::save_ephemeris_map_xml(const std::string& file_name, 
 }
 
 
-bool gnss_sdr_supl_client::load_gal_ephemeris_xml(const std::string& file_name)
+bool Gnss_Sdr_Supl_Client::load_gal_ephemeris_xml(const std::string& file_name)
 {
     std::ifstream ifs;
     try
@@ -463,7 +464,7 @@ bool save_gal_ephemeris_map_xml(const std::string& file_name, std::map<int, Gali
 }
 
 
-bool gnss_sdr_supl_client::load_cnav_ephemeris_xml(const std::string& file_name)
+bool Gnss_Sdr_Supl_Client::load_cnav_ephemeris_xml(const std::string& file_name)
 {
     std::ifstream ifs;
     try
@@ -510,7 +511,7 @@ bool save_cnav_ephemeris_map_xml(const std::string& file_name, std::map<int, Gps
 }
 
 
-bool gnss_sdr_supl_client::load_gnav_ephemeris_xml(const std::string& file_name)
+bool Gnss_Sdr_Supl_Client::load_gnav_ephemeris_xml(const std::string& file_name)
 {
     std::ifstream ifs;
     try
@@ -557,7 +558,7 @@ bool save_gnav_ephemeris_map_xml(const std::string& file_name, std::map<int, Glo
 }
 
 
-bool gnss_sdr_supl_client::load_utc_xml(const std::string& file_name)
+bool Gnss_Sdr_Supl_Client::load_utc_xml(const std::string& file_name)
 {
     std::ifstream ifs;
     try
@@ -576,7 +577,7 @@ bool gnss_sdr_supl_client::load_utc_xml(const std::string& file_name)
 }
 
 
-bool gnss_sdr_supl_client::save_utc_xml(const std::string& file_name, Gps_Utc_Model& utc)
+bool Gnss_Sdr_Supl_Client::save_utc_xml(const std::string& file_name, Gps_Utc_Model& utc)
 {
     if (utc.valid)
         {
@@ -603,7 +604,7 @@ bool gnss_sdr_supl_client::save_utc_xml(const std::string& file_name, Gps_Utc_Mo
 }
 
 
-bool gnss_sdr_supl_client::load_cnav_utc_xml(const std::string& file_name)
+bool Gnss_Sdr_Supl_Client::load_cnav_utc_xml(const std::string& file_name)
 {
     std::ifstream ifs;
     try
@@ -622,7 +623,7 @@ bool gnss_sdr_supl_client::load_cnav_utc_xml(const std::string& file_name)
 }
 
 
-bool gnss_sdr_supl_client::save_cnav_utc_xml(const std::string& file_name, Gps_CNAV_Utc_Model& utc)
+bool Gnss_Sdr_Supl_Client::save_cnav_utc_xml(const std::string& file_name, Gps_CNAV_Utc_Model& utc)
 {
     if (utc.valid)
         {
@@ -649,7 +650,7 @@ bool gnss_sdr_supl_client::save_cnav_utc_xml(const std::string& file_name, Gps_C
 }
 
 
-bool gnss_sdr_supl_client::load_gal_utc_xml(const std::string& file_name)
+bool Gnss_Sdr_Supl_Client::load_gal_utc_xml(const std::string& file_name)
 {
     std::ifstream ifs;
     try
@@ -668,7 +669,7 @@ bool gnss_sdr_supl_client::load_gal_utc_xml(const std::string& file_name)
 }
 
 
-bool gnss_sdr_supl_client::save_gal_utc_xml(const std::string& file_name, Galileo_Utc_Model& utc)
+bool Gnss_Sdr_Supl_Client::save_gal_utc_xml(const std::string& file_name, Galileo_Utc_Model& utc)
 {
     if (utc.flag_utc_model)
         {
@@ -695,7 +696,7 @@ bool gnss_sdr_supl_client::save_gal_utc_xml(const std::string& file_name, Galile
 }
 
 
-bool gnss_sdr_supl_client::load_iono_xml(const std::string& file_name)
+bool Gnss_Sdr_Supl_Client::load_iono_xml(const std::string& file_name)
 {
     std::ifstream ifs;
     try
@@ -714,7 +715,7 @@ bool gnss_sdr_supl_client::load_iono_xml(const std::string& file_name)
 }
 
 
-bool gnss_sdr_supl_client::save_iono_xml(const std::string& file_name, Gps_Iono& iono)
+bool Gnss_Sdr_Supl_Client::save_iono_xml(const std::string& file_name, Gps_Iono& iono)
 {
     if (iono.valid)
         {
@@ -741,7 +742,7 @@ bool gnss_sdr_supl_client::save_iono_xml(const std::string& file_name, Gps_Iono&
 }
 
 
-bool gnss_sdr_supl_client::load_gal_iono_xml(const std::string& file_name)
+bool Gnss_Sdr_Supl_Client::load_gal_iono_xml(const std::string& file_name)
 {
     std::ifstream ifs;
     try
@@ -760,7 +761,7 @@ bool gnss_sdr_supl_client::load_gal_iono_xml(const std::string& file_name)
 }
 
 
-bool gnss_sdr_supl_client::save_gal_iono_xml(const std::string& file_name, Galileo_Iono& iono)
+bool Gnss_Sdr_Supl_Client::save_gal_iono_xml(const std::string& file_name, Galileo_Iono& iono)
 {
     if (iono.ai0_5 != 0.0)
         {
@@ -787,7 +788,7 @@ bool gnss_sdr_supl_client::save_gal_iono_xml(const std::string& file_name, Galil
 }
 
 
-bool gnss_sdr_supl_client::load_gps_almanac_xml(const std::string& file_name)
+bool Gnss_Sdr_Supl_Client::load_gps_almanac_xml(const std::string& file_name)
 {
     std::ifstream ifs;
     try
@@ -807,7 +808,7 @@ bool gnss_sdr_supl_client::load_gps_almanac_xml(const std::string& file_name)
 }
 
 
-bool gnss_sdr_supl_client::save_gps_almanac_xml(const std::string& file_name, std::map<int, Gps_Almanac> gps_almanac_map)
+bool Gnss_Sdr_Supl_Client::save_gps_almanac_xml(const std::string& file_name, std::map<int, Gps_Almanac> gps_almanac_map)
 {
     if (gps_almanac_map.empty() == false)
         {
@@ -834,7 +835,7 @@ bool gnss_sdr_supl_client::save_gps_almanac_xml(const std::string& file_name, st
 }
 
 
-bool gnss_sdr_supl_client::load_gal_almanac_xml(const std::string& file_name)
+bool Gnss_Sdr_Supl_Client::load_gal_almanac_xml(const std::string& file_name)
 {
     std::ifstream ifs;
     try
@@ -854,7 +855,7 @@ bool gnss_sdr_supl_client::load_gal_almanac_xml(const std::string& file_name)
 }
 
 
-bool gnss_sdr_supl_client::read_gal_almanac_from_gsa(const std::string& file_name)
+bool Gnss_Sdr_Supl_Client::read_gal_almanac_from_gsa(const std::string& file_name)
 {
     pugi::xml_document doc;
     pugi::xml_parse_result result = doc.load_file(file_name.c_str());
@@ -904,7 +905,7 @@ bool gnss_sdr_supl_client::read_gal_almanac_from_gsa(const std::string& file_nam
 }
 
 
-bool gnss_sdr_supl_client::save_gal_almanac_xml(const std::string& file_name, std::map<int, Galileo_Almanac> gal_almanac_map)
+bool Gnss_Sdr_Supl_Client::save_gal_almanac_xml(const std::string& file_name, std::map<int, Galileo_Almanac> gal_almanac_map)
 {
     if (gal_almanac_map.empty() == false)
         {
@@ -931,7 +932,7 @@ bool gnss_sdr_supl_client::save_gal_almanac_xml(const std::string& file_name, st
 }
 
 
-bool gnss_sdr_supl_client::load_glo_utc_xml(const std::string& file_name)
+bool Gnss_Sdr_Supl_Client::load_glo_utc_xml(const std::string& file_name)
 {
     std::ifstream ifs;
     try
@@ -950,7 +951,7 @@ bool gnss_sdr_supl_client::load_glo_utc_xml(const std::string& file_name)
 }
 
 
-bool gnss_sdr_supl_client::save_glo_utc_xml(const std::string& file_name, Glonass_Gnav_Utc_Model& utc)
+bool Gnss_Sdr_Supl_Client::save_glo_utc_xml(const std::string& file_name, Glonass_Gnav_Utc_Model& utc)
 {
     if (utc.valid)
         {
@@ -977,7 +978,7 @@ bool gnss_sdr_supl_client::save_glo_utc_xml(const std::string& file_name, Glonas
 }
 
 
-bool gnss_sdr_supl_client::load_ref_time_xml(const std::string& file_name)
+bool Gnss_Sdr_Supl_Client::load_ref_time_xml(const std::string& file_name)
 {
     std::ifstream ifs;
     try
@@ -996,7 +997,7 @@ bool gnss_sdr_supl_client::load_ref_time_xml(const std::string& file_name)
 }
 
 
-bool gnss_sdr_supl_client::save_ref_time_xml(const std::string& file_name, Agnss_Ref_Time& ref_time)
+bool Gnss_Sdr_Supl_Client::save_ref_time_xml(const std::string& file_name, Agnss_Ref_Time& ref_time)
 {
     if (ref_time.valid == true)
         {
@@ -1023,7 +1024,7 @@ bool gnss_sdr_supl_client::save_ref_time_xml(const std::string& file_name, Agnss
 }
 
 
-bool gnss_sdr_supl_client::load_ref_location_xml(const std::string& file_name)
+bool Gnss_Sdr_Supl_Client::load_ref_location_xml(const std::string& file_name)
 {
     std::ifstream ifs;
     try
@@ -1042,7 +1043,7 @@ bool gnss_sdr_supl_client::load_ref_location_xml(const std::string& file_name)
 }
 
 
-bool gnss_sdr_supl_client::save_ref_location_xml(const std::string& file_name, Agnss_Ref_Location& ref_location)
+bool Gnss_Sdr_Supl_Client::save_ref_location_xml(const std::string& file_name, Agnss_Ref_Location& ref_location)
 {
     if (ref_location.valid == true)
         {

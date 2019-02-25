@@ -283,7 +283,7 @@ double Gps_Ephemeris::satellitePosition(double transmitTime)
     double dtr_s = d_A_f0 + d_A_f1 * tk + d_A_f2 * tk * tk;
 
     /* relativity correction */
-    dtr_s -= 2.0 * sqrt(GM * a) * d_e_eccentricity * sin(E) / (GPS_C_m_s * GPS_C_m_s);
+    dtr_s -= 2.0 * sqrt(GM * a) * d_e_eccentricity * sin(E) / (GPS_C_M_S * GPS_C_M_S);
 
     return dtr_s;
 }

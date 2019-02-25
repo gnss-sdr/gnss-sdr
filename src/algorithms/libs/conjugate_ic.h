@@ -36,7 +36,7 @@
 
 class conjugate_ic;
 
-typedef boost::shared_ptr<conjugate_ic> conjugate_ic_sptr;
+using conjugate_ic_sptr = boost::shared_ptr<conjugate_ic>;
 
 conjugate_ic_sptr make_conjugate_ic();
 

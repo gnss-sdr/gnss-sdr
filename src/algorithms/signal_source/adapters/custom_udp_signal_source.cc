@@ -72,7 +72,7 @@ CustomUDPSignalSource::CustomUDPSignalSource(ConfigurationInterface* configurati
     // output item size is always gr_complex
     item_size_ = sizeof(gr_complex);
 
-    udp_gnss_rx_source_ = gr_complex_ip_packet_source::make(capture_device,
+    udp_gnss_rx_source_ = Gr_Complex_Ip_Packet_Source::make(capture_device,
         address,
         port,
         payload_bytes,

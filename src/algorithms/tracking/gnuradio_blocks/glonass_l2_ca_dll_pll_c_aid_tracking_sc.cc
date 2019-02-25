@@ -36,7 +36,6 @@
 
 #include "glonass_l2_ca_dll_pll_c_aid_tracking_sc.h"
 #include "GLONASS_L1_L2_CA.h"
-#include "control_message_factory.h"
 #include "glonass_l2_signal_processing.h"
 #include "gnss_sdr_flags.h"
 #include "lock_detectors.h"
@@ -47,6 +46,7 @@
 #include <matio.h>
 #include <pmt/pmt.h>
 #include <cmath>
+#include <exception>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -528,7 +528,15 @@ glonass_l2_ca_dll_pll_c_aid_tracking_sc::~glonass_l2_ca_dll_pll_c_aid_tracking_s
                 {
                     std::cout << "Writing .mat files ...";
                 }
-            glonass_l2_ca_dll_pll_c_aid_tracking_sc::save_matfile();
+            try
+                {
+                    glonass_l2_ca_dll_pll_c_aid_tracking_sc::save_matfile();
+                }
+            catch (const std::exception &ex)
+                {
+                    LOG(WARNING) << "Error saving the .mat file: " << ex.what();
+                }
+
             if (d_channel == 0)
                 {
                     std::cout << " done." << std::endl;
@@ -789,7 +797,10 @@ int glonass_l2_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
                                 }
                             else
                                 {
-                                    if (d_carrier_lock_fail_counter > 0) d_carrier_lock_fail_counter--;
+                                    if (d_carrier_lock_fail_counter > 0)
+                                        {
+                                            d_carrier_lock_fail_counter--;
+                                        }
                                 }
                             if (d_carrier_lock_fail_counter > FLAGS_max_lock_fail)
                                 {

@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -24,14 +24,6 @@ if(ENABLE_CUDA)
     set(OPT_TRACKING_BLOCKS_HEADERS
         ${OPT_TRACKING_BLOCKS_HEADERS}
         gps_l1_ca_dll_pll_tracking_gpu_cc.h
-    )
-    set(OPT_TRACKING_INCLUDES
-        ${OPT_TRACKING_INCLUDES}
-        ${CUDA_INCLUDE_DIRS}
-    )
-    set(OPT_TRACKING_LIBRARIES
-        ${OPT_TRACKING_LIBRARIES}
-        ${CUDA_LIBRARIES}
     )
 endif()
 
@@ -78,59 +70,48 @@ set(TRACKING_GR_BLOCKS_HEADERS
     ${OPT_TRACKING_BLOCKS_HEADERS}
 )
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces
-    ${CMAKE_SOURCE_DIR}/src/core/receiver
-    ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs
-    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-    ${ARMADILLO_INCLUDE_DIRS}
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
-    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-    ${VOLK_GNSSSDR_INCLUDE_DIRS}
-    ${OPT_TRACKING_INCLUDES}
-    ${MATIO_INCLUDE_DIRS}
-)
-
-if(ENABLE_GENERIC_ARCH)
-    add_definitions(-DGENERIC_ARCH=1)
-endif()
-
 list(SORT TRACKING_GR_BLOCKS_HEADERS)
 list(SORT TRACKING_GR_BLOCKS_SOURCES)
+
+source_group(Headers FILES ${TRACKING_GR_BLOCKS_HEADERS})
 
 add_library(tracking_gr_blocks
     ${TRACKING_GR_BLOCKS_SOURCES}
     ${TRACKING_GR_BLOCKS_HEADERS}
 )
 
-source_group(Headers FILES ${TRACKING_GR_BLOCKS_HEADERS})
-
 target_link_libraries(tracking_gr_blocks
-    tracking_lib
-    ${GNURADIO_RUNTIME_LIBRARIES}
-    gnss_sdr_flags gnss_sp_libs
-    ${Boost_LIBRARIES}
-    ${VOLK_GNSSSDR_LIBRARIES}
-    ${MATIO_LIBRARIES}
-    ${OPT_TRACKING_LIBRARIES}
+    PUBLIC
+        Boost::boost
+        Gnuradio::blocks
+        Matio::matio
+        Volkgnsssdr::volkgnsssdr
+        gnss_sdr_flags
+        algorithms_libs
+        tracking_libs
 )
 
-if(NOT VOLKGNSSSDR_FOUND)
-    if(MATIO_FOUND)
-        add_dependencies(tracking_gr_blocks volk_gnsssdr_module)
-    else()
-        add_dependencies(tracking_gr_blocks volk_gnsssdr_module
-            matio-${GNSSSDR_MATIO_LOCAL_VERSION}
-        )
-    endif()
-else()
-    if(NOT MATIO_FOUND)
-        add_dependencies(tracking_gr_blocks
-            matio-${GNSSSDR_MATIO_LOCAL_VERSION}
+if(ENABLE_CUDA)
+    target_link_libraries(tracking_gr_blocks
+        PUBLIC
+            ${CUDA_LIBRARIES}
+    )
+    target_include_directories(tracking_gr_blocks
+        PUBLIC
+            ${CUDA_INCLUDE_DIRS}
+    )
+endif()
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(tracking_gr_blocks
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
         )
     endif()
 endif()
+
+set_property(TARGET tracking_gr_blocks
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

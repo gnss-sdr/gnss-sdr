@@ -56,12 +56,12 @@ memb_gpsTOW_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_refFrame_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_REF_FRAME_CONSTR_2 = {
 	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_gpsTOW_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_GPS_TOW_CONSTR_3 = {
 	{ APC_CONSTRAINED,	 24, -1,  0,  14399999 }	/* (0..14399999) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -72,7 +72,7 @@ static asn_TYPE_member_t asn_MBR_LocationInfo_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_refFrame_constraint_1,
-		&asn_PER_memb_refFrame_constr_2,
+		&ASN_PER_MEMB_REF_FRAME_CONSTR_2,
 		0,
 		"refFrame"
 		},
@@ -81,7 +81,7 @@ static asn_TYPE_member_t asn_MBR_LocationInfo_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_gpsTOW_constraint_1,
-		&asn_PER_memb_gpsTOW_constr_3,
+		&ASN_PER_MEMB_GPS_TOW_CONSTR_3,
 		0,
 		"gpsTOW"
 		},

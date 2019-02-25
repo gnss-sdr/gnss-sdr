@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -45,7 +45,6 @@ set(SYSTEM_PARAMETERS_SOURCES
     gps_cnav_navigation_message.cc
     gps_cnav_iono.cc
     gps_cnav_utc_model.cc
-    rtcm.cc
     glonass_gnav_ephemeris.cc
     glonass_gnav_almanac.cc
     glonass_gnav_utc_model.cc
@@ -75,7 +74,6 @@ set(SYSTEM_PARAMETERS_HEADERS
     gps_cnav_navigation_message.h
     gps_cnav_iono.h
     gps_cnav_utc_model.h
-    rtcm.h
     glonass_gnav_ephemeris.h
     glonass_gnav_almanac.h
     glonass_gnav_utc_model.h
@@ -100,26 +98,35 @@ set(SYSTEM_PARAMETERS_HEADERS
     MATH_CONSTANTS.h
 )
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/core/receiver
-    ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
-    ${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib
-    ${GLOG_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-)
-
 list(SORT SYSTEM_PARAMETERS_HEADERS)
 list(SORT SYSTEM_PARAMETERS_SOURCES)
 
-add_library(gnss_system_parameters
+source_group(Headers FILES ${SYSTEM_PARAMETERS_HEADERS})
+
+add_library(core_system_parameters
     ${SYSTEM_PARAMETERS_SOURCES}
     ${SYSTEM_PARAMETERS_HEADERS}
 )
 
-source_group(Headers FILES ${SYSTEM_PARAMETERS_HEADERS})
+target_link_libraries(core_system_parameters
+    PUBLIC
+        Boost::date_time
+        Boost::serialization
+        Glog::glog
+    PRIVATE
+        Gflags::gflags
+)
 
-add_dependencies(gnss_system_parameters rtklib_lib glog-${glog_RELEASE})
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(core_system_parameters
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
 
-target_link_libraries(gnss_system_parameters rtklib_lib ${Boost_LIBRARIES})
+set_property(TARGET core_system_parameters
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

@@ -68,9 +68,9 @@ gps_l5_telemetry_decoder_cc::gps_l5_telemetry_decoder_cc(
     d_TOW_at_Preamble_ms = 0U;
     // initialize the CNAV frame decoder (libswiftcnav)
     cnav_msg_decoder_init(&d_cnav_decoder);
-    for (int32_t aux = 0; aux < GPS_L5i_NH_CODE_LENGTH; aux++)
+    for (int32_t aux = 0; aux < GPS_L5I_NH_CODE_LENGTH; aux++)
         {
-            if (GPS_L5i_NH_CODE[aux] == 0)
+            if (GPS_L5I_NH_CODE[aux] == 0)
                 {
                     bits_NH[aux] = -1.0;
                 }
@@ -154,9 +154,9 @@ int gps_l5_telemetry_decoder_cc::general_work(int noutput_items __attribute__((u
     int32_t symbol_value = 0;
 
     // Search correlation with Neuman-Hofman Code (see IS-GPS-705D)
-    if (sym_hist.size() == GPS_L5i_NH_CODE_LENGTH)
+    if (sym_hist.size() == GPS_L5I_NH_CODE_LENGTH)
         {
-            for (int32_t i = 0; i < GPS_L5i_NH_CODE_LENGTH; i++)
+            for (int32_t i = 0; i < GPS_L5I_NH_CODE_LENGTH; i++)
                 {
                     if ((bits_NH[i] * sym_hist.at(i)) > 0.0)
                         {
@@ -167,7 +167,7 @@ int gps_l5_telemetry_decoder_cc::general_work(int noutput_items __attribute__((u
                             corr_NH -= 1;
                         }
                 }
-            if (abs(corr_NH) == GPS_L5i_NH_CODE_LENGTH)
+            if (abs(corr_NH) == GPS_L5I_NH_CODE_LENGTH)
                 {
                     sync_NH = true;
                     if (corr_NH > 0)
@@ -241,12 +241,12 @@ int gps_l5_telemetry_decoder_cc::general_work(int noutput_items __attribute__((u
             // delay by the formulae:
             // \code
             // symbolTime_ms = msg->tow * 6000 + *pdelay * 10 + (12 * 10); 12 symbols of the encoder's transitory
-            d_TOW_at_current_symbol_ms = msg.tow * 6000 + (delay + 12) * GPS_L5i_SYMBOL_PERIOD_MS;
+            d_TOW_at_current_symbol_ms = msg.tow * 6000 + (delay + 12) * GPS_L5I_SYMBOL_PERIOD_MS;
             d_flag_valid_word = true;
         }
     else
         {
-            d_TOW_at_current_symbol_ms += GPS_L5i_PERIOD_MS;
+            d_TOW_at_current_symbol_ms += GPS_L5I_PERIOD_MS;
             if (current_synchro_data.Flag_valid_symbol_output == false)
                 {
                     d_flag_valid_word = false;

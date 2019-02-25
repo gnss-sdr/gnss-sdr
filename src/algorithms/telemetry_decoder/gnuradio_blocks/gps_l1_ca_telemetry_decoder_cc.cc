@@ -30,7 +30,6 @@
  */
 
 #include "gps_l1_ca_telemetry_decoder_cc.h"
-#include "control_message_factory.h"
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
@@ -204,7 +203,10 @@ bool gps_l1_ca_telemetry_decoder_cc::decode_subframe()
             if (symbol_accumulator_counter == 20)
                 {
                     // symbol to bit
-                    if (symbol_accumulator > 0) GPS_frame_4bytes += 1;  // insert the telemetry bit in LSB
+                    if (symbol_accumulator > 0)
+                        {
+                            GPS_frame_4bytes += 1;  // insert the telemetry bit in LSB
+                        }
                     symbol_accumulator = 0;
                     symbol_accumulator_counter = 0;
 

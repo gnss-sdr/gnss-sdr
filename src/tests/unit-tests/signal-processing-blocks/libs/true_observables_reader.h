@@ -36,10 +36,10 @@
 #include <string>
 #include <vector>
 
-class true_observables_reader
+class True_Observables_Reader
 {
 public:
-    ~true_observables_reader();
+    ~True_Observables_Reader();
     bool read_binary_obs();
     bool restart();
     int64_t num_epochs();

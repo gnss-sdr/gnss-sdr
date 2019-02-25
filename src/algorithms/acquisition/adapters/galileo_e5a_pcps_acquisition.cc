@@ -70,7 +70,10 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
     acq_parameters_.dump = dump_;
     acq_parameters_.dump_channel = configuration_->property(role + ".dump_channel", 0);
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
-    if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
+    if (FLAGS_doppler_max != 0)
+        {
+            doppler_max_ = FLAGS_doppler_max;
+        }
     acq_parameters_.doppler_max = doppler_max_;
     sampled_ms_ = 1;
     max_dwells_ = configuration_->property(role + ".max_dwells", 1);
@@ -93,10 +96,10 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
         }
     if (acq_parameters_.use_automatic_resampler)
         {
-            if (acq_parameters_.fs_in > Galileo_E5a_OPT_ACQ_FS_HZ)
+            if (acq_parameters_.fs_in > GALILEO_E5A_OPT_ACQ_FS_HZ)
                 {
-                    acq_parameters_.resampler_ratio = floor(static_cast<float>(acq_parameters_.fs_in) / Galileo_E5a_OPT_ACQ_FS_HZ);
-                    uint32_t decimation = acq_parameters_.fs_in / Galileo_E5a_OPT_ACQ_FS_HZ;
+                    acq_parameters_.resampler_ratio = floor(static_cast<float>(acq_parameters_.fs_in) / GALILEO_E5A_OPT_ACQ_FS_HZ);
+                    uint32_t decimation = acq_parameters_.fs_in / GALILEO_E5A_OPT_ACQ_FS_HZ;
                     while (acq_parameters_.fs_in % decimation > 0)
                         {
                             decimation--;
@@ -106,21 +109,21 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
                 }
 
             //--- Find number of samples per spreading code -------------------------
-            code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (Galileo_E5a_CODE_CHIP_RATE_HZ / Galileo_E5a_CODE_LENGTH_CHIPS)));
+            code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GALILEO_E5A_CODE_CHIP_RATE_HZ / GALILEO_E5A_CODE_LENGTH_CHIPS)));
             acq_parameters_.samples_per_ms = static_cast<float>(acq_parameters_.resampled_fs) * 0.001;
-            acq_parameters_.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / Galileo_E5a_CODE_CHIP_RATE_HZ) * static_cast<float>(acq_parameters_.resampled_fs)));
+            acq_parameters_.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / GALILEO_E5A_CODE_CHIP_RATE_HZ) * static_cast<float>(acq_parameters_.resampled_fs)));
         }
     else
         {
             acq_parameters_.resampled_fs = fs_in_;
             //--- Find number of samples per spreading code -------------------------
-            code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(fs_in_) / (Galileo_E5a_CODE_CHIP_RATE_HZ / Galileo_E5a_CODE_LENGTH_CHIPS)));
+            code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(fs_in_) / (GALILEO_E5A_CODE_CHIP_RATE_HZ / GALILEO_E5A_CODE_LENGTH_CHIPS)));
             acq_parameters_.samples_per_ms = static_cast<float>(fs_in_) * 0.001;
-            acq_parameters_.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / Galileo_E5a_CODE_CHIP_RATE_HZ) * static_cast<float>(acq_parameters_.fs_in)));
+            acq_parameters_.samples_per_chip = static_cast<unsigned int>(ceil((1.0 / GALILEO_E5A_CODE_CHIP_RATE_HZ) * static_cast<float>(acq_parameters_.fs_in)));
         }
 
     //--- Find number of samples per spreading code (1ms)-------------------------
-    code_length_ = static_cast<unsigned int>(std::round(static_cast<double>(fs_in_) / Galileo_E5a_CODE_CHIP_RATE_HZ * static_cast<double>(Galileo_E5a_CODE_LENGTH_CHIPS)));
+    code_length_ = static_cast<unsigned int>(std::round(static_cast<double>(fs_in_) / GALILEO_E5A_CODE_CHIP_RATE_HZ * static_cast<double>(GALILEO_E5A_CODE_LENGTH_CHIPS)));
     vector_length_ = code_length_ * sampled_ms_;
 
     code_ = new gr_complex[vector_length_];
@@ -141,7 +144,7 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(ConfigurationInterface* con
     acq_parameters_.it_size = item_size_;
     acq_parameters_.sampled_ms = sampled_ms_;
     acq_parameters_.ms_per_code = 1;
-    acq_parameters_.samples_per_code = acq_parameters_.samples_per_ms * static_cast<float>(GALILEO_E5a_CODE_PERIOD_MS);
+    acq_parameters_.samples_per_code = acq_parameters_.samples_per_ms * static_cast<float>(GALILEO_E5A_CODE_PERIOD_MS);
     acq_parameters_.num_doppler_bins_step2 = configuration_->property(role + ".second_nbins", 4);
     acq_parameters_.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
     acq_parameters_.make_2_steps = configuration_->property(role + ".make_two_steps", false);

@@ -42,8 +42,8 @@ DEFINE_int32(size_magnitude_test, 100000, "Size of the arrays used for magnitude
 
 TEST(MagnitudeSquaredTest, StandardCComplexImplementation)
 {
-    std::complex<float>* input = new std::complex<float>[FLAGS_size_magnitude_test];
-    float* output = new float[FLAGS_size_magnitude_test];
+    auto* input = new std::complex<float>[FLAGS_size_magnitude_test];
+    auto* output = new float[FLAGS_size_magnitude_test];
     unsigned int number = 0;
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
@@ -114,9 +114,9 @@ TEST(MagnitudeSquaredTest, ArmadilloComplexImplementation)
 
 TEST(MagnitudeSquaredTest, VolkComplexImplementation)
 {
-    std::complex<float>* input = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(FLAGS_size_magnitude_test * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
+    auto* input = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(FLAGS_size_magnitude_test * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
     std::fill_n(input, FLAGS_size_magnitude_test, std::complex<float>(0.0, 0.0));
-    float* output = static_cast<float*>(volk_gnsssdr_malloc(FLAGS_size_magnitude_test * sizeof(float), volk_gnsssdr_get_alignment()));
+    auto* output = static_cast<float*>(volk_gnsssdr_malloc(FLAGS_size_magnitude_test * sizeof(float), volk_gnsssdr_get_alignment()));
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
 

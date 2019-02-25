@@ -40,8 +40,8 @@
 
 
 // Physical constants
-const double GPS_C_m_s = SPEED_OF_LIGHT;                 //!< The speed of light, [m/s]
-const double GPS_C_m_ms = 299792.4580;                   //!< The speed of light, [m/ms]
+const double GPS_C_M_S = SPEED_OF_LIGHT;                 //!< The speed of light, [m/s]
+const double GPS_C_M_MS = 299792.4580;                   //!< The speed of light, [m/ms]
 const double GPS_PI = 3.1415926535898;                   //!< Pi as defined in IS-GPS-200E
 const double GPS_TWO_PI = 6.283185307179586;             //!< 2Pi as defined in IS-GPS-200E
 const double OMEGA_EARTH_DOT = DEFAULT_OMEGA_EARTH_DOT;  //!< Earth rotation rate, [rad/s]
@@ -72,7 +72,7 @@ const double MAX_TOA_DELAY_MS = 20;
 
 //#define NAVIGATION_SOLUTION_RATE_MS 1000 // this cannot go here
 //const double GPS_STARTOFFSET_ms = 68.802;  //[ms] Initial sign. travel time (this cannot go here)
-const double GPS_STARTOFFSET_ms = 60.0;
+const double GPS_STARTOFFSET_MS = 60.0;
 
 // OBSERVABLE HISTORY DEEP FOR INTERPOLATION
 const int32_t GPS_L1_CA_HISTORY_DEEP = 100;

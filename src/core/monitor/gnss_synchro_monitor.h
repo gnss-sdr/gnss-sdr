@@ -34,22 +34,21 @@
 #ifndef GNSS_SDR_GNSS_SYNCHRO_MONITOR_H
 #define GNSS_SDR_GNSS_SYNCHRO_MONITOR_H
 
-
 #include "gnss_synchro_udp_sink.h"
 #include <gnuradio/sync_block.h>
-#include <fstream>
+#include <memory>
 #include <string>
-#include <utility>
+#include <vector>
 
 
 class gnss_synchro_monitor;
 
-typedef boost::shared_ptr<gnss_synchro_monitor> gnss_synchro_monitor_sptr;
+using gnss_synchro_monitor_sptr = boost::shared_ptr<gnss_synchro_monitor>;
 
 gnss_synchro_monitor_sptr gnss_synchro_make_monitor(unsigned int n_channels,
-    int output_rate_ms,
+    int decimation_factor,
     int udp_port,
-    std::vector<std::string> udp_addresses);
+    const std::vector<std::string>& udp_addresses);
 
 /*!
  * \brief This class implements a block that computes the PVT solution with Galileo E1 signals
@@ -57,14 +56,14 @@ gnss_synchro_monitor_sptr gnss_synchro_make_monitor(unsigned int n_channels,
 class gnss_synchro_monitor : public gr::sync_block
 {
 private:
-    friend gnss_synchro_monitor_sptr gnss_synchro_make_monitor(unsigned int nchannels,
-        int output_rate_ms,
+    friend gnss_synchro_monitor_sptr gnss_synchro_make_monitor(unsigned int n_channels,
+        int decimation_factor,
         int udp_port,
-        std::vector<std::string> udp_addresses);
+        const std::vector<std::string>& udp_addresses);
 
     unsigned int d_nchannels;
 
-    int d_output_rate_ms;
+    int d_decimation_factor;
 
     std::unique_ptr<Gnss_Synchro_Udp_Sink> udp_sink_ptr;
 
@@ -72,10 +71,10 @@ private:
 
 
 public:
-    gnss_synchro_monitor(unsigned int nchannels,
-        int output_rate_ms,
+    gnss_synchro_monitor(unsigned int n_channels,
+        int decimation_factor,
         int udp_port,
-        std::vector<std::string> udp_addresses);
+        const std::vector<std::string>& udp_addresses);
 
     ~gnss_synchro_monitor();  //!< Default destructor
 

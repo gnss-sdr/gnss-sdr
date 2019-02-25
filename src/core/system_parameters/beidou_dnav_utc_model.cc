@@ -1,5 +1,5 @@
 /*!
- * \file beidou_dnav_utc_model.c
+ * \file beidou_dnav_utc_model.cc
  * \brief  Interface of a BeiDou UTC Model storage
  * \author Damian Miralles, 2018. dmiralles2009(at)gmail.com
  * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.com

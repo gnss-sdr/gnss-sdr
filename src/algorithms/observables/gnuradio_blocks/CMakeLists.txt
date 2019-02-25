@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -24,42 +24,38 @@ set(OBS_GR_BLOCKS_HEADERS
     hybrid_observables_cc.h
 )
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces
-    ${CMAKE_SOURCE_DIR}/src/core/receiver
-    ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-    ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
-    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-    ${ARMADILLO_INCLUDE_DIRS}
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${MATIO_INCLUDE_DIRS}
-)
+source_group(Headers FILES ${OBS_GR_BLOCKS_HEADERS})
 
 add_library(obs_gr_blocks ${OBS_GR_BLOCKS_SOURCES} ${OBS_GR_BLOCKS_HEADERS})
 
-source_group(Headers FILES ${OBS_GR_BLOCKS_HEADERS})
-
-if(MATIO_FOUND)
-    add_dependencies(obs_gr_blocks
-        gnss_sp_libs
-        glog-${glog_RELEASE}
-        armadillo-${armadillo_RELEASE}
-    )
-else()
-    add_dependencies(obs_gr_blocks
-        gnss_sp_libs
-        glog-${glog_RELEASE}
-        armadillo-${armadillo_RELEASE}
-        matio-${GNSSSDR_MATIO_LOCAL_VERSION}
-    )
-endif()
+target_include_directories(obs_gr_blocks
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+)
 
 target_link_libraries(obs_gr_blocks
-    gnss_sp_libs
-    ${GNURADIO_RUNTIME_LIBRARIES}
-    ${ARMADILLO_LIBRARIES}
-    ${MATIO_LIBRARIES}
+    PUBLIC
+        Boost::boost
+        Gnuradio::blocks
+        core_system_parameters
+    PRIVATE
+        Gflags::gflags
+        Glog::glog
+        Boost::filesystem
+        Matio::matio
+        algorithms_libs
+)
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(obs_gr_blocks
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+set_property(TARGET obs_gr_blocks
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

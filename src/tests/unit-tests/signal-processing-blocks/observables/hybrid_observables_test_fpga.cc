@@ -1418,7 +1418,7 @@ void HybridObservablesTestFpga::configure_receiver(
             //        config->supersede_property("Tracking.implementation", std::string("Galileo_E5a_DLL_PLL_Tracking"));
             //    }
             config->set_property("Tracking.early_late_space_chips", "0.5");
-            config->set_property("Tracking.track_pilot", "false");
+            config->set_property("Tracking.track_pilot", "true");
             config->set_property("Tracking.order", "2");
 
             config->set_property("TelemetryDecoder.implementation", "Galileo_E5a_Telemetry_Decoder");
@@ -1432,7 +1432,7 @@ void HybridObservablesTestFpga::configure_receiver(
             std::memcpy(static_cast<void*>(gnss_synchro_master.Signal), str, 3);  // copy string into synchro char array: 2 char + null
 
             config->set_property("Tracking.early_late_space_chips", "0.5");
-            config->set_property("Tracking.track_pilot", "false");
+            config->set_property("Tracking.track_pilot", "true");
             config->set_property("Tracking.order", "2");
 
             config->set_property("TelemetryDecoder.implementation", "GPS_L5_Telemetry_Decoder");

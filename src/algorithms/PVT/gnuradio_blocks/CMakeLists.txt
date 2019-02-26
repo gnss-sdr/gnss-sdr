@@ -30,15 +30,18 @@ add_library(pvt_gr_blocks ${PVT_GR_BLOCKS_SOURCES} ${PVT_GR_BLOCKS_HEADERS})
 
 target_link_libraries(pvt_gr_blocks
     PUBLIC
-        Boost::date_time
-        Gnuradio::runtime
         pvt_libs
+        core_system_parameters
+        Boost::date_time
+        Gnuradio::pmt
+        Gnuradio::runtime
     PRIVATE
+        algorithms_libs
         Gflags::gflags
         Glog::glog
         Boost::filesystem
         Boost::system
-        core_system_parameters
+        Boost::serialization
 )
 
 if(ENABLE_CLANG_TIDY)
@@ -50,11 +53,6 @@ if(ENABLE_CLANG_TIDY)
     endif()
 endif()
 
-target_include_directories(pvt_gr_blocks
-    PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
-)
-
 if(Boost_VERSION LESS 105800)
     target_compile_definitions(pvt_gr_blocks PRIVATE -DOLD_BOOST=1)
 endif()
@@ -62,5 +60,4 @@ endif()
 set_property(TARGET pvt_gr_blocks
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/core/system_parameters>
 )

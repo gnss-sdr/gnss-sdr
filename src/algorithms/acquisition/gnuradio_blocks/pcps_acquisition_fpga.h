@@ -1,26 +1,14 @@
 /*!
  * \file pcps_acquisition_fpga.h
- * \brief This class implements a Parallel Code Phase Search Acquisition in the FPGA.
+ * \brief This class implements a Parallel Code Phase Search Acquisition for the FPGA
  *
- * Note: The CFAR algorithm is not implemented in the FPGA.
- * Note 2: The bit transition flag is not implemented in the FPGA
- *
- *  Acquisition strategy (Kay Borre book + CFAR threshold).
- *  <ol>
- *  <li> Compute the input signal power estimation
- *  <li> Doppler serial search loop
- *  <li> Perform the FFT-based circular convolution (parallel time search)
- *  <li> Record the maximum peak and the associated synchronization parameters
- *  <li> Compute the test statistics and compare to the threshold
- *  <li> Declare positive or negative acquisition using a message queue
- *  </ol>
  *
  * Kay Borre book: K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
  * "A Software-Defined GPS and Galileo Receiver. A Single-Frequency
  * Approach", Birkhauser, 2007. pp 81-84
  *
  * \authors <ul>
- *          <li> Marc Majoral, 2017. mmajoral(at)cttc.cat
+ *          <li> Marc Majoral, 2019. mmajoral(at)cttc.es
  *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
  *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *          <li> Marc Molina, 2013. marc.molina.pena@gmail.com
@@ -30,7 +18,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -51,7 +39,7 @@
  * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
- */
+ */ 
 
 #ifndef GNSS_SDR_PCPS_ACQUISITION_FPGA_H_
 #define GNSS_SDR_PCPS_ACQUISITION_FPGA_H_
@@ -122,15 +110,8 @@ private:
     Gnss_Synchro* d_gnss_synchro;
     std::shared_ptr<fpga_acquisition> acquisition_fpga;
 
-    // debug
-    //float debug_d_max_absolute;
-    //float debug_d_input_power_absolute;
-    //int32_t debug_indext;
-    //int32_t debug_doppler_index;
-
     float d_downsampling_factor;
     uint32_t d_select_queue_Fpga;
-    bool d_single_doppler_flag;
 
     uint32_t d_total_block_exp;
 
@@ -145,9 +126,7 @@ public:
       */
     inline void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
     {
-        //    printf("acq set gnss synchro start\n");
         d_gnss_synchro = p_gnss_synchro;
-        //   printf("acq set gnss synchro end\n");
     }
 
     /*!
@@ -155,9 +134,7 @@ public:
      */
     inline uint32_t mag() const
     {
-        //   printf("acq dmag start\n");
         return d_mag;
-        //   printf("acq dmag end\n");
     }
 
     /*!
@@ -238,19 +215,7 @@ public:
         gr_vector_void_star& output_items);
 
     /*!
-     * \brief This function is only used for the unit tests
-     */
-    void set_single_doppler_flag(unsigned int single_doppler_flag);
-
-    /*!
-     * \brief This funciton is only used for the unit tests
-     */
-    void read_acquisition_results(uint32_t *max_index,
-        float *max_magnitude, float *second_magnitude, uint64_t *initial_sample, uint32_t *doppler_index, uint32_t *total_fft_scaling_factor);
-
-
-    /*!
-     * \brief This funciton is only used for the unit tests
+     * \brief This funciton triggers a HW reset of the FPGA PL.
      */
     void reset_acquisition(void);
 

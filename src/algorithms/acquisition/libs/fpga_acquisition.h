@@ -2,7 +2,7 @@
  * \file fpga_acquisition.h
  * \brief High optimized FPGA vector correlator class
  * \authors <ul>
- *          <li> Marc Majoral, 2018. mmajoral(at)cttc.cat
+ *          <li> Marc Majoral, 2019. mmajoral(at)cttc.cat
  *          </ul>
  *
  * Class that controls and executes a high optimized acquisition HW
@@ -10,7 +10,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -61,13 +61,9 @@ public:
     bool set_local_code(uint32_t PRN);
     bool free();
     void set_doppler_sweep(uint32_t num_sweeps);
-    //void set_doppler_sweep_debug(uint32_t num_sweeps, uint32_t doppler_index);
     void run_acquisition(void);
     void set_phase_step(uint32_t doppler_index);
-    //void read_acquisition_results(uint32_t *max_index, float *max_magnitude,
-    //    uint64_t *initial_sample, float *power_sum, uint32_t *doppler_index);
     void read_acquisition_results(uint32_t *max_index, float *firstpeak, float *secondpeak, uint64_t *initial_sample, float *power_sum, uint32_t *doppler_index, uint32_t *total_blk_exp);
-
 
     void block_samples();
     void unblock_samples();
@@ -78,9 +74,7 @@ public:
      */
     void set_doppler_max(uint32_t doppler_max)
     {
-    	//printf("acq lib set doppler max called\n");
         d_doppler_max = doppler_max;
-        //printf("set acq lib d_doppler_max = %d\n", (int) d_doppler_max);
     }
 
     /*!
@@ -89,23 +83,16 @@ public:
      */
     void set_doppler_step(uint32_t doppler_step)
     {
-    	//printf("acq lib set doppler step called\n");
         d_doppler_step = doppler_step;
-        //printf("set acq lib d_doppler_step = %d\n", (int) d_doppler_step);
     }
 
     /*!
-     * \brief this function is only used in the unit test
-     */
-    void set_single_doppler_flag(unsigned int single_doppler_flag);
-
-    /*!
-     * \brief this function is only used in the unit test
+     * \brief Reset the FPGA PL.
      */
     void reset_acquisition(void);
 
     /*!
-     * \brief this function is only used in the unit test
+     * \brief read the scaling factor that has been used by the FFT-IFFT
      */
     void read_fpga_total_scale_factor(uint32_t *total_scale_factor, uint32_t *fw_scale_factor);
 
@@ -137,13 +124,8 @@ private:
     // FPGA private functions
     void fpga_acquisition_test_register(void);
     void fpga_configure_acquisition_local_code(lv_16sc_t fft_local_code[]);
-    //void configure_acquisition();
-//    void close_device();
-//    void open_device();
     void read_result_valid(uint32_t *result_valid);
 
-    // test parameters
-    unsigned int d_single_doppler_flag; // this flag is only used for testing purposes
 };
 
 #endif /* GNSS_SDR_FPGA_ACQUISITION_H_ */

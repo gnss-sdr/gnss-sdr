@@ -1,9 +1,9 @@
 /*!
  * \file gps_l1_ca_pcps_acquisition_fpga.h
- * \brief Adapts a PCPS acquisition block that uses the FPGA to
- *  an AcquisitionInterface for GPS L1 C/A signals
+ * \brief Adapts a PCPS acquisition block to an AcquisitionInterface
+ *  for GPS L1 C/A signals for the FPGA
  * \authors <ul>
- *          <li> Marc Majoral, 2018. mmajoral(at)cttc.es
+ *          <li> Marc Majoral, 2019. mmajoral(at)cttc.es
  *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
  *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *          <li> Marc Molina, 2013. marc.molina.pena(at)gmail.com
@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,7 +32,7 @@
  * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
- */
+ */ 
 
 #ifndef GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FPGA_H_
 #define GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FPGA_H_
@@ -134,26 +134,6 @@ public:
      * \brief If state = 1, it forces the block to start acquiring from the first sample
      */
     void set_state(int state) override;
-
-    /*!
-     * \brief This function is only used in the unit tests
-     */
-    void set_single_doppler_flag(unsigned int single_doppler_flag);
-    /*!
-     * \brief This function is only used in the unit tests
-     */
-    void read_acquisition_results(uint32_t *max_index,
-        float *max_magnitude, float *second_magnitude, uint64_t *initial_sample, uint32_t *doppler_index, uint32_t *total_fft_scaling_factor);
-
-    /*!
-     * \brief This function is only used in the unit tests
-     */
-    void reset_acquisition(void);
-
-    /*!
-     * \brief This function is only used in the unit tests
-     */
-    //void read_fpga_total_scale_factor(uint32_t *total_scale_factor, uint32_t *fw_scale_factor);
 
     /*!
      * \brief Stop running acquisition

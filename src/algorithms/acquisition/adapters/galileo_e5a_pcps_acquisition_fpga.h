@@ -1,11 +1,12 @@
 /*!
- * \file galileo_e5a_pcps_acquisition.h
+ * \file galileo_e5a_pcps_acquisition_fpga.h
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
- *  Galileo E5a data and pilot Signals
+ *  Galileo E5a data and pilot Signals for the FPGA
+ * \author Marc Majoral, 2019. mmajoral(at)cttc.es
  * \author Antonio Ramos, 2018. antonio.ramos(at)cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -129,32 +130,18 @@ public:
      * \brief This function is only used in the unit tests
      */
     void set_single_doppler_flag(unsigned int single_doppler_flag);
-    /*!
-     * \brief This function is only used in the unit tests
-     */
-    void read_acquisition_results(uint32_t *max_index,
-        float *max_magnitude, float *second_magnitude, uint64_t *initial_sample, uint32_t *doppler_index, uint32_t *total_fft_scaling_factor);
-
-
-    /*!
-     * \brief This function is only used in the unit tests
-     */
-    void reset_acquisition(void);
-
-    /*!
-     * \brief This function is only used in the unit tests
-     */
-    //void read_fpga_total_scale_factor(uint32_t *total_scale_factor, uint32_t *fw_scale_factor);
 
     /*!
      * \brief Stop running acquisition
      */
     void stop_acquisition() override;
 
+    /*!
+     * \brief Sets the resampler latency to account it in the acquisition code delay estimation
+     */
     void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
 
 private:
-    //float calculate_threshold(float pfa);
 
     ConfigurationInterface* configuration_;
 
@@ -189,16 +176,10 @@ private:
 
     float threshold_;
 
-    /*
-    std::complex<float>* codeI_;
-    std::complex<float>* codeQ_;
-    */
-
     gr_complex* code_;
 
     Gnss_Synchro* gnss_synchro_;
 
-    // extra for the FPGA
     lv_16sc_t* d_all_fft_codes_;  // memory that contains all the code ffts
 };
 #endif /* GALILEO_E5A_PCPS_ACQUISITION_FPGA_H_ */

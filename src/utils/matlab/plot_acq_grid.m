@@ -28,7 +28,7 @@
 
 %%%%%%%%% ?????? CONFIGURE !!! %%%%%%%%%%%%%
 
-path = '/archive/';
+path = '/home/dmiralles/Documents/Research/Publications/INSIDE_GNSS/bds_leg_pvt/Data/';  %% CHANGE THIS PATH
 file = 'bds_b3i_acq';
 
 sat = 27;

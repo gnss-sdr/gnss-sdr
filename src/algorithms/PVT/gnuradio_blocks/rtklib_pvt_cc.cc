@@ -30,7 +30,6 @@
 
 #include "rtklib_pvt_cc.h"
 #include "display.h"
-#include "galileo_almanac.h"
 #include "galileo_almanac_helper.h"
 #include "gnss_sdr_create_directory.h"
 #include "pvt_conf.h"
@@ -44,8 +43,8 @@
 #include <gnuradio/io_signature.h>
 #include <algorithm>
 #include <exception>
+#include <fstream>
 #include <iostream>
-#include <map>
 #include <stdexcept>
 #if OLD_BOOST
 #include <boost/math/common_factor_rt.hpp>
@@ -65,267 +64,6 @@ rtklib_pvt_cc_sptr rtklib_make_pvt_cc(uint32_t nchannels,
     return rtklib_pvt_cc_sptr(new rtklib_pvt_cc(nchannels,
         conf_,
         rtk));
-}
-
-
-void rtklib_pvt_cc::msg_handler_telemetry(const pmt::pmt_t& msg)
-{
-    try
-        {
-            // ************* GPS telemetry *****************
-            if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Ephemeris>))
-                {
-                    // ### GPS EPHEMERIS ###
-                    std::shared_ptr<Gps_Ephemeris> gps_eph;
-                    gps_eph = boost::any_cast<std::shared_ptr<Gps_Ephemeris>>(pmt::any_ref(msg));
-                    DLOG(INFO) << "Ephemeris record has arrived from SAT ID "
-                               << gps_eph->i_satellite_PRN << " (Block "
-                               << gps_eph->satelliteBlock[gps_eph->i_satellite_PRN] << ")"
-                               << "inserted with Toe=" << gps_eph->d_Toe << " and GPS Week="
-                               << gps_eph->i_GPS_week;
-                    // update/insert new ephemeris record to the global ephemeris map
-                    d_pvt_solver->gps_ephemeris_map[gps_eph->i_satellite_PRN] = *gps_eph;
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Iono>))
-                {
-                    // ### GPS IONO ###
-                    std::shared_ptr<Gps_Iono> gps_iono;
-                    gps_iono = boost::any_cast<std::shared_ptr<Gps_Iono>>(pmt::any_ref(msg));
-                    d_pvt_solver->gps_iono = *gps_iono;
-                    DLOG(INFO) << "New IONO record has arrived ";
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Utc_Model>))
-                {
-                    // ### GPS UTC MODEL ###
-                    std::shared_ptr<Gps_Utc_Model> gps_utc_model;
-                    gps_utc_model = boost::any_cast<std::shared_ptr<Gps_Utc_Model>>(pmt::any_ref(msg));
-                    d_pvt_solver->gps_utc_model = *gps_utc_model;
-                    DLOG(INFO) << "New UTC record has arrived ";
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_CNAV_Ephemeris>))
-                {
-                    // ### GPS CNAV message ###
-                    std::shared_ptr<Gps_CNAV_Ephemeris> gps_cnav_ephemeris;
-                    gps_cnav_ephemeris = boost::any_cast<std::shared_ptr<Gps_CNAV_Ephemeris>>(pmt::any_ref(msg));
-                    // update/insert new ephemeris record to the global ephemeris map
-                    d_pvt_solver->gps_cnav_ephemeris_map[gps_cnav_ephemeris->i_satellite_PRN] = *gps_cnav_ephemeris;
-                    DLOG(INFO) << "New GPS CNAV ephemeris record has arrived ";
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_CNAV_Iono>))
-                {
-                    // ### GPS CNAV IONO ###
-                    std::shared_ptr<Gps_CNAV_Iono> gps_cnav_iono;
-                    gps_cnav_iono = boost::any_cast<std::shared_ptr<Gps_CNAV_Iono>>(pmt::any_ref(msg));
-                    d_pvt_solver->gps_cnav_iono = *gps_cnav_iono;
-                    DLOG(INFO) << "New CNAV IONO record has arrived ";
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_CNAV_Utc_Model>))
-                {
-                    // ### GPS CNAV UTC MODEL ###
-                    std::shared_ptr<Gps_CNAV_Utc_Model> gps_cnav_utc_model;
-                    gps_cnav_utc_model = boost::any_cast<std::shared_ptr<Gps_CNAV_Utc_Model>>(pmt::any_ref(msg));
-                    d_pvt_solver->gps_cnav_utc_model = *gps_cnav_utc_model;
-                    DLOG(INFO) << "New CNAV UTC record has arrived ";
-                }
-
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Almanac>))
-                {
-                    // ### GPS ALMANAC ###
-                    std::shared_ptr<Gps_Almanac> gps_almanac;
-                    gps_almanac = boost::any_cast<std::shared_ptr<Gps_Almanac>>(pmt::any_ref(msg));
-                    d_pvt_solver->gps_almanac_map[gps_almanac->i_satellite_PRN] = *gps_almanac;
-                    DLOG(INFO) << "New GPS almanac record has arrived ";
-                }
-
-            // **************** Galileo telemetry ********************
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Ephemeris>))
-                {
-                    // ### Galileo EPHEMERIS ###
-                    std::shared_ptr<Galileo_Ephemeris> galileo_eph;
-                    galileo_eph = boost::any_cast<std::shared_ptr<Galileo_Ephemeris>>(pmt::any_ref(msg));
-                    // insert new ephemeris record
-                    DLOG(INFO) << "Galileo New Ephemeris record inserted in global map with TOW =" << galileo_eph->TOW_5
-                               << ", GALILEO Week Number =" << galileo_eph->WN_5
-                               << " and Ephemeris IOD = " << galileo_eph->IOD_ephemeris;
-                    // update/insert new ephemeris record to the global ephemeris map
-                    d_pvt_solver->galileo_ephemeris_map[galileo_eph->i_satellite_PRN] = *galileo_eph;
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Iono>))
-                {
-                    // ### Galileo IONO ###
-                    std::shared_ptr<Galileo_Iono> galileo_iono;
-                    galileo_iono = boost::any_cast<std::shared_ptr<Galileo_Iono>>(pmt::any_ref(msg));
-                    d_pvt_solver->galileo_iono = *galileo_iono;
-                    DLOG(INFO) << "New IONO record has arrived ";
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Utc_Model>))
-                {
-                    // ### Galileo UTC MODEL ###
-                    std::shared_ptr<Galileo_Utc_Model> galileo_utc_model;
-                    galileo_utc_model = boost::any_cast<std::shared_ptr<Galileo_Utc_Model>>(pmt::any_ref(msg));
-                    d_pvt_solver->galileo_utc_model = *galileo_utc_model;
-                    DLOG(INFO) << "New UTC record has arrived ";
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Almanac_Helper>))
-                {
-                    // ### Galileo Almanac ###
-                    std::shared_ptr<Galileo_Almanac_Helper> galileo_almanac_helper;
-                    galileo_almanac_helper = boost::any_cast<std::shared_ptr<Galileo_Almanac_Helper>>(pmt::any_ref(msg));
-
-                    Galileo_Almanac sv1 = galileo_almanac_helper->get_almanac(1);
-                    Galileo_Almanac sv2 = galileo_almanac_helper->get_almanac(2);
-                    Galileo_Almanac sv3 = galileo_almanac_helper->get_almanac(3);
-
-                    if (sv1.i_satellite_PRN != 0)
-                        {
-                            d_pvt_solver->galileo_almanac_map[sv1.i_satellite_PRN] = sv1;
-                        }
-                    if (sv2.i_satellite_PRN != 0)
-                        {
-                            d_pvt_solver->galileo_almanac_map[sv2.i_satellite_PRN] = sv2;
-                        }
-                    if (sv3.i_satellite_PRN != 0)
-                        {
-                            d_pvt_solver->galileo_almanac_map[sv3.i_satellite_PRN] = sv3;
-                        }
-                    DLOG(INFO) << "New Galileo Almanac data have arrived ";
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Almanac>))
-                {
-                    // ### Galileo Almanac ###
-                    std::shared_ptr<Galileo_Almanac> galileo_alm;
-                    galileo_alm = boost::any_cast<std::shared_ptr<Galileo_Almanac>>(pmt::any_ref(msg));
-                    // update/insert new almanac record to the global almanac map
-                    d_pvt_solver->galileo_almanac_map[galileo_alm->i_satellite_PRN] = *galileo_alm;
-                }
-
-            // **************** GLONASS GNAV Telemetry **************************
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Glonass_Gnav_Ephemeris>))
-                {
-                    // ### GLONASS GNAV EPHEMERIS ###
-                    std::shared_ptr<Glonass_Gnav_Ephemeris> glonass_gnav_eph;
-                    glonass_gnav_eph = boost::any_cast<std::shared_ptr<Glonass_Gnav_Ephemeris>>(pmt::any_ref(msg));
-                    // TODO Add GLONASS with gps week number and tow,
-                    // insert new ephemeris record
-                    DLOG(INFO) << "GLONASS GNAV New Ephemeris record inserted in global map with TOW =" << glonass_gnav_eph->d_TOW
-                               << ", Week Number =" << glonass_gnav_eph->d_WN
-                               << " and Ephemeris IOD in UTC = " << glonass_gnav_eph->compute_GLONASS_time(glonass_gnav_eph->d_t_b)
-                               << " from SV = " << glonass_gnav_eph->i_satellite_slot_number;
-                    // update/insert new ephemeris record to the global ephemeris map
-                    d_pvt_solver->glonass_gnav_ephemeris_map[glonass_gnav_eph->i_satellite_PRN] = *glonass_gnav_eph;
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Glonass_Gnav_Utc_Model>))
-                {
-                    // ### GLONASS GNAV UTC MODEL ###
-                    std::shared_ptr<Glonass_Gnav_Utc_Model> glonass_gnav_utc_model;
-                    glonass_gnav_utc_model = boost::any_cast<std::shared_ptr<Glonass_Gnav_Utc_Model>>(pmt::any_ref(msg));
-                    d_pvt_solver->glonass_gnav_utc_model = *glonass_gnav_utc_model;
-                    DLOG(INFO) << "New GLONASS GNAV UTC record has arrived ";
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Glonass_Gnav_Almanac>))
-                {
-                    // ### GLONASS GNAV Almanac ###
-                    std::shared_ptr<Glonass_Gnav_Almanac> glonass_gnav_almanac;
-                    glonass_gnav_almanac = boost::any_cast<std::shared_ptr<Glonass_Gnav_Almanac>>(pmt::any_ref(msg));
-                    d_pvt_solver->glonass_gnav_almanac = *glonass_gnav_almanac;
-                    DLOG(INFO) << "New GLONASS GNAV Almanac has arrived "
-                               << ", GLONASS GNAV Slot Number =" << glonass_gnav_almanac->d_n_A;
-                }
-
-            // ************* BeiDou telemetry *****************
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Dnav_Ephemeris>))
-                {
-                    // ### Beidou EPHEMERIS ###
-                    std::shared_ptr<Beidou_Dnav_Ephemeris> bds_dnav_eph;
-                    bds_dnav_eph = boost::any_cast<std::shared_ptr<Beidou_Dnav_Ephemeris>>(pmt::any_ref(msg));
-                    DLOG(INFO) << "Ephemeris record has arrived from SAT ID "
-                               << bds_dnav_eph->i_satellite_PRN << " (Block "
-                               << bds_dnav_eph->satelliteBlock[bds_dnav_eph->i_satellite_PRN] << ")"
-                               << "inserted with Toe=" << bds_dnav_eph->d_Toe << " and BDS Week="
-                               << bds_dnav_eph->i_BEIDOU_week;
-                    // update/insert new ephemeris record to the global ephemeris map
-                    d_pvt_solver->beidou_dnav_ephemeris_map[bds_dnav_eph->i_satellite_PRN] = *bds_dnav_eph;
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Dnav_Iono>))
-                {
-                    // ### BeiDou IONO ###
-                    std::shared_ptr<Beidou_Dnav_Iono> bds_dnav_iono;
-                    bds_dnav_iono = boost::any_cast<std::shared_ptr<Beidou_Dnav_Iono>>(pmt::any_ref(msg));
-                    d_pvt_solver->beidou_dnav_iono = *bds_dnav_iono;
-                    DLOG(INFO) << "New BeiDou DNAV IONO record has arrived ";
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Dnav_Utc_Model>))
-                {
-                    // ### GPS UTC MODEL ###
-                    std::shared_ptr<Beidou_Dnav_Utc_Model> bds_dnav_utc_model;
-                    bds_dnav_utc_model = boost::any_cast<std::shared_ptr<Beidou_Dnav_Utc_Model>>(pmt::any_ref(msg));
-                    d_pvt_solver->beidou_dnav_utc_model = *bds_dnav_utc_model;
-                    DLOG(INFO) << "New BeiDou DNAV UTC record has arrived ";
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Dnav_Almanac>))
-                {
-                    // ### GPS ALMANAC ###
-                    std::shared_ptr<Beidou_Dnav_Almanac> bds_dnav_almanac;
-                    bds_dnav_almanac = boost::any_cast<std::shared_ptr<Beidou_Dnav_Almanac>>(pmt::any_ref(msg));
-                    d_pvt_solver->beidou_dnav_almanac_map[bds_dnav_almanac->i_satellite_PRN] = *bds_dnav_almanac;
-                    DLOG(INFO) << "New BeiDou DNAV almanac record has arrived ";
-                }
-            else
-                {
-                    LOG(WARNING) << "msg_handler_telemetry unknown object type!";
-                }
-        }
-    catch (boost::bad_any_cast& e)
-        {
-            LOG(WARNING) << "msg_handler_telemetry Bad any cast!";
-        }
-}
-
-
-std::map<int, Gps_Ephemeris> rtklib_pvt_cc::get_gps_ephemeris_map() const
-{
-    return d_pvt_solver->gps_ephemeris_map;
-}
-
-
-std::map<int, Gps_Almanac> rtklib_pvt_cc::get_gps_almanac_map() const
-{
-    return d_pvt_solver->gps_almanac_map;
-}
-
-
-std::map<int, Galileo_Ephemeris> rtklib_pvt_cc::get_galileo_ephemeris_map() const
-{
-    return d_pvt_solver->galileo_ephemeris_map;
-}
-
-
-std::map<int, Galileo_Almanac> rtklib_pvt_cc::get_galileo_almanac_map() const
-{
-    return d_pvt_solver->galileo_almanac_map;
-}
-
-
-std::map<int, Beidou_Dnav_Ephemeris> rtklib_pvt_cc::get_beidou_dnav_ephemeris_map() const
-{
-    return d_pvt_solver->beidou_dnav_ephemeris_map;
-}
-
-
-std::map<int, Beidou_Dnav_Almanac> rtklib_pvt_cc::get_beidou_dnav_almanac_map() const
-{
-    return d_pvt_solver->beidou_dnav_almanac_map;
-}
-
-
-void rtklib_pvt_cc::clear_ephemeris()
-{
-    d_pvt_solver->gps_ephemeris_map.clear();
-    d_pvt_solver->gps_almanac_map.clear();
-    d_pvt_solver->galileo_ephemeris_map.clear();
-    d_pvt_solver->galileo_almanac_map.clear();
-    d_pvt_solver->beidou_dnav_ephemeris_map.clear();
-    d_pvt_solver->beidou_dnav_almanac_map.clear();
 }
 
 
@@ -563,9 +301,7 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
             xml_base_path = xml_base_path + boost::filesystem::path::preferred_separator;
         }
 
-
     d_rx_time = 0.0;
-
     d_last_status_print_seg = 0;
 
     // PVT MONITOR
@@ -1147,6 +883,267 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
 }
 
 
+void rtklib_pvt_cc::msg_handler_telemetry(const pmt::pmt_t& msg)
+{
+    try
+        {
+            // ************* GPS telemetry *****************
+            if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Ephemeris>))
+                {
+                    // ### GPS EPHEMERIS ###
+                    std::shared_ptr<Gps_Ephemeris> gps_eph;
+                    gps_eph = boost::any_cast<std::shared_ptr<Gps_Ephemeris>>(pmt::any_ref(msg));
+                    DLOG(INFO) << "Ephemeris record has arrived from SAT ID "
+                               << gps_eph->i_satellite_PRN << " (Block "
+                               << gps_eph->satelliteBlock[gps_eph->i_satellite_PRN] << ")"
+                               << "inserted with Toe=" << gps_eph->d_Toe << " and GPS Week="
+                               << gps_eph->i_GPS_week;
+                    // update/insert new ephemeris record to the global ephemeris map
+                    d_pvt_solver->gps_ephemeris_map[gps_eph->i_satellite_PRN] = *gps_eph;
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Iono>))
+                {
+                    // ### GPS IONO ###
+                    std::shared_ptr<Gps_Iono> gps_iono;
+                    gps_iono = boost::any_cast<std::shared_ptr<Gps_Iono>>(pmt::any_ref(msg));
+                    d_pvt_solver->gps_iono = *gps_iono;
+                    DLOG(INFO) << "New IONO record has arrived ";
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Utc_Model>))
+                {
+                    // ### GPS UTC MODEL ###
+                    std::shared_ptr<Gps_Utc_Model> gps_utc_model;
+                    gps_utc_model = boost::any_cast<std::shared_ptr<Gps_Utc_Model>>(pmt::any_ref(msg));
+                    d_pvt_solver->gps_utc_model = *gps_utc_model;
+                    DLOG(INFO) << "New UTC record has arrived ";
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_CNAV_Ephemeris>))
+                {
+                    // ### GPS CNAV message ###
+                    std::shared_ptr<Gps_CNAV_Ephemeris> gps_cnav_ephemeris;
+                    gps_cnav_ephemeris = boost::any_cast<std::shared_ptr<Gps_CNAV_Ephemeris>>(pmt::any_ref(msg));
+                    // update/insert new ephemeris record to the global ephemeris map
+                    d_pvt_solver->gps_cnav_ephemeris_map[gps_cnav_ephemeris->i_satellite_PRN] = *gps_cnav_ephemeris;
+                    DLOG(INFO) << "New GPS CNAV ephemeris record has arrived ";
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_CNAV_Iono>))
+                {
+                    // ### GPS CNAV IONO ###
+                    std::shared_ptr<Gps_CNAV_Iono> gps_cnav_iono;
+                    gps_cnav_iono = boost::any_cast<std::shared_ptr<Gps_CNAV_Iono>>(pmt::any_ref(msg));
+                    d_pvt_solver->gps_cnav_iono = *gps_cnav_iono;
+                    DLOG(INFO) << "New CNAV IONO record has arrived ";
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_CNAV_Utc_Model>))
+                {
+                    // ### GPS CNAV UTC MODEL ###
+                    std::shared_ptr<Gps_CNAV_Utc_Model> gps_cnav_utc_model;
+                    gps_cnav_utc_model = boost::any_cast<std::shared_ptr<Gps_CNAV_Utc_Model>>(pmt::any_ref(msg));
+                    d_pvt_solver->gps_cnav_utc_model = *gps_cnav_utc_model;
+                    DLOG(INFO) << "New CNAV UTC record has arrived ";
+                }
+
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Almanac>))
+                {
+                    // ### GPS ALMANAC ###
+                    std::shared_ptr<Gps_Almanac> gps_almanac;
+                    gps_almanac = boost::any_cast<std::shared_ptr<Gps_Almanac>>(pmt::any_ref(msg));
+                    d_pvt_solver->gps_almanac_map[gps_almanac->i_satellite_PRN] = *gps_almanac;
+                    DLOG(INFO) << "New GPS almanac record has arrived ";
+                }
+
+            // **************** Galileo telemetry ********************
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Ephemeris>))
+                {
+                    // ### Galileo EPHEMERIS ###
+                    std::shared_ptr<Galileo_Ephemeris> galileo_eph;
+                    galileo_eph = boost::any_cast<std::shared_ptr<Galileo_Ephemeris>>(pmt::any_ref(msg));
+                    // insert new ephemeris record
+                    DLOG(INFO) << "Galileo New Ephemeris record inserted in global map with TOW =" << galileo_eph->TOW_5
+                               << ", GALILEO Week Number =" << galileo_eph->WN_5
+                               << " and Ephemeris IOD = " << galileo_eph->IOD_ephemeris;
+                    // update/insert new ephemeris record to the global ephemeris map
+                    d_pvt_solver->galileo_ephemeris_map[galileo_eph->i_satellite_PRN] = *galileo_eph;
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Iono>))
+                {
+                    // ### Galileo IONO ###
+                    std::shared_ptr<Galileo_Iono> galileo_iono;
+                    galileo_iono = boost::any_cast<std::shared_ptr<Galileo_Iono>>(pmt::any_ref(msg));
+                    d_pvt_solver->galileo_iono = *galileo_iono;
+                    DLOG(INFO) << "New IONO record has arrived ";
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Utc_Model>))
+                {
+                    // ### Galileo UTC MODEL ###
+                    std::shared_ptr<Galileo_Utc_Model> galileo_utc_model;
+                    galileo_utc_model = boost::any_cast<std::shared_ptr<Galileo_Utc_Model>>(pmt::any_ref(msg));
+                    d_pvt_solver->galileo_utc_model = *galileo_utc_model;
+                    DLOG(INFO) << "New UTC record has arrived ";
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Almanac_Helper>))
+                {
+                    // ### Galileo Almanac ###
+                    std::shared_ptr<Galileo_Almanac_Helper> galileo_almanac_helper;
+                    galileo_almanac_helper = boost::any_cast<std::shared_ptr<Galileo_Almanac_Helper>>(pmt::any_ref(msg));
+
+                    Galileo_Almanac sv1 = galileo_almanac_helper->get_almanac(1);
+                    Galileo_Almanac sv2 = galileo_almanac_helper->get_almanac(2);
+                    Galileo_Almanac sv3 = galileo_almanac_helper->get_almanac(3);
+
+                    if (sv1.i_satellite_PRN != 0)
+                        {
+                            d_pvt_solver->galileo_almanac_map[sv1.i_satellite_PRN] = sv1;
+                        }
+                    if (sv2.i_satellite_PRN != 0)
+                        {
+                            d_pvt_solver->galileo_almanac_map[sv2.i_satellite_PRN] = sv2;
+                        }
+                    if (sv3.i_satellite_PRN != 0)
+                        {
+                            d_pvt_solver->galileo_almanac_map[sv3.i_satellite_PRN] = sv3;
+                        }
+                    DLOG(INFO) << "New Galileo Almanac data have arrived ";
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Almanac>))
+                {
+                    // ### Galileo Almanac ###
+                    std::shared_ptr<Galileo_Almanac> galileo_alm;
+                    galileo_alm = boost::any_cast<std::shared_ptr<Galileo_Almanac>>(pmt::any_ref(msg));
+                    // update/insert new almanac record to the global almanac map
+                    d_pvt_solver->galileo_almanac_map[galileo_alm->i_satellite_PRN] = *galileo_alm;
+                }
+
+            // **************** GLONASS GNAV Telemetry **************************
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Glonass_Gnav_Ephemeris>))
+                {
+                    // ### GLONASS GNAV EPHEMERIS ###
+                    std::shared_ptr<Glonass_Gnav_Ephemeris> glonass_gnav_eph;
+                    glonass_gnav_eph = boost::any_cast<std::shared_ptr<Glonass_Gnav_Ephemeris>>(pmt::any_ref(msg));
+                    // TODO Add GLONASS with gps week number and tow,
+                    // insert new ephemeris record
+                    DLOG(INFO) << "GLONASS GNAV New Ephemeris record inserted in global map with TOW =" << glonass_gnav_eph->d_TOW
+                               << ", Week Number =" << glonass_gnav_eph->d_WN
+                               << " and Ephemeris IOD in UTC = " << glonass_gnav_eph->compute_GLONASS_time(glonass_gnav_eph->d_t_b)
+                               << " from SV = " << glonass_gnav_eph->i_satellite_slot_number;
+                    // update/insert new ephemeris record to the global ephemeris map
+                    d_pvt_solver->glonass_gnav_ephemeris_map[glonass_gnav_eph->i_satellite_PRN] = *glonass_gnav_eph;
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Glonass_Gnav_Utc_Model>))
+                {
+                    // ### GLONASS GNAV UTC MODEL ###
+                    std::shared_ptr<Glonass_Gnav_Utc_Model> glonass_gnav_utc_model;
+                    glonass_gnav_utc_model = boost::any_cast<std::shared_ptr<Glonass_Gnav_Utc_Model>>(pmt::any_ref(msg));
+                    d_pvt_solver->glonass_gnav_utc_model = *glonass_gnav_utc_model;
+                    DLOG(INFO) << "New GLONASS GNAV UTC record has arrived ";
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Glonass_Gnav_Almanac>))
+                {
+                    // ### GLONASS GNAV Almanac ###
+                    std::shared_ptr<Glonass_Gnav_Almanac> glonass_gnav_almanac;
+                    glonass_gnav_almanac = boost::any_cast<std::shared_ptr<Glonass_Gnav_Almanac>>(pmt::any_ref(msg));
+                    d_pvt_solver->glonass_gnav_almanac = *glonass_gnav_almanac;
+                    DLOG(INFO) << "New GLONASS GNAV Almanac has arrived "
+                               << ", GLONASS GNAV Slot Number =" << glonass_gnav_almanac->d_n_A;
+                }
+
+            // ************* BeiDou telemetry *****************
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Dnav_Ephemeris>))
+                {
+                    // ### Beidou EPHEMERIS ###
+                    std::shared_ptr<Beidou_Dnav_Ephemeris> bds_dnav_eph;
+                    bds_dnav_eph = boost::any_cast<std::shared_ptr<Beidou_Dnav_Ephemeris>>(pmt::any_ref(msg));
+                    DLOG(INFO) << "Ephemeris record has arrived from SAT ID "
+                               << bds_dnav_eph->i_satellite_PRN << " (Block "
+                               << bds_dnav_eph->satelliteBlock[bds_dnav_eph->i_satellite_PRN] << ")"
+                               << "inserted with Toe=" << bds_dnav_eph->d_Toe << " and BDS Week="
+                               << bds_dnav_eph->i_BEIDOU_week;
+                    // update/insert new ephemeris record to the global ephemeris map
+                    d_pvt_solver->beidou_dnav_ephemeris_map[bds_dnav_eph->i_satellite_PRN] = *bds_dnav_eph;
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Dnav_Iono>))
+                {
+                    // ### BeiDou IONO ###
+                    std::shared_ptr<Beidou_Dnav_Iono> bds_dnav_iono;
+                    bds_dnav_iono = boost::any_cast<std::shared_ptr<Beidou_Dnav_Iono>>(pmt::any_ref(msg));
+                    d_pvt_solver->beidou_dnav_iono = *bds_dnav_iono;
+                    DLOG(INFO) << "New BeiDou DNAV IONO record has arrived ";
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Dnav_Utc_Model>))
+                {
+                    // ### BeiDou UTC MODEL ###
+                    std::shared_ptr<Beidou_Dnav_Utc_Model> bds_dnav_utc_model;
+                    bds_dnav_utc_model = boost::any_cast<std::shared_ptr<Beidou_Dnav_Utc_Model>>(pmt::any_ref(msg));
+                    d_pvt_solver->beidou_dnav_utc_model = *bds_dnav_utc_model;
+                    DLOG(INFO) << "New BeiDou DNAV UTC record has arrived ";
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Dnav_Almanac>))
+                {
+                    // ### BeiDou ALMANAC ###
+                    std::shared_ptr<Beidou_Dnav_Almanac> bds_dnav_almanac;
+                    bds_dnav_almanac = boost::any_cast<std::shared_ptr<Beidou_Dnav_Almanac>>(pmt::any_ref(msg));
+                    d_pvt_solver->beidou_dnav_almanac_map[bds_dnav_almanac->i_satellite_PRN] = *bds_dnav_almanac;
+                    DLOG(INFO) << "New BeiDou DNAV almanac record has arrived ";
+                }
+            else
+                {
+                    LOG(WARNING) << "msg_handler_telemetry unknown object type!";
+                }
+        }
+    catch (boost::bad_any_cast& e)
+        {
+            LOG(WARNING) << "msg_handler_telemetry Bad any cast!";
+        }
+}
+
+
+std::map<int, Gps_Ephemeris> rtklib_pvt_cc::get_gps_ephemeris_map() const
+{
+    return d_pvt_solver->gps_ephemeris_map;
+}
+
+
+std::map<int, Gps_Almanac> rtklib_pvt_cc::get_gps_almanac_map() const
+{
+    return d_pvt_solver->gps_almanac_map;
+}
+
+
+std::map<int, Galileo_Ephemeris> rtklib_pvt_cc::get_galileo_ephemeris_map() const
+{
+    return d_pvt_solver->galileo_ephemeris_map;
+}
+
+
+std::map<int, Galileo_Almanac> rtklib_pvt_cc::get_galileo_almanac_map() const
+{
+    return d_pvt_solver->galileo_almanac_map;
+}
+
+
+std::map<int, Beidou_Dnav_Ephemeris> rtklib_pvt_cc::get_beidou_dnav_ephemeris_map() const
+{
+    return d_pvt_solver->beidou_dnav_ephemeris_map;
+}
+
+
+std::map<int, Beidou_Dnav_Almanac> rtklib_pvt_cc::get_beidou_dnav_almanac_map() const
+{
+    return d_pvt_solver->beidou_dnav_almanac_map;
+}
+
+
+void rtklib_pvt_cc::clear_ephemeris()
+{
+    d_pvt_solver->gps_ephemeris_map.clear();
+    d_pvt_solver->gps_almanac_map.clear();
+    d_pvt_solver->galileo_ephemeris_map.clear();
+    d_pvt_solver->galileo_almanac_map.clear();
+    d_pvt_solver->beidou_dnav_ephemeris_map.clear();
+    d_pvt_solver->beidou_dnav_almanac_map.clear();
+}
+
+
 bool rtklib_pvt_cc::observables_pairCompare_min(const std::pair<int, Gnss_Synchro>& a, const std::pair<int, Gnss_Synchro>& b)
 {
     return (a.second.Pseudorange_m) < (b.second.Pseudorange_m);
@@ -1215,7 +1212,7 @@ bool rtklib_pvt_cc::load_gnss_synchro_map_xml(const std::string& file_name)
 }
 
 
-std::vector<std::string> rtklib_pvt_cc::split_string(const std::string& s, char delim)
+std::vector<std::string> rtklib_pvt_cc::split_string(const std::string& s, char delim) const
 {
     std::vector<std::string> v;
     std::stringstream ss(s);

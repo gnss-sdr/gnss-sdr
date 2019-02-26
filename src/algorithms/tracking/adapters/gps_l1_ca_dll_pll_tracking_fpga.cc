@@ -1,8 +1,8 @@
 /*!
  * \file gps_l1_ca_dll_pll_tracking_fpga.cc
  * \brief Implementation of an adapter of a DLL+PLL tracking loop block
- * for GPS L1 C/A to a TrackingInterface that uses the FPGA
- * \author Marc Majoral, 2018, mmajoral(at)cttc.es
+ * for GPS L1 C/A to a TrackingInterface for the FPGA
+ * \author Marc Majoral, 2019, mmajoral(at)cttc.es
  *         Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Javier Arribas, 2011. jarribas(at)cttc.es
  *
@@ -13,7 +13,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -60,8 +60,6 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     DLOG(INFO) << "role " << role;
 
     //################# CONFIGURATION PARAMETERS ########################
-    //std::string default_item_type = "gr_complex";
-    //std::string item_type = configuration->property(role + ".item_type", default_item_type);
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     int fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     trk_param_fpga.fs_in = fs_in;
@@ -134,7 +132,6 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     trk_param_fpga.device_name = device_name;
     unsigned int device_base = configuration->property(role + ".device_base", 3);
     trk_param_fpga.device_base = device_base;
-    //unsigned int multicorr_type = configuration->property(role + ".multicorr_type", 0);
     trk_param_fpga.multicorr_type = 0;  //multicorr_type : 0 -> 3 correlators, 1 -> 5 correlators
 
     //################# PRE-COMPUTE ALL THE CODES #################
@@ -142,11 +139,6 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
             gps_l1_ca_code_gen_int(&d_ca_codes[(int(GPS_L1_CA_CODE_LENGTH_CHIPS)) * (PRN - 1)], PRN, 0);
-            // debug
-//            for (int kk=0;kk<int(GPS_L1_CA_CODE_LENGTH_CHIPS);kk++)
-//            {
-//            	printf("d_ca_codes[%d] = %d\n", (int(GPS_L1_CA_CODE_LENGTH_CHIPS)) * (PRN - 1) + kk , d_ca_codes[(int(GPS_L1_CA_CODE_LENGTH_CHIPS)) * (PRN - 1) + kk]);
-//            }
         }
     trk_param_fpga.ca_codes = d_ca_codes;
     trk_param_fpga.code_length_chips = GPS_L1_CA_CODE_LENGTH_CHIPS;

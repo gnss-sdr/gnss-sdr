@@ -1,7 +1,8 @@
 /*!
- * \file galileo_e1_dll_pll_veml_tracking.cc
+ * \file galileo_e1_dll_pll_veml_tracking_fpga.cc
  * \brief  Adapts a DLL+PLL VEML (Very Early Minus Late) tracking loop block
- *   to a TrackingInterface for Galileo E1 signals
+ *   to a TrackingInterface for Galileo E1 signals for the FPGA
+ * \author Marc Majoral, 2019. mmajoral(at)cttc.cat
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  * Code DLL + carrier PLL according to the algorithms described in:
@@ -11,7 +12,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -42,8 +43,6 @@
 #include "gnss_sdr_flags.h"
 #include <glog/logging.h>
 
-//#define NUM_PRNs_GALILEO_E1 50
-
 using google::LogMessage;
 
 void GalileoE1DllPllVemlTrackingFpga::stop_tracking()
@@ -54,7 +53,6 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
-    //dllpllconf_t trk_param;
     Dll_Pll_Conf_Fpga trk_param_fpga = Dll_Pll_Conf_Fpga();
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
@@ -131,7 +129,6 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     trk_param_fpga.device_name = device_name;
     unsigned int device_base = configuration->property(role + ".device_base", 15);
     trk_param_fpga.device_base = device_base;
-    //unsigned int multicorr_type = configuration->property(role + ".multicorr_type", 1);
     trk_param_fpga.multicorr_type = 1;  // 0 -> 3 correlators, 1 -> 5 correlators
 
     //################# PRE-COMPUTE ALL THE CODES #################
@@ -141,7 +138,6 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     float* data_codes_f;
 
 
-    printf("trk_param_fpga.track_pilot = %d\n", trk_param_fpga.track_pilot);
     if (trk_param_fpga.track_pilot)
         {
             d_data_codes = static_cast<int*>(volk_gnsssdr_malloc((static_cast<unsigned int>(GALILEO_E1_B_CODE_LENGTH_CHIPS)) * code_samples_per_chip * GALILEO_E1_NUMBER_OF_CODES * sizeof(int), volk_gnsssdr_get_alignment()));
@@ -153,16 +149,11 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
             data_codes_f = static_cast<float*>(volk_gnsssdr_malloc((static_cast<unsigned int>(GALILEO_E1_B_CODE_LENGTH_CHIPS)) * code_samples_per_chip * sizeof(float), volk_gnsssdr_get_alignment()));
         }
 
-    //printf("pppppppp trk_param_fpga.track_pilot = %d\n", trk_param_fpga.track_pilot);
-
-    //int kk;
-
     for (unsigned int PRN = 1; PRN <= GALILEO_E1_NUMBER_OF_CODES; PRN++)
         {
             char data_signal[3] = "1B";
             if (trk_param_fpga.track_pilot)
                 {
-                    //printf("yes tracking pilot !!!!!!!!!!!!!!!\n");
                     char pilot_signal[3] = "1C";
                     galileo_e1_code_gen_sinboc11_float(ca_codes_f, pilot_signal, PRN);
                     galileo_e1_code_gen_sinboc11_float(data_codes_f, data_signal, PRN);
@@ -171,23 +162,16 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
                         {
                             d_ca_codes[static_cast<int>(GALILEO_E1_B_CODE_LENGTH_CHIPS) * 2 * (PRN - 1) + s] = static_cast<int>(ca_codes_f[s]);
                             d_data_codes[static_cast<int>(GALILEO_E1_B_CODE_LENGTH_CHIPS) * 2 * (PRN - 1) + s] = static_cast<int>(data_codes_f[s]);
-                            //printf("%f %d | ", data_codes_f[s], d_data_codes[static_cast<int>(GALILEO_E1_B_CODE_LENGTH_CHIPS)* 2 * (PRN - 1) + s]);
                         }
-                    //printf("\n next \n");
-                    //scanf ("%d",&kk);
                 }
             else
                 {
-                    //printf("no tracking pilot\n");
                     galileo_e1_code_gen_sinboc11_float(ca_codes_f, data_signal, PRN);
 
                     for (unsigned int s = 0; s < 2 * GALILEO_E1_B_CODE_LENGTH_CHIPS; s++)
                         {
                             d_ca_codes[static_cast<int>(GALILEO_E1_B_CODE_LENGTH_CHIPS) * 2 * (PRN - 1) + s] = static_cast<int>(ca_codes_f[s]);
-                            //printf("%f %d | ", ca_codes_f[s], d_ca_codes[static_cast<int>(GALILEO_E1_B_CODE_LENGTH_CHIPS)* 2 * (PRN - 1) + s]);
                         }
-                    //printf("\n next \n");
-                    //scanf ("%d",&kk);
                 }
         }
 
@@ -218,7 +202,6 @@ GalileoE1DllPllVemlTrackingFpga::~GalileoE1DllPllVemlTrackingFpga()
 
 void GalileoE1DllPllVemlTrackingFpga::start_tracking()
 {
-    //tracking_->start_tracking();
     tracking_fpga_sc->start_tracking();
 }
 
@@ -229,14 +212,12 @@ void GalileoE1DllPllVemlTrackingFpga::start_tracking()
 void GalileoE1DllPllVemlTrackingFpga::set_channel(unsigned int channel)
 {
     channel_ = channel;
-    //tracking_->set_channel(channel);
     tracking_fpga_sc->set_channel(channel);
 }
 
 
 void GalileoE1DllPllVemlTrackingFpga::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
-    //tracking_->set_gnss_synchro(p_gnss_synchro);
     tracking_fpga_sc->set_gnss_synchro(p_gnss_synchro);
 }
 
@@ -261,13 +242,11 @@ void GalileoE1DllPllVemlTrackingFpga::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr GalileoE1DllPllVemlTrackingFpga::get_left_block()
 {
-    //return tracking_;
     return tracking_fpga_sc;
 }
 
 
 gr::basic_block_sptr GalileoE1DllPllVemlTrackingFpga::get_right_block()
 {
-    //return tracking_;
     return tracking_fpga_sc;
 }

@@ -1,19 +1,20 @@
 /*!
- * \file galileo_e5a_dll_pll_tracking.h
+ * \file galileo_e5a_dll_pll_tracking_fpga.h
  * \brief Adapts a code DLL + carrier PLL
- *  tracking block to a TrackingInterface for Galileo E5a signals
+ *  tracking block to a TrackingInterface for Galileo E5a signals for the FPGA
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
- *  Galileo E5a data and pilot Signals
+ *  Galileo E5a data and pilot Signals for the FPGA
  * \author Marc Sales, 2014. marcsales92(at)gmail.com
  * \based on work from:
  *          <ul>
+ *          <li> Marc Majoral, 2019. mmajoral(at)cttc.cat
  *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
  *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *          </ul>
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -63,10 +64,10 @@ public:
         return role_;
     }
 
-    //! Returns "Galileo_E5a_DLL_PLL_Tracking"
+    //! Returns "Galileo_E5a_DLL_PLL_Tracking_Fpga"
     inline std::string implementation() override
     {
-        return "Galileo_E5a_DLL_PLL_Tracking";
+        return "Galileo_E5a_DLL_PLL_Tracking_Fpga";
     }
 
     inline size_t item_size() override

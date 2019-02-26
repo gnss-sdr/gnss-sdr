@@ -2,7 +2,7 @@
  * \file fpga_switch.h
  * \brief Switch that connects the HW accelerator queues to the analog front end or the DMA.
  * \authors <ul>
- * 			<li> Marc Majoral, 2017. mmajoral(at)cttc.cat
+ * 			<li> Marc Majoral, 2019. mmajoral(at)cttc.cat
  *          <li> Javier Arribas, 2016. jarribas(at)cttc.es
  *          </ul>
  *

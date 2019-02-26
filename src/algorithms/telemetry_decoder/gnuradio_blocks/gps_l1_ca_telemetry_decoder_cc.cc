@@ -352,7 +352,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
                                     corr_value += d_preambles_symbols[i];
                                 }
                         }
-                    i += 1;
+                    i++;
                 }
         }
 
@@ -479,7 +479,6 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
 
             return 1;
         }
-
 
     return 0;
 }

@@ -164,13 +164,13 @@ private:
     bool blocking_;
     bool acq_iq_;
 
-    unsigned int vector_length_;
-    unsigned int code_length_;
-    unsigned int channel_;
-    unsigned int doppler_max_;
-    unsigned int doppler_step_;
-    unsigned int sampled_ms_;
-    unsigned int max_dwells_;
+    uint32_t vector_length_;
+    uint32_t code_length_;
+    uint32_t channel_;
+    uint32_t doppler_max_;
+    uint32_t doppler_step_;
+    uint32_t sampled_ms_;
+    uint32_t max_dwells_;
     unsigned int in_streams_;
     unsigned int out_streams_;
 

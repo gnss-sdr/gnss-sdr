@@ -145,9 +145,9 @@ public:
 private:
     ConfigurationInterface* configuration_;
     pcps_acquisition_fpga_sptr acquisition_fpga_;
-    unsigned int channel_;
-    unsigned int doppler_max_;
-    unsigned int doppler_step_;
+    uint32_t channel_;
+    uint32_t doppler_max_;
+    uint32_t doppler_step_;
     Gnss_Synchro* gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;

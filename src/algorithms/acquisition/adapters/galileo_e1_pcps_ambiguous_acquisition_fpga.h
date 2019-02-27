@@ -151,10 +151,10 @@ private:
     bool bit_transition_flag_;
     bool use_CFAR_algorithm_flag_;
     bool acquire_pilot_;
-    unsigned int channel_;
-    unsigned int doppler_max_;
-    unsigned int doppler_step_;
-    unsigned int max_dwells_;
+    uint32_t channel_;
+    uint32_t doppler_max_;
+    uint32_t doppler_step_;
+    uint32_t max_dwells_;
     bool dump_;
     bool blocking_;
     std::string dump_filename_;

@@ -103,12 +103,12 @@ public:
 private:
     dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
     size_t item_size_;
-    unsigned int channel_;
+    uint32_t channel_;
     std::string role_;
-    unsigned int in_streams_;
-    unsigned int out_streams_;
-    int* d_ca_codes;
-    int* d_data_codes;
+    uint32_t in_streams_;
+    uint32_t out_streams_;
+    int32_t* d_ca_codes;
+    int32_t* d_data_codes;
     bool d_track_pilot;
 };
 

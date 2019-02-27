@@ -46,7 +46,7 @@ class Fpga_Switch
 public:
     Fpga_Switch(const std::string& device_name);
     ~Fpga_Switch();
-    void set_switch_position(int switch_position);
+    void set_switch_position(int32_t switch_position);
 
 private:
     int d_device_descriptor;        // driver descriptor

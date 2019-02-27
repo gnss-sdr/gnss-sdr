@@ -756,7 +756,7 @@ void dll_pll_veml_tracking_fpga::update_tracking_vars()
                     double tmp_cp1 = 0.0;
                     double tmp_cp2 = 0.0;
                     double tmp_samples = 0.0;
-                    for (unsigned int k = 0; k < trk_parameters.smoother_length; k++)
+                    for (uint32_t k = 0; k < trk_parameters.smoother_length; k++)
                         {
                             tmp_cp1 += d_carr_ph_history.at(k).first;
                             tmp_cp2 += d_carr_ph_history.at(trk_parameters.smoother_length * 2 - k - 1).first;
@@ -786,7 +786,7 @@ void dll_pll_veml_tracking_fpga::update_tracking_vars()
                     double tmp_cp1 = 0.0;
                     double tmp_cp2 = 0.0;
                     double tmp_samples = 0.0;
-                    for (unsigned int k = 0; k < trk_parameters.smoother_length; k++)
+                    for (uint32_t k = 0; k < trk_parameters.smoother_length; k++)
                         {
                             tmp_cp1 += d_code_ph_history.at(k).first;
                             tmp_cp2 += d_code_ph_history.at(trk_parameters.smoother_length * 2 - k - 1).first;

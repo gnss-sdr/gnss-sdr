@@ -72,17 +72,16 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
     if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
     acq_parameters.doppler_max = doppler_max_;
-    unsigned int sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 1);
+    uint32_t sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 1);
     acq_parameters.sampled_ms = sampled_ms;
 
     //--- Find number of samples per spreading code -------------------------
-    auto code_length = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / (GPS_L5I_CODE_RATE_HZ / static_cast<double>(GPS_L5I_CODE_LENGTH_CHIPS))));
+    auto code_length = static_cast<uint32_t>(std::round(static_cast<double>(fs_in) / (GPS_L5I_CODE_RATE_HZ / static_cast<double>(GPS_L5I_CODE_LENGTH_CHIPS))));
     acq_parameters.code_length = code_length;
     // The FPGA can only use FFT lengths that are a power of two.
     float nbits = ceilf(log2f((float)code_length*2));
-    unsigned int nsamples_total = pow(2, nbits);
-    unsigned int vector_length = nsamples_total;
-    unsigned int select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga", 1);
+    uint32_t nsamples_total = pow(2, nbits);
+    uint32_t select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga", 1);
     acq_parameters.select_queue_Fpga = select_queue_Fpga;
     std::string default_device_name = "/dev/uio0";
     std::string device_name = configuration_->property(role + ".devicename", default_device_name);
@@ -90,7 +89,7 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     acq_parameters.samples_per_ms = nsamples_total/sampled_ms;
     acq_parameters.samples_per_code = nsamples_total;
 
-    acq_parameters.excludelimit = static_cast<unsigned int>(ceil((1.0 / GPS_L5I_CODE_RATE_HZ) * static_cast<float>(acq_parameters.fs_in)));
+    acq_parameters.excludelimit = static_cast<uint32_t>(ceil((1.0 / GPS_L5I_CODE_RATE_HZ) * static_cast<float>(acq_parameters.fs_in)));
 
     // compute all the GPS L5 PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
@@ -100,16 +99,16 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     d_all_fft_codes_ = new lv_16sc_t[nsamples_total * NUM_PRNs];  // memory containing all the possible fft codes for PRN 0 to 32
 
     float max;  // temporary maxima search
-    for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
+    for (uint32_t PRN = 1; PRN <= NUM_PRNs; PRN++)
     {
     	gps_l5i_code_gen_complex_sampled(code, PRN, fs_in);
 
-        for (int s = code_length; s < 2*code_length; s++)
+        for (uint32_t s = code_length; s < 2*code_length; s++)
             {
                 code[s] = code[s - code_length];
             }
 
-        for (int s = 2*code_length; s < nsamples_total; s++)
+        for (uint32_t s = 2*code_length; s < nsamples_total; s++)
             {
         		// fill in zero padding
                 code[s] = std::complex<float>(static_cast<float>(0,0));
@@ -119,7 +118,7 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
 		volk_32fc_conjugate_32fc(fft_codes_padded, fft_if->get_outbuf(), nsamples_total);  // conjugate values
 
         max = 0;                                                                           // initialize maximum value
-        for (unsigned int i = 0; i < nsamples_total; i++)                                  // search for maxima
+        for (uint32_t i = 0; i < nsamples_total; i++)                                  // search for maxima
             {
                 if (std::abs(fft_codes_padded[i].real()) > max)
                     {
@@ -130,10 +129,10 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
                         max = std::abs(fft_codes_padded[i].imag());
                     }
             }
-        for (unsigned int i = 0; i < nsamples_total; i++)  // map the FFT to the dynamic range of the fixed point values an copy to buffer containing all FFTs
+        for (uint32_t i = 0; i < nsamples_total; i++)  // map the FFT to the dynamic range of the fixed point values an copy to buffer containing all FFTs
             {
-                d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 9) - 1) / max)),
-                    static_cast<int>(floor(fft_codes_padded[i].imag() * (pow(2, 9) - 1) / max)));
+                d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int32_t>(floor(fft_codes_padded[i].real() * (pow(2, 9) - 1) / max)),
+                    static_cast<int32_t>(floor(fft_codes_padded[i].imag() * (pow(2, 9) - 1) / max)));
             }
     }
 

@@ -75,20 +75,19 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
     if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
     acq_parameters.doppler_max = doppler_max_;
-    unsigned int sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 4);
+    uint32_t sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 4);
     acq_parameters.sampled_ms = sampled_ms;
 
     acquire_pilot_ = configuration_->property(role + ".acquire_pilot", false);  //will be true in future versions
 
     //--- Find number of samples per spreading code (4 ms)  -----------------
-    auto code_length = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
+    auto code_length = static_cast<uint32_t>(std::round(static_cast<double>(fs_in) / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
 
     acq_parameters.code_length = code_length;
     // The FPGA can only use FFT lengths that are a power of two.
     float nbits = ceilf(log2f((float)code_length*2));
-    unsigned int nsamples_total = pow(2, nbits);
-    unsigned int vector_length = nsamples_total;
-    unsigned int select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga", 0);
+    uint32_t nsamples_total = pow(2, nbits);
+    uint32_t select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga", 0);
 
     acq_parameters.select_queue_Fpga = select_queue_Fpga;
     std::string default_device_name = "/dev/uio0";
@@ -96,7 +95,7 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     acq_parameters.device_name = device_name;
     acq_parameters.samples_per_ms = nsamples_total / sampled_ms;
     acq_parameters.samples_per_code = nsamples_total;
-    acq_parameters.excludelimit = static_cast<unsigned int>(std::round(static_cast<double>(fs_in) / GALILEO_E1_CODE_CHIP_RATE_HZ));
+    acq_parameters.excludelimit = static_cast<uint32_t>(std::round(static_cast<double>(fs_in) / GALILEO_E1_CODE_CHIP_RATE_HZ));
 
     // compute all the GALILEO E1 PRN Codes (this is done only once in the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
@@ -106,7 +105,7 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     d_all_fft_codes_ = new lv_16sc_t[nsamples_total * GALILEO_E1_NUMBER_OF_CODES];  // memory containing all the possible fft codes for PRN 0 to 32
     float max;                                                                      // temporary maxima search
 
-    for (unsigned int PRN = 1; PRN <= GALILEO_E1_NUMBER_OF_CODES; PRN++)
+    for (uint32_t PRN = 1; PRN <= GALILEO_E1_NUMBER_OF_CODES; PRN++)
         {
 
         bool cboc = false; // cboc is set to 0 when using the FPGA
@@ -125,14 +124,14 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
                     cboc, PRN, fs_in, 0, false);
             }
 
-        for (int s = code_length; s < 2*code_length; s++)
+        for (uint32_t s = code_length; s < 2*code_length; s++)
             {
                 code[s] = code[s - code_length];
             }
 
 
         // fill in zero padding
-        for (int s = 2*code_length; s < nsamples_total; s++)
+        for (uint32_t s = 2*code_length; s < nsamples_total; s++)
             {
                 code[s] = std::complex<float>(static_cast<float>(0,0));
             }
@@ -143,7 +142,7 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
 
         // normalize the code
         max = 0;                                                                           // initialize maximum value
-        for (unsigned int i = 0; i < nsamples_total; i++)                                  // search for maxima
+        for (uint32_t i = 0; i < nsamples_total; i++)                                  // search for maxima
             {
                 if (std::abs(fft_codes_padded[i].real()) > max)
                     {
@@ -154,10 +153,10 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
                         max = std::abs(fft_codes_padded[i].imag());
                     }
             }
-        for (unsigned int i = 0; i < nsamples_total; i++)  // map the FFT to the dynamic range of the fixed point values an copy to buffer containing all FFTs
+        for (uint32_t i = 0; i < nsamples_total; i++)  // map the FFT to the dynamic range of the fixed point values an copy to buffer containing all FFTs
             {
-                d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int>(floor(fft_codes_padded[i].real() * (pow(2, 9) - 1) / max)),
-                    static_cast<int>(floor(fft_codes_padded[i].imag() * (pow(2, 9) - 1) / max)));
+                d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int32_t>(floor(fft_codes_padded[i].real() * (pow(2, 9) - 1) / max)),
+                    static_cast<int32_t>(floor(fft_codes_padded[i].imag() * (pow(2, 9) - 1) / max)));
             }
 
         }

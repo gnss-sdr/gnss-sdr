@@ -43,7 +43,7 @@
 
 // constants
 const size_t PAGE_SIZE = 0x10000;
-const unsigned int TEST_REGISTER_TRACK_WRITEVAL = 0x55AA;
+const uint32_t TEST_REGISTER_TRACK_WRITEVAL = 0x55AA;
 
 Fpga_Switch::Fpga_Switch(const std::string &device_name)
 {
@@ -87,7 +87,7 @@ Fpga_Switch::~Fpga_Switch()
 }
 
 
-void Fpga_Switch::set_switch_position(int switch_position)
+void Fpga_Switch::set_switch_position(int32_t switch_position)
 {
     d_map_base[0] = switch_position;
 }

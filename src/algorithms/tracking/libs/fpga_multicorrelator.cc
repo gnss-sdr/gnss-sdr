@@ -280,7 +280,7 @@ void fpga_multicorrelator_8sc::fpga_configure_tracking_gps_local_code(int32_t PR
     d_map_base[PROG_MEMS_ADDR] = LOCAL_CODE_FPGA_CLEAR_ADDRESS_COUNTER;
     for (k = 0; k < d_code_length_chips * d_code_samples_per_chip; k++)
         {
-            if (d_ca_codes[((int(d_code_length_chips)) * d_code_samples_per_chip * (PRN - 1)) + k] == 1)
+            if (d_ca_codes[((int32_t(d_code_length_chips)) * d_code_samples_per_chip * (PRN - 1)) + k] == 1)
                 {
                     code_chip = 1;
                 }
@@ -298,7 +298,7 @@ void fpga_multicorrelator_8sc::fpga_configure_tracking_gps_local_code(int32_t PR
             d_map_base[PROG_MEMS_ADDR] = LOCAL_CODE_FPGA_CLEAR_ADDRESS_COUNTER;
             for (k = 0; k < d_code_length_chips * d_code_samples_per_chip; k++)
                 {
-                    if (d_data_codes[((int(d_code_length_chips)) * d_code_samples_per_chip * (PRN - 1)) + k] == 1)
+                    if (d_data_codes[((int32_t(d_code_length_chips)) * d_code_samples_per_chip * (PRN - 1)) + k] == 1)
                         {
                             code_chip = 1;
                         }

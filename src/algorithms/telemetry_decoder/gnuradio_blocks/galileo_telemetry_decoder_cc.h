@@ -80,7 +80,7 @@ private:
 
     void deinterleaver(int32_t rows, int32_t cols, const double *in, double *out);
 
-    void decode_INAV_word(double *symbols, int32_t frame_length);
+    void decode_INAV_word(double *page_part_symbols, int32_t frame_length);
     void decode_FNAV_word(double *page_symbols, int32_t frame_length);
 
     int d_frame_type;

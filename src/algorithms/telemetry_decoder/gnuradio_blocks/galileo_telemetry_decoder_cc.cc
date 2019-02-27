@@ -88,7 +88,7 @@ galileo_telemetry_decoder_cc::galileo_telemetry_decoder_cc(
         {
         case 1:  // INAV
             {
-                d_PRN_code_period_ms = static_cast<uint32_t>(GALILEO_E5A_CODE_PERIOD_MS);
+                d_PRN_code_period_ms = static_cast<uint32_t>(GALILEO_E1_CODE_PERIOD_MS);
                 d_samples_per_symbol = GALILEO_E1_B_SAMPLES_PER_SYMBOL;
                 d_bits_per_preamble = GALILEO_INAV_PREAMBLE_LENGTH_BITS;
                 // set the preamble
@@ -634,7 +634,7 @@ int galileo_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
                                     {
                                         // TOW_5 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
                                         d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_inav_nav.TOW_5 * 1000.0);
-                                        d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (d_required_symbols + 1) * GALILEO_E5A_CODE_PERIOD_MS);
+                                        d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (d_required_symbols + 1) * GALILEO_E1_CODE_PERIOD_MS);
                                         d_inav_nav.flag_TOW_5 = false;
                                     }
 
@@ -642,13 +642,13 @@ int galileo_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
                                     {
                                         // TOW_6 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
                                         d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_inav_nav.TOW_6 * 1000.0);
-                                        d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (d_required_symbols + 1) * GALILEO_E5A_CODE_PERIOD_MS);
+                                        d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (d_required_symbols + 1) * GALILEO_E1_CODE_PERIOD_MS);
                                         d_inav_nav.flag_TOW_6 = false;
                                     }
                                 else
                                     {
                                         // this page has no timing information
-                                        d_TOW_at_current_symbol_ms += static_cast<uint32_t>(GALILEO_E5A_CODE_PERIOD_MS);  // + GALILEO_INAV_PAGE_PART_SYMBOLS*GALILEO_E1_CODE_PERIOD;
+                                        d_TOW_at_current_symbol_ms += static_cast<uint32_t>(GALILEO_E1_CODE_PERIOD_MS);  // + GALILEO_INAV_PAGE_PART_SYMBOLS*GALILEO_E1_CODE_PERIOD;
                                     }
                             }
                         break;

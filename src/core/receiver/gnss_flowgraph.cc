@@ -277,7 +277,6 @@ void GNSSFlowgraph::connect()
 #endif
 
 #if ENABLE_FPGA
-//    bool FPGA_enabled = configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false);
 
     if (configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false) == false)
         {
@@ -356,8 +355,6 @@ void GNSSFlowgraph::connect()
             return;
         }
 #endif
-
-    //bool FPGA_enabled = configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false);
 
     // Signal conditioner (selected_signal_source) >> channels (i) (dependent of their associated SignalSource_ID)
     int selected_signal_conditioner_ID = 0;
@@ -673,10 +670,7 @@ void GNSSFlowgraph::connect()
             LOG(INFO) << "Channel " << i << " assigned to " << channels_.at(i)->get_signal();
             if (channels_state_[i] == 1)
                 {
-//                    if (FPGA_enabled == false)
-//                        {
-                            channels_.at(i)->start_acquisition();
-//                        }
+						channels_.at(i)->start_acquisition();
                     LOG(INFO) << "Channel " << i << " connected to observables and ready for acquisition";
                 }
             else
@@ -708,8 +702,7 @@ void GNSSFlowgraph::disconnect()
 
 
 #ifdef ENABLE_FPGA
-    bool FPGA_enabled = configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false);
-    if (FPGA_enabled == false)
+    if (configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false) == false)
     {
     	for (int i = 0; i < sources_count_; i++)
     		{
@@ -821,8 +814,7 @@ void GNSSFlowgraph::disconnect()
 #endif
 
 #ifdef ENABLE_FPGA
-    //bool FPGA_enabled = configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false);
-    if (FPGA_enabled == false)
+    if (configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false) == false)
         {
             // disconnect the signal source to sample counter
             // disconnect the sample counter to Observables

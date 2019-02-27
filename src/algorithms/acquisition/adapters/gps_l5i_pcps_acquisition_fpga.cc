@@ -59,13 +59,13 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
 
     LOG(INFO) << "role " << role;
 
-	int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
-	int64_t fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+    int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
+    int64_t fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
 
     float downsampling_factor = configuration_->property(role + ".downsampling_factor", 1.0);
     acq_parameters.downsampling_factor = downsampling_factor;
 
-    fs_in = fs_in/downsampling_factor;
+    fs_in = fs_in / downsampling_factor;
 
 
     acq_parameters.fs_in = fs_in;
@@ -79,14 +79,14 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     auto code_length = static_cast<uint32_t>(std::round(static_cast<double>(fs_in) / (GPS_L5I_CODE_RATE_HZ / static_cast<double>(GPS_L5I_CODE_LENGTH_CHIPS))));
     acq_parameters.code_length = code_length;
     // The FPGA can only use FFT lengths that are a power of two.
-    float nbits = ceilf(log2f((float)code_length*2));
+    float nbits = ceilf(log2f((float)code_length * 2));
     uint32_t nsamples_total = pow(2, nbits);
     uint32_t select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga", 1);
     acq_parameters.select_queue_Fpga = select_queue_Fpga;
     std::string default_device_name = "/dev/uio0";
     std::string device_name = configuration_->property(role + ".devicename", default_device_name);
     acq_parameters.device_name = device_name;
-    acq_parameters.samples_per_ms = nsamples_total/sampled_ms;
+    acq_parameters.samples_per_ms = nsamples_total / sampled_ms;
     acq_parameters.samples_per_code = nsamples_total;
 
     acq_parameters.excludelimit = static_cast<uint32_t>(ceil((1.0 / GPS_L5I_CODE_RATE_HZ) * static_cast<float>(acq_parameters.fs_in)));
@@ -100,41 +100,41 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
 
     float max;  // temporary maxima search
     for (uint32_t PRN = 1; PRN <= NUM_PRNs; PRN++)
-    {
-    	gps_l5i_code_gen_complex_sampled(code, PRN, fs_in);
+        {
+            gps_l5i_code_gen_complex_sampled(code, PRN, fs_in);
 
-        for (uint32_t s = code_length; s < 2*code_length; s++)
-            {
-                code[s] = code[s - code_length];
-            }
+            for (uint32_t s = code_length; s < 2 * code_length; s++)
+                {
+                    code[s] = code[s - code_length];
+                }
 
-        for (uint32_t s = 2*code_length; s < nsamples_total; s++)
-            {
-        		// fill in zero padding
-                code[s] = std::complex<float>(static_cast<float>(0,0));
-            }
-		memcpy(fft_if->get_inbuf(), code, sizeof(gr_complex) * nsamples_total);   // copy to FFT buffer
-		fft_if->execute();                                                                 // Run the FFT of local code
-		volk_32fc_conjugate_32fc(fft_codes_padded, fft_if->get_outbuf(), nsamples_total);  // conjugate values
+            for (uint32_t s = 2 * code_length; s < nsamples_total; s++)
+                {
+                    // fill in zero padding
+                    code[s] = std::complex<float>(static_cast<float>(0, 0));
+                }
+            memcpy(fft_if->get_inbuf(), code, sizeof(gr_complex) * nsamples_total);            // copy to FFT buffer
+            fft_if->execute();                                                                 // Run the FFT of local code
+            volk_32fc_conjugate_32fc(fft_codes_padded, fft_if->get_outbuf(), nsamples_total);  // conjugate values
 
-        max = 0;                                                                           // initialize maximum value
-        for (uint32_t i = 0; i < nsamples_total; i++)                                  // search for maxima
-            {
-                if (std::abs(fft_codes_padded[i].real()) > max)
-                    {
-                        max = std::abs(fft_codes_padded[i].real());
-                    }
-                if (std::abs(fft_codes_padded[i].imag()) > max)
-                    {
-                        max = std::abs(fft_codes_padded[i].imag());
-                    }
-            }
-        for (uint32_t i = 0; i < nsamples_total; i++)  // map the FFT to the dynamic range of the fixed point values an copy to buffer containing all FFTs
-            {
-                d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int32_t>(floor(fft_codes_padded[i].real() * (pow(2, 9) - 1) / max)),
-                    static_cast<int32_t>(floor(fft_codes_padded[i].imag() * (pow(2, 9) - 1) / max)));
-            }
-    }
+            max = 0;                                       // initialize maximum value
+            for (uint32_t i = 0; i < nsamples_total; i++)  // search for maxima
+                {
+                    if (std::abs(fft_codes_padded[i].real()) > max)
+                        {
+                            max = std::abs(fft_codes_padded[i].real());
+                        }
+                    if (std::abs(fft_codes_padded[i].imag()) > max)
+                        {
+                            max = std::abs(fft_codes_padded[i].imag());
+                        }
+                }
+            for (uint32_t i = 0; i < nsamples_total; i++)  // map the FFT to the dynamic range of the fixed point values an copy to buffer containing all FFTs
+                {
+                    d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int32_t>(floor(fft_codes_padded[i].real() * (pow(2, 9) - 1) / max)),
+                        static_cast<int32_t>(floor(fft_codes_padded[i].imag() * (pow(2, 9) - 1) / max)));
+                }
+        }
 
     //acq_parameters
     acq_parameters.all_fft_codes = d_all_fft_codes_;
@@ -153,7 +153,6 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     delete[] code;
     delete fft_if;
     delete[] fft_codes_padded;
-
 }
 
 
@@ -166,8 +165,8 @@ GpsL5iPcpsAcquisitionFpga::~GpsL5iPcpsAcquisitionFpga()
 
 void GpsL5iPcpsAcquisitionFpga::stop_acquisition()
 {
-	// this command causes the SW to reset the HW.
-	acquisition_fpga_->reset_acquisition();
+    // this command causes the SW to reset the HW.
+    acquisition_fpga_->reset_acquisition();
 }
 
 

@@ -37,8 +37,8 @@
 Dll_Pll_Conf_Fpga::Dll_Pll_Conf_Fpga()
 {
     /* DLL/PLL tracking configuration */
-	high_dyn = false;
-	smoother_length = 10;
+    high_dyn = false;
+    smoother_length = 10;
     fs_in = 0.0;
     vector_length = 0U;
     dump = false;

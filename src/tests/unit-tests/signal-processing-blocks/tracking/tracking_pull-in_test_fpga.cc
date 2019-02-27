@@ -32,13 +32,12 @@
 
 #include "GPS_L1_CA.h"
 #include "acquisition_msg_rx.h"
+#include "galileo_e1_pcps_ambiguous_acquisition_fpga.h"
 #include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
 #include "galileo_e5a_pcps_acquisition.h"
-#include "gnss_block_factory.h"
-#include "tracking_interface.h"
-#include "gps_l1_ca_pcps_acquisition_fpga.h"
-#include "galileo_e1_pcps_ambiguous_acquisition_fpga.h"
 #include "galileo_e5a_pcps_acquisition_fpga.h"
+#include "gnss_block_factory.h"
+#include "gps_l1_ca_pcps_acquisition_fpga.h"
 #include "gps_l5i_pcps_acquisition_fpga.h"
 #include "in_memory_configuration.h"
 #include "signal_generator_flags.h"
@@ -61,21 +60,21 @@
 #include <vector>
 
 // threads
-#include <pthread.h>	// for pthread stuff
-#include <fcntl.h>     	// for open, O_RDWR, O_SYNC
-#include <iostream>    	// for cout, endl
-#include <sys/mman.h>  	// for mmap
+#include <fcntl.h>     // for open, O_RDWR, O_SYNC
+#include <iostream>    // for cout, endl
+#include <pthread.h>   // for pthread stuff
+#include <sys/mman.h>  // for mmap
 
-#define MAX_INPUT_COMPLEX_SAMPLES_TOTAL 8192 	// maximum DMA sample block size in complex samples
-#define COMPLEX_SAMPLE_SIZE 2					// sample size in bytes
-#define NUM_QUEUES 2							// number of queues (1 for GPS L1/Galileo E1, and 1 for GPS L5/Galileo E5)
-#define DOWNAMPLING_FILTER_INIT_SAMPLES 100		// some samples to initialize the state of the downsampling filter
-#define DOWNSAMPLING_FILTER_DELAY 48			// delay of the downsampling filter in samples
+#define MAX_INPUT_COMPLEX_SAMPLES_TOTAL 8192  // maximum DMA sample block size in complex samples
+#define COMPLEX_SAMPLE_SIZE 2                 // sample size in bytes
+#define NUM_QUEUES 2                          // number of queues (1 for GPS L1/Galileo E1, and 1 for GPS L5/Galileo E5)
+#define DOWNAMPLING_FILTER_INIT_SAMPLES 100   // some samples to initialize the state of the downsampling filter
+#define DOWNSAMPLING_FILTER_DELAY 48          // delay of the downsampling filter in samples
 
 
 // HW related options
-bool skip_samples_already_used = 0;	// if skip_samples_already_used = 1 => for each PRN loop skip the samples used in the previous PRN loops
-									// (exactly in the same way as the SW)
+bool skip_samples_already_used = 0;  // if skip_samples_already_used = 1 => for each PRN loop skip the samples used in the previous PRN loops
+                                     // (exactly in the same way as the SW)
 
 class Acquisition_msg_rx_Fpga;
 
@@ -316,8 +315,6 @@ void TrackingPullInTestFpga::configure_receiver(
             config->set_property("Tracking.early_late_space_chips", "0.5");
             config->set_property("Tracking.if", "0");
             config->set_property("Tracking.order", "3");
-
-
         }
     else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
         {
@@ -335,7 +332,7 @@ void TrackingPullInTestFpga::configure_receiver(
             config->set_property("Tracking.device_base", "15");
         }
 
-    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0) // or implementation.compare("Galileo_E5a_DLL_PLL_Tracking_b") == 0)
+    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)  // or implementation.compare("Galileo_E5a_DLL_PLL_Tracking_b") == 0)
         {
             gnss_synchro.System = 'E';
             std::string signal = "5X";
@@ -381,16 +378,17 @@ const unsigned int TEST_REGISTER_TRACK_WRITEVAL = 0x55AA;
 void setup_fpga_switch(void)
 {
     int switch_device_descriptor;        // driver descriptor
-    volatile unsigned *switch_map_base;  // driver memory map
+    volatile unsigned* switch_map_base;  // driver memory map
 
     if ((switch_device_descriptor = open("/dev/uio1", O_RDWR | O_SYNC)) == -1)
         {
-            LOG(WARNING) << "Cannot open deviceio" << "/dev/uio1";
+            LOG(WARNING) << "Cannot open deviceio"
+                         << "/dev/uio1";
         }
-    switch_map_base = reinterpret_cast<volatile unsigned *>(mmap(nullptr, PAGE_SIZE,
+    switch_map_base = reinterpret_cast<volatile unsigned*>(mmap(nullptr, PAGE_SIZE,
         PROT_READ | PROT_WRITE, MAP_SHARED, switch_device_descriptor, 0));
 
-    if (switch_map_base == reinterpret_cast<void *>(-1))
+    if (switch_map_base == reinterpret_cast<void*>(-1))
         {
             LOG(WARNING) << "Cannot map the FPGA switch module into tracking memory";
             std::cout << "Could not map switch memory." << std::endl;
@@ -413,7 +411,7 @@ void setup_fpga_switch(void)
             LOG(INFO) << "Test register sanity check success !";
         }
 
-    switch_map_base[0] = 0; //0 -> DMA to queue 0, 1 -> DMA to queue 1, 2 -> A/Ds to queues
+    switch_map_base[0] = 0;  //0 -> DMA to queue 0, 1 -> DMA to queue 1, 2 -> A/Ds to queues
 }
 
 
@@ -421,133 +419,130 @@ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 volatile unsigned int send_samples_start = 0;
 
-int8_t input_samples[MAX_INPUT_COMPLEX_SAMPLES_TOTAL*COMPLEX_SAMPLE_SIZE]; // re - im
-int8_t input_samples_dma[MAX_INPUT_COMPLEX_SAMPLES_TOTAL*COMPLEX_SAMPLE_SIZE*NUM_QUEUES];
+int8_t input_samples[MAX_INPUT_COMPLEX_SAMPLES_TOTAL * COMPLEX_SAMPLE_SIZE];  // re - im
+int8_t input_samples_dma[MAX_INPUT_COMPLEX_SAMPLES_TOTAL * COMPLEX_SAMPLE_SIZE * NUM_QUEUES];
 
-struct DMA_handler_args {
+struct DMA_handler_args
+{
     std::string file;
     unsigned int nsamples_tx;
     unsigned int skip_used_samples;
-    unsigned int freq_band; // 0 for GPS L1/ Galileo E1, 1 for GPS L5/Galileo E5
+    unsigned int freq_band;  // 0 for GPS L1/ Galileo E1, 1 for GPS L5/Galileo E5
 };
 
-void *handler_DMA(void *arguments)
+void* handler_DMA(void* arguments)
 {
+    // DMA process that configures the DMA to send the samples to the acquisition engine
+    int tx_fd;                           // DMA descriptor
+    FILE* rx_signal_file_id;             // Input file descriptor
+    bool file_completed = false;         // flag to indicate if the file is completed
+    unsigned int nsamples_block;         // number of samples to send in the next DMA block of samples
+    unsigned int nread_elements;         // number of elements effectively read from the input file
+    unsigned int nsamples = 0;           // number of complex samples effectively transferred
+    unsigned int index0, dma_index = 0;  // counters used for putting the samples in the order expected by the DMA
 
-	// DMA process that configures the DMA to send the samples to the acquisition engine
-	int tx_fd; 															// DMA descriptor
-	FILE *rx_signal_file_id;											// Input file descriptor
-	bool file_completed = false;										// flag to indicate if the file is completed
-	unsigned int nsamples_block;										// number of samples to send in the next DMA block of samples
-	unsigned int nread_elements;										// number of elements effectively read from the input file
-	unsigned int nsamples = 0;											// number of complex samples effectively transferred
-	unsigned int index0, dma_index = 0;									// counters used for putting the samples in the order expected by the DMA
+    unsigned int nsamples_transmitted;
 
-	unsigned int nsamples_transmitted;
+    struct DMA_handler_args* args = (struct DMA_handler_args*)arguments;
 
-	struct DMA_handler_args *args = (struct DMA_handler_args *) arguments;
+    unsigned int nsamples_tx = args->nsamples_tx;
+    std::string file = args->file;  // input filename
+    unsigned int skip_used_samples = args->skip_used_samples;
 
-	unsigned int nsamples_tx = args->nsamples_tx;
-	std::string file = args->file; // input filename
-	unsigned int skip_used_samples = args->skip_used_samples;
+    // open DMA device
+    tx_fd = open("/dev/loop_tx", O_WRONLY);
+    if (tx_fd < 0)
+        {
+            std::cout << "DMA can't open loop device" << std::endl;
+            exit(1);
+        }
+    else
 
-	// open DMA device
-	tx_fd = open("/dev/loop_tx", O_WRONLY);
-	if ( tx_fd < 0 )
-	{
-		std::cout << "DMA can't open loop device" << std::endl;
-		exit(1);
-	}
-	else
+        // open input file
+        rx_signal_file_id = fopen(file.c_str(), "rb");
+    if (rx_signal_file_id == NULL)
+        {
+            std::cout << "DMA can't open input file" << std::endl;
+            exit(1);
+        }
+    while (send_samples_start == 0)
+        ;  // wait until main thread tells the DMA to start
 
-	// open input file
-	rx_signal_file_id = fopen(file.c_str(), "rb");
-	if (rx_signal_file_id == NULL)
-	{
-		std::cout << "DMA can't open input file" << std::endl;
-		exit(1);
-	}
-	while(send_samples_start == 0); // wait until main thread tells the DMA to start
+    // skip initial samples
+    int skip_samples = (int)FLAGS_skip_samples;
 
-	// skip initial samples
-	int skip_samples = (int) FLAGS_skip_samples;
+    fseek(rx_signal_file_id, (skip_samples + skip_used_samples) * 2, SEEK_SET);
 
-	fseek( rx_signal_file_id, (skip_samples + skip_used_samples)*2, SEEK_SET );
+    usleep(50000);  // wait some time to give time to the main thread to start the acquisition module
 
-	usleep(50000); // wait some time to give time to the main thread to start the acquisition module
+    while (file_completed == false)
+        {
+            if (nsamples_tx - nsamples > MAX_INPUT_COMPLEX_SAMPLES_TOTAL)
+                {
+                    nsamples_block = MAX_INPUT_COMPLEX_SAMPLES_TOTAL;
+                }
+            else
+                {
+                    nsamples_block = nsamples_tx - nsamples;  // remaining samples to be sent
+                    file_completed = true;
+                }
 
-	while (file_completed == false)
-	{
-		if (nsamples_tx - nsamples > MAX_INPUT_COMPLEX_SAMPLES_TOTAL)
-		{
-			nsamples_block = MAX_INPUT_COMPLEX_SAMPLES_TOTAL;
-		}
-		else
-		{
-			nsamples_block = nsamples_tx - nsamples; // remaining samples to be sent
-			file_completed = true;
-		}
+            nread_elements = fread(input_samples, sizeof(int8_t), nsamples_block * COMPLEX_SAMPLE_SIZE, rx_signal_file_id);
 
-		nread_elements = fread(input_samples, sizeof(int8_t), nsamples_block*COMPLEX_SAMPLE_SIZE, rx_signal_file_id);
+            if (nread_elements != nsamples_block * COMPLEX_SAMPLE_SIZE)
+                {
+                    std::cout << "file completed" << std::endl;
+                    file_completed = true;
+                }
 
-		if (nread_elements != nsamples_block * COMPLEX_SAMPLE_SIZE)
-		{
-			std::cout << "file completed" << std::endl;
-			file_completed = true;
-		}
+            nsamples += (nread_elements / COMPLEX_SAMPLE_SIZE);
 
-		nsamples+=(nread_elements/COMPLEX_SAMPLE_SIZE);
-
-		if (nread_elements > 0)
-		{
-			// for the 32-BIT DMA
-			dma_index = 0;
-			for (index0 = 0;index0 < (nread_elements);index0+=COMPLEX_SAMPLE_SIZE)
-			{
-				if (args->freq_band == 0)
-				{
-					// channel 1 (queue 1) -> E5/L5
-					input_samples_dma[dma_index] = 0;
-					input_samples_dma[dma_index+1] = 0;
-					// channel 0 (queue 0) -> E1/L1
-					input_samples_dma[dma_index+2] = input_samples[index0];
-					input_samples_dma[dma_index+3] = input_samples[index0+1];
-				}
-				else
-				{
-					// channel 1 (queue 1) -> E5/L5
-					input_samples_dma[dma_index] = input_samples[index0];
-					input_samples_dma[dma_index+1] = input_samples[index0+1];
-					// channel 0 (queue 0) -> E1/L1
-					input_samples_dma[dma_index+2] = 0;
-					input_samples_dma[dma_index+3] = 0;
-				}
-				dma_index += 4;
-			}
-			nsamples_transmitted = write(tx_fd, &input_samples_dma[0], nread_elements*NUM_QUEUES);
-			if (nsamples_transmitted != nread_elements*NUM_QUEUES)
-			{
-				std::cout << "Error : DMA could not send all the requested samples" << std::endl;
-			}
-		}
-	}
+            if (nread_elements > 0)
+                {
+                    // for the 32-BIT DMA
+                    dma_index = 0;
+                    for (index0 = 0; index0 < (nread_elements); index0 += COMPLEX_SAMPLE_SIZE)
+                        {
+                            if (args->freq_band == 0)
+                                {
+                                    // channel 1 (queue 1) -> E5/L5
+                                    input_samples_dma[dma_index] = 0;
+                                    input_samples_dma[dma_index + 1] = 0;
+                                    // channel 0 (queue 0) -> E1/L1
+                                    input_samples_dma[dma_index + 2] = input_samples[index0];
+                                    input_samples_dma[dma_index + 3] = input_samples[index0 + 1];
+                                }
+                            else
+                                {
+                                    // channel 1 (queue 1) -> E5/L5
+                                    input_samples_dma[dma_index] = input_samples[index0];
+                                    input_samples_dma[dma_index + 1] = input_samples[index0 + 1];
+                                    // channel 0 (queue 0) -> E1/L1
+                                    input_samples_dma[dma_index + 2] = 0;
+                                    input_samples_dma[dma_index + 3] = 0;
+                                }
+                            dma_index += 4;
+                        }
+                    nsamples_transmitted = write(tx_fd, &input_samples_dma[0], nread_elements * NUM_QUEUES);
+                    if (nsamples_transmitted != nread_elements * NUM_QUEUES)
+                        {
+                            std::cout << "Error : DMA could not send all the requested samples" << std::endl;
+                        }
+                }
+        }
 
 
-	close(tx_fd);
-	fclose(rx_signal_file_id);
-	return NULL;
+    close(tx_fd);
+    fclose(rx_signal_file_id);
+    return NULL;
 }
-
-
-
-
 
 
 bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 {
-	pthread_t thread_DMA;
+    pthread_t thread_DMA;
 
-	// 1. Setup GNU Radio flowgraph (file_source -> Acquisition_10m)
+    // 1. Setup GNU Radio flowgraph (file_source -> Acquisition_10m)
     gr::top_block_sptr top_block;
     top_block = gr::make_top_block("Acquisition test");
 
@@ -566,8 +561,7 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 
     if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
         {
-
-    	    tmp_gnss_synchro.System = 'G';
+            tmp_gnss_synchro.System = 'G';
             std::string signal = "1C";
             const char* str = signal.c_str();                                  // get a C style null terminated string
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
@@ -576,14 +570,12 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 
             args.freq_band = 0;
 
-    		acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
-
+            acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
         }
 
 
     else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
         {
-
             tmp_gnss_synchro.System = 'E';
             std::string signal = "1B";
             const char* str = signal.c_str();                                  // get a C style null terminated string
@@ -594,7 +586,6 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
             args.freq_band = 0;
 
             acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
-
         }
     else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
         {
@@ -608,8 +599,6 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
             args.freq_band = 1;
 
             acquisition = std::make_shared<GalileoE5aPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
-
-
         }
     else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
         {
@@ -622,7 +611,6 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 
             args.freq_band = 1;
             acquisition = std::make_shared<GpsL5iPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
-
         }
     else
         {
@@ -651,7 +639,7 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
     msg_rx->top_block = top_block;
 
 
-	top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
+    top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
 
 
     // 5. Run the flowgraph
@@ -683,134 +671,130 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 
     setup_fpga_switch();
 
-	unsigned int nsamples_to_transfer;
-	if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
-	{
-		nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
-	}
-	else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
-	{
-		nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
-	}
-	else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
-	{
-		nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
-	}
-	else // (if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0))
-	{
-		nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
-	}
+    unsigned int nsamples_to_transfer;
+    if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
+        {
+            nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
+        }
+    else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
+        {
+            nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
+        }
+    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
+        {
+            nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
+        }
+    else  // (if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0))
+        {
+            nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
+        }
 
-	int acq_doppler_max = config->property("Acquisition.doppler_max", FLAGS_external_signal_acquisition_doppler_max_hz);
-	int acq_doppler_step = config->property("Acquisition.doppler_step", FLAGS_external_signal_acquisition_doppler_step_hz);
+    int acq_doppler_max = config->property("Acquisition.doppler_max", FLAGS_external_signal_acquisition_doppler_max_hz);
+    int acq_doppler_step = config->property("Acquisition.doppler_step", FLAGS_external_signal_acquisition_doppler_step_hz);
 
-	for (unsigned int PRN = 1; PRN < MAX_PRN_IDX; PRN++)
-		{
+    for (unsigned int PRN = 1; PRN < MAX_PRN_IDX; PRN++)
+        {
+            tmp_gnss_synchro.PRN = PRN;
 
-		tmp_gnss_synchro.PRN = PRN;
+            acquisition->stop_acquisition();  // reset the whole system including the sample counters
+            acquisition->set_doppler_max(acq_doppler_max);
+            acquisition->set_doppler_step(acq_doppler_step);
+            acquisition->set_gnss_synchro(&tmp_gnss_synchro);
+            acquisition->init();
+            acquisition->set_local_code();
 
-		acquisition->stop_acquisition(); // reset the whole system including the sample counters
-		acquisition->set_doppler_max(acq_doppler_max);
-		acquisition->set_doppler_step(acq_doppler_step);
-		acquisition->set_gnss_synchro(&tmp_gnss_synchro);
-		acquisition->init();
-		acquisition->set_local_code();
-
-		args.file = file;
-
-
-		if ((implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0) or (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0))
-		{
-			// send the previous samples to set the downsampling filter in a good condition
-			send_samples_start = 0;
-
-			args.skip_used_samples = - DOWNAMPLING_FILTER_INIT_SAMPLES;
-
-			args.nsamples_tx = DOWNAMPLING_FILTER_INIT_SAMPLES + DOWNSAMPLING_FILTER_DELAY;
-
-			if (pthread_create(&thread_DMA, NULL, handler_DMA, (void *)&args) < 0)
-			{
-				std::cout << "ERROR cannot create DMA Process" << std::endl;
-			}
-			pthread_mutex_lock(&mutex);
-			send_samples_start = 1;
-			pthread_mutex_unlock(&mutex);
-			pthread_join(thread_DMA, NULL);
-			send_samples_start = 0;
-
-			args.nsamples_tx = nsamples_to_transfer;
-
-			args.skip_used_samples = DOWNSAMPLING_FILTER_DELAY;
-
-		}
-		else
-		{
-			args.nsamples_tx = nsamples_to_transfer;
-
-			args.skip_used_samples = 0;
-		}
+            args.file = file;
 
 
+            if ((implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0) or (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0))
+                {
+                    // send the previous samples to set the downsampling filter in a good condition
+                    send_samples_start = 0;
+
+                    args.skip_used_samples = -DOWNAMPLING_FILTER_INIT_SAMPLES;
+
+                    args.nsamples_tx = DOWNAMPLING_FILTER_INIT_SAMPLES + DOWNSAMPLING_FILTER_DELAY;
+
+                    if (pthread_create(&thread_DMA, NULL, handler_DMA, (void*)&args) < 0)
+                        {
+                            std::cout << "ERROR cannot create DMA Process" << std::endl;
+                        }
+                    pthread_mutex_lock(&mutex);
+                    send_samples_start = 1;
+                    pthread_mutex_unlock(&mutex);
+                    pthread_join(thread_DMA, NULL);
+                    send_samples_start = 0;
+
+                    args.nsamples_tx = nsamples_to_transfer;
+
+                    args.skip_used_samples = DOWNSAMPLING_FILTER_DELAY;
+                }
+            else
+                {
+                    args.nsamples_tx = nsamples_to_transfer;
+
+                    args.skip_used_samples = 0;
+                }
 
 
+            if (pthread_create(&thread_DMA, NULL, handler_DMA, (void*)&args) < 0)
+                {
+                    std::cout << "ERROR cannot create DMA Process" << std::endl;
+                }
 
-		if (pthread_create(&thread_DMA, NULL, handler_DMA, (void *)&args) < 0)
-		{
-			std::cout << "ERROR cannot create DMA Process" << std::endl;
-		}
+            msg_rx->rx_message = 0;
+            top_block->start();
 
-		msg_rx->rx_message = 0;
-		top_block->start();
-
-		pthread_mutex_lock(&mutex);
-		send_samples_start = 1;
-		pthread_mutex_unlock(&mutex);
-
-
-		acquisition->reset(); // set active
-
-		if (start_msg == true)
-			{
-				std::cout << "Reading external signal file: " << FLAGS_signal_file << std::endl;
-				std::cout << "Searching for " << System_and_Signal << " Satellites..." << std::endl;
-				std::cout << "[";
-				start_msg = false;
-			}
-
-		// wait for the child DMA process to finish
-		pthread_join(thread_DMA, NULL);
-
-		pthread_mutex_lock(&mutex);
-		send_samples_start = 0;
-		pthread_mutex_unlock(&mutex);
-
-		// the DMA sends the exact number of samples needed for the acquisition.
-		// however because of the LPF in the GPS L1/Gal E1 acquisition, this calculation is approximate
-		// and some extra samples might be sent. Wait at least once to give time the HW to consume any extra
-		// sample the DMA might have sent.
-		do {
-			usleep(100000);
-		} while (msg_rx->rx_message == 0);
-
-		if (msg_rx->rx_message == 1)
-			{
-				std::cout << " " << PRN << " ";
-				doppler_measurements_map.insert(std::pair<int, double>(PRN, tmp_gnss_synchro.Acq_doppler_hz));
-				code_delay_measurements_map.insert(std::pair<int, double>(PRN, tmp_gnss_synchro.Acq_delay_samples));
-				tmp_gnss_synchro.Acq_samplestamp_samples = 0; // do not take into account the filter internal state initialisation
-				acq_samplestamp_map.insert(std::pair<int, double>(PRN, tmp_gnss_synchro.Acq_samplestamp_samples));
-			}
-		else
-			{
-				std::cout << " . ";
-			}
+            pthread_mutex_lock(&mutex);
+            send_samples_start = 1;
+            pthread_mutex_unlock(&mutex);
 
 
-		top_block->stop();
+            acquisition->reset();  // set active
 
-		std::cout.flush();
+            if (start_msg == true)
+                {
+                    std::cout << "Reading external signal file: " << FLAGS_signal_file << std::endl;
+                    std::cout << "Searching for " << System_and_Signal << " Satellites..." << std::endl;
+                    std::cout << "[";
+                    start_msg = false;
+                }
 
-	}
+            // wait for the child DMA process to finish
+            pthread_join(thread_DMA, NULL);
+
+            pthread_mutex_lock(&mutex);
+            send_samples_start = 0;
+            pthread_mutex_unlock(&mutex);
+
+            // the DMA sends the exact number of samples needed for the acquisition.
+            // however because of the LPF in the GPS L1/Gal E1 acquisition, this calculation is approximate
+            // and some extra samples might be sent. Wait at least once to give time the HW to consume any extra
+            // sample the DMA might have sent.
+            do
+                {
+                    usleep(100000);
+                }
+            while (msg_rx->rx_message == 0);
+
+            if (msg_rx->rx_message == 1)
+                {
+                    std::cout << " " << PRN << " ";
+                    doppler_measurements_map.insert(std::pair<int, double>(PRN, tmp_gnss_synchro.Acq_doppler_hz));
+                    code_delay_measurements_map.insert(std::pair<int, double>(PRN, tmp_gnss_synchro.Acq_delay_samples));
+                    tmp_gnss_synchro.Acq_samplestamp_samples = 0;  // do not take into account the filter internal state initialisation
+                    acq_samplestamp_map.insert(std::pair<int, double>(PRN, tmp_gnss_synchro.Acq_samplestamp_samples));
+                }
+            else
+                {
+                    std::cout << " . ";
+                }
+
+
+            top_block->stop();
+
+            std::cout.flush();
+        }
 
     std::cout << "]" << std::endl;
     std::cout << "-------------------------------------------\n";
@@ -819,7 +803,6 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
         {
             std::cout << "DETECTED SATELLITE " << System_and_Signal << " PRN: " << x.first << " with Doppler: " << x.second << " [Hz], code phase: " << code_delay_measurements_map.at(x.first) << " [samples] at signal SampleStamp " << acq_samplestamp_map.at(x.first) << "\n";
         }
-
 
 
     // report the elapsed time
@@ -833,13 +816,11 @@ bool TrackingPullInTestFpga::acquire_signal(int SV_ID)
 
 TEST_F(TrackingPullInTestFpga, ValidationOfResults)
 {
+    // pointer to the DMA thread that sends the samples to the acquisition engine
+    pthread_t thread_DMA;
 
 
-	// pointer to the DMA thread that sends the samples to the acquisition engine
-	pthread_t thread_DMA;
-
-
-	struct DMA_handler_args args;
+    struct DMA_handler_args args;
 
 
     //*************************************************
@@ -884,7 +865,6 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                         }
                 }
         }
-
 
 
     // use generator or use an external capture file
@@ -953,71 +933,69 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
             std::cout << "Estimated Initial Doppler " << true_acq_doppler_hz
                       << " [Hz], estimated Initial code delay " << true_acq_delay_samples << " [Samples]"
                       << " Acquisition SampleStamp is " << acq_samplestamp_samples << std::endl;
-
         }
 
     std::vector<std::vector<double>> pull_in_results_v_v;
 
-   	unsigned int code_length;
-	if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
-	{
-		code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
-	}
-	else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
-	{
-		code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
-	}
-	else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
-	{
-		code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / GALILEO_E5A_CODE_CHIP_RATE_HZ * static_cast<double>(GALILEO_E5A_CODE_LENGTH_CHIPS)));
+    unsigned int code_length;
+    if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
+        {
+            code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
+        }
+    else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
+        {
+            code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
+        }
+    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
+        {
+            code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / GALILEO_E5A_CODE_CHIP_RATE_HZ * static_cast<double>(GALILEO_E5A_CODE_LENGTH_CHIPS)));
+        }
+    else  // (if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0))
+        {
+            code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L5I_CODE_RATE_HZ / static_cast<double>(GPS_L5I_CODE_LENGTH_CHIPS))));
+        }
 
-	}
-	else // (if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0))
-	{
-		code_length = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L5I_CODE_RATE_HZ / static_cast<double>(GPS_L5I_CODE_LENGTH_CHIPS))));
-	}
+    float nbits = ceilf(log2f((float)code_length));
+    unsigned int fft_size = pow(2, nbits);
 
-	float nbits = ceilf(log2f((float)code_length));
-	unsigned int fft_size = pow(2, nbits);
+    // The HW has been reset after the acquisition phase when the acquisition class was destroyed.
+    // No more samples remained in the DMA. Therefore any intermediate state in the LPF of the
+    // GPS L1 / Galileo E1 filter has been cleared.
+    // During this test all the samples coming from the DMA are consumed so in principle there would be
+    // no need to reset the HW. However we need to clear the sample counter in each test. Therefore we have
+    // to reset the HW at the beginning of each test.
 
-	// The HW has been reset after the acquisition phase when the acquisition class was destroyed.
-	// No more samples remained in the DMA. Therefore any intermediate state in the LPF of the
-	// GPS L1 / Galileo E1 filter has been cleared.
-	// During this test all the samples coming from the DMA are consumed so in principle there would be
-	// no need to reset the HW. However we need to clear the sample counter in each test. Therefore we have
-	// to reset the HW at the beginning of each test.
+    // instantiate the acquisition modules in order to use them to reset the HW.
+    // (note that the constructor of the acquisition modules resets the HW too)
 
-	// instantiate the acquisition modules in order to use them to reset the HW.
-	// (note that the constructor of the acquisition modules resets the HW too)
-
-	std::shared_ptr<AcquisitionInterface> acquisition;
+    std::shared_ptr<AcquisitionInterface> acquisition;
 
 
-	if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
-	{
-		acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
-		args.freq_band = 0;
-	}
-	else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
-	{
-		acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
-		args.freq_band = 0;
-	}
-	else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
-	{
-		acquisition = std::make_shared<GalileoE5aPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
-		args.freq_band = 1;
-	}
-	else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
-	{
-		acquisition = std::make_shared<GpsL5iPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
-		args.freq_band = 1;
-	}
+    if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
+        {
+            acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+            args.freq_band = 0;
+        }
+    else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
+        {
+            acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+            args.freq_band = 0;
+        }
+    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
+        {
+            acquisition = std::make_shared<GalileoE5aPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+            args.freq_band = 1;
+        }
+    else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
+        {
+            acquisition = std::make_shared<GpsL5iPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+            args.freq_band = 1;
+        }
     else
-    {
-        std::cout << "The test can not run with the selected tracking implementation\n ";
-        throw(std::exception());
-    }
+        {
+            std::cout << "The test can not run with the selected tracking implementation\n ";
+            throw(std::exception());
+        }
 
     for (unsigned int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
         {
@@ -1026,11 +1004,10 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                 {
                     for (unsigned int current_acq_code_error_idx = 0; current_acq_code_error_idx < acq_delay_error_chips_values.at(current_acq_doppler_error_idx).size(); current_acq_code_error_idx++)
                         {
+                            // reset the HW to clear the sample counters
+                            acquisition->stop_acquisition();
 
-                    		// reset the HW to clear the sample counters
-                    		acquisition->stop_acquisition();
-
-							gnss_synchro.Acq_samplestamp_samples = acq_samplestamp_samples;
+                            gnss_synchro.Acq_samplestamp_samples = acq_samplestamp_samples;
                             //simulate a Doppler error in acquisition
                             gnss_synchro.Acq_doppler_hz = true_acq_doppler_hz + acq_doppler_error_hz_values.at(current_acq_doppler_error_idx);
                             //simulate Code Delay error in acquisition
@@ -1065,13 +1042,13 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
 
                             args.file = file;
 
-                                if (skip_samples_already_used == 1)
+                            if (skip_samples_already_used == 1)
                                 {
-                                	args.skip_used_samples = (gnss_synchro.PRN - 1)*fft_size;
+                                    args.skip_used_samples = (gnss_synchro.PRN - 1) * fft_size;
                                 }
-                                else
+                            else
                                 {
-                                	args.skip_used_samples = 0;
+                                    args.skip_used_samples = 0;
                                 }
 
 
@@ -1080,13 +1057,13 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                             //********************************************************************
 
 
-                            args.nsamples_tx = baseband_sampling_freq*FLAGS_duration;
+                            args.nsamples_tx = baseband_sampling_freq * FLAGS_duration;
 
 
-                            if (pthread_create(&thread_DMA, NULL, handler_DMA, (void *)&args) < 0)
-                        	{
-                        		std::cout << "ERROR cannot create DMA Process" << std::endl;
-                        	}
+                            if (pthread_create(&thread_DMA, NULL, handler_DMA, (void*)&args) < 0)
+                                {
+                                    std::cout << "ERROR cannot create DMA Process" << std::endl;
+                                }
 
                             std::cout << "--- START TRACKING WITH PULL-IN ERROR: " << acq_doppler_error_hz_values.at(current_acq_doppler_error_idx) << " [Hz] and " << acq_delay_error_chips_values.at(current_acq_doppler_error_idx).at(current_acq_code_error_idx) << " [Chips] ---" << std::endl;
 
@@ -1098,17 +1075,17 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
 
                             top_block->start();
 
-                        	// wait for the child DMA process to finish
-                        	pthread_join(thread_DMA, NULL);
+                            // wait for the child DMA process to finish
+                            pthread_join(thread_DMA, NULL);
 
-                        	top_block->stop();
+                            top_block->stop();
 
-                    		// reset the HW to launch the pending interrupts
-                        	acquisition->stop_acquisition();
+                            // reset the HW to launch the pending interrupts
+                            acquisition->stop_acquisition();
 
-                        	pthread_mutex_lock(&mutex);
-                        	send_samples_start = 0;
-                        	pthread_mutex_unlock(&mutex);
+                            pthread_mutex_lock(&mutex);
+                            send_samples_start = 0;
+                            pthread_mutex_unlock(&mutex);
 
 
                             pull_in_results_v.push_back(msg_rx->rx_message != 3);  //save last asynchronous tracking message in order to detect a loss of lock
@@ -1280,9 +1257,9 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
 
                         }  //end acquisition Delay errors loop
 
-                    usleep(100000); // give time to the HW to consume all the remaining samples
+                    usleep(100000);  // give time to the HW to consume all the remaining samples
 
-                }          //end acquisition Doppler errors loop
+                }  //end acquisition Doppler errors loop
 
             pull_in_results_v_v.push_back(pull_in_results_v);
 
@@ -1308,44 +1285,40 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
 
             if (FLAGS_show_plots)
                 {
-            	Gnuplot g4("points palette pointsize 2 pointtype 7");
-				g4.showonscreen();  // window output
-				g4.cmd("set palette defined ( 0 \"black\", 1 \"green\" )");
-				g4.cmd("set key off");
-				g4.cmd("set view map");
-				std::string title;
-				if (!FLAGS_enable_external_signal_file)
-					{
-						title = std::string("Tracking Pull-in result grid at CN0:" + std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))) + " [dB-Hz], PLL/DLL BW: " + std::to_string(FLAGS_PLL_bw_hz_start) + "," + std::to_string(FLAGS_DLL_bw_hz_start) + " [Hz].");
-					}
-				else
-					{
-						title = std::string("Tracking Pull-in result grid, PLL/DLL BW: " + std::to_string(FLAGS_PLL_bw_hz_start) + "," + std::to_string(FLAGS_DLL_bw_hz_start) + " [Hz], GPS L1 C/A (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
-					}
+                    Gnuplot g4("points palette pointsize 2 pointtype 7");
+                    g4.showonscreen();  // window output
+                    g4.cmd("set palette defined ( 0 \"black\", 1 \"green\" )");
+                    g4.cmd("set key off");
+                    g4.cmd("set view map");
+                    std::string title;
+                    if (!FLAGS_enable_external_signal_file)
+                        {
+                            title = std::string("Tracking Pull-in result grid at CN0:" + std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))) + " [dB-Hz], PLL/DLL BW: " + std::to_string(FLAGS_PLL_bw_hz_start) + "," + std::to_string(FLAGS_DLL_bw_hz_start) + " [Hz].");
+                        }
+                    else
+                        {
+                            title = std::string("Tracking Pull-in result grid, PLL/DLL BW: " + std::to_string(FLAGS_PLL_bw_hz_start) + "," + std::to_string(FLAGS_DLL_bw_hz_start) + " [Hz], GPS L1 C/A (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+                        }
 
-				g4.set_title(title);
-				g4.set_grid();
-				g4.set_xlabel("Acquisition Doppler error [Hz]");
-				g4.set_ylabel("Acquisition Code Delay error [Chips]");
-				g4.cmd("set cbrange[0:1]");
-				g4.plot_xyz(doppler_error_mesh,
-					code_delay_error_mesh,
-					pull_in_result_mesh);
-				g4.set_legend();
-				if (!FLAGS_enable_external_signal_file)
-					{
-						g4.savetops("trk_pull_in_grid_" + std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))));
-						g4.savetopdf("trk_pull_in_grid_" + std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))), 12);
-					}
-				else
-					{
-						g4.savetops("trk_pull_in_grid_external_file");
-						g4.savetopdf("trk_pull_in_grid_external_file", 12);
-					}
-
+                    g4.set_title(title);
+                    g4.set_grid();
+                    g4.set_xlabel("Acquisition Doppler error [Hz]");
+                    g4.set_ylabel("Acquisition Code Delay error [Chips]");
+                    g4.cmd("set cbrange[0:1]");
+                    g4.plot_xyz(doppler_error_mesh,
+                        code_delay_error_mesh,
+                        pull_in_result_mesh);
+                    g4.set_legend();
+                    if (!FLAGS_enable_external_signal_file)
+                        {
+                            g4.savetops("trk_pull_in_grid_" + std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))));
+                            g4.savetopdf("trk_pull_in_grid_" + std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))), 12);
+                        }
+                    else
+                        {
+                            g4.savetops("trk_pull_in_grid_external_file");
+                            g4.savetopdf("trk_pull_in_grid_external_file", 12);
+                        }
                 }
-
         }
-
-
 }

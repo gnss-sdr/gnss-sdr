@@ -39,7 +39,7 @@
  * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
- */ 
+ */
 
 #ifndef GNSS_SDR_PCPS_ACQUISITION_FPGA_H_
 #define GNSS_SDR_PCPS_ACQUISITION_FPGA_H_
@@ -216,7 +216,7 @@ public:
     /*!
      * \brief This funciton is only used for the unit tests
      */
-    void read_fpga_total_scale_factor(uint32_t *total_scale_factor, uint32_t *fw_scale_factor);
+    void read_fpga_total_scale_factor(uint32_t* total_scale_factor, uint32_t* fw_scale_factor);
 };
 
 #endif /* GNSS_SDR_PCPS_ACQUISITION_FPGA_H_*/

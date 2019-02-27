@@ -28,7 +28,7 @@
  * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
- */ 
+ */
 
 #ifndef GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_FPGA_H_
 #define GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_FPGA_H_
@@ -135,10 +135,10 @@ public:
      */
     void set_state(int state) override;
 
-     /*!
+    /*!
       * \brief Stop running acquisition
       */
-     void stop_acquisition() override;
+    void stop_acquisition() override;
 
     void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
 

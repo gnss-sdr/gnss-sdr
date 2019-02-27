@@ -66,9 +66,9 @@ private:
     uint32_t current_days;     // Receiver time in days since the beginning of the run
     int32_t report_interval_ms;
     bool flag_enable_send_msg;
-    int32_t fd;                   			// driver descriptor
-    volatile uint32_t *map_base;  // driver memory map
-    std::string device_name = "/dev/uio2";	// HW device name
+    int32_t fd;                             // driver descriptor
+    volatile uint32_t *map_base;            // driver memory map
+    std::string device_name = "/dev/uio2";  // HW device name
 
 public:
     friend gnss_sdr_fpga_sample_counter_sptr gnss_sdr_make_fpga_sample_counter(double _fs, int32_t _interval_ms);

@@ -31,7 +31,7 @@
  * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
- */ 
+ */
 
 #include "fpga_acquisition.h"
 #include "GPS_L1_CA.h"
@@ -41,7 +41,6 @@
 #include <iostream>
 #include <sys/mman.h>  // libraries used by the GIPO
 #include <utility>
-
 
 
 // FPGA register parameters
@@ -58,10 +57,10 @@
 #define SELECT_MSB 0XFF00                     // value to select the most significant byte
 #define SELECT_16_BITS 0xFFFF                 // value to select 16 bits
 #define SHL_8_BITS 256                        // value used to shift a value 8 bits to the left
-#define SELECT_LSBits 0x000003FF		// Select the 10 LSbits out of a 20-bit word
-#define SELECT_MSBbits 0x000FFC00		// Select the 10 MSbits out of a 20-bit word
-#define SELECT_ALL_CODE_BITS 0x000FFFFF		// Select a 20 bit word
-#define SHL_CODE_BITS 1024			// shift left by 10 bits
+#define SELECT_LSBits 0x000003FF              // Select the 10 LSbits out of a 20-bit word
+#define SELECT_MSBbits 0x000FFC00             // Select the 10 MSbits out of a 20-bit word
+#define SELECT_ALL_CODE_BITS 0x000FFFFF       // Select a 20 bit word
+#define SHL_CODE_BITS 1024                    // shift left by 10 bits
 
 
 bool fpga_acquisition::init()
@@ -73,7 +72,7 @@ bool fpga_acquisition::init()
 bool fpga_acquisition::set_local_code(uint32_t PRN)
 {
     // select the code with the chosen PRN
-	d_PRN = PRN;
+    d_PRN = PRN;
     return true;
 }
 
@@ -82,7 +81,6 @@ void fpga_acquisition::write_local_code()
 {
     fpga_acquisition::fpga_configure_acquisition_local_code(
         &d_all_fft_codes[d_nsamples_total * (d_PRN - 1)]);
-
 }
 
 fpga_acquisition::fpga_acquisition(std::string device_name,
@@ -91,7 +89,7 @@ fpga_acquisition::fpga_acquisition(std::string device_name,
     uint32_t nsamples_total, int64_t fs_in,
     uint32_t sampled_ms, uint32_t select_queue,
     lv_16sc_t *all_fft_codes,
-	uint32_t excludelimit)
+    uint32_t excludelimit)
 {
     uint32_t vector_length = nsamples_total;
 
@@ -116,7 +114,6 @@ fpga_acquisition::fpga_acquisition(std::string device_name,
 
     d_PRN = 0;
     DLOG(INFO) << "Acquisition FPGA class created";
-
 }
 
 void fpga_acquisition::open_device()
@@ -135,12 +132,10 @@ void fpga_acquisition::open_device()
             LOG(WARNING) << "Cannot map the FPGA acquisition module into user memory";
             std::cout << "Acq: cannot map deviceio" << d_device_name << std::endl;
         }
-
 }
 
 fpga_acquisition::~fpga_acquisition()
 {
-
 }
 
 
@@ -152,7 +147,6 @@ bool fpga_acquisition::free()
 
 void fpga_acquisition::fpga_acquisition_test_register()
 {
-
     // sanity check : check test register
     uint32_t writeval = TEST_REG_SANITY_CHECK;
     uint32_t readval;
@@ -190,14 +184,12 @@ void fpga_acquisition::fpga_configure_acquisition_local_code(lv_16sc_t fft_local
             local_code = (tmp & SELECT_LSBits) | ((tmp2 * SHL_CODE_BITS) & SELECT_MSBbits);  // put together the real part and the imaginary part
             fft_data = local_code & SELECT_ALL_CODE_BITS;
             d_map_base[6] = fft_data;
-
         }
 }
 
 
 void fpga_acquisition::run_acquisition(void)
 {
-
     // enable interrupts
     int32_t reenable = 1;
     int32_t disable_int = 0;
@@ -212,67 +204,63 @@ void fpga_acquisition::run_acquisition(void)
     nb = read(d_fd, &irq_count, sizeof(irq_count));
     if (nb != sizeof(irq_count))
         {
-			std::cout << "acquisition module Read failed to retrieve 4 bytes!" << std::endl;
-			std::cout << "acquisition module Interrupt number " << irq_count << std::endl;
+            std::cout << "acquisition module Read failed to retrieve 4 bytes!" << std::endl;
+            std::cout << "acquisition module Interrupt number " << irq_count << std::endl;
         }
 
     write(d_fd, reinterpret_cast<void *>(&disable_int), sizeof(int32_t));
-
 }
 
 void fpga_acquisition::set_block_exp(uint32_t total_block_exp)
 {
-	d_map_base[11] = total_block_exp;
+    d_map_base[11] = total_block_exp;
 }
 
 void fpga_acquisition::set_doppler_sweep(uint32_t num_sweeps)
 {
+    float phase_step_rad_real;
+    float phase_step_rad_int_temp;
+    int32_t phase_step_rad_int;
+    int32_t doppler = static_cast<int32_t>(-d_doppler_max);
+    float phase_step_rad = GPS_TWO_PI * (doppler) / static_cast<float>(d_fs_in);
+    // The doppler step can never be outside the range -pi to +pi, otherwise there would be aliasing
+    // The FPGA expects phase_step_rad between -1 (-pi) to +1 (+pi)
+    // The FPGA also expects the phase to be negative since it produces cos(x) -j*sin(x)
+    phase_step_rad_real = phase_step_rad / (GPS_TWO_PI / 2);
 
-	    float phase_step_rad_real;
-	    float phase_step_rad_int_temp;
-	    int32_t phase_step_rad_int;
-	    int32_t doppler = static_cast<int32_t>(-d_doppler_max);
-	    float phase_step_rad = GPS_TWO_PI * (doppler) / static_cast<float>(d_fs_in);
-	// The doppler step can never be outside the range -pi to +pi, otherwise there would be aliasing
-	// The FPGA expects phase_step_rad between -1 (-pi) to +1 (+pi)
-	// The FPGA also expects the phase to be negative since it produces cos(x) -j*sin(x)
-	phase_step_rad_real = phase_step_rad / (GPS_TWO_PI / 2);
+    // avoid saturation of the fixed point representation in the fpga
+    // (only the positive value can saturate due to the 2's complement representation)
+    if (phase_step_rad_real >= 1.0)
+        {
+            phase_step_rad_real = MAX_PHASE_STEP_RAD;
+        }
+    phase_step_rad_int_temp = phase_step_rad_real * POW_2_2;                          // * 2^2
+    phase_step_rad_int = static_cast<int32_t>(phase_step_rad_int_temp * (POW_2_29));  // * 2^29 (in total it makes x2^31 in two steps to avoid the warnings
+    d_map_base[3] = phase_step_rad_int;
 
-	// avoid saturation of the fixed point representation in the fpga
-	// (only the positive value can saturate due to the 2's complement representation)
-	    if (phase_step_rad_real >= 1.0)
-	        {
-	            phase_step_rad_real = MAX_PHASE_STEP_RAD;
-	        }
-	    phase_step_rad_int_temp = phase_step_rad_real * POW_2_2;                          // * 2^2
-	    phase_step_rad_int = static_cast<int32_t>(phase_step_rad_int_temp * (POW_2_29));  // * 2^29 (in total it makes x2^31 in two steps to avoid the warnings
-	    d_map_base[3] = phase_step_rad_int;
-
-	    // repeat the calculation with the doppler step
-	    doppler = static_cast<int32_t>(d_doppler_step);
-	    phase_step_rad = GPS_TWO_PI * (doppler) / static_cast<float>(d_fs_in);
-	    phase_step_rad_real = phase_step_rad / (GPS_TWO_PI / 2);
-	    if (phase_step_rad_real >= 1.0)
-	        {
-	            phase_step_rad_real = MAX_PHASE_STEP_RAD;
-	        }
-	    phase_step_rad_int_temp = phase_step_rad_real * POW_2_2;                          // * 2^2
-	    phase_step_rad_int = static_cast<int32_t>(phase_step_rad_int_temp * (POW_2_29));  // * 2^29 (in total it makes x2^31 in two steps to avoid the warnings
-	    d_map_base[4] = phase_step_rad_int;
-	    d_map_base[5] = num_sweeps;
-
+    // repeat the calculation with the doppler step
+    doppler = static_cast<int32_t>(d_doppler_step);
+    phase_step_rad = GPS_TWO_PI * (doppler) / static_cast<float>(d_fs_in);
+    phase_step_rad_real = phase_step_rad / (GPS_TWO_PI / 2);
+    if (phase_step_rad_real >= 1.0)
+        {
+            phase_step_rad_real = MAX_PHASE_STEP_RAD;
+        }
+    phase_step_rad_int_temp = phase_step_rad_real * POW_2_2;                          // * 2^2
+    phase_step_rad_int = static_cast<int32_t>(phase_step_rad_int_temp * (POW_2_29));  // * 2^29 (in total it makes x2^31 in two steps to avoid the warnings
+    d_map_base[4] = phase_step_rad_int;
+    d_map_base[5] = num_sweeps;
 }
 
 void fpga_acquisition::configure_acquisition()
 {
-	fpga_acquisition::open_device();
+    fpga_acquisition::open_device();
 
     d_map_base[0] = d_select_queue;
     d_map_base[1] = d_vector_length;
     d_map_base[2] = d_nsamples;
     d_map_base[7] = static_cast<int32_t>(log2(static_cast<float>(d_vector_length)));  // log2 FFTlength
     d_map_base[12] = d_excludelimit;
-
 }
 
 
@@ -303,7 +291,6 @@ void fpga_acquisition::set_phase_step(uint32_t doppler_index)
 void fpga_acquisition::read_acquisition_results(uint32_t *max_index,
     float *firstpeak, float *secondpeak, uint64_t *initial_sample, float *power_sum, uint32_t *doppler_index, uint32_t *total_blk_exp)
 {
-
     uint64_t initial_sample_tmp = 0;
     uint32_t readval = 0;
     uint64_t readval_long = 0;
@@ -313,7 +300,7 @@ void fpga_acquisition::read_acquisition_results(uint32_t *max_index,
     initial_sample_tmp = readval;
 
     readval_long = d_map_base[2];
-    readval_long_shifted = readval_long << 32;                       // 2^32
+    readval_long_shifted = readval_long << 32;  // 2^32
 
     initial_sample_tmp = initial_sample_tmp + readval_long_shifted;  // 2^32
     *initial_sample = initial_sample_tmp;
@@ -335,10 +322,9 @@ void fpga_acquisition::read_acquisition_results(uint32_t *max_index,
     readval = d_map_base[7];  // read doppler index -- this read releases the interrupt line
     *doppler_index = readval;
 
-    readval = d_map_base[15]; // read dummy
+    readval = d_map_base[15];  // read dummy
 
     fpga_acquisition::close_device();
-
 }
 
 
@@ -367,7 +353,7 @@ void fpga_acquisition::close_device()
 
 void fpga_acquisition::reset_acquisition(void)
 {
-	fpga_acquisition::open_device();
+    fpga_acquisition::open_device();
     d_map_base[8] = RESET_ACQUISITION;  // writing a 2 to d_map_base[8] resets the multicorrelator
     fpga_acquisition::close_device();
 }
@@ -376,19 +362,17 @@ void fpga_acquisition::reset_acquisition(void)
 // this function is only used for the unit tests
 void fpga_acquisition::read_fpga_total_scale_factor(uint32_t *total_scale_factor, uint32_t *fw_scale_factor)
 {
+    uint32_t readval = 0;
+    readval = d_map_base[8];
+    *total_scale_factor = readval;
 
-	uint32_t readval = 0;
-	readval = d_map_base[8];
-	*total_scale_factor = readval;
-
-	//readval = d_map_base[8];
-	*fw_scale_factor = 0;
-
+    //readval = d_map_base[8];
+    *fw_scale_factor = 0;
 }
 
 void fpga_acquisition::read_result_valid(uint32_t *result_valid)
 {
-	uint32_t readval = 0;
-	readval = d_map_base[0];
-	*result_valid = readval;
+    uint32_t readval = 0;
+    readval = d_map_base[0];
+    *result_valid = readval;
 }

@@ -251,7 +251,7 @@ void gnss_sdr_fpga_sample_counter::close_device()
     auto *aux = const_cast<uint32_t *>(map_base);
     if (munmap(static_cast<void *>(aux), PAGE_SIZE) == -1)
         {
-			std::cout << "Failed to unmap memory uio" << std::endl;
+            std::cout << "Failed to unmap memory uio" << std::endl;
         }
     close(fd);
 }
@@ -270,8 +270,8 @@ uint32_t gnss_sdr_fpga_sample_counter::wait_for_interrupt_and_read_counter()
     nb = read(fd, &irq_count, sizeof(irq_count));
     if (nb != sizeof(irq_count))
         {
-			std::cout << "fpga sample counter module read failed to retrieve 4 bytes!" << std::endl;
-			std::cout << "fpga sample counter module interrupt number " << irq_count << std::endl;
+            std::cout << "fpga sample counter module read failed to retrieve 4 bytes!" << std::endl;
+            std::cout << "fpga sample counter module interrupt number " << irq_count << std::endl;
         }
 
     // it is a rising edge interrupt, the interrupt does not need to be acknowledged

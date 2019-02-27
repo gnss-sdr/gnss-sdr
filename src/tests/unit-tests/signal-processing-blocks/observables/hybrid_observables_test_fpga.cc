@@ -30,62 +30,62 @@
  * -------------------------------------------------------------------------
  */
 
-#include <unistd.h>
-#include <chrono>
-#include <exception>
+#include "GPS_L1_CA.h"
+#include "gnss_block_factory.h"
+#include "gnss_block_interface.h"
+#include "gnss_satellite.h"
+#include "gnss_sdr_fpga_sample_counter.h"
+#include "gnss_synchro.h"
+#include "gnuplot_i.h"
+#include "gps_l1_ca_dll_pll_tracking.h"
+#include "gps_l1_ca_dll_pll_tracking_fpga.h"
+#include "gps_l1_ca_telemetry_decoder.h"
+#include "hybrid_observables.h"
+#include "in_memory_configuration.h"
+#include "observable_tests_flags.h"
+#include "observables_dump_reader.h"
+#include "signal_generator_flags.h"
+#include "telemetry_decoder_interface.h"
+#include "test_flags.h"
+#include "tlm_dump_reader.h"
+#include "tracking_dump_reader.h"
+#include "tracking_interface.h"
+#include "tracking_tests_flags.h"
+#include "tracking_true_obs_reader.h"
+#include "true_observables_reader.h"
 #include <armadillo>
-#include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
 #include <gnuradio/blocks/null_sink.h>
-#include <gtest/gtest.h>
-#include <gpstk/RinexUtilities.hpp>
+#include <gnuradio/top_block.h>
 #include <gpstk/Rinex3ObsBase.hpp>
 #include <gpstk/Rinex3ObsData.hpp>
 #include <gpstk/Rinex3ObsHeader.hpp>
 #include <gpstk/Rinex3ObsStream.hpp>
+#include <gpstk/RinexUtilities.hpp>
+#include <gtest/gtest.h>
 #include <matio.h>
-#include "GPS_L1_CA.h"
-#include "gnss_satellite.h"
-#include "gnss_block_factory.h"
-#include "gnss_block_interface.h"
-#include "tracking_interface.h"
-#include "telemetry_decoder_interface.h"
-#include "in_memory_configuration.h"
-#include "gnss_synchro.h"
-#include "gps_l1_ca_telemetry_decoder.h"
-#include "tracking_true_obs_reader.h"
-#include "true_observables_reader.h"
-#include "tracking_dump_reader.h"
-#include "observables_dump_reader.h"
-#include "tlm_dump_reader.h"
-#include "gps_l1_ca_dll_pll_tracking.h"
-#include "gps_l1_ca_dll_pll_tracking_fpga.h"
-#include "hybrid_observables.h"
-#include "signal_generator_flags.h"
-#include "gnss_sdr_fpga_sample_counter.h"
-#include "test_flags.h"
-#include "tracking_tests_flags.h"
-#include "observable_tests_flags.h"
-#include "gnuplot_i.h"
+#include <chrono>
+#include <exception>
+#include <unistd.h>
 
 // threads
-#include <pthread.h>	// for pthread stuff
-#include <fcntl.h>     	// for open, O_RDWR, O_SYNC
-#include <iostream>    	// for cout, endl
-#include <sys/mman.h>  	// for mmap
+#include <fcntl.h>     // for open, O_RDWR, O_SYNC
+#include <iostream>    // for cout, endl
+#include <pthread.h>   // for pthread stuff
+#include <sys/mman.h>  // for mmap
 
-#define TEST_OBS_MAX_INPUT_COMPLEX_SAMPLES_TOTAL 8192 	// maximum DMA sample block size in complex samples
-#define TEST_OBS_COMPLEX_SAMPLE_SIZE 2					// sample size in bytes
-#define TEST_OBS_NUM_QUEUES 2							// number of queues (1 for GPS L1/Galileo E1, and 1 for GPS L5/Galileo E5)
-#define TEST_OBS_DOWNAMPLING_FILTER_INIT_SAMPLES 100		// some samples to initialize the state of the downsampling filter
+#define TEST_OBS_MAX_INPUT_COMPLEX_SAMPLES_TOTAL 8192  // maximum DMA sample block size in complex samples
+#define TEST_OBS_COMPLEX_SAMPLE_SIZE 2                 // sample size in bytes
+#define TEST_OBS_NUM_QUEUES 2                          // number of queues (1 for GPS L1/Galileo E1, and 1 for GPS L5/Galileo E5)
+#define TEST_OBS_DOWNAMPLING_FILTER_INIT_SAMPLES 100   // some samples to initialize the state of the downsampling filter
 #define TEST_OBS_DOWNSAMPLING_FILTER_DELAY 48
 
 
 // HW related options
-bool test_observables_show_results_table = 0;		// 1 => show matrix of (doppler, (max value, power sum)) results (only if test_observables_doppler_control_in_sw = 1), 0=> do not show it
-bool test_observables_skip_samples_already_used = 1;	// if test_observables_doppler_control_in_sw = 1 and test_observables_skip_samples_already_used = 1 => for each PRN loop skip the samples used in the previous PRN loops
-													// (exactly in the same way as the SW)
+bool test_observables_show_results_table = 0;         // 1 => show matrix of (doppler, (max value, power sum)) results (only if test_observables_doppler_control_in_sw = 1), 0=> do not show it
+bool test_observables_skip_samples_already_used = 1;  // if test_observables_doppler_control_in_sw = 1 and test_observables_skip_samples_already_used = 1 => for each PRN loop skip the samples used in the previous PRN loops
+                                                      // (exactly in the same way as the SW)
 
 class HybridObservablesTest_msg_rx_Fpga;
 
@@ -316,16 +316,17 @@ const unsigned int TEST_OBS_TEST_REGISTER_TRACK_WRITEVAL = 0x55AA;
 void setup_fpga_switch_obs_test(void)
 {
     int switch_device_descriptor;        // driver descriptor
-    volatile unsigned *switch_map_base;  // driver memory map
+    volatile unsigned* switch_map_base;  // driver memory map
 
     if ((switch_device_descriptor = open("/dev/uio1", O_RDWR | O_SYNC)) == -1)
         {
-            LOG(WARNING) << "Cannot open deviceio" << "/dev/uio1";
+            LOG(WARNING) << "Cannot open deviceio"
+                         << "/dev/uio1";
         }
-    switch_map_base = reinterpret_cast<volatile unsigned *>(mmap(nullptr, TEST_OBS_PAGE_SIZE,
+    switch_map_base = reinterpret_cast<volatile unsigned*>(mmap(nullptr, TEST_OBS_PAGE_SIZE,
         PROT_READ | PROT_WRITE, MAP_SHARED, switch_device_descriptor, 0));
 
-    if (switch_map_base == reinterpret_cast<void *>(-1))
+    if (switch_map_base == reinterpret_cast<void*>(-1))
         {
             LOG(WARNING) << "Cannot map the FPGA switch module into tracking memory";
             std::cout << "Could not map switch memory." << std::endl;
@@ -348,7 +349,7 @@ void setup_fpga_switch_obs_test(void)
             LOG(INFO) << "Test register sanity check success !";
         }
 
-    switch_map_base[0] = 0; //0 -> DMA to queue 0, 1 -> DMA to queue 1, 2 -> A/Ds to queues
+    switch_map_base[0] = 0;  //0 -> DMA to queue 0, 1 -> DMA to queue 1, 2 -> A/Ds to queues
 }
 
 
@@ -356,128 +357,127 @@ static pthread_mutex_t mutex_obs_test = PTHREAD_MUTEX_INITIALIZER;
 
 volatile unsigned int send_samples_start_obs_test = 0;
 
-int8_t input_samples_obs_test[TEST_OBS_MAX_INPUT_COMPLEX_SAMPLES_TOTAL*TEST_OBS_COMPLEX_SAMPLE_SIZE]; // re - im
-int8_t input_samples_dma_obs_test[TEST_OBS_MAX_INPUT_COMPLEX_SAMPLES_TOTAL*TEST_OBS_COMPLEX_SAMPLE_SIZE*TEST_OBS_NUM_QUEUES];
+int8_t input_samples_obs_test[TEST_OBS_MAX_INPUT_COMPLEX_SAMPLES_TOTAL * TEST_OBS_COMPLEX_SAMPLE_SIZE];  // re - im
+int8_t input_samples_dma_obs_test[TEST_OBS_MAX_INPUT_COMPLEX_SAMPLES_TOTAL * TEST_OBS_COMPLEX_SAMPLE_SIZE * TEST_OBS_NUM_QUEUES];
 
-struct DMA_handler_args_obs_test {
+struct DMA_handler_args_obs_test
+{
     std::string file;
     unsigned int nsamples_tx;
     unsigned int skip_used_samples;
-    unsigned int freq_band; // 0 for GPS L1/ Galileo E1, 1 for GPS L5/Galileo E5
+    unsigned int freq_band;  // 0 for GPS L1/ Galileo E1, 1 for GPS L5/Galileo E5
 };
 
-void *handler_DMA_obs_test(void *arguments)
+void* handler_DMA_obs_test(void* arguments)
 {
+    // DMA process that configures the DMA to send the samples to the acquisition engine
+    int tx_fd;                           // DMA descriptor
+    FILE* rx_signal_file_id;             // Input file descriptor
+    bool file_completed = false;         // flag to indicate if the file is completed
+    unsigned int nsamples_block;         // number of samples to send in the next DMA block of samples
+    unsigned int nread_elements;         // number of elements effectively read from the input file
+    unsigned int nsamples = 0;           // number of complex samples effectively transferred
+    unsigned int index0, dma_index = 0;  // counters used for putting the samples in the order expected by the DMA
 
-	// DMA process that configures the DMA to send the samples to the acquisition engine
-	int tx_fd; 															// DMA descriptor
-	FILE *rx_signal_file_id;											// Input file descriptor
-	bool file_completed = false;										// flag to indicate if the file is completed
-	unsigned int nsamples_block;										// number of samples to send in the next DMA block of samples
-	unsigned int nread_elements;										// number of elements effectively read from the input file
-	unsigned int nsamples = 0;											// number of complex samples effectively transferred
-	unsigned int index0, dma_index = 0;									// counters used for putting the samples in the order expected by the DMA
+    unsigned int nsamples_transmitted;
 
-	unsigned int nsamples_transmitted;
+    struct DMA_handler_args* args = (struct DMA_handler_args*)arguments;
 
-	struct DMA_handler_args *args = (struct DMA_handler_args *) arguments;
+    unsigned int nsamples_tx = args->nsamples_tx;
+    std::string file = args->file;  // input filename
+    unsigned int skip_used_samples = args->skip_used_samples;
 
-	unsigned int nsamples_tx = args->nsamples_tx;
-	std::string file = args->file; // input filename
-	unsigned int skip_used_samples = args->skip_used_samples;
+    // open DMA device
+    tx_fd = open("/dev/loop_tx", O_WRONLY);
+    if (tx_fd < 0)
+        {
+            std::cout << "DMA can't open loop device" << std::endl;
+            exit(1);
+        }
+    else
 
-	// open DMA device
-	tx_fd = open("/dev/loop_tx", O_WRONLY);
-	if ( tx_fd < 0 )
-	{
-		std::cout << "DMA can't open loop device" << std::endl;
-		exit(1);
-	}
-	else
+        // open input file
+        rx_signal_file_id = fopen(file.c_str(), "rb");
+    if (rx_signal_file_id == NULL)
+        {
+            std::cout << "DMA can't open input file" << std::endl;
+            exit(1);
+        }
+    while (send_samples_start_obs_test == 0)
+        ;  // wait until acquisition starts
+    // skip initial samples
+    int skip_samples = (int)FLAGS_skip_samples;
 
-	// open input file
-	rx_signal_file_id = fopen(file.c_str(), "rb");
-	if (rx_signal_file_id == NULL)
-	{
-		std::cout << "DMA can't open input file" << std::endl;
-		exit(1);
-	}
-	while(send_samples_start_obs_test == 0); // wait until acquisition starts
-	// skip initial samples
-	int skip_samples = (int) FLAGS_skip_samples;
+    fseek(rx_signal_file_id, (skip_samples + skip_used_samples) * 2, SEEK_SET);
 
-	fseek( rx_signal_file_id, (skip_samples + skip_used_samples)*2, SEEK_SET );
+    usleep(50000);  // wait some time to give time to the main thread to start the acquisition module
 
-	usleep(50000); // wait some time to give time to the main thread to start the acquisition module
+    while (file_completed == false)
+        {
+            if (nsamples_tx - nsamples > TEST_OBS_MAX_INPUT_COMPLEX_SAMPLES_TOTAL)
+                {
+                    nsamples_block = TEST_OBS_MAX_INPUT_COMPLEX_SAMPLES_TOTAL;
+                }
+            else
+                {
+                    nsamples_block = nsamples_tx - nsamples;  // remaining samples to be sent
+                    file_completed = true;
+                }
 
-	while (file_completed == false)
-	{
-		if (nsamples_tx - nsamples > TEST_OBS_MAX_INPUT_COMPLEX_SAMPLES_TOTAL)
-		{
-			nsamples_block = TEST_OBS_MAX_INPUT_COMPLEX_SAMPLES_TOTAL;
-		}
-		else
-		{
-			nsamples_block = nsamples_tx - nsamples; // remaining samples to be sent
-			file_completed = true;
-		}
+            nread_elements = fread(input_samples_obs_test, sizeof(int8_t), nsamples_block * TEST_OBS_COMPLEX_SAMPLE_SIZE, rx_signal_file_id);
 
-		nread_elements = fread(input_samples_obs_test, sizeof(int8_t), nsamples_block*TEST_OBS_COMPLEX_SAMPLE_SIZE, rx_signal_file_id);
+            if (nread_elements != nsamples_block * TEST_OBS_COMPLEX_SAMPLE_SIZE)
+                {
+                    std::cout << "file completed" << std::endl;
+                    file_completed = true;
+                }
 
-		if (nread_elements != nsamples_block * TEST_OBS_COMPLEX_SAMPLE_SIZE)
-		{
-			std::cout << "file completed" << std::endl;
-			file_completed = true;
-		}
+            nsamples += (nread_elements / TEST_OBS_COMPLEX_SAMPLE_SIZE);
 
-		nsamples+=(nread_elements/TEST_OBS_COMPLEX_SAMPLE_SIZE);
-
-		if (nread_elements > 0)
-		{
-			// for the 32-BIT DMA
-			dma_index = 0;
-			for (index0 = 0;index0 < (nread_elements);index0+=TEST_OBS_COMPLEX_SAMPLE_SIZE)
-			{
-				if (args->freq_band == 0)
-				{
-					// channel 1 (queue 1) -> E5/L5
-					input_samples_dma_obs_test[dma_index] = 0;
-					input_samples_dma_obs_test[dma_index+1] = 0;
-					// channel 0 (queue 0) -> E1/L1
-					input_samples_dma_obs_test[dma_index+2] = input_samples_obs_test[index0];
-					input_samples_dma_obs_test[dma_index+3] = input_samples_obs_test[index0+1];
-				}
-				else
-				{
-					// channel 1 (queue 1) -> E5/L5
-					input_samples_dma_obs_test[dma_index] = input_samples_obs_test[index0];
-					input_samples_dma_obs_test[dma_index+1] = input_samples_obs_test[index0+1];
-					// channel 0 (queue 0) -> E1/L1
-					input_samples_dma_obs_test[dma_index+2] = 0;
-					input_samples_dma_obs_test[dma_index+3] = 0;
-				}
-				dma_index += 4;
-			}
-			nsamples_transmitted = write(tx_fd, &input_samples_dma_obs_test[0], nread_elements*TEST_OBS_NUM_QUEUES);
-			if (nsamples_transmitted != nread_elements*TEST_OBS_NUM_QUEUES)
-			{
-				std::cout << "Error : DMA could not send all the requested samples" << std::endl;
-			}
-		}
-	}
+            if (nread_elements > 0)
+                {
+                    // for the 32-BIT DMA
+                    dma_index = 0;
+                    for (index0 = 0; index0 < (nread_elements); index0 += TEST_OBS_COMPLEX_SAMPLE_SIZE)
+                        {
+                            if (args->freq_band == 0)
+                                {
+                                    // channel 1 (queue 1) -> E5/L5
+                                    input_samples_dma_obs_test[dma_index] = 0;
+                                    input_samples_dma_obs_test[dma_index + 1] = 0;
+                                    // channel 0 (queue 0) -> E1/L1
+                                    input_samples_dma_obs_test[dma_index + 2] = input_samples_obs_test[index0];
+                                    input_samples_dma_obs_test[dma_index + 3] = input_samples_obs_test[index0 + 1];
+                                }
+                            else
+                                {
+                                    // channel 1 (queue 1) -> E5/L5
+                                    input_samples_dma_obs_test[dma_index] = input_samples_obs_test[index0];
+                                    input_samples_dma_obs_test[dma_index + 1] = input_samples_obs_test[index0 + 1];
+                                    // channel 0 (queue 0) -> E1/L1
+                                    input_samples_dma_obs_test[dma_index + 2] = 0;
+                                    input_samples_dma_obs_test[dma_index + 3] = 0;
+                                }
+                            dma_index += 4;
+                        }
+                    nsamples_transmitted = write(tx_fd, &input_samples_dma_obs_test[0], nread_elements * TEST_OBS_NUM_QUEUES);
+                    if (nsamples_transmitted != nread_elements * TEST_OBS_NUM_QUEUES)
+                        {
+                            std::cout << "Error : DMA could not send all the requested samples" << std::endl;
+                        }
+                }
+        }
 
 
-	close(tx_fd);
-	fclose(rx_signal_file_id);
-	return NULL;
-
+    close(tx_fd);
+    fclose(rx_signal_file_id);
+    return NULL;
 }
 
 
 bool HybridObservablesTestFpga::acquire_signal()
 {
-
-	pthread_t thread_DMA;
+    pthread_t thread_DMA;
 
     // 1. Setup GNU Radio flowgraph (file_source -> Acquisition_10m)
     gr::top_block_sptr top_block;
@@ -508,7 +508,6 @@ bool HybridObservablesTestFpga::acquire_signal()
             args.freq_band = 0;
 
             acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
-
         }
     else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
         {
@@ -521,7 +520,6 @@ bool HybridObservablesTestFpga::acquire_signal()
             args.freq_band = 0;
 
             acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
-
         }
 
     else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
@@ -535,7 +533,6 @@ bool HybridObservablesTestFpga::acquire_signal()
             args.freq_band = 1;
 
             acquisition = std::make_shared<GalileoE5aPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
-
         }
     else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
         {
@@ -548,7 +545,6 @@ bool HybridObservablesTestFpga::acquire_signal()
             args.freq_band = 1;
 
             acquisition = std::make_shared<GpsL5iPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
-
         }
     else
         {
@@ -603,143 +599,135 @@ bool HybridObservablesTestFpga::acquire_signal()
 
     setup_fpga_switch_obs_test();
 
-	unsigned int nsamples_to_transfer;
-	if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
-	{
-		nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
-	}
-	else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
-	{
-		nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
-	}
-	else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
-	{
-		nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GALILEO_E5A_CODE_CHIP_RATE_HZ / GALILEO_E5A_CODE_LENGTH_CHIPS)));
-	}
-	else // (if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0))
-	{
-		nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L5I_CODE_RATE_HZ / GPS_L5I_CODE_LENGTH_CHIPS)));
-	}
+    unsigned int nsamples_to_transfer;
+    if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
+        {
+            nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
+        }
+    else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
+        {
+            nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
+        }
+    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
+        {
+            nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GALILEO_E5A_CODE_CHIP_RATE_HZ / GALILEO_E5A_CODE_LENGTH_CHIPS)));
+        }
+    else  // (if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0))
+        {
+            nsamples_to_transfer = static_cast<unsigned int>(std::round(static_cast<double>(baseband_sampling_freq) / (GPS_L5I_CODE_RATE_HZ / GPS_L5I_CODE_LENGTH_CHIPS)));
+        }
 
-	int acq_doppler_max = config->property("Acquisition.doppler_max", FLAGS_external_signal_acquisition_doppler_max_hz);
-	int acq_doppler_step = config->property("Acquisition.doppler_step", FLAGS_external_signal_acquisition_doppler_step_hz);
-
-
-
-		for (unsigned int PRN = 1; PRN < MAX_PRN_IDX; PRN++)
-			{
-
-			tmp_gnss_synchro.PRN = PRN;
-
-			acquisition->stop_acquisition(); // reset the whole system including the sample counters
-			acquisition->set_doppler_max(acq_doppler_max);
-			acquisition->set_doppler_step(acq_doppler_step);
-			acquisition->set_gnss_synchro(&tmp_gnss_synchro);
-			acquisition->init();
-			acquisition->set_local_code();
-
-			args.file = file;
+    int acq_doppler_max = config->property("Acquisition.doppler_max", FLAGS_external_signal_acquisition_doppler_max_hz);
+    int acq_doppler_step = config->property("Acquisition.doppler_step", FLAGS_external_signal_acquisition_doppler_step_hz);
 
 
-			send_samples_start_obs_test = 0;
+    for (unsigned int PRN = 1; PRN < MAX_PRN_IDX; PRN++)
+        {
+            tmp_gnss_synchro.PRN = PRN;
 
-			if ((implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0) or (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0))
-			{
+            acquisition->stop_acquisition();  // reset the whole system including the sample counters
+            acquisition->set_doppler_max(acq_doppler_max);
+            acquisition->set_doppler_step(acq_doppler_step);
+            acquisition->set_gnss_synchro(&tmp_gnss_synchro);
+            acquisition->init();
+            acquisition->set_local_code();
 
-				args.skip_used_samples = - TEST_OBS_DOWNAMPLING_FILTER_INIT_SAMPLES;
-
-				args.nsamples_tx = TEST_OBS_DOWNAMPLING_FILTER_INIT_SAMPLES + TEST_OBS_DOWNSAMPLING_FILTER_DELAY;
-
-				if (pthread_create(&thread_DMA, NULL, handler_DMA_obs_test, (void *)&args) < 0)
-				{
-					std::cout << "ERROR cannot create DMA Process" << std::endl;
-				}
-				pthread_mutex_lock(&mutex);
-				send_samples_start_obs_test = 1;
-				pthread_mutex_unlock(&mutex);
-				pthread_join(thread_DMA, NULL);
-				send_samples_start_obs_test = 0;
-
-				args.nsamples_tx = nsamples_to_transfer;
-
-				args.skip_used_samples = TEST_OBS_DOWNSAMPLING_FILTER_DELAY;
-
-			}
-			else
-			{
-
-				args.nsamples_tx = nsamples_to_transfer;
-
-				args.skip_used_samples = 0;
-			}
+            args.file = file;
 
 
-			// create DMA child process
-			if (pthread_create(&thread_DMA, NULL, handler_DMA_obs_test, (void *)&args) < 0)
-			{
-				std::cout << "ERROR cannot create DMA Process" << std::endl;
-			}
+            send_samples_start_obs_test = 0;
 
-			msg_rx->rx_message = 0;
-			top_block->start();
+            if ((implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0) or (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0))
+                {
+                    args.skip_used_samples = -TEST_OBS_DOWNAMPLING_FILTER_INIT_SAMPLES;
 
-			pthread_mutex_lock(&mutex);
-			send_samples_start_obs_test = 1;
-			pthread_mutex_unlock(&mutex);
+                    args.nsamples_tx = TEST_OBS_DOWNAMPLING_FILTER_INIT_SAMPLES + TEST_OBS_DOWNSAMPLING_FILTER_DELAY;
 
-			acquisition->reset(); // set active
+                    if (pthread_create(&thread_DMA, NULL, handler_DMA_obs_test, (void*)&args) < 0)
+                        {
+                            std::cout << "ERROR cannot create DMA Process" << std::endl;
+                        }
+                    pthread_mutex_lock(&mutex);
+                    send_samples_start_obs_test = 1;
+                    pthread_mutex_unlock(&mutex);
+                    pthread_join(thread_DMA, NULL);
+                    send_samples_start_obs_test = 0;
 
-			if (start_msg == true)
-				{
-					std::cout << "Reading external signal file: " << FLAGS_signal_file << std::endl;
-					std::cout << "Searching for " << System_and_Signal << " Satellites..." << std::endl;
-					std::cout << "[";
-					start_msg = false;
-				}
+                    args.nsamples_tx = nsamples_to_transfer;
 
-			// wait for the child DMA process to finish
-			pthread_join(thread_DMA, NULL);
+                    args.skip_used_samples = TEST_OBS_DOWNSAMPLING_FILTER_DELAY;
+                }
+            else
+                {
+                    args.nsamples_tx = nsamples_to_transfer;
 
-			pthread_mutex_lock(&mutex);
-			send_samples_start_obs_test = 0;
-			pthread_mutex_unlock(&mutex);
-
-			// the DMA sends the exact number of samples needed for the acquisition.
-			// however because of the LPF in the GPS L1/Gal E1 acquisition, this calculation is approximate
-			// and some extra samples might be sent. Wait at least once to give time the HW to consume any extra
-			// sample the DMA might have sent.
-            do {
-            	usleep(100000);
-            } while (msg_rx->rx_message == 0);
-
-			if (msg_rx->rx_message == 1)
-				{
-					std::cout << " " << PRN << " ";
-
-					tmp_gnss_synchro.Acq_doppler_hz = tmp_gnss_synchro.Acq_doppler_hz;
-					tmp_gnss_synchro.Acq_delay_samples = tmp_gnss_synchro.Acq_delay_samples;
-					tmp_gnss_synchro.Acq_samplestamp_samples = 0; // do not take into account the filter internal state initialisation
-					tmp_gnss_synchro.Acq_samplestamp_samples = tmp_gnss_synchro.Acq_samplestamp_samples;  // delay due to the downsampling filter in the acquisition
+                    args.skip_used_samples = 0;
+                }
 
 
-					gnss_synchro_vec.push_back(tmp_gnss_synchro);
+            // create DMA child process
+            if (pthread_create(&thread_DMA, NULL, handler_DMA_obs_test, (void*)&args) < 0)
+                {
+                    std::cout << "ERROR cannot create DMA Process" << std::endl;
+                }
+
+            msg_rx->rx_message = 0;
+            top_block->start();
+
+            pthread_mutex_lock(&mutex);
+            send_samples_start_obs_test = 1;
+            pthread_mutex_unlock(&mutex);
+
+            acquisition->reset();  // set active
+
+            if (start_msg == true)
+                {
+                    std::cout << "Reading external signal file: " << FLAGS_signal_file << std::endl;
+                    std::cout << "Searching for " << System_and_Signal << " Satellites..." << std::endl;
+                    std::cout << "[";
+                    start_msg = false;
+                }
+
+            // wait for the child DMA process to finish
+            pthread_join(thread_DMA, NULL);
+
+            pthread_mutex_lock(&mutex);
+            send_samples_start_obs_test = 0;
+            pthread_mutex_unlock(&mutex);
+
+            // the DMA sends the exact number of samples needed for the acquisition.
+            // however because of the LPF in the GPS L1/Gal E1 acquisition, this calculation is approximate
+            // and some extra samples might be sent. Wait at least once to give time the HW to consume any extra
+            // sample the DMA might have sent.
+            do
+                {
+                    usleep(100000);
+                }
+            while (msg_rx->rx_message == 0);
+
+            if (msg_rx->rx_message == 1)
+                {
+                    std::cout << " " << PRN << " ";
+
+                    tmp_gnss_synchro.Acq_doppler_hz = tmp_gnss_synchro.Acq_doppler_hz;
+                    tmp_gnss_synchro.Acq_delay_samples = tmp_gnss_synchro.Acq_delay_samples;
+                    tmp_gnss_synchro.Acq_samplestamp_samples = 0;                                         // do not take into account the filter internal state initialisation
+                    tmp_gnss_synchro.Acq_samplestamp_samples = tmp_gnss_synchro.Acq_samplestamp_samples;  // delay due to the downsampling filter in the acquisition
 
 
-				}
-			else
-				{
-					std::cout << " . ";
-				}
+                    gnss_synchro_vec.push_back(tmp_gnss_synchro);
+                }
+            else
+                {
+                    std::cout << " . ";
+                }
 
 
-			top_block->stop();
+            top_block->stop();
 
 
-
-
-			std::cout.flush();
-
-	}
+            std::cout.flush();
+        }
     std::cout << "]" << std::endl;
     std::cout << "-------------------------------------------\n";
 
@@ -826,7 +814,7 @@ void HybridObservablesTestFpga::configure_receiver(
 
             config->set_property("TelemetryDecoder.implementation", "Galileo_E1B_Telemetry_Decoder");
         }
-    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0) // or implementation.compare("Galileo_E5a_DLL_PLL_Tracking_b") == 0)
+    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)  // or implementation.compare("Galileo_E5a_DLL_PLL_Tracking_b") == 0)
         {
             gnss_synchro_master.System = 'E';
             std::string signal = "5X";
@@ -1478,11 +1466,10 @@ bool HybridObservablesTestFpga::ReadRinexObs(std::vector<arma::mat>* obs_vec, Gn
 }
 TEST_F(HybridObservablesTestFpga, ValidationOfResults)
 {
+    // pointer to the DMA thread that sends the samples to the acquisition engine
+    pthread_t thread_DMA;
 
-	// pointer to the DMA thread that sends the samples to the acquisition engine
-	pthread_t thread_DMA;
-
-	struct DMA_handler_args_obs_test args;
+    struct DMA_handler_args_obs_test args;
 
     // Configure the signal generator
     configure_generator();
@@ -1575,46 +1562,45 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
         }
 
 
-	// The HW has been reset after the acquisition phase when the acquisition class was destroyed.
-	// No more samples remained in the DMA. Therefore any intermediate state in the LPF of the
-	// GPS L1 / Galileo E1 filter has been cleared.
-	// During this test all the samples coming from the DMA are consumed so in principle there would be
-	// no need to reset the HW. However we need to clear the sample counter in each test. Therefore we have
-	// to reset the HW at the beginning of each test.
+    // The HW has been reset after the acquisition phase when the acquisition class was destroyed.
+    // No more samples remained in the DMA. Therefore any intermediate state in the LPF of the
+    // GPS L1 / Galileo E1 filter has been cleared.
+    // During this test all the samples coming from the DMA are consumed so in principle there would be
+    // no need to reset the HW. However we need to clear the sample counter in each test. Therefore we have
+    // to reset the HW at the beginning of each test.
 
-	// instantiate the acquisition modules in order to use them to reset the HW.
-	// (note that the constructor of the acquisition modules resets the HW too)
+    // instantiate the acquisition modules in order to use them to reset the HW.
+    // (note that the constructor of the acquisition modules resets the HW too)
 
 
-	std::shared_ptr<AcquisitionInterface> acquisition;
+    std::shared_ptr<AcquisitionInterface> acquisition;
 
     // reset the HW to clear the sample counters: the acquisition constructor generates a reset
-	if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
-	{
-		acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
-		args.freq_band = 0;
-
-	}
-	else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
-	{
-		acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
-		args.freq_band = 0;
-	}
-	else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
-	{
-		acquisition = std::make_shared<GalileoE5aPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
-		args.freq_band = 1;
-	}
-	else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
-	{
-		acquisition = std::make_shared<GpsL5iPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
-		args.freq_band = 1;
-	}
-	else
-	{
-		std::cout << "The test can not run with the selected tracking implementation\n ";
-		throw(std::exception());
-	}
+    if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking_Fpga") == 0)
+        {
+            acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+            args.freq_band = 0;
+        }
+    else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking_Fpga") == 0)
+        {
+            acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+            args.freq_band = 0;
+        }
+    else if (implementation.compare("Galileo_E5a_DLL_PLL_Tracking_Fpga") == 0)
+        {
+            acquisition = std::make_shared<GalileoE5aPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+            args.freq_band = 1;
+        }
+    else if (implementation.compare("GPS_L5_DLL_PLL_Tracking_Fpga") == 0)
+        {
+            acquisition = std::make_shared<GpsL5iPcpsAcquisitionFpga>(config.get(), "Acquisition", 0, 0);
+            args.freq_band = 1;
+        }
+    else
+        {
+            std::cout << "The test can not run with the selected tracking implementation\n ";
+            throw(std::exception());
+        }
 
 
     std::vector<std::shared_ptr<TrackingInterface>> tracking_ch_vec;
@@ -1661,336 +1647,333 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
             }) << "Failure setting gnss_synchro.";
         }
 
-	top_block = gr::make_top_block("Telemetry_Decoder test");
-	boost::shared_ptr<HybridObservablesTest_msg_rx_Fpga> dummy_msg_rx_trk = HybridObservablesTest_msg_rx_Fpga_make();
-	boost::shared_ptr<HybridObservablesTest_tlm_msg_rx_Fpga> dummy_tlm_msg_rx = HybridObservablesTest_tlm_msg_rx_Fpga_make();
-	//Observables
-	std::shared_ptr<ObservablesInterface> observables(new HybridObservables(config.get(), "Observables", tracking_ch_vec.size() + 1, tracking_ch_vec.size()));
+    top_block = gr::make_top_block("Telemetry_Decoder test");
+    boost::shared_ptr<HybridObservablesTest_msg_rx_Fpga> dummy_msg_rx_trk = HybridObservablesTest_msg_rx_Fpga_make();
+    boost::shared_ptr<HybridObservablesTest_tlm_msg_rx_Fpga> dummy_tlm_msg_rx = HybridObservablesTest_tlm_msg_rx_Fpga_make();
+    //Observables
+    std::shared_ptr<ObservablesInterface> observables(new HybridObservables(config.get(), "Observables", tracking_ch_vec.size() + 1, tracking_ch_vec.size()));
 
-	for (unsigned int n = 0; n < tracking_ch_vec.size(); n++)
-		{
-			ASSERT_NO_THROW({
-				tracking_ch_vec.at(n)->connect(top_block);
-			}) << "Failure connecting tracking to the top_block.";
-		}
+    for (unsigned int n = 0; n < tracking_ch_vec.size(); n++)
+        {
+            ASSERT_NO_THROW({
+                tracking_ch_vec.at(n)->connect(top_block);
+            }) << "Failure connecting tracking to the top_block.";
+        }
 
-	std::string file;
+    std::string file;
 
-	ASSERT_NO_THROW({
-		if (!FLAGS_enable_external_signal_file)
-			{
-				file = "./" + filename_raw_data;
-			}
-		else
-			{
-				file = FLAGS_signal_file;
-			}
-		int observable_interval_ms = 20;
+    ASSERT_NO_THROW({
+        if (!FLAGS_enable_external_signal_file)
+            {
+                file = "./" + filename_raw_data;
+            }
+        else
+            {
+                file = FLAGS_signal_file;
+            }
+        int observable_interval_ms = 20;
 
-		double fs = static_cast<double>(config->property("GNSS-SDR.internal_fs_sps", 0));
+        double fs = static_cast<double>(config->property("GNSS-SDR.internal_fs_sps", 0));
 
-		gnss_sdr_fpga_sample_counter_sptr ch_out_fpga_sample_counter;
-		ch_out_fpga_sample_counter = gnss_sdr_make_fpga_sample_counter(fs, observable_interval_ms);
-
-
-
-		for (unsigned int n = 0; n < tracking_ch_vec.size(); n++)
-			{
-				//top_block->connect(gr_interleaved_char_to_complex, 0, tracking_ch_vec.at(n)->get_left_block(), 0);
-				top_block->connect(tracking_ch_vec.at(n)->get_right_block(), 0, tlm_ch_vec.at(n)->get_left_block(), 0);
-				top_block->connect(tlm_ch_vec.at(n)->get_right_block(), 0, observables->get_left_block(), n);
-				top_block->msg_connect(tracking_ch_vec.at(n)->get_right_block(), pmt::mp("events"), dummy_msg_rx_trk, pmt::mp("events"));
-				top_block->connect(observables->get_right_block(), n, null_sink_vec.at(n), 0);
-			}
-		//connect sample counter and timmer to the last channel in observables block (extra channel)
-		//top_block->connect(samp_counter, 0, observables->get_left_block(), tracking_ch_vec.size());
-		top_block->connect(ch_out_fpga_sample_counter, 0, observables->get_left_block(), tracking_ch_vec.size());  //extra port for the sample counter pulse
-
-	}) << "Failure connecting the blocks.";
+        gnss_sdr_fpga_sample_counter_sptr ch_out_fpga_sample_counter;
+        ch_out_fpga_sample_counter = gnss_sdr_make_fpga_sample_counter(fs, observable_interval_ms);
 
 
-	args.file = file;
-	args.nsamples_tx = baseband_sampling_freq*FLAGS_duration;;
-
-	args.skip_used_samples = 0;
-
-	if (pthread_create(&thread_DMA, NULL, handler_DMA_obs_test, (void *)&args) < 0)
-	{
-		std::cout << "ERROR cannot create DMA Process" << std::endl;
-	}
-
-
-	for (unsigned int n = 0; n < tracking_ch_vec.size(); n++)
-		{
-			tracking_ch_vec.at(n)->start_tracking();
-		}
-
-	pthread_mutex_lock(&mutex_obs_test);
-	send_samples_start_obs_test = 1;
-	pthread_mutex_unlock(&mutex_obs_test);
+        for (unsigned int n = 0; n < tracking_ch_vec.size(); n++)
+            {
+                //top_block->connect(gr_interleaved_char_to_complex, 0, tracking_ch_vec.at(n)->get_left_block(), 0);
+                top_block->connect(tracking_ch_vec.at(n)->get_right_block(), 0, tlm_ch_vec.at(n)->get_left_block(), 0);
+                top_block->connect(tlm_ch_vec.at(n)->get_right_block(), 0, observables->get_left_block(), n);
+                top_block->msg_connect(tracking_ch_vec.at(n)->get_right_block(), pmt::mp("events"), dummy_msg_rx_trk, pmt::mp("events"));
+                top_block->connect(observables->get_right_block(), n, null_sink_vec.at(n), 0);
+            }
+        //connect sample counter and timmer to the last channel in observables block (extra channel)
+        //top_block->connect(samp_counter, 0, observables->get_left_block(), tracking_ch_vec.size());
+        top_block->connect(ch_out_fpga_sample_counter, 0, observables->get_left_block(), tracking_ch_vec.size());  //extra port for the sample counter pulse
+    }) << "Failure connecting the blocks.";
 
 
-	top_block->start();
+    args.file = file;
+    args.nsamples_tx = baseband_sampling_freq * FLAGS_duration;
+    ;
+
+    args.skip_used_samples = 0;
+
+    if (pthread_create(&thread_DMA, NULL, handler_DMA_obs_test, (void*)&args) < 0)
+        {
+            std::cout << "ERROR cannot create DMA Process" << std::endl;
+        }
 
 
+    for (unsigned int n = 0; n < tracking_ch_vec.size(); n++)
+        {
+            tracking_ch_vec.at(n)->start_tracking();
+        }
 
-	EXPECT_NO_THROW({
-		start = std::chrono::system_clock::now();
-		//top_block->run();  // Start threads and wait
-		end = std::chrono::system_clock::now();
-		elapsed_seconds = end - start;
-	}) << "Failure running the top_block.";
-
-
-	// wait for the child DMA process to finish
-	pthread_join(thread_DMA, NULL);
+    pthread_mutex_lock(&mutex_obs_test);
+    send_samples_start_obs_test = 1;
+    pthread_mutex_unlock(&mutex_obs_test);
 
 
-	top_block->stop();
+    top_block->start();
+
+
+    EXPECT_NO_THROW({
+        start = std::chrono::system_clock::now();
+        //top_block->run();  // Start threads and wait
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end - start;
+    }) << "Failure running the top_block.";
+
+
+    // wait for the child DMA process to finish
+    pthread_join(thread_DMA, NULL);
+
+
+    top_block->stop();
 
 
     // reset the HW AGAIN
-	acquisition->stop_acquisition();
+    acquisition->stop_acquisition();
 
 
-	//	pthread_mutex_lock(&mutex_obs_test);
-	//	send_samples_start_obs_test = 0;
-	//	pthread_mutex_unlock(&mutex_obs_test);
+    //	pthread_mutex_lock(&mutex_obs_test);
+    //	send_samples_start_obs_test = 0;
+    //	pthread_mutex_unlock(&mutex_obs_test);
 
 
+    //check results
+    // Matrices for storing columnwise true GPS time, Range, Doppler and Carrier phase
+    std::vector<arma::mat> true_obs_vec;
 
-	//check results
-	// Matrices for storing columnwise true GPS time, Range, Doppler and Carrier phase
-	std::vector<arma::mat> true_obs_vec;
+    if (!FLAGS_enable_external_signal_file)
+        {
+            //load the true values
+            True_Observables_Reader true_observables;
+            ASSERT_NO_THROW({
+                if (true_observables.open_obs_file(std::string("./obs_out.bin")) == false)
+                    {
+                        throw std::exception();
+                    }
+            }) << "Failure opening true observables file";
 
-	if (!FLAGS_enable_external_signal_file)
-		{
-			//load the true values
-			True_Observables_Reader true_observables;
-			ASSERT_NO_THROW({
-				if (true_observables.open_obs_file(std::string("./obs_out.bin")) == false)
-					{
-						throw std::exception();
-					}
-			}) << "Failure opening true observables file";
+            unsigned int nepoch = static_cast<unsigned int>(true_observables.num_epochs());
 
-			unsigned int nepoch = static_cast<unsigned int>(true_observables.num_epochs());
+            std::cout << "True observation epochs = " << nepoch << std::endl;
 
-			std::cout << "True observation epochs = " << nepoch << std::endl;
+            true_observables.restart();
+            int64_t epoch_counter = 0;
+            for (unsigned int n = 0; n < tracking_ch_vec.size(); n++)
+                {
+                    true_obs_vec.push_back(arma::zeros<arma::mat>(nepoch, 4));
+                }
 
-			true_observables.restart();
-			int64_t epoch_counter = 0;
-			for (unsigned int n = 0; n < tracking_ch_vec.size(); n++)
-				{
-					true_obs_vec.push_back(arma::zeros<arma::mat>(nepoch, 4));
-				}
-
-			ASSERT_NO_THROW({
-				while (true_observables.read_binary_obs())
-					{
-						for (unsigned int n = 0; n < true_obs_vec.size(); n++)
-							{
-								if (round(true_observables.prn[n]) != gnss_synchro_vec.at(n).PRN)
-									{
-										std::cout << "True observables SV PRN does not match measured ones: "
-												  << round(true_observables.prn[n]) << " vs. " << gnss_synchro_vec.at(n).PRN << std::endl;
-										throw std::exception();
-									}
-								true_obs_vec.at(n)(epoch_counter, 0) = true_observables.gps_time_sec[n];
-								true_obs_vec.at(n)(epoch_counter, 1) = true_observables.dist_m[n];
-								true_obs_vec.at(n)(epoch_counter, 2) = true_observables.doppler_l1_hz[n];
-								true_obs_vec.at(n)(epoch_counter, 3) = true_observables.acc_carrier_phase_l1_cycles[n];
-							}
-						epoch_counter++;
-					}
-			});
-		}
-	else
-		{
-			ASSERT_EQ(ReadRinexObs(&true_obs_vec, gnss_synchro_master), true)
-				<< "Failure reading RINEX file";
-		}
-
-
-	//read measured values
-	Observables_Dump_Reader estimated_observables(tracking_ch_vec.size());
-	ASSERT_NO_THROW({
-		if (estimated_observables.open_obs_file(std::string("./observables.dat")) == false)
-			{
-				throw std::exception();
-			}
-	}) << "Failure opening dump observables file";
-
-	unsigned int nepoch = static_cast<unsigned int>(estimated_observables.num_epochs());
-	std::cout << "Measured observations epochs = " << nepoch << std::endl;
-
-	// Matrices for storing columnwise measured RX_time, TOW, Doppler, Carrier phase and Pseudorange
-	std::vector<arma::mat> measured_obs_vec;
-	std::vector<int64_t> epoch_counters_vec;
-	for (unsigned int n = 0; n < tracking_ch_vec.size(); n++)
-		{
-			measured_obs_vec.push_back(arma::zeros<arma::mat>(nepoch, 5));
-			epoch_counters_vec.push_back(0);
-		}
-
-	estimated_observables.restart();
-	while (estimated_observables.read_binary_obs())
-		{
-			for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
-				{
-					if (static_cast<bool>(estimated_observables.valid[n]))
-						{
-							measured_obs_vec.at(n)(epoch_counters_vec.at(n), 0) = estimated_observables.RX_time[n];
-							measured_obs_vec.at(n)(epoch_counters_vec.at(n), 1) = estimated_observables.TOW_at_current_symbol_s[n];
-							measured_obs_vec.at(n)(epoch_counters_vec.at(n), 2) = estimated_observables.Carrier_Doppler_hz[n];
-							measured_obs_vec.at(n)(epoch_counters_vec.at(n), 3) = estimated_observables.Acc_carrier_phase_hz[n];
-							measured_obs_vec.at(n)(epoch_counters_vec.at(n), 4) = estimated_observables.Pseudorange_m[n];
-							epoch_counters_vec.at(n)++;
-						}
-				}
-		}
+            ASSERT_NO_THROW({
+                while (true_observables.read_binary_obs())
+                    {
+                        for (unsigned int n = 0; n < true_obs_vec.size(); n++)
+                            {
+                                if (round(true_observables.prn[n]) != gnss_synchro_vec.at(n).PRN)
+                                    {
+                                        std::cout << "True observables SV PRN does not match measured ones: "
+                                                  << round(true_observables.prn[n]) << " vs. " << gnss_synchro_vec.at(n).PRN << std::endl;
+                                        throw std::exception();
+                                    }
+                                true_obs_vec.at(n)(epoch_counter, 0) = true_observables.gps_time_sec[n];
+                                true_obs_vec.at(n)(epoch_counter, 1) = true_observables.dist_m[n];
+                                true_obs_vec.at(n)(epoch_counter, 2) = true_observables.doppler_l1_hz[n];
+                                true_obs_vec.at(n)(epoch_counter, 3) = true_observables.acc_carrier_phase_l1_cycles[n];
+                            }
+                        epoch_counter++;
+                    }
+            });
+        }
+    else
+        {
+            ASSERT_EQ(ReadRinexObs(&true_obs_vec, gnss_synchro_master), true)
+                << "Failure reading RINEX file";
+        }
 
 
-	//Cut measurement tail zeros
-	arma::uvec index;
-	for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
-		{
-			index = arma::find(measured_obs_vec.at(n).col(0) > 0.0, 1, "last");
-			if ((index.size() > 0) and index(0) < (nepoch - 1))
-				{
-					measured_obs_vec.at(n).shed_rows(index(0) + 1, nepoch - 1);
-				}
-		}
+    //read measured values
+    Observables_Dump_Reader estimated_observables(tracking_ch_vec.size());
+    ASSERT_NO_THROW({
+        if (estimated_observables.open_obs_file(std::string("./observables.dat")) == false)
+            {
+                throw std::exception();
+            }
+    }) << "Failure opening dump observables file";
 
-	//Cut measurement initial transitory of the measurements
+    unsigned int nepoch = static_cast<unsigned int>(estimated_observables.num_epochs());
+    std::cout << "Measured observations epochs = " << nepoch << std::endl;
 
-	double initial_transitory_s = FLAGS_skip_obs_transitory_s;
+    // Matrices for storing columnwise measured RX_time, TOW, Doppler, Carrier phase and Pseudorange
+    std::vector<arma::mat> measured_obs_vec;
+    std::vector<int64_t> epoch_counters_vec;
+    for (unsigned int n = 0; n < tracking_ch_vec.size(); n++)
+        {
+            measured_obs_vec.push_back(arma::zeros<arma::mat>(nepoch, 5));
+            epoch_counters_vec.push_back(0);
+        }
 
-	for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
-		{
-			index = arma::find(measured_obs_vec.at(n).col(0) >= (measured_obs_vec.at(n)(0, 0) + initial_transitory_s), 1, "first");
-			if ((index.size() > 0) and (index(0) > 0))
-				{
-					measured_obs_vec.at(n).shed_rows(0, index(0));
-				}
-
-			index = arma::find(measured_obs_vec.at(n).col(0) >= true_obs_vec.at(n)(0, 0), 1, "first");
-			if ((index.size() > 0) and (index(0) > 0))
-				{
-					measured_obs_vec.at(n).shed_rows(0, index(0));
-				}
-		}
-
-
-	//Correct the clock error using true values (it is not possible for a receiver to correct
-	//the receiver clock offset error at the observables level because it is required the
-	//decoding of the ephemeris data and solve the PVT equations)
-
-	//Find the reference satellite (the nearest) and compute the receiver time offset at observable level
-	double min_pr = std::numeric_limits<double>::max();
-	unsigned int min_pr_ch_id = 0;
-	for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
-		{
-			if (epoch_counters_vec.at(n) > 10)  //discard non-valid channels
-				{
-					{
-						if (measured_obs_vec.at(n)(0, 4) < min_pr)
-							{
-								min_pr = measured_obs_vec.at(n)(0, 4);
-								min_pr_ch_id = n;
-							}
-					}
-				}
-			else
-				{
-					std::cout << "PRN " << gnss_synchro_vec.at(n).PRN << " has NO observations!\n";
-				}
-		}
-
-	arma::vec receiver_time_offset_ref_channel_s;
-	//receiver_time_offset_ref_channel_s = true_obs_vec.at(min_pr_ch_id).col(1) / GPS_C_m_s - GPS_STARTOFFSET_ms / 1000.0;
-	receiver_time_offset_ref_channel_s = (true_obs_vec.at(min_pr_ch_id).col(1)(0) - measured_obs_vec.at(min_pr_ch_id).col(4)(0)) / GPS_C_M_S;
-	std::cout << "Ref channel initial Receiver time offset " << receiver_time_offset_ref_channel_s(0) * 1e3 << " [ms]" << std::endl;
-
-	for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
-		{
-			//debug save to .mat
-			std::vector<double> tmp_vector_x(true_obs_vec.at(n).col(0).colptr(0),
-				true_obs_vec.at(n).col(0).colptr(0) + true_obs_vec.at(n).col(0).n_rows);
-			std::vector<double> tmp_vector_y(true_obs_vec.at(n).col(1).colptr(0),
-				true_obs_vec.at(n).col(1).colptr(0) + true_obs_vec.at(n).col(1).n_rows);
-			save_mat_xy(tmp_vector_x, tmp_vector_y, std::string("true_pr_ch_" + std::to_string(n)));
-
-			std::vector<double> tmp_vector_x2(measured_obs_vec.at(n).col(0).colptr(0),
-				measured_obs_vec.at(n).col(0).colptr(0) + measured_obs_vec.at(n).col(0).n_rows);
-			std::vector<double> tmp_vector_y2(measured_obs_vec.at(n).col(4).colptr(0),
-				measured_obs_vec.at(n).col(4).colptr(0) + measured_obs_vec.at(n).col(4).n_rows);
-			save_mat_xy(tmp_vector_x2, tmp_vector_y2, std::string("measured_pr_ch_" + std::to_string(n)));
-
-			std::vector<double> tmp_vector_x3(true_obs_vec.at(n).col(0).colptr(0),
-				true_obs_vec.at(n).col(0).colptr(0) + true_obs_vec.at(n).col(0).n_rows);
-			std::vector<double> tmp_vector_y3(true_obs_vec.at(n).col(2).colptr(0),
-				true_obs_vec.at(n).col(2).colptr(0) + true_obs_vec.at(n).col(2).n_rows);
-			save_mat_xy(tmp_vector_x3, tmp_vector_y3, std::string("true_doppler_ch_" + std::to_string(n)));
-
-			std::vector<double> tmp_vector_x4(measured_obs_vec.at(n).col(0).colptr(0),
-				measured_obs_vec.at(n).col(0).colptr(0) + measured_obs_vec.at(n).col(0).n_rows);
-			std::vector<double> tmp_vector_y4(measured_obs_vec.at(n).col(2).colptr(0),
-				measured_obs_vec.at(n).col(2).colptr(0) + measured_obs_vec.at(n).col(2).n_rows);
-			save_mat_xy(tmp_vector_x4, tmp_vector_y4, std::string("measured_doppler_ch_" + std::to_string(n)));
-
-			if (epoch_counters_vec.at(n) > 10)  //discard non-valid channels
-				{
-					arma::vec true_TOW_ref_ch_s = true_obs_vec.at(min_pr_ch_id).col(0) - receiver_time_offset_ref_channel_s(0);
-					arma::vec true_TOW_ch_s = true_obs_vec.at(n).col(0) - receiver_time_offset_ref_channel_s(0);
-					//Compare measured observables
-					if (min_pr_ch_id != n)
-						{
-							check_results_code_pseudorange(true_obs_vec.at(n),
-								true_obs_vec.at(min_pr_ch_id),
-								true_TOW_ch_s,
-								true_TOW_ref_ch_s,
-								measured_obs_vec.at(n),
-								measured_obs_vec.at(min_pr_ch_id),
-								"[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
-							check_results_carrier_phase_double_diff(true_obs_vec.at(n),
-								true_obs_vec.at(min_pr_ch_id),
-								true_TOW_ch_s,
-								true_TOW_ref_ch_s,
-								measured_obs_vec.at(n),
-								measured_obs_vec.at(min_pr_ch_id),
-								"[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
-
-							check_results_carrier_doppler_double_diff(true_obs_vec.at(n),
-								true_obs_vec.at(min_pr_ch_id),
-								true_TOW_ch_s,
-								true_TOW_ref_ch_s,
-								measured_obs_vec.at(n),
-								measured_obs_vec.at(min_pr_ch_id),
-								"[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
-						}
-					else
-						{
-							std::cout << "[CH " << std::to_string(n) << "] PRN " << std::to_string(gnss_synchro_vec.at(n).PRN) << " is the reference satellite" << std::endl;
-						}
-					if (FLAGS_compute_single_diffs)
-						{
-							check_results_carrier_phase(true_obs_vec.at(n),
-								true_TOW_ch_s,
-								measured_obs_vec.at(n),
-								"[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
-							check_results_carrier_doppler(true_obs_vec.at(n),
-								true_TOW_ch_s,
-								measured_obs_vec.at(n),
-								"[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
-						}
-				}
-			else
-				{
-					std::cout << "PRN " << gnss_synchro_vec.at(n).PRN << " has NO observations!\n";
-				}
-		}
+    estimated_observables.restart();
+    while (estimated_observables.read_binary_obs())
+        {
+            for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
+                {
+                    if (static_cast<bool>(estimated_observables.valid[n]))
+                        {
+                            measured_obs_vec.at(n)(epoch_counters_vec.at(n), 0) = estimated_observables.RX_time[n];
+                            measured_obs_vec.at(n)(epoch_counters_vec.at(n), 1) = estimated_observables.TOW_at_current_symbol_s[n];
+                            measured_obs_vec.at(n)(epoch_counters_vec.at(n), 2) = estimated_observables.Carrier_Doppler_hz[n];
+                            measured_obs_vec.at(n)(epoch_counters_vec.at(n), 3) = estimated_observables.Acc_carrier_phase_hz[n];
+                            measured_obs_vec.at(n)(epoch_counters_vec.at(n), 4) = estimated_observables.Pseudorange_m[n];
+                            epoch_counters_vec.at(n)++;
+                        }
+                }
+        }
 
 
-	std::cout << "Test completed in " << elapsed_seconds.count() << " [s]" << std::endl;
+    //Cut measurement tail zeros
+    arma::uvec index;
+    for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
+        {
+            index = arma::find(measured_obs_vec.at(n).col(0) > 0.0, 1, "last");
+            if ((index.size() > 0) and index(0) < (nepoch - 1))
+                {
+                    measured_obs_vec.at(n).shed_rows(index(0) + 1, nepoch - 1);
+                }
+        }
+
+    //Cut measurement initial transitory of the measurements
+
+    double initial_transitory_s = FLAGS_skip_obs_transitory_s;
+
+    for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
+        {
+            index = arma::find(measured_obs_vec.at(n).col(0) >= (measured_obs_vec.at(n)(0, 0) + initial_transitory_s), 1, "first");
+            if ((index.size() > 0) and (index(0) > 0))
+                {
+                    measured_obs_vec.at(n).shed_rows(0, index(0));
+                }
+
+            index = arma::find(measured_obs_vec.at(n).col(0) >= true_obs_vec.at(n)(0, 0), 1, "first");
+            if ((index.size() > 0) and (index(0) > 0))
+                {
+                    measured_obs_vec.at(n).shed_rows(0, index(0));
+                }
+        }
+
+
+    //Correct the clock error using true values (it is not possible for a receiver to correct
+    //the receiver clock offset error at the observables level because it is required the
+    //decoding of the ephemeris data and solve the PVT equations)
+
+    //Find the reference satellite (the nearest) and compute the receiver time offset at observable level
+    double min_pr = std::numeric_limits<double>::max();
+    unsigned int min_pr_ch_id = 0;
+    for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
+        {
+            if (epoch_counters_vec.at(n) > 10)  //discard non-valid channels
+                {
+                    {
+                        if (measured_obs_vec.at(n)(0, 4) < min_pr)
+                            {
+                                min_pr = measured_obs_vec.at(n)(0, 4);
+                                min_pr_ch_id = n;
+                            }
+                    }
+                }
+            else
+                {
+                    std::cout << "PRN " << gnss_synchro_vec.at(n).PRN << " has NO observations!\n";
+                }
+        }
+
+    arma::vec receiver_time_offset_ref_channel_s;
+    //receiver_time_offset_ref_channel_s = true_obs_vec.at(min_pr_ch_id).col(1) / GPS_C_m_s - GPS_STARTOFFSET_ms / 1000.0;
+    receiver_time_offset_ref_channel_s = (true_obs_vec.at(min_pr_ch_id).col(1)(0) - measured_obs_vec.at(min_pr_ch_id).col(4)(0)) / GPS_C_M_S;
+    std::cout << "Ref channel initial Receiver time offset " << receiver_time_offset_ref_channel_s(0) * 1e3 << " [ms]" << std::endl;
+
+    for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
+        {
+            //debug save to .mat
+            std::vector<double> tmp_vector_x(true_obs_vec.at(n).col(0).colptr(0),
+                true_obs_vec.at(n).col(0).colptr(0) + true_obs_vec.at(n).col(0).n_rows);
+            std::vector<double> tmp_vector_y(true_obs_vec.at(n).col(1).colptr(0),
+                true_obs_vec.at(n).col(1).colptr(0) + true_obs_vec.at(n).col(1).n_rows);
+            save_mat_xy(tmp_vector_x, tmp_vector_y, std::string("true_pr_ch_" + std::to_string(n)));
+
+            std::vector<double> tmp_vector_x2(measured_obs_vec.at(n).col(0).colptr(0),
+                measured_obs_vec.at(n).col(0).colptr(0) + measured_obs_vec.at(n).col(0).n_rows);
+            std::vector<double> tmp_vector_y2(measured_obs_vec.at(n).col(4).colptr(0),
+                measured_obs_vec.at(n).col(4).colptr(0) + measured_obs_vec.at(n).col(4).n_rows);
+            save_mat_xy(tmp_vector_x2, tmp_vector_y2, std::string("measured_pr_ch_" + std::to_string(n)));
+
+            std::vector<double> tmp_vector_x3(true_obs_vec.at(n).col(0).colptr(0),
+                true_obs_vec.at(n).col(0).colptr(0) + true_obs_vec.at(n).col(0).n_rows);
+            std::vector<double> tmp_vector_y3(true_obs_vec.at(n).col(2).colptr(0),
+                true_obs_vec.at(n).col(2).colptr(0) + true_obs_vec.at(n).col(2).n_rows);
+            save_mat_xy(tmp_vector_x3, tmp_vector_y3, std::string("true_doppler_ch_" + std::to_string(n)));
+
+            std::vector<double> tmp_vector_x4(measured_obs_vec.at(n).col(0).colptr(0),
+                measured_obs_vec.at(n).col(0).colptr(0) + measured_obs_vec.at(n).col(0).n_rows);
+            std::vector<double> tmp_vector_y4(measured_obs_vec.at(n).col(2).colptr(0),
+                measured_obs_vec.at(n).col(2).colptr(0) + measured_obs_vec.at(n).col(2).n_rows);
+            save_mat_xy(tmp_vector_x4, tmp_vector_y4, std::string("measured_doppler_ch_" + std::to_string(n)));
+
+            if (epoch_counters_vec.at(n) > 10)  //discard non-valid channels
+                {
+                    arma::vec true_TOW_ref_ch_s = true_obs_vec.at(min_pr_ch_id).col(0) - receiver_time_offset_ref_channel_s(0);
+                    arma::vec true_TOW_ch_s = true_obs_vec.at(n).col(0) - receiver_time_offset_ref_channel_s(0);
+                    //Compare measured observables
+                    if (min_pr_ch_id != n)
+                        {
+                            check_results_code_pseudorange(true_obs_vec.at(n),
+                                true_obs_vec.at(min_pr_ch_id),
+                                true_TOW_ch_s,
+                                true_TOW_ref_ch_s,
+                                measured_obs_vec.at(n),
+                                measured_obs_vec.at(min_pr_ch_id),
+                                "[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
+                            check_results_carrier_phase_double_diff(true_obs_vec.at(n),
+                                true_obs_vec.at(min_pr_ch_id),
+                                true_TOW_ch_s,
+                                true_TOW_ref_ch_s,
+                                measured_obs_vec.at(n),
+                                measured_obs_vec.at(min_pr_ch_id),
+                                "[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
+
+                            check_results_carrier_doppler_double_diff(true_obs_vec.at(n),
+                                true_obs_vec.at(min_pr_ch_id),
+                                true_TOW_ch_s,
+                                true_TOW_ref_ch_s,
+                                measured_obs_vec.at(n),
+                                measured_obs_vec.at(min_pr_ch_id),
+                                "[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
+                        }
+                    else
+                        {
+                            std::cout << "[CH " << std::to_string(n) << "] PRN " << std::to_string(gnss_synchro_vec.at(n).PRN) << " is the reference satellite" << std::endl;
+                        }
+                    if (FLAGS_compute_single_diffs)
+                        {
+                            check_results_carrier_phase(true_obs_vec.at(n),
+                                true_TOW_ch_s,
+                                measured_obs_vec.at(n),
+                                "[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
+                            check_results_carrier_doppler(true_obs_vec.at(n),
+                                true_TOW_ch_s,
+                                measured_obs_vec.at(n),
+                                "[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
+                        }
+                }
+            else
+                {
+                    std::cout << "PRN " << gnss_synchro_vec.at(n).PRN << " has NO observations!\n";
+                }
+        }
+
+
+    std::cout << "Test completed in " << elapsed_seconds.count() << " [s]" << std::endl;
 }

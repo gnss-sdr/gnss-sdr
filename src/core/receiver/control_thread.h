@@ -168,16 +168,16 @@ private:
     bool delete_configuration_;
     unsigned int processed_control_messages_;
     unsigned int applied_actions_;
-//<<<<<<< HEAD
-//    boost::thread keyboard_thread_;
-//    boost::thread sysv_queue_thread_;
-//    boost::thread gps_acq_assist_data_collector_thread_;
+    //<<<<<<< HEAD
+    //    boost::thread keyboard_thread_;
+    //    boost::thread sysv_queue_thread_;
+    //    boost::thread gps_acq_assist_data_collector_thread_;
     boost::thread fpga_helper_thread_;
-//=======
+    //=======
     std::thread keyboard_thread_;
     std::thread sysv_queue_thread_;
     std::thread gps_acq_assist_data_collector_thread_;
-//>>>>>>> 4fe976ba016fa9c1c64ece88b26a9a93d93a84f4
+    //>>>>>>> 4fe976ba016fa9c1c64ece88b26a9a93d93a84f4
 
     void keyboard_listener();
     void sysv_queue_listener();

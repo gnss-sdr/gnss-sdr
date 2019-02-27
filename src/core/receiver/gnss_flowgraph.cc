@@ -212,65 +212,65 @@ void GNSSFlowgraph::connect()
 
     for (int i = 0; i < sources_count_; i++)
         {
-			try
-				{
-					//TODO: Remove this array implementation and create generic multistream connector
-					//(if a signal source has more than 1 stream, then connect it to the multistream signal conditioner)
-					if (sig_source_.at(i)->implementation() == "Raw_Array_Signal_Source")
-						{
-							//Multichannel Array
-							std::cout << "ARRAY MODE" << std::endl;
-							for (int j = 0; j < GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_CHANNELS; j++)
-								{
-									std::cout << "connecting ch " << j << std::endl;
-									top_block_->connect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(i)->get_left_block(), j);
-								}
-						}
-					else
-						{
-							//TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
-							//Include GetRFChannels in the interface to avoid read config parameters here
-							//read the number of RF channels for each front-end
-							RF_Channels = configuration_->property(sig_source_.at(i)->role() + ".RF_channels", 1);
+            try
+                {
+                    //TODO: Remove this array implementation and create generic multistream connector
+                    //(if a signal source has more than 1 stream, then connect it to the multistream signal conditioner)
+                    if (sig_source_.at(i)->implementation() == "Raw_Array_Signal_Source")
+                        {
+                            //Multichannel Array
+                            std::cout << "ARRAY MODE" << std::endl;
+                            for (int j = 0; j < GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_CHANNELS; j++)
+                                {
+                                    std::cout << "connecting ch " << j << std::endl;
+                                    top_block_->connect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(i)->get_left_block(), j);
+                                }
+                        }
+                    else
+                        {
+                            //TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
+                            //Include GetRFChannels in the interface to avoid read config parameters here
+                            //read the number of RF channels for each front-end
+                            RF_Channels = configuration_->property(sig_source_.at(i)->role() + ".RF_channels", 1);
 
-							for (int j = 0; j < RF_Channels; j++)
-								{
-									//Connect the multichannel signal source to multiple signal conditioners
-									// GNURADIO max_streams=-1 means infinite ports!
-									LOG(INFO) << "sig_source_.at(i)->get_right_block()->output_signature()->max_streams()=" << sig_source_.at(i)->get_right_block()->output_signature()->max_streams();
-									LOG(INFO) << "sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()=" << sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()->max_streams();
+                            for (int j = 0; j < RF_Channels; j++)
+                                {
+                                    //Connect the multichannel signal source to multiple signal conditioners
+                                    // GNURADIO max_streams=-1 means infinite ports!
+                                    LOG(INFO) << "sig_source_.at(i)->get_right_block()->output_signature()->max_streams()=" << sig_source_.at(i)->get_right_block()->output_signature()->max_streams();
+                                    LOG(INFO) << "sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()=" << sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()->max_streams();
 
-									if (sig_source_.at(i)->get_right_block()->output_signature()->max_streams() > 1)
-										{
-											LOG(INFO) << "connecting sig_source_ " << i << " stream " << j << " to conditioner " << j;
-											top_block_->connect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
-										}
-									else
-										{
-											if (j == 0)
-												{
-													// RF_channel 0 backward compatibility with single channel sources
-													LOG(INFO) << "connecting sig_source_ " << i << " stream " << 0 << " to conditioner " << j;
-													top_block_->connect(sig_source_.at(i)->get_right_block(), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
-												}
-											else
-												{
-													// Multiple channel sources using multiple output blocks of single channel (requires RF_channel selector in call)
-													LOG(INFO) << "connecting sig_source_ " << i << " stream " << j << " to conditioner " << j;
-													top_block_->connect(sig_source_.at(i)->get_right_block(j), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
-												}
-										}
-									signal_conditioner_ID++;
-								}
-						}
-				}
-			catch (const std::exception& e)
-				{
-					LOG(WARNING) << "Can't connect signal source " << i << " to signal conditioner " << i;
-					LOG(ERROR) << e.what();
-					top_block_->disconnect_all();
-					return;
-				}
+                                    if (sig_source_.at(i)->get_right_block()->output_signature()->max_streams() > 1)
+                                        {
+                                            LOG(INFO) << "connecting sig_source_ " << i << " stream " << j << " to conditioner " << j;
+                                            top_block_->connect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
+                                        }
+                                    else
+                                        {
+                                            if (j == 0)
+                                                {
+                                                    // RF_channel 0 backward compatibility with single channel sources
+                                                    LOG(INFO) << "connecting sig_source_ " << i << " stream " << 0 << " to conditioner " << j;
+                                                    top_block_->connect(sig_source_.at(i)->get_right_block(), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
+                                                }
+                                            else
+                                                {
+                                                    // Multiple channel sources using multiple output blocks of single channel (requires RF_channel selector in call)
+                                                    LOG(INFO) << "connecting sig_source_ " << i << " stream " << j << " to conditioner " << j;
+                                                    top_block_->connect(sig_source_.at(i)->get_right_block(j), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
+                                                }
+                                        }
+                                    signal_conditioner_ID++;
+                                }
+                        }
+                }
+            catch (const std::exception& e)
+                {
+                    LOG(WARNING) << "Can't connect signal source " << i << " to signal conditioner " << i;
+                    LOG(ERROR) << e.what();
+                    top_block_->disconnect_all();
+                    return;
+                }
         }
     DLOG(INFO) << "Signal source connected to signal conditioner";
 
@@ -306,7 +306,6 @@ void GNSSFlowgraph::connect()
         }
     else
         {
-
             //create a hardware-defined gnss_synchro pulse for the observables block
             try
                 {
@@ -362,7 +361,6 @@ void GNSSFlowgraph::connect()
     uint32_t fs = configuration_->property("GNSS-SDR.internal_fs_sps", 0);
     for (unsigned int i = 0; i < channels_count_; i++)
         {
-
 #ifndef ENABLE_FPGA
             if (configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false) == false)
                 {
@@ -670,7 +668,7 @@ void GNSSFlowgraph::connect()
             LOG(INFO) << "Channel " << i << " assigned to " << channels_.at(i)->get_signal();
             if (channels_state_[i] == 1)
                 {
-						channels_.at(i)->start_acquisition();
+                    channels_.at(i)->start_acquisition();
                     LOG(INFO) << "Channel " << i << " connected to observables and ready for acquisition";
                 }
             else
@@ -703,114 +701,114 @@ void GNSSFlowgraph::disconnect()
 
 #ifdef ENABLE_FPGA
     if (configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false) == false)
-    {
-    	for (int i = 0; i < sources_count_; i++)
-    		{
-    			try
-    				{
-    					// TODO: Remove this array implementation and create generic multistream connector
-    					// (if a signal source has more than 1 stream, then connect it to the multistream signal conditioner)
-    					if (sig_source_.at(i)->implementation() == "Raw_Array_Signal_Source")
-    						{
-    							//Multichannel Array
-    							for (int j = 0; j < GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_CHANNELS; j++)
-    								{
-    									top_block_->disconnect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(i)->get_left_block(), j);
-    								}
-    						}
-    					else
-    						{
-    							// TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
-    							// Include GetRFChannels in the interface to avoid read config parameters here
-    							// read the number of RF channels for each front-end
-    							RF_Channels = configuration_->property(sig_source_.at(i)->role() + ".RF_channels", 1);
+        {
+            for (int i = 0; i < sources_count_; i++)
+                {
+                    try
+                        {
+                            // TODO: Remove this array implementation and create generic multistream connector
+                            // (if a signal source has more than 1 stream, then connect it to the multistream signal conditioner)
+                            if (sig_source_.at(i)->implementation() == "Raw_Array_Signal_Source")
+                                {
+                                    //Multichannel Array
+                                    for (int j = 0; j < GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_CHANNELS; j++)
+                                        {
+                                            top_block_->disconnect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(i)->get_left_block(), j);
+                                        }
+                                }
+                            else
+                                {
+                                    // TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
+                                    // Include GetRFChannels in the interface to avoid read config parameters here
+                                    // read the number of RF channels for each front-end
+                                    RF_Channels = configuration_->property(sig_source_.at(i)->role() + ".RF_channels", 1);
 
-    							for (int j = 0; j < RF_Channels; j++)
-    								{
-    									if (sig_source_.at(i)->get_right_block()->output_signature()->max_streams() > 1)
-    										{
-    											top_block_->disconnect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
-    										}
-    									else
-    										{
-    											if (j == 0)
-    												{
-    													// RF_channel 0 backward compatibility with single channel sources
-    													top_block_->disconnect(sig_source_.at(i)->get_right_block(), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
-    												}
-    											else
-    												{
-    													// Multiple channel sources using multiple output blocks of single channel (requires RF_channel selector in call)
-    													top_block_->disconnect(sig_source_.at(i)->get_right_block(j), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
-    												}
-    										}
-    									signal_conditioner_ID++;
-    								}
-    						}
-    				}
-    			catch (const std::exception& e)
-    				{
-    					LOG(INFO) << "Can't disconnect signal source " << i << " to signal conditioner " << i << ": " << e.what();
-    					top_block_->disconnect_all();
-    					return;
-    				}
-    		}
-    }
+                                    for (int j = 0; j < RF_Channels; j++)
+                                        {
+                                            if (sig_source_.at(i)->get_right_block()->output_signature()->max_streams() > 1)
+                                                {
+                                                    top_block_->disconnect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
+                                                }
+                                            else
+                                                {
+                                                    if (j == 0)
+                                                        {
+                                                            // RF_channel 0 backward compatibility with single channel sources
+                                                            top_block_->disconnect(sig_source_.at(i)->get_right_block(), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
+                                                        }
+                                                    else
+                                                        {
+                                                            // Multiple channel sources using multiple output blocks of single channel (requires RF_channel selector in call)
+                                                            top_block_->disconnect(sig_source_.at(i)->get_right_block(j), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
+                                                        }
+                                                }
+                                            signal_conditioner_ID++;
+                                        }
+                                }
+                        }
+                    catch (const std::exception& e)
+                        {
+                            LOG(INFO) << "Can't disconnect signal source " << i << " to signal conditioner " << i << ": " << e.what();
+                            top_block_->disconnect_all();
+                            return;
+                        }
+                }
+        }
 
 
 #else
 
-	for (int i = 0; i < sources_count_; i++)
-		{
-			try
-				{
-					// TODO: Remove this array implementation and create generic multistream connector
-					// (if a signal source has more than 1 stream, then connect it to the multistream signal conditioner)
-					if (sig_source_.at(i)->implementation() == "Raw_Array_Signal_Source")
-						{
-							//Multichannel Array
-							for (int j = 0; j < GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_CHANNELS; j++)
-								{
-									top_block_->disconnect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(i)->get_left_block(), j);
-								}
-						}
-					else
-						{
-							// TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
-							// Include GetRFChannels in the interface to avoid read config parameters here
-							// read the number of RF channels for each front-end
-							RF_Channels = configuration_->property(sig_source_.at(i)->role() + ".RF_channels", 1);
+    for (int i = 0; i < sources_count_; i++)
+        {
+            try
+                {
+                    // TODO: Remove this array implementation and create generic multistream connector
+                    // (if a signal source has more than 1 stream, then connect it to the multistream signal conditioner)
+                    if (sig_source_.at(i)->implementation() == "Raw_Array_Signal_Source")
+                        {
+                            //Multichannel Array
+                            for (int j = 0; j < GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_CHANNELS; j++)
+                                {
+                                    top_block_->disconnect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(i)->get_left_block(), j);
+                                }
+                        }
+                    else
+                        {
+                            // TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
+                            // Include GetRFChannels in the interface to avoid read config parameters here
+                            // read the number of RF channels for each front-end
+                            RF_Channels = configuration_->property(sig_source_.at(i)->role() + ".RF_channels", 1);
 
-							for (int j = 0; j < RF_Channels; j++)
-								{
-									if (sig_source_.at(i)->get_right_block()->output_signature()->max_streams() > 1)
-										{
-											top_block_->disconnect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
-										}
-									else
-										{
-											if (j == 0)
-												{
-													// RF_channel 0 backward compatibility with single channel sources
-													top_block_->disconnect(sig_source_.at(i)->get_right_block(), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
-												}
-											else
-												{
-													// Multiple channel sources using multiple output blocks of single channel (requires RF_channel selector in call)
-													top_block_->disconnect(sig_source_.at(i)->get_right_block(j), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
-												}
-										}
-									signal_conditioner_ID++;
-								}
-						}
-				}
-			catch (const std::exception& e)
-				{
-					LOG(INFO) << "Can't disconnect signal source " << i << " to signal conditioner " << i << ": " << e.what();
-					top_block_->disconnect_all();
-					return;
-				}
-		}
+                            for (int j = 0; j < RF_Channels; j++)
+                                {
+                                    if (sig_source_.at(i)->get_right_block()->output_signature()->max_streams() > 1)
+                                        {
+                                            top_block_->disconnect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
+                                        }
+                                    else
+                                        {
+                                            if (j == 0)
+                                                {
+                                                    // RF_channel 0 backward compatibility with single channel sources
+                                                    top_block_->disconnect(sig_source_.at(i)->get_right_block(), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
+                                                }
+                                            else
+                                                {
+                                                    // Multiple channel sources using multiple output blocks of single channel (requires RF_channel selector in call)
+                                                    top_block_->disconnect(sig_source_.at(i)->get_right_block(j), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
+                                                }
+                                        }
+                                    signal_conditioner_ID++;
+                                }
+                        }
+                }
+            catch (const std::exception& e)
+                {
+                    LOG(INFO) << "Can't disconnect signal source " << i << " to signal conditioner " << i << ": " << e.what();
+                    top_block_->disconnect_all();
+                    return;
+                }
+        }
 #endif
 
 #ifdef ENABLE_FPGA
@@ -1133,7 +1131,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                             channels_[ch_index]->start_acquisition();
 #else
                             // create a task for the FPGA such that it doesn't stop the flow
-                            std::thread tmp_thread(&ChannelInterface::start_acquisition,channels_[ch_index]);
+                            std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[ch_index]);
                             tmp_thread.detach();
 #endif
                         }
@@ -1210,7 +1208,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                             channels_[i]->start_acquisition();
 #else
                             // create a task for the FPGA such that it doesn't stop the flow
-                            std::thread tmp_thread(&ChannelInterface::start_acquisition,channels_[i]);
+                            std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[i]);
                             tmp_thread.detach();
 #endif
                         }
@@ -1231,7 +1229,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                     channels_[who]->start_acquisition();
 #else
                     // create a task for the FPGA such that it doesn't stop the flow
-                    std::thread tmp_thread(&ChannelInterface::start_acquisition,channels_[who]);
+                    std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[who]);
                     tmp_thread.detach();
 #endif
                 }
@@ -1366,7 +1364,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                             channels_[ch_index]->start_acquisition();
 #else
                             // create a task for the FPGA such that it doesn't stop the flow
-                            std::thread tmp_thread(&ChannelInterface::start_acquisition,channels_[ch_index]);
+                            std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[ch_index]);
                             tmp_thread.detach();
 #endif
                         }
@@ -1400,7 +1398,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                             channels_[ch_index]->start_acquisition();
 #else
                             // create a task for the FPGA such that it doesn't stop the flow
-                            std::thread tmp_thread(&ChannelInterface::start_acquisition,channels_[ch_index]);
+                            std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[ch_index]);
                             tmp_thread.detach();
 #endif
                         }
@@ -1435,7 +1433,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                             channels_[ch_index]->start_acquisition();
 #else
                             // create a task for the FPGA such that it doesn't stop the flow
-                            std::thread tmp_thread(&ChannelInterface::start_acquisition,channels_[ch_index]);
+                            std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[ch_index]);
                             tmp_thread.detach();
 #endif
                         }
@@ -1531,15 +1529,12 @@ void GNSSFlowgraph::start_acquisition_helper()
 }
 
 
-
 void GNSSFlowgraph::perform_hw_reset()
 {
-
-	// a stop acquisition command causes the SW to reset the HW
+    // a stop acquisition command causes the SW to reset the HW
     std::shared_ptr<Channel> channel_ptr;
     channel_ptr = std::dynamic_pointer_cast<Channel>(channels_.at(0));
     channel_ptr->acquisition()->stop_acquisition();
-
 }
 
 #endif

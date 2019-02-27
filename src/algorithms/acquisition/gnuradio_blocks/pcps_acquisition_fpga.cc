@@ -32,7 +32,7 @@
  * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
- */ 
+ */
 
 
 #include "pcps_acquisition_fpga.h"
@@ -77,7 +77,6 @@ pcps_acquisition_fpga::pcps_acquisition_fpga(pcpsconf_fpga_t conf_) : gr::block(
 
     acquisition_fpga = std::make_shared<fpga_acquisition>(acq_parameters.device_name, acq_parameters.code_length, acq_parameters.doppler_max, d_fft_size,
         acq_parameters.fs_in, acq_parameters.sampled_ms, acq_parameters.select_queue_Fpga, acq_parameters.all_fft_codes, acq_parameters.excludelimit);
-
 }
 
 
@@ -105,9 +104,9 @@ void pcps_acquisition_fpga::init()
     d_mag = 0.0;
     d_input_power = 0.0;
 
-  	d_num_doppler_bins = static_cast<uint32_t>(std::ceil(static_cast<double>(static_cast<int32_t>(acq_parameters.doppler_max) - static_cast<int32_t>(-acq_parameters.doppler_max)) / static_cast<double>(d_doppler_step))) + 1;
+    d_num_doppler_bins = static_cast<uint32_t>(std::ceil(static_cast<double>(static_cast<int32_t>(acq_parameters.doppler_max) - static_cast<int32_t>(-acq_parameters.doppler_max)) / static_cast<double>(d_doppler_step))) + 1;
 
-  	acquisition_fpga->init();
+    acquisition_fpga->init();
 }
 
 
@@ -171,7 +170,6 @@ void pcps_acquisition_fpga::send_negative_acquisition()
 
 void pcps_acquisition_fpga::set_active(bool active)
 {
-
     d_active = active;
 
     // initialize acquisition algorithm
@@ -203,47 +201,44 @@ void pcps_acquisition_fpga::set_active(bool active)
     acquisition_fpga->read_acquisition_results(&indext, &firstpeak, &secondpeak, &initial_sample, &d_input_power, &d_doppler_index, &total_block_exp);
 
     if (total_block_exp > d_total_block_exp)
-    {
-    	// if the attenuation factor of the FPGA FFT-IFFT is smaller than the reference attenuation factor then we need to update the reference attenuation factor
-    	std::cout << "changing blk exp..... d_total_block_exp = " << d_total_block_exp << " total_block_exp = " << total_block_exp << " chan = " << d_channel << std::endl;
-    	d_total_block_exp = total_block_exp;
+        {
+            // if the attenuation factor of the FPGA FFT-IFFT is smaller than the reference attenuation factor then we need to update the reference attenuation factor
+            std::cout << "changing blk exp..... d_total_block_exp = " << d_total_block_exp << " total_block_exp = " << total_block_exp << " chan = " << d_channel << std::endl;
+            d_total_block_exp = total_block_exp;
+        }
 
-    }
+    doppler = -static_cast<int32_t>(acq_parameters.doppler_max) + d_doppler_step * (d_doppler_index - 1);
 
-	doppler = -static_cast<int32_t>(acq_parameters.doppler_max) + d_doppler_step * (d_doppler_index - 1);
-
-	if (secondpeak > 0)
-	{
-		d_test_statistics = firstpeak/secondpeak;
-	}
-	else
-	{
-		d_test_statistics = 0.0;
-	}
+    if (secondpeak > 0)
+        {
+            d_test_statistics = firstpeak / secondpeak;
+        }
+    else
+        {
+            d_test_statistics = 0.0;
+        }
 
     d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
     d_sample_counter = initial_sample;
 
     if (d_select_queue_Fpga == 0)
-    {
-    	if (d_downsampling_factor > 1)
-    	{
-
-    		d_gnss_synchro->Acq_delay_samples = static_cast<double>(d_downsampling_factor*(indext));
-    		d_gnss_synchro->Acq_samplestamp_samples = d_downsampling_factor*d_sample_counter - 44; //33; //41; //+ 81*0.5; // delay due to the downsampling filter in the acquisition
-
-    	}
-    	else
-    	{
-        	d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext);
-        	d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;  // delay due to the downsampling filter in the acquisition
+        {
+            if (d_downsampling_factor > 1)
+                {
+                    d_gnss_synchro->Acq_delay_samples = static_cast<double>(d_downsampling_factor * (indext));
+                    d_gnss_synchro->Acq_samplestamp_samples = d_downsampling_factor * d_sample_counter - 44;  //33; //41; //+ 81*0.5; // delay due to the downsampling filter in the acquisition
+                }
+            else
+                {
+                    d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext);
+                    d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;  // delay due to the downsampling filter in the acquisition
+                }
         }
-    }
     else
-    {
-    	d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext);
-    	d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;  // delay due to the downsampling filter in the acquisition
-    }
+        {
+            d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext);
+            d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;  // delay due to the downsampling filter in the acquisition
+        }
 
     if (d_test_statistics > d_threshold)
         {
@@ -270,14 +265,11 @@ int pcps_acquisition_fpga::general_work(int noutput_items __attribute__((unused)
 
 void pcps_acquisition_fpga::reset_acquisition(void)
 {
-	// this function triggers a HW reset of the FPGA PL.
-	acquisition_fpga->reset_acquisition();
+    // this function triggers a HW reset of the FPGA PL.
+    acquisition_fpga->reset_acquisition();
 }
 
-void pcps_acquisition_fpga::read_fpga_total_scale_factor(uint32_t *total_scale_factor, uint32_t *fw_scale_factor)
+void pcps_acquisition_fpga::read_fpga_total_scale_factor(uint32_t* total_scale_factor, uint32_t* fw_scale_factor)
 {
-	acquisition_fpga->read_fpga_total_scale_factor(total_scale_factor, fw_scale_factor);
+    acquisition_fpga->read_fpga_total_scale_factor(total_scale_factor, fw_scale_factor);
 }
-
-
-

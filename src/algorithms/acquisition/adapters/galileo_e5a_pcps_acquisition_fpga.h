@@ -145,7 +145,6 @@ public:
     void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
 
 private:
-
     ConfigurationInterface* configuration_;
 
     pcps_acquisition_fpga_sptr acquisition_fpga_;

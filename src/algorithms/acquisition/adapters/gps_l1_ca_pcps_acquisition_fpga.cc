@@ -32,7 +32,7 @@
  * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
- */ 
+ */
 
 #include "gps_l1_ca_pcps_acquisition_fpga.h"
 #include "GPS_L1_CA.h"
@@ -63,13 +63,13 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
 
     DLOG(INFO) << "role " << role;
 
-	int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
-	int64_t fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+    int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
+    int64_t fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
 
     float downsampling_factor = configuration_->property(role + ".downsampling_factor", 4.0);
     acq_parameters.downsampling_factor = downsampling_factor;
 
-    fs_in = fs_in/downsampling_factor;
+    fs_in = fs_in / downsampling_factor;
 
     acq_parameters.fs_in = fs_in;
     doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
@@ -80,7 +80,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     auto code_length = static_cast<uint32_t>(std::round(static_cast<double>(fs_in) / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS)));
     acq_parameters.code_length = code_length;
     // The FPGA can only use FFT lengths that are a power of two.
-    float nbits = ceilf(log2f((float)code_length*2));
+    float nbits = ceilf(log2f((float)code_length * 2));
     uint32_t nsamples_total = pow(2, nbits);
     uint32_t select_queue_Fpga = configuration_->property(role + ".select_queue_Fpga", 0);
     acq_parameters.select_queue_Fpga = select_queue_Fpga;
@@ -102,23 +102,23 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     for (uint32_t PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
             gps_l1_ca_code_gen_complex_sampled(code, PRN, fs_in, 0);  // generate PRN code
-            
-            for (uint32_t s = code_length; s < 2*code_length; s++)
+
+            for (uint32_t s = code_length; s < 2 * code_length; s++)
                 {
                     code[s] = code[s - code_length];
                 }
 
             // fill in zero padding
-            for (uint32_t s = 2*code_length; s < nsamples_total; s++)
+            for (uint32_t s = 2 * code_length; s < nsamples_total; s++)
                 {
                     code[s] = std::complex<float>(0.0, 0.0);
                 }
 
-            memcpy(fft_if->get_inbuf(), code, sizeof(gr_complex) * nsamples_total);   // copy to FFT buffer
+            memcpy(fft_if->get_inbuf(), code, sizeof(gr_complex) * nsamples_total);            // copy to FFT buffer
             fft_if->execute();                                                                 // Run the FFT of local code
             volk_32fc_conjugate_32fc(fft_codes_padded, fft_if->get_outbuf(), nsamples_total);  // conjugate values
 
-            max = 0;                                           // initialize maximum value
+            max = 0;                                       // initialize maximum value
             for (uint32_t i = 0; i < nsamples_total; i++)  // search for maxima
                 {
                     if (std::abs(fft_codes_padded[i].real()) > max)
@@ -135,7 +135,6 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
                     d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int32_t>(floor(fft_codes_padded[i].real() * (pow(2, 9) - 1) / max)),
                         static_cast<int32_t>(floor(fft_codes_padded[i].imag() * (pow(2, 9) - 1) / max)));
                 }
-
         }
 
     //acq_parameters
@@ -155,7 +154,6 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     delete[] code;
     delete fft_if;
     delete[] fft_codes_padded;
-
 }
 
 
@@ -167,8 +165,8 @@ GpsL1CaPcpsAcquisitionFpga::~GpsL1CaPcpsAcquisitionFpga()
 
 void GpsL1CaPcpsAcquisitionFpga::stop_acquisition()
 {
-	// this command causes the SW to reset the HW.
-	acquisition_fpga_->reset_acquisition();
+    // this command causes the SW to reset the HW.
+    acquisition_fpga_->reset_acquisition();
 }
 
 
@@ -227,7 +225,7 @@ void GpsL1CaPcpsAcquisitionFpga::set_local_code()
 
 void GpsL1CaPcpsAcquisitionFpga::reset()
 {
-	// this function starts the acquisition process
+    // this function starts the acquisition process
     acquisition_fpga_->set_active(true);
 }
 

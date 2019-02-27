@@ -55,7 +55,6 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     ConfigurationInterface *configuration, const std::string &role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
-
     Dll_Pll_Conf_Fpga trk_param_fpga = Dll_Pll_Conf_Fpga();
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
@@ -138,15 +137,6 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
 
     auto *aux_code = static_cast<gr_complex *>(volk_gnsssdr_malloc(sizeof(gr_complex) * code_length_chips * code_samples_per_chip, volk_gnsssdr_get_alignment()));
 
-    float *tracking_code;
-    float *data_code;
-
-    if (trk_param_fpga.track_pilot)
-        {
-            data_code = static_cast<float *>(volk_gnsssdr_malloc(code_samples_per_chip * code_length_chips * sizeof(float), volk_gnsssdr_get_alignment()));
-        }
-    tracking_code = static_cast<float *>(volk_gnsssdr_malloc(code_samples_per_chip * code_length_chips * sizeof(float), volk_gnsssdr_get_alignment()));
-
     d_ca_codes = static_cast<int32_t *>(volk_gnsssdr_malloc(static_cast<int32_t>(code_length_chips) * code_samples_per_chip * GALILEO_E5A_NUMBER_OF_CODES * sizeof(int32_t), volk_gnsssdr_get_alignment()));
 
     if (trk_param_fpga.track_pilot)
@@ -160,37 +150,22 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
             galileo_e5_a_code_gen_complex_primary(aux_code, PRN, const_cast<char *>(sig_));
             if (trk_param_fpga.track_pilot)
                 {
-                    for (uint32_t i = 0; i < code_length_chips; i++)
-                        {
-                            tracking_code[i] = aux_code[i].imag();
-                            data_code[i] = aux_code[i].real();
-                        }
                     for (uint32_t s = 0; s < code_length_chips; s++)
                         {
-                            d_ca_codes[static_cast<int32_t>(code_length_chips) * (PRN - 1) + s] = static_cast<int32_t>(tracking_code[s]);
-                            d_data_codes[static_cast<int32_t>(code_length_chips) * (PRN - 1) + s] = static_cast<int32_t>(data_code[s]);
+                            d_ca_codes[static_cast<int32_t>(code_length_chips) * (PRN - 1) + s] = static_cast<int32_t>(aux_code[s].imag());
+                            d_data_codes[static_cast<int32_t>(code_length_chips) * (PRN - 1) + s] = static_cast<int32_t>(aux_code[s].real());
                         }
                 }
             else
                 {
-                    for (uint32_t i = 0; i < code_length_chips; i++)
-                        {
-                            tracking_code[i] = aux_code[i].real();
-                        }
-
                     for (uint32_t s = 0; s < code_length_chips; s++)
                         {
-                            d_ca_codes[static_cast<int32_t>(code_length_chips) * (PRN - 1) + s] = static_cast<int32_t>(tracking_code[s]);
+                            d_ca_codes[static_cast<int32_t>(code_length_chips) * (PRN - 1) + s] = static_cast<int32_t>(aux_code[s].real());
                         }
                 }
         }
 
     volk_gnsssdr_free(aux_code);
-    volk_gnsssdr_free(tracking_code);
-    if (trk_param_fpga.track_pilot)
-        {
-            volk_gnsssdr_free(data_code);
-        }
     trk_param_fpga.ca_codes = d_ca_codes;
     trk_param_fpga.data_codes = d_data_codes;
     trk_param_fpga.code_length_chips = code_length_chips;

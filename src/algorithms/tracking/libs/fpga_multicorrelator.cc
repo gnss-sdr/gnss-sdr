@@ -35,40 +35,36 @@
  */
 
 #include "fpga_multicorrelator.h"
-#include <cmath>
-#include <new>
-#include <cerrno>
-#include <cstdio>
-#include <fcntl.h>
-#include <unistd.h>
+#include <glog/logging.h>
 #include <cassert>
+#include <cerrno>
+#include <cmath>
+#include <csignal>
 #include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <fcntl.h>
+#include <new>
+#include <string>
+#include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <csignal>
-#include <cstdlib>
-#include <sys/mman.h>
-#include <glog/logging.h>
-#include <string>
 #include <utility>
 
 // FPGA register access constants
-#define PAGE_SIZE 									0x10000
-#define MAX_LENGTH_DEVICEIO_NAME 					50
-#define CODE_RESAMPLER_NUM_BITS_PRECISION 			20
-#define CODE_PHASE_STEP_CHIPS_NUM_NBITS 			CODE_RESAMPLER_NUM_BITS_PRECISION
-#define pwrtwo(x) 									(1 << (x))
-#define MAX_CODE_RESAMPLER_COUNTER 					pwrtwo(CODE_PHASE_STEP_CHIPS_NUM_NBITS)  // 2^CODE_PHASE_STEP_CHIPS_NUM_NBITS
-#define PHASE_CARR_NBITS 							32
-#define PHASE_CARR_NBITS_INT 						1
-#define PHASE_CARR_NBITS_FRAC 						PHASE_CARR_NBITS - PHASE_CARR_NBITS_INT
-#define LOCAL_CODE_FPGA_CORRELATOR_SELECT_COUNT 	0x20000000
-#define LOCAL_CODE_FPGA_CLEAR_ADDRESS_COUNTER 		0x10000000
-#define LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY 		0x0C000000
-#define TEST_REGISTER_TRACK_WRITEVAL 				0x55AA
-
-
-
+#define PAGE_SIZE 0x10000
+#define MAX_LENGTH_DEVICEIO_NAME 50
+#define CODE_RESAMPLER_NUM_BITS_PRECISION 20
+#define CODE_PHASE_STEP_CHIPS_NUM_NBITS CODE_RESAMPLER_NUM_BITS_PRECISION
+#define pwrtwo(x) (1 << (x))
+#define MAX_CODE_RESAMPLER_COUNTER pwrtwo(CODE_PHASE_STEP_CHIPS_NUM_NBITS)  // 2^CODE_PHASE_STEP_CHIPS_NUM_NBITS
+#define PHASE_CARR_NBITS 32
+#define PHASE_CARR_NBITS_INT 1
+#define PHASE_CARR_NBITS_FRAC PHASE_CARR_NBITS - PHASE_CARR_NBITS_INT
+#define LOCAL_CODE_FPGA_CORRELATOR_SELECT_COUNT 0x20000000
+#define LOCAL_CODE_FPGA_CLEAR_ADDRESS_COUNTER 0x10000000
+#define LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY 0x0C000000
+#define TEST_REGISTER_TRACK_WRITEVAL 0x55AA
 
 
 uint64_t fpga_multicorrelator_8sc::read_sample_counter()
@@ -111,9 +107,9 @@ void fpga_multicorrelator_8sc::update_local_code(float rem_code_phase_chips)
 
 void fpga_multicorrelator_8sc::Carrier_wipeoff_multicorrelator_resampler(
     float rem_carrier_phase_in_rad, float phase_step_rad,
-	float carrier_phase_rate_step_rad,
+    float carrier_phase_rate_step_rad,
     float rem_code_phase_chips, float code_phase_step_chips,
-	float code_phase_rate_step_chips,
+    float code_phase_rate_step_chips,
     int32_t signal_length_samples)
 {
     update_local_code(rem_code_phase_chips);
@@ -130,7 +126,7 @@ void fpga_multicorrelator_8sc::Carrier_wipeoff_multicorrelator_resampler(
     if (nb != sizeof(irq_count))
         {
             std::cout << "Tracking_module Read failed to retrieve 4 bytes!" << std::endl;
-            std::cout << "Tracking_module Interrupt number " << irq_count << std::endl; 
+            std::cout << "Tracking_module Interrupt number " << irq_count << std::endl;
         }
     fpga_multicorrelator_8sc::read_tracking_gps_results();
 }
@@ -294,7 +290,6 @@ void fpga_multicorrelator_8sc::fpga_configure_tracking_gps_local_code(int32_t PR
         }
     if (d_track_pilot)
         {
-
             d_map_base[PROG_MEMS_ADDR] = LOCAL_CODE_FPGA_CLEAR_ADDRESS_COUNTER;
             for (k = 0; k < d_code_length_chips * d_code_samples_per_chip; k++)
                 {
@@ -410,7 +405,6 @@ void fpga_multicorrelator_8sc::fpga_compute_signal_parameters_in_fpga(void)
         {
             d_phase_step_rad_int = -d_phase_step_rad_int;
         }
-
 }
 
 
@@ -451,9 +445,9 @@ void fpga_multicorrelator_8sc::read_tracking_gps_results(void)
         }
     if (d_track_pilot)
         {
-	    readval_real = d_map_base[RESULT_REG_REAL_BASE_ADDR + d_n_correlators];
-	    readval_imag = d_map_base[RESULT_REG_IMAG_BASE_ADDR + d_n_correlators];
-        d_Prompt_Data[0] = gr_complex(readval_real, readval_imag);
+            readval_real = d_map_base[RESULT_REG_REAL_BASE_ADDR + d_n_correlators];
+            readval_imag = d_map_base[RESULT_REG_IMAG_BASE_ADDR + d_n_correlators];
+            d_Prompt_Data[0] = gr_complex(readval_real, readval_imag);
         }
 }
 
@@ -461,8 +455,8 @@ void fpga_multicorrelator_8sc::read_tracking_gps_results(void)
 void fpga_multicorrelator_8sc::unlock_channel(void)
 {
     // unlock the channel to let the next samples go through
-    d_map_base[DROP_SAMPLES_REG_ADDR] = 1;  // unlock the channel
-    d_map_base[STOP_TRACKING_REG_ADDR] = 1;						// set the tracking module back to idle
+    d_map_base[DROP_SAMPLES_REG_ADDR] = 1;   // unlock the channel
+    d_map_base[STOP_TRACKING_REG_ADDR] = 1;  // set the tracking module back to idle
 }
 
 void fpga_multicorrelator_8sc::close_device()
@@ -481,4 +475,3 @@ void fpga_multicorrelator_8sc::lock_channel(void)
     // lock the channel for processing
     d_map_base[DROP_SAMPLES_REG_ADDR] = 0;  // lock the channel
 }
-

@@ -153,7 +153,7 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
 
     for (uint32_t PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
-            if (track_pilot)
+            if (trk_param_fpga.track_pilot)
                 {
                     gps_l5q_code_gen_float(tracking_code, PRN);
                     gps_l5i_code_gen_float(data_code, PRN);

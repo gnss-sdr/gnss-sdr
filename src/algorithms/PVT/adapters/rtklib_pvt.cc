@@ -33,16 +33,12 @@
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
 #include "pvt_conf.h"
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/serialization/map.hpp>
 #include <glog/logging.h>
 #if OLD_BOOST
 #include <boost/math/common_factor_rt.hpp>
 namespace bc = boost::math;
 #else
 #include <boost/integer/common_factor_rt.hpp>
-#include <utility>
 namespace bc = boost::integer;
 #endif
 
@@ -50,7 +46,7 @@ namespace bc = boost::integer;
 using google::LogMessage;
 
 
-RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
+Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
@@ -724,13 +720,13 @@ RtklibPvt::RtklibPvt(ConfigurationInterface* configuration,
 }
 
 
-RtklibPvt::~RtklibPvt()
+Rtklib_Pvt::~Rtklib_Pvt()
 {
     rtkfree(&rtk);
 }
 
 
-bool RtklibPvt::get_latest_PVT(double* longitude_deg,
+bool Rtklib_Pvt::get_latest_PVT(double* longitude_deg,
     double* latitude_deg,
     double* height_m,
     double* ground_speed_kmh,
@@ -746,37 +742,37 @@ bool RtklibPvt::get_latest_PVT(double* longitude_deg,
 }
 
 
-void RtklibPvt::clear_ephemeris()
+void Rtklib_Pvt::clear_ephemeris()
 {
     pvt_->clear_ephemeris();
 }
 
 
-std::map<int, Gps_Ephemeris> RtklibPvt::get_gps_ephemeris() const
+std::map<int, Gps_Ephemeris> Rtklib_Pvt::get_gps_ephemeris() const
 {
     return pvt_->get_gps_ephemeris_map();
 }
 
 
-std::map<int, Galileo_Ephemeris> RtklibPvt::get_galileo_ephemeris() const
+std::map<int, Galileo_Ephemeris> Rtklib_Pvt::get_galileo_ephemeris() const
 {
     return pvt_->get_galileo_ephemeris_map();
 }
 
 
-std::map<int, Gps_Almanac> RtklibPvt::get_gps_almanac() const
+std::map<int, Gps_Almanac> Rtklib_Pvt::get_gps_almanac() const
 {
     return pvt_->get_gps_almanac_map();
 }
 
 
-std::map<int, Galileo_Almanac> RtklibPvt::get_galileo_almanac() const
+std::map<int, Galileo_Almanac> Rtklib_Pvt::get_galileo_almanac() const
 {
     return pvt_->get_galileo_almanac_map();
 }
 
 
-void RtklibPvt::connect(gr::top_block_sptr top_block)
+void Rtklib_Pvt::connect(gr::top_block_sptr top_block)
 {
     if (top_block)
         { /* top_block is not null */
@@ -786,7 +782,7 @@ void RtklibPvt::connect(gr::top_block_sptr top_block)
 }
 
 
-void RtklibPvt::disconnect(gr::top_block_sptr top_block)
+void Rtklib_Pvt::disconnect(gr::top_block_sptr top_block)
 {
     if (top_block)
         { /* top_block is not null */
@@ -795,13 +791,13 @@ void RtklibPvt::disconnect(gr::top_block_sptr top_block)
 }
 
 
-gr::basic_block_sptr RtklibPvt::get_left_block()
+gr::basic_block_sptr Rtklib_Pvt::get_left_block()
 {
     return pvt_;
 }
 
 
-gr::basic_block_sptr RtklibPvt::get_right_block()
+gr::basic_block_sptr Rtklib_Pvt::get_right_block()
 {
     return nullptr;  // this is a sink, nothing downstream
 }

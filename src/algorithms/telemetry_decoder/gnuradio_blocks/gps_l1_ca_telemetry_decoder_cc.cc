@@ -336,14 +336,14 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
 
     // ******* preamble correlation ********
     int32_t corr_value = 0;
-    if ((d_symbol_history.size() == GPS_CA_PREAMBLE_LENGTH_SYMBOLS))  // and (d_make_correlation or !d_flag_frame_sync))
+    if ((d_symbol_history.size() == GPS_CA_PREAMBLE_LENGTH_SYMBOLS))
         {
-            // std::cout << "-------\n";
-            for (uint32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_SYMBOLS; i++)
+            int i = 0;
+            for (const auto &iter : d_symbol_history)
                 {
-                    if (d_symbol_history[i].Flag_valid_symbol_output == true)
+                    if (iter.Flag_valid_symbol_output == true)
                         {
-                            if (d_symbol_history[i].Prompt_I < 0)  // symbols clipping
+                            if (iter.Prompt_I < 0)  // symbols clipping
                                 {
                                     corr_value -= d_preambles_symbols[i];
                                 }
@@ -352,6 +352,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
                                     corr_value += d_preambles_symbols[i];
                                 }
                         }
+                    i++;
                 }
         }
 
@@ -478,7 +479,6 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
 
             return 1;
         }
-
 
     return 0;
 }

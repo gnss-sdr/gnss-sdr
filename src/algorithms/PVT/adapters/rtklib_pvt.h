@@ -32,8 +32,14 @@
 #ifndef GNSS_SDR_RTKLIB_PVT_H_
 #define GNSS_SDR_RTKLIB_PVT_H_
 
+#include "galileo_almanac.h"
+#include "galileo_ephemeris.h"
+#include "gps_almanac.h"
+#include "gps_ephemeris.h"
 #include "pvt_interface.h"
+#include "rtklib.h"
 #include "rtklib_pvt_cc.h"
+#include <map>
 #include <string>
 
 
@@ -42,15 +48,15 @@ class ConfigurationInterface;
 /*!
  * \brief This class implements a PvtInterface for the RTKLIB PVT block
  */
-class RtklibPvt : public PvtInterface
+class Rtklib_Pvt : public PvtInterface
 {
 public:
-    RtklibPvt(ConfigurationInterface* configuration,
+    Rtklib_Pvt(ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~RtklibPvt();
+    virtual ~Rtklib_Pvt();
 
     inline std::string role() override
     {

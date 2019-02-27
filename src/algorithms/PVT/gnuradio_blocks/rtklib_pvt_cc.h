@@ -31,7 +31,13 @@
 #ifndef GNSS_SDR_RTKLIB_PVT_CC_H
 #define GNSS_SDR_RTKLIB_PVT_CC_H
 
+#include "beidou_dnav_almanac.h"
+#include "beidou_dnav_ephemeris.h"
+#include "galileo_almanac.h"
+#include "galileo_ephemeris.h"
 #include "geojson_printer.h"
+#include "gnss_synchro.h"
+#include "gps_almanac.h"
 #include "gps_ephemeris.h"
 #include "gpx_printer.h"
 #include "kml_printer.h"
@@ -44,14 +50,17 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <gnuradio/sync_block.h>
+#include <pmt/pmt.h>
 #include <chrono>
 #include <cstdint>
-#include <fstream>
+#include <map>
+#include <memory>
 #include <string>
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <sys/types.h>
 #include <utility>
+#include <vector>
 
 
 class rtklib_pvt_cc;
@@ -146,7 +155,7 @@ private:
 
     bool flag_monitor_pvt_enabled;
     std::unique_ptr<Monitor_Pvt_Udp_Sink> udp_sink_ptr;
-    std::vector<std::string> split_string(const std::string& s, char delim);
+    std::vector<std::string> split_string(const std::string& s, char delim) const;
 
 public:
     rtklib_pvt_cc(uint32_t nchannels,

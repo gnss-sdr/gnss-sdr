@@ -212,8 +212,8 @@ void fpga_acquisition::run_acquisition(void)
     nb = read(d_fd, &irq_count, sizeof(irq_count));
     if (nb != sizeof(irq_count))
         {
-            printf("acquisition module Read failed to retrieve 4 bytes!\n");
-            printf("acquisition module Interrupt number %d\n", irq_count);
+			std::cout << "acquisition module Read failed to retrieve 4 bytes!" << std::endl;
+			std::cout << "acquisition module Interrupt number " << irq_count << std::endl;
         }
 
     write(d_fd, reinterpret_cast<void *>(&disable_int), sizeof(int32_t));
@@ -359,7 +359,7 @@ void fpga_acquisition::close_device()
     uint32_t *aux = const_cast<uint32_t *>(d_map_base);
     if (munmap(static_cast<void *>(aux), PAGE_SIZE) == -1)
         {
-            printf("Failed to unmap memory uio\n");
+            std::cout << "Failed to unmap memory uio" << std::endl;
         }
     close(d_fd);
 }

@@ -65,7 +65,7 @@ public:
     }
 
     /*!
-     * \brief Returns "Galileo_E1_PCPS_Ambiguous_Acquisition"
+     * \brief Returns "Galileo_E1_PCPS_Ambiguous_Acquisition_Fpga"
      */
     inline std::string implementation() override
     {

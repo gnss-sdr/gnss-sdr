@@ -1,13 +1,13 @@
 /*!
- * \file dll_pll_veml_tracking.h
- * \brief Implementation of a code DLL + carrier PLL tracking block.
- * \author Marc Majoral, 2018. marc.majoral(at)cttc.es
+ * \file dll_pll_veml_tracking_fpga.h
+ * \brief Implementation of a code DLL + carrier PLL tracking block using an FPGA.
+ * \author Marc Majoral, 2019. marc.majoral(at)cttc.es
  * \author Javier Arribas, 2018. jarribas(at)cttc.es
  * \author Antonio Ramos, 2018 antonio.ramosdet(at)gmail.com
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -80,7 +80,6 @@ private:
 
     bool cn0_and_tracking_lock_status(double coh_integration_time_s);
     bool acquire_secondary();
-    //void do_correlation_step(const gr_complex *input_samples);
     void do_correlation_step(void);
     void run_dll_pll();
     void update_tracking_vars();

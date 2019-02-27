@@ -65,7 +65,7 @@ public:
     }
 
     /*!
-     * \brief Returns "GPS_L1_CA_PCPS_Acquisition"
+     * \brief Returns "GPS_L1_CA_PCPS_Acquisition_Fpga"
      */
     inline std::string implementation() override
     {

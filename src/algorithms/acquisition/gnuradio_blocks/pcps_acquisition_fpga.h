@@ -178,9 +178,7 @@ public:
       */
     inline void set_threshold(float threshold)
     {
-        //    printf("acq set threshold start\n");
         d_threshold = threshold;
-        //   printf("acq set threshold end\n");
     }
 
     /*!
@@ -189,10 +187,8 @@ public:
       */
     inline void set_doppler_max(uint32_t doppler_max)
     {
-        //   printf("acq set doppler max start\n");
         acq_parameters.doppler_max = doppler_max;
         acquisition_fpga->set_doppler_max(doppler_max);
-        //    printf("acq set doppler max end\n");
     }
 
     /*!
@@ -201,10 +197,8 @@ public:
       */
     inline void set_doppler_step(uint32_t doppler_step)
     {
-        //   printf("acq set doppler step start\n");
         d_doppler_step = doppler_step;
         acquisition_fpga->set_doppler_step(doppler_step);
-        //   printf("acq set doppler step end\n");
     }
 
     /*!

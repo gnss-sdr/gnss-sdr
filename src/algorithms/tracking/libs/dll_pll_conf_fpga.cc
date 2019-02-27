@@ -1,12 +1,13 @@
 /*!
- * \file dll_pll_conf.cc
+ * \file dll_pll_conf_fpga.cc
  * \brief Class that contains all the configuration parameters for generic
- * tracking block based on a DLL and a PLL.
+ * tracking block based on a DLL and a PLL for the FPGA.
+ * \author Marc Majoral, 2019. mmajoral(at)cttc.cat
  * \author Javier Arribas, 2018. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver

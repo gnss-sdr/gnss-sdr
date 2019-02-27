@@ -57,6 +57,9 @@ public:
         return role_;
     }
 
+    /*!
+     * \brief Returns "Galileo_E5a_Pcps_Acquisition_Fpga"
+     */
     inline std::string implementation() override
     {
         return "Galileo_E5a_Pcps_Acquisition_Fpga";

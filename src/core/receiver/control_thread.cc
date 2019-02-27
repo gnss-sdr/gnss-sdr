@@ -274,13 +274,9 @@ int ControlThread::run()
     cmd_interface_thread_ = std::thread(&ControlThread::telecommand_listener, this);
 
 #ifdef ENABLE_FPGA
-//    bool enable_FPGA = configuration_->property("Channel.enable_FPGA", false);
-//    if (enable_FPGA == true)
-//        {
-            // Create a task for the acquisition such that id doesn't block the flow of the control thread
-            fpga_helper_thread_=boost::thread(&GNSSFlowgraph::start_acquisition_helper,
-            		flowgraph_);
-//        }
+	// Create a task for the acquisition such that id doesn't block the flow of the control thread
+	fpga_helper_thread_=boost::thread(&GNSSFlowgraph::start_acquisition_helper,
+			flowgraph_);
 #endif
     // Main loop to read and process the control messages
     while (flowgraph_->running() && !stop_)
@@ -306,46 +302,17 @@ int ControlThread::run()
 	flowgraph_->perform_hw_reset();
 #endif
 
-//	<<<<<<< HEAD
-
-// Join keyboard thread
-//#ifdef OLD_BOOST
-//    keyboard_thread_.timed_join(boost::posix_time::seconds(1));
-//    sysv_queue_thread_.timed_join(boost::posix_time::seconds(1));
-//    cmd_interface_thread_.timed_join(boost::posix_time::seconds(1));
-//#ifdef ENABLE_FPGA
-////    if (enable_FPGA == true)
-////        {
-//    	fpga_helper_thread_.timed_join(boost::posix_time::seconds(1));
-////        }
-//#endif
-//
-//#endif
-//#ifndef OLD_BOOST
-//    keyboard_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
-//    sysv_queue_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
-//    cmd_interface_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
-
     pthread_t id = keyboard_thread_.native_handle();
     keyboard_thread_.detach();
     pthread_cancel(id);
 
 #ifdef ENABLE_FPGA
-//    if (enable_FPGA == true)
-//        {
-    	fpga_helper_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
-//        }
+
+	fpga_helper_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
+
 #endif
 
-//    #endif
-
     LOG(INFO) << "Flowgraph stopped";
-//=======
-//    // Terminate keyboard thread
-//    pthread_t id = keyboard_thread_.native_handle();
-//    keyboard_thread_.detach();
-//    pthread_cancel(id);
-//>>>>>>> 4fe976ba016fa9c1c64ece88b26a9a93d93a84f4
 
     if (restart_)
         {

@@ -83,7 +83,6 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
     trk_param_fpga.early_late_space_chips = early_late_space_chips;
     int vector_length = std::round(static_cast<double>(fs_in) / (static_cast<double>(GPS_L5I_CODE_RATE_HZ) / static_cast<double>(GPS_L5I_CODE_LENGTH_CHIPS)));
     trk_param_fpga.vector_length = vector_length;
-    printf("trk vector length = %d\n", vector_length);
     int extend_correlation_symbols = configuration->property(role + ".extend_correlation_symbols", 1);
     float early_late_space_narrow_chips = configuration->property(role + ".early_late_space_narrow_chips", 0.15);
     trk_param_fpga.early_late_space_narrow_chips = early_late_space_narrow_chips;
@@ -152,7 +151,6 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
             d_data_codes = static_cast<int *>(volk_gnsssdr_malloc((static_cast<unsigned int>(code_length_chips)) * NUM_PRNs * sizeof(int), volk_gnsssdr_get_alignment()));
         }
 
-    //printf("start \n");
     for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
             if (track_pilot)

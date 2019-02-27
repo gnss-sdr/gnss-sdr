@@ -102,7 +102,6 @@ public:
 
     void configure_acquisition(void);
 
-    //void configure_acquisition_debug(void);
     void close_device();
     void open_device();
 

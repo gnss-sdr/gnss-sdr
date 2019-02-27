@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -126,8 +126,8 @@ void GNSSFlowgraph::connect()
 #ifndef ENABLE_FPGA
     for (int i = 0; i < sources_count_; i++)
         {
-//            if (configuration_->property(sig_source_.at(i)->role() + ".enable_FPGA", false) == false)
-//                {
+            if (configuration_->property(sig_source_.at(i)->role() + ".enable_FPGA", false) == false)
+                {
                     try
                         {
                             sig_source_.at(i)->connect(top_block_);
@@ -139,15 +139,15 @@ void GNSSFlowgraph::connect()
                             top_block_->disconnect_all();
                             return;
                         }
-//                }
+                }
         }
 
 
     // Signal Source > Signal conditioner >
     for (unsigned int i = 0; i < sig_conditioner_.size(); i++)
         {
-//            if (configuration_->property(sig_conditioner_.at(i)->role() + ".enable_FPGA", false) == false)
-//                {
+            if (configuration_->property(sig_conditioner_.at(i)->role() + ".enable_FPGA", false) == false)
+                {
                     try
                         {
                             sig_conditioner_.at(i)->connect(top_block_);
@@ -159,7 +159,7 @@ void GNSSFlowgraph::connect()
                             top_block_->disconnect_all();
                             return;
                         }
-//                }
+                }
         }
 #endif
     for (unsigned int i = 0; i < channels_count_; i++)
@@ -212,137 +212,102 @@ void GNSSFlowgraph::connect()
 
     for (int i = 0; i < sources_count_; i++)
         {
-//            //FPGA Accelerators do not need signal sources or conditioners
-//            //as the samples are feed directly to the FPGA fabric, so, if enabled, do not connect any source
-//            if (configuration_->property(sig_source_.at(i)->role() + ".enable_FPGA", false) == false)
-//                {
-                    try
-                        {
-                            //TODO: Remove this array implementation and create generic multistream connector
-                            //(if a signal source has more than 1 stream, then connect it to the multistream signal conditioner)
-                            if (sig_source_.at(i)->implementation() == "Raw_Array_Signal_Source")
-                                {
-                                    //Multichannel Array
-                                    std::cout << "ARRAY MODE" << std::endl;
-                                    for (int j = 0; j < GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_CHANNELS; j++)
-                                        {
-                                            std::cout << "connecting ch " << j << std::endl;
-                                            top_block_->connect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(i)->get_left_block(), j);
-                                        }
-                                }
-                            else
-                                {
-                                    //TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
-                                    //Include GetRFChannels in the interface to avoid read config parameters here
-                                    //read the number of RF channels for each front-end
-                                    RF_Channels = configuration_->property(sig_source_.at(i)->role() + ".RF_channels", 1);
+			try
+				{
+					//TODO: Remove this array implementation and create generic multistream connector
+					//(if a signal source has more than 1 stream, then connect it to the multistream signal conditioner)
+					if (sig_source_.at(i)->implementation() == "Raw_Array_Signal_Source")
+						{
+							//Multichannel Array
+							std::cout << "ARRAY MODE" << std::endl;
+							for (int j = 0; j < GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_CHANNELS; j++)
+								{
+									std::cout << "connecting ch " << j << std::endl;
+									top_block_->connect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(i)->get_left_block(), j);
+								}
+						}
+					else
+						{
+							//TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
+							//Include GetRFChannels in the interface to avoid read config parameters here
+							//read the number of RF channels for each front-end
+							RF_Channels = configuration_->property(sig_source_.at(i)->role() + ".RF_channels", 1);
 
-                                    for (int j = 0; j < RF_Channels; j++)
-                                        {
-                                            //Connect the multichannel signal source to multiple signal conditioners
-                                            // GNURADIO max_streams=-1 means infinite ports!
-                                            LOG(INFO) << "sig_source_.at(i)->get_right_block()->output_signature()->max_streams()=" << sig_source_.at(i)->get_right_block()->output_signature()->max_streams();
-                                            LOG(INFO) << "sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()=" << sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()->max_streams();
+							for (int j = 0; j < RF_Channels; j++)
+								{
+									//Connect the multichannel signal source to multiple signal conditioners
+									// GNURADIO max_streams=-1 means infinite ports!
+									LOG(INFO) << "sig_source_.at(i)->get_right_block()->output_signature()->max_streams()=" << sig_source_.at(i)->get_right_block()->output_signature()->max_streams();
+									LOG(INFO) << "sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()=" << sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()->max_streams();
 
-                                            if (sig_source_.at(i)->get_right_block()->output_signature()->max_streams() > 1)
-                                                {
-                                                    LOG(INFO) << "connecting sig_source_ " << i << " stream " << j << " to conditioner " << j;
-                                                    top_block_->connect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
-                                                }
-                                            else
-                                                {
-                                                    if (j == 0)
-                                                        {
-                                                            // RF_channel 0 backward compatibility with single channel sources
-                                                            LOG(INFO) << "connecting sig_source_ " << i << " stream " << 0 << " to conditioner " << j;
-                                                            top_block_->connect(sig_source_.at(i)->get_right_block(), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
-                                                        }
-                                                    else
-                                                        {
-                                                            // Multiple channel sources using multiple output blocks of single channel (requires RF_channel selector in call)
-                                                            LOG(INFO) << "connecting sig_source_ " << i << " stream " << j << " to conditioner " << j;
-                                                            top_block_->connect(sig_source_.at(i)->get_right_block(j), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
-                                                        }
-                                                }
-                                            signal_conditioner_ID++;
-                                        }
-                                }
-                        }
-                    catch (const std::exception& e)
-                        {
-                            LOG(WARNING) << "Can't connect signal source " << i << " to signal conditioner " << i;
-                            LOG(ERROR) << e.what();
-                            top_block_->disconnect_all();
-                            return;
-                        }
-//                }
+									if (sig_source_.at(i)->get_right_block()->output_signature()->max_streams() > 1)
+										{
+											LOG(INFO) << "connecting sig_source_ " << i << " stream " << j << " to conditioner " << j;
+											top_block_->connect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
+										}
+									else
+										{
+											if (j == 0)
+												{
+													// RF_channel 0 backward compatibility with single channel sources
+													LOG(INFO) << "connecting sig_source_ " << i << " stream " << 0 << " to conditioner " << j;
+													top_block_->connect(sig_source_.at(i)->get_right_block(), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
+												}
+											else
+												{
+													// Multiple channel sources using multiple output blocks of single channel (requires RF_channel selector in call)
+													LOG(INFO) << "connecting sig_source_ " << i << " stream " << j << " to conditioner " << j;
+													top_block_->connect(sig_source_.at(i)->get_right_block(j), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
+												}
+										}
+									signal_conditioner_ID++;
+								}
+						}
+				}
+			catch (const std::exception& e)
+				{
+					LOG(WARNING) << "Can't connect signal source " << i << " to signal conditioner " << i;
+					LOG(ERROR) << e.what();
+					top_block_->disconnect_all();
+					return;
+				}
         }
     DLOG(INFO) << "Signal source connected to signal conditioner";
-//    bool FPGA_enabled = configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false);
 
 #endif
 
 #if ENABLE_FPGA
-//<<<<<<< HEAD
-//    if (FPGA_enabled == false)
-//        {
-//            //connect the signal source to sample counter
-//            //connect the sample counter to Observables
-//            try
-//                {
-//                    double fs = static_cast<double>(configuration_->property("GNSS-SDR.internal_fs_sps", 0));
-//                    if (fs == 0.0)
-//                        {
-//                            LOG(WARNING) << "Set GNSS-SDR.internal_fs_sps in configuration file";
-//                            std::cout << "Set GNSS-SDR.internal_fs_sps in configuration file" << std::endl;
-//                            throw(std::invalid_argument("Set GNSS-SDR.internal_fs_sps in configuration"));
-//                        }
-//                    int observable_interval_ms = static_cast<double>(configuration_->property("GNSS-SDR.observable_interval_ms", 20));
-//                    ch_out_sample_counter = gnss_sdr_make_sample_counter(fs, observable_interval_ms, sig_conditioner_.at(0)->get_right_block()->output_signature()->sizeof_stream_item(0));
-//                    //ch_out_sample_counter = gnss_sdr_make_sample_counter(fs, sig_conditioner_.at(0)->get_right_block()->output_signature()->sizeof_stream_item(0));
-//                    top_block_->connect(sig_conditioner_.at(0)->get_right_block(), 0, ch_out_sample_counter, 0);
-//                    top_block_->connect(ch_out_sample_counter, 0, observables_->get_left_block(), channels_count_);  //extra port for the sample counter pulse
-//                }
-//            catch (const std::exception& e)
-//                {
-//                    LOG(WARNING) << "Can't connect sample counter";
-//                    LOG(ERROR) << e.what();
-//                    top_block_->disconnect_all();
-//                    return;
-//                }
-//        }
-//    else
-//        {
-//=======
-//    if (FPGA_enabled == false)
-//        {
-//            //connect the signal source to sample counter
-//            //connect the sample counter to Observables
-//            try
-//                {
-//                    double fs = static_cast<double>(configuration_->property("GNSS-SDR.internal_fs_sps", 0));
-//                    if (fs == 0.0)
-//                        {
-//                            LOG(WARNING) << "Set GNSS-SDR.internal_fs_sps in configuration file";
-//                            std::cout << "Set GNSS-SDR.internal_fs_sps in configuration file" << std::endl;
-//                            throw(std::invalid_argument("Set GNSS-SDR.internal_fs_sps in configuration"));
-//                        }
-//                    int observable_interval_ms = static_cast<double>(configuration_->property("GNSS-SDR.observable_interval_ms", 20));
-//                    ch_out_sample_counter = gnss_sdr_make_sample_counter(fs, observable_interval_ms, sig_conditioner_.at(0)->get_right_block()->output_signature()->sizeof_stream_item(0));
-//                    top_block_->connect(sig_conditioner_.at(0)->get_right_block(), 0, ch_out_sample_counter, 0);
-//                    top_block_->connect(ch_out_sample_counter, 0, observables_->get_left_block(), channels_count_);  //extra port for the sample counter pulse
-//                }
-//            catch (const std::exception& e)
-//                {
-//                    LOG(WARNING) << "Can't connect sample counter";
-//                    LOG(ERROR) << e.what();
-//                    top_block_->disconnect_all();
-//                    return;
-//                }
-//        }
-//    else
-//        {
-//>>>>>>> 4fe976ba016fa9c1c64ece88b26a9a93d93a84f4
+//    bool FPGA_enabled = configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false);
+
+    if (configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false) == false)
+        {
+            //connect the signal source to sample counter
+            //connect the sample counter to Observables
+            try
+                {
+                    double fs = static_cast<double>(configuration_->property("GNSS-SDR.internal_fs_sps", 0));
+                    if (fs == 0.0)
+                        {
+                            LOG(WARNING) << "Set GNSS-SDR.internal_fs_sps in configuration file";
+                            std::cout << "Set GNSS-SDR.internal_fs_sps in configuration file" << std::endl;
+                            throw(std::invalid_argument("Set GNSS-SDR.internal_fs_sps in configuration"));
+                        }
+                    int observable_interval_ms = static_cast<double>(configuration_->property("GNSS-SDR.observable_interval_ms", 20));
+                    ch_out_sample_counter = gnss_sdr_make_sample_counter(fs, observable_interval_ms, sig_conditioner_.at(0)->get_right_block()->output_signature()->sizeof_stream_item(0));
+                    top_block_->connect(sig_conditioner_.at(0)->get_right_block(), 0, ch_out_sample_counter, 0);
+                    top_block_->connect(ch_out_sample_counter, 0, observables_->get_left_block(), channels_count_);  //extra port for the sample counter pulse
+                }
+            catch (const std::exception& e)
+                {
+                    LOG(WARNING) << "Can't connect sample counter";
+                    LOG(ERROR) << e.what();
+                    top_block_->disconnect_all();
+                    return;
+                }
+        }
+    else
+        {
+
             //create a hardware-defined gnss_synchro pulse for the observables block
             try
                 {
@@ -364,7 +329,7 @@ void GNSSFlowgraph::connect()
                     top_block_->disconnect_all();
                     return;
                 }
-//        }
+        }
 #else
     // connect the signal source to sample counter
     // connect the sample counter to Observables
@@ -402,8 +367,8 @@ void GNSSFlowgraph::connect()
         {
 
 #ifndef ENABLE_FPGA
-//            if (FPGA_enabled == false)
-//                {
+            if (configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false) == false)
+                {
                     try
                         {
                             selected_signal_conditioner_ID = configuration_->property("Channel" + std::to_string(i) + ".RF_channel_ID", 0);
@@ -540,7 +505,7 @@ void GNSSFlowgraph::connect()
                         }
 
                     DLOG(INFO) << "signal conditioner " << selected_signal_conditioner_ID << " connected to channel " << i;
-//                }
+                }
 #endif
             // Signal Source > Signal conditioner >> Channels >> Observables
             try
@@ -855,7 +820,6 @@ void GNSSFlowgraph::disconnect()
 		}
 #endif
 
-	//printf("disconnect process point 1\n");
 #ifdef ENABLE_FPGA
     //bool FPGA_enabled = configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false);
     if (FPGA_enabled == false)

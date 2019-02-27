@@ -40,8 +40,6 @@
 #include <gnuradio/io_signature.h>
 #include <utility>
 
-#include <unistd.h> // for the usleep function only (debug)
-
 #define AQ_DOWNSAMPLING_DELAY 40  // delay due to the downsampling filter in the acquisition
 
 using google::LogMessage;
@@ -196,10 +194,6 @@ void pcps_acquisition_fpga::set_active(bool active)
                << ", use_CFAR_algorithm_flag: false";
 
     uint64_t initial_sample;
-    float input_power_all = 0.0;
-    float input_power_computed = 0.0;
-
-    float temp_d_input_power;
 
     acquisition_fpga->configure_acquisition();
     acquisition_fpga->set_doppler_sweep(d_num_doppler_bins);

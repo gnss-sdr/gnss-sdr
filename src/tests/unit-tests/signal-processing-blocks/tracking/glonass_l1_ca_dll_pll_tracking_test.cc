@@ -31,28 +31,33 @@
  */
 
 
-#include <chrono>
-#include <gnuradio/top_block.h>
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/analog/sig_source_waveform.h>
-#include <gnuradio/analog/sig_source_c.h>
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/blocks/skiphead.h>
-#include <gtest/gtest.h>
+#include "glonass_l1_ca_dll_pll_tracking.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
-#include "tracking_interface.h"
-#include "in_memory_configuration.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
-#include "glonass_l1_ca_dll_pll_tracking.h"
+#include "in_memory_configuration.h"
+#include "tracking_interface.h"
+#include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/blocks/file_source.h>
+#include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/blocks/skiphead.h>
+#include <gnuradio/msg_queue.h>
+#include <gnuradio/top_block.h>
+#include <gtest/gtest.h>
+#include <chrono>
+#include <utility>
+#ifdef GR_GREATER_38
+#include <gnuradio/analog/sig_source.h>
+#else
+#include <gnuradio/analog/sig_source_c.h>
+#endif
 
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GlonassL1CaDllPllTrackingTest_msg_rx;
 
-typedef boost::shared_ptr<GlonassL1CaDllPllTrackingTest_msg_rx> GlonassL1CaDllPllTrackingTest_msg_rx_sptr;
+using GlonassL1CaDllPllTrackingTest_msg_rx_sptr = boost::shared_ptr<GlonassL1CaDllPllTrackingTest_msg_rx>;
 
 GlonassL1CaDllPllTrackingTest_msg_rx_sptr GlonassL1CaDllPllTrackingTest_msg_rx_make();
 
@@ -77,7 +82,7 @@ void GlonassL1CaDllPllTrackingTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            long int message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
         }
     catch (boost::bad_any_cast& e)
@@ -94,9 +99,7 @@ GlonassL1CaDllPllTrackingTest_msg_rx::GlonassL1CaDllPllTrackingTest_msg_rx() : g
     rx_message = 0;
 }
 
-GlonassL1CaDllPllTrackingTest_msg_rx::~GlonassL1CaDllPllTrackingTest_msg_rx()
-{
-}
+GlonassL1CaDllPllTrackingTest_msg_rx::~GlonassL1CaDllPllTrackingTest_msg_rx() = default;
 
 
 // ###########################################################
@@ -113,9 +116,7 @@ protected:
         gnss_synchro = Gnss_Synchro();
     }
 
-    ~GlonassL1CaDllPllTrackingTest()
-    {
-    }
+    ~GlonassL1CaDllPllTrackingTest() = default;
 
     void init();
 
@@ -137,11 +138,10 @@ void GlonassL1CaDllPllTrackingTest::init()
     gnss_synchro.PRN = 11;
 
     config->set_property("GNSS-SDR.internal_fs_sps", "6625000");
+    config->set_property("Tracking_1G.implementation", "GLONASS_L1_CA_DLL_PLL_Tracking");
     config->set_property("Tracking_1G.item_type", "gr_complex");
     config->set_property("Tracking_1G.dump", "false");
-    config->set_property("Tracking_1G.if", "0.0");
     config->set_property("Tracking_1G.dump_filename", "./tracking_ch_");
-    config->set_property("Tracking_1G.implementation", "GLONASS_L1_CA_DLL_PLL_Tracking");
     config->set_property("Tracking_1G.early_late_space_chips", "0.5");
     config->set_property("Tracking_1G.order", "2");
     config->set_property("Tracking_1G.pll_bw_hz", "2");

@@ -55,7 +55,7 @@ public:
      */
     float decode_block(const double input_c[], int* output_u_int, const int LL);
 
-    float decode_continuous(const double sym[], const int traceback_depth, int output_u_int[],
+    float decode_continuous(const double sym[], const int traceback_depth, int bits[],
         const int nbits_requested, int& nbits_decoded);
 
 private:
@@ -113,10 +113,10 @@ private:
     void init_trellis_state();
     int do_acs(const double sym[], int nbits);
     int do_traceback(std::size_t traceback_length);
-    int do_tb_and_decode(int traceback_length, int requested_decoding_length, int state, int bits[], float& indicator_metric);
+    int do_tb_and_decode(int traceback_length, int requested_decoding_length, int state, int output_u_int[], float& indicator_metric);
 
     // branch metric function
-    float gamma(float rec_array[], int symbol, int nn);
+    float gamma(const float rec_array[], int symbol, int nn);
 
     // trellis generation
     void nsc_transit(int output_p[], int trans_p[], int input, const int g[], int KK, int nn);

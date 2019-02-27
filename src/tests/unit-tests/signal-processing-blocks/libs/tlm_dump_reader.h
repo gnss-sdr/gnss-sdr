@@ -31,22 +31,23 @@
 #ifndef GNSS_SDR_TLM_DUMP_READER_H
 #define GNSS_SDR_TLM_DUMP_READER_H
 
+#include <cstdint>
 #include <fstream>
 #include <string>
 #include <vector>
 
-class tlm_dump_reader
+class Tlm_Dump_Reader
 {
 public:
-    ~tlm_dump_reader();
+    ~Tlm_Dump_Reader();
     bool read_binary_obs();
     bool restart();
-    long int num_epochs();
+    int64_t num_epochs();
     bool open_obs_file(std::string out_file);
 
     //telemetry decoder dump variables
     double TOW_at_current_symbol;
-    unsigned long int Tracking_sample_counter;
+    uint64_t Tracking_sample_counter;
     double d_TOW_at_Preamble;
 
 private:

@@ -30,15 +30,13 @@
 
 #include "notch_lite_cc.h"
 #include <boost/math/distributions/chi_squared.hpp>
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
-#include <cstring>
 #include <cmath>
+#include <cstring>
 
-using google::LogMessage;
 
-notch_lite_sptr make_notch_filter_lite(float p_c_factor, float pfa, int length_, int n_segments_est, int n_segments_reset, int n_segments_coeff)
+notch_lite_sptr make_notch_filter_lite(float p_c_factor, float pfa, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset, int32_t n_segments_coeff)
 {
     return notch_lite_sptr(new NotchLite(p_c_factor, pfa, length_, n_segments_est, n_segments_reset, n_segments_coeff));
 }
@@ -46,17 +44,17 @@ notch_lite_sptr make_notch_filter_lite(float p_c_factor, float pfa, int length_,
 
 NotchLite::NotchLite(float p_c_factor,
     float pfa,
-    int length_,
-    int n_segments_est,
-    int n_segments_reset,
-    int n_segments_coeff) : gr::block("NotchLite",
-                                gr::io_signature::make(1, 1, sizeof(gr_complex)),
-                                gr::io_signature::make(1, 1, sizeof(gr_complex)))
+    int32_t length_,
+    int32_t n_segments_est,
+    int32_t n_segments_reset,
+    int32_t n_segments_coeff) : gr::block("NotchLite",
+                                    gr::io_signature::make(1, 1, sizeof(gr_complex)),
+                                    gr::io_signature::make(1, 1, sizeof(gr_complex)))
 {
-    const int alignment_multiple = volk_get_alignment() / sizeof(gr_complex);
+    const int32_t alignment_multiple = volk_get_alignment() / sizeof(gr_complex);
     set_alignment(std::max(1, alignment_multiple));
     set_history(2);
-    this->p_c_factor = gr_complex(p_c_factor, 0);
+    this->p_c_factor = gr_complex(p_c_factor, 0.0);
     this->n_segments_est = n_segments_est;
     this->n_segments_reset = n_segments_reset;
     this->n_segments_coeff_reset = n_segments_coeff;
@@ -68,12 +66,12 @@ NotchLite::NotchLite(float p_c_factor,
     n_deg_fred = 2 * length_;
     noise_pow_est = 0.0;
     filter_state_ = false;
-    z_0 = gr_complex(0, 0);
-    last_out = gr_complex(0, 0);
+    z_0 = gr_complex(0.0, 0.0);
+    last_out = gr_complex(0.0, 0.0);
     boost::math::chi_squared_distribution<float> my_dist_(n_deg_fred);
     thres_ = boost::math::quantile(boost::math::complement(my_dist_, pfa));
-    c_samples1 = gr_complex(0, 0);
-    c_samples2 = gr_complex(0, 0);
+    c_samples1 = gr_complex(0.0, 0.0);
+    c_samples2 = gr_complex(0.0, 0.0);
     angle1 = 0.0;
     angle2 = 0.0;
     power_spect = static_cast<float *>(volk_malloc(length_ * sizeof(float), volk_get_alignment()));
@@ -89,9 +87,9 @@ NotchLite::~NotchLite()
 
 void NotchLite::forecast(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items_required)
 {
-    for (unsigned int aux = 0; aux < ninput_items_required.size(); aux++)
+    for (int &aux : ninput_items_required)
         {
-            ninput_items_required[aux] = length_;
+            aux = length_;
         }
 }
 
@@ -99,12 +97,12 @@ void NotchLite::forecast(int noutput_items __attribute__((unused)), gr_vector_in
 int NotchLite::general_work(int noutput_items, gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
-    int index_out = 0;
+    int32_t index_out = 0;
     float sig2dB = 0.0;
     float sig2lin = 0.0;
     lv_32fc_t dot_prod_;
-    const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);
-    gr_complex *out = reinterpret_cast<gr_complex *>(output_items[0]);
+    const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);
+    auto *out = reinterpret_cast<gr_complex *>(output_items[0]);
     in++;
     while ((index_out + length_) < noutput_items)
         {
@@ -138,7 +136,7 @@ int NotchLite::general_work(int noutput_items, gr_vector_int &ninput_items __att
                                     float angle_ = (angle1 + angle2) / 2.0;
                                     z_0 = std::exp(gr_complex(0, 1) * angle_);
                                 }
-                            for (int aux = 0; aux < length_; aux++)
+                            for (int32_t aux = 0; aux < length_; aux++)
                                 {
                                     *(out + aux) = *(in + aux) - z_0 * (*(in + aux - 1)) + p_c_factor * z_0 * last_out;
                                     last_out = *(out + aux);

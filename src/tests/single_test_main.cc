@@ -29,17 +29,16 @@
  * -------------------------------------------------------------------------
  */
 
-#include "concurrent_queue.h"
+#include "agnss_ref_location.h"
+#include "agnss_ref_time.h"
 #include "concurrent_map.h"
-#include "gps_navigation_message.h"
-#include "gps_ephemeris.h"
+#include "concurrent_queue.h"
+#include "galileo_navigation_message.h"
+#include "gps_acq_assist.h"
 #include "gps_cnav_ephemeris.h"
 #include "gps_cnav_iono.h"
-#include "gps_acq_assist.h"
-#include "gps_ref_location.h"
-#include "gps_ref_time.h"
-#include "galileo_navigation_message.h"
-#include <boost/thread.hpp>
+#include "gps_ephemeris.h"
+#include "gps_navigation_message.h"
 #include <boost/filesystem.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
@@ -50,9 +49,9 @@
 #include <queue>
 
 
-concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
+Concurrent_Queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 
-concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
+Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
 using google::LogMessage;
 

@@ -29,14 +29,16 @@
  */
 
 #include "tlm_dump_reader.h"
+#include <exception>
 #include <iostream>
+#include <utility>
 
-bool tlm_dump_reader::read_binary_obs()
+bool Tlm_Dump_Reader::read_binary_obs()
 {
     try
         {
             d_dump_file.read(reinterpret_cast<char *>(&TOW_at_current_symbol), sizeof(double));
-            d_dump_file.read(reinterpret_cast<char *>(&Tracking_sample_counter), sizeof(unsigned long int));
+            d_dump_file.read(reinterpret_cast<char *>(&Tracking_sample_counter), sizeof(uint64_t));
             d_dump_file.read(reinterpret_cast<char *>(&d_TOW_at_Preamble), sizeof(double));
         }
     catch (const std::ifstream::failure &e)
@@ -47,7 +49,7 @@ bool tlm_dump_reader::read_binary_obs()
 }
 
 
-bool tlm_dump_reader::restart()
+bool Tlm_Dump_Reader::restart()
 {
     if (d_dump_file.is_open())
         {
@@ -55,39 +57,33 @@ bool tlm_dump_reader::restart()
             d_dump_file.seekg(0, std::ios::beg);
             return true;
         }
-    else
-        {
-            return false;
-        }
+    return false;
 }
 
 
-long int tlm_dump_reader::num_epochs()
+int64_t Tlm_Dump_Reader::num_epochs()
 {
     std::ifstream::pos_type size;
     int number_of_vars_in_epoch = 2;
-    int epoch_size_bytes = sizeof(double) * number_of_vars_in_epoch + sizeof(unsigned long int);
+    int epoch_size_bytes = sizeof(double) * number_of_vars_in_epoch + sizeof(uint64_t);
     std::ifstream tmpfile(d_dump_filename.c_str(), std::ios::binary | std::ios::ate);
     if (tmpfile.is_open())
         {
             size = tmpfile.tellg();
-            long int nepoch = size / epoch_size_bytes;
+            int64_t nepoch = size / epoch_size_bytes;
             return nepoch;
         }
-    else
-        {
-            return 0;
-        }
+    return 0;
 }
 
 
-bool tlm_dump_reader::open_obs_file(std::string out_file)
+bool Tlm_Dump_Reader::open_obs_file(std::string out_file)
 {
     if (d_dump_file.is_open() == false)
         {
             try
                 {
-                    d_dump_filename = out_file;
+                    d_dump_filename = std::move(out_file);
                     d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
                     d_dump_file.open(d_dump_filename.c_str(), std::ios::in | std::ios::binary);
                     std::cout << "TLM dump enabled, Log file: " << d_dump_filename.c_str() << std::endl;
@@ -95,7 +91,7 @@ bool tlm_dump_reader::open_obs_file(std::string out_file)
                 }
             catch (const std::ifstream::failure &e)
                 {
-                    std::cout << "Problem opening TLM dump Log file: " << d_dump_filename.c_str() << std::endl;
+                    std::cout << "Problem opening TLM dump Log file: " << d_dump_filename << std::endl;
                     return false;
                 }
         }
@@ -106,10 +102,21 @@ bool tlm_dump_reader::open_obs_file(std::string out_file)
 }
 
 
-tlm_dump_reader::~tlm_dump_reader()
+Tlm_Dump_Reader::~Tlm_Dump_Reader()
 {
-    if (d_dump_file.is_open() == true)
+    try
         {
-            d_dump_file.close();
+            if (d_dump_file.is_open() == true)
+                {
+                    d_dump_file.close();
+                }
+        }
+    catch (const std::ifstream::failure &e)
+        {
+            std::cerr << "Problem closing TLM dump Log file: " << d_dump_filename << '\n';
+        }
+    catch (const std::exception &e)
+        {
+            std::cerr << e.what() << '\n';
         }
 }

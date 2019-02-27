@@ -31,32 +31,37 @@
  */
 
 
-#include <chrono>
-#include <boost/make_shared.hpp>
-#include <glog/logging.h>
-#include <gnuradio/top_block.h>
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/analog/sig_source_waveform.h>
-#include <gnuradio/analog/sig_source_c.h>
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/blocks/null_sink.h>
-#include <gtest/gtest.h>
+#include "Galileo_E1.h"
+#include "acquisition_dump_reader.h"
+#include "galileo_e1_pcps_ambiguous_acquisition.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
-#include "in_memory_configuration.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_signal.h"
 #include "gnss_synchro.h"
 #include "gnuplot_i.h"
+#include "in_memory_configuration.h"
 #include "test_flags.h"
-#include "acquisition_dump_reader.h"
-#include "galileo_e1_pcps_ambiguous_acquisition.h"
-#include "Galileo_E1.h"
+#include <boost/make_shared.hpp>
+#include <glog/logging.h>
+#include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/blocks/file_source.h>
+#include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/msg_queue.h>
+#include <gnuradio/top_block.h>
+#include <gtest/gtest.h>
+#include <chrono>
+#include <utility>
+#ifdef GR_GREATER_38
+#include <gnuradio/analog/sig_source.h>
+#else
+#include <gnuradio/analog/sig_source_c.h>
+#endif
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx;
 
-typedef boost::shared_ptr<GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx> GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx_sptr;
+using GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx_sptr = boost::shared_ptr<GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx>;
 
 GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx_sptr GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx_make();
 
@@ -83,7 +88,7 @@ void GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx::msg_handler_events(pmt::pmt_t
 {
     try
         {
-            long int message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
         }
     catch (boost::bad_any_cast& e)
@@ -102,9 +107,7 @@ GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx::GalileoE1PcpsAmbiguousAcquisitionT
 }
 
 
-GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx::~GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx()
-{
-}
+GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx::~GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx() = default;
 
 
 // ###########################################################
@@ -122,9 +125,7 @@ protected:
         doppler_step = 250;
     }
 
-    ~GalileoE1PcpsAmbiguousAcquisitionTest()
-    {
-    }
+    ~GalileoE1PcpsAmbiguousAcquisitionTest() = default;
 
     void init();
     void plot_grid();
@@ -172,12 +173,15 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::plot_grid()
 {
     //load the measured values
     std::string basename = "./tmp-acq-gal1/acquisition_E_1B";
-    unsigned int sat = static_cast<unsigned int>(gnss_synchro.PRN);
+    auto sat = static_cast<unsigned int>(gnss_synchro.PRN);
 
-    unsigned int samples_per_code = static_cast<unsigned int>(round(4000000 / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS)));  // !!
-    acquisition_dump_reader acq_dump(basename, sat, doppler_max, doppler_step, samples_per_code);
+    auto samples_per_code = static_cast<unsigned int>(round(4000000 / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS)));  // !!
+    Acquisition_Dump_Reader acq_dump(basename, sat, doppler_max, doppler_step, samples_per_code);
 
-    if (!acq_dump.read_binary_acq()) std::cout << "Error reading files" << std::endl;
+    if (!acq_dump.read_binary_acq())
+        {
+            std::cout << "Error reading files" << std::endl;
+        }
 
     std::vector<int>* doppler = &acq_dump.doppler;
     std::vector<unsigned int>* samples = &acq_dump.samples;
@@ -197,10 +201,18 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::plot_grid()
                 {
                     boost::filesystem::path p(gnuplot_executable);
                     boost::filesystem::path dir = p.parent_path();
-                    std::string gnuplot_path = dir.native();
+                    const std::string& gnuplot_path = dir.native();
                     Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                     Gnuplot g1("lines");
+                    if (FLAGS_show_plots)
+                        {
+                            g1.showonscreen();  // window output
+                        }
+                    else
+                        {
+                            g1.disablescreen();
+                        }
                     g1.set_title("Galileo E1b/c signal acquisition for satellite PRN #" + std::to_string(gnss_synchro.PRN));
                     g1.set_xlabel("Doppler [Hz]");
                     g1.set_ylabel("Sample");
@@ -209,7 +221,6 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::plot_grid()
 
                     g1.savetops("Galileo_E1_acq_grid");
                     g1.savetopdf("Galileo_E1_acq_grid");
-                    g1.showonscreen();
                 }
             catch (const GnuplotException& ge)
                 {
@@ -227,7 +238,7 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::plot_grid()
 TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, Instantiate)
 {
     init();
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition_1B", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 1);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition_1B", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 0);
     std::shared_ptr<AcquisitionInterface> acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
 }
 
@@ -241,7 +252,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ConnectAndRun)
     top_block = gr::make_top_block("Acquisition test");
     gr::msg_queue::sptr queue = gr::msg_queue::make(0);
     init();
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition_1B", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 1);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition_1B", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 0);
     std::shared_ptr<AcquisitionInterface> acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
     boost::shared_ptr<GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx> msg_rx = GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx_make();
 
@@ -283,7 +294,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
     double expected_doppler_hz = -632;
     init();
     top_block = gr::make_top_block("Acquisition test");
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition_1B", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 1);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition_1B", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 0);
     std::shared_ptr<GalileoE1PcpsAmbiguousAcquisition> acquisition = std::dynamic_pointer_cast<GalileoE1PcpsAmbiguousAcquisition>(acq_);
     boost::shared_ptr<GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx> msg_rx = GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx_make();
 
@@ -332,7 +343,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
         elapsed_seconds = end - start;
     }) << "Failure running the top_block.";
 
-    unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
+    uint64_t nsamples = gnss_synchro.Acq_samplestamp_samples;
     std::cout << "Acquired " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds" << std::endl;
     ASSERT_EQ(1, msg_rx->rx_message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 
@@ -340,7 +351,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
     std::cout << "Doppler: " << gnss_synchro.Acq_doppler_hz << std::endl;
 
     double delay_error_samples = std::abs(expected_delay_samples - gnss_synchro.Acq_delay_samples);
-    float delay_error_chips = static_cast<float>(delay_error_samples * 1023 / 4000000);
+    auto delay_error_chips = static_cast<float>(delay_error_samples * 1023 / 4000000);
     double doppler_error_hz = std::abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
 
     EXPECT_LE(doppler_error_hz, 166) << "Doppler error exceeds the expected value: 166 Hz = 2/(3*integration period)";

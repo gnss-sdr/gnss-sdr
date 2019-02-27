@@ -32,12 +32,11 @@
 #ifndef GNSS_SDR_GALILEO_E1_PCPS_8MS_AMBIGUOUS_ACQUISITION_H_
 #define GNSS_SDR_GALILEO_E1_PCPS_8MS_AMBIGUOUS_ACQUISITION_H_
 
-#include <string>
-#include <gnuradio/blocks/stream_to_vector.h>
-#include "gnss_synchro.h"
 #include "acquisition_interface.h"
 #include "galileo_pcps_8ms_acquisition_cc.h"
-
+#include "gnss_synchro.h"
+#include <gnuradio/blocks/stream_to_vector.h>
+#include <string>
 
 class ConfigurationInterface;
 
@@ -49,7 +48,8 @@ class GalileoE1Pcps8msAmbiguousAcquisition : public AcquisitionInterface
 {
 public:
     GalileoE1Pcps8msAmbiguousAcquisition(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role,
+        unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~GalileoE1Pcps8msAmbiguousAcquisition();
@@ -124,6 +124,16 @@ public:
      */
     void reset() override;
 
+    /*!
+     * \brief Stop running acquisition
+     */
+    void stop_acquisition() override;
+
+    void set_state(int state __attribute__((unused))) override{};
+
+    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
+
+
 private:
     ConfigurationInterface* configuration_;
     galileo_pcps_8ms_acquisition_cc_sptr acquisition_cc_;
@@ -138,8 +148,7 @@ private:
     unsigned int doppler_step_;
     unsigned int sampled_ms_;
     unsigned int max_dwells_;
-    long fs_in_;
-    long if_;
+    int64_t fs_in_;
     bool dump_;
     std::string dump_filename_;
     std::complex<float>* code_;

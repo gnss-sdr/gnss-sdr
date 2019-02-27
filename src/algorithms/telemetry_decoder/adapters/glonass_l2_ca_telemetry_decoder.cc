@@ -32,17 +32,17 @@
 
 #include "glonass_l2_ca_telemetry_decoder.h"
 #include "configuration_interface.h"
-#include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_almanac.h"
+#include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_utc_model.h"
-#include <gnuradio/io_signature.h>
 #include <glog/logging.h>
+#include <gnuradio/io_signature.h>
 
 
 using google::LogMessage;
 
 GlonassL2CaTelemetryDecoder::GlonassL2CaTelemetryDecoder(ConfigurationInterface* configuration,
-    std::string role,
+    const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
                                 in_streams_(in_streams),
@@ -56,12 +56,18 @@ GlonassL2CaTelemetryDecoder::GlonassL2CaTelemetryDecoder(ConfigurationInterface*
     telemetry_decoder_ = glonass_l2_ca_make_telemetry_decoder_cc(satellite_, dump_);
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
     channel_ = 0;
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 
-GlonassL2CaTelemetryDecoder::~GlonassL2CaTelemetryDecoder()
-{
-}
+GlonassL2CaTelemetryDecoder::~GlonassL2CaTelemetryDecoder() = default;
 
 
 void GlonassL2CaTelemetryDecoder::set_satellite(const Gnss_Satellite& satellite)

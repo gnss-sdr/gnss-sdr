@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -16,49 +16,81 @@
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
-add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
 
-set(PVT_LIB_SOURCES 
-     pvt_solution.cc
-     ls_pvt.cc
-     hybrid_ls_pvt.cc
-     kml_printer.cc
-     gpx_printer.cc
-     rinex_printer.cc
-     nmea_printer.cc  
-     rtcm_printer.cc
-     geojson_printer.cc
-     rtklib_solver.cc
+set(PVT_LIB_SOURCES
+    pvt_solution.cc
+    ls_pvt.cc
+    hybrid_ls_pvt.cc
+    kml_printer.cc
+    gpx_printer.cc
+    rinex_printer.cc
+    nmea_printer.cc
+    rtcm_printer.cc
+    geojson_printer.cc
+    rtklib_solver.cc
+    pvt_conf.cc
+    monitor_pvt_udp_sink.cc
 )
 
-include_directories(
-     ${CMAKE_CURRENT_SOURCE_DIR}
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/adapters
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib
-     ${Boost_INCLUDE_DIRS}
-     ${ARMADILLO_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${GLOG_INCLUDE_DIRS}
+set(PVT_LIB_HEADERS
+    pvt_solution.h
+    ls_pvt.h
+    hybrid_ls_pvt.h
+    kml_printer.h
+    gpx_printer.h
+    rinex_printer.h
+    nmea_printer.h
+    rtcm_printer.h
+    geojson_printer.h
+    rtklib_solver.h
+    pvt_conf.h
+    monitor_pvt_udp_sink.h
+    monitor_pvt.h
 )
 
-file(GLOB PVT_LIB_HEADERS "*.h")
 list(SORT PVT_LIB_HEADERS)
-add_library(pvt_lib ${PVT_LIB_SOURCES} ${PVT_LIB_HEADERS})
-source_group(Headers FILES ${PVT_LIB_HEADERS})
-add_dependencies(pvt_lib rtklib_lib armadillo-${armadillo_RELEASE} glog-${glog_RELEASE})
+list(SORT PVT_LIB_SOURCES)
 
-target_link_libraries(
-    pvt_lib 
-    rtklib_lib
-    gnss_sdr_flags
-    ${Boost_LIBRARIES} 
-    ${GLOG_LIBRARIES} 
-    ${ARMADILLO_LIBRARIES}
-    ${BLAS}
-    ${LAPACK}
-    )
-    
+source_group(Headers FILES ${PVT_LIB_HEADERS})
+
+add_library(pvt_libs ${PVT_LIB_SOURCES} ${PVT_LIB_HEADERS})
+
+target_link_libraries(pvt_libs
+    PUBLIC
+        Armadillo::armadillo
+        Boost::date_time
+        algorithms_libs
+        algorithms_libs_rtklib
+        core_system_parameters
+    PRIVATE
+        Boost::filesystem
+        Boost::system
+        Gflags::gflags
+        Glog::glog
+        Matio::matio
+)
+
+target_include_directories(pvt_libs
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+        ${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib
+        ${CMAKE_SOURCE_DIR}/src/core/receiver
+)
+
+target_compile_definitions(pvt_libs PRIVATE -DGNSS_SDR_VERSION="${VERSION}")
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(pvt_libs
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+set_property(TARGET pvt_libs APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/algorithms/libs>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/core/system_parameters>
+)

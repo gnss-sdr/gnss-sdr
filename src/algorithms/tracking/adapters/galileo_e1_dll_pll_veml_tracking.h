@@ -37,8 +37,8 @@
 #ifndef GNSS_SDR_GALILEO_E1_DLL_PLL_VEML_TRACKING_H_
 #define GNSS_SDR_GALILEO_E1_DLL_PLL_VEML_TRACKING_H_
 
-#include "tracking_interface.h"
 #include "dll_pll_veml_tracking.h"
+#include "tracking_interface.h"
 #include <string>
 
 
@@ -52,7 +52,7 @@ class GalileoE1DllPllVemlTracking : public TrackingInterface
 {
 public:
     GalileoE1DllPllVemlTracking(ConfigurationInterface* configuration,
-        std::string role,
+        const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 
@@ -92,6 +92,10 @@ public:
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
     void start_tracking() override;
+    /*!
+     * \brief Stop running tracking
+     */
+    void stop_tracking() override;
 
 private:
     dll_pll_veml_tracking_sptr tracking_;

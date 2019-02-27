@@ -29,26 +29,27 @@
  * -------------------------------------------------------------------------
  */
 
+#include "GPS_L1_CA.h"
+#include "cpu_multicorrelator_real_codes.h"
+#include "gps_sdr_signal_processing.h"
+#include <gflags/gflags.h>
+#include <gnuradio/gr_complex.h>
+#include <gtest/gtest.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include <chrono>
 #include <complex>
 #include <random>
 #include <thread>
-#include <gtest/gtest.h>
-#include <gflags/gflags.h>
-#include <gnuradio/gr_complex.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
-#include "cpu_multicorrelator_real_codes.h"
-#include "gps_sdr_signal_processing.h"
-#include "GPS_L1_CA.h"
 
 
 DEFINE_int32(cpu_multicorrelator_real_codes_iterations_test, 100, "Number of averaged iterations in CPU multicorrelator test timing test");
 DEFINE_int32(cpu_multicorrelator_real_codes_max_threads_test, 12, "Number of maximum concurrent correlators in CPU multicorrelator test timing test");
 
-void run_correlator_cpu_real_codes(cpu_multicorrelator_real_codes* correlator,
+void run_correlator_cpu_real_codes(Cpu_Multicorrelator_Real_Codes* correlator,
     float d_rem_carrier_phase_rad,
     float d_carrier_phase_step_rad,
     float d_code_phase_step_chips,
+    float d_code_phase_rate_step_chips,
     float d_rem_code_phase_chips,
     int correlation_size)
 {
@@ -58,6 +59,7 @@ void run_correlator_cpu_real_codes(cpu_multicorrelator_real_codes* correlator,
                 d_carrier_phase_step_rad,
                 d_code_phase_step_chips,
                 d_rem_code_phase_chips,
+                d_code_phase_rate_step_chips,
                 correlation_size);
         }
 }
@@ -69,7 +71,7 @@ TEST(CpuMulticorrelatorRealCodesTest, MeasureExecutionTime)
     std::chrono::duration<double> elapsed_seconds(0);
     int max_threads = FLAGS_cpu_multicorrelator_real_codes_max_threads_test;
     std::vector<std::thread> thread_pool;
-    cpu_multicorrelator_real_codes* correlator_pool[max_threads];
+    Cpu_Multicorrelator_Real_Codes* correlator_pool[max_threads];
     unsigned int correlation_sizes[3] = {2048, 4096, 8192};
     double execution_times[3];
 
@@ -116,7 +118,7 @@ TEST(CpuMulticorrelatorRealCodesTest, MeasureExecutionTime)
 
     for (int n = 0; n < max_threads; n++)
         {
-            correlator_pool[n] = new cpu_multicorrelator_real_codes();
+            correlator_pool[n] = new Cpu_Multicorrelator_Real_Codes();
             correlator_pool[n]->init(d_vector_length, d_n_correlator_taps);
             correlator_pool[n]->set_input_output_vectors(d_correlator_outs, in_cpu);
             correlator_pool[n]->set_local_code_and_taps(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS), d_ca_code, d_local_code_shift_chips);
@@ -125,6 +127,7 @@ TEST(CpuMulticorrelatorRealCodesTest, MeasureExecutionTime)
     float d_rem_carrier_phase_rad = 0.0;
     float d_carrier_phase_step_rad = 0.1;
     float d_code_phase_step_chips = 0.3;
+    float d_code_phase_rate_step_chips = 0.00001;
     float d_rem_code_phase_chips = 0.4;
 
     EXPECT_NO_THROW(
@@ -141,6 +144,7 @@ TEST(CpuMulticorrelatorRealCodesTest, MeasureExecutionTime)
                                 d_rem_carrier_phase_rad,
                                 d_carrier_phase_step_rad,
                                 d_code_phase_step_chips,
+                                d_code_phase_rate_step_chips,
                                 d_rem_code_phase_chips,
                                 correlation_sizes[correlation_sizes_idx]));
                         }

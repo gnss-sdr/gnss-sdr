@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -34,35 +34,92 @@ set(ACQ_ADAPTER_SOURCES
     galileo_e5a_pcps_acquisition.cc
     glonass_l1_ca_pcps_acquisition.cc
     glonass_l2_ca_pcps_acquisition.cc
+    beidou_b1i_pcps_acquisition.cc
+)
+
+set(ACQ_ADAPTER_HEADERS
+    gps_l1_ca_pcps_acquisition.h
+    gps_l1_ca_pcps_assisted_acquisition.h
+    gps_l1_ca_pcps_acquisition_fine_doppler.h
+    gps_l1_ca_pcps_tong_acquisition.h
+    gps_l1_ca_pcps_quicksync_acquisition.h
+    gps_l2_m_pcps_acquisition.h
+    gps_l5i_pcps_acquisition.h
+    galileo_e1_pcps_ambiguous_acquisition.h
+    galileo_e1_pcps_cccwsr_ambiguous_acquisition.h
+    galileo_e1_pcps_quicksync_ambiguous_acquisition.h
+    galileo_e1_pcps_tong_ambiguous_acquisition.h
+    galileo_e1_pcps_8ms_ambiguous_acquisition.h
+    galileo_e5a_noncoherent_iq_acquisition_caf.h
+    galileo_e5a_pcps_acquisition.h
+    glonass_l1_ca_pcps_acquisition.h
+    glonass_l2_ca_pcps_acquisition.h
 )
 
 if(ENABLE_FPGA)
-    set(ACQ_ADAPTER_SOURCES ${ACQ_ADAPTER_SOURCES} gps_l1_ca_pcps_acquisition_fpga.cc)
-endif(ENABLE_FPGA)
+    set(ACQ_ADAPTER_SOURCES ${ACQ_ADAPTER_SOURCES}
+        gps_l1_ca_pcps_acquisition_fpga.cc
+        gps_l2_m_pcps_acquisition_fpga.cc
+        galileo_e1_pcps_ambiguous_acquisition_fpga.cc
+        galileo_e5a_pcps_acquisition_fpga.cc
+        gps_l5i_pcps_acquisition_fpga.cc
+    )
+    set(ACQ_ADAPTER_HEADERS ${ACQ_ADAPTER_HEADERS}
+        gps_l1_ca_pcps_acquisition_fpga.h
+        gps_l2_m_pcps_acquisition_fpga.h
+        galileo_e1_pcps_ambiguous_acquisition_fpga.h
+        galileo_e5a_pcps_acquisition_fpga.h
+        gps_l5i_pcps_acquisition_fpga.h
+    )
+endif()
 
 if(OPENCL_FOUND)
-    set(ACQ_ADAPTER_SOURCES ${ACQ_ADAPTER_SOURCES} gps_l1_ca_pcps_opencl_acquisition.cc)
-endif(OPENCL_FOUND)
+    set(ACQ_ADAPTER_SOURCES
+        ${ACQ_ADAPTER_SOURCES}
+        gps_l1_ca_pcps_opencl_acquisition.cc
+    )
+    set(ACQ_ADAPTER_HEADERS ${ACQ_ADAPTER_HEADERS}
+        gps_l1_ca_pcps_opencl_acquisition.h
+    )
+endif()
 
-include_directories(
-     ${CMAKE_CURRENT_SOURCE_DIR}
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/gnuradio_blocks
-     ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/libs
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${Boost_INCLUDE_DIRS}
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${ARMADILLO_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-     ${GNURADIO_BLOCKS_INCLUDE_DIRS}
-     ${VOLK_GNSSSDR_INCLUDE_DIRS}
+list(SORT ACQ_ADAPTER_HEADERS)
+list(SORT ACQ_ADAPTER_SOURCES)
+
+source_group(Headers FILES ${ACQ_ADAPTER_HEADERS})
+
+add_library(acquisition_adapters ${ACQ_ADAPTER_SOURCES} ${ACQ_ADAPTER_HEADERS})
+
+target_link_libraries(acquisition_adapters
+    PUBLIC
+        Gnuradio::blocks
+        algorithms_libs
+        gnss_sdr_flags
+        acquisition_gr_blocks
+        core_system_parameters
+    PRIVATE
+        Boost::boost
+        Gflags::gflags
+        Glog::glog
+        Volkgnsssdr::volkgnsssdr
+        acquisition_libs
 )
 
-file(GLOB ACQ_ADAPTER_HEADERS "*.h")
-list(SORT ACQ_ADAPTER_HEADERS)
-add_library(acq_adapters ${ACQ_ADAPTER_SOURCES} ${ACQ_ADAPTER_HEADERS})
-source_group(Headers FILES ${ACQ_ADAPTER_HEADERS})
-target_link_libraries(acq_adapters gnss_sp_libs gnss_sdr_flags acq_gr_blocks ${Boost_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES})
+target_include_directories(acquisition_adapters
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+)
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(acquisition_adapters
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+set_property(TARGET acquisition_adapters
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

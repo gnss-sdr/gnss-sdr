@@ -1,26 +1,14 @@
 /*!
  * \file pcps_acquisition_fpga.h
- * \brief This class implements a Parallel Code Phase Search Acquisition in the FPGA.
+ * \brief This class implements a Parallel Code Phase Search Acquisition for the FPGA
  *
- * Note: The CFAR algorithm is not implemented in the FPGA.
- * Note 2: The bit transition flag is not implemented in the FPGA
- *
- *  Acquisition strategy (Kay Borre book + CFAR threshold).
- *  <ol>
- *  <li> Compute the input signal power estimation
- *  <li> Doppler serial search loop
- *  <li> Perform the FFT-based circular convolution (parallel time search)
- *  <li> Record the maximum peak and the associated synchronization parameters
- *  <li> Compute the test statistics and compare to the threshold
- *  <li> Declare positive or negative acquisition using a message queue
- *  </ol>
  *
  * Kay Borre book: K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
  * "A Software-Defined GPS and Galileo Receiver. A Single-Frequency
  * Approach", Birkhauser, 2007. pp 81-84
  *
  * \authors <ul>
- *          <li> Marc Majoral, 2017. mmajoral(at)cttc.cat
+ *          <li> Marc Majoral, 2019. mmajoral(at)cttc.es
  *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
  *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *          <li> Marc Molina, 2013. marc.molina.pena@gmail.com
@@ -30,7 +18,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -64,16 +52,18 @@
 typedef struct
 {
     /* pcps acquisition configuration */
-    unsigned int sampled_ms;
-    unsigned int doppler_max;
-    long freq;
-    long fs_in;
-    int samples_per_ms;
-    int samples_per_code;
-    unsigned int select_queue_Fpga;
+    uint32_t sampled_ms;
+    uint32_t doppler_max;
+    int64_t fs_in;
+    int32_t samples_per_ms;
+    int32_t samples_per_code;
+    int32_t code_length;
+    uint32_t select_queue_Fpga;
     std::string device_name;
     lv_16sc_t* all_fft_codes;  // memory that contains all the code ffts
-
+    float downsampling_factor;
+    uint32_t total_block_exp;
+    uint32_t excludelimit;
 } pcpsconf_fpga_t;
 
 class pcps_acquisition_fpga;
@@ -102,20 +92,29 @@ private:
 
     void send_positive_acquisition();
 
+    float first_vs_second_peak_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
+
     pcpsconf_fpga_t acq_parameters;
     bool d_active;
     float d_threshold;
     float d_mag;
     float d_input_power;
+    uint32_t d_doppler_index;
     float d_test_statistics;
-    int d_state;
-    unsigned int d_channel;
-    unsigned int d_doppler_step;
-    unsigned int d_fft_size;
-    unsigned int d_num_doppler_bins;
-    unsigned long int d_sample_counter;
+    int32_t d_state;
+    uint32_t d_channel;
+    uint32_t d_doppler_step;
+    uint32_t d_fft_size;
+    uint32_t d_num_doppler_bins;
+    uint64_t d_sample_counter;
     Gnss_Synchro* d_gnss_synchro;
     std::shared_ptr<fpga_acquisition> acquisition_fpga;
+
+    float d_downsampling_factor;
+    uint32_t d_select_queue_Fpga;
+
+    uint32_t d_total_block_exp;
+
 
 public:
     ~pcps_acquisition_fpga();
@@ -133,7 +132,7 @@ public:
     /*!
      * \brief Returns the maximum peak of grid search.
      */
-    inline unsigned int mag() const
+    inline uint32_t mag() const
     {
         return d_mag;
     }
@@ -154,7 +153,7 @@ public:
       * first available sample.
       * \param state - int=1 forces start of acquisition
       */
-    void set_state(int state);
+    void set_state(int32_t state);
 
     /*!
       * \brief Starts acquisition algorithm, turning from standby mode to
@@ -167,7 +166,7 @@ public:
       * \brief Set acquisition channel unique ID
       * \param channel - receiver channel.
       */
-    inline void set_channel(unsigned int channel)
+    inline void set_channel(uint32_t channel)
     {
         d_channel = channel;
     }
@@ -186,7 +185,7 @@ public:
       * \brief Set maximum Doppler grid search
       * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
       */
-    inline void set_doppler_max(unsigned int doppler_max)
+    inline void set_doppler_max(uint32_t doppler_max)
     {
         acq_parameters.doppler_max = doppler_max;
         acquisition_fpga->set_doppler_max(doppler_max);
@@ -196,7 +195,7 @@ public:
       * \brief Set Doppler steps for the grid search
       * \param doppler_step - Frequency bin of the search grid [Hz].
       */
-    inline void set_doppler_step(unsigned int doppler_step)
+    inline void set_doppler_step(uint32_t doppler_step)
     {
         d_doppler_step = doppler_step;
         acquisition_fpga->set_doppler_step(doppler_step);
@@ -208,6 +207,16 @@ public:
     int general_work(int noutput_items, gr_vector_int& ninput_items,
         gr_vector_const_void_star& input_items,
         gr_vector_void_star& output_items);
+
+    /*!
+     * \brief This funciton triggers a HW reset of the FPGA PL.
+     */
+    void reset_acquisition(void);
+
+    /*!
+     * \brief This funciton is only used for the unit tests
+     */
+    void read_fpga_total_scale_factor(uint32_t* total_scale_factor, uint32_t* fw_scale_factor);
 };
 
 #endif /* GNSS_SDR_PCPS_ACQUISITION_FPGA_H_*/

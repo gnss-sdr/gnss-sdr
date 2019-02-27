@@ -31,42 +31,42 @@
  */
 
 #include "pcps_assisted_acquisition_cc.h"
-#include <sstream>
+#include "GPS_L1_CA.h"
+#include "concurrent_map.h"
+#include "gps_acq_assist.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include "concurrent_map.h"
-#include "control_message_factory.h"
-#include "gps_acq_assist.h"
-#include "GPS_L1_CA.h"
+#include <exception>
+#include <sstream>
+#include <utility>
 
-extern concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
+extern Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
 using google::LogMessage;
 
 pcps_assisted_acquisition_cc_sptr pcps_make_assisted_acquisition_cc(
-    int max_dwells, unsigned int sampled_ms, int doppler_max, int doppler_min, long freq,
-    long fs_in, int samples_per_ms, bool dump,
+    int32_t max_dwells, uint32_t sampled_ms, int32_t doppler_max, int32_t doppler_min,
+    int64_t fs_in, int32_t samples_per_ms, bool dump,
     std::string dump_filename)
 {
     return pcps_assisted_acquisition_cc_sptr(
-        new pcps_assisted_acquisition_cc(max_dwells, sampled_ms, doppler_max, doppler_min, freq,
-            fs_in, samples_per_ms, dump, dump_filename));
+        new pcps_assisted_acquisition_cc(max_dwells, sampled_ms, doppler_max, doppler_min,
+            fs_in, samples_per_ms, dump, std::move(dump_filename)));
 }
 
 
 pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(
-    int max_dwells, unsigned int sampled_ms, int doppler_max, int doppler_min, long freq,
-    long fs_in, int samples_per_ms, bool dump,
+    int32_t max_dwells, uint32_t sampled_ms, int32_t doppler_max, int32_t doppler_min,
+    int64_t fs_in, int32_t samples_per_ms, bool dump,
     std::string dump_filename) : gr::block("pcps_assisted_acquisition_cc",
                                      gr::io_signature::make(1, 1, sizeof(gr_complex)),
                                      gr::io_signature::make(0, 0, sizeof(gr_complex)))
 {
     this->message_port_register_out(pmt::mp("events"));
-    d_sample_counter = 0;  // SAMPLE COUNTER
+    d_sample_counter = 0ULL;  // SAMPLE COUNTER
     d_active = false;
-    d_freq = freq;
     d_fs_in = fs_in;
     d_samples_per_ms = samples_per_ms;
     d_sampled_ms = sampled_ms;
@@ -90,7 +90,7 @@ pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(
 
     // For dumping samples into a file
     d_dump = dump;
-    d_dump_filename = dump_filename;
+    d_dump_filename = std::move(dump_filename);
 
     d_doppler_resolution = 0;
     d_threshold = 0;
@@ -98,9 +98,9 @@ pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(
     d_doppler_min = 0;
     d_num_doppler_points = 0;
     d_doppler_step = 0;
-    d_grid_data = 0;
-    d_grid_doppler_wipeoffs = 0;
-    d_gnss_synchro = 0;
+    d_grid_data = nullptr;
+    d_grid_doppler_wipeoffs = nullptr;
+    d_gnss_synchro = nullptr;
     d_code_phase = 0;
     d_doppler_freq = 0;
     d_test_statistics = 0;
@@ -109,7 +109,7 @@ pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(
 }
 
 
-void pcps_assisted_acquisition_cc::set_doppler_step(unsigned int doppler_step)
+void pcps_assisted_acquisition_cc::set_doppler_step(uint32_t doppler_step)
 {
     d_doppler_step = doppler_step;
 }
@@ -117,7 +117,7 @@ void pcps_assisted_acquisition_cc::set_doppler_step(unsigned int doppler_step)
 
 void pcps_assisted_acquisition_cc::free_grid_memory()
 {
-    for (int i = 0; i < d_num_doppler_points; i++)
+    for (int32_t i = 0; i < d_num_doppler_points; i++)
         {
             delete[] d_grid_data[i];
             delete[] d_grid_doppler_wipeoffs[i];
@@ -132,9 +132,20 @@ pcps_assisted_acquisition_cc::~pcps_assisted_acquisition_cc()
     volk_gnsssdr_free(d_fft_codes);
     delete d_ifft;
     delete d_fft_if;
-    if (d_dump)
+    try
         {
-            d_dump_file.close();
+            if (d_dump)
+                {
+                    d_dump_file.close();
+                }
+        }
+    catch (const std::ofstream::failure &e)
+        {
+            std::cerr << "Problem closing Acquisition dump file: " << d_dump_filename << '\n';
+        }
+    catch (const std::exception &e)
+        {
+            std::cerr << e.what() << '\n';
         }
 }
 
@@ -151,10 +162,10 @@ void pcps_assisted_acquisition_cc::init()
     d_gnss_synchro->Flag_valid_symbol_output = false;
     d_gnss_synchro->Flag_valid_pseudorange = false;
     d_gnss_synchro->Flag_valid_word = false;
-
+    d_gnss_synchro->Acq_doppler_step = 0U;
     d_gnss_synchro->Acq_delay_samples = 0.0;
     d_gnss_synchro->Acq_doppler_hz = 0.0;
-    d_gnss_synchro->Acq_samplestamp_samples = 0;
+    d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
     d_input_power = 0.0;
     d_state = 0;
 
@@ -206,9 +217,9 @@ void pcps_assisted_acquisition_cc::get_assistance()
 void pcps_assisted_acquisition_cc::reset_grid()
 {
     d_well_count = 0;
-    for (int i = 0; i < d_num_doppler_points; i++)
+    for (int32_t i = 0; i < d_num_doppler_points; i++)
         {
-            for (unsigned int j = 0; j < d_fft_size; j++)
+            for (uint32_t j = 0; j < d_fft_size; j++)
                 {
                     d_grid_data[i][j] = 0.0;
                 }
@@ -227,16 +238,16 @@ void pcps_assisted_acquisition_cc::redefine_grid()
     d_num_doppler_points = floor(std::abs(d_doppler_max - d_doppler_min) / d_doppler_step);
 
     d_grid_data = new float *[d_num_doppler_points];
-    for (int i = 0; i < d_num_doppler_points; i++)
+    for (int32_t i = 0; i < d_num_doppler_points; i++)
         {
             d_grid_data[i] = new float[d_fft_size];
         }
 
     // create the carrier Doppler wipeoff signals
-    int doppler_hz;
+    int32_t doppler_hz;
     float phase_step_rad;
     d_grid_doppler_wipeoffs = new gr_complex *[d_num_doppler_points];
-    for (int doppler_index = 0; doppler_index < d_num_doppler_points; doppler_index++)
+    for (int32_t doppler_index = 0; doppler_index < d_num_doppler_points; doppler_index++)
         {
             doppler_hz = d_doppler_min + d_doppler_step * doppler_index;
             // doppler search steps
@@ -254,11 +265,11 @@ double pcps_assisted_acquisition_cc::search_maximum()
 {
     float magt = 0.0;
     float fft_normalization_factor;
-    int index_doppler = 0;
+    int32_t index_doppler = 0;
     uint32_t tmp_intex_t = 0;
     uint32_t index_time = 0;
 
-    for (int i = 0; i < d_num_doppler_points; i++)
+    for (int32_t i = 0; i < d_num_doppler_points; i++)
         {
             volk_gnsssdr_32f_index_max_32u(&tmp_intex_t, d_grid_data[i], d_fft_size);
             if (d_grid_data[i][tmp_intex_t] > magt)
@@ -280,6 +291,7 @@ double pcps_assisted_acquisition_cc::search_maximum()
     d_gnss_synchro->Acq_delay_samples = static_cast<double>(index_time);
     d_gnss_synchro->Acq_doppler_hz = static_cast<double>(index_doppler * d_doppler_step + d_doppler_min);
     d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
+    d_gnss_synchro->Acq_doppler_step = d_doppler_step;
 
     // Record results to file if required
     if (d_dump)
@@ -301,9 +313,9 @@ double pcps_assisted_acquisition_cc::search_maximum()
 
 float pcps_assisted_acquisition_cc::estimate_input_power(gr_vector_const_void_star &input_items)
 {
-    const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
+    const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
     // 1- Compute the input signal power estimation
-    float *p_tmp_vector = static_cast<float *>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
+    auto *p_tmp_vector = static_cast<float *>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
 
     volk_32fc_magnitude_squared_32f(p_tmp_vector, in, d_fft_size);
 
@@ -315,10 +327,10 @@ float pcps_assisted_acquisition_cc::estimate_input_power(gr_vector_const_void_st
 }
 
 
-int pcps_assisted_acquisition_cc::compute_and_accumulate_grid(gr_vector_const_void_star &input_items)
+int32_t pcps_assisted_acquisition_cc::compute_and_accumulate_grid(gr_vector_const_void_star &input_items)
 {
     // initialize acquisition algorithm
-    const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
+    const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
 
     DLOG(INFO) << "Channel: " << d_channel
                << " , doing acquisition of satellite: " << d_gnss_synchro->System << " "
@@ -328,9 +340,9 @@ int pcps_assisted_acquisition_cc::compute_and_accumulate_grid(gr_vector_const_vo
                << ", doppler_step: " << d_doppler_step;
 
     // 2- Doppler frequency search loop
-    float *p_tmp_vector = static_cast<float *>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
+    auto *p_tmp_vector = static_cast<float *>(volk_gnsssdr_malloc(d_fft_size * sizeof(float), volk_gnsssdr_get_alignment()));
 
-    for (int doppler_index = 0; doppler_index < d_num_doppler_points; doppler_index++)
+    for (int32_t doppler_index = 0; doppler_index < d_num_doppler_points; doppler_index++)
         {
             // doppler search steps
             // Perform the carrier wipe-off
@@ -380,27 +392,30 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
     switch (d_state)
         {
         case 0:  // S0. StandBy
-            if (d_active == true) d_state = 1;
-            d_sample_counter += ninput_items[0];  // sample counter
+            if (d_active == true)
+                {
+                    d_state = 1;
+                }
+            d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
             consume_each(ninput_items[0]);
             break;
         case 1:  // S1. GetAssist
             get_assistance();
             redefine_grid();
             reset_grid();
-            d_sample_counter += ninput_items[0];  // sample counter
+            d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
             consume_each(ninput_items[0]);
             d_state = 2;
             break;
         case 2:  // S2. ComputeGrid
-            int consumed_samples;
+            int32_t consumed_samples;
             consumed_samples = compute_and_accumulate_grid(input_items);
             d_well_count++;
             if (d_well_count >= d_max_dwells)
                 {
                     d_state = 3;
                 }
-            d_sample_counter += consumed_samples;
+            d_sample_counter += static_cast<uint64_t>(consumed_samples);
             consume_each(consumed_samples);
             break;
         case 3:  // Compute test statistics and decide
@@ -423,14 +438,14 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
                             d_state = 6;
                         }
                 }
-            d_sample_counter += ninput_items[0];  // sample counter
+            d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
             consume_each(ninput_items[0]);
             break;
         case 4:  // RedefineGrid
             free_grid_memory();
             redefine_grid();
             reset_grid();
-            d_sample_counter += ninput_items[0];  // sample counter
+            d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
             consume_each(ninput_items[0]);
             d_state = 2;
             break;
@@ -448,7 +463,7 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
             this->message_port_pub(pmt::mp("events"), pmt::from_long(1));
             free_grid_memory();
             // consume samples to not block the GNU Radio flowgraph
-            d_sample_counter += ninput_items[0];  // sample counter
+            d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
             consume_each(ninput_items[0]);
             d_state = 0;
             break;
@@ -466,7 +481,7 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
             this->message_port_pub(pmt::mp("events"), pmt::from_long(2));
             free_grid_memory();
             // consume samples to not block the GNU Radio flowgraph
-            d_sample_counter += ninput_items[0];  // sample counter
+            d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
             consume_each(ninput_items[0]);
             d_state = 0;
             break;

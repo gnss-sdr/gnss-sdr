@@ -31,18 +31,20 @@
 #ifndef GNSS_SDR_TRACKING_TRUE_OBS_READER_H
 #define GNSS_SDR_TRACKING_TRUE_OBS_READER_H
 
+#include <cstdint>
 #include <fstream>
 #include <string>
 #include <vector>
 
-class tracking_true_obs_reader
+class Tracking_True_Obs_Reader
 {
 public:
-    ~tracking_true_obs_reader();
+    ~Tracking_True_Obs_Reader();
     bool read_binary_obs();
     bool restart();
-    long int num_epochs();
+    int64_t num_epochs();
     bool open_obs_file(std::string out_file);
+    void close_obs_file();
     bool d_dump;
 
     double signal_timestamp_s;

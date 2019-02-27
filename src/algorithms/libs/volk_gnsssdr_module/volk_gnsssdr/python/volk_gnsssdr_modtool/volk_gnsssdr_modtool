@@ -18,10 +18,10 @@
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function
 from volk_gnsssdr_modtool import volk_gnsssdr_modtool, volk_gnsssdr_modtool_config
 from optparse import OptionParser, OptionGroup
 
-import exceptions
 import os
 import sys
 
@@ -57,12 +57,12 @@ if __name__ == '__main__':
         parser.print_help()
 
     elif options.moo:
-        print "         (__)    "
-        print "         (oo)    "
-        print "   /------\/     "
-        print "  / |    ||      "
-        print " *  /\---/\      "
-        print "    ~~   ~~      "
+        print("         (__)    ")
+        print("         (oo)    ")
+        print("   /------\/     ")
+        print("  / |    ||      ")
+        print(" *  /\---/\      ")
+        print("    ~~   ~~      ")
 
     else:
         my_cfg = volk_gnsssdr_modtool_config(options.config_file);
@@ -77,7 +77,7 @@ if __name__ == '__main__':
 
         if options.add_kernel:
             if not options.kernel_name:
-                raise exceptions.IOError("This action requires the -n option.");
+                raise IOError("This action requires the -n option.");
             else:
                 name = options.kernel_name;
             if options.base_path:
@@ -88,7 +88,7 @@ if __name__ == '__main__':
 
         if options.remove_kernel:
             if not options.kernel_name:
-                raise exceptions.IOError("This action requires the -n option.");
+                raise IOError("This action requires the -n option.");
             else:
                 name = options.kernel_name;
             my_modtool.remove_kernel(name);
@@ -105,17 +105,17 @@ if __name__ == '__main__':
 
         if options.remote_list:
             if not options.base_path:
-                raise exceptions.IOError("This action requires the -b option.  Try -l or -k for listing kernels in the base or the module.")
+                raise IOError("This action requires the -b option.  Try -l or -k for listing kernels in the base or the module.")
             else:
                 base = options.base_path;
             kernelset = my_modtool.get_current_kernels(base);
             for i in kernelset:
-                print i;
+                print(i);
 
         if options.list:
             kernelset = my_modtool.get_current_kernels();
             for i in kernelset:
-                print i;
+                print(i);
 
         if options.kernels:
             dest = my_cfg.cfg.get(my_cfg.config_name, 'destination');
@@ -123,4 +123,4 @@ if __name__ == '__main__':
             base = os.path.join(dest, 'volk_gnsssdr_' + name);
             kernelset = my_modtool.get_current_kernels(base);
             for i in kernelset:
-                print i;
+                print(i);

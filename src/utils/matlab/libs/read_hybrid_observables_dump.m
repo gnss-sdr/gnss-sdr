@@ -79,7 +79,7 @@ else
     %         {
     %             tmp_double = current_gnss_synchro[i].RX_time;
     %             d_dump_file.write((char*)&tmp_double, sizeof(double));
-    %             tmp_double = current_gnss_synchro[i].TOW_at_current_symbol_s;
+    %             tmp_double = current_gnss_synchro[i].TOW_at_current_symbol_ms;
     %             d_dump_file.write((char*)&tmp_double, sizeof(double));
     %             tmp_double = current_gnss_synchro[i].Carrier_Doppler_hz;
     %             d_dump_file.write((char*)&tmp_double, sizeof(double));

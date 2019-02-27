@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -18,30 +18,47 @@
 
 
 set(INPUT_FILTER_GR_BLOCKS_SOURCES
-     beamformer.cc
-     pulse_blanking_cc.cc
-     notch_cc.cc
-     notch_lite_cc.cc
+    beamformer.cc
+    pulse_blanking_cc.cc
+    notch_cc.cc
+    notch_lite_cc.cc
 )
 
-include_directories(
-     ${CMAKE_CURRENT_SOURCE_DIR}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-     ${GNURADIO_BLOCKS_INCLUDE_DIRS}
-     ${VOLK_GNSSSDR_INCLUDE_DIRS}
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
+set(INPUT_FILTER_GR_BLOCKS_HEADERS
+    beamformer.h
+    pulse_blanking_cc.h
+    notch_cc.h
+    notch_lite_cc.h
 )
 
-file(GLOB INPUT_FILTER_GR_BLOCKS_HEADERS "*.h")
 list(SORT INPUT_FILTER_GR_BLOCKS_HEADERS)
-add_library(input_filter_gr_blocks ${INPUT_FILTER_GR_BLOCKS_SOURCES} ${INPUT_FILTER_GR_BLOCKS_HEADERS})
+list(SORT INPUT_FILTER_GR_BLOCKS_SOURCES)
+
 source_group(Headers FILES ${INPUT_FILTER_GR_BLOCKS_HEADERS})
 
-target_link_libraries(input_filter_gr_blocks ${GNURADIO_FILTER_LIBRARIES}  ${VOLK_GNSSSDR_LIBRARIES} ${LOG4CPP_LIBRARIES})
+add_library(input_filter_gr_blocks
+    ${INPUT_FILTER_GR_BLOCKS_SOURCES}
+    ${INPUT_FILTER_GR_BLOCKS_HEADERS})
 
-if(NOT VOLK_GNSSSDR_FOUND)
-    add_dependencies(input_filter_gr_blocks volk_gnsssdr_module glog-${glog_RELEASE})
-else(NOT VOLK_GNSSSDR_FOUND)
-    add_dependencies(input_filter_gr_blocks glog-${glog_RELEASE})
-endif(NOT VOLK_GNSSSDR_FOUND)
+target_link_libraries(input_filter_gr_blocks
+    PUBLIC
+        Gnuradio::blocks
+        Gnuradio::filter
+        Volkgnsssdr::volkgnsssdr
+    PRIVATE
+        Log4cpp::log4cpp
+)
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(input_filter_gr_blocks
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+set_property(TARGET input_filter_gr_blocks
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

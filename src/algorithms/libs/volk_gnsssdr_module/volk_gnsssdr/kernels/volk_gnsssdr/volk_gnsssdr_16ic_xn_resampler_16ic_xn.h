@@ -63,10 +63,10 @@
 #ifndef INCLUDED_volk_gnsssdr_16ic_xn_resampler_16ic_xn_H
 #define INCLUDED_volk_gnsssdr_16ic_xn_resampler_16ic_xn_H
 
-#include <math.h>
-#include <stdlib.h>
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
+#include <math.h>
+#include <stdlib.h>
 
 
 #ifdef LV_HAVE_GENERIC
@@ -75,8 +75,8 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_generic(lv_16sc_t** re
 {
     int local_code_chip_index;
     int current_correlator_tap;
-    int n;
-    for (current_correlator_tap = 0; current_correlator_tap < num_out_vectors; current_correlator_tap++)
+    unsigned int n;
+    for (current_correlator_tap = 0U; current_correlator_tap < num_out_vectors; current_correlator_tap++)
         {
             for (n = 0; n < num_points; n++)
                 {

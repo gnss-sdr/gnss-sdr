@@ -111,7 +111,7 @@ SystemInfoIndex_encode_uper(asn_TYPE_descriptor_t *td,
 	return td->uper_encoder(td, constraints, structure, per_out);
 }
 
-static asn_per_constraints_t asn_PER_type_SystemInfoIndex_constr_1 = {
+static asn_per_constraints_t ASN_PER_TYPE_SYSTEM_INFO_INDEX_CONSTR_1 = {
 	{ APC_CONSTRAINED,	 5,  5,  1,  32 }	/* (1..32) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -138,7 +138,7 @@ asn_TYPE_descriptor_t asn_DEF_SystemInfoIndex = {
 	asn_DEF_SystemInfoIndex_tags_1,	/* Same as above */
 	sizeof(asn_DEF_SystemInfoIndex_tags_1)
 		/sizeof(asn_DEF_SystemInfoIndex_tags_1[0]), /* 1 */
-	&asn_PER_type_SystemInfoIndex_constr_1,
+	&ASN_PER_TYPE_SYSTEM_INFO_INDEX_CONSTR_1,
 	0, 0,	/* No members */
 	0	/* No specifics */
 };

@@ -2,7 +2,7 @@
  * \file fpga_acquisition.h
  * \brief High optimized FPGA vector correlator class
  * \authors <ul>
- *          <li> Marc Majoral, 2018. mmajoral(at)cttc.cat
+ *          <li> Marc Majoral, 2019. mmajoral(at)cttc.cat
  *          </ul>
  *
  * Class that controls and executes a high optimized acquisition HW
@@ -10,7 +10,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -38,6 +38,7 @@
 
 #include <gnuradio/fft/fft.h>
 #include <volk/volk.h>
+#include <cstdint>
 
 /*!
  * \brief Class that implements carrier wipe-off and correlators.
@@ -46,20 +47,24 @@ class fpga_acquisition
 {
 public:
     fpga_acquisition(std::string device_name,
-        unsigned int nsamples,
-        unsigned int doppler_max,
-        unsigned int nsamples_total, long fs_in, long freq,
-        unsigned int sampled_ms, unsigned select_queue,
-        lv_16sc_t *all_fft_codes);
+        uint32_t nsamples,
+        uint32_t doppler_max,
+        uint32_t nsamples_total,
+        int64_t fs_in,
+        uint32_t sampled_ms,
+        uint32_t select_queue,
+        lv_16sc_t *all_fft_codes,
+        uint32_t excludelimit);
+
     ~fpga_acquisition();
     bool init();
-    bool set_local_code(
-        unsigned int PRN);
+    bool set_local_code(uint32_t PRN);
     bool free();
+    void set_doppler_sweep(uint32_t num_sweeps);
     void run_acquisition(void);
-    void set_phase_step(unsigned int doppler_index);
-    void read_acquisition_results(uint32_t *max_index, float *max_magnitude,
-        unsigned *initial_sample, float *power_sum);
+    void set_phase_step(uint32_t doppler_index);
+    void read_acquisition_results(uint32_t *max_index, float *firstpeak, float *secondpeak, uint64_t *initial_sample, float *power_sum, uint32_t *doppler_index, uint32_t *total_blk_exp);
+
     void block_samples();
     void unblock_samples();
 
@@ -67,7 +72,7 @@ public:
      * \brief Set maximum Doppler grid search
      * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
      */
-    void set_doppler_max(unsigned int doppler_max)
+    void set_doppler_max(uint32_t doppler_max)
     {
         d_doppler_max = doppler_max;
     }
@@ -76,32 +81,49 @@ public:
      * \brief Set Doppler steps for the grid search
      * \param doppler_step - Frequency bin of the search grid [Hz].
      */
-    void set_doppler_step(unsigned int doppler_step)
+    void set_doppler_step(uint32_t doppler_step)
     {
         d_doppler_step = doppler_step;
     }
 
-private:
-    long d_freq;
-    long d_fs_in;
-    gr::fft::fft_complex *d_fft_if;  // function used to run the fft of the local codes
-    // data related to the hardware module and the driver
-    int d_fd;                       // driver descriptor
-    volatile unsigned *d_map_base;  // driver memory map
-    lv_16sc_t *d_all_fft_codes;     // memory that contains all the code ffts
-    unsigned int d_vector_length;   // number of samples incluing padding and number of ms
-    unsigned int d_nsamples_total;  // number of samples including padding
-    unsigned int d_nsamples;        // number of samples not including padding
-    unsigned int d_select_queue;    // queue selection
-    std::string d_device_name;      // HW device name
-    unsigned int d_doppler_max;     // max doppler
-    unsigned int d_doppler_step;    // doppler step
-    // FPGA private functions
-    unsigned fpga_acquisition_test_register(unsigned writeval);
-    void fpga_configure_acquisition_local_code(lv_16sc_t fft_local_code[]);
-    void configure_acquisition();
+    /*!
+     * \brief Reset the FPGA PL.
+     */
     void reset_acquisition(void);
+
+    /*!
+     * \brief read the scaling factor that has been used by the FFT-IFFT
+     */
+    void read_fpga_total_scale_factor(uint32_t *total_scale_factor, uint32_t *fw_scale_factor);
+
+    void set_block_exp(uint32_t total_block_exp);
+
+    void write_local_code(void);
+
+    void configure_acquisition(void);
+
     void close_device();
+    void open_device();
+
+private:
+    int64_t d_fs_in;
+    // data related to the hardware module and the driver
+    int32_t d_fd;                   // driver descriptor
+    volatile uint32_t *d_map_base;  // driver memory map
+    lv_16sc_t *d_all_fft_codes;     // memory that contains all the code ffts
+    uint32_t d_vector_length;       // number of samples incluing padding and number of ms
+    uint32_t d_excludelimit;
+    uint32_t d_nsamples_total;  // number of samples including padding
+    uint32_t d_nsamples;        // number of samples not including padding
+    uint32_t d_select_queue;    // queue selection
+    std::string d_device_name;  // HW device name
+    uint32_t d_doppler_max;     // max doppler
+    uint32_t d_doppler_step;    // doppler step
+    uint32_t d_PRN;             // PRN
+    // FPGA private functions
+    void fpga_acquisition_test_register(void);
+    void fpga_configure_acquisition_local_code(lv_16sc_t fft_local_code[]);
+    void read_result_valid(uint32_t *result_valid);
 };
 
 #endif /* GNSS_SDR_FPGA_ACQUISITION_H_ */

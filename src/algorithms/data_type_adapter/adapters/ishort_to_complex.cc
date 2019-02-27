@@ -34,7 +34,7 @@
 
 using google::LogMessage;
 
-IshortToComplex::IshortToComplex(ConfigurationInterface* configuration, std::string role,
+IshortToComplex::IshortToComplex(ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     std::string default_input_item_type = "short";
@@ -64,12 +64,18 @@ IshortToComplex::IshortToComplex(ConfigurationInterface* configuration, std::str
             DLOG(INFO) << "Dumping output into file " << dump_filename_;
             file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
         }
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 
-IshortToComplex::~IshortToComplex()
-{
-}
+IshortToComplex::~IshortToComplex() = default;
 
 
 void IshortToComplex::connect(gr::top_block_sptr top_block)
@@ -136,8 +142,5 @@ gr::basic_block_sptr IshortToComplex::get_right_block()
         {
             return conjugate_cc_;
         }
-    else
-        {
-            return gr_interleaved_short_to_complex_;
-        }
+    return gr_interleaved_short_to_complex_;
 }

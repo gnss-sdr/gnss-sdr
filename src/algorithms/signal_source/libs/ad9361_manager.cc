@@ -46,8 +46,8 @@ void errchk(int v, const char *what)
 }
 
 
-/* write attribute: long long int */
-void wr_ch_lli(struct iio_channel *chn, const char *what, long long val)
+/* write attribute: int64_t int */
+void wr_ch_lli(struct iio_channel *chn, const char *what, int64_t val)
 {
     errchk(iio_channel_attr_write_longlong(chn, what, val), what);
 }
@@ -75,10 +75,10 @@ bool get_ad9361_stream_dev(struct iio_context *ctx, enum iodev d, struct iio_dev
         {
         case TX:
             *dev = iio_context_find_device(ctx, "cf-ad9361-dds-core-lpc");
-            return *dev != NULL;
+            return *dev != nullptr;
         case RX:
             *dev = iio_context_find_device(ctx, "cf-ad9361-lpc");
-            return *dev != NULL;
+            return *dev != nullptr;
         default:
             return false;
         }
@@ -100,7 +100,7 @@ bool get_ad9361_stream_ch(struct iio_context *ctx __attribute__((unused)), enum 
             name << chid;
             *chn = iio_device_find_channel(dev, name.str().c_str(), d == TX);
         }
-    return *chn != NULL;
+    return *chn != nullptr;
 }
 
 
@@ -115,14 +115,14 @@ bool get_phy_chan(struct iio_context *ctx, enum iodev d, int chid, struct iio_ch
             name << "voltage";
             name << chid;
             *chn = iio_device_find_channel(get_ad9361_phy(ctx), name.str().c_str(), false);
-            return *chn != NULL;
+            return *chn != nullptr;
             break;
         case TX:
             name.str("");
             name << "voltage";
             name << chid;
             *chn = iio_device_find_channel(get_ad9361_phy(ctx), name.str().c_str(), true);
-            return *chn != NULL;
+            return *chn != nullptr;
             break;
         default:
             return false;
@@ -138,10 +138,10 @@ bool get_lo_chan(struct iio_context *ctx, enum iodev d, struct iio_channel **chn
         // LO chan is always output, i.e. true
         case RX:
             *chn = iio_device_find_channel(get_ad9361_phy(ctx), "altvoltage0", true);
-            return *chn != NULL;
+            return *chn != nullptr;
         case TX:
             *chn = iio_device_find_channel(get_ad9361_phy(ctx), "altvoltage1", true);
-            return *chn != NULL;
+            return *chn != nullptr;
         default:
             return false;
         }
@@ -151,7 +151,7 @@ bool get_lo_chan(struct iio_context *ctx, enum iodev d, struct iio_channel **chn
 /* applies streaming configuration through IIO */
 bool cfg_ad9361_streaming_ch(struct iio_context *ctx, struct stream_cfg *cfg, enum iodev type, int chid)
 {
-    struct iio_channel *chn = NULL;
+    struct iio_channel *chn = nullptr;
 
     // Configure phy and lo channels
     //LOG(INFO)<<"* Acquiring AD9361 phy channel"<<chid;
@@ -176,12 +176,12 @@ bool cfg_ad9361_streaming_ch(struct iio_context *ctx, struct stream_cfg *cfg, en
 }
 
 
-bool config_ad9361_rx_local(unsigned long bandwidth_,
-    unsigned long sample_rate_,
-    unsigned long freq_,
-    std::string rf_port_select_,
-    std::string gain_mode_rx1_,
-    std::string gain_mode_rx2_,
+bool config_ad9361_rx_local(uint64_t bandwidth_,
+    uint64_t sample_rate_,
+    uint64_t freq_,
+    const std::string &rf_port_select_,
+    const std::string &gain_mode_rx1_,
+    const std::string &gain_mode_rx2_,
     double rf_gain_rx1_,
     double rf_gain_rx2_)
 
@@ -291,13 +291,13 @@ bool config_ad9361_rx_local(unsigned long bandwidth_,
 }
 
 
-bool config_ad9361_rx_remote(std::string remote_host,
-    unsigned long bandwidth_,
-    unsigned long sample_rate_,
-    unsigned long freq_,
-    std::string rf_port_select_,
-    std::string gain_mode_rx1_,
-    std::string gain_mode_rx2_,
+bool config_ad9361_rx_remote(const std::string &remote_host,
+    uint64_t bandwidth_,
+    uint64_t sample_rate_,
+    uint64_t freq_,
+    const std::string &rf_port_select_,
+    const std::string &gain_mode_rx1_,
+    const std::string &gain_mode_rx2_,
     double rf_gain_rx1_,
     double rf_gain_rx2_)
 {
@@ -407,11 +407,11 @@ bool config_ad9361_rx_remote(std::string remote_host,
 }
 
 
-bool config_ad9361_lo_local(unsigned long bandwidth_,
-    unsigned long sample_rate_,
-    unsigned long freq_rf_tx_hz_,
+bool config_ad9361_lo_local(uint64_t bandwidth_,
+    uint64_t sample_rate_,
+    uint64_t freq_rf_tx_hz_,
     double tx_attenuation_db_,
-    long long freq_dds_tx_hz_,
+    int64_t freq_dds_tx_hz_,
     double scale_dds_dbfs_)
 {
     // TX stream config
@@ -476,13 +476,13 @@ bool config_ad9361_lo_local(unsigned long bandwidth_,
 
     //set frequency, scale and phase
 
-    ret = iio_channel_attr_write_longlong(dds_channel0_I, "frequency", (long long)freq_dds_tx_hz_);
+    ret = iio_channel_attr_write_longlong(dds_channel0_I, "frequency", static_cast<int64_t>(freq_dds_tx_hz_));
     if (ret < 0)
         {
             std::cout << "Failed to set TX DDS frequency I: " << ret << std::endl;
         }
 
-    ret = iio_channel_attr_write_longlong(dds_channel0_Q, "frequency", (long long)freq_dds_tx_hz_);
+    ret = iio_channel_attr_write_longlong(dds_channel0_Q, "frequency", static_cast<int64_t>(freq_dds_tx_hz_));
     if (ret < 0)
         {
             std::cout << "Failed to set TX DDS frequency Q: " << ret << std::endl;
@@ -543,12 +543,12 @@ bool config_ad9361_lo_local(unsigned long bandwidth_,
 }
 
 
-bool config_ad9361_lo_remote(std::string remote_host,
-    unsigned long bandwidth_,
-    unsigned long sample_rate_,
-    unsigned long freq_rf_tx_hz_,
+bool config_ad9361_lo_remote(const std::string &remote_host,
+    uint64_t bandwidth_,
+    uint64_t sample_rate_,
+    uint64_t freq_rf_tx_hz_,
     double tx_attenuation_db_,
-    long long freq_dds_tx_hz_,
+    int64_t freq_dds_tx_hz_,
     double scale_dds_dbfs_)
 {
     // TX stream config
@@ -613,13 +613,13 @@ bool config_ad9361_lo_remote(std::string remote_host,
 
     //set frequency, scale and phase
 
-    ret = iio_channel_attr_write_longlong(dds_channel0_I, "frequency", (long long)freq_dds_tx_hz_);
+    ret = iio_channel_attr_write_longlong(dds_channel0_I, "frequency", static_cast<int64_t>(freq_dds_tx_hz_));
     if (ret < 0)
         {
             std::cout << "Failed to set TX DDS frequency I: " << ret << std::endl;
         }
 
-    ret = iio_channel_attr_write_longlong(dds_channel0_Q, "frequency", (long long)freq_dds_tx_hz_);
+    ret = iio_channel_attr_write_longlong(dds_channel0_Q, "frequency", static_cast<int64_t>(freq_dds_tx_hz_));
     if (ret < 0)
         {
             std::cout << "Failed to set TX DDS frequency Q: " << ret << std::endl;
@@ -680,7 +680,7 @@ bool config_ad9361_lo_remote(std::string remote_host,
 }
 
 
-bool ad9361_disable_lo_remote(std::string remote_host)
+bool ad9361_disable_lo_remote(const std::string &remote_host)
 {
     std::cout << "AD9361 Acquiring IIO REMOTE context in host " << remote_host << std::endl;
     struct iio_context *ctx;

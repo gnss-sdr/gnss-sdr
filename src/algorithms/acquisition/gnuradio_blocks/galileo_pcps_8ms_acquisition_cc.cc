@@ -30,40 +30,47 @@
  */
 
 #include "galileo_pcps_8ms_acquisition_cc.h"
-#include <sstream>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include "control_message_factory.h"
+#include <exception>
+#include <sstream>
+#include <utility>
 
 using google::LogMessage;
 
 galileo_pcps_8ms_acquisition_cc_sptr galileo_pcps_8ms_make_acquisition_cc(
-    unsigned int sampled_ms, unsigned int max_dwells,
-    unsigned int doppler_max, long freq, long fs_in,
-    int samples_per_ms, int samples_per_code,
+    uint32_t sampled_ms,
+    uint32_t max_dwells,
+    uint32_t doppler_max,
+    int64_t fs_in,
+    int32_t samples_per_ms,
+    int32_t samples_per_code,
     bool dump, std::string dump_filename)
 {
     return galileo_pcps_8ms_acquisition_cc_sptr(
-        new galileo_pcps_8ms_acquisition_cc(sampled_ms, max_dwells, doppler_max, freq, fs_in, samples_per_ms,
-            samples_per_code, dump, dump_filename));
+        new galileo_pcps_8ms_acquisition_cc(sampled_ms, max_dwells, doppler_max, fs_in, samples_per_ms,
+            samples_per_code, dump, std::move(dump_filename)));
 }
 
+
 galileo_pcps_8ms_acquisition_cc::galileo_pcps_8ms_acquisition_cc(
-    unsigned int sampled_ms, unsigned int max_dwells,
-    unsigned int doppler_max, long freq, long fs_in,
-    int samples_per_ms, int samples_per_code,
+    uint32_t sampled_ms,
+    uint32_t max_dwells,
+    uint32_t doppler_max,
+    int64_t fs_in,
+    int32_t samples_per_ms,
+    int32_t samples_per_code,
     bool dump,
     std::string dump_filename) : gr::block("galileo_pcps_8ms_acquisition_cc",
                                      gr::io_signature::make(1, 1, sizeof(gr_complex) * sampled_ms * samples_per_ms),
                                      gr::io_signature::make(0, 0, sizeof(gr_complex) * sampled_ms * samples_per_ms))
 {
     this->message_port_register_out(pmt::mp("events"));
-    d_sample_counter = 0;  // SAMPLE COUNTER
+    d_sample_counter = 0ULL;  // SAMPLE COUNTER
     d_active = false;
     d_state = 0;
-    d_freq = freq;
     d_fs_in = fs_in;
     d_samples_per_ms = samples_per_ms;
     d_samples_per_code = samples_per_code;
@@ -88,24 +95,25 @@ galileo_pcps_8ms_acquisition_cc::galileo_pcps_8ms_acquisition_cc(
 
     // For dumping samples into a file
     d_dump = dump;
-    d_dump_filename = dump_filename;
+    d_dump_filename = std::move(dump_filename);
 
     d_doppler_resolution = 0;
     d_threshold = 0;
     d_doppler_step = 0;
-    d_grid_doppler_wipeoffs = 0;
-    d_gnss_synchro = 0;
+    d_grid_doppler_wipeoffs = nullptr;
+    d_gnss_synchro = nullptr;
     d_code_phase = 0;
     d_doppler_freq = 0;
     d_test_statistics = 0;
     d_channel = 0;
 }
 
+
 galileo_pcps_8ms_acquisition_cc::~galileo_pcps_8ms_acquisition_cc()
 {
     if (d_num_doppler_bins > 0)
         {
-            for (unsigned int i = 0; i < d_num_doppler_bins; i++)
+            for (uint32_t i = 0; i < d_num_doppler_bins; i++)
                 {
                     volk_gnsssdr_free(d_grid_doppler_wipeoffs[i]);
                 }
@@ -119,11 +127,23 @@ galileo_pcps_8ms_acquisition_cc::~galileo_pcps_8ms_acquisition_cc()
     delete d_ifft;
     delete d_fft_if;
 
-    if (d_dump)
+    try
         {
-            d_dump_file.close();
+            if (d_dump)
+                {
+                    d_dump_file.close();
+                }
+        }
+    catch (const std::ofstream::failure &e)
+        {
+            std::cerr << "Problem closing Acquisition dump file: " << d_dump_filename << '\n';
+        }
+    catch (const std::exception &e)
+        {
+            std::cerr << e.what() << '\n';
         }
 }
+
 
 void galileo_pcps_8ms_acquisition_cc::set_local_code(std::complex<float> *code)
 {
@@ -146,23 +166,24 @@ void galileo_pcps_8ms_acquisition_cc::set_local_code(std::complex<float> *code)
     volk_32fc_conjugate_32fc(d_fft_code_B, d_fft_if->get_outbuf(), d_fft_size);
 }
 
+
 void galileo_pcps_8ms_acquisition_cc::init()
 {
     d_gnss_synchro->Flag_valid_acquisition = false;
     d_gnss_synchro->Flag_valid_symbol_output = false;
     d_gnss_synchro->Flag_valid_pseudorange = false;
     d_gnss_synchro->Flag_valid_word = false;
-
+    d_gnss_synchro->Acq_doppler_step = 0U;
     d_gnss_synchro->Acq_delay_samples = 0.0;
     d_gnss_synchro->Acq_doppler_hz = 0.0;
-    d_gnss_synchro->Acq_samplestamp_samples = 0;
+    d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
     d_mag = 0.0;
     d_input_power = 0.0;
     const double GALILEO_TWO_PI = 6.283185307179600;
     // Count the number of bins
     d_num_doppler_bins = 0;
-    for (int doppler = static_cast<int>(-d_doppler_max);
-         doppler <= static_cast<int>(d_doppler_max);
+    for (auto doppler = static_cast<int32_t>(-d_doppler_max);
+         doppler <= static_cast<int32_t>(d_doppler_max);
          doppler += d_doppler_step)
         {
             d_num_doppler_bins++;
@@ -170,11 +191,11 @@ void galileo_pcps_8ms_acquisition_cc::init()
 
     // Create the carrier Doppler wipeoff signals
     d_grid_doppler_wipeoffs = new gr_complex *[d_num_doppler_bins];
-    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+    for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-            int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
-            float phase_step_rad = static_cast<float>(GALILEO_TWO_PI) * (d_freq + doppler) / static_cast<float>(d_fs_in);
+            int32_t doppler = -static_cast<int32_t>(d_doppler_max) + d_doppler_step * doppler_index;
+            float phase_step_rad = static_cast<float>(GALILEO_TWO_PI) * doppler / static_cast<float>(d_fs_in);
             float _phase[1];
             _phase[0] = 0;
             volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index], -phase_step_rad, _phase, d_fft_size);
@@ -182,14 +203,15 @@ void galileo_pcps_8ms_acquisition_cc::init()
 }
 
 
-void galileo_pcps_8ms_acquisition_cc::set_state(int state)
+void galileo_pcps_8ms_acquisition_cc::set_state(int32_t state)
 {
     d_state = state;
     if (d_state == 1)
         {
             d_gnss_synchro->Acq_delay_samples = 0.0;
             d_gnss_synchro->Acq_doppler_hz = 0.0;
-            d_gnss_synchro->Acq_samplestamp_samples = 0;
+            d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
+            d_gnss_synchro->Acq_doppler_step = 0U;
             d_well_count = 0;
             d_mag = 0.0;
             d_input_power = 0.0;
@@ -209,7 +231,7 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
     gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items __attribute__((unused)))
 {
-    int acquisition_message = -1;  //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
+    int32_t acquisition_message = -1;  //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
 
     switch (d_state)
         {
@@ -220,7 +242,8 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
                         //restart acquisition variables
                         d_gnss_synchro->Acq_delay_samples = 0.0;
                         d_gnss_synchro->Acq_doppler_hz = 0.0;
-                        d_gnss_synchro->Acq_samplestamp_samples = 0;
+                        d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
+                        d_gnss_synchro->Acq_doppler_step = 0U;
                         d_well_count = 0;
                         d_mag = 0.0;
                         d_input_power = 0.0;
@@ -229,7 +252,7 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
                         d_state = 1;
                     }
 
-                d_sample_counter += d_fft_size * ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_fft_size * ninput_items[0]);  // sample counter
                 consume_each(ninput_items[0]);
 
                 break;
@@ -238,19 +261,19 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
         case 1:
             {
                 // initialize acquisition algorithm
-                int doppler;
+                int32_t doppler;
                 uint32_t indext = 0;
                 uint32_t indext_A = 0;
                 uint32_t indext_B = 0;
                 float magt = 0.0;
                 float magt_A = 0.0;
                 float magt_B = 0.0;
-                const gr_complex *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
+                const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);  //Get the input samples pointer
                 float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
                 d_input_power = 0.0;
                 d_mag = 0.0;
 
-                d_sample_counter += d_fft_size;  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_fft_size);  // sample counter
 
                 d_well_count++;
 
@@ -266,10 +289,10 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
                 d_input_power /= static_cast<float>(d_fft_size);
 
                 // 2- Doppler frequency search loop
-                for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+                for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
                     {
                         // doppler search steps
-                        doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
+                        doppler = -static_cast<int32_t>(d_doppler_max) + d_doppler_step * doppler_index;
 
                         volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in,
                             d_grid_doppler_wipeoffs[doppler_index], d_fft_size);
@@ -329,6 +352,7 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
                                 d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
                                 d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
                                 d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
+                                d_gnss_synchro->Acq_doppler_step = d_doppler_step;
                             }
 
                         // Record results to file if required
@@ -405,7 +429,7 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
                 d_active = false;
                 d_state = 0;
 
-                d_sample_counter += d_fft_size * ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_fft_size * ninput_items[0]);  // sample counter
                 consume_each(ninput_items[0]);
 
                 acquisition_message = 2;

@@ -81,17 +81,17 @@ memb_ai2_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_ai0_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_AI0_CONSTR_2 = {
 	{ APC_CONSTRAINED,	 12,  12,  0,  4095 }	/* (0..4095) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ai1_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_AI1_CONSTR_3 = {
 	{ APC_CONSTRAINED,	 12,  12,  0,  4095 }	/* (0..4095) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ai2_constr_4 = {
+static asn_per_constraints_t ASN_PER_MEMB_AI2_CONSTR_4 = {
 	{ APC_CONSTRAINED,	 12,  12,  0,  4095 }	/* (0..4095) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -102,7 +102,7 @@ static asn_TYPE_member_t asn_MBR_GANSSIonosphereModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ai0_constraint_1,
-		&asn_PER_memb_ai0_constr_2,
+		&ASN_PER_MEMB_AI0_CONSTR_2,
 		0,
 		"ai0"
 		},
@@ -111,7 +111,7 @@ static asn_TYPE_member_t asn_MBR_GANSSIonosphereModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ai1_constraint_1,
-		&asn_PER_memb_ai1_constr_3,
+		&ASN_PER_MEMB_AI1_CONSTR_3,
 		0,
 		"ai1"
 		},
@@ -120,7 +120,7 @@ static asn_TYPE_member_t asn_MBR_GANSSIonosphereModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ai2_constraint_1,
-		&asn_PER_memb_ai2_constr_4,
+		&ASN_PER_MEMB_AI2_CONSTR_4,
 		0,
 		"ai2"
 		},

@@ -30,10 +30,10 @@
 
 #include "raw_array_signal_source.h"
 #include "configuration_interface.h"
-#include <dbfcttc/raw_array.h>
+#include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/msg_queue.h>
-#include <glog/logging.h>
+#include <dbfcttc/raw_array.h>
 
 
 using google::LogMessage;
@@ -66,7 +66,7 @@ RawArraySignalSource::RawArraySignalSource(ConfigurationInterface* configuration
     int sampling_freq_;
     sampling_freq_ = configuration->property(role + ".sampling_freq", 5000000);
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             raw_array_source_ = gr::dbfcttc::raw_array::make(eth_device_.c_str(), channels_, snapshots_per_frame_, inter_frame_delay_, sampling_freq_);
@@ -97,9 +97,7 @@ RawArraySignalSource::RawArraySignalSource(ConfigurationInterface* configuration
 }
 
 
-RawArraySignalSource::~RawArraySignalSource()
-{
-}
+RawArraySignalSource::~RawArraySignalSource() = default;
 
 
 void RawArraySignalSource::connect(gr::top_block_sptr top_block)

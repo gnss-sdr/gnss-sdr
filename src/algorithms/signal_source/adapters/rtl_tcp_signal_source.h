@@ -32,13 +32,13 @@
 #ifndef GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_H
 #define GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_H
 
-#include "rtl_tcp_signal_source_c.h"
 #include "gnss_block_interface.h"
+#include "rtl_tcp_signal_source_c.h"
 #include <boost/shared_ptr.hpp>
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/deinterleave.h>
+#include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/float_to_complex.h>
+#include <gnuradio/msg_queue.h>
 #include <stdexcept>
 #include <string>
 
@@ -54,8 +54,10 @@ class RtlTcpSignalSource : public GNSSBlockInterface
 {
 public:
     RtlTcpSignalSource(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_stream,
-        unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
+        const std::string& role,
+        unsigned int in_stream,
+        unsigned int out_stream,
+        boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~RtlTcpSignalSource();
 
@@ -88,7 +90,7 @@ private:
 
     // rtl_tcp settings
     std::string address_;
-    short port_;
+    int16_t port_;
     bool AGC_enabled_;
     double sample_rate_;
     bool flip_iq_;
@@ -103,7 +105,7 @@ private:
 
     std::string item_type_;
     size_t item_size_;
-    long samples_;
+    uint64_t samples_;
     bool dump_;
     std::string dump_filename_;
 

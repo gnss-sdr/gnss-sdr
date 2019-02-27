@@ -28,24 +28,28 @@
  * -------------------------------------------------------------------------
  */
 
+#include <gflags/gflags.h>
+#include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/top_block.h>
 #include <chrono>
 #include <complex>
 #include <cstdint>
-#include <gflags/gflags.h>
-#include <gnuradio/top_block.h>
-#include <gnuradio/analog/sig_source_waveform.h>
+#ifdef GR_GREATER_38
+#include <gnuradio/analog/sig_source.h>
+#else
 #include <gnuradio/analog/sig_source_c.h>
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/blocks/null_sink.h>
-#include <gtest/gtest.h>
+#endif
+#include "file_signal_source.h"
+#include "fir_filter.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
-#include "in_memory_configuration.h"
 #include "gnss_sdr_valve.h"
+#include "in_memory_configuration.h"
 #include "interleaved_byte_to_complex_byte.h"
 #include "interleaved_short_to_complex_short.h"
-#include "fir_filter.h"
-#include "file_signal_source.h"
+#include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/msg_queue.h>
+#include <gtest/gtest.h>
 
 
 DEFINE_int32(filter_test_nsamples, 1000000, "Number of samples to filter in the tests (max: 2147483647)");
@@ -59,9 +63,7 @@ protected:
         item_size = sizeof(gr_complex);
         config = std::make_shared<InMemoryConfiguration>();
     }
-    ~FirFilterTest()
-    {
-    }
+    ~FirFilterTest() = default;
 
     void init();
     void configure_cbyte_cbyte();
@@ -135,7 +137,10 @@ TEST_F(FirFilterTest, InstantiateGrComplexGrComplex)
     configure_gr_complex_gr_complex();
     std::unique_ptr<FirFilter> filter(new FirFilter(config.get(), "InputFilter", 1, 1));
     int res = 0;
-    if (filter) res = 1;
+    if (filter)
+        {
+            res = 1;
+        }
     ASSERT_EQ(1, res);
 }
 
@@ -145,7 +150,10 @@ TEST_F(FirFilterTest, InstantiateCshortCshort)
     configure_cshort_cshort();
     std::unique_ptr<FirFilter> filter(new FirFilter(config.get(), "InputFilter", 1, 1));
     int res = 0;
-    if (filter) res = 1;
+    if (filter)
+        {
+            res = 1;
+        }
     ASSERT_EQ(1, res);
 }
 
@@ -156,7 +164,10 @@ TEST_F(FirFilterTest, InstantiateCbyteCbyte)
     configure_cbyte_cbyte();
     std::unique_ptr<FirFilter> filter(new FirFilter(config.get(), "InputFilter", 1, 1));
     int res = 0;
-    if (filter) res = 1;
+    if (filter)
+        {
+            res = 1;
+        }
     ASSERT_EQ(1, res);
 }
 
@@ -167,7 +178,10 @@ TEST_F(FirFilterTest, InstantiateCbyteGrComplex)
     configure_cbyte_gr_complex();
     std::unique_ptr<FirFilter> filter(new FirFilter(config.get(), "InputFilter", 1, 1));
     int res = 0;
-    if (filter) res = 1;
+    if (filter)
+        {
+            res = 1;
+        }
     ASSERT_EQ(1, res);
 }
 
@@ -227,7 +241,7 @@ TEST_F(FirFilterTest, ConnectAndRunGrcomplex)
     ASSERT_NO_THROW({
         filter->connect(top_block);
 
-        boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 1, 1, queue));
+        boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 0, 1, queue));
         source->connect(top_block);
 
         boost::shared_ptr<gr::block> null_sink = gr::blocks::null_sink::make(item_size);
@@ -268,7 +282,7 @@ TEST_F(FirFilterTest, ConnectAndRunCshorts)
     ASSERT_NO_THROW({
         filter->connect(top_block);
 
-        boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 1, 1, queue));
+        boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 0, 1, queue));
         source->connect(top_block);
 
         interleaved_short_to_complex_short_sptr ishort_to_cshort_ = make_interleaved_short_to_complex_short();
@@ -312,7 +326,7 @@ TEST_F(FirFilterTest, ConnectAndRunCbytes)
     ASSERT_NO_THROW({
         filter->connect(top_block);
 
-        boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 1, 1, queue));
+        boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 0, 1, queue));
         source->connect(top_block);
 
         interleaved_byte_to_complex_byte_sptr ibyte_to_cbyte_ = make_interleaved_byte_to_complex_byte();
@@ -356,7 +370,7 @@ TEST_F(FirFilterTest, ConnectAndRunCbyteGrcomplex)
     ASSERT_NO_THROW({
         filter->connect(top_block);
 
-        boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 1, 1, queue));
+        boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 0, 1, queue));
         source->connect(top_block);
 
         interleaved_byte_to_complex_byte_sptr ibyte_to_cbyte_ = make_interleaved_byte_to_complex_byte();

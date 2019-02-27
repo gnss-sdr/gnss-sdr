@@ -1,6 +1,6 @@
 /*!
- * \filei fmcomms2_signal_source.cc
- * \brief signal source for sdr hardware from analog devices based on 
+ * \file fmcomms2_signal_source.cc
+ * \brief Signal source for SDR hardware from Analog Devices based on
  * fmcomms2 evaluation board. 
  * \author Rodrigo Muñoz, 2017, rmunozl(at)inacap.cl
  *
@@ -30,20 +30,22 @@
  */
 
 #include "fmcomms2_signal_source.h"
-#include "configuration_interface.h"
-#include "gnss_sdr_valve.h"
-#include "ad9361_manager.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
+#include "ad9361_manager.h"
+#include "configuration_interface.h"
+#include "gnss_sdr_valve.h"
 #include <glog/logging.h>
+#include <exception>
 #include <iostream>
+#include <utility>
 
 
 using google::LogMessage;
 
 Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_stream, unsigned int out_stream,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+    const std::string& role, unsigned int in_stream, unsigned int out_stream,
+    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/signal_source.dat";
@@ -70,7 +72,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
-    //AD9361 Local Oscillator generation for dual band operation
+    // AD9361 Local Oscillator generation for dual band operation
     enable_dds_lo_ = configuration->property(role + ".enable_dds_lo", false);
     freq_rf_tx_hz_ = configuration->property(role + ".freq_rf_tx_hz", GPS_L1_FREQ_HZ - GPS_L2_FREQ_HZ - 1000);
     freq_dds_tx_hz_ = configuration->property(role + ".freq_dds_tx_hz", 1000);
@@ -84,7 +86,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
     std::cout << "LO frequency : " << freq_ << " Hz" << std::endl;
     std::cout << "sample rate: " << sample_rate_ << " Hz" << std::endl;
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             if (RF_channels_ == 1)
                 {
@@ -104,7 +106,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
                                 rf_port_select_.c_str(), filter_file_.c_str(),
                                 filter_auto_);
 
-                            //configure LO
+                            // configure LO
                             if (enable_dds_lo_ == true)
                                 {
                                     std::cout << "Enabling Local Oscillator generator in FMCOMMS2\n";
@@ -135,7 +137,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration
                                 gain_mode_rx2_.c_str(), rf_gain_rx2_,
                                 rf_port_select_.c_str(), filter_file_.c_str(),
                                 filter_auto_);
-                            //configure LO
+                            // configure LO
                             if (enable_dds_lo_ == true)
                                 {
                                     std::cout << "Enabling Local Oscillator generator in FMCOMMS2\n";
@@ -179,7 +181,14 @@ Fmcomms2SignalSource::~Fmcomms2SignalSource()
 {
     if (enable_dds_lo_ == true)
         {
-            ad9361_disable_lo_remote(uri_);
+            try
+                {
+                    ad9361_disable_lo_remote(uri_);
+                }
+            catch (const std::exception& e)
+                {
+                    LOG(WARNING) << "Exception thrown in Fmcomms2SignalSource destructor: " << e.what();
+                }
         }
 }
 

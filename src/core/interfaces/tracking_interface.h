@@ -41,7 +41,7 @@
 #include "gnss_synchro.h"
 
 template <typename Data>
-class concurrent_queue;
+class Concurrent_Queue;
 
 /*!
  * \brief This abstract class represents an interface to a tracking block.
@@ -56,6 +56,7 @@ class TrackingInterface : public GNSSBlockInterface
 {
 public:
     virtual void start_tracking() = 0;
+    virtual void stop_tracking() = 0;
     virtual void set_gnss_synchro(Gnss_Synchro* gnss_synchro) = 0;
     virtual void set_channel(unsigned int channel) = 0;
 };

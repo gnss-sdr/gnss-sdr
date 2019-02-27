@@ -1,6 +1,8 @@
 /*!
- * \file raw_array_signal_source.cc
- * \brief CTTC Experimental GNSS 8 channels array signal source
+ * \file flexiband_signal_source.cc
+ * \brief ignal Source adapter for the Teleorbit Flexiband front-end device.
+ * This adapter requires a Flexiband GNU Radio driver
+ * installed (not included with GNSS-SDR)
  * \author Javier Arribas, jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
@@ -30,16 +32,22 @@
 
 #include "flexiband_signal_source.h"
 #include "configuration_interface.h"
+#include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/msg_queue.h>
-#include <glog/logging.h>
 #include <teleorbit/frontend.h>
-
+#include <utility>
 
 using google::LogMessage;
 
 FlexibandSignalSource::FlexibandSignalSource(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_stream, unsigned int out_stream, gr::msg_queue::sptr queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+    const std::string& role,
+    unsigned int in_stream,
+    unsigned int out_stream,
+    gr::msg_queue::sptr queue) : role_(role),
+                                 in_stream_(in_stream),
+                                 out_stream_(out_stream),
+                                 queue_(std::move(queue))
 {
     std::string default_item_type = "byte";
     item_type_ = configuration->property(role + ".item_type", default_item_type);
@@ -60,7 +68,7 @@ FlexibandSignalSource::FlexibandSignalSource(ConfigurationInterface* configurati
 
     RF_channels_ = configuration->property(role + ".RF_channels", 1);
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             flexiband_source_ = gr::teleorbit::frontend::make(firmware_filename_.c_str(), gain1_, gain2_, gain3_, AGC_, usb_packet_buffer_size_, signal_file.c_str(), flag_read_file);
@@ -85,12 +93,18 @@ FlexibandSignalSource::FlexibandSignalSource(ConfigurationInterface* configurati
             LOG(WARNING) << item_type_ << " unrecognized item type for flexiband_source_";
             item_size_ = sizeof(gr_complex);
         }
+    if (in_stream_ > 0)
+        {
+            LOG(ERROR) << "A signal source does not have an input stream";
+        }
+    if (out_stream_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 
-FlexibandSignalSource::~FlexibandSignalSource()
-{
-}
+FlexibandSignalSource::~FlexibandSignalSource() = default;
 
 
 void FlexibandSignalSource::connect(gr::top_block_sptr top_block)

@@ -37,20 +37,20 @@
 #include <gnuradio/gr_complex.h>
 
 
-void galileo_e5_a_code_gen_complex_primary(std::complex<float>* _dest, signed int _prn, char _Signal[3])
+void galileo_e5_a_code_gen_complex_primary(std::complex<float>* _dest, int32_t _prn, const char _Signal[3])
 {
-    unsigned int prn = _prn - 1;
-    unsigned int index = 0;
-    int a[4];
+    uint32_t prn = _prn - 1;
+    uint32_t index = 0;
+    int32_t a[4];
     if ((_prn < 1) || (_prn > 50))
         {
             return;
         }
     if (_Signal[0] == '5' && _Signal[1] == 'Q')
         {
-            for (size_t i = 0; i < Galileo_E5a_Q_PRIMARY_CODE[prn].length() - 1; i++)
+            for (size_t i = 0; i < GALILEO_E5A_Q_PRIMARY_CODE[prn].length() - 1; i++)
                 {
-                    hex_to_binary_converter(a, Galileo_E5a_Q_PRIMARY_CODE[prn].at(i));
+                    hex_to_binary_converter(a, GALILEO_E5A_Q_PRIMARY_CODE[prn].at(i));
                     _dest[index] = std::complex<float>(0.0, float(a[0]));
                     _dest[index + 1] = std::complex<float>(0.0, float(a[1]));
                     _dest[index + 2] = std::complex<float>(0.0, float(a[2]));
@@ -58,15 +58,15 @@ void galileo_e5_a_code_gen_complex_primary(std::complex<float>* _dest, signed in
                     index = index + 4;
                 }
             // last 2 bits are filled up zeros
-            hex_to_binary_converter(a, Galileo_E5a_Q_PRIMARY_CODE[prn].at(Galileo_E5a_Q_PRIMARY_CODE[prn].length() - 1));
+            hex_to_binary_converter(a, GALILEO_E5A_Q_PRIMARY_CODE[prn].at(GALILEO_E5A_Q_PRIMARY_CODE[prn].length() - 1));
             _dest[index] = std::complex<float>(float(0.0), a[0]);
             _dest[index + 1] = std::complex<float>(float(0.0), a[1]);
         }
     else if (_Signal[0] == '5' && _Signal[1] == 'I')
         {
-            for (size_t i = 0; i < Galileo_E5a_I_PRIMARY_CODE[prn].length() - 1; i++)
+            for (size_t i = 0; i < GALILEO_E5A_I_PRIMARY_CODE[prn].length() - 1; i++)
                 {
-                    hex_to_binary_converter(a, Galileo_E5a_I_PRIMARY_CODE[prn].at(i));
+                    hex_to_binary_converter(a, GALILEO_E5A_I_PRIMARY_CODE[prn].at(i));
                     _dest[index] = std::complex<float>(float(a[0]), 0.0);
                     _dest[index + 1] = std::complex<float>(float(a[1]), 0.0);
                     _dest[index + 2] = std::complex<float>(float(a[2]), 0.0);
@@ -74,17 +74,17 @@ void galileo_e5_a_code_gen_complex_primary(std::complex<float>* _dest, signed in
                     index = index + 4;
                 }
             // last 2 bits are filled up zeros
-            hex_to_binary_converter(a, Galileo_E5a_I_PRIMARY_CODE[prn].at(Galileo_E5a_I_PRIMARY_CODE[prn].length() - 1));
+            hex_to_binary_converter(a, GALILEO_E5A_I_PRIMARY_CODE[prn].at(GALILEO_E5A_I_PRIMARY_CODE[prn].length() - 1));
             _dest[index] = std::complex<float>(float(a[0]), 0.0);
             _dest[index + 1] = std::complex<float>(float(a[1]), 0.0);
         }
     else if (_Signal[0] == '5' && _Signal[1] == 'X')
         {
-            int b[4];
-            for (size_t i = 0; i < Galileo_E5a_I_PRIMARY_CODE[prn].length() - 1; i++)
+            int32_t b[4];
+            for (size_t i = 0; i < GALILEO_E5A_I_PRIMARY_CODE[prn].length() - 1; i++)
                 {
-                    hex_to_binary_converter(a, Galileo_E5a_I_PRIMARY_CODE[prn].at(i));
-                    hex_to_binary_converter(b, Galileo_E5a_Q_PRIMARY_CODE[prn].at(i));
+                    hex_to_binary_converter(a, GALILEO_E5A_I_PRIMARY_CODE[prn].at(i));
+                    hex_to_binary_converter(b, GALILEO_E5A_Q_PRIMARY_CODE[prn].at(i));
                     _dest[index] = std::complex<float>(float(a[0]), float(b[0]));
                     _dest[index + 1] = std::complex<float>(float(a[1]), float(b[1]));
                     _dest[index + 2] = std::complex<float>(float(a[2]), float(b[2]));
@@ -92,50 +92,45 @@ void galileo_e5_a_code_gen_complex_primary(std::complex<float>* _dest, signed in
                     index = index + 4;
                 }
             // last 2 bits are filled up zeros
-            hex_to_binary_converter(a, Galileo_E5a_I_PRIMARY_CODE[prn].at(Galileo_E5a_I_PRIMARY_CODE[prn].length() - 1));
-            hex_to_binary_converter(b, Galileo_E5a_Q_PRIMARY_CODE[prn].at(Galileo_E5a_Q_PRIMARY_CODE[prn].length() - 1));
+            hex_to_binary_converter(a, GALILEO_E5A_I_PRIMARY_CODE[prn].at(GALILEO_E5A_I_PRIMARY_CODE[prn].length() - 1));
+            hex_to_binary_converter(b, GALILEO_E5A_Q_PRIMARY_CODE[prn].at(GALILEO_E5A_Q_PRIMARY_CODE[prn].length() - 1));
             _dest[index] = std::complex<float>(float(a[0]), float(b[0]));
             _dest[index + 1] = std::complex<float>(float(a[1]), float(b[1]));
         }
 }
 
-void galileo_e5_a_code_gen_complex_sampled(std::complex<float>* _dest, char _Signal[3],
-    unsigned int _prn, signed int _fs, unsigned int _chip_shift)
-{
-    unsigned int _samplesPerCode;
-    unsigned int delay;
-    const unsigned int _codeLength = Galileo_E5a_CODE_LENGTH_CHIPS;
-    const int _codeFreqBasis = Galileo_E5a_CODE_CHIP_RATE_HZ;
 
-    std::complex<float>* _code = new std::complex<float>[_codeLength]();
+void galileo_e5_a_code_gen_complex_sampled(std::complex<float>* _dest, char _Signal[3],
+    uint32_t _prn, int32_t _fs, uint32_t _chip_shift)
+{
+    uint32_t _samplesPerCode;
+    uint32_t delay;
+    const uint32_t _codeLength = GALILEO_E5A_CODE_LENGTH_CHIPS;
+    const int32_t _codeFreqBasis = GALILEO_E5A_CODE_CHIP_RATE_HZ;
+
+    auto* _code = new std::complex<float>[_codeLength]();
 
     galileo_e5_a_code_gen_complex_primary(_code, _prn, _Signal);
 
-    _samplesPerCode = static_cast<unsigned int>(static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis) / static_cast<double>(_codeLength)));
+    _samplesPerCode = static_cast<uint32_t>(static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis) / static_cast<double>(_codeLength)));
 
     delay = ((_codeLength - _chip_shift) % _codeLength) * _samplesPerCode / _codeLength;
 
     if (_fs != _codeFreqBasis)
         {
             std::complex<float>* _resampled_signal;
-            if (posix_memalign((void**)&_resampled_signal, 16, _samplesPerCode * sizeof(gr_complex)) == 0)
+            if (posix_memalign(reinterpret_cast<void**>(&_resampled_signal), 16, _samplesPerCode * sizeof(gr_complex)) == 0)
                 {
                 };
-            resampler(_code, _resampled_signal, _codeFreqBasis, _fs, _codeLength, _samplesPerCode);  //resamples code to fs
+            resampler(_code, _resampled_signal, _codeFreqBasis, _fs, _codeLength, _samplesPerCode);  // resamples code to fs
             delete[] _code;
             _code = _resampled_signal;
         }
 
-    for (unsigned int i = 0; i < _samplesPerCode; i++)
+    for (uint32_t i = 0; i < _samplesPerCode; i++)
         {
             _dest[(i + delay) % _samplesPerCode] = _code[i];
         }
-    if (_fs != _codeFreqBasis)
-        {
-            free(_code);
-        }
-    else
-        {
-            delete[] _code;
-        }
+
+    delete[] _code;
 }

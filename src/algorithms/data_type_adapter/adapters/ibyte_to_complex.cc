@@ -34,7 +34,7 @@
 
 using google::LogMessage;
 
-IbyteToComplex::IbyteToComplex(ConfigurationInterface* configuration, std::string role,
+IbyteToComplex::IbyteToComplex(ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     std::string default_input_item_type = "byte";
@@ -64,12 +64,18 @@ IbyteToComplex::IbyteToComplex(ConfigurationInterface* configuration, std::strin
             DLOG(INFO) << "Dumping output into file " << dump_filename_;
             file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
         }
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 
-IbyteToComplex::~IbyteToComplex()
-{
-}
+IbyteToComplex::~IbyteToComplex() = default;
 
 
 void IbyteToComplex::connect(gr::top_block_sptr top_block)
@@ -136,8 +142,5 @@ gr::basic_block_sptr IbyteToComplex::get_right_block()
         {
             return conjugate_cc_;
         }
-    else
-        {
-            return gr_interleaved_char_to_complex_;
-        }
+    return gr_interleaved_char_to_complex_;
 }

@@ -33,46 +33,61 @@
  */
 
 #include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
-#include <glog/logging.h>
-#include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
+#include "acq_conf.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
+#include "gps_sdr_signal_processing.h"
+#include <glog/logging.h>
 
 using google::LogMessage;
 
+
 GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
-    ConfigurationInterface* configuration, std::string role,
-    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    ConfigurationInterface* configuration,
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(role),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams)
 {
     std::string default_item_type = "gr_complex";
-    std::string default_dump_filename = "./data/acquisition.dat";
+    std::string default_dump_filename = "./acquisition.mat";
 
     DLOG(INFO) << "role " << role;
+    Acq_Conf acq_parameters = Acq_Conf();
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-    long fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
+    int64_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    if_ = configuration->property(role + ".if", 0);
+    acq_parameters.fs_in = fs_in_;
+    acq_parameters.samples_per_chip = static_cast<unsigned int>(ceil(GPS_L1_CA_CHIP_PERIOD * static_cast<float>(acq_parameters.fs_in)));
     dump_ = configuration->property(role + ".dump", false);
+    acq_parameters.dump = dump_;
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
+    acq_parameters.dump_filename = dump_filename_;
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
-    if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
-    doppler_min_ = configuration->property(role + ".doppler_min", -doppler_max_);
+    if (FLAGS_doppler_max != 0)
+        {
+            doppler_max_ = FLAGS_doppler_max;
+        }
+    acq_parameters.doppler_max = doppler_max_;
     sampled_ms_ = configuration->property(role + ".coherent_integration_time_ms", 1);
+    acq_parameters.sampled_ms = sampled_ms_;
     max_dwells_ = configuration->property(role + ".max_dwells", 1);
+    acq_parameters.max_dwells = max_dwells_;
+
+    acq_parameters.blocking_on_standby = configuration->property(role + ".blocking_on_standby", false);
 
     //--- Find number of samples per spreading code -------------------------
     vector_length_ = round(fs_in_ / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
-
+    acq_parameters.samples_per_ms = vector_length_;
     code_ = new gr_complex[vector_length_];
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
-            acquisition_cc_ = pcps_make_acquisition_fine_doppler_cc(max_dwells_, sampled_ms_,
-                doppler_max_, doppler_min_, if_, fs_in_, vector_length_,
-                dump_, dump_filename_);
+            acquisition_cc_ = pcps_make_acquisition_fine_doppler_cc(acq_parameters);
         }
     else
         {
@@ -83,13 +98,26 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
     channel_ = 0;
     threshold_ = 0.0;
     doppler_step_ = 0;
-    gnss_synchro_ = 0;
+    gnss_synchro_ = nullptr;
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 0)
+        {
+            LOG(ERROR) << "This implementation does not provide an output stream";
+        }
 }
 
 
 GpsL1CaPcpsAcquisitionFineDoppler::~GpsL1CaPcpsAcquisitionFineDoppler()
 {
     delete[] code_;
+}
+
+
+void GpsL1CaPcpsAcquisitionFineDoppler::stop_acquisition()
+{
 }
 
 
@@ -151,6 +179,12 @@ void GpsL1CaPcpsAcquisitionFineDoppler::set_local_code()
 void GpsL1CaPcpsAcquisitionFineDoppler::reset()
 {
     acquisition_cc_->set_active(true);
+}
+
+
+void GpsL1CaPcpsAcquisitionFineDoppler::set_state(int state)
+{
+    acquisition_cc_->set_state(state);
 }
 
 

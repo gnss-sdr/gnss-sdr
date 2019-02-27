@@ -152,7 +152,7 @@ static ber_tlv_tag_t asn_DEF_GeneralizedTime_tags[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (26 << 2)),  /* [UNIVERSAL 26] IMPLICIT ...*/
 	(ASN_TAG_CLASS_UNIVERSAL | (4 << 2))    /* ... OCTET STRING */
 };
-static asn_per_constraints_t asn_DEF_GeneralizedTime_constraints = {
+static asn_per_constraints_t ASN_DEF_GENERALIZED_TIME_CONSTRAINTS = {
 	{ APC_CONSTRAINED, 7, 7, 0x20, 0x7e },  /* Value */
 	{ APC_SEMI_CONSTRAINED, -1, -1, 0, 0 }, /* Size */
 	0, 0
@@ -176,7 +176,7 @@ asn_TYPE_descriptor_t asn_DEF_GeneralizedTime = {
 	asn_DEF_GeneralizedTime_tags,
 	sizeof(asn_DEF_GeneralizedTime_tags)
 	  / sizeof(asn_DEF_GeneralizedTime_tags[0]),
-	&asn_DEF_GeneralizedTime_constraints,
+	&ASN_DEF_GENERALIZED_TIME_CONSTRAINTS,
 	0, 0,	/* No members */
 	0	/* No specifics */
 };
@@ -369,7 +369,7 @@ asn_GT2time_frac(const GeneralizedTime_t *st, int *frac_value, int *frac_digits,
 			errno = EINVAL;				\
 			return -1;				\
 		} else {					\
-			var = var * 10 + (ch - 0x30);		\
+			(var) = (var) * 10 + (ch - 0x30);		\
 			buf++;					\
 		}						\
 	} while(0)

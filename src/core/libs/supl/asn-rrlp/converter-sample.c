@@ -34,7 +34,7 @@ extern asn_TYPE_descriptor_t *asn_pdu_collection[];
 /*
  * Open file and parse its contens.
  */
-static void *data_decode_from_file(asn_TYPE_descriptor_t *asnTypeOfPDU,
+static void *data_decode_from_file(asn_TYPE_descriptor_t *pduType,
 	FILE *file, const char *name, ssize_t suggested_bufsize, int first_pdu);
 static int write_out(const void *buffer, size_t size, void *key);
 static FILE *argument_to_file(char *av[], int idx);
@@ -774,11 +774,11 @@ static int write_out(const void *buffer, size_t size, void *key) {
 }
 
 static int argument_is_stdin(char *av[], int idx) {
-	if(strcmp(av[idx], "-")) {
+	if(strcmp(av[idx], "-") != 0) {
 		return 0;	/* Certainly not <stdin> */
 	} else {
 		/* This might be <stdin>, unless `./program -- -` */
-		if(strcmp(av[-1], "--"))
+		if(strcmp(av[-1], "--") != 0)
 			return 1;
 		else
 			return 0;
@@ -788,7 +788,7 @@ static int argument_is_stdin(char *av[], int idx) {
 static FILE *argument_to_file(char *av[], int idx) {
 	return argument_is_stdin(av, idx)
 		? stdin
-		: fopen(av[idx], "r");
+		: fopen(av[idx], "re");
 }
 
 static char *argument_to_name(char *av[], int idx) {

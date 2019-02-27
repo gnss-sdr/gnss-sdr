@@ -36,6 +36,7 @@
 #include <boost/crc.hpp>
 #include <gnuradio/block.h>
 #include <algorithm>  // for copy
+#include <cstdint>
 #include <deque>
 #include <fstream>
 #include <string>
@@ -45,7 +46,7 @@
 
 class sbas_l1_telemetry_decoder_cc;
 
-typedef boost::shared_ptr<sbas_l1_telemetry_decoder_cc> sbas_l1_telemetry_decoder_cc_sptr;
+using sbas_l1_telemetry_decoder_cc_sptr = boost::shared_ptr<sbas_l1_telemetry_decoder_cc>;
 
 sbas_l1_telemetry_decoder_cc_sptr
 sbas_l1_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
@@ -59,7 +60,7 @@ class sbas_l1_telemetry_decoder_cc : public gr::block
 public:
     ~sbas_l1_telemetry_decoder_cc();
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
-    void set_channel(int channel);                        //!< Set receiver's channel
+    void set_channel(int32_t channel);                    //!< Set receiver's channel
 
     /*!
      * \brief This is where all signal processing takes place
@@ -72,16 +73,16 @@ private:
     sbas_l1_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
     sbas_l1_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
 
-    void viterbi_decoder(double *page_part_symbols, int *page_part_bits);
+    void viterbi_decoder(double *page_part_symbols, int32_t *page_part_bits);
     void align_samples();
 
-    static const int d_samples_per_symbol = 2;
-    static const int d_symbols_per_bit = 2;
-    static const int d_block_size_in_bits = 30;
+    static const int32_t D_SAMPLES_PER_SYMBOL = 2;
+    static const int32_t D_SYMBOLS_PER_BIT = 2;
+    static const int32_t D_BLOCK_SIZE_IN_BITS = 30;
 
     bool d_dump;
     Gnss_Satellite d_satellite;
-    int d_channel;
+    int32_t d_channel;
 
     std::string d_dump_filename;
     std::ofstream d_dump_file;
@@ -89,24 +90,24 @@ private:
     size_t d_block_size;               //!< number of samples which are processed during one invocation of the algorithms
     std::vector<double> d_sample_buf;  //!< input buffer holding the samples to be processed in one block
 
-    typedef std::pair<int, std::vector<int>> msg_candiate_int_t;
-    typedef std::pair<int, std::vector<unsigned char>> msg_candiate_char_t;
+    typedef std::pair<int32_t, std::vector<int32_t>> msg_candiate_int_t;
+    typedef std::pair<int32_t, std::vector<uint8_t>> msg_candiate_char_t;
 
     // helper class for sample alignment
-    class sample_aligner
+    class Sample_Aligner
     {
     public:
-        sample_aligner();
-        ~sample_aligner();
+        Sample_Aligner();
+        ~Sample_Aligner();
         void reset();
         /*
          * samples length must be a multiple of two
          * for block operation
          */
-        bool get_symbols(const std::vector<double> samples, std::vector<double> &symbols);
+        bool get_symbols(const std::vector<double> &samples, std::vector<double> &symbols);
 
     private:
-        int d_n_smpls_in_history;
+        int32_t d_n_smpls_in_history;
         double d_iir_par;
         double d_corr_paired;
         double d_corr_shifted;
@@ -115,16 +116,16 @@ private:
     } d_sample_aligner;
 
     // helper class for symbol alignment and Viterbi decoding
-    class symbol_aligner_and_decoder
+    class Symbol_Aligner_And_Decoder
     {
     public:
-        symbol_aligner_and_decoder();
-        ~symbol_aligner_and_decoder();
+        Symbol_Aligner_And_Decoder();
+        ~Symbol_Aligner_And_Decoder();
         void reset();
-        bool get_bits(const std::vector<double> symbols, std::vector<int> &bits);
+        bool get_bits(const std::vector<double> &symbols, std::vector<int32_t> &bits);
 
     private:
-        int d_KK;
+        int32_t d_KK;
         Viterbi_Decoder *d_vd1;
         Viterbi_Decoder *d_vd2;
         double d_past_symbol;
@@ -132,29 +133,29 @@ private:
 
 
     // helper class for detecting the preamble and collect the corresponding message candidates
-    class frame_detector
+    class Frame_Detector
     {
     public:
         void reset();
-        void get_frame_candidates(const std::vector<int> bits, std::vector<std::pair<int, std::vector<int>>> &msg_candidates);
+        void get_frame_candidates(const std::vector<int32_t> &bits, std::vector<std::pair<int32_t, std::vector<int32_t>>> &msg_candidates);
 
     private:
-        std::deque<int> d_buffer;
+        std::deque<int32_t> d_buffer;
     } d_frame_detector;
 
 
     // helper class for checking the CRC of the message candidates
-    class crc_verifier
+    class Crc_Verifier
     {
     public:
         void reset();
-        void get_valid_frames(const std::vector<msg_candiate_int_t> msg_candidates, std::vector<msg_candiate_char_t> &valid_msgs);
+        void get_valid_frames(const std::vector<msg_candiate_int_t> &msg_candidates, std::vector<msg_candiate_char_t> &valid_msgs);
 
     private:
         typedef boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false> crc_24_q_type;
         crc_24_q_type d_checksum_agent;
-        void zerropad_front_and_convert_to_bytes(const std::vector<int> msg_candidate, std::vector<unsigned char> &bytes);
-        void zerropad_back_and_convert_to_bytes(const std::vector<int> msg_candidate, std::vector<unsigned char> &bytes);
+        void zerropad_front_and_convert_to_bytes(const std::vector<int32_t> &msg_candidate, std::vector<uint8_t> &bytes);
+        void zerropad_back_and_convert_to_bytes(const std::vector<int32_t> &msg_candidate, std::vector<uint8_t> &bytes);
     } d_crc_verifier;
 };
 

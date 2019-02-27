@@ -31,43 +31,48 @@
  */
 
 
-#include <chrono>
-#include <gnuradio/top_block.h>
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/analog/sig_source_waveform.h>
-#include <gnuradio/analog/sig_source_c.h>
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/blocks/null_sink.h>
-#include <gtest/gtest.h>
-#include "gnss_block_interface.h"
-#include "in_memory_configuration.h"
 #include "configuration_interface.h"
-#include "gnss_synchro.h"
+#include "freq_xlating_fir_filter.h"
+#include "gen_signal_source.h"
 #include "glonass_l1_ca_pcps_acquisition.h"
+#include "gnss_block_interface.h"
+#include "gnss_sdr_valve.h"
+#include "gnss_synchro.h"
+#include "in_memory_configuration.h"
+#include "pass_through.h"
 #include "signal_generator.h"
 #include "signal_generator_c.h"
-#include "fir_filter.h"
-#include "gen_signal_source.h"
-#include "gnss_sdr_valve.h"
-#include "boost/shared_ptr.hpp"
-#include "pass_through.h"
-
+#include <boost/shared_ptr.hpp>
+#include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/blocks/file_source.h>
+#include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/msg_queue.h>
+#include <gnuradio/top_block.h>
+#include <gtest/gtest.h>
+#include <chrono>
+#include <thread>
+#include <utility>
+#ifdef GR_GREATER_38
+#include <gnuradio/analog/sig_source.h>
+#else
+#include <gnuradio/analog/sig_source_c.h>
+#endif
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx;
 
-typedef boost::shared_ptr<GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx> GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx_sptr;
+using GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx_sptr = boost::shared_ptr<GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx>;
 
-GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx_sptr GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx_make(concurrent_queue<int>& queue);
+GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx_sptr GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx_make(Concurrent_Queue<int>& queue);
 
 
 class GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx : public gr::block
 {
 private:
-    friend GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx_sptr GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx_make(concurrent_queue<int>& queue);
+    friend GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx_sptr GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx_make(Concurrent_Queue<int>& queue);
     void msg_handler_events(pmt::pmt_t msg);
-    GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx(concurrent_queue<int>& queue);
-    concurrent_queue<int>& channel_internal_queue;
+    GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx(Concurrent_Queue<int>& queue);
+    Concurrent_Queue<int>& channel_internal_queue;
 
 public:
     int rx_message;
@@ -75,7 +80,7 @@ public:
 };
 
 
-GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx_sptr GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx_make(concurrent_queue<int>& queue)
+GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx_sptr GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx_make(Concurrent_Queue<int>& queue)
 {
     return GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx_sptr(new GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx(queue));
 }
@@ -85,7 +90,7 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx::msg_handler_events(pmt::pmt_
 {
     try
         {
-            long int message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
             channel_internal_queue.push(rx_message);
         }
@@ -97,7 +102,7 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx::msg_handler_events(pmt::pmt_
 }
 
 
-GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx::GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx(concurrent_queue<int>& queue) : gr::block("GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue)
+GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx::GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx(Concurrent_Queue<int>& queue) : gr::block("GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue)
 {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"), boost::bind(&GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx::msg_handler_events, this, _1));
@@ -105,9 +110,7 @@ GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx::GlonassL1CaPcpsAcquisitionGSoC201
 }
 
 
-GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx::~GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx()
-{
-}
+GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx::~GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx() = default;
 
 
 // ###########################################################
@@ -121,13 +124,11 @@ protected:
         stop = false;
         message = 0;
         gnss_synchro = Gnss_Synchro();
-        acquisition = 0;
+        acquisition = nullptr;
         init();
     }
 
-    ~GlonassL1CaPcpsAcquisitionGSoC2017Test()
-    {
-    }
+    ~GlonassL1CaPcpsAcquisitionGSoC2017Test() = default;
 
     void init();
     void config_1();
@@ -137,7 +138,7 @@ protected:
     void process_message();
     void stop_queue();
 
-    concurrent_queue<int> channel_internal_queue;
+    Concurrent_Queue<int> channel_internal_queue;
 
     gr::msg_queue::sptr queue;
     gr::top_block_sptr top_block;
@@ -147,7 +148,7 @@ protected:
     size_t item_size;
     bool stop;
     int message;
-    boost::thread ch_thread;
+    std::thread ch_thread;
 
     unsigned int integration_time_ms = 0;
     unsigned int fs_in = 0;
@@ -226,7 +227,7 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::config_1()
     config->set_property("SignalSource.data_flag", "false");
     config->set_property("SignalSource.BW_BB", "0.97");
 
-    config->set_property("InputFilter.implementation", "Fir_Filter");
+    config->set_property("InputFilter.implementation", "Freq_Xlating_Fir_Filter");
     config->set_property("InputFilter.input_item_type", "gr_complex");
     config->set_property("InputFilter.output_item_type", "gr_complex");
     config->set_property("InputFilter.taps_item_type", "float");
@@ -244,9 +245,10 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::config_1()
     config->set_property("InputFilter.band2_error", "1.0");
     config->set_property("InputFilter.filter_type", "bandpass");
     config->set_property("InputFilter.grid_density", "16");
+    config->set_property("InputFilter.sampling_frequency", std::to_string(fs_in));
+    config->set_property("InputFilter.IF", "4000000");
 
     config->set_property("Acquisition.item_type", "gr_complex");
-    config->set_property("Acquisition.if", "4000000");
     config->set_property("Acquisition.coherent_integration_time_ms",
         std::to_string(integration_time_ms));
     config->set_property("Acquisition.max_dwells", "1");
@@ -314,7 +316,7 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::config_2()
     config->set_property("SignalSource.data_flag", "true");
     config->set_property("SignalSource.BW_BB", "0.97");
 
-    config->set_property("InputFilter.implementation", "Fir_Filter");
+    config->set_property("InputFilter.implementation", "Freq_Xlating_Fir_Filter");
     config->set_property("InputFilter.input_item_type", "gr_complex");
     config->set_property("InputFilter.output_item_type", "gr_complex");
     config->set_property("InputFilter.taps_item_type", "float");
@@ -332,14 +334,15 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::config_2()
     config->set_property("InputFilter.band2_error", "1.0");
     config->set_property("InputFilter.filter_type", "bandpass");
     config->set_property("InputFilter.grid_density", "16");
+    config->set_property("InputFilter.sampling_frequency", std::to_string(fs_in));
+    config->set_property("InputFilter.IF", "4000000");
 
     config->set_property("Acquisition.item_type", "gr_complex");
-    config->set_property("Acquisition.if", "4000000");
     config->set_property("Acquisition.coherent_integration_time_ms",
         std::to_string(integration_time_ms));
     config->set_property("Acquisition.max_dwells", "1");
     config->set_property("Acquisition.implementation", "GLONASS_L1_CA_PCPS_Acquisition");
-    config->set_property("Acquisition.pfa", "0.1");
+    //config->set_property("Acquisition.pfa", "0.1");
     config->set_property("Acquisition.doppler_max", "10000");
     config->set_property("Acquisition.doppler_step", "250");
     config->set_property("Acquisition.bit_transition_flag", "false");
@@ -350,26 +353,26 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::config_2()
 void GlonassL1CaPcpsAcquisitionGSoC2017Test::start_queue()
 {
     stop = false;
-    ch_thread = boost::thread(&GlonassL1CaPcpsAcquisitionGSoC2017Test::wait_message, this);
+    ch_thread = std::thread(&GlonassL1CaPcpsAcquisitionGSoC2017Test::wait_message, this);
 }
 
 
 void GlonassL1CaPcpsAcquisitionGSoC2017Test::wait_message()
 {
     struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    int64_t begin = 0;
+    int64_t end = 0;
 
     while (!stop)
         {
             acquisition->reset();
 
-            gettimeofday(&tv, NULL);
+            gettimeofday(&tv, nullptr);
             begin = tv.tv_sec * 1e6 + tv.tv_usec;
 
             channel_internal_queue.wait_and_pop(message);
 
-            gettimeofday(&tv, NULL);
+            gettimeofday(&tv, nullptr);
             end = tv.tv_sec * 1e6 + tv.tv_usec;
 
             mean_acq_time_us += (end - begin);
@@ -429,7 +432,7 @@ void GlonassL1CaPcpsAcquisitionGSoC2017Test::stop_queue()
 TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, Instantiate)
 {
     config_1();
-    acquisition = new GlonassL1CaPcpsAcquisition(config.get(), "Acquisition", 1, 1);
+    acquisition = new GlonassL1CaPcpsAcquisition(config.get(), "Acquisition", 1, 0);
     delete acquisition;
 }
 
@@ -443,7 +446,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ConnectAndRun)
     top_block = gr::make_top_block("Acquisition test");
 
     config_1();
-    acquisition = new GlonassL1CaPcpsAcquisition(config.get(), "Acquisition", 1, 1);
+    acquisition = new GlonassL1CaPcpsAcquisition(config.get(), "Acquisition", 1, 0);
     boost::shared_ptr<GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx> msg_rx = GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
@@ -474,7 +477,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResults)
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Acquisition test");
 
-    acquisition = new GlonassL1CaPcpsAcquisition(config.get(), "Acquisition", 1, 1);
+    acquisition = new GlonassL1CaPcpsAcquisition(config.get(), "Acquisition", 1, 0);
     boost::shared_ptr<GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx> msg_rx = GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
@@ -494,7 +497,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResults)
     }) << "Failure setting doppler_step.";
 
     ASSERT_NO_THROW({
-        acquisition->set_threshold(0.5);
+        acquisition->set_threshold(0.05);
     }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
@@ -505,12 +508,11 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResults)
     acquisition->init();
 
     ASSERT_NO_THROW({
-        boost::shared_ptr<GenSignalSource> signal_source;
-        SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
-        FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1);
-        signal_source.reset(new GenSignalSource(signal_generator, filter, "SignalSource", queue));
-        signal_source->connect(top_block);
-        top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
+        std::shared_ptr<SignalGenerator> signal_generator = std::make_shared<SignalGenerator>(config.get(), "SignalSource", 0, 1, queue);
+        std::shared_ptr<FreqXlatingFirFilter> filter = std::make_shared<FreqXlatingFirFilter>(config.get(), "InputFilter", 1, 1);
+        signal_generator->connect(top_block);
+        top_block->connect(signal_generator->get_right_block(), 0, filter->get_left_block(), 0);
+        top_block->connect(filter->get_right_block(), 0, acquisition->get_left_block(), 0);
     }) << "Failure connecting the blocks of acquisition test.";
 
     // i = 0 --> satellite in acquisition is visible
@@ -548,16 +550,10 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResults)
                 {
                     EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
                 }
-#ifdef OLD_BOOST
+
             ASSERT_NO_THROW({
-                ch_thread.timed_join(boost::posix_time::seconds(1));
-            }) << "Failure while waiting the queue to stop.";
-#endif
-#ifndef OLD_BOOST
-            ASSERT_NO_THROW({
-                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+                ch_thread.join();
             }) << "Failure while waiting the queue to stop";
-#endif
         }
 
     delete acquisition;
@@ -569,51 +565,43 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResultsProbabilities)
     config_2();
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Acquisition test");
-    acquisition = new GlonassL1CaPcpsAcquisition(config.get(), "Acquisition", 1, 1);
+    acquisition = new GlonassL1CaPcpsAcquisition(config.get(), "Acquisition", 1, 0);
     boost::shared_ptr<GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx> msg_rx = GlonassL1CaPcpsAcquisitionGSoC2017Test_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
         acquisition->set_channel(1);
-    }) << "Failure setting channel."
-       << std::endl;
+    }) << "Failure setting channel.";
 
     ASSERT_NO_THROW({
         acquisition->set_gnss_synchro(&gnss_synchro);
-    }) << "Failure setting gnss_synchro."
-       << std::endl;
+    }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
         acquisition->set_doppler_max(config->property("Acquisition.doppler_max", 10000));
-    }) << "Failure setting doppler_max."
-       << std::endl;
+    }) << "Failure setting doppler_max.";
 
     ASSERT_NO_THROW({
         acquisition->set_doppler_step(config->property("Acquisition.doppler_step", 500));
-    }) << "Failure setting doppler_step."
-       << std::endl;
+    }) << "Failure setting doppler_step.";
 
     ASSERT_NO_THROW({
         acquisition->set_threshold(config->property("Acquisition.threshold", 0.0));
-    }) << "Failure setting threshold."
-       << std::endl;
+    }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-    }) << "Failure connecting acquisition to the top_block."
-       << std::endl;
+    }) << "Failure connecting acquisition to the top_block.";
 
     acquisition->init();
 
     ASSERT_NO_THROW({
-        boost::shared_ptr<GenSignalSource> signal_source;
-        SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
-        FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1);
-        signal_source.reset(new GenSignalSource(signal_generator, filter, "SignalSource", queue));
-        signal_source->connect(top_block);
-        top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
-    }) << "Failure connecting the blocks of acquisition test."
-       << std::endl;
+        std::shared_ptr<SignalGenerator> signal_generator = std::make_shared<SignalGenerator>(config.get(), "SignalSource", 0, 1, queue);
+        std::shared_ptr<FreqXlatingFirFilter> filter = std::make_shared<FreqXlatingFirFilter>(config.get(), "InputFilter", 1, 1);
+        signal_generator->connect(top_block);
+        top_block->connect(signal_generator->get_right_block(), 0, filter->get_left_block(), 0);
+        top_block->connect(filter->get_right_block(), 0, acquisition->get_left_block(), 0);
+    }) << "Failure connecting the blocks of acquisition test.";
 
     std::cout << "Probability of false alarm (target) = " << 0.1 << std::endl;
 
@@ -652,18 +640,11 @@ TEST_F(GlonassL1CaPcpsAcquisitionGSoC2017Test, ValidationOfResultsProbabilities)
                     std::cout << "Estimated probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
                     std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
                 }
-#ifdef OLD_BOOST
+
             ASSERT_NO_THROW({
-                ch_thread.timed_join(boost::posix_time::seconds(1));
+                ch_thread.join();
             }) << "Failure while waiting the queue to stop"
                << std::endl;
-#endif
-#ifndef OLD_BOOST
-            ASSERT_NO_THROW({
-                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-            }) << "Failure while waiting the queue to stop"
-               << std::endl;
-#endif
         }
 
     delete acquisition;

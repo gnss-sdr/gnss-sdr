@@ -38,9 +38,9 @@
 #ifndef GNSS_SDR_GPS_L1_CA_TCP_CONNECTOR_TRACKING_H_
 #define GNSS_SDR_GPS_L1_CA_TCP_CONNECTOR_TRACKING_H_
 
-#include <string>
-#include "tracking_interface.h"
 #include "gps_l1_ca_tcp_connector_tracking_cc.h"
+#include "tracking_interface.h"
+#include <string>
 
 
 class ConfigurationInterface;
@@ -52,7 +52,7 @@ class GpsL1CaTcpConnectorTracking : public TrackingInterface
 {
 public:
     GpsL1CaTcpConnectorTracking(ConfigurationInterface* configuration,
-        std::string role,
+        const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 
@@ -91,6 +91,10 @@ public:
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
     void start_tracking() override;
+    /*!
+     * \brief Stop running tracking
+     */
+    void stop_tracking() override;
 
 private:
     gps_l1_ca_tcp_connector_tracking_cc_sptr tracking_;

@@ -52,6 +52,7 @@
 #ifndef GNSS_SDR_PCPS_ACQUISITION_H_
 #define GNSS_SDR_PCPS_ACQUISITION_H_
 
+#include "acq_conf.h"
 #include "gnss_synchro.h"
 #include <armadillo>
 #include <gnuradio/block.h>
@@ -59,33 +60,13 @@
 #include <volk/volk.h>
 #include <string>
 
-typedef struct
-{
-    /* pcps acquisition configuration */
-    unsigned int sampled_ms;
-    unsigned int max_dwells;
-    unsigned int doppler_max;
-    unsigned int num_doppler_bins_step2;
-    float doppler_step2;
-    long freq;
-    long fs_in;
-    int samples_per_ms;
-    int samples_per_code;
-    bool bit_transition_flag;
-    bool use_CFAR_algorithm_flag;
-    bool dump;
-    bool blocking;
-    bool make_2_steps;
-    std::string dump_filename;
-    size_t it_size;
-} pcpsconf_t;
 
 class pcps_acquisition;
 
-typedef boost::shared_ptr<pcps_acquisition> pcps_acquisition_sptr;
+using pcps_acquisition_sptr = boost::shared_ptr<pcps_acquisition>;
 
 pcps_acquisition_sptr
-pcps_make_acquisition(pcpsconf_t conf_);
+pcps_make_acquisition(const Acq_Conf& conf_);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition.
@@ -97,40 +78,55 @@ class pcps_acquisition : public gr::block
 {
 private:
     friend pcps_acquisition_sptr
-    pcps_make_acquisition(pcpsconf_t conf_);
+    pcps_make_acquisition(const Acq_Conf& conf_);
 
-    pcps_acquisition(pcpsconf_t conf_);
+    pcps_acquisition(const Acq_Conf& conf_);
 
-    void update_local_carrier(gr_complex* carrier_vector, int correlator_length_samples, float freq);
+    void update_local_carrier(gr_complex* carrier_vector, int32_t correlator_length_samples, float freq);
     void update_grid_doppler_wipeoffs();
     void update_grid_doppler_wipeoffs_step2();
     bool is_fdma();
 
-    void acquisition_core(unsigned long int samp_count);
+    void acquisition_core(uint64_t samp_count);
 
     void send_negative_acquisition();
 
     void send_positive_acquisition();
 
-    pcpsconf_t acq_parameters;
+    void dump_results(int32_t effective_fft_size);
+
+    float first_vs_second_peak_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
+    float max_to_input_power_statistic(uint32_t& indext, int32_t& doppler, float input_power, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
+
+    bool start();
+
+
+    Acq_Conf acq_parameters;
     bool d_active;
     bool d_worker_active;
     bool d_cshort;
     bool d_step_two;
+    bool d_use_CFAR_algorithm_flag;
+    int32_t d_positive_acq;
     float d_threshold;
     float d_mag;
     float d_input_power;
     float d_test_statistics;
     float* d_magnitude;
-    long d_old_freq;
-    int d_state;
-    unsigned int d_channel;
-    unsigned int d_doppler_step;
+    float** d_magnitude_grid;
+    float* d_tmp_buffer;
+    gr_complex* d_input_signal;
+    uint32_t d_samplesPerChip;
+    int64_t d_old_freq;
+    int32_t d_state;
+    uint32_t d_channel;
+    uint32_t d_doppler_step;
     float d_doppler_center_step_two;
-    unsigned int d_well_count;
-    unsigned int d_fft_size;
-    unsigned int d_num_doppler_bins;
-    unsigned long int d_sample_counter;
+    uint32_t d_num_noncoherent_integrations_counter;
+    uint32_t d_fft_size;
+    uint32_t d_consumed_samples;
+    uint32_t d_num_doppler_bins;
+    uint64_t d_sample_counter;
     gr_complex** d_grid_doppler_wipeoffs;
     gr_complex** d_grid_doppler_wipeoffs_step_two;
     gr_complex* d_fft_codes;
@@ -140,6 +136,13 @@ private:
     gr::fft::fft_complex* d_ifft;
     Gnss_Synchro* d_gnss_synchro;
     arma::fmat grid_;
+    arma::fmat narrow_grid_;
+    uint32_t d_num_doppler_bins_step2;
+    int64_t d_dump_number;
+    uint32_t d_dump_channel;
+    uint32_t d_buffer_count;
+    bool d_dump;
+    std::string d_dump_filename;
 
 public:
     ~pcps_acquisition();
@@ -158,13 +161,13 @@ public:
     /*!
      * \brief Returns the maximum peak of grid search.
      */
-    inline unsigned int mag() const
+    inline uint32_t mag() const
     {
         return d_mag;
     }
 
     /*!
-      * \brief Initializes acquisition algorithm.
+      * \brief Initializes acquisition algorithm and reserves memory.
       */
     void init();
 
@@ -190,13 +193,13 @@ public:
       * first available sample.
       * \param state - int=1 forces start of acquisition
       */
-    void set_state(int state);
+    void set_state(int32_t state);
 
     /*!
       * \brief Set acquisition channel unique ID
       * \param channel - receiver channel.
       */
-    inline void set_channel(unsigned int channel)
+    inline void set_channel(uint32_t channel)
     {
         gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
         d_channel = channel;
@@ -217,7 +220,7 @@ public:
       * \brief Set maximum Doppler grid search
       * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
       */
-    inline void set_doppler_max(unsigned int doppler_max)
+    inline void set_doppler_max(uint32_t doppler_max)
     {
         gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
         acq_parameters.doppler_max = doppler_max;
@@ -227,11 +230,14 @@ public:
       * \brief Set Doppler steps for the grid search
       * \param doppler_step - Frequency bin of the search grid [Hz].
       */
-    inline void set_doppler_step(unsigned int doppler_step)
+    inline void set_doppler_step(uint32_t doppler_step)
     {
         gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
         d_doppler_step = doppler_step;
     }
+
+
+    void set_resampler_latency(uint32_t latency_samples);
 
     /*!
       * \brief Parallel Code Phase Search Acquisition signal processing.

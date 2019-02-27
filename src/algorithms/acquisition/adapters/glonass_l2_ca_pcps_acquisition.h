@@ -34,10 +34,9 @@
 #define GNSS_SDR_GLONASS_L2_CA_PCPS_ACQUISITION_H_
 
 #include "acquisition_interface.h"
+#include "complex_byte_to_float_x2.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition.h"
-#include "complex_byte_to_float_x2.h"
-#include <gnuradio/blocks/stream_to_vector.h>
 #include <gnuradio/blocks/float_to_complex.h>
 #include <string>
 
@@ -51,7 +50,8 @@ class GlonassL2CaPcpsAcquisition : public AcquisitionInterface
 {
 public:
     GlonassL2CaPcpsAcquisition(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role,
+        unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~GlonassL2CaPcpsAcquisition();
@@ -129,12 +129,18 @@ public:
     /*!
      * \brief If state = 1, it forces the block to start acquiring from the first sample
      */
-    void set_state(int state);
+    void set_state(int state) override;
+
+    /*!
+     * \brief Stop running acquisition
+     */
+    void stop_acquisition() override;
+
+    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
 
 private:
     ConfigurationInterface* configuration_;
     pcps_acquisition_sptr acquisition_;
-    gr::blocks::stream_to_vector::sptr stream_to_vector_;
     gr::blocks::float_to_complex::sptr float_to_complex_;
     complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
     size_t item_size_;
@@ -149,8 +155,7 @@ private:
     unsigned int doppler_step_;
     unsigned int sampled_ms_;
     unsigned int max_dwells_;
-    long fs_in_;
-    long if_;
+    int64_t fs_in_;
     bool dump_;
     bool blocking_;
     std::string dump_filename_;

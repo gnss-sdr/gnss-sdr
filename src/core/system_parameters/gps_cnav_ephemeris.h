@@ -48,13 +48,13 @@ private:
     double check_t(double time);
 
 public:
-    unsigned int i_satellite_PRN;  // SV PRN NUMBER
+    uint32_t i_satellite_PRN;  // SV PRN NUMBER
 
-    //Message Types 10 and 11 Parameters (1 of 2)
-    int i_GPS_week;            //!< GPS week number, aka WN [week]
-    int i_URA;                 //!< ED Accuracy Index
-    int i_signal_health;       //!< Signal health (L1/L2/L5)
-    double d_Top;              //!< Data predict time of week
+    // Message Types 10 and 11 Parameters (1 of 2)
+    int32_t i_GPS_week;        //!< GPS week number, aka WN [week]
+    int32_t i_URA;             //!< ED Accuracy Index
+    int32_t i_signal_health;   //!< Signal health (L1/L2/L5)
+    int32_t d_Top;             //!< Data predict time of week
     double d_DELTA_A;          //!< Semi-major axis difference at reference time
     double d_A_DOT;            //!< Change rate in semi-major axis
     double d_Delta_n;          //!< Mean Motion Difference From Computed Value [semi-circles/s]
@@ -63,8 +63,8 @@ public:
     double d_e_eccentricity;   //!< Eccentricity
     double d_OMEGA;            //!< Argument of Perigee [semi-cicles]
     double d_OMEGA0;           //!< Longitude of Ascending Node of Orbit Plane at Weekly Epoch [semi-cicles]
-    double d_Toe1;             //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
-    double d_Toe2;             //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
+    int32_t d_Toe1;            //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
+    int32_t d_Toe2;            //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
     double d_DELTA_OMEGA_DOT;  //!< Rate of Right Ascension  difference [semi-circles/s]
     double d_i_0;              //!< Inclination Angle at Reference Time [semi-circles]
     double d_IDOT;             //!< Rate of Inclination Angle [semi-circles/s]
@@ -75,8 +75,8 @@ public:
     double d_Cus;              //!< Amplitude of the Sine Harmonic Correction Term to the Argument of Latitude [rad]
     double d_Cuc;              //!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
 
-    //Clock Correction and Accuracy Parameters
-    double d_Toc;   //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200E) [s]
+    // Clock Correction and Accuracy Parameters
+    int32_t d_Toc;  //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200E) [s]
     double d_A_f0;  //!< Coefficient 0 of code phase offset model [s]
     double d_A_f1;  //!< Coefficient 1 of code phase offset model [s/s]
     double d_A_f2;  //!< Coefficient 2 of code phase offset model [s/s^2]
@@ -85,17 +85,14 @@ public:
     double d_URA1;  //!<NED Accuracy Change Index
     double d_URA2;  //!< NED Accuracy Change Rate Index
 
-
-    //Group Delay Differential Parameters
+    // Group Delay Differential Parameters
     double d_TGD;  //!< Estimated Group Delay Differential: L1-L2 correction term only for the benefit of "L1 P(Y)" or "L2 P(Y)" s users [s]
     double d_ISCL1;
     double d_ISCL2;
     double d_ISCL5I;
     double d_ISCL5Q;
 
-    double d_TOW;  //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
-
-    // Flags
+    int32_t d_TOW;  //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
 
     /*! \brief If true, enhanced level of integrity assurance.
      *
@@ -131,7 +128,7 @@ public:
     /*!
      * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the ephemeris data on disk file.
      */
-    inline void serialize(Archive& archive, const unsigned int version)
+    inline void serialize(Archive& archive, const uint32_t version)
     {
         using boost::serialization::make_nvp;
         if (version)

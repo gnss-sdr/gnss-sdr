@@ -62,9 +62,9 @@
 #ifndef INCLUDED_volk_gnsssdr_s32f_sincos_32fc_H
 #define INCLUDED_volk_gnsssdr_s32f_sincos_32fc_H
 
-#include <math.h>
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
+#include <math.h>
 
 
 #ifdef LV_HAVE_SSE2

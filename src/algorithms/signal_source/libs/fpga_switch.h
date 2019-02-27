@@ -2,7 +2,7 @@
  * \file fpga_switch.h
  * \brief Switch that connects the HW accelerator queues to the analog front end or the DMA.
  * \authors <ul>
- * 			<li> Marc Majoral, 2017. mmajoral(at)cttc.cat
+ * 			<li> Marc Majoral, 2019. mmajoral(at)cttc.cat
  *          <li> Javier Arribas, 2016. jarribas(at)cttc.es
  *          </ul>
  *
@@ -41,16 +41,16 @@
 
 #define MAX_LENGTH_DEVICEIO_NAME 50
 
-class fpga_switch
+class Fpga_Switch
 {
 public:
-    fpga_switch(std::string device_name);
-    ~fpga_switch();
-    void set_switch_position(int switch_position);
+    Fpga_Switch(const std::string& device_name);
+    ~Fpga_Switch();
+    void set_switch_position(int32_t switch_position);
 
 private:
     int d_device_descriptor;        // driver descriptor
-    volatile unsigned *d_map_base;  // driver memory map
+    volatile unsigned* d_map_base;  // driver memory map
 
     // private functions
     unsigned fpga_switch_test_register(unsigned writeval);

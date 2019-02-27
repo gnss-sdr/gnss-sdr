@@ -1,6 +1,6 @@
 /*!
  * \file cpu_multicorrelator_real_codes.h
- * \brief High optimized CPU vector multiTAP correlator class using real-valued local codes
+ * \brief Highly optimized CPU vector multiTAP correlator class using real-valued local codes
  * \authors <ul>
  *          <li> Javier Arribas, 2015. jarribas(at)cttc.es
  *          <li> Cillian O'Driscoll, 2017, cillian.odriscoll(at)gmail.com
@@ -42,16 +42,19 @@
 /*!
  * \brief Class that implements carrier wipe-off and correlators.
  */
-class cpu_multicorrelator_real_codes
+class Cpu_Multicorrelator_Real_Codes
 {
 public:
-    cpu_multicorrelator_real_codes();
-    ~cpu_multicorrelator_real_codes();
+    Cpu_Multicorrelator_Real_Codes();
+    void set_high_dynamics_resampler(bool use_high_dynamics_resampler);
+    ~Cpu_Multicorrelator_Real_Codes();
     bool init(int max_signal_length_samples, int n_correlators);
     bool set_local_code_and_taps(int code_length_chips, const float *local_code_in, float *shifts_chips);
     bool set_input_output_vectors(std::complex<float> *corr_out, const std::complex<float> *sig_in);
-    void update_local_code(int correlator_length_samples, float rem_code_phase_chips, float code_phase_step_chips);
-    bool Carrier_wipeoff_multicorrelator_resampler(float rem_carrier_phase_in_rad, float phase_step_rad, float rem_code_phase_chips, float code_phase_step_chips, int signal_length_samples);
+    void update_local_code(int correlator_length_samples, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips = 0.0);
+    // Overload Carrier_wipeoff_multicorrelator_resampler to ensure back compatibility
+    bool Carrier_wipeoff_multicorrelator_resampler(float rem_carrier_phase_in_rad, float phase_step_rad, float phase_rate_step_rad, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips, int signal_length_samples);
+    bool Carrier_wipeoff_multicorrelator_resampler(float rem_carrier_phase_in_rad, float phase_step_rad, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips, int signal_length_samples);
     bool free();
 
 private:
@@ -61,6 +64,7 @@ private:
     const float *d_local_code_in;
     std::complex<float> *d_corr_out;
     float *d_shifts_chips;
+    bool d_use_high_dynamics_resampler;
     int d_code_length_chips;
     int d_n_correlators;
 };

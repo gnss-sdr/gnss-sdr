@@ -36,22 +36,23 @@
  */
 
 #include "gps_l1_ca_tcp_connector_tracking.h"
-#include <glog/logging.h>
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
+#include <glog/logging.h>
+#include <utility>
 
 
 using google::LogMessage;
 
+
 GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(
-    ConfigurationInterface* configuration, std::string role,
+    ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
     int fs_in;
     int vector_length;
-    int f_if;
     bool dump;
     std::string dump_filename;
     std::string item_type;
@@ -62,7 +63,6 @@ GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(
     //vector_length = configuration->property(role + ".vector_length", 2048);
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     port_ch0 = configuration->property(role + ".port_ch0", 2060);
@@ -71,11 +71,10 @@ GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(
     vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     //################# MAKE TRACKING GNURadio object ###################
-    if (item_type.compare("gr_complex") == 0)
+    if (item_type == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             tracking_ = gps_l1_ca_tcp_connector_make_tracking_cc(
-                f_if,
                 fs_in,
                 vector_length,
                 dump,
@@ -91,10 +90,21 @@ GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(
 
     channel_ = 0;
     DLOG(INFO) << "tracking(" << tracking_->unique_id() << ")";
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 
-GpsL1CaTcpConnectorTracking::~GpsL1CaTcpConnectorTracking()
+GpsL1CaTcpConnectorTracking::~GpsL1CaTcpConnectorTracking() = default;
+
+
+void GpsL1CaTcpConnectorTracking::stop_tracking()
 {
 }
 

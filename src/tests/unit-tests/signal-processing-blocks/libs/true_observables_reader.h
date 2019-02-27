@@ -31,17 +31,18 @@
 #ifndef GNSS_SDR_TRUE_OBSERVABLES_READER_H
 #define GNSS_SDR_TRUE_OBSERVABLES_READER_H
 
+#include <cstdint>
 #include <fstream>
 #include <string>
 #include <vector>
 
-class true_observables_reader
+class True_Observables_Reader
 {
 public:
-    ~true_observables_reader();
+    ~True_Observables_Reader();
     bool read_binary_obs();
     bool restart();
-    long int num_epochs();
+    int64_t num_epochs();
     bool open_obs_file(std::string out_file);
 
     double gps_time_sec[12];

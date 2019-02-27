@@ -35,11 +35,11 @@
 using google::LogMessage;
 
 // Constructor
-ControlMessageFactory::ControlMessageFactory() {}
+ControlMessageFactory::ControlMessageFactory() = default;
 
 
 // Destructor
-ControlMessageFactory::~ControlMessageFactory() {}
+ControlMessageFactory::~ControlMessageFactory() = default;
 
 
 gr::message::sptr ControlMessageFactory::GetQueueMessage(unsigned int who, unsigned int what)
@@ -53,7 +53,7 @@ gr::message::sptr ControlMessageFactory::GetQueueMessage(unsigned int who, unsig
 }
 
 
-std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>> ControlMessageFactory::GetControlMessages(gr::message::sptr queue_message)
+std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>> ControlMessageFactory::GetControlMessages(const gr::message::sptr queue_message)  // NOLINT(performance-unnecessary-value-param)
 {
     std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>> control_messages = std::make_shared<std::vector<std::shared_ptr<ControlMessage>>>();
     unsigned int control_messages_count = queue_message->length() / sizeof(ControlMessage);

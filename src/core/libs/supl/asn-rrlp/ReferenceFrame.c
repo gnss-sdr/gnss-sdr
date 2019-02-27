@@ -56,12 +56,12 @@ memb_referenceFNMSB_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_referenceFN_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_REFERENCE_FN_CONSTR_2 = {
 	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_referenceFNMSB_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_REFERENCE_FNMSB_CONSTR_3 = {
 	{ APC_CONSTRAINED,	 6,  6,  0,  63 }	/* (0..63) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -72,7 +72,7 @@ static asn_TYPE_member_t asn_MBR_ReferenceFrame_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_referenceFN_constraint_1,
-		&asn_PER_memb_referenceFN_constr_2,
+		&ASN_PER_MEMB_REFERENCE_FN_CONSTR_2,
 		0,
 		"referenceFN"
 		},
@@ -81,7 +81,7 @@ static asn_TYPE_member_t asn_MBR_ReferenceFrame_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_referenceFNMSB_constraint_1,
-		&asn_PER_memb_referenceFNMSB_constr_3,
+		&ASN_PER_MEMB_REFERENCE_FNMSB_CONSTR_3,
 		0,
 		"referenceFNMSB"
 		},

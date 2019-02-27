@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -17,22 +17,44 @@
 #
 
 
-set(RESAMPLER_GR_BLOCKS_SOURCES 
-     direct_resampler_conditioner_cc.cc
-     direct_resampler_conditioner_cs.cc
-     direct_resampler_conditioner_cb.cc
+set(RESAMPLER_GR_BLOCKS_SOURCES
+    direct_resampler_conditioner_cc.cc
+    direct_resampler_conditioner_cs.cc
+    direct_resampler_conditioner_cb.cc
 )
 
-include_directories(
-     ${CMAKE_CURRENT_SOURCE_DIR}
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-     ${VOLK_INCLUDE_DIRS}
+set(RESAMPLER_GR_BLOCKS_HEADERS
+    direct_resampler_conditioner_cc.h
+    direct_resampler_conditioner_cs.h
+    direct_resampler_conditioner_cb.h
 )
 
-file(GLOB RESAMPLER_GR_BLOCKS_HEADERS "*.h")
 list(SORT RESAMPLER_GR_BLOCKS_HEADERS)
-add_library(resampler_gr_blocks ${RESAMPLER_GR_BLOCKS_SOURCES} ${RESAMPLER_GR_BLOCKS_HEADERS})
+list(SORT RESAMPLER_GR_BLOCKS_SOURCES)
+
 source_group(Headers FILES ${RESAMPLER_GR_BLOCKS_HEADERS})
-add_dependencies(resampler_gr_blocks glog-${glog_RELEASE})
+
+add_library(resampler_gr_blocks
+    ${RESAMPLER_GR_BLOCKS_SOURCES}
+    ${RESAMPLER_GR_BLOCKS_HEADERS}
+)
+
+target_link_libraries(resampler_gr_blocks
+    PUBLIC
+        Gnuradio::runtime
+        Volk::volk
+)
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(resampler_gr_blocks
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+set_property(TARGET resampler_gr_blocks
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

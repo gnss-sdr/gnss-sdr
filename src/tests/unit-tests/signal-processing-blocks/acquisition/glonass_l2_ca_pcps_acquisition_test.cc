@@ -30,27 +30,31 @@
  */
 
 
-#include <chrono>
-#include <gnuradio/top_block.h>
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/analog/sig_source_waveform.h>
-#include <gnuradio/analog/sig_source_c.h>
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/blocks/null_sink.h>
-#include <gtest/gtest.h>
-#include "gnss_block_interface.h"
-#include "in_memory_configuration.h"
 #include "configuration_interface.h"
-#include "gnss_synchro.h"
-#include "glonass_l2_ca_pcps_acquisition.h"
-#include "signal_generator.h"
-#include "signal_generator_c.h"
 #include "fir_filter.h"
 #include "gen_signal_source.h"
+#include "glonass_l2_ca_pcps_acquisition.h"
+#include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
-#include "boost/shared_ptr.hpp"
+#include "gnss_synchro.h"
+#include "in_memory_configuration.h"
 #include "pass_through.h"
-
+#include "signal_generator.h"
+#include "signal_generator_c.h"
+#include "boost/shared_ptr.hpp"
+#include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/blocks/file_source.h>
+#include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/msg_queue.h>
+#include <gnuradio/top_block.h>
+#include <gtest/gtest.h>
+#include <chrono>
+#include <thread>
+#ifdef GR_GREATER_38
+#include <gnuradio/analog/sig_source.h>
+#else
+#include <gnuradio/analog/sig_source_c.h>
+#endif
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GlonassL2CaPcpsAcquisitionTest_msg_rx;
@@ -84,7 +88,7 @@ void GlonassL2CaPcpsAcquisitionTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            long int message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(msg);
             rx_message = message;
             channel_internal_queue.push(rx_message);
         }
@@ -146,7 +150,7 @@ protected:
     size_t item_size;
     bool stop;
     int message;
-    boost::thread ch_thread;
+    std::thread ch_thread;
 
     unsigned int integration_time_ms = 0;
     unsigned int fs_in = 0;
@@ -245,7 +249,6 @@ void GlonassL2CaPcpsAcquisitionTest::config_1()
     config->set_property("InputFilter.grid_density", "16");
 
     config->set_property("Acquisition_2G.item_type", "gr_complex");
-    config->set_property("Acquisition_2G.if", "4000000");
     config->set_property("Acquisition_2G.coherent_integration_time_ms",
         std::to_string(integration_time_ms));
     config->set_property("Acquisition_2G.max_dwells", "1");
@@ -333,7 +336,6 @@ void GlonassL2CaPcpsAcquisitionTest::config_2()
     config->set_property("InputFilter.grid_density", "16");
 
     config->set_property("Acquisition_2G.item_type", "gr_complex");
-    config->set_property("Acquisition_2G.if", "4000000");
     config->set_property("Acquisition_2G.coherent_integration_time_ms",
         std::to_string(integration_time_ms));
     config->set_property("Acquisition_2G.max_dwells", "1");
@@ -349,15 +351,15 @@ void GlonassL2CaPcpsAcquisitionTest::config_2()
 void GlonassL2CaPcpsAcquisitionTest::start_queue()
 {
     stop = false;
-    ch_thread = boost::thread(&GlonassL2CaPcpsAcquisitionTest::wait_message, this);
+    ch_thread = std::thread(&GlonassL2CaPcpsAcquisitionTest::wait_message, this);
 }
 
 
 void GlonassL2CaPcpsAcquisitionTest::wait_message()
 {
     struct timeval tv;
-    long long int begin = 0;
-    long long int end = 0;
+    int64_t begin = 0;
+    int64_t end = 0;
 
     while (!stop)
         {
@@ -428,7 +430,7 @@ void GlonassL2CaPcpsAcquisitionTest::stop_queue()
 TEST_F(GlonassL2CaPcpsAcquisitionTest, Instantiate)
 {
     config_1();
-    acquisition = new GlonassL2CaPcpsAcquisition(config.get(), "Acquisition", 1, 1);
+    acquisition = new GlonassL2CaPcpsAcquisition(config.get(), "Acquisition", 1, 0);
     delete acquisition;
 }
 
@@ -442,7 +444,7 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ConnectAndRun)
     top_block = gr::make_top_block("Acquisition test");
 
     config_1();
-    acquisition = new GlonassL2CaPcpsAcquisition(config.get(), "Acquisition_2G", 1, 1);
+    acquisition = new GlonassL2CaPcpsAcquisition(config.get(), "Acquisition_2G", 1, 0);
     boost::shared_ptr<GlonassL2CaPcpsAcquisitionTest_msg_rx> msg_rx = GlonassL2CaPcpsAcquisitionTest_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
@@ -473,7 +475,7 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResults)
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Acquisition test");
 
-    acquisition = new GlonassL2CaPcpsAcquisition(config.get(), "Acquisition_2G", 1, 1);
+    acquisition = new GlonassL2CaPcpsAcquisition(config.get(), "Acquisition_2G", 1, 0);
     boost::shared_ptr<GlonassL2CaPcpsAcquisitionTest_msg_rx> msg_rx = GlonassL2CaPcpsAcquisitionTest_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
@@ -547,16 +549,10 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResults)
                 {
                     EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
                 }
-#ifdef OLD_BOOST
+
             ASSERT_NO_THROW({
-                ch_thread.timed_join(boost::posix_time::seconds(1));
-            }) << "Failure while waiting the queue to stop.";
-#endif
-#ifndef OLD_BOOST
-            ASSERT_NO_THROW({
-                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+                ch_thread.join();
             }) << "Failure while waiting the queue to stop";
-#endif
         }
 
     delete acquisition;
@@ -568,7 +564,7 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResultsProbabilities)
     config_2();
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Acquisition test");
-    acquisition = new GlonassL2CaPcpsAcquisition(config.get(), "Acquisition_2G", 1, 1);
+    acquisition = new GlonassL2CaPcpsAcquisition(config.get(), "Acquisition_2G", 1, 0);
     boost::shared_ptr<GlonassL2CaPcpsAcquisitionTest_msg_rx> msg_rx = GlonassL2CaPcpsAcquisitionTest_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
@@ -643,16 +639,10 @@ TEST_F(GlonassL2CaPcpsAcquisitionTest, ValidationOfResultsProbabilities)
                     std::cout << "Estimated probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
                     std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
                 }
-#ifdef OLD_BOOST
+
             ASSERT_NO_THROW({
-                ch_thread.timed_join(boost::posix_time::seconds(1));
+                ch_thread.join();
             }) << "Failure while waiting the queue to stop";
-#endif
-#ifndef OLD_BOOST
-            ASSERT_NO_THROW({
-                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-            }) << "Failure while waiting the queue to stop";
-#endif
         }
 
     delete acquisition;

@@ -3,6 +3,7 @@
  *
  * \brief Unpacks SPIR int samples
  * \author Antonio Ramos, antonio.ramos(at)cttc.es
+ * \author Javier Arribas jarribas (at) cttc.es
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
@@ -32,11 +33,10 @@
 #define GNSS_SDR_UNPACK_SPIR_GSS6450_SAMPLES_H
 
 #include <gnuradio/sync_interpolator.h>
-#include <boost/dynamic_bitset.hpp>
 
 class unpack_spir_gss6450_samples;
 
-typedef boost::shared_ptr<unpack_spir_gss6450_samples> unpack_spir_gss6450_samples_sptr;
+using unpack_spir_gss6450_samples_sptr = boost::shared_ptr<unpack_spir_gss6450_samples>;
 
 unpack_spir_gss6450_samples_sptr make_unpack_spir_gss6450_samples(unsigned int adc_nbit);
 
@@ -47,18 +47,13 @@ public:
     int work(int noutput_items,
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
     friend unpack_spir_gss6450_samples_sptr make_unpack_spir_gss6450_samples_sptr(unsigned int adc_nbit);
+    void decode_4bits_word(uint32_t input_uint32, gr_complex *out, int adc_bits);
     unpack_spir_gss6450_samples(unsigned int adc_nbit);
     ~unpack_spir_gss6450_samples();
 
 private:
-    int compute_two_complement(unsigned long data);
-
     unsigned int adc_bits;
     unsigned int samples_per_int;
-    int two_compl_thres;
-    int adc_bits_two_pow;
-    boost::dynamic_bitset<> i_data;
-    boost::dynamic_bitset<> q_data;
 };
 
 #endif

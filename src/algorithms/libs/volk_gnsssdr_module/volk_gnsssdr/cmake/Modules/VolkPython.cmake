@@ -25,42 +25,39 @@ set(__INCLUDED_VOLK_PYTHON_CMAKE TRUE)
 # This allows the user to specify a specific interpreter,
 # or finds the interpreter via the built-in cmake module.
 ########################################################################
-#this allows the user to override PYTHON_EXECUTABLE
-if(PYTHON_EXECUTABLE)
+set(VOLK_PYTHON_MIN_VERSION "2.7")
+set(VOLK_PYTHON3_MIN_VERSION "3.4")
 
-    set(PYTHONINTERP_FOUND TRUE)
-
-#otherwise if not set, try to automatically find it
-else(PYTHON_EXECUTABLE)
-
-    #use the built-in find script
-    set(Python_ADDITIONAL_VERSIONS 3.4 3.5 3.6)
-    find_package(PythonInterp 2)
-
-    #and if that fails use the find program routine
-    if(NOT PYTHONINTERP_FOUND)
-        find_program(PYTHON_EXECUTABLE NAMES python python2 python2.7 python3)
-        if(PYTHON_EXECUTABLE)
-            set(PYTHONINTERP_FOUND TRUE)
-        endif(PYTHON_EXECUTABLE)
-    endif(NOT PYTHONINTERP_FOUND)
-
-endif(PYTHON_EXECUTABLE)
-
-#make the path to the executable appear in the cmake gui
-set(PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE FILEPATH "python interpreter")
-
-#make sure we can use -B with python (introduced in 2.6)
-if(PYTHON_EXECUTABLE)
-    execute_process(
-        COMMAND ${PYTHON_EXECUTABLE} -B -c ""
-        OUTPUT_QUIET ERROR_QUIET
-        RESULT_VARIABLE PYTHON_HAS_DASH_B_RESULT
-    )
-    if(PYTHON_HAS_DASH_B_RESULT EQUAL 0)
-        set(PYTHON_DASH_B "-B")
+if(CMAKE_VERSION VERSION_LESS 3.12)
+    if(PYTHON_EXECUTABLE)
+        message(STATUS "User set python executable ${PYTHON_EXECUTABLE}")
+        find_package(PythonInterp ${VOLK_PYTHON_MIN_VERSION} REQUIRED)
+    else()
+        message(STATUS "PYTHON_EXECUTABLE not set - using default python2")
+        message(STATUS "Use -DPYTHON_EXECUTABLE=/path/to/python3 to build for python3.")
+        find_package(PythonInterp ${VOLK_PYTHON_MIN_VERSION})
+        if(NOT PYTHONINTERP_FOUND)
+            message(STATUS "python2 not found - using python3")
+            find_package(PythonInterp ${VOLK_PYTHON3_MIN_VERSION} REQUIRED)
+        endif()
     endif()
-endif(PYTHON_EXECUTABLE)
+    find_package(PythonLibs ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR} EXACT)
+else()
+    if(PYTHON_EXECUTABLE)
+        message(STATUS "User set python executable ${PYTHON_EXECUTABLE}")
+        find_package(PythonInterp ${VOLK_PYTHON_MIN_VERSION} REQUIRED)
+    else()
+        find_package(Python COMPONENTS Interpreter)
+        set(PYTHON_VERSION_MAJOR ${Python_VERSION_MAJOR})
+        set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
+    endif()
+endif()
+
+if(${PYTHON_VERSION_MAJOR} VERSION_EQUAL 3)
+    set(PYTHON3 TRUE)
+endif()
+
+
 
 ########################################################################
 # Check for the existence of a python module:
@@ -69,37 +66,45 @@ endif(PYTHON_EXECUTABLE)
 # - cmd an additional command to run
 # - have the result variable to set
 ########################################################################
-macro(VOLK_PYTHON_CHECK_MODULE desc mod cmd have)
-    message(STATUS "")
-    message(STATUS "Python checking for ${desc}")
+macro(VOLK_PYTHON_CHECK_MODULE_RAW desc python_code have)
     execute_process(
-        COMMAND ${PYTHON_EXECUTABLE} -c "
-#########################################
-try: import ${mod}
-except:
-    try: ${mod}
-    except: exit(-1)
-try: assert ${cmd}
-except: exit(-1)
-#########################################"
-        RESULT_VARIABLE ${have}
+        COMMAND ${PYTHON_EXECUTABLE} -c "${python_code}"
+        OUTPUT_QUIET ERROR_QUIET
+        RESULT_VARIABLE return_code
     )
-    if(${have} EQUAL 0)
+    if(return_code EQUAL 0)
         message(STATUS "Python checking for ${desc} - found")
         set(${have} TRUE)
-    else(${have} EQUAL 0)
+    else()
         message(STATUS "Python checking for ${desc} - not found")
         set(${have} FALSE)
-    endif(${have} EQUAL 0)
-endmacro(VOLK_PYTHON_CHECK_MODULE)
+    endif()
+endmacro()
+
+macro(VOLK_PYTHON_CHECK_MODULE desc mod cmd have)
+    VOLK_PYTHON_CHECK_MODULE_RAW(
+        "${desc}" "
+#########################################
+try:
+    import ${mod}
+    assert ${cmd}
+except (ImportError, AssertionError): exit(-1)
+except: pass
+#########################################"
+    "${have}")
+endmacro()
 
 ########################################################################
 # Sets the python installation directory VOLK_PYTHON_DIR
 ########################################################################
 if(NOT DEFINED VOLK_PYTHON_DIR)
 execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "
-from distutils import sysconfig
-print(sysconfig.get_python_lib(plat_specific=True, prefix=''))
+import os
+import sys
+if os.name == 'posix':
+    print(os.path.join('lib', 'python' + sys.version[:3], 'dist-packages'))
+if os.name == 'nt':
+    print(os.path.join('Lib', 'site-packages'))
 " OUTPUT_VARIABLE VOLK_PYTHON_DIR OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 endif()
@@ -116,14 +121,14 @@ unique = hashlib.md5(b'${reldir}${ARGN}').hexdigest()[:5]
 print(re.sub('\\W', '_', '${desc} ${reldir} ' + unique))"
     OUTPUT_VARIABLE _target OUTPUT_STRIP_TRAILING_WHITESPACE)
     add_custom_target(${_target} ALL DEPENDS ${ARGN})
-endfunction(VOLK_UNIQUE_TARGET)
+endfunction()
 
 ########################################################################
 # Install python sources (also builds and installs byte-compiled python)
 ########################################################################
 function(VOLK_PYTHON_INSTALL)
     include(CMakeParseArgumentsCopy)
-    CMAKE_PARSE_ARGUMENTS(VOLK_PYTHON_INSTALL "" "DESTINATION;COMPONENT" "FILES;PROGRAMS" ${ARGN})
+    cmake_parse_arguments(VOLK_PYTHON_INSTALL "" "DESTINATION;COMPONENT" "FILES;PROGRAMS" ${ARGN})
 
     ####################################################################
     if(VOLK_PYTHON_INSTALL_FILES)
@@ -157,7 +162,7 @@ function(VOLK_PYTHON_INSTALL)
             get_filename_component(pygen_path ${pygenfile} PATH)
             file(MAKE_DIRECTORY ${pygen_path})
 
-        endforeach(pyfile)
+        endforeach()
 
         #the command to generate the pyc files
         add_custom_command(
@@ -184,8 +189,8 @@ function(VOLK_PYTHON_INSTALL)
     ####################################################################
         file(TO_NATIVE_PATH ${PYTHON_EXECUTABLE} pyexe_native)
 
-        if (CMAKE_CROSSCOMPILING)
-           set(pyexe_native "/usr/bin/env python")
+        if(CMAKE_CROSSCOMPILING)
+            set(pyexe_native "/usr/bin/env python")
         endif()
 
         foreach(pyfile ${VOLK_PYTHON_INSTALL_PROGRAMS})
@@ -200,7 +205,7 @@ function(VOLK_PYTHON_INSTALL)
             add_custom_command(
                 OUTPUT ${pyexefile} DEPENDS ${pyfile}
                 COMMAND ${PYTHON_EXECUTABLE} -c
-                "open('${pyexefile}','w').write('\#!${pyexe_native}\\n'+open('${pyfile}').read())"
+                "open('${pyexefile}','w').write(r'\#!${pyexe_native}'+'\\n'+open('${pyfile}').read())"
                 COMMENT "Shebangin ${pyfile_name}"
                 VERBATIM
             )
@@ -215,13 +220,13 @@ function(VOLK_PYTHON_INSTALL)
                 DESTINATION ${VOLK_PYTHON_INSTALL_DESTINATION}
                 COMPONENT ${VOLK_PYTHON_INSTALL_COMPONENT}
             )
-        endforeach(pyfile)
+        endforeach()
 
     endif()
 
-    VOLK_UNIQUE_TARGET("pygen" ${python_install_gen_targets})
+    volk_unique_target("pygen" ${python_install_gen_targets})
 
-endfunction(VOLK_PYTHON_INSTALL)
+endfunction()
 
 ########################################################################
 # Write the python helper script that generates byte code files

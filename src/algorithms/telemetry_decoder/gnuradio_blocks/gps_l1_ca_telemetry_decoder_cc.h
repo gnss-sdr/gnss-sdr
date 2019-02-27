@@ -32,17 +32,17 @@
 #define GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_CC_H
 
 #include "GPS_L1_CA.h"
-#include "gps_l1_ca_subframe_fsm.h"
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
+#include "gps_navigation_message.h"
+#include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>
 #include <fstream>
 #include <string>
-#include <boost/circular_buffer.hpp>
 
 class gps_l1_ca_telemetry_decoder_cc;
 
-typedef boost::shared_ptr<gps_l1_ca_telemetry_decoder_cc> gps_l1_ca_telemetry_decoder_cc_sptr;
+using gps_l1_ca_telemetry_decoder_cc_sptr = boost::shared_ptr<gps_l1_ca_telemetry_decoder_cc>;
 
 gps_l1_ca_telemetry_decoder_cc_sptr
 gps_l1_ca_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
@@ -70,50 +70,37 @@ private:
 
     gps_l1_ca_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
 
-    bool gps_word_parityCheck(unsigned int gpsword);
+    bool gps_word_parityCheck(uint32_t gpsword);
 
-    // class private vars
+    bool decode_subframe();
+    bool new_decoder();
+    int d_crc_error_synchronization_counter;
 
     int *d_preambles_symbols;
-    unsigned int d_stat;
+    uint32_t d_stat;
     bool d_flag_frame_sync;
 
     // symbols
     boost::circular_buffer<Gnss_Synchro> d_symbol_history;
+    float d_subframe_symbols[GPS_SUBFRAME_MS]{};  // symbols per subframe
+    int d_current_subframe_symbol;
 
-    double d_symbol_accumulator;
-    short int d_symbol_accumulator_counter;
-
-    // symbol counting
-    bool d_make_correlation;
-    unsigned int d_symbol_counter_corr;
-
-    //bits and frame
-    unsigned short int d_frame_bit_index;
-    unsigned int d_GPS_frame_4bytes;
-    unsigned int d_prev_GPS_frame_4bytes;
-    bool d_flag_parity;
+    // bits and frame
+    uint32_t d_prev_GPS_frame_4bytes;
     bool d_flag_preamble;
     bool d_flag_new_tow_available;
-    int d_word_number;
-
-    // output averaging and decimation
-    int d_average_count;
-    int d_decimation_output_factor;
 
     // navigation message vars
     Gps_Navigation_Message d_nav;
-    GpsL1CaSubframeFsm d_GPS_FSM;
 
     bool d_dump;
     Gnss_Satellite d_satellite;
     int d_channel;
 
-    unsigned long int d_preamble_time_samples;
+    uint64_t d_preamble_time_samples;
 
-    double d_TOW_at_Preamble;
-    double d_TOW_at_current_symbol;
-    unsigned int d_TOW_at_current_symbol_ms;
+    uint32_t d_TOW_at_Preamble_ms;
+    uint32_t d_TOW_at_current_symbol_ms;
 
     bool flag_TOW_set;
     bool flag_PLL_180_deg_phase_locked;

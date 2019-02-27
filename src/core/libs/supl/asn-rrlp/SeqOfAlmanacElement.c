@@ -6,7 +6,7 @@
 
 #include "SeqOfAlmanacElement.h"
 
-static asn_per_constraints_t asn_PER_type_SeqOfAlmanacElement_constr_1 = {
+static asn_per_constraints_t ASN_PER_TYPE_SEQ_OF_ALMANAC_ELEMENT_CONSTR_1 = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 6,  6,  1,  64 }	/* (SIZE(1..64)) */,
 	0, 0	/* No PER value map */
@@ -49,7 +49,7 @@ asn_TYPE_descriptor_t asn_DEF_SeqOfAlmanacElement = {
 	asn_DEF_SeqOfAlmanacElement_tags_1,	/* Same as above */
 	sizeof(asn_DEF_SeqOfAlmanacElement_tags_1)
 		/sizeof(asn_DEF_SeqOfAlmanacElement_tags_1[0]), /* 1 */
-	&asn_PER_type_SeqOfAlmanacElement_constr_1,
+	&ASN_PER_TYPE_SEQ_OF_ALMANAC_ELEMENT_CONSTR_1,
 	asn_MBR_SeqOfAlmanacElement_1,
 	1,	/* Single element */
 	&asn_SPC_SeqOfAlmanacElement_specs_1	/* Additional specs */

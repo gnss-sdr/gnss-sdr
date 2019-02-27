@@ -34,10 +34,10 @@
 #ifndef GNSS_SDR_HYBRID_OBSERVABLES_CC_H
 #define GNSS_SDR_HYBRID_OBSERVABLES_CC_H
 
-#include "gnss_synchro.h"
 #include "gnss_circular_deque.h"
-#include <gnuradio/block.h>
+#include "gnss_synchro.h"
 #include <boost/dynamic_bitset.hpp>
+#include <gnuradio/block.h>
 #include <fstream>
 #include <string>
 #include <utility>
@@ -45,10 +45,10 @@
 
 class hybrid_observables_cc;
 
-typedef boost::shared_ptr<hybrid_observables_cc> hybrid_observables_cc_sptr;
+using hybrid_observables_cc_sptr = boost::shared_ptr<hybrid_observables_cc>;
 
 hybrid_observables_cc_sptr
-hybrid_make_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename);
+hybrid_make_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, bool dump_mat, std::string dump_filename);
 
 /*!
  * \brief This class implements a block that computes observables
@@ -63,25 +63,28 @@ public:
 
 private:
     friend hybrid_observables_cc_sptr
-    hybrid_make_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename);
-    hybrid_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, std::string dump_filename);
-    void clean_history(unsigned int pos);
+    hybrid_make_observables_cc(uint32_t nchannels_in, uint32_t nchannels_out, bool dump, bool dump_mat, std::string dump_filename);
+    hybrid_observables_cc(uint32_t nchannels_in, uint32_t nchannels_out, bool dump, bool dump_mat, std::string dump_filename);
+    bool interpolate_data(Gnss_Synchro& out, const uint32_t& ch, const double& ti);
+    bool interp_trk_obs(Gnss_Synchro& interpolated_obs, const uint32_t& ch, const uint64_t& rx_clock);
     double compute_T_rx_s(const Gnss_Synchro& a);
-    bool interpolate_data(Gnss_Synchro& out, const unsigned int& ch, const double& ti);
-    void find_interp_elements(const unsigned int& ch, const double& ti);
-    void correct_TOW_and_compute_prange(std::vector<Gnss_Synchro>& data);
-    int save_matfile();
+    void compute_pranges(std::vector<Gnss_Synchro>& data);
+    void update_TOW(std::vector<Gnss_Synchro>& data);
+    int32_t save_matfile();
 
+    //time history
+    boost::circular_buffer<uint64_t> d_Rx_clock_buffer;
     //Tracking observable history
     Gnss_circular_deque<Gnss_Synchro>* d_gnss_synchro_history;
-    boost::dynamic_bitset<> valid_channels;
-    double T_rx_s;
-    double T_rx_step_s;
-    double max_delta;
-    double d_latency;
+    uint32_t T_rx_clock_step_samples;
+    //rx time follow GPST
+    bool T_rx_TOW_set;
+    uint32_t T_rx_TOW_ms;
+    uint32_t T_rx_TOW_offset_ms;
     bool d_dump;
-    unsigned int d_nchannels;
-    unsigned int d_num_valid_channels;
+    bool d_dump_mat;
+    uint32_t d_nchannels_in;
+    uint32_t d_nchannels_out;
     std::string d_dump_filename;
     std::ofstream d_dump_file;
 };

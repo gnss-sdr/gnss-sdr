@@ -33,12 +33,12 @@
 
 Galileo_Iono::Galileo_Iono()
 {
-    /* Ionospheric correction */
-    ai0_5 = 0;  // Effective Ionisation Level 1st order parameter [sfu]
-    ai1_5 = 0;  // Effective Ionisation Level 2st order parameter [sfu/degree]
-    ai2_5 = 0;  // Effective Ionisation Level 3st order parameter [sfu/degree]
+    //  Ionospheric correction
+    ai0_5 = 0.0;  // Effective Ionisation Level 1st order parameter [sfu]
+    ai1_5 = 0.0;  // Effective Ionisation Level 2st order parameter [sfu/degree]
+    ai2_5 = 0.0;  // Effective Ionisation Level 3st order parameter [sfu/degree]
 
-    /* Ionospheric disturbance flag */
+    // Ionospheric disturbance flag
     Region1_flag_5 = false;  // Ionospheric Disturbance Flag for region 1
     Region2_flag_5 = false;  // Ionospheric Disturbance Flag for region 2
     Region3_flag_5 = false;  // Ionospheric Disturbance Flag for region 3

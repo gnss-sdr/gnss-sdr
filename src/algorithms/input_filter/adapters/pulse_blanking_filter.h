@@ -35,7 +35,11 @@
 #include "gnss_block_interface.h"
 #include "pulse_blanking_cc.h"
 #include <gnuradio/blocks/file_sink.h>
+#ifdef GR_GREATER_38
+#include <gnuradio/filter/freq_xlating_fir_filter.h>
+#else
 #include <gnuradio/filter/freq_xlating_fir_filter_ccf.h>
+#endif
 #include <string>
 
 class ConfigurationInterface;

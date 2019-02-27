@@ -1,0 +1,27 @@
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="boost_serialization">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="GNSS-SDR_iono_model">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element type="xs:float" name="d_alpha0"/>
+              <xs:element type="xs:float" name="d_alpha1"/>
+              <xs:element type="xs:float" name="d_alpha2"/>
+              <xs:element type="xs:float" name="d_alpha3"/>
+              <xs:element type="xs:float" name="d_beta0"/>
+              <xs:element type="xs:float" name="d_beta1"/>
+              <xs:element type="xs:float" name="d_beta2"/>
+              <xs:element type="xs:float" name="d_beta3"/>
+            </xs:sequence>
+            <xs:attribute type="xs:byte" name="class_id"/>
+            <xs:attribute type="xs:byte" name="tracking_level"/>
+            <xs:attribute type="xs:byte" name="version"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute type="xs:string" name="signature"/>
+      <xs:attribute type="xs:byte" name="version"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

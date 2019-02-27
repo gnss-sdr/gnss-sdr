@@ -6,14 +6,17 @@
 
 <arch name="softfp">
   <flag compiler="gnu">-mfloat-abi=softfp</flag>
+  <flag compiler="clang">-mfloat-abi=softfp</flag>
 </arch>
 
 <arch name="hardfp">
   <flag compiler="gnu">-mfloat-abi=hard</flag>
+  <flag compiler="clang">-mfloat-abi=hard</flag>
 </arch>
 
 <arch name="neon">
   <flag compiler="gnu">-funsafe-math-optimizations</flag>
+  <flag compiler="clang">-funsafe-math-optimizations</flag>
   <alignment>16</alignment>
   <check name="has_neon"></check>
 </arch>
@@ -21,18 +24,22 @@
 <arch name="neonv7">
   <flag compiler="gnu">-mfpu=neon</flag>
   <flag compiler="gnu">-funsafe-math-optimizations</flag>
+  <flag compiler="clang">-mfpu=neon</flag>
+  <flag compiler="clang">-funsafe-math-optimizations</flag>
   <alignment>16</alignment>
   <check name="has_neonv7"></check>
 </arch>
 
 <arch name="neonv8">
   <flag compiler="gnu">-funsafe-math-optimizations</flag>
+  <flag compiler="clang">-funsafe-math-optimizations</flag>
   <alignment>16</alignment>
   <check name="has_neonv8"></check>
 </arch>
 
 <arch name="32">
   <flag compiler="gnu">-m32</flag>
+  <flag compiler="clang">-m32</flag>
 </arch>
 
 <arch name="64">
@@ -236,6 +243,50 @@
     <flag compiler="gnu">-mavx2</flag>
     <flag compiler="msvc">/arch:AVX2</flag>
     <alignment>32</alignment>
+</arch>
+
+<arch name="avx512f">
+    <!-- check for AVX512F -->
+    <check name="cpuid_count_x86_bit">
+        <param>7</param>
+        <param>0</param>
+        <param>1</param>
+        <param>16</param>
+    </check>
+    <!-- check to make sure that xgetbv is enabled in OS -->
+    <check name="cpuid_x86_bit">
+        <param>2</param>
+        <param>0x00000001</param>
+        <param>27</param>
+    </check>
+    <!-- check to see that the OS has enabled AVX512 -->
+    <check name="get_avx512_enabled"></check>
+    <flag compiler="gnu">-mavx512f</flag>
+    <flag compiler="clang">-mavx512f</flag>
+    <flag compiler="msvc">/arch:AVX512F</flag>
+    <alignment>64</alignment>
+</arch>
+
+<arch name="avx512cd">
+    <!-- check for AVX512CD -->
+    <check name="cpuid_count_x86_bit">
+        <param>7</param>
+        <param>0</param>
+        <param>1</param>
+        <param>28</param>
+    </check>
+    <!-- check to make sure that xgetbv is enabled in OS -->
+    <check name="cpuid_x86_bit">
+        <param>2</param>
+        <param>0x00000001</param>
+        <param>27</param>
+    </check>
+    <!-- check to see that the OS has enabled AVX512 -->
+    <check name="get_avx512_enabled"></check>
+    <flag compiler="gnu">-mavx512cd</flag>
+    <flag compiler="clang">-mavx512cd</flag>
+    <flag compiler="msvc">/arch:AVX512CD</flag>
+    <alignment>64</alignment>
 </arch>
 
 </grammar>

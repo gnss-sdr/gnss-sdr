@@ -53,7 +53,7 @@ extern "C"
  * Write out leading TL[v] sequence according to the type definition.
  */
     ssize_t der_write_tags(
-        struct asn_TYPE_descriptor_s *type_descriptor,
+        struct asn_TYPE_descriptor_s *sd,
         size_t struct_length,
         int tag_mode,      /* {-1,0,1}: IMPLICIT, no, EXPLICIT */
         int last_tag_form, /* {0,!0}: prim, constructed */

@@ -1,4 +1,4 @@
-# Copyright (C) 2011-2018 (see AUTHORS file for a list of contributors)
+# Copyright (C) 2011-2019 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -21,30 +21,33 @@
 #
 # Once done this will define:
 #
-#  MATIO_FOUND		- True if MATIO found.
-#  MATIO_LIBRARIES	- MATIO libraries.
+#  MATIO_FOUND - True if MATIO found.
+#  MATIO_LIBRARIES - MATIO libraries.
 #  MATIO_INCLUDE_DIRS - where to find matio.h, etc..
 #  MATIO_VERSION_STRING - version number as a string (e.g.: "1.3.4")
-# 
+#
+# Provides the following imported target:
+# Matio::matio
+#
 #=============================================================================
 # Copyright 2015 Avtech Scientific <http://avtechscientific.com>
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
 # are met:
-# 
+#
 # * Redistributions of source code must retain the above copyright
 #   notice, this list of conditions and the following disclaimer.
-# 
+#
 # * Redistributions in binary form must reproduce the above copyright
 #   notice, this list of conditions and the following disclaimer in the
 #   documentation and/or other materials provided with the distribution.
-# 
+#
 # * Neither the names of Kitware, Inc., the Insight Software Consortium,
 #   nor the names of their contributors may be used to endorse or promote
 #   products derived from this software without specific prior written
 #   permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 # "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 # LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -60,58 +63,80 @@
 #
 
 # Look for the header file.
-find_path(MATIO_INCLUDE_DIR NAMES matio.h DOC "The MATIO include directory")
+find_path(MATIO_INCLUDE_DIR
+    NAMES matio.h
+    HINTS
+      ${MATIO_ROOT}/include
+      $ENV{MATIO_ROOT}/include
+    DOC "The MATIO include directory"
+)
 
 # Look for the library.
-find_library(MATIO_LIBRARY NAMES matio DOC "The MATIO library")
+find_library(MATIO_LIBRARY
+    NAMES matio
+    HINTS
+      ${MATIO_ROOT}/lib
+      $ENV{MATIO_ROOT}/lib
+      ${MATIO_ROOT}/lib64
+      $ENV{MATIO_ROOT}/lib64
+    DOC "The MATIO library"
+)
 
 if(MATIO_INCLUDE_DIR)
-	# ---------------------------------------------------
-	#  Extract version information from MATIO
-	# ---------------------------------------------------
+    # ---------------------------------------------------
+    #  Extract version information from MATIO
+    # ---------------------------------------------------
 
-	# If the file is missing, set all values to 0
-	set(MATIO_MAJOR_VERSION 0)
-	set(MATIO_MINOR_VERSION 0)
-	set(MATIO_RELEASE_LEVEL 0)
+    # If the file is missing, set all values to 0
+    set(MATIO_MAJOR_VERSION 0)
+    set(MATIO_MINOR_VERSION 0)
+    set(MATIO_RELEASE_LEVEL 0)
 
-	# new versions of MATIO have `matio_pubconf.h`
-	if(EXISTS ${MATIO_INCLUDE_DIR}/matio_pubconf.h)
-		set(MATIO_CONFIG_FILE "matio_pubconf.h")
-	else()
-		set(MATIO_CONFIG_FILE "matioConfig.h")
-	endif()
+    # new versions of MATIO have `matio_pubconf.h`
+    if(EXISTS ${MATIO_INCLUDE_DIR}/matio_pubconf.h)
+        set(MATIO_CONFIG_FILE "matio_pubconf.h")
+    else()
+        set(MATIO_CONFIG_FILE "matioConfig.h")
+    endif()
 
-	if(MATIO_CONFIG_FILE)
+    if(MATIO_CONFIG_FILE)
 
-		# Read and parse MATIO config header file for version number
-		file(STRINGS "${MATIO_INCLUDE_DIR}/${MATIO_CONFIG_FILE}" _matio_HEADER_CONTENTS REGEX "#define MATIO_((MAJOR|MINOR)_VERSION)|(RELEASE_LEVEL) ")
+        # Read and parse MATIO config header file for version number
+        file(STRINGS "${MATIO_INCLUDE_DIR}/${MATIO_CONFIG_FILE}" _matio_HEADER_CONTENTS REGEX "#define MATIO_((MAJOR|MINOR)_VERSION)|(RELEASE_LEVEL) ")
 
-		foreach(line ${_matio_HEADER_CONTENTS})
-			if(line MATCHES "#define ([A-Z_]+) ([0-9]+)")
-				set("${CMAKE_MATCH_1}" "${CMAKE_MATCH_2}")
-			endif()
-		endforeach()
+        foreach(line ${_matio_HEADER_CONTENTS})
+            if(line MATCHES "#define ([A-Z_]+) ([0-9]+)")
+                set("${CMAKE_MATCH_1}" "${CMAKE_MATCH_2}")
+            endif()
+        endforeach()
 
-		unset(_matio_HEADER_CONTENTS)
-	endif()
+        unset(_matio_HEADER_CONTENTS)
+    endif()
 
-	set(MATIO_VERSION_STRING "${MATIO_MAJOR_VERSION}.${MATIO_MINOR_VERSION}.${MATIO_RELEASE_LEVEL}")
-endif ()
-
-#==================
+    set(MATIO_VERSION_STRING "${MATIO_MAJOR_VERSION}.${MATIO_MINOR_VERSION}.${MATIO_RELEASE_LEVEL}")
+endif()
 
 mark_as_advanced(MATIO_INCLUDE_DIR MATIO_LIBRARY)
 
-# handle the QUIETLY and REQUIRED arguments and set MATIO_FOUND to TRUE if 
+# handle the QUIETLY and REQUIRED arguments and set MATIO_FOUND to TRUE if
 # all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(MATIO REQUIRED_VARS MATIO_LIBRARY MATIO_INCLUDE_DIR VERSION_VAR MATIO_VERSION_STRING)
+find_package_handle_standard_args(MATIO REQUIRED_VARS MATIO_LIBRARY MATIO_INCLUDE_DIR VERSION_VAR MATIO_VERSION_STRING)
 
 if(MATIO_FOUND)
   set(MATIO_LIBRARIES ${MATIO_LIBRARY})
   set(MATIO_INCLUDE_DIRS ${MATIO_INCLUDE_DIR})
-else(MATIO_FOUND)
+else()
   set(MATIO_LIBRARIES)
   set(MATIO_INCLUDE_DIRS)
-endif(MATIO_FOUND)
+endif()
+
+if(MATIO_FOUND AND NOT TARGET Matio::matio)
+    add_library(Matio::matio SHARED IMPORTED)
+    set_target_properties(Matio::matio PROPERTIES
+        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+        IMPORTED_LOCATION "${MATIO_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${MATIO_INCLUDE_DIR}"
+        INTERFACE_LINK_LIBRARIES "${MATIO_LIBRARY}"
+    )
+endif()

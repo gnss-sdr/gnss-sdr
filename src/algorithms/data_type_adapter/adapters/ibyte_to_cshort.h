@@ -32,8 +32,8 @@
 #define GNSS_SDR_IBYTE_TO_CSHORT_H_
 
 #include "conjugate_sc.h"
-#include "interleaved_byte_to_complex_short.h"
 #include "gnss_block_interface.h"
+#include "interleaved_byte_to_complex_short.h"
 #include <gnuradio/blocks/file_sink.h>
 #include <string>
 
@@ -48,7 +48,7 @@ class IbyteToCshort : public GNSSBlockInterface
 {
 public:
     IbyteToCshort(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role, unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~IbyteToCshort();

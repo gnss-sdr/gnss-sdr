@@ -39,22 +39,22 @@
 #define GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_C_H
 
 #include "rtl_tcp_dongle_info.h"
-#include <boost/asio.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/condition.hpp>
 #include <boost/array.hpp>
+#include <boost/asio.hpp>
 #include <boost/circular_buffer.hpp>
+#include <boost/thread/condition.hpp>
+#include <boost/thread/mutex.hpp>
 #include <gnuradio/sync_block.h>
+#include <cstdint>
 #include <string>
 
 class rtl_tcp_signal_source_c;
 
-typedef boost::shared_ptr<rtl_tcp_signal_source_c>
-    rtl_tcp_signal_source_c_sptr;
+using rtl_tcp_signal_source_c_sptr = boost::shared_ptr<rtl_tcp_signal_source_c>;
 
 rtl_tcp_signal_source_c_sptr
 rtl_tcp_make_signal_source_c(const std::string &address,
-    short port,
+    int16_t port,
     bool flip_iq = false);
 
 /*!
@@ -77,18 +77,18 @@ public:
     void set_if_gain(int gain);
 
 private:
-    typedef boost::circular_buffer_space_optimized<float> buffer_type;
+    using buffer_type = boost::circular_buffer_space_optimized<float>;
 
     friend rtl_tcp_signal_source_c_sptr
     rtl_tcp_make_signal_source_c(const std::string &address,
-        short port,
+        int16_t port,
         bool flip_iq);
 
     rtl_tcp_signal_source_c(const std::string &address,
-        short port,
+        int16_t port,
         bool flip_iq);
 
-    rtl_tcp_dongle_info info_;
+    Rtl_Tcp_Dongle_Info info_;
 
     // IO members
     boost::asio::io_service io_service_;

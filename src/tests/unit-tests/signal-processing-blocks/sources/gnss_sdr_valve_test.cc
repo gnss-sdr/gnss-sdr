@@ -31,12 +31,16 @@
  */
 
 
-#include <gnuradio/top_block.h>
 #include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/top_block.h>
+#ifdef GR_GREATER_38
+#include <gnuradio/analog/sig_source.h>
+#else
 #include <gnuradio/analog/sig_source_f.h>
+#endif
+#include "gnss_sdr_valve.h"
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/msg_queue.h>
-#include "gnss_sdr_valve.h"
 
 TEST(ValveTest, CheckEventSentAfter100Samples)
 {

@@ -49,42 +49,42 @@
  */
 
 #include "pcps_opencl_acquisition_cc.h"
-#include "control_message_factory.h"
+#include "GPS_L1_CA.h"  //GPS_TWO_PI
 #include "opencl/fft_base_kernels.h"
 #include "opencl/fft_internal.h"
-#include "GPS_L1_CA.h"  //GPS_TWO_PI
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <algorithm>
+#include <exception>
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <utility>
 
 
 using google::LogMessage;
 
 pcps_opencl_acquisition_cc_sptr pcps_make_opencl_acquisition_cc(
-    unsigned int sampled_ms, unsigned int max_dwells,
-    unsigned int doppler_max, long freq, long fs_in,
+    uint32_t sampled_ms, uint32_t max_dwells,
+    uint32_t doppler_max, int64_t fs_in,
     int samples_per_ms, int samples_per_code,
     bool bit_transition_flag,
     bool dump,
     std::string dump_filename)
 {
     return pcps_opencl_acquisition_cc_sptr(
-        new pcps_opencl_acquisition_cc(sampled_ms, max_dwells, doppler_max, freq, fs_in, samples_per_ms,
-            samples_per_code, bit_transition_flag, dump, dump_filename));
+        new pcps_opencl_acquisition_cc(sampled_ms, max_dwells, doppler_max, fs_in, samples_per_ms,
+            samples_per_code, bit_transition_flag, dump, std::move(dump_filename)));
 }
 
 
 pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(
-    unsigned int sampled_ms,
-    unsigned int max_dwells,
-    unsigned int doppler_max,
-    long freq,
-    long fs_in,
+    uint32_t sampled_ms,
+    uint32_t max_dwells,
+    uint32_t doppler_max,
+    int64_t fs_in,
     int samples_per_ms,
     int samples_per_code,
     bool bit_transition_flag,
@@ -94,11 +94,10 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(
                                      gr::io_signature::make(0, 0, sizeof(gr_complex) * sampled_ms * samples_per_ms))
 {
     this->message_port_register_out(pmt::mp("events"));
-    d_sample_counter = 0;  // SAMPLE COUNTER
+    d_sample_counter = 0ULL;  // SAMPLE COUNTER
     d_active = false;
     d_state = 0;
     d_core_working = false;
-    d_freq = freq;
     d_fs_in = fs_in;
     d_samples_per_ms = samples_per_ms;
     d_samples_per_code = samples_per_code;
@@ -116,7 +115,7 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(
     d_cl_fft_batch_size = 1;
 
     d_in_buffer = new gr_complex *[d_max_dwells];
-    for (unsigned int i = 0; i < d_max_dwells; i++)
+    for (uint32_t i = 0; i < d_max_dwells; i++)
         {
             d_in_buffer[i] = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
         }
@@ -124,7 +123,7 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(
     d_fft_codes = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_fft_size_pow2 * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     d_zero_vector = static_cast<gr_complex *>(volk_gnsssdr_malloc((d_fft_size_pow2 - d_fft_size) * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
-    for (unsigned int i = 0; i < (d_fft_size_pow2 - d_fft_size); i++)
+    for (uint32_t i = 0; i < (d_fft_size_pow2 - d_fft_size); i++)
         {
             d_zero_vector[i] = gr_complex(0.0, 0.0);
         }
@@ -142,7 +141,7 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(
 
     // For dumping samples into a file
     d_dump = dump;
-    d_dump_filename = dump_filename;
+    d_dump_filename = std::move(dump_filename);
 }
 
 
@@ -150,14 +149,14 @@ pcps_opencl_acquisition_cc::~pcps_opencl_acquisition_cc()
 {
     if (d_num_doppler_bins > 0)
         {
-            for (unsigned int i = 0; i < d_num_doppler_bins; i++)
+            for (uint32_t i = 0; i < d_num_doppler_bins; i++)
                 {
                     volk_gnsssdr_free(d_grid_doppler_wipeoffs[i]);
                 }
             delete[] d_grid_doppler_wipeoffs;
         }
 
-    for (unsigned int i = 0; i < d_max_dwells; i++)
+    for (uint32_t i = 0; i < d_max_dwells; i++)
         {
             volk_gnsssdr_free(d_in_buffer[i]);
         }
@@ -188,14 +187,25 @@ pcps_opencl_acquisition_cc::~pcps_opencl_acquisition_cc()
             delete d_fft_if;
         }
 
-    if (d_dump)
+    try
         {
-            d_dump_file.close();
+            if (d_dump)
+                {
+                    d_dump_file.close();
+                }
+        }
+    catch (const std::ofstream::failure &e)
+        {
+            std::cerr << "Problem closing Acquisition dump file: " << d_dump_filename << '\n';
+        }
+    catch (const std::exception &e)
+        {
+            std::cerr << e.what() << '\n';
         }
 }
 
 
-int pcps_opencl_acquisition_cc::init_opencl_environment(std::string kernel_filename)
+int pcps_opencl_acquisition_cc::init_opencl_environment(const std::string &kernel_filename)
 {
     //get all platforms (drivers)
     std::vector<cl::Platform> all_platforms;
@@ -292,10 +302,10 @@ void pcps_opencl_acquisition_cc::init()
     d_gnss_synchro->Flag_valid_symbol_output = false;
     d_gnss_synchro->Flag_valid_pseudorange = false;
     d_gnss_synchro->Flag_valid_word = false;
-
+    d_gnss_synchro->Acq_doppler_step = 0U;
     d_gnss_synchro->Acq_delay_samples = 0.0;
     d_gnss_synchro->Acq_doppler_hz = 0.0;
-    d_gnss_synchro->Acq_samplestamp_samples = 0;
+    d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
     d_mag = 0.0;
     d_input_power = 0.0;
 
@@ -315,12 +325,12 @@ void pcps_opencl_acquisition_cc::init()
             d_cl_buffer_grid_doppler_wipeoffs = new cl::Buffer *[d_num_doppler_bins];
         }
 
-    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+    for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex *>(volk_gnsssdr_malloc(d_fft_size * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
 
             int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
-            float phase_step_rad = static_cast<float>(GPS_TWO_PI) * (d_freq + doppler) / static_cast<float>(d_fs_in);
+            float phase_step_rad = static_cast<float>(GPS_TWO_PI) * doppler / static_cast<float>(d_fs_in);
             float _phase[1];
             _phase[0] = 0;
             volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index], -phase_step_rad, _phase, d_fft_size);
@@ -361,7 +371,7 @@ void pcps_opencl_acquisition_cc::set_local_code(std::complex<float> *code)
 
             clFFT_ExecuteInterleaved((*d_cl_queue)(), d_cl_fft_plan, d_cl_fft_batch_size,
                 clFFT_Forward, (*d_cl_buffer_2)(), (*d_cl_buffer_2)(),
-                0, NULL, NULL);
+                0, nullptr, nullptr);
 
             //Conjucate the local code
             cl::Kernel kernel = cl::Kernel(d_cl_program, "conj_vector");
@@ -389,7 +399,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_volk()
     float magt = 0.0;
     float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
     gr_complex *in = d_in_buffer[d_well_count];
-    unsigned long int samplestamp = d_sample_counter_buffer[d_well_count];
+    uint64_t samplestamp = d_sample_counter_buffer[d_well_count];
 
     d_input_power = 0.0;
     d_mag = 0.0;
@@ -408,7 +418,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_volk()
     d_input_power /= static_cast<float>(d_fft_size);
 
     // 2- Doppler frequency search loop
-    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+    for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             // doppler search steps
             doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
@@ -452,6 +462,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_volk()
                             d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
                             d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
                             d_gnss_synchro->Acq_samplestamp_samples = samplestamp;
+                            d_gnss_synchro->Acq_doppler_step = d_doppler_step;
 
                             // 5- Compute the test statistics and compare to the threshold
                             //d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
@@ -512,7 +523,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
     float magt = 0.0;
     float fft_normalization_factor = (static_cast<float>(d_fft_size_pow2) * static_cast<float>(d_fft_size));  //This works, but I am not sure why.
     gr_complex *in = d_in_buffer[d_well_count];
-    unsigned long int samplestamp = d_sample_counter_buffer[d_well_count];
+    uint64_t samplestamp = d_sample_counter_buffer[d_well_count];
 
     d_input_power = 0.0;
     d_mag = 0.0;
@@ -543,7 +554,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
     cl::Kernel kernel;
 
     // 2- Doppler frequency search loop
-    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+    for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             // doppler search steps
 
@@ -563,7 +574,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
 
             clFFT_ExecuteInterleaved((*d_cl_queue)(), d_cl_fft_plan, d_cl_fft_batch_size,
                 clFFT_Forward, (*d_cl_buffer_1)(), (*d_cl_buffer_2)(),
-                0, NULL, NULL);
+                0, nullptr, nullptr);
 
             // Multiply carrier wiped--off, Fourier transformed incoming signal
             // with the local FFT'd code reference
@@ -577,7 +588,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
             // compute the inverse FFT
             clFFT_ExecuteInterleaved((*d_cl_queue)(), d_cl_fft_plan, d_cl_fft_batch_size,
                 clFFT_Inverse, (*d_cl_buffer_2)(), (*d_cl_buffer_2)(),
-                0, NULL, NULL);
+                0, nullptr, nullptr);
 
             // Compute magnitude
             kernel = cl::Kernel(d_cl_program, "magnitude_squared");
@@ -615,6 +626,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
                             d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
                             d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
                             d_gnss_synchro->Acq_samplestamp_samples = samplestamp;
+                            d_gnss_synchro->Acq_doppler_step = d_doppler_step;
 
                             // 5- Compute the test statistics and compare to the threshold
                             //d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
@@ -678,7 +690,8 @@ void pcps_opencl_acquisition_cc::set_state(int state)
         {
             d_gnss_synchro->Acq_delay_samples = 0.0;
             d_gnss_synchro->Acq_doppler_hz = 0.0;
-            d_gnss_synchro->Acq_samplestamp_samples = 0;
+            d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
+            d_gnss_synchro->Acq_doppler_step = 0U;
             d_well_count = 0;
             d_mag = 0.0;
             d_input_power = 0.0;
@@ -710,7 +723,8 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
                         //restart acquisition variables
                         d_gnss_synchro->Acq_delay_samples = 0.0;
                         d_gnss_synchro->Acq_doppler_hz = 0.0;
-                        d_gnss_synchro->Acq_samplestamp_samples = 0;
+                        d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
+                        d_gnss_synchro->Acq_doppler_step = 0U;
                         d_well_count = 0;
                         d_mag = 0.0;
                         d_input_power = 0.0;
@@ -721,7 +735,7 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
                         d_state = 1;
                     }
 
-                d_sample_counter += d_fft_size * ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_fft_size * ninput_items[0]);  // sample counter
 
                 break;
             }
@@ -733,25 +747,25 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
                         // Fill internal buffer with d_max_dwells signal blocks. This step ensures that
                         // consecutive signal blocks will be processed in multi-dwell operation. This is
                         // essential when d_bit_transition_flag = true.
-                        unsigned int num_dwells = std::min(static_cast<int>(d_max_dwells - d_in_dwell_count), ninput_items[0]);
-                        for (unsigned int i = 0; i < num_dwells; i++)
+                        uint32_t num_dwells = std::min(static_cast<int>(d_max_dwells - d_in_dwell_count), ninput_items[0]);
+                        for (uint32_t i = 0; i < num_dwells; i++)
                             {
                                 memcpy(d_in_buffer[d_in_dwell_count++], static_cast<const gr_complex *>(input_items[i]),
                                     sizeof(gr_complex) * d_fft_size);
-                                d_sample_counter += d_fft_size;
+                                d_sample_counter += static_cast<uint64_t>(d_fft_size);
                                 d_sample_counter_buffer.push_back(d_sample_counter);
                             }
 
                         if (ninput_items[0] > static_cast<int>(num_dwells))
                             {
-                                d_sample_counter += d_fft_size * (ninput_items[0] - num_dwells);
+                                d_sample_counter += static_cast<uint64_t>(d_fft_size * (ninput_items[0] - num_dwells));
                             }
                     }
                 else
                     {
                         // We already have d_max_dwells consecutive blocks in the internal buffer,
                         // just skip input blocks.
-                        d_sample_counter += d_fft_size * ninput_items[0];
+                        d_sample_counter += static_cast<uint64_t>(d_fft_size * ninput_items[0]);
                     }
 
                 // We create a new thread to process next block if the following
@@ -795,7 +809,7 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
                 d_active = false;
                 d_state = 0;
 
-                d_sample_counter += d_fft_size * ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_fft_size * ninput_items[0]);  // sample counter
 
                 acquisition_message = 1;
                 this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
@@ -819,7 +833,7 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
                 d_active = false;
                 d_state = 0;
 
-                d_sample_counter += d_fft_size * ninput_items[0];  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_fft_size * ninput_items[0]);  // sample counter
 
                 acquisition_message = 2;
                 this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));

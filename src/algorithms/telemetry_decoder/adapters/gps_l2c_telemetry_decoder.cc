@@ -32,18 +32,18 @@
 
 #include "gps_l2c_telemetry_decoder.h"
 #include "configuration_interface.h"
-#include "gps_cnav_ephemeris.h"
 #include "gps_almanac.h"
+#include "gps_cnav_ephemeris.h"
 #include "gps_cnav_iono.h"
 #include "gps_cnav_utc_model.h"
-#include <gnuradio/io_signature.h>
 #include <glog/logging.h>
+#include <gnuradio/io_signature.h>
 
 
 using google::LogMessage;
 
 GpsL2CTelemetryDecoder::GpsL2CTelemetryDecoder(ConfigurationInterface* configuration,
-    std::string role,
+    const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
                                 in_streams_(in_streams),
@@ -57,12 +57,18 @@ GpsL2CTelemetryDecoder::GpsL2CTelemetryDecoder(ConfigurationInterface* configura
     telemetry_decoder_ = gps_l2c_make_telemetry_decoder_cc(satellite_, dump_);  // TODO fix me
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
     channel_ = 0;
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 
-GpsL2CTelemetryDecoder::~GpsL2CTelemetryDecoder()
-{
-}
+GpsL2CTelemetryDecoder::~GpsL2CTelemetryDecoder() = default;
 
 
 void GpsL2CTelemetryDecoder::set_satellite(const Gnss_Satellite& satellite)

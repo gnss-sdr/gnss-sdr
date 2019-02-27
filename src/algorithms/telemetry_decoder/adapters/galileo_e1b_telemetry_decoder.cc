@@ -33,18 +33,18 @@
 
 #include "galileo_e1b_telemetry_decoder.h"
 #include "configuration_interface.h"
-#include "galileo_ephemeris.h"
 #include "galileo_almanac.h"
+#include "galileo_ephemeris.h"
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
-#include <gnuradio/io_signature.h>
 #include <glog/logging.h>
+#include <gnuradio/io_signature.h>
 
 
 using google::LogMessage;
 
 GalileoE1BTelemetryDecoder::GalileoE1BTelemetryDecoder(ConfigurationInterface* configuration,
-    std::string role,
+    const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
                                 in_streams_(in_streams),
@@ -55,15 +55,21 @@ GalileoE1BTelemetryDecoder::GalileoE1BTelemetryDecoder(ConfigurationInterface* c
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     // make telemetry decoder object
-    telemetry_decoder_ = galileo_e1b_make_telemetry_decoder_cc(satellite_, dump_);  // TODO fix me
+    telemetry_decoder_ = galileo_make_telemetry_decoder_cc(satellite_, 1, dump_);  //unified galileo decoder set to INAV (frame_type=1)
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
     channel_ = 0;
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 
-GalileoE1BTelemetryDecoder::~GalileoE1BTelemetryDecoder()
-{
-}
+GalileoE1BTelemetryDecoder::~GalileoE1BTelemetryDecoder() = default;
 
 
 void GalileoE1BTelemetryDecoder::set_satellite(const Gnss_Satellite& satellite)

@@ -31,12 +31,14 @@
  */
 
 #include "ad9361_fpga_signal_source.h"
-#include "configuration_interface.h"
-#include "ad9361_manager.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
+#include "ad9361_manager.h"
+#include "configuration_interface.h"
 #include <glog/logging.h>
+#include <exception>
 #include <iostream>  // for cout, endl
+#include <utility>
 
 #ifdef __APPLE__
 #include <iio/iio.h>
@@ -45,8 +47,8 @@
 #endif
 
 Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_stream, unsigned int out_stream,
-    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
+    const std::string& role, unsigned int in_stream, unsigned int out_stream,
+    boost::shared_ptr<gr::msg_queue> queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(std::move(queue))
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/signal_source.dat";
@@ -105,11 +107,19 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface* configura
         }
 
     // turn switch to A/D position
-    std::string default_device_name = "/dev/uio13";
+    std::string default_device_name = "/dev/uio1";
     std::string device_name = configuration->property(role + ".devicename", default_device_name);
-    int switch_position = configuration->property(role + ".switch_position", 0);
-    switch_fpga = std::make_shared<fpga_switch>(device_name);
+    int32_t switch_position = configuration->property(role + ".switch_position", 0);
+    switch_fpga = std::make_shared<Fpga_Switch>(device_name);
     switch_fpga->set_switch_position(switch_position);
+    if (in_stream_ > 0)
+        {
+            LOG(ERROR) << "A signal source does not have an input stream";
+        }
+    if (out_stream_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 
@@ -122,7 +132,14 @@ Ad9361FpgaSignalSource::~Ad9361FpgaSignalSource()
 
     if (enable_dds_lo_)
         {
-            ad9361_disable_lo_local();
+            try
+                {
+                    ad9361_disable_lo_local();
+                }
+            catch (const std::exception& e)
+                {
+                    LOG(WARNING) << "Problem closing the Ad9361FpgaSignalSource: " << e.what();
+                }
         }
 
     // std::cout<<"* AD9361 Destroying context\n";
@@ -132,12 +149,18 @@ Ad9361FpgaSignalSource::~Ad9361FpgaSignalSource()
 
 void Ad9361FpgaSignalSource::connect(gr::top_block_sptr top_block)
 {
+    if (top_block)
+        { /* top_block is not null */
+        };
     DLOG(INFO) << "AD9361 FPGA source nothing to connect";
 }
 
 
 void Ad9361FpgaSignalSource::disconnect(gr::top_block_sptr top_block)
 {
+    if (top_block)
+        { /* top_block is not null */
+        };
     DLOG(INFO) << "AD9361 FPGA source nothing to disconnect";
 }
 

@@ -29,13 +29,12 @@
  * -------------------------------------------------------------------------
  */
 
-#include <stdexcept>
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/top_block.h>
-#include <gnuradio/blocks/null_sink.h>
-#include <gtest/gtest.h>
 #include "file_signal_source.h"
 #include "in_memory_configuration.h"
+#include <gnuradio/msg_queue.h>
+#include <gnuradio/top_block.h>
+#include <gtest/gtest.h>
+#include <stdexcept>
 
 TEST(FileSignalSource, Instantiate)
 {
@@ -50,7 +49,7 @@ TEST(FileSignalSource, Instantiate)
     config->set_property("Test.item_type", "gr_complex");
     config->set_property("Test.repeat", "false");
 
-    std::unique_ptr<FileSignalSource> signal_source(new FileSignalSource(config.get(), "Test", 1, 1, queue));
+    std::unique_ptr<FileSignalSource> signal_source(new FileSignalSource(config.get(), "Test", 0, 1, queue));
 
     EXPECT_STREQ("gr_complex", signal_source->item_type().c_str());
     EXPECT_TRUE(signal_source->repeat() == false);
@@ -67,5 +66,5 @@ TEST(FileSignalSource, InstantiateFileNotExists)
     config->set_property("Test.item_type", "gr_complex");
     config->set_property("Test.repeat", "false");
 
-    EXPECT_THROW({ auto uptr = std::make_shared<FileSignalSource>(config.get(), "Test", 1, 1, queue); }, std::exception);
+    EXPECT_THROW({ auto uptr = std::make_shared<FileSignalSource>(config.get(), "Test", 0, 1, queue); }, std::exception);
 }

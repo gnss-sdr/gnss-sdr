@@ -22,9 +22,10 @@
 #include "qa_utils.h"                           // for volk_gnsssdr_test_case_t, volk_gnsssdr_test_results_t
 #include "volk_gnsssdr/volk_gnsssdr_complex.h"  // for lv_32fc_t
 #include <cstdbool>                             // for bool, false, true
-#include <iostream>                             // for operator<<, basic_ostream, endl, char...
 #include <fstream>                              // IWYU pragma: keep
+#include <iostream>                             // for operator<<, basic_ostream, endl, char...
 #include <map>                                  // for map, map<>::iterator, _Rb_tree_iterator
+#include <sstream>                              // for stringstream
 #include <string>                               // for string, operator<<
 #include <utility>                              // for pair
 #include <vector>                               // for vector
@@ -38,7 +39,7 @@ int main(int argc, char* argv[])
     float def_tol = 1e-6;
     lv_32fc_t def_scalar = 327.0;
     int def_iter = 1;
-    int def_vlen = 131071;
+    int def_vlen = 8111;
     bool def_benchmark_mode = true;
     std::string def_kernel_regex = "";
 
@@ -48,15 +49,16 @@ int main(int argc, char* argv[])
     std::vector<volk_gnsssdr_test_results_t> results;
     if (argc > 1)
         {
-            const size_t len = std::char_traits<char>::length(argv[1]);
-            if (len == 0 || len > 2046)
+            std::stringstream ss;
+            ss << argv[1];
+            if (ss.fail())
                 {
-                    std::cerr << "Test name is too long." << std::endl;
+                    std::cerr << "Test name not correctly set." << std::endl;
                     return 0;
                 }
             for (unsigned int ii = 0; ii < test_cases.size(); ++ii)
                 {
-                    if (std::string(argv[1]) == test_cases[ii].name())
+                    if (ss.str() == test_cases[ii].name())
                         {
                             volk_gnsssdr_test_case_t test_case = test_cases[ii];
                             if (run_volk_gnsssdr_tests(test_case.desc(), test_case.kernel_ptr(),

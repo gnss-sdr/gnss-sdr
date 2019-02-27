@@ -50,11 +50,12 @@ private:
     std::ofstream geojson_file;
     bool first_pos;
     std::string filename_;
+    std::string geojson_base_path;
 
 public:
-    GeoJSON_Printer();
+    GeoJSON_Printer(const std::string& base_path = ".");
     ~GeoJSON_Printer();
-    bool set_headers(std::string filename, bool time_tag_name = true);
+    bool set_headers(const std::string& filename, bool time_tag_name = true);
     bool print_position(const std::shared_ptr<Pvt_Solution>& position, bool print_average_values);
     bool close_file();
 };

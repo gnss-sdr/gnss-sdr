@@ -36,7 +36,7 @@
 
 class complex_float_to_complex_byte;
 
-typedef boost::shared_ptr<complex_float_to_complex_byte> complex_float_to_complex_byte_sptr;
+using complex_float_to_complex_byte_sptr = boost::shared_ptr<complex_float_to_complex_byte>;
 
 complex_float_to_complex_byte_sptr make_complex_float_to_complex_byte();
 

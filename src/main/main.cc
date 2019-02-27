@@ -8,7 +8,7 @@
 *
 * -------------------------------------------------------------------------
 *
-* Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)
+* Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
 *
 * GNSS-SDR is a software defined Global Navigation
 * Satellite Systems receiver
@@ -32,7 +32,7 @@
 */
 
 #ifndef GNSS_SDR_VERSION
-#define GNSS_SDR_VERSION "0.0.9"
+#define GNSS_SDR_VERSION "0.0.10"
 #endif
 
 #ifndef GOOGLE_STRIP_LOG
@@ -43,16 +43,19 @@
 #include "concurrent_queue.h"
 #include "control_thread.h"
 #include "gnss_sdr_flags.h"
+#include "gps_acq_assist.h"
 #include <boost/exception/diagnostic_information.hpp>
-#include <boost/exception_ptr.hpp>
-#include <boost/filesystem/operations.hpp>   // for create_directories, exists
-#include <boost/filesystem/path.hpp>         // for path, operator<<
-#include <boost/filesystem/path_traits.hpp>  // for filesystem
+#include <boost/exception/exception.hpp>    // for exception
+#include <boost/filesystem/operations.hpp>  // for create_directories, exists
+#include <boost/filesystem/path.hpp>        // for path, operator<<
+#include <boost/system/error_code.hpp>      // for error_code
+#include <gflags/gflags.h>
 #include <glog/logging.h>
 #include <chrono>
+#include <exception>
 #include <iostream>
 #include <memory>
-
+#include <string>
 
 #if CUDA_GPU_ACCEL
 // For the CUDA runtime routines (prefixed with "cuda_")
@@ -69,14 +72,14 @@ using google::LogMessage;
 */
 
 // For GPS NAVIGATION (L1)
-concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
-concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
+Concurrent_Queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
+Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
 int main(int argc, char** argv)
 {
     const std::string intro_help(
         std::string("\nGNSS-SDR is an Open Source GNSS Software Defined Receiver\n") +
-        "Copyright (C) 2010-2018 (see AUTHORS file for a list of contributors)\n" +
+        "Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)\n" +
         "This program comes with ABSOLUTELY NO WARRANTY;\n" +
         "See COPYING file to see a copy of the General Public License\n \n");
 
@@ -129,15 +132,21 @@ int main(int argc, char** argv)
                 }
         }
 
-    std::unique_ptr<ControlThread> control_thread(new ControlThread());
-
-    // record startup time
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
-
+    int return_code = 0;
     try
         {
-            control_thread->run();
+            std::unique_ptr<ControlThread> control_thread(new ControlThread());
+            // record startup time
+            start = std::chrono::system_clock::now();
+            return_code = control_thread->run();
+        }
+    catch (const boost::thread_resource_error& e)
+        {
+            std::cout << "Failed to create boost thread." << std::endl;
+            google::ShutDownCommandLineFlags();
+            return 1;
         }
     catch (const boost::exception& e)
         {
@@ -189,5 +198,5 @@ int main(int argc, char** argv)
 
     google::ShutDownCommandLineFlags();
     std::cout << "GNSS-SDR program ended." << std::endl;
-    return 0;
+    return return_code;
 }

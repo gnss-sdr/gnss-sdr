@@ -32,12 +32,11 @@
 #ifndef GNSS_SDR_GALILEO_E1_PCPS_TONG_AMBIGUOUS_ACQUISITION_H_
 #define GNSS_SDR_GALILEO_E1_PCPS_TONG_AMBIGUOUS_ACQUISITION_H_
 
-#include <string>
-#include <gnuradio/blocks/stream_to_vector.h>
-#include "gnss_synchro.h"
 #include "acquisition_interface.h"
+#include "gnss_synchro.h"
 #include "pcps_tong_acquisition_cc.h"
-
+#include <gnuradio/blocks/stream_to_vector.h>
+#include <string>
 
 class ConfigurationInterface;
 
@@ -49,7 +48,8 @@ class GalileoE1PcpsTongAmbiguousAcquisition : public AcquisitionInterface
 {
 public:
     GalileoE1PcpsTongAmbiguousAcquisition(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role,
+        unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~GalileoE1PcpsTongAmbiguousAcquisition();
@@ -127,7 +127,14 @@ public:
     /*!
      * \brief If state = 1, it forces the block to start acquiring from the first sample
      */
-    void set_state(int state);
+    void set_state(int state) override;
+
+    /*!
+     * \brief Stop running acquisition
+     */
+    void stop_acquisition() override;
+
+    void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
 
 private:
     ConfigurationInterface* configuration_;
@@ -145,8 +152,7 @@ private:
     unsigned int tong_init_val_;
     unsigned int tong_max_val_;
     unsigned int tong_max_dwells_;
-    long fs_in_;
-    long if_;
+    int64_t fs_in_;
     bool dump_;
     std::string dump_filename_;
     std::complex<float>* code_;

@@ -32,19 +32,41 @@
 #ifndef GNSS_SDR_ACQUISITION_DUMP_READER_H
 #define GNSS_SDR_ACQUISITION_DUMP_READER_H
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
-class acquisition_dump_reader
+class Acquisition_Dump_Reader
 {
 public:
-    acquisition_dump_reader(const std::string& basename, unsigned int sat, unsigned int doppler_max, unsigned int doppler_step, unsigned int samples_per_code);
-    ~acquisition_dump_reader();
+    Acquisition_Dump_Reader(const std::string& basename,
+        unsigned int sat,
+        unsigned int doppler_max,
+        unsigned int doppler_step,
+        unsigned int samples_per_code,
+        int channel = 0,
+        int execution = 1);
+
+    Acquisition_Dump_Reader(const std::string& basename,
+        int channel = 0,
+        int execution = 1);
+
+    ~Acquisition_Dump_Reader();
+
     bool read_binary_acq();
 
     std::vector<int> doppler;
     std::vector<unsigned int> samples;
     std::vector<std::vector<float> > mag;
+    float acq_doppler_hz;
+    float acq_delay_samples;
+    float test_statistic;
+    float input_power;
+    float threshold;
+    int positive_acq;
+    unsigned int PRN;
+    unsigned int num_dwells;
+    uint64_t sample_counter;
 
 private:
     std::string d_basename;

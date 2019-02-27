@@ -31,19 +31,21 @@
 #ifndef GNSS_SDR_OBSERVABLES_DUMP_READER_H
 #define GNSS_SDR_OBSERVABLES_DUMP_READER_H
 
+#include <cstdint>
 #include <fstream>
 #include <string>
 #include <vector>
 
-class observables_dump_reader
+class Observables_Dump_Reader
 {
 public:
-    observables_dump_reader(int n_channels);
-    ~observables_dump_reader();
+    Observables_Dump_Reader(int n_channels);
+    ~Observables_Dump_Reader();
     bool read_binary_obs();
     bool restart();
-    long int num_epochs();
+    int64_t num_epochs();
     bool open_obs_file(std::string out_file);
+    void close_obs_file();
 
 
     //dump variables

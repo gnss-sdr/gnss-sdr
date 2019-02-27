@@ -34,9 +34,7 @@
 
 #include "direct_resampler_conditioner_cs.h"
 #include <gnuradio/io_signature.h>
-#include <glog/logging.h>
 
-using google::LogMessage;
 
 direct_resampler_conditioner_cs_sptr direct_resampler_make_conditioner_cs(
     double sample_freq_in, double sample_freq_out)
@@ -49,12 +47,13 @@ direct_resampler_conditioner_cs_sptr direct_resampler_make_conditioner_cs(
 
 direct_resampler_conditioner_cs::direct_resampler_conditioner_cs(
     double sample_freq_in,
-    double sample_freq_out) : gr::block("direct_resampler_make_conditioner_cs", gr::io_signature::make(1, 1, sizeof(lv_16sc_t)), gr::io_signature::make(1, 1, sizeof(lv_16sc_t))),
+    double sample_freq_out) : gr::block("direct_resampler_make_conditioner_cs",
+                                  gr::io_signature::make(1, 1, sizeof(lv_16sc_t)),
+                                  gr::io_signature::make(1, 1, sizeof(lv_16sc_t))),
                               d_sample_freq_in(sample_freq_in),
                               d_sample_freq_out(sample_freq_out),
                               d_phase(0),
-                              d_lphase(0),
-                              d_history(1)
+                              d_lphase(0)
 {
     const double two_32 = 4294967296.0;
     // Computes the phase step multiplying the resampling ratio by 2^32 = 4294967296
@@ -72,9 +71,7 @@ direct_resampler_conditioner_cs::direct_resampler_conditioner_cs(
 }
 
 
-direct_resampler_conditioner_cs::~direct_resampler_conditioner_cs()
-{
-}
+direct_resampler_conditioner_cs::~direct_resampler_conditioner_cs() = default;
 
 
 void direct_resampler_conditioner_cs::forecast(int noutput_items,
@@ -94,8 +91,8 @@ int direct_resampler_conditioner_cs::general_work(int noutput_items,
     gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items)
 {
-    const lv_16sc_t *in = reinterpret_cast<const lv_16sc_t *>(input_items[0]);
-    lv_16sc_t *out = reinterpret_cast<lv_16sc_t *>(output_items[0]);
+    const auto *in = reinterpret_cast<const lv_16sc_t *>(input_items[0]);
+    auto *out = reinterpret_cast<lv_16sc_t *>(output_items[0]);
 
     int lcv = 0;
     int count = 0;

@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -26,52 +26,84 @@ set(ACQ_GR_BLOCKS_SOURCES
     pcps_quicksync_acquisition_cc.cc
     galileo_pcps_8ms_acquisition_cc.cc
     galileo_e5a_noncoherent_iq_acquisition_caf_cc.cc
-) 
+)
+
+set(ACQ_GR_BLOCKS_HEADERS
+    pcps_acquisition.h
+    pcps_assisted_acquisition_cc.h
+    pcps_acquisition_fine_doppler_cc.h
+    pcps_tong_acquisition_cc.h
+    pcps_cccwsr_acquisition_cc.h
+    pcps_quicksync_acquisition_cc.h
+    galileo_pcps_8ms_acquisition_cc.h
+    galileo_e5a_noncoherent_iq_acquisition_caf_cc.h
+)
 
 if(ENABLE_FPGA)
     set(ACQ_GR_BLOCKS_SOURCES ${ACQ_GR_BLOCKS_SOURCES} pcps_acquisition_fpga.cc)
-endif(ENABLE_FPGA)
-    
+    set(ACQ_GR_BLOCKS_HEADERS ${ACQ_GR_BLOCKS_HEADERS} pcps_acquisition_fpga.h)
+endif()
+
 if(OPENCL_FOUND)
     set(ACQ_GR_BLOCKS_SOURCES ${ACQ_GR_BLOCKS_SOURCES} pcps_opencl_acquisition_cc.cc)
-endif(OPENCL_FOUND)
-
-include_directories(
-     ${CMAKE_CURRENT_SOURCE_DIR}
-     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-     ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/libs
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${ARMADILLO_INCLUDE_DIRS}
-     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-     ${VOLK_GNSSSDR_INCLUDE_DIRS}
-     ${MATIO_INCLUDE_DIRS}
-)
+    set(ACQ_GR_BLOCKS_HEADERS ${ACQ_GR_BLOCKS_HEADERS} pcps_opencl_acquisition_cc.h)
+endif()
 
 
 if(OPENCL_FOUND)
-    include_directories( ${OPENCL_INCLUDE_DIRS} )
+    include_directories(${OPENCL_INCLUDE_DIRS})
     if(OS_IS_MACOSX)
-         set(OPT_LIBRARIES ${OPT_LIBRARIES} "-framework OpenCL")
-    else(OS_IS_MACOSX)
-         set(OPT_LIBRARIES ${OPT_LIBRARIES} ${OPENCL_LIBRARIES})
-    endif(OS_IS_MACOSX)
-endif(OPENCL_FOUND)
+        set(OPT_LIBRARIES ${OPT_LIBRARIES} "-framework OpenCL")
+    else()
+        set(OPT_LIBRARIES ${OPT_LIBRARIES} ${OPENCL_LIBRARIES})
+    endif()
+endif()
 
-file(GLOB ACQ_GR_BLOCKS_HEADERS "*.h")
 list(SORT ACQ_GR_BLOCKS_HEADERS)
-add_library(acq_gr_blocks ${ACQ_GR_BLOCKS_SOURCES} ${ACQ_GR_BLOCKS_HEADERS})
-source_group(Headers FILES ${ACQ_GR_BLOCKS_HEADERS}) 
+list(SORT ACQ_GR_BLOCKS_SOURCES)
 
-if(ENABLE_FPGA)
-	target_link_libraries(acq_gr_blocks acquisition_lib gnss_sp_libs gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${VOLK_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${OPT_LIBRARIES} ${OPT_ACQUISITION_LIBRARIES})
-else(ENABLE_FPGA)
-	target_link_libraries(acq_gr_blocks gnss_sp_libs gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${VOLK_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${OPT_LIBRARIES} ${OPT_ACQUISITION_LIBRARIES} ${MATIO_LIBRARIES})
-endif(ENABLE_FPGA)
+source_group(Headers FILES ${ACQ_GR_BLOCKS_HEADERS})
 
-if(NOT VOLK_GNSSSDR_FOUND)
-    add_dependencies(acq_gr_blocks volk_gnsssdr_module)
-endif(NOT VOLK_GNSSSDR_FOUND)
+add_library(acquisition_gr_blocks ${ACQ_GR_BLOCKS_SOURCES} ${ACQ_GR_BLOCKS_HEADERS})
+
+target_link_libraries(acquisition_gr_blocks
+    PUBLIC
+        Gnuradio::runtime
+        Gnuradio::fft
+        Volk::volk
+        acquisition_libs
+        core_system_parameters
+        ${OPT_LIBRARIES}
+    PRIVATE
+        Boost::filesystem
+        Gflags::gflags
+        Glog::glog
+        Matio::matio
+        Volkgnsssdr::volkgnsssdr
+        algorithms_libs
+)
+
+target_include_directories(acquisition_gr_blocks
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+    PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/core/receiver
+)
+
+if(OPENCL_FOUND)
+    target_include_directories(acquisition_gr_blocks PUBLIC ${OPENCL_INCLUDE_DIRS})
+endif()
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(acquisition_gr_blocks
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+set_property(TARGET acquisition_gr_blocks
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)

@@ -38,7 +38,7 @@
 
 using google::LogMessage;
 
-NotchFilter::NotchFilter(ConfigurationInterface* configuration, std::string role,
+NotchFilter::NotchFilter(ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     size_t item_size_;
@@ -63,7 +63,7 @@ NotchFilter::NotchFilter(ConfigurationInterface* configuration, std::string role
     length_ = configuration->property(role + ".length", default_length_);
     n_segments_est = configuration->property(role + ".segments_est", default_n_segments_est);
     n_segments_reset = configuration->property(role + ".segments_reset", default_n_segments_reset);
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
             notch_filter_ = make_notch_filter(pfa, p_c_factor, length_, n_segments_est, n_segments_reset);
@@ -81,12 +81,18 @@ NotchFilter::NotchFilter(ConfigurationInterface* configuration, std::string role
             file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
             DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
         }
+    if (in_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one input stream";
+        }
+    if (out_streams_ > 1)
+        {
+            LOG(ERROR) << "This implementation only supports one output stream";
+        }
 }
 
 
-NotchFilter::~NotchFilter()
-{
-}
+NotchFilter::~NotchFilter() = default;
 
 
 void NotchFilter::connect(gr::top_block_sptr top_block)

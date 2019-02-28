@@ -294,6 +294,7 @@ int ControlThread::run()
     stop_ = true;
     flowgraph_->disconnect();
 
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     // Terminate keyboard thread
     pthread_t id = keyboard_thread_.native_handle();
     keyboard_thread_.detach();

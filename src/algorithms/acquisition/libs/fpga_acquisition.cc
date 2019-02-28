@@ -216,12 +216,13 @@ void fpga_acquisition::set_block_exp(uint32_t total_block_exp)
     d_map_base[11] = total_block_exp;
 }
 
-void fpga_acquisition::set_doppler_sweep(uint32_t num_sweeps)
+void fpga_acquisition::set_doppler_sweep(uint32_t num_sweeps, uint32_t doppler_step, uint32_t doppler_min)
 {
     float phase_step_rad_real;
     float phase_step_rad_int_temp;
     int32_t phase_step_rad_int;
-    int32_t doppler = static_cast<int32_t>(-d_doppler_max);
+    //int32_t doppler = static_cast<int32_t>(-d_doppler_max);
+    int32_t doppler = static_cast<int32_t>(doppler_min);
     float phase_step_rad = GPS_TWO_PI * (doppler) / static_cast<float>(d_fs_in);
     // The doppler step can never be outside the range -pi to +pi, otherwise there would be aliasing
     // The FPGA expects phase_step_rad between -1 (-pi) to +1 (+pi)
@@ -239,7 +240,8 @@ void fpga_acquisition::set_doppler_sweep(uint32_t num_sweeps)
     d_map_base[3] = phase_step_rad_int;
 
     // repeat the calculation with the doppler step
-    doppler = static_cast<int32_t>(d_doppler_step);
+    //doppler = static_cast<int32_t>(d_doppler_step);
+    doppler = static_cast<int32_t>(doppler_step);
     phase_step_rad = GPS_TWO_PI * (doppler) / static_cast<float>(d_fs_in);
     phase_step_rad_real = phase_step_rad / (GPS_TWO_PI / 2);
     if (phase_step_rad_real >= 1.0)
@@ -261,30 +263,6 @@ void fpga_acquisition::configure_acquisition()
     d_map_base[2] = d_nsamples;
     d_map_base[7] = static_cast<int32_t>(log2(static_cast<float>(d_vector_length)));  // log2 FFTlength
     d_map_base[12] = d_excludelimit;
-}
-
-
-void fpga_acquisition::set_phase_step(uint32_t doppler_index)
-{
-    float phase_step_rad_real;
-    float phase_step_rad_int_temp;
-    int32_t phase_step_rad_int;
-    int32_t doppler = -static_cast<int32_t>(d_doppler_max) + d_doppler_step * doppler_index;
-    float phase_step_rad = GPS_TWO_PI * (doppler) / static_cast<float>(d_fs_in);
-    // The doppler step can never be outside the range -pi to +pi, otherwise there would be aliasing
-    // The FPGA expects phase_step_rad between -1 (-pi) to +1 (+pi)
-    // The FPGA also expects the phase to be negative since it produces cos(x) -j*sin(x)
-    // while the gnss-sdr software (volk_gnsssdr_s32f_sincos_32fc) generates cos(x) + j*sin(x)
-    phase_step_rad_real = phase_step_rad / (GPS_TWO_PI / 2);
-    // avoid saturation of the fixed point representation in the fpga
-    // (only the positive value can saturate due to the 2's complement representation)
-    if (phase_step_rad_real >= 1.0)
-        {
-            phase_step_rad_real = MAX_PHASE_STEP_RAD;
-        }
-    phase_step_rad_int_temp = phase_step_rad_real * POW_2_2;                          // * 2^2
-    phase_step_rad_int = static_cast<int32_t>(phase_step_rad_int_temp * (POW_2_29));  // * 2^29 (in total it makes x2^31 in two steps to avoid the warnings
-    d_map_base[3] = phase_step_rad_int;
 }
 
 

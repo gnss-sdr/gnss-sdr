@@ -64,6 +64,9 @@ typedef struct
     float downsampling_factor;
     uint32_t total_block_exp;
     uint32_t excludelimit;
+    bool make_2_steps;
+    uint32_t num_doppler_bins_step2;
+    float doppler_step2;
 } pcpsconf_fpga_t;
 
 class pcps_acquisition_fpga;
@@ -94,6 +97,8 @@ private:
 
     float first_vs_second_peak_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
 
+    void acquisition_core(uint32_t num_doppler_bins, uint32_t doppler_step, uint32_t doppler_max);
+
     pcpsconf_fpga_t acq_parameters;
     bool d_active;
     float d_threshold;
@@ -104,6 +109,7 @@ private:
     int32_t d_state;
     uint32_t d_channel;
     uint32_t d_doppler_step;
+    uint32_t d_doppler_max;
     uint32_t d_fft_size;
     uint32_t d_num_doppler_bins;
     uint64_t d_sample_counter;
@@ -115,6 +121,10 @@ private:
 
     uint32_t d_total_block_exp;
 
+    bool d_make_2_steps;
+    uint32_t d_num_doppler_bins_step2;
+    float d_doppler_step2;
+    float d_doppler_center_step_two;
 
 public:
     ~pcps_acquisition_fpga();
@@ -187,7 +197,7 @@ public:
       */
     inline void set_doppler_max(uint32_t doppler_max)
     {
-        acq_parameters.doppler_max = doppler_max;
+        d_doppler_max = doppler_max;
         acquisition_fpga->set_doppler_max(doppler_max);
     }
 

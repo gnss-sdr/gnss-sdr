@@ -161,6 +161,10 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
 
     acq_parameters.all_fft_codes = d_all_fft_codes_;
 
+    acq_parameters.num_doppler_bins_step2 = configuration_->property(role + ".second_nbins", 4);
+    acq_parameters.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
+    acq_parameters.make_2_steps = configuration_->property(role + ".make_two_steps", false);
+
     // reference for the FPGA FFT-IFFT attenuation factor
     acq_parameters.total_block_exp = configuration_->property(role + ".total_block_exp", 14);
 

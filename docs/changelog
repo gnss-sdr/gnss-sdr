@@ -2,26 +2,44 @@
 
 ### Improvements in Efficiency
 
+- Improved preamble detection implementation in the decoding of navigation messages (acceleration by x1.6 on average).
 - Applied clang-tidy checks and fixes related to performance.
+
 
 ### Improvements in Interoperability:
 
 - Added the BeiDou B1I receiver chain.
 - Fix bug in GLONASS dual frequency receiver.
 
+
 ### Improvements in Maintainability:
 
 - Usage of clang-tidy integrated into CMake scripts. New option -DENABLE_CLANG_TIDY=ON executes clang-tidy along with compilation. Requires clang compiler.
 - Applied clang-tidy checks and fixes related to readability.
 
+
 ### Improvements in Portability:
 
+- Added interfaces for FPGA off-loading.
 - CMake scripts now follow a modern approach (targets and properties) but still work in 2.8.12
 
 
-## Improvements in Reliability
+### Improvements in Reliability
 
 - Applied clang-tidy checks and fixes related to High Integrity C++.
+
+
+### Improvements in Usability
+
+- The receiver now admits FPGA off-loading, allowing for real time operation at high sampling rates and higher number of signals and channels.
+- Fixed program termination (avoiding hangs and segfaults in some platforms/configurations).
+- Improved information provided to the user in case of failure.
+
+
+
+See the definitions of concepts and metrics at https://gnss-sdr.org/design-forces/
+
+
 
 
 ## [0.0.10](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.10)

@@ -65,7 +65,7 @@ DEFINE_bool(plot_gps_l1_kf_tracking_test, false, "Plots results of GpsL1CAKfTrac
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CAKfTrackingTest_msg_rx;
 
-typedef boost::shared_ptr<GpsL1CAKfTrackingTest_msg_rx> GpsL1CAKfTrackingTest_msg_rx_sptr;
+using GpsL1CAKfTrackingTest_msg_rx_sptr = boost::shared_ptr<GpsL1CAKfTrackingTest_msg_rx>;
 
 GpsL1CAKfTrackingTest_msg_rx_sptr GpsL1CAKfTrackingTest_msg_rx_make();
 

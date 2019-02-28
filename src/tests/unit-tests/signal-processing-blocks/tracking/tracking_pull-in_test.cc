@@ -79,7 +79,7 @@
 // ######## GNURADIO TRACKING BLOCK MESSAGE RECEVER #########
 class TrackingPullInTest_msg_rx;
 
-typedef boost::shared_ptr<TrackingPullInTest_msg_rx> TrackingPullInTest_msg_rx_sptr;
+using TrackingPullInTest_msg_rx_sptr = boost::shared_ptr<TrackingPullInTest_msg_rx>;
 
 TrackingPullInTest_msg_rx_sptr TrackingPullInTest_msg_rx_make();
 

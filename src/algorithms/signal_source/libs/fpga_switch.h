@@ -2,7 +2,7 @@
  * \file fpga_switch.h
  * \brief Switch that connects the HW accelerator queues to the analog front end or the DMA.
  * \authors <ul>
- * 			<li> Marc Majoral, 2017. mmajoral(at)cttc.cat
+ * 			<li> Marc Majoral, 2019. mmajoral(at)cttc.cat
  *          <li> Javier Arribas, 2016. jarribas(at)cttc.es
  *          </ul>
  *
@@ -46,7 +46,7 @@ class Fpga_Switch
 public:
     Fpga_Switch(const std::string& device_name);
     ~Fpga_Switch();
-    void set_switch_position(int switch_position);
+    void set_switch_position(int32_t switch_position);
 
 private:
     int d_device_descriptor;        // driver descriptor

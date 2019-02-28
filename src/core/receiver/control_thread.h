@@ -95,7 +95,6 @@ public:
      */
     void set_control_queue(const gr::msg_queue::sptr control_queue);  // NOLINT(performance-unnecessary-value-param)
 
-
     unsigned int processed_control_messages()
     {
         return processed_control_messages_;
@@ -168,6 +167,9 @@ private:
     bool delete_configuration_;
     unsigned int processed_control_messages_;
     unsigned int applied_actions_;
+
+    boost::thread fpga_helper_thread_;
+
     std::thread keyboard_thread_;
     std::thread sysv_queue_thread_;
     std::thread gps_acq_assist_data_collector_thread_;

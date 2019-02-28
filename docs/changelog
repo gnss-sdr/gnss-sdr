@@ -1,5 +1,10 @@
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
+### Improvements in Availability
+
+- Fixed bug that caused a random deadlock in the Observables block, preventing the computation of PVT fixes.
+
+
 ### Improvements in Efficiency
 
 - Improved preamble detection implementation in the decoding of navigation messages (acceleration by x1.6 on average).

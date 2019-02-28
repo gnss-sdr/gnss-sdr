@@ -94,7 +94,7 @@ DEFINE_bool(acq_test_dump, false, "Dump the results of an acquisition block into
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class AcqPerfTest_msg_rx;
 
-typedef boost::shared_ptr<AcqPerfTest_msg_rx> AcqPerfTest_msg_rx_sptr;
+using AcqPerfTest_msg_rx_sptr = boost::shared_ptr<AcqPerfTest_msg_rx>;
 
 AcqPerfTest_msg_rx_sptr AcqPerfTest_msg_rx_make(Concurrent_Queue<int>& queue);
 

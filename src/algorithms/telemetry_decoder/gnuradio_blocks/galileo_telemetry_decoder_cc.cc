@@ -52,25 +52,6 @@ galileo_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, int frame_typ
 }
 
 
-void galileo_telemetry_decoder_cc::viterbi_decoder(double *page_part_symbols, int32_t *page_part_bits)
-{
-    Viterbi(page_part_bits, out0, state0, out1, state1,
-        page_part_symbols, KK, nn, DataLength);
-}
-
-
-void galileo_telemetry_decoder_cc::deinterleaver(int32_t rows, int32_t cols, const double *in, double *out)
-{
-    for (int32_t r = 0; r < rows; r++)
-        {
-            for (int32_t c = 0; c < cols; c++)
-                {
-                    out[c * rows + r] = in[r * cols + c];
-                }
-        }
-}
-
-
 galileo_telemetry_decoder_cc::galileo_telemetry_decoder_cc(
     const Gnss_Satellite &satellite, int frame_type,
     bool dump) : gr::block("galileo_telemetry_decoder_cc", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
@@ -216,6 +197,8 @@ galileo_telemetry_decoder_cc::galileo_telemetry_decoder_cc(
     d_channel = 0;
     flag_TOW_set = false;
 
+    d_symbol_history.set_capacity(d_required_symbols + 1);
+
     // vars for Viterbi decoder
     int32_t max_states = 1 << mm;  // 2^mm
     g_encoder[0] = 121;            // Polynomial G1
@@ -251,6 +234,25 @@ galileo_telemetry_decoder_cc::~galileo_telemetry_decoder_cc()
             catch (const std::exception &ex)
                 {
                     LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
+                }
+        }
+}
+
+
+void galileo_telemetry_decoder_cc::viterbi_decoder(double *page_part_symbols, int32_t *page_part_bits)
+{
+    Viterbi(page_part_bits, out0, state0, out1, state1,
+        page_part_symbols, KK, nn, DataLength);
+}
+
+
+void galileo_telemetry_decoder_cc::deinterleaver(int32_t rows, int32_t cols, const double *in, double *out)
+{
+    for (int32_t r = 0; r < rows; r++)
+        {
+            for (int32_t c = 0; c < cols; c++)
+                {
+                    out[c * rows + r] = in[r * cols + c];
                 }
         }
 }
@@ -473,11 +475,10 @@ int galileo_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
 
     if (d_symbol_history.size() > d_required_symbols)
         {
-            // TODO Optimize me!
             // ******* preamble correlation ********
             for (int32_t i = 0; i < d_samples_per_preamble; i++)
                 {
-                    if (d_symbol_history.at(i) < 0.0)  // symbols clipping
+                    if (d_symbol_history[i] < 0.0)  // symbols clipping
                         {
                             corr_value -= d_preamble_samples[i];
                         }
@@ -524,7 +525,7 @@ int galileo_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
                     }
                 break;
             }
-        case 2:  //preamble acquired
+        case 2:  // preamble acquired
             {
                 if (d_sample_counter == d_preamble_index + static_cast<uint64_t>(d_preamble_period_symbols))
                     {
@@ -534,14 +535,14 @@ int galileo_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
                             case 1:  // INAV
                                      // NEW Galileo page part is received
                                 // 0. fetch the symbols into an array
-                                if (corr_value > 0)  //normal PLL lock
+                                if (corr_value > 0)  // normal PLL lock
                                     {
                                         for (uint32_t i = 0; i < d_frame_length_symbols; i++)
                                             {
                                                 d_page_part_symbols[i] = d_symbol_history.at(i + d_samples_per_preamble);  // because last symbol of the preamble is just received now!
                                             }
                                     }
-                                else  //180 deg. inverted carrier phase PLL lock
+                                else  // 180 deg. inverted carrier phase PLL lock
                                     {
                                         for (uint32_t i = 0; i < d_frame_length_symbols; i++)
                                             {
@@ -553,7 +554,7 @@ int galileo_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
                             case 2:  // FNAV
                                      // NEW Galileo page part is received
                                 // 0. fetch the symbols into an array
-                                if (corr_value > 0)  //normal PLL lock
+                                if (corr_value > 0)  // normal PLL lock
                                     {
                                         int k = 0;
                                         for (uint32_t i = 0; i < d_frame_length_symbols; i++)
@@ -567,13 +568,13 @@ int galileo_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
                                                     }
                                             }
                                     }
-                                else  //180 deg. inverted carrier phase PLL lock
+                                else  // 180 deg. inverted carrier phase PLL lock
                                     {
                                         int k = 0;
                                         for (uint32_t i = 0; i < d_frame_length_symbols; i++)
                                             {
                                                 d_page_part_symbols[i] = 0;
-                                                for (uint32_t m = 0; m < d_samples_per_symbol; m++)  //integrate samples into symbols
+                                                for (uint32_t m = 0; m < d_samples_per_symbol; m++)  // integrate samples into symbols
                                                     {
                                                         d_page_part_symbols[i] -= static_cast<float>(d_secondary_code_samples[k]) * d_symbol_history.at(i * d_samples_per_symbol + d_samples_per_preamble + m);  // because last symbol of the preamble is just received now!
                                                         k++;
@@ -715,13 +716,6 @@ int galileo_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
                         break;
                     }
                 }
-        }
-
-    // remove used symbols from history
-    // todo: Use circular buffer here
-    if (d_symbol_history.size() > d_required_symbols)
-        {
-            d_symbol_history.pop_front();
         }
 
     switch (d_frame_type)

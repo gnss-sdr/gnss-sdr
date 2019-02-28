@@ -63,7 +63,7 @@
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CADllPllTrackingTest_msg_rx;
 
-typedef boost::shared_ptr<GpsL1CADllPllTrackingTest_msg_rx> GpsL1CADllPllTrackingTest_msg_rx_sptr;
+using GpsL1CADllPllTrackingTest_msg_rx_sptr = boost::shared_ptr<GpsL1CADllPllTrackingTest_msg_rx>;
 
 GpsL1CADllPllTrackingTest_msg_rx_sptr GpsL1CADllPllTrackingTest_msg_rx_make();
 

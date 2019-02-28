@@ -1,17 +1,15 @@
 /*!
  * \file gps_l1_ca_pcps_acquisition_fpga.h
- * \brief Adapts a PCPS acquisition block that uses the FPGA to
- *  an AcquisitionInterface for GPS L1 C/A signals
+ * \brief Adapts a PCPS acquisition block to an AcquisitionInterface
+ *  for GPS L1 C/A signals for the FPGA
  * \authors <ul>
- *          <li> Marc Majoral, 2018. mmajoral(at)cttc.es
- *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
- *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
- *          <li> Marc Molina, 2013. marc.molina.pena(at)gmail.com
+ *          <li> Marc Majoral, 2019. mmajoral(at)cttc.es
+ *          <li> Javier Arribas, 2019. jarribas(at)cttc.es
  *          </ul>
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -65,7 +63,7 @@ public:
     }
 
     /*!
-     * \brief Returns "GPS_L1_CA_PCPS_Acquisition"
+     * \brief Returns "GPS_L1_CA_PCPS_Acquisition_Fpga"
      */
     inline std::string implementation() override
     {
@@ -145,9 +143,9 @@ public:
 private:
     ConfigurationInterface* configuration_;
     pcps_acquisition_fpga_sptr acquisition_fpga_;
-    unsigned int channel_;
-    unsigned int doppler_max_;
-    unsigned int doppler_step_;
+    uint32_t channel_;
+    uint32_t doppler_max_;
+    uint32_t doppler_step_;
     Gnss_Synchro* gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;

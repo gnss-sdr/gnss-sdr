@@ -1,8 +1,8 @@
 /*!
  * \file gnss_sdr_fpga_sample_counter.cc
- * \brief Simple block to report the current receiver time based on the output of the tracking or telemetry blocks
+ * \brief Simple block to report the current receiver time based on the output
+ * of the tracking or telemetry blocks
  * \author Javier Arribas 2018. jarribas(at)cttc.es
- *
  *
  * -------------------------------------------------------------------------
  *
@@ -53,10 +53,7 @@ gnss_sdr_fpga_sample_counter::gnss_sdr_fpga_sample_counter(
     set_max_noutput_items(1);
     interval_ms = _interval_ms;
     fs = _fs;
-    //printf("CREATOR fs =  %f\n", fs);
-    //printf("CREATOR interval_ms = %" PRIu32 "\n", interval_ms);
     samples_per_output = std::round(fs * static_cast<double>(interval_ms) / 1e3);
-    //printf("CREATOR samples_per_output =  %" PRIu32 "\n", samples_per_output);
     //todo: Load here the hardware counter register with this amount of samples. It should produce an
     //interrupt every samples_per_output count.
     //The hardware timer must keep always interrupting the PS. It must not wait for the interrupt to
@@ -122,7 +119,6 @@ int gnss_sdr_fpga_sample_counter::general_work(int noutput_items __attribute__((
 
     uint32_t counter = wait_for_interrupt_and_read_counter();
     uint64_t samples_passed = 2 * static_cast<uint64_t>(samples_per_output) - static_cast<uint64_t>(counter);  // ellapsed samples
-    //printf("============================================ interrupter : samples_passed = %" PRIu64 "\n", samples_passed);
     // Note: at this moment the sample counter is implemented as a sample counter that decreases to zero and then it is automatically
     // reloaded again and keeps counter. It is done in this way to minimize the logic in the FPGA and maximize the FPGA clock performance
     // (it takes less resources and latency in the FPGA to compare a number against a fixed value like zero than to compare it to a programmable
@@ -137,10 +133,6 @@ int gnss_sdr_fpga_sample_counter::general_work(int noutput_items __attribute__((
     out[0].fs = fs;
     if ((current_T_rx_ms % report_interval_ms) == 0)
         {
-            //printf("time to print sample_counter = %" PRIu64 "\n", sample_counter);
-            //printf("time to print current Tx ms : %" PRIu64 "\n", current_T_rx_ms);
-            //printf("time to print report_interval_ms : %" PRIu32 "\n", report_interval_ms);
-            //printf("time to print %f\n", (current_T_rx_ms % report_interval_ms));
             current_s++;
             if ((current_s % 60) == 0)
                 {
@@ -203,6 +195,7 @@ int gnss_sdr_fpga_sample_counter::general_work(int noutput_items __attribute__((
     return 1;
 }
 
+
 uint32_t gnss_sdr_fpga_sample_counter::test_register(uint32_t writeval)
 {
     uint32_t readval;
@@ -214,19 +207,13 @@ uint32_t gnss_sdr_fpga_sample_counter::test_register(uint32_t writeval)
     return readval;
 }
 
+
 void gnss_sdr_fpga_sample_counter::configure_samples_per_output(uint32_t interval)
 {
     // note : the counter is a 48-bit value in the HW.
-    //printf("============================================ total counter - interrupted interval : %" PRIu32 "\n", interval);
-    //uint64_t temp_interval;
-    //temp_interval = (interval & static_cast<uint32_t>(0xFFFFFFFF));
-    //printf("LSW counter - interrupted interval : %" PRIu32 "\n", static_cast<uint32_t>(temp_interval));
-    //map_base[0] = static_cast<uint32_t>(temp_interval);
     map_base[0] = interval - 1;
-    //temp_interval = (interval >> 32) & static_cast<uint32_t>(0xFFFFFFFF);
-    //printf("MSbits counter - interrupted interval : %" PRIu32 "\n", static_cast<uint32_t>(temp_interval));
-    //map_base[1] = static_cast<uint32_t>(temp_interval); // writing the most significant bits also enables the interrupts
 }
+
 
 void gnss_sdr_fpga_sample_counter::open_device()
 {
@@ -260,18 +247,19 @@ void gnss_sdr_fpga_sample_counter::open_device()
         }
 }
 
+
 void gnss_sdr_fpga_sample_counter::close_device()
 {
-    //printf("=========================================== NOW closing device ...\n");
     map_base[2] = 0;  // disable the generation of the interrupt in the device
 
     auto *aux = const_cast<uint32_t *>(map_base);
     if (munmap(static_cast<void *>(aux), PAGE_SIZE) == -1)
         {
-            printf("Failed to unmap memory uio\n");
+            std::cout << "Failed to unmap memory uio" << std::endl;
         }
     close(fd);
 }
+
 
 uint32_t gnss_sdr_fpga_sample_counter::wait_for_interrupt_and_read_counter()
 {
@@ -284,18 +272,15 @@ uint32_t gnss_sdr_fpga_sample_counter::wait_for_interrupt_and_read_counter()
     write(fd, reinterpret_cast<void *>(&reenable), sizeof(int32_t));
 
     // wait for interrupt
-    //printf("============================================ interrupter : going to wait for interupt\n");
     nb = read(fd, &irq_count, sizeof(irq_count));
-    //printf("============================================ interrupter : interrupt received\n");
-    //printf("interrupt received\n");
     if (nb != sizeof(irq_count))
         {
-            printf("acquisition module Read failed to retrieve 4 bytes!\n");
-            printf("acquisition module Interrupt number %d\n", irq_count);
+            std::cout << "FPGA sample counter module read failed to retrieve 4 bytes!" << std::endl;
+            std::cout << "FPGA sample counter module interrupt number " << irq_count << std::endl;
         }
 
-    // acknowledge the interrupt
-    map_base[1] = 0;  // writing anything to reg 1 acknowledges the interrupt
+    // it is a rising edge interrupt, the interrupt does not need to be acknowledged
+    //map_base[1] = 0; // writing anything to reg 1 acknowledges the interrupt
 
     // add number of passed samples or read the current counter value for more accuracy
     counter = samples_per_output;  //map_base[0];

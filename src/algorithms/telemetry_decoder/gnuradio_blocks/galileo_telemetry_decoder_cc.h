@@ -43,10 +43,10 @@
 #include "galileo_utc_model.h"
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
+#include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>
 #include <fstream>
 #include <string>
-
 
 class galileo_telemetry_decoder_cc;
 
@@ -95,7 +95,7 @@ private:
     uint32_t d_frame_length_symbols;
     double *d_page_part_symbols;
 
-    std::deque<float> d_symbol_history;
+    boost::circular_buffer<float> d_symbol_history;
 
     uint64_t d_sample_counter;
     uint64_t d_preamble_index;

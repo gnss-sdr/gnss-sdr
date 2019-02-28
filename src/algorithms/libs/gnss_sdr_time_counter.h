@@ -37,7 +37,7 @@
 
 class gnss_sdr_time_counter;
 
-typedef boost::shared_ptr<gnss_sdr_time_counter> gnss_sdr_time_counter_sptr;
+using gnss_sdr_time_counter_sptr = boost::shared_ptr<gnss_sdr_time_counter>;
 
 gnss_sdr_time_counter_sptr gnss_sdr_make_time_counter();
 

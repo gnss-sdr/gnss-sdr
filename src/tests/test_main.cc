@@ -64,17 +64,15 @@ using google::LogMessage;
 DECLARE_string(log_dir);
 
 #if UNIT_TESTING_MINIMAL
-
 #include "unit-tests/arithmetic/matio_test.cc"
 #if EXTRA_TESTS
 #include "unit-tests/signal-processing-blocks/acquisition/acq_performance_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/tracking_pull-in_test.cc"
-#if ENABLE_FPGA
+#if FPGA_BLOCKS_TEST
 #include "unit-tests/signal-processing-blocks/tracking/tracking_pull-in_test_fpga.cc"
-#endif
+#endif  // FPGA_BLOCKS_TEST
 #include "unit-tests/signal-processing-blocks/observables/hybrid_observables_test.cc"
-#endif
-
+#endif  // EXTRA_TESTS
 
 #else
 
@@ -160,12 +158,15 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/tracking/gps_l1_ca_kf_tracking_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/gps_l2_m_dll_pll_tracking_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/tracking_pull-in_test.cc"
-#if ENABLE_FPGA
+#if FPGA_BLOCKS_TEST
 #include "unit-tests/signal-processing-blocks/tracking/tracking_pull-in_test_fpga.cc"
-#endif
+#endif  // FPGA_BLOCKS_TEST
 #include "unit-tests/signal-processing-blocks/observables/hybrid_observables_test.cc"
+#if FPGA_BLOCKS_TEST
+#include "unit-tests/signal-processing-blocks/observables/hybrid_observables_test_fpga.cc"
+#endif  // FPGA_BLOCKS_TEST
 #include "unit-tests/signal-processing-blocks/telemetry_decoder/gps_l1_ca_telemetry_decoder_test.cc"
-#endif
+#endif  // EXTRA_TESTS
 
 #endif  // UNIT_TESTING_MINIMAL
 

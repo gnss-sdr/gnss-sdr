@@ -42,6 +42,7 @@
 #include "beidou_dnav_utc_model.h"
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
+#include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>
 #include <fstream>
 #include <string>
@@ -94,7 +95,7 @@ private:
     uint32_t d_required_symbols;
 
     // Storage for incoming data
-    std::deque<float> d_symbol_history;
+    boost::circular_buffer<float> d_symbol_history;
 
     // Variables for internal functionality
     uint64_t d_sample_counter;    // Sample counter as an index (1,2,3,..etc) indicating number of samples processed

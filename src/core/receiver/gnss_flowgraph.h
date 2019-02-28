@@ -95,9 +95,11 @@ public:
     void disconnect();
 
     void wait();
-
+#ifdef ENABLE_FPGA
     void start_acquisition_helper();
 
+    void perform_hw_reset();
+#endif
     /*!
      * \brief Applies an action to the flow graph
      *

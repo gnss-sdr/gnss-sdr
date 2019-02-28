@@ -1,14 +1,15 @@
 /*!
- * \file GPS_L5i_PCPS_Acquisition.h
+ * \file GPS_L5i_PCPS_Acquisition_fpga.h
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
- *  GPS L5i signals
+ *  GPS L5i signals for the FPGA
  * \authors <ul>
- *          <li> Javier Arribas, 2017. jarribas(at)cttc.es
+ *          <li> Marc Majoral, 2019. mmajoral(at)cttc.es
+ *          <li> Javier Arribas, 2019. jarribas(at)cttc.es
  *          </ul>
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -66,11 +67,11 @@ public:
     }
 
     /*!
-     * \brief Returns "GPS_L5i_PCPS_Acquisition"
+     * \brief Returns "GPS_L5i_PCPS_Acquisition_Fpga"
      */
     inline std::string implementation() override
     {
-        return "GPS_L5i_PCPS_Acquisition";
+        return "GPS_L5i_PCPS_Acquisition_Fpga";
     }
 
     inline size_t item_size() override
@@ -144,24 +145,22 @@ public:
 
 private:
     ConfigurationInterface* configuration_;
-    //pcps_acquisition_sptr acquisition_;
     pcps_acquisition_fpga_sptr acquisition_fpga_;
     gr::blocks::stream_to_vector::sptr stream_to_vector_;
     gr::blocks::float_to_complex::sptr float_to_complex_;
     complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
     size_t item_size_;
     std::string item_type_;
-    unsigned int vector_length_;
-    unsigned int code_length_;
+    uint32_t vector_length_;
+    uint32_t code_length_;
     bool bit_transition_flag_;
     bool use_CFAR_algorithm_flag_;
-    unsigned int channel_;
+    uint32_t channel_;
     float threshold_;
-    unsigned int doppler_max_;
-    unsigned int doppler_step_;
-    unsigned int max_dwells_;
+    uint32_t doppler_max_;
+    uint32_t doppler_step_;
+    uint32_t max_dwells_;
     int64_t fs_in_;
-    //long if_;
     bool dump_;
     bool blocking_;
     std::string dump_filename_;

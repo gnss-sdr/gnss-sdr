@@ -1,8 +1,8 @@
 /*!
  * \file fpga_multicorrelator_8sc.h
- * \brief High optimized FPGA vector correlator class for lv_16sc_t (short int32_t complex)
+ * \brief High optimized FPGA vector correlator class
  * \authors <ul>
- * 			<li> Marc Majoral, 2017. mmajoral(at)cttc.cat
+ * 			<li> Marc Majoral, 2019. mmajoral(at)cttc.cat
  *          <li> Javier Arribas, 2016. jarribas(at)cttc.es
  *          </ul>
  *
@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2017  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -41,32 +41,49 @@
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cstdint>
 
-#define MAX_LENGTH_DEVICEIO_NAME 50
+// FPGA register addresses
+
+// write addresses
+#define CODE_PHASE_STEP_CHIPS_NUM_REG_ADDR 0
+#define INITIAL_INDEX_REG_BASE_ADDR 1
+#define INITIAL_INTERP_COUNTER_REG_BASE_ADDR 7
+#define NSAMPLES_MINUS_1_REG_ADDR 13
+#define CODE_LENGTH_MINUS_1_REG_ADDR 14
+#define REM_CARR_PHASE_RAD_REG_ADDR 15
+#define PHASE_STEP_RAD_REG_ADDR 16
+#define PROG_MEMS_ADDR 17
+#define DROP_SAMPLES_REG_ADDR 18
+#define INITIAL_COUNTER_VALUE_REG_ADDR_LSW 19
+#define INITIAL_COUNTER_VALUE_REG_ADDR_MSW 20
+#define STOP_TRACKING_REG_ADDR 23
+#define START_FLAG_ADDR 30
+// read-write addresses
+#define TEST_REG_ADDR 31
+// read addresses
+#define RESULT_REG_REAL_BASE_ADDR 1
+#define RESULT_REG_IMAG_BASE_ADDR 7
+#define SAMPLE_COUNTER_REG_ADDR_LSW 13
+#define SAMPLE_COUNTER_REG_ADDR_MSW 14
+
 
 /*!
  * \brief Class that implements carrier wipe-off and correlators.
  */
-class fpga_multicorrelator_8sc
+class Fpga_Multicorrelator_8sc
 {
 public:
-    fpga_multicorrelator_8sc(int32_t n_correlators, std::string device_name,
+    Fpga_Multicorrelator_8sc(int32_t n_correlators, std::string device_name,
         uint32_t device_base, int32_t *ca_codes, int32_t *data_codes, uint32_t code_length_chips, bool track_pilot, uint32_t multicorr_type, uint32_t code_samples_per_chip);
-    ~fpga_multicorrelator_8sc();
-    //bool set_output_vectors(gr_complex* corr_out);
+    ~Fpga_Multicorrelator_8sc();
     void set_output_vectors(gr_complex *corr_out, gr_complex *Prompt_Data);
-    //    bool set_local_code_and_taps(
-    //            int32_t code_length_chips, const int* local_code_in,
-    //            float *shifts_chips, int32_t PRN);
-    //bool set_local_code_and_taps(
     void set_local_code_and_taps(
-        //            int32_t code_length_chips,
         float *shifts_chips, float *prompt_data_shift, int32_t PRN);
-    //bool set_output_vectors(lv_16sc_t* corr_out);
     void update_local_code(float rem_code_phase_chips);
-    //bool Carrier_wipeoff_multicorrelator_resampler(
     void Carrier_wipeoff_multicorrelator_resampler(
         float rem_carrier_phase_in_rad, float phase_step_rad,
+        float carrier_phase_rate_step_rad,
         float rem_code_phase_chips, float code_phase_step_chips,
+        float code_phase_rate_step_chips,
         int32_t signal_length_samples);
     bool free();
     void set_channel(uint32_t channel);
@@ -74,10 +91,8 @@ public:
     uint64_t read_sample_counter();
     void lock_channel(void);
     void unlock_channel(void);
-    //void read_sample_counters(int32_t *sample_counter, int32_t *secondary_sample_counter, int32_t *counter_corr_0_in, int32_t *counter_corr_0_out); // debug
 
 private:
-    //const int32_t *d_local_code_in;
     gr_complex *d_corr_out;
     gr_complex *d_Prompt_Data;
     float *d_shifts_chips;
@@ -113,36 +128,10 @@ private:
     int32_t *d_ca_codes;
     int32_t *d_data_codes;
 
-    //uint32_t d_code_length; // nominal number of chips
-
     uint32_t d_code_samples_per_chip;
     bool d_track_pilot;
 
     uint32_t d_multicorr_type;
-
-    // register addresses
-    // write-only regs
-    uint32_t d_CODE_PHASE_STEP_CHIPS_NUM_REG_ADDR;
-    uint32_t d_INITIAL_INDEX_REG_BASE_ADDR;
-    uint32_t d_INITIAL_INTERP_COUNTER_REG_BASE_ADDR;
-    uint32_t d_NSAMPLES_MINUS_1_REG_ADDR;
-    uint32_t d_CODE_LENGTH_MINUS_1_REG_ADDR;
-    uint32_t d_REM_CARR_PHASE_RAD_REG_ADDR;
-    uint32_t d_PHASE_STEP_RAD_REG_ADDR;
-    uint32_t d_PROG_MEMS_ADDR;
-    uint32_t d_DROP_SAMPLES_REG_ADDR;
-    uint32_t d_INITIAL_COUNTER_VALUE_REG_ADDR_LSW;
-    uint32_t d_INITIAL_COUNTER_VALUE_REG_ADDR_MSW;
-    uint32_t d_START_FLAG_ADDR;
-    // read-write regs
-    uint32_t d_TEST_REG_ADDR;
-    // read-only regs
-    uint32_t d_RESULT_REG_REAL_BASE_ADDR;
-    uint32_t d_RESULT_REG_IMAG_BASE_ADDR;
-    uint32_t d_RESULT_REG_DATA_REAL_BASE_ADDR;
-    uint32_t d_RESULT_REG_DATA_IMAG_BASE_ADDR;
-    uint32_t d_SAMPLE_COUNTER_REG_ADDR_LSW;
-    uint32_t d_SAMPLE_COUNTER_REG_ADDR_MSW;
 
     // private functions
     uint32_t fpga_acquisition_test_register(uint32_t writeval);
@@ -153,17 +142,7 @@ private:
     void fpga_configure_signal_parameters_in_fpga(void);
     void fpga_launch_multicorrelator_fpga(void);
     void read_tracking_gps_results(void);
-    //void reset_multicorrelator(void);
     void close_device(void);
-
-    uint32_t d_result_SAT_value;
-
-    int32_t debug_max_readval_real[5] = {0, 0, 0, 0, 0};
-    int32_t debug_max_readval_imag[5] = {0, 0, 0, 0, 0};
-
-    int32_t debug_max_readval_real_after_check[5] = {0, 0, 0, 0, 0};
-    int32_t debug_max_readval_imag_after_check[5] = {0, 0, 0, 0, 0};
-    int32_t printcounter = 0;
 };
 
 #endif /* GNSS_SDR_FPGA_MULTICORRELATOR_H_ */

@@ -176,7 +176,7 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CaPcpsAcquisitionTestFpga_msg_rx;
 
-typedef boost::shared_ptr<GpsL1CaPcpsAcquisitionTestFpga_msg_rx> GpsL1CaPcpsAcquisitionTest_msg_fpga_rx_sptr;
+using GpsL1CaPcpsAcquisitionTest_msg_fpga_rx_sptr = boost::shared_ptr<GpsL1CaPcpsAcquisitionTestFpga_msg_rx>;
 
 GpsL1CaPcpsAcquisitionTest_msg_fpga_rx_sptr GpsL1CaPcpsAcquisitionTestFpga_msg_rx_make();
 

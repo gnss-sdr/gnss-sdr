@@ -63,7 +63,7 @@
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL2MPcpsAcquisitionTest_msg_rx;
 
-typedef boost::shared_ptr<GpsL2MPcpsAcquisitionTest_msg_rx> GpsL2MPcpsAcquisitionTest_msg_rx_sptr;
+using GpsL2MPcpsAcquisitionTest_msg_rx_sptr = boost::shared_ptr<GpsL2MPcpsAcquisitionTest_msg_rx>;
 
 GpsL2MPcpsAcquisitionTest_msg_rx_sptr GpsL2MPcpsAcquisitionTest_msg_rx_make();
 

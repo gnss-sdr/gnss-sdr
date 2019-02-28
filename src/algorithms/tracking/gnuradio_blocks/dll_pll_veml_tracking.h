@@ -92,7 +92,7 @@ private:
     uint32_t d_channel;
     Gnss_Synchro *d_acquisition_gnss_synchro;
 
-    //Signal parameters
+    // Signal parameters
     bool d_secondary;
     bool interchange_iq;
     double d_signal_carrier_freq;
@@ -111,9 +111,10 @@ private:
     int32_t d_preamble_length_symbols;
     boost::circular_buffer<float> d_symbol_history;
 
-    //tracking state machine
+    // tracking state machine
     int32_t d_state;
-    //Integration period in samples
+
+    // Integration period in samples
     int32_t d_correlation_length_ms;
     int32_t d_n_correlator_taps;
 
@@ -188,11 +189,10 @@ private:
     // CN0 estimation and lock detector
     int32_t d_cn0_estimation_counter;
     int32_t d_carrier_lock_fail_counter;
-    std::deque<float> d_carrier_lock_detector_queue;
     double d_carrier_lock_test;
     double d_CN0_SNV_dB_Hz;
     double d_carrier_lock_threshold;
-    std::deque<gr_complex> d_Prompt_buffer_deque;
+    boost::circular_buffer<gr_complex> d_Prompt_circular_buffer;
     gr_complex *d_Prompt_buffer;
 
     // file dump

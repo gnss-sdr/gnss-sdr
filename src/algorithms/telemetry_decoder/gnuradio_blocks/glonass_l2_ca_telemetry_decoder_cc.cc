@@ -89,6 +89,8 @@ glonass_l2_ca_telemetry_decoder_cc::glonass_l2_ca_telemetry_decoder_cc(
                     n++;
                 }
         }
+
+    d_symbol_history.set_capacity(GLONASS_GNAV_PREAMBLE_PERIOD_SYMBOLS);
     d_sample_counter = 0ULL;
     d_stat = 0;
     d_preamble_index = 0ULL;
@@ -276,14 +278,14 @@ int glonass_l2_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
     consume_each(1);
 
     d_flag_preamble = false;
-    uint32_t required_symbols = GLONASS_GNAV_STRING_SYMBOLS;
 
-    if (d_symbol_history.size() > required_symbols)
+    if (d_symbol_history.size() == GLONASS_GNAV_PREAMBLE_PERIOD_SYMBOLS)
         {
             // ******* preamble correlation ********
-            for (int32_t i = 0; i < d_symbols_per_preamble; i++)
+            int i = 0;
+            for (const auto &iter : d_symbol_history)
                 {
-                    if (d_symbol_history.at(i).Prompt_I < 0)  // symbols clipping
+                    if (iter.Prompt_I < 0.0)  // symbols clipping
                         {
                             corr_value -= d_preambles_symbols[i];
                         }
@@ -291,6 +293,7 @@ int glonass_l2_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
                         {
                             corr_value += d_preambles_symbols[i];
                         }
+                    i++;
                 }
         }
 
@@ -304,7 +307,7 @@ int glonass_l2_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
                     LOG(INFO) << "Preamble detection for GLONASS L2 C/A SAT " << this->d_satellite;
                     // Enter into frame pre-detection status
                     d_stat = 1;
-                    d_preamble_time_samples = d_symbol_history.at(0).Tracking_sample_counter;  // record the preamble sample stamp
+                    d_preamble_time_samples = d_symbol_history[0].Tracking_sample_counter;  // record the preamble sample stamp
                 }
         }
     else if (d_stat == 1)  // possible preamble lock
@@ -314,7 +317,7 @@ int glonass_l2_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
                     // check preamble separation
                     preamble_diff = static_cast<int32_t>(d_sample_counter - d_preamble_index);
                     // Record the PRN start sample index associated to the preamble
-                    d_preamble_time_samples = static_cast<double>(d_symbol_history.at(0).Tracking_sample_counter);
+                    d_preamble_time_samples = static_cast<double>(d_symbol_history[0].Tracking_sample_counter);
                     if (abs(preamble_diff - GLONASS_GNAV_PREAMBLE_PERIOD_SYMBOLS) == 0)
                         {
                             // try to decode frame
@@ -366,7 +369,7 @@ int glonass_l2_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
                                 {
                                     d_flag_frame_sync = true;
                                     DLOG(INFO) << " Frame sync SAT " << this->d_satellite << " with preamble start at "
-                                               << d_symbol_history.at(0).Tracking_sample_counter << " [samples]";
+                                               << d_symbol_history[0].Tracking_sample_counter << " [samples]";
                                 }
                         }
                     else
@@ -437,11 +440,6 @@ int glonass_l2_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
                 }
         }
 
-    // remove used symbols from history
-    if (d_symbol_history.size() > required_symbols)
-        {
-            d_symbol_history.pop_front();
-        }
     // 3. Make the output (copy the object contents to the GNURadio reserved memory)
     *out[0] = current_symbol;
 

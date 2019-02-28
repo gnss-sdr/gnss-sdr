@@ -343,7 +343,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
                 {
                     if (iter.Flag_valid_symbol_output == true)
                         {
-                            if (iter.Prompt_I < 0)  // symbols clipping
+                            if (iter.Prompt_I < 0.0)  // symbols clipping
                                 {
                                     corr_value -= d_preambles_symbols[i];
                                 }

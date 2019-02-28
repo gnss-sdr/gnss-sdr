@@ -66,6 +66,8 @@ gps_l5_telemetry_decoder_cc::gps_l5_telemetry_decoder_cc(
     d_flag_valid_word = false;
     d_TOW_at_current_symbol_ms = 0U;
     d_TOW_at_Preamble_ms = 0U;
+    sym_hist.set_capacity(GPS_L5I_NH_CODE_LENGTH);
+
     // initialize the CNAV frame decoder (libswiftcnav)
     cnav_msg_decoder_init(&d_cnav_decoder);
     for (int32_t aux = 0; aux < GPS_L5I_NH_CODE_LENGTH; aux++)
@@ -145,10 +147,10 @@ int gps_l5_telemetry_decoder_cc::general_work(int noutput_items __attribute__((u
     const auto *in = reinterpret_cast<const Gnss_Synchro *>(input_items[0]);  // Get the input buffer pointer
 
     // UPDATE GNSS SYNCHRO DATA
-    Gnss_Synchro current_synchro_data{};  //structure to save the synchronization information and send the output object to the next block
+    Gnss_Synchro current_synchro_data{};  // structure to save the synchronization information and send the output object to the next block
     // 1. Copy the current tracking output
     current_synchro_data = in[0];
-    consume_each(1);  //one by one
+    consume_each(1);  // one by one
     sym_hist.push_back(in[0].Prompt_I);
     int32_t corr_NH = 0;
     int32_t symbol_value = 0;
@@ -158,7 +160,7 @@ int gps_l5_telemetry_decoder_cc::general_work(int noutput_items __attribute__((u
         {
             for (int32_t i = 0; i < GPS_L5I_NH_CODE_LENGTH; i++)
                 {
-                    if ((bits_NH[i] * sym_hist.at(i)) > 0.0)
+                    if ((bits_NH[i] * sym_hist[i]) > 0.0)
                         {
                             corr_NH += 1;
                         }
@@ -183,7 +185,6 @@ int gps_l5_telemetry_decoder_cc::general_work(int noutput_items __attribute__((u
                 }
             else
                 {
-                    sym_hist.pop_front();
                     sync_NH = false;
                     new_sym = false;
                 }

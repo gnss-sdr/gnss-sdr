@@ -32,6 +32,7 @@
 #define GNSS_SDR_GPS_L2C_TELEMETRY_DECODER_CC_H
 
 
+#include "GPS_L2C.h"
 #include "gnss_satellite.h"
 #include "gps_cnav_ephemeris.h"
 #include "gps_cnav_iono.h"
@@ -39,12 +40,10 @@
 #include <gnuradio/block.h>
 #include <algorithm>  // for copy
 #include <cstdint>
-#include <deque>
 #include <fstream>
 #include <string>
 #include <utility>  // for pair
 #include <vector>
-
 
 extern "C"
 {
@@ -53,7 +52,6 @@ extern "C"
 #include "edc.h"
 }
 
-#include "GPS_L2C.h"
 
 class gps_l2c_telemetry_decoder_cc;
 

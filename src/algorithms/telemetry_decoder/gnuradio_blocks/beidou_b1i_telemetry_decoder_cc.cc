@@ -117,6 +117,7 @@ beidou_b1i_telemetry_decoder_cc::beidou_b1i_telemetry_decoder_cc(
     d_subframe_symbols = static_cast<double *>(volk_gnsssdr_malloc(BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS * sizeof(double), volk_gnsssdr_get_alignment()));
     d_required_symbols = BEIDOU_DNAV_SUBFRAME_SYMBOLS * d_samples_per_symbol + d_samples_per_preamble;
 
+    d_symbol_history.set_capacity(d_required_symbols + 1);
     // Generic settings
     d_sample_counter = 0;
     d_stat = 0;
@@ -316,12 +317,8 @@ void beidou_b1i_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satell
             volk_gnsssdr_free(d_secondary_code_symbols);
             volk_gnsssdr_free(d_subframe_symbols);
 
-            d_samples_per_symbol = (BEIDOU_B1I_CODE_RATE_HZ / BEIDOU_B1I_CODE_LENGTH_CHIPS) / BEIDOU_D2NAV_SYMBOL_RATE_SPS;
-            d_symbols_per_preamble = BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS;
-            d_samples_per_preamble = BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS * d_samples_per_symbol;
             d_secondary_code_symbols = nullptr;
             d_preamble_samples = static_cast<int32_t *>(volk_gnsssdr_malloc(d_samples_per_preamble * sizeof(int32_t), volk_gnsssdr_get_alignment()));
-            d_preamble_period_samples = BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS * d_samples_per_symbol;
 
             // Setting samples of preamble code
             int32_t n = 0;
@@ -401,7 +398,7 @@ int beidou_b1i_telemetry_decoder_cc::general_work(int noutput_items __attribute_
             //******* preamble correlation ********
             for (int32_t i = 0; i < d_samples_per_preamble; i++)
                 {
-                    if (d_symbol_history.at(i) < 0)  // symbols clipping
+                    if (d_symbol_history[i] < 0)  // symbols clipping
                         {
                             corr_value -= d_preamble_samples[i];
                         }
@@ -579,11 +576,6 @@ int beidou_b1i_telemetry_decoder_cc::general_work(int noutput_items __attribute_
                 }
         }
 
-    // remove used symbols from history
-    if (d_symbol_history.size() > d_required_symbols)
-        {
-            d_symbol_history.pop_front();
-        }
     // 3. Make the output (copy the object contents to the GNURadio reserved memory)
     *out[0] = current_symbol;
 

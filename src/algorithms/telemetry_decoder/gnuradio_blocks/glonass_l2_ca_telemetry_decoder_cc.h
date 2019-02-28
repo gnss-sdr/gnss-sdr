@@ -40,6 +40,7 @@
 #include "glonass_gnav_utc_model.h"
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
+#include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>
 #include <fstream>
 #include <string>
@@ -86,7 +87,7 @@ private:
     int32_t d_symbols_per_preamble;
 
     //!< Storage for incoming data
-    std::deque<Gnss_Synchro> d_symbol_history;
+    boost::circular_buffer<Gnss_Synchro> d_symbol_history;
 
     //!< Variables for internal functionality
     uint64_t d_sample_counter;    //!< Sample counter as an index (1,2,3,..etc) indicating number of samples processed

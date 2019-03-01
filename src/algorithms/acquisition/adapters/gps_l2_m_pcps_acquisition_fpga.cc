@@ -146,7 +146,6 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
 
 GpsL2MPcpsAcquisitionFpga::~GpsL2MPcpsAcquisitionFpga()
 {
-    //delete[] code_;
     delete[] d_all_fft_codes_;
 }
 
@@ -212,9 +211,6 @@ void GpsL2MPcpsAcquisitionFpga::init()
 
 void GpsL2MPcpsAcquisitionFpga::set_local_code()
 {
-    //gps_l2c_m_code_gen_complex_sampled(code_, gnss_synchro_->PRN, fs_in_);
-
-    //acquisition_fpga_->set_local_code(code_);
     acquisition_fpga_->set_local_code();
 }
 

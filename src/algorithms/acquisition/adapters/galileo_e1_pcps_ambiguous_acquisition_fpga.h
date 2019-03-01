@@ -147,15 +147,10 @@ private:
     gr::blocks::stream_to_vector::sptr stream_to_vector_;
     gr::blocks::float_to_complex::sptr float_to_complex_;
     complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
-    bool bit_transition_flag_;
-    bool use_CFAR_algorithm_flag_;
     bool acquire_pilot_;
     uint32_t channel_;
     uint32_t doppler_max_;
     uint32_t doppler_step_;
-    uint32_t max_dwells_;
-    bool dump_;
-    bool blocking_;
     std::string dump_filename_;
     Gnss_Synchro* gnss_synchro_;
     std::string role_;

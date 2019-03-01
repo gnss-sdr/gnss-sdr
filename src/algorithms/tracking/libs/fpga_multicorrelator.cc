@@ -66,6 +66,18 @@
 #define LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY 0x0C000000
 #define TEST_REGISTER_TRACK_WRITEVAL 0x55AA
 
+#ifndef TEMP_FAILURE_RETRY
+#define TEMP_FAILURE_RETRY(exp)              \
+    ({                                       \
+        decltype(exp) _rc;                   \
+        do                                   \
+            {                                \
+                _rc = (exp);                 \
+            }                                \
+        while (_rc == -1 && errno == EINTR); \
+        _rc;                                 \
+    })
+#endif
 
 Fpga_Multicorrelator_8sc::Fpga_Multicorrelator_8sc(int32_t n_correlators,
     std::string device_name, uint32_t device_base, int32_t *ca_codes, int32_t *data_codes, uint32_t code_length_chips, bool track_pilot,
@@ -95,6 +107,7 @@ Fpga_Multicorrelator_8sc::Fpga_Multicorrelator_8sc(int32_t n_correlators,
         }
     d_shifts_chips = nullptr;
     d_prompt_data_shift = nullptr;
+    d_Prompt_Data = nullptr;
     d_corr_out = nullptr;
     d_code_length_chips = 0;
     d_rem_code_phase_chips = 0;
@@ -105,7 +118,8 @@ Fpga_Multicorrelator_8sc::Fpga_Multicorrelator_8sc(int32_t n_correlators,
     d_phase_step_rad_int = 0;
     d_initial_sample_counter = 0;
     d_channel = 0;
-    d_correlator_length_samples = 0,
+    d_correlator_length_samples = 0;
+    d_code_phase_step_chips_num = 0;
     d_code_length_chips = code_length_chips;
     d_ca_codes = ca_codes;
     d_data_codes = data_codes;
@@ -119,6 +133,14 @@ Fpga_Multicorrelator_8sc::Fpga_Multicorrelator_8sc(int32_t n_correlators,
 Fpga_Multicorrelator_8sc::~Fpga_Multicorrelator_8sc()
 {
     close_device();
+    if (d_initial_index != nullptr)
+        {
+            volk_gnsssdr_free(d_initial_index);
+        }
+    if (d_initial_interp_counter != nullptr)
+        {
+            volk_gnsssdr_free(d_initial_interp_counter);
+        }
 }
 
 

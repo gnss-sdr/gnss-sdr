@@ -62,6 +62,18 @@
 #define SELECT_ALL_CODE_BITS 0x000FFFFF       // Select a 20 bit word
 #define SHL_CODE_BITS 1024                    // shift left by 10 bits
 
+#ifndef TEMP_FAILURE_RETRY
+#define TEMP_FAILURE_RETRY(exp)              \
+    ({                                       \
+        decltype(exp) _rc;                   \
+        do                                   \
+            {                                \
+                _rc = (exp);                 \
+            }                                \
+        while (_rc == -1 && errno == EINTR); \
+        _rc;                                 \
+    })
+#endif
 
 bool Fpga_Acquisition::init()
 {

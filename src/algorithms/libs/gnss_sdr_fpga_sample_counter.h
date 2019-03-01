@@ -72,9 +72,11 @@ private:
     int32_t fd;                             // driver descriptor
     volatile uint32_t *map_base;            // driver memory map
     std::string device_name = "/dev/uio2";  // HW device name
+    bool is_open;
 
 public:
     friend gnss_sdr_fpga_sample_counter_sptr gnss_sdr_make_fpga_sample_counter(double _fs, int32_t _interval_ms);
+    ~gnss_sdr_fpga_sample_counter();
     int general_work(int noutput_items,
         gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items,

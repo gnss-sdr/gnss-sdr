@@ -70,7 +70,7 @@ public:
 
     inline size_t item_size() override
     {
-        return item_size_;
+        return sizeof(int);
     }
 
     void connect(gr::top_block_sptr top_block) override;
@@ -97,7 +97,6 @@ public:
 
 private:
     dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
-    size_t item_size_;
     uint32_t channel_;
     std::string role_;
     uint32_t in_streams_;

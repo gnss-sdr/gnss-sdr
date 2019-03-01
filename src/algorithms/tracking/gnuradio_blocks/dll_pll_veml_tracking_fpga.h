@@ -1,19 +1,12 @@
 /*!
- * \file gps_l1_ca_dll_pll_tracking_fpga.h
- * \brief Interface of a code DLL + carrier PLL tracking block
- * \author Marc Majoral, 2018. marc.majoral(at)cttc.es
- *         Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
- *         Javier Arribas, 2011. jarribas(at)cttc.es
- *         Cillian O'Driscoll, 2017. cillian.odriscoll(at)gmail.com
- *
- * Code DLL + carrier PLL according to the algorithms described in:
- * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
- * A Software-Defined GPS and Galileo Receiver. A Single-Frequency Approach,
- * Birkhauser, 2007
+ * \file dll_pll_veml_tracking_fpga.h
+ * \brief Implementation of a code DLL + carrier PLL tracking block using an FPGA.
+ * \author Marc Majoral, 2019. marc.majoral(at)cttc.es
+ * \author Javier Arribas, 2019. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -49,18 +42,18 @@
 #include <fstream>
 #include <map>
 #include <queue>
-#include <string>
+#include <utility>
+//#include <string>
 
 class dll_pll_veml_tracking_fpga;
 
-typedef boost::shared_ptr<dll_pll_veml_tracking_fpga>
-    dll_pll_veml_tracking_fpga_sptr;
+using dll_pll_veml_tracking_fpga_sptr = boost::shared_ptr<dll_pll_veml_tracking_fpga>;
 
 dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(const Dll_Pll_Conf_Fpga &conf_);
 
 
 /*!
- * \brief This class implements a DLL + PLL tracking loop block
+ * \brief This class implements a code DLL + carrier PLL tracking block.
  */
 class dll_pll_veml_tracking_fpga : public gr::block
 {
@@ -71,6 +64,7 @@ public:
     void set_gnss_synchro(Gnss_Synchro *p_gnss_synchro);
     void start_tracking();
     void stop_tracking();
+
     int general_work(int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
@@ -84,6 +78,7 @@ private:
 
     bool cn0_and_tracking_lock_status(double coh_integration_time_s);
     bool acquire_secondary();
+    void do_correlation_step(void);
     void run_dll_pll();
     void update_tracking_vars();
     void clear_tracking_vars();
@@ -91,9 +86,10 @@ private:
     void log_data(bool integrating);
     int32_t save_matfile();
 
+    void run_state_2(Gnss_Synchro &current_synchro_data);
+
     // tracking configuration vars
     Dll_Pll_Conf_Fpga trk_parameters;
-    //dllpllconf_fpga_t trk_parameters;
     bool d_veml;
     bool d_cloop;
     uint32_t d_channel;
@@ -119,14 +115,20 @@ private:
 
     //tracking state machine
     int32_t d_state;
-    bool d_synchonizing;
     //Integration period in samples
     int32_t d_correlation_length_ms;
     int32_t d_n_correlator_taps;
+
+    float *d_tracking_code;
+    float *d_data_code;
     float *d_local_code_shift_chips;
     float *d_prompt_data_shift;
-    std::shared_ptr<fpga_multicorrelator_8sc> multicorrelator_fpga;
-
+    std::shared_ptr<Fpga_Multicorrelator_8sc> multicorrelator_fpga;
+    /*  TODO: currently the multicorrelator does not support adding extra correlator
+        with different local code, thus we need extra multicorrelator instance.
+        Implement this functionality inside multicorrelator class
+        as an enhancement to increase the performance
+     */
     gr_complex *d_correlator_outs;
     gr_complex *d_Very_Early;
     gr_complex *d_Early;
@@ -148,10 +150,14 @@ private:
     gr_complex *d_Prompt_Data;
 
     double d_code_phase_step_chips;
+    double d_code_phase_rate_step_chips;
+    boost::circular_buffer<std::pair<double, double>> d_code_ph_history;
     double d_carrier_phase_step_rad;
+    double d_carrier_phase_rate_step_rad;
+    boost::circular_buffer<std::pair<double, double>> d_carr_ph_history;
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;
-    double d_rem_carr_phase_rad;
+    float d_rem_carr_phase_rad;
 
     // PLL and DLL filter library
     Tracking_2nd_DLL_filter d_code_loop_filter;
@@ -166,12 +172,10 @@ private:
     double d_carr_error_filt_hz;
     double d_code_error_chips;
     double d_code_error_filt_chips;
-    double d_K_blk_samples;
     double d_code_freq_chips;
     double d_carrier_doppler_hz;
     double d_acc_carrier_phase_rad;
     double d_rem_code_phase_chips;
-    double d_code_phase_samples;
     double T_chip_seconds;
     double T_prn_seconds;
     double T_prn_samples;
@@ -181,11 +185,13 @@ private:
     // processing samples counters
     uint64_t d_sample_counter;
     uint64_t d_acq_sample_stamp;
+
     uint64_t d_absolute_samples_offset;
 
     // CN0 estimation and lock detector
     int32_t d_cn0_estimation_counter;
     int32_t d_carrier_lock_fail_counter;
+    std::deque<float> d_carrier_lock_detector_queue;
     double d_carrier_lock_test;
     double d_CN0_SNV_dB_Hz;
     double d_carrier_lock_threshold;
@@ -202,7 +208,6 @@ private:
     int32_t d_correlation_length_samples;
     int32_t d_next_prn_length_samples;
     uint64_t d_sample_counter_next;
-    uint32_t d_pull_in = 0U;
 };
 
 #endif  //GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H

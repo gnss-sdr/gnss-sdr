@@ -52,13 +52,13 @@ add_library(telemetry_decoder_gr_blocks
 
 target_link_libraries(telemetry_decoder_gr_blocks
     PUBLIC
-        Gnuradio::runtime
-        Volkgnsssdr::volkgnsssdr
         telemetry_decoder_libswiftcnav
         telemetry_decoder_libs
         core_system_parameters
-    PRIVATE
+        Gnuradio::runtime
+        Volkgnsssdr::volkgnsssdr
         Boost::boost
+    PRIVATE
         Gflags::gflags
         Glog::glog
 )

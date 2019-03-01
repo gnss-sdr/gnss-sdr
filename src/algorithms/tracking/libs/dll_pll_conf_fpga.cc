@@ -1,12 +1,13 @@
 /*!
- * \file dll_pll_conf.cc
+ * \file dll_pll_conf_fpga.cc
  * \brief Class that contains all the configuration parameters for generic
- * tracking block based on a DLL and a PLL.
+ * tracking block based on a DLL and a PLL for the FPGA.
+ * \author Marc Majoral, 2019. mmajoral(at)cttc.cat
  * \author Javier Arribas, 2018. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -36,12 +37,14 @@
 Dll_Pll_Conf_Fpga::Dll_Pll_Conf_Fpga()
 {
     /* DLL/PLL tracking configuration */
+    high_dyn = false;
+    smoother_length = 10;
     fs_in = 0.0;
     vector_length = 0U;
     dump = false;
     dump_mat = true;
     dump_filename = std::string("./dll_pll_dump.dat");
-    pll_bw_hz = 40.0;
+    pll_bw_hz = 35.0;
     dll_bw_hz = 2.0;
     pll_bw_narrow_hz = 5.0;
     dll_bw_narrow_hz = 0.75;

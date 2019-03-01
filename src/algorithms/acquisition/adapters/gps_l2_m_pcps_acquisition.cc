@@ -375,6 +375,8 @@ gr::basic_block_sptr GpsL2MPcpsAcquisition::get_right_block()
 {
     return acquisition_;
 }
+
+
 void GpsL2MPcpsAcquisition::set_resampler_latency(uint32_t latency_samples)
 {
     acquisition_->set_resampler_latency(latency_samples);

@@ -570,9 +570,41 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
             if (n_valid > 0)
                 {
                     update_TOW(epoch_data);
-                    if (T_rx_TOW_ms % 20 != 0)
+                    int tow_inc_loop_count = 0;
+                    while (T_rx_TOW_ms % 20 != 0 and tow_inc_loop_count < 20)
                         {
-                            T_rx_TOW_offset_ms = T_rx_TOW_ms % 20;
+                            tow_inc_loop_count++;
+                            T_rx_TOW_offset_ms++;
+                            T_rx_TOW_offset_ms = T_rx_TOW_offset_ms % 20;
+                            //check if effectively the receiver TOW is now multiple of 20 ms
+                            n_valid = 0;
+                            epoch_data.clear();
+                            for (uint32_t n = 0; n < d_nchannels_out; n++)
+                                {
+                                    Gnss_Synchro interpolated_gnss_synchro{};
+                                    if (!interp_trk_obs(interpolated_gnss_synchro, n, d_Rx_clock_buffer.front() + T_rx_TOW_offset_ms * T_rx_clock_step_samples))
+                                        {
+                                            // Produce an empty observation
+                                            interpolated_gnss_synchro = Gnss_Synchro();
+                                            interpolated_gnss_synchro.Flag_valid_pseudorange = false;
+                                            interpolated_gnss_synchro.Flag_valid_word = false;
+                                            interpolated_gnss_synchro.Flag_valid_acquisition = false;
+                                            interpolated_gnss_synchro.fs = 0;
+                                            interpolated_gnss_synchro.Channel_ID = n;
+                                        }
+                                    else
+                                        {
+                                            n_valid++;
+                                        }
+                                    epoch_data.push_back(interpolated_gnss_synchro);
+                                }
+                            update_TOW(epoch_data);
+                            //debug code:
+                            //                            if (T_rx_TOW_ms % 20 != 0)
+                            //                                {
+                            //                                    std::cout << "Warning: RX TOW is not multiple of 20 ms\n";
+                            //                                }
+                            //                            std::cout << "T_rx_TOW_ms=" << T_rx_TOW_ms << " T_rx_TOW_offset_ms=" << T_rx_TOW_offset_ms << " ->" << T_rx_TOW_ms % 20 << std::endl;
                         }
                 }
 

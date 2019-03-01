@@ -1,12 +1,12 @@
 /*!
- * \file galileo_e1_pcps_ambiguous_acquisition.h
+ * \file galileo_e1_pcps_ambiguous_acquisition_fpga.h
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
  *  Galileo E1 Signals
- * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ * \author Marc Majoral, 2019. mmajoral(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -60,22 +60,19 @@ public:
 
     inline std::string role() override
     {
-        //   printf("top acq role\n");
         return role_;
     }
 
     /*!
-     * \brief Returns "Galileo_E1_PCPS_Ambiguous_Acquisition"
+     * \brief Returns "Galileo_E1_PCPS_Ambiguous_Acquisition_Fpga"
      */
     inline std::string implementation() override
     {
-        //  printf("top acq implementation\n");
         return "Galileo_E1_PCPS_Ambiguous_Acquisition_Fpga";
     }
 
     size_t item_size() override
     {
-        //   printf("top acq item size\n");
         size_t item_size = sizeof(lv_16sc_t);
         return item_size;
     }
@@ -138,45 +135,28 @@ public:
     void set_state(int state) override;
 
     /*!
-     * \brief Stop running acquisition
-     */
+      * \brief Stop running acquisition
+      */
     void stop_acquisition() override;
 
     void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
 
 private:
     ConfigurationInterface* configuration_;
-    //pcps_acquisition_sptr acquisition_;
     pcps_acquisition_fpga_sptr acquisition_fpga_;
     gr::blocks::stream_to_vector::sptr stream_to_vector_;
     gr::blocks::float_to_complex::sptr float_to_complex_;
     complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
-    // size_t item_size_;
-    // std::string item_type_;
-    //unsigned int vector_length_;
-    //unsigned int code_length_;
-    bool bit_transition_flag_;
-    bool use_CFAR_algorithm_flag_;
     bool acquire_pilot_;
-    unsigned int channel_;
-    //float threshold_;
-    unsigned int doppler_max_;
-    unsigned int doppler_step_;
-    //unsigned int sampled_ms_;
-    unsigned int max_dwells_;
-    //long fs_in_;
-    //long if_;
-    bool dump_;
-    bool blocking_;
+    uint32_t channel_;
+    uint32_t doppler_max_;
+    uint32_t doppler_step_;
     std::string dump_filename_;
-    //std::complex<float>* code_;
     Gnss_Synchro* gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    //float calculate_threshold(float pfa);
 
-    // extra for the FPGA
     lv_16sc_t* d_all_fft_codes_;  // memory that contains all the code ffts
 };
 

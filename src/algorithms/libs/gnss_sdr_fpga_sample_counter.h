@@ -1,6 +1,7 @@
 /*!
  * \file gnss_sdr_fpga_sample_counter.h
- * \brief Simple block to report the current receiver time based on the output of the tracking or telemetry blocks
+ * \brief Simple block to report the current receiver time based on the output
+ * of the tracking or telemetry blocks
  * \author Javier Arribas 2018. jarribas(at)cttc.es
  *
  *
@@ -28,16 +29,18 @@
  *
  * -------------------------------------------------------------------------
  */
-#ifndef GNSS_SDR_FPGA_sample_counter_H_
-#define GNSS_SDR_FPGA_sample_counter_H_
+
+#ifndef GNSS_SDR_GNSS_SDR_FPGA_SAMPLE_COUNTER_H_
+#define GNSS_SDR_GNSS_SDR_FPGA_SAMPLE_COUNTER_H_
 
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/block.h>
 #include <cstdint>
+#include <string>
 
 class gnss_sdr_fpga_sample_counter;
 
-typedef boost::shared_ptr<gnss_sdr_fpga_sample_counter> gnss_sdr_fpga_sample_counter_sptr;
+using gnss_sdr_fpga_sample_counter_sptr = boost::shared_ptr<gnss_sdr_fpga_sample_counter>;
 
 gnss_sdr_fpga_sample_counter_sptr gnss_sdr_make_fpga_sample_counter(double _fs, int32_t _interval_ms);
 
@@ -66,16 +69,18 @@ private:
     uint32_t current_days;     // Receiver time in days since the beginning of the run
     int32_t report_interval_ms;
     bool flag_enable_send_msg;
-    int32_t fd;                              // driver descriptor
-    volatile uint32_t *map_base;             // driver memory map
-    std::string device_name = "/dev/uio26";  // HW device name
+    int32_t fd;                             // driver descriptor
+    volatile uint32_t *map_base;            // driver memory map
+    std::string device_name = "/dev/uio2";  // HW device name
+    bool is_open;
 
 public:
     friend gnss_sdr_fpga_sample_counter_sptr gnss_sdr_make_fpga_sample_counter(double _fs, int32_t _interval_ms);
+    ~gnss_sdr_fpga_sample_counter();
     int general_work(int noutput_items,
         gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items);
 };
 
-#endif /*GNSS_SDR_FPGA_sample_counter_H_*/
+#endif  // GNSS_SDR_GNSS_SDR_FPGA_SAMPLE_COUNTER_H_

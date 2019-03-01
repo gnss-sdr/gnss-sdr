@@ -1,8 +1,9 @@
 /*!
- * \file gps_l5_dll_pll_tracking.h
+ * \file gps_l5_dll_pll_tracking_fpga.h
  * \brief  Interface of an adapter of a DLL+PLL tracking loop block
  * for GPS L5 to a TrackingInterface
- * \author Javier Arribas, 2017. jarribas(at)cttc.es
+ * \author Marc Majoral, 2019. mmajoral(at)cttc.cat
+ *         Javier Arribas, 2019. jarribas(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
@@ -11,7 +12,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -69,7 +70,7 @@ public:
 
     inline size_t item_size() override
     {
-        return item_size_;
+        return sizeof(int);
     }
 
     void connect(gr::top_block_sptr top_block) override;
@@ -95,16 +96,14 @@ public:
     void stop_tracking() override;
 
 private:
-    //dll_pll_veml_tracking_sptr tracking_;
     dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
-    size_t item_size_;
-    unsigned int channel_;
+    uint32_t channel_;
     std::string role_;
-    unsigned int in_streams_;
-    unsigned int out_streams_;
+    uint32_t in_streams_;
+    uint32_t out_streams_;
     bool d_track_pilot;
-    int* d_ca_codes;
-    int* d_data_codes;
+    int32_t* d_ca_codes;
+    int32_t* d_data_codes;
 };
 
 #endif  // GNSS_SDR_GPS_L5_DLL_PLL_TRACKING_FPGA_H_

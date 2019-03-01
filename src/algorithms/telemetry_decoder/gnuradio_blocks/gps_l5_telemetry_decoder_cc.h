@@ -31,12 +31,13 @@
 #define GNSS_SDR_GPS_L5_TELEMETRY_DECODER_CC_H
 
 
+#include "GPS_L5.h"
 #include "gnss_satellite.h"
 #include "gps_cnav_navigation_message.h"
+#include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>
 #include <algorithm>
 #include <cstdint>
-#include <deque>
 #include <fstream>
 #include <string>
 #include <utility>
@@ -49,7 +50,6 @@ extern "C"
 #include "edc.h"
 }
 
-#include "GPS_L5.h"
 
 class gps_l5_telemetry_decoder_cc;
 
@@ -90,8 +90,8 @@ private:
     bool d_flag_valid_word;
 
     Gps_CNAV_Navigation_Message d_CNAV_Message;
-    double bits_NH[GPS_L5I_NH_CODE_LENGTH]{};
-    std::deque<double> sym_hist;
+    float bits_NH[GPS_L5I_NH_CODE_LENGTH]{};
+    boost::circular_buffer<float> sym_hist;
     bool sync_NH;
     bool new_sym;
 };

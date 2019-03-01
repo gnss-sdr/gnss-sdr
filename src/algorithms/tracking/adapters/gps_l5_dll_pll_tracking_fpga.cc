@@ -1,8 +1,9 @@
 /*!
- * \file gps_l5_dll_pll_tracking.cc
+ * \file gps_l5_dll_pll_tracking_fpga.cc
  * \brief  Interface of an adapter of a DLL+PLL tracking loop block
  * for GPS L5 to a TrackingInterface
- * \author Javier Arribas, 2017. jarribas(at)cttc.es
+ * \author Marc Majoral, 2019. mmajoral(at)cttc.cat
+ *         Javier Arribas, 2019. jarribas(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
@@ -11,7 +12,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -55,15 +56,11 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
     ConfigurationInterface *configuration, const std::string &role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
-    //printf("L5 TRK CLASS CREATED\n");
-    //dllpllconf_t trk_param;
     Dll_Pll_Conf_Fpga trk_param_fpga = Dll_Pll_Conf_Fpga();
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
-    //std::string default_item_type = "gr_complex";
-    //std::string item_type = configuration->property(role + ".item_type", default_item_type);
-    int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
-    int fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+    int32_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 12500000);
+    int32_t fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     trk_param_fpga.fs_in = fs_in;
     bool dump = configuration->property(role + ".dump", false);
     trk_param_fpga.dump = dump;
@@ -84,9 +81,9 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
     trk_param_fpga.dll_bw_narrow_hz = dll_bw_narrow_hz;
     float early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     trk_param_fpga.early_late_space_chips = early_late_space_chips;
-    int vector_length = std::round(static_cast<double>(fs_in) / (static_cast<double>(GPS_L5I_CODE_RATE_HZ) / static_cast<double>(GPS_L5I_CODE_LENGTH_CHIPS)));
+    int32_t vector_length = std::round(static_cast<double>(fs_in) / (static_cast<double>(GPS_L5I_CODE_RATE_HZ) / static_cast<double>(GPS_L5I_CODE_LENGTH_CHIPS)));
     trk_param_fpga.vector_length = vector_length;
-    int extend_correlation_symbols = configuration->property(role + ".extend_correlation_symbols", 1);
+    int32_t extend_correlation_symbols = configuration->property(role + ".extend_correlation_symbols", 1);
     float early_late_space_narrow_chips = configuration->property(role + ".early_late_space_narrow_chips", 0.15);
     trk_param_fpga.early_late_space_narrow_chips = early_late_space_narrow_chips;
     bool track_pilot = configuration->property(role + ".track_pilot", false);
@@ -112,103 +109,85 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
     trk_param_fpga.system = 'G';
     char sig_[3] = "L5";
     std::memcpy(trk_param_fpga.signal, sig_, 3);
-    int cn0_samples = configuration->property(role + ".cn0_samples", 20);
+    int32_t cn0_samples = configuration->property(role + ".cn0_samples", 20);
     if (FLAGS_cn0_samples != 20) cn0_samples = FLAGS_cn0_samples;
     trk_param_fpga.cn0_samples = cn0_samples;
-    int cn0_min = configuration->property(role + ".cn0_min", 25);
+    int32_t cn0_min = configuration->property(role + ".cn0_min", 25);
     if (FLAGS_cn0_min != 25) cn0_min = FLAGS_cn0_min;
     trk_param_fpga.cn0_min = cn0_min;
-    int max_lock_fail = configuration->property(role + ".max_lock_fail", 50);
+    int32_t max_lock_fail = configuration->property(role + ".max_lock_fail", 50);
     if (FLAGS_max_lock_fail != 50) max_lock_fail = FLAGS_max_lock_fail;
     trk_param_fpga.max_lock_fail = max_lock_fail;
-    double carrier_lock_th = configuration->property(role + ".carrier_lock_th", 0.85);
+    double carrier_lock_th = configuration->property(role + ".carrier_lock_th", 0.75);
     if (FLAGS_carrier_lock_th != 0.85) carrier_lock_th = FLAGS_carrier_lock_th;
     trk_param_fpga.carrier_lock_th = carrier_lock_th;
 
     // FPGA configuration parameters
+
     std::string default_device_name = "/dev/uio";
     std::string device_name = configuration->property(role + ".devicename", default_device_name);
     trk_param_fpga.device_name = device_name;
-    unsigned int device_base = configuration->property(role + ".device_base", 1);
+    uint32_t device_base = configuration->property(role + ".device_base", 27);
     trk_param_fpga.device_base = device_base;
-    //unsigned int multicorr_type = configuration->property(role + ".multicorr_type", 0);
     trk_param_fpga.multicorr_type = 0;  //multicorr_type : 0 -> 3 correlators, 1 -> 5 correlators
-
     //################# PRE-COMPUTE ALL THE CODES #################
-    unsigned int code_samples_per_chip = 1;
-    auto code_length_chips = static_cast<unsigned int>(GPS_L5I_CODE_LENGTH_CHIPS);
-    //printf("TRK code_length_chips = %d\n", code_length_chips);
+    uint32_t code_samples_per_chip = 1;
+    auto code_length_chips = static_cast<uint32_t>(GPS_L5I_CODE_LENGTH_CHIPS);
 
     float *tracking_code;
-    float *data_code;
+    float *data_code = nullptr;
 
     tracking_code = static_cast<float *>(volk_gnsssdr_malloc(code_length_chips * sizeof(float), volk_gnsssdr_get_alignment()));
 
-    if (trk_param_fpga.track_pilot)
+    if (track_pilot)
         {
             data_code = static_cast<float *>(volk_gnsssdr_malloc(code_length_chips * sizeof(float), volk_gnsssdr_get_alignment()));
+            for (uint32_t i = 0; i < code_length_chips; i++)
+                {
+                    data_code[i] = 0.0;
+                }
         }
 
-    d_ca_codes = static_cast<int *>(volk_gnsssdr_malloc(static_cast<int>(code_length_chips * NUM_PRNs) * sizeof(int), volk_gnsssdr_get_alignment()));
+    d_ca_codes = static_cast<int32_t *>(volk_gnsssdr_malloc(static_cast<int32_t>(code_length_chips * NUM_PRNs) * sizeof(int32_t), volk_gnsssdr_get_alignment()));
 
-    if (trk_param_fpga.track_pilot)
+    if (track_pilot)
         {
-            d_data_codes = static_cast<int *>(volk_gnsssdr_malloc((static_cast<unsigned int>(code_length_chips)) * NUM_PRNs * sizeof(int), volk_gnsssdr_get_alignment()));
+            d_data_codes = static_cast<int32_t *>(volk_gnsssdr_malloc((static_cast<uint32_t>(code_length_chips)) * NUM_PRNs * sizeof(int32_t), volk_gnsssdr_get_alignment()));
         }
 
-    //printf("start \n");
-    for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
+    for (uint32_t PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
             if (track_pilot)
                 {
                     gps_l5q_code_gen_float(tracking_code, PRN);
                     gps_l5i_code_gen_float(data_code, PRN);
 
-
-                    for (unsigned int s = 0; s < code_length_chips; s++)
+                    for (uint32_t s = 0; s < code_length_chips; s++)
                         {
-                            d_ca_codes[static_cast<int>(code_length_chips) * (PRN - 1) + s] = static_cast<int>(tracking_code[s]);
-                            d_data_codes[static_cast<int>(code_length_chips) * (PRN - 1) + s] = static_cast<int>(data_code[s]);
-                            //printf("%f %d | ", data_codes_f[s], d_data_codes[static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS)* 2 * (PRN - 1) + s]);
+                            d_ca_codes[static_cast<int32_t>(code_length_chips) * (PRN - 1) + s] = static_cast<int32_t>(tracking_code[s]);
+                            d_data_codes[static_cast<int32_t>(code_length_chips) * (PRN - 1) + s] = static_cast<int32_t>(data_code[s]);
                         }
                 }
-
             else
                 {
                     gps_l5i_code_gen_float(tracking_code, PRN);
-                    for (unsigned int s = 0; s < code_length_chips; s++)
+                    for (uint32_t s = 0; s < code_length_chips; s++)
                         {
-                            d_ca_codes[static_cast<int>(code_length_chips) * (PRN - 1) + s] = static_cast<int>(data_code[s]);
-                            //printf("%f %d | ", ca_codes_f[s], d_ca_codes[static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS)* 2 * (PRN - 1) + s]);
+                            d_ca_codes[static_cast<int32_t>(code_length_chips) * (PRN - 1) + s] = static_cast<int32_t>(tracking_code[s]);
                         }
                 }
         }
-    //printf("end \n");
 
-
-    delete[] tracking_code;
-    if (trk_param_fpga.track_pilot)
+    volk_gnsssdr_free(tracking_code);
+    if (track_pilot)
         {
-            delete[] data_code;
+            volk_gnsssdr_free(data_code);
         }
     trk_param_fpga.ca_codes = d_ca_codes;
     trk_param_fpga.data_codes = d_data_codes;
     trk_param_fpga.code_length_chips = code_length_chips;
     trk_param_fpga.code_samples_per_chip = code_samples_per_chip;  // 2 sample per chip
-    //################# MAKE TRACKING GNURadio object ###################
-    //    if (item_type.compare("gr_complex") == 0)
-    //        {
-    //            item_size_ = sizeof(gr_complex);
-    //            tracking_ = dll_pll_veml_make_tracking(trk_param_fpga);
-    //        }
-    //    else
-    //        {
-    //            item_size_ = sizeof(gr_complex);
-    //            LOG(WARNING) << item_type << " unknown tracking item type.";
-    //        }
-    //printf("call \n");
     tracking_fpga_sc = dll_pll_veml_make_tracking_fpga(trk_param_fpga);
-    //printf("end2 \n");
     channel_ = 0;
     DLOG(INFO) << "tracking(" << tracking_fpga_sc->unique_id() << ")";
 }

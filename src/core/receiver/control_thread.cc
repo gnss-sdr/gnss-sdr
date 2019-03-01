@@ -273,12 +273,11 @@ int ControlThread::run()
     cmd_interface_.set_pvt(flowgraph_->get_pvt());
     cmd_interface_thread_ = std::thread(&ControlThread::telecommand_listener, this);
 
-    bool enable_FPGA = configuration_->property("Channel.enable_FPGA", false);
-    if (enable_FPGA == true)
-        {
-            flowgraph_->start_acquisition_helper();
-        }
-
+#ifdef ENABLE_FPGA
+    // Create a task for the acquisition such that id doesn't block the flow of the control thread
+    fpga_helper_thread_ = boost::thread(&GNSSFlowgraph::start_acquisition_helper,
+        flowgraph_);
+#endif
     // Main loop to read and process the control messages
     while (flowgraph_->running() && !stop_)
         {
@@ -294,10 +293,22 @@ int ControlThread::run()
     stop_ = true;
     flowgraph_->disconnect();
 
+#ifdef ENABLE_FPGA
+    // trigger a HW reset
+    // The HW reset causes any HW accelerator module that is waiting for more samples to complete its calculations
+    // to trigger an interrupt and finish its signal processing tasks immediately. In this way all SW threads that
+    // are waiting for interrupts in the HW can exit in a normal way.
+    flowgraph_->perform_hw_reset();
+    fpga_helper_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
+#endif
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     // Terminate keyboard thread
     pthread_t id = keyboard_thread_.native_handle();
     keyboard_thread_.detach();
     pthread_cancel(id);
+
+    LOG(INFO) << "Flowgraph stopped";
 
     if (restart_)
         {

@@ -1,8 +1,8 @@
 /*!
- * \file galileo_e1_dll_pll_veml_tracking.h
+ * \file galileo_e1_dll_pll_veml_tracking_fpga.h
  * \brief  Adapts a DLL+PLL VEML (Very Early Minus Late) tracking loop block
- *   to a TrackingInterface for Galileo E1 signals
- * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ *   to a TrackingInterface for Galileo E1 signals for the FPGA
+ * \author Marc Majoral, 2019. mmajoral(at)cttc.cat
  *
  * Code DLL + carrier PLL according to the algorithms described in:
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -63,7 +63,7 @@ public:
         return role_;
     }
 
-    //! Returns "Galileo_E1_DLL_PLL_VEML_Tracking"
+    //! Returns "Galileo_E1_DLL_PLL_VEML_Tracking_Fpga"
     inline std::string implementation() override
     {
         return "Galileo_E1_DLL_PLL_VEML_Tracking_Fpga";
@@ -71,7 +71,7 @@ public:
 
     inline size_t item_size() override
     {
-        return item_size_;
+        return sizeof(int);
     }
 
     void connect(gr::top_block_sptr top_block) override;
@@ -100,15 +100,13 @@ public:
 
 
 private:
-    //dll_pll_veml_tracking_sptr tracking_;
     dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
-    size_t item_size_;
-    unsigned int channel_;
+    uint32_t channel_;
     std::string role_;
-    unsigned int in_streams_;
-    unsigned int out_streams_;
-    int* d_ca_codes;
-    int* d_data_codes;
+    uint32_t in_streams_;
+    uint32_t out_streams_;
+    int32_t* d_ca_codes;
+    int32_t* d_data_codes;
     bool d_track_pilot;
 };
 

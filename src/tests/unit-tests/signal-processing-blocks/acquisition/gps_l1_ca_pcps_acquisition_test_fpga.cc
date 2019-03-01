@@ -102,7 +102,11 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
     pointer_float = (float *)&buffer_float[0];
     for (int k = 0; k < file_length; k = k + FLOAT_SIZE)
         {
-            fread(buffer_float, FLOAT_SIZE, 1, rx_signal_file);
+            size_t result = fread(buffer_float, FLOAT_SIZE, 1, rx_signal_file);
+            if (result != FLOAT_SIZE)
+                {
+                    std::cerr << "Error reading buffer" << std::endl;
+                }
 
             if (fabs(pointer_float[0]) > max)
                 {
@@ -152,7 +156,11 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
 
                     for (int t = 0; t < transfer_size; t++)
                         {
-                            fread(buffer_float, FLOAT_SIZE, 1, rx_signal_file);
+                            size_t result = fread(buffer_float, FLOAT_SIZE, 1, rx_signal_file);
+                            if (result != FLOAT_SIZE)
+                                {
+                                    std::cerr << "Error reading buffer" << std::endl;
+                                }
 
                             // specify (float) (int) for a quantization maximizing the dynamic range
                             buffer_DMA[t] = static_cast<signed char>((pointer_float[0] * (RX_SIGNAL_MAX_VALUE - 1) / max));
@@ -176,7 +184,7 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CaPcpsAcquisitionTestFpga_msg_rx;
 
-typedef boost::shared_ptr<GpsL1CaPcpsAcquisitionTestFpga_msg_rx> GpsL1CaPcpsAcquisitionTest_msg_fpga_rx_sptr;
+using GpsL1CaPcpsAcquisitionTest_msg_fpga_rx_sptr = boost::shared_ptr<GpsL1CaPcpsAcquisitionTestFpga_msg_rx>;
 
 GpsL1CaPcpsAcquisitionTest_msg_fpga_rx_sptr GpsL1CaPcpsAcquisitionTestFpga_msg_rx_make();
 

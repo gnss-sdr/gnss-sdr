@@ -98,7 +98,7 @@ private:
     float *d_shifts_chips;
     float *d_prompt_data_shift;
     int32_t d_code_length_chips;
-    int32_t d_n_correlators;
+    int32_t d_n_correlators; // number of correlators
 
     // data related to the hardware module and the driver
     int32_t d_device_descriptor;    // driver descriptor
@@ -106,7 +106,6 @@ private:
 
     // configuration data received from the interface
     uint32_t d_channel;       // channel number
-    uint32_t d_ncorrelators;  // number of correlators
     uint32_t d_correlator_length_samples;
     float d_rem_code_phase_chips;
     float d_code_phase_step_chips;

@@ -114,6 +114,7 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     double carrier_lock_th = configuration->property(role + ".carrier_lock_th", 0.85);
     if (FLAGS_carrier_lock_th != 0.85) carrier_lock_th = FLAGS_carrier_lock_th;
     trk_param_fpga.carrier_lock_th = carrier_lock_th;
+    d_data_codes = nullptr;
 
     // FPGA configuration parameters
     std::string default_device_name = "/dev/uio";
@@ -135,7 +136,6 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
         {
             d_data_codes = static_cast<int32_t *>(volk_gnsssdr_malloc((static_cast<uint32_t>(code_length_chips)) * code_samples_per_chip * GALILEO_E5A_NUMBER_OF_CODES * sizeof(int32_t), volk_gnsssdr_get_alignment()));
         }
-
 
     for (uint32_t PRN = 1; PRN <= GALILEO_E5A_NUMBER_OF_CODES; PRN++)
         {

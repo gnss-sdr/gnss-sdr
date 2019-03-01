@@ -40,8 +40,23 @@
 #include <string>
 #include <sys/mman.h>  // libraries used by the GIPO
 
+using google::LogMessage;
+
 #define PAGE_SIZE 0x10000             // default page size for the multicorrelator memory map
 #define TEST_REG_SANITY_CHECK 0x55AA  // value to check the presence of the test register (to detect the hw)
+#ifndef TEMP_FAILURE_RETRY
+#define TEMP_FAILURE_RETRY(exp)              \
+    ({                                       \
+        decltype(exp) _rc;                   \
+        do                                   \
+            {                                \
+                _rc = (exp);                 \
+            }                                \
+        while (_rc == -1 && errno == EINTR); \
+        _rc;                                 \
+    })
+#endif
+
 
 gnss_sdr_fpga_sample_counter::gnss_sdr_fpga_sample_counter(
     double _fs,
@@ -59,7 +74,7 @@ gnss_sdr_fpga_sample_counter::gnss_sdr_fpga_sample_counter(
     //The hardware timer must keep always interrupting the PS. It must not wait for the interrupt to
     //be served.
     open_device();
-
+    is_open = true;
     sample_counter = 0ULL;
     current_T_rx_ms = 0;
     current_s = 0;
@@ -78,6 +93,15 @@ gnss_sdr_fpga_sample_counter_sptr gnss_sdr_make_fpga_sample_counter(double _fs, 
 {
     gnss_sdr_fpga_sample_counter_sptr fpga_sample_counter_(new gnss_sdr_fpga_sample_counter(_fs, _interval_ms));
     return fpga_sample_counter_;
+}
+
+
+gnss_sdr_fpga_sample_counter::~gnss_sdr_fpga_sample_counter()
+{
+    if (is_open)
+        {
+            close_device();
+        }
 }
 
 
@@ -100,99 +124,8 @@ bool gnss_sdr_fpga_sample_counter::stop()
     //todo: place here the routines to stop the associated hardware (if needed).This function will be called by GNURadio at every stop of the flowgraph.
     // return true if everything is ok.
     close_device();
-
+    is_open = false;
     return true;
-}
-
-
-int gnss_sdr_fpga_sample_counter::general_work(int noutput_items __attribute__((unused)),
-    __attribute__((unused)) gr_vector_int &ninput_items,
-    __attribute__((unused)) gr_vector_const_void_star &input_items,
-    gr_vector_void_star &output_items)
-{
-    //todo: Call here a function that waits for an interrupt. Do not open a thread,
-    //it must be a simple call to a BLOCKING function.
-    // The function will return the actual absolute sample count of the internal counter of the timmer.
-    // store the sample count in class member sample_counter
-    // Possible problem: what happen if the PS is overloaded and gnuradio does not call this function
-    // with the sufficient rate to catch all the interrupts in the counter. To be evaluated later.
-
-    uint32_t counter = wait_for_interrupt_and_read_counter();
-    uint64_t samples_passed = 2 * static_cast<uint64_t>(samples_per_output) - static_cast<uint64_t>(counter);  // ellapsed samples
-    // Note: at this moment the sample counter is implemented as a sample counter that decreases to zero and then it is automatically
-    // reloaded again and keeps counter. It is done in this way to minimize the logic in the FPGA and maximize the FPGA clock performance
-    // (it takes less resources and latency in the FPGA to compare a number against a fixed value like zero than to compare it to a programmable
-    // variable number).
-
-    sample_counter = sample_counter + samples_passed;  //samples_per_output;
-    auto *out = reinterpret_cast<Gnss_Synchro *>(output_items[0]);
-    out[0] = Gnss_Synchro();
-    out[0].Flag_valid_symbol_output = false;
-    out[0].Flag_valid_word = false;
-    out[0].Channel_ID = -1;
-    out[0].fs = fs;
-    if ((current_T_rx_ms % report_interval_ms) == 0)
-        {
-            current_s++;
-            if ((current_s % 60) == 0)
-                {
-                    current_s = 0;
-                    current_m++;
-                    flag_m = true;
-                    if ((current_m % 60) == 0)
-                        {
-                            current_m = 0;
-                            current_h++;
-                            flag_h = true;
-                            if ((current_h % 24) == 0)
-                                {
-                                    current_h = 0;
-                                    current_days++;
-                                    flag_days = true;
-                                }
-                        }
-                }
-
-            if (flag_days)
-                {
-                    std::string day;
-                    if (current_days == 1)
-                        {
-                            day = " day ";
-                        }
-                    else
-                        {
-                            day = " days ";
-                        }
-                    std::cout << "Current receiver time: " << current_days << day << current_h << " h " << current_m << " min " << current_s << " s" << std::endl;
-                }
-            else
-                {
-                    if (flag_h)
-                        {
-                            std::cout << "Current receiver time: " << current_h << " h " << current_m << " min " << current_s << " s" << std::endl;
-                        }
-                    else
-                        {
-                            if (flag_m)
-                                {
-                                    std::cout << "Current receiver time: " << current_m << " min " << current_s << " s" << std::endl;
-                                }
-                            else
-                                {
-                                    std::cout << "Current receiver time: " << current_s << " s" << std::endl;
-                                }
-                        }
-                }
-            if (flag_enable_send_msg)
-                {
-                    message_port_pub(pmt::mp("receiver_time"), pmt::from_double(static_cast<double>(current_T_rx_ms) / 1000.0));
-                }
-        }
-    out[0].Tracking_sample_counter = sample_counter;
-    //current_T_rx_ms = (sample_counter * 1000) / samples_per_output;
-    current_T_rx_ms = interval_ms * (sample_counter) / samples_per_output;
-    return 1;
 }
 
 
@@ -289,4 +222,95 @@ uint32_t gnss_sdr_fpga_sample_counter::wait_for_interrupt_and_read_counter()
     // add number of passed samples or read the current counter value for more accuracy
     counter = samples_per_output;  //map_base[0];
     return counter;
+}
+
+
+int gnss_sdr_fpga_sample_counter::general_work(int noutput_items __attribute__((unused)),
+    __attribute__((unused)) gr_vector_int &ninput_items,
+    __attribute__((unused)) gr_vector_const_void_star &input_items,
+    gr_vector_void_star &output_items)
+{
+    //todo: Call here a function that waits for an interrupt. Do not open a thread,
+    //it must be a simple call to a BLOCKING function.
+    // The function will return the actual absolute sample count of the internal counter of the timmer.
+    // store the sample count in class member sample_counter
+    // Possible problem: what happen if the PS is overloaded and gnuradio does not call this function
+    // with the sufficient rate to catch all the interrupts in the counter. To be evaluated later.
+
+    uint32_t counter = wait_for_interrupt_and_read_counter();
+    uint64_t samples_passed = 2 * static_cast<uint64_t>(samples_per_output) - static_cast<uint64_t>(counter);  // ellapsed samples
+    // Note: at this moment the sample counter is implemented as a sample counter that decreases to zero and then it is automatically
+    // reloaded again and keeps counter. It is done in this way to minimize the logic in the FPGA and maximize the FPGA clock performance
+    // (it takes less resources and latency in the FPGA to compare a number against a fixed value like zero than to compare it to a programmable
+    // variable number).
+
+    sample_counter = sample_counter + samples_passed;  //samples_per_output;
+    auto *out = reinterpret_cast<Gnss_Synchro *>(output_items[0]);
+    out[0] = Gnss_Synchro();
+    out[0].Flag_valid_symbol_output = false;
+    out[0].Flag_valid_word = false;
+    out[0].Channel_ID = -1;
+    out[0].fs = fs;
+    if ((current_T_rx_ms % report_interval_ms) == 0)
+        {
+            current_s++;
+            if ((current_s % 60) == 0)
+                {
+                    current_s = 0;
+                    current_m++;
+                    flag_m = true;
+                    if ((current_m % 60) == 0)
+                        {
+                            current_m = 0;
+                            current_h++;
+                            flag_h = true;
+                            if ((current_h % 24) == 0)
+                                {
+                                    current_h = 0;
+                                    current_days++;
+                                    flag_days = true;
+                                }
+                        }
+                }
+
+            if (flag_days)
+                {
+                    std::string day;
+                    if (current_days == 1)
+                        {
+                            day = " day ";
+                        }
+                    else
+                        {
+                            day = " days ";
+                        }
+                    std::cout << "Current receiver time: " << current_days << day << current_h << " h " << current_m << " min " << current_s << " s" << std::endl;
+                }
+            else
+                {
+                    if (flag_h)
+                        {
+                            std::cout << "Current receiver time: " << current_h << " h " << current_m << " min " << current_s << " s" << std::endl;
+                        }
+                    else
+                        {
+                            if (flag_m)
+                                {
+                                    std::cout << "Current receiver time: " << current_m << " min " << current_s << " s" << std::endl;
+                                }
+                            else
+                                {
+                                    std::cout << "Current receiver time: " << current_s << " s" << std::endl;
+                                }
+                        }
+                }
+            if (flag_enable_send_msg)
+                {
+                    message_port_pub(pmt::mp("receiver_time"), pmt::from_double(static_cast<double>(current_T_rx_ms) / 1000.0));
+                }
+        }
+    out[0].Tracking_sample_counter = sample_counter;
+    //current_T_rx_ms = (sample_counter * 1000) / samples_per_output;
+    current_T_rx_ms = interval_ms * (sample_counter) / samples_per_output;
+    return 1;
 }

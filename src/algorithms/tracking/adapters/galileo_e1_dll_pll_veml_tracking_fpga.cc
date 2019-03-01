@@ -3,7 +3,6 @@
  * \brief  Adapts a DLL+PLL VEML (Very Early Minus Late) tracking loop block
  *   to a TrackingInterface for Galileo E1 signals for the FPGA
  * \author Marc Majoral, 2019. mmajoral(at)cttc.cat
- * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  * Code DLL + carrier PLL according to the algorithms described in:
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
@@ -44,10 +43,6 @@
 #include <glog/logging.h>
 
 using google::LogMessage;
-
-void GalileoE1DllPllVemlTrackingFpga::stop_tracking()
-{
-}
 
 GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     ConfigurationInterface* configuration, const std::string& role,
@@ -136,6 +131,7 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     d_ca_codes = static_cast<int32_t*>(volk_gnsssdr_malloc(static_cast<int32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS) * code_samples_per_chip * GALILEO_E1_NUMBER_OF_CODES * sizeof(int32_t), volk_gnsssdr_get_alignment()));
     float* ca_codes_f;
     float* data_codes_f = nullptr;
+    d_data_codes = nullptr;
 
     if (d_track_pilot)
         {
@@ -197,6 +193,11 @@ GalileoE1DllPllVemlTrackingFpga::~GalileoE1DllPllVemlTrackingFpga()
         {
             delete[] d_data_codes;
         }
+}
+
+
+void GalileoE1DllPllVemlTrackingFpga::stop_tracking()
+{
 }
 
 

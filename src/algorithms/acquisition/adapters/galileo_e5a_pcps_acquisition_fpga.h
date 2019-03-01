@@ -67,7 +67,7 @@ public:
 
     inline size_t item_size() override
     {
-        return item_size_;
+        return sizeof(int);
     }
 
     void connect(gr::top_block_sptr top_block) override;
@@ -150,34 +150,18 @@ private:
     pcps_acquisition_fpga_sptr acquisition_fpga_;
     gr::blocks::stream_to_vector::sptr stream_to_vector_;
 
-    size_t item_size_;
-
     std::string item_type_;
     std::string dump_filename_;
     std::string role_;
 
-    bool bit_transition_flag_;
-    bool dump_;
     bool acq_pilot_;
-    bool use_CFAR_;
-    bool blocking_;
     bool acq_iq_;
 
-    uint32_t vector_length_;
-    uint32_t code_length_;
     uint32_t channel_;
     uint32_t doppler_max_;
     uint32_t doppler_step_;
-    uint32_t sampled_ms_;
-    uint32_t max_dwells_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-
-    int64_t fs_in_;
-
-    float threshold_;
-
-    gr_complex* code_;
 
     Gnss_Synchro* gnss_synchro_;
 

@@ -63,7 +63,7 @@ galileo_telemetry_decoder_cc::galileo_telemetry_decoder_cc(
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     d_frame_type = frame_type;
-    LOG(INFO) << "Initializing GALILEO UNIFIED TELEMETRY DECODER";
+    DLOG(INFO) << "Initializing GALILEO UNIFIED TELEMETRY DECODER";
 
     switch (d_frame_type)
         {
@@ -299,11 +299,11 @@ void galileo_telemetry_decoder_cc::decode_INAV_word(double *page_part_symbols, i
             d_inav_nav.split_page(page_String, flag_even_word_arrived);
             if (d_inav_nav.flag_CRC_test == true)
                 {
-                    LOG(INFO) << "Galileo E1 CRC correct in channel " << d_channel << " from satellite " << d_satellite;
+                    DLOG(INFO) << "Galileo E1 CRC correct in channel " << d_channel << " from satellite " << d_satellite;
                 }
             else
                 {
-                    LOG(INFO) << "Galileo E1 CRC error in channel " << d_channel << " from satellite " << d_satellite;
+                    DLOG(INFO) << "Galileo E1 CRC error in channel " << d_channel << " from satellite " << d_satellite;
                 }
             flag_even_word_arrived = 0;
         }
@@ -391,11 +391,11 @@ void galileo_telemetry_decoder_cc::decode_FNAV_word(double *page_symbols, int32_
     d_fnav_nav.split_page(page_String);
     if (d_fnav_nav.flag_CRC_test == true)
         {
-            LOG(INFO) << "Galileo E5a CRC correct in channel " << d_channel << " from satellite " << d_satellite;
+            DLOG(INFO) << "Galileo E5a CRC correct in channel " << d_channel << " from satellite " << d_satellite;
         }
     else
         {
-            LOG(INFO) << "Galileo E5a CRC error in channel " << d_channel << " from satellite " << d_satellite;
+            DLOG(INFO) << "Galileo E5a CRC error in channel " << d_channel << " from satellite " << d_satellite;
         }
 
     // 4. Push the new navigation data to the queues
@@ -431,7 +431,7 @@ void galileo_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satellite
 void galileo_telemetry_decoder_cc::set_channel(int32_t channel)
 {
     d_channel = channel;
-    LOG(INFO) << "Navigation channel set to " << channel;
+    DLOG(INFO) << "Navigation channel set to " << channel;
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump == true)
         {
@@ -497,7 +497,7 @@ int galileo_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
                 if (abs(corr_value) >= d_samples_per_preamble)
                     {
                         d_preamble_index = d_sample_counter;  // record the preamble sample stamp
-                        LOG(INFO) << "Preamble detection for Galileo satellite " << this->d_satellite;
+                        DLOG(INFO) << "Preamble detection for Galileo satellite " << this->d_satellite;
                         d_stat = 1;  // enter into frame pre-detection status
                     }
                 break;
@@ -511,7 +511,7 @@ int galileo_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
                         if (abs(preamble_diff - d_preamble_period_symbols) == 0)
                             {
                                 // try to decode frame
-                                LOG(INFO) << "Starting page decoder for Galileo satellite " << this->d_satellite;
+                                DLOG(INFO) << "Starting page decoder for Galileo satellite " << this->d_satellite;
                                 d_preamble_index = d_sample_counter;  // record the preamble sample stamp
                                 d_stat = 2;
                             }
@@ -606,7 +606,7 @@ int galileo_telemetry_decoder_cc::general_work(int noutput_items __attribute__((
                                 d_preamble_index = d_sample_counter;  // record the preamble sample stamp
                                 if (d_CRC_error_counter > CRC_ERROR_LIMIT)
                                     {
-                                        LOG(INFO) << "Lost of frame sync SAT " << this->d_satellite;
+                                        DLOG(INFO) << "Lost of frame sync SAT " << this->d_satellite;
                                         d_flag_frame_sync = false;
                                         d_stat = 0;
                                         d_TOW_at_current_symbol_ms = 0;

@@ -74,7 +74,7 @@
 /*!
  * \brief This class implements a simple PVT Least Squares solution
  */
-class rtklib_solver : public Pvt_Solution
+class Rtklib_Solver : public Pvt_Solution
 {
 private:
     rtk_t rtk_;
@@ -91,8 +91,8 @@ private:
 public:
     sol_t pvt_sol;
     ssat_t pvt_ssat[MAXSAT];
-    rtklib_solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, const rtk_t& rtk);
-    ~rtklib_solver();
+    Rtklib_Solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, const rtk_t& rtk);
+    ~Rtklib_Solver();
 
     bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, bool flag_averaging);
     double get_hdop() const;

@@ -60,9 +60,9 @@ add_library(signal_source_gr_blocks
 
 target_link_libraries(signal_source_gr_blocks
     PUBLIC
-        signal_source_lib
-        Gnuradio::runtime
         Boost::thread
+        Gnuradio::runtime
+        signal_source_libs
     PRIVATE
         Gflags::gflags
         Glog::glog
@@ -75,6 +75,24 @@ if(ENABLE_RAW_UDP AND PCAP_FOUND)
     )
 endif()
 
-set_property(TARGET signal_source_gr_blocks APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+if(OS_IS_MACOSX)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")  # not AppleClang
+        target_compile_definitions(signal_source_gr_blocks
+            PUBLIC
+                -DBOOST_ASIO_HAS_STD_STRING_VIEW
+        )
+    endif()
+endif()
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(signal_source_gr_blocks
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+set_property(TARGET signal_source_gr_blocks APPEND PROPERTY
+    INTERFACE_INCLUDE_DIRECTORIES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

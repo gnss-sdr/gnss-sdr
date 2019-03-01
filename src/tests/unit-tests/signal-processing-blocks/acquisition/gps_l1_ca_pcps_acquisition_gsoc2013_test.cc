@@ -31,15 +31,6 @@
  */
 
 
-#include <gnuradio/analog/sig_source_waveform.h>
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/top_block.h>
-#include <chrono>
-#ifdef GR_GREATER_38
-#include <gnuradio/analog/sig_source.h>
-#else
-#include <gnuradio/analog/sig_source_c.h>
-#endif
 #include "configuration_interface.h"
 #include "fir_filter.h"
 #include "gen_signal_source.h"
@@ -51,27 +42,38 @@
 #include "pass_through.h"
 #include "signal_generator.h"
 #include "signal_generator_c.h"
-#include "boost/shared_ptr.hpp"
+#include <boost/shared_ptr.hpp>
+#include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/msg_queue.h>
+#include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
+#include <chrono>
+#include <thread>
+#include <utility>
+#ifdef GR_GREATER_38
+#include <gnuradio/analog/sig_source.h>
+#else
+#include <gnuradio/analog/sig_source_c.h>
+#endif
 
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx;
 
-typedef boost::shared_ptr<GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx> GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx_sptr;
+using GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx_sptr = boost::shared_ptr<GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx>;
 
-GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx_sptr GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx_make(concurrent_queue<int>& queue);
+GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx_sptr GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx_make(Concurrent_Queue<int>& queue);
 
 
 class GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx : public gr::block
 {
 private:
-    friend GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx_sptr GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx_make(concurrent_queue<int>& queue);
+    friend GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx_sptr GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx_make(Concurrent_Queue<int>& queue);
     void msg_handler_events(pmt::pmt_t msg);
-    GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx(concurrent_queue<int>& queue);
-    concurrent_queue<int>& channel_internal_queue;
+    GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx(Concurrent_Queue<int>& queue);
+    Concurrent_Queue<int>& channel_internal_queue;
 
 public:
     int rx_message;
@@ -79,7 +81,7 @@ public:
 };
 
 
-GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx_sptr GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx_make(concurrent_queue<int>& queue)
+GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx_sptr GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx_make(Concurrent_Queue<int>& queue)
 {
     return GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx_sptr(new GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx(queue));
 }
@@ -89,7 +91,7 @@ void GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx::msg_handler_events(pmt::pmt_t ms
 {
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
             channel_internal_queue.push(rx_message);
         }
@@ -101,16 +103,14 @@ void GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx::msg_handler_events(pmt::pmt_t ms
 }
 
 
-GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx::GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx(concurrent_queue<int>& queue) : gr::block("GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue)
+GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx::GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx(Concurrent_Queue<int>& queue) : gr::block("GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue)
 {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"), boost::bind(&GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx::msg_handler_events, this, _1));
     rx_message = 0;
 }
 
-GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx::~GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx()
-{
-}
+GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx::~GpsL1CaPcpsAcquisitionGSoC2013Test_msg_rx() = default;
 
 
 // ###########################################################
@@ -124,13 +124,11 @@ protected:
         stop = false;
         message = 0;
         gnss_synchro = Gnss_Synchro();
-        acquisition = 0;
+        acquisition = nullptr;
         init();
     }
 
-    ~GpsL1CaPcpsAcquisitionGSoC2013Test()
-    {
-    }
+    ~GpsL1CaPcpsAcquisitionGSoC2013Test() = default;
 
     void init();
     void config_1();
@@ -140,7 +138,7 @@ protected:
     void process_message();
     void stop_queue();
 
-    concurrent_queue<int> channel_internal_queue;
+    Concurrent_Queue<int> channel_internal_queue;
 
     gr::msg_queue::sptr queue;
     gr::top_block_sptr top_block;
@@ -150,7 +148,7 @@ protected:
     size_t item_size;
     bool stop;
     int message;
-    boost::thread ch_thread;
+    std::thread ch_thread;
 
     unsigned int integration_time_ms = 0;
     unsigned int fs_in = 0;
@@ -351,7 +349,7 @@ void GpsL1CaPcpsAcquisitionGSoC2013Test::config_2()
 void GpsL1CaPcpsAcquisitionGSoC2013Test::start_queue()
 {
     stop = false;
-    ch_thread = boost::thread(&GpsL1CaPcpsAcquisitionGSoC2013Test::wait_message, this);
+    ch_thread = std::thread(&GpsL1CaPcpsAcquisitionGSoC2013Test::wait_message, this);
 }
 
 
@@ -548,7 +546,7 @@ TEST_F(GpsL1CaPcpsAcquisitionGSoC2013Test, ValidationOfResults)
                 }
 
             ASSERT_NO_THROW({
-                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+                ch_thread.join();
             }) << "Failure while waiting the queue to stop";
         }
 
@@ -638,7 +636,7 @@ TEST_F(GpsL1CaPcpsAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
                 }
 
             ASSERT_NO_THROW({
-                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+                ch_thread.join();
             }) << "Failure while waiting the queue to stop";
         }
 

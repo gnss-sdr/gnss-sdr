@@ -34,17 +34,17 @@
 
 #include "swift_common.h"
 
-u8 parity(u32 x);
-u32 getbitu(const u8 *buff, u32 pos, u8 len);
-s32 getbits(const u8 *buff, u32 pos, u8 len);
-void setbitu(u8 *buff, u32 pos, u32 len, u32 data);
-void setbits(u8 *buff, u32 pos, u32 len, s32 data);
-void bitcopy(void *dst, u32 dst_index,
-    const void *src, u32 src_index, u32 count);
-void bitshl(void *buf, u32 size, u32 shift);
-u8 count_bits_u64(u64 v, u8 bv);
-u8 count_bits_u32(u32 v, u8 bv);
-u8 count_bits_u16(u16 v, u8 bv);
-u8 count_bits_u8(u8 v, u8 bv);
+uint8_t parity(uint32_t x);
+uint32_t getbitu(const uint8_t *buff, uint32_t pos, uint8_t len);
+int32_t getbits(const uint8_t *buff, uint32_t pos, uint8_t len);
+void setbitu(uint8_t *buff, uint32_t pos, uint32_t len, uint32_t data);
+void setbits(uint8_t *buff, uint32_t pos, uint32_t len, int32_t data);
+void bitcopy(void *dst, uint32_t dst_index,
+    const void *src, uint32_t src_index, uint32_t count);
+void bitshl(void *buf, uint32_t size, uint32_t shift);
+uint8_t count_bits_u64(uint64_t v, uint8_t bv);
+uint8_t count_bits_u32(uint32_t v, uint8_t bv);
+uint8_t count_bits_u16(uint16_t v, uint8_t bv);
+uint8_t count_bits_u8(uint8_t v, uint8_t bv);
 
 #endif /* LIBSWIFTNAV_BITS_H */

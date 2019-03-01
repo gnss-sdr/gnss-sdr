@@ -41,6 +41,7 @@
 #include <gnuradio/blocks/float_to_complex.h>
 #include <gnuradio/blocks/stream_to_vector.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <cstdint>
 #include <string>
 
 
@@ -92,7 +93,7 @@ public:
     /*!
      * \brief Set acquisition channel unique ID
      */
-    void set_channel(unsigned int channel) override;
+    void set_channel(uint32_t channel) override;
 
     /*!
      * \brief Set statistics threshold of PCPS algorithm
@@ -102,12 +103,12 @@ public:
     /*!
      * \brief Set maximum Doppler off grid search
      */
-    void set_doppler_max(unsigned int doppler_max) override;
+    void set_doppler_max(uint32_t doppler_max) override;
 
     /*!
      * \brief Set Doppler steps for the grid search
      */
-    void set_doppler_step(unsigned int doppler_step) override;
+    void set_doppler_step(uint32_t doppler_step) override;
 
     /*!
      * \brief Initializes acquisition algorithm.
@@ -153,25 +154,25 @@ private:
     complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
     size_t item_size_;
     std::string item_type_;
-    unsigned int vector_length_;
-    unsigned int code_length_;
+    uint32_t vector_length_;
+    uint32_t code_length_;
     bool bit_transition_flag_;
     bool use_CFAR_algorithm_flag_;
-    unsigned int channel_;
+    uint32_t channel_;
     float threshold_;
-    unsigned int doppler_max_;
-    unsigned int doppler_step_;
-    unsigned int sampled_ms_;
-    unsigned int max_dwells_;
-    long fs_in_;
+    uint32_t doppler_max_;
+    uint32_t doppler_step_;
+    uint32_t sampled_ms_;
+    uint32_t max_dwells_;
+    int64_t fs_in_;
     bool dump_;
     bool blocking_;
     std::string dump_filename_;
     std::complex<float>* code_;
     Gnss_Synchro* gnss_synchro_;
     std::string role_;
-    unsigned int in_streams_;
-    unsigned int out_streams_;
+    uint32_t in_streams_;
+    uint32_t out_streams_;
 
     float calculate_threshold(float pfa);
 };

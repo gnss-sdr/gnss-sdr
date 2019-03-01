@@ -97,19 +97,19 @@ public:
         return repeat_;
     }
 
-    inline long sampling_frequency() const
+    inline int64_t sampling_frequency() const
     {
         return sampling_frequency_;
     }
 
-    inline long samples() const
+    inline uint64_t samples() const
     {
         return samples_;
     }
 
 private:
     uint64_t samples_;
-    double sampling_frequency_;
+    int64_t sampling_frequency_;
     std::string filename_;
     bool repeat_;
     bool dump_;  //Enables dumping the gr_complex sample output

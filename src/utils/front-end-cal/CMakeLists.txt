@@ -26,40 +26,62 @@ source_group(Headers FILES ${FRONT_END_CAL_HEADERS})
 target_link_libraries(front_end_cal_lib
     PUBLIC
         Armadillo::armadillo
-        ${THREAD_LIBRARIES}
-        acq_adapters
+        Threads::Threads
         Volkgnsssdr::volkgnsssdr ${ORC_LIBRARIES}
-        rx_core_lib
+        signal_source_adapters
+        signal_source_gr_blocks
+        signal_source_libs
+        acquisition_adapters
         gnss_sdr_flags
-        gnss_rx
-        channel_fsm
-        gnss_sp_libs
+        channel_libs
+        algorithms_libs
+        core_receiver
+        core_libs
     PRIVATE
+        Boost::boost
+        Gflags::gflags
         Glog::glog
         Gnuradio::blocks
         Gnuradio::runtime
-        Boost::serialization
-        Boost::thread
 )
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(front_end_cal_lib
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
 
 add_executable(front-end-cal ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
 
 target_link_libraries(front-end-cal
     PUBLIC
         Volkgnsssdr::volkgnsssdr ${ORC_LIBRARIES}
-        rx_core_lib
-        gnss_rx
+        core_libs
+        core_receiver
         front_end_cal_lib
         gnss_sdr_flags
     PRIVATE
+        Boost::filesystem
+        Gflags::gflags
         Glog::glog
-        Armadillo::armadillo
 )
 
 target_compile_definitions(front-end-cal
     PUBLIC -DGNSS_SDR_VERSION="${VERSION}"
     PUBLIC -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}"
 )
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(front-end-cal
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
 
 add_custom_command(TARGET front-end-cal POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:front-end-cal>

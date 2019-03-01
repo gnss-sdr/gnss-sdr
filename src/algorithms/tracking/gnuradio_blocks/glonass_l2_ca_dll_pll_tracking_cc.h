@@ -48,8 +48,7 @@
 
 class Glonass_L2_Ca_Dll_Pll_Tracking_cc;
 
-typedef boost::shared_ptr<Glonass_L2_Ca_Dll_Pll_Tracking_cc>
-    glonass_l2_ca_dll_pll_tracking_cc_sptr;
+using glonass_l2_ca_dll_pll_tracking_cc_sptr = boost::shared_ptr<Glonass_L2_Ca_Dll_Pll_Tracking_cc>;
 
 glonass_l2_ca_dll_pll_tracking_cc_sptr
 glonass_l2_ca_dll_pll_make_tracking_cc(
@@ -125,7 +124,7 @@ private:
     gr_complex* d_ca_code;
     float* d_local_code_shift_chips;
     gr_complex* d_correlator_outs;
-    cpu_multicorrelator multicorrelator_cpu;
+    Cpu_Multicorrelator multicorrelator_cpu;
 
 
     // tracking vars

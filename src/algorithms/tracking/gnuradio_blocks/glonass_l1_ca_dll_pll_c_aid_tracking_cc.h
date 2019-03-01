@@ -53,8 +53,7 @@
 
 class glonass_l1_ca_dll_pll_c_aid_tracking_cc;
 
-typedef boost::shared_ptr<glonass_l1_ca_dll_pll_c_aid_tracking_cc>
-    glonass_l1_ca_dll_pll_c_aid_tracking_cc_sptr;
+using glonass_l1_ca_dll_pll_c_aid_tracking_cc_sptr = boost::shared_ptr<glonass_l1_ca_dll_pll_c_aid_tracking_cc>;
 
 glonass_l1_ca_dll_pll_c_aid_tracking_cc_sptr
 glonass_l1_ca_dll_pll_c_aid_make_tracking_cc(
@@ -126,7 +125,7 @@ private:
     gr_complex* d_ca_code;
     float* d_local_code_shift_chips;
     gr_complex* d_correlator_outs;
-    cpu_multicorrelator multicorrelator_cpu;
+    Cpu_Multicorrelator multicorrelator_cpu;
 
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;

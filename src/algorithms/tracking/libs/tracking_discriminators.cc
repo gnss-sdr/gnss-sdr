@@ -64,7 +64,7 @@ double fll_four_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2, double
  */
 double pll_four_quadrant_atan(gr_complex prompt_s1)
 {
-    return atan2(prompt_s1.imag(), prompt_s1.real());
+    return static_cast<double>(std::atan2(prompt_s1.imag(), prompt_s1.real()));
 }
 
 
@@ -79,7 +79,7 @@ double pll_cloop_two_quadrant_atan(gr_complex prompt_s1)
 {
     if (prompt_s1.real() != 0.0)
         {
-            return atan(prompt_s1.imag() / prompt_s1.real());
+            return static_cast<double>(std::atan(prompt_s1.imag() / prompt_s1.real()));
         }
     return 0.0;
 }

@@ -30,12 +30,12 @@
 
 #include "pcps_quicksync_acquisition_cc.h"
 #include "GPS_L1_CA.h"
-#include "control_message_factory.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cmath>
+#include <exception>
 #include <sstream>
 #include <utility>
 
@@ -159,11 +159,21 @@ pcps_quicksync_acquisition_cc::~pcps_quicksync_acquisition_cc()
     delete d_corr_output_f;
     delete[] d_code_folded;
 
-    if (d_dump)
+    try
         {
-            d_dump_file.close();
+            if (d_dump)
+                {
+                    d_dump_file.close();
+                }
         }
-    // DLOG(INFO) << "END DESTROYER";
+    catch (const std::ofstream::failure& e)
+        {
+            std::cerr << "Problem closing Acquisition dump file: " << d_dump_filename << '\n';
+        }
+    catch (const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+        }
 }
 
 
@@ -208,7 +218,10 @@ void pcps_quicksync_acquisition_cc::init()
     d_mag = 0.0;
     d_input_power = 0.0;
 
-    if (d_doppler_step == 0) d_doppler_step = 250;
+    if (d_doppler_step == 0)
+        {
+            d_doppler_step = 250;
+        }
 
     // Count the number of bins
     d_num_doppler_bins = 0;
@@ -535,7 +548,10 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                 DLOG(INFO) << "test statistics threshold " << d_threshold;
                 DLOG(INFO) << "folding factor " << d_folding_factor;
                 DLOG(INFO) << "possible delay correlation output";
-                for (int32_t i = 0; i < static_cast<int32_t>(d_folding_factor); i++) DLOG(INFO) << d_possible_delay[i] << "\t\t\t" << d_corr_output_f[i];
+                for (int32_t i = 0; i < static_cast<int32_t>(d_folding_factor); i++)
+                    {
+                        DLOG(INFO) << d_possible_delay[i] << "\t\t\t" << d_corr_output_f[i];
+                    }
                 DLOG(INFO) << "code phase " << d_gnss_synchro->Acq_delay_samples;
                 DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
                 DLOG(INFO) << "magnitude folded " << d_mag;
@@ -564,7 +580,10 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                 DLOG(INFO) << "test statistics threshold " << d_threshold;
                 DLOG(INFO) << "folding factor " << d_folding_factor;
                 DLOG(INFO) << "possible delay    corr output";
-                for (int32_t i = 0; i < static_cast<int32_t>(d_folding_factor); i++) DLOG(INFO) << d_possible_delay[i] << "\t\t\t" << d_corr_output_f[i];
+                for (int32_t i = 0; i < static_cast<int32_t>(d_folding_factor); i++)
+                    {
+                        DLOG(INFO) << d_possible_delay[i] << "\t\t\t" << d_corr_output_f[i];
+                    }
                 DLOG(INFO) << "code phase " << d_gnss_synchro->Acq_delay_samples;
                 DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
                 DLOG(INFO) << "magnitude folded " << d_mag;

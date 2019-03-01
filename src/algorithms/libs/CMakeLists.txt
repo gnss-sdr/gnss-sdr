@@ -22,7 +22,6 @@ set(GNSS_SPLIBS_SOURCES
     gps_l2c_signal.cc
     gps_l5_signal.cc
     galileo_e1_signal_processing.cc
-    gnss_sdr_valve.cc
     gnss_sdr_sample_counter.cc
     gnss_signal_processing.cc
     gps_sdr_signal_processing.cc
@@ -42,13 +41,13 @@ set(GNSS_SPLIBS_SOURCES
     conjugate_ic.cc
     gnss_sdr_create_directory.cc
     geofunctions.cc
+    rtcm.cc
 )
 
 set(GNSS_SPLIBS_HEADERS
     gps_l2c_signal.h
     gps_l5_signal.h
     galileo_e1_signal_processing.h
-    gnss_sdr_valve.h
     gnss_sdr_sample_counter.h
     gnss_signal_processing.h
     gps_sdr_signal_processing.h
@@ -69,6 +68,7 @@ set(GNSS_SPLIBS_HEADERS
     gnss_sdr_create_directory.h
     gnss_circular_deque.h
     geofunctions.h
+    rtcm.h
 )
 
 if(ENABLE_FPGA)
@@ -107,35 +107,57 @@ list(SORT GNSS_SPLIBS_SOURCES)
 
 source_group(Headers FILES ${GNSS_SPLIBS_HEADERS})
 
-add_library(gnss_sp_libs ${GNSS_SPLIBS_SOURCES} ${GNSS_SPLIBS_HEADERS})
+add_library(algorithms_libs ${GNSS_SPLIBS_SOURCES} ${GNSS_SPLIBS_HEADERS})
 
-target_link_libraries(gnss_sp_libs
+target_link_libraries(algorithms_libs
     PUBLIC
+        Armadillo::armadillo
         Boost::boost
         Gflags::gflags
-        Armadillo::armadillo
         Gnuradio::runtime
         Gnuradio::blocks
         Volk::volk ${ORC_LIBRARIES}
         Volkgnsssdr::volkgnsssdr
-        gnss_system_parameters
+        core_system_parameters
         ${OPT_LIBRARIES}
     PRIVATE
         Boost::filesystem
         Gflags::gflags
         Glog::glog
-        gnss_rx
 )
 
-target_compile_definitions(gnss_sp_libs
+target_include_directories(algorithms_libs
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+        ${CMAKE_SOURCE_DIR}/src/core/receiver
+)
+
+target_compile_definitions(algorithms_libs
     PUBLIC -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}"
 )
 
-set_property(TARGET gnss_sp_libs
+set_property(TARGET algorithms_libs
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
+if(OS_IS_MACOSX)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")  # not AppleClang
+        target_compile_definitions(algorithms_libs
+            PUBLIC
+                -DBOOST_ASIO_HAS_STD_STRING_VIEW
+        )
+    endif()
+endif()
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(algorithms_libs
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
 
 ###############################################################################
 
@@ -157,6 +179,15 @@ endif()
 target_compile_definitions(gnss_sdr_flags
     PRIVATE -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}"
 )
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(gnss_sdr_flags
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
 
 set_property(TARGET gnss_sdr_flags
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES

@@ -51,6 +51,7 @@
 #include <gtest/gtest.h>
 #include <chrono>
 #include <unistd.h>
+#include <utility>
 #include <vector>
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
@@ -91,7 +92,7 @@ void GpsL1CAKfTrackingTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            long int message = pmt::to_long(msg);
+            long int message = pmt::to_long(std::move(msg));
             rx_message = message;
         }
     catch (boost::bad_any_cast& e)
@@ -110,9 +111,7 @@ GpsL1CAKfTrackingTest_msg_rx::GpsL1CAKfTrackingTest_msg_rx() : gr::block("GpsL1C
 }
 
 
-GpsL1CAKfTrackingTest_msg_rx::~GpsL1CAKfTrackingTest_msg_rx()
-{
-}
+GpsL1CAKfTrackingTest_msg_rx::~GpsL1CAKfTrackingTest_msg_rx() = default;
 
 
 // ###########################################################
@@ -157,9 +156,7 @@ public:
         gnss_synchro = Gnss_Synchro();
     }
 
-    ~GpsL1CAKfTrackingTest()
-    {
-    }
+    ~GpsL1CAKfTrackingTest() = default;
 
     void configure_receiver();
 
@@ -196,11 +193,13 @@ int GpsL1CAKfTrackingTest::generate_signal()
 {
     int child_status;
 
-    char* const parmList[] = {&generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0], NULL};
+    char* const parmList[] = {&generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0], nullptr};
 
     int pid;
     if ((pid = fork()) == -1)
-        perror("fork err");
+        {
+            perror("fork err");
+        }
     else if (pid == 0)
         {
             execv(&generator_binary[0], parmList);
@@ -376,7 +375,7 @@ TEST_F(GpsL1CAKfTrackingTest, ValidationOfResults)
     configure_receiver();
 
     // open true observables log file written by the simulator
-    tracking_true_obs_reader true_obs_data;
+    Tracking_True_Obs_Reader true_obs_data;
     int test_satellite_PRN = FLAGS_test_satellite_PRN;
     std::cout << "Testing satellite PRN=" << test_satellite_PRN << std::endl;
     std::string true_obs_file = std::string("./gps_l1_ca_obs_prn");
@@ -460,7 +459,7 @@ TEST_F(GpsL1CAKfTrackingTest, ValidationOfResults)
         }
 
     //load the measured values
-    tracking_dump_reader trk_dump;
+    Tracking_Dump_Reader trk_dump;
 
     ASSERT_EQ(trk_dump.open_obs_file(std::string("./tracking_ch_0.dat")), true)
         << "Failure opening tracking dump file";
@@ -528,7 +527,7 @@ TEST_F(GpsL1CAKfTrackingTest, ValidationOfResults)
                         {
                             boost::filesystem::path p(gnuplot_executable);
                             boost::filesystem::path dir = p.parent_path();
-                            std::string gnuplot_path = dir.native();
+                            const std::string& gnuplot_path = dir.native();
                             Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                             std::vector<double> timevec;
@@ -544,7 +543,7 @@ TEST_F(GpsL1CAKfTrackingTest, ValidationOfResults)
                             g1.set_xlabel("Time [s]");
                             g1.set_ylabel("Correlators' output");
                             g1.cmd("set key box opaque");
-                            unsigned int decimate = static_cast<unsigned int>(FLAGS_plot_decimate);
+                            auto decimate = static_cast<unsigned int>(FLAGS_plot_decimate);
                             g1.plot_xy(timevec, prompt, "Prompt", decimate);
                             g1.plot_xy(timevec, early, "Early", decimate);
                             g1.plot_xy(timevec, late, "Late", decimate);

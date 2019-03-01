@@ -31,6 +31,7 @@
 
 #include "labsat23_source.h"
 #include <gnuradio/io_signature.h>
+#include <exception>
 #include <iostream>
 #include <sstream>
 
@@ -88,9 +89,20 @@ labsat23_source::labsat23_source(const char *signal_file_basename,
 
 labsat23_source::~labsat23_source()
 {
-    if (binary_input_file->is_open())
+    try
         {
-            binary_input_file->close();
+            if (binary_input_file->is_open())
+                {
+                    binary_input_file->close();
+                }
+        }
+    catch (const std::ifstream::failure &e)
+        {
+            std::cerr << "Problem closing input file" << '\n';
+        }
+    catch (const std::exception &e)
+        {
+            std::cerr << e.what() << '\n';
         }
     delete binary_input_file;
 }
@@ -186,7 +198,10 @@ int labsat23_source::general_work(int noutput_items,
                     bool preamble_ok = true;
                     for (int i = 0; i < 8; i++)
                         {
-                            if (memblock[byte_counter] != 0x00) preamble_ok = false;
+                            if (memblock[byte_counter] != 0x00)
+                                {
+                                    preamble_ok = false;
+                                }
                             //std::cout << "H[" << i << "]:" << (int)memblock[byte_counter] << std::endl;
                             byte_counter++;
                         }

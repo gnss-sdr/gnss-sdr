@@ -117,7 +117,7 @@ SVIDMASK_encode_uper(asn_TYPE_descriptor_t *td,
 	return td->uper_encoder(td, constraints, structure, per_out);
 }
 
-static asn_per_constraints_t asn_PER_type_SVIDMASK_constr_1 = {
+static asn_per_constraints_t ASN_PER_TYPE_SVIDMASK_CONSTR_1 = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 6,  6,  1,  36 }	/* (SIZE(1..36)) */,
 	0, 0	/* No PER value map */
@@ -144,7 +144,7 @@ asn_TYPE_descriptor_t asn_DEF_SVIDMASK = {
 	asn_DEF_SVIDMASK_tags_1,	/* Same as above */
 	sizeof(asn_DEF_SVIDMASK_tags_1)
 		/sizeof(asn_DEF_SVIDMASK_tags_1[0]), /* 1 */
-	&asn_PER_type_SVIDMASK_constr_1,
+	&ASN_PER_TYPE_SVIDMASK_CONSTR_1,
 	0, 0,	/* No members */
 	0	/* No specifics */
 };

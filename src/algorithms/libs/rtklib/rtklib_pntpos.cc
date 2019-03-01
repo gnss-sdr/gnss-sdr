@@ -62,7 +62,10 @@ double varerr(const prcopt_t *opt, double el, int sys)
     double fact, varr;
     fact = sys == SYS_GLO ? EFACT_GLO : (sys == SYS_SBS ? EFACT_SBS : EFACT_GPS);
     varr = std::pow(opt->err[0], 2.0) * (std::pow(opt->err[1], 2.0) + std::pow(opt->err[2], 2.0) / sin(el));
-    if (opt->ionoopt == IONOOPT_IFLC) varr *= std::pow(2, 3.0); /* iono-free */
+    if (opt->ionoopt == IONOOPT_IFLC)
+        {
+            varr *= std::pow(2, 3.0); /* iono-free */
+        }
     return std::pow(fact, 2.0) * varr;
 }
 
@@ -73,7 +76,10 @@ double gettgd(int sat, const nav_t *nav)
     int i;
     for (i = 0; i < nav->n; i++)
         {
-            if (nav->eph[i].sat != sat) continue;
+            if (nav->eph[i].sat != sat)
+                {
+                    continue;
+                }
             return SPEED_OF_LIGHT * nav->eph[i].tgd[0];
         }
     return 0.0;
@@ -84,7 +90,10 @@ double getiscl1(int sat, const nav_t *nav)
 {
     for (int i = 0; i < nav->n; i++)
         {
-            if (nav->eph[i].sat != sat) continue;
+            if (nav->eph[i].sat != sat)
+                {
+                    continue;
+                }
             return SPEED_OF_LIGHT * nav->eph[i].isc[0];
         }
     return 0.0;
@@ -94,7 +103,10 @@ double getiscl2(int sat, const nav_t *nav)
 {
     for (int i = 0; i < nav->n; i++)
         {
-            if (nav->eph[i].sat != sat) continue;
+            if (nav->eph[i].sat != sat)
+                {
+                    continue;
+                }
             return SPEED_OF_LIGHT * nav->eph[i].isc[1];
         }
     return 0.0;
@@ -104,7 +116,10 @@ double getiscl5i(int sat, const nav_t *nav)
 {
     for (int i = 0; i < nav->n; i++)
         {
-            if (nav->eph[i].sat != sat) continue;
+            if (nav->eph[i].sat != sat)
+                {
+                    continue;
+                }
             return SPEED_OF_LIGHT * nav->eph[i].isc[2];
         }
     return 0.0;
@@ -114,7 +129,10 @@ double getiscl5q(int sat, const nav_t *nav)
 {
     for (int i = 0; i < nav->n; i++)
         {
-            if (nav->eph[i].sat != sat) continue;
+            if (nav->eph[i].sat != sat)
+                {
+                    continue;
+                }
             return SPEED_OF_LIGHT * nav->eph[i].isc[3];
         }
     return 0.0;
@@ -407,7 +425,10 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
 
     trace(3, "resprng : n=%d\n", n);
 
-    for (i = 0; i < 3; i++) rr[i] = x[i];
+    for (i = 0; i < 3; i++)
+        {
+            rr[i] = x[i];
+        }
     dtr = x[3];
 
     ecef2pos(rr, pos);
@@ -417,7 +438,10 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
             vsat[i] = 0;
             azel[i * 2] = azel[1 + i * 2] = resp[i] = 0.0;
 
-            if (!(sys = satsys(obs[i].sat, nullptr))) continue;
+            if (!(sys = satsys(obs[i].sat, nullptr)))
+                {
+                    continue;
+                }
 
             /* reject duplicated observation data */
             if (i < n - 1 && i < MAXOBS - 1 && obs[i].sat == obs[i + 1].sat)
@@ -464,7 +488,7 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
             /* GPS-L1 -> L1/B1 */
             if ((lam_L1 = nav->lam[obs[i].sat - 1][0]) > 0.0)
                 {
-                    dion *= std::pow(lam_L1 / lam_carr[0], 2.0);
+                    dion *= std::pow(lam_L1 / LAM_CARR[0], 2.0);
                 }
             /* tropospheric corrections */
             if (!tropcorr(obs[i].time, nav, pos, azel + i * 2,
@@ -477,7 +501,10 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
             v[nv] = P - (r + dtr - SPEED_OF_LIGHT * dts[i * 2] + dion + dtrp);
 
             /* design matrix */
-            for (j = 0; j < NX; j++) H[j + nv * NX] = j < 3 ? -e[j] : (j == 3 ? 1.0 : 0.0);
+            for (j = 0; j < NX; j++)
+                {
+                    H[j + nv * NX] = j < 3 ? -e[j] : (j == 3 ? 1.0 : 0.0);
+                }
 
             /* time system and receiver bias offset correction */
             if (sys == SYS_GLO)
@@ -499,7 +526,9 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
                     mask[3] = 1;
                 }
             else
-                mask[0] = 1;
+                {
+                    mask[0] = 1;
+                }
 
             vsat[i] = 1;
             resp[i] = v[nv];
@@ -514,9 +543,15 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
     /* constraint to avoid rank-deficient */
     for (i = 0; i < 4; i++)
         {
-            if (mask[i]) continue;
+            if (mask[i])
+                {
+                    continue;
+                }
             v[nv] = 0.0;
-            for (j = 0; j < NX; j++) H[j + nv * NX] = j == i + 3 ? 1.0 : 0.0;
+            for (j = 0; j < NX; j++)
+                {
+                    H[j + nv * NX] = j == i + 3 ? 1.0 : 0.0;
+                }
             var[nv++] = 0.01;
         }
     return nv;
@@ -536,15 +571,18 @@ int valsol(const double *azel, const int *vsat, int n,
 
     /* chi-square validation of residuals */
     vv = dot(v, v, nv);
-    if (nv > nx && vv > chisqr[nv - nx - 1])
+    if (nv > nx && vv > CHISQR[nv - nx - 1])
         {
-            sprintf(msg, "chi-square error nv=%d vv=%.1f cs=%.1f", nv, vv, chisqr[nv - nx - 1]);
+            sprintf(msg, "chi-square error nv=%d vv=%.1f cs=%.1f", nv, vv, CHISQR[nv - nx - 1]);
             return 0;
         }
     /* large gdop check */
     for (i = ns = 0; i < n; i++)
         {
-            if (!vsat[i]) continue;
+            if (!vsat[i])
+                {
+                    continue;
+                }
             azels[ns * 2] = azel[i * 2];
             azels[1 + ns * 2] = azel[1 + i * 2];
             ns++;
@@ -574,7 +612,10 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
     H = mat(NX, n + 4);
     var = mat(n + 4, 1);
 
-    for (i = 0; i < 3; i++) x[i] = sol->rr[i];
+    for (i = 0; i < 3; i++)
+        {
+            x[i] = sol->rr[i];
+        }
 
     for (i = 0; i < MAXITR; i++)
         {
@@ -591,7 +632,10 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
                 {
                     sig = sqrt(var[j]);
                     v[j] /= sig;
-                    for (k = 0; k < NX; k++) H[k + j * NX] /= sig;
+                    for (k = 0; k < NX; k++)
+                        {
+                            H[k + j * NX] /= sig;
+                        }
                 }
             /* least square estimation */
             if ((info = lsq(H, v, NX, nv, dx, Q)))
@@ -599,7 +643,10 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
                     sprintf(msg, "lsq error info=%d", info);
                     break;
                 }
-            for (j = 0; j < NX; j++) x[j] += dx[j];
+            for (j = 0; j < NX; j++)
+                {
+                    x[j] += dx[j];
+                }
 
             if (norm_rtk(dx, NX) < 1e-4)
                 {
@@ -609,8 +656,14 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
                     sol->dtr[1] = x[4] / SPEED_OF_LIGHT; /* glo-gps time offset (s) */
                     sol->dtr[2] = x[5] / SPEED_OF_LIGHT; /* gal-gps time offset (s) */
                     sol->dtr[3] = x[6] / SPEED_OF_LIGHT; /* bds-gps time offset (s) */
-                    for (j = 0; j < 6; j++) sol->rr[j] = j < 3 ? x[j] : 0.0;
-                    for (j = 0; j < 3; j++) sol->qr[j] = static_cast<float>(Q[j + j * NX]);
+                    for (j = 0; j < 6; j++)
+                        {
+                            sol->rr[j] = j < 3 ? x[j] : 0.0;
+                        }
+                    for (j = 0; j < 3; j++)
+                        {
+                            sol->qr[j] = static_cast<float>(Q[j + j * NX]);
+                        }
                     sol->qr[3] = static_cast<float>(Q[1]);      /* cov xy */
                     sol->qr[4] = static_cast<float>(Q[2 + NX]); /* cov yz */
                     sol->qr[5] = static_cast<float>(Q[2]);      /* cov zx */
@@ -629,7 +682,10 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
                     return stat;
                 }
         }
-    if (i >= MAXITR) sprintf(msg, "iteration divergent i=%d", i);
+    if (i >= MAXITR)
+        {
+            sprintf(msg, "iteration divergent i=%d", i);
+        }
 
     free(v);
     free(H);
@@ -653,7 +709,10 @@ int raim_fde(const obsd_t *obs, int n, const double *rs,
 
     trace(3, "raim_fde: %s n=%2d\n", time_str(obs[0].time, 0), n);
 
-    if (!(obs_e = static_cast<obsd_t *>(malloc(sizeof(obsd_t) * n)))) return 0;
+    if (!(obs_e = static_cast<obsd_t *>(malloc(sizeof(obsd_t) * n))))
+        {
+            return 0;
+        }
     rs_e = mat(6, n);
     dts_e = mat(2, n);
     vare_e = mat(1, n);
@@ -667,7 +726,10 @@ int raim_fde(const obsd_t *obs, int n, const double *rs,
             /* satellite exclution */
             for (j = k = 0; j < n; j++)
                 {
-                    if (j == i) continue;
+                    if (j == i)
+                        {
+                            continue;
+                        }
                     obs_e[k] = obs[j];
                     matcpy(rs_e + 6 * k, rs + 6 * j, 6, 1);
                     matcpy(dts_e + 2 * k, dts + 2 * j, 2, 1);
@@ -683,7 +745,10 @@ int raim_fde(const obsd_t *obs, int n, const double *rs,
                 }
             for (j = nvsat = 0, rms_e = 0.0; j < n - 1; j++)
                 {
-                    if (!vsat_e[j]) continue;
+                    if (!vsat_e[j])
+                        {
+                            continue;
+                        }
                     rms_e += std::pow(resp_e[j], 2.0);
                     nvsat++;
                 }
@@ -697,12 +762,18 @@ int raim_fde(const obsd_t *obs, int n, const double *rs,
 
             trace(3, "raim_fde: exsat=%2d rms=%8.3f\n", obs[i].sat, rms_e);
 
-            if (rms_e > rms) continue;
+            if (rms_e > rms)
+                {
+                    continue;
+                }
 
             /* save result */
             for (j = k = 0; j < n; j++)
                 {
-                    if (j == i) continue;
+                    if (j == i)
+                        {
+                            continue;
+                        }
                     matcpy(azel + 2 * j, azel_e + 2 * k, 2, 1);
                     vsat[j] = vsat_e[k];
                     resp[j] = resp_e[k++];
@@ -749,9 +820,18 @@ int resdop(const obsd_t *obs, int n, const double *rs, const double *dts,
 
     for (i = 0; i < n && i < MAXOBS; i++)
         {
-            if (obs[i].code[0] != CODE_NONE) band = 0;
-            if (obs[i].code[1] != CODE_NONE) band = 1;
-            if (obs[i].code[2] != CODE_NONE) band = 2;
+            if (obs[i].code[0] != CODE_NONE)
+                {
+                    band = 0;
+                }
+            if (obs[i].code[1] != CODE_NONE)
+                {
+                    band = 1;
+                }
+            if (obs[i].code[2] != CODE_NONE)
+                {
+                    band = 2;
+                }
             lam = nav->lam[obs[i].sat - 1][band];
 
             if (obs[i].D[band] == 0.0 || lam == 0.0 || !vsat[i] || norm_rtk(rs + 3 + i * 6, 3) <= 0.0)
@@ -766,7 +846,10 @@ int resdop(const obsd_t *obs, int n, const double *rs, const double *dts,
             matmul("TN", 3, 1, 3, 1.0, E, a, 0.0, e);
 
             /* satellite velocity relative to receiver in ecef */
-            for (j = 0; j < 3; j++) vs[j] = rs[j + 3 + i * 6] - x[j];
+            for (j = 0; j < 3; j++)
+                {
+                    vs[j] = rs[j + 3 + i * 6] - x[j];
+                }
 
             /* range rate with earth rotation correction */
             rate = dot(vs, e, 3) + DEFAULT_OMEGA_EARTH_DOT / SPEED_OF_LIGHT * (rs[4 + i * 6] * rr[0] + rs[1 + i * 6] * x[0] - rs[3 + i * 6] * rr[1] - rs[i * 6] * x[1]);
@@ -775,7 +858,10 @@ int resdop(const obsd_t *obs, int n, const double *rs, const double *dts,
             v[nv] = -lam * obs[i].D[band] - (rate + x[3] - SPEED_OF_LIGHT * dts[1 + i * 2]);
 
             /* design matrix */
-            for (j = 0; j < 4; j++) H[j + nv * 4] = j < 3 ? -e[j] : 1.0;
+            for (j = 0; j < 4; j++)
+                {
+                    H[j + nv * 4] = j < 3 ? -e[j] : 1.0;
+                }
 
             nv++;
         }
@@ -804,13 +890,22 @@ void estvel(const obsd_t *obs, int n, const double *rs, const double *dts,
                     break;
                 }
             /* least square estimation */
-            if (lsq(H, v, 4, nv, dx, Q)) break;
+            if (lsq(H, v, 4, nv, dx, Q))
+                {
+                    break;
+                }
 
-            for (j = 0; j < 4; j++) x[j] += dx[j];
+            for (j = 0; j < 4; j++)
+                {
+                    x[j] += dx[j];
+                }
 
             if (norm_rtk(dx, 4) < 1e-6)
                 {
-                    for (i = 0; i < 3; i++) sol->rr[i + 3] = x[i];
+                    for (i = 0; i < 3; i++)
+                        {
+                            sol->rr[i + 3] = x[i];
+                        }
                     break;
                 }
         }
@@ -882,11 +977,17 @@ int pntpos(const obsd_t *obs, int n, const nav_t *nav,
             stat = raim_fde(obs, n, rs, dts, var, svh, nav, &opt_, sol, azel_, vsat, resp, msg);
         }
     /* estimate receiver velocity with doppler */
-    if (stat) estvel(obs, n, rs, dts, nav, &opt_, sol, azel_, vsat);
+    if (stat)
+        {
+            estvel(obs, n, rs, dts, nav, &opt_, sol, azel_, vsat);
+        }
 
     if (azel)
         {
-            for (i = 0; i < n * 2; i++) azel[i] = azel_[i];
+            for (i = 0; i < n * 2; i++)
+                {
+                    azel[i] = azel_[i];
+                }
         }
     if (ssat)
         {
@@ -902,7 +1003,10 @@ int pntpos(const obsd_t *obs, int n, const nav_t *nav,
                     ssat[obs[i].sat - 1].azel[0] = azel_[i * 2];
                     ssat[obs[i].sat - 1].azel[1] = azel_[1 + i * 2];
                     ssat[obs[i].sat - 1].snr[0] = obs[i].SNR[0];
-                    if (!vsat[i]) continue;
+                    if (!vsat[i])
+                        {
+                            continue;
+                        }
                     ssat[obs[i].sat - 1].vs = 1;
                     ssat[obs[i].sat - 1].resp[0] = resp[i];
                 }

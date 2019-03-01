@@ -36,7 +36,7 @@
 
 class conjugate_sc;
 
-typedef boost::shared_ptr<conjugate_sc> conjugate_sc_sptr;
+using conjugate_sc_sptr = boost::shared_ptr<conjugate_sc>;
 
 conjugate_sc_sptr make_conjugate_sc();
 

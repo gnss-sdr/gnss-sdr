@@ -39,7 +39,6 @@
 
 #include "gps_l1_ca_kf_tracking_cc.h"
 #include "GPS_L1_CA.h"
-#include "control_message_factory.h"
 #include "gnss_sdr_flags.h"
 #include "gps_sdr_signal_processing.h"
 #include "lock_detectors.h"
@@ -49,6 +48,7 @@
 #include <matio.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cmath>
+#include <exception>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -375,7 +375,15 @@ Gps_L1_Ca_Kf_Tracking_cc::~Gps_L1_Ca_Kf_Tracking_cc()
                 {
                     std::cout << "Writing .mat files ...";
                 }
-            Gps_L1_Ca_Kf_Tracking_cc::save_matfile();
+            try
+                {
+                    Gps_L1_Ca_Kf_Tracking_cc::save_matfile();
+                }
+            catch (const std::exception &ex)
+                {
+                    LOG(WARNING) << "Error saving the .mat file: " << ex.what();
+                }
+
             if (d_channel == 0)
                 {
                     std::cout << " done." << std::endl;
@@ -842,7 +850,10 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
                         }
                     else
                         {
-                            if (d_carrier_lock_fail_counter > 0) d_carrier_lock_fail_counter--;
+                            if (d_carrier_lock_fail_counter > 0)
+                                {
+                                    d_carrier_lock_fail_counter--;
+                                }
                         }
                     if (d_carrier_lock_fail_counter > FLAGS_max_lock_fail)
                         {

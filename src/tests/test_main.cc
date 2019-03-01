@@ -48,8 +48,7 @@
 #include "gps_utc_model.h"
 #include "sbas_ephemeris.h"
 #include <boost/filesystem.hpp>
-#include <boost/make_shared.hpp>
-#include <boost/thread.hpp>
+#include <boost/shared_ptr.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 #include <gnuradio/msg_queue.h>
@@ -171,8 +170,8 @@ DECLARE_string(log_dir);
 #endif  // UNIT_TESTING_MINIMAL
 
 // For GPS NAVIGATION (L1)
-concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
-concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
+Concurrent_Queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
+Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
 int main(int argc, char **argv)
 {

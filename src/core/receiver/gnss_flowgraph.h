@@ -72,7 +72,7 @@ public:
     /*!
      * \brief Constructor that initializes the receiver flow graph
      */
-    GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration, const gr::msg_queue::sptr& queue);
+    GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration, const gr::msg_queue::sptr queue);  // NOLINT(performance-unnecessary-value-param)
 
     /*!
      * \brief Destructor
@@ -195,8 +195,8 @@ private:
         evGAL_5X,
         evGLO_1G,
         evGLO_2G,
-		    evBDS_B1,
-		    evBDS_B3
+        evBDS_B1,
+        evBDS_B3
     };
     std::map<std::string, StringValue> mapStringValues_;
 

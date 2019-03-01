@@ -49,18 +49,30 @@ target_link_libraries(input_filter_adapters
         Gnuradio::blocks
         Gnuradio::filter
         input_filter_gr_blocks
-        gnss_sp_libs
-        gnss_rx
+        algorithms_libs
     PRIVATE
+        Gflags::gflags
+        Glog::glog
         Volk::volk
 )
 
 target_include_directories(input_filter_adapters
-    PUBLIC ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
 )
 
 if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13.4")
     target_compile_definitions(input_filter_adapters PUBLIC -DGR_GREATER_38=1)
+endif()
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(input_filter_adapters
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
 endif()
 
 set_property(TARGET input_filter_adapters

@@ -30,7 +30,6 @@
 
 #include "rtklib_pvt_cc.h"
 #include "display.h"
-#include "galileo_almanac.h"
 #include "galileo_almanac_helper.h"
 #include "gnss_sdr_create_directory.h"
 #include "pvt_conf.h"
@@ -44,8 +43,9 @@
 #include <gnuradio/io_signature.h>
 #include <algorithm>
 #include <exception>
+#include <fstream>
 #include <iostream>
-#include <map>
+#include <stdexcept>
 #if OLD_BOOST
 #include <boost/math/common_factor_rt.hpp>
 namespace bc = boost::math;
@@ -64,257 +64,6 @@ rtklib_pvt_cc_sptr rtklib_make_pvt_cc(uint32_t nchannels,
     return rtklib_pvt_cc_sptr(new rtklib_pvt_cc(nchannels,
         conf_,
         rtk));
-}
-
-
-void rtklib_pvt_cc::msg_handler_telemetry(const pmt::pmt_t& msg)
-{
-    try
-        {
-            // ************* GPS telemetry *****************
-            if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Ephemeris>))
-                {
-                    // ### GPS EPHEMERIS ###
-                    std::shared_ptr<Gps_Ephemeris> gps_eph;
-                    gps_eph = boost::any_cast<std::shared_ptr<Gps_Ephemeris>>(pmt::any_ref(msg));
-                    DLOG(INFO) << "Ephemeris record has arrived from SAT ID "
-                               << gps_eph->i_satellite_PRN << " (Block "
-                               << gps_eph->satelliteBlock[gps_eph->i_satellite_PRN] << ")"
-                               << "inserted with Toe=" << gps_eph->d_Toe << " and GPS Week="
-                               << gps_eph->i_GPS_week;
-                    // update/insert new ephemeris record to the global ephemeris map
-                    d_pvt_solver->gps_ephemeris_map[gps_eph->i_satellite_PRN] = *gps_eph;
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Iono>))
-                {
-                    // ### GPS IONO ###
-                    std::shared_ptr<Gps_Iono> gps_iono;
-                    gps_iono = boost::any_cast<std::shared_ptr<Gps_Iono>>(pmt::any_ref(msg));
-                    d_pvt_solver->gps_iono = *gps_iono;
-                    DLOG(INFO) << "New IONO record has arrived ";
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Utc_Model>))
-                {
-                    // ### GPS UTC MODEL ###
-                    std::shared_ptr<Gps_Utc_Model> gps_utc_model;
-                    gps_utc_model = boost::any_cast<std::shared_ptr<Gps_Utc_Model>>(pmt::any_ref(msg));
-                    d_pvt_solver->gps_utc_model = *gps_utc_model;
-                    DLOG(INFO) << "New UTC record has arrived ";
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_CNAV_Ephemeris>))
-                {
-                    // ### GPS CNAV message ###
-                    std::shared_ptr<Gps_CNAV_Ephemeris> gps_cnav_ephemeris;
-                    gps_cnav_ephemeris = boost::any_cast<std::shared_ptr<Gps_CNAV_Ephemeris>>(pmt::any_ref(msg));
-                    // update/insert new ephemeris record to the global ephemeris map
-                    d_pvt_solver->gps_cnav_ephemeris_map[gps_cnav_ephemeris->i_satellite_PRN] = *gps_cnav_ephemeris;
-                    DLOG(INFO) << "New GPS CNAV ephemeris record has arrived ";
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_CNAV_Iono>))
-                {
-                    // ### GPS CNAV IONO ###
-                    std::shared_ptr<Gps_CNAV_Iono> gps_cnav_iono;
-                    gps_cnav_iono = boost::any_cast<std::shared_ptr<Gps_CNAV_Iono>>(pmt::any_ref(msg));
-                    d_pvt_solver->gps_cnav_iono = *gps_cnav_iono;
-                    DLOG(INFO) << "New CNAV IONO record has arrived ";
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_CNAV_Utc_Model>))
-                {
-                    // ### GPS CNAV UTC MODEL ###
-                    std::shared_ptr<Gps_CNAV_Utc_Model> gps_cnav_utc_model;
-                    gps_cnav_utc_model = boost::any_cast<std::shared_ptr<Gps_CNAV_Utc_Model>>(pmt::any_ref(msg));
-                    d_pvt_solver->gps_cnav_utc_model = *gps_cnav_utc_model;
-                    DLOG(INFO) << "New CNAV UTC record has arrived ";
-                }
-
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Almanac>))
-                {
-                    // ### GPS ALMANAC ###
-                    std::shared_ptr<Gps_Almanac> gps_almanac;
-                    gps_almanac = boost::any_cast<std::shared_ptr<Gps_Almanac>>(pmt::any_ref(msg));
-                    d_pvt_solver->gps_almanac_map[gps_almanac->i_satellite_PRN] = *gps_almanac;
-                    DLOG(INFO) << "New GPS almanac record has arrived ";
-                }
-
-            // **************** Galileo telemetry ********************
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Ephemeris>))
-                {
-                    // ### Galileo EPHEMERIS ###
-                    std::shared_ptr<Galileo_Ephemeris> galileo_eph;
-                    galileo_eph = boost::any_cast<std::shared_ptr<Galileo_Ephemeris>>(pmt::any_ref(msg));
-                    // insert new ephemeris record
-                    DLOG(INFO) << "Galileo New Ephemeris record inserted in global map with TOW =" << galileo_eph->TOW_5
-                               << ", GALILEO Week Number =" << galileo_eph->WN_5
-                               << " and Ephemeris IOD = " << galileo_eph->IOD_ephemeris;
-                    // update/insert new ephemeris record to the global ephemeris map
-                    d_pvt_solver->galileo_ephemeris_map[galileo_eph->i_satellite_PRN] = *galileo_eph;
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Iono>))
-                {
-                    // ### Galileo IONO ###
-                    std::shared_ptr<Galileo_Iono> galileo_iono;
-                    galileo_iono = boost::any_cast<std::shared_ptr<Galileo_Iono>>(pmt::any_ref(msg));
-                    d_pvt_solver->galileo_iono = *galileo_iono;
-                    DLOG(INFO) << "New IONO record has arrived ";
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Utc_Model>))
-                {
-                    // ### Galileo UTC MODEL ###
-                    std::shared_ptr<Galileo_Utc_Model> galileo_utc_model;
-                    galileo_utc_model = boost::any_cast<std::shared_ptr<Galileo_Utc_Model>>(pmt::any_ref(msg));
-                    d_pvt_solver->galileo_utc_model = *galileo_utc_model;
-                    DLOG(INFO) << "New UTC record has arrived ";
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Almanac_Helper>))
-                {
-                    // ### Galileo Almanac ###
-                    std::shared_ptr<Galileo_Almanac_Helper> galileo_almanac_helper;
-                    galileo_almanac_helper = boost::any_cast<std::shared_ptr<Galileo_Almanac_Helper>>(pmt::any_ref(msg));
-
-                    Galileo_Almanac sv1 = galileo_almanac_helper->get_almanac(1);
-                    Galileo_Almanac sv2 = galileo_almanac_helper->get_almanac(2);
-                    Galileo_Almanac sv3 = galileo_almanac_helper->get_almanac(3);
-
-                    if (sv1.i_satellite_PRN != 0) d_pvt_solver->galileo_almanac_map[sv1.i_satellite_PRN] = sv1;
-                    if (sv2.i_satellite_PRN != 0) d_pvt_solver->galileo_almanac_map[sv2.i_satellite_PRN] = sv2;
-                    if (sv3.i_satellite_PRN != 0) d_pvt_solver->galileo_almanac_map[sv3.i_satellite_PRN] = sv3;
-                    DLOG(INFO) << "New Galileo Almanac data have arrived ";
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Almanac>))
-                {
-                    // ### Galileo Almanac ###
-                    std::shared_ptr<Galileo_Almanac> galileo_alm;
-                    galileo_alm = boost::any_cast<std::shared_ptr<Galileo_Almanac>>(pmt::any_ref(msg));
-                    // update/insert new almanac record to the global almanac map
-                    d_pvt_solver->galileo_almanac_map[galileo_alm->i_satellite_PRN] = *galileo_alm;
-                }
-
-            // **************** GLONASS GNAV Telemetry **************************
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Glonass_Gnav_Ephemeris>))
-                {
-                    // ### GLONASS GNAV EPHEMERIS ###
-                    std::shared_ptr<Glonass_Gnav_Ephemeris> glonass_gnav_eph;
-                    glonass_gnav_eph = boost::any_cast<std::shared_ptr<Glonass_Gnav_Ephemeris>>(pmt::any_ref(msg));
-                    // TODO Add GLONASS with gps week number and tow,
-                    // insert new ephemeris record
-                    DLOG(INFO) << "GLONASS GNAV New Ephemeris record inserted in global map with TOW =" << glonass_gnav_eph->d_TOW
-                               << ", Week Number =" << glonass_gnav_eph->d_WN
-                               << " and Ephemeris IOD in UTC = " << glonass_gnav_eph->compute_GLONASS_time(glonass_gnav_eph->d_t_b)
-                               << " from SV = " << glonass_gnav_eph->i_satellite_slot_number;
-                    // update/insert new ephemeris record to the global ephemeris map
-                    d_pvt_solver->glonass_gnav_ephemeris_map[glonass_gnav_eph->i_satellite_PRN] = *glonass_gnav_eph;
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Glonass_Gnav_Utc_Model>))
-                {
-                    // ### GLONASS GNAV UTC MODEL ###
-                    std::shared_ptr<Glonass_Gnav_Utc_Model> glonass_gnav_utc_model;
-                    glonass_gnav_utc_model = boost::any_cast<std::shared_ptr<Glonass_Gnav_Utc_Model>>(pmt::any_ref(msg));
-                    d_pvt_solver->glonass_gnav_utc_model = *glonass_gnav_utc_model;
-                    DLOG(INFO) << "New GLONASS GNAV UTC record has arrived ";
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Glonass_Gnav_Almanac>))
-                {
-                    // ### GLONASS GNAV Almanac ###
-                    std::shared_ptr<Glonass_Gnav_Almanac> glonass_gnav_almanac;
-                    glonass_gnav_almanac = boost::any_cast<std::shared_ptr<Glonass_Gnav_Almanac>>(pmt::any_ref(msg));
-                    d_pvt_solver->glonass_gnav_almanac = *glonass_gnav_almanac;
-                    DLOG(INFO) << "New GLONASS GNAV Almanac has arrived "
-                               << ", GLONASS GNAV Slot Number =" << glonass_gnav_almanac->d_n_A;
-                }
-
-            // ************* BeiDou telemetry *****************
-            if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Dnav_Ephemeris>))
-                {
-                    // ### Beidou EPHEMERIS ###
-                    std::shared_ptr<Beidou_Dnav_Ephemeris> bds_dnav_eph;
-                    bds_dnav_eph = boost::any_cast<std::shared_ptr<Beidou_Dnav_Ephemeris>>(pmt::any_ref(msg));
-                    DLOG(INFO) << "Ephemeris record has arrived from SAT ID "
-                               << bds_dnav_eph->i_satellite_PRN << " (Block "
-                               << bds_dnav_eph->satelliteBlock[bds_dnav_eph->i_satellite_PRN] << ")"
-                               << "inserted with Toe=" << bds_dnav_eph->d_Toe << " and BDS Week="
-                               << bds_dnav_eph->i_BEIDOU_week;
-                    // update/insert new ephemeris record to the global ephemeris map
-                    d_pvt_solver->beidou_dnav_ephemeris_map[bds_dnav_eph->i_satellite_PRN] = *bds_dnav_eph;
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Dnav_Iono>))
-                {
-                    // ### BeiDou IONO ###
-                    std::shared_ptr<Beidou_Dnav_Iono> bds_dnav_iono;
-                    bds_dnav_iono = boost::any_cast<std::shared_ptr<Beidou_Dnav_Iono>>(pmt::any_ref(msg));
-                    d_pvt_solver->beidou_dnav_iono = *bds_dnav_iono;
-                    DLOG(INFO) << "New BeiDou DNAV IONO record has arrived ";
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Dnav_Utc_Model>))
-                {
-                    // ### GPS UTC MODEL ###
-                    std::shared_ptr<Beidou_Dnav_Utc_Model> bds_dnav_utc_model;
-                    bds_dnav_utc_model = boost::any_cast<std::shared_ptr<Beidou_Dnav_Utc_Model>>(pmt::any_ref(msg));
-                    d_pvt_solver->beidou_dnav_utc_model = *bds_dnav_utc_model;
-                    DLOG(INFO) << "New BeiDou DNAV UTC record has arrived ";
-                }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Dnav_Almanac>))
-                {
-                    // ### GPS ALMANAC ###
-                    std::shared_ptr<Beidou_Dnav_Almanac> bds_dnav_almanac;
-                    bds_dnav_almanac = boost::any_cast<std::shared_ptr<Beidou_Dnav_Almanac>>(pmt::any_ref(msg));
-                    d_pvt_solver->beidou_dnav_almanac_map[bds_dnav_almanac->i_satellite_PRN] = *bds_dnav_almanac;
-                    DLOG(INFO) << "New BeiDou DNAV almanac record has arrived ";
-                }
-            else
-                {
-                    LOG(WARNING) << "msg_handler_telemetry unknown object type!";
-                }
-        }
-    catch (boost::bad_any_cast& e)
-        {
-            LOG(WARNING) << "msg_handler_telemetry Bad any cast!";
-        }
-}
-
-
-std::map<int, Gps_Ephemeris> rtklib_pvt_cc::get_gps_ephemeris_map() const
-{
-    return d_pvt_solver->gps_ephemeris_map;
-}
-
-
-std::map<int, Gps_Almanac> rtklib_pvt_cc::get_gps_almanac_map() const
-{
-    return d_pvt_solver->gps_almanac_map;
-}
-
-
-std::map<int, Galileo_Ephemeris> rtklib_pvt_cc::get_galileo_ephemeris_map() const
-{
-    return d_pvt_solver->galileo_ephemeris_map;
-}
-
-
-std::map<int, Galileo_Almanac> rtklib_pvt_cc::get_galileo_almanac_map() const
-{
-    return d_pvt_solver->galileo_almanac_map;
-}
-
-
-std::map<int, Beidou_Dnav_Ephemeris> rtklib_pvt_cc::get_beidou_dnav_ephemeris_map() const
-{
-    return d_pvt_solver->beidou_dnav_ephemeris_map;
-}
-
-
-std::map<int, Beidou_Dnav_Almanac> rtklib_pvt_cc::get_beidou_dnav_almanac_map() const
-{
-    return d_pvt_solver->beidou_dnav_almanac_map;
-}
-
-void rtklib_pvt_cc::clear_ephemeris()
-{
-    d_pvt_solver->gps_ephemeris_map.clear();
-    d_pvt_solver->gps_almanac_map.clear();
-    d_pvt_solver->galileo_ephemeris_map.clear();
-    d_pvt_solver->galileo_almanac_map.clear();
-    d_pvt_solver->beidou_dnav_ephemeris_map.clear();
-    d_pvt_solver->beidou_dnav_almanac_map.clear();
 }
 
 
@@ -552,11 +301,7 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
             xml_base_path = xml_base_path + boost::filesystem::path::preferred_separator;
         }
 
-    d_pvt_solver = std::make_shared<rtklib_solver>(static_cast<int32_t>(nchannels), dump_ls_pvt_filename, d_dump, d_dump_mat, rtk);
-    d_pvt_solver->set_averaging_depth(1);
-
     d_rx_time = 0.0;
-
     d_last_status_print_seg = 0;
 
     // PVT MONITOR
@@ -570,7 +315,10 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
 
             udp_sink_ptr = std::unique_ptr<Monitor_Pvt_Udp_Sink>(new Monitor_Pvt_Udp_Sink(udp_addr_vec, conf_.udp_port));
         }
-
+    else
+        {
+            udp_sink_ptr = nullptr;
+        }
 
     // Create Sys V message queue
     first_fix = true;
@@ -581,6 +329,9 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
             std::cout << "GNSS-SDR can not create message queues!" << std::endl;
             throw std::exception();
         }
+
+    d_pvt_solver = std::make_shared<Rtklib_Solver>(static_cast<int32_t>(nchannels), dump_ls_pvt_filename, d_dump, d_dump_mat, rtk);
+    d_pvt_solver->set_averaging_depth(1);
     start = std::chrono::system_clock::now();
 }
 
@@ -588,404 +339,808 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
 rtklib_pvt_cc::~rtklib_pvt_cc()
 {
     msgctl(sysv_msqid, IPC_RMID, nullptr);
-    if (d_xml_storage)
+    try
         {
-            // save GPS L2CM ephemeris to XML file
-            std::string file_name = xml_base_path + "gps_cnav_ephemeris.xml";
-            if (d_pvt_solver->gps_cnav_ephemeris_map.empty() == false)
+            if (d_xml_storage)
                 {
-                    std::ofstream ofs;
-                    try
+                    // save GPS L2CM ephemeris to XML file
+                    std::string file_name = xml_base_path + "gps_cnav_ephemeris.xml";
+                    if (d_pvt_solver->gps_cnav_ephemeris_map.empty() == false)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_cnav_ephemeris_map", d_pvt_solver->gps_cnav_ephemeris_map);
-                            LOG(INFO) << "Saved GPS L2CM or L5 Ephemeris map data";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_cnav_ephemeris_map", d_pvt_solver->gps_cnav_ephemeris_map);
+                                    LOG(INFO) << "Saved GPS L2CM or L5 Ephemeris map data";
+                                }
+                            catch (const boost::archive::archive_exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save GPS L2CM or L5 Ephemeris, map is empty";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save GPS L2CM or L5 Ephemeris, map is empty";
-                }
 
-            // save GPS L1 CA ephemeris to XML file
-            file_name = xml_base_path + "gps_ephemeris.xml";
-            if (d_pvt_solver->gps_ephemeris_map.empty() == false)
-                {
-                    std::ofstream ofs;
-                    try
+                    // save GPS L1 CA ephemeris to XML file
+                    file_name = xml_base_path + "gps_ephemeris.xml";
+                    if (d_pvt_solver->gps_ephemeris_map.empty() == false)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", d_pvt_solver->gps_ephemeris_map);
-                            LOG(INFO) << "Saved GPS L1 CA Ephemeris map data";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", d_pvt_solver->gps_ephemeris_map);
+                                    LOG(INFO) << "Saved GPS L1 CA Ephemeris map data";
+                                }
+                            catch (const boost::archive::archive_exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (const std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save GPS L1 CA Ephemeris, map is empty";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save GPS L1 CA Ephemeris, map is empty";
-                }
 
-            // save Galileo E1 ephemeris to XML file
-            file_name = xml_base_path + "gal_ephemeris.xml";
-            if (d_pvt_solver->galileo_ephemeris_map.empty() == false)
-                {
-                    std::ofstream ofs;
-                    try
+                    // save Galileo E1 ephemeris to XML file
+                    file_name = xml_base_path + "gal_ephemeris.xml";
+                    if (d_pvt_solver->galileo_ephemeris_map.empty() == false)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_gal_ephemeris_map", d_pvt_solver->galileo_ephemeris_map);
-                            LOG(INFO) << "Saved Galileo E1 Ephemeris map data";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_ephemeris_map", d_pvt_solver->galileo_ephemeris_map);
+                                    LOG(INFO) << "Saved Galileo E1 Ephemeris map data";
+                                }
+                            catch (const boost::archive::archive_exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (const std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save Galileo E1 Ephemeris, map is empty";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save Galileo E1 Ephemeris, map is empty";
-                }
 
-            // save GLONASS GNAV ephemeris to XML file
-            file_name = xml_base_path + "eph_GLONASS_GNAV.xml";
-            if (d_pvt_solver->glonass_gnav_ephemeris_map.empty() == false)
-                {
-                    std::ofstream ofs;
-                    try
+                    // save GLONASS GNAV ephemeris to XML file
+                    file_name = xml_base_path + "eph_GLONASS_GNAV.xml";
+                    if (d_pvt_solver->glonass_gnav_ephemeris_map.empty() == false)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_gnav_ephemeris_map", d_pvt_solver->glonass_gnav_ephemeris_map);
-                            LOG(INFO) << "Saved GLONASS GNAV Ephemeris map data";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_gnav_ephemeris_map", d_pvt_solver->glonass_gnav_ephemeris_map);
+                                    LOG(INFO) << "Saved GLONASS GNAV Ephemeris map data";
+                                }
+                            catch (const boost::archive::archive_exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save GLONASS GNAV Ephemeris, map is empty";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save GLONASS GNAV Ephemeris, map is empty";
-                }
 
-            // Save GPS UTC model parameters
-            file_name = xml_base_path + "gps_utc_model.xml";
-            if (d_pvt_solver->gps_utc_model.valid)
-                {
-                    std::ofstream ofs;
-                    try
+                    // Save GPS UTC model parameters
+                    file_name = xml_base_path + "gps_utc_model.xml";
+                    if (d_pvt_solver->gps_utc_model.valid)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_utc_model", d_pvt_solver->gps_utc_model);
-                            LOG(INFO) << "Saved GPS UTC model parameters";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_utc_model", d_pvt_solver->gps_utc_model);
+                                    LOG(INFO) << "Saved GPS UTC model parameters";
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const boost::archive::archive_exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save GPS UTC model parameters, not valid data";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save GPS UTC model parameters, not valid data";
-                }
 
-            // Save Galileo UTC model parameters
-            file_name = xml_base_path + "gal_utc_model.xml";
-            if (d_pvt_solver->galileo_utc_model.Delta_tLS_6 != 0.0)
-                {
-                    std::ofstream ofs;
-                    try
+                    // Save Galileo UTC model parameters
+                    file_name = xml_base_path + "gal_utc_model.xml";
+                    if (d_pvt_solver->galileo_utc_model.Delta_tLS_6 != 0.0)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_gal_utc_model", d_pvt_solver->galileo_utc_model);
-                            LOG(INFO) << "Saved Galileo UTC model parameters";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_utc_model", d_pvt_solver->galileo_utc_model);
+                                    LOG(INFO) << "Saved Galileo UTC model parameters";
+                                }
+                            catch (const boost::archive::archive_exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save Galileo UTC model parameters, not valid data";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save Galileo UTC model parameters, not valid data";
-                }
 
-            // Save GPS iono parameters
-            file_name = xml_base_path + "gps_iono.xml";
-            if (d_pvt_solver->gps_iono.valid == true)
-                {
-                    std::ofstream ofs;
-                    try
+                    // Save GPS iono parameters
+                    file_name = xml_base_path + "gps_iono.xml";
+                    if (d_pvt_solver->gps_iono.valid == true)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_iono_model", d_pvt_solver->gps_iono);
-                            LOG(INFO) << "Saved GPS ionospheric model parameters";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_iono_model", d_pvt_solver->gps_iono);
+                                    LOG(INFO) << "Saved GPS ionospheric model parameters";
+                                }
+                            catch (const boost::archive::archive_exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save GPS ionospheric model parameters, not valid data";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save GPS ionospheric model parameters, not valid data";
-                }
 
-            // Save GPS CNAV iono parameters
-            file_name = xml_base_path + "gps_cnav_iono.xml";
-            if (d_pvt_solver->gps_cnav_iono.valid == true)
-                {
-                    std::ofstream ofs;
-                    try
+                    // Save GPS CNAV iono parameters
+                    file_name = xml_base_path + "gps_cnav_iono.xml";
+                    if (d_pvt_solver->gps_cnav_iono.valid == true)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_cnav_iono_model", d_pvt_solver->gps_cnav_iono);
-                            LOG(INFO) << "Saved GPS CNAV ionospheric model parameters";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_cnav_iono_model", d_pvt_solver->gps_cnav_iono);
+                                    LOG(INFO) << "Saved GPS CNAV ionospheric model parameters";
+                                }
+                            catch (const boost::archive::archive_exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save GPS CNAV ionospheric model parameters, not valid data";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save GPS CNAV ionospheric model parameters, not valid data";
-                }
 
-            // Save Galileo iono parameters
-            file_name = xml_base_path + "gal_iono.xml";
-            if (d_pvt_solver->galileo_iono.ai0_5 != 0.0)
-                {
-                    std::ofstream ofs;
-                    try
+                    // Save Galileo iono parameters
+                    file_name = xml_base_path + "gal_iono.xml";
+                    if (d_pvt_solver->galileo_iono.ai0_5 != 0.0)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_gal_iono_model", d_pvt_solver->galileo_iono);
-                            LOG(INFO) << "Saved Galileo ionospheric model parameters";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_iono_model", d_pvt_solver->galileo_iono);
+                                    LOG(INFO) << "Saved Galileo ionospheric model parameters";
+                                }
+                            catch (const boost::archive::archive_exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save Galileo ionospheric model parameters, not valid data";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save Galileo ionospheric model parameters, not valid data";
-                }
 
-            // save GPS almanac to XML file
-            file_name = xml_base_path + "gps_almanac.xml";
-            if (d_pvt_solver->gps_almanac_map.empty() == false)
-                {
-                    std::ofstream ofs;
-                    try
+                    // save GPS almanac to XML file
+                    file_name = xml_base_path + "gps_almanac.xml";
+                    if (d_pvt_solver->gps_almanac_map.empty() == false)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_gps_almanac_map", d_pvt_solver->gps_almanac_map);
-                            LOG(INFO) << "Saved GPS almanac map data";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_gps_almanac_map", d_pvt_solver->gps_almanac_map);
+                                    LOG(INFO) << "Saved GPS almanac map data";
+                                }
+                            catch (const boost::archive::archive_exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (const std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save GPS almanac, map is empty";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save GPS almanac, map is empty";
-                }
 
-            // Save Galileo almanac
-            file_name = xml_base_path + "gal_almanac.xml";
-            if (d_pvt_solver->galileo_almanac_map.empty() == false)
-                {
-                    std::ofstream ofs;
-                    try
+                    // Save Galileo almanac
+                    file_name = xml_base_path + "gal_almanac.xml";
+                    if (d_pvt_solver->galileo_almanac_map.empty() == false)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_gal_almanac_map", d_pvt_solver->galileo_almanac_map);
-                            LOG(INFO) << "Saved Galileo almanac data";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_gal_almanac_map", d_pvt_solver->galileo_almanac_map);
+                                    LOG(INFO) << "Saved Galileo almanac data";
+                                }
+                            catch (const boost::archive::archive_exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save Galileo almanac, not valid data";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save Galileo almanac, not valid data";
-                }
 
-            // Save GPS CNAV UTC model parameters
-            file_name = xml_base_path + "gps_cnav_utc_model.xml";
-            if (d_pvt_solver->gps_cnav_utc_model.valid)
-                {
-                    std::ofstream ofs;
-                    try
+                    // Save GPS CNAV UTC model parameters
+                    file_name = xml_base_path + "gps_cnav_utc_model.xml";
+                    if (d_pvt_solver->gps_cnav_utc_model.valid)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_cnav_utc_model", d_pvt_solver->gps_cnav_utc_model);
-                            LOG(INFO) << "Saved GPS CNAV UTC model parameters";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_cnav_utc_model", d_pvt_solver->gps_cnav_utc_model);
+                                    LOG(INFO) << "Saved GPS CNAV UTC model parameters";
+                                }
+                            catch (const boost::archive::archive_exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save GPS CNAV UTC model parameters, not valid data";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save GPS CNAV UTC model parameters, not valid data";
-                }
 
-            // save GLONASS GNAV ephemeris to XML file
-            file_name = xml_base_path + "glo_gnav_ephemeris.xml";
-            if (d_pvt_solver->glonass_gnav_ephemeris_map.empty() == false)
-                {
-                    std::ofstream ofs;
-                    try
+                    // save GLONASS GNAV ephemeris to XML file
+                    file_name = xml_base_path + "glo_gnav_ephemeris.xml";
+                    if (d_pvt_solver->glonass_gnav_ephemeris_map.empty() == false)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_gnav_ephemeris_map", d_pvt_solver->glonass_gnav_ephemeris_map);
-                            LOG(INFO) << "Saved GLONASS GNAV ephemeris map data";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_gnav_ephemeris_map", d_pvt_solver->glonass_gnav_ephemeris_map);
+                                    LOG(INFO) << "Saved GLONASS GNAV ephemeris map data";
+                                }
+                            catch (const boost::archive::archive_exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save GLONASS GNAV ephemeris, map is empty";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save GLONASS GNAV ephemeris, map is empty";
-                }
 
-            // save GLONASS UTC model parameters to XML file
-            file_name = xml_base_path + "glo_utc_model.xml";
-            if (d_pvt_solver->glonass_gnav_utc_model.valid)
-                {
-                    std::ofstream ofs;
-                    try
+                    // save GLONASS UTC model parameters to XML file
+                    file_name = xml_base_path + "glo_utc_model.xml";
+                    if (d_pvt_solver->glonass_gnav_utc_model.valid)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_gnav_utc_model", d_pvt_solver->glonass_gnav_utc_model);
-                            LOG(INFO) << "Saved GLONASS UTC model parameters";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_gnav_utc_model", d_pvt_solver->glonass_gnav_utc_model);
+                                    LOG(INFO) << "Saved GLONASS UTC model parameters";
+                                }
+                            catch (const boost::archive::archive_exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save GLONASS GNAV ephemeris, not valid data";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save GLONASS GNAV ephemeris, not valid data";
-                }
 
-            // save BeiDou DNAV ephemeris to XML file
-            file_name = xml_base_path + "bds_dnav_ephemeris.xml";
-            if (d_pvt_solver->beidou_dnav_ephemeris_map.empty() == false)
-                {
-                    std::ofstream ofs;
-                    try
+                    // save BeiDou DNAV ephemeris to XML file
+                    file_name = xml_base_path + "bds_dnav_ephemeris.xml";
+                    if (d_pvt_solver->beidou_dnav_ephemeris_map.empty() == false)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_ephemeris_map", d_pvt_solver->beidou_dnav_ephemeris_map);
-                            LOG(INFO) << "Saved BeiDou DNAV Ephemeris map data";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_ephemeris_map", d_pvt_solver->beidou_dnav_ephemeris_map);
+                                    LOG(INFO) << "Saved BeiDou DNAV Ephemeris map data";
+                                }
+                            catch (const boost::archive::archive_exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (const std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save BeiDou DNAV Ephemeris, map is empty";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save BeiDou DNAV Ephemeris, map is empty";
-                }
 
-            // Save BeiDou DNAV iono parameters
-            file_name = xml_base_path + "bds_dnav_iono.xml";
-            if (d_pvt_solver->beidou_dnav_iono.valid)
-                {
-                    std::ofstream ofs;
-                    try
+                    // Save BeiDou DNAV iono parameters
+                    file_name = xml_base_path + "bds_dnav_iono.xml";
+                    if (d_pvt_solver->beidou_dnav_iono.valid)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_iono_model", d_pvt_solver->beidou_dnav_iono);
-                            LOG(INFO) << "Saved BeiDou DNAV ionospheric model parameters";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_iono_model", d_pvt_solver->beidou_dnav_iono);
+                                    LOG(INFO) << "Saved BeiDou DNAV ionospheric model parameters";
+                                }
+                            catch (const boost::archive::archive_exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save BeiDou DNAV ionospheric model parameters, not valid data";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save BeiDou DNAV ionospheric model parameters, not valid data";
-                }
 
-            // save BeiDou DNAV almanac to XML file
-            file_name = xml_base_path + "bds_dnav_almanac.xml";
-            if (d_pvt_solver->beidou_dnav_almanac_map.empty() == false)
-                {
-                    std::ofstream ofs;
-                    try
+                    // save BeiDou DNAV almanac to XML file
+                    file_name = xml_base_path + "bds_dnav_almanac.xml";
+                    if (d_pvt_solver->beidou_dnav_almanac_map.empty() == false)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_almanac_map", d_pvt_solver->beidou_dnav_almanac_map);
-                            LOG(INFO) << "Saved BeiDou DNAV almanac map data";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_almanac_map", d_pvt_solver->beidou_dnav_almanac_map);
+                                    LOG(INFO) << "Saved BeiDou DNAV almanac map data";
+                                }
+                            catch (const boost::archive::archive_exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (const std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save BeiDou DNAV almanac, map is empty";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save BeiDou DNAV almanac, map is empty";
-                }
 
-            // Save BeiDou UTC model parameters
-            file_name = xml_base_path + "bds_dnav_utc_model.xml";
-            if (d_pvt_solver->beidou_dnav_utc_model.valid)
-                {
-                    std::ofstream ofs;
-                    try
+                    // Save BeiDou UTC model parameters
+                    file_name = xml_base_path + "bds_dnav_utc_model.xml";
+                    if (d_pvt_solver->beidou_dnav_utc_model.valid)
                         {
-                            ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
-                            boost::archive::xml_oarchive xml(ofs);
-                            xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_utc_model", d_pvt_solver->beidou_dnav_utc_model);
-                            LOG(INFO) << "Saved BeiDou DNAV UTC model parameters";
+                            std::ofstream ofs;
+                            try
+                                {
+                                    ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+                                    boost::archive::xml_oarchive xml(ofs);
+                                    xml << boost::serialization::make_nvp("GNSS-SDR_bds_dnav_utc_model", d_pvt_solver->beidou_dnav_utc_model);
+                                    LOG(INFO) << "Saved BeiDou DNAV UTC model parameters";
+                                }
+                            catch (const boost::archive::archive_exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
+                            catch (const std::ofstream::failure& e)
+                                {
+                                    LOG(WARNING) << "Problem opening output XML file";
+                                }
+                            catch (const std::exception& e)
+                                {
+                                    LOG(WARNING) << e.what();
+                                }
                         }
-                    catch (std::exception& e)
+                    else
                         {
-                            LOG(WARNING) << e.what();
+                            LOG(INFO) << "Failed to save BeiDou DNAV UTC model parameters, not valid data";
                         }
-                }
-            else
-                {
-                    LOG(INFO) << "Failed to save BeiDou DNAV UTC model parameters, not valid data";
                 }
         }
+    catch (std::length_error& e)
+        {
+            LOG(WARNING) << e.what();
+        }
+}
+
+
+void rtklib_pvt_cc::msg_handler_telemetry(const pmt::pmt_t& msg)
+{
+    try
+        {
+            // ************* GPS telemetry *****************
+            if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Ephemeris>))
+                {
+                    // ### GPS EPHEMERIS ###
+                    std::shared_ptr<Gps_Ephemeris> gps_eph;
+                    gps_eph = boost::any_cast<std::shared_ptr<Gps_Ephemeris>>(pmt::any_ref(msg));
+                    DLOG(INFO) << "Ephemeris record has arrived from SAT ID "
+                               << gps_eph->i_satellite_PRN << " (Block "
+                               << gps_eph->satelliteBlock[gps_eph->i_satellite_PRN] << ")"
+                               << "inserted with Toe=" << gps_eph->d_Toe << " and GPS Week="
+                               << gps_eph->i_GPS_week;
+                    // update/insert new ephemeris record to the global ephemeris map
+                    d_pvt_solver->gps_ephemeris_map[gps_eph->i_satellite_PRN] = *gps_eph;
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Iono>))
+                {
+                    // ### GPS IONO ###
+                    std::shared_ptr<Gps_Iono> gps_iono;
+                    gps_iono = boost::any_cast<std::shared_ptr<Gps_Iono>>(pmt::any_ref(msg));
+                    d_pvt_solver->gps_iono = *gps_iono;
+                    DLOG(INFO) << "New IONO record has arrived ";
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Utc_Model>))
+                {
+                    // ### GPS UTC MODEL ###
+                    std::shared_ptr<Gps_Utc_Model> gps_utc_model;
+                    gps_utc_model = boost::any_cast<std::shared_ptr<Gps_Utc_Model>>(pmt::any_ref(msg));
+                    d_pvt_solver->gps_utc_model = *gps_utc_model;
+                    DLOG(INFO) << "New UTC record has arrived ";
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_CNAV_Ephemeris>))
+                {
+                    // ### GPS CNAV message ###
+                    std::shared_ptr<Gps_CNAV_Ephemeris> gps_cnav_ephemeris;
+                    gps_cnav_ephemeris = boost::any_cast<std::shared_ptr<Gps_CNAV_Ephemeris>>(pmt::any_ref(msg));
+                    // update/insert new ephemeris record to the global ephemeris map
+                    d_pvt_solver->gps_cnav_ephemeris_map[gps_cnav_ephemeris->i_satellite_PRN] = *gps_cnav_ephemeris;
+                    DLOG(INFO) << "New GPS CNAV ephemeris record has arrived ";
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_CNAV_Iono>))
+                {
+                    // ### GPS CNAV IONO ###
+                    std::shared_ptr<Gps_CNAV_Iono> gps_cnav_iono;
+                    gps_cnav_iono = boost::any_cast<std::shared_ptr<Gps_CNAV_Iono>>(pmt::any_ref(msg));
+                    d_pvt_solver->gps_cnav_iono = *gps_cnav_iono;
+                    DLOG(INFO) << "New CNAV IONO record has arrived ";
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_CNAV_Utc_Model>))
+                {
+                    // ### GPS CNAV UTC MODEL ###
+                    std::shared_ptr<Gps_CNAV_Utc_Model> gps_cnav_utc_model;
+                    gps_cnav_utc_model = boost::any_cast<std::shared_ptr<Gps_CNAV_Utc_Model>>(pmt::any_ref(msg));
+                    d_pvt_solver->gps_cnav_utc_model = *gps_cnav_utc_model;
+                    DLOG(INFO) << "New CNAV UTC record has arrived ";
+                }
+
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Almanac>))
+                {
+                    // ### GPS ALMANAC ###
+                    std::shared_ptr<Gps_Almanac> gps_almanac;
+                    gps_almanac = boost::any_cast<std::shared_ptr<Gps_Almanac>>(pmt::any_ref(msg));
+                    d_pvt_solver->gps_almanac_map[gps_almanac->i_satellite_PRN] = *gps_almanac;
+                    DLOG(INFO) << "New GPS almanac record has arrived ";
+                }
+
+            // **************** Galileo telemetry ********************
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Ephemeris>))
+                {
+                    // ### Galileo EPHEMERIS ###
+                    std::shared_ptr<Galileo_Ephemeris> galileo_eph;
+                    galileo_eph = boost::any_cast<std::shared_ptr<Galileo_Ephemeris>>(pmt::any_ref(msg));
+                    // insert new ephemeris record
+                    DLOG(INFO) << "Galileo New Ephemeris record inserted in global map with TOW =" << galileo_eph->TOW_5
+                               << ", GALILEO Week Number =" << galileo_eph->WN_5
+                               << " and Ephemeris IOD = " << galileo_eph->IOD_ephemeris;
+                    // update/insert new ephemeris record to the global ephemeris map
+                    d_pvt_solver->galileo_ephemeris_map[galileo_eph->i_satellite_PRN] = *galileo_eph;
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Iono>))
+                {
+                    // ### Galileo IONO ###
+                    std::shared_ptr<Galileo_Iono> galileo_iono;
+                    galileo_iono = boost::any_cast<std::shared_ptr<Galileo_Iono>>(pmt::any_ref(msg));
+                    d_pvt_solver->galileo_iono = *galileo_iono;
+                    DLOG(INFO) << "New IONO record has arrived ";
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Utc_Model>))
+                {
+                    // ### Galileo UTC MODEL ###
+                    std::shared_ptr<Galileo_Utc_Model> galileo_utc_model;
+                    galileo_utc_model = boost::any_cast<std::shared_ptr<Galileo_Utc_Model>>(pmt::any_ref(msg));
+                    d_pvt_solver->galileo_utc_model = *galileo_utc_model;
+                    DLOG(INFO) << "New UTC record has arrived ";
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Almanac_Helper>))
+                {
+                    // ### Galileo Almanac ###
+                    std::shared_ptr<Galileo_Almanac_Helper> galileo_almanac_helper;
+                    galileo_almanac_helper = boost::any_cast<std::shared_ptr<Galileo_Almanac_Helper>>(pmt::any_ref(msg));
+
+                    Galileo_Almanac sv1 = galileo_almanac_helper->get_almanac(1);
+                    Galileo_Almanac sv2 = galileo_almanac_helper->get_almanac(2);
+                    Galileo_Almanac sv3 = galileo_almanac_helper->get_almanac(3);
+
+                    if (sv1.i_satellite_PRN != 0)
+                        {
+                            d_pvt_solver->galileo_almanac_map[sv1.i_satellite_PRN] = sv1;
+                        }
+                    if (sv2.i_satellite_PRN != 0)
+                        {
+                            d_pvt_solver->galileo_almanac_map[sv2.i_satellite_PRN] = sv2;
+                        }
+                    if (sv3.i_satellite_PRN != 0)
+                        {
+                            d_pvt_solver->galileo_almanac_map[sv3.i_satellite_PRN] = sv3;
+                        }
+                    DLOG(INFO) << "New Galileo Almanac data have arrived ";
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Almanac>))
+                {
+                    // ### Galileo Almanac ###
+                    std::shared_ptr<Galileo_Almanac> galileo_alm;
+                    galileo_alm = boost::any_cast<std::shared_ptr<Galileo_Almanac>>(pmt::any_ref(msg));
+                    // update/insert new almanac record to the global almanac map
+                    d_pvt_solver->galileo_almanac_map[galileo_alm->i_satellite_PRN] = *galileo_alm;
+                }
+
+            // **************** GLONASS GNAV Telemetry **************************
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Glonass_Gnav_Ephemeris>))
+                {
+                    // ### GLONASS GNAV EPHEMERIS ###
+                    std::shared_ptr<Glonass_Gnav_Ephemeris> glonass_gnav_eph;
+                    glonass_gnav_eph = boost::any_cast<std::shared_ptr<Glonass_Gnav_Ephemeris>>(pmt::any_ref(msg));
+                    // TODO Add GLONASS with gps week number and tow,
+                    // insert new ephemeris record
+                    DLOG(INFO) << "GLONASS GNAV New Ephemeris record inserted in global map with TOW =" << glonass_gnav_eph->d_TOW
+                               << ", Week Number =" << glonass_gnav_eph->d_WN
+                               << " and Ephemeris IOD in UTC = " << glonass_gnav_eph->compute_GLONASS_time(glonass_gnav_eph->d_t_b)
+                               << " from SV = " << glonass_gnav_eph->i_satellite_slot_number;
+                    // update/insert new ephemeris record to the global ephemeris map
+                    d_pvt_solver->glonass_gnav_ephemeris_map[glonass_gnav_eph->i_satellite_PRN] = *glonass_gnav_eph;
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Glonass_Gnav_Utc_Model>))
+                {
+                    // ### GLONASS GNAV UTC MODEL ###
+                    std::shared_ptr<Glonass_Gnav_Utc_Model> glonass_gnav_utc_model;
+                    glonass_gnav_utc_model = boost::any_cast<std::shared_ptr<Glonass_Gnav_Utc_Model>>(pmt::any_ref(msg));
+                    d_pvt_solver->glonass_gnav_utc_model = *glonass_gnav_utc_model;
+                    DLOG(INFO) << "New GLONASS GNAV UTC record has arrived ";
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Glonass_Gnav_Almanac>))
+                {
+                    // ### GLONASS GNAV Almanac ###
+                    std::shared_ptr<Glonass_Gnav_Almanac> glonass_gnav_almanac;
+                    glonass_gnav_almanac = boost::any_cast<std::shared_ptr<Glonass_Gnav_Almanac>>(pmt::any_ref(msg));
+                    d_pvt_solver->glonass_gnav_almanac = *glonass_gnav_almanac;
+                    DLOG(INFO) << "New GLONASS GNAV Almanac has arrived "
+                               << ", GLONASS GNAV Slot Number =" << glonass_gnav_almanac->d_n_A;
+                }
+
+            // ************* BeiDou telemetry *****************
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Dnav_Ephemeris>))
+                {
+                    // ### Beidou EPHEMERIS ###
+                    std::shared_ptr<Beidou_Dnav_Ephemeris> bds_dnav_eph;
+                    bds_dnav_eph = boost::any_cast<std::shared_ptr<Beidou_Dnav_Ephemeris>>(pmt::any_ref(msg));
+                    DLOG(INFO) << "Ephemeris record has arrived from SAT ID "
+                               << bds_dnav_eph->i_satellite_PRN << " (Block "
+                               << bds_dnav_eph->satelliteBlock[bds_dnav_eph->i_satellite_PRN] << ")"
+                               << "inserted with Toe=" << bds_dnav_eph->d_Toe << " and BDS Week="
+                               << bds_dnav_eph->i_BEIDOU_week;
+                    // update/insert new ephemeris record to the global ephemeris map
+                    d_pvt_solver->beidou_dnav_ephemeris_map[bds_dnav_eph->i_satellite_PRN] = *bds_dnav_eph;
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Dnav_Iono>))
+                {
+                    // ### BeiDou IONO ###
+                    std::shared_ptr<Beidou_Dnav_Iono> bds_dnav_iono;
+                    bds_dnav_iono = boost::any_cast<std::shared_ptr<Beidou_Dnav_Iono>>(pmt::any_ref(msg));
+                    d_pvt_solver->beidou_dnav_iono = *bds_dnav_iono;
+                    DLOG(INFO) << "New BeiDou DNAV IONO record has arrived ";
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Dnav_Utc_Model>))
+                {
+                    // ### BeiDou UTC MODEL ###
+                    std::shared_ptr<Beidou_Dnav_Utc_Model> bds_dnav_utc_model;
+                    bds_dnav_utc_model = boost::any_cast<std::shared_ptr<Beidou_Dnav_Utc_Model>>(pmt::any_ref(msg));
+                    d_pvt_solver->beidou_dnav_utc_model = *bds_dnav_utc_model;
+                    DLOG(INFO) << "New BeiDou DNAV UTC record has arrived ";
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Dnav_Almanac>))
+                {
+                    // ### BeiDou ALMANAC ###
+                    std::shared_ptr<Beidou_Dnav_Almanac> bds_dnav_almanac;
+                    bds_dnav_almanac = boost::any_cast<std::shared_ptr<Beidou_Dnav_Almanac>>(pmt::any_ref(msg));
+                    d_pvt_solver->beidou_dnav_almanac_map[bds_dnav_almanac->i_satellite_PRN] = *bds_dnav_almanac;
+                    DLOG(INFO) << "New BeiDou DNAV almanac record has arrived ";
+                }
+            else
+                {
+                    LOG(WARNING) << "msg_handler_telemetry unknown object type!";
+                }
+        }
+    catch (boost::bad_any_cast& e)
+        {
+            LOG(WARNING) << "msg_handler_telemetry Bad any cast!";
+        }
+}
+
+
+std::map<int, Gps_Ephemeris> rtklib_pvt_cc::get_gps_ephemeris_map() const
+{
+    return d_pvt_solver->gps_ephemeris_map;
+}
+
+
+std::map<int, Gps_Almanac> rtklib_pvt_cc::get_gps_almanac_map() const
+{
+    return d_pvt_solver->gps_almanac_map;
+}
+
+
+std::map<int, Galileo_Ephemeris> rtklib_pvt_cc::get_galileo_ephemeris_map() const
+{
+    return d_pvt_solver->galileo_ephemeris_map;
+}
+
+
+std::map<int, Galileo_Almanac> rtklib_pvt_cc::get_galileo_almanac_map() const
+{
+    return d_pvt_solver->galileo_almanac_map;
+}
+
+
+std::map<int, Beidou_Dnav_Ephemeris> rtklib_pvt_cc::get_beidou_dnav_ephemeris_map() const
+{
+    return d_pvt_solver->beidou_dnav_ephemeris_map;
+}
+
+
+std::map<int, Beidou_Dnav_Almanac> rtklib_pvt_cc::get_beidou_dnav_almanac_map() const
+{
+    return d_pvt_solver->beidou_dnav_almanac_map;
+}
+
+
+void rtklib_pvt_cc::clear_ephemeris()
+{
+    d_pvt_solver->gps_ephemeris_map.clear();
+    d_pvt_solver->gps_almanac_map.clear();
+    d_pvt_solver->galileo_ephemeris_map.clear();
+    d_pvt_solver->galileo_almanac_map.clear();
+    d_pvt_solver->beidou_dnav_ephemeris_map.clear();
+    d_pvt_solver->beidou_dnav_almanac_map.clear();
 }
 
 
@@ -1023,7 +1178,7 @@ bool rtklib_pvt_cc::save_gnss_synchro_map_xml(const std::string& file_name)
                     xml << boost::serialization::make_nvp("GNSS-SDR_gnss_synchro_map", gnss_observables_map);
                     LOG(INFO) << "Saved gnss_sychro map data";
                 }
-            catch (std::exception& e)
+            catch (const std::exception& e)
                 {
                     LOG(WARNING) << e.what();
                     return false;
@@ -1048,7 +1203,7 @@ bool rtklib_pvt_cc::load_gnss_synchro_map_xml(const std::string& file_name)
             xml >> boost::serialization::make_nvp("GNSS-SDR_gnss_synchro_map", gnss_observables_map);
             //std::cout << "Loaded gnss_synchro map data with " << gnss_synchro_map.size() << " pseudoranges" << std::endl;
         }
-    catch (std::exception& e)
+    catch (const std::exception& e)
         {
             std::cout << e.what() << "File: " << file_name;
             return false;
@@ -1057,14 +1212,28 @@ bool rtklib_pvt_cc::load_gnss_synchro_map_xml(const std::string& file_name)
 }
 
 
+std::vector<std::string> rtklib_pvt_cc::split_string(const std::string& s, char delim) const
+{
+    std::vector<std::string> v;
+    std::stringstream ss(s);
+    std::string item;
+
+    while (std::getline(ss, item, delim))
+        {
+            *(std::back_inserter(v)++) = item;
+        }
+
+    return v;
+}
+
+
 bool rtklib_pvt_cc::get_latest_PVT(double* longitude_deg,
     double* latitude_deg,
     double* height_m,
     double* ground_speed_kmh,
     double* course_over_ground_deg,
-    time_t* UTC_time)
+    time_t* UTC_time) const
 {
-    gr::thread::scoped_lock lock(d_setlock);
     if (d_pvt_solver->is_valid_position())
         {
             *latitude_deg = d_pvt_solver->get_latitude();
@@ -1072,7 +1241,7 @@ bool rtklib_pvt_cc::get_latest_PVT(double* longitude_deg,
             *height_m = d_pvt_solver->get_height();
             *ground_speed_kmh = d_pvt_solver->get_speed_over_ground() * 3600.0 / 1000.0;
             *course_over_ground_deg = d_pvt_solver->get_course_over_ground();
-            *UTC_time = to_time_t(d_pvt_solver->get_position_UTC_time());
+            *UTC_time = convert_to_time_t(d_pvt_solver->get_position_UTC_time());
 
             return true;
         }
@@ -1084,8 +1253,6 @@ bool rtklib_pvt_cc::get_latest_PVT(double* longitude_deg,
 int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items __attribute__((unused)))
 {
-    gr::thread::scoped_lock l(d_setlock);
-
     for (int32_t epoch = 0; epoch < noutput_items; epoch++)
         {
             bool flag_display_pvt = false;
@@ -1117,7 +1284,8 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                 ((tmp_eph_iter_glo_gnav->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "1G")) or
                                 ((tmp_eph_iter_glo_gnav->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "2G")) or
                                 ((tmp_eph_iter_cnav->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "L5")) or
-                                ((tmp_eph_iter_bds_dnav->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "B1")))
+                                ((tmp_eph_iter_bds_dnav->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "B1")) or
+                                ((tmp_eph_iter_bds_dnav->second.i_satellite_PRN == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "B3")))
                                 {
                                     // store valid observables in a map.
                                     gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(i, in[i][epoch]));
@@ -1277,10 +1445,22 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                             send_sys_v_ttff_msg(ttff);
                                             first_fix = false;
                                         }
-                                    if (d_kml_output_enabled) d_kml_dump->print_position(d_pvt_solver, false);
-                                    if (d_gpx_output_enabled) d_gpx_dump->print_position(d_pvt_solver, false);
-                                    if (d_geojson_output_enabled) d_geojson_printer->print_position(d_pvt_solver, false);
-                                    if (d_nmea_output_file_enabled) d_nmea_printer->Print_Nmea_Line(d_pvt_solver, false);
+                                    if (d_kml_output_enabled)
+                                        {
+                                            d_kml_dump->print_position(d_pvt_solver, false);
+                                        }
+                                    if (d_gpx_output_enabled)
+                                        {
+                                            d_gpx_dump->print_position(d_pvt_solver, false);
+                                        }
+                                    if (d_geojson_output_enabled)
+                                        {
+                                            d_geojson_printer->print_position(d_pvt_solver, false);
+                                        }
+                                    if (d_nmea_output_file_enabled)
+                                        {
+                                            d_nmea_printer->Print_Nmea_Line(d_pvt_solver, false);
+                                        }
 
                                     /*
                                      *   TYPE  |  RECEIVER
@@ -1494,7 +1674,9 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     std::string glo_signal("1G");
                                                                     rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, glo_signal);
                                                                     if (d_rinex_version == 3)
-                                                                        rp->rinex_nav_header(rp->navMixFile, d_pvt_solver->gps_iono, d_pvt_solver->gps_utc_model, d_pvt_solver->glonass_gnav_utc_model, d_pvt_solver->glonass_gnav_almanac);
+                                                                        {
+                                                                            rp->rinex_nav_header(rp->navMixFile, d_pvt_solver->gps_iono, d_pvt_solver->gps_utc_model, d_pvt_solver->glonass_gnav_utc_model, d_pvt_solver->glonass_gnav_almanac);
+                                                                        }
                                                                     if (d_rinex_version == 2)
                                                                         {
                                                                             rp->rinex_nav_header(rp->navFile, d_pvt_solver->gps_iono, d_pvt_solver->gps_utc_model);
@@ -1528,7 +1710,9 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     std::string glo_signal("2G");
                                                                     rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, d_rx_time, glo_signal);
                                                                     if (d_rinex_version == 3)
-                                                                        rp->rinex_nav_header(rp->navMixFile, d_pvt_solver->gps_iono, d_pvt_solver->gps_utc_model, d_pvt_solver->glonass_gnav_utc_model, d_pvt_solver->glonass_gnav_almanac);
+                                                                        {
+                                                                            rp->rinex_nav_header(rp->navMixFile, d_pvt_solver->gps_iono, d_pvt_solver->gps_utc_model, d_pvt_solver->glonass_gnav_utc_model, d_pvt_solver->glonass_gnav_almanac);
+                                                                        }
                                                                     if (d_rinex_version == 2)
                                                                         {
                                                                             rp->rinex_nav_header(rp->navFile, d_pvt_solver->gps_iono, d_pvt_solver->gps_utc_model);
@@ -1636,7 +1820,9 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     break;
                                                                 case 26:  //  GPS L1 C/A + GLONASS L1 C/A
                                                                     if (d_rinex_version == 3)
-                                                                        rp->log_rinex_nav(rp->navMixFile, d_pvt_solver->gps_ephemeris_map, d_pvt_solver->glonass_gnav_ephemeris_map);
+                                                                        {
+                                                                            rp->log_rinex_nav(rp->navMixFile, d_pvt_solver->gps_ephemeris_map, d_pvt_solver->glonass_gnav_ephemeris_map);
+                                                                        }
                                                                     if (d_rinex_version == 2)
                                                                         {
                                                                             rp->log_rinex_nav(rp->navFile, d_pvt_solver->gps_ephemeris_map);
@@ -1651,7 +1837,9 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     break;
                                                                 case 29:  //  GPS L1 C/A + GLONASS L2 C/A
                                                                     if (d_rinex_version == 3)
-                                                                        rp->log_rinex_nav(rp->navMixFile, d_pvt_solver->gps_ephemeris_map, d_pvt_solver->glonass_gnav_ephemeris_map);
+                                                                        {
+                                                                            rp->log_rinex_nav(rp->navMixFile, d_pvt_solver->gps_ephemeris_map, d_pvt_solver->glonass_gnav_ephemeris_map);
+                                                                        }
                                                                     if (d_rinex_version == 2)
                                                                         {
                                                                             rp->log_rinex_nav(rp->navFile, d_pvt_solver->gps_ephemeris_map);
@@ -3110,18 +3298,4 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
         }
 
     return noutput_items;
-}
-
-std::vector<std::string> rtklib_pvt_cc::split_string(const std::string& s, char delim)
-{
-    std::vector<std::string> v;
-    std::stringstream ss(s);
-    std::string item;
-
-    while (std::getline(ss, item, delim))
-        {
-            *(std::back_inserter(v)++) = item;
-        }
-
-    return v;
 }

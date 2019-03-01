@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2019  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -63,25 +63,23 @@ list(SORT RTKLIB_LIB_SOURCES)
 
 source_group(Headers FILES ${RTKLIB_LIB_HEADERS})
 
-add_library(rtklib_lib ${RTKLIB_LIB_SOURCES} ${RTKLIB_LIB_HEADERS})
+add_library(algorithms_libs_rtklib ${RTKLIB_LIB_SOURCES} ${RTKLIB_LIB_HEADERS})
 
-if(OS_IS_MACOSX)
-    set(MAC_LIBRARIES "-framework Accelerate")
-endif()
-
-target_link_libraries(rtklib_lib
+target_link_libraries(algorithms_libs_rtklib
     PUBLIC
-        gnss_rx
-        gnss_system_parameters
+        core_system_parameters
     PRIVATE
         Gflags::gflags
         Glog::glog
-        ${BLAS}
-        ${LAPACK}
-        ${MAC_LIBRARIES}
 )
 
-set_property(TARGET rtklib_lib
+if(OS_IS_MACOSX)
+    target_link_libraries(algorithms_libs_rtklib PRIVATE "-framework Accelerate")
+else()
+    target_link_libraries(algorithms_libs_rtklib PRIVATE ${LAPACK} ${BLAS})
+endif()
+
+set_property(TARGET algorithms_libs_rtklib
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

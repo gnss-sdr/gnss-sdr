@@ -52,6 +52,7 @@
 #include <matio.h>
 #include <chrono>
 #include <unistd.h>
+#include <utility>
 #include <vector>
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
@@ -89,7 +90,7 @@ void GpsL1CADllPllTrackingTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
-            int64_t message = pmt::to_long(msg);
+            int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;  //3 -> loss of lock
             //std::cout << "Received trk message: " << rx_message << std::endl;
         }
@@ -109,9 +110,7 @@ GpsL1CADllPllTrackingTest_msg_rx::GpsL1CADllPllTrackingTest_msg_rx() : gr::block
 }
 
 
-GpsL1CADllPllTrackingTest_msg_rx::~GpsL1CADllPllTrackingTest_msg_rx()
-{
-}
+GpsL1CADllPllTrackingTest_msg_rx::~GpsL1CADllPllTrackingTest_msg_rx() = default;
 
 
 // ###########################################################
@@ -166,9 +165,7 @@ public:
         gnss_synchro = Gnss_Synchro();
     }
 
-    ~GpsL1CADllPllTrackingTest()
-    {
-    }
+    ~GpsL1CADllPllTrackingTest() = default;
 
     void configure_receiver(double PLL_wide_bw_hz,
         double DLL_wide_bw_hz,
@@ -210,11 +207,13 @@ int GpsL1CADllPllTrackingTest::generate_signal()
 {
     int child_status;
 
-    char* const parmList[] = {&generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0], &p6[0], NULL};
+    char* const parmList[] = {&generator_binary[0], &generator_binary[0], &p1[0], &p2[0], &p3[0], &p4[0], &p5[0], &p6[0], nullptr};
 
     int pid;
     if ((pid = fork()) == -1)
-        perror("fork err");
+        {
+            perror("fork err");
+        }
     else if (pid == 0)
         {
             execv(&generator_binary[0], parmList);
@@ -448,7 +447,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
     int test_satellite_PRN = 0;
     double acq_delay_samples = 0.0;
     double acq_doppler_hz = 0.0;
-    tracking_true_obs_reader true_obs_data;
+    Tracking_True_Obs_Reader true_obs_data;
 
 
     // CONFIG PARAM SWEEP LOOP
@@ -646,7 +645,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
 
                     //check results
                     //load the measured values
-                    tracking_dump_reader trk_dump;
+                    Tracking_Dump_Reader trk_dump;
                     ASSERT_EQ(trk_dump.open_obs_file(std::string("./tracking_ch_0.dat")), true)
                         << "Failure opening tracking dump file";
 
@@ -730,7 +729,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                     double pull_in_offset_s = FLAGS_skip_trk_transitory_s;
 
                                     arma::uvec initial_meas_point = arma::find(trk_timestamp_s >= (true_timestamp_s(0) + pull_in_offset_s), 1, "first");
-                                    if (initial_meas_point.size() > 0 and tracking_last_msg != 3)
+                                    if (!initial_meas_point.empty() and tracking_last_msg != 3)
                                         {
                                             trk_timestamp_s = trk_timestamp_s.subvec(initial_meas_point(0), trk_timestamp_s.size() - 1);
                                             trk_acc_carrier_phase_cycles = trk_acc_carrier_phase_cycles.subvec(initial_meas_point(0), trk_acc_carrier_phase_cycles.size() - 1);
@@ -750,9 +749,9 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                             rmse_doppler.push_back(rmse);
 
                                             code_phase_error_chips = check_results_codephase(true_timestamp_s, true_prn_delay_chips, trk_timestamp_s, trk_prn_delay_chips, mean_error, std_dev_error, rmse);
-                                            for (unsigned int ii = 0; ii < code_phase_error_chips.size(); ii++)
+                                            for (double code_phase_error_chip : code_phase_error_chips)
                                                 {
-                                                    code_phase_error_meters.push_back(GPS_L1_CA_CHIP_PERIOD * code_phase_error_chips.at(ii) * GPS_C_m_s);
+                                                    code_phase_error_meters.push_back(GPS_L1_CA_CHIP_PERIOD * code_phase_error_chip * GPS_C_M_S);
                                                 }
                                             mean_code_phase_error.push_back(mean_error);
                                             std_dev_code_phase_error.push_back(std_dev_error);
@@ -821,9 +820,9 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                 {
                                     boost::filesystem::path p(gnuplot_executable);
                                     boost::filesystem::path dir = p.parent_path();
-                                    std::string gnuplot_path = dir.native();
+                                    const std::string& gnuplot_path = dir.native();
                                     Gnuplot::set_GNUPlotPath(gnuplot_path);
-                                    unsigned int decimate = static_cast<unsigned int>(FLAGS_plot_decimate);
+                                    auto decimate = static_cast<unsigned int>(FLAGS_plot_decimate);
 
                                     if (FLAGS_plot_detail_level >= 2)
                                         {
@@ -1165,8 +1164,8 @@ bool GpsL1CADllPllTrackingTest::save_mat_xy(std::vector<double>& x, std::vector<
             matvar_t* matvar;
             filename.erase(filename.length() - 4, 4);
             filename.append(".mat");
-            matfp = Mat_CreateVer(filename.c_str(), NULL, MAT_FT_MAT73);
-            if (reinterpret_cast<int64_t*>(matfp) != NULL)
+            matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT73);
+            if (reinterpret_cast<int64_t*>(matfp) != nullptr)
                 {
                     size_t dims[2] = {1, x.size()};
                     matvar = Mat_VarCreate("x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, &x[0], 0);

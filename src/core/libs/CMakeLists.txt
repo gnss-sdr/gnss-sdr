@@ -37,13 +37,13 @@ list(SORT CORE_LIBS_SOURCES)
 
 source_group(Headers FILES ${CORE_LIBS_HEADERS})
 
-add_library(rx_core_lib ${CORE_LIBS_SOURCES} ${CORE_LIBS_HEADERS})
+add_library(core_libs ${CORE_LIBS_SOURCES} ${CORE_LIBS_HEADERS})
 
-target_link_libraries(rx_core_lib
+target_link_libraries(core_libs
     PUBLIC
         Boost::boost
-        supl_library
-        gnss_system_parameters
+        core_libs_supl
+        core_system_parameters
     PRIVATE
         Boost::serialization
         Gflags::gflags
@@ -51,7 +51,16 @@ target_link_libraries(rx_core_lib
         Pugixml::pugixml
 )
 
-set_property(TARGET rx_core_lib
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(core_libs
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+set_property(TARGET core_libs
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/core/interfaces>

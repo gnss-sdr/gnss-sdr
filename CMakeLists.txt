@@ -41,7 +41,7 @@ endif()
 
 ########################################################################
 # Determine optional blocks/libraries to be built (default: not built)
-# Enable them at the command line by doing 'cmake -DENABLE_XXX=ON ../'
+# Enable them at the command line by doing 'cmake -DENABLE_XXX=ON ..'
 ########################################################################
 # Support of optional RF front-ends
 option(ENABLE_UHD "Enable the use of UHD (driver for all USRP devices)" ON)
@@ -57,6 +57,9 @@ option(ENABLE_RAW_UDP "Enable the use of high-optimized custom UDP packet sample
 # Performance analysis tools
 option(ENABLE_GPERFTOOLS "Enable linking to Gperftools libraries (tcmalloc and profiler)" OFF)
 option(ENABLE_GPROF "Enable the use of the GNU profiler tool 'gprof'" OFF)
+
+# Code correctness
+option(ENABLE_CLANG_TIDY "Enable the use of clang-tidy when compiling" OFF)
 
 # Acceleration
 option(ENABLE_PROFILING "Enable execution of volk_gnsssdr_profile at the end of the building" OFF)
@@ -408,6 +411,53 @@ endif()
 
 
 ################################################################################
+# Set C and C++ standard
+################################################################################
+if(NOT (CMAKE_VERSION VERSION_LESS "3.1"))
+    set(CMAKE_C_STANDARD 11)
+    set(CMAKE_CXX_STANDARD 14)
+    set(CMAKE_CXX_EXTENSIONS OFF)
+else()
+    add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,C>:-std=gnu11>")
+    if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
+        if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
+            add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:-std=c++11>")
+        else()
+            add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:-std=c++14>")
+        endif()
+    endif()
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        if(OS_IS_MACOSX)
+            if(CLANG_VERSION VERSION_LESS "600")
+                add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:-std=c++11>")
+            else()
+                add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:-std=c++14>")
+            endif()
+        else()
+            if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
+                add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:-std=c++11>")
+            else()
+                add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:-std=c++14>")
+            endif()
+        endif()
+    endif()
+endif()
+
+# Visibility
+# See https://gcc.gnu.org/wiki/Visibility
+if(POLICY CMP0053)
+    cmake_policy(SET CMP0063 NEW)
+    set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+    set(CMAKE_C_VISIBILITY_PRESET hidden)
+    set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+else()
+    if((CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
+        add_definitions(-fvisibility=hidden)
+    endif()
+endif()
+
+
+################################################################################
 # Check if the compiler defines the architecture as ARM
 ################################################################################
 if(NOT OS_IS_MACOSX)
@@ -424,20 +474,24 @@ endif()
 
 
 ################################################################################
-# Check for availability of SSE
-################################################################################
-if(NOT ENABLE_GENERIC_ARCH)
-    include(TestForSSE)
-endif()
-
-
-
-################################################################################
 # Find the POSIX thread (pthread) libraries
 ################################################################################
 if(CMAKE_VERSION VERSION_LESS 3.1)
+    # Workaround for CMake < 3.1
     find_package(Threads REQUIRED)
-    set(THREAD_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
+    add_library(Threads::Threads SHARED IMPORTED)
+    set_property(TARGET Threads::Threads PROPERTY INTERFACE_LINK_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}")
+    set_property(TARGET Threads::Threads PROPERTY IMPORTED_LINK_INTERFACE_LANGUAGES "CXX")
+    include(GNUInstallDirs)
+    # Fix bug in Debian 8.11
+    if(${LINUX_DISTRIBUTION} MATCHES "Debian")
+        if(${LINUX_VER} VERSION_LESS 8.12)
+            if(ARCH_64BITS)
+                set(FIX_PTHREADS_LOCATION "x86_64-linux-gnu/")
+            endif()
+        endif()
+    endif()
+    set_property(TARGET Threads::Threads PROPERTY IMPORTED_LOCATION /usr/${CMAKE_INSTALL_LIBDIR}/${FIX_PTHREADS_LOCATION}${CMAKE_FIND_LIBRARY_PREFIXES}pthread${CMAKE_SHARED_LIBRARY_SUFFIX})
 else()
     set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
     if(CMAKE_CROSSCOMPILING)
@@ -446,7 +500,6 @@ else()
         set(THREADS_PREFER_PTHREAD_FLAG TRUE)
     endif()
     find_package(Threads REQUIRED)
-    set(THREAD_LIBRARIES Threads::Threads)
 endif()
 
 
@@ -461,13 +514,13 @@ if(ENABLE_UNIT_TESTING OR ENABLE_SYSTEM_TESTING)
     endif()
     if(GTEST_DIR)
         message(STATUS "Googletest root folder set at ${GTEST_DIR}")
-        find_path(LIBGTEST_DEV_DIR NAMES src/gtest-all.cc PATHS ${GTEST_DIR})
+        find_path(LIBGTEST_DEV_DIR NAMES src/gtest-all.cc PATHS ${GTEST_DIR} ${GTEST_DIR}/googletest)
         if(LIBGTEST_DEV_DIR)
             message(STATUS "Googletest has been found.")
         else()
             message(FATAL_ERROR " Googletest source code has not been found at ${GTEST_DIR}.")
         endif()
-        find_path(GTEST_INCLUDE_DIRS NAMES gtest/gtest.h PATHS ${GTEST_DIR}/include)
+        find_path(GTEST_INCLUDE_DIRS NAMES gtest/gtest.h PATHS ${GTEST_DIR}/googletest/include)
     else()
         find_path(LIBGTEST_DEV_DIR NAMES src/gtest-all.cc PATHS /usr/src/googletest/googletest /usr/src/gtest /usr/include/gtest /opt/local/src/gtest-1.7.0)
         find_path(GTEST_INCLUDE_DIRS NAMES gtest/gtest.h PATHS /usr/include /opt/local/src/gtest-1.7.0/include)
@@ -1101,7 +1154,6 @@ endif()
 
 if(NOT ENABLE_LOG)
     message(STATUS "Logging is not enabled")
-    target_compile_definitions(Glog::glog PUBLIC -DGOOGLE_STRIP_LOG=1)
 endif()
 
 
@@ -1481,8 +1533,8 @@ endif()
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
     message(STATUS "Doxygen found.")
-    message(STATUS "You can build the documentation with '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} doc'.")
-    message(STATUS "When done, point your browser to ${CMAKE_BINARY_DIR}/html/index.html")
+    message(STATUS " You can build the documentation with '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} doc'.")
+    message(STATUS " When done, point your browser to ${CMAKE_BINARY_DIR}/html/index.html")
     set(HAVE_DOT ${DOXYGEN_DOT_FOUND})
     file(TO_NATIVE_PATH ${CMAKE_SOURCE_DIR} top_srcdir)
     file(TO_NATIVE_PATH ${CMAKE_BINARY_DIR} top_builddir)
@@ -1504,7 +1556,7 @@ if(DOXYGEN_FOUND)
         COMMENT "Generating API documentation with Doxygen." VERBATIM
     )
     if(LATEX_COMPILER)
-        message(STATUS "'${CMAKE_MAKE_PROGRAM_PRETTY_NAME} pdfmanual' will generate a manual at ${CMAKE_BINARY_DIR}/docs/GNSS-SDR_manual.pdf")
+        message(STATUS " '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} pdfmanual' will generate a manual at ${CMAKE_BINARY_DIR}/docs/GNSS-SDR_manual.pdf")
         add_custom_target(pdfmanual
             COMMAND ${CMAKE_MAKE_PROGRAM}
             COMMAND ${CMAKE_COMMAND} -E copy refman.pdf ${CMAKE_BINARY_DIR}/docs/GNSS-SDR_manual.pdf
@@ -1514,7 +1566,7 @@ if(DOXYGEN_FOUND)
             COMMENT "Generating PDF manual with Doxygen." VERBATIM
         )
     endif()
-    message(STATUS "'${CMAKE_MAKE_PROGRAM_PRETTY_NAME} doc-clean' will clean the documentation.")
+    message(STATUS " '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} doc-clean' will clean the documentation.")
     add_custom_target(doc-clean
         COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/docs/html
         COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/docs/latex
@@ -1552,7 +1604,7 @@ if(ENABLE_OPENCL)
     else()
         if(OPENCL_FOUND)
             message(STATUS "OpenCL has been found and will be used by some processing blocks")
-            message(STATUS "You can disable OpenCL use by doing 'cmake -DENABLE_OPENCL=OFF ../' ")
+            message(STATUS " You can disable OpenCL use by doing 'cmake -DENABLE_OPENCL=OFF ..' ")
         endif()
     endif()
     if(ENABLE_GENERIC_ARCH)
@@ -1579,10 +1631,10 @@ endif()
 if(ENABLE_CUDA)
     find_package(CUDA REQUIRED)
     message(STATUS "NVIDIA CUDA GPU Acceleration will be enabled.")
-    message(STATUS "You can disable it with 'cmake -DENABLE_CUDA=OFF ../'")
+    message(STATUS " You can disable it with 'cmake -DENABLE_CUDA=OFF ..'")
 else()
     message(STATUS "NVIDIA CUDA GPU Acceleration will be not enabled.")
-    message(STATUS "Enable it with 'cmake -DENABLE_CUDA=ON ../' to add support for GPU-based acceleration using CUDA.")
+    message(STATUS " Enable it with 'cmake -DENABLE_CUDA=ON ..' to add support for GPU-based acceleration using CUDA.")
 endif()
 
 
@@ -1592,7 +1644,7 @@ endif()
 ###############################################################################
 if(ENABLE_RAW_UDP)
     message(STATUS "High-optimized custom UDP IP packet source is enabled.")
-    message(STATUS "You can disable it with 'cmake -DENABLE_RAW_UDP=OFF ../'")
+    message(STATUS " You can disable it with 'cmake -DENABLE_RAW_UDP=OFF ..'")
     find_package(PCAP)
     if(NOT PCAP_FOUND)
         message(FATAL_ERROR "PCAP required to compile custom UDP packet sample source (with ENABLE_RAW_UDP=ON)")
@@ -1606,10 +1658,10 @@ endif()
 ###############################################################################
 if(ENABLE_FPGA)
     message(STATUS "FPGA Acceleration will be enabled.")
-    message(STATUS "You can disable it with 'cmake -DENABLE_FPGA=OFF ../'")
+    message(STATUS " You can disable it with 'cmake -DENABLE_FPGA=OFF ..'")
 else()
     message(STATUS "Fpga Acceleration will be not enabled.")
-    message(STATUS "Enable it with 'cmake -DENABLE_FPGA=ON ../' to add support for GPU-based acceleration using the FPGA.")
+    message(STATUS " Enable it with 'cmake -DENABLE_FPGA=ON ..' to add support for GPU-based acceleration using the FPGA.")
 endif()
 
 
@@ -1659,7 +1711,7 @@ if(ENABLE_OSMOSDR)
     find_package(GROSMOSDR)
     if(GROSMOSDR_FOUND)
         message(STATUS "The driver for OsmoSDR and other front-ends (HackRF, bladeRF, Realtek's RTL2832U-based dongles, etc.) will be compiled.")
-        message(STATUS "You can disable it with 'cmake -DENABLE_OSMOSDR=OFF ../'")
+        message(STATUS " You can disable it with 'cmake -DENABLE_OSMOSDR=OFF ..'")
     else()
         if(ENABLE_PACKAGING)
             message(WARNING "gr-osmosdr has not been found. Source blocks depending on it will NOT be built.")
@@ -1669,7 +1721,7 @@ if(ENABLE_OSMOSDR)
     endif()
 else()
     message(STATUS "The (optional) driver for OsmoSDR and related front-ends is not enabled.")
-    message(STATUS "Enable it with 'cmake -DENABLE_OSMOSDR=ON ../' to add support for OsmoSDR and other front-ends (HackRF, bladeRF, Realtek's RTL2832U-based USB dongles, etc.)")
+    message(STATUS " Enable it with 'cmake -DENABLE_OSMOSDR=ON ..' to add support for OsmoSDR and other front-ends (HackRF, bladeRF, Realtek's RTL2832U-based USB dongles, etc.)")
 endif()
 
 
@@ -1680,6 +1732,7 @@ endif()
 ##############################################
 if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
     find_package(GRIIO)
+    find_package(LIBIIO)
 endif()
 
 
@@ -1707,10 +1760,10 @@ endif()
 
 if(ENABLE_FLEXIBAND)
     message(STATUS "The Teleorbit Flexiband front-end source will be compiled.")
-    message(STATUS "You can disable it with 'cmake -DENABLE_FLEXIBAND=OFF ../'")
+    message(STATUS " You can disable it with 'cmake -DENABLE_FLEXIBAND=OFF ..'")
 else()
     message(STATUS "The (optional) Teleorbit Flexiband front-end driver adapter is not enabled.")
-    message(STATUS "Enable it with 'cmake -DENABLE_FLEXIBAND=ON ../' to add support for the Teleorbit Flexiband front-end.")
+    message(STATUS " Enable it with 'cmake -DENABLE_FLEXIBAND=ON ..' to add support for the Teleorbit Flexiband front-end.")
 endif()
 if(ENABLE_FLEXIBAND)
     find_package(TELEORBIT)
@@ -1732,11 +1785,11 @@ if(GN3S_DRIVER)
 endif()
 if(ENABLE_GN3S)
     message(STATUS "The GN3S driver will be compiled.")
-    message(STATUS "You can disable it with 'cmake -DENABLE_GN3S=OFF ../'")
+    message(STATUS " You can disable it with 'cmake -DENABLE_GN3S=OFF ..'")
     find_package(GRGN3S QUIET)
 else()
     message(STATUS "The (optional and experimental) GN3S driver is not enabled.")
-    message(STATUS "Enable it with 'cmake -DENABLE_GN3S=ON ../' to add support for the GN3S dongle.")
+    message(STATUS " Enable it with 'cmake -DENABLE_GN3S=ON ..' to add support for the GN3S dongle.")
 endif()
 
 
@@ -1754,11 +1807,11 @@ endif()
 
 if(ENABLE_ARRAY)
     message(STATUS "CTTC's Antenna Array front-end driver will be compiled.")
-    message(STATUS "You can disable it with 'cmake -DENABLE_ARRAY=OFF ../'")
+    message(STATUS " You can disable it with 'cmake -DENABLE_ARRAY=OFF ..'")
     find_package(GRDBFCTTC QUIET)
 else()
     message(STATUS "The (optional) CTTC's Antenna Array front-end driver is not enabled.")
-    message(STATUS "Enable it with 'cmake -DENABLE_ARRAY=ON ../' to add support for the CTTC experimental array front-end.")
+    message(STATUS " Enable it with 'cmake -DENABLE_ARRAY=ON ..' to add support for the CTTC experimental array front-end.")
 endif()
 
 
@@ -1770,11 +1823,11 @@ if(ENABLE_GPERFTOOLS)
     find_package(GPERFTOOLS)
     if(NOT GPERFTOOLS_FOUND)
         message(STATUS "Although ENABLE_GPERFTOOLS has been set to ON, GPerftools has not been found.")
-        message(STATUS "Binaries will be compiled without 'tcmalloc' and 'profiler' libraries.")
-        message(STATUS "You can install GPerftools from https://github.com/gperftools/gperftools")
+        message(STATUS " Binaries will be compiled without 'tcmalloc' and 'profiler' libraries.")
+        message(STATUS " You can install GPerftools from https://github.com/gperftools/gperftools")
     else()
         message(STATUS "GPerftools libraries found.")
-        message(STATUS "Binaries will be compiled with 'tcmalloc' and 'profiler' libraries.")
+        message(STATUS " Binaries will be compiled with 'tcmalloc' and 'profiler' libraries.")
     endif()
 endif()
 if(ENABLE_GPERFTOOLS)
@@ -1782,10 +1835,10 @@ if(ENABLE_GPERFTOOLS)
     # See https://github.com/gperftools/gperftools/blob/master/README
     if(GPERFTOOLS_FOUND)
         if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
-            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free")
+            add_compile_options(-fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free)
         endif()
         if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -fno-builtin")
+            add_compile_options(-fno-builtin)
         endif()
     endif()
 endif()
@@ -1796,7 +1849,7 @@ endif()
 # GNU gprof (OPTIONAL) - https://sourceware.org/binutils/docs/gprof/
 ########################################################################
 if(ENABLE_GPROF)
-    set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -pg")
+    add_compile_options(-pg)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pg")
 endif()
@@ -1805,92 +1858,48 @@ endif()
 ########################################################################
 # Set compiler flags
 ########################################################################
-# Support of C++17 is still not possible due to pm_remez.h (solved in GNU Radio 3.8)
-# Enable C++14 support in GCC >= 6.1.1
-# Fallback to C++11 when using GCC < 6.1.1
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
-        set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
+    # Add warning flags
+    # For "-Wall" see https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
+    set(cxx_warning_flags -Wall -Wextra)
+    if(NOT (CMAKE_VERSION VERSION_LESS "3.3"))
+        add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:${cxx_warning_flags}>")
     else()
-        # if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
-            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
-        # else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
-            # set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++17")
-        # endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
+        add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:${cxx_warning_flags}>")
     endif()
-    set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wall -Wextra")  #Add warning flags: For "-Wall" see https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
-endif()
-
-# Support of C++17 is still not possible due to pm_remez.h (solved in GNU Radio 3.8)
-# Enable C++14 support in Clang >= 3.5.0 or AppleClang >= 600
-# Fallback to C++11 if older version
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    if(OS_IS_MACOSX)
-        # See https://trac.macports.org/wiki/XcodeVersionInfo for Apple Clang version equivalences
-        if(CLANG_VERSION VERSION_LESS "600")
-            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
-        else()
-            # if(CLANG_VERSION VERSION_LESS "900")
-            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
-            # else(CLANG_VERSION VERSION_LESS "900")
-            # set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++17")
-            # endif(CLANG_VERSION VERSION_LESS "900")
-        endif()
-    else()
-        if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
-            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11")
-        else()
-            # if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.0.0")
-            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++14")
-            # else(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.0.0")
-            # set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++17")
-            # endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.0.0")
-        endif()
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.0")
+        add_compile_options(-Wno-missing-field-initializers)
     endif()
-
-    if(OS_IS_MACOSX)
-        set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -stdlib=libc++")
-    endif()
-endif()
-
-if(NOT ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang")) AND NOT WIN32)
-    if(NOT (CMAKE_VERSION VERSION_LESS "3.1"))
-        set(CMAKE_C_STANDARD 11)
-        set(CMAKE_CXX_STANDARD 11)
+    if(CMAKE_CROSSCOMPILING)
+        add_compile_options(-Wno-psabi)
     endif()
 endif()
 
 # Processor-architecture related flags
 # See https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
-if(NOT ARCH_COMPILER_FLAGS)
-    if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
-      if(OS_IS_MACOSX)
-          set(ARCH_COMPILER_FLAGS "-march=corei7 -mfpmath=sse")
-      else()
-          if(NOT ${ENABLE_GENERIC_ARCH})
-              if(IS_ARM) # ARM-specific options (https://gcc.gnu.org/onlinedocs/gcc/ARM-Options.html)
-                  if(NOT CMAKE_CROSSCOMPILING)
-                      if(ARM_VERSION STREQUAL "arm")
-                          # Unknown arm version - try our best to detect
-                          set(ARCH_COMPILER_FLAGS "-mcpu=native")
-                      else()
-                          set(ARCH_COMPILER_FLAGS "-march=${ARM_VERSION}")
-                      endif()
-                  endif()
-              else()
-                  set(ARCH_COMPILER_FLAGS "-march=native -mfpmath=sse")
-              endif()
-          endif()
-      endif()
+if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
+    if(OS_IS_MACOSX)
+        add_compile_options(-march=corei7 -mfpmath=sse)
+    else()
+        if(NOT ENABLE_GENERIC_ARCH)
+            if(IS_ARM)
+                # ARM-specific options
+                # See https://gcc.gnu.org/onlinedocs/gcc/ARM-Options.html
+                if(NOT CMAKE_CROSSCOMPILING)
+                    if(ARM_VERSION STREQUAL "arm")
+                        # Unknown arm version - try our best to detect
+                        add_compile_options(-mcpu=native)
+                    else()
+                        add_compile_options(-march=${ARM_VERSION})
+                    endif()
+                endif()
+            else()
+                add_compile_options(-march=native -mfpmath=sse)
+            endif()
+        endif()
     endif()
 endif()
-set(MY_CXX_FLAGS "${MY_CXX_FLAGS} ${ARCH_COMPILER_FLAGS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MY_CXX_FLAGS}")
 
-if((CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
-    # https://gcc.gnu.org/wiki/Visibility
-    add_definitions(-fvisibility=hidden)
-endif()
 
 
 ########################################################################
@@ -1907,7 +1916,12 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
             message(STATUS "clang-tidy not found.")
         else()
             message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
-            set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" "-checks=*")
+            if(ENABLE_CLANG_TIDY)
+                message(STATUS " clang-tidy will be used in compilation. You can disable it with 'cmake -DENABLE_CLANG_TIDY=OFF ..'")
+            else()
+                message(STATUS " You can enable clang-tidy usage in compilation with 'cmake -DENABLE_CLANG_TIDY=ON ..'")
+            endif()
+            set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" "-fix")
             set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
         endif()
     endif()

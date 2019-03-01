@@ -43,7 +43,7 @@ template <typename Data>
  * boost_thread to perform MUTEX based on the code available at
  * http://www.justsoftwaresolutions.co.uk/threading/implementing-a-thread-safe-queue-using-condition-variables.html
  */
-class concurrent_queue
+class Concurrent_Queue
 {
 private:
     std::queue<Data> the_queue;

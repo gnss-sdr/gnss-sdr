@@ -37,14 +37,23 @@ target_link_libraries(obs_gr_blocks
     PUBLIC
         Boost::boost
         Gnuradio::blocks
-        gnss_system_parameters
+        core_system_parameters
     PRIVATE
         Gflags::gflags
         Glog::glog
         Boost::filesystem
         Matio::matio
-        gnss_sp_libs
+        algorithms_libs
 )
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(obs_gr_blocks
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
 
 set_property(TARGET obs_gr_blocks
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES

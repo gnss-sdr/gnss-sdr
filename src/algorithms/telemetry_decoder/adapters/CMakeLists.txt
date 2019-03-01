@@ -20,12 +20,12 @@
 set(TELEMETRY_DECODER_ADAPTER_SOURCES
     gps_l1_ca_telemetry_decoder.cc
     gps_l2c_telemetry_decoder.cc
-    gps_l5_telemetry_decoder.cc 
+    gps_l5_telemetry_decoder.cc
     galileo_e1b_telemetry_decoder.cc
     sbas_l1_telemetry_decoder.cc
     galileo_e5a_telemetry_decoder.cc
     glonass_l1_ca_telemetry_decoder.cc
-    glonass_l2_ca_telemetry_decoder.cc 
+    glonass_l2_ca_telemetry_decoder.cc
     beidou_b1i_telemetry_decoder.cc
     beidou_b3i_telemetry_decoder.cc
 )
@@ -33,7 +33,7 @@ set(TELEMETRY_DECODER_ADAPTER_SOURCES
 set(TELEMETRY_DECODER_ADAPTER_HEADERS
     gps_l1_ca_telemetry_decoder.h
     gps_l2c_telemetry_decoder.h
-    gps_l5_telemetry_decoder.h 
+    gps_l5_telemetry_decoder.h
     galileo_e1b_telemetry_decoder.h
     sbas_l1_telemetry_decoder.h
     galileo_e5a_telemetry_decoder.h
@@ -55,15 +55,28 @@ add_library(telemetry_decoder_adapters
 
 target_link_libraries(telemetry_decoder_adapters
     PUBLIC
-    telemetry_decoder_gr_blocks
-    gnss_system_parameters
-        gnss_rx
+        telemetry_decoder_gr_blocks
+        core_system_parameters
     PRIVATE
         Gflags::gflags
         Glog::glog
         Gnuradio::runtime
-        telemetry_decoder_lib
+        telemetry_decoder_libs
 )
+
+target_include_directories(telemetry_decoder_adapters
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+)
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(telemetry_decoder_adapters
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
 
 set_property(TARGET telemetry_decoder_adapters
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES

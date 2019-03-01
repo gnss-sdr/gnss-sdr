@@ -115,6 +115,7 @@ void Gps_Navigation_Message::reset()
     d_beta1 = 0.0;
     d_beta2 = 0.0;
     d_beta3 = 0.0;
+    d_A2 = 0.0;
     d_A1 = 0.0;
     d_A0 = 0.0;
     d_t_OT = 0;

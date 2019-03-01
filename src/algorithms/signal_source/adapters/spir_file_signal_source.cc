@@ -57,8 +57,14 @@ SpirFileSignalSource::SpirFileSignalSource(ConfigurationInterface* configuration
     filename_ = configuration->property(role + ".filename", default_filename);
 
     // override value with commandline flag, if present
-    if (FLAGS_signal_source != "-") filename_ = FLAGS_signal_source;
-    if (FLAGS_s != "-") filename_ = FLAGS_s;
+    if (FLAGS_signal_source != "-")
+        {
+            filename_ = FLAGS_signal_source;
+        }
+    if (FLAGS_s != "-")
+        {
+            filename_ = FLAGS_s;
+        }
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     repeat_ = configuration->property(role + ".repeat", false);

@@ -29,10 +29,11 @@
  */
 
 #include "tracking_true_obs_reader.h"
+#include <exception>
 #include <iostream>
 #include <utility>
 
-bool tracking_true_obs_reader::read_binary_obs()
+bool Tracking_True_Obs_Reader::read_binary_obs()
 {
     try
         {
@@ -50,7 +51,7 @@ bool tracking_true_obs_reader::read_binary_obs()
 }
 
 
-bool tracking_true_obs_reader::restart()
+bool Tracking_True_Obs_Reader::restart()
 {
     if (d_dump_file.is_open())
         {
@@ -62,7 +63,7 @@ bool tracking_true_obs_reader::restart()
 }
 
 
-int64_t tracking_true_obs_reader::num_epochs()
+int64_t Tracking_True_Obs_Reader::num_epochs()
 {
     std::ifstream::pos_type size;
     int number_of_vars_in_epoch = 5;
@@ -78,7 +79,7 @@ int64_t tracking_true_obs_reader::num_epochs()
 }
 
 
-bool tracking_true_obs_reader::open_obs_file(std::string out_file)
+bool Tracking_True_Obs_Reader::open_obs_file(std::string out_file)
 {
     if (d_dump_file.is_open() == false)
         {
@@ -92,7 +93,7 @@ bool tracking_true_obs_reader::open_obs_file(std::string out_file)
                 }
             catch (const std::ifstream::failure &e)
                 {
-                    std::cout << "Problem opening Tracking dump Log file: " << d_dump_filename.c_str() << std::endl;
+                    std::cout << "Problem opening Tracking dump Log file: " << d_dump_filename << std::endl;
                     return false;
                 }
         }
@@ -102,7 +103,7 @@ bool tracking_true_obs_reader::open_obs_file(std::string out_file)
         }
 }
 
-void tracking_true_obs_reader::close_obs_file()
+void Tracking_True_Obs_Reader::close_obs_file()
 {
     if (d_dump_file.is_open() == true)
         {
@@ -110,10 +111,21 @@ void tracking_true_obs_reader::close_obs_file()
         }
 }
 
-tracking_true_obs_reader::~tracking_true_obs_reader()
+Tracking_True_Obs_Reader::~Tracking_True_Obs_Reader()
 {
-    if (d_dump_file.is_open() == true)
+    try
         {
-            d_dump_file.close();
+            if (d_dump_file.is_open() == true)
+                {
+                    d_dump_file.close();
+                }
+        }
+    catch (const std::ifstream::failure &e)
+        {
+            std::cerr << "Problem closing Tracking dump Log file: " << d_dump_filename << '\n';
+        }
+    catch (const std::exception &e)
+        {
+            std::cerr << e.what() << '\n';
         }
 }

@@ -71,27 +71,45 @@ list(SORT TRACKING_LIB_SOURCES)
 
 source_group(Headers FILES ${TRACKING_LIB_HEADERS})
 
-add_library(tracking_lib ${TRACKING_LIB_SOURCES} ${TRACKING_LIB_HEADERS})
+add_library(tracking_libs ${TRACKING_LIB_SOURCES} ${TRACKING_LIB_HEADERS})
 
-target_link_libraries(tracking_lib
+target_link_libraries(tracking_libs
     PUBLIC
         Armadillo::armadillo
         Boost::boost
         Gnuradio::runtime
         Volkgnsssdr::volkgnsssdr
-        gnss_system_parameters
+        core_system_parameters
         ${OPT_TRACKING_LIBRARIES}
     PRIVATE
         Gflags::gflags
         Glog::glog
 )
 
-target_include_directories(tracking_lib
+target_include_directories(tracking_libs
     PUBLIC
         ${OPT_TRACKING_INCLUDES}
 )
 
-set_property(TARGET tracking_lib
+if(OS_IS_MACOSX)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")  # not AppleClang
+        target_compile_definitions(tracking_libs
+            PUBLIC
+                -DBOOST_ASIO_HAS_STD_STRING_VIEW
+        )
+    endif()
+endif()
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(tracking_libs
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+set_property(TARGET tracking_libs
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

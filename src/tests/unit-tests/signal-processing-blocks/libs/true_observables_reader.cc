@@ -29,10 +29,11 @@
  */
 
 #include "true_observables_reader.h"
+#include <exception>
 #include <iostream>
 #include <utility>
 
-bool true_observables_reader::read_binary_obs()
+bool True_Observables_Reader::read_binary_obs()
 {
     try
         {
@@ -55,7 +56,7 @@ bool true_observables_reader::read_binary_obs()
 }
 
 
-bool true_observables_reader::restart()
+bool True_Observables_Reader::restart()
 {
     if (d_dump_file.is_open())
         {
@@ -67,7 +68,7 @@ bool true_observables_reader::restart()
 }
 
 
-int64_t true_observables_reader::num_epochs()
+int64_t True_Observables_Reader::num_epochs()
 {
     std::ifstream::pos_type size;
     int number_of_vars_in_epoch = 6 * 12;
@@ -83,7 +84,7 @@ int64_t true_observables_reader::num_epochs()
 }
 
 
-bool true_observables_reader::open_obs_file(std::string out_file)
+bool True_Observables_Reader::open_obs_file(std::string out_file)
 {
     if (d_dump_file.is_open() == false)
         {
@@ -97,7 +98,7 @@ bool true_observables_reader::open_obs_file(std::string out_file)
                 }
             catch (const std::ifstream::failure &e)
                 {
-                    std::cout << "Problem opening True observables Log file: " << d_dump_filename.c_str() << std::endl;
+                    std::cout << "Problem opening true Observables Log file: " << d_dump_filename << std::endl;
                     return false;
                 }
         }
@@ -108,10 +109,21 @@ bool true_observables_reader::open_obs_file(std::string out_file)
 }
 
 
-true_observables_reader::~true_observables_reader()
+True_Observables_Reader::~True_Observables_Reader()
 {
-    if (d_dump_file.is_open() == true)
+    try
         {
-            d_dump_file.close();
+            if (d_dump_file.is_open() == true)
+                {
+                    d_dump_file.close();
+                }
+        }
+    catch (const std::ifstream::failure &e)
+        {
+            std::cerr << "Problem closing true Observables dump Log file: " << d_dump_filename << '\n';
+        }
+    catch (const std::exception &e)
+        {
+            std::cerr << e.what() << '\n';
         }
 }

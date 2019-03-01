@@ -31,16 +31,6 @@
  */
 
 
-#include <boost/shared_ptr.hpp>
-#include <gnuradio/analog/sig_source_waveform.h>
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/top_block.h>
-#include <chrono>
-#ifdef GR_GREATER_38
-#include <gnuradio/analog/sig_source.h>
-#else
-#include <gnuradio/analog/sig_source_c.h>
-#endif
 #include "configuration_interface.h"
 #include "fir_filter.h"
 #include "gen_signal_source.h"
@@ -51,8 +41,19 @@
 #include "in_memory_configuration.h"
 #include "signal_generator.h"
 #include "signal_generator_c.h"
+#include <boost/shared_ptr.hpp>
+#include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/msg_queue.h>
+#include <gnuradio/top_block.h>
+#include <chrono>
+#include <thread>
+#ifdef GR_GREATER_38
+#include <gnuradio/analog/sig_source.h>
+#else
+#include <gnuradio/analog/sig_source_c.h>
+#endif
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CaPcpsOpenClAcquisitionGSoC2013Test_msg_rx;
@@ -147,7 +148,7 @@ protected:
     size_t item_size;
     bool stop;
     int message;
-    boost::thread ch_thread;
+    std::thread ch_thread;
 
     unsigned int integration_time_ms = 0;
     unsigned int fs_in = 0;
@@ -348,7 +349,7 @@ void GpsL1CaPcpsOpenClAcquisitionGSoC2013Test::config_2()
 void GpsL1CaPcpsOpenClAcquisitionGSoC2013Test::start_queue()
 {
     stop = false;
-    ch_thread = boost::thread(&GpsL1CaPcpsOpenClAcquisitionGSoC2013Test::wait_message, this);
+    ch_thread = std::thread(&GpsL1CaPcpsOpenClAcquisitionGSoC2013Test::wait_message, this);
 }
 
 

@@ -30,14 +30,14 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_unpack_byte_4bit_samples_H
-#define GNSS_SDR_unpack_byte_4bit_samples_H
+#ifndef GNSS_SDR_UNPACK_BYTE_4BIT_SAMPLES_H
+#define GNSS_SDR_UNPACK_BYTE_4BIT_SAMPLES_H
 
 #include <gnuradio/sync_interpolator.h>
 
 class unpack_byte_4bit_samples;
 
-typedef boost::shared_ptr<unpack_byte_4bit_samples> unpack_byte_4bit_samples_sptr;
+using unpack_byte_4bit_samples_sptr = boost::shared_ptr<unpack_byte_4bit_samples>;
 
 unpack_byte_4bit_samples_sptr make_unpack_byte_4bit_samples();
 

@@ -37,7 +37,7 @@
 
 class byte_x2_to_complex_byte;
 
-typedef boost::shared_ptr<byte_x2_to_complex_byte> byte_x2_to_complex_byte_sptr;
+using byte_x2_to_complex_byte_sptr = boost::shared_ptr<byte_x2_to_complex_byte>;
 
 byte_x2_to_complex_byte_sptr make_byte_x2_to_complex_byte();
 

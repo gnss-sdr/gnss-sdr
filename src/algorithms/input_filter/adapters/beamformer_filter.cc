@@ -67,7 +67,7 @@ BeamformerFilter::BeamformerFilter(
             file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
             DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
         }
-    samples_ = 0;
+    samples_ = 0ULL;
     if (in_stream_ > 8)
         {
             LOG(ERROR) << "This implementation only supports eight input streams";

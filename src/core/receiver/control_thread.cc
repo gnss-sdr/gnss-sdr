@@ -54,11 +54,11 @@
 #include "rtklib_conversions.h"
 #include "rtklib_ephemeris.h"
 #include "rtklib_rtkcmn.h"
-#include <boost/chrono.hpp>
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
 #include <gnuradio/message.h>
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <iostream>
 #include <limits>
@@ -70,15 +70,15 @@
 #include <utility>
 
 
-extern concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
-extern concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
+extern Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
+extern Concurrent_Queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 
 using google::LogMessage;
 
 
 ControlThread::ControlThread()
 {
-    if (!FLAGS_c.compare("-"))
+    if (FLAGS_c == "-")
         {
             configuration_ = std::make_shared<FileConfiguration>(FLAGS_config_file);
         }
@@ -138,7 +138,9 @@ void ControlThread::init()
                 {
                     vect.push_back(d);
                     if ((ss.peek() == ',') or (ss.peek() == ' '))
-                        ss.ignore();
+                        {
+                            ss.ignore();
+                        }
                 }
             // fill agnss_ref_location_
             if (vect.size() >= 2)
@@ -191,7 +193,20 @@ void ControlThread::init()
 
 ControlThread::~ControlThread()  // NOLINT(modernize-use-equals-default)
 {
-    if (msqid != -1) msgctl(msqid, IPC_RMID, nullptr);
+    if (msqid != -1)
+        {
+            msgctl(msqid, IPC_RMID, nullptr);
+        }
+
+    if (sysv_queue_thread_.joinable())
+        {
+            sysv_queue_thread_.join();
+        }
+
+    if (cmd_interface_thread_.joinable())
+        {
+            cmd_interface_thread_.detach();
+        }
 }
 
 
@@ -251,12 +266,12 @@ int ControlThread::run()
     // launch GNSS assistance process AFTER the flowgraph is running because the GNU Radio asynchronous queues must be already running to transport msgs
     assist_GNSS();
     // start the keyboard_listener thread
-    keyboard_thread_ = boost::thread(&ControlThread::keyboard_listener, this);
-    sysv_queue_thread_ = boost::thread(&ControlThread::sysv_queue_listener, this);
+    keyboard_thread_ = std::thread(&ControlThread::keyboard_listener, this);
+    sysv_queue_thread_ = std::thread(&ControlThread::sysv_queue_listener, this);
 
     // start the telecommand listener thread
     cmd_interface_.set_pvt(flowgraph_->get_pvt());
-    cmd_interface_thread_ = boost::thread(&ControlThread::telecommand_listener, this);
+    cmd_interface_thread_ = std::thread(&ControlThread::telecommand_listener, this);
 
     bool enable_FPGA = configuration_->property("Channel.enable_FPGA", false);
     if (enable_FPGA == true)
@@ -269,19 +284,20 @@ int ControlThread::run()
         {
             //TODO re-enable the blocking read messages functions and fork the process
             read_control_messages();
-            if (control_messages_ != nullptr) process_control_messages();
+            if (control_messages_ != nullptr)
+                {
+                    process_control_messages();
+                }
         }
     std::cout << "Stopping GNSS-SDR, please wait!" << std::endl;
     flowgraph_->stop();
     stop_ = true;
     flowgraph_->disconnect();
 
-    // Join keyboard thread
-    keyboard_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
-    sysv_queue_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
-    cmd_interface_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1000));
-
-    LOG(INFO) << "Flowgraph stopped";
+    // Terminate keyboard thread
+    pthread_t id = keyboard_thread_.native_handle();
+    keyboard_thread_.detach();
+    pthread_cancel(id);
 
     if (restart_)
         {
@@ -292,7 +308,7 @@ int ControlThread::run()
 }
 
 
-void ControlThread::set_control_queue(const gr::msg_queue::sptr &control_queue)
+void ControlThread::set_control_queue(const gr::msg_queue::sptr control_queue)  // NOLINT(performance-unnecessary-value-param)
 {
     if (flowgraph_->running())
         {
@@ -776,9 +792,12 @@ void ControlThread::read_control_messages()
 // Apply the corresponding control actions
 void ControlThread::process_control_messages()
 {
-    for (auto & i : *control_messages_)
+    for (auto &i : *control_messages_)
         {
-            if (stop_) break;
+            if (stop_)
+                {
+                    break;
+                }
             if (i->who == 200)
                 {
                     apply_action(i->what);
@@ -863,7 +882,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
     // 2. Compute rx GPS time from UTC time
     gtime_t utc_gtime;
     utc_gtime.time = rx_utc_time;
-    utc_gtime.sec = 0;
+    utc_gtime.sec = 0.0;
     gtime_t gps_gtime = utc2gpst(utc_gtime);
 
     // 3. loop through all the available ephemeris or almanac and compute satellite positions and elevations
@@ -881,7 +900,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
               << "UTC, assuming RX position " << LLH(0) << " [deg], " << LLH(1) << " [deg], " << LLH(2) << " [m]" << std::endl;
 
     std::map<int, Gps_Ephemeris> gps_eph_map = pvt_ptr->get_gps_ephemeris();
-    for (auto & it : gps_eph_map)
+    for (auto &it : gps_eph_map)
         {
             eph_t rtklib_eph = eph_to_rtklib(it.second);
             double r_sat[3];
@@ -904,7 +923,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
         }
 
     std::map<int, Galileo_Ephemeris> gal_eph_map = pvt_ptr->get_galileo_ephemeris();
-    for (auto & it : gal_eph_map)
+    for (auto &it : gal_eph_map)
         {
             eph_t rtklib_eph = eph_to_rtklib(it.second);
             double r_sat[3];
@@ -927,13 +946,14 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
         }
 
     std::map<int, Gps_Almanac> gps_alm_map = pvt_ptr->get_gps_almanac();
-    for (auto & it : gps_alm_map)
+    for (auto &it : gps_alm_map)
         {
             alm_t rtklib_alm = alm_to_rtklib(it.second);
             double r_sat[3];
             double clock_bias_s;
             gtime_t aux_gtime;
             aux_gtime.time = fmod(utc2gpst(gps_gtime).time + 345600, 604800);
+            aux_gtime.sec = 0.0;
             alm2pos(aux_gtime, &rtklib_alm, &r_sat[0], &clock_bias_s);
             double Az, El, dist_m;
             arma::vec r_sat_eb_e = arma::vec{r_sat[0], r_sat[1], r_sat[2]};
@@ -954,13 +974,14 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
         }
 
     std::map<int, Galileo_Almanac> gal_alm_map = pvt_ptr->get_galileo_almanac();
-    for (auto & it : gal_alm_map)
+    for (auto &it : gal_alm_map)
         {
             alm_t rtklib_alm = alm_to_rtklib(it.second);
             double r_sat[3];
             double clock_bias_s;
             gtime_t gal_gtime;
             gal_gtime.time = fmod(utc2gpst(gps_gtime).time + 345600, 604800);
+            gal_gtime.sec = 0.0;
             alm2pos(gal_gtime, &rtklib_alm, &r_sat[0], &clock_bias_s);
             double Az, El, dist_m;
             arma::vec r_sat_eb_e = arma::vec{r_sat[0], r_sat[1], r_sat[2]};
@@ -998,7 +1019,10 @@ void ControlThread::gps_acq_assist_data_collector()
     while (stop_ == false)
         {
             global_gps_acq_assist_queue.wait_and_pop(gps_acq);
-            if (gps_acq.i_satellite_PRN == 0) break;
+            if (gps_acq.i_satellite_PRN == 0)
+                {
+                    break;
+                }
 
             // DEBUG MESSAGE
             std::cout << "Acquisition assistance record has arrived from SAT ID "
@@ -1026,7 +1050,7 @@ void ControlThread::sysv_queue_listener()
 {
     typedef struct
     {
-        long mtype;  // required by SysV queue messaging
+        long mtype;  // NOLINT(google-runtime-int) required by SysV queue messaging
         double stop_message;
     } stop_msgbuf;
 
@@ -1080,6 +1104,6 @@ void ControlThread::keyboard_listener()
                         }
                     read_keys = false;
                 }
-            usleep(500000);
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
 }

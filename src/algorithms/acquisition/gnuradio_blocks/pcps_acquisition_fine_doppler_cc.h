@@ -55,13 +55,13 @@
 #include <gnuradio/block.h>
 #include <gnuradio/fft/fft.h>
 #include <gnuradio/gr_complex.h>
+#include <cstdint>
 #include <fstream>
 #include <string>
 
 class pcps_acquisition_fine_doppler_cc;
 
-typedef boost::shared_ptr<pcps_acquisition_fine_doppler_cc>
-    pcps_acquisition_fine_doppler_cc_sptr;
+using pcps_acquisition_fine_doppler_cc_sptr = boost::shared_ptr<pcps_acquisition_fine_doppler_cc>;
 
 pcps_acquisition_fine_doppler_cc_sptr
 pcps_make_acquisition_fine_doppler_cc(const Acq_Conf& conf_);
@@ -87,7 +87,7 @@ private:
     bool start();
 
     Acq_Conf acq_parameters;
-    long d_fs_in;
+    int64_t d_fs_in;
     int d_samples_per_ms;
     int d_max_dwells;
     int d_gnuradio_forecast_samples;

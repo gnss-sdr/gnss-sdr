@@ -21,27 +21,36 @@ set(SIGNAL_GENERATOR_BLOCK_HEADERS signal_generator_c.h)
 
 source_group(Headers FILES ${SIGNAL_GENERATOR_BLOCK_HEADERS})
 
-add_library(signal_generator_blocks
+add_library(signal_generator_gr_blocks
     ${SIGNAL_GENERATOR_BLOCK_SOURCES}
     ${SIGNAL_GENERATOR_BLOCK_HEADERS}
 )
 
-target_link_libraries(signal_generator_blocks
+target_link_libraries(signal_generator_gr_blocks
     PUBLIC
         Boost::boost
         Gnuradio::runtime
-        gnss_system_parameters
+        core_system_parameters
     PRIVATE
-        gnss_sp_libs
         Volkgnsssdr::volkgnsssdr
+        algorithms_libs
 )
 
-target_include_directories(signal_generator_blocks
+target_include_directories(signal_generator_gr_blocks
     PUBLIC
         ${CMAKE_SOURCE_DIR}/src/algorithms/libs
 )
 
-set_property(TARGET signal_generator_blocks
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(signal_generator_gr_blocks
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+set_property(TARGET signal_generator_gr_blocks
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

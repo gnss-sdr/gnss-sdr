@@ -35,7 +35,7 @@
 
 class unpack_intspir_1bit_samples;
 
-typedef boost::shared_ptr<unpack_intspir_1bit_samples> unpack_intspir_1bit_samples_sptr;
+using unpack_intspir_1bit_samples_sptr = boost::shared_ptr<unpack_intspir_1bit_samples>;
 
 unpack_intspir_1bit_samples_sptr make_unpack_intspir_1bit_samples();
 

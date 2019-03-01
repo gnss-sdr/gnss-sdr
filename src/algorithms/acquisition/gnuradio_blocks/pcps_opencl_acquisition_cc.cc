@@ -50,7 +50,6 @@
 
 #include "pcps_opencl_acquisition_cc.h"
 #include "GPS_L1_CA.h"  //GPS_TWO_PI
-#include "control_message_factory.h"
 #include "opencl/fft_base_kernels.h"
 #include "opencl/fft_internal.h"
 #include <glog/logging.h>
@@ -58,6 +57,7 @@
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <algorithm>
+#include <exception>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -187,9 +187,20 @@ pcps_opencl_acquisition_cc::~pcps_opencl_acquisition_cc()
             delete d_fft_if;
         }
 
-    if (d_dump)
+    try
         {
-            d_dump_file.close();
+            if (d_dump)
+                {
+                    d_dump_file.close();
+                }
+        }
+    catch (const std::ofstream::failure &e)
+        {
+            std::cerr << "Problem closing Acquisition dump file: " << d_dump_filename << '\n';
+        }
+    catch (const std::exception &e)
+        {
+            std::cerr << e.what() << '\n';
         }
 }
 

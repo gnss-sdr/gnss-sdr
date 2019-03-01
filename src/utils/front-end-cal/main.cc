@@ -57,7 +57,6 @@
 #include <boost/exception/detail/exception_ptr.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/thread.hpp>
 #include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/file_source.h>
@@ -73,6 +72,7 @@
 #include <exception>
 #include <memory>
 #include <queue>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -81,14 +81,14 @@ using google::LogMessage;
 
 DECLARE_string(log_dir);
 
-concurrent_map<Gps_Ephemeris> global_gps_ephemeris_map;
-concurrent_map<Gps_Iono> global_gps_iono_map;
-concurrent_map<Gps_Utc_Model> global_gps_utc_model_map;
-concurrent_map<Gps_Almanac> global_gps_almanac_map;
-concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
+Concurrent_Map<Gps_Ephemeris> global_gps_ephemeris_map;
+Concurrent_Map<Gps_Iono> global_gps_iono_map;
+Concurrent_Map<Gps_Utc_Model> global_gps_utc_model_map;
+Concurrent_Map<Gps_Almanac> global_gps_almanac_map;
+Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
 bool stop;
-concurrent_queue<int> channel_internal_queue;
+Concurrent_Queue<int> channel_internal_queue;
 GpsL1CaPcpsAcquisitionFineDoppler* acquisition;
 Gnss_Synchro* gnss_synchro;
 std::vector<Gnss_Synchro> gnss_sync_vector;
@@ -398,7 +398,7 @@ int main(int argc, char** argv)
     std::map<int, double> doppler_measurements_map;
     std::map<int, double> cn0_measurements_map;
 
-    boost::thread ch_thread;
+    std::thread ch_thread;
 
     // record startup time
     std::chrono::time_point<std::chrono::system_clock> start, end;
@@ -417,9 +417,9 @@ int main(int argc, char** argv)
             stop = false;
             try
                 {
-                    ch_thread = boost::thread(wait_message);
+                    ch_thread = std::thread(wait_message);
                 }
-            catch (const boost::thread_resource_error& e)
+            catch (const std::exception& e)
                 {
                     LOG(INFO) << "Exception caught (thread resource error)";
                 }
@@ -457,7 +457,7 @@ int main(int argc, char** argv)
                 {
                     ch_thread.join();
                 }
-            catch (const boost::thread_resource_error& e)
+            catch (const std::exception& e)
                 {
                     LOG(INFO) << "Exception caught while joining threads.";
                 }

@@ -48,7 +48,7 @@
 
 class glonass_l1_ca_telemetry_decoder_cc;
 
-typedef boost::shared_ptr<glonass_l1_ca_telemetry_decoder_cc> glonass_l1_ca_telemetry_decoder_cc_sptr;
+using glonass_l1_ca_telemetry_decoder_cc_sptr = boost::shared_ptr<glonass_l1_ca_telemetry_decoder_cc>;
 
 glonass_l1_ca_telemetry_decoder_cc_sptr glonass_l1_ca_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
 

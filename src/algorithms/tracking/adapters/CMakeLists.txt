@@ -26,67 +26,63 @@ if(ENABLE_CUDA)
         ${OPT_TRACKING_ADAPTERS_HEADERS}
         gps_l1_ca_dll_pll_tracking_gpu.h
     )
-    set(OPT_TRACKING_INCLUDE_DIRS
-        ${OPT_TRACKING_INCLUDE_DIRS}
-        ${CUDA_INCLUDE_DIRS}
-    )
 endif()
 
 if(ENABLE_FPGA)
     set(OPT_TRACKING_ADAPTERS_SOURCES
         ${OPT_TRACKING_ADAPTERS_SOURCES}
-                                       gps_l1_ca_dll_pll_tracking_fpga.cc
-                                       gps_l2_m_dll_pll_tracking_fpga.cc
-                                       galileo_e1_dll_pll_veml_tracking_fpga.cc
-                                       galileo_e5a_dll_pll_tracking_fpga.cc
+        gps_l1_ca_dll_pll_tracking_fpga.cc
+        gps_l2_m_dll_pll_tracking_fpga.cc
+        galileo_e1_dll_pll_veml_tracking_fpga.cc
+        galileo_e5a_dll_pll_tracking_fpga.cc
         gps_l5_dll_pll_tracking_fpga.cc
     )
     set(OPT_TRACKING_ADAPTERS_HEADERS
         ${OPT_TRACKING_ADAPTERS_HEADERS}
-                                       gps_l1_ca_dll_pll_tracking_fpga.h
-                                       gps_l2_m_dll_pll_tracking_fpga.h
-                                       galileo_e1_dll_pll_veml_tracking_fpga.h
-                                       galileo_e5a_dll_pll_tracking_fpga.h
+        gps_l1_ca_dll_pll_tracking_fpga.h
+        gps_l2_m_dll_pll_tracking_fpga.h
+        galileo_e1_dll_pll_veml_tracking_fpga.h
+        galileo_e5a_dll_pll_tracking_fpga.h
         gps_l5_dll_pll_tracking_fpga.h
     )
 endif()
 
 set(TRACKING_ADAPTER_SOURCES
-     galileo_e1_dll_pll_veml_tracking.cc
-     galileo_e1_tcp_connector_tracking.cc
-     gps_l1_ca_dll_pll_tracking.cc
-     gps_l1_ca_dll_pll_c_aid_tracking.cc
-     gps_l1_ca_tcp_connector_tracking.cc
-     galileo_e5a_dll_pll_tracking.cc
-     gps_l2_m_dll_pll_tracking.cc
-     glonass_l1_ca_dll_pll_tracking.cc
-     glonass_l1_ca_dll_pll_c_aid_tracking.cc
-     gps_l1_ca_kf_tracking.cc
-     gps_l5_dll_pll_tracking.cc
-     glonass_l2_ca_dll_pll_tracking.cc
-     glonass_l2_ca_dll_pll_c_aid_tracking.cc
-     beidou_b1i_dll_pll_tracking.cc
+    galileo_e1_dll_pll_veml_tracking.cc
+    galileo_e1_tcp_connector_tracking.cc
+    gps_l1_ca_dll_pll_tracking.cc
+    gps_l1_ca_dll_pll_c_aid_tracking.cc
+    gps_l1_ca_tcp_connector_tracking.cc
+    galileo_e5a_dll_pll_tracking.cc
+    gps_l2_m_dll_pll_tracking.cc
+    glonass_l1_ca_dll_pll_tracking.cc
+    glonass_l1_ca_dll_pll_c_aid_tracking.cc
+    gps_l1_ca_kf_tracking.cc
+    gps_l5_dll_pll_tracking.cc
+    glonass_l2_ca_dll_pll_tracking.cc
+    glonass_l2_ca_dll_pll_c_aid_tracking.cc
+    beidou_b1i_dll_pll_tracking.cc
      beidou_b3i_dll_pll_tracking.cc
-     ${OPT_TRACKING_ADAPTERS_SOURCES}
+    ${OPT_TRACKING_ADAPTERS_SOURCES}
 )
 
 set(TRACKING_ADAPTER_HEADERS
-     galileo_e1_dll_pll_veml_tracking.h
-     galileo_e1_tcp_connector_tracking.h
-     gps_l1_ca_dll_pll_tracking.h
-     gps_l1_ca_dll_pll_c_aid_tracking.h
-     gps_l1_ca_tcp_connector_tracking.h
-     galileo_e5a_dll_pll_tracking.h
-     gps_l2_m_dll_pll_tracking.h
-     glonass_l1_ca_dll_pll_tracking.h
-     glonass_l1_ca_dll_pll_c_aid_tracking.h
-     gps_l1_ca_kf_tracking.h
-     gps_l5_dll_pll_tracking.h
-     glonass_l2_ca_dll_pll_tracking.h
-     glonass_l2_ca_dll_pll_c_aid_tracking.h
-     beidou_b1i_dll_pll_tracking.h
+    galileo_e1_dll_pll_veml_tracking.h
+    galileo_e1_tcp_connector_tracking.h
+    gps_l1_ca_dll_pll_tracking.h
+    gps_l1_ca_dll_pll_c_aid_tracking.h
+    gps_l1_ca_tcp_connector_tracking.h
+    galileo_e5a_dll_pll_tracking.h
+    gps_l2_m_dll_pll_tracking.h
+    glonass_l1_ca_dll_pll_tracking.h
+    glonass_l1_ca_dll_pll_c_aid_tracking.h
+    gps_l1_ca_kf_tracking.h
+    gps_l5_dll_pll_tracking.h
+    glonass_l2_ca_dll_pll_tracking.h
+    glonass_l2_ca_dll_pll_c_aid_tracking.h
+    beidou_b1i_dll_pll_tracking.h
      beidou_b3i_dll_pll_tracking.h
-     ${OPT_TRACKING_ADAPTERS_HEADERS}
+    ${OPT_TRACKING_ADAPTERS_HEADERS}
 )
 
 list(SORT TRACKING_ADAPTER_HEADERS)
@@ -101,15 +97,35 @@ add_library(tracking_adapters
 
 target_link_libraries(tracking_adapters
     PUBLIC
-    tracking_gr_blocks
-    gnss_sp_libs
-    gnss_sdr_flags
+        tracking_gr_blocks
+        algorithms_libs
+        gnss_sdr_flags
 )
 
 target_include_directories(tracking_adapters
     PUBLIC
-        ${OPT_TRACKING_INCLUDE_DIRS}
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
 )
+
+if(ENABLE_CUDA)
+    target_link_libraries(tracking_adapters
+        PUBLIC
+            ${CUDA_LIBRARIES}
+    )
+    target_include_directories(tracking_adapters
+        PUBLIC
+            ${CUDA_INCLUDE_DIRS}
+    )
+endif()
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(tracking_adapters
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
 
 set_property(TARGET tracking_adapters
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES

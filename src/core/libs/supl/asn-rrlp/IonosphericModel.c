@@ -206,42 +206,42 @@ memb_beta3_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_alfa0_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_ALFA0_CONSTR_2 = {
 	{ APC_CONSTRAINED,	 8,  8, -128,  127 }	/* (-128..127) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_alfa1_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_ALFA1_CONSTR_3 = {
 	{ APC_CONSTRAINED,	 8,  8, -128,  127 }	/* (-128..127) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_alfa2_constr_4 = {
+static asn_per_constraints_t ASN_PER_MEMB_ALFA2_CONSTR_4 = {
 	{ APC_CONSTRAINED,	 8,  8, -128,  127 }	/* (-128..127) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_alfa3_constr_5 = {
+static asn_per_constraints_t ASN_PER_MEMB_ALFA3_CONSTR_5 = {
 	{ APC_CONSTRAINED,	 8,  8, -128,  127 }	/* (-128..127) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_beta0_constr_6 = {
+static asn_per_constraints_t ASN_PER_MEMB_BETA0_CONSTR_6 = {
 	{ APC_CONSTRAINED,	 8,  8, -128,  127 }	/* (-128..127) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_beta1_constr_7 = {
+static asn_per_constraints_t ASN_PER_MEMB_BETA1_CONSTR_7 = {
 	{ APC_CONSTRAINED,	 8,  8, -128,  127 }	/* (-128..127) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_beta2_constr_8 = {
+static asn_per_constraints_t ASN_PER_MEMB_BETA2_CONSTR_8 = {
 	{ APC_CONSTRAINED,	 8,  8, -128,  127 }	/* (-128..127) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_beta3_constr_9 = {
+static asn_per_constraints_t ASN_PER_MEMB_BETA3_CONSTR_9 = {
 	{ APC_CONSTRAINED,	 8,  8, -128,  127 }	/* (-128..127) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -252,7 +252,7 @@ static asn_TYPE_member_t asn_MBR_IonosphericModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_alfa0_constraint_1,
-		&asn_PER_memb_alfa0_constr_2,
+		&ASN_PER_MEMB_ALFA0_CONSTR_2,
 		0,
 		"alfa0"
 		},
@@ -261,7 +261,7 @@ static asn_TYPE_member_t asn_MBR_IonosphericModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_alfa1_constraint_1,
-		&asn_PER_memb_alfa1_constr_3,
+		&ASN_PER_MEMB_ALFA1_CONSTR_3,
 		0,
 		"alfa1"
 		},
@@ -270,7 +270,7 @@ static asn_TYPE_member_t asn_MBR_IonosphericModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_alfa2_constraint_1,
-		&asn_PER_memb_alfa2_constr_4,
+		&ASN_PER_MEMB_ALFA2_CONSTR_4,
 		0,
 		"alfa2"
 		},
@@ -279,7 +279,7 @@ static asn_TYPE_member_t asn_MBR_IonosphericModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_alfa3_constraint_1,
-		&asn_PER_memb_alfa3_constr_5,
+		&ASN_PER_MEMB_ALFA3_CONSTR_5,
 		0,
 		"alfa3"
 		},
@@ -288,7 +288,7 @@ static asn_TYPE_member_t asn_MBR_IonosphericModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_beta0_constraint_1,
-		&asn_PER_memb_beta0_constr_6,
+		&ASN_PER_MEMB_BETA0_CONSTR_6,
 		0,
 		"beta0"
 		},
@@ -297,7 +297,7 @@ static asn_TYPE_member_t asn_MBR_IonosphericModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_beta1_constraint_1,
-		&asn_PER_memb_beta1_constr_7,
+		&ASN_PER_MEMB_BETA1_CONSTR_7,
 		0,
 		"beta1"
 		},
@@ -306,7 +306,7 @@ static asn_TYPE_member_t asn_MBR_IonosphericModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_beta2_constraint_1,
-		&asn_PER_memb_beta2_constr_8,
+		&ASN_PER_MEMB_BETA2_CONSTR_8,
 		0,
 		"beta2"
 		},
@@ -315,7 +315,7 @@ static asn_TYPE_member_t asn_MBR_IonosphericModel_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_beta3_constraint_1,
-		&asn_PER_memb_beta3_constr_9,
+		&ASN_PER_MEMB_BETA3_CONSTR_9,
 		0,
 		"beta3"
 		},

@@ -1,12 +1,11 @@
 /*!
- * \file beidou_ephemeris.cc
+ * \file beidou_dnav_ephemeris.cc
  * \brief  Interface of a BeiDou EPHEMERIS storage and orbital model functions
- *
  * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.com
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -276,7 +275,7 @@ double Beidou_Dnav_Ephemeris::satellitePosition(double transmitTime)
     double dtr_s = d_A_f0 + d_A_f1 * tk + d_A_f2 * tk * tk;
 
     /* relativity correction */
-    dtr_s -= 2.0 * sqrt(BEIDOU_GM * a) * d_eccentricity * sin(E) / (BEIDOU_C_m_s * BEIDOU_C_m_s);
+    dtr_s -= 2.0 * sqrt(BEIDOU_GM * a) * d_eccentricity * sin(E) / (BEIDOU_C_M_S * BEIDOU_C_M_S);
 
     return dtr_s;
 }

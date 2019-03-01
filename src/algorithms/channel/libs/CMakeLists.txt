@@ -31,18 +31,28 @@ list(SORT CHANNEL_FSM_SOURCES)
 
 source_group(Headers FILES ${CHANNEL_FSM_HEADERS})
 
-add_library(channel_fsm ${CHANNEL_FSM_SOURCES} ${CHANNEL_FSM_HEADERS})
+add_library(channel_libs ${CHANNEL_FSM_SOURCES} ${CHANNEL_FSM_HEADERS})
 
-target_link_libraries(channel_fsm
+target_link_libraries(channel_libs
     PUBLIC
-        gnss_rx
         Gnuradio::runtime
+        core_system_parameters
     PRIVATE
         Gflags::gflags
         Glog::glog
+        core_receiver
 )
 
-set_property(TARGET channel_fsm
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(channel_libs
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+set_property(TARGET channel_libs
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

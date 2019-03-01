@@ -40,7 +40,6 @@
 #include "gps_ephemeris.h"
 #include "gps_navigation_message.h"
 #include <boost/filesystem.hpp>
-#include <boost/thread.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 #include <gnuradio/msg_queue.h>
@@ -50,9 +49,9 @@
 #include <queue>
 
 
-concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
+Concurrent_Queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 
-concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
+Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
 using google::LogMessage;
 

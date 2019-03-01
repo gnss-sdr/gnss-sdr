@@ -28,15 +28,27 @@ add_library(signal_generator_adapters
 
 target_link_libraries(signal_generator_adapters
     PUBLIC
-        signal_generator_blocks
-        Gnuradio::runtime
         Gnuradio::blocks
-        gnss_rx
+        signal_generator_gr_blocks
     PRIVATE
         Gflags::gflags
         Glog::glog
-        gnss_sp_libs
+        algorithms_libs
 )
+
+target_include_directories(signal_generator_adapters
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+)
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(signal_generator_adapters
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
 
 set_property(TARGET signal_generator_adapters
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES

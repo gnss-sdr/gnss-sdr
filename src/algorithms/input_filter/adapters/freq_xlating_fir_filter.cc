@@ -339,7 +339,7 @@ gr::basic_block_sptr FreqXlatingFirFilter::get_left_block()
         {
             return gr_char_to_short_;
         }
-    else if ((taps_item_type_ == "float") && (input_item_type_ == "byte") && (output_item_type_ == "cbyte"))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "byte") && (output_item_type_ == "cbyte"))
         {
             return gr_char_to_short_;
         }
@@ -373,7 +373,7 @@ gr::basic_block_sptr FreqXlatingFirFilter::get_right_block()
         {
             return freq_xlating_fir_filter_scf_;
         }
-    else if ((taps_item_type_ == "float") && (input_item_type_ == "byte") && (output_item_type_ == "cbyte"))
+    if ((taps_item_type_ == "float") && (input_item_type_ == "byte") && (output_item_type_ == "cbyte"))
         {
             return complex_to_complex_byte_;
         }

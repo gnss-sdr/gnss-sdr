@@ -42,7 +42,7 @@
 #include "gnss_synchro.h"
 
 template <typename Data>
-class concurrent_queue;
+class Concurrent_Queue;
 
 /*! \brief This abstract class represents an interface to an acquisition GNSS block.
  *

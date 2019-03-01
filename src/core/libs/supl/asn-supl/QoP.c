@@ -106,22 +106,22 @@ memb_delay_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_horacc_constr_2 = {
+static asn_per_constraints_t ASN_PER_MEMB_HORACC_CONSTR_2 = {
 	{ APC_CONSTRAINED,	 7,  7,  0,  127 }	/* (0..127) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_veracc_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_VERACC_CONSTR_3 = {
 	{ APC_CONSTRAINED,	 7,  7,  0,  127 }	/* (0..127) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_maxLocAge_constr_4 = {
+static asn_per_constraints_t ASN_PER_MEMB_MAX_LOC_AGE_CONSTR_4 = {
 	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_delay_constr_5 = {
+static asn_per_constraints_t ASN_PER_MEMB_DELAY_CONSTR_5 = {
 	{ APC_CONSTRAINED,	 3,  3,  0,  7 }	/* (0..7) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -132,7 +132,7 @@ static asn_TYPE_member_t asn_MBR_QoP_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_horacc_constraint_1,
-		&asn_PER_memb_horacc_constr_2,
+		&ASN_PER_MEMB_HORACC_CONSTR_2,
 		0,
 		"horacc"
 		},
@@ -141,7 +141,7 @@ static asn_TYPE_member_t asn_MBR_QoP_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_veracc_constraint_1,
-		&asn_PER_memb_veracc_constr_3,
+		&ASN_PER_MEMB_VERACC_CONSTR_3,
 		0,
 		"veracc"
 		},
@@ -150,7 +150,7 @@ static asn_TYPE_member_t asn_MBR_QoP_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_maxLocAge_constraint_1,
-		&asn_PER_memb_maxLocAge_constr_4,
+		&ASN_PER_MEMB_MAX_LOC_AGE_CONSTR_4,
 		0,
 		"maxLocAge"
 		},
@@ -159,7 +159,7 @@ static asn_TYPE_member_t asn_MBR_QoP_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_delay_constraint_1,
-		&asn_PER_memb_delay_constr_5,
+		&ASN_PER_MEMB_DELAY_CONSTR_5,
 		0,
 		"delay"
 		},

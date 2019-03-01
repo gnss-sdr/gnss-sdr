@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -27,7 +27,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -50,7 +50,7 @@
 
 class beidou_b1i_telemetry_decoder_cc;
 
-typedef boost::shared_ptr<beidou_b1i_telemetry_decoder_cc> beidou_b1i_telemetry_decoder_cc_sptr;
+using beidou_b1i_telemetry_decoder_cc_sptr = boost::shared_ptr<beidou_b1i_telemetry_decoder_cc>;
 
 beidou_b1i_telemetry_decoder_cc_sptr beidou_b1i_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
 
@@ -64,7 +64,7 @@ beidou_b1i_telemetry_decoder_cc_sptr beidou_b1i_make_telemetry_decoder_cc(const 
 class beidou_b1i_telemetry_decoder_cc : public gr::block
 {
 public:
-    ~beidou_b1i_telemetry_decoder_cc();                //!< Class destructor
+    ~beidou_b1i_telemetry_decoder_cc();                   //!< Class destructor
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
     void set_channel(int channel);                        //!< Set receiver's channel
 
@@ -76,7 +76,7 @@ public:
 
 private:
     friend beidou_b1i_telemetry_decoder_cc_sptr
-	beidou_b1i_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
+    beidou_b1i_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
     beidou_b1i_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
 
     void decode_subframe(double *symbols, int32_t frame_length);
@@ -84,29 +84,29 @@ private:
     void decode_bch15_11_01(const int32_t *bits, int32_t *decbits);
 
 
-    //!< Preamble decoding
-    unsigned short int d_preambles_symbols[BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS];
-    int32_t 	*d_preamble_samples;
-    int32_t 	*d_secondary_code_symbols;
-    uint32_t 	d_samples_per_symbol;
-    int32_t 	d_symbols_per_preamble;
-    int32_t     d_samples_per_preamble;
-    int32_t    d_preamble_period_samples;
-    double 		*d_subframe_symbols;
-    uint32_t 	d_subframe_length_symbols;
-    uint32_t    d_required_symbols;
+    // Preamble decoding
+    uint16_t d_preambles_symbols[BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS];
+    int32_t *d_preamble_samples;
+    int32_t *d_secondary_code_symbols;
+    uint32_t d_samples_per_symbol;
+    int32_t d_symbols_per_preamble;
+    int32_t d_samples_per_preamble;
+    int32_t d_preamble_period_samples;
+    double *d_subframe_symbols;
+    uint32_t d_subframe_length_symbols;
+    uint32_t d_required_symbols;
 
-    //!< Storage for incoming data
+    // Storage for incoming data
     std::deque<float> d_symbol_history;
 
-    //!< Variables for internal functionality
-    uint64_t d_sample_counter;  //!< Sample counter as an index (1,2,3,..etc) indicating number of samples processed
-    uint64_t d_preamble_index;  //!< Index of sample number where preamble was found
-    uint32_t d_stat;                 //!< Status of decoder
-    bool d_flag_frame_sync;              //!< Indicate when a frame sync is achieved
-    bool d_flag_preamble;                //!< Flag indicating when preamble was found
-    int32_t d_CRC_error_counter;             //!< Number of failed CRC operations
-    bool flag_SOW_set;                   //!< Indicates when time of week is set
+    // Variables for internal functionality
+    uint64_t d_sample_counter;    // Sample counter as an index (1,2,3,..etc) indicating number of samples processed
+    uint64_t d_preamble_index;    // Index of sample number where preamble was found
+    uint32_t d_stat;              // Status of decoder
+    bool d_flag_frame_sync;       // Indicate when a frame sync is achieved
+    bool d_flag_preamble;         // Flag indicating when preamble was found
+    int32_t d_CRC_error_counter;  // Number of failed CRC operations
+    bool flag_SOW_set;            // Indicates when time of week is set
 
     //!< Navigation Message variable
     Beidou_Dnav_Navigation_Message d_nav;

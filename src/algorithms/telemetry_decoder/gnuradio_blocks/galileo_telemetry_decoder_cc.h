@@ -50,7 +50,7 @@
 
 class galileo_telemetry_decoder_cc;
 
-typedef boost::shared_ptr<galileo_telemetry_decoder_cc> galileo_telemetry_decoder_cc_sptr;
+using galileo_telemetry_decoder_cc_sptr = boost::shared_ptr<galileo_telemetry_decoder_cc>;
 
 galileo_telemetry_decoder_cc_sptr galileo_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, int frame_type, bool dump);
 

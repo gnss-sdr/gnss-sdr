@@ -64,7 +64,9 @@ void gps_l1_ca_code_gen_int(int32_t* _dest, int32_t _prn, uint32_t _chip_shift)
 
     /* A simple error check */
     if ((prn_idx < 0) || (prn_idx > 51))
-        return;
+        {
+            return;
+        }
 
     for (lcv = 0; lcv < 10; lcv++)
         {

@@ -57,7 +57,7 @@ extern "C"
 
 class gps_l2c_telemetry_decoder_cc;
 
-typedef boost::shared_ptr<gps_l2c_telemetry_decoder_cc> gps_l2c_telemetry_decoder_cc_sptr;
+using gps_l2c_telemetry_decoder_cc_sptr = boost::shared_ptr<gps_l2c_telemetry_decoder_cc>;
 
 gps_l2c_telemetry_decoder_cc_sptr
 gps_l2c_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);

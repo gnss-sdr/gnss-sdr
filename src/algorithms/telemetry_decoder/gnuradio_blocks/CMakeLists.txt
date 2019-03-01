@@ -17,26 +17,26 @@
 #
 
 set(TELEMETRY_DECODER_GR_BLOCKS_SOURCES
-     gps_l1_ca_telemetry_decoder_cc.cc
-     gps_l2c_telemetry_decoder_cc.cc
-     gps_l5_telemetry_decoder_cc.cc
-     sbas_l1_telemetry_decoder_cc.cc
-     glonass_l1_ca_telemetry_decoder_cc.cc
-     glonass_l2_ca_telemetry_decoder_cc.cc
-     galileo_telemetry_decoder_cc.cc
-     beidou_b1i_telemetry_decoder_cc.cc
+    gps_l1_ca_telemetry_decoder_cc.cc
+    gps_l2c_telemetry_decoder_cc.cc
+    gps_l5_telemetry_decoder_cc.cc
+    sbas_l1_telemetry_decoder_cc.cc
+    glonass_l1_ca_telemetry_decoder_cc.cc
+    glonass_l2_ca_telemetry_decoder_cc.cc
+    galileo_telemetry_decoder_cc.cc
+    beidou_b1i_telemetry_decoder_cc.cc
      beidou_b3i_telemetry_decoder_cc.cc
 )
 
 set(TELEMETRY_DECODER_GR_BLOCKS_HEADERS
-     gps_l1_ca_telemetry_decoder_cc.h
-     gps_l2c_telemetry_decoder_cc.h
-     gps_l5_telemetry_decoder_cc.h
-     sbas_l1_telemetry_decoder_cc.h
-     glonass_l1_ca_telemetry_decoder_cc.h
-     glonass_l2_ca_telemetry_decoder_cc.h
-     galileo_telemetry_decoder_cc.h
-     beidou_b1i_telemetry_decoder_cc.h
+    gps_l1_ca_telemetry_decoder_cc.h
+    gps_l2c_telemetry_decoder_cc.h
+    gps_l5_telemetry_decoder_cc.h
+    sbas_l1_telemetry_decoder_cc.h
+    glonass_l1_ca_telemetry_decoder_cc.h
+    glonass_l2_ca_telemetry_decoder_cc.h
+    galileo_telemetry_decoder_cc.h
+    beidou_b1i_telemetry_decoder_cc.h
      beidou_b3i_telemetry_decoder_cc.h
 )
 
@@ -52,17 +52,25 @@ add_library(telemetry_decoder_gr_blocks
 
 target_link_libraries(telemetry_decoder_gr_blocks
     PUBLIC
-    telemetry_decoder_libswiftcnav
-    telemetry_decoder_lib
-    gnss_system_parameters
-        gnss_rx
         Gnuradio::runtime
         Volkgnsssdr::volkgnsssdr
+        telemetry_decoder_libswiftcnav
+        telemetry_decoder_libs
+        core_system_parameters
     PRIVATE
         Boost::boost
         Gflags::gflags
         Glog::glog
 )
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(telemetry_decoder_gr_blocks
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
 
 set_property(TARGET telemetry_decoder_gr_blocks
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES

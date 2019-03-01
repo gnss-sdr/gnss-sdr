@@ -30,11 +30,11 @@
  */
 
 #include "galileo_pcps_8ms_acquisition_cc.h"
-#include "control_message_factory.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <exception>
 #include <sstream>
 #include <utility>
 
@@ -53,6 +53,7 @@ galileo_pcps_8ms_acquisition_cc_sptr galileo_pcps_8ms_make_acquisition_cc(
         new galileo_pcps_8ms_acquisition_cc(sampled_ms, max_dwells, doppler_max, fs_in, samples_per_ms,
             samples_per_code, dump, std::move(dump_filename)));
 }
+
 
 galileo_pcps_8ms_acquisition_cc::galileo_pcps_8ms_acquisition_cc(
     uint32_t sampled_ms,
@@ -126,9 +127,20 @@ galileo_pcps_8ms_acquisition_cc::~galileo_pcps_8ms_acquisition_cc()
     delete d_ifft;
     delete d_fft_if;
 
-    if (d_dump)
+    try
         {
-            d_dump_file.close();
+            if (d_dump)
+                {
+                    d_dump_file.close();
+                }
+        }
+    catch (const std::ofstream::failure &e)
+        {
+            std::cerr << "Problem closing Acquisition dump file: " << d_dump_filename << '\n';
+        }
+    catch (const std::exception &e)
+        {
+            std::cerr << e.what() << '\n';
         }
 }
 

@@ -179,7 +179,8 @@ add_library(signal_source_adapters
 )
 
 target_include_directories(signal_source_adapters
-    PUBLIC ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
 )
 
 target_link_libraries(signal_source_adapters
@@ -188,10 +189,10 @@ target_link_libraries(signal_source_adapters
         Gnuradio::runtime
         Gnuradio::blocks
         signal_source_gr_blocks
-        gnss_sp_libs
-        gnss_rx
-        signal_source_lib
+        signal_source_libs
     PRIVATE
+        gnss_sdr_flags
+        core_system_parameters
         Gflags::gflags
         Glog::glog
         Volk::volk
@@ -251,6 +252,15 @@ endif()
 target_compile_definitions(signal_source_adapters
     PRIVATE -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}"
 )
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(signal_source_adapters
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
 
 set_property(TARGET signal_source_adapters APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

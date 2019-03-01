@@ -33,21 +33,27 @@ list(SORT TELEMETRY_DECODER_LIB_SOURCES)
 
 source_group(Headers FILES ${TELEMETRY_DECODER_LIB_HEADERS})
 
-add_library(telemetry_decoder_lib
+add_library(telemetry_decoder_libs
     ${TELEMETRY_DECODER_LIB_SOURCES}
     ${TELEMETRY_DECODER_LIB_HEADERS}
 )
 
-target_link_libraries(telemetry_decoder_lib
-    PUBLIC
-        gnss_system_parameters
-        gnss_rx
+target_link_libraries(telemetry_decoder_libs
     PRIVATE
         Gflags::gflags
         Glog::glog
 )
 
-set_property(TARGET telemetry_decoder_lib
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(telemetry_decoder_libs
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+set_property(TARGET telemetry_decoder_libs
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

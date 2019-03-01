@@ -304,8 +304,14 @@ arma::vec CTM_to_Euler(const arma::mat &C)
     arma::mat CTM(C);
     arma::vec eul = arma::zeros(3, 1);
     eul(0) = atan2(CTM(1, 2), CTM(2, 2));  // roll
-    if (CTM(0, 2) < -1.0) CTM(0, 2) = -1.0;
-    if (CTM(0, 2) > 1.0) CTM(0, 2) = 1.0;
+    if (CTM(0, 2) < -1.0)
+        {
+            CTM(0, 2) = -1.0;
+        }
+    if (CTM(0, 2) > 1.0)
+        {
+            CTM(0, 2) = 1.0;
+        }
     eul(1) = -asin(CTM(0, 2));             // pitch
     eul(2) = atan2(CTM(0, 1), CTM(0, 0));  // yaw
     return eul;
@@ -614,7 +620,10 @@ void cart2utm(const arma::vec &r_eb_e, int zone, arma::vec &r_enu)
     // Ellipsoidal latitude, longitude to spherical latitude, longitude
     bool neg_geo = false;
 
-    if (B < 0.0) neg_geo = true;
+    if (B < 0.0)
+        {
+            neg_geo = true;
+        }
 
     double Bg_r = fabs(B);
     double res_clensin = clsin(bg, 4, 2.0 * Bg_r);
@@ -732,10 +741,14 @@ int findUtmZone(double latitude_deg, double longitude_deg)
 
     // Check value bounds
     if ((longitude_deg > 180.0) || (longitude_deg < -180.0))
-        std::cout << "Longitude value exceeds limits (-180:180).\n";
+        {
+            std::cout << "Longitude value exceeds limits (-180:180).\n";
+        }
 
     if ((latitude_deg > 84.0) || (latitude_deg < -80.0))
-        std::cout << "Latitude value exceeds limits (-80:84).\n";
+        {
+            std::cout << "Latitude value exceeds limits (-80:84).\n";
+        }
 
     //
     // Find zone
@@ -769,7 +782,9 @@ int findUtmZone(double latitude_deg, double longitude_deg)
         {
             // Correction for zone 32
             if ((longitude_deg >= 3.0) && (longitude_deg < 12.0))
-                utmZone = 32;
+                {
+                    utmZone = 32;
+                }
         }
     return utmZone;
 }

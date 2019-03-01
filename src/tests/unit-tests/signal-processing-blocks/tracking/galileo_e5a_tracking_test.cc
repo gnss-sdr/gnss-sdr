@@ -65,9 +65,7 @@ protected:
         gnss_synchro = Gnss_Synchro();
     }
 
-    ~GalileoE5aTrackingTest()
-    {
-    }
+    ~GalileoE5aTrackingTest() = default;
 
     void init();
 

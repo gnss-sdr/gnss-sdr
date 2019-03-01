@@ -65,9 +65,9 @@ if(Boost_FOUND)
             Boost::serialization
             ${GPSTK_LIBRARY}
             Gflags::gflags
-            gnss_system_parameters
-            gnss_sp_libs
-            gnss_rx
+            algorithms_libs
+            core_receiver
+            core_system_parameters
     )
 
     target_include_directories(rinex2assist
@@ -97,5 +97,5 @@ if(Boost_FOUND)
     )
 else()
     message(STATUS "Boost Iostreams library not found.")
-    message(STATUS "rinex2assist will not be built.")
+    message(STATUS " rinex2assist will not be built.")
 endif()

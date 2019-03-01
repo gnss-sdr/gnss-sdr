@@ -56,12 +56,12 @@ memb_iod_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_memb_svHealth_constr_3 = {
+static asn_per_constraints_t ASN_PER_MEMB_SV_HEALTH_CONSTR_3 = {
 	{ APC_CONSTRAINED,	 5,  5, -7,  13 }	/* (-7..13) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_iod_constr_4 = {
+static asn_per_constraints_t ASN_PER_MEMB_IOD_CONSTR_4 = {
 	{ APC_CONSTRAINED,	 10,  10,  0,  1023 }	/* (0..1023) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -81,7 +81,7 @@ static asn_TYPE_member_t asn_MBR_GANSSSatelliteElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_svHealth_constraint_1,
-		&asn_PER_memb_svHealth_constr_3,
+		&ASN_PER_MEMB_SV_HEALTH_CONSTR_3,
 		0,
 		"svHealth"
 		},
@@ -90,7 +90,7 @@ static asn_TYPE_member_t asn_MBR_GANSSSatelliteElement_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_iod_constraint_1,
-		&asn_PER_memb_iod_constr_4,
+		&ASN_PER_MEMB_IOD_CONSTR_4,
 		0,
 		"iod"
 		},

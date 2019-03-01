@@ -30,7 +30,6 @@
  */
 
 #include "gps_l1_ca_telemetry_decoder_cc.h"
-#include "control_message_factory.h"
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
@@ -204,7 +203,10 @@ bool gps_l1_ca_telemetry_decoder_cc::decode_subframe()
             if (symbol_accumulator_counter == 20)
                 {
                     // symbol to bit
-                    if (symbol_accumulator > 0) GPS_frame_4bytes += 1;  // insert the telemetry bit in LSB
+                    if (symbol_accumulator > 0)
+                        {
+                            GPS_frame_4bytes += 1;  // insert the telemetry bit in LSB
+                        }
                     symbol_accumulator = 0;
                     symbol_accumulator_counter = 0;
 
@@ -334,14 +336,14 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
 
     // ******* preamble correlation ********
     int32_t corr_value = 0;
-    if ((d_symbol_history.size() == GPS_CA_PREAMBLE_LENGTH_SYMBOLS))  // and (d_make_correlation or !d_flag_frame_sync))
+    if ((d_symbol_history.size() == GPS_CA_PREAMBLE_LENGTH_SYMBOLS))
         {
-            // std::cout << "-------\n";
-            for (uint32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_SYMBOLS; i++)
+            int i = 0;
+            for (const auto &iter : d_symbol_history)
                 {
-                    if (d_symbol_history[i].Flag_valid_symbol_output == true)
+                    if (iter.Flag_valid_symbol_output == true)
                         {
-                            if (d_symbol_history[i].Prompt_I < 0)  // symbols clipping
+                            if (iter.Prompt_I < 0)  // symbols clipping
                                 {
                                     corr_value -= d_preambles_symbols[i];
                                 }
@@ -350,6 +352,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
                                     corr_value += d_preambles_symbols[i];
                                 }
                         }
+                    i++;
                 }
         }
 
@@ -476,7 +479,6 @@ int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__
 
             return 1;
         }
-
 
     return 0;
 }

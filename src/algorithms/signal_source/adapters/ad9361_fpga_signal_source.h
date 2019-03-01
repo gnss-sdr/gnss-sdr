@@ -114,7 +114,7 @@ private:
 
     boost::shared_ptr<gr::msg_queue> queue_;
 
-    std::shared_ptr<fpga_switch> switch_fpga;
+    std::shared_ptr<Fpga_Switch> switch_fpga;
 };
 
 #endif /*GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H_*/

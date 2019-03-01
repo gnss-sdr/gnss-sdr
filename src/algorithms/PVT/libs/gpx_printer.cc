@@ -36,6 +36,7 @@
 #include <boost/filesystem/path.hpp>         // for path, operator<<
 #include <boost/filesystem/path_traits.hpp>  // for filesystem
 #include <glog/logging.h>
+#include <exception>
 #include <sstream>
 
 using google::LogMessage;
@@ -154,14 +155,14 @@ bool Gpx_Printer::set_headers(const std::string& filename, bool time_tag_name)
 }
 
 
-bool Gpx_Printer::print_position(const std::shared_ptr<rtklib_solver>& position, bool print_average_values)
+bool Gpx_Printer::print_position(const std::shared_ptr<Rtklib_Solver>& position, bool print_average_values)
 {
     double latitude;
     double longitude;
     double height;
 
     positions_printed = true;
-    const std::shared_ptr<rtklib_solver>& position_ = position;
+    const std::shared_ptr<Rtklib_Solver>& position_ = position;
 
     double speed_over_ground = position_->get_speed_over_ground();    // expressed in m/s
     double course_over_ground = position_->get_course_over_ground();  // expressed in deg
@@ -170,7 +171,10 @@ bool Gpx_Printer::print_position(const std::shared_ptr<rtklib_solver>& position,
     double vdop = position_->get_vdop();
     double pdop = position_->get_pdop();
     std::string utc_time = to_iso_extended_string(position_->get_position_UTC_time());
-    if (utc_time.length() < 23) utc_time += ".";
+    if (utc_time.length() < 23)
+        {
+            utc_time += ".";
+        }
     utc_time.resize(23, '0');  // time up to ms
     utc_time.append("Z");      // UTC time zone
 
@@ -218,9 +222,19 @@ bool Gpx_Printer::close_file()
 
 Gpx_Printer::~Gpx_Printer()
 {
-    close_file();
+    try
+        {
+            close_file();
+        }
+    catch (const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+        }
     if (!positions_printed)
         {
-            if (remove(gpx_filename.c_str()) != 0) LOG(INFO) << "Error deleting temporary GPX file";
+            if (remove(gpx_filename.c_str()) != 0)
+                {
+                    LOG(INFO) << "Error deleting temporary GPX file";
+                }
         }
 }

@@ -102,7 +102,7 @@ double radtodeg(double angleInRadians);
 
 double mstoknotsh(double MetersPerSeconds);
 
-double mstokph(double Kph);
+double mstokph(double MetersPerSeconds);
 
 arma::vec CTM_to_Euler(const arma::mat &C);
 

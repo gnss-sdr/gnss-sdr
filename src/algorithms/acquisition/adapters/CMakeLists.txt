@@ -91,25 +91,38 @@ list(SORT ACQ_ADAPTER_SOURCES)
 
 source_group(Headers FILES ${ACQ_ADAPTER_HEADERS})
 
-add_library(acq_adapters ${ACQ_ADAPTER_SOURCES} ${ACQ_ADAPTER_HEADERS})
+add_library(acquisition_adapters ${ACQ_ADAPTER_SOURCES} ${ACQ_ADAPTER_HEADERS})
 
-target_link_libraries(acq_adapters
+target_link_libraries(acquisition_adapters
     PUBLIC
-        gnss_sp_libs
-        gnss_sdr_flags
-        acq_gr_blocks
-        rx_core_lib
         Gnuradio::blocks
-        gnss_system_parameters
+        algorithms_libs
+        gnss_sdr_flags
+        acquisition_gr_blocks
+        core_system_parameters
     PRIVATE
         Boost::boost
         Gflags::gflags
         Glog::glog
         Volkgnsssdr::volkgnsssdr
-        acquisition_lib
+        acquisition_libs
 )
 
-set_property(TARGET acq_adapters
+target_include_directories(acquisition_adapters
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+)
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(acquisition_adapters
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
+endif()
+
+set_property(TARGET acquisition_adapters
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

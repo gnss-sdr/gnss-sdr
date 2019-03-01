@@ -39,7 +39,7 @@
 
 class NotchLite;
 
-typedef boost::shared_ptr<NotchLite> notch_lite_sptr;
+using notch_lite_sptr = boost::shared_ptr<NotchLite>;
 
 notch_lite_sptr make_notch_filter_lite(float p_c_factor, float pfa, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset, int32_t n_segments_coeff);
 

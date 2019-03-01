@@ -44,9 +44,9 @@
 #include "gnss_sdr_supl_client.h"
 #include "tcp_cmd_interface.h"
 #include <armadillo>
-#include <boost/thread.hpp>
 #include <gnuradio/msg_queue.h>
 #include <memory>
+#include <thread>
 #include <vector>
 
 
@@ -93,7 +93,7 @@ public:
      *
      * \param[in] boost::shared_ptr<gr::msg_queue> control_queue
      */
-    void set_control_queue(const gr::msg_queue::sptr& control_queue);
+    void set_control_queue(const gr::msg_queue::sptr control_queue);  // NOLINT(performance-unnecessary-value-param)
 
 
     unsigned int processed_control_messages()
@@ -120,10 +120,10 @@ private:
     //Telecommand TCP interface
     TcpCmdInterface cmd_interface_;
     void telecommand_listener();
-    boost::thread cmd_interface_thread_;
+    std::thread cmd_interface_thread_;
     //SUPL assistance classes
-    gnss_sdr_supl_client supl_client_acquisition_;
-    gnss_sdr_supl_client supl_client_ephemeris_;
+    Gnss_Sdr_Supl_Client supl_client_acquisition_;
+    Gnss_Sdr_Supl_Client supl_client_ephemeris_;
     int supl_mcc;  // Current network MCC (Mobile country code), 3 digits.
     int supl_mns;  // Current network MNC (Mobile Network code), 2 or 3 digits.
     int supl_lac;  // Current network LAC (Location area code),16 bits, 1-65520 are valid values.
@@ -168,9 +168,9 @@ private:
     bool delete_configuration_;
     unsigned int processed_control_messages_;
     unsigned int applied_actions_;
-    boost::thread keyboard_thread_;
-    boost::thread sysv_queue_thread_;
-    boost::thread gps_acq_assist_data_collector_thread_;
+    std::thread keyboard_thread_;
+    std::thread sysv_queue_thread_;
+    std::thread gps_acq_assist_data_collector_thread_;
 
     void keyboard_listener();
     void sysv_queue_listener();

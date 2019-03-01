@@ -75,14 +75,23 @@ Channel::Channel(ConfigurationInterface* configuration, uint32_t channel, std::s
     // IMPORTANT: Do not change the order between set_doppler_step and set_threshold
 
     uint32_t doppler_step = configuration->property("Acquisition_" + implementation_ + std::to_string(channel_) + ".doppler_step", 0);
-    if (doppler_step == 0) doppler_step = configuration->property("Acquisition_" + implementation_ + ".doppler_step", 500);
-    if (FLAGS_doppler_step != 0) doppler_step = static_cast<uint32_t>(FLAGS_doppler_step);
+    if (doppler_step == 0)
+        {
+            doppler_step = configuration->property("Acquisition_" + implementation_ + ".doppler_step", 500);
+        }
+    if (FLAGS_doppler_step != 0)
+        {
+            doppler_step = static_cast<uint32_t>(FLAGS_doppler_step);
+        }
     DLOG(INFO) << "Channel " << channel_ << " Doppler_step = " << doppler_step;
 
     acq_->set_doppler_step(doppler_step);
 
     float threshold = configuration->property("Acquisition_" + implementation_ + std::to_string(channel_) + ".threshold", 0.0);
-    if (threshold == 0.0) threshold = configuration->property("Acquisition_" + implementation_ + ".threshold", 0.0);
+    if (threshold == 0.0)
+        {
+            threshold = configuration->property("Acquisition_" + implementation_ + ".threshold", 0.0);
+        }
 
     acq_->set_threshold(threshold);
 

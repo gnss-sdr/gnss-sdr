@@ -59,7 +59,7 @@ find_package_handle_standard_args(VOLKGNSSSDR DEFAULT_MSG VOLK_GNSSSDR_LIBRARIES
 mark_as_advanced(VOLK_GNSSSDR_LIBRARIES VOLK_GNSSSDR_INCLUDE_DIRS)
 
 
-if(GFLAGS_FOUND AND NOT TARGET Volkgnsssdr::volkgnsssdr)
+if(VOLKGNSSSDR_FOUND AND NOT TARGET Volkgnsssdr::volkgnsssdr)
     add_library(Volkgnsssdr::volkgnsssdr SHARED IMPORTED)
     set_target_properties(Volkgnsssdr::volkgnsssdr PROPERTIES
         IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"

@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -24,7 +24,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -47,7 +47,7 @@
 
 class beidou_b3i_telemetry_decoder_cc;
 
-typedef boost::shared_ptr<beidou_b3i_telemetry_decoder_cc> beidou_b3i_telemetry_decoder_cc_sptr;
+using beidou_b3i_telemetry_decoder_cc_sptr = boost::shared_ptr<beidou_b3i_telemetry_decoder_cc>;
 
 beidou_b3i_telemetry_decoder_cc_sptr beidou_b3i_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
 
@@ -82,7 +82,7 @@ private:
 
 
     //!< Preamble decoding
-    unsigned short int d_preambles_symbols[BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS];
+    uint16_t d_preambles_symbols[BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS];
     int32_t 	*d_preamble_samples;
     int32_t 	*d_secondary_code_symbols;
     uint32_t 	d_samples_per_symbol;

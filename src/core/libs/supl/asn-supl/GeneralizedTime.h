@@ -34,22 +34,22 @@ extern "C"
  * instead of default local one.
  * On error returns -1 and errno set to EINVAL
  */
-    time_t asn_GT2time(const GeneralizedTime_t *, struct tm *_optional_tm4fill,
+    time_t asn_GT2time(const GeneralizedTime_t * /*st*/, struct tm *ret_tm,
         int as_gmt);
 
     /* A version of the above function also returning the fractions of seconds */
-    time_t asn_GT2time_frac(const GeneralizedTime_t *,
+    time_t asn_GT2time_frac(const GeneralizedTime_t * /*st*/,
         int *frac_value, int *frac_digits, /* (value / (10 ^ digits)) */
-        struct tm *_optional_tm4fill, int as_gmt);
+        struct tm *ret_tm, int as_gmt);
 
     /*
  * Another version returning fractions with defined precision
  * For example, parsing of the time ending with ".1" seconds
  * with frac_digits=3 (msec) would yield frac_value = 100.
  */
-    time_t asn_GT2time_prec(const GeneralizedTime_t *,
+    time_t asn_GT2time_prec(const GeneralizedTime_t * /*st*/,
         int *frac_value, int frac_digits,
-        struct tm *_optional_tm4fill, int as_gmt);
+        struct tm *ret_tm, int as_gmt);
 
     /*
  * Convert a struct tm into GeneralizedTime.
@@ -58,10 +58,10 @@ extern "C"
  * into a GMT time zone (encoding ends with a "Z").
  * On error, this function returns 0 and sets errno.
  */
-    GeneralizedTime_t *asn_time2GT(GeneralizedTime_t *_optional_gt,
-        const struct tm *, int force_gmt);
-    GeneralizedTime_t *asn_time2GT_frac(GeneralizedTime_t *_optional_gt,
-        const struct tm *, int frac_value, int frac_digits, int force_gmt);
+    GeneralizedTime_t *asn_time2GT(GeneralizedTime_t *opt_gt,
+        const struct tm * /*tm*/, int force_gmt);
+    GeneralizedTime_t *asn_time2GT_frac(GeneralizedTime_t *opt_gt,
+        const struct tm * /*tm*/, int frac_value, int frac_digits, int force_gmt);
 
 #ifdef __cplusplus
 }

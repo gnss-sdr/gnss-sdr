@@ -32,17 +32,28 @@ add_library(pvt_adapters ${PVT_ADAPTER_SOURCES} ${PVT_ADAPTER_HEADERS})
 target_link_libraries(pvt_adapters
     PUBLIC
         pvt_gr_blocks
-        Armadillo::armadillo
-        Gnuradio::runtime
-        gnss_system_parameters
-        gnss_rx
-        pvt_lib
+        core_system_parameters
     PRIVATE
-        Boost::serialization
+        gnss_sdr_flags
+        pvt_libs
+)
+
+target_include_directories(pvt_adapters
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
 )
 
 if(Boost_VERSION LESS 105800)
     target_compile_definitions(pvt_adapters PRIVATE -DOLD_BOOST=1)
+endif()
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(pvt_adapters
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
 endif()
 
 set_property(TARGET pvt_adapters

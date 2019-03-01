@@ -6,7 +6,7 @@
 
 #include "ReferenceIdentityType.h"
 
-static asn_per_constraints_t asn_PER_type_ReferenceIdentityType_constr_1 = {
+static asn_per_constraints_t ASN_PER_TYPE_REFERENCE_IDENTITY_TYPE_CONSTR_1 = {
 	{ APC_CONSTRAINED,	 3,  3,  0,  4 }	/* (0..4) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -92,7 +92,7 @@ asn_TYPE_descriptor_t asn_DEF_ReferenceIdentityType = {
 	0,	/* No effective tags (count) */
 	0,	/* No tags (pointer) */
 	0,	/* No tags (count) */
-	&asn_PER_type_ReferenceIdentityType_constr_1,
+	&ASN_PER_TYPE_REFERENCE_IDENTITY_TYPE_CONSTR_1,
 	asn_MBR_ReferenceIdentityType_1,
 	5,	/* Elements count */
 	&asn_SPC_ReferenceIdentityType_specs_1	/* Additional specs */

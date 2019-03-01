@@ -21,8 +21,8 @@ extern "C"
  * field of the return value. Use the following formula to convert to bytes:
  * 	bytes = ((.encoded + 7) / 8)
  */
-    asn_enc_rval_t uper_encode(struct asn_TYPE_descriptor_s *type_descriptor,
-        void *struct_ptr,                          /* Structure to be encoded */
+    asn_enc_rval_t uper_encode(struct asn_TYPE_descriptor_s *td,
+        void *sptr,                          /* Structure to be encoded */
         asn_app_consume_bytes_f *consume_bytes_cb, /* Data collector */
         void *app_key                              /* Arbitrary callback argument */
     );
@@ -33,8 +33,8 @@ extern "C"
  * field of the return value.
  */
     asn_enc_rval_t uper_encode_to_buffer(
-        struct asn_TYPE_descriptor_s *type_descriptor,
-        void *struct_ptr,  /* Structure to be encoded */
+        struct asn_TYPE_descriptor_s *td,
+        void *sptr,  /* Structure to be encoded */
         void *buffer,      /* Pre-allocated buffer */
         size_t buffer_size /* Initial buffer size (max) */
     );
@@ -47,9 +47,9 @@ extern "C"
  * encoding of uper_encode() and uper_encode_to_buffer().
  */
     ssize_t uper_encode_to_new_buffer(
-        struct asn_TYPE_descriptor_s *type_descriptor,
+        struct asn_TYPE_descriptor_s *td,
         asn_per_constraints_t *constraints,
-        void *struct_ptr, /* Structure to be encoded */
+        void *sptr, /* Structure to be encoded */
         void **buffer_r   /* Buffer allocated and returned */
     );
 

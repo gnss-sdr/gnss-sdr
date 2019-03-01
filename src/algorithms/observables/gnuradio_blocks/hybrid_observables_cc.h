@@ -45,7 +45,7 @@
 
 class hybrid_observables_cc;
 
-typedef boost::shared_ptr<hybrid_observables_cc> hybrid_observables_cc_sptr;
+using hybrid_observables_cc_sptr = boost::shared_ptr<hybrid_observables_cc>;
 
 hybrid_observables_cc_sptr
 hybrid_make_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, bool dump_mat, std::string dump_filename);

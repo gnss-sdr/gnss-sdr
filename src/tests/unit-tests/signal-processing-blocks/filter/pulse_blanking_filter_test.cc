@@ -94,7 +94,10 @@ TEST_F(PulseBlankingFilterTest, InstantiateGrComplexGrComplex)
     configure_gr_complex_gr_complex();
     std::unique_ptr<PulseBlankingFilter> filter(new PulseBlankingFilter(config.get(), "InputFilter", 1, 1));
     int res = 0;
-    if (filter) res = 1;
+    if (filter)
+        {
+            res = 1;
+        }
     ASSERT_EQ(1, res);
 }
 

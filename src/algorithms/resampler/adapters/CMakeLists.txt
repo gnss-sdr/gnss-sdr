@@ -41,15 +41,28 @@ target_link_libraries(resampler_adapters
     PUBLIC
         Gnuradio::runtime
         resampler_gr_blocks
-        gnss_rx
     PRIVATE
         Gflags::gflags
         Glog::glog
         Volk::volk
 )
 
+target_include_directories(resampler_adapters
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+)
+
 if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13.4")
     target_compile_definitions(resampler_adapters PUBLIC -DGR_GREATER_38=1)
+endif()
+
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set_target_properties(resampler_adapters
+            PROPERTIES
+                CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
+        )
+    endif()
 endif()
 
 set_property(TARGET resampler_adapters

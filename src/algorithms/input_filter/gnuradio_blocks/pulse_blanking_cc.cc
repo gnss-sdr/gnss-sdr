@@ -30,12 +30,10 @@
 
 #include "pulse_blanking_cc.h"
 #include <boost/math/distributions/chi_squared.hpp>
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <cmath>
 
-using google::LogMessage;
 
 pulse_blanking_cc_sptr make_pulse_blanking_cc(float pfa, int32_t length_,
     int32_t n_segments_est, int32_t n_segments_reset)

@@ -627,7 +627,7 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
     double true_acq_delay_samples = 0.0;
     uint64_t acq_samplestamp_samples = 0;
 
-    tracking_true_obs_reader true_obs_data;
+    Tracking_True_Obs_Reader true_obs_data;
     if (!FLAGS_enable_external_signal_file)
         {
             test_satellite_PRN = FLAGS_test_satellite_PRN;
@@ -739,7 +739,7 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
                             if (FLAGS_plot_detail_level >= 2 and FLAGS_show_plots)
                                 {
                                     //load the measured values
-                                    tracking_dump_reader trk_dump;
+                                    Tracking_Dump_Reader trk_dump;
                                     ASSERT_EQ(trk_dump.open_obs_file(std::string("./tracking_ch_0.dat")), true)
                                         << "Failure opening tracking dump file";
 

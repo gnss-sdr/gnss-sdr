@@ -105,7 +105,7 @@ gps_l5_telemetry_decoder_cc::~gps_l5_telemetry_decoder_cc()
 void gps_l5_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satellite)
 {
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    LOG(INFO) << "GPS L5 CNAV telemetry decoder in channel " << this->d_channel << " set to satellite " << d_satellite;
+    DLOG(INFO) << "GPS L5 CNAV telemetry decoder in channel " << this->d_channel << " set to satellite " << d_satellite;
     d_CNAV_Message.reset();
 }
 
@@ -114,7 +114,7 @@ void gps_l5_telemetry_decoder_cc::set_channel(int32_t channel)
 {
     d_channel = channel;
     d_CNAV_Message.reset();
-    LOG(INFO) << "GPS L5 CNAV channel set to " << channel;
+    DLOG(INFO) << "GPS L5 CNAV channel set to " << channel;
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump == true)
         {

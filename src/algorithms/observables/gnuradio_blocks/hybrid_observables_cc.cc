@@ -514,7 +514,7 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
                 {
                     T_rx_clock_step_samples = std::round(static_cast<double>(in[d_nchannels_in - 1][0].fs) * 1e-3);  // 1 ms
                     LOG(INFO) << "Observables clock step samples set to " << T_rx_clock_step_samples;
-                    usleep(1000000);
+                    //usleep(1000000);
                 }
 
             // Consume one item from the clock channel (last of the input channels)

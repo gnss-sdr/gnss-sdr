@@ -174,7 +174,7 @@ void pcps_acquisition_fpga::send_negative_acquisition()
     this->message_port_pub(pmt::mp("events"), pmt::from_long(2));
 }
 
-void pcps_acquisition_fpga::acquisition_core(uint32_t num_doppler_bins, uint32_t doppler_step, uint32_t doppler_min)
+void pcps_acquisition_fpga::acquisition_core(uint32_t num_doppler_bins, uint32_t doppler_step, int32_t doppler_min)
 {
     uint32_t indext = 0U;
     float firstpeak = 0.0;

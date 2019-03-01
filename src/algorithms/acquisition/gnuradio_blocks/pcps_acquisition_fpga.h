@@ -97,7 +97,7 @@ private:
 
     float first_vs_second_peak_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
 
-    void acquisition_core(uint32_t num_doppler_bins, uint32_t doppler_step, uint32_t doppler_max);
+    void acquisition_core(uint32_t num_doppler_bins, uint32_t doppler_step, int32_t doppler_max);
 
     pcpsconf_fpga_t acq_parameters;
     bool d_active;

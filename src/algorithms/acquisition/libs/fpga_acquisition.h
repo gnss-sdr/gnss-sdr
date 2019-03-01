@@ -60,7 +60,7 @@ public:
     bool init();
     bool set_local_code(uint32_t PRN);
     bool free();
-    void set_doppler_sweep(uint32_t num_sweeps, uint32_t doppler_step, uint32_t doppler_max);
+    void set_doppler_sweep(uint32_t num_sweeps, uint32_t doppler_step, int32_t doppler_min);
     void run_acquisition(void);
 
     void read_acquisition_results(uint32_t *max_index, float *firstpeak, float *secondpeak, uint64_t *initial_sample, float *power_sum, uint32_t *doppler_index, uint32_t *total_blk_exp);

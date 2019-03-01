@@ -150,6 +150,7 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
 
     d_ca_codes = static_cast<int32_t *>(volk_gnsssdr_malloc(static_cast<int32_t>(code_length_chips * NUM_PRNs) * sizeof(int32_t), volk_gnsssdr_get_alignment()));
 
+    d_data_codes = nullptr;
     if (track_pilot)
         {
             d_data_codes = static_cast<int32_t *>(volk_gnsssdr_malloc((static_cast<uint32_t>(code_length_chips)) * NUM_PRNs * sizeof(int32_t), volk_gnsssdr_get_alignment()));
@@ -195,10 +196,10 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
 
 GpsL5DllPllTrackingFpga::~GpsL5DllPllTrackingFpga()
 {
-    delete[] d_ca_codes;
+    volk_gnsssdr_free(d_ca_codes);
     if (d_track_pilot)
         {
-            delete[] d_data_codes;
+            volk_gnsssdr_free(d_data_codes);
         }
 }
 

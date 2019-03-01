@@ -63,6 +63,7 @@ pcps_acquisition_fpga::pcps_acquisition_fpga(pcpsconf_fpga_t conf_) : gr::block(
     d_num_doppler_bins = 0U;
     d_threshold = 0.0;
     d_doppler_step = 0U;
+    d_doppler_index = 0U;
     d_test_statistics = 0.0;
     d_channel = 0U;
     d_gnss_synchro = nullptr;

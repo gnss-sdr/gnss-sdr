@@ -2,8 +2,7 @@
  * \file dll_pll_veml_tracking_fpga.h
  * \brief Implementation of a code DLL + carrier PLL tracking block using an FPGA.
  * \author Marc Majoral, 2019. marc.majoral(at)cttc.es
- * \author Javier Arribas, 2018. jarribas(at)cttc.es
- * \author Antonio Ramos, 2018 antonio.ramosdet(at)gmail.com
+ * \author Javier Arribas, 2019. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *

@@ -269,7 +269,11 @@ uint32_t gnss_sdr_fpga_sample_counter::wait_for_interrupt_and_read_counter()
 
     // enable interrupts
     int32_t reenable = 1;
-    write(fd, reinterpret_cast<void *>(&reenable), sizeof(int32_t));
+    ssize_t nbytes = TEMP_FAILURE_RETRY(write(fd, reinterpret_cast<void *>(&reenable), sizeof(int32_t)));
+    if (nbytes != sizeof(int32_t))
+        {
+            std::cerr << "Error enabling interruptions in the FPGA." << std::endl;
+        }
 
     // wait for interrupt
     nb = read(fd, &irq_count, sizeof(irq_count));

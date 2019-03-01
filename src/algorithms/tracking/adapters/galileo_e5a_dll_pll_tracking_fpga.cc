@@ -2,15 +2,7 @@
  * \file galileo_e5a_dll_pll_tracking_fpga.cc
  * \brief Adapts a code DLL + carrier PLL
  *  tracking block to a TrackingInterface for Galileo E5a signals for the FPGA
- * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
- *  Galileo E5a data and pilot Signals for the FPGA
- * \author Marc Sales, 2014. marcsales92(at)gmail.com
- * \based on work from:
- *          <ul>
- *          <li> Marc Majoral, 2019. mmajoral(at)cttc.cat
- *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
- *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
- *          </ul>
+ * \author Marc Majoral, 2019. mmajoral(at)cttc.cat
  *
  * -------------------------------------------------------------------------
  *

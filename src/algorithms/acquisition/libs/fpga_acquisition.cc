@@ -87,8 +87,10 @@ void Fpga_Acquisition::write_local_code()
 Fpga_Acquisition::Fpga_Acquisition(std::string device_name,
     uint32_t nsamples,
     uint32_t doppler_max,
-    uint32_t nsamples_total, int64_t fs_in,
-    uint32_t sampled_ms, uint32_t select_queue,
+    uint32_t nsamples_total,
+    int64_t fs_in,
+    uint32_t sampled_ms __attribute__((unused)),
+    uint32_t select_queue,
     lv_16sc_t *all_fft_codes,
     uint32_t excludelimit)
 {
@@ -193,7 +195,11 @@ void Fpga_Acquisition::run_acquisition(void)
     // enable interrupts
     int32_t reenable = 1;
     int32_t disable_int = 0;
-    write(d_fd, reinterpret_cast<void *>(&reenable), sizeof(int32_t));
+    ssize_t nbytes = TEMP_FAILURE_RETRY(write(d_fd, reinterpret_cast<void *>(&reenable), sizeof(int32_t)));
+    if (nbytes != sizeof(int32_t))
+        {
+            std::cerr << "Error enabling run in the FPGA." << std::endl;
+        }
 
     // launch the acquisition process
     d_map_base[8] = LAUNCH_ACQUISITION;  // writing a 1 to reg 8 launches the acquisition process
@@ -208,7 +214,11 @@ void Fpga_Acquisition::run_acquisition(void)
             std::cout << "acquisition module Interrupt number " << irq_count << std::endl;
         }
 
-    write(d_fd, reinterpret_cast<void *>(&disable_int), sizeof(int32_t));
+    nbytes = TEMP_FAILURE_RETRY(write(d_fd, reinterpret_cast<void *>(&disable_int), sizeof(int32_t)));
+    if (nbytes != sizeof(int32_t))
+        {
+            std::cerr << "Error disabling interruptions in the FPGA." << std::endl;
+        }
 }
 
 

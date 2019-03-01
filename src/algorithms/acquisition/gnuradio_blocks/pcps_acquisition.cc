@@ -187,6 +187,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
         }
 }
 
+
 pcps_acquisition::~pcps_acquisition()
 {
     if (d_num_doppler_bins > 0)
@@ -226,6 +227,7 @@ void pcps_acquisition::set_resampler_latency(uint32_t latency_samples)
     gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
     acq_parameters.resampler_latency_samples = latency_samples;
 }
+
 
 void pcps_acquisition::set_local_code(std::complex<float>* code)
 {
@@ -912,6 +914,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
         }
 }
 
+
 // Called by gnuradio to enable drivers, etc for i/o devices.
 bool pcps_acquisition::start()
 {
@@ -919,8 +922,10 @@ bool pcps_acquisition::start()
     return true;
 }
 
+
 int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
-    gr_vector_int& ninput_items, gr_vector_const_void_star& input_items,
+    gr_vector_int& ninput_items,
+    gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items __attribute__((unused)))
 {
     /*

@@ -1,9 +1,9 @@
 /*!
- * \file gps_l5_dll_pll_tracking.h
+ * \file gps_l5_dll_pll_tracking_fpga.h
  * \brief  Interface of an adapter of a DLL+PLL tracking loop block
  * for GPS L5 to a TrackingInterface
  * \author Marc Majoral, 2019. mmajoral(at)cttc.cat
- * \author Javier Arribas, 2017. jarribas(at)cttc.es
+ *         Javier Arribas, 2019. jarribas(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,

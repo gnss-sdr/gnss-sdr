@@ -253,7 +253,8 @@ void pcps_acquisition_fpga::set_active(bool active)
 
 
 int pcps_acquisition_fpga::general_work(int noutput_items __attribute__((unused)),
-    gr_vector_int& ninput_items, gr_vector_const_void_star& input_items,
+    gr_vector_int& ninput_items __attribute__((unused)),
+    gr_vector_const_void_star& input_items __attribute__((unused)),
     gr_vector_void_star& output_items __attribute__((unused)))
 {
     // the general work is not used with the acquisition that uses the FPGA

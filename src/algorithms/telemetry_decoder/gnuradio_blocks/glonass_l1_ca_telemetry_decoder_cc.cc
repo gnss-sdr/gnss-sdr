@@ -279,7 +279,7 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
 
     d_flag_preamble = false;
 
-    if (d_symbol_history.size() == d_symbols_per_preamble)
+    if (static_cast<int32_t>(d_symbol_history.size()) == d_symbols_per_preamble)
         {
             // ******* preamble correlation ********
             int i = 0;

@@ -70,7 +70,7 @@ public:
 
     inline size_t item_size() override
     {
-        return sizeof(int)
+        return sizeof(int);
     }
 
     void connect(gr::top_block_sptr top_block) override;

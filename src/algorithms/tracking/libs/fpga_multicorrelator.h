@@ -1,12 +1,12 @@
 /*!
- * \file fpga_multicorrelator_8sc.h
- * \brief High optimized FPGA vector correlator class
+ * \file fpga_multicorrelator.h
+ * \brief FPGA vector correlator class
  * \authors <ul>
  * 			<li> Marc Majoral, 2019. mmajoral(at)cttc.cat
- *          <li> Javier Arribas, 2016. jarribas(at)cttc.es
+ *          <li> Javier Arribas, 2019. jarribas(at)cttc.es
  *          </ul>
  *
- * Class that controls and executes a high optimized vector correlator
+ * Class that controls and executes a highly optimized vector correlator
  * class in the FPGA
  *
  * -------------------------------------------------------------------------

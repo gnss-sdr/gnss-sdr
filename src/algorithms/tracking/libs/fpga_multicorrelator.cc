@@ -1,12 +1,12 @@
 /*!
- * \file fpga_multicorrelator_8sc.cc
- * \brief High optimized FPGA vector correlator class
+ * \file fpga_multicorrelator.cc
+ * \brief FPGA vector correlator class
  * \authors <ul>
  *    <li> Marc Majoral, 2019. mmajoral(at)cttc.cat
- *    <li> Javier Arribas, 2015. jarribas(at)cttc.es
+ *    <li> Javier Arribas, 2019. jarribas(at)cttc.es
  * </ul>
  *
- * Class that controls and executes a high optimized vector correlator
+ * Class that controls and executes a highly optimized vector correlator
  * class in the FPGA
  *
  * -------------------------------------------------------------------------
@@ -67,70 +67,6 @@
 #define TEST_REGISTER_TRACK_WRITEVAL 0x55AA
 
 
-uint64_t Fpga_Multicorrelator_8sc::read_sample_counter()
-{
-    uint64_t sample_counter_tmp, sample_counter_msw_tmp;
-    sample_counter_tmp = d_map_base[SAMPLE_COUNTER_REG_ADDR_LSW];
-    sample_counter_msw_tmp = d_map_base[SAMPLE_COUNTER_REG_ADDR_MSW];
-    sample_counter_msw_tmp = sample_counter_msw_tmp << 32;
-    sample_counter_tmp = sample_counter_tmp + sample_counter_msw_tmp;  // 2^32
-    return sample_counter_tmp;
-}
-
-void Fpga_Multicorrelator_8sc::set_initial_sample(uint64_t samples_offset)
-{
-    d_initial_sample_counter = samples_offset;
-    d_map_base[INITIAL_COUNTER_VALUE_REG_ADDR_LSW] = (d_initial_sample_counter & 0xFFFFFFFF);
-    d_map_base[INITIAL_COUNTER_VALUE_REG_ADDR_MSW] = (d_initial_sample_counter >> 32) & 0xFFFFFFFF;
-}
-
-void Fpga_Multicorrelator_8sc::set_local_code_and_taps(float *shifts_chips, float *prompt_data_shift, int32_t PRN)
-{
-    d_shifts_chips = shifts_chips;
-    d_prompt_data_shift = prompt_data_shift;
-    Fpga_Multicorrelator_8sc::fpga_configure_tracking_gps_local_code(PRN);
-}
-
-void Fpga_Multicorrelator_8sc::set_output_vectors(gr_complex *corr_out, gr_complex *Prompt_Data)
-{
-    d_corr_out = corr_out;
-    d_Prompt_Data = Prompt_Data;
-}
-
-void Fpga_Multicorrelator_8sc::update_local_code(float rem_code_phase_chips)
-{
-    d_rem_code_phase_chips = rem_code_phase_chips;
-    Fpga_Multicorrelator_8sc::fpga_compute_code_shift_parameters();
-    Fpga_Multicorrelator_8sc::fpga_configure_code_parameters_in_fpga();
-}
-
-
-void Fpga_Multicorrelator_8sc::Carrier_wipeoff_multicorrelator_resampler(
-    float rem_carrier_phase_in_rad, float phase_step_rad,
-    float carrier_phase_rate_step_rad,
-    float rem_code_phase_chips, float code_phase_step_chips,
-    float code_phase_rate_step_chips,
-    int32_t signal_length_samples)
-{
-    update_local_code(rem_code_phase_chips);
-    d_rem_carrier_phase_in_rad = rem_carrier_phase_in_rad;
-    d_code_phase_step_chips = code_phase_step_chips;
-    d_phase_step_rad = phase_step_rad;
-    d_correlator_length_samples = signal_length_samples;
-    Fpga_Multicorrelator_8sc::fpga_compute_signal_parameters_in_fpga();
-    Fpga_Multicorrelator_8sc::fpga_configure_signal_parameters_in_fpga();
-    Fpga_Multicorrelator_8sc::fpga_launch_multicorrelator_fpga();
-    int32_t irq_count;
-    ssize_t nb;
-    nb = read(d_device_descriptor, &irq_count, sizeof(irq_count));
-    if (nb != sizeof(irq_count))
-        {
-            std::cout << "Tracking_module Read failed to retrieve 4 bytes!" << std::endl;
-            std::cout << "Tracking_module Interrupt number " << irq_count << std::endl;
-        }
-    Fpga_Multicorrelator_8sc::read_tracking_gps_results();
-}
-
 Fpga_Multicorrelator_8sc::Fpga_Multicorrelator_8sc(int32_t n_correlators,
     std::string device_name, uint32_t device_base, int32_t *ca_codes, int32_t *data_codes, uint32_t code_length_chips, bool track_pilot,
     uint32_t multicorr_type, uint32_t code_samples_per_chip)
@@ -183,6 +119,77 @@ Fpga_Multicorrelator_8sc::Fpga_Multicorrelator_8sc(int32_t n_correlators,
 Fpga_Multicorrelator_8sc::~Fpga_Multicorrelator_8sc()
 {
     close_device();
+}
+
+
+uint64_t Fpga_Multicorrelator_8sc::read_sample_counter()
+{
+    uint64_t sample_counter_tmp, sample_counter_msw_tmp;
+    sample_counter_tmp = d_map_base[SAMPLE_COUNTER_REG_ADDR_LSW];
+    sample_counter_msw_tmp = d_map_base[SAMPLE_COUNTER_REG_ADDR_MSW];
+    sample_counter_msw_tmp = sample_counter_msw_tmp << 32;
+    sample_counter_tmp = sample_counter_tmp + sample_counter_msw_tmp;  // 2^32
+    return sample_counter_tmp;
+}
+
+
+void Fpga_Multicorrelator_8sc::set_initial_sample(uint64_t samples_offset)
+{
+    d_initial_sample_counter = samples_offset;
+    d_map_base[INITIAL_COUNTER_VALUE_REG_ADDR_LSW] = (d_initial_sample_counter & 0xFFFFFFFF);
+    d_map_base[INITIAL_COUNTER_VALUE_REG_ADDR_MSW] = (d_initial_sample_counter >> 32) & 0xFFFFFFFF;
+}
+
+
+void Fpga_Multicorrelator_8sc::set_local_code_and_taps(float *shifts_chips, float *prompt_data_shift, int32_t PRN)
+{
+    d_shifts_chips = shifts_chips;
+    d_prompt_data_shift = prompt_data_shift;
+    Fpga_Multicorrelator_8sc::fpga_configure_tracking_gps_local_code(PRN);
+}
+
+
+void Fpga_Multicorrelator_8sc::set_output_vectors(gr_complex *corr_out, gr_complex *Prompt_Data)
+{
+    d_corr_out = corr_out;
+    d_Prompt_Data = Prompt_Data;
+}
+
+
+void Fpga_Multicorrelator_8sc::update_local_code(float rem_code_phase_chips)
+{
+    d_rem_code_phase_chips = rem_code_phase_chips;
+    Fpga_Multicorrelator_8sc::fpga_compute_code_shift_parameters();
+    Fpga_Multicorrelator_8sc::fpga_configure_code_parameters_in_fpga();
+}
+
+
+void Fpga_Multicorrelator_8sc::Carrier_wipeoff_multicorrelator_resampler(
+    float rem_carrier_phase_in_rad,
+    float phase_step_rad,
+    float carrier_phase_rate_step_rad __attribute__((unused)),
+    float rem_code_phase_chips,
+    float code_phase_step_chips __attribute__((unused)),
+    float code_phase_rate_step_chips __attribute__((unused)),
+    int32_t signal_length_samples)
+{
+    update_local_code(rem_code_phase_chips);
+    d_rem_carrier_phase_in_rad = rem_carrier_phase_in_rad;
+    d_code_phase_step_chips = code_phase_step_chips;
+    d_phase_step_rad = phase_step_rad;
+    d_correlator_length_samples = signal_length_samples;
+    Fpga_Multicorrelator_8sc::fpga_compute_signal_parameters_in_fpga();
+    Fpga_Multicorrelator_8sc::fpga_configure_signal_parameters_in_fpga();
+    Fpga_Multicorrelator_8sc::fpga_launch_multicorrelator_fpga();
+    int32_t irq_count;
+    ssize_t nb;
+    nb = read(d_device_descriptor, &irq_count, sizeof(irq_count));
+    if (nb != sizeof(irq_count))
+        {
+            std::cout << "Tracking_module Read failed to retrieve 4 bytes!" << std::endl;
+            std::cout << "Tracking_module Interrupt number " << irq_count << std::endl;
+        }
+    Fpga_Multicorrelator_8sc::read_tracking_gps_results();
 }
 
 
@@ -424,8 +431,11 @@ void Fpga_Multicorrelator_8sc::fpga_launch_multicorrelator_fpga(void)
 {
     // enable interrupts
     int32_t reenable = 1;
-    write(d_device_descriptor, reinterpret_cast<void *>(&reenable), sizeof(int32_t));
-
+    ssize_t nbytes = TEMP_FAILURE_RETRY(write(d_device_descriptor, reinterpret_cast<void *>(&reenable), sizeof(int32_t)));
+    if (nbytes != sizeof(int32_t))
+        {
+            std::cerr << "Error launching the FPGA multicorrelator" << std::endl;
+        }
     // writing 1 to reg 14 launches the tracking
     d_map_base[START_FLAG_ADDR] = 1;
 }
@@ -458,6 +468,7 @@ void Fpga_Multicorrelator_8sc::unlock_channel(void)
     d_map_base[DROP_SAMPLES_REG_ADDR] = 1;   // unlock the channel
     d_map_base[STOP_TRACKING_REG_ADDR] = 1;  // set the tracking module back to idle
 }
+
 
 void Fpga_Multicorrelator_8sc::close_device()
 {

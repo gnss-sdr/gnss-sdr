@@ -3,8 +3,6 @@
  * \brief Implementation of an adapter of a DLL+PLL tracking loop block
  * for GPS L1 C/A to a TrackingInterface for the FPGA
  * \author Marc Majoral, 2019, mmajoral(at)cttc.es
- *         Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
- *         Javier Arribas, 2011. jarribas(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,

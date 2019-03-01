@@ -2,8 +2,7 @@
  * \file dll_pll_veml_tracking_fpga.cc
  * \brief Implementation of a code DLL + carrier PLL tracking block using an FPGA
  * \author Marc Majoral, 2019. marc.majoral(at)cttc.es
- * \author Antonio Ramos, 2018 antonio.ramosdet(at)gmail.com
- * \author Javier Arribas, 2018. jarribas(at)cttc.es
+ * \author Javier Arribas, 2019. jarribas(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:
  * [1] K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
@@ -315,7 +314,6 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
             d_prompt_data_shift = &d_local_code_shift_chips[1];
         }
 
-
     if (trk_parameters.extend_correlation_symbols > 1)
         {
             d_enable_extended_integration = true;
@@ -498,7 +496,6 @@ void dll_pll_veml_tracking_fpga::start_tracking()
     std::cout << "Tracking of " << systemName << " " << signal_pretty_name << " signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
     DLOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
-
     multicorrelator_fpga->set_local_code_and_taps(d_local_code_shift_chips, d_prompt_data_shift, d_acquisition_gnss_synchro->PRN);
     // enable tracking pull-in
     d_state = 1;
@@ -677,7 +674,6 @@ void dll_pll_veml_tracking_fpga::run_dll_pll()
     // New carrier Doppler frequency estimation
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz + d_carr_error_filt_hz;
 
-
     // ################## DLL ##########################################################
     // DLL discriminator
     if (d_veml)
@@ -752,7 +748,6 @@ void dll_pll_veml_tracking_fpga::update_tracking_vars()
     // remnant carrier phase to prevent overflow in the code NCO
     d_rem_carr_phase_rad += static_cast<float>(d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples) + 0.5 * d_carrier_phase_rate_step_rad * static_cast<double>(d_current_prn_length_samples) * static_cast<double>(d_current_prn_length_samples));
     d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, PI_2);
-
 
     // carrier phase accumulator
     d_acc_carrier_phase_rad -= (d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples) + 0.5 * d_carrier_phase_rate_step_rad * static_cast<double>(d_current_prn_length_samples) * static_cast<double>(d_current_prn_length_samples));
@@ -1021,7 +1016,6 @@ int32_t dll_pll_veml_tracking_fpga::save_matfile()
     auto *aux2 = new double[num_epoch];
     auto *PRN = new uint32_t[num_epoch];
 
-
     try
         {
             if (dump_file.is_open())
@@ -1249,14 +1243,22 @@ void dll_pll_veml_tracking_fpga::stop_tracking()
     d_state = 0;
 }
 
-int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items,
-    gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
+
+void dll_pll_veml_tracking_fpga::reset(void)
+{
+    multicorrelator_fpga->unlock_channel();
+}
+
+
+int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((unused)),
+    gr_vector_int &ninput_items __attribute__((unused)),
+    gr_vector_const_void_star &input_items __attribute__((unused)),
+    gr_vector_void_star &output_items)
 {
     auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
 
     d_current_prn_length_samples = d_next_prn_length_samples;
-
 
     switch (d_state)
         {
@@ -1299,7 +1301,6 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                 d_sample_counter = absolute_samples_offset;
                 current_synchro_data.Tracking_sample_counter = absolute_samples_offset;
                 d_sample_counter_next = d_sample_counter;
-
 
                 // Signal alignment (skip samples until the incoming signal is aligned with local replica)
 
@@ -1477,6 +1478,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
     return 0;
 }
 
+
 void dll_pll_veml_tracking_fpga::run_state_2(Gnss_Synchro &current_synchro_data)
 {
     d_sample_counter = d_sample_counter_next;
@@ -1648,10 +1650,4 @@ void dll_pll_veml_tracking_fpga::run_state_2(Gnss_Synchro &current_synchro_data)
                         }
                 }
         }
-}
-
-
-void dll_pll_veml_tracking_fpga::reset(void)
-{
-    multicorrelator_fpga->unlock_channel();
 }

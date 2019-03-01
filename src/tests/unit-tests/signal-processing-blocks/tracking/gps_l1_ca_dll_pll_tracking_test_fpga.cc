@@ -102,7 +102,11 @@ void send_tracking_gps_input_samples(FILE *rx_signal_file,
                 }
             if (num_remaining_samples > DMA_TRACK_TRANSFER_SIZE)
                 {
-                    fread(buffer_DMA, DMA_TRACK_TRANSFER_SIZE, 1, rx_signal_file);
+                    size_t result = fread(buffer_DMA, DMA_TRACK_TRANSFER_SIZE, 1, rx_signal_file);
+                    if (result != DMA_TRACK_TRANSFER_SIZE)
+                        {
+                            std::cerr << "Error reading from DMA" << std::endl;
+                        }
 
                     assert(DMA_TRACK_TRANSFER_SIZE == write(dma_descr, &buffer_DMA[0], DMA_TRACK_TRANSFER_SIZE));
                     num_remaining_samples = num_remaining_samples - DMA_TRACK_TRANSFER_SIZE;
@@ -110,8 +114,11 @@ void send_tracking_gps_input_samples(FILE *rx_signal_file,
                 }
             else
                 {
-                    fread(buffer_DMA, num_remaining_samples, 1, rx_signal_file);
-
+                    size_t result = fread(buffer_DMA, num_remaining_samples, 1, rx_signal_file);
+                    if (static_cast<int>(result) != num_remaining_samples)
+                        {
+                            std::cerr << "Error reading from DMA" << std::endl;
+                        }
                     assert(num_remaining_samples == write(dma_descr, &buffer_DMA[0], num_remaining_samples));
                     num_samples_transferred = num_samples_transferred + num_remaining_samples;
                     num_remaining_samples = 0;

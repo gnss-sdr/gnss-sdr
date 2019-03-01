@@ -1,9 +1,9 @@
 /*!
- * \file gps_l5_dll_pll_tracking.cc
+ * \file gps_l5_dll_pll_tracking_fpga.cc
  * \brief  Interface of an adapter of a DLL+PLL tracking loop block
  * for GPS L5 to a TrackingInterface
  * \author Marc Majoral, 2019. mmajoral(at)cttc.cat
- * \author Javier Arribas, 2017. jarribas(at)cttc.es
+ *         Javier Arribas, 2019. jarribas(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
@@ -135,29 +135,32 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
     auto code_length_chips = static_cast<uint32_t>(GPS_L5I_CODE_LENGTH_CHIPS);
 
     float *tracking_code;
-    float *data_code;
+    float *data_code = nullptr;
 
     tracking_code = static_cast<float *>(volk_gnsssdr_malloc(code_length_chips * sizeof(float), volk_gnsssdr_get_alignment()));
 
-    if (trk_param_fpga.track_pilot)
+    if (track_pilot)
         {
             data_code = static_cast<float *>(volk_gnsssdr_malloc(code_length_chips * sizeof(float), volk_gnsssdr_get_alignment()));
+            for (uint32_t i = 0; i < code_length_chips; i++)
+                {
+                    data_code[i] = 0.0;
+                }
         }
 
     d_ca_codes = static_cast<int32_t *>(volk_gnsssdr_malloc(static_cast<int32_t>(code_length_chips * NUM_PRNs) * sizeof(int32_t), volk_gnsssdr_get_alignment()));
 
-    if (trk_param_fpga.track_pilot)
+    if (track_pilot)
         {
             d_data_codes = static_cast<int32_t *>(volk_gnsssdr_malloc((static_cast<uint32_t>(code_length_chips)) * NUM_PRNs * sizeof(int32_t), volk_gnsssdr_get_alignment()));
         }
 
     for (uint32_t PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
-            if (trk_param_fpga.track_pilot)
+            if (track_pilot)
                 {
                     gps_l5q_code_gen_float(tracking_code, PRN);
                     gps_l5i_code_gen_float(data_code, PRN);
-
 
                     for (uint32_t s = 0; s < code_length_chips; s++)
                         {
@@ -165,7 +168,6 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
                             d_data_codes[static_cast<int32_t>(code_length_chips) * (PRN - 1) + s] = static_cast<int32_t>(data_code[s]);
                         }
                 }
-
             else
                 {
                     gps_l5i_code_gen_float(tracking_code, PRN);
@@ -176,10 +178,10 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
                 }
         }
 
-    delete[] tracking_code;
-    if (trk_param_fpga.track_pilot)
+    volk_gnsssdr_free(tracking_code);
+    if (track_pilot)
         {
-            delete[] data_code;
+            volk_gnsssdr_free(data_code);
         }
     trk_param_fpga.ca_codes = d_ca_codes;
     trk_param_fpga.data_codes = d_data_codes;

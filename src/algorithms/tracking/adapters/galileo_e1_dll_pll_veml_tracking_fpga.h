@@ -3,7 +3,6 @@
  * \brief  Adapts a DLL+PLL VEML (Very Early Minus Late) tracking loop block
  *   to a TrackingInterface for Galileo E1 signals for the FPGA
  * \author Marc Majoral, 2019. mmajoral(at)cttc.cat
- * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  * Code DLL + carrier PLL according to the algorithms described in:
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,

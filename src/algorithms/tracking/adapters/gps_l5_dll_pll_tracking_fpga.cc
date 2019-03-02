@@ -43,14 +43,12 @@
 #include "gnss_sdr_flags.h"
 #include "gps_l5_signal.h"
 #include <glog/logging.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 
 #define NUM_PRNs 32
 
 using google::LogMessage;
 
-void GpsL5DllPllTrackingFpga::stop_tracking()
-{
-}
 
 GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
     ConfigurationInterface *configuration, const std::string &role,
@@ -123,7 +121,6 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
     trk_param_fpga.carrier_lock_th = carrier_lock_th;
 
     // FPGA configuration parameters
-
     std::string default_device_name = "/dev/uio";
     std::string device_name = configuration->property(role + ".devicename", default_device_name);
     trk_param_fpga.device_name = device_name;
@@ -207,6 +204,11 @@ GpsL5DllPllTrackingFpga::~GpsL5DllPllTrackingFpga()
 void GpsL5DllPllTrackingFpga::start_tracking()
 {
     tracking_fpga_sc->start_tracking();
+}
+
+
+void GpsL5DllPllTrackingFpga::stop_tracking()
+{
 }
 
 

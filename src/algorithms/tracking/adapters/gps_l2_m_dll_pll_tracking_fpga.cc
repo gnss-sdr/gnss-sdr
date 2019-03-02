@@ -42,6 +42,7 @@
 #include "gnss_sdr_flags.h"
 #include "gps_l2c_signal.h"
 #include <glog/logging.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 
 #define NUM_PRNs 32
 

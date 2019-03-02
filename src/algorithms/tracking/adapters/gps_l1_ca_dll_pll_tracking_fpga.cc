@@ -41,14 +41,12 @@
 #include "gnss_sdr_flags.h"
 #include "gps_sdr_signal_processing.h"
 #include <glog/logging.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 
 #define NUM_PRNs 32
 
 using google::LogMessage;
 
-void GpsL1CaDllPllTrackingFpga::stop_tracking()
-{
-}
 
 GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     ConfigurationInterface* configuration, const std::string& role,
@@ -148,15 +146,23 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     DLOG(INFO) << "tracking(" << tracking_fpga_sc->unique_id() << ")";
 }
 
+
 GpsL1CaDllPllTrackingFpga::~GpsL1CaDllPllTrackingFpga()
 {
     delete[] d_ca_codes;
 }
 
+
 void GpsL1CaDllPllTrackingFpga::start_tracking()
 {
     tracking_fpga_sc->start_tracking();
 }
+
+
+void GpsL1CaDllPllTrackingFpga::stop_tracking()
+{
+}
+
 
 /*
  * Set tracking channel unique ID
@@ -167,10 +173,12 @@ void GpsL1CaDllPllTrackingFpga::set_channel(unsigned int channel)
     tracking_fpga_sc->set_channel(channel);
 }
 
+
 void GpsL1CaDllPllTrackingFpga::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
     tracking_fpga_sc->set_gnss_synchro(p_gnss_synchro);
 }
+
 
 void GpsL1CaDllPllTrackingFpga::connect(gr::top_block_sptr top_block)
 {

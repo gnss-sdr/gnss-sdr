@@ -36,19 +36,12 @@
 
 #include "fpga_multicorrelator.h"
 #include <glog/logging.h>
-#include <cassert>
-#include <cerrno>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cmath>
-#include <csignal>
-#include <cstdint>
 #include <cstdio>
-#include <cstdlib>
-#include <fcntl.h>
-#include <new>
+#include <fcntl.h>  // for O_RDWR, O_RSYNC
 #include <string>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <unistd.h>
+#include <sys/mman.h>  // for PROT_READ, PROT_WRITE, MAP_SHARED
 #include <utility>
 
 // FPGA register access constants
@@ -248,8 +241,14 @@ void Fpga_Multicorrelator_8sc::set_channel(uint32_t channel)
     int32_t numdevice = d_device_base + d_channel;
     devicebasetemp << numdevice;
     mergedname = d_device_name + devicebasetemp.str();
-    strcpy(device_io_name, mergedname.substr(0, MAX_LENGTH_DEVICEIO_NAME).c_str());
 
+    if (mergedname.size() > MAX_LENGTH_DEVICEIO_NAME)
+        {
+            mergedname = mergedname.substr(0, MAX_LENGTH_DEVICEIO_NAME);
+        }
+
+    mergedname.copy(device_io_name, mergedname.size() + 1);
+    device_io_name[mergedname.size()] = '\0';
     std::cout << "trk device_io_name = " << device_io_name << std::endl;
 
     if ((d_device_descriptor = open(device_io_name, O_RDWR | O_SYNC)) == -1)
@@ -267,14 +266,14 @@ void Fpga_Multicorrelator_8sc::set_channel(uint32_t channel)
             std::cout << "Cannot map deviceio" << device_io_name << std::endl;
         }
 
-    // sanity check : check test register
+    // sanity check: check test register
     uint32_t writeval = TEST_REGISTER_TRACK_WRITEVAL;
     uint32_t readval;
     readval = Fpga_Multicorrelator_8sc::fpga_acquisition_test_register(writeval);
     if (writeval != readval)
         {
             LOG(WARNING) << "Test register sanity check failed";
-            std::cout << "tracking test register sanity check failed" << std::endl;
+            std::cout << "Tracking test register sanity check failed" << std::endl;
         }
     else
         {
@@ -343,8 +342,7 @@ void Fpga_Multicorrelator_8sc::fpga_compute_code_shift_parameters(void)
 
     for (i = 0; i < d_n_correlators; i++)
         {
-            temp_calculation = floor(
-                d_shifts_chips[i] - d_rem_code_phase_chips);
+            temp_calculation = floor(d_shifts_chips[i] - d_rem_code_phase_chips);
 
             if (temp_calculation < 0)
                 {

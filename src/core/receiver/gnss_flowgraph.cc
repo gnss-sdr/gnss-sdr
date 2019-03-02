@@ -205,12 +205,11 @@ void GNSSFlowgraph::connect()
 
     DLOG(INFO) << "blocks connected internally";
     // Signal Source (i) >  Signal conditioner (i) >
-    int RF_Channels = 0;
-    int signal_conditioner_ID = 0;
-
 
 #ifndef ENABLE_FPGA
 
+    int RF_Channels = 0;
+    int signal_conditioner_ID = 0;
     for (int i = 0; i < sources_count_; i++)
         {
             try
@@ -357,12 +356,13 @@ void GNSSFlowgraph::connect()
 #endif
 
     // Signal conditioner (selected_signal_source) >> channels (i) (dependent of their associated SignalSource_ID)
-    int selected_signal_conditioner_ID = 0;
-    bool use_acq_resampler = configuration_->property("GNSS-SDR.use_acquisition_resampler", false);
-    uint32_t fs = configuration_->property("GNSS-SDR.internal_fs_sps", 0);
     for (unsigned int i = 0; i < channels_count_; i++)
         {
 #ifndef ENABLE_FPGA
+
+            int selected_signal_conditioner_ID = 0;
+            bool use_acq_resampler = configuration_->property("GNSS-SDR.use_acquisition_resampler", false);
+            uint32_t fs = configuration_->property("GNSS-SDR.internal_fs_sps", 0);
             if (configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false) == false)
                 {
                     try
@@ -860,7 +860,9 @@ void GNSSFlowgraph::disconnect()
             return;
         }
 #endif
-    // Signal conditioner (selected_signal_source) >> channels (i) (dependent of their associated SignalSource_ID)
+        // Signal conditioner (selected_signal_source) >> channels (i) (dependent of their associated SignalSource_ID)
+
+#ifndef ENABLE_FPGA
     int selected_signal_conditioner_ID;
     for (unsigned int i = 0; i < channels_count_; i++)
         {
@@ -874,7 +876,6 @@ void GNSSFlowgraph::disconnect()
                     top_block_->disconnect_all();
                     return;
                 }
-#ifndef ENABLE_FPGA
             try
                 {
                     top_block_->disconnect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,

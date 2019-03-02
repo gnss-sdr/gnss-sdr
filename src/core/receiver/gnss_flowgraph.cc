@@ -860,12 +860,12 @@ void GNSSFlowgraph::disconnect()
             return;
         }
 #endif
-        // Signal conditioner (selected_signal_source) >> channels (i) (dependent of their associated SignalSource_ID)
+    // Signal conditioner (selected_signal_source) >> channels (i) (dependent of their associated SignalSource_ID)
 
-#ifndef ENABLE_FPGA
-    int selected_signal_conditioner_ID;
     for (unsigned int i = 0; i < channels_count_; i++)
         {
+#ifndef ENABLE_FPGA
+            int selected_signal_conditioner_ID;
             try
                 {
                     selected_signal_conditioner_ID = configuration_->property("Channel" + std::to_string(i) + ".RF_channel_ID", 0);

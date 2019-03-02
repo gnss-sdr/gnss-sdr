@@ -79,14 +79,15 @@ void send_tracking_gps_input_samples(FILE *rx_signal_file,
     dma_descr = open("/dev/loop_tx", O_WRONLY);
     if (dma_descr < 0)
         {
-            printf("can't open loop device\n");
-            exit(1);
+            std::cerr << "Can't open loop device\n";
+            return;
         }
 
     buffer_DMA = (char *)malloc(DMA_TRACK_TRANSFER_SIZE);
     if (!buffer_DMA)
         {
-            fprintf(stderr, "Memory error!");
+            std::cerr << "Memory error!" << std::endl;
+            return;
         }
 
     while (num_remaining_samples > 0)
@@ -140,7 +141,8 @@ void sending_thread(gr::top_block_sptr top_block, const char *file_name)
     rx_signal_file = fopen(file_name, "rb");
     if (!rx_signal_file)
         {
-            printf("Unable to open file!");
+            std::cerr << "Unable to open file!" << std::endl;
+            return;
         }
 
     fseek(rx_signal_file, 0, SEEK_END);
@@ -335,7 +337,7 @@ void GpsL1CADllPllTrackingTestFpga::configure_receiver()
 void GpsL1CADllPllTrackingTestFpga::check_results_doppler(arma::vec &true_time_s,
     arma::vec &true_value, arma::vec &meas_time_s, arma::vec &meas_value)
 {
-    //1. True value interpolation to match the measurement times
+    // 1. True value interpolation to match the measurement times
     arma::vec true_value_interp;
     arma::uvec true_time_s_valid = find(true_time_s > 0);
     true_time_s = true_time_s(true_time_s_valid);
@@ -345,22 +347,21 @@ void GpsL1CADllPllTrackingTestFpga::check_results_doppler(arma::vec &true_time_s
     meas_value = meas_value(meas_time_s_valid);
     arma::interp1(true_time_s, true_value, meas_time_s, true_value_interp);
 
-    //2. RMSE
+    // 2. RMSE
     arma::vec err;
-
     err = meas_value - true_value_interp;
     arma::vec err2 = arma::square(err);
     double rmse = sqrt(arma::mean(err2));
 
-    //3. Mean err and variance
+    // 3. Mean err and variance
     double error_mean = arma::mean(err);
     double error_var = arma::var(err);
 
-    // 5. Peaks
+    // 4. Peaks
     double max_error = arma::max(err);
     double min_error = arma::min(err);
 
-    //5. report
+    // 5. report
     std::streamsize ss = std::cout.precision();
     std::cout << std::setprecision(10) << "TRK Doppler RMSE=" << rmse
               << ", mean=" << error_mean << ", stdev=" << sqrt(error_var)
@@ -384,14 +385,14 @@ void GpsL1CADllPllTrackingTestFpga::check_results_acc_carrier_phase(
     meas_value = meas_value(meas_time_s_valid);
     arma::interp1(true_time_s, true_value, meas_time_s, true_value_interp);
 
-    //2. RMSE
+    // 2. RMSE
     arma::vec err;
 
     err = meas_value - true_value_interp;
     arma::vec err2 = arma::square(err);
     double rmse = sqrt(arma::mean(err2));
 
-    //3. Mean err and variance
+    // 3. Mean err and variance
     double error_mean = arma::mean(err);
     double error_var = arma::var(err);
 
@@ -399,7 +400,7 @@ void GpsL1CADllPllTrackingTestFpga::check_results_acc_carrier_phase(
     double max_error = arma::max(err);
     double min_error = arma::min(err);
 
-    //5. report
+    // 5. report
     std::streamsize ss = std::cout.precision();
     std::cout << std::setprecision(10) << "TRK acc carrier phase RMSE=" << rmse
               << ", mean=" << error_mean << ", stdev=" << sqrt(error_var)
@@ -413,7 +414,7 @@ void GpsL1CADllPllTrackingTestFpga::check_results_codephase(
     arma::vec &true_time_s, arma::vec &true_value, arma::vec &meas_time_s,
     arma::vec &meas_value)
 {
-    //1. True value interpolation to match the measurement times
+    // 1. True value interpolation to match the measurement times
     arma::vec true_value_interp;
     arma::uvec true_time_s_valid = find(true_time_s > 0);
     true_time_s = true_time_s(true_time_s_valid);
@@ -423,13 +424,13 @@ void GpsL1CADllPllTrackingTestFpga::check_results_codephase(
     meas_value = meas_value(meas_time_s_valid);
     arma::interp1(true_time_s, true_value, meas_time_s, true_value_interp);
 
-    //2. RMSE
+    // 2. RMSE
     arma::vec err;
     err = meas_value - true_value_interp;
     arma::vec err2 = arma::square(err);
     double rmse = sqrt(arma::mean(err2));
 
-    //3. Mean err and variance
+    // 3. Mean err and variance
     double error_mean = arma::mean(err);
     double error_var = arma::var(err);
 
@@ -437,7 +438,7 @@ void GpsL1CADllPllTrackingTestFpga::check_results_codephase(
     double max_error = arma::max(err);
     double min_error = arma::min(err);
 
-    //5. report
+    // 5. report
     std::streamsize ss = std::cout.precision();
     std::cout << std::setprecision(10) << "TRK code phase RMSE=" << rmse
               << ", mean=" << error_mean << ", stdev=" << sqrt(error_var)
@@ -459,7 +460,7 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
 
     configure_receiver();
 
-    //open true observables log file written by the simulator
+    // open true observables log file written by the simulator
     Tracking_True_Obs_Reader true_obs_data;
     int test_satellite_PRN = FLAGS_test_satellite_PRN;
     std::cout << "Testing satellite PRN=" << test_satellite_PRN << std::endl;
@@ -491,7 +492,7 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
         })
         << "Failure reading true observables file";
 
-    //restart the epoch counter
+    // restart the epoch counter
     true_obs_data.restart();
 
     std::cout << "Initial Doppler [Hz]=" << true_obs_data.doppler_l1_hz
@@ -550,8 +551,8 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
     // wait until child thread terminates
     t.join();
 
-    //check results
-    //load the true values
+    // check results
+    // load the true values
     int64_t nepoch = true_obs_data.num_epochs();
     std::cout << "True observation epochs=" << nepoch << std::endl;
 
@@ -572,7 +573,7 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
             epoch_counter++;
         }
 
-    //load the measured values
+    // load the measured values
     Tracking_Dump_Reader trk_dump;
     ASSERT_NO_THROW(
         {
@@ -604,7 +605,7 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
             epoch_counter++;
         }
 
-    //Align initial measurements and cut the tracking pull-in transitory
+    // Align initial measurements and cut the tracking pull-in transitory
     double pull_in_offset_s = 1.0;
     arma::uvec initial_meas_point = arma::find(trk_timestamp_s >= (true_timestamp_s(0) + pull_in_offset_s), 1, "first");
 

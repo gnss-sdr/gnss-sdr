@@ -1,5 +1,5 @@
 /*!
- * \file rtklib_pvt_cc.h
+ * \file rtklib_pvt_gs.h
  * \brief Interface of a Position Velocity and Time computation block
  * \author Javier Arribas, 2017. jarribas(at)cttc.es
  *
@@ -28,8 +28,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_RTKLIB_PVT_CC_H
-#define GNSS_SDR_RTKLIB_PVT_CC_H
+#ifndef GNSS_SDR_RTKLIB_PVT_GS_H
+#define GNSS_SDR_RTKLIB_PVT_GS_H
 
 #include "beidou_dnav_almanac.h"
 #include "beidou_dnav_ephemeris.h"
@@ -63,21 +63,21 @@
 #include <vector>
 
 
-class rtklib_pvt_cc;
+class rtklib_pvt_gs;
 
-using rtklib_pvt_cc_sptr = boost::shared_ptr<rtklib_pvt_cc>;
+using rtklib_pvt_gs_sptr = boost::shared_ptr<rtklib_pvt_gs>;
 
-rtklib_pvt_cc_sptr rtklib_make_pvt_cc(uint32_t nchannels,
+rtklib_pvt_gs_sptr rtklib_make_pvt_gs(uint32_t nchannels,
     const Pvt_Conf& conf_,
     const rtk_t& rtk);
 
 /*!
  * \brief This class implements a block that computes the PVT solution using the RTKLIB integrated library
  */
-class rtklib_pvt_cc : public gr::sync_block
+class rtklib_pvt_gs : public gr::sync_block
 {
 private:
-    friend rtklib_pvt_cc_sptr rtklib_make_pvt_cc(uint32_t nchannels,
+    friend rtklib_pvt_gs_sptr rtklib_make_pvt_gs(uint32_t nchannels,
         const Pvt_Conf& conf_,
         const rtk_t& rtk);
 
@@ -158,11 +158,11 @@ private:
     std::vector<std::string> split_string(const std::string& s, char delim) const;
 
 public:
-    rtklib_pvt_cc(uint32_t nchannels,
+    rtklib_pvt_gs(uint32_t nchannels,
         const Pvt_Conf& conf_,
         const rtk_t& rtk);
 
-    ~rtklib_pvt_cc();  //!< Default destructor
+    ~rtklib_pvt_gs();  //!< Default destructor
 
     /*!
      * \brief Get latest set of GPS ephemeris from PVT block

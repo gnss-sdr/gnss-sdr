@@ -17,11 +17,11 @@
 #
 
 set(OBS_GR_BLOCKS_SOURCES
-    hybrid_observables_cc.cc
+    hybrid_observables_gs.cc
 )
 
 set(OBS_GR_BLOCKS_HEADERS
-    hybrid_observables_cc.h
+    hybrid_observables_gs.h
 )
 
 source_group(Headers FILES ${OBS_GR_BLOCKS_HEADERS})

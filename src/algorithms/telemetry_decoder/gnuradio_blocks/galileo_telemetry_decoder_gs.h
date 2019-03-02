@@ -1,5 +1,5 @@
 /*!
- * \file galileo_telemetry_decoder_cc.h
+ * \file galileo_telemetry_decoder_gs.h
  * \brief Implementation of a Galileo unified INAV and FNAV message demodulator block
  * \author Javier Arribas 2018. jarribas(at)cttc.es
  *
@@ -29,8 +29,8 @@
  */
 
 
-#ifndef GNSS_SDR_GALILEO_TELEMETRY_DECODER_CC_H
-#define GNSS_SDR_GALILEO_TELEMETRY_DECODER_CC_H
+#ifndef GNSS_SDR_GALILEO_TELEMETRY_DECODER_GS_H
+#define GNSS_SDR_GALILEO_TELEMETRY_DECODER_GS_H
 
 
 #include "Galileo_E1.h"
@@ -48,19 +48,19 @@
 #include <fstream>
 #include <string>
 
-class galileo_telemetry_decoder_cc;
+class galileo_telemetry_decoder_gs;
 
-using galileo_telemetry_decoder_cc_sptr = boost::shared_ptr<galileo_telemetry_decoder_cc>;
+using galileo_telemetry_decoder_gs_sptr = boost::shared_ptr<galileo_telemetry_decoder_gs>;
 
-galileo_telemetry_decoder_cc_sptr galileo_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, int frame_type, bool dump);
+galileo_telemetry_decoder_gs_sptr galileo_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, int frame_type, bool dump);
 
 /*!
  * \brief This class implements a block that decodes the INAV and FNAV data defined in Galileo ICD
  */
-class galileo_telemetry_decoder_cc : public gr::block
+class galileo_telemetry_decoder_gs : public gr::block
 {
 public:
-    ~galileo_telemetry_decoder_cc();
+    ~galileo_telemetry_decoder_gs();
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
     void set_channel(int32_t channel);                    //!< Set receiver's channel
     int32_t flag_even_word_arrived;
@@ -72,9 +72,9 @@ public:
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
 private:
-    friend galileo_telemetry_decoder_cc_sptr
-    galileo_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, int frame_type, bool dump);
-    galileo_telemetry_decoder_cc(const Gnss_Satellite &satellite, int frame_type, bool dump);
+    friend galileo_telemetry_decoder_gs_sptr
+    galileo_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, int frame_type, bool dump);
+    galileo_telemetry_decoder_gs(const Gnss_Satellite &satellite, int frame_type, bool dump);
 
     void viterbi_decoder(double *page_part_symbols, int32_t *page_part_bits);
 

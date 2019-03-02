@@ -1,7 +1,8 @@
 /*!
- * \file gps_l5_telemetry_decoder_cc.h
- * \brief Interface of a CNAV message demodulator block
- * \author Antonio Ramos, 2017. antonio.ramos(at)cttc.es
+ * \file gps_l2c_telemetry_decoder_gs.h
+ * \brief Interface of a CNAV message demodulator block based on
+ * Kay Borre book MATLAB-based GPS receiver
+ * \author Javier Arribas, 2015. jarribas(at)cttc.es
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
@@ -27,20 +28,21 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L5_TELEMETRY_DECODER_CC_H
-#define GNSS_SDR_GPS_L5_TELEMETRY_DECODER_CC_H
+#ifndef GNSS_SDR_GPS_L2C_TELEMETRY_DECODER_GS_H
+#define GNSS_SDR_GPS_L2C_TELEMETRY_DECODER_GS_H
 
 
-#include "GPS_L5.h"
+#include "GPS_L2C.h"
 #include "gnss_satellite.h"
+#include "gps_cnav_ephemeris.h"
+#include "gps_cnav_iono.h"
 #include "gps_cnav_navigation_message.h"
-#include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>
-#include <algorithm>
+#include <algorithm>  // for copy
 #include <cstdint>
 #include <fstream>
 #include <string>
-#include <utility>
+#include <utility>  // for pair
 #include <vector>
 
 extern "C"
@@ -51,30 +53,34 @@ extern "C"
 }
 
 
-class gps_l5_telemetry_decoder_cc;
+class gps_l2c_telemetry_decoder_gs;
 
-using gps_l5_telemetry_decoder_cc_sptr = boost::shared_ptr<gps_l5_telemetry_decoder_cc>;
+using gps_l2c_telemetry_decoder_gs_sptr = boost::shared_ptr<gps_l2c_telemetry_decoder_gs>;
 
-gps_l5_telemetry_decoder_cc_sptr
-gps_l5_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
+gps_l2c_telemetry_decoder_gs_sptr
+gps_l2c_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
 /*!
- * \brief This class implements a GPS L5 Telemetry decoder
+ * \brief This class implements a block that decodes the SBAS integrity and corrections data defined in RTCA MOPS DO-229
  *
  */
-class gps_l5_telemetry_decoder_cc : public gr::block
+class gps_l2c_telemetry_decoder_gs : public gr::block
 {
 public:
-    ~gps_l5_telemetry_decoder_cc();
+    ~gps_l2c_telemetry_decoder_gs();
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
     void set_channel(int32_t channel);                    //!< Set receiver's channel
+
+    /*!
+     * \brief This is where all signal processing takes place
+     */
     int general_work(int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
 private:
-    friend gps_l5_telemetry_decoder_cc_sptr
-    gps_l5_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
-    gps_l5_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
+    friend gps_l2c_telemetry_decoder_gs_sptr
+    gps_l2c_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+    gps_l2c_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
     bool d_dump;
     Gnss_Satellite d_satellite;
@@ -85,15 +91,14 @@ private:
 
     cnav_msg_decoder_t d_cnav_decoder{};
 
-    uint32_t d_TOW_at_current_symbol_ms;
-    uint32_t d_TOW_at_Preamble_ms;
+    int32_t d_state;
+    int32_t d_crc_error_count;
+
+    double d_TOW_at_current_symbol;
+    double d_TOW_at_Preamble;
     bool d_flag_valid_word;
 
     Gps_CNAV_Navigation_Message d_CNAV_Message;
-    float bits_NH[GPS_L5I_NH_CODE_LENGTH]{};
-    boost::circular_buffer<float> sym_hist;
-    bool sync_NH;
-    bool new_sym;
 };
 
 

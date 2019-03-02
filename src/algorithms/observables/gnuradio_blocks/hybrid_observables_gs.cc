@@ -1,5 +1,5 @@
 /*!
- * \file hybrid_observables_cc.cc
+ * \file hybrid_observables_gs.cc
  * \brief Implementation of the observables computation block
  * \author Javier Arribas 2017. jarribas(at)cttc.es
  * \author Antonio Ramos  2018. antonio.ramos(at)cttc.es
@@ -29,10 +29,10 @@
  * -------------------------------------------------------------------------
  */
 
-#include "hybrid_observables_cc.h"
 #include "GPS_L1_CA.h"
 #include "display.h"
 #include "gnss_sdr_create_directory.h"
+#include "hybrid_observables_gs.h"
 #include <boost/filesystem/path.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
@@ -49,17 +49,17 @@
 using google::LogMessage;
 
 
-hybrid_observables_cc_sptr hybrid_make_observables_cc(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, bool dump_mat, std::string dump_filename)
+hybrid_observables_gs_sptr hybrid_make_observables_gs(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, bool dump_mat, std::string dump_filename)
 {
-    return hybrid_observables_cc_sptr(new hybrid_observables_cc(nchannels_in, nchannels_out, dump, dump_mat, std::move(dump_filename)));
+    return hybrid_observables_gs_sptr(new hybrid_observables_gs(nchannels_in, nchannels_out, dump, dump_mat, std::move(dump_filename)));
 }
 
 
-hybrid_observables_cc::hybrid_observables_cc(uint32_t nchannels_in,
+hybrid_observables_gs::hybrid_observables_gs(uint32_t nchannels_in,
     uint32_t nchannels_out,
     bool dump,
     bool dump_mat,
-    std::string dump_filename) : gr::block("hybrid_observables_cc",
+    std::string dump_filename) : gr::block("hybrid_observables_gs",
                                      gr::io_signature::make(nchannels_in, nchannels_in, sizeof(Gnss_Synchro)),
                                      gr::io_signature::make(nchannels_out, nchannels_out, sizeof(Gnss_Synchro)))
 {
@@ -120,12 +120,12 @@ hybrid_observables_cc::hybrid_observables_cc(uint32_t nchannels_in,
     T_rx_TOW_set = false;
 
     // rework
-    d_Rx_clock_buffer.resize(10);  // 10*20 ms = 200 ms of data in buffer
-    d_Rx_clock_buffer.clear();     // Clear all the elements in the buffer
+    d_Rx_clock_buffer.set_capacity(10);  // 10*20 ms = 200 ms of data in buffer
+    d_Rx_clock_buffer.clear();           // Clear all the elements in the buffer
 }
 
 
-hybrid_observables_cc::~hybrid_observables_cc()
+hybrid_observables_gs::~hybrid_observables_gs()
 {
     delete d_gnss_synchro_history;
     if (d_dump_file.is_open())
@@ -153,7 +153,7 @@ hybrid_observables_cc::~hybrid_observables_cc()
 }
 
 
-int32_t hybrid_observables_cc::save_matfile()
+int32_t hybrid_observables_gs::save_matfile()
 {
     // READ DUMP FILE
     std::string dump_filename = d_dump_filename;
@@ -342,13 +342,13 @@ int32_t hybrid_observables_cc::save_matfile()
 }
 
 
-double hybrid_observables_cc::compute_T_rx_s(const Gnss_Synchro &a)
+double hybrid_observables_gs::compute_T_rx_s(const Gnss_Synchro &a)
 {
     return ((static_cast<double>(a.Tracking_sample_counter) + a.Code_phase_samples) / static_cast<double>(a.fs));
 }
 
 
-bool hybrid_observables_cc::interp_trk_obs(Gnss_Synchro &interpolated_obs, const uint32_t &ch, const uint64_t &rx_clock)
+bool hybrid_observables_gs::interp_trk_obs(Gnss_Synchro &interpolated_obs, const uint32_t &ch, const uint64_t &rx_clock)
 {
     int32_t nearest_element = -1;
     int64_t abs_diff;
@@ -427,7 +427,7 @@ bool hybrid_observables_cc::interp_trk_obs(Gnss_Synchro &interpolated_obs, const
 }
 
 
-void hybrid_observables_cc::forecast(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items_required)
+void hybrid_observables_gs::forecast(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items_required)
 {
     for (int32_t n = 0; n < static_cast<int32_t>(d_nchannels_in) - 1; n++)
         {
@@ -438,18 +438,18 @@ void hybrid_observables_cc::forecast(int noutput_items __attribute__((unused)), 
 }
 
 
-void hybrid_observables_cc::update_TOW(std::vector<Gnss_Synchro> &data)
+void hybrid_observables_gs::update_TOW(const std::vector<Gnss_Synchro> &data)
 {
     //1. Set the TOW using the minimum TOW in the observables.
     //   this will be the receiver time.
     //2. If the TOW is set, it must be incremented by the desired receiver time step.
     //   the time step must match the observables timer block (connected to the las input channel)
-    std::vector<Gnss_Synchro>::iterator it;
+    std::vector<Gnss_Synchro>::const_iterator it;
     //    if (!T_rx_TOW_set)
     //        {
     //uint32_t TOW_ref = std::numeric_limits<uint32_t>::max();
     uint32_t TOW_ref = 0U;
-    for (it = data.begin(); it != data.end(); it++)
+    for (it = data.cbegin(); it != data.cend(); it++)
         {
             if (it->Flag_valid_word)
                 {
@@ -475,7 +475,7 @@ void hybrid_observables_cc::update_TOW(std::vector<Gnss_Synchro> &data)
 }
 
 
-void hybrid_observables_cc::compute_pranges(std::vector<Gnss_Synchro> &data)
+void hybrid_observables_gs::compute_pranges(std::vector<Gnss_Synchro> &data)
 {
     std::vector<Gnss_Synchro>::iterator it;
     for (it = data.begin(); it != data.end(); it++)
@@ -498,7 +498,7 @@ void hybrid_observables_cc::compute_pranges(std::vector<Gnss_Synchro> &data)
 }
 
 
-int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)),
+int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)),
     gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items)
 {
@@ -599,12 +599,12 @@ int hybrid_observables_cc::general_work(int noutput_items __attribute__((unused)
                                     epoch_data.push_back(interpolated_gnss_synchro);
                                 }
                             update_TOW(epoch_data);
-                            //debug code:
-                            //                            if (T_rx_TOW_ms % 20 != 0)
-                            //                                {
-                            //                                    std::cout << "Warning: RX TOW is not multiple of 20 ms\n";
-                            //                                }
-                            //                            std::cout << "T_rx_TOW_ms=" << T_rx_TOW_ms << " T_rx_TOW_offset_ms=" << T_rx_TOW_offset_ms << " ->" << T_rx_TOW_ms % 20 << std::endl;
+                            // debug code:
+                            // if (T_rx_TOW_ms % 20 != 0)
+                            //     {
+                            //         std::cout << "Warning: RX TOW is not multiple of 20 ms\n";
+                            //     }
+                            // std::cout << "T_rx_TOW_ms=" << T_rx_TOW_ms << " T_rx_TOW_offset_ms=" << T_rx_TOW_offset_ms << " ->" << T_rx_TOW_ms % 20 << std::endl;
                         }
                 }
 

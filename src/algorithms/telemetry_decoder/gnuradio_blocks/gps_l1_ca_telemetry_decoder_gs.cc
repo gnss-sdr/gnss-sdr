@@ -1,5 +1,5 @@
 /*!
- * \file gps_l1_ca_telemetry_decoder_cc.cc
+ * \file gps_l1_ca_telemetry_decoder_gs.cc
  * \brief Implementation of a NAV message demodulator block based on
  * Kay Borre book MATLAB-based GPS receiver
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
@@ -29,7 +29,7 @@
  * -------------------------------------------------------------------------
  */
 
-#include "gps_l1_ca_telemetry_decoder_cc.h"
+#include "gps_l1_ca_telemetry_decoder_gs.h"
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
@@ -42,16 +42,16 @@
 
 using google::LogMessage;
 
-gps_l1_ca_telemetry_decoder_cc_sptr
-gps_l1_ca_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump)
+gps_l1_ca_telemetry_decoder_gs_sptr
+gps_l1_ca_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump)
 {
-    return gps_l1_ca_telemetry_decoder_cc_sptr(new gps_l1_ca_telemetry_decoder_cc(satellite, dump));
+    return gps_l1_ca_telemetry_decoder_gs_sptr(new gps_l1_ca_telemetry_decoder_gs(satellite, dump));
 }
 
 
-gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
+gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
-    bool dump) : gr::block("gps_navigation_cc", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
+    bool dump) : gr::block("gps_navigation_gs", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                      gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
     // Ephemeris data port out
@@ -98,7 +98,7 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
 }
 
 
-gps_l1_ca_telemetry_decoder_cc::~gps_l1_ca_telemetry_decoder_cc()
+gps_l1_ca_telemetry_decoder_gs::~gps_l1_ca_telemetry_decoder_gs()
 {
     volk_gnsssdr_free(d_preambles_symbols);
     d_symbol_history.clear();
@@ -116,7 +116,7 @@ gps_l1_ca_telemetry_decoder_cc::~gps_l1_ca_telemetry_decoder_cc()
 }
 
 
-bool gps_l1_ca_telemetry_decoder_cc::gps_word_parityCheck(uint32_t gpsword)
+bool gps_l1_ca_telemetry_decoder_gs::gps_word_parityCheck(uint32_t gpsword)
 {
     uint32_t d1, d2, d3, d4, d5, d6, d7, t, parity;
     // XOR as many bits in parallel as possible.  The magic constants pick
@@ -143,7 +143,7 @@ bool gps_l1_ca_telemetry_decoder_cc::gps_word_parityCheck(uint32_t gpsword)
 }
 
 
-void gps_l1_ca_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satellite)
+void gps_l1_ca_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satellite)
 {
     d_nav.reset();
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
@@ -153,7 +153,7 @@ void gps_l1_ca_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satelli
 }
 
 
-void gps_l1_ca_telemetry_decoder_cc::set_channel(int32_t channel)
+void gps_l1_ca_telemetry_decoder_gs::set_channel(int32_t channel)
 {
     d_channel = channel;
     d_nav.i_channel_ID = channel;
@@ -182,7 +182,7 @@ void gps_l1_ca_telemetry_decoder_cc::set_channel(int32_t channel)
 }
 
 
-bool gps_l1_ca_telemetry_decoder_cc::decode_subframe()
+bool gps_l1_ca_telemetry_decoder_gs::decode_subframe()
 {
     char subframe[GPS_SUBFRAME_LENGTH];
 
@@ -234,7 +234,7 @@ bool gps_l1_ca_telemetry_decoder_cc::decode_subframe()
                                 {
                                     GPS_frame_4bytes ^= 0x3FFFFFC0;  // invert the data bits (using XOR)
                                 }
-                            if (gps_l1_ca_telemetry_decoder_cc::gps_word_parityCheck(GPS_frame_4bytes))
+                            if (gps_l1_ca_telemetry_decoder_gs::gps_word_parityCheck(GPS_frame_4bytes))
                                 {
                                     subframe_synchro_confirmation = true;
                                 }
@@ -310,7 +310,7 @@ bool gps_l1_ca_telemetry_decoder_cc::decode_subframe()
 }
 
 
-int gps_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
+int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     int32_t preamble_diff_ms = 0;

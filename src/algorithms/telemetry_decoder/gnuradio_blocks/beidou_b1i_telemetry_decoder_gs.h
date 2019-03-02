@@ -1,5 +1,5 @@
 /*!
- * \file beidou_b1i_telemetry_decoder_cc.h
+ * \file beidou_b1i_telemetry_decoder_gs.h
  * \brief Implementation of an adapter of a BEIDOU BI1 DNAV data decoder block
  * to a TelemetryDecoderInterface
  * \details Code added as part of GSoC 2018 program. However new modifications included to mimic
@@ -32,8 +32,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_CC_H
-#define GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_CC_H
+#ifndef GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_GS_H
+#define GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_GS_H
 
 #include "Beidou_B1I.h"
 #include "beidou_dnav_almanac.h"
@@ -48,11 +48,11 @@
 #include <string>
 
 
-class beidou_b1i_telemetry_decoder_cc;
+class beidou_b1i_telemetry_decoder_gs;
 
-using beidou_b1i_telemetry_decoder_cc_sptr = boost::shared_ptr<beidou_b1i_telemetry_decoder_cc>;
+using beidou_b1i_telemetry_decoder_gs_sptr = boost::shared_ptr<beidou_b1i_telemetry_decoder_gs>;
 
-beidou_b1i_telemetry_decoder_cc_sptr beidou_b1i_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
+beidou_b1i_telemetry_decoder_gs_sptr beidou_b1i_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
 //!!!! edit
 /*!
@@ -61,10 +61,10 @@ beidou_b1i_telemetry_decoder_cc_sptr beidou_b1i_make_telemetry_decoder_cc(const 
  * \see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf">GLONASS ICD</a>
  *
  */
-class beidou_b1i_telemetry_decoder_cc : public gr::block
+class beidou_b1i_telemetry_decoder_gs : public gr::block
 {
 public:
-    ~beidou_b1i_telemetry_decoder_cc();                   //!< Class destructor
+    ~beidou_b1i_telemetry_decoder_gs();                   //!< Class destructor
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
     void set_channel(int channel);                        //!< Set receiver's channel
 
@@ -75,9 +75,9 @@ public:
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
 private:
-    friend beidou_b1i_telemetry_decoder_cc_sptr
-    beidou_b1i_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
-    beidou_b1i_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
+    friend beidou_b1i_telemetry_decoder_gs_sptr
+    beidou_b1i_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+    beidou_b1i_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
     void decode_subframe(double *symbols);
     void decode_word(int32_t word_counter, const double *enc_word_symbols, int32_t *dec_word_symbols);

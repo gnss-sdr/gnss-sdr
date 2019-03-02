@@ -46,7 +46,7 @@ HybridObservables::HybridObservables(ConfigurationInterface* configuration,
     dump_mat_ = configuration->property(role + ".dump_mat", true);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
 
-    observables_ = hybrid_make_observables_cc(in_streams_, out_streams_, dump_, dump_mat_, dump_filename_);
+    observables_ = hybrid_make_observables_gs(in_streams_, out_streams_, dump_, dump_mat_, dump_filename_);
     DLOG(INFO) << "Observables block ID (" << observables_->unique_id() << ")";
 }
 

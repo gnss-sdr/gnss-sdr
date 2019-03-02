@@ -1,8 +1,9 @@
 /*!
- * \file glonass_l2_ca_telemetry_decoder_cc.h
- * \brief Implementation of an adapter of a GLONASS L2 C/A NAV data decoder block
+ * \file glonass_l1_ca_telemetry_decoder_gs.h
+ * \brief Implementation of an adapter of a GLONASS L1 C/A NAV data decoder block
  * to a TelemetryDecoderInterface
- * \author Damian Miralles, 2018. dmiralles2009(at)gmail.com
+ * \note Code added as part of GSoC 2017 program
+ * \author Damian Miralles, 2017. dmiralles2009(at)gmail.com
  *
  * -------------------------------------------------------------------------
  *
@@ -29,8 +30,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GLONASS_L2_CA_TELEMETRY_DECODER_CC_H
-#define GNSS_SDR_GLONASS_L2_CA_TELEMETRY_DECODER_CC_H
+#ifndef GNSS_SDR_GLONASS_L1_CA_TELEMETRY_DECODER_GS_H
+#define GNSS_SDR_GLONASS_L1_CA_TELEMETRY_DECODER_GS_H
 
 
 #include "GLONASS_L1_L2_CA.h"
@@ -46,21 +47,22 @@
 #include <string>
 
 
-class glonass_l2_ca_telemetry_decoder_cc;
+class glonass_l1_ca_telemetry_decoder_gs;
 
-using glonass_l2_ca_telemetry_decoder_cc_sptr = boost::shared_ptr<glonass_l2_ca_telemetry_decoder_cc>;
+using glonass_l1_ca_telemetry_decoder_gs_sptr = boost::shared_ptr<glonass_l1_ca_telemetry_decoder_gs>;
 
-glonass_l2_ca_telemetry_decoder_cc_sptr glonass_l2_ca_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
+glonass_l1_ca_telemetry_decoder_gs_sptr glonass_l1_ca_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
 /*!
  * \brief This class implements a block that decodes the GNAV data defined in GLONASS ICD v5.1
+ * \note Code added as part of GSoC 2017 program
  * \see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf">GLONASS ICD</a>
  *
  */
-class glonass_l2_ca_telemetry_decoder_cc : public gr::block
+class glonass_l1_ca_telemetry_decoder_gs : public gr::block
 {
 public:
-    ~glonass_l2_ca_telemetry_decoder_cc();                //!< Class destructor
+    ~glonass_l1_ca_telemetry_decoder_gs();                //!< Class destructor
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
     void set_channel(int32_t channel);                    //!< Set receiver's channel
 
@@ -71,9 +73,9 @@ public:
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
 private:
-    friend glonass_l2_ca_telemetry_decoder_cc_sptr
-    glonass_l2_ca_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
-    glonass_l2_ca_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
+    friend glonass_l1_ca_telemetry_decoder_gs_sptr
+    glonass_l1_ca_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+    glonass_l1_ca_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
     void decode_string(const double *symbols, int32_t frame_length);
 

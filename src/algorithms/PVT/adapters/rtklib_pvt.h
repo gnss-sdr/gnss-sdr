@@ -38,7 +38,7 @@
 #include "gps_ephemeris.h"
 #include "pvt_interface.h"
 #include "rtklib.h"
-#include "rtklib_pvt_cc.h"
+#include "rtklib_pvt_gs.h"
 #include <map>
 #include <string>
 
@@ -99,7 +99,7 @@ public:
         time_t* UTC_time) override;
 
 private:
-    rtklib_pvt_cc_sptr pvt_;
+    rtklib_pvt_gs_sptr pvt_;
     rtk_t rtk{};
     std::string role_;
     unsigned int in_streams_;

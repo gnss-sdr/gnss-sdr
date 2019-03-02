@@ -85,6 +85,10 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     //acq_parameters.samples_per_ms = static_cast<int>(std::round(static_cast<double>(fs_in_) * 0.001));
     acq_parameters.samples_per_code = nsamples_total;
 
+    acq_parameters.downsampling_factor = configuration_->property(role + ".downsampling_factor", 1.0);
+    acq_parameters.total_block_exp = configuration_->property(role + ".total_block_exp", 14);
+    acq_parameters.excludelimit = static_cast<uint32_t>(std::round(static_cast<double>(fs_in_) / GPS_L2_M_CODE_RATE_HZ));
+
     // compute all the GPS L1 PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
     auto* fft_if = new gr::fft::fft_complex(vector_length, true);  // Direct FFT
@@ -219,6 +223,7 @@ void GpsL2MPcpsAcquisitionFpga::reset()
 {
     acquisition_fpga_->set_active(true);
 }
+
 
 void GpsL2MPcpsAcquisitionFpga::set_state(int state)
 {

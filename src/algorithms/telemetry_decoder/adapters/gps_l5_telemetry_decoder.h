@@ -35,7 +35,7 @@
 
 
 #include "gnss_satellite.h"
-#include "gps_l5_telemetry_decoder_cc.h"
+#include "gps_l5_telemetry_decoder_gs.h"
 #include "telemetry_decoder_interface.h"
 #include <string>
 
@@ -84,7 +84,7 @@ public:
     }
 
 private:
-    gps_l5_telemetry_decoder_cc_sptr telemetry_decoder_;
+    gps_l5_telemetry_decoder_gs_sptr telemetry_decoder_;
     Gnss_Satellite satellite_;
     int channel_;
     bool dump_;

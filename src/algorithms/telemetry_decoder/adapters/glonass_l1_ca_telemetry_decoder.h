@@ -34,7 +34,7 @@
 #ifndef GNSS_SDR_GLONASS_L1_CA_TELEMETRY_DECODER_H_
 #define GNSS_SDR_GLONASS_L1_CA_TELEMETRY_DECODER_H_
 
-#include "glonass_l1_ca_telemetry_decoder_cc.h"
+#include "glonass_l1_ca_telemetry_decoder_gs.h"
 #include "telemetry_decoder_interface.h"
 #include <string>
 
@@ -78,7 +78,7 @@ public:
     }
 
 private:
-    glonass_l1_ca_telemetry_decoder_cc_sptr telemetry_decoder_;
+    glonass_l1_ca_telemetry_decoder_gs_sptr telemetry_decoder_;
     Gnss_Satellite satellite_;
     int channel_;
     bool dump_;

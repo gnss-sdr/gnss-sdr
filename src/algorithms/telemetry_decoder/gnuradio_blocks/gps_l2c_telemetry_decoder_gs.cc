@@ -1,5 +1,5 @@
 /*!
- * \file gps_l2c_telemetry_decoder_cc.cc
+ * \file gps_l2c_telemetry_decoder_gs.cc
  * \brief Implementation of a NAV message demodulator block based on
  * Kay Borre book MATLAB-based GPS receiver
  * \author Javier Arribas, 2015. jarribas(at)cttc.es
@@ -30,9 +30,9 @@
  */
 
 
-#include "gps_l2c_telemetry_decoder_cc.h"
 #include "display.h"
 #include "gnss_synchro.h"
+#include "gps_l2c_telemetry_decoder_gs.h"
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
@@ -43,15 +43,15 @@
 
 using google::LogMessage;
 
-gps_l2c_telemetry_decoder_cc_sptr
-gps_l2c_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump)
+gps_l2c_telemetry_decoder_gs_sptr
+gps_l2c_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump)
 {
-    return gps_l2c_telemetry_decoder_cc_sptr(new gps_l2c_telemetry_decoder_cc(satellite, dump));
+    return gps_l2c_telemetry_decoder_gs_sptr(new gps_l2c_telemetry_decoder_gs(satellite, dump));
 }
 
 
-gps_l2c_telemetry_decoder_cc::gps_l2c_telemetry_decoder_cc(
-    const Gnss_Satellite &satellite, bool dump) : gr::block("gps_l2c_telemetry_decoder_cc",
+gps_l2c_telemetry_decoder_gs::gps_l2c_telemetry_decoder_gs(
+    const Gnss_Satellite &satellite, bool dump) : gr::block("gps_l2c_telemetry_decoder_gs",
                                                       gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                                                       gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
@@ -74,7 +74,7 @@ gps_l2c_telemetry_decoder_cc::gps_l2c_telemetry_decoder_cc(
 }
 
 
-gps_l2c_telemetry_decoder_cc::~gps_l2c_telemetry_decoder_cc()
+gps_l2c_telemetry_decoder_gs::~gps_l2c_telemetry_decoder_gs()
 {
     if (d_dump_file.is_open() == true)
         {
@@ -90,14 +90,14 @@ gps_l2c_telemetry_decoder_cc::~gps_l2c_telemetry_decoder_cc()
 }
 
 
-void gps_l2c_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satellite)
+void gps_l2c_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satellite)
 {
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     DLOG(INFO) << "GPS L2C CNAV telemetry decoder in channel " << this->d_channel << " set to satellite " << d_satellite;
 }
 
 
-void gps_l2c_telemetry_decoder_cc::set_channel(int channel)
+void gps_l2c_telemetry_decoder_gs::set_channel(int channel)
 {
     d_channel = channel;
     LOG(INFO) << "GPS L2C CNAV channel set to " << channel;
@@ -125,7 +125,7 @@ void gps_l2c_telemetry_decoder_cc::set_channel(int channel)
 }
 
 
-int gps_l2c_telemetry_decoder_cc::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
+int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     // get pointers on in- and output gnss-synchro objects

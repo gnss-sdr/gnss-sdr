@@ -711,7 +711,7 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
     pvt_output_parameters.udp_port = configuration->property(role + ".monitor_udp_port", 1234);
 
     // make PVT object
-    pvt_ = rtklib_make_pvt_cc(in_streams_, pvt_output_parameters, rtk);
+    pvt_ = rtklib_make_pvt_gs(in_streams_, pvt_output_parameters, rtk);
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
     if (out_streams_ > 0)
         {

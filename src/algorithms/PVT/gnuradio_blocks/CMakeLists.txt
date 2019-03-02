@@ -17,11 +17,11 @@
 #
 
 set(PVT_GR_BLOCKS_SOURCES
-    rtklib_pvt_cc.cc
+    rtklib_pvt_gs.cc
 )
 
 set(PVT_GR_BLOCKS_HEADERS
-    rtklib_pvt_cc.h
+    rtklib_pvt_gs.h
 )
 
 source_group(Headers FILES ${PVT_GR_BLOCKS_HEADERS})

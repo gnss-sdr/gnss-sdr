@@ -34,7 +34,7 @@
 #ifndef GNSS_SDR_HYBRID_OBSERVABLES_H_
 #define GNSS_SDR_HYBRID_OBSERVABLES_H_
 
-#include "hybrid_observables_cc.h"
+#include "hybrid_observables_gs.h"
 #include "observables_interface.h"
 #include <string>
 
@@ -81,7 +81,7 @@ public:
     }
 
 private:
-    hybrid_observables_cc_sptr observables_;
+    hybrid_observables_gs_sptr observables_;
     bool dump_;
     bool dump_mat_;
     std::string dump_filename_;

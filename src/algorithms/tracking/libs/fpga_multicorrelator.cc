@@ -248,7 +248,7 @@ void Fpga_Multicorrelator_8sc::set_channel(uint32_t channel)
     int32_t numdevice = d_device_base + d_channel;
     devicebasetemp << numdevice;
     mergedname = d_device_name + devicebasetemp.str();
-    strcpy(device_io_name, mergedname.c_str());
+    strcpy(device_io_name, mergedname.substr(0, MAX_LENGTH_DEVICEIO_NAME).c_str());
 
     std::cout << "trk device_io_name = " << device_io_name << std::endl;
 
@@ -351,8 +351,7 @@ void Fpga_Multicorrelator_8sc::fpga_compute_code_shift_parameters(void)
                     temp_calculation = temp_calculation + (d_code_length_chips * d_code_samples_per_chip);  // % operator does not work as in Matlab with negative numbers
                 }
             d_initial_index[i] = static_cast<uint32_t>((static_cast<int32_t>(temp_calculation)) % (d_code_length_chips * d_code_samples_per_chip));
-            temp_calculation = fmod(d_shifts_chips[i] - d_rem_code_phase_chips,
-                1.0);
+            temp_calculation = fmod(d_shifts_chips[i] - d_rem_code_phase_chips, 1.0);
             if (temp_calculation < 0)
                 {
                     temp_calculation = temp_calculation + 1.0;  // fmod operator does not work as in Matlab with negative numbers
@@ -362,16 +361,14 @@ void Fpga_Multicorrelator_8sc::fpga_compute_code_shift_parameters(void)
         }
     if (d_track_pilot)
         {
-            temp_calculation = floor(
-                d_prompt_data_shift[0] - d_rem_code_phase_chips);
+            temp_calculation = floor(d_prompt_data_shift[0] - d_rem_code_phase_chips);
 
             if (temp_calculation < 0)
                 {
                     temp_calculation = temp_calculation + (d_code_length_chips * d_code_samples_per_chip);  // % operator does not work as in Matlab with negative numbers
                 }
             d_initial_index[d_n_correlators] = static_cast<uint32_t>((static_cast<int32_t>(temp_calculation)) % (d_code_length_chips * d_code_samples_per_chip));
-            temp_calculation = fmod(d_prompt_data_shift[0] - d_rem_code_phase_chips,
-                1.0);
+            temp_calculation = fmod(d_prompt_data_shift[0] - d_rem_code_phase_chips, 1.0);
             if (temp_calculation < 0)
                 {
                     temp_calculation = temp_calculation + 1.0;  // fmod operator does not work as in Matlab with negative numbers
@@ -421,14 +418,12 @@ void Fpga_Multicorrelator_8sc::fpga_compute_signal_parameters_in_fpga(void)
         {
             d_rem_carrier_phase_in_rad_temp = d_rem_carrier_phase_in_rad;
         }
-    d_rem_carr_phase_rad_int = static_cast<int32_t>(roundf(
-        (fabs(d_rem_carrier_phase_in_rad_temp) / M_PI) * pow(2, PHASE_CARR_NBITS_FRAC)));
+    d_rem_carr_phase_rad_int = static_cast<int32_t>(roundf((fabs(d_rem_carrier_phase_in_rad_temp) / M_PI) * pow(2, PHASE_CARR_NBITS_FRAC)));
     if (d_rem_carrier_phase_in_rad_temp < 0)
         {
             d_rem_carr_phase_rad_int = -d_rem_carr_phase_rad_int;
         }
-    d_phase_step_rad_int = static_cast<int32_t>(roundf(
-        (fabs(d_phase_step_rad) / M_PI) * pow(2, PHASE_CARR_NBITS_FRAC)));  // the FPGA accepts a range for the phase step between -pi and +pi
+    d_phase_step_rad_int = static_cast<int32_t>(roundf((fabs(d_phase_step_rad) / M_PI) * pow(2, PHASE_CARR_NBITS_FRAC)));  // the FPGA accepts a range for the phase step between -pi and +pi
 
     if (d_phase_step_rad < 0)
         {

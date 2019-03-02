@@ -39,9 +39,6 @@
 
 using google::LogMessage;
 
-void GalileoE5aDllPllTrackingFpga::stop_tracking()
-{
-}
 
 GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     ConfigurationInterface *configuration, const std::string &role,
@@ -183,6 +180,11 @@ GalileoE5aDllPllTrackingFpga::~GalileoE5aDllPllTrackingFpga()
 void GalileoE5aDllPllTrackingFpga::start_tracking()
 {
     tracking_fpga_sc->start_tracking();
+}
+
+
+void GalileoE5aDllPllTrackingFpga::stop_tracking()
+{
 }
 
 

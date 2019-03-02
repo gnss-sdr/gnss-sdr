@@ -1,5 +1,5 @@
 /*!
- * \file beidou_b1i_telemetry_decoder_cc.cc
+ * \file beidou_b1i_telemetry_decoder_gs.cc
  * \brief Implementation of an adapter of a BEIDOU BI1 DNAV data decoder block
  * to a TelemetryDecoderInterface
  * \note Code added as part of GSoC 2018 program
@@ -32,7 +32,7 @@
  */
 
 
-#include "beidou_b1i_telemetry_decoder_cc.h"
+#include "beidou_b1i_telemetry_decoder_gs.h"
 #include "convolutional.h"
 #include "display.h"
 #include "gnss_synchro.h"
@@ -47,16 +47,16 @@
 using google::LogMessage;
 
 
-beidou_b1i_telemetry_decoder_cc_sptr
-beidou_b1i_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump)
+beidou_b1i_telemetry_decoder_gs_sptr
+beidou_b1i_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump)
 {
-    return beidou_b1i_telemetry_decoder_cc_sptr(new beidou_b1i_telemetry_decoder_cc(satellite, dump));
+    return beidou_b1i_telemetry_decoder_gs_sptr(new beidou_b1i_telemetry_decoder_gs(satellite, dump));
 }
 
 
-beidou_b1i_telemetry_decoder_cc::beidou_b1i_telemetry_decoder_cc(
+beidou_b1i_telemetry_decoder_gs::beidou_b1i_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
-    bool dump) : gr::block("beidou_b1i_telemetry_decoder_cc",
+    bool dump) : gr::block("beidou_b1i_telemetry_decoder_gs",
                      gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                      gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
@@ -133,7 +133,7 @@ beidou_b1i_telemetry_decoder_cc::beidou_b1i_telemetry_decoder_cc(
 }
 
 
-beidou_b1i_telemetry_decoder_cc::~beidou_b1i_telemetry_decoder_cc()
+beidou_b1i_telemetry_decoder_gs::~beidou_b1i_telemetry_decoder_gs()
 {
     volk_gnsssdr_free(d_preamble_samples);
     volk_gnsssdr_free(d_secondary_code_symbols);
@@ -153,7 +153,7 @@ beidou_b1i_telemetry_decoder_cc::~beidou_b1i_telemetry_decoder_cc()
 }
 
 
-void beidou_b1i_telemetry_decoder_cc::decode_bch15_11_01(const int32_t *bits, int32_t *decbits)
+void beidou_b1i_telemetry_decoder_gs::decode_bch15_11_01(const int32_t *bits, int32_t *decbits)
 {
     int32_t bit, err, reg[4] = {1, 1, 1, 1};
     int32_t errind[15] = {14, 13, 10, 12, 6, 9, 4, 11, 0, 5, 7, 8, 1, 3, 2};
@@ -182,7 +182,7 @@ void beidou_b1i_telemetry_decoder_cc::decode_bch15_11_01(const int32_t *bits, in
 }
 
 
-void beidou_b1i_telemetry_decoder_cc::decode_word(
+void beidou_b1i_telemetry_decoder_gs::decode_word(
     int32_t word_counter,
     const double *enc_word_symbols,
     int32_t *dec_word_symbols)
@@ -224,7 +224,7 @@ void beidou_b1i_telemetry_decoder_cc::decode_word(
 }
 
 
-void beidou_b1i_telemetry_decoder_cc::decode_subframe(double *frame_symbols)
+void beidou_b1i_telemetry_decoder_gs::decode_subframe(double *frame_symbols)
 {
     // 1. Transform from symbols to bits
     std::string data_bits;
@@ -251,7 +251,6 @@ void beidou_b1i_telemetry_decoder_cc::decode_subframe(double *frame_symbols)
         {
             d_nav.d1_subframe_decoder(data_bits);
         }
-
 
     // 3. Check operation executed correctly
     if (d_nav.flag_crc_test == true)
@@ -298,7 +297,7 @@ void beidou_b1i_telemetry_decoder_cc::decode_subframe(double *frame_symbols)
 }
 
 
-void beidou_b1i_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satellite)
+void beidou_b1i_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satellite)
 {
     uint32_t sat_prn = 0;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
@@ -348,7 +347,7 @@ void beidou_b1i_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satell
 }
 
 
-void beidou_b1i_telemetry_decoder_cc::set_channel(int32_t channel)
+void beidou_b1i_telemetry_decoder_gs::set_channel(int32_t channel)
 {
     d_channel = channel;
     LOG(INFO) << "Navigation channel set to " << channel;
@@ -375,7 +374,7 @@ void beidou_b1i_telemetry_decoder_cc::set_channel(int32_t channel)
 }
 
 
-int beidou_b1i_telemetry_decoder_cc::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
+int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     int32_t corr_value = 0;

@@ -627,7 +627,7 @@ int32_t Galileo_Navigation_Message::page_jk_decoder(const char* data_jk)
     std::bitset<GALILEO_DATA_JK_BITS> data_jk_bits(data_jk_string);
 
     page_number = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, PAGE_TYPE_BIT));
-    LOG(INFO) << "Page number = " << page_number;
+    DLOG(INFO) << "Page number = " << page_number;
 
     switch (page_number)
         {

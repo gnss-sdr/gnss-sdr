@@ -119,8 +119,6 @@ private:
     int32_t d_correlation_length_ms;
     int32_t d_n_correlator_taps;
 
-    float *d_tracking_code;
-    float *d_data_code;
     float *d_local_code_shift_chips;
     float *d_prompt_data_shift;
     std::shared_ptr<Fpga_Multicorrelator_8sc> multicorrelator_fpga;

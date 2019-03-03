@@ -89,6 +89,7 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
     if (!rx_signal_file)
         {
             std::cerr << "Unable to open file!" << std::endl;
+            free(buffer_float);
             return;
         }
 
@@ -123,6 +124,9 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
     if (!buffer_DMA)
         {
             std::cerr << "Memory error!" << std::endl;
+            free(buffer_float);
+            fclose(rx_signal_file);
+            return;
         }
 
     // open the DMA descriptor
@@ -130,6 +134,9 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
     if (dma_descr < 0)
         {
             std::cerr << "Can't open loop device\n";
+            free(buffer_float);
+            free(buffer_DMA);
+            fclose(rx_signal_file);
             return;
         }
 

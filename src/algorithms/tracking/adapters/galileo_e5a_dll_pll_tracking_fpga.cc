@@ -36,6 +36,7 @@
 #include "galileo_e5_signal_processing.h"
 #include "gnss_sdr_flags.h"
 #include <glog/logging.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 
 using google::LogMessage;
 

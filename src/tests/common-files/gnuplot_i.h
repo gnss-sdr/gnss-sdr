@@ -2082,10 +2082,13 @@ bool Gnuplot::get_program_path()
     // Retrieves a C string containing the value of environment variable PATH
     path = std::getenv("PATH");
     std::stringstream s;
-    s << path;
-    if (s.fail())
+    if (!path)
         {
-            throw GnuplotException("Path is not set");
+            s << path;
+        }
+    if (s.fail() or s.gcount() == 0)
+        {
+            throw GnuplotException("PATH is not set");
         }
     std::string path_str = s.str();
 

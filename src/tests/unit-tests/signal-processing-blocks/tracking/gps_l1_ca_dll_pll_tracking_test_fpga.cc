@@ -87,6 +87,7 @@ void send_tracking_gps_input_samples(FILE *rx_signal_file,
     if (!buffer_DMA)
         {
             std::cerr << "Memory error!" << std::endl;
+            close(dma_descr);
             return;
         }
 

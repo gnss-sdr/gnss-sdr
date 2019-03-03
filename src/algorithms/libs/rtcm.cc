@@ -3366,6 +3366,7 @@ std::map<std::string, int> Rtcm::gps_signal_map = [] {
     gps_signal_map_["5I"] = 22;
     gps_signal_map_["5Q"] = 23;
     gps_signal_map_["5X"] = 24;
+    gps_signal_map_["L5"] = 24;  // Workaround. TODO: check if it was I or Q
     return gps_signal_map_;
 }();
 

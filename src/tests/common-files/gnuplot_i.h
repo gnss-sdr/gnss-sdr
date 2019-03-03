@@ -2082,7 +2082,7 @@ bool Gnuplot::get_program_path()
     // Retrieves a C string containing the value of environment variable PATH
     path = std::getenv("PATH");
     std::stringstream s;
-    if (!path)
+    if (path != nullptr)
         {
             s << path;
         }
@@ -2091,10 +2091,8 @@ bool Gnuplot::get_program_path()
             throw GnuplotException("PATH is not well defined");
         }
     std::string path_str;
-    if (s.gcount() > 0)
-        {
-            path_str = s.str();
-        }
+    path_str = s.str();
+
     std::list<std::string> ls;
 
 //split path (one long string) into list ls of strings

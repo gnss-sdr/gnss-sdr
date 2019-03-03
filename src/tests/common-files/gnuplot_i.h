@@ -2086,12 +2086,15 @@ bool Gnuplot::get_program_path()
         {
             s << path;
         }
-    if (s.fail() or s.gcount() == 0)
+    if (s.fail())
         {
-            throw GnuplotException("PATH is not set");
+            throw GnuplotException("PATH is not well defined");
         }
-    std::string path_str = s.str();
-
+    std::string path_str;
+    if (s.gcount() > 0)
+        {
+            path_str = s.str();
+        }
     std::list<std::string> ls;
 
 //split path (one long string) into list ls of strings

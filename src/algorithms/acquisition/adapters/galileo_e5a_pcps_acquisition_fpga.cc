@@ -39,9 +39,6 @@
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
 
 
-using google::LogMessage;
-
-
 GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,

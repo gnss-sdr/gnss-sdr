@@ -42,7 +42,6 @@
 #include "gnss_sdr_flags.h"
 #include <glog/logging.h>
 
-using google::LogMessage;
 
 BeidouB1iDllPllTracking::BeidouB1iDllPllTracking(
     ConfigurationInterface* configuration, const std::string& role,

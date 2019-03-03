@@ -53,8 +53,6 @@ Concurrent_Queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 
 Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
-using google::LogMessage;
-
 DECLARE_string(log_dir);
 
 int main(int argc, char **argv)

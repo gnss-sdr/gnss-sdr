@@ -58,9 +58,6 @@
 #include <memory>
 #include <queue>
 
-
-using google::LogMessage;
-
 DECLARE_string(log_dir);
 
 #if UNIT_TESTING_MINIMAL

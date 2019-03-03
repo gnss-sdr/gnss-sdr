@@ -62,7 +62,6 @@
 #include <numeric>
 #include <sstream>
 
-using google::LogMessage;
 
 dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(const Dll_Pll_Conf_Fpga &conf_)
 {

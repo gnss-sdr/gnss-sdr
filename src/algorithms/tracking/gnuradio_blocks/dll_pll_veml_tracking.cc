@@ -63,7 +63,6 @@
 #include <numeric>
 #include <sstream>
 
-using google::LogMessage;
 
 dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_)
 {

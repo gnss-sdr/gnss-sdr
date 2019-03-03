@@ -38,7 +38,6 @@
 #include <volk/volk.h>
 #include <utility>
 
-using google::LogMessage;
 
 FreqXlatingFirFilter::FreqXlatingFirFilter(ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : config_(configuration), role_(std::move(role)), in_streams_(in_streams), out_streams_(out_streams)

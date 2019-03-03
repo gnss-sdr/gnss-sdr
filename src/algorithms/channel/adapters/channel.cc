@@ -35,7 +35,6 @@
 #include <glog/logging.h>
 #include <cstdint>
 
-using google::LogMessage;
 
 // Constructor
 Channel::Channel(ConfigurationInterface* configuration, uint32_t channel, std::shared_ptr<AcquisitionInterface> acq,

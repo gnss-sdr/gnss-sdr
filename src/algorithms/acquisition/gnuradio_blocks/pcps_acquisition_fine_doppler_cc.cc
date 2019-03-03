@@ -44,8 +44,6 @@
 #include <sstream>
 
 
-using google::LogMessage;
-
 pcps_acquisition_fine_doppler_cc_sptr pcps_make_acquisition_fine_doppler_cc(const Acq_Conf &conf_)
 {
     return pcps_acquisition_fine_doppler_cc_sptr(

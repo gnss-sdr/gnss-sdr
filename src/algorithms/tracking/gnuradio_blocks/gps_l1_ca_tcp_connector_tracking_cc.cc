@@ -53,8 +53,6 @@
 #include <utility>
 
 
-using google::LogMessage;
-
 gps_l1_ca_tcp_connector_tracking_cc_sptr
 gps_l1_ca_tcp_connector_make_tracking_cc(
     int64_t fs_in,

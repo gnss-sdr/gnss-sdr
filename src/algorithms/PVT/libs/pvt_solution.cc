@@ -36,9 +36,6 @@
 #include <exception>
 
 
-using google::LogMessage;
-
-
 Pvt_Solution::Pvt_Solution()
 {
     d_latitude_d = 0.0;

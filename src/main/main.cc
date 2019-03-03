@@ -63,9 +63,6 @@
 #endif
 
 
-using google::LogMessage;
-
-
 /*
 * Concurrent queues that communicates the Telemetry Decoder
 * to the Observables modules

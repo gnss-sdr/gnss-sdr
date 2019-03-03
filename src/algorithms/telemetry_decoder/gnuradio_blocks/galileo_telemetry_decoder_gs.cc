@@ -29,9 +29,9 @@
  */
 
 
+#include "galileo_telemetry_decoder_gs.h"
 #include "convolutional.h"
 #include "display.h"
-#include "galileo_telemetry_decoder_gs.h"
 #include "gnss_synchro.h"
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
@@ -41,8 +41,6 @@
 
 
 #define CRC_ERROR_LIMIT 6
-
-using google::LogMessage;
 
 
 galileo_telemetry_decoder_gs_sptr

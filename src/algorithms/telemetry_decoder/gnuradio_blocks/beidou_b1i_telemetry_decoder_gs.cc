@@ -44,8 +44,6 @@
 
 #define CRC_ERROR_LIMIT 8
 
-using google::LogMessage;
-
 
 beidou_b1i_telemetry_decoder_gs_sptr
 beidou_b1i_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump)

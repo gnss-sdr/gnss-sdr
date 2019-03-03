@@ -30,9 +30,9 @@
  */
 
 
+#include "gps_l2c_telemetry_decoder_gs.h"
 #include "display.h"
 #include "gnss_synchro.h"
-#include "gps_l2c_telemetry_decoder_gs.h"
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
@@ -40,8 +40,6 @@
 #include <iostream>
 #include <sstream>
 
-
-using google::LogMessage;
 
 gps_l2c_telemetry_decoder_gs_sptr
 gps_l2c_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump)

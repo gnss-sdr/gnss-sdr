@@ -36,8 +36,6 @@
 #include <dbfcttc/raw_array.h>
 
 
-using google::LogMessage;
-
 RawArraySignalSource::RawArraySignalSource(ConfigurationInterface* configuration,
     std::string role, unsigned int in_stream, unsigned int out_stream, gr::msg_queue::sptr queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
 {
@@ -45,10 +43,8 @@ RawArraySignalSource::RawArraySignalSource(ConfigurationInterface* configuration
     std::string default_dump_file = "./data/raw_array_source.dat";
     item_type_ = configuration->property(role + ".item_type", default_item_type);
 
-
     //dump_ = configuration->property(role + ".dump", false);
     //dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
-
     dump_ = false;
 
     std::string default_ethernet_dev = "eth0";

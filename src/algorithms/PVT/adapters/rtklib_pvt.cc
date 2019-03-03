@@ -43,9 +43,6 @@ namespace bc = boost::integer;
 #endif
 
 
-using google::LogMessage;
-
-
 Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,

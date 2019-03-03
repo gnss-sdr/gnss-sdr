@@ -39,7 +39,6 @@
 #include <sstream>
 #include <utility>
 
-using google::LogMessage;
 
 // Constructor
 GenSignalSource::GenSignalSource(GNSSBlockInterface *signal_generator, GNSSBlockInterface *filter,

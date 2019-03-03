@@ -36,7 +36,6 @@
 #include <volk/volk.h>
 #include <complex>
 
-using google::LogMessage;
 
 Pass_Through::Pass_Through(ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams,

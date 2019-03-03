@@ -36,8 +36,6 @@
 #include <gnuradio/io_signature.h>
 
 
-using google::LogMessage;
-
 GpsL5TelemetryDecoder::GpsL5TelemetryDecoder(ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,

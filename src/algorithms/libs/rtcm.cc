@@ -42,8 +42,6 @@
 #include <sstream>    // for std::stringstream
 #include <thread>
 
-using google::LogMessage;
-
 
 Rtcm::Rtcm(uint16_t port)
 {

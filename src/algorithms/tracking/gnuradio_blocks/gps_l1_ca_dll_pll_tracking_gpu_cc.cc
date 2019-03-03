@@ -44,8 +44,6 @@
 #include <sstream>
 
 
-using google::LogMessage;
-
 gps_l1_ca_dll_pll_tracking_gpu_cc_sptr
 gps_l1_ca_dll_pll_make_tracking_gpu_cc(
     int64_t fs_in,

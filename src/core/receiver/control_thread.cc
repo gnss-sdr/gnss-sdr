@@ -73,8 +73,6 @@
 extern Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 extern Concurrent_Queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 
-using google::LogMessage;
-
 
 ControlThread::ControlThread()
 {

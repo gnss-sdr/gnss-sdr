@@ -38,8 +38,6 @@
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 
-using google::LogMessage;
-
 
 GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     ConfigurationInterface *configuration, const std::string &role,

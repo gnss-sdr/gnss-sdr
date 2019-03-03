@@ -39,9 +39,6 @@
 #include <glog/logging.h>
 
 
-using google::LogMessage;
-
-
 GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     ConfigurationInterface* configuration,
     const std::string& role,

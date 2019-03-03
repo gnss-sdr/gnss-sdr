@@ -30,16 +30,14 @@
  */
 
 
-#include "display.h"
 #include "glonass_l2_ca_telemetry_decoder_gs.h"
+#include "display.h"
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 
 
 #define CRC_ERROR_LIMIT 6
-
-using google::LogMessage;
 
 
 glonass_l2_ca_telemetry_decoder_gs_sptr

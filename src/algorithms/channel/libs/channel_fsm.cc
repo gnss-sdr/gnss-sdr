@@ -33,7 +33,6 @@
 #include "control_message_factory.h"
 #include <glog/logging.h>
 
-using google::LogMessage;
 
 ChannelFsm::ChannelFsm()
 {

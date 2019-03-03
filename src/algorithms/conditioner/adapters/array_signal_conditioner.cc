@@ -34,8 +34,6 @@
 #include <utility>
 
 
-using google::LogMessage;
-
 // Constructor
 ArraySignalConditioner::ArraySignalConditioner(ConfigurationInterface *configuration,
     std::shared_ptr<GNSSBlockInterface> data_type_adapt,

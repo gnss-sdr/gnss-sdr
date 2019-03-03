@@ -38,8 +38,6 @@
 #include <utility>
 
 
-using google::LogMessage;
-
 Hybrid_Ls_Pvt::Hybrid_Ls_Pvt(int nchannels, std::string dump_filename, bool flag_dump_to_file) : Ls_Pvt()
 {
     // init empty ephemeris for all the available GNSS channels

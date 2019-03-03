@@ -172,9 +172,6 @@
 #include <utility>
 
 
-using google::LogMessage;
-
-
 GNSSBlockFactory::GNSSBlockFactory() = default;
 
 

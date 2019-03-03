@@ -39,8 +39,6 @@
 #include <exception>
 #include <sstream>
 
-using google::LogMessage;
-
 
 Gpx_Printer::Gpx_Printer(const std::string& base_path)
 {

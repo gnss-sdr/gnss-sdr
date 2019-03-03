@@ -77,8 +77,6 @@
 #include <vector>
 
 
-using google::LogMessage;
-
 DECLARE_string(log_dir);
 
 Concurrent_Map<Gps_Ephemeris> global_gps_ephemeris_map;

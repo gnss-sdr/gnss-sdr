@@ -40,8 +40,6 @@
 #include "gps_sdr_signal_processing.h"
 #include <glog/logging.h>
 
-using google::LogMessage;
-
 
 GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
     ConfigurationInterface* configuration,

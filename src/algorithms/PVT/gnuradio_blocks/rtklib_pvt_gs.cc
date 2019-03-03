@@ -28,11 +28,11 @@
  * -------------------------------------------------------------------------
  */
 
+#include "rtklib_pvt_gs.h"
 #include "display.h"
 #include "galileo_almanac_helper.h"
 #include "gnss_sdr_create_directory.h"
 #include "pvt_conf.h"
-#include "rtklib_pvt_gs.h"
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/exception/all.hpp>
@@ -53,8 +53,6 @@ namespace bc = boost::math;
 #include <boost/integer/common_factor_rt.hpp>
 namespace bc = boost::integer;
 #endif
-
-using google::LogMessage;
 
 
 rtklib_pvt_gs_sptr rtklib_make_pvt_gs(uint32_t nchannels,

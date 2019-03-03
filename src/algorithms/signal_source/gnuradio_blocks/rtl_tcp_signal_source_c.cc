@@ -36,7 +36,6 @@
 #include <glog/logging.h>
 #include <map>
 
-using google::LogMessage;
 
 namespace ip = boost::asio::ip;
 using boost::asio::ip::tcp;

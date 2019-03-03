@@ -42,8 +42,6 @@
 
 #define NUM_PRNs 32
 
-using google::LogMessage;
-
 
 GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     ConfigurationInterface* configuration,

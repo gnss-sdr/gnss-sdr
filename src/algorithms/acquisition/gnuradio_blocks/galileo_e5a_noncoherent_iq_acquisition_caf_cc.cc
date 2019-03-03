@@ -44,7 +44,6 @@
 #include <sstream>
 #include <utility>
 
-using google::LogMessage;
 
 galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(
     unsigned int sampled_ms,

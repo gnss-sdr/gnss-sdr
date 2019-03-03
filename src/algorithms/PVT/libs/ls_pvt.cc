@@ -37,9 +37,6 @@
 #include <stdexcept>
 
 
-using google::LogMessage;
-
-
 Ls_Pvt::Ls_Pvt() : Pvt_Solution()
 {
 }

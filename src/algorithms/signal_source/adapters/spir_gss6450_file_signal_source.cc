@@ -39,9 +39,6 @@
 #include <utility>
 
 
-using google::LogMessage;
-
-
 SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(ConfigurationInterface* configuration,
     const std::string& role, uint32_t in_streams, uint32_t out_streams, gr::msg_queue::sptr queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(std::move(queue))
 {

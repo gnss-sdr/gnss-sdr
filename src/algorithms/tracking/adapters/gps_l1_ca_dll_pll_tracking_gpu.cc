@@ -42,12 +42,6 @@
 #include <glog/logging.h>
 
 
-using google::LogMessage;
-
-void GpsL1CaDllPllTrackingGPU::stop_tracking()
-{
-}
-
 GpsL1CaDllPllTrackingGPU::GpsL1CaDllPllTrackingGPU(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
@@ -118,6 +112,12 @@ void GpsL1CaDllPllTrackingGPU::start_tracking()
     tracking_->start_tracking();
 }
 
+
+void GpsL1CaDllPllTrackingGPU::stop_tracking()
+{
+}
+
+
 /*
  * Set tracking channel unique ID
  */
@@ -127,10 +127,12 @@ void GpsL1CaDllPllTrackingGPU::set_channel(unsigned int channel)
     tracking_->set_channel(channel);
 }
 
+
 void GpsL1CaDllPllTrackingGPU::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
     tracking_->set_gnss_synchro(p_gnss_synchro);
 }
+
 
 void GpsL1CaDllPllTrackingGPU::connect(gr::top_block_sptr top_block)
 {
@@ -140,6 +142,7 @@ void GpsL1CaDllPllTrackingGPU::connect(gr::top_block_sptr top_block)
     //nothing to connect, now the tracking uses gr_sync_decimator
 }
 
+
 void GpsL1CaDllPllTrackingGPU::disconnect(gr::top_block_sptr top_block)
 {
     if (top_block)
@@ -148,10 +151,12 @@ void GpsL1CaDllPllTrackingGPU::disconnect(gr::top_block_sptr top_block)
     //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
+
 gr::basic_block_sptr GpsL1CaDllPllTrackingGPU::get_left_block()
 {
     return tracking_;
 }
+
 
 gr::basic_block_sptr GpsL1CaDllPllTrackingGPU::get_right_block()
 {

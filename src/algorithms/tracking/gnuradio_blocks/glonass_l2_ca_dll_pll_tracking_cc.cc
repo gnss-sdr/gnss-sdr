@@ -55,7 +55,6 @@
 
 #define CN0_ESTIMATION_SAMPLES 10
 
-using google::LogMessage;
 
 glonass_l2_ca_dll_pll_tracking_cc_sptr
 glonass_l2_ca_dll_pll_make_tracking_cc(

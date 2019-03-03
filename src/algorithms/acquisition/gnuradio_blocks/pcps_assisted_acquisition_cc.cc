@@ -44,7 +44,6 @@
 
 extern Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
-using google::LogMessage;
 
 pcps_assisted_acquisition_cc_sptr pcps_make_assisted_acquisition_cc(
     int32_t max_dwells, uint32_t sampled_ms, int32_t doppler_max, int32_t doppler_min,

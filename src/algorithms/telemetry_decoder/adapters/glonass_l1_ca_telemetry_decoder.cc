@@ -40,8 +40,6 @@
 #include <gnuradio/io_signature.h>
 
 
-using google::LogMessage;
-
 GlonassL1CaTelemetryDecoder::GlonassL1CaTelemetryDecoder(ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,

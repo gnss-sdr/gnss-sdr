@@ -40,8 +40,6 @@
 #include <gnuradio/io_signature.h>
 
 
-using google::LogMessage;
-
 BeidouB1iTelemetryDecoder::BeidouB1iTelemetryDecoder(ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,

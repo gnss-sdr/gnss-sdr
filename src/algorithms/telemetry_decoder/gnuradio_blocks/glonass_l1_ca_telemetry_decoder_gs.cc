@@ -39,8 +39,6 @@
 
 #define CRC_ERROR_LIMIT 6
 
-using google::LogMessage;
-
 
 glonass_l1_ca_telemetry_decoder_gs_sptr
 glonass_l1_ca_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump)

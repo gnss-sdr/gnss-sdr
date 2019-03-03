@@ -58,7 +58,6 @@
 #include <sstream>
 #include <utility>
 
-using google::LogMessage;
 
 pcps_tong_acquisition_cc_sptr pcps_tong_make_acquisition_cc(
     uint32_t sampled_ms,

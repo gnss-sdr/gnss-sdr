@@ -41,7 +41,6 @@
 #include <cstdint>
 #include <limits>
 
-using google::LogMessage;
 
 DirectResamplerConditioner::DirectResamplerConditioner(
     ConfigurationInterface* configuration, const std::string& role,

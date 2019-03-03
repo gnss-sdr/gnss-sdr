@@ -29,10 +29,10 @@
  * -------------------------------------------------------------------------
  */
 
+#include "hybrid_observables_gs.h"
 #include "GPS_L1_CA.h"
 #include "display.h"
 #include "gnss_sdr_create_directory.h"
-#include "hybrid_observables_gs.h"
 #include <boost/filesystem/path.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
@@ -44,9 +44,6 @@
 #include <iostream>
 #include <limits>
 #include <utility>
-
-
-using google::LogMessage;
 
 
 hybrid_observables_gs_sptr hybrid_make_observables_gs(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, bool dump_mat, std::string dump_filename)

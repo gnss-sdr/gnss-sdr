@@ -44,8 +44,6 @@
 #include <gnuradio/io_signature.h>
 
 
-using google::LogMessage;
-
 GalileoE5aTelemetryDecoder::GalileoE5aTelemetryDecoder(ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,

@@ -64,8 +64,6 @@
 #include <utility>
 
 
-using google::LogMessage;
-
 Rtklib_Solver::Rtklib_Solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, const rtk_t &rtk)
 {
     // init empty ephemeris for all the available GNSS channels

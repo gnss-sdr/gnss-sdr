@@ -47,8 +47,6 @@
 #include <utility>
 
 
-using google::LogMessage;
-
 gps_l1_ca_dll_pll_c_aid_tracking_cc_sptr
 gps_l1_ca_dll_pll_c_aid_make_tracking_cc(
     int64_t fs_in,

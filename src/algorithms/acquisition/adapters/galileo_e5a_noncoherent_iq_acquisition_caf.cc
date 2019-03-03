@@ -43,8 +43,6 @@
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
 
-using google::LogMessage;
-
 
 GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
     ConfigurationInterface* configuration,

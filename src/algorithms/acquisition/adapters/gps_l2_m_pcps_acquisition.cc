@@ -41,9 +41,6 @@
 #include <glog/logging.h>
 
 
-using google::LogMessage;
-
-
 GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     ConfigurationInterface* configuration,
     const std::string& role,

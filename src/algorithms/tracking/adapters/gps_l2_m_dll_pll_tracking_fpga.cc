@@ -46,8 +46,6 @@
 
 #define NUM_PRNs 32
 
-using google::LogMessage;
-
 
 GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
     ConfigurationInterface* configuration, const std::string& role,

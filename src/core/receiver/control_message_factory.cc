@@ -32,8 +32,6 @@
 #include <glog/logging.h>
 
 
-using google::LogMessage;
-
 // Constructor
 ControlMessageFactory::ControlMessageFactory() = default;
 

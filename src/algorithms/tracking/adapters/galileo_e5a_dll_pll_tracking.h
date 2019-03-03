@@ -2,8 +2,6 @@
  * \file galileo_e5a_dll_pll_tracking.h
  * \brief Adapts a code DLL + carrier PLL
  *  tracking block to a TrackingInterface for Galileo E5a signals
- * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
- *  Galileo E5a data and pilot Signals
  * \author Marc Sales, 2014. marcsales92(at)gmail.com
  * \based on work from:
  *          <ul>

@@ -81,6 +81,10 @@ private:
         const Pvt_Conf& conf_,
         const rtk_t& rtk);
 
+    rtklib_pvt_gs(uint32_t nchannels,
+        const Pvt_Conf& conf_,
+        const rtk_t& rtk);
+
     void msg_handler_telemetry(const pmt::pmt_t& msg);
 
     bool d_dump;
@@ -135,7 +139,7 @@ private:
     int sysv_msqid;
     typedef struct
     {
-        long mtype;  //required by sys v message
+        long mtype;  // NOLINT(google-runtime-int) required by SysV queue messaging
         double ttff;
     } ttff_msgbuf;
     bool send_sys_v_ttff_msg(ttff_msgbuf ttff);
@@ -158,31 +162,40 @@ private:
     std::vector<std::string> split_string(const std::string& s, char delim) const;
 
 public:
-    rtklib_pvt_gs(uint32_t nchannels,
-        const Pvt_Conf& conf_,
-        const rtk_t& rtk);
-
     ~rtklib_pvt_gs();  //!< Default destructor
 
     /*!
      * \brief Get latest set of GPS ephemeris from PVT block
-     *
      */
     std::map<int, Gps_Ephemeris> get_gps_ephemeris_map() const;
 
+    /*!
+     * \brief Get latest set of GPS almanac from PVT block
+     */
     std::map<int, Gps_Almanac> get_gps_almanac_map() const;
 
+    /*!
+     * \brief Get latest set of Galileo ephemeris from PVT block
+     */
     std::map<int, Galileo_Ephemeris> get_galileo_ephemeris_map() const;
 
+    /*!
+     * \brief Get latest set of Galileo almanac from PVT block
+     */
     std::map<int, Galileo_Almanac> get_galileo_almanac_map() const;
 
+    /*!
+     * \brief Get latest set of BeiDou DNAV ephemeris from PVT block
+     */
     std::map<int, Beidou_Dnav_Ephemeris> get_beidou_dnav_ephemeris_map() const;
 
+    /*!
+     * \brief Get latest set of BeiDou DNAV almanac from PVT block
+     */
     std::map<int, Beidou_Dnav_Almanac> get_beidou_dnav_almanac_map() const;
 
     /*!
      * \brief Clear all ephemeris information and the almanacs for GPS and Galileo
-     *
      */
     void clear_ephemeris();
 

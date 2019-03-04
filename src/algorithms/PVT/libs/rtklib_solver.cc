@@ -57,6 +57,7 @@
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
 #include "rtklib_conversions.h"
+#include "rtklib_rtkpos.h"
 #include "rtklib_solution.h"
 #include <glog/logging.h>
 #include <matio.h>
@@ -479,10 +480,12 @@ double Rtklib_Solver::get_vdop() const
     return dop_[3];
 }
 
+
 Monitor_Pvt Rtklib_Solver::get_monitor_pvt() const
 {
     return monitor_pvt;
 }
+
 
 bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, bool flag_averaging)
 {

@@ -32,7 +32,7 @@
 #include "channel_fsm.h"
 #include "control_message_factory.h"
 #include <glog/logging.h>
-
+#include <utility>
 
 ChannelFsm::ChannelFsm()
 {
@@ -57,13 +57,13 @@ bool ChannelFsm::Event_stop_channel()
     DLOG(INFO) << "CH = " << channel_ << ". Ev stop channel";
     switch (d_state)
         {
-        case 0:  //already in stanby
+        case 0:  // already in stanby
             break;
-        case 1:  //acquisition
+        case 1:  // acquisition
             d_state = 0;
             stop_acquisition();
             break;
-        case 2:  //tracking
+        case 2:  // tracking
             d_state = 0;
             stop_tracking();
             break;
@@ -72,6 +72,7 @@ bool ChannelFsm::Event_stop_channel()
         }
     return true;
 }
+
 
 bool ChannelFsm::Event_start_acquisition()
 {

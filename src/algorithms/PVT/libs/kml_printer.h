@@ -33,7 +33,6 @@
 #ifndef GNSS_SDR_KML_PRINTER_H_
 #define GNSS_SDR_KML_PRINTER_H_
 
-#include "pvt_solution.h"
 #include "rtklib_solver.h"
 #include <fstream>
 #include <memory>

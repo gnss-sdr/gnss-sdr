@@ -166,6 +166,7 @@
 #endif
 
 #include <glog/logging.h>
+#include <exception>
 #include <iostream>
 #include <sstream>
 #include <string>

@@ -33,7 +33,6 @@
 #include "GPS_L1_CA.h"
 #include "geofunctions.h"
 #include <glog/logging.h>
-#include <exception>
 #include <stdexcept>
 
 

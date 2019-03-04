@@ -30,6 +30,7 @@
  */
 
 #include "front_end_cal.h"
+#include "concurrent_map.h"
 #include "gnss_sdr_supl_client.h"
 #include "gps_almanac.h"
 #include "gps_cnav_ephemeris.h"

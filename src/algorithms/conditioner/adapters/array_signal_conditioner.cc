@@ -30,6 +30,7 @@
  */
 
 #include "array_signal_conditioner.h"
+#include "configuration_interface.h"
 #include <glog/logging.h>
 #include <utility>
 

@@ -55,16 +55,28 @@
 #define GNSS_SDR_RTKLIB_SOLVER_H_
 
 
-#include "beidou_dnav_navigation_message.h"
+#include "beidou_dnav_almanac.h"
+#include "beidou_dnav_ephemeris.h"
+#include "beidou_dnav_iono.h"
+#include "beidou_dnav_utc_model.h"
 #include "galileo_almanac.h"
-#include "galileo_navigation_message.h"
-#include "glonass_gnav_navigation_message.h"
+#include "galileo_ephemeris.h"
+#include "galileo_iono.h"
+#include "galileo_utc_model.h"
+#include "glonass_gnav_almanac.h"
+#include "glonass_gnav_ephemeris.h"
+#include "glonass_gnav_utc_model.h"
 #include "gnss_synchro.h"
-#include "gps_cnav_navigation_message.h"
-#include "gps_navigation_message.h"
+#include "gps_almanac.h"
+#include "gps_cnav_ephemeris.h"
+#include "gps_cnav_iono.h"
+#include "gps_cnav_utc_model.h"
+#include "gps_ephemeris.h"
+#include "gps_iono.h"
+#include "gps_utc_model.h"
 #include "monitor_pvt.h"
 #include "pvt_solution.h"
-#include "rtklib_rtkpos.h"
+#include "rtklib.h"
 #include <array>
 #include <fstream>
 #include <map>
@@ -89,12 +101,13 @@ private:
     Monitor_Pvt monitor_pvt;
 
 public:
-    sol_t pvt_sol;
-    ssat_t pvt_ssat[MAXSAT];
     Rtklib_Solver(int nchannels, std::string dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, const rtk_t& rtk);
     ~Rtklib_Solver();
 
     bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, bool flag_averaging);
+
+    sol_t pvt_sol;
+    ssat_t pvt_ssat[MAXSAT];
     double get_hdop() const;
     double get_vdop() const;
     double get_pdop() const;

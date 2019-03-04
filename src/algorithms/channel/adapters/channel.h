@@ -38,9 +38,12 @@
 #include "channel_fsm.h"
 #include "channel_interface.h"
 #include "channel_msg_receiver_cc.h"
+#include "gnss_signal.h"
 #include "gnss_synchro.h"
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <mutex>
 #include <string>

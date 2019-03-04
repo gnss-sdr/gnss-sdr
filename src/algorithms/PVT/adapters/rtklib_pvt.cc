@@ -33,6 +33,7 @@
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
 #include "pvt_conf.h"
+#include "rtklib_rtkpos.h"
 #include <glog/logging.h>
 #if OLD_BOOST
 #include <boost/math/common_factor_rt.hpp>

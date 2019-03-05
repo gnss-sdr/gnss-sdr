@@ -40,7 +40,6 @@
 #include "galileo_utc_model.h"
 #include <bitset>
 #include <cstdint>
-#include <map>
 #include <string>
 #include <utility>
 #include <vector>

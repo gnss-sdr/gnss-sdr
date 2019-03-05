@@ -32,7 +32,6 @@
 
 #include "glonass_l2_ca_telemetry_decoder_gs.h"
 #include "display.h"
-#include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 

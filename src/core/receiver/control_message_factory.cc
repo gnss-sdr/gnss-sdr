@@ -30,7 +30,8 @@
 
 #include "control_message_factory.h"
 #include <glog/logging.h>
-
+#include <cstring>  // for memcpy
+#include <ostream>  // for operator<<, basic_ostream
 
 // Constructor
 ControlMessageFactory::ControlMessageFactory() = default;

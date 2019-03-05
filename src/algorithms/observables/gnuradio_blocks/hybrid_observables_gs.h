@@ -34,21 +34,24 @@
 #ifndef GNSS_SDR_HYBRID_OBSERVABLES_GS_H
 #define GNSS_SDR_HYBRID_OBSERVABLES_GS_H
 
-#include "gnss_circular_deque.h"
-#include "gnss_synchro.h"
-#include <boost/dynamic_bitset.hpp>
-#include <gnuradio/block.h>
-#include <fstream>
-#include <string>
-#include <utility>
+#include <boost/circular_buffer.hpp>  // for boost::curcular_buffer
+#include <boost/shared_ptr.hpp>       // for boost::shared_ptr
+#include <gnuradio/block.h>           // for block
+#include <gnuradio/types.h>           // for gr_vector_int
+#include <cstdint>                    // for int32_t
+#include <fstream>                    // for string, ofstream
+#include <vector>                     // for vector
 
-
+class Gnss_Synchro;
 class hybrid_observables_gs;
+
+template <class T>
+class Gnss_circular_deque;
 
 using hybrid_observables_gs_sptr = boost::shared_ptr<hybrid_observables_gs>;
 
 hybrid_observables_gs_sptr
-hybrid_make_observables_gs(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, bool dump_mat, std::string dump_filename);
+hybrid_observables_gs_make(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, bool dump_mat, std::string dump_filename);
 
 /*!
  * \brief This class implements a block that computes observables
@@ -63,7 +66,7 @@ public:
 
 private:
     friend hybrid_observables_gs_sptr
-    hybrid_make_observables_gs(uint32_t nchannels_in, uint32_t nchannels_out, bool dump, bool dump_mat, std::string dump_filename);
+    hybrid_observables_gs_make(uint32_t nchannels_in, uint32_t nchannels_out, bool dump, bool dump_mat, std::string dump_filename);
     hybrid_observables_gs(uint32_t nchannels_in, uint32_t nchannels_out, bool dump, bool dump_mat, std::string dump_filename);
     bool interpolate_data(Gnss_Synchro& out, const uint32_t& ch, const double& ti);
     bool interp_trk_obs(Gnss_Synchro& interpolated_obs, const uint32_t& ch, const uint64_t& rx_clock);

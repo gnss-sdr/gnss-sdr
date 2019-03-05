@@ -35,6 +35,7 @@
 #include "control_thread.h"
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
+#include "configuration_interface.h"
 #include "control_message_factory.h"
 #include "file_configuration.h"
 #include "galileo_almanac.h"
@@ -45,29 +46,36 @@
 #include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_utc_model.h"
 #include "gnss_flowgraph.h"
+#include "gnss_satellite.h"
 #include "gnss_sdr_flags.h"
-#include "gps_almanac.h"
-#include "gps_ephemeris.h"
-#include "gps_iono.h"
-#include "gps_utc_model.h"
-#include "pvt_interface.h"
-#include "rtklib_conversions.h"
-#include "rtklib_ephemeris.h"
-#include "rtklib_rtkcmn.h"
-#include <boost/lexical_cast.hpp>
-#include <glog/logging.h>
-#include <gnuradio/message.h>
-#include <algorithm>
-#include <chrono>
-#include <cmath>
-#include <iostream>
-#include <limits>
-#include <map>
-#include <string>
-#include <sys/ipc.h>
-#include <sys/msg.h>
-#include <sys/types.h>
-#include <utility>
+#include "gps_acq_assist.h"                         // for Gps_Acq_Assist
+#include "gps_almanac.h"                            // for Gps_Almanac
+#include "gps_cnav_ephemeris.h"                     // for Gps_CNAV_Ephemeris
+#include "gps_cnav_utc_model.h"                     // for Gps_CNAV_Utc_Model
+#include "gps_ephemeris.h"                          // for Gps_Ephemeris
+#include "gps_iono.h"                               // for Gps_Iono
+#include "gps_utc_model.h"                          // for Gps_Utc_Model
+#include "pvt_interface.h"                          // for PvtInterface
+#include "rtklib.h"                                 // for gtime_t, alm_t
+#include "rtklib_conversions.h"                     // for alm_to_rtklib
+#include "rtklib_ephemeris.h"                       // for alm2pos, eph2pos
+#include "rtklib_rtkcmn.h"                          // for utc2gpst
+#include <boost/lexical_cast/bad_lexical_cast.hpp>  // for bad_lexical_cast
+#include <glog/logging.h>                           // for LOG
+#include <gnuradio/message.h>                       // for message::sptr
+#include <pmt/pmt.h>                                // for make_any
+#include <algorithm>                                // for find, min
+#include <chrono>                                   // for milliseconds
+#include <cmath>                                    // for floor, fmod, log
+#include <ctime>                                    // for gmtime, strftime
+#include <exception>                                // for exception
+#include <iostream>                                 // for operator<<, endl
+#include <limits>                                   // for numeric_limits
+#include <map>                                      // for map
+#include <pthread.h>                                // for pthread_cancel
+#include <stdexcept>                                // for invalid_argument
+#include <sys/ipc.h>                                // for IPC_CREAT
+#include <sys/msg.h>                                // for msgctl, msgget
 
 
 extern Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;

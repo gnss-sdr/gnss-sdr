@@ -34,7 +34,6 @@
 
 
 #include "GPS_L1_CA.h"
-#include "gps_almanac.h"
 #include "gps_ephemeris.h"
 #include "gps_iono.h"
 #include "gps_utc_model.h"

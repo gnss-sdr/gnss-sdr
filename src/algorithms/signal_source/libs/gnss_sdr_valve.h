@@ -35,8 +35,10 @@
 #define GNSS_SDR_GNSS_SDR_VALVE_H_
 
 #include <boost/shared_ptr.hpp>
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/sync_block.h>
+#include <gnuradio/msg_queue.h>   // for msg_queue, msg_queue::sptr
+#include <gnuradio/sync_block.h>  // for sync_block
+#include <gnuradio/types.h>       // for gr_vector_const_void_star
+#include <cstddef>                // for size_t
 #include <cstdint>
 
 boost::shared_ptr<gr::block> gnss_sdr_make_valve(size_t sizeof_stream_item,

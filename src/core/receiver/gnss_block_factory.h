@@ -37,10 +37,11 @@
 #ifndef GNSS_SDR_BLOCK_FACTORY_H_
 #define GNSS_SDR_BLOCK_FACTORY_H_
 
-#include <gnuradio/msg_queue.h>
-#include <memory>
-#include <string>
-#include <vector>
+#include <boost/shared_ptr.hpp>  // for boost::shared_ptr
+#include <gnuradio/msg_queue.h>  // for msg_queue::sptr, msg_queue
+#include <memory>                // for unique_ptr, shared_ptr
+#include <string>                // for string
+#include <vector>                // for vector
 
 
 class ConfigurationInterface;

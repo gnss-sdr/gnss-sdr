@@ -37,7 +37,6 @@
 #include "beidou_dnav_utc_model.h"
 #include "configuration_interface.h"
 #include <glog/logging.h>
-#include <gnuradio/io_signature.h>
 
 
 BeidouB1iTelemetryDecoder::BeidouB1iTelemetryDecoder(ConfigurationInterface* configuration,

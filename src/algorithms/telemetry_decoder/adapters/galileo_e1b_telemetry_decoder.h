@@ -38,6 +38,8 @@
 #include "galileo_telemetry_decoder_gs.h"
 #include "gnss_satellite.h"
 #include "telemetry_decoder_interface.h"
+#include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
+#include <cstddef>                   // for size_t
 #include <string>
 
 

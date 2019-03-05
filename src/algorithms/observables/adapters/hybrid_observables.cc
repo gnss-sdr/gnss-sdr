@@ -33,6 +33,7 @@
 #include "hybrid_observables.h"
 #include "configuration_interface.h"
 #include <glog/logging.h>
+#include <ostream>  // for operator<<
 
 
 HybridObservables::HybridObservables(ConfigurationInterface* configuration,
@@ -44,7 +45,7 @@ HybridObservables::HybridObservables(ConfigurationInterface* configuration,
     dump_mat_ = configuration->property(role + ".dump_mat", true);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
 
-    observables_ = hybrid_make_observables_gs(in_streams_, out_streams_, dump_, dump_mat_, dump_filename_);
+    observables_ = hybrid_observables_gs_make(in_streams_, out_streams_, dump_, dump_mat_, dump_filename_);
     DLOG(INFO) << "Observables block ID (" << observables_->unique_id() << ")";
 }
 

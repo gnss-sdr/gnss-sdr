@@ -36,6 +36,7 @@
 
 
 #include "gnss_block_factory.h"
+#include "acquisition_interface.h"  // for AcquisitionInterface
 #include "array_signal_conditioner.h"
 #include "beamformer_filter.h"
 #include "beidou_b1i_dll_pll_tracking.h"
@@ -105,8 +106,13 @@
 #include "signal_conditioner.h"
 #include "spir_file_signal_source.h"
 #include "spir_gss6450_file_signal_source.h"
+#include "telemetry_decoder_interface.h"
+#include "tracking_interface.h"
 #include "two_bit_cpx_file_signal_source.h"
 #include "two_bit_packed_file_signal_source.h"
+#include <glog/logging.h>
+#include <exception>  // for exception
+#include <utility>    // for move
 
 #if RAW_UDP
 #include "custom_udp_signal_source.h"
@@ -164,13 +170,6 @@
 #if CUDA_GPU_ACCEL
 #include "gps_l1_ca_dll_pll_tracking_gpu.h"
 #endif
-
-#include <glog/logging.h>
-#include <exception>
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <utility>
 
 
 GNSSBlockFactory::GNSSBlockFactory() = default;

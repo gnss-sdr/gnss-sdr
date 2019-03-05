@@ -29,23 +29,43 @@
  */
 
 #include "rtklib_pvt_gs.h"
+#include "beidou_dnav_almanac.h"
+#include "beidou_dnav_ephemeris.h"
 #include "display.h"
+#include "galileo_almanac.h"
 #include "galileo_almanac_helper.h"
+#include "galileo_ephemeris.h"
+#include "geojson_printer.h"
 #include "gnss_sdr_create_directory.h"
+#include "gps_almanac.h"
+#include "gps_ephemeris.h"
+#include "gpx_printer.h"
+#include "kml_printer.h"
+#include "monitor_pvt_udp_sink.h"
+#include "nmea_printer.h"
 #include "pvt_conf.h"
+#include "rinex_printer.h"
+#include "rtcm_printer.h"
+#include "rtklib_solver.h"
+#include <boost/any.hpp>  // for any_cast, any
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
-#include <boost/exception/all.hpp>
+#include <boost/bind/bind.hpp>  // for bind_t, bind
+#include <boost/exception/diagnostic_information.hpp>
+#include <boost/exception/exception.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/serialization/map.hpp>
-#include <glog/logging.h>
-#include <gnuradio/gr_complex.h>
-#include <gnuradio/io_signature.h>
+#include <boost/serialization/nvp.hpp>  // for nvp, make_nvp
+#include <glog/logging.h>               // for LOG
+#include <gnuradio/io_signature.h>      // for io_signature
+#include <pmt/pmt_sugar.h>              // for mp
 #include <algorithm>
 #include <exception>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include <sys/ipc.h>  // for IPC_CREAT
+#include <sys/msg.h>  // for msgctl
 #if OLD_BOOST
 #include <boost/math/common_factor_rt.hpp>
 namespace bc = boost::math;
@@ -149,7 +169,6 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     // initialize geojson_printer
     std::string geojson_dump_filename;
     geojson_dump_filename = d_dump_filename;
-
     d_geojson_output_enabled = conf_.geojson_output_enabled;
     if (d_geojson_output_enabled)
         {

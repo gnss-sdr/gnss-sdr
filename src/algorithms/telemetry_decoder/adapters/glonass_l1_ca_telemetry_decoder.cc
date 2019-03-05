@@ -33,9 +33,6 @@
 
 #include "glonass_l1_ca_telemetry_decoder.h"
 #include "configuration_interface.h"
-#include "glonass_gnav_almanac.h"
-#include "glonass_gnav_ephemeris.h"
-#include "glonass_gnav_utc_model.h"
 #include <glog/logging.h>
 
 

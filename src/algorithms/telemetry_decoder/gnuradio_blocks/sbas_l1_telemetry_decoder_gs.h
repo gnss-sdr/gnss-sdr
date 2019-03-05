@@ -32,10 +32,12 @@
 #define GNSS_SDR_SBAS_L1_TELEMETRY_DECODER_GS_H
 
 #include "gnss_satellite.h"
-#include "viterbi_decoder.h"
 #include <boost/crc.hpp>
+#include <boost/shared_ptr.hpp>  // for boost::shared_ptr
 #include <gnuradio/block.h>
-#include <algorithm>  // for copy
+#include <gnuradio/types.h>  // for gr_vector_const_void_star
+#include <algorithm>         // for copy
+#include <cstddef>           // for size_t
 #include <cstdint>
 #include <deque>
 #include <fstream>
@@ -43,6 +45,7 @@
 #include <utility>  // for pair
 #include <vector>
 
+class Viterbi_Decoder;
 
 class sbas_l1_telemetry_decoder_gs;
 

@@ -1,7 +1,6 @@
 /*!
  * \file beidou_b1i_telemetry_decoder_gs.cc
- * \brief Implementation of an adapter of a BEIDOU BI1 DNAV data decoder block
- * to a TelemetryDecoderInterface
+ * \brief Implementation of a BEIDOU BI1 DNAV data decoder block
  * \note Code added as part of GSoC 2018 program
  * \author Damian Miralles, 2018. dmiralles2009(at)gmail.com
  * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.es
@@ -33,13 +32,22 @@
 
 
 #include "beidou_b1i_telemetry_decoder_gs.h"
+#include "Beidou_B1I.h"
+#include "beidou_dnav_almanac.h"
+#include "beidou_dnav_ephemeris.h"
+#include "beidou_dnav_utc_model.h"
 #include "convolutional.h"
 #include "display.h"
 #include "gnss_synchro.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
+#include <pmt/pmt.h>        // for make_any
+#include <pmt/pmt_sugar.h>  // for mp
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include <iostream>
+#include <cstdlib>    // for abs
+#include <exception>  // for exception
+#include <iostream>   // for cout
+#include <memory>     // for shared_ptr, make_shared
 
 #define CRC_ERROR_LIMIT 8
 

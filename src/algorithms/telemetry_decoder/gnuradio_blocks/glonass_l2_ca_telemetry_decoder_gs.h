@@ -1,7 +1,6 @@
 /*!
  * \file glonass_l2_ca_telemetry_decoder_gs.h
- * \brief Implementation of an adapter of a GLONASS L2 C/A NAV data decoder block
- * to a TelemetryDecoderInterface
+ * \brief Implementation of a GLONASS L2 C/A NAV data decoder block
  * \author Damian Miralles, 2018. dmiralles2009(at)gmail.com
  *
  * -------------------------------------------------------------------------
@@ -34,17 +33,18 @@
 
 
 #include "GLONASS_L1_L2_CA.h"
-#include "glonass_gnav_almanac.h"
-#include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_navigation_message.h"
-#include "glonass_gnav_utc_model.h"
 #include "gnss_satellite.h"
-#include "gnss_synchro.h"
 #include <boost/circular_buffer.hpp>
+#include <boost/shared_ptr.hpp>  // for boost::shared_ptr
 #include <gnuradio/block.h>
+#include <gnuradio/types.h>  // for gr_vector_const_void_star
+#include <cstdint>
 #include <fstream>
 #include <string>
 
+
+class Gnss_Synchro;
 
 class glonass_l2_ca_telemetry_decoder_gs;
 
@@ -53,10 +53,10 @@ using glonass_l2_ca_telemetry_decoder_gs_sptr = boost::shared_ptr<glonass_l2_ca_
 glonass_l2_ca_telemetry_decoder_gs_sptr glonass_l2_ca_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
 /*!
- * \brief This class implements a block that decodes the GNAV data defined in GLONASS ICD v5.1
- * \see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf">GLONASS ICD</a>
- *
- */
+* \brief This class implements a block that decodes the GNAV data defined in GLONASS ICD v5.1
+* \see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf">GLONASS ICD</a>
+*
+*/
 class glonass_l2_ca_telemetry_decoder_gs : public gr::block
 {
 public:
@@ -65,8 +65,8 @@ public:
     void set_channel(int32_t channel);                    //!< Set receiver's channel
 
     /*!
-     * \brief This is where all signal processing takes place
-     */
+    * \brief This is where all signal processing takes place
+    */
     int general_work(int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 

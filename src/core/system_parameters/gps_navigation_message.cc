@@ -32,8 +32,9 @@ m * \file gps_navigation_message.cc
 
 #include "gps_navigation_message.h"
 #include "gnss_satellite.h"
-#include <cmath>
-#include <iostream>
+#include <cmath>     // for fmod, abs, floor
+#include <cstring>   // for memcpy
+#include <iostream>  // for operator<<, cout, endl
 
 
 void Gps_Navigation_Message::reset()

@@ -31,12 +31,12 @@ add_library(pvt_gr_blocks ${PVT_GR_BLOCKS_SOURCES} ${PVT_GR_BLOCKS_HEADERS})
 target_link_libraries(pvt_gr_blocks
     PUBLIC
         algorithms_libs_rtklib
-        pvt_libs
         core_system_parameters
         Boost::date_time
         Gnuradio::pmt
         Gnuradio::runtime
     PRIVATE
+        pvt_libs
         algorithms_libs
         Gflags::gflags
         Glog::glog

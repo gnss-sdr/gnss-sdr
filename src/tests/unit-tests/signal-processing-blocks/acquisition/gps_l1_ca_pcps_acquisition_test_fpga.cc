@@ -46,6 +46,7 @@
 #include <gtest/gtest.h>
 #include <chrono>
 #include <cstdlib>
+#include <fcntl.h>  // for O_WRONLY
 #include <unistd.h>
 #include <utility>
 #ifdef GR_GREATER_38

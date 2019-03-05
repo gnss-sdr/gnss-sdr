@@ -30,11 +30,17 @@
 
 
 #include "rtklib_pvt.h"
-#include "configuration_interface.h"
-#include "gnss_sdr_flags.h"
-#include "pvt_conf.h"
-#include "rtklib_rtkpos.h"
-#include <glog/logging.h>
+#include "MATH_CONSTANTS.h"           // for D2R
+#include "configuration_interface.h"  // for ConfigurationInterface
+#include "galileo_almanac.h"          // for Galileo_Almanac
+#include "galileo_ephemeris.h"        // for Galileo_Ephemeris
+#include "gnss_sdr_flags.h"           // for FLAGS_RINEX_version
+#include "gps_almanac.h"              // for Gps_Almanac
+#include "gps_ephemeris.h"            // for Gps_Ephemeris
+#include "pvt_conf.h"                 // for Pvt_Conf
+#include "rtklib_rtkpos.h"            // for rtkfree, rtkinit
+#include <glog/logging.h>             // for LOG
+#include <iostream>                   // for operator<<
 #if OLD_BOOST
 #include <boost/math/common_factor_rt.hpp>
 namespace bc = boost::math;

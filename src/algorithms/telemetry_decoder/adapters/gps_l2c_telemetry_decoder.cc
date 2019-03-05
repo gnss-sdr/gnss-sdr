@@ -37,7 +37,6 @@
 #include "gps_cnav_iono.h"
 #include "gps_cnav_utc_model.h"
 #include <glog/logging.h>
-#include <gnuradio/io_signature.h>
 
 
 GpsL2CTelemetryDecoder::GpsL2CTelemetryDecoder(ConfigurationInterface* configuration,

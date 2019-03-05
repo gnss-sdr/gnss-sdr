@@ -38,8 +38,9 @@
 #include <boost/crc.hpp>  // for boost::crc_basic, boost::crc_optimal
 #include <boost/dynamic_bitset.hpp>
 #include <glog/logging.h>
-#include <iostream>
-
+#include <algorithm>  // for reverse
+#include <iostream>   // for string, operator<<
+#include <iterator>   // for back_insert_iterator
 
 using CRC_Galileo_FNAV_type = boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false>;
 

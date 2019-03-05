@@ -33,8 +33,10 @@
 #include "pass_through.h"
 #include "configuration_interface.h"
 #include <glog/logging.h>
-#include <volk/volk.h>
-#include <complex>
+#include <gnuradio/gr_complex.h>
+#include <volk/volk_complex.h>
+#include <cstdint>  // for int8_t
+#include <ostream>  // for operator<<
 
 
 Pass_Through::Pass_Through(ConfigurationInterface* configuration, const std::string& role,

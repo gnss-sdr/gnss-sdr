@@ -33,6 +33,7 @@
 #define GNSS_SDR_GALILEO_IONO_H_
 
 #include <boost/serialization/nvp.hpp>
+#include <cstdint>
 
 /*!
  * \brief This class is a storage for the GALILEO IONOSPHERIC data as described in Galileo ICD paragraph 5.1.6

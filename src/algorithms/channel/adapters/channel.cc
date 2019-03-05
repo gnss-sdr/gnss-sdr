@@ -31,12 +31,13 @@
 
 #include "channel.h"
 #include "acquisition_interface.h"
+#include "channel_fsm.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
 #include "telemetry_decoder_interface.h"
 #include "tracking_interface.h"
 #include <glog/logging.h>
-#include <cstdint>
+#include <cstring>  // for memcpy
 #include <utility>
 
 
@@ -204,8 +205,7 @@ void Channel::stop_channel()
             LOG(WARNING) << "Invalid channel event";
             return;
         }
-    DLOG(INFO)
-        << "Channel stop_channel()";
+    DLOG(INFO) << "Channel stop_channel()";
 }
 
 

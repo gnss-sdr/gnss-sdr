@@ -31,38 +31,39 @@
 #ifndef GNSS_SDR_RTKLIB_PVT_GS_H
 #define GNSS_SDR_RTKLIB_PVT_GS_H
 
-#include "beidou_dnav_almanac.h"
-#include "beidou_dnav_ephemeris.h"
-#include "galileo_almanac.h"
-#include "galileo_ephemeris.h"
-#include "geojson_printer.h"
 #include "gnss_synchro.h"
-#include "gps_almanac.h"
-#include "gps_ephemeris.h"
-#include "gpx_printer.h"
-#include "kml_printer.h"
-#include "monitor_pvt_udp_sink.h"
-#include "nmea_printer.h"
-#include "pvt_conf.h"
-#include "rinex_printer.h"
-#include "rtcm_printer.h"
-#include "rtklib_solver.h"
+#include "rtklib.h"
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <gnuradio/sync_block.h>
-#include <pmt/pmt.h>
-#include <chrono>
-#include <cstdint>
-#include <map>
-#include <memory>
-#include <string>
-#include <sys/ipc.h>
-#include <sys/msg.h>
-#include <sys/types.h>
-#include <utility>
-#include <vector>
+#include <boost/shared_ptr.hpp>   // for boost::shared_ptr
+#include <gnuradio/sync_block.h>  // for sync_block
+#include <gnuradio/types.h>       // for gr_vector_const_void_star
+#include <pmt/pmt.h>              // for pmt_t
+#include <chrono>                 // for system_clock
+#include <cstdint>                // for int32_t
+#include <ctime>                  // for time_t
+#include <map>                    // for map
+#include <memory>                 // for shared_ptr, unique_ptr
+#include <string>                 // for string
+#include <sys/types.h>            // for key_t
+#include <utility>                // for pair
+#include <vector>                 // for vector
 
-
+class Beidou_Dnav_Almanac;
+class Beidou_Dnav_Ephemeris;
+class Galileo_Almanac;
+class Galileo_Ephemeris;
+class GeoJSON_Printer;
+class Gps_Almanac;
+class Gps_Ephemeris;
+class Gpx_Printer;
+class Kml_Printer;
+class Monitor_Pvt_Udp_Sink;
+class Nmea_Printer;
+class Pvt_Conf;
+class Rinex_Printer;
+class Rtcm_Printer;
+class Rtklib_Solver;
 class rtklib_pvt_gs;
 
 using rtklib_pvt_gs_sptr = boost::shared_ptr<rtklib_pvt_gs>;

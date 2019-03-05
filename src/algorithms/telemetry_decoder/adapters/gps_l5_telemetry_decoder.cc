@@ -33,7 +33,6 @@
 #include "gps_l5_telemetry_decoder.h"
 #include "configuration_interface.h"
 #include <glog/logging.h>
-#include <gnuradio/io_signature.h>
 
 
 GpsL5TelemetryDecoder::GpsL5TelemetryDecoder(ConfigurationInterface* configuration,

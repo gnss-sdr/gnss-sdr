@@ -36,6 +36,9 @@
 
 #include "hybrid_observables_gs.h"
 #include "observables_interface.h"
+#include <gnuradio/gr_complex.h>     // for gr_complex
+#include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
+#include <cstddef>
 #include <string>
 
 class ConfigurationInterface;

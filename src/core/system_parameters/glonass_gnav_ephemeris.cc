@@ -32,7 +32,8 @@
 
 #include "glonass_gnav_ephemeris.h"
 #include "GLONASS_L1_L2_CA.h"
-#include "gnss_satellite.h"
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/posix_time/time_formatters.hpp>
 #include <cmath>
 
 

@@ -40,7 +40,6 @@
 #include <cmath>      // for std::fmod
 #include <cstdlib>    // for strtol
 #include <sstream>    // for std::stringstream
-#include <thread>
 
 
 Rtcm::Rtcm(uint16_t port)

@@ -36,7 +36,6 @@
 #include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_utc_model.h"
 #include <glog/logging.h>
-#include <gnuradio/io_signature.h>
 
 
 GlonassL2CaTelemetryDecoder::GlonassL2CaTelemetryDecoder(ConfigurationInterface* configuration,

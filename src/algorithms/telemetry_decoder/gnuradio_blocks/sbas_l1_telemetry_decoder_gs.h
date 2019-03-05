@@ -32,11 +32,10 @@
 #define GNSS_SDR_SBAS_L1_TELEMETRY_DECODER_GS_H
 
 #include "gnss_satellite.h"
-#include <boost/crc.hpp>
+#include <boost/crc.hpp>         // for crc_optimal
 #include <boost/shared_ptr.hpp>  // for boost::shared_ptr
 #include <gnuradio/block.h>
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
-#include <algorithm>         // for copy
 #include <cstddef>           // for size_t
 #include <cstdint>
 #include <deque>

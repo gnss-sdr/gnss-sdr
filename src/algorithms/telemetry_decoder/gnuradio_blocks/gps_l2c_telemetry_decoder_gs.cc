@@ -31,13 +31,21 @@
 
 
 #include "gps_l2c_telemetry_decoder_gs.h"
+#include "GPS_L2C.h"  // for GPS_L2_CNAV_DATA_PAGE_BITS, GPS_L...
 #include "display.h"
 #include "gnss_synchro.h"
+#include "gps_cnav_ephemeris.h"  // for Gps_CNAV_Ephemeris
+#include "gps_cnav_iono.h"       // for Gps_CNAV_Iono
+#include "gps_cnav_utc_model.h"  // for Gps_CNAV_Utc_Model
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
-#include <bitset>
-#include <iostream>
-#include <sstream>
+#include <pmt/pmt.h>        // for make_any
+#include <pmt/pmt_sugar.h>  // for mp
+#include <bitset>           // for bitset
+#include <cmath>            // for round
+#include <exception>        // for exception
+#include <iostream>         // for cout
+#include <memory>           // for shared_ptr, make_shared
 
 
 gps_l2c_telemetry_decoder_gs_sptr

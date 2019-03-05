@@ -31,10 +31,6 @@
 
 
 #include "beidou_b1i_telemetry_decoder.h"
-#include "beidou_dnav_almanac.h"
-#include "beidou_dnav_ephemeris.h"
-#include "beidou_dnav_iono.h"
-#include "beidou_dnav_utc_model.h"
 #include "configuration_interface.h"
 #include <glog/logging.h>
 

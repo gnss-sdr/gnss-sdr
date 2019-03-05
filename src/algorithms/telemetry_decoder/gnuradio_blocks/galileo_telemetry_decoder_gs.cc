@@ -30,13 +30,25 @@
 
 
 #include "galileo_telemetry_decoder_gs.h"
+#include "Galileo_E1.h"   // for GALILEO_E1_CODE_PERIOD_MS
+#include "Galileo_E5a.h"  // for GALILEO_E5A_CODE_PERIO...
 #include "convolutional.h"
 #include "display.h"
+#include "galileo_almanac_helper.h"  // for Galileo_Almanac_Helper
+#include "galileo_ephemeris.h"       // for Galileo_Ephemeris
+#include "galileo_iono.h"            // for Galileo_Iono
+#include "galileo_utc_model.h"       // for Galileo_Utc_Model
 #include "gnss_synchro.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
+#include <pmt/pmt.h>        // for make_any
+#include <pmt/pmt_sugar.h>  // for mp
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include <iostream>
+#include <cmath>      // for fmod
+#include <cstdlib>    // for abs
+#include <exception>  // for exception
+#include <iostream>   // for cout
+#include <memory>     // for shared_ptr, make_shared
 
 
 #define CRC_ERROR_LIMIT 6

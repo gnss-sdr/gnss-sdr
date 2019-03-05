@@ -32,6 +32,7 @@
 #include "tcp_cmd_interface.h"
 #include "control_message_factory.h"
 #include <functional>
+#include <iomanip>  // for setprecision
 #include <sstream>
 #include <utility>
 

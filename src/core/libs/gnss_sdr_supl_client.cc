@@ -32,10 +32,17 @@
  */
 
 #include "gnss_sdr_supl_client.h"
+#include "GPS_L1_CA.h"
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/serialization/map.hpp>
 #include <glog/logging.h>
 #include <pugixml.hpp>
-#include <cmath>
-#include <utility>
+#include <cmath>      // for pow
+#include <cstring>    // for strcpy
+#include <exception>  // for exception
+#include <iostream>   // for cerr
+#include <utility>    // for pair
 
 Gnss_Sdr_Supl_Client::Gnss_Sdr_Supl_Client()
 {

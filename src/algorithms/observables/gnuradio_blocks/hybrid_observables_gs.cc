@@ -30,23 +30,24 @@
  */
 
 #include "hybrid_observables_gs.h"
-#include "GPS_L1_CA.h"
-#include "display.h"
+#include "GPS_L1_CA.h"       // for GPS_STARTOFFSET_MS, GPS_TWO_PI
+#include "MATH_CONSTANTS.h"  // for SPEED_OF_LIGHT
+#include "gnss_circular_deque.h"
 #include "gnss_sdr_create_directory.h"
+#include "gnss_synchro.h"
 #include <boost/filesystem/path.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <matio.h>
-#include <algorithm>
-#include <cmath>
-#include <cstdlib>
-#include <exception>
-#include <iostream>
-#include <limits>
-#include <utility>
+#include <cmath>      // for round
+#include <cstdlib>    // for size_t, llabs
+#include <exception>  // for exception
+#include <iostream>   // for cerr, cout
+#include <limits>     // for numeric_limits
+#include <utility>    // for move
 
 
-hybrid_observables_gs_sptr hybrid_make_observables_gs(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, bool dump_mat, std::string dump_filename)
+hybrid_observables_gs_sptr hybrid_observables_gs_make(unsigned int nchannels_in, unsigned int nchannels_out, bool dump, bool dump_mat, std::string dump_filename)
 {
     return hybrid_observables_gs_sptr(new hybrid_observables_gs(nchannels_in, nchannels_out, dump, dump_mat, std::move(dump_filename)));
 }

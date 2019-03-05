@@ -37,29 +37,27 @@
 #ifndef GNSS_SDR_GNSS_FLOWGRAPH_H_
 #define GNSS_SDR_GNSS_FLOWGRAPH_H_
 
-#include "GPS_L1_CA.h"
-#include "channel_interface.h"
-#include "configuration_interface.h"
-#include "gnss_block_factory.h"
-#include "gnss_block_interface.h"
 #include "gnss_sdr_sample_counter.h"
 #include "gnss_signal.h"
-#include "gnss_synchro_monitor.h"
 #include "pvt_interface.h"
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/top_block.h>
-#include <list>
-#include <map>
-#include <memory>
-#include <mutex>
-#include <queue>
-#include <string>
-#include <vector>
-
+#include <gnuradio/msg_queue.h>      // for msg_queue, msg_queue::sptr
+#include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
+#include <pmt/pmt.h>                 // for pmt_t
+#include <list>                      // for list
+#include <map>                       // for map
+#include <memory>                    // for for shared_ptr, dynamic_pointer_cast
+#include <mutex>                     // for mutex
+#include <string>                    // for string
+#include <utility>                   // for pair
+#include <vector>                    // for vector
 #if ENABLE_FPGA
 #include "gnss_sdr_fpga_sample_counter.h"
 #endif
 
+class ChannelInterface;
+class ConfigurationInterface;
+class GNSSBlockInterface;
+class Gnss_Satellite;
 
 /*! \brief This class represents a GNSS flow graph.
  *

@@ -26,6 +26,7 @@ set(PVT_LIB_SOURCES
     rinex_printer.cc
     nmea_printer.cc
     rtcm_printer.cc
+    rtcm.cc
     geojson_printer.cc
     rtklib_solver.cc
     pvt_conf.cc
@@ -41,6 +42,7 @@ set(PVT_LIB_HEADERS
     rinex_printer.h
     nmea_printer.h
     rtcm_printer.h
+    rtcm.h
     geojson_printer.h
     rtklib_solver.h
     pvt_conf.h
@@ -59,10 +61,10 @@ target_link_libraries(pvt_libs
     PUBLIC
         Armadillo::armadillo
         Boost::date_time
-        algorithms_libs
         algorithms_libs_rtklib
         core_system_parameters
     PRIVATE
+        algorithms_libs
         Boost::filesystem
         Boost::system
         Gflags::gflags
@@ -72,12 +74,19 @@ target_link_libraries(pvt_libs
 
 target_include_directories(pvt_libs
     PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-        ${CMAKE_SOURCE_DIR}/src/algorithms/libs/rtklib
         ${CMAKE_SOURCE_DIR}/src/core/receiver
 )
 
 target_compile_definitions(pvt_libs PRIVATE -DGNSS_SDR_VERSION="${VERSION}")
+
+if(OS_IS_MACOSX)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")  # not AppleClang
+        target_compile_definitions(pvt_libs
+            PUBLIC
+                -DBOOST_ASIO_HAS_STD_STRING_VIEW
+        )
+    endif()
+endif()
 
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)

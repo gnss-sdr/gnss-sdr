@@ -34,6 +34,7 @@
 
 #include <cstdint>
 #include <map>
+#include <ostream>
 #include <set>
 #include <string>
 

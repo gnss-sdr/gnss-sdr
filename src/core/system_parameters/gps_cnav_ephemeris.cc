@@ -31,7 +31,9 @@
  */
 
 #include "gps_cnav_ephemeris.h"
+#include "MATH_CONSTANTS.h"  // for PI, SPEED_OF_LIGHT
 #include <cmath>
+
 
 Gps_CNAV_Ephemeris::Gps_CNAV_Ephemeris()
 {

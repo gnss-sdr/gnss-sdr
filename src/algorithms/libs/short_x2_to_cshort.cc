@@ -31,8 +31,9 @@
 
 #include "short_x2_to_cshort.h"
 #include <gnuradio/io_signature.h>
-#include <volk/volk.h>
-
+#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <algorithm>  // for max
+#include <complex>    // for complex
 
 short_x2_to_cshort_sptr make_short_x2_to_cshort()
 {
@@ -44,7 +45,7 @@ short_x2_to_cshort::short_x2_to_cshort() : sync_block("short_x2_to_cshort",
                                                gr::io_signature::make(2, 2, sizeof(int16_t)),
                                                gr::io_signature::make(1, 1, sizeof(lv_16sc_t)))
 {
-    const int alignment_multiple = volk_get_alignment() / sizeof(lv_16sc_t);
+    const int alignment_multiple = volk_gnsssdr_get_alignment() / sizeof(lv_16sc_t);
     set_alignment(std::max(1, alignment_multiple));
 }
 
@@ -61,7 +62,6 @@ int short_x2_to_cshort::work(int noutput_items,
     int16_t imag_part;
     for (int number = 0; number < noutput_items; number++)
         {
-            // lv_cmake(r, i) defined at volk/volk_complex.h
             real_part = *in0++;
             imag_part = *in1++;
             *out++ = lv_cmake(real_part, imag_part);

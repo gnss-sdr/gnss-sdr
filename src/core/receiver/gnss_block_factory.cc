@@ -582,7 +582,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_5X(
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1G(
     const std::shared_ptr<ConfigurationInterface>& configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-    boost::shared_ptr<gr::msg_queue> queue)
+    gr::msg_queue::sptr queue)
 {
     std::stringstream stream;
     stream << channel;
@@ -650,7 +650,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1G(
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2G(
     const std::shared_ptr<ConfigurationInterface>& configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-    boost::shared_ptr<gr::msg_queue> queue)
+    gr::msg_queue::sptr queue)
 {
     std::stringstream stream;
     stream << channel;

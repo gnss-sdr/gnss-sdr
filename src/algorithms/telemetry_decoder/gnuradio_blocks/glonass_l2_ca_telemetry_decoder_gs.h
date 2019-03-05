@@ -35,6 +35,7 @@
 #include "GLONASS_L1_L2_CA.h"
 #include "glonass_gnav_navigation_message.h"
 #include "gnss_satellite.h"
+#include "gnss_synchro.h"
 #include <boost/circular_buffer.hpp>
 #include <boost/shared_ptr.hpp>  // for boost::shared_ptr
 #include <gnuradio/block.h>
@@ -43,8 +44,6 @@
 #include <fstream>
 #include <string>
 
-
-class Gnss_Synchro;
 
 class glonass_l2_ca_telemetry_decoder_gs;
 

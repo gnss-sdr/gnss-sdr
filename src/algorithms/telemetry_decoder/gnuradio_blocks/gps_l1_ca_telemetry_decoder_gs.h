@@ -34,6 +34,7 @@
 #include "GPS_L1_CA.h"
 #include "gnss_satellite.h"
 #include "gps_navigation_message.h"
+#include "gnss_synchro.h"
 #include <boost/circular_buffer.hpp>
 #include <boost/shared_ptr.hpp>  // for boost::shared_ptr
 #include <gnuradio/block.h>      // for block
@@ -42,7 +43,6 @@
 #include <fstream>               // for ofstream
 #include <string>                // for string
 
-class Gnss_Synchro;
 
 class gps_l1_ca_telemetry_decoder_gs;
 

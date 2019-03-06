@@ -1,16 +1,16 @@
 /*!
  * \file fpga_acquisition.cc
- * \brief High optimized FPGA vector correlator class
+ * \brief Highly optimized FPGA vector correlator class
  * \authors <ul>
  *          <li> Marc Majoral, 2019. mmajoral(at)cttc.cat
  *          </ul>
  *
- * Class that controls and executes a high optimized acquisition HW
+ * Class that controls and executes a highly optimized acquisition HW
  * accelerator in the FPGA
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -34,13 +34,14 @@
  */
 
 #include "fpga_acquisition.h"
-#include "GPS_L1_CA.h"
-#include "gps_sdr_signal_processing.h"
-#include <glog/logging.h>
-#include <fcntl.h>  // libraries used by the GIPO
-#include <iostream>
-#include <sys/mman.h>  // libraries used by the GIPO
-#include <utility>
+#include "GPS_L1_CA.h"     // for GPS_TWO_PI
+#include <glog/logging.h>  // for LOG
+#include <cmath>           // for log2
+#include <fcntl.h>         // libraries used by the GIPO
+#include <iostream>        // for operator<<
+#include <sys/mman.h>      // libraries used by the GIPO
+#include <unistd.h>        // for write, close, read, ssize_t
+#include <utility>         // for move
 
 
 // FPGA register parameters
@@ -74,26 +75,6 @@
         _rc;                                 \
     })
 #endif
-
-bool Fpga_Acquisition::init()
-{
-    return true;
-}
-
-
-bool Fpga_Acquisition::set_local_code(uint32_t PRN)
-{
-    // select the code with the chosen PRN
-    d_PRN = PRN;
-    return true;
-}
-
-
-void Fpga_Acquisition::write_local_code()
-{
-    Fpga_Acquisition::fpga_configure_acquisition_local_code(
-        &d_all_fft_codes[d_nsamples_total * (d_PRN - 1)]);
-}
 
 
 Fpga_Acquisition::Fpga_Acquisition(std::string device_name,
@@ -132,6 +113,30 @@ Fpga_Acquisition::Fpga_Acquisition(std::string device_name,
 }
 
 
+Fpga_Acquisition::~Fpga_Acquisition() = default;
+
+
+bool Fpga_Acquisition::init()
+{
+    return true;
+}
+
+
+bool Fpga_Acquisition::set_local_code(uint32_t PRN)
+{
+    // select the code with the chosen PRN
+    d_PRN = PRN;
+    return true;
+}
+
+
+void Fpga_Acquisition::write_local_code()
+{
+    Fpga_Acquisition::fpga_configure_acquisition_local_code(
+        &d_all_fft_codes[d_nsamples_total * (d_PRN - 1)]);
+}
+
+
 void Fpga_Acquisition::open_device()
 {
     // open communication with HW accelerator
@@ -149,9 +154,6 @@ void Fpga_Acquisition::open_device()
             std::cout << "Acq: cannot map deviceio" << d_device_name << std::endl;
         }
 }
-
-
-Fpga_Acquisition::~Fpga_Acquisition() = default;
 
 
 bool Fpga_Acquisition::free()

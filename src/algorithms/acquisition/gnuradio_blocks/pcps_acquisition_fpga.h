@@ -42,8 +42,15 @@
 
 
 #include "fpga_acquisition.h"
-#include "gnss_synchro.h"
-#include <gnuradio/block.h>
+#include <boost/shared_ptr.hpp>
+#include <gnuradio/block.h>     // for block
+#include <gnuradio/types.h>     // for gr_vector_const_void_star
+#include <volk/volk_complex.h>  // for lv_16sc_t
+#include <cstdint>              // for uint32_t
+#include <memory>               // for shared_ptr
+#include <string>               // for string
+
+class Gnss_Synchro;
 
 typedef struct
 {
@@ -78,9 +85,7 @@ pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_);
 class pcps_acquisition_fpga : public gr::block
 {
 private:
-    friend pcps_acquisition_fpga_sptr
-
-    pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_);
+    friend pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_);
 
     pcps_acquisition_fpga(pcpsconf_fpga_t conf_);
 
@@ -115,10 +120,10 @@ public:
     ~pcps_acquisition_fpga();
 
     /*!
-      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
-      * to exchange synchronization data between acquisition and tracking blocks.
-      * \param p_gnss_synchro Satellite information shared by the processing blocks.
-      */
+     * \brief Set acquisition/tracking common Gnss_Synchro object pointer
+     * to exchange synchronization data between acquisition and tracking blocks.
+     * \param p_gnss_synchro Satellite information shared by the processing blocks.
+     */
     inline void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
     {
         d_gnss_synchro = p_gnss_synchro;
@@ -133,53 +138,53 @@ public:
     }
 
     /*!
-      * \brief Initializes acquisition algorithm.
-      */
+     * \brief Initializes acquisition algorithm.
+     */
     void init();
 
     /*!
-      * \brief Sets local code for PCPS acquisition algorithm.
-      * \param code - Pointer to the PRN code.
-      */
+     * \brief Sets local code for PCPS acquisition algorithm.
+     * \param code - Pointer to the PRN code.
+     */
     void set_local_code();
 
     /*!
-      * \brief If set to 1, ensures that acquisition starts at the
-      * first available sample.
-      * \param state - int=1 forces start of acquisition
-      */
+     * \brief If set to 1, ensures that acquisition starts at the
+     * first available sample.
+     * \param state - int=1 forces start of acquisition
+     */
     void set_state(int32_t state);
 
     /*!
-      * \brief Starts acquisition algorithm, turning from standby mode to
-      * active mode
-      * \param active - bool that activates/deactivates the block.
-      */
+     * \brief Starts acquisition algorithm, turning from standby mode to
+     * active mode
+     * \param active - bool that activates/deactivates the block.
+     */
     void set_active(bool active);
 
     /*!
-      * \brief Set acquisition channel unique ID
-      * \param channel - receiver channel.
-      */
+     * \brief Set acquisition channel unique ID
+     * \param channel - receiver channel.
+     */
     inline void set_channel(uint32_t channel)
     {
         d_channel = channel;
     }
 
     /*!
-      * \brief Set statistics threshold of PCPS algorithm.
-      * \param threshold - Threshold for signal detection (check \ref Navitec2012,
-      * Algorithm 1, for a definition of this threshold).
-      */
+     * \brief Set statistics threshold of PCPS algorithm.
+     * \param threshold - Threshold for signal detection (check \ref Navitec2012,
+     * Algorithm 1, for a definition of this threshold).
+     */
     inline void set_threshold(float threshold)
     {
         d_threshold = threshold;
     }
 
     /*!
-      * \brief Set maximum Doppler grid search
-      * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
-      */
+     * \brief Set maximum Doppler grid search
+     * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
+     */
     inline void set_doppler_max(uint32_t doppler_max)
     {
         acq_parameters.doppler_max = doppler_max;
@@ -187,21 +192,14 @@ public:
     }
 
     /*!
-      * \brief Set Doppler steps for the grid search
-      * \param doppler_step - Frequency bin of the search grid [Hz].
-      */
+     * \brief Set Doppler steps for the grid search
+     * \param doppler_step - Frequency bin of the search grid [Hz].
+     */
     inline void set_doppler_step(uint32_t doppler_step)
     {
         d_doppler_step = doppler_step;
         acquisition_fpga->set_doppler_step(doppler_step);
     }
-
-    /*!
-      * \brief Parallel Code Phase Search Acquisition signal processing.
-      */
-    int general_work(int noutput_items, gr_vector_int& ninput_items,
-        gr_vector_const_void_star& input_items,
-        gr_vector_void_star& output_items);
 
     /*!
      * \brief This funciton triggers a HW reset of the FPGA PL.
@@ -212,6 +210,13 @@ public:
      * \brief This funciton is only used for the unit tests
      */
     void read_fpga_total_scale_factor(uint32_t* total_scale_factor, uint32_t* fw_scale_factor);
+
+    /*!
+     * \brief Parallel Code Phase Search Acquisition signal processing.
+     */
+    int general_work(int noutput_items, gr_vector_int& ninput_items,
+        gr_vector_const_void_star& input_items,
+        gr_vector_void_star& output_items);
 };
 
 #endif /* GNSS_SDR_PCPS_ACQUISITION_FPGA_H_*/

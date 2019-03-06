@@ -32,7 +32,8 @@
 #ifndef GNSS_SDR_RTL_TCP_COMMANDS_H
 #define GNSS_SDR_RTL_TCP_COMMANDS_H
 
-#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/ip/tcp.hpp>        // for tcp, tcp::socket
+#include <boost/system/error_code.hpp>  // for error_code
 
 /// Command IDs for configuration rtl_tcp
 enum RTL_TCP_COMMAND

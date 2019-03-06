@@ -32,10 +32,7 @@
 
 #include "sbas_l1_telemetry_decoder.h"
 #include "configuration_interface.h"
-#include "sbas_ephemeris.h"
-#include "sbas_l1_telemetry_decoder_gs.h"
 #include <glog/logging.h>
-#include <gnuradio/io_signature.h>
 
 
 SbasL1TelemetryDecoder::SbasL1TelemetryDecoder(ConfigurationInterface* configuration,

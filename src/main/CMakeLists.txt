@@ -27,7 +27,6 @@ target_link_libraries(gnss-sdr
         Glog::glog
         Threads::Threads
         core_receiver
-        gnss_sdr_flags
 )
 
 target_compile_definitions(gnss-sdr PRIVATE -DGNSS_SDR_VERSION="${VERSION}")

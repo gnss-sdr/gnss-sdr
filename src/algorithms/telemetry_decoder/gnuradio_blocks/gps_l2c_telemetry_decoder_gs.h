@@ -32,24 +32,18 @@
 #define GNSS_SDR_GPS_L2C_TELEMETRY_DECODER_GS_H
 
 
-#include "GPS_L2C.h"
 #include "gnss_satellite.h"
-#include "gps_cnav_ephemeris.h"
-#include "gps_cnav_iono.h"
 #include "gps_cnav_navigation_message.h"
+#include <boost/shared_ptr.hpp>  // for boost::shared_ptr
 #include <gnuradio/block.h>
-#include <algorithm>  // for copy
+#include <gnuradio/types.h>  // for gr_vector_const_void_star
 #include <cstdint>
 #include <fstream>
 #include <string>
-#include <utility>  // for pair
-#include <vector>
 
 extern "C"
 {
-#include "bits.h"
 #include "cnav_msg.h"
-#include "edc.h"
 }
 
 

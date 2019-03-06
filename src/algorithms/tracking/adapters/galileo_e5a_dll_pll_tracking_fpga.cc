@@ -33,10 +33,17 @@
 #include "Galileo_E5a.h"
 #include "configuration_interface.h"
 #include "display.h"
+#include "dll_pll_conf_fpga.h"
 #include "galileo_e5_signal_processing.h"
 #include "gnss_sdr_flags.h"
+#include "gnss_synchro.h"
 #include <glog/logging.h>
+#include <gnuradio/gr_complex.h>  // for gr_complex
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <cmath>  // for round
+#include <complex>
+#include <cstring>  // for memcpy
+#include <iostream>
 
 
 GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(

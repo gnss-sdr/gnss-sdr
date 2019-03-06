@@ -32,12 +32,7 @@
 
 #include "gps_l2c_telemetry_decoder.h"
 #include "configuration_interface.h"
-#include "gps_almanac.h"
-#include "gps_cnav_ephemeris.h"
-#include "gps_cnav_iono.h"
-#include "gps_cnav_utc_model.h"
 #include <glog/logging.h>
-#include <gnuradio/io_signature.h>
 
 
 GpsL2CTelemetryDecoder::GpsL2CTelemetryDecoder(ConfigurationInterface* configuration,

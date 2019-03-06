@@ -34,7 +34,15 @@
 #include "configuration_interface.h"
 #include "galileo_e1_signal_processing.h"
 #include "gnss_sdr_flags.h"
+#include "gnss_synchro.h"
 #include <glog/logging.h>
+#include <gnuradio/fft/fft.h>     // for fft_complex
+#include <gnuradio/gr_complex.h>  // for gr_complex
+#include <volk/volk.h>            // for volk_32fc_conjugate_32fc
+#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <cmath>    // for abs, pow, floor
+#include <complex>  // for complex
+#include <cstring>  // for memcpy
 
 
 GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(

@@ -33,18 +33,23 @@
 #define GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H
 
 #include "dll_pll_conf_fpga.h"
-#include "fpga_multicorrelator.h"
-#include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
 #include <boost/circular_buffer.hpp>
+#include <boost/shared_ptr.hpp>
 #include <gnuradio/block.h>
-#include <fstream>
-#include <map>
-#include <queue>
+#include <gnuradio/gr_complex.h>  // for gr_complex
+#include <gnuradio/types.h>       // for gr_vector_const_void_star
+#include <pmt/pmt.h>              // for pmt_t
+#include <cstdint>
+#include <deque>    // for deque
+#include <fstream>  // for ofstream
+#include <memory>   // for shared_ptr
+#include <string>
 #include <utility>
-//#include <string>
 
+class Fpga_Multicorrelator_8sc;
+class Gnss_Synchro;
 class dll_pll_veml_tracking_fpga;
 
 using dll_pll_veml_tracking_fpga_sptr = boost::shared_ptr<dll_pll_veml_tracking_fpga>;

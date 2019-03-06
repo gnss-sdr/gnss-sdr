@@ -43,7 +43,9 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
 #include <bitset>
+#include <cstddef>  // for size_t
 #include <cstdint>
+#include <cstring>  // for memcpy
 #include <deque>
 #include <map>
 #include <memory>

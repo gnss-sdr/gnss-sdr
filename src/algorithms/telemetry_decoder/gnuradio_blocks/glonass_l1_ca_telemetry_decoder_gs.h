@@ -1,7 +1,6 @@
 /*!
  * \file glonass_l1_ca_telemetry_decoder_gs.h
- * \brief Implementation of an adapter of a GLONASS L1 C/A NAV data decoder block
- * to a TelemetryDecoderInterface
+ * \brief Implementation of a GLONASS L1 C/A NAV data decoder block
  * \note Code added as part of GSoC 2017 program
  * \author Damian Miralles, 2017. dmiralles2009(at)gmail.com
  *
@@ -35,15 +34,15 @@
 
 
 #include "GLONASS_L1_L2_CA.h"
-#include "glonass_gnav_almanac.h"
-#include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_navigation_message.h"
-#include "glonass_gnav_utc_model.h"
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
 #include <boost/circular_buffer.hpp>
-#include <gnuradio/block.h>
-#include <fstream>
+#include <boost/shared_ptr.hpp>  // for boost::shared_ptr
+#include <gnuradio/block.h>      // for block
+#include <gnuradio/types.h>      // for gr_vector_const_void_star
+#include <cstdint>
+#include <fstream>  // for ofstream
 #include <string>
 
 

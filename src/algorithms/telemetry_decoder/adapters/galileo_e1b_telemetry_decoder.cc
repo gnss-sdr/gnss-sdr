@@ -33,12 +33,7 @@
 
 #include "galileo_e1b_telemetry_decoder.h"
 #include "configuration_interface.h"
-#include "galileo_almanac.h"
-#include "galileo_ephemeris.h"
-#include "galileo_iono.h"
-#include "galileo_utc_model.h"
 #include <glog/logging.h>
-#include <gnuradio/io_signature.h>
 
 
 GalileoE1BTelemetryDecoder::GalileoE1BTelemetryDecoder(ConfigurationInterface* configuration,

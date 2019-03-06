@@ -33,6 +33,8 @@
 
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/sync_decimator.h>
+#include <gnuradio/types.h>  // for gr_vector_const_void_star
+#include <cstddef>           // for size_t
 #include <cstdint>
 
 

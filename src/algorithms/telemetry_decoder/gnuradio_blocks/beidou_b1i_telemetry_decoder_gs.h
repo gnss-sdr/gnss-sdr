@@ -1,9 +1,8 @@
 /*!
  * \file beidou_b1i_telemetry_decoder_gs.h
- * \brief Implementation of an adapter of a BEIDOU BI1 DNAV data decoder block
- * to a TelemetryDecoderInterface
- * \details Code added as part of GSoC 2018 program. However new modifications included to mimic
- * decoding of existing signals
+ * \brief Implementation of a BEIDOU BI1 DNAV data decoder block
+ * \details Code added as part of GSoC 2018 program. However new modifications
+ * included to mimic decoding of existing signals
  * \author Damian Miralles, 2018. dmiralles2009(at)gmail.com
  * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.es
  *
@@ -35,17 +34,16 @@
 #ifndef GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_GS_H
 #define GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_GS_H
 
-#include "Beidou_B1I.h"
-#include "beidou_dnav_almanac.h"
-#include "beidou_dnav_ephemeris.h"
-#include "beidou_dnav_navigation_message.h"
-#include "beidou_dnav_utc_model.h"
+
 #include "gnss_satellite.h"
-#include "gnss_synchro.h"
+#include "beidou_dnav_navigation_message.h"
 #include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>
+#include <gnuradio/types.h>                  // for gr_vector_const_void_star
 #include <fstream>
 #include <string>
+#include <boost/shared_ptr.hpp>  // for boost::shared_ptr
+#include <cstdint>
 
 
 class beidou_b1i_telemetry_decoder_gs;

@@ -38,10 +38,15 @@
 #include "Galileo_E1.h"
 #include "configuration_interface.h"
 #include "display.h"
+#include "dll_pll_conf_fpga.h"
 #include "galileo_e1_signal_processing.h"
 #include "gnss_sdr_flags.h"
+#include "gnss_synchro.h"
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <cmath>     // for round
+#include <cstring>   // for memcpy
+#include <iostream>  // for operator<<,
 
 
 GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(

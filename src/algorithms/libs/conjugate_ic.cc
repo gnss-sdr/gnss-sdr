@@ -31,6 +31,7 @@
 #include "conjugate_ic.h"
 #include <gnuradio/io_signature.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <algorithm>  // for max
 
 
 conjugate_ic_sptr make_conjugate_ic()

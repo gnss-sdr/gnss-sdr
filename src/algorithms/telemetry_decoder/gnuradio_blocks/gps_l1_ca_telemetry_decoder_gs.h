@@ -33,12 +33,16 @@
 
 #include "GPS_L1_CA.h"
 #include "gnss_satellite.h"
-#include "gnss_synchro.h"
 #include "gps_navigation_message.h"
+#include "gnss_synchro.h"
 #include <boost/circular_buffer.hpp>
-#include <gnuradio/block.h>
-#include <fstream>
-#include <string>
+#include <boost/shared_ptr.hpp>  // for boost::shared_ptr
+#include <gnuradio/block.h>      // for block
+#include <gnuradio/types.h>      // for gr_vector_const_void_star
+#include <cstdint>               // for int32_t
+#include <fstream>               // for ofstream
+#include <string>                // for string
+
 
 class gps_l1_ca_telemetry_decoder_gs;
 

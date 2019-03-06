@@ -38,7 +38,6 @@ extern "C"
 {
 #include "supl.h"
 }
-#include "GPS_L1_CA.h"
 #include "agnss_ref_location.h"
 #include "agnss_ref_time.h"
 #include "galileo_almanac.h"
@@ -54,9 +53,6 @@ extern "C"
 #include "gps_ephemeris.h"
 #include "gps_iono.h"
 #include "gps_utc_model.h"
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/serialization/map.hpp>
 #include <fstream>
 #include <map>
 #include <string>

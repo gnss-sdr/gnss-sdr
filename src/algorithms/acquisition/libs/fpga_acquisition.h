@@ -1,11 +1,11 @@
 /*!
  * \file fpga_acquisition.h
- * \brief High optimized FPGA vector correlator class
+ * \brief Highly optimized FPGA vector correlator class
  * \authors <ul>
  *          <li> Marc Majoral, 2019. mmajoral(at)cttc.cat
  *          </ul>
  *
- * Class that controls and executes a high optimized acquisition HW
+ * Class that controls and executes a highly optimized acquisition HW
  * accelerator in the FPGA
  *
  * -------------------------------------------------------------------------
@@ -36,9 +36,9 @@
 #ifndef GNSS_SDR_FPGA_ACQUISITION_H_
 #define GNSS_SDR_FPGA_ACQUISITION_H_
 
-#include <gnuradio/fft/fft.h>
-#include <volk/volk.h>
+#include <volk/volk_complex.h>  // for lv_16sc_t
 #include <cstdint>
+#include <string>
 
 /*!
  * \brief Class that implements carrier wipe-off and correlators.

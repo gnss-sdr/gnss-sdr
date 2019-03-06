@@ -33,9 +33,15 @@
 
 
 #include "pcps_acquisition_fpga.h"
+#include "gnss_synchro.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
-#include <utility>
+#include <pmt/pmt.h>        // for from_long
+#include <pmt/pmt_sugar.h>  // for mp
+#include <cmath>            // for ceil
+#include <iostream>         // for operator<<
+#include <utility>          // for move
+
 
 #define AQ_DOWNSAMPLING_DELAY 40  // delay due to the downsampling filter in the acquisition
 
@@ -133,7 +139,7 @@ void pcps_acquisition_fpga::set_state(int32_t state)
 void pcps_acquisition_fpga::send_positive_acquisition()
 {
     // Declare positive acquisition using a message port
-    //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
+    // 0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
     DLOG(INFO) << "positive acquisition"
                << ", satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
                << ", sample_stamp " << d_sample_counter

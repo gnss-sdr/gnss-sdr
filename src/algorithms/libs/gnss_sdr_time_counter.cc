@@ -32,7 +32,6 @@
 #include "gnss_sdr_time_counter.h"
 #include "gnss_synchro.h"
 #include <gnuradio/io_signature.h>
-#include <cmath>
 #include <iostream>
 #include <string>
 

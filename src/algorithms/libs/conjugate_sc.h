@@ -33,6 +33,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/sync_block.h>
+#include <gnuradio/types.h>  // for gr_vector_const_void_star
 
 class conjugate_sc;
 
@@ -48,10 +49,9 @@ class conjugate_sc : public gr::sync_block
 {
 private:
     friend conjugate_sc_sptr make_conjugate_sc();
-
-public:
     conjugate_sc();
-
+    
+public:
     int work(int noutput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items);

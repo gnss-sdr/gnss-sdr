@@ -42,16 +42,28 @@
 #include "channel_interface.h"
 #include "configuration_interface.h"
 #include "gnss_block_factory.h"
-#include <boost/lexical_cast.hpp>
-#include <boost/tokenizer.hpp>
-#include <glog/logging.h>
-#include <gnuradio/filter/firdes.h>
-#include <algorithm>
-#include <exception>
-#include <iostream>
-#include <set>
-#include <thread>
-#include <utility>
+#include "gnss_block_interface.h"
+#include "gnss_satellite.h"
+#include "gnss_synchro_monitor.h"
+#include <boost/lexical_cast.hpp>    // for boost::lexical_cast
+#include <boost/shared_ptr.hpp>      // for boost::shared_ptr
+#include <boost/tokenizer.hpp>       // for boost::tokenizer
+#include <glog/logging.h>            // for LOG
+#include <gnuradio/basic_block.h>    // for basic_block
+#include <gnuradio/filter/firdes.h>  // for gr::filter::firdes
+#include <gnuradio/io_signature.h>   // for io_signature
+#include <gnuradio/top_block.h>      // for top_block, make_top_block
+#include <pmt/pmt_sugar.h>           // for mp
+#include <algorithm>                 // for transform, sort, unique
+#include <cmath>                     // for floor
+#include <cstddef>                   // for size_t
+#include <exception>                 // for exception
+#include <iostream>                  // for operator<<
+#include <iterator>                  // for insert_iterator, inserter
+#include <set>                       // for set
+#include <stdexcept>                 // for invalid_argument
+#include <thread>                    // for thread
+#include <utility>                   // for move
 #ifdef GR_GREATER_38
 #include <gnuradio/filter/fir_filter_blk.h>
 #else

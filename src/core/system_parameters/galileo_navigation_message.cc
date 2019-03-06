@@ -31,10 +31,11 @@
  */
 
 #include "galileo_navigation_message.h"
-#include <boost/crc.hpp>  // for boost::crc_basic, boost::crc_optimal
-#include <boost/dynamic_bitset.hpp>
-#include <glog/logging.h>
-#include <iostream>
+#include <boost/crc.hpp>             // for boost::crc_basic, boost::crc_optimal
+#include <boost/dynamic_bitset.hpp>  // for boost::dynamic_bitset
+#include <glog/logging.h>            // for DLOG
+#include <algorithm>                 // for reverse
+#include <iostream>                  // for operator<<
 
 
 using CRC_Galileo_INAV_type = boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false>;

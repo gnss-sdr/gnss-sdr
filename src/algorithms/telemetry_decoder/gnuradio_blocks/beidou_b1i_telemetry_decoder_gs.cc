@@ -1,7 +1,6 @@
 /*!
  * \file beidou_b1i_telemetry_decoder_gs.cc
- * \brief Implementation of an adapter of a BEIDOU BI1 DNAV data decoder block
- * to a TelemetryDecoderInterface
+ * \brief Implementation of a BEIDOU BI1 DNAV data decoder block
  * \note Code added as part of GSoC 2018 program
  * \author Damian Miralles, 2018. dmiralles2009(at)gmail.com
  * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.es
@@ -33,14 +32,22 @@
 
 
 #include "beidou_b1i_telemetry_decoder_gs.h"
+#include "Beidou_B1I.h"
+#include "beidou_dnav_almanac.h"
+#include "beidou_dnav_ephemeris.h"
+#include "beidou_dnav_utc_model.h"
 #include "convolutional.h"
 #include "display.h"
 #include "gnss_synchro.h"
-#include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
+#include <pmt/pmt.h>        // for make_any
+#include <pmt/pmt_sugar.h>  // for mp
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include <iostream>
+#include <cstdlib>    // for abs
+#include <exception>  // for exception
+#include <iostream>   // for cout
+#include <memory>     // for shared_ptr, make_shared
 
 #define CRC_ERROR_LIMIT 8
 
@@ -314,8 +321,12 @@ void beidou_b1i_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satell
             volk_gnsssdr_free(d_secondary_code_symbols);
             volk_gnsssdr_free(d_subframe_symbols);
 
+            d_samples_per_symbol = (BEIDOU_B1I_CODE_RATE_HZ / BEIDOU_B1I_CODE_LENGTH_CHIPS) / BEIDOU_D2NAV_SYMBOL_RATE_SPS;
+            d_symbols_per_preamble = BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS;
+            d_samples_per_preamble = BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS * d_samples_per_symbol;
             d_secondary_code_symbols = nullptr;
             d_preamble_samples = static_cast<int32_t *>(volk_gnsssdr_malloc(d_samples_per_preamble * sizeof(int32_t), volk_gnsssdr_get_alignment()));
+            d_preamble_period_samples = BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS * d_samples_per_symbol;
 
             // Setting samples of preamble code
             int32_t n = 0;

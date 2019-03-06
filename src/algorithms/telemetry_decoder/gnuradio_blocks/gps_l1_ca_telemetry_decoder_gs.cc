@@ -30,10 +30,19 @@
  */
 
 #include "gps_l1_ca_telemetry_decoder_gs.h"
-#include <boost/lexical_cast.hpp>
+#include "gps_ephemeris.h"  // for Gps_Ephemeris
+#include "gps_iono.h"       // for Gps_Iono
+#include "gps_utc_model.h"  // for Gps_Utc_Model
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
+#include <pmt/pmt.h>        // for make_any
+#include <pmt/pmt_sugar.h>  // for mp
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <cmath>      // for round
+#include <cstring>    // for memcpy
+#include <exception>  // for exception
+#include <iostream>   // for cout
+#include <memory>     // for shared_ptr
 
 
 #ifndef _rotl

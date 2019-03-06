@@ -32,12 +32,7 @@
 
 #include "gps_l1_ca_telemetry_decoder.h"
 #include "configuration_interface.h"
-#include "gps_almanac.h"
-#include "gps_ephemeris.h"
-#include "gps_iono.h"
-#include "gps_utc_model.h"
 #include <glog/logging.h>
-#include <gnuradio/io_signature.h>
 
 
 GpsL1CaTelemetryDecoder::GpsL1CaTelemetryDecoder(ConfigurationInterface* configuration,

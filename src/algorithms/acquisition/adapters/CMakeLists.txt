@@ -92,15 +92,17 @@ add_library(acquisition_adapters ${ACQ_ADAPTER_SOURCES} ${ACQ_ADAPTER_HEADERS})
 
 target_link_libraries(acquisition_adapters
     PUBLIC
-        Gnuradio::blocks
         algorithms_libs
         gnss_sdr_flags
         acquisition_gr_blocks
         core_system_parameters
+        Gnuradio::blocks
+        Volk::volk
     PRIVATE
         Boost::boost
         Gflags::gflags
         Glog::glog
+        Gnuradio::fft
         Volkgnsssdr::volkgnsssdr
         acquisition_libs
 )

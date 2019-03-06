@@ -53,14 +53,17 @@
 #define GNSS_SDR_PCPS_ACQUISITION_H_
 
 #include "acq_conf.h"
-#include "gnss_synchro.h"
 #include <armadillo>
 #include <gnuradio/block.h>
 #include <gnuradio/fft/fft.h>
-#include <volk/volk.h>
+#include <gnuradio/gr_complex.h>     // for gr_complex
+#include <gnuradio/thread/thread.h>  // for scoped_lock
+#include <gnuradio/types.h>          // for gr_vector_const_void_star
+#include <volk/volk_complex.h>       // for lv_16sc_t
+#include <cstdint>
 #include <string>
 
-
+class Gnss_Synchro;
 class pcps_acquisition;
 
 using pcps_acquisition_sptr = boost::shared_ptr<pcps_acquisition>;

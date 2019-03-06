@@ -550,7 +550,7 @@ endif()
 set(CMAKE_CTEST_COMMAND ctest -V)
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
 
-if(NOT ENABLE_PACKAGING)
+if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     add_executable(flowgraph_test
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/control-plane/gnss_flowgraph_test.cc
@@ -589,7 +589,7 @@ endif()
 
 
 #########################################################
-if(NOT ENABLE_PACKAGING)
+if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     add_executable(gnss_block_test
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/sources/file_signal_source_test.cc
@@ -640,7 +640,7 @@ endif()
 
 
 #########################################################
-if(NOT ENABLE_PACKAGING)
+if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     add_executable(gnuradio_block_test
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/sources/unpack_2bit_samples_test.cc
@@ -696,7 +696,7 @@ set_property(TEST matio_test PROPERTY TIMEOUT 30)
 
 
 #########################################################
-if(NOT ENABLE_PACKAGING)
+if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     add_executable(acq_test
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_test.cc
@@ -734,7 +734,7 @@ endif()
 
 
 #########################################################
-if(NOT ENABLE_PACKAGING)
+if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     add_executable(trk_test
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/galileo_e1_dll_pll_veml_tracking_test.cc
@@ -773,7 +773,7 @@ endif()
 
 #########################################################
 
-if(NOT ENABLE_PACKAGING)
+if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     add_executable(control_thread_test
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/control-plane/control_message_factory_test.cc
@@ -796,7 +796,7 @@ if(NOT ENABLE_PACKAGING)
             core_receiver
             core_system_parameters
     )
-
+message(STATUS "+++++++++++++++++++++++++++${ENABLE_FPGA} ${ENABLE_PACKAGING}")
     add_test(control_thread_test control_thread_test)
 
     set_property(TEST control_thread_test PROPERTY TIMEOUT 30)
@@ -807,6 +807,10 @@ endif()
 if(ENABLE_PACKAGING)
     add_dependencies(check matio_test)
 else()
-    add_dependencies(check control_thread_test flowgraph_test gnss_block_test
-        gnuradio_block_test acq_test trk_test matio_test)
+    if(ENABLE_FPGA)
+        add_dependencies(check matio_test)
+    else()
+        add_dependencies(check control_thread_test flowgraph_test gnss_block_test
+            gnuradio_block_test acq_test trk_test matio_test)
+    endif()
 endif()

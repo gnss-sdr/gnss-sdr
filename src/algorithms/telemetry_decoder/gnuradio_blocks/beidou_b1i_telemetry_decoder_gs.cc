@@ -326,8 +326,7 @@ void beidou_b1i_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satell
             d_samples_per_preamble = BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS * d_samples_per_symbol;
             d_secondary_code_symbols = nullptr;
             d_preamble_samples = static_cast<int32_t *>(volk_gnsssdr_malloc(d_samples_per_preamble * sizeof(int32_t), volk_gnsssdr_get_alignment()));
-            d_preamble_period_samples = BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS*d_samples_per_symbol;
-            //d_subframe_length_symbols = BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS;
+            d_preamble_period_samples = BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS * d_samples_per_symbol;
 
             // Setting samples of preamble code
             int32_t n = 0;

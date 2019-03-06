@@ -796,7 +796,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             core_receiver
             core_system_parameters
     )
-message(STATUS "+++++++++++++++++++++++++++${ENABLE_FPGA} ${ENABLE_PACKAGING}")
+
     add_test(control_thread_test control_thread_test)
 
     set_property(TEST control_thread_test PROPERTY TIMEOUT 30)

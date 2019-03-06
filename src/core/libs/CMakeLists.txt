@@ -23,6 +23,7 @@ set(CORE_LIBS_SOURCES
     INIReader.cc
     string_converter.cc
     gnss_sdr_supl_client.cc
+    gnss_sdr_sample_counter.cc
 )
 
 set(CORE_LIBS_HEADERS
@@ -30,7 +31,21 @@ set(CORE_LIBS_HEADERS
     INIReader.h
     string_converter.h
     gnss_sdr_supl_client.h
+    gnss_sdr_sample_counter.h
 )
+
+if(ENABLE_FPGA)
+    set(CORE_LIBS_SOURCES
+        ${CORE_LIBS_SOURCES}
+        gnss_sdr_fpga_sample_counter.cc
+        gnss_sdr_time_counter.cc
+    )
+    set(CORE_LIBS_HEADERS
+        ${CORE_LIBS_HEADERS}
+        gnss_sdr_fpga_sample_counter.h
+        gnss_sdr_time_counter.h
+    )
+endif()
 
 list(SORT CORE_LIBS_HEADERS)
 list(SORT CORE_LIBS_SOURCES)
@@ -42,6 +57,7 @@ add_library(core_libs ${CORE_LIBS_SOURCES} ${CORE_LIBS_HEADERS})
 target_link_libraries(core_libs
     PUBLIC
         Boost::boost
+        Gnuradio::runtime
         core_libs_supl
         core_system_parameters
     PRIVATE
@@ -50,6 +66,7 @@ target_link_libraries(core_libs
         Glog::glog
         Pugixml::pugixml
 )
+
 
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)

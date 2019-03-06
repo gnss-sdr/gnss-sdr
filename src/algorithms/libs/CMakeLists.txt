@@ -22,7 +22,6 @@ set(GNSS_SPLIBS_SOURCES
     gps_l2c_signal.cc
     gps_l5_signal.cc
     galileo_e1_signal_processing.cc
-    gnss_sdr_sample_counter.cc
     gnss_signal_processing.cc
     gps_sdr_signal_processing.cc
     glonass_l1_signal_processing.cc
@@ -46,7 +45,6 @@ set(GNSS_SPLIBS_HEADERS
     gps_l2c_signal.h
     gps_l5_signal.h
     galileo_e1_signal_processing.h
-    gnss_sdr_sample_counter.h
     gnss_signal_processing.h
     gps_sdr_signal_processing.h
     glonass_l1_signal_processing.h
@@ -67,29 +65,12 @@ set(GNSS_SPLIBS_HEADERS
     geofunctions.h
 )
 
-if(ENABLE_FPGA)
-    set(GNSS_SPLIBS_SOURCES
-        ${GNSS_SPLIBS_SOURCES}
-        gnss_sdr_time_counter.cc
-        gnss_sdr_fpga_sample_counter.cc
-    )
-    set(GNSS_SPLIBS_HEADERS
-        ${GNSS_SPLIBS_HEADERS}
-        gnss_sdr_time_counter.h
-        gnss_sdr_fpga_sample_counter.h
-    )
-endif()
-
 if(OPENCL_FOUND)
     set(GNSS_SPLIBS_SOURCES ${GNSS_SPLIBS_SOURCES}
         opencl/fft_execute.cc # Needs OpenCL
         opencl/fft_setup.cc # Needs OpenCL
         opencl/fft_kernelstring.cc # Needs OpenCL
     )
-endif()
-
-
-if(OPENCL_FOUND)
     include_directories(${OPENCL_INCLUDE_DIRS})
     if(OS_IS_MACOSX)
         set(OPT_LIBRARIES ${OPT_LIBRARIES} "-framework OpenCL")

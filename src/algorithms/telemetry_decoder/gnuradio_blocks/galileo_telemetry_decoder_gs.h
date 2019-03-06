@@ -33,18 +33,11 @@
 #define GNSS_SDR_GALILEO_TELEMETRY_DECODER_GS_H
 
 
-//#include "Galileo_E1.h"
-//#include "Galileo_E5a.h"
-//#include "galileo_almanac_helper.h"
-//#include "galileo_ephemeris.h"
 #include "galileo_fnav_message.h"
 #include <boost/shared_ptr.hpp>  // for boost::shared_ptr
 #include <gnuradio/types.h>      // for gr_vector_const_void_star
-//#include "galileo_iono.h"
 #include "galileo_navigation_message.h"
-//#include "galileo_utc_model.h"
 #include "gnss_satellite.h"
-//#include "gnss_synchro.h"
 #include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>
 #include <fstream>

@@ -33,11 +33,11 @@
 #ifndef GNSS_SDR_KML_PRINTER_H_
 #define GNSS_SDR_KML_PRINTER_H_
 
-#include "rtklib_solver.h"
-#include <fstream>
-#include <memory>
-#include <string>
+#include <fstream>   // for ofstream
+#include <memory>    // for shared_ptr
 
+
+class Rtklib_Solver;
 
 /*!
  * \brief Prints PVT information to OGC KML format file (can be viewed with Google Earth)

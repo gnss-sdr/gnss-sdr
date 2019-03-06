@@ -41,25 +41,25 @@
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
 #include "MATH_CONSTANTS.h"
-#include "galileo_e1_signal_processing.h"
-#include "galileo_e5_signal_processing.h"
+#include "fpga_multicorrelator.h"
+#include "gnss_satellite.h"
 #include "gnss_sdr_create_directory.h"
-#include "gps_l2c_signal.h"
-#include "gps_l5_signal.h"
-#include "gps_sdr_signal_processing.h"
+#include "gnss_synchro.h"
 #include "lock_detectors.h"
 #include "tracking_discriminators.h"
 #include <boost/filesystem/path.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <matio.h>
+#include <pmt/pmt_sugar.h>  // for mp
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <algorithm>
 #include <cmath>
+#include <complex>
+#include <cstdlib>  // for abs, size_t
 #include <exception>
 #include <iostream>
-#include <numeric>
-#include <sstream>
+#include <map>
 
 
 dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(const Dll_Pll_Conf_Fpga &conf_)

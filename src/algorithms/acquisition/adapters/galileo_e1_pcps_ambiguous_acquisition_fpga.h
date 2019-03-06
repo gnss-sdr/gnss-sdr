@@ -34,14 +34,15 @@
 
 #include "acquisition_interface.h"
 #include "complex_byte_to_float_x2.h"
-#include "gnss_synchro.h"
 #include "pcps_acquisition_fpga.h"
 #include <gnuradio/blocks/float_to_complex.h>
 #include <gnuradio/blocks/stream_to_vector.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_...
+#include <volk/volk_complex.h>       // for lv_16sc_t
+#include <cstddef>                   // for size_t
 #include <string>
 
-
+class Gnss_Synchro;
 class ConfigurationInterface;
 
 /*!

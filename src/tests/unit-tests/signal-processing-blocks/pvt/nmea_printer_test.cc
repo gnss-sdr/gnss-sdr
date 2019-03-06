@@ -31,6 +31,7 @@
 
 #include "nmea_printer.h"
 #include "rtklib_rtkpos.h"
+#include "rtklib_solver.h"
 #include <cstdio>
 #include <fstream>
 #include <string>

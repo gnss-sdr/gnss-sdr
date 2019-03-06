@@ -30,7 +30,6 @@
  */
 
 #include "gps_l1_ca_telemetry_decoder_gs.h"
-#include "gnss_synchro.h"
 #include "gps_ephemeris.h"  // for Gps_Ephemeris
 #include "gps_iono.h"       // for Gps_Iono
 #include "gps_utc_model.h"  // for Gps_Utc_Model

@@ -44,7 +44,9 @@
 #include <pmt/pmt.h>              // for pmt_t
 #include <cstdint>                // for int32_t
 #include <fstream>                // for string, ofstream
+#include <string>                 // for string
 #include <utility>                // for pair
+
 
 class Gnss_Synchro;
 class dll_pll_veml_tracking;

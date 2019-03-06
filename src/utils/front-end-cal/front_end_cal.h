@@ -32,9 +32,11 @@
 #ifndef GNSS_SDR_FRONT_END_CAL_H_
 #define GNSS_SDR_FRONT_END_CAL_H_
 
-#include "file_configuration.h"
 #include <armadillo>
+#include <memory>
+#include <string>
 
+class ConfigurationInterface;
 
 class FrontEndCal
 {

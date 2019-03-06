@@ -34,10 +34,18 @@
 #ifndef GNSS_SDR_RTCM_PRINTER_H_
 #define GNSS_SDR_RTCM_PRINTER_H_
 
-#include "rtcm.h"
-#include <fstream>  // std::ofstream
-#include <map>
-#include <memory>  // std::shared_ptr
+#include <cstdint>  // for int32_t
+#include <fstream>  // for std::ofstream
+#include <map>      // for std::map
+#include <memory>   // std::shared_ptr
+
+class Galileo_Ephemeris;
+class Glonass_Gnav_Ephemeris;
+class Glonass_Gnav_Utc_Model;
+class Gnss_Synchro;
+class Gps_CNAV_Ephemeris;
+class Gps_Ephemeris;
+class Rtcm;
 
 /*!
  * \brief This class provides a implementation of a subset of the RTCM Standard 10403.2 messages

@@ -36,11 +36,12 @@
 #ifndef GNSS_SDR_NMEA_PRINTER_H_
 #define GNSS_SDR_NMEA_PRINTER_H_
 
-#include "rtklib_solver.h"
-#include <fstream>
-#include <memory>
-#include <string>
+#include <boost/date_time/posix_time/ptime.hpp>  // for ptime
+#include <fstream>                               // for ofstream
+#include <memory>                                // for shared_ptr
+#include <string>                                // for string
 
+class Rtklib_Solver;
 
 /*!
  * \brief This class provides a implementation of a subset of the NMEA-0183 standard for interfacing

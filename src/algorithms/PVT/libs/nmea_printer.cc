@@ -35,14 +35,16 @@
 
 #include "nmea_printer.h"
 #include "rtklib_solution.h"
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include "rtklib_solver.h"
 #include <boost/filesystem/operations.hpp>   // for create_directories, exists
 #include <boost/filesystem/path.hpp>         // for path, operator<<
 #include <boost/filesystem/path_traits.hpp>  // for filesystem
+#include <boost/system/error_code.hpp>       // for error_code
 #include <glog/logging.h>
 #include <cstdint>
 #include <exception>
 #include <fcntl.h>
+#include <iostream>  // for cout, cerr
 #include <termios.h>
 
 

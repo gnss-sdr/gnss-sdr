@@ -1,5 +1,5 @@
 /*!
- * \file gps_utc_model.h
+ * \file gps_cnav_utc_model.h
  * \brief  Interface of a GPS UTC MODEL storage
  * \author Javier Arribas, 2013. jarribas(at)cttc.es
  *

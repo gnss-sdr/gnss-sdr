@@ -1,5 +1,5 @@
 /*!
- * \file pcps_acquisition_fine_doppler_acquisition_cc.h
+ * \file pcps_acquisition_fine_doppler_cc.h
  * \brief This class implements a Parallel Code Phase Search Acquisition with multi-dwells and fine Doppler estimation
  * for GPS L1 C/A signal
  *

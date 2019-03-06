@@ -1,5 +1,5 @@
 /*!
- * \file tlm_dump_reader.h
+ * \file true_observables_reader.h
  * \brief Helper file for unit testing
  * \author Javier Arribas, 2017. jarribas(at)cttc.es
  *

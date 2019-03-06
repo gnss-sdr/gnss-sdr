@@ -1,5 +1,5 @@
 /*!
- * \file gps_l5i pcps_acquisition_fpga.cc
+ * \file gps_l5i_pcps_acquisition_fpga.cc
  * \brief Adapts a PCPS acquisition block to an Acquisition Interface for
  *  GPS L5i signals for the FPGA
  * \authors <ul>
@@ -140,7 +140,6 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
                 }
         }
 
-    //acq_parameters
     acq_parameters.all_fft_codes = d_all_fft_codes_;
 
     // reference for the FPGA FFT-IFFT attenuation factor

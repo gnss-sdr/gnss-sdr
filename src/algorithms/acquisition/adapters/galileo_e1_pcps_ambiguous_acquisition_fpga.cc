@@ -77,12 +77,12 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     uint32_t sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 4);
     acq_parameters.sampled_ms = sampled_ms;
 
-    acquire_pilot_ = configuration_->property(role + ".acquire_pilot", false);  //will be true in future versions
+    acquire_pilot_ = configuration_->property(role + ".acquire_pilot", false);  // could be true in future versions
 
-    //--- Find number of samples per spreading code (4 ms)  -----------------
+    // Find number of samples per spreading code (4 ms)
     auto code_length = static_cast<uint32_t>(std::round(static_cast<double>(fs_in) / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
-
     acq_parameters.code_length = code_length;
+
     // The FPGA can only use FFT lengths that are a power of two.
     float nbits = ceilf(log2f((float)code_length * 2));
     uint32_t nsamples_total = pow(2, nbits);
@@ -253,6 +253,7 @@ void GalileoE1PcpsAmbiguousAcquisitionFpga::set_state(int state)
 {
     acquisition_fpga_->set_state(state);
 }
+
 
 void GalileoE1PcpsAmbiguousAcquisitionFpga::connect(gr::top_block_sptr top_block)
 {

@@ -29,8 +29,11 @@
  */
 
 #include "rtcm.h"
+#include "GLONASS_L1_L2_CA.h"
+#include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
 #include "Galileo_E1.h"
+#include "Galileo_E5a.h"
 #include <boost/algorithm/string.hpp>  // for to_upper_copy
 #include <boost/crc.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
@@ -39,6 +42,7 @@
 #include <chrono>     // std::chrono::seconds
 #include <cmath>      // for std::fmod
 #include <cstdlib>    // for strtol
+#include <iostream>   // for cout
 #include <sstream>    // for std::stringstream
 
 

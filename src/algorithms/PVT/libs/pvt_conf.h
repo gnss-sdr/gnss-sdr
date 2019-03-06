@@ -31,7 +31,6 @@
 #ifndef GNSS_SDR_PVT_CONF_H_
 #define GNSS_SDR_PVT_CONF_H_
 
-#include <cstddef>
 #include <cstdint>
 #include <map>
 #include <string>

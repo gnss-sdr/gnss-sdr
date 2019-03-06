@@ -29,7 +29,20 @@
  */
 
 #include "rtklib_conversions.h"
+#include "MATH_CONSTANTS.h"          // for PI, PI_2
+#include "beidou_dnav_ephemeris.h"   // for Beidou_Dnav_Ephemeris
+#include "galileo_almanac.h"         // for Galileo_Almanac
+#include "galileo_ephemeris.h"       // for Galileo_Ephemeris
+#include "glonass_gnav_ephemeris.h"  // for Glonass_Gnav_Ephemeris
+#include "glonass_gnav_utc_model.h"  // for Glonass_Gnav_Utc_Model
+#include "gnss_obs_codes.h"          // for CODE_L1C, CODE_L2S, CODE_L5X
+#include "gnss_synchro.h"            // for Gnss_Synchro
+#include "gps_almanac.h"             // for Gps_Almanac
+#include "gps_cnav_ephemeris.h"      // for Gps_CNAV_Ephemeris
+#include "gps_ephemeris.h"           // for Gps_Ephemeris
 #include "rtklib_rtkcmn.h"
+#include <cmath>
+#include <cstdint>
 
 obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs, const Gnss_Synchro& gnss_synchro, int week, int band)
 {

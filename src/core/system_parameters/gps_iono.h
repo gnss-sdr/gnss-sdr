@@ -33,7 +33,6 @@
 #define GNSS_SDR_GPS_IONO_H_
 
 
-#include <boost/assign.hpp>
 #include <boost/serialization/nvp.hpp>
 
 

@@ -1,9 +1,7 @@
 /*!
- * \file glonass_l1_ca_telemetry_decoder_cc.cc
- * \brief Implementation of an adapter of a GLONASS L1 C/A NAV data decoder block
- * to a TelemetryDecoderInterface
- * \note Code added as part of GSoC 2017 program
- * \author Damian Miralles, 2017. dmiralles2009(at)gmail.com
+ * \file glonass_l2_ca_telemetry_decoder_gs.cc
+ * \brief Implementation of a GLONASS L2 C/A NAV data decoder block
+ * \author Damian Miralles, 2018. dmiralles2009(at)gmail.com
  *
  * -------------------------------------------------------------------------
  *
@@ -31,27 +29,35 @@
  */
 
 
-#include "glonass_l1_ca_telemetry_decoder_cc.h"
-#include <boost/lexical_cast.hpp>
+#include "glonass_l2_ca_telemetry_decoder_gs.h"
+#include "display.h"
+#include "glonass_gnav_almanac.h"
+#include "glonass_gnav_ephemeris.h"
+#include "glonass_gnav_utc_model.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
-
+#include <pmt/pmt.h>        // for make_any
+#include <pmt/pmt_sugar.h>  // for mp
+#include <cmath>            // for floor, round
+#include <cstdlib>          // for abs, malloc
+#include <cstring>          // for memcpy
+#include <exception>        // for exception
+#include <iostream>         // for cout
+#include <memory>           // for shared_ptr, make_shared
 
 #define CRC_ERROR_LIMIT 6
 
-using google::LogMessage;
 
-
-glonass_l1_ca_telemetry_decoder_cc_sptr
-glonass_l1_ca_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump)
+glonass_l2_ca_telemetry_decoder_gs_sptr
+glonass_l2_ca_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump)
 {
-    return glonass_l1_ca_telemetry_decoder_cc_sptr(new glonass_l1_ca_telemetry_decoder_cc(satellite, dump));
+    return glonass_l2_ca_telemetry_decoder_gs_sptr(new glonass_l2_ca_telemetry_decoder_gs(satellite, dump));
 }
 
 
-glonass_l1_ca_telemetry_decoder_cc::glonass_l1_ca_telemetry_decoder_cc(
+glonass_l2_ca_telemetry_decoder_gs::glonass_l2_ca_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
-    bool dump) : gr::block("glonass_l1_ca_telemetry_decoder_cc", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
+    bool dump) : gr::block("glonass_l2_ca_telemetry_decoder_gs", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                      gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
     // Ephemeris data port out
@@ -59,10 +65,10 @@ glonass_l1_ca_telemetry_decoder_cc::glonass_l1_ca_telemetry_decoder_cc(
     // initialize internal vars
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    LOG(INFO) << "Initializing GLONASS L1 CA TELEMETRY DECODING";
+    LOG(INFO) << "Initializing GLONASS L2 CA TELEMETRY DECODING";
     // Define the number of sampes per symbol. Notice that GLONASS has 2 rates,
     // one for the navigation data and the other for the preamble information
-    d_samples_per_symbol = (GLONASS_L1_CA_CODE_RATE_HZ / GLONASS_L1_CA_CODE_LENGTH_CHIPS) / GLONASS_L1_CA_SYMBOL_RATE_BPS;
+    d_samples_per_symbol = (GLONASS_L2_CA_CODE_RATE_HZ / GLONASS_L2_CA_CODE_LENGTH_CHIPS) / GLONASS_L2_CA_SYMBOL_RATE_BPS;
 
     // Set the preamble information
     uint16_t preambles_bits[GLONASS_GNAV_PREAMBLE_LENGTH_BITS] = GLONASS_GNAV_PREAMBLE;
@@ -90,7 +96,7 @@ glonass_l1_ca_telemetry_decoder_cc::glonass_l1_ca_telemetry_decoder_cc(
                 }
         }
 
-    d_symbol_history.set_capacity(GLONASS_GNAV_PREAMBLE_LENGTH_SYMBOLS);
+    d_symbol_history.set_capacity(GLONASS_GNAV_PREAMBLE_PERIOD_SYMBOLS);
     d_sample_counter = 0ULL;
     d_stat = 0;
     d_preamble_index = 0ULL;
@@ -109,7 +115,7 @@ glonass_l1_ca_telemetry_decoder_cc::glonass_l1_ca_telemetry_decoder_cc(
 }
 
 
-glonass_l1_ca_telemetry_decoder_cc::~glonass_l1_ca_telemetry_decoder_cc()
+glonass_l2_ca_telemetry_decoder_gs::~glonass_l2_ca_telemetry_decoder_gs()
 {
     delete d_preambles_symbols;
     if (d_dump_file.is_open() == true)
@@ -126,7 +132,7 @@ glonass_l1_ca_telemetry_decoder_cc::~glonass_l1_ca_telemetry_decoder_cc()
 }
 
 
-void glonass_l1_ca_telemetry_decoder_cc::decode_string(const double *frame_symbols, int32_t frame_length)
+void glonass_l2_ca_telemetry_decoder_gs::decode_string(const double *frame_symbols, int32_t frame_length)
 {
     double chip_acc = 0.0;
     int32_t chip_acc_counter = 0;
@@ -197,7 +203,7 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(const double *frame_symbo
             std::shared_ptr<Glonass_Gnav_Ephemeris> tmp_obj = std::make_shared<Glonass_Gnav_Ephemeris>(d_nav.get_ephemeris());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "GLONASS GNAV Ephemeris have been received in channel" << d_channel << " from satellite " << d_satellite;
-            std::cout << "New GLONASS L1 GNAV message received in channel " << d_channel << ": ephemeris from satellite " << d_satellite << std::endl;
+            std::cout << TEXT_CYAN << "New GLONASS L2 GNAV message received in channel " << d_channel << ": ephemeris from satellite " << d_satellite << TEXT_RESET << std::endl;
         }
     if (d_nav.have_new_utc_model() == true)
         {
@@ -205,7 +211,7 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(const double *frame_symbo
             std::shared_ptr<Glonass_Gnav_Utc_Model> tmp_obj = std::make_shared<Glonass_Gnav_Utc_Model>(d_nav.get_utc_model());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "GLONASS GNAV UTC Model have been received in channel" << d_channel << " from satellite " << d_satellite;
-            std::cout << "New GLONASS L1 GNAV message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << std::endl;
+            std::cout << TEXT_CYAN << "New GLONASS L2 GNAV message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << TEXT_RESET << std::endl;
         }
     if (d_nav.have_new_almanac() == true)
         {
@@ -213,7 +219,7 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(const double *frame_symbo
             std::shared_ptr<Glonass_Gnav_Almanac> tmp_obj = std::make_shared<Glonass_Gnav_Almanac>(d_nav.get_almanac(slot_nbr));
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "GLONASS GNAV Almanac have been received in channel" << d_channel << " in slot number " << slot_nbr;
-            std::cout << "New GLONASS L1 GNAV almanac received in channel " << d_channel << " from satellite " << d_satellite << std::endl;
+            std::cout << TEXT_CYAN << "New GLONASS L2 GNAV almanac received in channel " << d_channel << " from satellite " << d_satellite << TEXT_RESET << std::endl;
         }
     // 5. Update satellite information on system
     if (d_nav.flag_update_slot_number == true)
@@ -226,7 +232,7 @@ void glonass_l1_ca_telemetry_decoder_cc::decode_string(const double *frame_symbo
 }
 
 
-void glonass_l1_ca_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satellite)
+void glonass_l2_ca_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satellite)
 {
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     DLOG(INFO) << "Setting decoder Finite State Machine to satellite " << d_satellite;
@@ -234,7 +240,7 @@ void glonass_l1_ca_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &sat
 }
 
 
-void glonass_l1_ca_telemetry_decoder_cc::set_channel(int32_t channel)
+void glonass_l2_ca_telemetry_decoder_gs::set_channel(int32_t channel)
 {
     d_channel = channel;
     LOG(INFO) << "Navigation channel set to " << channel;
@@ -261,7 +267,7 @@ void glonass_l1_ca_telemetry_decoder_cc::set_channel(int32_t channel)
 }
 
 
-int glonass_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
+int glonass_l2_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     int32_t corr_value = 0;
@@ -279,7 +285,7 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
 
     d_flag_preamble = false;
 
-    if (static_cast<int32_t>(d_symbol_history.size()) == d_symbols_per_preamble)
+    if (d_symbol_history.size() == GLONASS_GNAV_PREAMBLE_PERIOD_SYMBOLS)
         {
             // ******* preamble correlation ********
             int i = 0;
@@ -304,7 +310,7 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
                 {
                     // Record the preamble sample stamp
                     d_preamble_index = d_sample_counter;
-                    LOG(INFO) << "Preamble detection for GLONASS L1 C/A SAT " << this->d_satellite;
+                    LOG(INFO) << "Preamble detection for GLONASS L2 C/A SAT " << this->d_satellite;
                     // Enter into frame pre-detection status
                     d_stat = 1;
                     d_preamble_time_samples = d_symbol_history[0].Tracking_sample_counter;  // record the preamble sample stamp
@@ -321,7 +327,7 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
                     if (abs(preamble_diff - GLONASS_GNAV_PREAMBLE_PERIOD_SYMBOLS) == 0)
                         {
                             // try to decode frame
-                            LOG(INFO) << "Starting string decoder for GLONASS L1 C/A SAT " << this->d_satellite;
+                            LOG(INFO) << "Starting string decoder for GLONASS L2 C/A SAT " << this->d_satellite;
                             d_preamble_index = d_sample_counter;  // record the preamble sample stamp
                             d_stat = 2;
                         }
@@ -331,7 +337,7 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
                                 {
                                     d_stat = 0;  // start again
                                 }
-                            DLOG(INFO) << "Failed string decoder for GLONASS L1 C/A SAT " << this->d_satellite;
+                            DLOG(INFO) << "Failed string decoder for GLONASS L2 C/A SAT " << this->d_satellite;
                         }
                 }
         }
@@ -396,7 +402,7 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
         }
     else  // if there is not a new preamble, we define the TOW of the current symbol
         {
-            d_TOW_at_current_symbol = d_TOW_at_current_symbol + GLONASS_L1_CA_CODE_PERIOD;
+            d_TOW_at_current_symbol = d_TOW_at_current_symbol + GLONASS_L2_CA_CODE_PERIOD;
         }
 
     // if (d_flag_frame_sync == true and d_nav.flag_TOW_set==true and d_nav.flag_CRC_test == true)
@@ -418,7 +424,7 @@ int glonass_l1_ca_telemetry_decoder_cc::general_work(int noutput_items __attribu
     current_symbol.PRN = this->d_satellite.get_PRN();
     current_symbol.TOW_at_current_symbol_ms = round(d_TOW_at_current_symbol * 1000.0);
     // todo: glonass time to gps time should be done in observables block
-    // current_symbol.TOW_at_current_symbol_ms -= -= static_cast<uint32_t>(delta_t) * 1000;  // Galileo to GPS TOW
+    // current_symbol.TOW_at_current_symbol_ms -= static_cast<uint32_t>(delta_t) * 1000;
 
     if (d_dump == true)
         {

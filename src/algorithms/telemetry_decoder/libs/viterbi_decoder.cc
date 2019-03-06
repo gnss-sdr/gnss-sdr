@@ -31,6 +31,8 @@
 
 #include "viterbi_decoder.h"
 #include <glog/logging.h>
+#include <cstring>  // for memset
+#include <ostream>  // for operator<<, basic_ostream, char_traits, endl
 
 // logging
 #define EVENT 2   // logs important events which don't occur every block

@@ -34,14 +34,14 @@
 
 
 #include "gnss_block_interface.h"
-#include <gnuradio/msg_queue.h>
+#include <gnuradio/block.h>
+#include <cstddef>
+#include <memory>
 #include <string>
 
 
 class ConfigurationInterface;
-class AcquisitionInterface;
-class TrackingInterface;
-class TelemetryDecoderInterface;
+
 
 /*!
  * \brief This class wraps blocks to change data_type_adapter, input_filter and resampler

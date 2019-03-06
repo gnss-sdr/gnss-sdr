@@ -37,8 +37,6 @@
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
 
-using google::LogMessage;
-
 
 GalileoE1Pcps8msAmbiguousAcquisition::GalileoE1Pcps8msAmbiguousAcquisition(
     ConfigurationInterface* configuration,

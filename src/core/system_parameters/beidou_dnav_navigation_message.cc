@@ -32,13 +32,8 @@
 
 #include "beidou_dnav_navigation_message.h"
 #include "gnss_satellite.h"
-#include <boost/crc.hpp>  // for boost::crc_basic, boost::crc_optimal
-#include <boost/dynamic_bitset.hpp>
-#include <glog/logging.h>
-#include <cmath>
-#include <cstring>
-#include <iostream>
-#include <string>
+#include <cmath>     // for cos, sin, fmod, sqrt, atan2, fabs, floor
+#include <iostream>  // for string, operator<<, cout, ostream, endl
 
 
 void Beidou_Dnav_Navigation_Message::reset()

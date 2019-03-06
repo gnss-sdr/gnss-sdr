@@ -30,6 +30,7 @@
 
 
 #include "nmea_printer.h"
+#include "rtklib_rtkpos.h"
 #include <cstdio>
 #include <fstream>
 #include <string>

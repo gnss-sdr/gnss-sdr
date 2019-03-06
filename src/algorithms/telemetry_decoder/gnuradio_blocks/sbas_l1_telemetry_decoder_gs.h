@@ -1,5 +1,5 @@
 /*!
- * \file sbas_l1_telemetry_decoder_cc.h
+ * \file sbas_l1_telemetry_decoder_gs.h
  * \brief Interface of a SBAS telemetry data decoder block
  * \author Daniel Fehr 2013. daniel.co(at)bluewin.ch
  *
@@ -28,14 +28,15 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_SBAS_L1_TELEMETRY_DECODER_CC_H
-#define GNSS_SDR_SBAS_L1_TELEMETRY_DECODER_CC_H
+#ifndef GNSS_SDR_SBAS_L1_TELEMETRY_DECODER_GS_H
+#define GNSS_SDR_SBAS_L1_TELEMETRY_DECODER_GS_H
 
 #include "gnss_satellite.h"
-#include "viterbi_decoder.h"
-#include <boost/crc.hpp>
+#include <boost/crc.hpp>         // for crc_optimal
+#include <boost/shared_ptr.hpp>  // for boost::shared_ptr
 #include <gnuradio/block.h>
-#include <algorithm>  // for copy
+#include <gnuradio/types.h>  // for gr_vector_const_void_star
+#include <cstddef>           // for size_t
 #include <cstdint>
 #include <deque>
 #include <fstream>
@@ -43,22 +44,23 @@
 #include <utility>  // for pair
 #include <vector>
 
+class Viterbi_Decoder;
 
-class sbas_l1_telemetry_decoder_cc;
+class sbas_l1_telemetry_decoder_gs;
 
-using sbas_l1_telemetry_decoder_cc_sptr = boost::shared_ptr<sbas_l1_telemetry_decoder_cc>;
+using sbas_l1_telemetry_decoder_gs_sptr = boost::shared_ptr<sbas_l1_telemetry_decoder_gs>;
 
-sbas_l1_telemetry_decoder_cc_sptr
-sbas_l1_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
+sbas_l1_telemetry_decoder_gs_sptr
+sbas_l1_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
 /*!
  * \brief This class implements a block that decodes the SBAS integrity and corrections data defined in RTCA MOPS DO-229
  *
  */
-class sbas_l1_telemetry_decoder_cc : public gr::block
+class sbas_l1_telemetry_decoder_gs : public gr::block
 {
 public:
-    ~sbas_l1_telemetry_decoder_cc();
+    ~sbas_l1_telemetry_decoder_gs();
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
     void set_channel(int32_t channel);                    //!< Set receiver's channel
 
@@ -69,9 +71,9 @@ public:
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
 private:
-    friend sbas_l1_telemetry_decoder_cc_sptr
-    sbas_l1_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
-    sbas_l1_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
+    friend sbas_l1_telemetry_decoder_gs_sptr
+    sbas_l1_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+    sbas_l1_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
     void viterbi_decoder(double *page_part_symbols, int32_t *page_part_bits);
     void align_samples();

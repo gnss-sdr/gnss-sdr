@@ -38,7 +38,8 @@
 #include "conjugate_sc.h"
 #include "gnss_block_interface.h"
 #include <gnuradio/blocks/copy.h>
-#include <gnuradio/hier_block2.h>
+#include <gnuradio/runtime_types.h>
+#include <cstddef>
 #include <string>
 
 

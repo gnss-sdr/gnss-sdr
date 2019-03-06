@@ -98,6 +98,8 @@ target_link_libraries(tracking_adapters
         tracking_gr_blocks
         algorithms_libs
         gnss_sdr_flags
+    PRIVATE
+        Volkgnsssdr::volkgnsssdr
 )
 
 target_include_directories(tracking_adapters

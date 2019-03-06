@@ -41,9 +41,6 @@
 #include <glog/logging.h>
 
 
-using google::LogMessage;
-
-
 GlonassL1CaPcpsAcquisition::GlonassL1CaPcpsAcquisition(
     ConfigurationInterface* configuration,
     const std::string& role,

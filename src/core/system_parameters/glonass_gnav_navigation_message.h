@@ -41,6 +41,9 @@
 #include "glonass_gnav_utc_model.h"
 #include <bitset>
 #include <cstdint>
+#include <utility>                   // for pair
+#include <vector>                    // for vector
+#include <string>
 
 
 /*!

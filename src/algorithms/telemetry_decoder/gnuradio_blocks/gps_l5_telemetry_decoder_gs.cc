@@ -1,5 +1,5 @@
 /*!
- * \file gps_l5_telemetry_decoder_cc.cc
+ * \file gps_l5_telemetry_decoder_gs.cc
  * \brief Implementation of a CNAV message demodulator block
  * \author Antonio Ramos, 2017. antonio.ramos(at)cttc.es
  *
@@ -29,30 +29,32 @@
  */
 
 
-#include "gps_l5_telemetry_decoder_cc.h"
+#include "gps_l5_telemetry_decoder_gs.h"
 #include "display.h"
 #include "gnss_synchro.h"
 #include "gps_cnav_ephemeris.h"
 #include "gps_cnav_iono.h"
-#include <boost/lexical_cast.hpp>
+#include "gps_cnav_utc_model.h"  // for Gps_CNAV_Utc_Model
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
+#include <pmt/pmt.h>        // for make_any
+#include <pmt/pmt_sugar.h>  // for mp
 #include <bitset>
+#include <cstdlib>    // for abs
+#include <exception>  // for exception
 #include <iostream>
-#include <sstream>
+#include <memory>  // for shared_ptr, make_shared
 
 
-using google::LogMessage;
-
-gps_l5_telemetry_decoder_cc_sptr
-gps_l5_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump)
+gps_l5_telemetry_decoder_gs_sptr
+gps_l5_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump)
 {
-    return gps_l5_telemetry_decoder_cc_sptr(new gps_l5_telemetry_decoder_cc(satellite, dump));
+    return gps_l5_telemetry_decoder_gs_sptr(new gps_l5_telemetry_decoder_gs(satellite, dump));
 }
 
 
-gps_l5_telemetry_decoder_cc::gps_l5_telemetry_decoder_cc(
-    const Gnss_Satellite &satellite, bool dump) : gr::block("gps_l5_telemetry_decoder_cc",
+gps_l5_telemetry_decoder_gs::gps_l5_telemetry_decoder_gs(
+    const Gnss_Satellite &satellite, bool dump) : gr::block("gps_l5_telemetry_decoder_gs",
                                                       gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                                                       gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
@@ -86,7 +88,7 @@ gps_l5_telemetry_decoder_cc::gps_l5_telemetry_decoder_cc(
 }
 
 
-gps_l5_telemetry_decoder_cc::~gps_l5_telemetry_decoder_cc()
+gps_l5_telemetry_decoder_gs::~gps_l5_telemetry_decoder_gs()
 {
     if (d_dump_file.is_open() == true)
         {
@@ -102,7 +104,7 @@ gps_l5_telemetry_decoder_cc::~gps_l5_telemetry_decoder_cc()
 }
 
 
-void gps_l5_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satellite)
+void gps_l5_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satellite)
 {
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     DLOG(INFO) << "GPS L5 CNAV telemetry decoder in channel " << this->d_channel << " set to satellite " << d_satellite;
@@ -110,7 +112,7 @@ void gps_l5_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satellite)
 }
 
 
-void gps_l5_telemetry_decoder_cc::set_channel(int32_t channel)
+void gps_l5_telemetry_decoder_gs::set_channel(int32_t channel)
 {
     d_channel = channel;
     d_CNAV_Message.reset();
@@ -139,7 +141,7 @@ void gps_l5_telemetry_decoder_cc::set_channel(int32_t channel)
 }
 
 
-int gps_l5_telemetry_decoder_cc::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
+int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     // get pointers on in- and output gnss-synchro objects

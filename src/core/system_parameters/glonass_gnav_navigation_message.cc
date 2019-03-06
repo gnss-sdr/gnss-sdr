@@ -31,8 +31,11 @@
  */
 
 #include "glonass_gnav_navigation_message.h"
+#include "MATH_CONSTANTS.h"  // for TWO_N20, TWO_N30, TWO_N14, TWO_N15, TWO_N18
 #include "gnss_satellite.h"
 #include <glog/logging.h>
+#include <map>
+#include <ostream>  // for operator<<
 
 
 void Glonass_Gnav_Navigation_Message::reset()

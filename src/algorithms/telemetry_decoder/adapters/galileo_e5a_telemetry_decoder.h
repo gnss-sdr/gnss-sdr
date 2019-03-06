@@ -37,8 +37,11 @@
 #ifndef GNSS_SDR_GALILEO_E5A_TELEMETRY_DECODER_H_
 #define GNSS_SDR_GALILEO_E5A_TELEMETRY_DECODER_H_
 
-#include "galileo_telemetry_decoder_cc.h"
+#include "galileo_telemetry_decoder_gs.h"
+#include "gnss_satellite.h"  // for Gnss_Satellite
 #include "telemetry_decoder_interface.h"
+#include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
+#include <cstddef>                   // for size_t
 #include <string>
 
 class ConfigurationInterface;
@@ -87,7 +90,7 @@ public:
     }
 
 private:
-    galileo_telemetry_decoder_cc_sptr telemetry_decoder_;
+    galileo_telemetry_decoder_gs_sptr telemetry_decoder_;
     Gnss_Satellite satellite_;
     int channel_;
     bool dump_;

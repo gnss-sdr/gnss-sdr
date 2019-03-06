@@ -38,7 +38,6 @@
 #include <sstream>
 #include <utility>
 
-using google::LogMessage;
 
 galileo_pcps_8ms_acquisition_cc_sptr galileo_pcps_8ms_make_acquisition_cc(
     uint32_t sampled_ms,

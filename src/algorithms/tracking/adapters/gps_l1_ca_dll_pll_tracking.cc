@@ -43,8 +43,6 @@
 #include "gnss_sdr_flags.h"
 #include <glog/logging.h>
 
-using google::LogMessage;
-
 
 GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     ConfigurationInterface* configuration, const std::string& role,

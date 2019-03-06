@@ -33,11 +33,7 @@
 #include "GPS_L1_CA.h"
 #include "geofunctions.h"
 #include <glog/logging.h>
-#include <exception>
 #include <stdexcept>
-
-
-using google::LogMessage;
 
 
 Ls_Pvt::Ls_Pvt() : Pvt_Solution()

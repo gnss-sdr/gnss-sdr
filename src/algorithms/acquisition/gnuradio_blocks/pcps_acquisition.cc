@@ -45,8 +45,6 @@
 #include <cstring>
 
 
-using google::LogMessage;
-
 pcps_acquisition_sptr pcps_make_acquisition(const Acq_Conf& conf_)
 {
     return pcps_acquisition_sptr(new pcps_acquisition(conf_));

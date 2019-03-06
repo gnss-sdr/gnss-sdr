@@ -64,8 +64,6 @@
 #include <utility>
 
 
-using google::LogMessage;
-
 pcps_opencl_acquisition_cc_sptr pcps_make_opencl_acquisition_cc(
     uint32_t sampled_ms, uint32_t max_dwells,
     uint32_t doppler_max, int64_t fs_in,

@@ -31,6 +31,7 @@
 #include "conjugate_cc.h"
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
+#include <algorithm>  // for max
 
 
 conjugate_cc_sptr make_conjugate_cc()

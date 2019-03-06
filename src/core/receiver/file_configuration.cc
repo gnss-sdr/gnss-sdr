@@ -41,8 +41,6 @@
 #include <string>
 
 
-using google::LogMessage;
-
 FileConfiguration::FileConfiguration(std::string filename)
 {
     filename_ = std::move(filename);

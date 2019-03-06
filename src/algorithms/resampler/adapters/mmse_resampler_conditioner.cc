@@ -36,7 +36,6 @@
 #include <cmath>
 #include <limits>
 
-using google::LogMessage;
 
 MmseResamplerConditioner::MmseResamplerConditioner(
     ConfigurationInterface* configuration, const std::string& role,

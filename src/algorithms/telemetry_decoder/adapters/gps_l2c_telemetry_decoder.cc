@@ -32,15 +32,8 @@
 
 #include "gps_l2c_telemetry_decoder.h"
 #include "configuration_interface.h"
-#include "gps_almanac.h"
-#include "gps_cnav_ephemeris.h"
-#include "gps_cnav_iono.h"
-#include "gps_cnav_utc_model.h"
 #include <glog/logging.h>
-#include <gnuradio/io_signature.h>
 
-
-using google::LogMessage;
 
 GpsL2CTelemetryDecoder::GpsL2CTelemetryDecoder(ConfigurationInterface* configuration,
     const std::string& role,
@@ -54,7 +47,7 @@ GpsL2CTelemetryDecoder::GpsL2CTelemetryDecoder(ConfigurationInterface* configura
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     // make telemetry decoder object
-    telemetry_decoder_ = gps_l2c_make_telemetry_decoder_cc(satellite_, dump_);  // TODO fix me
+    telemetry_decoder_ = gps_l2c_make_telemetry_decoder_gs(satellite_, dump_);  // TODO fix me
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
     channel_ = 0;
     if (in_streams_ > 1)

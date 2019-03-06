@@ -17,11 +17,11 @@
 #
 
 set(PVT_GR_BLOCKS_SOURCES
-    rtklib_pvt_cc.cc
+    rtklib_pvt_gs.cc
 )
 
 set(PVT_GR_BLOCKS_HEADERS
-    rtklib_pvt_cc.h
+    rtklib_pvt_gs.h
 )
 
 source_group(Headers FILES ${PVT_GR_BLOCKS_HEADERS})
@@ -30,12 +30,13 @@ add_library(pvt_gr_blocks ${PVT_GR_BLOCKS_SOURCES} ${PVT_GR_BLOCKS_HEADERS})
 
 target_link_libraries(pvt_gr_blocks
     PUBLIC
-        pvt_libs
+        algorithms_libs_rtklib
         core_system_parameters
         Boost::date_time
         Gnuradio::pmt
         Gnuradio::runtime
     PRIVATE
+        pvt_libs
         algorithms_libs
         Gflags::gflags
         Glog::glog

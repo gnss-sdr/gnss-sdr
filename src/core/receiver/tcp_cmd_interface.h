@@ -31,20 +31,18 @@
 #ifndef GNSS_SDR_TCP_CMD_INTERFACE_H_
 #define GNSS_SDR_TCP_CMD_INTERFACE_H_
 
-#include "pvt_interface.h"
+
 #include <armadillo>
-#include <boost/asio.hpp>
-#include <gnuradio/message.h>
 #include <gnuradio/msg_queue.h>
-#include <algorithm>
 #include <cstdint>
 #include <ctime>
 #include <functional>
-#include <iostream>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
+class PvtInterface;
 
 class TcpCmdInterface
 {

@@ -38,7 +38,6 @@
 #define GNSS_SDR_FPGA_MULTICORRELATOR_8SC_H_
 
 #include <gnuradio/block.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cstdint>
 
 // FPGA register addresses

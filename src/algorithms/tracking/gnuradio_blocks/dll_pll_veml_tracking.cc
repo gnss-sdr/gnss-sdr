@@ -46,6 +46,7 @@
 #include "galileo_e1_signal_processing.h"
 #include "galileo_e5_signal_processing.h"
 #include "gnss_sdr_create_directory.h"
+#include "gnss_synchro.h"
 #include "gps_l2c_signal.h"
 #include "gps_l5_signal.h"
 #include "gps_sdr_signal_processing.h"
@@ -53,17 +54,17 @@
 #include "tracking_discriminators.h"
 #include <boost/filesystem/path.hpp>
 #include <glog/logging.h>
-#include <gnuradio/io_signature.h>
-#include <matio.h>
+#include <gnuradio/io_signature.h>   // for io_signature
+#include <gnuradio/thread/thread.h>  // for scoped_lock
+#include <matio.h>                   // for Mat_VarCreate
+#include <pmt/pmt_sugar.h>           // for mp
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include <algorithm>
-#include <cmath>
-#include <exception>
-#include <iostream>
-#include <numeric>
-#include <sstream>
+#include <algorithm>  // for fill_n
+#include <cmath>      // for fmod, round, floor
+#include <exception>  // for exception
+#include <iostream>   // for cout, cerr
+#include <map>
 
-using google::LogMessage;
 
 dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_)
 {

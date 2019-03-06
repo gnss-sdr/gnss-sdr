@@ -48,9 +48,6 @@
 #include <vector>
 
 
-using google::LogMessage;
-
-
 Rinex_Printer::Rinex_Printer(int32_t conf_version, const std::string& base_path)
 {
     std::string base_rinex_path = base_path;

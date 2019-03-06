@@ -35,6 +35,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/block.h>
+#include <gnuradio/types.h>  // for gr_vector_const_void_star
 #include <cstdint>
 #include <string>
 

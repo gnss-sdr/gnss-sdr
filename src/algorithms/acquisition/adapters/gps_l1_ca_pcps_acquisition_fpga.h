@@ -36,11 +36,13 @@
 #define GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FPGA_H_
 
 #include "acquisition_interface.h"
-#include "gnss_synchro.h"
 #include "pcps_acquisition_fpga.h"
-#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
+#include <volk/volk_complex.h>       // for lv_16sc_t
+#include <cstddef>
 #include <string>
 
+class Gnss_Synchro;
 class ConfigurationInterface;
 
 /*!

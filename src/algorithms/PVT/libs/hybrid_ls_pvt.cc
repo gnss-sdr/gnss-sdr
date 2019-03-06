@@ -1,5 +1,5 @@
 /*!
- * \file galileo_e1_ls_pvt.cc
+ * \file hybrid_ls_pvt.cc
  * \brief Implementation of a Least Squares Position, Velocity, and Time
  * (PVT) solver, based on K.Borre's Matlab receiver.
  * \author Javier Arribas, 2011. jarribas(at)cttc.es

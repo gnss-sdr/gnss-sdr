@@ -1,7 +1,7 @@
 /*!
  * \file gps_l5_dll_pll_tracking_fpga.cc
  * \brief  Interface of an adapter of a DLL+PLL tracking loop block
- * for GPS L5 to a TrackingInterface
+ * for GPS L5 to a TrackingInterface for the FPGA
  * \author Marc Majoral, 2019. mmajoral(at)cttc.cat
  *         Javier Arribas, 2019. jarribas(at)cttc.es
  *

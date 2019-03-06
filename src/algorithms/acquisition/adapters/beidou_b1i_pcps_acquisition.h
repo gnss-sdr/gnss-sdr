@@ -1,5 +1,5 @@
 /*!
- * \file beidou_bi1_pcps_acquisition.h
+ * \file beidou_b1i_pcps_acquisition.h
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
  *  Beidou B1I signals
  * \authors <ul>
@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver

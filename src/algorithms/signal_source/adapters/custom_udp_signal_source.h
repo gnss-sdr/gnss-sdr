@@ -1,6 +1,5 @@
 /*!
- * \file udp_signal_source.h
- *
+ * \file custom_udp_signal_source.h
  * \brief Receives ip frames containing samples in UDP frame encapsulation
  * using a high performance packet capture library (libpcap)
  * \author Javier Arribas jarribas (at) cttc.es

@@ -35,8 +35,8 @@
 #include "dll_pll_veml_tracking_fpga.h"
 #include "tracking_interface.h"
 #include <gnuradio/runtime_types.h>  // for basic_block_sptr
-#include <cstdint>
-#include <stddef.h>  // for size_t
+#include <cstdint>                   // For uint32_t
+#include <stddef.h>                  // for size_t
 #include <string>
 
 class Gnss_Synchro;

@@ -1,5 +1,5 @@
 /*!
- * \file pcps_acquisition_fine_doppler_acquisition_cc.cc
+ * \file pcps_acquisition_fine_doppler_cc.cc
  * \brief This class implements a Parallel Code Phase Search Acquisition with multi-dwells and fine Doppler estimation
  * \authors <ul>
  *          <li> Javier Arribas, 2013. jarribas(at)cttc.es

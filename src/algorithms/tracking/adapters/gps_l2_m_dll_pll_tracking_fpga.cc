@@ -1,7 +1,7 @@
 /*!
  * \file gps_l2_m_dll_pll_tracking_fpga.cc
  * \brief Implementation of an adapter of a DLL+PLL tracking loop block
- * for GPS L2C to a TrackingInterface
+ * for GPS L2C to a TrackingInterface for the FPGA
  * \author Javier Arribas, 2019. jarribas(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:
@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver

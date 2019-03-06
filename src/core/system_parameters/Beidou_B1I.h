@@ -1,5 +1,5 @@
 /*!
- * \file beidou_b1I.h
+ * \file Beidou_B1I.h
  * \brief  Defines system parameters for BeiDou B1I signal and DNAV data
  * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.com
  * \author Damian Miralles, 2018. dmiralles2009@gmail.com

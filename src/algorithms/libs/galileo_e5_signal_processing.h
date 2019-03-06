@@ -1,5 +1,5 @@
 /*!
- * \file galileo_e5_signal_processing.cc
+ * \file galileo_e5_signal_processing.h
  * \brief This library implements various functions for Galileo E5 signals such
  * as replica code generation
  * \author Marc Sales, 2014. marcsales92(at)gmail.com

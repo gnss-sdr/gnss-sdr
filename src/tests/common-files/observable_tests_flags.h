@@ -1,5 +1,5 @@
 /*!
- * \file tracking_tests_flags.h
+ * \file observable_tests_flags.h
  * \brief Helper file for unit testing
  * \author Javier Arribas, 2018. jarribas(at)cttc.es
  *

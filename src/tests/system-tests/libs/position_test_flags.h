@@ -1,5 +1,5 @@
 /*!
- * \file signal_generator_flags.h
+ * \file position_test_flags.h
  * \brief Helper file for unit testing
  * \author Javier Arribas, 2018. jarribas(at)cttc.es
  *

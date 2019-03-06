@@ -37,11 +37,13 @@
 #ifndef GNSS_SDR_gps_l2_m_dll_pll_tracking_FPGA_H_
 #define GNSS_SDR_gps_l2_m_dll_pll_tracking_FPGA_H_
 
-#include "tracking_interface.h"
-//#include "dll_pll_veml_tracking.h"
 #include "dll_pll_veml_tracking_fpga.h"
+#include "tracking_interface.h"
+#include <gnuradio/runtime_types.h>
+#include <cstddef>
 #include <string>
 
+class Gnss_Synchro;
 class ConfigurationInterface;
 
 /*!

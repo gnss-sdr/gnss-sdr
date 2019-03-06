@@ -39,9 +39,12 @@
 
 #include "dll_pll_veml_tracking_fpga.h"
 #include "tracking_interface.h"
+#include <gnuradio/runtime_types.h>
+#include <cstddef>
 #include <string>
 
 
+class Gnss_Synchro;
 class ConfigurationInterface;
 
 /*!

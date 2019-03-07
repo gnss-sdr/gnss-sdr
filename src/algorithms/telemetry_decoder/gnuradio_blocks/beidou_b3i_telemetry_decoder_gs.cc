@@ -1,7 +1,6 @@
 /*!
- * \file beidou_b3i_telemetry_decoder_cc.cc
+ * \file beidou_b3i_telemetry_decoder_gs.cc
  * \brief Implementation of an adapter of a BEIDOU B31 DNAV data decoder block
- * to a TelemetryDecoderInterface
  * \author Damian Miralles, 2019. dmiralles2009(at)gmail.com
  *
  * -------------------------------------------------------------------------
@@ -30,31 +29,38 @@
  */
 
 
-#include "beidou_b3i_telemetry_decoder_cc.h"
+#include "beidou_b3i_telemetry_decoder_gs.h"
+#include "Beidou_B3I.h"
+#include "Beidou_DNAV.h"
+#include "beidou_dnav_almanac.h"
+#include "beidou_dnav_ephemeris.h"
+#include "beidou_dnav_utc_model.h"
 #include "convolutional.h"
 #include "display.h"
 #include "gnss_synchro.h"
-#include <boost/lexical_cast.hpp>
-#include <gnuradio/io_signature.h>
 #include <glog/logging.h>
+#include <gnuradio/io_signature.h>
+#include <pmt/pmt.h>        // for make_any
+#include <pmt/pmt_sugar.h>  // for mp
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include <iostream>
+#include <cstdlib>    // for abs
+#include <exception>  // for exception
+#include <iostream>   // for cout
+#include <memory>     // for shared_ptr, make_shared
 
 #define CRC_ERROR_LIMIT 8
 
-using google::LogMessage;
 
-
-beidou_b3i_telemetry_decoder_cc_sptr
-beidou_b3i_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump)
+beidou_b3i_telemetry_decoder_gs_sptr
+beidou_b3i_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump)
 {
-    return beidou_b3i_telemetry_decoder_cc_sptr(new beidou_b3i_telemetry_decoder_cc(satellite, dump));
+    return beidou_b3i_telemetry_decoder_gs_sptr(new beidou_b3i_telemetry_decoder_gs(satellite, dump));
 }
 
 
-beidou_b3i_telemetry_decoder_cc::beidou_b3i_telemetry_decoder_cc(
+beidou_b3i_telemetry_decoder_gs::beidou_b3i_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
-    bool dump) : gr::block("beidou_b3i_telemetry_decoder_cc",
+    bool dump) : gr::block("beidou_b3i_telemetry_decoder_gs",
     		     gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                  gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
@@ -63,7 +69,7 @@ beidou_b3i_telemetry_decoder_cc::beidou_b3i_telemetry_decoder_cc(
     // initialize internal vars
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    LOG(INFO) << "Initializing BeiDou B1i Telemetry Decoding for satellite "<< this->d_satellite;
+    LOG(INFO) << "Initializing BeiDou B3I Telemetry Decoding for satellite "<< this->d_satellite;
 
     d_samples_per_symbol = (BEIDOU_B3I_CODE_RATE_HZ / BEIDOU_B3I_CODE_LENGTH_CHIPS) / BEIDOU_D1NAV_SYMBOL_RATE_SPS;
 	d_symbols_per_preamble = BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS;
@@ -71,7 +77,6 @@ beidou_b3i_telemetry_decoder_cc::beidou_b3i_telemetry_decoder_cc(
 	d_secondary_code_symbols = static_cast<int32_t *>(volk_gnsssdr_malloc(BEIDOU_B3I_SECONDARY_CODE_LENGTH * sizeof(int32_t), volk_gnsssdr_get_alignment()));
 	d_preamble_samples = static_cast<int32_t *>(volk_gnsssdr_malloc(d_samples_per_preamble * sizeof(int32_t), volk_gnsssdr_get_alignment()));
 	d_preamble_period_samples = BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS*d_samples_per_symbol;
-	d_subframe_length_symbols = BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS;
 
 	// Setting samples of secondary code
 	for (int32_t i = 0; i < BEIDOU_B3I_SECONDARY_CODE_LENGTH; i++)
@@ -113,8 +118,9 @@ beidou_b3i_telemetry_decoder_cc::beidou_b3i_telemetry_decoder_cc(
 				}
 		}
 
-	d_subframe_symbols = static_cast<double *>(volk_gnsssdr_malloc(d_subframe_length_symbols * sizeof(double), volk_gnsssdr_get_alignment()));
+	d_subframe_symbols = static_cast<double *>(volk_gnsssdr_malloc(BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS * sizeof(double), volk_gnsssdr_get_alignment()));
 	d_required_symbols = BEIDOU_DNAV_SUBFRAME_SYMBOLS*d_samples_per_symbol + d_samples_per_preamble;
+    d_symbol_history.set_capacity(d_required_symbols + 1);
 
     // Generic settings
     d_sample_counter = 0;
@@ -131,7 +137,7 @@ beidou_b3i_telemetry_decoder_cc::beidou_b3i_telemetry_decoder_cc(
 }
 
 
-beidou_b3i_telemetry_decoder_cc::~beidou_b3i_telemetry_decoder_cc()
+beidou_b3i_telemetry_decoder_gs::~beidou_b3i_telemetry_decoder_gs()
 {
 	volk_gnsssdr_free(d_preamble_samples);
     volk_gnsssdr_free(d_secondary_code_symbols);
@@ -151,7 +157,7 @@ beidou_b3i_telemetry_decoder_cc::~beidou_b3i_telemetry_decoder_cc()
 }
 
 
-void beidou_b3i_telemetry_decoder_cc::decode_bch15_11_01(int32_t *bits, int32_t *decbits)
+void beidou_b3i_telemetry_decoder_gs::decode_bch15_11_01(int32_t *bits, int32_t *decbits)
 {
     int bit, err, reg[4] = {1, 1, 1, 1};
     int errind[15] = {14, 13, 10, 12, 6, 9, 4, 11, 0, 5, 7, 8, 1, 3, 2};
@@ -179,7 +185,8 @@ void beidou_b3i_telemetry_decoder_cc::decode_bch15_11_01(int32_t *bits, int32_t 
         }
 }
 
-void beidou_b3i_telemetry_decoder_cc::decode_word(
+
+void beidou_b3i_telemetry_decoder_gs::decode_word(
 		int32_t word_counter,
 		double* enc_word_symbols,
 		int32_t* dec_word_symbols)
@@ -223,7 +230,7 @@ void beidou_b3i_telemetry_decoder_cc::decode_word(
 }
 
 
-void beidou_b3i_telemetry_decoder_cc::decode_subframe(double *frame_symbols, int32_t frame_length)
+void beidou_b3i_telemetry_decoder_gs::decode_subframe(double *frame_symbols)
 {
 	// 1. Transform from symbols to bits
     std::string data_bits;
@@ -297,7 +304,7 @@ void beidou_b3i_telemetry_decoder_cc::decode_subframe(double *frame_symbols, int
 }
 
 
-void beidou_b3i_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satellite)
+void beidou_b3i_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satellite)
 {
 	uint32_t sat_prn = 0;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
@@ -323,7 +330,6 @@ void beidou_b3i_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satell
 			d_secondary_code_symbols = nullptr;
 			d_preamble_samples = static_cast<int32_t *>(volk_gnsssdr_malloc(d_samples_per_preamble * sizeof(int32_t), volk_gnsssdr_get_alignment()));
 			d_preamble_period_samples = BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS*d_samples_per_symbol;
-			d_subframe_length_symbols = BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS;
 
 			// Setting samples of preamble code
 			int32_t n = 0;
@@ -347,13 +353,13 @@ void beidou_b3i_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satell
 						}
 				}
 
-			d_subframe_symbols = static_cast<double *>(volk_gnsssdr_malloc(d_subframe_length_symbols * sizeof(double), volk_gnsssdr_get_alignment()));
+			d_subframe_symbols = static_cast<double *>(volk_gnsssdr_malloc(BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS * sizeof(double), volk_gnsssdr_get_alignment()));
 			d_required_symbols = BEIDOU_DNAV_SUBFRAME_SYMBOLS*d_samples_per_symbol + d_samples_per_preamble;
     	}
 }
 
 
-void beidou_b3i_telemetry_decoder_cc::set_channel(int channel)
+void beidou_b3i_telemetry_decoder_gs::set_channel(int channel)
 {
     d_channel = channel;
     LOG(INFO) << "Navigation channel set to " << channel;
@@ -365,7 +371,7 @@ void beidou_b3i_telemetry_decoder_cc::set_channel(int channel)
                     try
                         {
                             d_dump_filename = "telemetry";
-                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
+                            d_dump_filename.append(std::to_string(d_channel));
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
@@ -380,7 +386,7 @@ void beidou_b3i_telemetry_decoder_cc::set_channel(int channel)
 }
 
 
-int beidou_b3i_telemetry_decoder_cc::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
+int beidou_b3i_telemetry_decoder_gs::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
 	int32_t corr_value = 0;
@@ -403,7 +409,7 @@ int beidou_b3i_telemetry_decoder_cc::general_work(int noutput_items __attribute_
             //******* preamble correlation ********
             for (int i = 0; i < d_samples_per_preamble; i++)
                 {
-                    if (d_symbol_history.at(i) < 0)  // symbols clipping
+                    if (d_symbol_history[i] < 0)  // symbols clipping
                         {
                             corr_value -= d_preamble_samples[i];
                         }
@@ -457,7 +463,7 @@ int beidou_b3i_telemetry_decoder_cc::general_work(int noutput_items __attribute_
                     if (corr_value > 0)  //normal PLL lock
                         {
                             int k = 0;
-                            for (uint32_t i = 0; i < d_subframe_length_symbols; i++)
+                            for (uint32_t i = 0; i < BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS; i++)
                                 {
                             		d_subframe_symbols[i] = 0;
                             		//integrate samples into symbols
@@ -481,7 +487,7 @@ int beidou_b3i_telemetry_decoder_cc::general_work(int noutput_items __attribute_
                     else  //180 deg. inverted carrier phase PLL lock
                         {
                             int k = 0;
-                            for (uint32_t i = 0; i < d_subframe_length_symbols; i++)
+                            for (uint32_t i = 0; i < BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS; i++)
                                 {
                             		d_subframe_symbols[i] = 0;
                             		//integrate samples into symbols
@@ -504,7 +510,7 @@ int beidou_b3i_telemetry_decoder_cc::general_work(int noutput_items __attribute_
                         }
 
                     //call the decoder
-                    decode_subframe(d_subframe_symbols, d_subframe_length_symbols);
+                    decode_subframe(d_subframe_symbols);
 
                     if (d_nav.flag_crc_test == true)
                         {
@@ -581,11 +587,6 @@ int beidou_b3i_telemetry_decoder_cc::general_work(int noutput_items __attribute_
                 }
         }
 
-    // remove used symbols from history
-    if (d_symbol_history.size() > d_required_symbols)
-        {
-            d_symbol_history.pop_front();
-        }
     //3. Make the output (copy the object contents to the GNURadio reserved memory)
     *out[0] = current_symbol;
 

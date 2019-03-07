@@ -43,9 +43,6 @@
 #include <utility>
 
 
-using google::LogMessage;
-
-
 TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,

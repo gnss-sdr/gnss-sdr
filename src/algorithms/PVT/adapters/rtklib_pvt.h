@@ -32,18 +32,21 @@
 #ifndef GNSS_SDR_RTKLIB_PVT_H_
 #define GNSS_SDR_RTKLIB_PVT_H_
 
-#include "galileo_almanac.h"
-#include "galileo_ephemeris.h"
-#include "gps_almanac.h"
-#include "gps_ephemeris.h"
-#include "pvt_interface.h"
-#include "rtklib.h"
-#include "rtklib_pvt_cc.h"
-#include <map>
-#include <string>
-
+#include "pvt_interface.h"           // for PvtInterface
+#include "rtklib.h"                  // for rtk_t
+#include "rtklib_pvt_gs.h"           // for rtklib_pvt_gs_sptr
+#include <gnuradio/gr_complex.h>     // for gr_complex
+#include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
+#include <cstddef>                   // for size_t
+#include <ctime>                     // for time_t
+#include <map>                       // for map
+#include <string>                    // for string
 
 class ConfigurationInterface;
+class Galileo_Almanac;
+class Galileo_Ephemeris;
+class Gps_Almanac;
+class Gps_Ephemeris;
 
 /*!
  * \brief This class implements a PvtInterface for the RTKLIB PVT block
@@ -99,7 +102,7 @@ public:
         time_t* UTC_time) override;
 
 private:
-    rtklib_pvt_cc_sptr pvt_;
+    rtklib_pvt_gs_sptr pvt_;
     rtk_t rtk{};
     std::string role_;
     unsigned int in_streams_;

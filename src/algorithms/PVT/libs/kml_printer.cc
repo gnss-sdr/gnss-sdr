@@ -39,8 +39,6 @@
 #include <exception>
 #include <sstream>
 
-using google::LogMessage;
-
 
 Kml_Printer::Kml_Printer(const std::string& base_path)
 {

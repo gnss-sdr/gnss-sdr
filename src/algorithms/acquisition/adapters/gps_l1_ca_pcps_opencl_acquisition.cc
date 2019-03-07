@@ -38,9 +38,6 @@
 #include <glog/logging.h>
 
 
-using google::LogMessage;
-
-
 GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
     ConfigurationInterface* configuration,
     const std::string& role,

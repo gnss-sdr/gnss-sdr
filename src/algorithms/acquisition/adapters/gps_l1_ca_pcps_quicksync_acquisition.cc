@@ -39,9 +39,6 @@
 #include <glog/logging.h>
 
 
-using google::LogMessage;
-
-
 GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
     ConfigurationInterface* configuration,
     const std::string& role,

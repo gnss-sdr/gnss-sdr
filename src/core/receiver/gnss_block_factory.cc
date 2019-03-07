@@ -36,6 +36,7 @@
 
 
 #include "gnss_block_factory.h"
+#include "acquisition_interface.h"  // for AcquisitionInterface
 #include "array_signal_conditioner.h"
 #include "beamformer_filter.h"
 #include "byte_to_short.h"
@@ -108,8 +109,13 @@
 #include "signal_conditioner.h"
 #include "spir_file_signal_source.h"
 #include "spir_gss6450_file_signal_source.h"
+#include "telemetry_decoder_interface.h"
+#include "tracking_interface.h"
 #include "two_bit_cpx_file_signal_source.h"
 #include "two_bit_packed_file_signal_source.h"
+#include <glog/logging.h>
+#include <exception>  // for exception
+#include <utility>    // for move
 
 #if RAW_UDP
 #include "custom_udp_signal_source.h"
@@ -167,15 +173,6 @@
 #if CUDA_GPU_ACCEL
 #include "gps_l1_ca_dll_pll_tracking_gpu.h"
 #endif
-
-#include <glog/logging.h>
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <utility>
-
-
-using google::LogMessage;
 
 
 GNSSBlockFactory::GNSSBlockFactory() = default;
@@ -590,7 +587,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_5X(
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1G(
     const std::shared_ptr<ConfigurationInterface>& configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-    boost::shared_ptr<gr::msg_queue> queue)
+    gr::msg_queue::sptr queue)
 {
     std::stringstream stream;
     stream << channel;
@@ -658,7 +655,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1G(
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2G(
     const std::shared_ptr<ConfigurationInterface>& configuration,
     const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-    boost::shared_ptr<gr::msg_queue> queue)
+    gr::msg_queue::sptr queue)
 {
     std::stringstream stream;
     stream << channel;

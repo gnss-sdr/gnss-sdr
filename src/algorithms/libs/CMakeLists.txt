@@ -41,7 +41,6 @@ set(GNSS_SPLIBS_SOURCES
     conjugate_ic.cc
     gnss_sdr_create_directory.cc
     geofunctions.cc
-    rtcm.cc
 )
 
 set(GNSS_SPLIBS_HEADERS
@@ -68,7 +67,6 @@ set(GNSS_SPLIBS_HEADERS
     gnss_sdr_create_directory.h
     gnss_circular_deque.h
     geofunctions.h
-    rtcm.h
 )
 
 if(ENABLE_FPGA)
@@ -116,20 +114,18 @@ target_link_libraries(algorithms_libs
         Gflags::gflags
         Gnuradio::runtime
         Gnuradio::blocks
-        Volk::volk ${ORC_LIBRARIES}
-        Volkgnsssdr::volkgnsssdr
-        core_system_parameters
         ${OPT_LIBRARIES}
     PRIVATE
+        core_system_parameters
+        Volk::volk ${ORC_LIBRARIES}
+        Volkgnsssdr::volkgnsssdr
         Boost::filesystem
-        Gflags::gflags
         Glog::glog
 )
 
 target_include_directories(algorithms_libs
     PUBLIC
         ${CMAKE_SOURCE_DIR}/src/core/interfaces
-        ${CMAKE_SOURCE_DIR}/src/core/receiver
 )
 
 target_compile_definitions(algorithms_libs
@@ -140,15 +136,6 @@ set_property(TARGET algorithms_libs
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
-
-if(OS_IS_MACOSX)
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")  # not AppleClang
-        target_compile_definitions(algorithms_libs
-            PUBLIC
-                -DBOOST_ASIO_HAS_STD_STRING_VIEW
-        )
-    endif()
-endif()
 
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)

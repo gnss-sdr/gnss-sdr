@@ -29,8 +29,8 @@
 clearvars;
 close all;
 addpath('./libs');
-samplingFreq       = 10000000;     %[Hz]
-channels=18;
+samplingFreq       = 25000000;     %[Hz]
+channels=10;
 path='/home/dmiralles/Documents/gnss-sdr/';
 observables_log_path=[path 'observables.dat'];
 GNSS_observables= read_hybrid_observables_dump(channels,observables_log_path);

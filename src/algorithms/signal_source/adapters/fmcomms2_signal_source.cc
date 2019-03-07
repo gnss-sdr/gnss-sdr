@@ -1,7 +1,7 @@
 /*!
  * \file fmcomms2_signal_source.cc
  * \brief Signal source for SDR hardware from Analog Devices based on
- * fmcomms2 evaluation board. 
+ * fmcomms2 evaluation board.
  * \author Rodrigo Muñoz, 2017, rmunozl(at)inacap.cl
  *
  * -------------------------------------------------------------------------
@@ -40,8 +40,6 @@
 #include <iostream>
 #include <utility>
 
-
-using google::LogMessage;
 
 Fmcomms2SignalSource::Fmcomms2SignalSource(ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_stream, unsigned int out_stream,

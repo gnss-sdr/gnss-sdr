@@ -32,13 +32,8 @@
 
 #include "sbas_l1_telemetry_decoder.h"
 #include "configuration_interface.h"
-#include "sbas_ephemeris.h"
-#include "sbas_l1_telemetry_decoder_cc.h"
 #include <glog/logging.h>
-#include <gnuradio/io_signature.h>
 
-
-using google::LogMessage;
 
 SbasL1TelemetryDecoder::SbasL1TelemetryDecoder(ConfigurationInterface* configuration,
     const std::string& role,
@@ -52,7 +47,7 @@ SbasL1TelemetryDecoder::SbasL1TelemetryDecoder(ConfigurationInterface* configura
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     // make telemetry decoder object
-    telemetry_decoder_ = sbas_l1_make_telemetry_decoder_cc(satellite_, dump_);  // TODO fix me
+    telemetry_decoder_ = sbas_l1_make_telemetry_decoder_gs(satellite_, dump_);  // TODO fix me
     channel_ = 0;
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
     if (in_streams_ > 1)

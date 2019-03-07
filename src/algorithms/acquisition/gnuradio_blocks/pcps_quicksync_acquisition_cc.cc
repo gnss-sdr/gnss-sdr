@@ -40,8 +40,6 @@
 #include <utility>
 
 
-using google::LogMessage;
-
 pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(
     uint32_t folding_factor,
     uint32_t sampled_ms,

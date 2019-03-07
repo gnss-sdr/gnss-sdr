@@ -30,12 +30,16 @@
  */
 
 #include "channel.h"
+#include "acquisition_interface.h"
+#include "channel_fsm.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
+#include "telemetry_decoder_interface.h"
+#include "tracking_interface.h"
 #include <glog/logging.h>
-#include <cstdint>
+#include <cstring>  // for memcpy
+#include <utility>
 
-using google::LogMessage;
 
 // Constructor
 Channel::Channel(ConfigurationInterface* configuration, uint32_t channel, std::shared_ptr<AcquisitionInterface> acq,
@@ -158,15 +162,18 @@ gr::basic_block_sptr Channel::get_left_block()
     return nullptr;
 }
 
+
 gr::basic_block_sptr Channel::get_left_block_trk()
 {
     return trk_->get_left_block();
 }
 
+
 gr::basic_block_sptr Channel::get_left_block_acq()
 {
     return acq_->get_left_block();
 }
+
 
 gr::basic_block_sptr Channel::get_right_block()
 {
@@ -198,9 +205,9 @@ void Channel::stop_channel()
             LOG(WARNING) << "Invalid channel event";
             return;
         }
-    DLOG(INFO)
-        << "Channel stop_channel()";
+    DLOG(INFO) << "Channel stop_channel()";
 }
+
 
 void Channel::start_acquisition()
 {

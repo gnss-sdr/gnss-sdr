@@ -33,7 +33,6 @@
 #define GNSS_SDR_CHANNEL_FSM_H
 
 #include "acquisition_interface.h"
-#include "telemetry_decoder_interface.h"
 #include "tracking_interface.h"
 #include <gnuradio/msg_queue.h>
 #include <cstdint>
@@ -55,7 +54,7 @@ public:
     void set_queue(gr::msg_queue::sptr queue);
     void set_channel(uint32_t channel);
 
-    //FSM EVENTS
+    // FSM EVENTS
     bool Event_start_acquisition();
     bool Event_valid_acquisition();
     bool Event_stop_channel();
@@ -79,4 +78,4 @@ private:
     std::mutex mx;
 };
 
-#endif /*GNSS_SDR_CHANNEL_FSM_H*/
+#endif // GNSS_SDR_CHANNEL_FSM_H

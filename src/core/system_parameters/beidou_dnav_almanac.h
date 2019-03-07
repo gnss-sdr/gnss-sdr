@@ -34,7 +34,6 @@
 #define GNSS_SDR_BEIDOU_DNAV_ALMANAC_H_
 
 #include <boost/serialization/nvp.hpp>
-#include <cstdint>
 
 
 /*!

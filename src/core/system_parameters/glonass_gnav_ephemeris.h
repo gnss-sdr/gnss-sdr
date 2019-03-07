@@ -35,7 +35,7 @@
 #define GNSS_SDR_GLONASS_GNAV_EPHEMERIS_H_
 
 
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/posix_time/ptime.hpp>  // for ptime
 #include <boost/serialization/nvp.hpp>
 #include <cstdint>
 

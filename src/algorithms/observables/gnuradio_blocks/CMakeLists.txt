@@ -17,11 +17,11 @@
 #
 
 set(OBS_GR_BLOCKS_SOURCES
-    hybrid_observables_cc.cc
+    hybrid_observables_gs.cc
 )
 
 set(OBS_GR_BLOCKS_HEADERS
-    hybrid_observables_cc.h
+    hybrid_observables_gs.h
 )
 
 source_group(Headers FILES ${OBS_GR_BLOCKS_HEADERS})
@@ -37,13 +37,13 @@ target_link_libraries(obs_gr_blocks
     PUBLIC
         Boost::boost
         Gnuradio::blocks
-        core_system_parameters
     PRIVATE
+        algorithms_libs
+        core_system_parameters
         Gflags::gflags
         Glog::glog
         Boost::filesystem
         Matio::matio
-        algorithms_libs
 )
 
 if(ENABLE_CLANG_TIDY)

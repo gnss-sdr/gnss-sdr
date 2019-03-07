@@ -35,7 +35,8 @@
 
 #include "telemetry_decoder_interface.h"
 #include <string>
-#include "beidou_b3i_telemetry_decoder_cc.h"
+
+#include "../gnuradio_blocks/beidou_b3i_telemetry_decoder_gs.h"
 
 class ConfigurationInterface;
 
@@ -82,7 +83,7 @@ public:
     }
 
 private:
-    beidou_b3i_telemetry_decoder_cc_sptr telemetry_decoder_;
+    beidou_b3i_telemetry_decoder_gs_sptr telemetry_decoder_;
     Gnss_Satellite satellite_;
     int channel_;
     bool dump_;

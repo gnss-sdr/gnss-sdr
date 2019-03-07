@@ -43,9 +43,6 @@
 #include <glog/logging.h>
 
 
-using google::LogMessage;
-
-
 GpsL1CaDllPllCAidTracking::GpsL1CaDllPllCAidTracking(
     ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)

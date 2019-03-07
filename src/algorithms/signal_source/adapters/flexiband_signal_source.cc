@@ -38,7 +38,6 @@
 #include <teleorbit/frontend.h>
 #include <utility>
 
-using google::LogMessage;
 
 FlexibandSignalSource::FlexibandSignalSource(ConfigurationInterface* configuration,
     const std::string& role,

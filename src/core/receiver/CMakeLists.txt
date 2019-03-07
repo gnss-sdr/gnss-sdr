@@ -143,6 +143,7 @@ target_link_libraries(core_receiver
         core_libs
         core_monitor
     PRIVATE
+        Boost::chrono
         Gflags::gflags
         Glog::glog
         signal_source_adapters

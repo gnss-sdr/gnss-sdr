@@ -1,5 +1,5 @@
 /*!
- * \file galileo_telemetry_decoder_cc.cc
+ * \file galileo_telemetry_decoder_gs.cc
  * \brief Implementation of a Galileo unified INAV and FNAV message demodulator block
  * \author Javier Arribas 2018. jarribas(at)cttc.es
  *
@@ -29,32 +29,41 @@
  */
 
 
-#include "galileo_telemetry_decoder_cc.h"
+#include "galileo_telemetry_decoder_gs.h"
+#include "Galileo_E1.h"   // for GALILEO_E1_CODE_PERIOD_MS
+#include "Galileo_E5a.h"  // for GALILEO_E5A_CODE_PERIO...
 #include "convolutional.h"
 #include "display.h"
+#include "galileo_almanac_helper.h"  // for Galileo_Almanac_Helper
+#include "galileo_ephemeris.h"       // for Galileo_Ephemeris
+#include "galileo_iono.h"            // for Galileo_Iono
+#include "galileo_utc_model.h"       // for Galileo_Utc_Model
 #include "gnss_synchro.h"
-#include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
+#include <pmt/pmt.h>        // for make_any
+#include <pmt/pmt_sugar.h>  // for mp
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include <iostream>
+#include <cmath>      // for fmod
+#include <cstdlib>    // for abs
+#include <exception>  // for exception
+#include <iostream>   // for cout
+#include <memory>     // for shared_ptr, make_shared
 
 
 #define CRC_ERROR_LIMIT 6
 
-using google::LogMessage;
 
-
-galileo_telemetry_decoder_cc_sptr
-galileo_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, int frame_type, bool dump)
+galileo_telemetry_decoder_gs_sptr
+galileo_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, int frame_type, bool dump)
 {
-    return galileo_telemetry_decoder_cc_sptr(new galileo_telemetry_decoder_cc(satellite, frame_type, dump));
+    return galileo_telemetry_decoder_gs_sptr(new galileo_telemetry_decoder_gs(satellite, frame_type, dump));
 }
 
 
-galileo_telemetry_decoder_cc::galileo_telemetry_decoder_cc(
+galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     const Gnss_Satellite &satellite, int frame_type,
-    bool dump) : gr::block("galileo_telemetry_decoder_cc", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
+    bool dump) : gr::block("galileo_telemetry_decoder_gs", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                      gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
     // Ephemeris data port out
@@ -213,7 +222,7 @@ galileo_telemetry_decoder_cc::galileo_telemetry_decoder_cc(
 }
 
 
-galileo_telemetry_decoder_cc::~galileo_telemetry_decoder_cc()
+galileo_telemetry_decoder_gs::~galileo_telemetry_decoder_gs()
 {
     volk_gnsssdr_free(d_preamble_samples);
     if (d_frame_type == 2)
@@ -239,14 +248,14 @@ galileo_telemetry_decoder_cc::~galileo_telemetry_decoder_cc()
 }
 
 
-void galileo_telemetry_decoder_cc::viterbi_decoder(double *page_part_symbols, int32_t *page_part_bits)
+void galileo_telemetry_decoder_gs::viterbi_decoder(double *page_part_symbols, int32_t *page_part_bits)
 {
     Viterbi(page_part_bits, out0, state0, out1, state1,
         page_part_symbols, KK, nn, DataLength);
 }
 
 
-void galileo_telemetry_decoder_cc::deinterleaver(int32_t rows, int32_t cols, const double *in, double *out)
+void galileo_telemetry_decoder_gs::deinterleaver(int32_t rows, int32_t cols, const double *in, double *out)
 {
     for (int32_t r = 0; r < rows; r++)
         {
@@ -258,7 +267,7 @@ void galileo_telemetry_decoder_cc::deinterleaver(int32_t rows, int32_t cols, con
 }
 
 
-void galileo_telemetry_decoder_cc::decode_INAV_word(double *page_part_symbols, int32_t frame_length)
+void galileo_telemetry_decoder_gs::decode_INAV_word(double *page_part_symbols, int32_t frame_length)
 {
     // 1. De-interleave
     auto *page_part_symbols_deint = static_cast<double *>(volk_gnsssdr_malloc(frame_length * sizeof(double), volk_gnsssdr_get_alignment()));
@@ -352,7 +361,7 @@ void galileo_telemetry_decoder_cc::decode_INAV_word(double *page_part_symbols, i
 }
 
 
-void galileo_telemetry_decoder_cc::decode_FNAV_word(double *page_symbols, int32_t frame_length)
+void galileo_telemetry_decoder_gs::decode_FNAV_word(double *page_symbols, int32_t frame_length)
 {
     // 1. De-interleave
     auto *page_symbols_deint = static_cast<double *>(volk_gnsssdr_malloc(frame_length * sizeof(double), volk_gnsssdr_get_alignment()));
@@ -420,7 +429,7 @@ void galileo_telemetry_decoder_cc::decode_FNAV_word(double *page_symbols, int32_
 }
 
 
-void galileo_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satellite)
+void galileo_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satellite)
 {
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     DLOG(INFO) << "Setting decoder Finite State Machine to satellite " << d_satellite;
@@ -428,7 +437,7 @@ void galileo_telemetry_decoder_cc::set_satellite(const Gnss_Satellite &satellite
 }
 
 
-void galileo_telemetry_decoder_cc::set_channel(int32_t channel)
+void galileo_telemetry_decoder_gs::set_channel(int32_t channel)
 {
     d_channel = channel;
     DLOG(INFO) << "Navigation channel set to " << channel;
@@ -455,7 +464,7 @@ void galileo_telemetry_decoder_cc::set_channel(int32_t channel)
 }
 
 
-int galileo_telemetry_decoder_cc::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
+int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     int32_t corr_value = 0;

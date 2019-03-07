@@ -43,14 +43,10 @@
 #include "gnss_sdr_flags.h"
 #include "gps_l5_signal.h"
 #include <glog/logging.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 
 #define NUM_PRNs 32
 
-using google::LogMessage;
-
-void GpsL5DllPllTrackingFpga::stop_tracking()
-{
-}
 
 GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
     ConfigurationInterface *configuration, const std::string &role,
@@ -123,7 +119,6 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
     trk_param_fpga.carrier_lock_th = carrier_lock_th;
 
     // FPGA configuration parameters
-
     std::string default_device_name = "/dev/uio";
     std::string device_name = configuration->property(role + ".devicename", default_device_name);
     trk_param_fpga.device_name = device_name;
@@ -150,6 +145,7 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
 
     d_ca_codes = static_cast<int32_t *>(volk_gnsssdr_malloc(static_cast<int32_t>(code_length_chips * NUM_PRNs) * sizeof(int32_t), volk_gnsssdr_get_alignment()));
 
+    d_data_codes = nullptr;
     if (track_pilot)
         {
             d_data_codes = static_cast<int32_t *>(volk_gnsssdr_malloc((static_cast<uint32_t>(code_length_chips)) * NUM_PRNs * sizeof(int32_t), volk_gnsssdr_get_alignment()));
@@ -195,10 +191,10 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
 
 GpsL5DllPllTrackingFpga::~GpsL5DllPllTrackingFpga()
 {
-    delete[] d_ca_codes;
+    volk_gnsssdr_free(d_ca_codes);
     if (d_track_pilot)
         {
-            delete[] d_data_codes;
+            volk_gnsssdr_free(d_data_codes);
         }
 }
 
@@ -206,6 +202,11 @@ GpsL5DllPllTrackingFpga::~GpsL5DllPllTrackingFpga()
 void GpsL5DllPllTrackingFpga::start_tracking()
 {
     tracking_fpga_sc->start_tracking();
+}
+
+
+void GpsL5DllPllTrackingFpga::stop_tracking()
+{
 }
 
 

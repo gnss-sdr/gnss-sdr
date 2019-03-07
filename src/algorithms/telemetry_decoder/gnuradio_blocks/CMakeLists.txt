@@ -17,27 +17,27 @@
 #
 
 set(TELEMETRY_DECODER_GR_BLOCKS_SOURCES
-    gps_l1_ca_telemetry_decoder_cc.cc
-    gps_l2c_telemetry_decoder_cc.cc
-    gps_l5_telemetry_decoder_cc.cc
-    sbas_l1_telemetry_decoder_cc.cc
-    glonass_l1_ca_telemetry_decoder_cc.cc
-    glonass_l2_ca_telemetry_decoder_cc.cc
-    galileo_telemetry_decoder_cc.cc
-    beidou_b1i_telemetry_decoder_cc.cc
-     beidou_b3i_telemetry_decoder_cc.cc
+    gps_l1_ca_telemetry_decoder_gs.cc
+    gps_l2c_telemetry_decoder_gs.cc
+    gps_l5_telemetry_decoder_gs.cc
+    sbas_l1_telemetry_decoder_gs.cc
+    glonass_l1_ca_telemetry_decoder_gs.cc
+    glonass_l2_ca_telemetry_decoder_gs.cc
+    galileo_telemetry_decoder_gs.cc
+    beidou_b1i_telemetry_decoder_gs.cc
+    beidou_b3i_telemetry_decoder_gs.cc
 )
 
 set(TELEMETRY_DECODER_GR_BLOCKS_HEADERS
-    gps_l1_ca_telemetry_decoder_cc.h
-    gps_l2c_telemetry_decoder_cc.h
-    gps_l5_telemetry_decoder_cc.h
-    sbas_l1_telemetry_decoder_cc.h
-    glonass_l1_ca_telemetry_decoder_cc.h
-    glonass_l2_ca_telemetry_decoder_cc.h
-    galileo_telemetry_decoder_cc.h
-    beidou_b1i_telemetry_decoder_cc.h
-     beidou_b3i_telemetry_decoder_cc.h
+    gps_l1_ca_telemetry_decoder_gs.h
+    gps_l2c_telemetry_decoder_gs.h
+    gps_l5_telemetry_decoder_gs.h
+    sbas_l1_telemetry_decoder_gs.h
+    glonass_l1_ca_telemetry_decoder_gs.h
+    glonass_l2_ca_telemetry_decoder_gs.h
+    galileo_telemetry_decoder_gs.h
+    beidou_b1i_telemetry_decoder_gs.h
+    beidou_b3i_telemetry_decoder_gs.h
 )
 
 list(SORT TELEMETRY_DECODER_GR_BLOCKS_HEADERS)

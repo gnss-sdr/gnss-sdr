@@ -31,35 +31,11 @@
 
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
-#include "control_thread.h"
-#include "galileo_almanac.h"
-#include "galileo_ephemeris.h"
-#include "galileo_iono.h"
-#include "galileo_utc_model.h"
-#include "glonass_gnav_almanac.h"
-#include "glonass_gnav_ephemeris.h"
-#include "glonass_gnav_utc_model.h"
-#include "gps_almanac.h"
-#include "gps_cnav_ephemeris.h"
-#include "gps_cnav_iono.h"
-#include "gps_ephemeris.h"
-#include "gps_iono.h"
-#include "gps_navigation_message.h"
-#include "gps_utc_model.h"
-#include "sbas_ephemeris.h"
-#include <boost/filesystem.hpp>
-#include <boost/shared_ptr.hpp>
+#include "gps_acq_assist.h"
 #include <gflags/gflags.h>
 #include <glog/logging.h>
-#include <gnuradio/msg_queue.h>
 #include <gtest/gtest.h>
-#include <cmath>
 #include <iostream>
-#include <memory>
-#include <queue>
-
-
-using google::LogMessage;
 
 DECLARE_string(log_dir);
 
@@ -74,7 +50,7 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/observables/hybrid_observables_test.cc"
 #endif  // EXTRA_TESTS
 
-#else
+#else  // UNIT_TESTING_MINIMAL
 
 #include "unit-tests/arithmetic/matio_test.cc"
 #include "unit-tests/arithmetic/code_generation_test.cc"

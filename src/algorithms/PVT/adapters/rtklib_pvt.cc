@@ -30,10 +30,17 @@
 
 
 #include "rtklib_pvt.h"
-#include "configuration_interface.h"
-#include "gnss_sdr_flags.h"
-#include "pvt_conf.h"
-#include <glog/logging.h>
+#include "MATH_CONSTANTS.h"           // for D2R
+#include "configuration_interface.h"  // for ConfigurationInterface
+#include "galileo_almanac.h"          // for Galileo_Almanac
+#include "galileo_ephemeris.h"        // for Galileo_Ephemeris
+#include "gnss_sdr_flags.h"           // for FLAGS_RINEX_version
+#include "gps_almanac.h"              // for Gps_Almanac
+#include "gps_ephemeris.h"            // for Gps_Ephemeris
+#include "pvt_conf.h"                 // for Pvt_Conf
+#include "rtklib_rtkpos.h"            // for rtkfree, rtkinit
+#include <glog/logging.h>             // for LOG
+#include <iostream>                   // for operator<<
 #if OLD_BOOST
 #include <boost/math/common_factor_rt.hpp>
 namespace bc = boost::math;
@@ -41,9 +48,6 @@ namespace bc = boost::math;
 #include <boost/integer/common_factor_rt.hpp>
 namespace bc = boost::integer;
 #endif
-
-
-using google::LogMessage;
 
 
 Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
@@ -739,7 +743,7 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
     pvt_output_parameters.udp_port = configuration->property(role + ".monitor_udp_port", 1234);
 
     // make PVT object
-    pvt_ = rtklib_make_pvt_cc(in_streams_, pvt_output_parameters, rtk);
+    pvt_ = rtklib_make_pvt_gs(in_streams_, pvt_output_parameters, rtk);
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
     if (out_streams_ > 0)
         {

@@ -41,8 +41,6 @@
 #include <glog/logging.h>
 
 
-using google::LogMessage;
-
 BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
     ConfigurationInterface* configuration,
     const std::string& role,

@@ -42,28 +42,25 @@
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
 #include "control_thread.h"
-#include "gnss_sdr_flags.h"
 #include "gps_acq_assist.h"
-#include <boost/exception/diagnostic_information.hpp>
-#include <boost/exception/exception.hpp>    // for exception
-#include <boost/filesystem/operations.hpp>  // for create_directories, exists
-#include <boost/filesystem/path.hpp>        // for path, operator<<
-#include <boost/system/error_code.hpp>      // for error_code
-#include <gflags/gflags.h>
-#include <glog/logging.h>
-#include <chrono>
-#include <exception>
-#include <iostream>
-#include <memory>
-#include <string>
+#include <boost/exception/diagnostic_information.hpp>  // for diagnostic_informatio
+#include <boost/exception/exception.hpp>               // for exception
+#include <boost/filesystem/operations.hpp>             // for create_directories, exists
+#include <boost/filesystem/path.hpp>                   // for path, operator<<
+#include <boost/system/error_code.hpp>                 // for error_code
+#include <boost/thread/exceptions.hpp>                 // for thread_resource_error
+#include <gflags/gflags.h>                             // for ShutDownCommandLineFlags
+#include <glog/logging.h>                              // for FLAGS_log_dir
+#include <chrono>                                      // for time_point
+#include <exception>                                   // for exception
+#include <iostream>                                    // for operator<<, endl
+#include <memory>                                      // for unique_ptr
+#include <string>                                      // for string
 
 #if CUDA_GPU_ACCEL
 // For the CUDA runtime routines (prefixed with "cuda_")
 #include <cuda_runtime.h>
 #endif
-
-
-using google::LogMessage;
 
 
 /*

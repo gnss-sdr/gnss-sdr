@@ -40,7 +40,6 @@
 #include <string>
 #include <sys/mman.h>  // libraries used by the GIPO
 
-using google::LogMessage;
 
 #define PAGE_SIZE 0x10000             // default page size for the multicorrelator memory map
 #define TEST_REG_SANITY_CHECK 0x55AA  // value to check the presence of the test register (to detect the hw)

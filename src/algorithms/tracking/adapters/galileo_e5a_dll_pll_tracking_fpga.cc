@@ -36,12 +36,8 @@
 #include "galileo_e5_signal_processing.h"
 #include "gnss_sdr_flags.h"
 #include <glog/logging.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 
-using google::LogMessage;
-
-void GalileoE5aDllPllTrackingFpga::stop_tracking()
-{
-}
 
 GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     ConfigurationInterface *configuration, const std::string &role,
@@ -183,6 +179,11 @@ GalileoE5aDllPllTrackingFpga::~GalileoE5aDllPllTrackingFpga()
 void GalileoE5aDllPllTrackingFpga::start_tracking()
 {
     tracking_fpga_sc->start_tracking();
+}
+
+
+void GalileoE5aDllPllTrackingFpga::stop_tracking()
+{
 }
 
 

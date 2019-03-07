@@ -32,7 +32,6 @@
 #ifndef GNSS_SDR_FRONT_END_CAL_H_
 #define GNSS_SDR_FRONT_END_CAL_H_
 
-#include "concurrent_map.h"
 #include "file_configuration.h"
 #include <armadillo>
 

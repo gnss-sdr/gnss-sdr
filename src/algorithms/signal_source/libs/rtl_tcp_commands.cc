@@ -31,7 +31,9 @@
  */
 
 #include "rtl_tcp_commands.h"
-#include <string>
+#include <boost/asio/buffer.hpp>                  // for buffer
+#include <boost/asio/detail/impl/socket_ops.ipp>  // for host_to_network_long
+#include <cstring>                                // for memcpy
 
 boost::system::error_code rtl_tcp_command(RTL_TCP_COMMAND id, unsigned param, boost::asio::ip::tcp::socket &socket)
 {

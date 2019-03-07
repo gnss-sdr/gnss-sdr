@@ -34,8 +34,11 @@
 #define GNSS_SDR_SBAS_L1_TELEMETRY_DECODER_H_
 
 
-#include "sbas_l1_telemetry_decoder_cc.h"
+#include "gnss_satellite.h"  // for Gnss_Satellite
+#include "sbas_l1_telemetry_decoder_gs.h"
 #include "telemetry_decoder_interface.h"
+#include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
+#include <cstddef>                   // for size_t
 #include <string>
 
 
@@ -86,7 +89,7 @@ public:
     }
 
 private:
-    sbas_l1_telemetry_decoder_cc_sptr telemetry_decoder_;
+    sbas_l1_telemetry_decoder_gs_sptr telemetry_decoder_;
     Gnss_Satellite satellite_;
     int channel_;
     bool dump_;

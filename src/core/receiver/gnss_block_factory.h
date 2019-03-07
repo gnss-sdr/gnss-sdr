@@ -37,10 +37,10 @@
 #ifndef GNSS_SDR_BLOCK_FACTORY_H_
 #define GNSS_SDR_BLOCK_FACTORY_H_
 
-#include <gnuradio/msg_queue.h>
-#include <memory>
-#include <string>
-#include <vector>
+#include <gnuradio/msg_queue.h>  // for msg_queue::sptr
+#include <memory>                // for unique_ptr, shared_ptr
+#include <string>                // for string
+#include <vector>                // for vector
 
 
 class ConfigurationInterface;
@@ -100,15 +100,15 @@ private:
 
     std::unique_ptr<GNSSBlockInterface> GetChannel_1G(const std::shared_ptr<ConfigurationInterface>& configuration,
         const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-        boost::shared_ptr<gr::msg_queue> queue);
+        gr::msg_queue::sptr queue);
 
     std::unique_ptr<GNSSBlockInterface> GetChannel_2G(const std::shared_ptr<ConfigurationInterface>& configuration,
         const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-        boost::shared_ptr<gr::msg_queue> queue);
+        gr::msg_queue::sptr queue);
 
     std::unique_ptr<GNSSBlockInterface> GetChannel_B1(const std::shared_ptr<ConfigurationInterface>& configuration,
         const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
-        boost::shared_ptr<gr::msg_queue> queue);
+        gr::msg_queue::sptr queue);
 
     std::unique_ptr<GNSSBlockInterface> GetChannel_B3(const std::shared_ptr<ConfigurationInterface>& configuration,
         const std::string& acq, const std::string& trk, const std::string& tlm, int channel,

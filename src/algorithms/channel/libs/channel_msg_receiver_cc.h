@@ -33,6 +33,8 @@
 
 #include "channel_fsm.h"
 #include <gnuradio/block.h>
+#include <pmt/pmt.h>
+#include <memory>
 
 class channel_msg_receiver_cc;
 

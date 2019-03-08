@@ -59,11 +59,11 @@ public:
     }
 
     /*!
-     * \brief Returns "Gn3sSignalSource".
+     * \brief Returns "Gn3s_Signal_Source".
      */
     inline std::string implementation() override
     {
-        return "Gn3sSignalSource";
+        return "Gn3s_Signal_Source";
     }
 
     inline size_t item_size() override

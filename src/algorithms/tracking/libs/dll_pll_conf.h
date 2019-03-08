@@ -65,6 +65,8 @@ public:
     float very_early_late_space_narrow_chips;
     int32_t extend_correlation_symbols;
     bool high_dyn;
+    std::string item_type;
+    std::string local_replica_item_type;
     int32_t cn0_samples;
     int32_t cn0_smoother_samples;
     float cn0_smoother_alpha;

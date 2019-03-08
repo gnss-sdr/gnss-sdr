@@ -72,6 +72,8 @@ Dll_Pll_Conf::Dll_Pll_Conf()
     max_code_lock_fail = FLAGS_max_lock_fail;
     carrier_lock_th = FLAGS_carrier_lock_th;
     enable_doppler_correction = false;
+    item_type = "gr_complex";
+    local_replica_item_type = "float";
     track_pilot = false;
     system = 'G';
     signal[0] = '1';

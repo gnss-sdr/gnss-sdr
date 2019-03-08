@@ -33,6 +33,7 @@
 #ifndef GNSS_SDR_DLL_PLL_CONF_H_
 #define GNSS_SDR_DLL_PLL_CONF_H_
 
+#include "configuration_interface.h"
 #include <cstdint>
 #include <string>
 
@@ -83,6 +84,8 @@ public:
     char signal[3]{};
 
     Dll_Pll_Conf();
+
+    void SetFromConfiguration( ConfigurationInterface *configuration, const std::string &role );
 };
 
 #endif

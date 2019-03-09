@@ -930,6 +930,27 @@ if(NOT VOLKGNSSSDR_FOUND)
         message(FATAL_ERROR "six - python 2 and 3 compatibility library required to build VOLK_GNSSSDR")
     endif()
 
+    set_package_properties(Python3 PROPERTIES
+        URL "https://www.python.org/"
+        DESCRIPTION "An interpreted, high-level, general-purpose programming language"
+        PURPOSE "Required to build volk_gnsssdr."
+        TYPE REQUIRED
+    )
+
+    set_package_properties(Python2 PROPERTIES
+        URL "https://www.python.org/"
+        DESCRIPTION "An interpreted, high-level, general-purpose programming language"
+        PURPOSE "Required to build volk_gnsssdr."
+        TYPE REQUIRED
+    )
+
+    set_package_properties(PythonInterp PROPERTIES
+        URL "https://www.python.org/"
+        DESCRIPTION "An interpreted, high-level, general-purpose programming language"
+        PURPOSE "RRequired to build volk_gnsssdr."
+        TYPE REQUIRED
+    )
+
     set(READ_ENVIRO "")
     if(ENABLE_PACKAGING)
         if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)

@@ -64,7 +64,7 @@ public:
     }
 
     /*!
-     * \brief Returns "UDP_Signal_Source"
+     * \brief Returns "Custom_UDP_Signal_Source"
      */
     inline std::string implementation() override
     {

@@ -313,6 +313,9 @@ if(NOT CROSSCOMPILE_MULTILIB AND CPU_IS_x86)
     #MSVC 64 bit does not have MMX, overrule it
     if(${SIZEOF_CPU} EQUAL 64 AND MSVC)
         overrule_arch(mmx "No MMX for Win64")
+        if(MSVC_VERSION GREATER 1700)
+            OVERRULE_ARCH(sse "No SSE for Win64 Visual Studio 2013")
+        endif()
     endif()
 
 endif()
@@ -582,7 +585,7 @@ target_include_directories(volk_gnsssdr_obj
 
 #Add dynamic library
 add_library(volk_gnsssdr SHARED $<TARGET_OBJECTS:volk_gnsssdr_obj>)
-target_link_libraries(volk_gnsssdr ${volk_gnsssdr_libraries} m)
+target_link_libraries(volk_gnsssdr ${volk_gnsssdr_libraries})
 target_include_directories(volk_gnsssdr
     PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
     PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
@@ -593,7 +596,10 @@ target_include_directories(volk_gnsssdr
 )
 
 #Configure target properties
-set_target_properties(volk_gnsssdr_obj PROPERTIES COMPILE_FLAGS "-fPIC")
+if(NOT MSVC)
+    set_target_properties(volk_gnsssdr_obj PROPERTIES COMPILE_FLAGS "-fPIC")
+    target_link_libraries(volk_gnsssdr m)
+endif()
 set_target_properties(volk_gnsssdr PROPERTIES SOVERSION ${LIBVER})
 set_target_properties(volk_gnsssdr PROPERTIES DEFINE_SYMBOL "volk_gnsssdr_EXPORTS")
 
@@ -608,7 +614,10 @@ install(TARGETS volk_gnsssdr
 #Configure static library
 if(ENABLE_STATIC_LIBS)
     add_library(volk_gnsssdr_static STATIC $<TARGET_OBJECTS:volk_gnsssdr_obj>)
-    target_link_libraries(volk_gnsssdr_static ${volk_gnsssdr_libraries} pthread m)
+    target_link_libraries(volk_gnsssdr_static ${volk_gnsssdr_libraries} pthread)
+    if(NOT MSVC)
+        target_link_libraries(volk_gnsssdr_static m)
+    endif()
     target_include_directories(volk_gnsssdr_static
         PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
         PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>

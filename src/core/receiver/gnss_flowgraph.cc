@@ -1664,10 +1664,10 @@ void GNSSFlowgraph::init()
 
     if (enable_monitor_)
         {
-            GnssSynchroMonitor_ = gr::basic_block_sptr(new gnss_synchro_monitor(channels_count_,
+            GnssSynchroMonitor_ = gnss_synchro_make_monitor(channels_count_,
                 configuration_->property("Monitor.decimation_factor", 1),
                 configuration_->property("Monitor.udp_port", 1234),
-                udp_addr_vec));
+                udp_addr_vec);
         }
 }
 

@@ -59,6 +59,7 @@ private:
     friend gnss_sdr_time_counter_sptr gnss_sdr_make_time_counter();
 
 public:
+    ~gnss_sdr_time_counter();
     int general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items __attribute__((unused)), gr_vector_void_star &output_items);
 };

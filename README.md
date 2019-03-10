@@ -542,7 +542,7 @@ In a terminal, type:
 ~~~~~~
 $ sudo port selfupdate
 $ sudo port upgrade outdated
-$ sudo port install doxygen +latex
+$ sudo port install doxygen +docs
 $ sudo port install gnuradio
 $ sudo port install armadillo
 $ sudo port install gnutls

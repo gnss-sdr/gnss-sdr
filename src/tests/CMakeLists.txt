@@ -184,6 +184,12 @@ find_package(Gnuplot)
 if(GNUPLOT_FOUND)
     add_definitions(-DGNUPLOT_EXECUTABLE="${GNUPLOT_EXECUTABLE}")
 endif()
+set_package_properties(Gnuplot PROPERTIES
+    URL "http://www.gnuplot.info"
+    DESCRIPTION "A portable command-line driven graphing utility"
+    PURPOSE "Used to generate plots in some tests."
+    TYPE OPTIONAL
+)
 
 if(ENABLE_UNIT_TESTING_MINIMAL)
     add_definitions(-DUNIT_TESTING_MINIMAL=1)
@@ -194,6 +200,15 @@ endif()
 # Optional generator
 ################################################################################
 option(ENABLE_GNSS_SIM_INSTALL "Enable the installation of gnss_sim on the fly" ON)
+add_feature_info(ENABLE_GNSS_SIM_INSTALL ENABLE_GNSS_SIM_INSTALL "Enables downloading and building of gnss-sim.")
+
+find_package(GPSTK)
+set_package_properties(GPSTK PROPERTIES
+    URL "http://www.gpstk.org"
+    DESCRIPTION "Library and suite of applications for satellite navigation"
+    PURPOSE "Used in some Extra Tests."
+    TYPE OPTIONAL
+)
 if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
     if(ENABLE_FPGA)
       set(CROSS_INSTALL_DIR "-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}")
@@ -239,7 +254,6 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
     ################################################################################
     # Local installation of GPSTk http://www.gpstk.org/
     ################################################################################
-    find_package(GPSTK)
     if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
       message(STATUS " GPSTk v${GNSSSDR_GPSTK_LOCAL_VERSION} will be automatically downloaded and built when doing 'make'.")
       if("${TOOLCHAIN_ARG}" STREQUAL "")

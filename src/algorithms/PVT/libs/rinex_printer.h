@@ -96,13 +96,13 @@ public:
      */
     ~Rinex_Printer();
 
-    std::fstream obsFile;     //<! Output file stream for RINEX observation file
-    std::fstream navFile;     //<! Output file stream for RINEX navigation data file
-    std::fstream sbsFile;     //<! Output file stream for RINEX SBAS raw data file
-    std::fstream navGalFile;  //<! Output file stream for RINEX Galileo navigation data file
-    std::fstream navGloFile;  //<! Output file stream for RINEX GLONASS navigation data file
-    std::fstream navBdsFile;  //<! Output file stream for RINEX Galileo navigation data file
-    std::fstream navMixFile;  //<! Output file stream for RINEX Mixed navigation data file
+    std::fstream obsFile;     //!< Output file stream for RINEX observation file
+    std::fstream navFile;     //!< Output file stream for RINEX navigation data file
+    std::fstream sbsFile;     //!< Output file stream for RINEX SBAS raw data file
+    std::fstream navGalFile;  //!< Output file stream for RINEX Galileo navigation data file
+    std::fstream navGloFile;  //!< Output file stream for RINEX GLONASS navigation data file
+    std::fstream navBdsFile;  //!< Output file stream for RINEX Galileo navigation data file
+    std::fstream navMixFile;  //!< Output file stream for RINEX Mixed navigation data file
 
     /*!
      *  \brief Generates the GPS L1 C/A Navigation Data header
@@ -412,10 +412,10 @@ public:
 
     void update_obs_header(std::fstream& out, const Beidou_Dnav_Utc_Model& utc_model);
 
-    std::map<std::string, std::string> satelliteSystem;  //<! GPS, GLONASS, SBAS payload, Galileo or Beidou
-    std::map<std::string, std::string> observationType;  //<! PSEUDORANGE, CARRIER_PHASE, DOPPLER, SIGNAL_STRENGTH
-    std::map<std::string, std::string> observationCode;  //<! GNSS observation descriptors
-    std::string stringVersion;                           //<! RINEX version (2.10/2.11 or 3.01/3.02)
+    std::map<std::string, std::string> satelliteSystem;  //!< GPS, GLONASS, SBAS payload, Galileo or Beidou
+    std::map<std::string, std::string> observationType;  //!< PSEUDORANGE, CARRIER_PHASE, DOPPLER, SIGNAL_STRENGTH
+    std::map<std::string, std::string> observationCode;  //!< GNSS observation descriptors
+    std::string stringVersion;                           //!< RINEX version (2.10/2.11 or 3.01/3.02)
 
     std::string navfilename;
     std::string obsfilename;

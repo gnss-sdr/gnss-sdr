@@ -497,7 +497,7 @@ endif()
 
 # Visibility
 # See https://gcc.gnu.org/wiki/Visibility
-if(POLICY CMP0053)
+if(POLICY CMP0063)
     cmake_policy(SET CMP0063 NEW)
     set(CMAKE_CXX_VISIBILITY_PRESET hidden)
     set(CMAKE_C_VISIBILITY_PRESET hidden)

@@ -956,7 +956,7 @@ if(NOT VOLKGNSSSDR_FOUND)
     set_package_properties(PythonInterp PROPERTIES
         URL "https://www.python.org/"
         DESCRIPTION "An interpreted, high-level, general-purpose programming language"
-        PURPOSE "RRequired to build volk_gnsssdr."
+        PURPOSE "Required to build volk_gnsssdr."
         TYPE REQUIRED
     )
 

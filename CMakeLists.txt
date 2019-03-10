@@ -145,7 +145,7 @@ if(NOT ${THIS_IS_A_RELEASE})
         PURPOSE "Manage version control, get MINOR_VERSION name for version number."
         TYPE REQUIRED
     )
-    if(Git_FOUND)
+    if(GIT_FOUND)
         # was this info set in the CMake commandline?
         if(NOT GIT_BRANCH)
             # no: try to find it
@@ -154,7 +154,6 @@ if(NOT ${THIS_IS_A_RELEASE})
                 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                 OUTPUT_VARIABLE GIT_BRANCH
                 OUTPUT_STRIP_TRAILING_WHITESPACE
-                OUTPUT_QUIET ERROR_QUIET
             )
         endif(NOT GIT_BRANCH)
         # was this info set in the CMake commandline?
@@ -165,7 +164,6 @@ if(NOT ${THIS_IS_A_RELEASE})
                 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                 OUTPUT_VARIABLE GIT_COMMIT_HASH
                 OUTPUT_STRIP_TRAILING_WHITESPACE
-                OUTPUT_QUIET ERROR_QUIET
             )
         endif(NOT GIT_COMMIT_HASH)
     endif()
@@ -2241,4 +2239,4 @@ else()
         ENABLED_FEATURES DISABLED_FEATURES
     )
 endif()
-message(STATUS "GNSS-SDR is ready to be built.")
+message(STATUS "GNSS-SDR v${VERSION} is ready to be built.")

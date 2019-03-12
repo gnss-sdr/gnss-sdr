@@ -35,10 +35,15 @@
 #include "gnss_synchro.h"
 #include <boost/asio.hpp>
 #include <boost/system/error_code.hpp>
+#include <cstdint>
 #include <string>
 #include <vector>
 
 
+/*!
+ * \brief This class sends serialized Gnss_Synchro objects
+ * over UDP to one or multiple endpoints.
+ */
 class Gnss_Synchro_Udp_Sink
 {
 public:

@@ -36,16 +36,18 @@
 #define GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FPGA_H_
 
 #include "acquisition_interface.h"
-#include "gnss_synchro.h"
 #include "pcps_acquisition_fpga.h"
-#include <volk_gnsssdr/volk_gnsssdr.h>
-#include <string>
+#include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
+#include <volk/volk_complex.h>       // for lv_16sc_t
+#include <cstddef>                   // for size_t
+#include <string>                    // for string
 
+class Gnss_Synchro;
 class ConfigurationInterface;
 
 /*!
- * \brief This class adapts a PCPS acquisition block to an AcquisitionInterface
- *  for GPS L1 C/A signals
+ * \brief This class adapts a PCPS acquisition block off-loaded on an FPGA
+ * to an AcquisitionInterface for GPS L1 C/A signals
  */
 class GpsL1CaPcpsAcquisitionFpga : public AcquisitionInterface
 {
@@ -84,7 +86,7 @@ public:
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
      * to efficiently exchange synchronization data between acquisition and
-     *  tracking blocks
+     * tracking blocks
      */
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 

@@ -1,5 +1,5 @@
 /*!
- * \file gps_l5i pcps_acquisition_fpga.cc
+ * \file gps_l5i_pcps_acquisition_fpga.cc
  * \brief Adapts a PCPS acquisition block to an Acquisition Interface for
  *  GPS L5i signals for the FPGA
  * \authors <ul>
@@ -36,9 +36,16 @@
 #include "GPS_L5.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
+#include "gnss_synchro.h"
 #include "gps_l5_signal.h"
-#include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
+#include <gnuradio/fft/fft.h>     // for fft_complex
+#include <gnuradio/gr_complex.h>  // for gr_complex
+#include <volk/volk.h>            // for volk_32fc_conjugate_32fc
+#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <cmath>    // for abs, pow, floor
+#include <complex>  // for complex
+#include <cstring>  // for memcpy
 
 #define NUM_PRNs 32
 
@@ -133,7 +140,6 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
                 }
         }
 
-    //acq_parameters
     acq_parameters.all_fft_codes = d_all_fft_codes_;
 
     // reference for the FPGA FFT-IFFT attenuation factor

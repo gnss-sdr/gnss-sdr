@@ -32,9 +32,11 @@
 #include "gnss_sdr_sample_counter.h"
 #include "gnss_synchro.h"
 #include <gnuradio/io_signature.h>
-#include <cmath>
-#include <iostream>
-#include <string>
+#include <pmt/pmt.h>        // for from_double
+#include <pmt/pmt_sugar.h>  // for mp
+#include <cmath>            // for round
+#include <iostream>         // for operator<<
+#include <string>           // for string
 
 gnss_sdr_sample_counter::gnss_sdr_sample_counter(
     double _fs,
@@ -61,6 +63,9 @@ gnss_sdr_sample_counter::gnss_sdr_sample_counter(
     flag_h = false;
     flag_days = false;
 }
+
+
+gnss_sdr_sample_counter::~gnss_sdr_sample_counter() = default;
 
 
 gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter(double _fs, int32_t _interval_ms, size_t _size)

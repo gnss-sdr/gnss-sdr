@@ -36,13 +36,13 @@ end
 
 samplingFreq = 25000000;     %[Hz]
 coherent_integration_time_ms = 1; %[ms]
-channels = 2;   % Number of channels
-first_channel = 14;  % Number of the first channel
+channels = 10;   % Number of channels
+first_channel = 0;  % Number of the first channel
 
-path = '/home/dmiralles/Documents/Research/Publications/INSIDE_GNSS/bds_leg_pvt/Data/';  %% CHANGE THIS PATH
+path = '/home/dmiralles/Documents/gnss-sdr/';  %% CHANGE THIS PATH
 
 for N=1:1:channels
-    tracking_log_path = [path 'bds_b1i_trk_ch_' num2str(N+first_channel-1) '.dat']; %% CHANGE track_ch_ BY YOUR dump_filename
+    tracking_log_path = [path 'epl_tracking_ch_' num2str(N+first_channel-1) '.dat']; %% CHANGE track_ch_ BY YOUR dump_filename
     GNSS_tracking(N) = dll_pll_veml_read_tracking_dump(tracking_log_path);
 end
 

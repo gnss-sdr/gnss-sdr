@@ -33,11 +33,9 @@
 
 #include "beidou_b1i_telemetry_decoder_gs.h"
 #include "Beidou_B1I.h"
-#include "beidou_dnav_almanac.h"
 #include "beidou_dnav_ephemeris.h"
+#include "beidou_dnav_iono.h"
 #include "beidou_dnav_utc_model.h"
-#include "convolutional.h"
-#include "display.h"
 #include "gnss_synchro.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>

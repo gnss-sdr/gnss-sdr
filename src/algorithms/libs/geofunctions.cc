@@ -30,6 +30,7 @@
  */
 
 #include "geofunctions.h"
+#include <cmath>  // for sin, cos, sqrt, abs, pow
 
 const double STRP_PI = 3.1415926535898;  // Pi as defined in IS-GPS-200E
 

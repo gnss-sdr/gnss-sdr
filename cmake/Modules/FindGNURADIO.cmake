@@ -43,6 +43,9 @@ macro(LIST_CONTAINS var value)
   endforeach()
 endmacro()
 
+# Trick for feature_summary
+set(GNURADIO_FOUND TRUE)
+
 function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
     list_contains(REQUIRED_MODULE ${EXTVAR} ${GR_REQUIRED_COMPONENTS})
     if(NOT REQUIRED_MODULE)
@@ -140,6 +143,7 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
     # generate an error if the module is missing
     if(NOT GNURADIO_${EXTVAR}_FOUND)
         message(STATUS "Required GNU Radio Component: ${EXTVAR} missing!")
+        set(GNURADIO_FOUND FALSE) # Trick for feature_summary
     endif()
 
     mark_as_advanced(GNURADIO_${EXTVAR}_LIBRARIES GNURADIO_${EXTVAR}_INCLUDE_DIRS)
@@ -200,3 +204,6 @@ if(NOT PC_GNURADIO_RUNTIME_VERSION)
         set(PC_GNURADIO_RUNTIME_VERSION "3.8.0+")
     endif()
 endif()
+
+# Trick for feature_summary
+set(GNURADIO_FOUND TRUE)

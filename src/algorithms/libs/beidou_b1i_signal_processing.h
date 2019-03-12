@@ -35,7 +35,7 @@
 
 #include <complex>
 #include <cstdint>
-#include <iostream>
+
 
 //! Generates int32_t GPS L1 C/A code for the desired SV ID and code shift
 void beidou_b1i_code_gen_int(int32_t* _dest, int32_t _prn, uint32_t _chip_shift);

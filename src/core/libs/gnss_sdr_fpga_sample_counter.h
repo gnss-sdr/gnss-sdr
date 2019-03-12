@@ -35,6 +35,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/block.h>
+#include <gnuradio/types.h>  // for gr_vector_const_void_star
 #include <cstdint>
 #include <string>
 
@@ -47,6 +48,7 @@ gnss_sdr_fpga_sample_counter_sptr gnss_sdr_make_fpga_sample_counter(double _fs, 
 class gnss_sdr_fpga_sample_counter : public gr::block
 {
 private:
+    friend gnss_sdr_fpga_sample_counter_sptr gnss_sdr_make_fpga_sample_counter(double _fs, int32_t _interval_ms);
     gnss_sdr_fpga_sample_counter(double _fs, int32_t _interval_ms);
     uint32_t test_register(uint32_t writeval);
     void configure_samples_per_output(uint32_t interval);
@@ -75,7 +77,6 @@ private:
     bool is_open;
 
 public:
-    friend gnss_sdr_fpga_sample_counter_sptr gnss_sdr_make_fpga_sample_counter(double _fs, int32_t _interval_ms);
     ~gnss_sdr_fpga_sample_counter();
     int general_work(int noutput_items,
         gr_vector_int &ninput_items,

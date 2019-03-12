@@ -1,8 +1,7 @@
 /*!
  * \file beidou_b1i_telemetry_decoder_gs.h
  * \brief Implementation of a BEIDOU BI1 DNAV data decoder block
- * \details Code added as part of GSoC 2018 program. However new modifications
- * included to mimic decoding of existing signals
+ * \details Code added as part of GSoC 2018 program.
  * \author Damian Miralles, 2018. dmiralles2009(at)gmail.com
  * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.es
  *
@@ -35,15 +34,15 @@
 #define GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_GS_H
 
 
-#include "gnss_satellite.h"
 #include "beidou_dnav_navigation_message.h"
+#include "gnss_satellite.h"
 #include <boost/circular_buffer.hpp>
-#include <gnuradio/block.h>
+#include <boost/shared_ptr.hpp>  // for boost::shared_ptr
+#include <gnuradio/block.h>      // for block
 #include <gnuradio/types.h>                  // for gr_vector_const_void_star
+#include <cstdint>
 #include <fstream>
 #include <string>
-#include <boost/shared_ptr.hpp>  // for boost::shared_ptr
-#include <cstdint>
 
 
 class beidou_b1i_telemetry_decoder_gs;
@@ -52,10 +51,10 @@ using beidou_b1i_telemetry_decoder_gs_sptr = boost::shared_ptr<beidou_b1i_teleme
 
 beidou_b1i_telemetry_decoder_gs_sptr beidou_b1i_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
+
 /*!
- * \brief This class implements a block that decodes the BeiDou DNAV data.
+ * \brief This class implements a block that decodes the GNAV data defined in BEIDOU ICD v5.1
  * \note Code added as part of GSoC 2018 program
- *
  */
 class beidou_b1i_telemetry_decoder_gs : public gr::block
 {

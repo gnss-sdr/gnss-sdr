@@ -1,7 +1,7 @@
 /*!
  * \file gps_l5_dll_pll_tracking_fpga.cc
  * \brief  Interface of an adapter of a DLL+PLL tracking loop block
- * for GPS L5 to a TrackingInterface
+ * for GPS L5 to a TrackingInterface for the FPGA
  * \author Marc Majoral, 2019. mmajoral(at)cttc.cat
  *         Javier Arribas, 2019. jarribas(at)cttc.es
  *
@@ -40,10 +40,15 @@
 #include "GPS_L5.h"
 #include "configuration_interface.h"
 #include "display.h"
+#include "dll_pll_conf_fpga.h"
 #include "gnss_sdr_flags.h"
+#include "gnss_synchro.h"
 #include "gps_l5_signal.h"
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <cmath>    // for round
+#include <cstring>  // for memcpy
+#include <iostream>
 
 #define NUM_PRNs 32
 

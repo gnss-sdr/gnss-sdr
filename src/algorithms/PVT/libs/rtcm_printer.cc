@@ -32,17 +32,26 @@
  */
 
 #include "rtcm_printer.h"
+#include "galileo_ephemeris.h"
+#include "glonass_gnav_ephemeris.h"
+#include "glonass_gnav_utc_model.h"
+#include "gnss_synchro.h"
+#include "gps_cnav_ephemeris.h"
+#include "gps_ephemeris.h"
+#include "rtcm.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem/operations.hpp>   // for create_directories, exists
 #include <boost/filesystem/path.hpp>         // for path, operator<<
 #include <boost/filesystem/path_traits.hpp>  // for filesystem
+#include <boost/system/error_code.hpp>       // for error_codes
 #include <glog/logging.h>
-#include <cstdint>
-#include <exception>
-#include <fcntl.h>  // for O_RDWR
-#include <iomanip>
+#include <cstdio>     // for remove
+#include <ctime>      // for tm
+#include <exception>  // for exception
+#include <fcntl.h>    // for O_RDWR
+#include <iostream>   // for cout, cerr
 #include <termios.h>  // for tcgetattr
-#include <utility>
+#include <unistd.h>   // for close, write
 
 
 Rtcm_Printer::Rtcm_Printer(const std::string& filename, bool flag_rtcm_file_dump, bool flag_rtcm_server, bool flag_rtcm_tty_port, uint16_t rtcm_tcp_port, uint16_t rtcm_station_id, const std::string& rtcm_dump_devname, bool time_tag_name, const std::string& base_path)

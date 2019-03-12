@@ -47,6 +47,7 @@
 #include "beidou_b1i_signal_processing.h"
 #include "galileo_e1_signal_processing.h"
 #include "galileo_e5_signal_processing.h"
+#include "gnss_satellite.h"
 #include "gnss_sdr_create_directory.h"
 #include "gnss_synchro.h"
 #include "gps_l2c_signal.h"
@@ -63,9 +64,11 @@
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <algorithm>  // for fill_n
 #include <cmath>      // for fmod, round, floor
+#include <complex>    // for complex
+#include <cstdlib>    // for abs, size_t
 #include <exception>  // for exception
 #include <iostream>   // for cout, cerr
-#include <map>
+#include <map>        // for map
 
 
 dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_)

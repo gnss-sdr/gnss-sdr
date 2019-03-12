@@ -33,11 +33,12 @@
 #ifndef GNSS_SDR_BEIDOU_B3I_TELEMETRY_DECODER_H_
 #define GNSS_SDR_BEIDOU_B3I_TELEMETRY_DECODER_H_
 
+#include "beidou_b3i_telemetry_decoder_gs.h"
+#include "gnss_satellite.h"  // for Gnss_Satellite
 #include "telemetry_decoder_interface.h"
+#include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
+#include <cstddef>                   // for size_t
 #include <string>
-
-#include "../gnuradio_blocks/beidou_b3i_telemetry_decoder_gs.h"
-
 class ConfigurationInterface;
 
 /*!

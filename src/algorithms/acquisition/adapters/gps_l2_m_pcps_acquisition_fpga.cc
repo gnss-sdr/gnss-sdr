@@ -1,14 +1,14 @@
 /*!
- * \file gps_l2_m_pcps_acquisition.cc
- * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
- *  GPS L2 M signals
+ * \file gps_l2_m_pcps_acquisition_fpga.cc
+ * \brief Adapts an FPGA-offloaded PCPS acquisition block
+ * to an AcquisitionInterface for GPS L2 M signals
  * \authors <ul>
- *          <li> Javier Arribas, 2015. jarribas(at)cttc.es
+ *          <li> Javier Arribas, 2019. jarribas(at)cttc.es
  *          </ul>
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -35,9 +35,16 @@
 #include "GPS_L2C.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
+#include "gnss_synchro.h"
 #include "gps_l2c_signal.h"
-#include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
+#include <gnuradio/fft/fft.h>     // for fft_complex
+#include <gnuradio/gr_complex.h>  // for gr_complex
+#include <volk/volk.h>            // for volk_32fc_conjugate_32fc
+#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <cmath>    // for abs, pow, floor
+#include <complex>  // for complex
+#include <cstring>  // for memcpy
 
 #define NUM_PRNs 32
 
@@ -80,14 +87,13 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     std::string device_name = configuration_->property(role + ".devicename", default_device_name);
     acq_parameters.device_name = device_name;
     acq_parameters.samples_per_ms = nsamples_total / acq_parameters.sampled_ms;
-    //acq_parameters.samples_per_ms = static_cast<int>(std::round(static_cast<double>(fs_in_) * 0.001));
     acq_parameters.samples_per_code = nsamples_total;
 
     acq_parameters.downsampling_factor = configuration_->property(role + ".downsampling_factor", 1.0);
     acq_parameters.total_block_exp = configuration_->property(role + ".total_block_exp", 14);
     acq_parameters.excludelimit = static_cast<uint32_t>(std::round(static_cast<double>(fs_in_) / GPS_L2_M_CODE_RATE_HZ));
 
-    // compute all the GPS L1 PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
+    // compute all the GPS L2C PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
     auto* fft_if = new gr::fft::fft_complex(vector_length, true);  // Direct FFT
     // allocate memory to compute all the PRNs and compute all the possible codes
@@ -125,7 +131,6 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
                 }
         }
 
-    //acq_parameters
     acq_parameters.all_fft_codes = d_all_fft_codes_;
 
     // temporary buffers that we can delete

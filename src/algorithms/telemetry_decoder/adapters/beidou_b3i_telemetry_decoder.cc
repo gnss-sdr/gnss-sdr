@@ -34,13 +34,7 @@
 #include "configuration_interface.h"
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
-#include "beidou_dnav_almanac.h"
-#include "beidou_dnav_ephemeris.h"
-#include "beidou_dnav_iono.h"
-#include "beidou_dnav_utc_model.h"
 
-
-using google::LogMessage;
 
 BeidouB3iTelemetryDecoder::BeidouB3iTelemetryDecoder(ConfigurationInterface* configuration,
     std::string role,

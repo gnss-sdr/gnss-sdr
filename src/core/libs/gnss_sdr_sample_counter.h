@@ -28,11 +28,14 @@
  *
  * -------------------------------------------------------------------------
  */
-#ifndef GNSS_SDR_SAMPLE_COUNTER_H_
-#define GNSS_SDR_SAMPLE_COUNTER_H_
+
+#ifndef GNSS_SDR_GNSS_SDR_SAMPLE_COUNTER_H_
+#define GNSS_SDR_GNSS_SDR_SAMPLE_COUNTER_H_
 
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/sync_decimator.h>
+#include <gnuradio/types.h>  // for gr_vector_const_void_star
+#include <cstddef>           // for size_t
 #include <cstdint>
 
 
@@ -48,6 +51,7 @@ gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter(
 class gnss_sdr_sample_counter : public gr::sync_decimator
 {
 private:
+    friend gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter(double _fs, int32_t _interval_ms, size_t _size);
     gnss_sdr_sample_counter(double _fs, int32_t _interval_ms, size_t _size);
     uint32_t samples_per_output;
     double fs;
@@ -65,10 +69,10 @@ private:
     bool flag_enable_send_msg;
 
 public:
-    friend gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter(double _fs, int32_t _interval_ms, size_t _size);
+    ~gnss_sdr_sample_counter();
     int work(int noutput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items);
 };
 
-#endif /*GNSS_SDR_SAMPLE_COUNTER_H_*/
+#endif /*GNSS_SDR_GNSS_SDR_SAMPLE_COUNTER_H_*/

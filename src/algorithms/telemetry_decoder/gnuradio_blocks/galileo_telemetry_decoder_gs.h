@@ -34,15 +34,15 @@
 
 
 #include "galileo_fnav_message.h"
-#include <boost/shared_ptr.hpp>  // for boost::shared_ptr
-#include <gnuradio/types.h>      // for gr_vector_const_void_star
 #include "galileo_navigation_message.h"
 #include "gnss_satellite.h"
 #include <boost/circular_buffer.hpp>
-#include <gnuradio/block.h>
+#include <boost/shared_ptr.hpp>  // for boost::shared_ptr
+#include <gnuradio/block.h>      // for block
+#include <gnuradio/types.h>      // for gr_vector_const_void_star
+#include <cstdint>
 #include <fstream>
 #include <string>
-#include <cstdint>
 
 class galileo_telemetry_decoder_gs;
 

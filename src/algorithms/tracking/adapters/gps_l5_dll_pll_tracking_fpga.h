@@ -1,7 +1,7 @@
 /*!
  * \file gps_l5_dll_pll_tracking_fpga.h
  * \brief  Interface of an adapter of a DLL+PLL tracking loop block
- * for GPS L5 to a TrackingInterface
+ * for GPS L5 to a TrackingInterface for the FPGA
  * \author Marc Majoral, 2019. mmajoral(at)cttc.cat
  *         Javier Arribas, 2019. jarribas(at)cttc.es
  *
@@ -40,8 +40,12 @@
 
 #include "dll_pll_veml_tracking_fpga.h"
 #include "tracking_interface.h"
+#include <gnuradio/runtime_types.h>
+#include <cstddef>
+#include <cstdint>
 #include <string>
 
+class Gnss_Synchro;
 class ConfigurationInterface;
 
 /*!
@@ -62,10 +66,10 @@ public:
         return role_;
     }
 
-    //! Returns "GPS_L5_DLL_PLL_Tracking"
+    //! Returns "GPS_L5_DLL_PLL_Tracking_Fpga"
     inline std::string implementation() override
     {
-        return "GPS_L5_DLL_PLL_Tracking";
+        return "GPS_L5_DLL_PLL_Tracking_Fpga";
     }
 
     inline size_t item_size() override
@@ -90,6 +94,7 @@ public:
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
     void start_tracking() override;
+
     /*!
      * \brief Stop running tracking
      */

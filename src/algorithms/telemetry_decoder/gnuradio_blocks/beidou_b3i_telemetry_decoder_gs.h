@@ -31,8 +31,8 @@
 #ifndef GNSS_SDR_BEIDOU_B3I_TELEMETRY_DECODER_GS_H
 #define GNSS_SDR_BEIDOU_B3I_TELEMETRY_DECODER_GS_H
 
-#include "gnss_satellite.h"
 #include "beidou_dnav_navigation_message.h"
+#include "gnss_satellite.h"
 #include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/types.h>                  // for gr_vector_const_void_star

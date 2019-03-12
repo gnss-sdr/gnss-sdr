@@ -33,12 +33,13 @@
 #include "gnss_synchro.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
-#include <cinttypes>
-#include <cmath>
-#include <fcntl.h>  // libraries used by the GIPO
-#include <iostream>
-#include <string>
-#include <sys/mman.h>  // libraries used by the GIPO
+#include <pmt/pmt.h>        // for from_double
+#include <pmt/pmt_sugar.h>  // for mp
+#include <cmath>            // for round
+#include <fcntl.h>          // for O_RDWR, libraries used by the GIPO
+#include <iostream>         // for operator<<, endl
+#include <sys/mman.h>       // libraries used by the GIPO
+#include <unistd.h>         // for write, close, read, ssize_t
 
 
 #define PAGE_SIZE 0x10000             // default page size for the multicorrelator memory map

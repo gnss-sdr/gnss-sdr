@@ -35,8 +35,6 @@
 #include "beidou_dnav_almanac.h"
 #include "beidou_dnav_ephemeris.h"
 #include "beidou_dnav_utc_model.h"
-#include "convolutional.h"
-#include "display.h"
 #include "gnss_synchro.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>

@@ -26,14 +26,15 @@
 % -------------------------------------------------------------------------
 %
 
-%close all;
-%clear all;
-samplingFreq       = 64e6/16;     %[Hz]
-channels=4;
-path='/home/sergi/gnss/gnss-sdr/install/';
+close all;
+
+samplingFreq       = 25000000;     %[Hz]
+channels=[0:9];
+path='/home/dmiralles/Documents/gnss-sdr/';
+addpath('libs/');
 clear PRN_absolute_sample_start;
-for N=1:1:channels
-    telemetry_log_path=[path 'telemetry' num2str(N-1) '.dat'];
+for N=1:1:length(channels)
+    telemetry_log_path=[path 'telemetry' num2str(channels(N)) '.dat'];
     GNSS_telemetry(N)= gps_l1_ca_read_telemetry_dump(telemetry_log_path);
 end
 

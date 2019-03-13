@@ -570,11 +570,11 @@ int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
                 {
                     double tmp_double;
                     uint64_t tmp_ulong_int;
-                    tmp_double = d_TOW_at_current_symbol_ms;
+                    tmp_double = static_cast<double>(d_TOW_at_current_symbol_ms);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                     tmp_ulong_int = current_symbol.Tracking_sample_counter;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(uint64_t));
-                    tmp_double = 0;
+                    tmp_double = current_symbol.Code_phase_samples;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                 }
             catch (const std::ifstream::failure &e)

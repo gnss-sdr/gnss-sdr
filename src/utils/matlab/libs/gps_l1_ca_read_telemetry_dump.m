@@ -47,13 +47,13 @@ end
 f = fopen (filename, 'rb');
 if (f < 0)
 else
-    telemetry.preamble_delay_ms = fread (f, count, 'float64',skip_bytes_each_read-double_size_bytes);
+    telemetry.tow_current_symbol_ms = fread (f, count, 'float64',skip_bytes_each_read-double_size_bytes);
     bytes_shift=bytes_shift+double_size_bytes;
     fseek(f,bytes_shift,'bof'); % move to next interleaved
-    telemetry.prn_delay_ms = fread (f, count, 'uint64',skip_bytes_each_read-double_size_bytes);
+    telemetry.tracking_sample_counter = fread (f, count, 'uint64',skip_bytes_each_read-double_size_bytes);
     bytes_shift=bytes_shift+double_size_bytes;
     fseek(f,bytes_shift,'bof'); % move to next interleaved
-    telemetry.Preamble_symbol_counter = fread (f, count, 'float64',skip_bytes_each_read-double_size_bytes);
+    telemetry.tow = fread (f, count, 'float64',skip_bytes_each_read-double_size_bytes);
     bytes_shift=bytes_shift+double_size_bytes;
     fseek(f,bytes_shift,'bof'); % move to next interleaved
     

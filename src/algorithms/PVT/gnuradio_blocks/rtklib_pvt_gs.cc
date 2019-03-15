@@ -76,7 +76,10 @@
 #include <algorithm>                    // for sort, unique
 #include <exception>                    // for exception
 #include <fstream>                      // for ofstream
+#include <iomanip>                      // for put_time, setprecision
 #include <iostream>                     // for operator<<
+#include <locale>                       // for locale
+#include <sstream>                      // for ostringstream
 #include <stdexcept>                    // for length_error
 #include <sys/ipc.h>                    // for IPC_CREAT
 #include <sys/msg.h>                    // for msgctl
@@ -364,6 +367,18 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     d_pvt_solver = std::make_shared<Rtklib_Solver>(static_cast<int32_t>(nchannels), dump_ls_pvt_filename, d_dump, d_dump_mat, rtk);
     d_pvt_solver->set_averaging_depth(1);
     start = std::chrono::system_clock::now();
+
+    // Display time in local time zone
+    time_t when = std::time(nullptr);
+    auto const tm = *std::localtime(&when);
+    std::ostringstream os;
+    os << std::put_time(&tm, "%z");
+    d_utc_diff = os.str();
+    // d_utc_diff is in ISO 8601 format: "+HHMM" or "-HHMM"
+    int h = std::stoi(d_utc_diff.substr(0, 3), nullptr, 10);
+    int m = std::stoi(d_utc_diff[0] + d_utc_diff.substr(3), nullptr, 10);
+    d_utc_diff_time = boost::posix_time::hours(h) + boost::posix_time::minutes(m);
+    d_show_local_time_zone = conf_.show_local_time_zone;
 }
 
 
@@ -1464,8 +1479,16 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
 
                                     if (first_fix == true)
                                         {
-                                            std::cout << "First position fix at " << boost::posix_time::to_simple_string(d_pvt_solver->get_position_UTC_time())
-                                                      << " UTC is Lat = " << d_pvt_solver->get_latitude() << " [deg], Long = " << d_pvt_solver->get_longitude()
+                                            if (d_show_local_time_zone)
+                                                {
+                                                    boost::posix_time::ptime time_first_solution = d_pvt_solver->get_position_UTC_time() + d_utc_diff_time;
+                                                    std::cout << "First position fix at " << time_first_solution << " (UTC " + d_utc_diff.substr(0, 3) + ":" + d_utc_diff.substr(3, 2) + ")";
+                                                }
+                                            else
+                                                {
+                                                    std::cout << "First position fix at " << d_pvt_solver->get_position_UTC_time() << " UTC";
+                                                }
+                                            std::cout << " is Lat = " << d_pvt_solver->get_latitude() << " [deg], Long = " << d_pvt_solver->get_longitude()
                                                       << " [deg], Height= " << d_pvt_solver->get_height() << " [m]" << std::endl;
                                             ttff_msgbuf ttff;
                                             ttff.mtype = 1;
@@ -3287,18 +3310,31 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                     // DEBUG MESSAGE: Display position in console output
                     if (d_pvt_solver->is_valid_position() and flag_display_pvt)
                         {
+                            boost::posix_time::ptime time_solution;
+                            std::string UTC_solution_str;
+                            if (d_show_local_time_zone)
+                                {
+                                    time_solution = d_pvt_solver->get_position_UTC_time() + d_utc_diff_time;
+                                    UTC_solution_str = " (UTC " + d_utc_diff.substr(0, 3) + ":" + d_utc_diff.substr(3, 2) + ")";
+                                }
+                            else
+                                {
+                                    time_solution = d_pvt_solver->get_position_UTC_time();
+                                    UTC_solution_str = " UTC";
+                                }
                             std::streamsize ss = std::cout.precision();  // save current precision
                             std::cout.setf(std::ios::fixed, std::ios::floatfield);
                             auto facet = new boost::posix_time::time_facet("%Y-%b-%d %H:%M:%S.%f %z");
                             std::cout.imbue(std::locale(std::cout.getloc(), facet));
+                            std::cout
+                                << TEXT_BOLD_GREEN
+                                << "Position at " << time_solution << UTC_solution_str
+                                << " using " << d_pvt_solver->get_num_valid_observations()
+                                << std::fixed << std::setprecision(9)
+                                << " observations is Lat = " << d_pvt_solver->get_latitude() << " [deg], Long = " << d_pvt_solver->get_longitude()
+                                << std::fixed << std::setprecision(3)
+                                << " [deg], Height = " << d_pvt_solver->get_height() << " [m]" << TEXT_RESET << std::endl;
 
-                            std::cout << TEXT_BOLD_GREEN
-                                      << "Position at " << d_pvt_solver->get_position_UTC_time()
-                                      << " UTC using " << d_pvt_solver->get_num_valid_observations()
-                                      << std::fixed << std::setprecision(9)
-                                      << " observations is Lat = " << d_pvt_solver->get_latitude() << " [deg], Long = " << d_pvt_solver->get_longitude()
-                                      << std::fixed << std::setprecision(3)
-                                      << " [deg], Height = " << d_pvt_solver->get_height() << " [m]" << TEXT_RESET << std::endl;
                             std::cout << std::setprecision(ss);
                             DLOG(INFO) << "RX clock offset: " << d_pvt_solver->get_time_offset_s() << "[s]";
 

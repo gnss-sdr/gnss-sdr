@@ -378,7 +378,7 @@ coverity-scan:
     - export PATH=$PATH:$(pwd)/cov-analysis-linux64-2017.07/bin
     - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev libgtest-dev
     - cd build
-    - cmake -DENABLE_OSMOSDR=ON -DENABLE_RAW_UDP=ON -DENABLE_FPGA=ON ..
+    - cmake -DENABLE_OSMOSDR=ON -DENABLE_RAW_UDP=ON  ..
     - cov-build --dir cov-int make -j2
     - tar cvzf gnss-sdr.tgz cov-int
     - curl --form token=$COVERITY_SCAN_TOKEN --form email=$COVERITY_SCAN_EMAIL --form file=@$(pwd)/gnss-sdr.tgz --form version="0.0.9-next" --form description=" " https://scan.coverity.com/builds?project=$COVERITY_SCAN_USER%2Fgnss-sdr --progress-bar | tee -a "log_upload.txt" ; test ${PIPESTATUS[0]} -eq 0

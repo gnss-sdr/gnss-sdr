@@ -714,6 +714,9 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
     pvt_output_parameters.udp_addresses = configuration->property(role + ".monitor_client_addresses", std::string("127.0.0.1"));
     pvt_output_parameters.udp_port = configuration->property(role + ".monitor_udp_port", 1234);
 
+    // Show time in local zone
+    pvt_output_parameters.show_local_time_zone = configuration->property(role + ".show_local_time_zone", false);
+
     // make PVT object
     pvt_ = rtklib_make_pvt_gs(in_streams_, pvt_output_parameters, rtk);
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";

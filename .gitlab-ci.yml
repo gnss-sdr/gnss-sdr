@@ -277,7 +277,7 @@ opensuse-tumbleweed:
     - pwd
   script:
     - zypper -n dup
-    - zypper -n install cmake git gcc-c++ boost-devel libboost_atomic-devel libboost_system-devel libboost_filesystem-devel libboost_date_time-devel libboost_thread-devel libboost_chrono-devel libboost_serialization-devel log4cpp-devel gtest gnuradio-devel pugixml-devel libpcap-devel armadillo-devel libtool automake hdf5-devel openssl-devel python-Mako python-six
+    - zypper -n install cmake git gcc-c++ boost-devel libboost_atomic-devel libboost_system-devel libboost_filesystem-devel libboost_date_time-devel libboost_thread-devel libboost_chrono-devel libboost_serialization-devel log4cpp-devel gtest gnuradio-devel pugixml-devel libpcap-devel armadillo-devel libtool automake hdf5-devel libopenssl-devel python3-Mako python3-six
     - cd build
     - cmake -DENABLE_RAW_UDP=ON ..
     - NPROC=$(grep -c ^processor /proc/cpuinfo)

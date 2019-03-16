@@ -162,6 +162,10 @@ private:
     std::unique_ptr<Monitor_Pvt_Udp_Sink> udp_sink_ptr;
     std::vector<std::string> split_string(const std::string& s, char delim) const;
 
+    bool d_show_local_time_zone;
+    std::string d_local_time_str;
+    boost::posix_time::time_duration d_utc_diff_time;
+
 public:
     ~rtklib_pvt_gs();  //!< Default destructor
 

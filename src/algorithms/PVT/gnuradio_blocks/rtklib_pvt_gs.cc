@@ -364,21 +364,42 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
             throw std::exception();
         }
 
-    d_pvt_solver = std::make_shared<Rtklib_Solver>(static_cast<int32_t>(nchannels), dump_ls_pvt_filename, d_dump, d_dump_mat, rtk);
-    d_pvt_solver->set_averaging_depth(1);
-    start = std::chrono::system_clock::now();
-
     // Display time in local time zone
+    d_show_local_time_zone = conf_.show_local_time_zone;
     time_t when = std::time(nullptr);
     auto const tm = *std::localtime(&when);
     std::ostringstream os;
     os << std::put_time(&tm, "%z");
-    d_utc_diff = os.str();
-    // d_utc_diff is in ISO 8601 format: "+HHMM" or "-HHMM"
-    int h = std::stoi(d_utc_diff.substr(0, 3), nullptr, 10);
-    int m = std::stoi(d_utc_diff[0] + d_utc_diff.substr(3), nullptr, 10);
+    std::string utc_diff_str = os.str();  // in ISO 8601 format: "+HHMM" or "-HHMM"
+    if (utc_diff_str.empty())
+        {
+            utc_diff_str = "+0000";
+        }
+    int h = std::stoi(utc_diff_str.substr(0, 3), nullptr, 10);
+    int m = std::stoi(utc_diff_str[0] + utc_diff_str.substr(3), nullptr, 10);
     d_utc_diff_time = boost::posix_time::hours(h) + boost::posix_time::minutes(m);
-    d_show_local_time_zone = conf_.show_local_time_zone;
+    std::ostringstream os2;
+    os2 << std::put_time(&tm, "%Z");
+    std::string time_zone_abrv = os2.str();
+    if (time_zone_abrv.empty())
+        {
+            if (utc_diff_str == "+0000")
+                {
+                    d_local_time_str = " UTC";
+                }
+            else
+                {
+                    d_local_time_str = " (UTC " + utc_diff_str.substr(0, 3) + ":" + utc_diff_str.substr(3, 2) + ")";
+                }
+        }
+    else
+        {
+            d_local_time_str = std::string(" ") + time_zone_abrv + " (UTC " + utc_diff_str.substr(0, 3) + ":" + utc_diff_str.substr(3, 2) + ")";
+        }
+
+    d_pvt_solver = std::make_shared<Rtklib_Solver>(static_cast<int32_t>(nchannels), dump_ls_pvt_filename, d_dump, d_dump_mat, rtk);
+    d_pvt_solver->set_averaging_depth(1);
+    start = std::chrono::system_clock::now();
 }
 
 
@@ -1482,7 +1503,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             if (d_show_local_time_zone)
                                                 {
                                                     boost::posix_time::ptime time_first_solution = d_pvt_solver->get_position_UTC_time() + d_utc_diff_time;
-                                                    std::cout << "First position fix at " << time_first_solution << " (UTC " + d_utc_diff.substr(0, 3) + ":" + d_utc_diff.substr(3, 2) + ")";
+                                                    std::cout << "First position fix at " << time_first_solution << d_local_time_str;
                                                 }
                                             else
                                                 {
@@ -3315,7 +3336,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             if (d_show_local_time_zone)
                                 {
                                     time_solution = d_pvt_solver->get_position_UTC_time() + d_utc_diff_time;
-                                    UTC_solution_str = " (UTC " + d_utc_diff.substr(0, 3) + ":" + d_utc_diff.substr(3, 2) + ")";
+                                    UTC_solution_str = d_local_time_str;
                                 }
                             else
                                 {

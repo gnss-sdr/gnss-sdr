@@ -163,7 +163,7 @@ private:
     std::vector<std::string> split_string(const std::string& s, char delim) const;
 
     bool d_show_local_time_zone;
-    std::string d_utc_diff;
+    std::string d_local_time_str;
     boost::posix_time::time_duration d_utc_diff_time;
 
 public:

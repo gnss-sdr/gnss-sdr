@@ -369,7 +369,9 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     time_t when = std::time(nullptr);
     auto const tm = *std::localtime(&when);
     std::ostringstream os;
+#ifdef HAS_PUT_TIME
     os << std::put_time(&tm, "%z");
+#endif
     std::string utc_diff_str = os.str();  // in ISO 8601 format: "+HHMM" or "-HHMM"
     if (utc_diff_str.empty())
         {
@@ -379,7 +381,9 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     int m = std::stoi(utc_diff_str[0] + utc_diff_str.substr(3), nullptr, 10);
     d_utc_diff_time = boost::posix_time::hours(h) + boost::posix_time::minutes(m);
     std::ostringstream os2;
+#ifdef HAS_PUT_TIME
     os2 << std::put_time(&tm, "%Z");
+#endif
     std::string time_zone_abrv = os2.str();
     if (time_zone_abrv.empty())
         {

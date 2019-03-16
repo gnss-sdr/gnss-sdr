@@ -3,6 +3,7 @@
 ### Improvements in Availability
 
 - Fixed bug that caused a random deadlock in the Observables block, preventing the computation of PVT fixes.
+- Fixed bug in Galileo INAV message decoding when PLL is locked at 180 degrees, which prevented from correct navigation message decoding in some situations.
 
 
 ### Improvements in Efficiency
@@ -42,6 +43,7 @@
 - The receiver now admits FPGA off-loading, allowing for real time operation at high sampling rates and higher number of signals and channels.
 - Fixed program termination (avoiding hangs and segfaults in some platforms/configurations).
 - CMake now generates a summary of enabled/disabled features. This info is also stored in a file called features.log in the building directory.
+- New parameter PVT.show_local_time_zone displays time in the local time zone. Subject to the proper system configuration of the machine running the software receiver.
 - Improved information provided to the user in case of failure.
 
 

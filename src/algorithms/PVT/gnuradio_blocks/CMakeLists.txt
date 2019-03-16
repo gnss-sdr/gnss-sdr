@@ -58,6 +58,18 @@ if(Boost_VERSION LESS 105800)
     target_compile_definitions(pvt_gr_blocks PRIVATE -DOLD_BOOST=1)
 endif()
 
+# Check if we have std::put_time (Workaround for gcc < 5.0)
+include(CheckCXXSourceCompiles)
+check_cxx_source_compiles("
+    #include <iomanip>
+    int main()
+    { std::put_time(nullptr, \"\"); }"
+    HAS_PUT_TIME
+)
+if(${HAS_PUT_TIME})
+    target_compile_definitions(pvt_gr_blocks PRIVATE -DHAS_PUT_TIME=1)
+endif()
+
 set_property(TARGET pvt_gr_blocks
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

@@ -32,7 +32,7 @@ function [telemetry] = gps_l1_ca_read_telemetry_dump (filename, count)
 %%
 
 m = nargchk (1,2,nargin);
-num_double_vars=3;
+num_double_vars=4;
 double_size_bytes=8;
 skip_bytes_each_read=double_size_bytes*num_double_vars;
 bytes_shift=0;
@@ -54,6 +54,9 @@ else
     bytes_shift=bytes_shift+double_size_bytes;
     fseek(f,bytes_shift,'bof'); % move to next interleaved
     telemetry.tow = fread (f, count, 'float64',skip_bytes_each_read-double_size_bytes);
+    bytes_shift=bytes_shift+double_size_bytes;
+    fseek(f,bytes_shift,'bof'); % move to next interleaved
+    telemetry.required_symbols = fread (f, count, 'uint64',skip_bytes_each_read-double_size_bytes);
     bytes_shift=bytes_shift+double_size_bytes;
     fseek(f,bytes_shift,'bof'); % move to next interleaved
     

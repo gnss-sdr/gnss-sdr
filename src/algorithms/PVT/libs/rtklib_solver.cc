@@ -53,6 +53,7 @@
 
 #include "rtklib_solver.h"
 #include "Beidou_B1I.h"
+#include "Beidou_B3I.h"
 #include "GLONASS_L1_L2_CA.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
@@ -831,6 +832,47 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                 else  // the ephemeris are not available for this SV
                                     {
                                         DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->first;
+                                    }
+                            }
+                        // BeiDou B3
+                        if (sig_ == "B3")
+                            {
+                        	    beidou_ephemeris_iter = beidou_dnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
+                                if (beidou_ephemeris_iter != beidou_dnav_ephemeris_map.cend())
+                                    {
+                                        bool found_B1I_obs = false;
+                                        for (int i = 0; i < valid_obs; i++)
+                                            {
+                                                if (eph_data[i].sat == (static_cast<int>(gnss_observables_iter->second.PRN + NSATGPS + NSATGLO + NSATGAL + NSATQZS)))
+                                                    {
+                                                        obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(obs_data[i + glo_valid_obs],
+                                                            gnss_observables_iter->second,
+															beidou_ephemeris_iter->second.i_BEIDOU_week + 1356,
+                                                            1);  // Band 3 (L2/G2/B3)
+                                                        found_B1I_obs = true;
+                                                        break;
+                                                    }
+                                            }
+                                        if (!found_B1I_obs)
+                                            {
+                                                // insert BeiDou B3I obs as new obs and also insert its ephemeris
+                                                // convert ephemeris from GNSS-SDR class to RTKLIB structure
+                                                eph_data[valid_obs] = eph_to_rtklib(beidou_ephemeris_iter->second);
+                                                // convert observation from GNSS-SDR class to RTKLIB structure
+                                                auto default_code_ = static_cast<unsigned char>(CODE_NONE);
+                                                obsd_t newobs = {{0, 0}, '0', '0', {}, {},
+                                                    {default_code_, default_code_, default_code_},
+                                                    {}, {0.0, 0.0, 0.0}, {}};
+                                                obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
+                                                    gnss_observables_iter->second,
+													beidou_ephemeris_iter->second.i_BEIDOU_week + 1356,
+                                                    1);  // Band 2 (L2/G2)
+                                                valid_obs++;
+                                            }
+                                    }
+                                else  // the ephemeris are not available for this SV
+                                    {
+                                        DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
                                     }
                             }
                         break;

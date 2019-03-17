@@ -353,6 +353,7 @@ void beidou_b3i_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satell
 
 			d_subframe_symbols = static_cast<double *>(volk_gnsssdr_malloc(BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS * sizeof(double), volk_gnsssdr_get_alignment()));
 			d_required_symbols = BEIDOU_DNAV_SUBFRAME_SYMBOLS*d_samples_per_symbol + d_samples_per_preamble;
+			d_symbol_history.set_capacity(d_required_symbols + 1);
     	}
 }
 

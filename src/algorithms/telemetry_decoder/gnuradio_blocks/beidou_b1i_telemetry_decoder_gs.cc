@@ -119,8 +119,8 @@ beidou_b1i_telemetry_decoder_gs::beidou_b1i_telemetry_decoder_gs(
 
     d_subframe_symbols = static_cast<double *>(volk_gnsssdr_malloc(BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS * sizeof(double), volk_gnsssdr_get_alignment()));
     d_required_symbols = BEIDOU_DNAV_SUBFRAME_SYMBOLS * d_samples_per_symbol + d_samples_per_preamble;
-
     d_symbol_history.set_capacity(d_required_symbols + 1);
+
     // Generic settings
     d_sample_counter = 0;
     d_stat = 0;
@@ -351,6 +351,7 @@ void beidou_b1i_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satell
 
             d_subframe_symbols = static_cast<double *>(volk_gnsssdr_malloc(BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS * sizeof(double), volk_gnsssdr_get_alignment()));
             d_required_symbols = BEIDOU_DNAV_SUBFRAME_SYMBOLS * d_samples_per_symbol + d_samples_per_preamble;
+            d_symbol_history.set_capacity(d_required_symbols + 1);
         }
 }
 
@@ -576,6 +577,8 @@ int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(uint64_t));
                     tmp_double = d_nav.d_SOW;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                    tmp_ulong_int = static_cast<uint64_t>(d_required_symbols);
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(uint64_t));
                 }
             catch (const std::ifstream::failure &e)
                 {

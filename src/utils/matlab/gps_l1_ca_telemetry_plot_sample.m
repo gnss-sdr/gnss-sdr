@@ -26,15 +26,37 @@
 % -------------------------------------------------------------------------
 %
 
-%close all;
-
+close all;clear;
 samplingFreq       = 25000000;     %[Hz]
 channels=[0:9];
-path='/home/dmiralles/Documents/gnss-sdr/';
+path='/home/dmiralles/Documents/gnss-sdr-bds_b1i_v2/';
 addpath('libs/');
 clear PRN_absolute_sample_start;
 for N=1:1:length(channels)
     telemetry_log_path=[path 'telemetry' num2str(channels(N)) '.dat'];
-    GNSS_telemetry(N)= gps_l1_ca_read_telemetry_dump(telemetry_log_path);
+    GNSS_telemetry_v2(N)= gps_l1_ca_read_telemetry_dump(telemetry_log_path);
 end
 
+%% Plotting values
+%--- Plot results
+figure;
+plot(GNSS_telemetry_v2(6).tracking_sample_counter, ...
+     GNSS_telemetry_v2(6).tow_current_symbol_ms, 'b+');
+hold on;
+grid on;
+plot(GNSS_telemetry_v2(1).tracking_sample_counter, ...
+     GNSS_telemetry_v2(1).tow_current_symbol_ms, 'ro');
+xlabel('TRK Sampling Counter');
+ylabel('Current Symbol TOW');
+legend('BDS-1', 'BDS-6');
+
+figure;
+plot(GNSS_telemetry_v2(6).tracking_sample_counter, ...
+     GNSS_telemetry_v2(6).tow, 'b+');
+hold on;
+grid on;
+plot(GNSS_telemetry_v2(1).tracking_sample_counter, ...
+     GNSS_telemetry_v2(1).tow, 'ro');
+xlabel('TRK Sampling Counter');
+ylabel('Decoded Nav TOW');
+legend('BDS-1', 'BDS-6');

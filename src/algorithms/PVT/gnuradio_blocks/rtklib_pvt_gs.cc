@@ -1802,6 +1802,15 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 }
 
                                                             break;
+                                                        case 60:  // BDS B1I only
+                                                            if (beidou_dnav_ephemeris_iter != d_pvt_solver->beidou_dnav_ephemeris_map.cend())
+                                                                {
+                                                                    rp->rinex_obs_header(rp->obsFile, beidou_dnav_ephemeris_iter->second, d_rx_time, "B3");
+                                                                    rp->rinex_nav_header(rp->navFile, d_pvt_solver->beidou_dnav_iono, d_pvt_solver->beidou_dnav_utc_model);
+                                                                    b_rinex_header_written = true;  // do not write header anymore
+                                                                }
+
+                                                            break;
                                                         default:
                                                             break;
                                                         }

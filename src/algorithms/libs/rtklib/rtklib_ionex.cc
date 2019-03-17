@@ -1,5 +1,5 @@
 /*!
- * \file rtklib_ionex.h
+ * \file rtklib_ionex.cc
  * \brief ionex functions
  * \authors <ul>
  *          <li> 2007-2013, T. Takasu

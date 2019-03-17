@@ -64,9 +64,9 @@ check_cxx_source_compiles("
     #include <iomanip>
     int main()
     { std::put_time(nullptr, \"\"); }"
-    HAS_PUT_TIME
+    has_put_time
 )
-if(${HAS_PUT_TIME})
+if(${has_put_time})
     target_compile_definitions(pvt_gr_blocks PRIVATE -DHAS_PUT_TIME=1)
 endif()
 

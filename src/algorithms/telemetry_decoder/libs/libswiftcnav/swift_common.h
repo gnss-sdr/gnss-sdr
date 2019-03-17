@@ -32,8 +32,8 @@
  */
 
 
-#ifndef LIBSWIFTNAV_COMMON_H
-#define LIBSWIFTNAV_COMMON_H
+#ifndef GNSS_SDR_SWIFT_COMMON_H_
+#define GNSS_SDR_SWIFT_COMMON_H_
 
 /** \defgroup common Common definitions
  * Common definitions used throughout the library.
@@ -50,4 +50,4 @@
 
 /** \} */
 
-#endif /* LIBSWIFTNAV_COMMON_H */
+#endif /* GNSS_SDR_SWIFT_COMMON_H_ */

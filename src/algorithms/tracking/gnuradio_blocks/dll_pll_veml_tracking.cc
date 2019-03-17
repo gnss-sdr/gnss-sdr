@@ -672,7 +672,7 @@ void dll_pll_veml_tracking::start_tracking()
                                     n++;
                                 }
                         }
-                    d_symbol_history.set_capacity(22);  // Change fixed buffer size
+                    d_symbol_history.resize(22);  // Change fixed buffer size
                     d_symbol_history.clear();
                 }
         }

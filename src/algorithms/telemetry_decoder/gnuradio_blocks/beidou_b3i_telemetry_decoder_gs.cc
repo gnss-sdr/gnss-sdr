@@ -34,6 +34,7 @@
 #include "Beidou_DNAV.h"
 #include "beidou_dnav_almanac.h"
 #include "beidou_dnav_ephemeris.h"
+#include "beidou_dnav_iono.h"
 #include "beidou_dnav_utc_model.h"
 #include "gnss_synchro.h"
 #include <glog/logging.h>
@@ -137,7 +138,7 @@ beidou_b3i_telemetry_decoder_gs::beidou_b3i_telemetry_decoder_gs(
 
 beidou_b3i_telemetry_decoder_gs::~beidou_b3i_telemetry_decoder_gs()
 {
-	volk_gnsssdr_free(d_preamble_samples);
+	  volk_gnsssdr_free(d_preamble_samples);
     volk_gnsssdr_free(d_secondary_code_symbols);
     volk_gnsssdr_free(d_subframe_symbols);
 
@@ -155,17 +156,17 @@ beidou_b3i_telemetry_decoder_gs::~beidou_b3i_telemetry_decoder_gs()
 }
 
 
-void beidou_b3i_telemetry_decoder_gs::decode_bch15_11_01(int32_t *bits, int32_t *decbits)
+void beidou_b3i_telemetry_decoder_gs::decode_bch15_11_01(const int32_t *bits, int32_t *decbits)
 {
-    int bit, err, reg[4] = {1, 1, 1, 1};
-    int errind[15] = {14, 13, 10, 12, 6, 9, 4, 11, 0, 5, 7, 8, 1, 3, 2};
+    int32_t bit, err, reg[4] = {1, 1, 1, 1};
+    int32_t errind[15] = {14, 13, 10, 12, 6, 9, 4, 11, 0, 5, 7, 8, 1, 3, 2};
 
-    for (unsigned int i = 0; i < 15; i++)
+    for (uint32_t i = 0; i < 15; i++)
         {
             decbits[i] = bits[i];
         }
 
-    for (unsigned int i = 0; i < 15; i++)
+    for (uint32_t i = 0; i < 15; i++)
         {
             bit = reg[3];
             reg[3] = reg[2];
@@ -186,45 +187,43 @@ void beidou_b3i_telemetry_decoder_gs::decode_bch15_11_01(int32_t *bits, int32_t 
 
 void beidou_b3i_telemetry_decoder_gs::decode_word(
 		int32_t word_counter,
-		double* enc_word_symbols,
+		const double* enc_word_symbols,
 		int32_t* dec_word_symbols)
 {
     int32_t bitsbch[30], first_branch[15], second_branch[15];
 
     if (word_counter == 1)
         {
-            for (unsigned int j = 0; j < 30; j++)
-	            {
-            	    dec_word_symbols[j] = (int32_t)(enc_word_symbols[j] > 0) ? (1) : (-1);
-	            }
+            for (uint32_t j = 0; j < 30; j++)
+	              {
+            	      dec_word_symbols[j] = static_cast<int32_t>(enc_word_symbols[j] > 0) ? (1) : (-1);
+	              }
          }
     else
         {
-	        for (unsigned int r = 0; r < 2; r++)
-	     		 {
-	     		 	 for (unsigned int c = 0; c < 15; c++)
+	         for (uint32_t r = 0; r < 2; r++)
+	     		     {
+	     		 	       for (uint32_t c = 0; c < 15; c++)
                         {
-	     		 		 	 bitsbch[r*15 + c] = (int32_t)(enc_word_symbols[c*2 + r] > 0) ? (1) : (-1);
+                            bitsbch[r * 15 + c] = static_cast<int32_t>(enc_word_symbols[c*2 + r] > 0) ? (1) : (-1);
                         }
-	     		 }
+	     		     }
 
             decode_bch15_11_01(&bitsbch[0], first_branch);
             decode_bch15_11_01(&bitsbch[15], second_branch);
 
-			for (unsigned int j = 0; j < 11; j++)
-				{
-				    dec_word_symbols[j] = first_branch[j];
-				    dec_word_symbols[j + 11] = second_branch[j];
-				}
+						for (uint32_t j = 0; j < 11; j++)
+							{
+									dec_word_symbols[j] = first_branch[j];
+									dec_word_symbols[j + 11] = second_branch[j];
+							}
 
-			for (unsigned int j = 0; j < 4; j++)
-				{
-				    dec_word_symbols[j + 22] = first_branch[11 + j];
-				    dec_word_symbols[j + 26] = second_branch[11 + j];
-				}
+						for (uint32_t j = 0; j < 4; j++)
+							{
+									dec_word_symbols[j + 22] = first_branch[11 + j];
+									dec_word_symbols[j + 26] = second_branch[11 + j];
+							}
         }
-
-
 }
 
 
@@ -255,7 +254,6 @@ void beidou_b3i_telemetry_decoder_gs::decode_subframe(double *frame_symbols)
 		{
 			d_nav.d1_subframe_decoder(data_bits);
 		}
-
 
     // 3. Check operation executed correctly
     if (d_nav.flag_crc_test == true)
@@ -358,7 +356,7 @@ void beidou_b3i_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satell
 }
 
 
-void beidou_b3i_telemetry_decoder_gs::set_channel(int channel)
+void beidou_b3i_telemetry_decoder_gs::set_channel(int32_t channel)
 {
     d_channel = channel;
     LOG(INFO) << "Navigation channel set to " << channel;
@@ -391,8 +389,8 @@ int beidou_b3i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
 	int32_t corr_value = 0;
 	int32_t preamble_diff = 0;
 
-    Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);            // Get the output buffer pointer
-    const Gnss_Synchro **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);  // Get the input buffer pointer
+    auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);            // Get the output buffer pointer
+    const auto **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);  // Get the input buffer pointer
 
     Gnss_Synchro current_symbol;  //structure to save the synchronization information and send the output object to the next block
     //1. Copy the current tracking output
@@ -406,7 +404,7 @@ int beidou_b3i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
     if (d_symbol_history.size() > d_required_symbols)
         {
             //******* preamble correlation ********
-            for (int i = 0; i < d_samples_per_preamble; i++)
+            for (int32_t i = 0; i < d_samples_per_preamble; i++)
                 {
                     if (d_symbol_history[i] < 0)  // symbols clipping
                         {
@@ -461,7 +459,7 @@ int beidou_b3i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
                     //******* SAMPLES TO SYMBOLS *******
                     if (corr_value > 0)  //normal PLL lock
                         {
-                            int k = 0;
+                            int32_t k = 0;
                             for (uint32_t i = 0; i < BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS; i++)
                                 {
                             		d_subframe_symbols[i] = 0;
@@ -485,7 +483,7 @@ int beidou_b3i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
                         }
                     else  //180 deg. inverted carrier phase PLL lock
                         {
-                            int k = 0;
+                            int32_t k = 0;
                             for (uint32_t i = 0; i < BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS; i++)
                                 {
                             		d_subframe_symbols[i] = 0;
@@ -571,14 +569,16 @@ int beidou_b3i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
             // MULTIPLEXED FILE RECORDING - Record results to file
             try
                 {
-                    double tmp_double;
-                    unsigned long int tmp_ulong_int;
-                    tmp_double = d_TOW_at_current_symbol_ms;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                    tmp_ulong_int = current_symbol.Tracking_sample_counter;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(unsigned long int));
-                    tmp_double = 0;
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                double tmp_double;
+                uint64_t tmp_ulong_int;
+                tmp_double = static_cast<double>(d_TOW_at_current_symbol_ms);
+                d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                tmp_ulong_int = current_symbol.Tracking_sample_counter;
+                d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(uint64_t));
+                tmp_double = d_nav.d_SOW;
+                d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                tmp_ulong_int = static_cast<uint64_t>(d_required_symbols);
+                d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(uint64_t));
                 }
             catch (const std::ifstream::failure &e)
                 {

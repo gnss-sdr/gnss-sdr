@@ -53,7 +53,7 @@ beidou_b1i_telemetry_decoder_gs_sptr beidou_b1i_make_telemetry_decoder_gs(const 
 
 
 /*!
- * \brief This class implements a block that decodes the GNAV data defined in BEIDOU ICD v5.1
+ * \brief This class implements a block that decodes the BeiDou DNAV data.
  * \note Code added as part of GSoC 2018 program
  */
 class beidou_b1i_telemetry_decoder_gs : public gr::block

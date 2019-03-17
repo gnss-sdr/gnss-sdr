@@ -87,6 +87,7 @@ add_feature_info(ENABLE_FPGA ENABLE_FPGA "Enables building of processing blocks 
 
 # Building and packaging options
 option(ENABLE_GENERIC_ARCH "Builds a portable binary" OFF)
+add_feature_info(ENABLE_GENERIC_ARCH ENABLE_GENERIC_ARCH "When disabled, flags such as '-march=native' are passed to the compiler.")
 
 option(ENABLE_PACKAGING "Enable software packaging" OFF)
 add_feature_info(ENABLE_PACKAGING ENABLE_PACKAGING "Enables software packaging.")
@@ -412,7 +413,7 @@ set(GNSSSDR_ARMADILLO_LOCAL_VERSION "9.200.x")
 set(GNSSSDR_GTEST_LOCAL_VERSION "1.8.1")
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
 set(GNSSSDR_GPSTK_LOCAL_VERSION "2.10.6")
-set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.13")
+set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.14")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.9")
 
 if(CMAKE_VERSION VERSION_LESS "3.0.2") # Fix for CentOS 7

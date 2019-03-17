@@ -70,4 +70,6 @@ Pvt_Conf::Pvt_Conf()
 
     monitor_enabled = false;
     udp_port = 0;
+
+    show_local_time_zone = false;
 }

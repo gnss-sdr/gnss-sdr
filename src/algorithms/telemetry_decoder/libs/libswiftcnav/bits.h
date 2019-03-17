@@ -29,8 +29,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBSWIFTNAV_BITS_H
-#define LIBSWIFTNAV_BITS_H
+#ifndef GNSS_SDR_BITS_H_
+#define GNSS_SDR_BITS_H_
 
 #include "swift_common.h"
 
@@ -47,4 +47,4 @@ uint8_t count_bits_u32(uint32_t v, uint8_t bv);
 uint8_t count_bits_u16(uint16_t v, uint8_t bv);
 uint8_t count_bits_u8(uint8_t v, uint8_t bv);
 
-#endif /* LIBSWIFTNAV_BITS_H */
+#endif /* GNSS_SDR_BITS_H_ */

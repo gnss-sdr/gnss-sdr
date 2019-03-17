@@ -522,6 +522,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                 // try to decode frame
                                 DLOG(INFO) << "Starting page decoder for Galileo satellite " << this->d_satellite;
                                 d_preamble_index = d_sample_counter;  // record the preamble sample stamp
+                                d_CRC_error_counter = 0;
                                 d_stat = 2;
                             }
                         else
@@ -555,7 +556,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                     {
                                         for (uint32_t i = 0; i < d_frame_length_symbols; i++)
                                             {
-                                                d_page_part_symbols[i] = d_symbol_history.at(i + d_samples_per_preamble);  // because last symbol of the preamble is just received now!
+                                                d_page_part_symbols[i] = -d_symbol_history.at(i + d_samples_per_preamble);  // because last symbol of the preamble is just received now!
                                             }
                                     }
                                 decode_INAV_word(d_page_part_symbols, d_frame_length_symbols);

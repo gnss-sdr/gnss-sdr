@@ -58,7 +58,7 @@
 
 
 /*!
- * \brief  This class implements the generation and reading of some Message Types
+ * \brief This class implements the generation and reading of some Message Types
  * defined in the RTCM 3.2 Standard, plus some utilities to handle messages.
  *
  * Generation of the following Message Types:
@@ -144,6 +144,7 @@ public:
      * \return string with message contents
      */
     std::string print_MT1009(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, uint16_t station_id);
+
     /*!
      * \brief Prints Extended L1-Only GLONASS RTK Observables
      * \details This GLONASS message type is used when only L1 data is present and bandwidth is very tight, often 1012 is used in such cases.
@@ -154,6 +155,7 @@ public:
      * \return string with message contents
      */
     std::string print_MT1010(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, uint16_t station_id);
+
     /*!
      * \brief Prints L1&L2 GLONASS RTK Observables
      * \details This GLONASS message type is not generally used or supported; type 1012 is to be preferred
@@ -164,6 +166,7 @@ public:
      * \return string with message contents
      */
     std::string print_MT1011(const Glonass_Gnav_Ephemeris& glonass_gnav_ephL1, const Glonass_Gnav_Ephemeris& glonass_gnav_ephL2, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, uint16_t station_id);
+
     /*!
      * \brief Prints Extended L1&L2 GLONASS RTK Observables
      * \details This GLONASS message type is the most common observational message type, with L1/L2/SNR content.  This is one of the most common messages found.
@@ -335,6 +338,7 @@ public:
     uint32_t lock_time(const Gps_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);       //!< Returns the time period in which GPS L1 signals have been continually tracked.
     uint32_t lock_time(const Gps_CNAV_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);  //!< Returns the time period in which GPS L2 signals have been continually tracked.
     uint32_t lock_time(const Galileo_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);   //!< Returns the time period in which Galileo signals have been continually tracked.
+
     /*!
      * \brief Locks time period in which GLONASS signals have been continually tracked.
      * \note Code added as part of GSoC 2017 program

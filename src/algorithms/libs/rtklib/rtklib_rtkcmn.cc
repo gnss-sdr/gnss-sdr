@@ -51,7 +51,6 @@
  *----------------------------------------------------------------------------*/
 
 #include "rtklib_rtkcmn.h"
-//#include <cstdio>
 #include <glog/logging.h>
 #include <dirent.h>
 #include <iostream>

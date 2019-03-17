@@ -193,12 +193,7 @@ const int NSATGLO = 0;
 const int NSYSGLO = 0;
 #endif
 
-/*
-const int MINPRNGLO = 1;                   //!<   min satellite slot number of GLONASS
-const int MAXPRNGLO = 27;                  //!<   max satellite slot number of GLONASS
-const int NSATGLO = (MAXPRNGLO - MINPRNGLO + 1); //!<   number of GLONASS satellites
-const int NSYSGLO = 1;
-*/
+
 const int MINPRNGAL = 1;                          //!<   min satellite PRN number of Galileo
 const int MAXPRNGAL = 36;                         //!<   max satellite PRN number of Galileo
 const int NSATGAL = (MAXPRNGAL - MINPRNGAL + 1);  //!<   number of Galileo satellites

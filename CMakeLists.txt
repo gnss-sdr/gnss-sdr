@@ -87,6 +87,7 @@ add_feature_info(ENABLE_FPGA ENABLE_FPGA "Enables building of processing blocks 
 
 # Building and packaging options
 option(ENABLE_GENERIC_ARCH "Builds a portable binary" OFF)
+add_feature_info(ENABLE_GENERIC_ARCH ENABLE_GENERIC_ARCH "When disabled, flags such as '-march=native' are passed to the compiler.")
 
 option(ENABLE_PACKAGING "Enable software packaging" OFF)
 add_feature_info(ENABLE_PACKAGING ENABLE_PACKAGING "Enables software packaging.")

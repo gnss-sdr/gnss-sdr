@@ -106,7 +106,7 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
     // Telemetry bit synchronization message port input
     this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
     this->message_port_register_out(pmt::mp("events"));
-
+    this->message_port_register_in(pmt::mp("telemetry_to_trk"));
     // initialize internal vars
     d_order = order;
     d_dump = dump;

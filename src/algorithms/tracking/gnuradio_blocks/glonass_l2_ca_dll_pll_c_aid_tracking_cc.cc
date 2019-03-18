@@ -117,6 +117,7 @@ glonass_l2_ca_dll_pll_c_aid_tracking_cc::glonass_l2_ca_dll_pll_c_aid_tracking_cc
         boost::bind(&glonass_l2_ca_dll_pll_c_aid_tracking_cc::msg_handler_preamble_index, this, _1));
 
     this->message_port_register_out(pmt::mp("events"));
+    this->message_port_register_in(pmt::mp("telemetry_to_trk"));
     // initialize internal vars
     d_dump = dump;
     d_fs_in = fs_in;

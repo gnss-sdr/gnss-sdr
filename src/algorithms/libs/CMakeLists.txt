@@ -53,7 +53,7 @@ set(GNSS_SPLIBS_HEADERS
     pass_through.h
     galileo_e5_signal_processing.h
     beidou_b1i_signal_processing.h
-    beidou_b1i_signal_processing.h
+    beidou_b3i_signal_processing.h
     complex_byte_to_float_x2.h
     byte_x2_to_complex_byte.h
     cshort_to_float_x2.h

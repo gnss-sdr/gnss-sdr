@@ -34,8 +34,8 @@
 
 #include "cpu_multicorrelator_real_codes.h"
 #include "dll_pll_conf.h"
-#include "tracking_2nd_DLL_filter.h"
-#include "tracking_2nd_PLL_filter.h"
+#include "tracking_FLL_PLL_filter.h"  // for PLL/FLL filter
+#include "tracking_loop_filter.h"     // for DLL filter
 #include <boost/circular_buffer.hpp>
 #include <boost/shared_ptr.hpp>   // for boost::shared_ptr
 #include <gnuradio/block.h>       // for block
@@ -44,9 +44,7 @@
 #include <pmt/pmt.h>              // for pmt_t
 #include <cstdint>                // for int32_t
 #include <fstream>                // for string, ofstream
-#include <string>                 // for string
 #include <utility>                // for pair
-
 
 class Gnss_Synchro;
 class dll_pll_veml_tracking;
@@ -75,9 +73,8 @@ public:
 
 private:
     friend dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_);
-
+    void msg_handler_telemetry_to_trk(const pmt::pmt_t &msg);
     dll_pll_veml_tracking(const Dll_Pll_Conf &conf_);
-    void msg_handler_preamble_index(pmt::pmt_t msg);
 
     bool cn0_and_tracking_lock_status(double coh_integration_time_s);
     bool acquire_secondary();
@@ -147,9 +144,9 @@ private:
     gr_complex d_VE_accu;
     gr_complex d_E_accu;
     gr_complex d_P_accu;
+    gr_complex d_P_accu_old;
     gr_complex d_L_accu;
     gr_complex d_VL_accu;
-    gr_complex d_last_prompt;
 
     gr_complex *d_Prompt_Data;
 
@@ -163,16 +160,18 @@ private:
     double d_rem_code_phase_samples;
     float d_rem_carr_phase_rad;
 
-    // PLL and DLL filter library
-    Tracking_2nd_DLL_filter d_code_loop_filter;
-    Tracking_2nd_PLL_filter d_carrier_loop_filter;
+    Tracking_loop_filter d_code_loop_filter;
+    Tracking_FLL_PLL_filter d_carrier_loop_filter;
 
     // acquisition
     double d_acq_code_phase_samples;
     double d_acq_carrier_doppler_hz;
 
     // tracking vars
-    double d_carr_error_hz;
+    bool d_pull_in_transitory;
+    double d_current_correlation_time_s;
+    double d_carr_phase_error_hz;
+    double d_carr_freq_error_hz;
     double d_carr_error_filt_hz;
     double d_code_error_chips;
     double d_code_error_filt_chips;

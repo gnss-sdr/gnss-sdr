@@ -42,8 +42,7 @@
 #include <fstream>
 #include <string>
 
-extern "C"
-{
+extern "C" {
 #include "cnav_msg.h"
 }
 
@@ -65,6 +64,7 @@ public:
     ~gps_l5_telemetry_decoder_gs();
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
     void set_channel(int32_t channel);                    //!< Set receiver's channel
+    void reset();
     int general_work(int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
@@ -85,6 +85,10 @@ private:
     uint32_t d_TOW_at_current_symbol_ms;
     uint32_t d_TOW_at_Preamble_ms;
     bool d_flag_valid_word;
+    uint64_t d_sample_counter;
+    bool d_sent_tlm_failed_msg;
+    uint64_t d_last_valid_preamble;
+    uint32_t d_max_symbols_without_valid_frame;
 
     Gps_CNAV_Navigation_Message d_CNAV_Message;
     float bits_NH[GPS_L5I_NH_CODE_LENGTH]{};

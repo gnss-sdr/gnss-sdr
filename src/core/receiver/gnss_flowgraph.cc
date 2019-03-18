@@ -215,7 +215,7 @@ void GNSSFlowgraph::connect()
         }
 
     DLOG(INFO) << "blocks connected internally";
-    // Signal Source (i) >  Signal conditioner (i) >
+// Signal Source (i) >  Signal conditioner (i) >
 
 #ifndef ENABLE_FPGA
 
@@ -472,9 +472,6 @@ void GNSSFlowgraph::connect()
                                                     top_block_->connect(acq_resamplers_.at(map_key), 0,
                                                         channels_.at(i)->get_left_block_acq(), 0);
 
-                                                    top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
-                                                        channels_.at(i)->get_left_block_trk(), 0);
-
                                                     std::shared_ptr<Channel> channel_ptr;
                                                     channel_ptr = std::dynamic_pointer_cast<Channel>(channels_.at(i));
                                                     channel_ptr->acquisition()->set_resampler_latency((taps.size() - 1) / 2);
@@ -485,8 +482,6 @@ void GNSSFlowgraph::connect()
                                                     //resampler not required!
                                                     top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
                                                         channels_.at(i)->get_left_block_acq(), 0);
-                                                    top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
-                                                        channels_.at(i)->get_left_block_trk(), 0);
                                                 }
                                         }
                                     else
@@ -494,17 +489,15 @@ void GNSSFlowgraph::connect()
                                             LOG(INFO) << "Disabled acquisition resampler because the input sampling frequency is too low";
                                             top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
                                                 channels_.at(i)->get_left_block_acq(), 0);
-                                            top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
-                                                channels_.at(i)->get_left_block_trk(), 0);
                                         }
                                 }
                             else
                                 {
                                     top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
                                         channels_.at(i)->get_left_block_acq(), 0);
-                                    top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
-                                        channels_.at(i)->get_left_block_trk(), 0);
                                 }
+                            top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
+                                channels_.at(i)->get_left_block_trk(), 0);
                         }
                     catch (const std::exception& e)
                         {

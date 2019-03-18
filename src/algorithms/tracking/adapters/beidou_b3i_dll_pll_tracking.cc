@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -34,13 +34,13 @@
  * -------------------------------------------------------------------------
  */
 
-#include "dll_pll_conf.h"
 #include "beidou_b3i_dll_pll_tracking.h"
-#include "configuration_interface.h"
-#include "gnss_sdr_flags.h"
-#include "display.h"
-#include <glog/logging.h>
 #include "Beidou_B3I.h"
+#include "configuration_interface.h"
+#include "display.h"
+#include "dll_pll_conf.h"
+#include "gnss_sdr_flags.h"
+#include <glog/logging.h>
 
 using google::LogMessage;
 
@@ -48,7 +48,7 @@ BeidouB3iDllPllTracking::BeidouB3iDllPllTracking(
     ConfigurationInterface* configuration, std::string role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
-	Dll_Pll_Conf trk_param = Dll_Pll_Conf();
+    Dll_Pll_Conf trk_param = Dll_Pll_Conf();
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
     std::string default_item_type = "gr_complex";
@@ -150,6 +150,7 @@ void BeidouB3iDllPllTracking::start_tracking()
 {
     tracking_->start_tracking();
 }
+
 
 void BeidouB3iDllPllTracking::stop_tracking()
 {

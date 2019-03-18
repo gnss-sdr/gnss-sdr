@@ -39,13 +39,13 @@ void beidou_b3i_code_gen_int(int* _dest, signed int _prn, unsigned int _chip_shi
     const unsigned int _code_length = 10230;
     bool G1[_code_length];
     bool G2[_code_length];
-    std::array<bool,13> G1_register = {{1,1,1,1,1,1,1,1,1,1,1,1,1}};
-    std::array<bool,13> G2_register = {{1,1,1,1,1,1,1,1,1,1,1,1,1}};
-    std::array<bool,13> G1_register_reset =  {{0,0,1,1,1,1,1,1,1,1,1,1,1}};
+    std::array<bool, 13> G1_register = {{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
+    std::array<bool, 13> G2_register = {{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
+    std::array<bool, 13> G1_register_reset = {{0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
     bool feedback1, feedback2, aux;
     uint32_t lcv, lcv2, delay;
     int32_t prn_idx = _prn - 1;
-
+    // clang-format off
     std::array<std::array<bool, 13>, 63> G2_register_shifted = {{
     	{{1,0,1,0,1,1,1,1,1,1,1,1,1,}}, {{1,1,1,1,0,0,0,1,0,1,0,1,1,}}, {{1,0,1,1,1,1,0,0,0,1,0,1,0,}}, {{1,1,1,1,1,1,1,1,1,1,0,1,1,}},
 	    {{1,1,0,0,1,0,0,0,1,1,1,1,1,}}, {{1,0,0,1,0,0,1,1,0,0,1,0,0,}}, {{1,1,1,1,1,1,1,0,1,0,0,1,0,}}, {{1,1,1,0,1,1,1,1,1,1,1,0,1,}},
@@ -63,41 +63,42 @@ void beidou_b3i_code_gen_int(int* _dest, signed int _prn, unsigned int _chip_shi
 	    {{0,0,0,0,0,0,0,0,1,1,0,0,0,}}, {{1,0,0,0,0,0,0,0,0,0,1,0,0,}}, {{0,0,1,1,0,1,0,1,0,0,1,1,0,}}, {{1,0,1,1,0,0,1,0,0,0,1,1,0,}},
 	    {{0,1,1,1,0,0,1,1,1,1,0,0,0,}}, {{0,0,1,0,1,1,1,0,0,1,0,1,0,}}, {{1,1,0,0,1,1,1,1,1,0,1,1,0,}}, {{1,0,0,1,0,0,1,0,0,0,1,0,1,}},
 	    {{0,1,1,1,0,0,0,1,0,0,0,0,0,}}, {{0,0,1,1,0,0,1,0,0,0,0,1,0,}}, {{0,0,1,0,0,0,1,0,0,1,1,1,0,}}}};
-
+    // clang-format on
     // A simple error check
     if ((prn_idx < 0) || (prn_idx > 63))
         return;
 
     // Assign shifted G2 register based on prn number
     G2_register = G2_register_shifted[prn_idx];
-    std::reverse(G2_register.begin(), G2_register.end()) ;
+    std::reverse(G2_register.begin(), G2_register.end());
 
     // Generate G1 and G2 Register
     for (lcv = 0; lcv < _code_length; lcv++)
-    	{
-    		G1[lcv]   = G1_register[0];
-    		G2[lcv]   = G2_register[0];
+        {
+            G1[lcv] = G1_register[0];
+            G2[lcv] = G2_register[0];
 
-    		//feedback1 = (test_G1_register[0]+test_G1_register[2]+test_G1_register[3]+test_G1_register[12]) & 0x1;
-    		feedback1 = (G1_register[0]+G1_register[9]+G1_register[10]+G1_register[12]) & 0x01;
-    		feedback2 = (G2_register[0]+G2_register[1]+G2_register[3]+G2_register[4]+
-    				     G2_register[6]+G2_register[7]+G2_register[8]+G2_register[12]) & 0x01;
+            //feedback1 = (test_G1_register[0]+test_G1_register[2]+test_G1_register[3]+test_G1_register[12]) & 0x1;
+            feedback1 = (G1_register[0] + G1_register[9] + G1_register[10] + G1_register[12]) & 0x01;
+            feedback2 = (G2_register[0] + G2_register[1] + G2_register[3] + G2_register[4] +
+                            G2_register[6] + G2_register[7] + G2_register[8] + G2_register[12]) &
+                        0x01;
 
-    		for (lcv2 = 0; lcv2 < 12; lcv2++)
-				{
-					G1_register[lcv2] = G1_register[lcv2 + 1];
-					G2_register[lcv2] = G2_register[lcv2 + 1];
-				}
+            for (lcv2 = 0; lcv2 < 12; lcv2++)
+                {
+                    G1_register[lcv2] = G1_register[lcv2 + 1];
+                    G2_register[lcv2] = G2_register[lcv2 + 1];
+                }
 
-    		G1_register[12] = feedback1;
-    		G2_register[12] = feedback2;
+            G1_register[12] = feedback1;
+            G2_register[12] = feedback2;
 
-    		// Reset G1 register if sequence found
-    		if(G1_register == G1_register_reset)
-				{
-    				G1_register = {{1,1,1,1,1,1,1,1,1,1,1,1,1}};
-				}
-    	}
+            // Reset G1 register if sequence found
+            if (G1_register == G1_register_reset)
+                {
+                    G1_register = {{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
+                }
+        }
 
     delay = _code_length;
     delay += _chip_shift;
@@ -119,7 +120,6 @@ void beidou_b3i_code_gen_int(int* _dest, signed int _prn, unsigned int _chip_shi
             delay++;
             delay %= _code_length;
         }
-
 }
 
 
@@ -166,8 +166,8 @@ void beidou_b3i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned in
     _samplesPerCode = static_cast<signed int>(static_cast<double>(_fs) / static_cast<double>(_codeFreqBasis / _codeLength));
 
     //--- Find time constants --------------------------------------------------
-    _ts = 1.0 / static_cast<float>(_fs);                   // Sampling period in sec
-    _tc = 1.0 / static_cast<float>(_codeFreqBasis);        // C/A chip period in sec
+    _ts = 1.0 / static_cast<float>(_fs);                    // Sampling period in sec
+    _tc = 1.0 / static_cast<float>(_codeFreqBasis);         // C/A chip period in sec
     beidou_b3i_code_gen_complex(_code, _prn, _chip_shift);  //generate C/A code 1 sample per chip
 
     for (signed int i = 0; i < _samplesPerCode; i++)

@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -37,8 +37,8 @@
 #ifndef GNSS_SDR_BEIDOU_B3I_DLL_PLL_TRACKING_H_
 #define GNSS_SDR_BEIDOU_B3I_DLL_PLL_TRACKING_H_
 
-#include "tracking_interface.h"
 #include "dll_pll_veml_tracking.h"
+#include "tracking_interface.h"
 #include <string>
 
 class ConfigurationInterface;

@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,8 +30,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef BEIDOU_B3I_SDR_SIGNAL_PROCESSING_H_
-#define BEIDOU_B3I_SDR_SIGNAL_PROCESSING_H_
+#ifndef GNSS_SDR_BEIDOU_B3I_SIGNAL_PROCESSING_H_
+#define GNSS_SDR_BEIDOU_B3I_SIGNAL_PROCESSING_H_
 
 #include <complex>
 #include <iostream>
@@ -39,13 +39,13 @@
 #include <array>
 #include <algorithm>
 
-//!Generates int BeiDou B3I code for the desired SV ID and code shift
+//! Generates int BeiDou B3I code for the desired SV ID and code shift
 void beidou_b3i_code_gen_int(int* _dest, signed int _prn, unsigned int _chip_shift);
 
-//!Generates float BeiDou B3I code for the desired SV ID and code shift
+//! Generates float BeiDou B3I code for the desired SV ID and code shift
 void beidou_b3i_code_gen_float(float* _dest, signed int _prn, unsigned int _chip_shift);
 
-//!Generates complex BeiDou B3I code for the desired SV ID and code shift, and sampled to specific sampling frequency
+//! Generates complex BeiDou B3I code for the desired SV ID and code shift, and sampled to specific sampling frequency
 void beidou_b3i_code_gen_complex(std::complex<float>* _dest, signed int _prn, unsigned int _chip_shift);
 
 //! Generates N complex BeiDou B3I codes for the desired SV ID and code shift
@@ -54,4 +54,4 @@ void beidou_b3i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned in
 //! Generates complex BeiDou B3I code for the desired SV ID and code shift
 void beidou_b3i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, int _fs, unsigned int _chip_shift);
 
-#endif /* BEIDOU_B3I_SDR_SIGNAL_PROCESSING_H_ */
+#endif /* GNSS_SDR_BEIDOU_B3I_SIGNAL_PROCESSING_H_ */

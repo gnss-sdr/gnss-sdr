@@ -33,54 +33,58 @@
 #define GNSS_SDR_BEIDOU_B3I_TELEMETRY_DECODER_H_
 
 #include "beidou_b3i_telemetry_decoder_gs.h"
-#include "gnss_satellite.h" // for Gnss_Satellite
+#include "gnss_satellite.h"  // for Gnss_Satellite
 #include "telemetry_decoder_interface.h"
-#include <cstddef>                  // for size_t
-#include <gnuradio/runtime_types.h> // for basic_block_sptr, top_block_sptr
+#include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
+#include <cstddef>                   // for size_t
 #include <string>
+
 class ConfigurationInterface;
 
 /*!
  * \brief This class implements a NAV data decoder for BEIDOU B1I
  */
-class BeidouB3iTelemetryDecoder : public TelemetryDecoderInterface {
+class BeidouB3iTelemetryDecoder : public TelemetryDecoderInterface
+{
 public:
-  BeidouB3iTelemetryDecoder(ConfigurationInterface *configuration,
-                            std::string role, unsigned int in_streams,
-                            unsigned int out_streams);
+    BeidouB3iTelemetryDecoder(ConfigurationInterface *configuration,
+        std::string role, unsigned int in_streams,
+        unsigned int out_streams);
 
-  virtual ~BeidouB3iTelemetryDecoder();
+    virtual ~BeidouB3iTelemetryDecoder();
 
-  inline std::string role() override { return role_; }
+    inline std::string role() override { return role_; }
 
-  //! Returns "BEIDOU_B3I_Telemetry_Decoder"
-  inline std::string implementation() override {
-    return "BEIDOU_B3I_Telemetry_Decoder";
-  }
+    //! Returns "BEIDOU_B3I_Telemetry_Decoder"
+    inline std::string implementation() override
+    {
+        return "BEIDOU_B3I_Telemetry_Decoder";
+    }
 
-  void connect(gr::top_block_sptr top_block) override;
-  void disconnect(gr::top_block_sptr top_block) override;
-  gr::basic_block_sptr get_left_block() override;
-  gr::basic_block_sptr get_right_block() override;
+    void connect(gr::top_block_sptr top_block) override;
+    void disconnect(gr::top_block_sptr top_block) override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_right_block() override;
 
-  void set_satellite(const Gnss_Satellite &satellite) override;
-  inline void set_channel(int channel) override {
-    telemetry_decoder_->set_channel(channel);
-  }
+    void set_satellite(const Gnss_Satellite &satellite) override;
+    inline void set_channel(int channel) override
+    {
+        telemetry_decoder_->set_channel(channel);
+    }
 
-  inline void reset() override { return; }
+    inline void reset() override { return; }
 
-  inline size_t item_size() override { return 0; }
+    inline size_t item_size() override { return 0; }
 
 private:
-  beidou_b3i_telemetry_decoder_gs_sptr telemetry_decoder_;
-  Gnss_Satellite satellite_;
-  int channel_;
-  bool dump_;
-  std::string dump_filename_;
-  std::string role_;
-  unsigned int in_streams_;
-  unsigned int out_streams_;
+    beidou_b3i_telemetry_decoder_gs_sptr telemetry_decoder_;
+    Gnss_Satellite satellite_;
+    int channel_;
+    bool dump_;
+    std::string dump_filename_;
+    std::string role_;
+    unsigned int in_streams_;
+    unsigned int out_streams_;
 };
 
 #endif

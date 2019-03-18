@@ -30,27 +30,26 @@
  */
 
 #include "beidou_b3i_pcps_acquisition.h"
+#include "Beidou_B3I.h"
+#include "acq_conf.h"
+#include "beidou_b3i_signal_processing.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
-#include "acq_conf.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
-
-#include "beidou_b3i_signal_processing.h"
-#include "Beidou_B3I.h"
 
 
 using google::LogMessage;
 
 BeidouB3iPcpsAcquisition::BeidouB3iPcpsAcquisition(
     ConfigurationInterface* configuration,
-	std::string role,
-	unsigned int in_streams,
-	unsigned int out_streams) : role_(role),
-			                    in_streams_(in_streams),
-								out_streams_(out_streams)
+    std::string role,
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(role),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams)
 {
-	Acq_Conf acq_parameters = Acq_Conf();
+    Acq_Conf acq_parameters = Acq_Conf();
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
     std::string default_dump_filename = "./data/acquisition.dat";
@@ -59,7 +58,7 @@ BeidouB3iPcpsAcquisition::BeidouB3iPcpsAcquisition(
 
     item_type_ = configuration_->property(role + ".item_type", default_item_type);
 
-    long fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
+    int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in_;
     dump_ = configuration_->property(role + ".dump", false);
@@ -80,7 +79,7 @@ BeidouB3iPcpsAcquisition::BeidouB3iPcpsAcquisition(
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
     acq_parameters.dump_filename = dump_filename_;
     //--- Find number of samples per spreading code -------------------------
-    code_length_ = static_cast<unsigned int>(std::round(static_cast<double>(fs_in_) / ( BEIDOU_B3I_CODE_RATE_HZ / BEIDOU_B3I_CODE_LENGTH_CHIPS)));
+    code_length_ = static_cast<unsigned int>(std::round(static_cast<double>(fs_in_) / (BEIDOU_B3I_CODE_RATE_HZ / BEIDOU_B3I_CODE_LENGTH_CHIPS)));
 
     vector_length_ = code_length_ * sampled_ms_;
 
@@ -264,11 +263,11 @@ void BeidouB3iPcpsAcquisition::connect(gr::top_block_sptr top_block)
 {
     if (item_type_.compare("gr_complex") == 0)
         {
-    		// nothing to connect
+            // nothing to connect
         }
     else if (item_type_.compare("cshort") == 0)
         {
-    	    // nothing to connect
+            // nothing to connect
         }
     else if (item_type_.compare("cbyte") == 0)
         {
@@ -287,11 +286,11 @@ void BeidouB3iPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 {
     if (item_type_.compare("gr_complex") == 0)
         {
-    		// nothing to disconnect
+            // nothing to disconnect
         }
     else if (item_type_.compare("cshort") == 0)
         {
-    		// nothing to disconnect
+            // nothing to disconnect
         }
     else if (item_type_.compare("cbyte") == 0)
         {
@@ -334,6 +333,7 @@ gr::basic_block_sptr BeidouB3iPcpsAcquisition::get_right_block()
 {
     return acquisition_;
 }
+
 
 void BeidouB3iPcpsAcquisition::set_resampler_latency(uint32_t latency_samples)
 {

@@ -8,14 +8,15 @@
 This program is a software-defined receiver which is able to process (that is, to perform detection, synchronization, demodulation and decoding of the navigation message, computation of observables and, finally, computation of position fixes) the following Global Navigation Satellite System's signals:
 
 In the L1 band:
- - &#128752; BeiDou B1I (centered at 1561.098 MHz) :white_check_mark:
- - &#128752; GPS L1 C/A  (centered at 1575.42 MHz) :white_check_mark:
- - &#128752; Galileo E1b/c  (centered at 1575.42 MHz) :white_check_mark:
  - &#128752; GLONASS L1 C/A (centered at 1602.00 MHz) :white_check_mark:
+ - &#128752; GPS L1 C/A (centered at 1575.42 MHz) :white_check_mark:
+ - &#128752; Galileo E1b/c (centered at 1575.42 MHz) :white_check_mark:
+ - &#128752; BeiDou B1I (centered at 1561.098 MHz) :white_check_mark:
 
 In the L2 band:
- - &#128752; GPS L2C (centered at 1227.60 MHz) :white_check_mark:
+ - &#128752; BeiDou B3I (centered at 1268.520 MHz) :white_check_mark:
  - &#128752; GLONASS L2 C/A (centered at 1246.00 MHz) :white_check_mark:
+ - &#128752; GPS L2C (centered at 1227.60 MHz) :white_check_mark:
 
 In the L5 band:
  - &#128752; GPS L5 (centered at 1176.45 MHz) :white_check_mark:
@@ -1128,6 +1129,7 @@ Each channel must be assigned to a GNSS signal, according to the following ident
 | Galileo E1b/c     |      1B         |
 | Glonass L1 C/A    |      1G         |
 | Beidou B1I        |      B1         |
+| Beidou B3I        |      B3         |
 | GPS L2 L2C(M)     |      2S         |
 | Glonass L2 C/A    |      2G         |
 | GPS L5            |      L5         |

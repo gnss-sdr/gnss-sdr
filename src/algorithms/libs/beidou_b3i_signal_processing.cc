@@ -39,30 +39,35 @@ void beidou_b3i_code_gen_int(int* _dest, signed int _prn, unsigned int _chip_shi
     const unsigned int _code_length = 10230;
     bool G1[_code_length];
     bool G2[_code_length];
-    std::array<bool, 13> G1_register = {{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
-    std::array<bool, 13> G2_register = {{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
-    std::array<bool, 13> G1_register_reset = {{0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
+    std::array<bool, 13> G1_register = {{true, true, true, true, true, true, true, true, true, true, true, true, true}};
+    std::array<bool, 13> G2_register = {{true, true, true, true, true, true, true, true, true, true, true, true, true}};
+    std::array<bool, 13> G1_register_reset = {{false, false, true, true, true, true, true, true, true, true, true, true, true}};
     bool feedback1, feedback2, aux;
     uint32_t lcv, lcv2, delay;
     int32_t prn_idx = _prn - 1;
     // clang-format off
     std::array<std::array<bool, 13>, 63> G2_register_shifted = {{
-    	{{1,0,1,0,1,1,1,1,1,1,1,1,1,}}, {{1,1,1,1,0,0,0,1,0,1,0,1,1,}}, {{1,0,1,1,1,1,0,0,0,1,0,1,0,}}, {{1,1,1,1,1,1,1,1,1,1,0,1,1,}},
-	    {{1,1,0,0,1,0,0,0,1,1,1,1,1,}}, {{1,0,0,1,0,0,1,1,0,0,1,0,0,}}, {{1,1,1,1,1,1,1,0,1,0,0,1,0,}}, {{1,1,1,0,1,1,1,1,1,1,1,0,1,}},
-	    {{1,0,1,0,0,0,0,0,0,0,0,1,0,}}, {{0,0,1,0,0,0,0,0,1,1,0,1,1,}}, {{1,1,1,0,1,0,1,1,1,0,0,0,0,}}, {{0,0,1,0,1,1,0,0,1,1,1,1,0,}},
-	    {{0,1,1,0,0,1,0,0,1,0,1,0,1,}}, {{0,1,1,1,0,0,0,1,0,0,1,1,0,}}, {{1,0,0,0,1,1,0,0,0,1,0,0,1,}}, {{1,1,1,0,0,0,1,1,1,1,1,0,0,}},
-	    {{0,0,1,0,0,1,1,0,0,0,1,0,1,}}, {{0,0,0,0,0,1,1,1,0,1,1,0,0,}}, {{1,0,0,0,1,0,1,0,1,0,1,1,1,}}, {{0,0,0,1,0,1,1,0,1,1,1,1,0,}},
-	    {{0,0,1,0,0,0,0,1,0,1,1,0,1,}}, {{0,0,1,0,1,1,0,0,0,1,0,1,0,}}, {{0,0,0,1,0,1,1,0,0,1,1,1,1,}}, {{0,0,1,1,0,0,1,1,0,0,0,1,0,}},
-	    {{0,0,1,1,1,0,1,0,0,1,0,0,0,}}, {{0,1,0,0,1,0,0,1,0,1,0,0,1,}}, {{1,0,1,1,0,1,1,0,1,0,0,1,1,}}, {{1,0,1,0,1,1,1,1,0,0,0,1,0,}},
-	    {{0,0,0,1,0,1,1,1,1,0,1,0,1,}}, {{0,1,1,1,1,1,1,1,1,1,1,1,1,}}, {{0,1,1,0,1,1,0,0,0,1,1,1,1,}}, {{1,0,1,0,1,1,0,0,0,1,0,0,1,}},
-	    {{1,0,0,1,0,1,0,1,0,1,0,1,1,}}, {{1,1,0,0,1,1,0,1,0,0,1,0,1,}}, {{1,1,0,1,0,0,1,0,1,1,1,0,1,}}, {{1,1,1,1,1,0,1,1,1,0,1,0,0,}},
-	    {{0,0,1,0,1,0,1,1,0,0,1,1,1,}}, {{1,1,1,0,1,0,0,0,1,0,0,0,0,}}, {{1,1,0,1,1,1,0,0,1,0,0,0,0,}}, {{1,1,0,1,0,1,1,0,0,1,1,1,0,}},
-	    {{1,0,0,0,0,0,0,1,1,0,1,0,0,}}, {{0,1,0,1,1,1,1,0,1,1,0,0,1,}}, {{0,1,1,0,1,1,0,1,1,1,1,0,0,}}, {{1,1,0,1,0,0,1,1,1,0,0,0,1,}},
-	    {{0,0,1,1,1,0,0,1,0,0,0,1,0,}}, {{0,1,0,1,0,1,1,0,0,0,1,0,1,}}, {{1,0,0,1,1,1,1,1,0,0,1,1,0,}}, {{1,1,1,1,1,0,1,0,0,1,0,0,0,}},
-	    {{0,0,0,0,1,0,1,0,0,1,0,0,1,}}, {{1,0,0,0,0,1,0,1,0,1,1,0,0,}}, {{1,1,1,1,0,0,1,0,0,1,1,0,0,}}, {{0,1,0,0,1,1,0,0,0,1,1,1,1,}},
-	    {{0,0,0,0,0,0,0,0,1,1,0,0,0,}}, {{1,0,0,0,0,0,0,0,0,0,1,0,0,}}, {{0,0,1,1,0,1,0,1,0,0,1,1,0,}}, {{1,0,1,1,0,0,1,0,0,0,1,1,0,}},
-	    {{0,1,1,1,0,0,1,1,1,1,0,0,0,}}, {{0,0,1,0,1,1,1,0,0,1,0,1,0,}}, {{1,1,0,0,1,1,1,1,1,0,1,1,0,}}, {{1,0,0,1,0,0,1,0,0,0,1,0,1,}},
-	    {{0,1,1,1,0,0,0,1,0,0,0,0,0,}}, {{0,0,1,1,0,0,1,0,0,0,0,1,0,}}, {{0,0,1,0,0,0,1,0,0,1,1,1,0,}}}};
+    	{{true,false,true,false,true,true,true,true,true,true,true,true,true,}},
+        {{true,true,true,true,false,false,false,true,false,true,false,true,true,}},
+        {{true,false,true,true,true,true,false,false,false,true,false,true,false,}},
+        {{true,true,true,true,true,true,true,true,true,true,false,true,true,}},
+	    {{true,true,false,false,true,false,false,false,true,true,true,true,true,}},
+        {{true,false,false,true,false,false,true,true,false,false,true,false,false,}},
+        {{true,true,true,true,true,true,true,false,true,false,false,true,false,}}, {{true,true,true,false,true,true,true,true,true,true,true,false,true,}},
+	    {{true,false,true,false,false,false,false,false,false,false,false,true,false,}}, {{false,false,true,false,false,false,false,false,true,true,false,true,true,}}, {{true,true,true,false,true,false,true,true,true,false,false,false,false,}}, {{false,false,true,false,true,true,false,false,true,true,true,true,false,}},
+	    {{false,true,true,false,false,true,false,false,true,false,true,false,true,}}, {{false,true,true,true,false,false,false,true,false,false,true,true,false,}}, {{true,false,false,false,true,true,false,false,false,true,false,false,true,}}, {{true,true,true,false,false,false,true,true,true,true,true,false,false,}},
+	    {{false,false,true,false,false,true,true,false,false,false,true,false,true,}}, {{false,false,false,false,false,true,true,true,false,true,true,false,false,}}, {{true,false,false,false,true,false,true,false,true,false,true,true,true,}}, {{false,false,false,true,false,true,true,false,true,true,true,true,false,}},
+	    {{false,false,true,false,false,false,false,true,false,true,true,false,true,}}, {{false,false,true,false,true,true,false,false,false,true,false,true,false,}}, {{false,false,false,true,false,true,true,false,false,true,true,true,true,}}, {{false,false,true,true,false,false,true,true,false,false,false,true,false,}},
+	    {{false,false,true,true,true,false,true,false,false,true,false,false,false,}}, {{false,true,false,false,true,false,false,true,false,true,false,false,true,}}, {{true,false,true,true,false,true,true,false,true,false,false,true,true,}}, {{true,false,true,false,true,true,true,true,false,false,false,true,false,}},
+	    {{false,false,false,true,false,true,true,true,true,false,true,false,true,}}, {{false,true,true,true,true,true,true,true,true,true,true,true,true,}}, {{false,true,true,false,true,true,false,false,false,true,true,true,true,}}, {{true,false,true,false,true,true,false,false,false,true,false,false,true,}},
+	    {{true,false,false,true,false,true,false,true,false,true,false,true,true,}}, {{true,true,false,false,true,true,false,true,false,false,true,false,true,}}, {{true,true,false,true,false,false,true,false,true,true,true,false,true,}}, {{true,true,true,true,true,false,true,true,true,false,true,false,false,}},
+	    {{false,false,true,false,true,false,true,true,false,false,true,true,true,}}, {{true,true,true,false,true,false,false,false,true,false,false,false,false,}}, {{true,true,false,true,true,true,false,false,true,false,false,false,false,}}, {{true,true,false,true,false,true,true,false,false,true,true,true,false,}},
+	    {{true,false,false,false,false,false,false,true,true,false,true,false,false,}}, {{false,true,false,true,true,true,true,false,true,true,false,false,true,}}, {{false,true,true,false,true,true,false,true,true,true,true,false,false,}}, {{true,true,false,true,false,false,true,true,true,false,false,false,true,}},
+	    {{false,false,true,true,true,false,false,true,false,false,false,true,false,}}, {{false,true,false,true,false,true,true,false,false,false,true,false,true,}}, {{true,false,false,true,true,true,true,true,false,false,true,true,false,}}, {{true,true,true,true,true,false,true,false,false,true,false,false,false,}},
+	    {{false,false,false,false,true,false,true,false,false,true,false,false,true,}}, {{true,false,false,false,false,true,false,true,false,true,true,false,false,}}, {{true,true,true,true,false,false,true,false,false,true,true,false,false,}}, {{false,true,false,false,true,true,false,false,false,true,true,true,true,}},
+	    {{false,false,false,false,false,false,false,false,true,true,false,false,false,}}, {{true,false,false,false,false,false,false,false,false,false,true,false,false,}}, {{false,false,true,true,false,true,false,true,false,false,true,true,false,}}, {{true,false,true,true,false,false,true,false,false,false,true,true,false,}},
+	    {{false,true,true,true,false,false,true,true,true,true,false,false,false,}}, {{false,false,true,false,true,true,true,false,false,true,false,true,false,}}, {{true,true,false,false,true,true,true,true,true,false,true,true,false,}}, {{true,false,false,true,false,false,true,false,false,false,true,false,true,}},
+	    {{false,true,true,true,false,false,false,true,false,false,false,false,false,}}, {{false,false,true,true,false,false,true,false,false,false,false,true,false,}}, {{false,false,true,false,false,false,true,false,false,true,true,true,false,}}}};
     // clang-format on
     // A simple error check
     if ((prn_idx < 0) || (prn_idx > 63))
@@ -96,7 +101,7 @@ void beidou_b3i_code_gen_int(int* _dest, signed int _prn, unsigned int _chip_shi
             // Reset G1 register if sequence found
             if (G1_register == G1_register_reset)
                 {
-                    G1_register = {{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
+                    G1_register = {{true, true, true, true, true, true, true, true, true, true, true, true, true}};
                 }
         }
 

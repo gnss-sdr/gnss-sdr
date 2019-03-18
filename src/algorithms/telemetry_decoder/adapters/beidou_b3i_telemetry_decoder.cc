@@ -34,7 +34,7 @@
 #include <glog/logging.h>
 
 BeidouB3iTelemetryDecoder::BeidouB3iTelemetryDecoder(
-    ConfigurationInterface *configuration, std::string role,
+    ConfigurationInterface *configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams)
     : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {

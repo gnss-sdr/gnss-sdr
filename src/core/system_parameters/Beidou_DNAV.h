@@ -36,8 +36,8 @@
 #include <utility>
 #include <vector>
 
-const double BEIDOU_DNAV_C_m_s = 299792458.0;         //!< The speed of light, [m/s]
-const double BEIDOU_DNAV_C_m_ms = 299792.4580;        //!< The speed of light, [m/ms]
+const double BEIDOU_DNAV_C_M_S = 299792458.0;         //!< The speed of light, [m/s]
+const double BEIDOU_DNAV_C_M_MS = 299792.4580;        //!< The speed of light, [m/ms]
 const double BEIDOU_DNAV_PI = 3.1415926535898;        //!< Pi
 const double BEIDOU_DNAV_TWO_PI = 6.283185307179586;  //!< 2Pi
 const int32_t BEIDOU_DNAV_PREAMBLE_LENGTH_BITS = 11;

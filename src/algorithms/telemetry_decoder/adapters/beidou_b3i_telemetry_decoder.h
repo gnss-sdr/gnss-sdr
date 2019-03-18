@@ -48,7 +48,7 @@ class BeidouB3iTelemetryDecoder : public TelemetryDecoderInterface
 {
 public:
     BeidouB3iTelemetryDecoder(ConfigurationInterface *configuration,
-        std::string role, unsigned int in_streams,
+        const std::string& role, unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~BeidouB3iTelemetryDecoder();

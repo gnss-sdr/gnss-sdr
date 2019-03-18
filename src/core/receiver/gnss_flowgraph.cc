@@ -215,7 +215,7 @@ void GNSSFlowgraph::connect()
         }
 
     DLOG(INFO) << "blocks connected internally";
-// Signal Source (i) >  Signal conditioner (i) >
+    // Signal Source (i) >  Signal conditioner (i) >
 
 #ifndef ENABLE_FPGA
 

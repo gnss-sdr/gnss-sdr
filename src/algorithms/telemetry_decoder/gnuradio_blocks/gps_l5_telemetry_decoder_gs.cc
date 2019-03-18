@@ -148,6 +148,7 @@ void gps_l5_telemetry_decoder_gs::set_channel(int32_t channel)
         }
 }
 
+
 void gps_l5_telemetry_decoder_gs::reset()
 {
     d_last_valid_preamble = d_sample_counter;

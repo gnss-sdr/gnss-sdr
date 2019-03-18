@@ -324,12 +324,14 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe()
     return subframe_synchro_confirmation;
 }
 
+
 void gps_l1_ca_telemetry_decoder_gs::reset()
 {
     d_last_valid_preamble = d_sample_counter;
     d_sent_tlm_failed_msg = false;
     DLOG(INFO) << "Telemetry decoder reset for satellite " << d_satellite;
 }
+
 
 int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)

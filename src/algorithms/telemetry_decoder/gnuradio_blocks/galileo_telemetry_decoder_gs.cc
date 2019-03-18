@@ -456,6 +456,8 @@ void galileo_telemetry_decoder_gs::reset()
     d_sent_tlm_failed_msg = false;
     DLOG(INFO) << "Telemetry decoder reset for satellite " << d_satellite;
 }
+
+
 void galileo_telemetry_decoder_gs::set_channel(int32_t channel)
 {
     d_channel = channel;

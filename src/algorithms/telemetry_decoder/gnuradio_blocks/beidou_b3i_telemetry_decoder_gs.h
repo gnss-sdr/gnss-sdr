@@ -1,9 +1,7 @@
 /*!
- * \file beidou_b1i_telemetry_decoder_gs.h
- * \brief Implementation of a BEIDOU BI1 DNAV data decoder block
- * \details Code added as part of GSoC 2018 program.
- * \author Damian Miralles, 2018. dmiralles2009(at)gmail.com
- * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.es
+ * \file beidou_b3i_telemetry_decoder_gs.h
+ * \brief Implementation of a BEIDOU B3I DNAV data decoder block
+ * \author Damian Miralles, 2019. dmiralles2009(at)gmail.com
  *
  * -------------------------------------------------------------------------
  *
@@ -30,36 +28,36 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_GS_H
-#define GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_GS_H
-
+#ifndef GNSS_SDR_BEIDOU_B3I_TELEMETRY_DECODER_GS_H
+#define GNSS_SDR_BEIDOU_B3I_TELEMETRY_DECODER_GS_H
 
 #include "beidou_dnav_navigation_message.h"
 #include "gnss_satellite.h"
 #include <boost/circular_buffer.hpp>
 #include <boost/shared_ptr.hpp>  // for boost::shared_ptr
 #include <gnuradio/block.h>      // for block
-#include <gnuradio/types.h>                  // for gr_vector_const_void_star
+#include <gnuradio/types.h>      // for gr_vector_const_void_star
 #include <cstdint>
 #include <fstream>
 #include <string>
 
+class beidou_b3i_telemetry_decoder_gs;
 
-class beidou_b1i_telemetry_decoder_gs;
+using beidou_b3i_telemetry_decoder_gs_sptr =
+    boost::shared_ptr<beidou_b3i_telemetry_decoder_gs>;
 
-using beidou_b1i_telemetry_decoder_gs_sptr = boost::shared_ptr<beidou_b1i_telemetry_decoder_gs>;
-
-beidou_b1i_telemetry_decoder_gs_sptr beidou_b1i_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
-
+beidou_b3i_telemetry_decoder_gs_sptr
+beidou_b3i_make_telemetry_decoder_gs(const Gnss_Satellite &satellite,
+    bool dump);
 
 /*!
  * \brief This class implements a block that decodes the BeiDou DNAV data.
- * \note Code added as part of GSoC 2018 program
+ *
  */
-class beidou_b1i_telemetry_decoder_gs : public gr::block
+class beidou_b3i_telemetry_decoder_gs : public gr::block
 {
 public:
-    ~beidou_b1i_telemetry_decoder_gs();                   //!< Class destructor
+    ~beidou_b3i_telemetry_decoder_gs();                   //!< Class destructor
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
     void set_channel(int channel);                        //!< Set receiver's channel
 
@@ -67,17 +65,19 @@ public:
      * \brief This is where all signal processing takes place
      */
     int general_work(int noutput_items, gr_vector_int &ninput_items,
-        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+        gr_vector_const_void_star &input_items,
+        gr_vector_void_star &output_items);
 
 private:
-    friend beidou_b1i_telemetry_decoder_gs_sptr
-    beidou_b1i_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
-    beidou_b1i_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+    friend beidou_b3i_telemetry_decoder_gs_sptr
+    beidou_b3i_make_telemetry_decoder_gs(const Gnss_Satellite &satellite,
+        bool dump);
+    beidou_b3i_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
     void decode_subframe(double *symbols);
-    void decode_word(int32_t word_counter, const double *enc_word_symbols, int32_t *dec_word_symbols);
+    void decode_word(int32_t word_counter, const double *enc_word_symbols,
+        int32_t *dec_word_symbols);
     void decode_bch15_11_01(const int32_t *bits, int32_t *decbits);
-
 
     // Preamble decoding
     int32_t *d_preamble_samples;
@@ -93,7 +93,8 @@ private:
     boost::circular_buffer<float> d_symbol_history;
 
     // Variables for internal functionality
-    uint64_t d_sample_counter;    // Sample counter as an index (1,2,3,..etc) indicating number of samples processed
+    uint64_t d_sample_counter;    // Sample counter as an index (1,2,3,..etc)
+                                  // indicating number of samples processed
     uint64_t d_preamble_index;    // Index of sample number where preamble was found
     uint32_t d_stat;              // Status of decoder
     bool d_flag_frame_sync;       // Indicate when a frame sync is achieved
@@ -101,15 +102,15 @@ private:
     int32_t d_CRC_error_counter;  // Number of failed CRC operations
     bool flag_SOW_set;            // Indicates when time of week is set
 
-    //!< Navigation Message variable
+    // Navigation Message variable
     Beidou_Dnav_Navigation_Message d_nav;
 
-    //!< Values to populate gnss synchronization structure
+    // Values to populate gnss synchronization structure
     uint32_t d_TOW_at_Preamble_ms;
     uint32_t d_TOW_at_current_symbol_ms;
     bool Flag_valid_word;
 
-    //!< Satellite Information and logging capacity
+    // Satellite Information and logging capacity
     Gnss_Satellite d_satellite;
     int32_t d_channel;
     bool d_dump;

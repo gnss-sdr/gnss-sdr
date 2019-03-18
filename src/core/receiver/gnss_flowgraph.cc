@@ -422,6 +422,9 @@ void GNSSFlowgraph::connect()
                                         case evBDS_B1:
                                             acq_fs = fs;
                                             break;
+                                        case evBDS_B3:
+                                            acq_fs = fs;
+                                            break;
                                         }
 
                                     if (acq_fs < fs)
@@ -622,6 +625,12 @@ void GNSSFlowgraph::connect()
                             gnss_system = "Beidou";
                             signal_value = Gnss_Signal(Gnss_Satellite(gnss_system, sat), gnss_signal);
                             available_BDS_B1_signals_.remove(signal_value);
+                            break;
+
+                        case evBDS_B3:
+                            gnss_system = "Beidou";
+                            signal_value = Gnss_Signal(Gnss_Satellite(gnss_system, sat), gnss_signal);
+                            available_BDS_B3_signals_.remove(signal_value);
                             break;
 
                         default:
@@ -1108,7 +1117,13 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                             break;
 
                         case evBDS_B1:
-                            available_BDS_B1_signals_.push_back(channels_[who]->get_signal());
+                            available_BDS_B1_signals_.remove(gs);
+                            available_BDS_B1_signals_.push_back(gs);
+                            break;
+
+                        case evBDS_B3:
+                            available_BDS_B3_signals_.remove(gs);
+                            available_BDS_B3_signals_.push_back(gs);
                             break;
 
                         default:
@@ -1188,6 +1203,10 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
 
                 case evBDS_B1:
                     available_BDS_B1_signals_.remove(channels_[who]->get_signal());
+                    break;
+
+                case evBDS_B3:
+                    available_BDS_B3_signals_.remove(channels_[who]->get_signal());
                     break;
 
                 default:
@@ -1286,6 +1305,11 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                                     available_BDS_B1_signals_.push_back(channels_[who]->get_signal());
                                     break;
 
+                                case evBDS_B3:
+                                    available_BDS_B3_signals_.push_back(channels_[who]->get_signal());
+                                    break;
+
+
                                 default:
                                     LOG(ERROR) << "This should not happen :-(";
                                     break;
@@ -1337,6 +1361,16 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                                 case evGLO_2G:
                                     available_GLO_2G_signals_.remove(gs);
                                     available_GLO_2G_signals_.push_back(gs);
+                                    break;
+
+                                case evBDS_B1:
+                                    available_BDS_B1_signals_.remove(gs);
+                                    available_BDS_B1_signals_.push_back(gs);
+                                    break;
+
+                                case evBDS_B3:
+                                    available_BDS_B3_signals_.remove(gs);
+                                    available_BDS_B3_signals_.push_back(gs);
                                     break;
 
                                 default:
@@ -1645,6 +1679,7 @@ void GNSSFlowgraph::init()
     mapStringValues_["1G"] = evGLO_1G;
     mapStringValues_["2G"] = evGLO_2G;
     mapStringValues_["B1"] = evBDS_B1;
+    mapStringValues_["B3"] = evBDS_B3;
 
     // fill the signals queue with the satellites ID's to be searched by the acquisition
     set_signals_list();
@@ -1693,7 +1728,8 @@ void GNSSFlowgraph::set_signals_list()
 
     std::set<unsigned int> available_beidou_prn = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
         11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
-        30, 31, 32, 33, 34, 35, 36, 37};
+        30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49,
+        50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63};
 
     std::string sv_list = configuration_->property("Galileo.prns", std::string(""));
 
@@ -1758,8 +1794,8 @@ void GNSSFlowgraph::set_signals_list()
                     available_glonass_prn = tmp_set;
                 }
         }
-    sv_list = configuration_->property("Beidou.prns", std::string(""));
 
+    sv_list = configuration_->property("Beidou.prns", std::string(""));
 
     if (sv_list.length() > 0)
         {
@@ -1892,6 +1928,21 @@ void GNSSFlowgraph::set_signals_list()
                     available_BDS_B1_signals_.push_back(Gnss_Signal(
                         Gnss_Satellite(std::string("Beidou"), *available_gnss_prn_iter),
                         std::string("B1")));
+                }
+        }
+
+    if (configuration_->property("Channels_B3.count", 0) > 0)
+        {
+            /*
+             * Loop to create the list of BeiDou B1C signals
+             */
+            for (available_gnss_prn_iter = available_beidou_prn.cbegin();
+                 available_gnss_prn_iter != available_beidou_prn.cend();
+                 available_gnss_prn_iter++)
+                {
+                    available_BDS_B3_signals_.push_back(Gnss_Signal(
+                        Gnss_Satellite(std::string("Beidou"), *available_gnss_prn_iter),
+                        std::string("B3")));
                 }
         }
 }
@@ -2153,20 +2204,44 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                 }
             if (tracked)
                 {
-                    // In the near future Beidou B2a will be added
-                    //                    if (configuration_->property("Channels_5C.count", 0) > 0)
-                    //                        {
-                    //                            for (unsigned int ch = 0; ch < channels_count_; ch++)
-                    //                                {
-                    //                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str().compare("5C") != 0)) untracked_satellite = false;
-                    //                                }
-                    //                            if (untracked_satellite)
-                    //                                {
-                    //                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "5C");
-                    //                                    available_BDS_5C_signals_.remove(gs);
-                    //                                    available_BDS_5C_signals_.push_front(gs);
-                    //                                }
-                    //                        }
+                    if (configuration_->property("Channels_B3.count", 0) > 0)
+                        {
+                            for (unsigned int ch = 0; ch < channels_count_; ch++)
+                                {
+                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str() != "2G")) untracked_satellite = false;
+                                }
+                            if (untracked_satellite)
+                                {
+                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "B3");
+                                    available_BDS_B3_signals_.remove(gs);
+                                    available_BDS_B3_signals_.push_front(gs);
+                                }
+                        }
+                }
+            break;
+
+        case evBDS_B3:
+            result = available_BDS_B3_signals_.front();
+            available_BDS_B3_signals_.pop_front();
+            if (!pop)
+                {
+                    available_BDS_B3_signals_.push_back(result);
+                }
+            if (tracked)
+                {
+                    if (configuration_->property("Channels_B1.count", 0) > 0)
+                        {
+                            for (unsigned int ch = 0; ch < channels_count_; ch++)
+                                {
+                                    if ((channels_[ch]->get_signal().get_satellite() == result.get_satellite()) and (channels_[ch]->get_signal().get_signal_str() != "2G")) untracked_satellite = false;
+                                }
+                            if (untracked_satellite)
+                                {
+                                    Gnss_Signal gs = Gnss_Signal(result.get_satellite(), "B1");
+                                    available_BDS_B1_signals_.remove(gs);
+                                    available_BDS_B1_signals_.push_front(gs);
+                                }
+                        }
                 }
             break;
 

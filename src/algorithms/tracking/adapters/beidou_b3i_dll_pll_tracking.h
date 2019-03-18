@@ -1,9 +1,13 @@
 /*!
- * \file beidou_b1i_telemetry_decoder.h
- * \brief Interface of an adapter of a Beidou B1I NAV data decoder block
- * to a TelemetryDecoderInterface
- * \author Damian Miralles, 2018. dmiralles2009@gmail.com
- * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.com
+ * \file beidou_b3i_dll_pll_tracking.h
+ * \brief  Interface of an adapter of a DLL+PLL tracking loop block
+ * for Beidou B3I to a TrackingInterface
+ * \author Damian Miralles, 2019. dmiralles2009(at)gmail.com
+ *
+ * Code DLL + carrier PLL according to the algorithms described in:
+ * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
+ * A Software-Defined GPS and Galileo Receiver. A Single-Frequency
+ * Approach, Birkhauser, 2007
  *
  * -------------------------------------------------------------------------
  *
@@ -30,41 +34,41 @@
  * -------------------------------------------------------------------------
  */
 
+#ifndef GNSS_SDR_BEIDOU_B3I_DLL_PLL_TRACKING_H_
+#define GNSS_SDR_BEIDOU_B3I_DLL_PLL_TRACKING_H_
 
-#ifndef GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_H_
-#define GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_H_
-
-#include "beidou_b1i_telemetry_decoder_gs.h"
-#include "gnss_satellite.h"  // for Gnss_Satellite
-#include "telemetry_decoder_interface.h"
-#include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
-#include <cstddef>                   // for size_t
+#include "dll_pll_veml_tracking.h"
+#include "tracking_interface.h"
 #include <string>
 
 class ConfigurationInterface;
 
 /*!
- * \brief This class implements a NAV data decoder for BEIDOU B1I
+ * \brief This class implements a code DLL + carrier PLL tracking loop
  */
-class BeidouB1iTelemetryDecoder : public TelemetryDecoderInterface
+class BeidouB3iDllPllTracking : public TrackingInterface
 {
 public:
-    BeidouB1iTelemetryDecoder(ConfigurationInterface* configuration,
+    BeidouB3iDllPllTracking(ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 
-    virtual ~BeidouB1iTelemetryDecoder();
+    virtual ~BeidouB3iDllPllTracking();
 
     inline std::string role() override
     {
         return role_;
     }
 
-    //! Returns "BEIDOU_B1I_Telemetry_Decoder"
     inline std::string implementation() override
     {
-        return "BEIDOU_B1I_Telemetry_Decoder";
+        return "BEIDOU_B3I_DLL_PLL_Tracking";
+    }
+
+    inline size_t item_size() override
+    {
+        return item_size_;
     }
 
     void connect(gr::top_block_sptr top_block) override;
@@ -72,28 +76,31 @@ public:
     gr::basic_block_sptr get_left_block() override;
     gr::basic_block_sptr get_right_block() override;
 
-    void set_satellite(const Gnss_Satellite& satellite) override;
-    inline void set_channel(int channel) override { telemetry_decoder_->set_channel(channel); }
+    /*!
+     * \brief Set tracking channel unique ID
+     */
+    void set_channel(unsigned int channel) override;
 
-    inline void reset() override
-    {
-        return;
-    }
+    /*!
+     * \brief Set acquisition/tracking common Gnss_Synchro object pointer
+     * to efficiently exchange synchronization data between acquisition and tracking blocks
+     */
+    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
-    inline size_t item_size() override
-    {
-        return 0;
-    }
+    void start_tracking() override;
+
+    /*!
+     * \brief Stop running tracking
+     */
+    void stop_tracking() override;
 
 private:
-    beidou_b1i_telemetry_decoder_gs_sptr telemetry_decoder_;
-    Gnss_Satellite satellite_;
-    int channel_;
-    bool dump_;
-    std::string dump_filename_;
+    dll_pll_veml_tracking_sptr tracking_;
+    size_t item_size_;
+    unsigned int channel_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
 };
 
-#endif
+#endif  // GNSS_SDR_BEIDOU_B3I_DLL_PLL_TRACKING_H_

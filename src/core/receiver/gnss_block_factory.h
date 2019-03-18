@@ -110,6 +110,10 @@ private:
         const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
         gr::msg_queue::sptr queue);
 
+    std::unique_ptr<GNSSBlockInterface> GetChannel_B3(const std::shared_ptr<ConfigurationInterface>& configuration,
+        const std::string& acq, const std::string& trk, const std::string& tlm, int channel,
+        boost::shared_ptr<gr::msg_queue> queue);
+
     std::unique_ptr<AcquisitionInterface> GetAcqBlock(
         const std::shared_ptr<ConfigurationInterface>& configuration,
         const std::string& role,

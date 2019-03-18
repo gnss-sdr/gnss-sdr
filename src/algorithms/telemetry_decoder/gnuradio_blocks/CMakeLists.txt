@@ -25,6 +25,7 @@ set(TELEMETRY_DECODER_GR_BLOCKS_SOURCES
     glonass_l2_ca_telemetry_decoder_gs.cc
     galileo_telemetry_decoder_gs.cc
     beidou_b1i_telemetry_decoder_gs.cc
+    beidou_b3i_telemetry_decoder_gs.cc
 )
 
 set(TELEMETRY_DECODER_GR_BLOCKS_HEADERS
@@ -36,6 +37,7 @@ set(TELEMETRY_DECODER_GR_BLOCKS_HEADERS
     glonass_l2_ca_telemetry_decoder_gs.h
     galileo_telemetry_decoder_gs.h
     beidou_b1i_telemetry_decoder_gs.h
+    beidou_b3i_telemetry_decoder_gs.h
 )
 
 list(SORT TELEMETRY_DECODER_GR_BLOCKS_HEADERS)

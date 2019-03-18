@@ -154,7 +154,6 @@ void GNSSFlowgraph::connect()
                 }
         }
 
-
     // Signal Source > Signal conditioner >
     for (unsigned int i = 0; i < sig_conditioner_.size(); i++)
         {
@@ -216,20 +215,18 @@ void GNSSFlowgraph::connect()
 
     DLOG(INFO) << "blocks connected internally";
     // Signal Source (i) >  Signal conditioner (i) >
-
 #ifndef ENABLE_FPGA
-
     int RF_Channels = 0;
     int signal_conditioner_ID = 0;
     for (int i = 0; i < sources_count_; i++)
         {
             try
                 {
-                    //TODO: Remove this array implementation and create generic multistream connector
-                    //(if a signal source has more than 1 stream, then connect it to the multistream signal conditioner)
+                    // TODO: Remove this array implementation and create generic multistream connector
+                    // (if a signal source has more than 1 stream, then connect it to the multistream signal conditioner)
                     if (sig_source_.at(i)->implementation() == "Raw_Array_Signal_Source")
                         {
-                            //Multichannel Array
+                            // Multichannel Array
                             std::cout << "ARRAY MODE" << std::endl;
                             for (int j = 0; j < GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_CHANNELS; j++)
                                 {
@@ -239,14 +236,14 @@ void GNSSFlowgraph::connect()
                         }
                     else
                         {
-                            //TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
-                            //Include GetRFChannels in the interface to avoid read config parameters here
-                            //read the number of RF channels for each front-end
+                            // TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
+                            // Include GetRFChannels in the interface to avoid read config parameters here
+                            // read the number of RF channels for each front-end
                             RF_Channels = configuration_->property(sig_source_.at(i)->role() + ".RF_channels", 1);
 
                             for (int j = 0; j < RF_Channels; j++)
                                 {
-                                    //Connect the multichannel signal source to multiple signal conditioners
+                                    // Connect the multichannel signal source to multiple signal conditioners
                                     // GNURADIO max_streams=-1 means infinite ports!
                                     LOG(INFO) << "sig_source_.at(i)->get_right_block()->output_signature()->max_streams()=" << sig_source_.at(i)->get_right_block()->output_signature()->max_streams();
                                     LOG(INFO) << "sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()=" << sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()->max_streams();
@@ -284,15 +281,13 @@ void GNSSFlowgraph::connect()
                 }
         }
     DLOG(INFO) << "Signal source connected to signal conditioner";
-
 #endif
 
 #if ENABLE_FPGA
-
     if (configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false) == false)
         {
-            //connect the signal source to sample counter
-            //connect the sample counter to Observables
+            // connect the signal source to sample counter
+            // connect the sample counter to Observables
             try
                 {
                     double fs = static_cast<double>(configuration_->property("GNSS-SDR.internal_fs_sps", 0));
@@ -317,7 +312,7 @@ void GNSSFlowgraph::connect()
         }
     else
         {
-            //create a hardware-defined gnss_synchro pulse for the observables block
+            // create a hardware-defined gnss_synchro pulse for the observables block
             try
                 {
                     double fs = static_cast<double>(configuration_->property("GNSS-SDR.internal_fs_sps", 0));
@@ -370,7 +365,6 @@ void GNSSFlowgraph::connect()
     for (unsigned int i = 0; i < channels_count_; i++)
         {
 #ifndef ENABLE_FPGA
-
             int selected_signal_conditioner_ID = 0;
             bool use_acq_resampler = configuration_->property("GNSS-SDR.use_acquisition_resampler", false);
             uint32_t fs = configuration_->property("GNSS-SDR.internal_fs_sps", 0);
@@ -389,10 +383,10 @@ void GNSSFlowgraph::connect()
                             // Enable automatic resampler for the acquisition, if required
                             if (use_acq_resampler == true)
                                 {
-                                    //create acquisition resamplers if required
+                                    // create acquisition resamplers if required
                                     double resampler_ratio = 1.0;
                                     double acq_fs = fs;
-                                    //find the signal associated to this channel
+                                    // find the signal associated to this channel
                                     switch (mapStringValues_[channels_.at(i)->implementation()])
                                         {
                                         case evGPS_1C:
@@ -429,7 +423,7 @@ void GNSSFlowgraph::connect()
 
                                     if (acq_fs < fs)
                                         {
-                                            //check if the resampler is already created for the channel system/signal and for the specific RF Channel
+                                            // check if the resampler is already created for the channel system/signal and for the specific RF Channel
                                             std::string map_key = channels_.at(i)->implementation() + std::to_string(selected_signal_conditioner_ID);
                                             resampler_ratio = static_cast<double>(fs) / acq_fs;
                                             int decimation = floor(resampler_ratio);
@@ -441,7 +435,7 @@ void GNSSFlowgraph::connect()
 
                                             if (decimation > 1)
                                                 {
-                                                    //create a FIR low pass filter
+                                                    // create a FIR low pass filter
                                                     std::vector<float> taps;
                                                     taps = gr::filter::firdes::low_pass(1.0,
                                                         fs,
@@ -468,7 +462,6 @@ void GNSSFlowgraph::connect()
                                                                       << " acquisition resampler for RF channel " << std::to_string(signal_conditioner_ID) << " with " << taps.size() << " taps and decimation factor of " << decimation;
                                                         }
 
-
                                                     top_block_->connect(acq_resamplers_.at(map_key), 0,
                                                         channels_.at(i)->get_left_block_acq(), 0);
 
@@ -479,7 +472,7 @@ void GNSSFlowgraph::connect()
                                             else
                                                 {
                                                     LOG(INFO) << "Disabled acquisition resampler because the input sampling frequency is too low";
-                                                    //resampler not required!
+                                                    // resampler not required!
                                                     top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
                                                         channels_.at(i)->get_left_block_acq(), 0);
                                                 }
@@ -673,8 +666,6 @@ void GNSSFlowgraph::connect()
                     return;
                 }
         }
-
-
 #ifndef ENABLE_FPGA
     // Activate acquisition in enabled channels
     for (unsigned int i = 0; i < channels_count_; i++)
@@ -691,7 +682,6 @@ void GNSSFlowgraph::connect()
                 }
         }
 #endif
-
     connected_ = true;
     LOG(INFO) << "Flowgraph connected";
     top_block_->dump();
@@ -711,8 +701,6 @@ void GNSSFlowgraph::disconnect()
     // Signal Source (i) >  Signal conditioner (i) >
     int RF_Channels = 0;
     int signal_conditioner_ID = 0;
-
-
 #ifdef ENABLE_FPGA
     if (configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false) == false)
         {
@@ -724,7 +712,7 @@ void GNSSFlowgraph::disconnect()
                             // (if a signal source has more than 1 stream, then connect it to the multistream signal conditioner)
                             if (sig_source_.at(i)->implementation() == "Raw_Array_Signal_Source")
                                 {
-                                    //Multichannel Array
+                                    // Multichannel Array
                                     for (int j = 0; j < GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_CHANNELS; j++)
                                         {
                                             top_block_->disconnect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(i)->get_left_block(), j);
@@ -768,10 +756,7 @@ void GNSSFlowgraph::disconnect()
                         }
                 }
         }
-
-
 #else
-
     for (int i = 0; i < sources_count_; i++)
         {
             try
@@ -874,7 +859,6 @@ void GNSSFlowgraph::disconnect()
         }
 #endif
     // Signal conditioner (selected_signal_source) >> channels (i) (dependent of their associated SignalSource_ID)
-
     for (unsigned int i = 0; i < channels_count_; i++)
         {
 #ifndef ENABLE_FPGA
@@ -1302,7 +1286,6 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                                     available_BDS_B3_signals_.push_back(channels_[who]->get_signal());
                                     break;
 
-
                                 default:
                                     LOG(ERROR) << "This should not happen :-(";
                                     break;
@@ -1317,7 +1300,6 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                     if (channels_state_[n] == 1 or channels_state_[n] == 2)  //channel in acquisition or in tracking
                         {
                             //recover the satellite assigned
-
                             Gnss_Signal gs = channels_[n]->get_signal();
                             switch (mapStringValues_[gs.get_signal_str()])
                                 {
@@ -1370,7 +1352,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                                     LOG(ERROR) << "This should not happen :-(";
                                     break;
                                 }
-                            channels_[n]->stop_channel();  //stop the acquisition or tracking operation
+                            channels_[n]->stop_channel();  // stop the acquisition or tracking operation
                             channels_state_[n] = 0;
                         }
                 }
@@ -1378,7 +1360,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             break;
         case 11:  // request coldstart mode
             LOG(INFO) << "TC request flowgraph coldstart";
-            //start again the satellite acquisitions
+            // start again the satellite acquisitions
             for (unsigned int i = 0; i < channels_count_; i++)
                 {
                     unsigned int ch_index = (who + i + 1) % channels_count_;
@@ -1447,7 +1429,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             break;
         case 13:  // request warmstart mode
             LOG(INFO) << "TC request flowgraph warmstart";
-            //start again the satellite acquisitions
+            // start again the satellite acquisitions
             for (unsigned int i = 0; i < channels_count_; i++)
                 {
                     unsigned int ch_index = (who + i + 1) % channels_count_;
@@ -1555,8 +1537,8 @@ void GNSSFlowgraph::set_configuration(std::shared_ptr<ConfigurationInterface> co
     configuration_ = std::move(configuration);
 }
 
-#ifdef ENABLE_FPGA
 
+#ifdef ENABLE_FPGA
 void GNSSFlowgraph::start_acquisition_helper()
 {
     for (unsigned int i = 0; i < channels_count_; i++)
@@ -1576,8 +1558,8 @@ void GNSSFlowgraph::perform_hw_reset()
     channel_ptr = std::dynamic_pointer_cast<Channel>(channels_.at(0));
     channel_ptr->acquisition()->stop_acquisition();
 }
-
 #endif
+
 
 void GNSSFlowgraph::init()
 {
@@ -1700,6 +1682,21 @@ void GNSSFlowgraph::init()
 }
 
 
+std::vector<std::string> GNSSFlowgraph::split_string(const std::string& s, char delim)
+{
+    std::vector<std::string> v;
+    std::stringstream ss(s);
+    std::string item;
+
+    while (std::getline(ss, item, delim))
+        {
+            *(std::back_inserter(v)++) = item;
+        }
+
+    return v;
+}
+
+
 void GNSSFlowgraph::set_signals_list()
 {
     // Set a sequential list of GNSS satellites
@@ -1803,7 +1800,6 @@ void GNSSFlowgraph::set_signals_list()
                     available_beidou_prn = tmp_set;
                 }
         }
-
 
     if (configuration_->property("Channels_1C.count", 0) > 0)
         {
@@ -2248,18 +2244,4 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
             break;
         }
     return result;
-}
-
-std::vector<std::string> GNSSFlowgraph::split_string(const std::string& s, char delim)
-{
-    std::vector<std::string> v;
-    std::stringstream ss(s);
-    std::string item;
-
-    while (std::getline(ss, item, delim))
-        {
-            *(std::back_inserter(v)++) = item;
-        }
-
-    return v;
 }

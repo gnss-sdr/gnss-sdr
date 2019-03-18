@@ -64,7 +64,10 @@ public:
     ~glonass_l1_ca_telemetry_decoder_gs();                //!< Class destructor
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
     void set_channel(int32_t channel);                    //!< Set receiver's channel
-
+    inline void reset()
+    {
+        return;
+    }
     /*!
      * \brief This is where all signal processing takes place
      */

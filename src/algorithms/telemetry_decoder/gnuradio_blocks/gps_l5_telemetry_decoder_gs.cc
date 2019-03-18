@@ -60,6 +60,12 @@ gps_l5_telemetry_decoder_gs::gps_l5_telemetry_decoder_gs(
 {
     // Ephemeris data port out
     this->message_port_register_out(pmt::mp("telemetry"));
+    // Control messages to tracking block
+    this->message_port_register_out(pmt::mp("telemetry_to_trk"));
+    d_last_valid_preamble = 0;
+    d_sent_tlm_failed_msg = false;
+    d_max_symbols_without_valid_frame = GPS_L5_CNAV_DATA_PAGE_BITS * GPS_L5_SAMPLES_PER_SYMBOL * GPS_L5_SYMBOLS_PER_BIT * 5;  //rise alarm if 5 consecutive subframes have no valid CRC
+
     // initialize internal vars
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
@@ -85,6 +91,8 @@ gps_l5_telemetry_decoder_gs::gps_l5_telemetry_decoder_gs(
         }
     sync_NH = false;
     new_sym = false;
+
+    d_sample_counter = 0;
 }
 
 
@@ -141,6 +149,14 @@ void gps_l5_telemetry_decoder_gs::set_channel(int32_t channel)
 }
 
 
+void gps_l5_telemetry_decoder_gs::reset()
+{
+    d_last_valid_preamble = d_sample_counter;
+    d_sent_tlm_failed_msg = false;
+    DLOG(INFO) << "Telemetry decoder reset for satellite " << d_satellite;
+}
+
+
 int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
@@ -156,6 +172,18 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
     sym_hist.push_back(in[0].Prompt_I);
     int32_t corr_NH = 0;
     int32_t symbol_value = 0;
+
+    // check if there is a problem with the telemetry of the current satellite
+    d_sample_counter++;  // count for the processed symbols
+    if (d_sent_tlm_failed_msg == false)
+        {
+            if ((d_sample_counter - d_last_valid_preamble) > d_max_symbols_without_valid_frame)
+                {
+                    int message = 1;  //bad telemetry
+                    this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(message));
+                    d_sent_tlm_failed_msg = true;
+                }
+        }
 
     // Search correlation with Neuman-Hofman Code (see IS-GPS-705D)
     if (sym_hist.size() == GPS_L5I_NH_CODE_LENGTH)
@@ -240,6 +268,7 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
 
             // update TOW at the preamble instant
             d_TOW_at_Preamble_ms = msg.tow * 6000;
+            d_last_valid_preamble = d_sample_counter;
             // The time of the last input symbol can be computed from the message ToW and
             // delay by the formulae:
             // \code

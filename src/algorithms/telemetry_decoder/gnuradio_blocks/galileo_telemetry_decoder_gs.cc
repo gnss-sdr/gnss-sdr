@@ -68,6 +68,12 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
 {
     // Ephemeris data port out
     this->message_port_register_out(pmt::mp("telemetry"));
+    // Control messages to tracking block
+    this->message_port_register_out(pmt::mp("telemetry_to_trk"));
+    d_last_valid_preamble = 0;
+    d_sent_tlm_failed_msg = false;
+
+
     // initialize internal vars
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
@@ -91,6 +97,8 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                 d_frame_length_symbols = GALILEO_INAV_PAGE_PART_SYMBOLS - GALILEO_INAV_PREAMBLE_LENGTH_BITS;
                 CodeLength = GALILEO_INAV_PAGE_PART_SYMBOLS - GALILEO_INAV_PREAMBLE_LENGTH_BITS;
                 DataLength = (CodeLength / nn) - mm;
+                d_max_symbols_without_valid_frame = GALILEO_INAV_PAGE_PART_SYMBOLS * 10;  //rise alarm 10 seconds without valid tlm
+
                 break;
             }
         case 2:  // FNAV
@@ -119,6 +127,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                                 d_secondary_code_samples[i] = -1;
                             }
                     }
+                d_max_symbols_without_valid_frame = GALILEO_FNAV_CODES_PER_SYMBOL * GALILEO_FNAV_SYMBOLS_PER_PAGE * 10;  //rise alarm 10 seconds without valid tlm
                 break;
             }
         default:
@@ -133,6 +142,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
             d_frame_length_symbols = 0U;
             CodeLength = 0;
             DataLength = 0;
+            d_max_symbols_without_valid_frame = 0;
             std::cout << "Galileo unified telemetry decoder error: Unknown frame type " << std::endl;
         }
 
@@ -431,9 +441,20 @@ void galileo_telemetry_decoder_gs::decode_FNAV_word(double *page_symbols, int32_
 
 void galileo_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satellite)
 {
+    gr::thread::scoped_lock lock(d_setlock);
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
+    d_last_valid_preamble = d_sample_counter;
+    d_sent_tlm_failed_msg = false;
     DLOG(INFO) << "Setting decoder Finite State Machine to satellite " << d_satellite;
     DLOG(INFO) << "Navigation Satellite set to " << d_satellite;
+}
+
+
+void galileo_telemetry_decoder_gs::reset()
+{
+    d_last_valid_preamble = d_sample_counter;
+    d_sent_tlm_failed_msg = false;
+    DLOG(INFO) << "Telemetry decoder reset for satellite " << d_satellite;
 }
 
 
@@ -478,10 +499,20 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
     current_symbol = in[0][0];
     // add new symbol to the symbol queue
     d_symbol_history.push_back(current_symbol.Prompt_I);
-    d_sample_counter++;  // count for the processed samples
+    d_sample_counter++;  // count for the processed symbols
     consume_each(1);
     d_flag_preamble = false;
 
+    // check if there is a problem with the telemetry of the current satellite
+    if (d_stat < 1 and d_sent_tlm_failed_msg == false)
+        {
+            if ((d_sample_counter - d_last_valid_preamble) > d_max_symbols_without_valid_frame)
+                {
+                    int message = 1;  //bad telemetry
+                    this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(message));
+                    d_sent_tlm_failed_msg = true;
+                }
+        }
     if (d_symbol_history.size() > d_required_symbols)
         {
             // ******* preamble correlation ********
@@ -604,6 +635,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                 d_CRC_error_counter = 0;
                                 d_flag_preamble = true;               // valid preamble indicator (initialized to false every work())
                                 d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
+                                d_last_valid_preamble = d_sample_counter;
                                 if (!d_flag_frame_sync)
                                     {
                                         d_flag_frame_sync = true;

@@ -40,6 +40,14 @@ class Dll_Pll_Conf
 {
 public:
     /* DLL/PLL tracking configuration */
+
+    int fll_filter_order;
+    bool enable_fll_pull_in;
+    bool enable_fll_steady_state;
+    unsigned int pull_in_time_s;
+    int pll_filter_order;
+    int dll_filter_order;
+
     double fs_in;
     uint32_t vector_length;
     bool dump;
@@ -47,6 +55,7 @@ public:
     std::string dump_filename;
     float pll_pull_in_bw_hz;
     float dll_pull_in_bw_hz;
+    float fll_bw_hz;
     float pll_bw_hz;
     float dll_bw_hz;
     float pll_bw_narrow_hz;

@@ -33,8 +33,8 @@
 
 #include "GPS_L1_CA.h"
 #include "gnss_satellite.h"
-#include "gps_navigation_message.h"
 #include "gnss_synchro.h"
+#include "gps_navigation_message.h"
 #include <boost/circular_buffer.hpp>
 #include <boost/shared_ptr.hpp>  // for boost::shared_ptr
 #include <gnuradio/block.h>      // for block
@@ -61,7 +61,7 @@ public:
     ~gps_l1_ca_telemetry_decoder_gs();
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
     void set_channel(int channel);                        //!< Set receiver's channel
-
+    void reset();
     /*!
      * \brief This is where all signal processing takes place
      */
@@ -79,6 +79,10 @@ private:
     bool decode_subframe();
     bool new_decoder();
     int d_crc_error_synchronization_counter;
+    uint64_t d_sample_counter;
+    bool d_sent_tlm_failed_msg;
+    uint64_t d_last_valid_preamble;
+    uint32_t d_max_symbols_without_valid_frame;
 
     int *d_preambles_symbols;
     uint32_t d_stat;

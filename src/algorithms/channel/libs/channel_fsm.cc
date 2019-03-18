@@ -157,7 +157,11 @@ void ChannelFsm::set_tracking(std::shared_ptr<TrackingInterface> tracking)
     trk_ = std::move(tracking);
 }
 
-
+void ChannelFsm::set_telemetry(std::shared_ptr<TelemetryDecoderInterface> telemetry)
+{
+    std::lock_guard<std::mutex> lk(mx);
+    nav_ = std::move(telemetry);
+}
 void ChannelFsm::set_queue(gr::msg_queue::sptr queue)
 {
     std::lock_guard<std::mutex> lk(mx);
@@ -186,6 +190,7 @@ void ChannelFsm::stop_tracking()
 void ChannelFsm::start_acquisition()
 {
     acq_->reset();
+    nav_->reset();
 }
 
 

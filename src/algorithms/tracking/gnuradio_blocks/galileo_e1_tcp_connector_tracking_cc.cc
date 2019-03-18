@@ -95,6 +95,8 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
 {
     this->message_port_register_out(pmt::mp("events"));
     this->set_relative_rate(1.0 / vector_length);
+    // Telemetry message port input
+    this->message_port_register_in(pmt::mp("telemetry_to_trk"));
     // initialize internal vars
     d_dump = dump;
     d_fs_in = fs_in;

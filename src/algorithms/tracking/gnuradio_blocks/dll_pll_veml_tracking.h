@@ -34,17 +34,21 @@
 
 #include "cpu_multicorrelator_real_codes.h"
 #include "dll_pll_conf.h"
-#include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
 #include <boost/circular_buffer.hpp>
-#include <gnuradio/block.h>
-#include <fstream>
-#include <map>
-#include <queue>
-#include <string>
-#include <utility>
+#include <boost/shared_ptr.hpp>   // for boost::shared_ptr
+#include <gnuradio/block.h>       // for block
+#include <gnuradio/gr_complex.h>  // for gr_complex
+#include <gnuradio/types.h>       // for gr_vector_int, gr_vector...
+#include <pmt/pmt.h>              // for pmt_t
+#include <cstdint>                // for int32_t
+#include <fstream>                // for string, ofstream
+#include <string>                 // for string
+#include <utility>                // for pair
 
+
+class Gnss_Synchro;
 class dll_pll_veml_tracking;
 
 using dll_pll_veml_tracking_sptr = boost::shared_ptr<dll_pll_veml_tracking>;
@@ -92,7 +96,7 @@ private:
     uint32_t d_channel;
     Gnss_Synchro *d_acquisition_gnss_synchro;
 
-    //Signal parameters
+    // Signal parameters
     bool d_secondary;
     bool interchange_iq;
     double d_signal_carrier_freq;
@@ -111,9 +115,10 @@ private:
     int32_t d_preamble_length_symbols;
     boost::circular_buffer<float> d_symbol_history;
 
-    //tracking state machine
+    // tracking state machine
     int32_t d_state;
-    //Integration period in samples
+
+    // Integration period in samples
     int32_t d_correlation_length_ms;
     int32_t d_n_correlator_taps;
 
@@ -188,11 +193,10 @@ private:
     // CN0 estimation and lock detector
     int32_t d_cn0_estimation_counter;
     int32_t d_carrier_lock_fail_counter;
-    std::deque<float> d_carrier_lock_detector_queue;
     double d_carrier_lock_test;
     double d_CN0_SNV_dB_Hz;
     double d_carrier_lock_threshold;
-    std::deque<gr_complex> d_Prompt_buffer_deque;
+    boost::circular_buffer<gr_complex> d_Prompt_circular_buffer;
     gr_complex *d_Prompt_buffer;
 
     // file dump

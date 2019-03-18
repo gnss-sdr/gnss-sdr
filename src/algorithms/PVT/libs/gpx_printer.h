@@ -33,12 +33,12 @@
 #ifndef GNSS_SDR_GPX_PRINTER_H_
 #define GNSS_SDR_GPX_PRINTER_H_
 
-#include "pvt_solution.h"
-#include "rtklib_solver.h"
+
 #include <fstream>
 #include <memory>
 #include <string>
 
+class Rtklib_Solver;
 
 /*!
  * \brief Prints PVT information to GPX format file

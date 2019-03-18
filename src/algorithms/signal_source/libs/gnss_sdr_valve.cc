@@ -32,11 +32,12 @@
  */
 
 #include "gnss_sdr_valve.h"
-#include "control_message_factory.h"
-#include <glog/logging.h>
-#include <gnuradio/io_signature.h>
-#include <algorithm>  // for min
-#include <cstring>    // for memcpy
+#include "control_message_factory.h"  // for ControlMessageFactory
+#include <glog/logging.h>             // for LOG
+#include <gnuradio/io_signature.h>    // for io_signature
+#include <algorithm>                  // for min
+#include <cstring>                    // for memcpy
+#include <unistd.h>                   // for usleep
 #include <utility>
 
 Gnss_Sdr_Valve::Gnss_Sdr_Valve(size_t sizeof_stream_item,

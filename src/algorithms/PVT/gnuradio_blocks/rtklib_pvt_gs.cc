@@ -1,5 +1,5 @@
 /*!
- * \file rtklib_pvt_cc.cc
+ * \file rtklib_pvt_gs.cc
  * \brief Interface of a Position Velocity and Time computation block
  * \author Javier Arribas, 2017. jarribas(at)cttc.es
  *
@@ -28,24 +28,61 @@
  * -------------------------------------------------------------------------
  */
 
-#include "rtklib_pvt_cc.h"
+#include "rtklib_pvt_gs.h"
+#include "beidou_dnav_almanac.h"
+#include "beidou_dnav_ephemeris.h"
+#include "beidou_dnav_iono.h"
+#include "beidou_dnav_utc_model.h"
 #include "display.h"
+#include "galileo_almanac.h"
 #include "galileo_almanac_helper.h"
+#include "galileo_ephemeris.h"
+#include "galileo_iono.h"
+#include "galileo_utc_model.h"
+#include "geojson_printer.h"
+#include "glonass_gnav_almanac.h"
+#include "glonass_gnav_ephemeris.h"
+#include "glonass_gnav_utc_model.h"
 #include "gnss_sdr_create_directory.h"
+#include "gps_almanac.h"
+#include "gps_cnav_ephemeris.h"
+#include "gps_cnav_iono.h"
+#include "gps_cnav_utc_model.h"
+#include "gps_ephemeris.h"
+#include "gps_iono.h"
+#include "gps_utc_model.h"
+#include "gpx_printer.h"
+#include "kml_printer.h"
+#include "monitor_pvt.h"
+#include "monitor_pvt_udp_sink.h"
+#include "nmea_printer.h"
 #include "pvt_conf.h"
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/exception/all.hpp>
+#include "rinex_printer.h"
+#include "rtcm_printer.h"
+#include "rtklib_solver.h"
+#include <boost/any.hpp>                   // for any_cast, any
+#include <boost/archive/xml_iarchive.hpp>  // for xml_iarchive
+#include <boost/archive/xml_oarchive.hpp>  // for xml_oarchive
+#include <boost/bind/bind.hpp>             // for bind_t, bind
+#include <boost/exception/diagnostic_information.hpp>
+#include <boost/exception/exception.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/serialization/map.hpp>
-#include <glog/logging.h>
-#include <gnuradio/gr_complex.h>
-#include <gnuradio/io_signature.h>
-#include <algorithm>
-#include <exception>
-#include <fstream>
-#include <iostream>
-#include <stdexcept>
+#include <boost/serialization/nvp.hpp>  // for nvp, make_nvp
+#include <boost/system/error_code.hpp>  // for error_code
+#include <glog/logging.h>               // for LOG
+#include <gnuradio/io_signature.h>      // for io_signature
+#include <pmt/pmt_sugar.h>              // for mp
+#include <algorithm>                    // for sort, unique
+#include <exception>                    // for exception
+#include <fstream>                      // for ofstream
+#include <iomanip>                      // for put_time, setprecision
+#include <iostream>                     // for operator<<
+#include <locale>                       // for locale
+#include <sstream>                      // for ostringstream
+#include <stdexcept>                    // for length_error
+#include <sys/ipc.h>                    // for IPC_CREAT
+#include <sys/msg.h>                    // for msgctl
 #if OLD_BOOST
 #include <boost/math/common_factor_rt.hpp>
 namespace bc = boost::math;
@@ -54,22 +91,20 @@ namespace bc = boost::math;
 namespace bc = boost::integer;
 #endif
 
-using google::LogMessage;
 
-
-rtklib_pvt_cc_sptr rtklib_make_pvt_cc(uint32_t nchannels,
+rtklib_pvt_gs_sptr rtklib_make_pvt_gs(uint32_t nchannels,
     const Pvt_Conf& conf_,
     const rtk_t& rtk)
 {
-    return rtklib_pvt_cc_sptr(new rtklib_pvt_cc(nchannels,
+    return rtklib_pvt_gs_sptr(new rtklib_pvt_gs(nchannels,
         conf_,
         rtk));
 }
 
 
-rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
+rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     const Pvt_Conf& conf_,
-    const rtk_t& rtk) : gr::sync_block("rtklib_pvt_cc",
+    const rtk_t& rtk) : gr::sync_block("rtklib_pvt_gs",
                             gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
                             gr::io_signature::make(0, 0, 0))
 {
@@ -118,7 +153,7 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
 
     // GPS Ephemeris data message port in
     this->message_port_register_in(pmt::mp("telemetry"));
-    this->set_msg_handler(pmt::mp("telemetry"), boost::bind(&rtklib_pvt_cc::msg_handler_telemetry, this, _1));
+    this->set_msg_handler(pmt::mp("telemetry"), boost::bind(&rtklib_pvt_gs::msg_handler_telemetry, this, _1));
 
     // initialize kml_printer
     std::string kml_dump_filename;
@@ -151,7 +186,6 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
     // initialize geojson_printer
     std::string geojson_dump_filename;
     geojson_dump_filename = d_dump_filename;
-
     d_geojson_output_enabled = conf_.geojson_output_enabled;
     if (d_geojson_output_enabled)
         {
@@ -330,13 +364,50 @@ rtklib_pvt_cc::rtklib_pvt_cc(uint32_t nchannels,
             throw std::exception();
         }
 
+    // Display time in local time zone
+    d_show_local_time_zone = conf_.show_local_time_zone;
+    time_t when = std::time(nullptr);
+    auto const tm = *std::localtime(&when);
+    std::ostringstream os;
+#ifdef HAS_PUT_TIME
+    os << std::put_time(&tm, "%z");
+#endif
+    std::string utc_diff_str = os.str();  // in ISO 8601 format: "+HHMM" or "-HHMM"
+    if (utc_diff_str.empty())
+        {
+            utc_diff_str = "+0000";
+        }
+    int h = std::stoi(utc_diff_str.substr(0, 3), nullptr, 10);
+    int m = std::stoi(utc_diff_str[0] + utc_diff_str.substr(3), nullptr, 10);
+    d_utc_diff_time = boost::posix_time::hours(h) + boost::posix_time::minutes(m);
+    std::ostringstream os2;
+#ifdef HAS_PUT_TIME
+    os2 << std::put_time(&tm, "%Z");
+#endif
+    std::string time_zone_abrv = os2.str();
+    if (time_zone_abrv.empty())
+        {
+            if (utc_diff_str == "+0000")
+                {
+                    d_local_time_str = " UTC";
+                }
+            else
+                {
+                    d_local_time_str = " (UTC " + utc_diff_str.substr(0, 3) + ":" + utc_diff_str.substr(3, 2) + ")";
+                }
+        }
+    else
+        {
+            d_local_time_str = std::string(" ") + time_zone_abrv + " (UTC " + utc_diff_str.substr(0, 3) + ":" + utc_diff_str.substr(3, 2) + ")";
+        }
+
     d_pvt_solver = std::make_shared<Rtklib_Solver>(static_cast<int32_t>(nchannels), dump_ls_pvt_filename, d_dump, d_dump_mat, rtk);
     d_pvt_solver->set_averaging_depth(1);
     start = std::chrono::system_clock::now();
 }
 
 
-rtklib_pvt_cc::~rtklib_pvt_cc()
+rtklib_pvt_gs::~rtklib_pvt_gs()
 {
     msgctl(sysv_msqid, IPC_RMID, nullptr);
     try
@@ -883,7 +954,7 @@ rtklib_pvt_cc::~rtklib_pvt_cc()
 }
 
 
-void rtklib_pvt_cc::msg_handler_telemetry(const pmt::pmt_t& msg)
+void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
 {
     try
         {
@@ -1097,43 +1168,43 @@ void rtklib_pvt_cc::msg_handler_telemetry(const pmt::pmt_t& msg)
 }
 
 
-std::map<int, Gps_Ephemeris> rtklib_pvt_cc::get_gps_ephemeris_map() const
+std::map<int, Gps_Ephemeris> rtklib_pvt_gs::get_gps_ephemeris_map() const
 {
     return d_pvt_solver->gps_ephemeris_map;
 }
 
 
-std::map<int, Gps_Almanac> rtklib_pvt_cc::get_gps_almanac_map() const
+std::map<int, Gps_Almanac> rtklib_pvt_gs::get_gps_almanac_map() const
 {
     return d_pvt_solver->gps_almanac_map;
 }
 
 
-std::map<int, Galileo_Ephemeris> rtklib_pvt_cc::get_galileo_ephemeris_map() const
+std::map<int, Galileo_Ephemeris> rtklib_pvt_gs::get_galileo_ephemeris_map() const
 {
     return d_pvt_solver->galileo_ephemeris_map;
 }
 
 
-std::map<int, Galileo_Almanac> rtklib_pvt_cc::get_galileo_almanac_map() const
+std::map<int, Galileo_Almanac> rtklib_pvt_gs::get_galileo_almanac_map() const
 {
     return d_pvt_solver->galileo_almanac_map;
 }
 
 
-std::map<int, Beidou_Dnav_Ephemeris> rtklib_pvt_cc::get_beidou_dnav_ephemeris_map() const
+std::map<int, Beidou_Dnav_Ephemeris> rtklib_pvt_gs::get_beidou_dnav_ephemeris_map() const
 {
     return d_pvt_solver->beidou_dnav_ephemeris_map;
 }
 
 
-std::map<int, Beidou_Dnav_Almanac> rtklib_pvt_cc::get_beidou_dnav_almanac_map() const
+std::map<int, Beidou_Dnav_Almanac> rtklib_pvt_gs::get_beidou_dnav_almanac_map() const
 {
     return d_pvt_solver->beidou_dnav_almanac_map;
 }
 
 
-void rtklib_pvt_cc::clear_ephemeris()
+void rtklib_pvt_gs::clear_ephemeris()
 {
     d_pvt_solver->gps_ephemeris_map.clear();
     d_pvt_solver->gps_almanac_map.clear();
@@ -1144,13 +1215,13 @@ void rtklib_pvt_cc::clear_ephemeris()
 }
 
 
-bool rtklib_pvt_cc::observables_pairCompare_min(const std::pair<int, Gnss_Synchro>& a, const std::pair<int, Gnss_Synchro>& b)
+bool rtklib_pvt_gs::observables_pairCompare_min(const std::pair<int, Gnss_Synchro>& a, const std::pair<int, Gnss_Synchro>& b)
 {
     return (a.second.Pseudorange_m) < (b.second.Pseudorange_m);
 }
 
 
-bool rtklib_pvt_cc::send_sys_v_ttff_msg(ttff_msgbuf ttff)
+bool rtklib_pvt_gs::send_sys_v_ttff_msg(ttff_msgbuf ttff)
 {
     // Fill Sys V message structures
     int msgsend_size;
@@ -1166,7 +1237,7 @@ bool rtklib_pvt_cc::send_sys_v_ttff_msg(ttff_msgbuf ttff)
 }
 
 
-bool rtklib_pvt_cc::save_gnss_synchro_map_xml(const std::string& file_name)
+bool rtklib_pvt_gs::save_gnss_synchro_map_xml(const std::string& file_name)
 {
     if (gnss_observables_map.empty() == false)
         {
@@ -1191,7 +1262,7 @@ bool rtklib_pvt_cc::save_gnss_synchro_map_xml(const std::string& file_name)
 }
 
 
-bool rtklib_pvt_cc::load_gnss_synchro_map_xml(const std::string& file_name)
+bool rtklib_pvt_gs::load_gnss_synchro_map_xml(const std::string& file_name)
 {
     // load from xml (boost serialize)
     std::ifstream ifs;
@@ -1212,7 +1283,7 @@ bool rtklib_pvt_cc::load_gnss_synchro_map_xml(const std::string& file_name)
 }
 
 
-std::vector<std::string> rtklib_pvt_cc::split_string(const std::string& s, char delim) const
+std::vector<std::string> rtklib_pvt_gs::split_string(const std::string& s, char delim) const
 {
     std::vector<std::string> v;
     std::stringstream ss(s);
@@ -1227,7 +1298,7 @@ std::vector<std::string> rtklib_pvt_cc::split_string(const std::string& s, char 
 }
 
 
-bool rtklib_pvt_cc::get_latest_PVT(double* longitude_deg,
+bool rtklib_pvt_gs::get_latest_PVT(double* longitude_deg,
     double* latitude_deg,
     double* height_m,
     double* ground_speed_kmh,
@@ -1250,7 +1321,7 @@ bool rtklib_pvt_cc::get_latest_PVT(double* longitude_deg,
 }
 
 
-int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_items,
+int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items __attribute__((unused)))
 {
     for (int32_t epoch = 0; epoch < noutput_items; epoch++)
@@ -1433,8 +1504,16 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
 
                                     if (first_fix == true)
                                         {
-                                            std::cout << "First position fix at " << boost::posix_time::to_simple_string(d_pvt_solver->get_position_UTC_time())
-                                                      << " UTC is Lat = " << d_pvt_solver->get_latitude() << " [deg], Long = " << d_pvt_solver->get_longitude()
+                                            if (d_show_local_time_zone)
+                                                {
+                                                    boost::posix_time::ptime time_first_solution = d_pvt_solver->get_position_UTC_time() + d_utc_diff_time;
+                                                    std::cout << "First position fix at " << time_first_solution << d_local_time_str;
+                                                }
+                                            else
+                                                {
+                                                    std::cout << "First position fix at " << d_pvt_solver->get_position_UTC_time() << " UTC";
+                                                }
+                                            std::cout << " is Lat = " << d_pvt_solver->get_latitude() << " [deg], Long = " << d_pvt_solver->get_longitude()
                                                       << " [deg], Height= " << d_pvt_solver->get_height() << " [m]" << std::endl;
                                             ttff_msgbuf ttff;
                                             ttff.mtype = 1;
@@ -3256,18 +3335,31 @@ int rtklib_pvt_cc::work(int noutput_items, gr_vector_const_void_star& input_item
                     // DEBUG MESSAGE: Display position in console output
                     if (d_pvt_solver->is_valid_position() and flag_display_pvt)
                         {
+                            boost::posix_time::ptime time_solution;
+                            std::string UTC_solution_str;
+                            if (d_show_local_time_zone)
+                                {
+                                    time_solution = d_pvt_solver->get_position_UTC_time() + d_utc_diff_time;
+                                    UTC_solution_str = d_local_time_str;
+                                }
+                            else
+                                {
+                                    time_solution = d_pvt_solver->get_position_UTC_time();
+                                    UTC_solution_str = " UTC";
+                                }
                             std::streamsize ss = std::cout.precision();  // save current precision
                             std::cout.setf(std::ios::fixed, std::ios::floatfield);
                             auto facet = new boost::posix_time::time_facet("%Y-%b-%d %H:%M:%S.%f %z");
                             std::cout.imbue(std::locale(std::cout.getloc(), facet));
+                            std::cout
+                                << TEXT_BOLD_GREEN
+                                << "Position at " << time_solution << UTC_solution_str
+                                << " using " << d_pvt_solver->get_num_valid_observations()
+                                << std::fixed << std::setprecision(9)
+                                << " observations is Lat = " << d_pvt_solver->get_latitude() << " [deg], Long = " << d_pvt_solver->get_longitude()
+                                << std::fixed << std::setprecision(3)
+                                << " [deg], Height = " << d_pvt_solver->get_height() << " [m]" << TEXT_RESET << std::endl;
 
-                            std::cout << TEXT_BOLD_GREEN
-                                      << "Position at " << d_pvt_solver->get_position_UTC_time()
-                                      << " UTC using " << d_pvt_solver->get_num_valid_observations()
-                                      << std::fixed << std::setprecision(9)
-                                      << " observations is Lat = " << d_pvt_solver->get_latitude() << " [deg], Long = " << d_pvt_solver->get_longitude()
-                                      << std::fixed << std::setprecision(3)
-                                      << " [deg], Height = " << d_pvt_solver->get_height() << " [m]" << TEXT_RESET << std::endl;
                             std::cout << std::setprecision(ss);
                             DLOG(INFO) << "RX clock offset: " << d_pvt_solver->get_time_offset_s() << "[s]";
 

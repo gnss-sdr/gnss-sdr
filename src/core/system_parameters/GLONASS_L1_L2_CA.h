@@ -52,7 +52,7 @@ const double GLONASS_F_M_A = 0.35e9;                           //!< Gravitationa
 const double GLONASS_SEMI_MAJOR_AXIS = 6378136;                //!< Semi-major axis of Earth [m]
 const double GLONASS_FLATTENING = 1 / 29825784;                //!< Flattening parameter
 const double GLONASS_GRAVITY = 97803284;                       //!< Equatorial acceleration of gravity [mGal]
-const double GLONASS_GRAVITY_CORRECTION = 0.87;                //!< Correction to acceleration of gravity at sea-level due to Atmosphere[мGal]
+const double GLONASS_GRAVITY_CORRECTION = 0.87;                //!< Correction to acceleration of gravity at sea-level due to Atmosphere[uGal]
 const double GLONASS_J2 = 1082625.75e-9;                       //!< Second zonal harmonic of the geopotential
 const double GLONASS_J4 = -2370.89e-9;                         //!< Fourth zonal harmonic of the geopotential
 const double GLONASS_J6 = 6.08e-9;                             //!< Sixth zonal harmonic of the geopotential
@@ -74,7 +74,7 @@ const double GLONASS_MOON_SEMI_MAJOR_AXIS = 3.84385243e5;     //!< Semi-major ax
 const double GLONASS_MOON_ECCENTRICITY = 0.054900489;         //!< Eccentricity of lunar orbit
 const double GLONASS_MOON_INCLINATION = 0.000089803977407e3;  //!< Inclination of lunar orbit to ecliptic plane (5 deg 08 min 43.4 sec) [rad]
 
-const double GLONASS_SUN_OMEGA = 0.004908229466869e3;  //!< TODO What is this operation in the seconds with T?(281 deg 13 min 15.0 + 6189.03*Т sec) [rad]
+const double GLONASS_SUN_OMEGA = 0.004908229466869e3;  //!< TODO What is this operation in the seconds with T?(281 deg 13 min 15.0 + 6189.03 x T sec) [rad]
 const double GLONASS_SUN_Q0 = 0.006256583774423e3;     //!< (358 deg 28 min 33.04 sec) [rad]
 const double GLONASS_SUN_Q1 = 0e3;                     //!< TODO Why is the value greater than 60?(129596579.10 sec) [rad]
 const double GLONASS_SUN_GM = 0.1325263e12;            //!< Solar gravitational constant [km^3/s^2]

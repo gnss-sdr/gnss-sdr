@@ -1,6 +1,5 @@
 /*!
- * \file udp_signal_source.cc
- *
+ * \file custom_udp_signal_source.cc
  * \brief Receives ip frames containing samples in UDP frame encapsulation
  * using a high performance packet capture library (libpcap)
  * \author Javier Arribas jarribas (at) cttc.es
@@ -37,9 +36,6 @@
 #include <glog/logging.h>
 #include <iostream>
 #include <utility>
-
-
-using google::LogMessage;
 
 
 CustomUDPSignalSource::CustomUDPSignalSource(ConfigurationInterface* configuration,

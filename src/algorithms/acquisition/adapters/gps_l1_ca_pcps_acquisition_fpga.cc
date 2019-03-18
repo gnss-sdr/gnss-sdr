@@ -4,9 +4,7 @@
  *  for GPS L1 C/A signals for the FPGA
  * \authors <ul>
  *          <li> Marc Majoral, 2019. mmajoral(at)cttc.es
- *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
- *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
- *          <li> Marc Molina, 2013. marc.molina.pena(at)gmail.com
+ *          <li> Javier Arribas, 2019. jarribas(at)cttc.es
  *          </ul>
  *
  * -------------------------------------------------------------------------
@@ -38,15 +36,19 @@
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
+#include "gnss_synchro.h"
 #include "gps_sdr_signal_processing.h"
 #include <glog/logging.h>
 #include <gnuradio/fft/fft.h>
-#include <new>
+#include <gnuradio/gr_complex.h>  // for gr_complex
+#include <volk/volk.h>            // for volk_32fc_conjugate_32fc
+#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <cmath>    // for abs, pow, floor
+#include <complex>  // for complex
+#include <cstring>  // for memcpy
 
 
 #define NUM_PRNs 32
-
-using google::LogMessage;
 
 
 GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
@@ -242,13 +244,19 @@ void GpsL1CaPcpsAcquisitionFpga::set_state(int state)
 
 void GpsL1CaPcpsAcquisitionFpga::connect(gr::top_block_sptr top_block)
 {
-    // nothing to connect
+    if (top_block)
+        { /* top_block is not null */
+        };
+    // Nothing to connect
 }
 
 
 void GpsL1CaPcpsAcquisitionFpga::disconnect(gr::top_block_sptr top_block)
 {
-    // nothing to disconnect
+    if (top_block)
+        { /* top_block is not null */
+        };
+    // Nothing to disconnect
 }
 
 

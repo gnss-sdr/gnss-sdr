@@ -32,6 +32,7 @@
 #include "complex_byte_to_float_x2.h"
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
+#include <algorithm>  // for max
 
 
 complex_byte_to_float_x2_sptr make_complex_byte_to_float_x2()

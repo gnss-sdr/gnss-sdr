@@ -34,6 +34,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/sync_block.h>
+#include <gnuradio/types.h>  // for gr_vector_const_void_star
 
 class short_x2_to_cshort;
 
@@ -48,10 +49,9 @@ class short_x2_to_cshort : public gr::sync_block
 {
 private:
     friend short_x2_to_cshort_sptr make_short_x2_to_cshort();
-
-public:
     short_x2_to_cshort();
 
+public:
     int work(int noutput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items);

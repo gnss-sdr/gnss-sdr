@@ -30,6 +30,7 @@ target_link_libraries(channel_adapters
     PUBLIC
         Gnuradio::runtime
         channel_libs
+        core_system_parameters
     PRIVATE
         Gflags::gflags
         Glog::glog

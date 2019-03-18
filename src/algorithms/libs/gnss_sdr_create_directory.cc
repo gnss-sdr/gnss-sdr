@@ -28,13 +28,13 @@
  * -------------------------------------------------------------------------
  */
 
-
 #include "gnss_sdr_create_directory.h"
 #include <boost/filesystem/operations.hpp>   // for create_directories, exists
 #include <boost/filesystem/path.hpp>         // for path, operator<<
 #include <boost/filesystem/path_traits.hpp>  // for filesystem
-#include <fstream>
-
+#include <boost/system/error_code.hpp>       // for error_code
+#include <exception>                         // for exception
+#include <fstream>                           // for ofstream
 
 bool gnss_sdr_create_directory(const std::string& foldername)
 {

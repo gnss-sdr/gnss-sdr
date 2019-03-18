@@ -1,12 +1,12 @@
 /*!
- * \file fpga_multicorrelator_8sc.h
- * \brief High optimized FPGA vector correlator class
+ * \file fpga_multicorrelator.h
+ * \brief FPGA vector correlator class
  * \authors <ul>
  * 			<li> Marc Majoral, 2019. mmajoral(at)cttc.cat
- *          <li> Javier Arribas, 2016. jarribas(at)cttc.es
+ *          <li> Javier Arribas, 2019. jarribas(at)cttc.es
  *          </ul>
  *
- * Class that controls and executes a high optimized vector correlator
+ * Class that controls and executes a highly optimized vector correlator
  * class in the FPGA
  *
  * -------------------------------------------------------------------------
@@ -38,7 +38,6 @@
 #define GNSS_SDR_FPGA_MULTICORRELATOR_8SC_H_
 
 #include <gnuradio/block.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cstdint>
 
 // FPGA register addresses
@@ -69,12 +68,12 @@
 /*!
  * \brief Class that implements carrier wipe-off and correlators.
  */
-class fpga_multicorrelator_8sc
+class Fpga_Multicorrelator_8sc
 {
 public:
-    fpga_multicorrelator_8sc(int32_t n_correlators, std::string device_name,
+    Fpga_Multicorrelator_8sc(int32_t n_correlators, std::string device_name,
         uint32_t device_base, int32_t *ca_codes, int32_t *data_codes, uint32_t code_length_chips, bool track_pilot, uint32_t multicorr_type, uint32_t code_samples_per_chip);
-    ~fpga_multicorrelator_8sc();
+    ~Fpga_Multicorrelator_8sc();
     void set_output_vectors(gr_complex *corr_out, gr_complex *Prompt_Data);
     void set_local_code_and_taps(
         float *shifts_chips, float *prompt_data_shift, int32_t PRN);
@@ -98,7 +97,7 @@ private:
     float *d_shifts_chips;
     float *d_prompt_data_shift;
     int32_t d_code_length_chips;
-    int32_t d_n_correlators;
+    int32_t d_n_correlators; // number of correlators
 
     // data related to the hardware module and the driver
     int32_t d_device_descriptor;    // driver descriptor
@@ -106,7 +105,6 @@ private:
 
     // configuration data received from the interface
     uint32_t d_channel;       // channel number
-    uint32_t d_ncorrelators;  // number of correlators
     uint32_t d_correlator_length_samples;
     float d_rem_code_phase_chips;
     float d_code_phase_step_chips;

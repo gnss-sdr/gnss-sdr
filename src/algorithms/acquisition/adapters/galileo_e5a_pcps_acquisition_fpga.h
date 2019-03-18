@@ -3,7 +3,7 @@
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
  *  Galileo E5a data and pilot Signals for the FPGA
  * \author Marc Majoral, 2019. mmajoral(at)cttc.es
- * \author Antonio Ramos, 2018. antonio.ramos(at)cttc.es
+ *
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
@@ -29,19 +29,27 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GALILEO_E5A_PCPS_ACQUISITION_FPGA_H_
-#define GALILEO_E5A_PCPS_ACQUISITION_FPGA_H_
+#ifndef GNSS_SDR_GALILEO_E5A_PCPS_ACQUISITION_FPGA_H_
+#define GNSS_SDR_GALILEO_E5A_PCPS_ACQUISITION_FPGA_H_
 
 
 #include "acquisition_interface.h"
-#include "gnss_synchro.h"
 #include "pcps_acquisition_fpga.h"
 #include <gnuradio/blocks/stream_to_vector.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
+#include <volk/volk_complex.h>       // for lv_16sc_t
+#include <cstddef>                   // for size_t
+#include <cstdint>
 #include <string>
 
+class Gnss_Synchro;
 class ConfigurationInterface;
 
+
+/*!
+ * \brief This class adapts a PCPS acquisition block off-loaded on an FPGA
+ * to an AcquisitionInterface for Galileo E5a signals
+ */
 class GalileoE5aPcpsAcquisitionFpga : public AcquisitionInterface
 {
 public:
@@ -67,7 +75,7 @@ public:
 
     inline size_t item_size() override
     {
-        return item_size_;
+        return sizeof(lv_16sc_t);
     }
 
     void connect(gr::top_block_sptr top_block) override;
@@ -78,7 +86,7 @@ public:
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
      * to efficiently exchange synchronization data between acquisition and
-     *  tracking blocks
+     * tracking blocks
      */
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
@@ -146,42 +154,25 @@ public:
 
 private:
     ConfigurationInterface* configuration_;
-
     pcps_acquisition_fpga_sptr acquisition_fpga_;
     gr::blocks::stream_to_vector::sptr stream_to_vector_;
-
-    size_t item_size_;
 
     std::string item_type_;
     std::string dump_filename_;
     std::string role_;
 
-    bool bit_transition_flag_;
-    bool dump_;
     bool acq_pilot_;
-    bool use_CFAR_;
-    bool blocking_;
     bool acq_iq_;
 
-    uint32_t vector_length_;
-    uint32_t code_length_;
     uint32_t channel_;
     uint32_t doppler_max_;
     uint32_t doppler_step_;
-    uint32_t sampled_ms_;
-    uint32_t max_dwells_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-
-    int64_t fs_in_;
-
-
-    float threshold_;
-
-    gr_complex* code_;
 
     Gnss_Synchro* gnss_synchro_;
 
     lv_16sc_t* d_all_fft_codes_;  // memory that contains all the code ffts
 };
-#endif /* GALILEO_E5A_PCPS_ACQUISITION_FPGA_H_ */
+
+#endif /* GNSS_SDR_GALILEO_E5A_PCPS_ACQUISITION_FPGA_H_ */

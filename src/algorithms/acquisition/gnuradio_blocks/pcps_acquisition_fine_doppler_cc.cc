@@ -1,5 +1,5 @@
 /*!
- * \file pcps_acquisition_fine_doppler_acquisition_cc.cc
+ * \file pcps_acquisition_fine_doppler_cc.cc
  * \brief This class implements a Parallel Code Phase Search Acquisition with multi-dwells and fine Doppler estimation
  * \authors <ul>
  *          <li> Javier Arribas, 2013. jarribas(at)cttc.es
@@ -43,8 +43,6 @@
 #include <algorithm>  // std::rotate, std::fill_n
 #include <sstream>
 
-
-using google::LogMessage;
 
 pcps_acquisition_fine_doppler_cc_sptr pcps_make_acquisition_fine_doppler_cc(const Acq_Conf &conf_)
 {

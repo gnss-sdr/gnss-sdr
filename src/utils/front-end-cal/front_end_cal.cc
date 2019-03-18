@@ -30,19 +30,21 @@
  */
 
 #include "front_end_cal.h"
+#include "GPS_L1_CA.h"  // for GPS_L1_FREQ_HZ
+#include "concurrent_map.h"
+#include "configuration_interface.h"
 #include "gnss_sdr_supl_client.h"
+#include "gps_acq_assist.h"  // for Gps_Acq_Assist
 #include "gps_almanac.h"
-#include "gps_cnav_ephemeris.h"
-#include "gps_cnav_iono.h"
 #include "gps_ephemeris.h"
 #include "gps_iono.h"
-#include "gps_navigation_message.h"
 #include "gps_utc_model.h"
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
+#include <algorithm>  // for min
 #include <cmath>
-#include <exception>
-#include <memory>
+#include <iostream>  // for operator<<
+#include <map>
 #include <utility>
 
 extern Concurrent_Map<Gps_Ephemeris> global_gps_ephemeris_map;

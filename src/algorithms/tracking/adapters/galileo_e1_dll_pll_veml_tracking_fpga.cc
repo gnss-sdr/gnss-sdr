@@ -3,7 +3,6 @@
  * \brief  Adapts a DLL+PLL VEML (Very Early Minus Late) tracking loop block
  *   to a TrackingInterface for Galileo E1 signals for the FPGA
  * \author Marc Majoral, 2019. mmajoral(at)cttc.cat
- * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  * Code DLL + carrier PLL according to the algorithms described in:
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
@@ -39,15 +38,16 @@
 #include "Galileo_E1.h"
 #include "configuration_interface.h"
 #include "display.h"
+#include "dll_pll_conf_fpga.h"
 #include "galileo_e1_signal_processing.h"
 #include "gnss_sdr_flags.h"
+#include "gnss_synchro.h"
 #include <glog/logging.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <cmath>     // for round
+#include <cstring>   // for memcpy
+#include <iostream>  // for operator<<,
 
-using google::LogMessage;
-
-void GalileoE1DllPllVemlTrackingFpga::stop_tracking()
-{
-}
 
 GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     ConfigurationInterface* configuration, const std::string& role,
@@ -135,16 +135,16 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     uint32_t code_samples_per_chip = 2;
     d_ca_codes = static_cast<int32_t*>(volk_gnsssdr_malloc(static_cast<int32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS) * code_samples_per_chip * GALILEO_E1_NUMBER_OF_CODES * sizeof(int32_t), volk_gnsssdr_get_alignment()));
     float* ca_codes_f;
-    float* data_codes_f;
+    float* data_codes_f = nullptr;
+    d_data_codes = nullptr;
 
-
-    if (trk_param_fpga.track_pilot)
+    if (d_track_pilot)
         {
             d_data_codes = static_cast<int32_t*>(volk_gnsssdr_malloc((static_cast<uint32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS)) * code_samples_per_chip * GALILEO_E1_NUMBER_OF_CODES * sizeof(int32_t), volk_gnsssdr_get_alignment()));
         }
     ca_codes_f = static_cast<float*>(volk_gnsssdr_malloc(static_cast<int32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS) * code_samples_per_chip * sizeof(float), volk_gnsssdr_get_alignment()));
 
-    if (trk_param_fpga.track_pilot)
+    if (d_track_pilot)
         {
             data_codes_f = static_cast<float*>(volk_gnsssdr_malloc((static_cast<uint32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS)) * code_samples_per_chip * sizeof(float), volk_gnsssdr_get_alignment()));
         }
@@ -152,7 +152,7 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     for (uint32_t PRN = 1; PRN <= GALILEO_E1_NUMBER_OF_CODES; PRN++)
         {
             char data_signal[3] = "1B";
-            if (trk_param_fpga.track_pilot)
+            if (d_track_pilot)
                 {
                     char pilot_signal[3] = "1C";
                     galileo_e1_code_gen_sinboc11_float(ca_codes_f, pilot_signal, PRN);
@@ -176,9 +176,9 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
         }
 
     delete[] ca_codes_f;
-    if (trk_param_fpga.track_pilot)
+    if (d_track_pilot)
         {
-            delete[] data_codes_f;
+            volk_gnsssdr_free(data_codes_f);
         }
     trk_param_fpga.ca_codes = d_ca_codes;
     trk_param_fpga.data_codes = d_data_codes;
@@ -199,6 +199,12 @@ GalileoE1DllPllVemlTrackingFpga::~GalileoE1DllPllVemlTrackingFpga()
             delete[] d_data_codes;
         }
 }
+
+
+void GalileoE1DllPllVemlTrackingFpga::stop_tracking()
+{
+}
+
 
 void GalileoE1DllPllVemlTrackingFpga::start_tracking()
 {
@@ -227,7 +233,7 @@ void GalileoE1DllPllVemlTrackingFpga::connect(gr::top_block_sptr top_block)
     if (top_block)
         { /* top_block is not null */
         };
-    //nothing to connect, now the tracking uses gr_sync_decimator
+    // nothing to connect, now the tracking uses gr_sync_decimator
 }
 
 
@@ -236,7 +242,7 @@ void GalileoE1DllPllVemlTrackingFpga::disconnect(gr::top_block_sptr top_block)
     if (top_block)
         { /* top_block is not null */
         };
-    //nothing to disconnect, now the tracking uses gr_sync_decimator
+    // nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 

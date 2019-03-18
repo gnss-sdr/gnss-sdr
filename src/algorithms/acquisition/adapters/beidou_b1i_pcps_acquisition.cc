@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -40,8 +40,6 @@
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
 
-
-using google::LogMessage;
 
 BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
     ConfigurationInterface* configuration,

@@ -34,6 +34,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/sync_block.h>
+#include <gnuradio/types.h>  // for gr_vector_const_void_star
 
 class byte_x2_to_complex_byte;
 
@@ -49,10 +50,9 @@ class byte_x2_to_complex_byte : public gr::sync_block
 {
 private:
     friend byte_x2_to_complex_byte_sptr make_byte_x2_to_complex_byte();
-
-public:
     byte_x2_to_complex_byte();
 
+public:
     int work(int noutput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items);

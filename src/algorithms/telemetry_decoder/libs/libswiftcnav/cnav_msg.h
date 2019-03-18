@@ -30,8 +30,8 @@
  */
 
 
-#ifndef LIBSWIFTNAV_CNAV_MSG_H
-#define LIBSWIFTNAV_CNAV_MSG_H
+#ifndef GNSS_SDR_CNAV_MSG_H_
+#define GNSS_SDR_CNAV_MSG_H_
 
 #include "fec.h"
 #include "swift_common.h"
@@ -117,4 +117,4 @@ bool cnav_msg_decoder_add_symbol(cnav_msg_decoder_t *dec,
 /** \} */
 /** \} */
 
-#endif /* LIBSWIFTNAV_CNAV_MSG_H */
+#endif /* GNSS_SDR_CNAV_MSG_H_ */

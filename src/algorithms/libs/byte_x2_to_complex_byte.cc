@@ -31,7 +31,10 @@
 
 #include "byte_x2_to_complex_byte.h"
 #include <gnuradio/io_signature.h>
-#include <volk/volk.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <algorithm>  // for max
+#include <complex>    // for complex
+#include <cstdint>    // for int8_t
 
 
 byte_x2_to_complex_byte_sptr make_byte_x2_to_complex_byte()
@@ -44,7 +47,7 @@ byte_x2_to_complex_byte::byte_x2_to_complex_byte() : sync_block("byte_x2_to_comp
                                                          gr::io_signature::make(2, 2, sizeof(int8_t)),    // int8_t, defined in stdint.h and included in volk.h (signed char)
                                                          gr::io_signature::make(1, 1, sizeof(lv_8sc_t)))  // lv_8sc_t is a Volk's typedef for std::complex<signed char>
 {
-    const int alignment_multiple = volk_get_alignment() / sizeof(lv_8sc_t);
+    const int alignment_multiple = volk_gnsssdr_get_alignment() / sizeof(lv_8sc_t);
     set_alignment(std::max(1, alignment_multiple));
 }
 

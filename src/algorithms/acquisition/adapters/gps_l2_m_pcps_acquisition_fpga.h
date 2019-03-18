@@ -1,14 +1,14 @@
 /*!
- * \file gps_l2_m_pcps_acquisition.h
- * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
- *  GPS L2 M signals
+ * \file gps_l2_m_pcps_acquisition_fpga.h
+ * \brief Adapts an FPGA-offloaded PCPS acquisition block
+ * to an AcquisitionInterface for GPS L2 M signals
  * \authors <ul>
- *          <li> Javier Arribas, 2015. jarribas(at)cttc.es
+ *          <li> Javier Arribas, 2019. jarribas(at)cttc.es
  *          </ul>
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -36,19 +36,20 @@
 
 #include "acquisition_interface.h"
 #include "complex_byte_to_float_x2.h"
-#include "gnss_synchro.h"
 #include "pcps_acquisition_fpga.h"
 #include <gnuradio/blocks/float_to_complex.h>
 #include <gnuradio/blocks/stream_to_vector.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
-#include <string>
+#include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
+#include <volk/volk_complex.h>       // for lv_16sc_t
+#include <cstddef>                   // for size_t
+#include <string>                    // for string
 
-
+class Gnss_Synchro;
 class ConfigurationInterface;
 
 /*!
- * \brief This class adapts a PCPS acquisition block to an AcquisitionInterface
- *  for GPS L2 M signals
+ * \brief This class adapts a PCPS acquisition block off-loaded on an FPGA
+ * to an AcquisitionInterface for GPS L2 M signals
  */
 class GpsL2MPcpsAcquisitionFpga : public AcquisitionInterface
 {
@@ -66,16 +67,16 @@ public:
     }
 
     /*!
-     * \brief Returns "GPS_L2_M_PCPS_Acquisition"
+     * \brief Returns "GPS_L2_M_PCPS_Acquisition_Fpga"
      */
     inline std::string implementation() override
     {
-        return "GPS_L2_M_PCPS_Acquisition";
+        return "GPS_L2_M_PCPS_Acquisition_Fpga";
     }
 
     inline size_t item_size() override
     {
-        return item_size_;
+        return sizeof(lv_16sc_t);
     }
 
     void connect(gr::top_block_sptr top_block) override;
@@ -86,7 +87,7 @@ public:
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
      * to efficiently exchange synchronization data between acquisition and
-     *  tracking blocks
+     * tracking blocks
      */
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
@@ -144,28 +145,17 @@ public:
 
 private:
     ConfigurationInterface* configuration_;
-    //pcps_acquisition_sptr acquisition_;
     pcps_acquisition_fpga_sptr acquisition_fpga_;
     gr::blocks::stream_to_vector::sptr stream_to_vector_;
     gr::blocks::float_to_complex::sptr float_to_complex_;
     complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
-    size_t item_size_;
     std::string item_type_;
-    unsigned int vector_length_;
-    unsigned int code_length_;
-    bool bit_transition_flag_;
-    bool use_CFAR_algorithm_flag_;
     unsigned int channel_;
     float threshold_;
     unsigned int doppler_max_;
     unsigned int doppler_step_;
-    unsigned int max_dwells_;
     int64_t fs_in_;
-    //long if_;
-    bool dump_;
-    bool blocking_;
     std::string dump_filename_;
-    std::complex<float>* code_;
     Gnss_Synchro* gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;

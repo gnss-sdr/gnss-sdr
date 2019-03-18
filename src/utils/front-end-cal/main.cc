@@ -32,52 +32,56 @@
 #define FRONT_END_CAL_VERSION "0.0.1"
 #endif
 
+#include "GPS_L1_CA.h"  // for GPS_L1_CA_COD...
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
+#include "configuration_interface.h"  // for Configuration...
 #include "file_configuration.h"
 #include "front_end_cal.h"
-#include "galileo_almanac.h"
-#include "galileo_ephemeris.h"
-#include "galileo_iono.h"
-#include "galileo_utc_model.h"
 #include "gnss_block_factory.h"
+#include "gnss_block_interface.h"  // for GNSSBlockInte...
 #include "gnss_sdr_flags.h"
-#include "gnss_sdr_supl_client.h"
-#include "gnss_signal.h"
 #include "gnss_synchro.h"
+#include "gps_acq_assist.h"  // for Gps_Acq_Assist
 #include "gps_almanac.h"
-#include "gps_cnav_ephemeris.h"
-#include "gps_cnav_iono.h"
 #include "gps_ephemeris.h"
 #include "gps_iono.h"
 #include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
-#include "gps_navigation_message.h"
 #include "gps_utc_model.h"
-#include "sbas_ephemeris.h"
-#include <boost/exception/detail/exception_ptr.hpp>
+#include <boost/any.hpp>  // for bad_any_cast
+#include <boost/bind.hpp>
+#include <boost/exception/exception.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
+#include <gflags/gflags.h>
 #include <glog/logging.h>
+#include <gnuradio/block.h>  // for block
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/head.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/skiphead.h>
+#include <gnuradio/gr_complex.h>    // for gr_complex
+#include <gnuradio/io_signature.h>  // for io_signature
 #include <gnuradio/msg_queue.h>
+#include <gnuradio/runtime_types.h>  // for block_sptr
 #include <gnuradio/top_block.h>
+#include <pmt/pmt.h>        // for pmt_t, to_long
+#include <pmt/pmt_sugar.h>  // for mp
 #include <chrono>
+#include <cmath>  // for round
 #include <cstdint>
 #include <cstdlib>
 #include <ctime>  // for ctime
 #include <exception>
+#include <iostream>
+#include <map>
 #include <memory>
-#include <queue>
+#include <stdexcept>  // for logic_error
+#include <string>
 #include <thread>
 #include <utility>
 #include <vector>
-
-
-using google::LogMessage;
 
 DECLARE_string(log_dir);
 

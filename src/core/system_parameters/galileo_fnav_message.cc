@@ -38,8 +38,9 @@
 #include <boost/crc.hpp>  // for boost::crc_basic, boost::crc_optimal
 #include <boost/dynamic_bitset.hpp>
 #include <glog/logging.h>
-#include <iostream>
-
+#include <algorithm>  // for reverse
+#include <iostream>   // for string, operator<<
+#include <iterator>   // for back_insert_iterator
 
 using CRC_Galileo_FNAV_type = boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false>;
 
@@ -487,13 +488,13 @@ bool Galileo_Fnav_Message::have_new_ephemeris()  // Check if we have a new ephem
             // if all ephemeris pages have the same IOD, then they belong to the same block
             if ((FNAV_IODnav_1 == FNAV_IODnav_2) and (FNAV_IODnav_3 == FNAV_IODnav_4) and (FNAV_IODnav_1 == FNAV_IODnav_3))
                 {
-                    std::cout << "Ephemeris (1, 2, 3) have been received and belong to the same batch" << std::endl;
+                    DLOG(INFO) << "Ephemeris (1, 2, 3) have been received and belong to the same batch";
                     flag_ephemeris_1 = false;  // clear the flag
                     flag_ephemeris_2 = false;  // clear the flag
                     flag_ephemeris_3 = false;  // clear the flag
                     flag_all_ephemeris = true;
                     IOD_ephemeris = FNAV_IODnav_1;
-                    std::cout << "Batch number: " << IOD_ephemeris << std::endl;
+                    DLOG(INFO) << "Batch number: " << IOD_ephemeris;
                     return true;
                 }
         }

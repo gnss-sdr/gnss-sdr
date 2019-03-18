@@ -67,7 +67,7 @@
 // ######## GNURADIO BLOCK MESSAGE RECEVER FOR TRACKING MESSAGES #########
 class GpsL1CADllPllTelemetryDecoderTest_msg_rx;
 
-typedef boost::shared_ptr<GpsL1CADllPllTelemetryDecoderTest_msg_rx> GpsL1CADllPllTelemetryDecoderTest_msg_rx_sptr;
+using GpsL1CADllPllTelemetryDecoderTest_msg_rx_sptr = boost::shared_ptr<GpsL1CADllPllTelemetryDecoderTest_msg_rx>;
 
 GpsL1CADllPllTelemetryDecoderTest_msg_rx_sptr GpsL1CADllPllTelemetryDecoderTest_msg_rx_make();
 
@@ -118,7 +118,7 @@ GpsL1CADllPllTelemetryDecoderTest_msg_rx::~GpsL1CADllPllTelemetryDecoderTest_msg
 // ######## GNURADIO BLOCK MESSAGE RECEVER FOR TLM MESSAGES #########
 class GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx;
 
-typedef boost::shared_ptr<GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx> GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx_sptr;
+using GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx_sptr = boost::shared_ptr<GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx>;
 
 GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx_sptr GpsL1CADllPllTelemetryDecoderTest_tlm_msg_rx_make();
 

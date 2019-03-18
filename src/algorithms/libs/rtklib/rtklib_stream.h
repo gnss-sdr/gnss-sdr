@@ -1,6 +1,6 @@
 /*!
- * \file rtklib_sbas.h
- * \brief sbas functions
+ * \file rtklib_stream.h
+ * \brief streaming functions
  * \authors <ul>
  *          <li> 2007-2013, T. Takasu
  *          <li> 2017, Javier Arribas

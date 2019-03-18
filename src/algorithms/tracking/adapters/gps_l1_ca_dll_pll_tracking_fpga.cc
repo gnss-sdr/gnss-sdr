@@ -3,8 +3,6 @@
  * \brief Implementation of an adapter of a DLL+PLL tracking loop block
  * for GPS L1 C/A to a TrackingInterface for the FPGA
  * \author Marc Majoral, 2019, mmajoral(at)cttc.es
- *         Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
- *         Javier Arribas, 2011. jarribas(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
@@ -40,17 +38,18 @@
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
 #include "display.h"
+#include "dll_pll_conf_fpga.h"
 #include "gnss_sdr_flags.h"
+#include "gnss_synchro.h"
 #include "gps_sdr_signal_processing.h"
 #include <glog/logging.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <cmath>    // for round
+#include <cstring>  // for memcpy
+#include <iostream>
 
 #define NUM_PRNs 32
 
-using google::LogMessage;
-
-void GpsL1CaDllPllTrackingFpga::stop_tracking()
-{
-}
 
 GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     ConfigurationInterface* configuration, const std::string& role,
@@ -150,15 +149,23 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     DLOG(INFO) << "tracking(" << tracking_fpga_sc->unique_id() << ")";
 }
 
+
 GpsL1CaDllPllTrackingFpga::~GpsL1CaDllPllTrackingFpga()
 {
     delete[] d_ca_codes;
 }
 
+
 void GpsL1CaDllPllTrackingFpga::start_tracking()
 {
     tracking_fpga_sc->start_tracking();
 }
+
+
+void GpsL1CaDllPllTrackingFpga::stop_tracking()
+{
+}
+
 
 /*
  * Set tracking channel unique ID
@@ -169,10 +176,12 @@ void GpsL1CaDllPllTrackingFpga::set_channel(unsigned int channel)
     tracking_fpga_sc->set_channel(channel);
 }
 
+
 void GpsL1CaDllPllTrackingFpga::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
     tracking_fpga_sc->set_gnss_synchro(p_gnss_synchro);
 }
+
 
 void GpsL1CaDllPllTrackingFpga::connect(gr::top_block_sptr top_block)
 {

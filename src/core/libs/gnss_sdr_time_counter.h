@@ -28,16 +28,18 @@
  *
  * -------------------------------------------------------------------------
  */
-#ifndef GNSS_SDR_TIME_COUNTER_H_
-#define GNSS_SDR_TIME_COUNTER_H_
+
+#ifndef GNSS_SDR_GNSS_SDR_TIME_COUNTER_H_
+#define GNSS_SDR_GNSS_SDR_TIME_COUNTER_H_
 
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/block.h>
+#include <gnuradio/types.h>  // for gr_vector_const_void_star
 #include <cstdint>
 
 class gnss_sdr_time_counter;
 
-typedef boost::shared_ptr<gnss_sdr_time_counter> gnss_sdr_time_counter_sptr;
+using gnss_sdr_time_counter_sptr = boost::shared_ptr<gnss_sdr_time_counter>;
 
 gnss_sdr_time_counter_sptr gnss_sdr_make_time_counter();
 
@@ -54,11 +56,12 @@ private:
     bool flag_days;           // True if the receiver has been running for at least 1 day
     uint32_t current_days;    // Receiver time in days since the beginning of the run
     int32_t report_interval_ms;
+    friend gnss_sdr_time_counter_sptr gnss_sdr_make_time_counter();
 
 public:
-    friend gnss_sdr_time_counter_sptr gnss_sdr_make_time_counter();
+    ~gnss_sdr_time_counter();
     int general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items __attribute__((unused)), gr_vector_void_star &output_items);
 };
 
-#endif /*GNSS_SDR_SAMPLE_COUNTER_H_*/
+#endif /*GNSS_SDR_GNSS_SDR_SAMPLE_COUNTER_H_*/

@@ -44,6 +44,7 @@ Gnss_Synchro_Udp_Sink::Gnss_Synchro_Udp_Sink(std::vector<std::string> addresses,
         }
 }
 
+
 bool Gnss_Synchro_Udp_Sink::write_gnss_synchro(const std::vector<Gnss_Synchro>& stocks)
 {
     std::ostringstream archive_stream;

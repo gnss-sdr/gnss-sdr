@@ -29,8 +29,8 @@
  */
 
 
-#ifndef LIBSWIFTNAV_FEC_H_
-#define LIBSWIFTNAV_FEC_H_
+#ifndef GNSS_SDR_FEC_H_
+#define GNSS_SDR_FEC_H_
 
 /* r=1/2 k=7 convolutional encoder polynomials
  * The NASA-DSN convention is to use V27POLYA inverted, then V27POLYB

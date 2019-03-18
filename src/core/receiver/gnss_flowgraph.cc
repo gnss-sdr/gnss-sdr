@@ -42,15 +42,28 @@
 #include "channel_interface.h"
 #include "configuration_interface.h"
 #include "gnss_block_factory.h"
-#include <boost/lexical_cast.hpp>
-#include <boost/tokenizer.hpp>
-#include <glog/logging.h>
-#include <gnuradio/filter/firdes.h>
-#include <algorithm>
-#include <exception>
-#include <iostream>
-#include <set>
-#include <utility>
+#include "gnss_block_interface.h"
+#include "gnss_satellite.h"
+#include "gnss_synchro_monitor.h"
+#include <boost/lexical_cast.hpp>    // for boost::lexical_cast
+#include <boost/shared_ptr.hpp>      // for boost::shared_ptr
+#include <boost/tokenizer.hpp>       // for boost::tokenizer
+#include <glog/logging.h>            // for LOG
+#include <gnuradio/basic_block.h>    // for basic_block
+#include <gnuradio/filter/firdes.h>  // for gr::filter::firdes
+#include <gnuradio/io_signature.h>   // for io_signature
+#include <gnuradio/top_block.h>      // for top_block, make_top_block
+#include <pmt/pmt_sugar.h>           // for mp
+#include <algorithm>                 // for transform, sort, unique
+#include <cmath>                     // for floor
+#include <cstddef>                   // for size_t
+#include <exception>                 // for exception
+#include <iostream>                  // for operator<<
+#include <iterator>                  // for insert_iterator, inserter
+#include <set>                       // for set
+#include <stdexcept>                 // for invalid_argument
+#include <thread>                    // for thread
+#include <utility>                   // for move
 #ifdef GR_GREATER_38
 #include <gnuradio/filter/fir_filter_blk.h>
 #else
@@ -60,7 +73,6 @@
 
 #define GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_CHANNELS 8
 
-using google::LogMessage;
 
 GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration, const gr::msg_queue::sptr queue)  // NOLINT(performance-unnecessary-value-param)
 {
@@ -204,12 +216,11 @@ void GNSSFlowgraph::connect()
 
     DLOG(INFO) << "blocks connected internally";
     // Signal Source (i) >  Signal conditioner (i) >
-    int RF_Channels = 0;
-    int signal_conditioner_ID = 0;
-
 
 #ifndef ENABLE_FPGA
 
+    int RF_Channels = 0;
+    int signal_conditioner_ID = 0;
     for (int i = 0; i < sources_count_; i++)
         {
             try
@@ -356,12 +367,13 @@ void GNSSFlowgraph::connect()
 #endif
 
     // Signal conditioner (selected_signal_source) >> channels (i) (dependent of their associated SignalSource_ID)
-    int selected_signal_conditioner_ID = 0;
-    bool use_acq_resampler = configuration_->property("GNSS-SDR.use_acquisition_resampler", false);
-    uint32_t fs = configuration_->property("GNSS-SDR.internal_fs_sps", 0);
     for (unsigned int i = 0; i < channels_count_; i++)
         {
 #ifndef ENABLE_FPGA
+
+            int selected_signal_conditioner_ID = 0;
+            bool use_acq_resampler = configuration_->property("GNSS-SDR.use_acquisition_resampler", false);
+            uint32_t fs = configuration_->property("GNSS-SDR.internal_fs_sps", 0);
             if (configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false) == false)
                 {
                     try
@@ -860,9 +872,11 @@ void GNSSFlowgraph::disconnect()
         }
 #endif
     // Signal conditioner (selected_signal_source) >> channels (i) (dependent of their associated SignalSource_ID)
-    int selected_signal_conditioner_ID;
+
     for (unsigned int i = 0; i < channels_count_; i++)
         {
+#ifndef ENABLE_FPGA
+            int selected_signal_conditioner_ID;
             try
                 {
                     selected_signal_conditioner_ID = configuration_->property("Channel" + std::to_string(i) + ".RF_channel_ID", 0);
@@ -873,7 +887,6 @@ void GNSSFlowgraph::disconnect()
                     top_block_->disconnect_all();
                     return;
                 }
-#ifndef ENABLE_FPGA
             try
                 {
                     top_block_->disconnect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
@@ -1651,10 +1664,10 @@ void GNSSFlowgraph::init()
 
     if (enable_monitor_)
         {
-            GnssSynchroMonitor_ = gr::basic_block_sptr(new gnss_synchro_monitor(channels_count_,
+            GnssSynchroMonitor_ = gnss_synchro_make_monitor(channels_count_,
                 configuration_->property("Monitor.decimation_factor", 1),
                 configuration_->property("Monitor.udp_port", 1234),
-                udp_addr_vec));
+                udp_addr_vec);
         }
 }
 

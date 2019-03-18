@@ -1,5 +1,5 @@
 /*!
- * \file gps_l2c_telemetry_decoder_cc.h
+ * \file gps_l2c_telemetry_decoder_gs.h
  * \brief Interface of a CNAV message demodulator block based on
  * Kay Borre book MATLAB-based GPS receiver
  * \author Javier Arribas, 2015. jarribas(at)cttc.es
@@ -28,48 +28,40 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L2C_TELEMETRY_DECODER_CC_H
-#define GNSS_SDR_GPS_L2C_TELEMETRY_DECODER_CC_H
+#ifndef GNSS_SDR_GPS_L2C_TELEMETRY_DECODER_GS_H
+#define GNSS_SDR_GPS_L2C_TELEMETRY_DECODER_GS_H
 
 
 #include "gnss_satellite.h"
-#include "gps_cnav_ephemeris.h"
-#include "gps_cnav_iono.h"
 #include "gps_cnav_navigation_message.h"
+#include <boost/shared_ptr.hpp>  // for boost::shared_ptr
 #include <gnuradio/block.h>
-#include <algorithm>  // for copy
+#include <gnuradio/types.h>  // for gr_vector_const_void_star
 #include <cstdint>
-#include <deque>
 #include <fstream>
 #include <string>
-#include <utility>  // for pair
-#include <vector>
-
 
 extern "C"
 {
-#include "bits.h"
 #include "cnav_msg.h"
-#include "edc.h"
 }
 
-#include "GPS_L2C.h"
 
-class gps_l2c_telemetry_decoder_cc;
+class gps_l2c_telemetry_decoder_gs;
 
-using gps_l2c_telemetry_decoder_cc_sptr = boost::shared_ptr<gps_l2c_telemetry_decoder_cc>;
+using gps_l2c_telemetry_decoder_gs_sptr = boost::shared_ptr<gps_l2c_telemetry_decoder_gs>;
 
-gps_l2c_telemetry_decoder_cc_sptr
-gps_l2c_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
+gps_l2c_telemetry_decoder_gs_sptr
+gps_l2c_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
 /*!
  * \brief This class implements a block that decodes the SBAS integrity and corrections data defined in RTCA MOPS DO-229
  *
  */
-class gps_l2c_telemetry_decoder_cc : public gr::block
+class gps_l2c_telemetry_decoder_gs : public gr::block
 {
 public:
-    ~gps_l2c_telemetry_decoder_cc();
+    ~gps_l2c_telemetry_decoder_gs();
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
     void set_channel(int32_t channel);                    //!< Set receiver's channel
 
@@ -80,9 +72,9 @@ public:
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
 private:
-    friend gps_l2c_telemetry_decoder_cc_sptr
-    gps_l2c_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
-    gps_l2c_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
+    friend gps_l2c_telemetry_decoder_gs_sptr
+    gps_l2c_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+    gps_l2c_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
     bool d_dump;
     Gnss_Satellite d_satellite;

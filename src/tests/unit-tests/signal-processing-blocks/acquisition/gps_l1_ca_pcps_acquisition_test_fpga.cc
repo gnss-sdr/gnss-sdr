@@ -46,6 +46,7 @@
 #include <gtest/gtest.h>
 #include <chrono>
 #include <cstdlib>
+#include <fcntl.h>  // for O_WRONLY
 #include <unistd.h>
 #include <utility>
 #ifdef GR_GREATER_38
@@ -81,13 +82,16 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
     buffer_float = (char *)malloc(FLOAT_SIZE);  // allocate space for the temporary buffer
     if (!buffer_float)
         {
-            fprintf(stderr, "Memory error!");
+            std::cerr << "Memory error!" << std::endl;
+            return;
         }
 
     rx_signal_file = fopen(file_name, "rb");  // file containing the received signal
     if (!rx_signal_file)
         {
-            printf("Unable to open file!");
+            std::cerr << "Unable to open file!" << std::endl;
+            free(buffer_float);
+            return;
         }
 
     // determine the length of the file that contains the received signal
@@ -96,13 +100,16 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
     fseek(rx_signal_file, 0, SEEK_SET);
 
     // first step: check for the maximum value of the received signal
-
     float max = 0;
     float *pointer_float;
     pointer_float = (float *)&buffer_float[0];
     for (int k = 0; k < file_length; k = k + FLOAT_SIZE)
         {
-            fread(buffer_float, FLOAT_SIZE, 1, rx_signal_file);
+            size_t result = fread(buffer_float, FLOAT_SIZE, 1, rx_signal_file);
+            if (result != FLOAT_SIZE)
+                {
+                    std::cerr << "Error reading buffer" << std::endl;
+                }
 
             if (fabs(pointer_float[0]) > max)
                 {
@@ -114,23 +121,27 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
     fseek(rx_signal_file, 0, SEEK_SET);
 
     // allocate memory for the samples to be transferred to the DMA
-
     buffer_DMA = (signed char *)malloc(DMA_ACQ_TRANSFER_SIZE);
     if (!buffer_DMA)
         {
-            fprintf(stderr, "Memory error!");
+            std::cerr << "Memory error!" << std::endl;
+            free(buffer_float);
+            fclose(rx_signal_file);
+            return;
         }
 
     // open the DMA descriptor
     dma_descr = open("/dev/loop_tx", O_WRONLY);
     if (dma_descr < 0)
         {
-            printf("can't open loop device\n");
-            exit(1);
+            std::cerr << "Can't open loop device\n";
+            free(buffer_float);
+            free(buffer_DMA);
+            fclose(rx_signal_file);
+            return;
         }
 
     // cycle through the file containing the received samples
-
     for (int k = 0; k < NTIMES_CYCLE_THROUGH_RX_SAMPLES_FILE; k++)
         {
             fseek(rx_signal_file, 0, SEEK_SET);
@@ -152,7 +163,11 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
 
                     for (int t = 0; t < transfer_size; t++)
                         {
-                            fread(buffer_float, FLOAT_SIZE, 1, rx_signal_file);
+                            size_t result = fread(buffer_float, FLOAT_SIZE, 1, rx_signal_file);
+                            if (result != FLOAT_SIZE)
+                                {
+                                    std::cerr << "Error reading buffer" << std::endl;
+                                }
 
                             // specify (float) (int) for a quantization maximizing the dynamic range
                             buffer_DMA[t] = static_cast<signed char>((pointer_float[0] * (RX_SIGNAL_MAX_VALUE - 1) / max));
@@ -168,7 +183,6 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
     close(dma_descr);
 
     // when all the samples are sent stop the top block
-
     top_block->stop();
 }
 
@@ -176,7 +190,7 @@ void thread_acquisition_send_rx_samples(gr::top_block_sptr top_block,
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CaPcpsAcquisitionTestFpga_msg_rx;
 
-typedef boost::shared_ptr<GpsL1CaPcpsAcquisitionTestFpga_msg_rx> GpsL1CaPcpsAcquisitionTest_msg_fpga_rx_sptr;
+using GpsL1CaPcpsAcquisitionTest_msg_fpga_rx_sptr = boost::shared_ptr<GpsL1CaPcpsAcquisitionTestFpga_msg_rx>;
 
 GpsL1CaPcpsAcquisitionTest_msg_fpga_rx_sptr GpsL1CaPcpsAcquisitionTestFpga_msg_rx_make();
 

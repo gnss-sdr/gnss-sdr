@@ -34,8 +34,11 @@
 #ifndef GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_H_
 #define GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_H_
 
-#include "beidou_b1i_telemetry_decoder_cc.h"
+#include "beidou_b1i_telemetry_decoder_gs.h"
+#include "gnss_satellite.h"  // for Gnss_Satellite
 #include "telemetry_decoder_interface.h"
+#include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
+#include <cstddef>                   // for size_t
 #include <string>
 
 class ConfigurationInterface;
@@ -83,7 +86,7 @@ public:
     }
 
 private:
-    beidou_b1i_telemetry_decoder_cc_sptr telemetry_decoder_;
+    beidou_b1i_telemetry_decoder_gs_sptr telemetry_decoder_;
     Gnss_Satellite satellite_;
     int channel_;
     bool dump_;

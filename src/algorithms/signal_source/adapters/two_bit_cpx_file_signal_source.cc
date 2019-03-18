@@ -41,9 +41,6 @@
 #include <utility>
 
 
-using google::LogMessage;
-
-
 TwoBitCpxFileSignalSource::TwoBitCpxFileSignalSource(ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,

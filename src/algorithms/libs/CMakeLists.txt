@@ -22,7 +22,6 @@ set(GNSS_SPLIBS_SOURCES
     gps_l2c_signal.cc
     gps_l5_signal.cc
     galileo_e1_signal_processing.cc
-    gnss_sdr_sample_counter.cc
     gnss_signal_processing.cc
     gps_sdr_signal_processing.cc
     glonass_l1_signal_processing.cc
@@ -40,14 +39,12 @@ set(GNSS_SPLIBS_SOURCES
     conjugate_ic.cc
     gnss_sdr_create_directory.cc
     geofunctions.cc
-    rtcm.cc
 )
 
 set(GNSS_SPLIBS_HEADERS
     gps_l2c_signal.h
     gps_l5_signal.h
     galileo_e1_signal_processing.h
-    gnss_sdr_sample_counter.h
     gnss_signal_processing.h
     gps_sdr_signal_processing.h
     glonass_l1_signal_processing.h
@@ -66,21 +63,7 @@ set(GNSS_SPLIBS_HEADERS
     gnss_sdr_create_directory.h
     gnss_circular_deque.h
     geofunctions.h
-    rtcm.h
 )
-
-if(ENABLE_FPGA)
-    set(GNSS_SPLIBS_SOURCES
-        ${GNSS_SPLIBS_SOURCES}
-        gnss_sdr_time_counter.cc
-        gnss_sdr_fpga_sample_counter.cc
-    )
-    set(GNSS_SPLIBS_HEADERS
-        ${GNSS_SPLIBS_HEADERS}
-        gnss_sdr_time_counter.h
-        gnss_sdr_fpga_sample_counter.h
-    )
-endif()
 
 if(OPENCL_FOUND)
     set(GNSS_SPLIBS_SOURCES ${GNSS_SPLIBS_SOURCES}
@@ -88,10 +71,6 @@ if(OPENCL_FOUND)
         opencl/fft_setup.cc # Needs OpenCL
         opencl/fft_kernelstring.cc # Needs OpenCL
     )
-endif()
-
-
-if(OPENCL_FOUND)
     include_directories(${OPENCL_INCLUDE_DIRS})
     if(OS_IS_MACOSX)
         set(OPT_LIBRARIES ${OPT_LIBRARIES} "-framework OpenCL")
@@ -114,20 +93,18 @@ target_link_libraries(algorithms_libs
         Gflags::gflags
         Gnuradio::runtime
         Gnuradio::blocks
-        Volk::volk ${ORC_LIBRARIES}
-        Volkgnsssdr::volkgnsssdr
-        core_system_parameters
         ${OPT_LIBRARIES}
     PRIVATE
+        core_system_parameters
+        Volk::volk ${ORC_LIBRARIES}
+        Volkgnsssdr::volkgnsssdr
         Boost::filesystem
-        Gflags::gflags
         Glog::glog
 )
 
 target_include_directories(algorithms_libs
     PUBLIC
         ${CMAKE_SOURCE_DIR}/src/core/interfaces
-        ${CMAKE_SOURCE_DIR}/src/core/receiver
 )
 
 target_compile_definitions(algorithms_libs
@@ -138,15 +115,6 @@ set_property(TARGET algorithms_libs
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
-
-if(OS_IS_MACOSX)
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")  # not AppleClang
-        target_compile_definitions(algorithms_libs
-            PUBLIC
-                -DBOOST_ASIO_HAS_STD_STRING_VIEW
-        )
-    endif()
-endif()
 
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)

@@ -35,6 +35,8 @@
 #define GNSS_SDR_GNSS_SYNCHRO_MONITOR_H
 
 #include "gnss_synchro_udp_sink.h"
+#include <boost/shared_ptr.hpp>
+#include <gnuradio/runtime_types.h>  // for gr_vector_void_star
 #include <gnuradio/sync_block.h>
 #include <memory>
 #include <string>
@@ -51,7 +53,9 @@ gnss_synchro_monitor_sptr gnss_synchro_make_monitor(unsigned int n_channels,
     const std::vector<std::string>& udp_addresses);
 
 /*!
- * \brief This class implements a block that computes the PVT solution with Galileo E1 signals
+ * \brief This class implements a monitoring block which allows sending
+ * a data stream with the receiver internal parameters (Gnss_Synchro objects)
+ * to local or remote clients over UDP.
  */
 class gnss_synchro_monitor : public gr::sync_block
 {
@@ -61,21 +65,17 @@ private:
         int udp_port,
         const std::vector<std::string>& udp_addresses);
 
-    unsigned int d_nchannels;
-
-    int d_decimation_factor;
-
-    std::unique_ptr<Gnss_Synchro_Udp_Sink> udp_sink_ptr;
-
-    int count;
-
-
-public:
     gnss_synchro_monitor(unsigned int n_channels,
         int decimation_factor,
         int udp_port,
         const std::vector<std::string>& udp_addresses);
 
+    unsigned int d_nchannels;
+    int d_decimation_factor;
+    std::unique_ptr<Gnss_Synchro_Udp_Sink> udp_sink_ptr;
+    int count;
+
+public:
     ~gnss_synchro_monitor();  //!< Default destructor
 
     int work(int noutput_items, gr_vector_const_void_star& input_items,

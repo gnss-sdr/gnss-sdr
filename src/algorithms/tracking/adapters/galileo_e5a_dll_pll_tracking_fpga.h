@@ -2,15 +2,7 @@
  * \file galileo_e5a_dll_pll_tracking_fpga.h
  * \brief Adapts a code DLL + carrier PLL
  *  tracking block to a TrackingInterface for Galileo E5a signals for the FPGA
- * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
- *  Galileo E5a data and pilot Signals for the FPGA
- * \author Marc Sales, 2014. marcsales92(at)gmail.com
- * \based on work from:
- *          <ul>
- *          <li> Marc Majoral, 2019. mmajoral(at)cttc.cat
- *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
- *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
- *          </ul>
+ * \author Marc Majoral, 2019. mmajoral(at)cttc.cat
  *
  * -------------------------------------------------------------------------
  *
@@ -42,8 +34,12 @@
 
 #include "dll_pll_veml_tracking_fpga.h"
 #include "tracking_interface.h"
+#include <gnuradio/runtime_types.h>  // for basic_block_sptr
+#include <cstdint>                   // For uint32_t
+#include <stddef.h>                  // for size_t
 #include <string>
 
+class Gnss_Synchro;
 class ConfigurationInterface;
 
 /*!
@@ -72,7 +68,7 @@ public:
 
     inline size_t item_size() override
     {
-        return item_size_;
+        return sizeof(int);
     }
 
     void connect(gr::top_block_sptr top_block) override;
@@ -99,12 +95,10 @@ public:
 
 private:
     dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
-    size_t item_size_;
     uint32_t channel_;
     std::string role_;
     uint32_t in_streams_;
     uint32_t out_streams_;
-
 
     int32_t* d_ca_codes;
     int32_t* d_data_codes;

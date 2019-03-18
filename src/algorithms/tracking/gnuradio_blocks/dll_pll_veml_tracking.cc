@@ -45,7 +45,9 @@
 #include "beidou_b1i_signal_processing.h"
 #include "galileo_e1_signal_processing.h"
 #include "galileo_e5_signal_processing.h"
+#include "gnss_satellite.h"
 #include "gnss_sdr_create_directory.h"
+#include "gnss_synchro.h"
 #include "gps_l2c_signal.h"
 #include "gps_l5_signal.h"
 #include "gps_sdr_signal_processing.h"
@@ -53,17 +55,19 @@
 #include "tracking_discriminators.h"
 #include <boost/filesystem/path.hpp>
 #include <glog/logging.h>
-#include <gnuradio/io_signature.h>
-#include <matio.h>
+#include <gnuradio/io_signature.h>   // for io_signature
+#include <gnuradio/thread/thread.h>  // for scoped_lock
+#include <matio.h>                   // for Mat_VarCreate
+#include <pmt/pmt_sugar.h>           // for mp
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include <algorithm>
-#include <cmath>
-#include <exception>
-#include <iostream>
-#include <numeric>
-#include <sstream>
+#include <algorithm>  // for fill_n
+#include <cmath>      // for fmod, round, floor
+#include <complex>    // for complex
+#include <cstdlib>    // for abs, size_t
+#include <exception>  // for exception
+#include <iostream>   // for cout, cerr
+#include <map>        // for map
 
-using google::LogMessage;
 
 dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_)
 {
@@ -153,8 +157,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                                     n++;
                                 }
                         }
-                    d_symbol_history.resize(GPS_CA_PREAMBLE_LENGTH_SYMBOLS);  // Change fixed buffer size
-                    d_symbol_history.clear();                                 // Clear all the elements in the buffer
+                    d_symbol_history.set_capacity(GPS_CA_PREAMBLE_LENGTH_SYMBOLS);  // Change fixed buffer size
+                    d_symbol_history.clear();                                       // Clear all the elements in the buffer
                 }
             else if (signal_type == "2S")
                 {
@@ -405,6 +409,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
         }
 
     // --- Initializations ---
+    d_Prompt_circular_buffer.set_capacity(d_secondary_code_length);
     multicorrelator_cpu.set_high_dynamics_resampler(trk_parameters.high_dyn);
     // Initial code frequency basis of NCO
     d_code_freq_chips = d_code_chip_rate;
@@ -446,13 +451,13 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     clear_tracking_vars();
     if (trk_parameters.smoother_length > 0)
         {
-            d_carr_ph_history.resize(trk_parameters.smoother_length * 2);
-            d_code_ph_history.resize(trk_parameters.smoother_length * 2);
+            d_carr_ph_history.set_capacity(trk_parameters.smoother_length * 2);
+            d_code_ph_history.set_capacity(trk_parameters.smoother_length * 2);
         }
     else
         {
-            d_carr_ph_history.resize(1);
-            d_code_ph_history.resize(1);
+            d_carr_ph_history.set_capacity(1);
+            d_code_ph_history.set_capacity(1);
         }
 
     d_dump = trk_parameters.dump;
@@ -607,7 +612,7 @@ void dll_pll_veml_tracking::start_tracking()
                                     n++;
                                 }
                         }
-                    d_symbol_history.resize(22);  // Change fixed buffer size
+                    d_symbol_history.set_capacity(22);  // Change fixed buffer size
                     d_symbol_history.clear();
                 }
         }
@@ -649,7 +654,7 @@ void dll_pll_veml_tracking::start_tracking()
     // enable tracking pull-in
     d_state = 1;
     d_cloop = true;
-    d_Prompt_buffer_deque.clear();
+    d_Prompt_circular_buffer.clear();
     d_last_prompt = gr_complex(0.0, 0.0);
 }
 
@@ -710,7 +715,7 @@ bool dll_pll_veml_tracking::acquire_secondary()
     int32_t corr_value = 0;
     for (uint32_t i = 0; i < d_secondary_code_length; i++)
         {
-            if (d_Prompt_buffer_deque.at(i).real() < 0.0)  // symbols clipping
+            if (d_Prompt_circular_buffer[i].real() < 0.0)  // symbols clipping
                 {
                     if (d_secondary_code_string->at(i) == '0')
                         {
@@ -866,7 +871,7 @@ void dll_pll_veml_tracking::clear_tracking_vars()
     d_code_error_chips = 0.0;
     d_code_error_filt_chips = 0.0;
     d_current_symbol = 0;
-    d_Prompt_buffer_deque.clear();
+    d_Prompt_circular_buffer.clear();
     d_last_prompt = gr_complex(0.0, 0.0);
     d_carrier_phase_rate_step_rad = 0.0;
     d_code_phase_rate_step_chips = 0.0;
@@ -902,9 +907,9 @@ void dll_pll_veml_tracking::update_tracking_vars()
                     double tmp_samples = 0.0;
                     for (unsigned int k = 0; k < trk_parameters.smoother_length; k++)
                         {
-                            tmp_cp1 += d_carr_ph_history.at(k).first;
-                            tmp_cp2 += d_carr_ph_history.at(trk_parameters.smoother_length * 2 - k - 1).first;
-                            tmp_samples += d_carr_ph_history.at(trk_parameters.smoother_length * 2 - k - 1).second;
+                            tmp_cp1 += d_carr_ph_history[k].first;
+                            tmp_cp2 += d_carr_ph_history[trk_parameters.smoother_length * 2 - k - 1].first;
+                            tmp_samples += d_carr_ph_history[trk_parameters.smoother_length * 2 - k - 1].second;
                         }
                     tmp_cp1 /= static_cast<double>(trk_parameters.smoother_length);
                     tmp_cp2 /= static_cast<double>(trk_parameters.smoother_length);
@@ -915,7 +920,6 @@ void dll_pll_veml_tracking::update_tracking_vars()
     // remnant carrier phase to prevent overflow in the code NCO
     d_rem_carr_phase_rad += static_cast<float>(d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples) + 0.5 * d_carrier_phase_rate_step_rad * static_cast<double>(d_current_prn_length_samples) * static_cast<double>(d_current_prn_length_samples));
     d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, PI_2);
-
 
     // carrier phase accumulator
     //double a = d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples);
@@ -936,9 +940,9 @@ void dll_pll_veml_tracking::update_tracking_vars()
                     double tmp_samples = 0.0;
                     for (unsigned int k = 0; k < trk_parameters.smoother_length; k++)
                         {
-                            tmp_cp1 += d_code_ph_history.at(k).first;
-                            tmp_cp2 += d_code_ph_history.at(trk_parameters.smoother_length * 2 - k - 1).first;
-                            tmp_samples += d_code_ph_history.at(trk_parameters.smoother_length * 2 - k - 1).second;
+                            tmp_cp1 += d_code_ph_history[k].first;
+                            tmp_cp2 += d_code_ph_history[trk_parameters.smoother_length * 2 - k - 1].first;
+                            tmp_samples += d_code_ph_history[trk_parameters.smoother_length * 2 - k - 1].second;
                         }
                     tmp_cp1 /= static_cast<double>(trk_parameters.smoother_length);
                     tmp_cp2 /= static_cast<double>(trk_parameters.smoother_length);
@@ -1503,8 +1507,8 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                         if (d_secondary)
                             {
                                 // ####### SECONDARY CODE LOCK #####
-                                d_Prompt_buffer_deque.push_back(*d_Prompt);
-                                if (d_Prompt_buffer_deque.size() == d_secondary_code_length)
+                                d_Prompt_circular_buffer.push_back(*d_Prompt);
+                                if (d_Prompt_circular_buffer.size() == d_secondary_code_length)
                                     {
                                         next_state = acquire_secondary();
                                         if (next_state)
@@ -1514,8 +1518,6 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                                 std::cout << systemName << " " << signal_pretty_name << " secondary code locked in channel " << d_channel
                                                           << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
                                             }
-
-                                        d_Prompt_buffer_deque.pop_front();
                                     }
                             }
                         else if (d_symbols_per_bit > 1)  //Signal does not have secondary code. Search a bit transition by sign change
@@ -1528,9 +1530,10 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                         int32_t corr_value = 0;
                                         if ((static_cast<int32_t>(d_symbol_history.size()) == d_preamble_length_symbols))  // and (d_make_correlation or !d_flag_frame_sync))
                                             {
-                                                for (int32_t i = 0; i < d_preamble_length_symbols; i++)
+                                                int i = 0;
+                                                for (const auto &iter : d_symbol_history)
                                                     {
-                                                        if (d_symbol_history.at(i) < 0)  // symbols clipping
+                                                        if (iter < 0.0)  // symbols clipping
                                                             {
                                                                 corr_value -= d_preambles_symbols[i];
                                                             }
@@ -1538,6 +1541,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                                             {
                                                                 corr_value += d_preambles_symbols[i];
                                                             }
+                                                        i++;
                                                     }
                                             }
                                         if (corr_value == d_preamble_length_symbols)
@@ -1606,7 +1610,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                 d_L_accu = gr_complex(0.0, 0.0);
                                 d_VL_accu = gr_complex(0.0, 0.0);
                                 d_last_prompt = gr_complex(0.0, 0.0);
-                                d_Prompt_buffer_deque.clear();
+                                d_Prompt_circular_buffer.clear();
                                 d_current_symbol = 0;
 
                                 if (d_enable_extended_integration)

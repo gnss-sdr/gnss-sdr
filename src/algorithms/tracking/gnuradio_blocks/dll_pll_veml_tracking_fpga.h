@@ -2,8 +2,7 @@
  * \file dll_pll_veml_tracking_fpga.h
  * \brief Implementation of a code DLL + carrier PLL tracking block using an FPGA.
  * \author Marc Majoral, 2019. marc.majoral(at)cttc.es
- * \author Javier Arribas, 2018. jarribas(at)cttc.es
- * \author Antonio Ramos, 2018 antonio.ramosdet(at)gmail.com
+ * \author Javier Arribas, 2019. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
@@ -34,21 +33,26 @@
 #define GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H
 
 #include "dll_pll_conf_fpga.h"
-#include "fpga_multicorrelator.h"
-#include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
 #include <boost/circular_buffer.hpp>
+#include <boost/shared_ptr.hpp>
 #include <gnuradio/block.h>
-#include <fstream>
-#include <map>
-#include <queue>
+#include <gnuradio/gr_complex.h>  // for gr_complex
+#include <gnuradio/types.h>       // for gr_vector_const_void_star
+#include <pmt/pmt.h>              // for pmt_t
+#include <cstdint>
+#include <deque>    // for deque
+#include <fstream>  // for ofstream
+#include <memory>   // for shared_ptr
+#include <string>
 #include <utility>
-//#include <string>
 
+class Fpga_Multicorrelator_8sc;
+class Gnss_Synchro;
 class dll_pll_veml_tracking_fpga;
 
-typedef boost::shared_ptr<dll_pll_veml_tracking_fpga> dll_pll_veml_tracking_fpga_sptr;
+using dll_pll_veml_tracking_fpga_sptr = boost::shared_ptr<dll_pll_veml_tracking_fpga>;
 
 dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(const Dll_Pll_Conf_Fpga &conf_);
 
@@ -120,11 +124,9 @@ private:
     int32_t d_correlation_length_ms;
     int32_t d_n_correlator_taps;
 
-    float *d_tracking_code;
-    float *d_data_code;
     float *d_local_code_shift_chips;
     float *d_prompt_data_shift;
-    std::shared_ptr<fpga_multicorrelator_8sc> multicorrelator_fpga;
+    std::shared_ptr<Fpga_Multicorrelator_8sc> multicorrelator_fpga;
     /*  TODO: currently the multicorrelator does not support adding extra correlator
         with different local code, thus we need extra multicorrelator instance.
         Implement this functionality inside multicorrelator class

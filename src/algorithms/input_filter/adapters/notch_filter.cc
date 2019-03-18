@@ -2,7 +2,7 @@
  * \file notch_filter.cc
  * \brief Adapts a gnuradio gr_notch_filter
  * \author Antonio Ramos, 2017. antonio.ramosdet(at)gmail.com
- *         
+ *
  *
  * -------------------------------------------------------------------------
  *
@@ -35,8 +35,6 @@
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
 
-
-using google::LogMessage;
 
 NotchFilter::NotchFilter(ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)

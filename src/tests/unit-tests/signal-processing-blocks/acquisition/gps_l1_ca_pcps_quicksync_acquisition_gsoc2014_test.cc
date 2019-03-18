@@ -59,7 +59,6 @@
 DEFINE_double(value_threshold, 1, "Value of the threshold for the acquisition");
 DEFINE_int32(value_CN0_dB_0, 44, "Value for the CN0_dB_0 in channel 0");
 
-using google::LogMessage;
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx;

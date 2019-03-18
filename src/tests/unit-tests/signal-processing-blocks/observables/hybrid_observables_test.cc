@@ -91,7 +91,7 @@
 // ######## GNURADIO BLOCK MESSAGE RECEVER FOR TRACKING MESSAGES #########
 class HybridObservablesTest_msg_rx;
 
-typedef boost::shared_ptr<HybridObservablesTest_msg_rx> HybridObservablesTest_msg_rx_sptr;
+using HybridObservablesTest_msg_rx_sptr = boost::shared_ptr<HybridObservablesTest_msg_rx>;
 
 HybridObservablesTest_msg_rx_sptr HybridObservablesTest_msg_rx_make();
 
@@ -142,7 +142,7 @@ HybridObservablesTest_msg_rx::~HybridObservablesTest_msg_rx() = default;
 // ######## GNURADIO BLOCK MESSAGE RECEVER FOR TLM MESSAGES #########
 class HybridObservablesTest_tlm_msg_rx;
 
-typedef boost::shared_ptr<HybridObservablesTest_tlm_msg_rx> HybridObservablesTest_tlm_msg_rx_sptr;
+using HybridObservablesTest_tlm_msg_rx_sptr = boost::shared_ptr<HybridObservablesTest_tlm_msg_rx>;
 
 HybridObservablesTest_tlm_msg_rx_sptr HybridObservablesTest_tlm_msg_rx_make();
 

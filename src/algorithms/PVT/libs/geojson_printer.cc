@@ -31,14 +31,19 @@
 
 
 #include "geojson_printer.h"
+#include "pvt_solution.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem/operations.hpp>   // for create_directories, exists
 #include <boost/filesystem/path.hpp>         // for path, operator<<
 #include <boost/filesystem/path_traits.hpp>  // for filesystem
+#include <boost/system/error_code.hpp>       // for error_code
 #include <glog/logging.h>
-#include <exception>
-#include <iomanip>
-#include <sstream>
+#include <cstdio>     // for remove
+#include <ctime>      // for tm
+#include <exception>  // for exception
+#include <iomanip>    // for operator<<
+#include <iostream>   // for cout, cerr
+#include <sstream>    // for stringstream
 
 
 GeoJSON_Printer::GeoJSON_Printer(const std::string& base_path)

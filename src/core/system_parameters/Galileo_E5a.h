@@ -1,4 +1,4 @@
-/*
+/*!
  * \file Galileo_E5a.h
  * \brief  Defines system parameters for Galileo E5a signal and NAV data
  * \author Marc Sales, 2014. marcsales92@gmail.com

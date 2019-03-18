@@ -37,7 +37,6 @@ add_library(acquisition_libs
 target_link_libraries(acquisition_libs
     PUBLIC
         Volk::volk
-        Gnuradio::fft
     PRIVATE
         Gflags::gflags
         Glog::glog

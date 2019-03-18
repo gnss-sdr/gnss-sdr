@@ -1,5 +1,5 @@
 /*!
- * \file rtklib_pvt_cc.h
+ * \file rtklib_pvt_gs.h
  * \brief Interface of a Position Velocity and Time computation block
  * \author Javier Arribas, 2017. jarribas(at)cttc.es
  *
@@ -28,56 +28,61 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_RTKLIB_PVT_CC_H
-#define GNSS_SDR_RTKLIB_PVT_CC_H
+#ifndef GNSS_SDR_RTKLIB_PVT_GS_H
+#define GNSS_SDR_RTKLIB_PVT_GS_H
 
-#include "beidou_dnav_almanac.h"
-#include "beidou_dnav_ephemeris.h"
-#include "galileo_almanac.h"
-#include "galileo_ephemeris.h"
-#include "geojson_printer.h"
 #include "gnss_synchro.h"
-#include "gps_almanac.h"
-#include "gps_ephemeris.h"
-#include "gpx_printer.h"
-#include "kml_printer.h"
-#include "monitor_pvt_udp_sink.h"
-#include "nmea_printer.h"
-#include "pvt_conf.h"
-#include "rinex_printer.h"
-#include "rtcm_printer.h"
-#include "rtklib_solver.h"
+#include "rtklib.h"
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <gnuradio/sync_block.h>
-#include <pmt/pmt.h>
-#include <chrono>
-#include <cstdint>
-#include <map>
-#include <memory>
-#include <string>
-#include <sys/ipc.h>
-#include <sys/msg.h>
-#include <sys/types.h>
-#include <utility>
-#include <vector>
+#include <boost/shared_ptr.hpp>   // for boost::shared_ptr
+#include <gnuradio/sync_block.h>  // for sync_block
+#include <gnuradio/types.h>       // for gr_vector_const_void_star
+#include <pmt/pmt.h>              // for pmt_t
+#include <chrono>                 // for system_clock
+#include <cstdint>                // for int32_t
+#include <ctime>                  // for time_t
+#include <map>                    // for map
+#include <memory>                 // for shared_ptr, unique_ptr
+#include <string>                 // for string
+#include <sys/types.h>            // for key_t
+#include <utility>                // for pair
+#include <vector>                 // for vector
 
+class Beidou_Dnav_Almanac;
+class Beidou_Dnav_Ephemeris;
+class Galileo_Almanac;
+class Galileo_Ephemeris;
+class GeoJSON_Printer;
+class Gps_Almanac;
+class Gps_Ephemeris;
+class Gpx_Printer;
+class Kml_Printer;
+class Monitor_Pvt_Udp_Sink;
+class Nmea_Printer;
+class Pvt_Conf;
+class Rinex_Printer;
+class Rtcm_Printer;
+class Rtklib_Solver;
+class rtklib_pvt_gs;
 
-class rtklib_pvt_cc;
+using rtklib_pvt_gs_sptr = boost::shared_ptr<rtklib_pvt_gs>;
 
-using rtklib_pvt_cc_sptr = boost::shared_ptr<rtklib_pvt_cc>;
-
-rtklib_pvt_cc_sptr rtklib_make_pvt_cc(uint32_t nchannels,
+rtklib_pvt_gs_sptr rtklib_make_pvt_gs(uint32_t nchannels,
     const Pvt_Conf& conf_,
     const rtk_t& rtk);
 
 /*!
  * \brief This class implements a block that computes the PVT solution using the RTKLIB integrated library
  */
-class rtklib_pvt_cc : public gr::sync_block
+class rtklib_pvt_gs : public gr::sync_block
 {
 private:
-    friend rtklib_pvt_cc_sptr rtklib_make_pvt_cc(uint32_t nchannels,
+    friend rtklib_pvt_gs_sptr rtklib_make_pvt_gs(uint32_t nchannels,
+        const Pvt_Conf& conf_,
+        const rtk_t& rtk);
+
+    rtklib_pvt_gs(uint32_t nchannels,
         const Pvt_Conf& conf_,
         const rtk_t& rtk);
 
@@ -135,7 +140,7 @@ private:
     int sysv_msqid;
     typedef struct
     {
-        long mtype;  //required by sys v message
+        long mtype;  // NOLINT(google-runtime-int) required by SysV queue messaging
         double ttff;
     } ttff_msgbuf;
     bool send_sys_v_ttff_msg(ttff_msgbuf ttff);
@@ -157,32 +162,45 @@ private:
     std::unique_ptr<Monitor_Pvt_Udp_Sink> udp_sink_ptr;
     std::vector<std::string> split_string(const std::string& s, char delim) const;
 
-public:
-    rtklib_pvt_cc(uint32_t nchannels,
-        const Pvt_Conf& conf_,
-        const rtk_t& rtk);
+    bool d_show_local_time_zone;
+    std::string d_local_time_str;
+    boost::posix_time::time_duration d_utc_diff_time;
 
-    ~rtklib_pvt_cc();  //!< Default destructor
+public:
+    ~rtklib_pvt_gs();  //!< Default destructor
 
     /*!
      * \brief Get latest set of GPS ephemeris from PVT block
-     *
      */
     std::map<int, Gps_Ephemeris> get_gps_ephemeris_map() const;
 
+    /*!
+     * \brief Get latest set of GPS almanac from PVT block
+     */
     std::map<int, Gps_Almanac> get_gps_almanac_map() const;
 
+    /*!
+     * \brief Get latest set of Galileo ephemeris from PVT block
+     */
     std::map<int, Galileo_Ephemeris> get_galileo_ephemeris_map() const;
 
+    /*!
+     * \brief Get latest set of Galileo almanac from PVT block
+     */
     std::map<int, Galileo_Almanac> get_galileo_almanac_map() const;
 
+    /*!
+     * \brief Get latest set of BeiDou DNAV ephemeris from PVT block
+     */
     std::map<int, Beidou_Dnav_Ephemeris> get_beidou_dnav_ephemeris_map() const;
 
+    /*!
+     * \brief Get latest set of BeiDou DNAV almanac from PVT block
+     */
     std::map<int, Beidou_Dnav_Almanac> get_beidou_dnav_almanac_map() const;
 
     /*!
      * \brief Clear all ephemeris information and the almanacs for GPS and Galileo
-     *
      */
     void clear_ephemeris();
 

@@ -31,7 +31,6 @@
 #ifndef GNSS_SDR_PVT_CONF_H_
 #define GNSS_SDR_PVT_CONF_H_
 
-#include <cstddef>
 #include <cstdint>
 #include <map>
 #include <string>
@@ -83,6 +82,8 @@ public:
     bool monitor_enabled;
     std::string udp_addresses;
     int udp_port;
+
+    bool show_local_time_zone;
 
     Pvt_Conf();
 };

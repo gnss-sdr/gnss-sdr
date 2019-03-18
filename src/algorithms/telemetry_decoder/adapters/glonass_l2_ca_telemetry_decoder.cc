@@ -32,14 +32,8 @@
 
 #include "glonass_l2_ca_telemetry_decoder.h"
 #include "configuration_interface.h"
-#include "glonass_gnav_almanac.h"
-#include "glonass_gnav_ephemeris.h"
-#include "glonass_gnav_utc_model.h"
 #include <glog/logging.h>
-#include <gnuradio/io_signature.h>
 
-
-using google::LogMessage;
 
 GlonassL2CaTelemetryDecoder::GlonassL2CaTelemetryDecoder(ConfigurationInterface* configuration,
     const std::string& role,
@@ -53,7 +47,7 @@ GlonassL2CaTelemetryDecoder::GlonassL2CaTelemetryDecoder(ConfigurationInterface*
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     // make telemetry decoder object
-    telemetry_decoder_ = glonass_l2_ca_make_telemetry_decoder_cc(satellite_, dump_);
+    telemetry_decoder_ = glonass_l2_ca_make_telemetry_decoder_gs(satellite_, dump_);
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
     channel_ = 0;
     if (in_streams_ > 1)

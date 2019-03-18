@@ -1,9 +1,9 @@
 /*!
  * \file gnss_sdr_fpga_sample_counter.cc
- * \brief Simple block to report the current receiver time based on the output of the tracking or telemetry blocks
+ * \brief Simple block to report the current receiver time based on the output
+ * of the tracking or telemetry blocks
  * \author Marc Majoral 2019. mmajoral(at)cttc.es
  * \author Javier Arribas 2018. jarribas(at)cttc.es
- *
  *
  * -------------------------------------------------------------------------
  *
@@ -34,15 +34,30 @@
 #include "gnss_synchro.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
-#include <cinttypes>
-#include <cmath>
-#include <fcntl.h>  // libraries used by the GIPO
-#include <iostream>
-#include <string>
-#include <sys/mman.h>  // libraries used by the GIPO
+#include <pmt/pmt.h>        // for from_double
+#include <pmt/pmt_sugar.h>  // for mp
+#include <cmath>            // for round
+#include <fcntl.h>          // for O_RDWR, libraries used by the GIPO
+#include <iostream>         // for operator<<, endl
+#include <sys/mman.h>       // libraries used by the GIPO
+#include <unistd.h>         // for write, close, read, ssize_t
+
 
 #define PAGE_SIZE 0x10000             // default page size for the multicorrelator memory map
 #define TEST_REG_SANITY_CHECK 0x55AA  // value to check the presence of the test register (to detect the hw)
+#ifndef TEMP_FAILURE_RETRY
+#define TEMP_FAILURE_RETRY(exp)              \
+    ({                                       \
+        decltype(exp) _rc;                   \
+        do                                   \
+            {                                \
+                _rc = (exp);                 \
+            }                                \
+        while (_rc == -1 && errno == EINTR); \
+        _rc;                                 \
+    })
+#endif
+
 
 gnss_sdr_fpga_sample_counter::gnss_sdr_fpga_sample_counter(
     double _fs,
@@ -56,6 +71,7 @@ gnss_sdr_fpga_sample_counter::gnss_sdr_fpga_sample_counter(
     fs = _fs;
     samples_per_output = std::round(fs * static_cast<double>(interval_ms) / 1e3);
     open_device();
+    is_open = true;
     sample_counter = 0ULL;
     last_sample_counter = 0ULL;
     current_T_rx_ms = 0;
@@ -79,6 +95,15 @@ gnss_sdr_fpga_sample_counter_sptr gnss_sdr_make_fpga_sample_counter(double _fs, 
 }
 
 
+gnss_sdr_fpga_sample_counter::~gnss_sdr_fpga_sample_counter()
+{
+    if (is_open)
+        {
+            close_device();
+        }
+}
+
+
 // Called by gnuradio to enable drivers, etc for i/o devices.
 bool gnss_sdr_fpga_sample_counter::start()
 {
@@ -93,10 +118,105 @@ bool gnss_sdr_fpga_sample_counter::start()
 bool gnss_sdr_fpga_sample_counter::stop()
 {
     close_device();
-
-    // return true if everything is ok.
+    is_open = false;
     return true;
 }
+
+
+uint32_t gnss_sdr_fpga_sample_counter::test_register(uint32_t writeval)
+{
+    uint32_t readval;
+    // write value to test register
+    map_base[3] = writeval;
+    // read value from test register
+    readval = map_base[3];
+    // return read value
+    return readval;
+}
+
+
+void gnss_sdr_fpga_sample_counter::configure_samples_per_output(uint32_t interval)
+{
+    // note : the counter is a 48-bit value in the HW.
+    map_base[0] = interval - 1;
+}
+
+
+void gnss_sdr_fpga_sample_counter::open_device()
+{
+    // open communication with HW accelerator
+    if ((fd = open(device_name.c_str(), O_RDWR | O_SYNC)) == -1)
+        {
+            LOG(WARNING) << "Cannot open deviceio" << device_name;
+            std::cout << "Counter-Intr: cannot open deviceio" << device_name << std::endl;
+        }
+    map_base = reinterpret_cast<volatile uint32_t *>(mmap(nullptr, PAGE_SIZE,
+        PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0));
+
+    if (map_base == reinterpret_cast<void *>(-1))
+        {
+            LOG(WARNING) << "Cannot map the FPGA acquisition module into user memory";
+            std::cout << "Counter-Intr: cannot map deviceio" << device_name << std::endl;
+        }
+
+    // sanity check : check test register
+    uint32_t writeval = TEST_REG_SANITY_CHECK;
+    uint32_t readval;
+    readval = gnss_sdr_fpga_sample_counter::test_register(writeval);
+    if (writeval != readval)
+        {
+            LOG(WARNING) << "Acquisition test register sanity check failed";
+        }
+    else
+        {
+            LOG(INFO) << "Acquisition test register sanity check success!";
+            //std::cout << "Acquisition test register sanity check success!" << std::endl;
+        }
+}
+
+
+void gnss_sdr_fpga_sample_counter::close_device()
+{
+    map_base[2] = 0;  // disable the generation of the interrupt in the device
+
+    auto *aux = const_cast<uint32_t *>(map_base);
+    if (munmap(static_cast<void *>(aux), PAGE_SIZE) == -1)
+        {
+            std::cout << "Failed to unmap memory uio" << std::endl;
+        }
+    close(fd);
+}
+
+
+//uint32_t gnss_sdr_fpga_sample_counter::wait_for_interrupt_and_read_counter()
+//{
+//    int32_t irq_count;
+//   ssize_t nb;
+//    int32_t counter;
+//
+//   // enable interrupts
+//    int32_t reenable = 1;
+//    ssize_t nbytes = TEMP_FAILURE_RETRY(write(fd, reinterpret_cast<void *>(&reenable), sizeof(int32_t)));
+//   if (nbytes != sizeof(int32_t))
+//        {
+//            std::cerr << "Error enabling interruptions in the FPGA." << std::endl;
+//        }
+//
+//    // wait for interrupt
+//   nb = read(fd, &irq_count, sizeof(irq_count));
+//   if (nb != sizeof(irq_count))
+//        {
+//            std::cout << "FPGA sample counter module read failed to retrieve 4 bytes!" << std::endl;
+//            std::cout << "FPGA sample counter module interrupt number " << irq_count << std::endl;
+//        }
+//
+//    // it is a rising edge interrupt, the interrupt does not need to be acknowledged
+//    //map_base[1] = 0; // writing anything to reg 1 acknowledges the interrupt
+//
+//    // add number of passed samples or read the current counter value for more accuracy
+//    counter = samples_per_output;  //map_base[0];
+//    return counter;
+//}
 
 
 int gnss_sdr_fpga_sample_counter::general_work(int noutput_items __attribute__((unused)),
@@ -185,68 +305,69 @@ int gnss_sdr_fpga_sample_counter::general_work(int noutput_items __attribute__((
     current_T_rx_ms = interval_ms * (sample_counter) / samples_per_output;
     return 1;
 }
+//<<<<<<< HEAD:src/algorithms/libs/gnss_sdr_fpga_sample_counter.cc
 
-uint32_t gnss_sdr_fpga_sample_counter::test_register(uint32_t writeval)
-{
-    uint32_t readval;
-    // write value to test register
-    map_base[3] = writeval;
-    // read value from test register
-    readval = map_base[3];
-    // return read value
-    return readval;
-}
+//uint32_t gnss_sdr_fpga_sample_counter::test_register(uint32_t writeval)
+//{
+//uint32_t readval;
+//// write value to test register
+//map_base[3] = writeval;
+//// read value from test register
+//readval = map_base[3];
+//// return read value
+//return readval;
+//}
 
-void gnss_sdr_fpga_sample_counter::configure_samples_per_output(uint32_t interval)
-{
-    // note : the counter is a 48-bit value in the HW.
-    map_base[0] = interval - 1;
-}
+//void gnss_sdr_fpga_sample_counter::configure_samples_per_output(uint32_t interval)
+//{
+//    // note : the counter is a 48-bit value in the HW.
+//    map_base[0] = interval - 1;
+//}
 
-void gnss_sdr_fpga_sample_counter::open_device()
-{
-    // open communication with HW accelerator
-    if ((fd = open(device_name.c_str(), O_RDWR | O_SYNC)) == -1)
-        {
-            LOG(WARNING) << "Cannot open deviceio" << device_name;
-            std::cout << "Counter-Intr: cannot open deviceio" << device_name << std::endl;
-        }
-    map_base = reinterpret_cast<volatile uint32_t *>(mmap(nullptr, PAGE_SIZE,
-        PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0));
+//void gnss_sdr_fpga_sample_counter::open_device()
+//{
+//// open communication with HW accelerator
+//if ((fd = open(device_name.c_str(), O_RDWR | O_SYNC)) == -1)
+//{
+//    LOG(WARNING) << "Cannot open deviceio" << device_name;
+//    std::cout << "Counter-Intr: cannot open deviceio" << device_name << std::endl;
+//}
+//map_base = reinterpret_cast<volatile uint32_t *>(mmap(nullptr, PAGE_SIZE,
+//PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0));
+//
+//if (map_base == reinterpret_cast<void *>(-1))
+//{
+//    LOG(WARNING) << "Cannot map the FPGA acquisition module into user memory";
+//    std::cout << "Counter-Intr: cannot map deviceio" << device_name << std::endl;
+//}
 
-    if (map_base == reinterpret_cast<void *>(-1))
-        {
-            LOG(WARNING) << "Cannot map the FPGA acquisition module into user memory";
-            std::cout << "Counter-Intr: cannot map deviceio" << device_name << std::endl;
-        }
+//// sanity check : check test register
+//uint32_t writeval = TEST_REG_SANITY_CHECK;
+//uint32_t readval;
+//readval = gnss_sdr_fpga_sample_counter::test_register(writeval);
+//if (writeval != readval)
+//{
+//    LOG(WARNING) << "Acquisition test register sanity check failed";
+//}
+//else
+//{
+//    LOG(INFO) << "Acquisition test register sanity check success!";
+//}
+//}
 
-    // sanity check : check test register
-    uint32_t writeval = TEST_REG_SANITY_CHECK;
-    uint32_t readval;
-    readval = gnss_sdr_fpga_sample_counter::test_register(writeval);
-    if (writeval != readval)
-        {
-            LOG(WARNING) << "Acquisition test register sanity check failed";
-        }
-    else
-        {
-            LOG(INFO) << "Acquisition test register sanity check success!";
-        }
-}
+//void gnss_sdr_fpga_sample_counter::close_device()
+//{
+//map_base[2] = 0;  // disable the generation of the interrupt in the device
+//
+//auto *aux = const_cast<uint32_t *>(map_base);
+//if (munmap(static_cast<void *>(aux), PAGE_SIZE) == -1)
+//{
+//    std::cout << "Failed to unmap memory uio" << std::endl;
+//}
+//close(fd);
+//}
 
-void gnss_sdr_fpga_sample_counter::close_device()
-{
-    map_base[2] = 0;  // disable the generation of the interrupt in the device
-
-    auto *aux = const_cast<uint32_t *>(map_base);
-    if (munmap(static_cast<void *>(aux), PAGE_SIZE) == -1)
-        {
-            std::cout << "Failed to unmap memory uio" << std::endl;
-        }
-    close(fd);
-}
-
-//uint32_t gnss_sdr_fpga_sample_counter::wait_for_interrupt_and_read_counter()
+////uint32_t gnss_sdr_fpga_sample_counter::wait_for_interrupt_and_read_counter()
 void gnss_sdr_fpga_sample_counter::wait_for_interrupt()
 {
     int32_t irq_count;
@@ -264,3 +385,5 @@ void gnss_sdr_fpga_sample_counter::wait_for_interrupt()
             std::cout << "fpga sample counter module interrupt number " << irq_count << std::endl;
         }
 }
+//=======
+//>>>>>>> b409f1c15efdd3c80fde680f4b5b966a1c18467b:src/core/libs/gnss_sdr_fpga_sample_counter.cc

@@ -2,8 +2,7 @@
  * \file dll_pll_veml_tracking_fpga.cc
  * \brief Implementation of a code DLL + carrier PLL tracking block using an FPGA
  * \author Marc Majoral, 2019. marc.majoral(at)cttc.es
- * \author Antonio Ramos, 2018 antonio.ramosdet(at)gmail.com
- * \author Javier Arribas, 2018. jarribas(at)cttc.es
+ * \author Javier Arribas, 2019. jarribas(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:
  * [1] K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
@@ -42,28 +41,26 @@
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
 #include "MATH_CONSTANTS.h"
-#include "control_message_factory.h"
-#include "galileo_e1_signal_processing.h"
-#include "galileo_e5_signal_processing.h"
+#include "fpga_multicorrelator.h"
+#include "gnss_satellite.h"
 #include "gnss_sdr_create_directory.h"
-#include "gps_l2c_signal.h"
-#include "gps_l5_signal.h"
-#include "gps_sdr_signal_processing.h"
+#include "gnss_synchro.h"
 #include "lock_detectors.h"
 #include "tracking_discriminators.h"
 #include <boost/filesystem/path.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <matio.h>
+#include <pmt/pmt_sugar.h>  // for mp
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <algorithm>
 #include <cmath>
+#include <complex>
+#include <cstdlib>  // for abs, size_t
 #include <exception>
 #include <iostream>
-#include <numeric>
-#include <sstream>
+#include <map>
 
-using google::LogMessage;
 
 dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(const Dll_Pll_Conf_Fpga &conf_)
 {
@@ -315,7 +312,6 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
             d_prompt_data_shift = &d_local_code_shift_chips[1];
         }
 
-
     if (trk_parameters.extend_correlation_symbols > 1)
         {
             d_enable_extended_integration = true;
@@ -387,7 +383,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
             d_dump_filename = trk_parameters.dump_filename;
             std::string dump_path;
             // Get path
-            if (d_dump_filename.find_last_of("/") != std::string::npos)
+            if (d_dump_filename.find_last_of('/') != std::string::npos)
                 {
                     std::string dump_filename_ = d_dump_filename.substr(d_dump_filename.find_last_of('/') + 1);
                     dump_path = d_dump_filename.substr(0, d_dump_filename.find_last_of('/'));
@@ -421,8 +417,9 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     int32_t *ca_codes = trk_parameters.ca_codes;
     int32_t *data_codes = trk_parameters.data_codes;
     uint32_t multicorr_type = trk_parameters.multicorr_type;
-    multicorrelator_fpga = std::make_shared<fpga_multicorrelator_8sc>(d_n_correlator_taps, device_name, device_base, ca_codes, data_codes, d_code_length_chips, trk_parameters.track_pilot, multicorr_type, d_code_samples_per_chip);
+    multicorrelator_fpga = std::make_shared<Fpga_Multicorrelator_8sc>(d_n_correlator_taps, device_name, device_base, ca_codes, data_codes, d_code_length_chips, trk_parameters.track_pilot, multicorr_type, d_code_samples_per_chip);
     multicorrelator_fpga->set_output_vectors(d_correlator_outs, d_Prompt_Data);
+    d_sample_counter_next = 0ULL;
 }
 
 
@@ -498,7 +495,6 @@ void dll_pll_veml_tracking_fpga::start_tracking()
     std::cout << "Tracking of " << systemName << " " << signal_pretty_name << " signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
     DLOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
-
     multicorrelator_fpga->set_local_code_and_taps(d_local_code_shift_chips, d_prompt_data_shift, d_acquisition_gnss_synchro->PRN);
     // enable tracking pull-in
     d_state = 1;
@@ -510,7 +506,7 @@ void dll_pll_veml_tracking_fpga::start_tracking()
 
 dll_pll_veml_tracking_fpga::~dll_pll_veml_tracking_fpga()
 {
-    if (signal_type.compare("1C") == 0)
+    if (signal_type == "1C")
         {
             volk_gnsssdr_free(d_gps_l1ca_preambles_symbols);
         }
@@ -677,7 +673,6 @@ void dll_pll_veml_tracking_fpga::run_dll_pll()
     // New carrier Doppler frequency estimation
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz + d_carr_error_filt_hz;
 
-
     // ################## DLL ##########################################################
     // DLL discriminator
     if (d_veml)
@@ -752,7 +747,6 @@ void dll_pll_veml_tracking_fpga::update_tracking_vars()
     // remnant carrier phase to prevent overflow in the code NCO
     d_rem_carr_phase_rad += static_cast<float>(d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples) + 0.5 * d_carrier_phase_rate_step_rad * static_cast<double>(d_current_prn_length_samples) * static_cast<double>(d_current_prn_length_samples));
     d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, PI_2);
-
 
     // carrier phase accumulator
     d_acc_carrier_phase_rad -= (d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples) + 0.5 * d_carrier_phase_rate_step_rad * static_cast<double>(d_current_prn_length_samples) * static_cast<double>(d_current_prn_length_samples));
@@ -998,29 +992,28 @@ int32_t dll_pll_veml_tracking_fpga::save_matfile()
         {
             return 1;
         }
-    float *abs_VE = new float[num_epoch];
-    float *abs_E = new float[num_epoch];
-    float *abs_P = new float[num_epoch];
-    float *abs_L = new float[num_epoch];
-    float *abs_VL = new float[num_epoch];
-    float *Prompt_I = new float[num_epoch];
-    float *Prompt_Q = new float[num_epoch];
-    uint64_t *PRN_start_sample_count = new uint64_t[num_epoch];
-    float *acc_carrier_phase_rad = new float[num_epoch];
-    float *carrier_doppler_hz = new float[num_epoch];
-    float *carrier_doppler_rate_hz = new float[num_epoch];
-    float *code_freq_chips = new float[num_epoch];
-    float *code_freq_rate_chips = new float[num_epoch];
-    float *carr_error_hz = new float[num_epoch];
-    float *carr_error_filt_hz = new float[num_epoch];
-    float *code_error_chips = new float[num_epoch];
-    float *code_error_filt_chips = new float[num_epoch];
-    float *CN0_SNV_dB_Hz = new float[num_epoch];
-    float *carrier_lock_test = new float[num_epoch];
-    float *aux1 = new float[num_epoch];
-    double *aux2 = new double[num_epoch];
-    uint32_t *PRN = new uint32_t[num_epoch];
-
+    auto *abs_VE = new float[num_epoch];
+    auto *abs_E = new float[num_epoch];
+    auto *abs_P = new float[num_epoch];
+    auto *abs_L = new float[num_epoch];
+    auto *abs_VL = new float[num_epoch];
+    auto *Prompt_I = new float[num_epoch];
+    auto *Prompt_Q = new float[num_epoch];
+    auto *PRN_start_sample_count = new uint64_t[num_epoch];
+    auto *acc_carrier_phase_rad = new float[num_epoch];
+    auto *carrier_doppler_hz = new float[num_epoch];
+    auto *carrier_doppler_rate_hz = new float[num_epoch];
+    auto *code_freq_chips = new float[num_epoch];
+    auto *code_freq_rate_chips = new float[num_epoch];
+    auto *carr_error_hz = new float[num_epoch];
+    auto *carr_error_filt_hz = new float[num_epoch];
+    auto *code_error_chips = new float[num_epoch];
+    auto *code_error_filt_chips = new float[num_epoch];
+    auto *CN0_SNV_dB_Hz = new float[num_epoch];
+    auto *carrier_lock_test = new float[num_epoch];
+    auto *aux1 = new float[num_epoch];
+    auto *aux2 = new double[num_epoch];
+    auto *PRN = new uint32_t[num_epoch];
 
     try
         {
@@ -1249,14 +1242,22 @@ void dll_pll_veml_tracking_fpga::stop_tracking()
     d_state = 0;
 }
 
-int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items,
-    gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
+
+void dll_pll_veml_tracking_fpga::reset(void)
 {
-    Gnss_Synchro **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
+    multicorrelator_fpga->unlock_channel();
+}
+
+
+int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((unused)),
+    gr_vector_int &ninput_items __attribute__((unused)),
+    gr_vector_const_void_star &input_items __attribute__((unused)),
+    gr_vector_void_star &output_items)
+{
+    auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
 
     d_current_prn_length_samples = d_next_prn_length_samples;
-
 
     switch (d_state)
         {
@@ -1299,7 +1300,6 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                 d_sample_counter = absolute_samples_offset;
                 current_synchro_data.Tracking_sample_counter = absolute_samples_offset;
                 d_sample_counter_next = d_sample_counter;
-
 
                 // Signal alignment (skip samples until the incoming signal is aligned with local replica)
 
@@ -1478,6 +1478,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
     return 0;
 }
 
+
 void dll_pll_veml_tracking_fpga::run_state_2(Gnss_Synchro &current_synchro_data)
 {
     d_sample_counter = d_sample_counter_next;
@@ -1649,10 +1650,4 @@ void dll_pll_veml_tracking_fpga::run_state_2(Gnss_Synchro &current_synchro_data)
                         }
                 }
         }
-}
-
-
-void dll_pll_veml_tracking_fpga::reset(void)
-{
-    multicorrelator_fpga->unlock_channel();
 }

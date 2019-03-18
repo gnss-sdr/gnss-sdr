@@ -1,9 +1,8 @@
 /*!
  * \file galileo_e1_pcps_ambiguous_acquisition_fpga.h
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
- *  Galileo E1 Signals
+ *  Galileo E1 Signals for the FPGA
  * \author Marc Majoral, 2019. mmajoral(at)cttc.es
- * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  * -------------------------------------------------------------------------
  *
@@ -35,19 +34,20 @@
 
 #include "acquisition_interface.h"
 #include "complex_byte_to_float_x2.h"
-#include "gnss_synchro.h"
 #include "pcps_acquisition_fpga.h"
 #include <gnuradio/blocks/float_to_complex.h>
 #include <gnuradio/blocks/stream_to_vector.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
+#include <volk/volk_complex.h>       // for lv_16sc_t
+#include <cstddef>                   // for size_t
 #include <string>
 
-
+class Gnss_Synchro;
 class ConfigurationInterface;
 
 /*!
- * \brief This class adapts a PCPS acquisition block to an
- *  AcquisitionInterface for Galileo E1 Signals
+ * \brief This class adapts a PCPS acquisition block off-loaded on an FPGA
+ * to an AcquisitionInterface for Galileo E1 Signals
  */
 class GalileoE1PcpsAmbiguousAcquisitionFpga : public AcquisitionInterface
 {
@@ -86,7 +86,7 @@ public:
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
      * to efficiently exchange synchronization data between acquisition and
-     *  tracking blocks
+     * tracking blocks
      */
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
@@ -136,8 +136,8 @@ public:
     void set_state(int state) override;
 
     /*!
-      * \brief Stop running acquisition
-      */
+     * \brief Stop running acquisition
+     */
     void stop_acquisition() override;
 
     void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
@@ -148,15 +148,10 @@ private:
     gr::blocks::stream_to_vector::sptr stream_to_vector_;
     gr::blocks::float_to_complex::sptr float_to_complex_;
     complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
-    bool bit_transition_flag_;
-    bool use_CFAR_algorithm_flag_;
     bool acquire_pilot_;
     uint32_t channel_;
     uint32_t doppler_max_;
     uint32_t doppler_step_;
-    uint32_t max_dwells_;
-    bool dump_;
-    bool blocking_;
     std::string dump_filename_;
     Gnss_Synchro* gnss_synchro_;
     std::string role_;

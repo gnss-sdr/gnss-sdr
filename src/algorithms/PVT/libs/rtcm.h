@@ -34,16 +34,19 @@
 
 
 #include "concurrent_queue.h"
-#include "galileo_fnav_message.h"
-#include "glonass_gnav_navigation_message.h"
 #include "gnss_synchro.h"
-#include "gps_cnav_navigation_message.h"
-#include "gps_navigation_message.h"
+#include <galileo_ephemeris.h>
+#include <gps_ephemeris.h>
+#include <gps_cnav_ephemeris.h>
+#include <glonass_gnav_ephemeris.h>
+#include <glonass_gnav_utc_model.h>
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
 #include <bitset>
+#include <cstddef>  // for size_t
 #include <cstdint>
+#include <cstring>  // for memcpy
 #include <deque>
 #include <map>
 #include <memory>
@@ -55,7 +58,7 @@
 
 
 /*!
- * This class implements the generation and reading of some Message Types
+ * \brief This class implements the generation and reading of some Message Types
  * defined in the RTCM 3.2 Standard, plus some utilities to handle messages.
  *
  * Generation of the following Message Types:
@@ -86,7 +89,7 @@
 class Rtcm
 {
 public:
-    Rtcm(uint16_t port = 2101);  //<! Default constructor that sets TCP port of the RTCM message server and RTCM Station ID. 2101 is the standard RTCM port according to the Internet Assigned Numbers Authority (IANA). See https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xml
+    Rtcm(uint16_t port = 2101);  //!< Default constructor that sets TCP port of the RTCM message server and RTCM Station ID. 2101 is the standard RTCM port according to the Internet Assigned Numbers Authority (IANA). See https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xml
     ~Rtcm();
 
     /*!
@@ -124,7 +127,7 @@ public:
      */
     std::string print_MT1006(uint32_t ref_id, double ecef_x, double ecef_y, double ecef_z, bool gps, bool glonass, bool galileo, bool non_physical, bool single_oscillator, uint32_t quarter_cycle_indicator, double height);
 
-    std::string print_MT1005_test();  //<! For testing purposes
+    std::string print_MT1005_test();  //!< For testing purposes
 
     /*!
      * \brief Prints message type 1008 (Antenna Descriptor & Serial Number)
@@ -141,6 +144,7 @@ public:
      * \return string with message contents
      */
     std::string print_MT1009(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, uint16_t station_id);
+
     /*!
      * \brief Prints Extended L1-Only GLONASS RTK Observables
      * \details This GLONASS message type is used when only L1 data is present and bandwidth is very tight, often 1012 is used in such cases.
@@ -151,6 +155,7 @@ public:
      * \return string with message contents
      */
     std::string print_MT1010(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, uint16_t station_id);
+
     /*!
      * \brief Prints L1&L2 GLONASS RTK Observables
      * \details This GLONASS message type is not generally used or supported; type 1012 is to be preferred
@@ -161,6 +166,7 @@ public:
      * \return string with message contents
      */
     std::string print_MT1011(const Glonass_Gnav_Ephemeris& glonass_gnav_ephL1, const Glonass_Gnav_Ephemeris& glonass_gnav_ephL2, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, uint16_t station_id);
+
     /*!
      * \brief Prints Extended L1&L2 GLONASS RTK Observables
      * \details This GLONASS message type is the most common observational message type, with L1/L2/SNR content.  This is one of the most common messages found.
@@ -329,9 +335,10 @@ public:
         bool divergence_free,
         bool more_messages);
 
-    uint32_t lock_time(const Gps_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);       //<! Returns the time period in which GPS L1 signals have been continually tracked.
-    uint32_t lock_time(const Gps_CNAV_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);  //<! Returns the time period in which GPS L2 signals have been continually tracked.
-    uint32_t lock_time(const Galileo_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);   //<! Returns the time period in which Galileo signals have been continually tracked.
+    uint32_t lock_time(const Gps_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);       //!< Returns the time period in which GPS L1 signals have been continually tracked.
+    uint32_t lock_time(const Gps_CNAV_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);  //!< Returns the time period in which GPS L2 signals have been continually tracked.
+    uint32_t lock_time(const Galileo_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);   //!< Returns the time period in which Galileo signals have been continually tracked.
+
     /*!
      * \brief Locks time period in which GLONASS signals have been continually tracked.
      * \note Code added as part of GSoC 2017 program
@@ -342,34 +349,26 @@ public:
      */
     uint32_t lock_time(const Glonass_Gnav_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);
 
-    std::string bin_to_hex(const std::string& s) const;  //<! Returns a string of hexadecimal symbols from a string of binary symbols
-    std::string hex_to_bin(const std::string& s) const;  //<! Returns a string of binary symbols from a string of hexadecimal symbols
+    std::string bin_to_hex(const std::string& s) const;  //!< Returns a string of hexadecimal symbols from a string of binary symbols
+    std::string hex_to_bin(const std::string& s) const;  //!< Returns a string of binary symbols from a string of hexadecimal symbols
 
-    std::string bin_to_binary_data(const std::string& s) const;  //<! Returns a string of binary data from a string of binary symbols
-    std::string binary_data_to_bin(const std::string& s) const;  //<! Returns a string of binary symbols from a string of binary data
+    std::string bin_to_binary_data(const std::string& s) const;  //!< Returns a string of binary data from a string of binary symbols
+    std::string binary_data_to_bin(const std::string& s) const;  //!< Returns a string of binary symbols from a string of binary data
 
-    uint32_t bin_to_uint(const std::string& s) const;  //<! Returns an uint32_t from a string of binary symbols
+    uint32_t bin_to_uint(const std::string& s) const;  //!< Returns an uint32_t from a string of binary symbols
     int32_t bin_to_int(const std::string& s) const;
-    double bin_to_double(const std::string& s) const;  //<! Returns double from a string of binary symbols
-    /*!
-     * \brief Locks time period in which GLONASS signals have been continually tracked.
-     * \note Code added as part of GSoC 2017 program
-     * \param eph GLONASS GNAV Broadcast Ephemeris
-     * \param obs_time Time of observation at the moment of printing
-     * \param observables Set of observables as defined by the platform
-     * \return //<! Returns a int64_t from a string of binary symbols
-     */
+    double bin_to_double(const std::string& s) const;  //!< Returns double from a string of binary symbols
     int32_t bin_to_sint(const std::string& s) const;
-    uint64_t hex_to_uint(const std::string& s) const;  //<! Returns an uint64_t from a string of hexadecimal symbols
-    int64_t hex_to_int(const std::string& s) const;    //<! Returns a int64_t from a string of hexadecimal symbols
+    uint64_t hex_to_uint(const std::string& s) const;  //!< Returns an uint64_t from a string of hexadecimal symbols
+    int64_t hex_to_int(const std::string& s) const;    //!< Returns a int64_t from a string of hexadecimal symbols
 
-    bool check_CRC(const std::string& message) const;  //<! Checks that the CRC of a RTCM package is correct
+    bool check_CRC(const std::string& message) const;  //!< Checks that the CRC of a RTCM package is correct
 
-    void run_server();   //<! Starts running the server
-    void stop_server();  //<! Stops the server
+    void run_server();   //!< Starts running the server
+    void stop_server();  //!< Stops the server
 
-    void send_message(const std::string& msg);  //<! Sends a message through the server to all connected clients
-    bool is_server_running() const;             //<! Returns true if the server is running, false otherwise
+    void send_message(const std::string& msg);  //!< Sends a message through the server to all connected clients
+    bool is_server_running() const;             //!< Returns true if the server is running, false otherwise
 
 private:
     //

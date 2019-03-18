@@ -3,7 +3,6 @@
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
  *  Galileo E1 Signals for the FPGA
  * \author Marc Majoral, 2019. mmajoral(at)cttc.es
- * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  * -------------------------------------------------------------------------
  *
@@ -35,12 +34,15 @@
 #include "configuration_interface.h"
 #include "galileo_e1_signal_processing.h"
 #include "gnss_sdr_flags.h"
-#include <boost/lexical_cast.hpp>
-#include <boost/math/distributions/exponential.hpp>
+#include "gnss_synchro.h"
 #include <glog/logging.h>
-
-
-using google::LogMessage;
+#include <gnuradio/fft/fft.h>     // for fft_complex
+#include <gnuradio/gr_complex.h>  // for gr_complex
+#include <volk/volk.h>            // for volk_32fc_conjugate_32fc
+#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <cmath>    // for abs, pow, floor
+#include <complex>  // for complex
+#include <cstring>  // for memcpy
 
 
 GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
@@ -57,10 +59,7 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     std::string default_item_type = "cshort";
     std::string default_dump_filename = "./data/acquisition.dat";
 
-
     DLOG(INFO) << "role " << role;
-
-    //    item_type_ = configuration_->property(role + ".item_type", default_item_type);
 
     int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
     int64_t fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
@@ -78,12 +77,12 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     uint32_t sampled_ms = configuration_->property(role + ".coherent_integration_time_ms", 4);
     acq_parameters.sampled_ms = sampled_ms;
 
-    acquire_pilot_ = configuration_->property(role + ".acquire_pilot", false);  //will be true in future versions
+    acquire_pilot_ = configuration_->property(role + ".acquire_pilot", false);  // could be true in future versions
 
-    //--- Find number of samples per spreading code (4 ms)  -----------------
+    // Find number of samples per spreading code (4 ms)
     auto code_length = static_cast<uint32_t>(std::round(static_cast<double>(fs_in) / (GALILEO_E1_CODE_CHIP_RATE_HZ / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
-
     acq_parameters.code_length = code_length;
+
     // The FPGA can only use FFT lengths that are a power of two.
     float nbits = ceilf(log2f((float)code_length * 2));
     uint32_t nsamples_total = pow(2, nbits);
@@ -128,11 +127,10 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
                     code[s] = code[s - code_length];
                 }
 
-
             // fill in zero padding
             for (uint32_t s = 2 * code_length; s < nsamples_total; s++)
                 {
-                    code[s] = std::complex<float>(static_cast<float>(0, 0));
+                    code[s] = std::complex<float>(0.0, 0.0);
                 }
 
             memcpy(fft_if->get_inbuf(), code, sizeof(gr_complex) * nsamples_total);            // copy to FFT buffer
@@ -260,15 +258,22 @@ void GalileoE1PcpsAmbiguousAcquisitionFpga::set_state(int state)
     acquisition_fpga_->set_state(state);
 }
 
+
 void GalileoE1PcpsAmbiguousAcquisitionFpga::connect(gr::top_block_sptr top_block)
 {
-    // nothing to connect
+    if (top_block)
+        { /* top_block is not null */
+        };
+    // Nothing to connect
 }
 
 
 void GalileoE1PcpsAmbiguousAcquisitionFpga::disconnect(gr::top_block_sptr top_block)
 {
-    // nothing to disconnect
+    if (top_block)
+        { /* top_block is not null */
+        };
+    // Nothing to disconnect
 }
 
 

@@ -29,8 +29,11 @@
  */
 
 #include "rtcm.h"
+#include "GLONASS_L1_L2_CA.h"
+#include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
 #include "Galileo_E1.h"
+#include "Galileo_E5a.h"
 #include <boost/algorithm/string.hpp>  // for to_upper_copy
 #include <boost/crc.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
@@ -39,10 +42,8 @@
 #include <chrono>     // std::chrono::seconds
 #include <cmath>      // for std::fmod
 #include <cstdlib>    // for strtol
+#include <iostream>   // for cout
 #include <sstream>    // for std::stringstream
-#include <thread>
-
-using google::LogMessage;
 
 
 Rtcm::Rtcm(uint16_t port)
@@ -3366,6 +3367,7 @@ std::map<std::string, int> Rtcm::gps_signal_map = [] {
     gps_signal_map_["5I"] = 22;
     gps_signal_map_["5Q"] = 23;
     gps_signal_map_["5X"] = 24;
+    gps_signal_map_["L5"] = 24;  // Workaround. TODO: check if it was I or Q
     return gps_signal_map_;
 }();
 

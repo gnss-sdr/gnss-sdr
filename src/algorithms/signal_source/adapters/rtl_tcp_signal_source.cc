@@ -41,9 +41,6 @@
 #include <utility>
 
 
-using google::LogMessage;
-
-
 RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_stream,

@@ -3,10 +3,7 @@
  * \brief This class implements a Parallel Code Phase Search Acquisition for the FPGA
  * \authors <ul>
  *          <li> Marc Majoral, 2019. mmajoral(at)cttc.es
- *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
- *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
- *          <li> Marc Molina, 2013. marc.molina.pena@gmail.com
- *          <li> Cillian O'Driscoll, 2017. cillian(at)ieee.org
+ *          <li> Javier Arribas, 2019. jarribas(at)cttc.es
  *          </ul>
  *
  * -------------------------------------------------------------------------
@@ -36,13 +33,18 @@
 
 
 #include "pcps_acquisition_fpga.h"
+#include "gnss_synchro.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
-#include <utility>
+#include <pmt/pmt.h>        // for from_long
+#include <pmt/pmt_sugar.h>  // for mp
+#include <cmath>            // for ceil
+#include <iostream>         // for operator<<
+#include <utility>          // for move
+
 
 #define AQ_DOWNSAMPLING_DELAY 40  // delay due to the downsampling filter in the acquisition
 
-using google::LogMessage;
 
 pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_)
 {
@@ -66,6 +68,7 @@ pcps_acquisition_fpga::pcps_acquisition_fpga(pcpsconf_fpga_t conf_) : gr::block(
     d_num_doppler_bins = 0U;
     d_threshold = 0.0;
     d_doppler_step = 0U;
+    d_doppler_index = 0U;
     d_test_statistics = 0.0;
     d_channel = 0U;
     d_gnss_synchro = nullptr;
@@ -82,7 +85,8 @@ pcps_acquisition_fpga::pcps_acquisition_fpga(pcpsconf_fpga_t conf_) : gr::block(
 
     d_doppler_max = acq_parameters.doppler_max;
 
-    acquisition_fpga = std::make_shared<fpga_acquisition>(acq_parameters.device_name, acq_parameters.code_length, acq_parameters.doppler_max, d_fft_size,
+    acquisition_fpga = std::make_shared<Fpga_Acquisition>(acq_parameters.device_name, acq_parameters.code_length, acq_parameters.doppler_max, d_fft_size,
+
         acq_parameters.fs_in, acq_parameters.sampled_ms, acq_parameters.select_queue_Fpga, acq_parameters.all_fft_codes, acq_parameters.excludelimit);
 }
 
@@ -143,7 +147,7 @@ void pcps_acquisition_fpga::set_state(int32_t state)
 void pcps_acquisition_fpga::send_positive_acquisition()
 {
     // Declare positive acquisition using a message port
-    //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
+    // 0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
     DLOG(INFO) << "positive acquisition"
                << ", satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
                << ", sample_stamp " << d_sample_counter
@@ -183,31 +187,32 @@ void pcps_acquisition_fpga::acquisition_core(uint32_t num_doppler_bins, uint32_t
     uint64_t initial_sample;
     int32_t doppler;
 
-    acquisition_fpga->configure_acquisition();
     acquisition_fpga->set_doppler_sweep(num_doppler_bins, doppler_step, doppler_min);
-    acquisition_fpga->write_local_code();
-    acquisition_fpga->set_block_exp(d_total_block_exp);
     acquisition_fpga->run_acquisition();
     acquisition_fpga->read_acquisition_results(&indext, &firstpeak, &secondpeak, &initial_sample, &d_input_power, &d_doppler_index, &total_block_exp);
+
+    doppler = static_cast<int32_t>(doppler_min) + doppler_step * (d_doppler_index - 1);
 
     if (total_block_exp > d_total_block_exp)
         {
             // if the attenuation factor of the FPGA FFT-IFFT is smaller than the reference attenuation factor then we need to update the reference attenuation factor
             std::cout << "changing blk exp..... d_total_block_exp = " << d_total_block_exp << " total_block_exp = " << total_block_exp << " chan = " << d_channel << std::endl;
             d_total_block_exp = total_block_exp;
-        }
-
-    //doppler = -static_cast<int32_t>(d_doppler_max) + d_doppler_step * (d_doppler_index - 1);
-    doppler = static_cast<int32_t>(doppler_min) + doppler_step * (d_doppler_index - 1);
-
-    if (secondpeak > 0)
-        {
-            d_test_statistics = firstpeak / secondpeak;
+            d_test_statistics = 0;
         }
     else
         {
-            d_test_statistics = 0.0;
+            if (secondpeak > 0)
+                {
+                    d_test_statistics = firstpeak / secondpeak;
+                }
+            else
+                {
+                    d_test_statistics = 0.0;
+                }
         }
+
+
 
     d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
     d_sample_counter = initial_sample;
@@ -249,6 +254,13 @@ void pcps_acquisition_fpga::set_active(bool active)
                << ", use_CFAR_algorithm_flag: false";
 
 
+    //acquisition_fpga->configure_acquisition();
+    //acquisition_fpga->write_local_code();
+
+    acquisition_fpga->configure_acquisition();
+    acquisition_fpga->write_local_code();
+    acquisition_fpga->set_block_exp(d_total_block_exp);
+
     acquisition_core(d_num_doppler_bins, d_doppler_step, -d_doppler_max);
 
     if (!d_make_2_steps)
@@ -271,6 +283,7 @@ void pcps_acquisition_fpga::set_active(bool active)
             if (d_test_statistics > d_threshold)
                 {
                     d_doppler_center_step_two = static_cast<float>(d_gnss_synchro->Acq_doppler_hz);
+                    acquisition_fpga->open_device();
                     acquisition_core(d_num_doppler_bins_step2, d_doppler_step2, d_doppler_center_step_two - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0)) * d_doppler_step2);
 
                     if (d_test_statistics > d_threshold)
@@ -319,18 +332,21 @@ void pcps_acquisition_fpga::set_active(bool active)
 
 
 int pcps_acquisition_fpga::general_work(int noutput_items __attribute__((unused)),
-    gr_vector_int& ninput_items, gr_vector_const_void_star& input_items,
+    gr_vector_int& ninput_items __attribute__((unused)),
+    gr_vector_const_void_star& input_items __attribute__((unused)),
     gr_vector_void_star& output_items __attribute__((unused)))
 {
     // the general work is not used with the acquisition that uses the FPGA
     return noutput_items;
 }
 
+
 void pcps_acquisition_fpga::reset_acquisition(void)
 {
     // this function triggers a HW reset of the FPGA PL.
     acquisition_fpga->reset_acquisition();
 }
+
 
 void pcps_acquisition_fpga::read_fpga_total_scale_factor(uint32_t* total_scale_factor, uint32_t* fw_scale_factor)
 {

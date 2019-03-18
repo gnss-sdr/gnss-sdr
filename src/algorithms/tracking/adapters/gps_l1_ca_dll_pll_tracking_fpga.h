@@ -3,8 +3,6 @@
  * \brief  Interface of an adapter of a DLL+PLL tracking loop block
  * for GPS L1 C/A to a TrackingInterface for the FPGA
  * \author Marc Majoral, 2019, mmajoral(at)cttc.es
- *         Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
- *         Javier Arribas, 2011. jarribas(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
@@ -41,9 +39,12 @@
 
 #include "dll_pll_veml_tracking_fpga.h"
 #include "tracking_interface.h"
+#include <gnuradio/runtime_types.h>
+#include <cstddef>
 #include <string>
 
 
+class Gnss_Synchro;
 class ConfigurationInterface;
 
 /*!
@@ -72,7 +73,7 @@ public:
 
     inline size_t item_size() override
     {
-        return item_size_;
+        return sizeof(int);
     }
 
     void connect(gr::top_block_sptr top_block) override;
@@ -100,7 +101,6 @@ public:
 
 private:
     dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
-    size_t item_size_;
     uint32_t channel_;
     std::string role_;
     uint32_t in_streams_;

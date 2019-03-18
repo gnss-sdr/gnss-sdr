@@ -1,7 +1,6 @@
 /*!
- * \file glonass_l1_ca_telemetry_decoder_cc.h
- * \brief Implementation of an adapter of a GLONASS L1 C/A NAV data decoder block
- * to a TelemetryDecoderInterface
+ * \file glonass_l1_ca_telemetry_decoder_gs.h
+ * \brief Implementation of a GLONASS L1 C/A NAV data decoder block
  * \note Code added as part of GSoC 2017 program
  * \author Damian Miralles, 2017. dmiralles2009(at)gmail.com
  *
@@ -30,27 +29,28 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GLONASS_L1_CA_TELEMETRY_DECODER_CC_H
-#define GNSS_SDR_GLONASS_L1_CA_TELEMETRY_DECODER_CC_H
+#ifndef GNSS_SDR_GLONASS_L1_CA_TELEMETRY_DECODER_GS_H
+#define GNSS_SDR_GLONASS_L1_CA_TELEMETRY_DECODER_GS_H
 
 
 #include "GLONASS_L1_L2_CA.h"
-#include "glonass_gnav_almanac.h"
-#include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_navigation_message.h"
-#include "glonass_gnav_utc_model.h"
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
-#include <gnuradio/block.h>
-#include <fstream>
+#include <boost/circular_buffer.hpp>
+#include <boost/shared_ptr.hpp>  // for boost::shared_ptr
+#include <gnuradio/block.h>      // for block
+#include <gnuradio/types.h>      // for gr_vector_const_void_star
+#include <cstdint>
+#include <fstream>  // for ofstream
 #include <string>
 
 
-class glonass_l1_ca_telemetry_decoder_cc;
+class glonass_l1_ca_telemetry_decoder_gs;
 
-using glonass_l1_ca_telemetry_decoder_cc_sptr = boost::shared_ptr<glonass_l1_ca_telemetry_decoder_cc>;
+using glonass_l1_ca_telemetry_decoder_gs_sptr = boost::shared_ptr<glonass_l1_ca_telemetry_decoder_gs>;
 
-glonass_l1_ca_telemetry_decoder_cc_sptr glonass_l1_ca_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
+glonass_l1_ca_telemetry_decoder_gs_sptr glonass_l1_ca_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
 /*!
  * \brief This class implements a block that decodes the GNAV data defined in GLONASS ICD v5.1
@@ -58,10 +58,10 @@ glonass_l1_ca_telemetry_decoder_cc_sptr glonass_l1_ca_make_telemetry_decoder_cc(
  * \see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf">GLONASS ICD</a>
  *
  */
-class glonass_l1_ca_telemetry_decoder_cc : public gr::block
+class glonass_l1_ca_telemetry_decoder_gs : public gr::block
 {
 public:
-    ~glonass_l1_ca_telemetry_decoder_cc();                //!< Class destructor
+    ~glonass_l1_ca_telemetry_decoder_gs();                //!< Class destructor
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
     void set_channel(int32_t channel);                    //!< Set receiver's channel
 
@@ -72,9 +72,9 @@ public:
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
 private:
-    friend glonass_l1_ca_telemetry_decoder_cc_sptr
-    glonass_l1_ca_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
-    glonass_l1_ca_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
+    friend glonass_l1_ca_telemetry_decoder_gs_sptr
+    glonass_l1_ca_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+    glonass_l1_ca_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
     void decode_string(const double *symbols, int32_t frame_length);
 
@@ -88,7 +88,7 @@ private:
     int32_t d_symbols_per_preamble;
 
     //!< Storage for incoming data
-    std::deque<Gnss_Synchro> d_symbol_history;
+    boost::circular_buffer<Gnss_Synchro> d_symbol_history;
 
     //!< Variables for internal functionality
     uint64_t d_sample_counter;    //!< Sample counter as an index (1,2,3,..etc) indicating number of samples processed

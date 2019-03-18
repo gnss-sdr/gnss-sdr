@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -35,11 +35,11 @@
 
 
 #include "Beidou_B1I.h"
-#include "beidou_dnav_almanac.h"
 #include "beidou_dnav_ephemeris.h"
 #include "beidou_dnav_iono.h"
 #include "beidou_dnav_utc_model.h"
 #include <bitset>
+#include <cstdint>
 #include <map>
 #include <string>
 #include <utility>
@@ -47,9 +47,7 @@
 
 
 /*!
- * \brief This class decodes a BeiDou D1 NAV Data message as described in IS-GPS-200E
- *
- * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
+ * \brief This class decodes a BeiDou D1 NAV Data message
  */
 class Beidou_Dnav_Navigation_Message
 {
@@ -61,13 +59,17 @@ private:
     /*
      * Accounts for the beginning or end of week crossover
      *
-     * See paragraph 20.3.3.3.3.1 (IS-GPS-200E)
      * \param[in]  -  time in seconds
      * \param[out] -  corrected time, in seconds
      */
     double check_t(double time);
 
 public:
+    /*!
+     * Default constructor
+     */
+    Beidou_Dnav_Navigation_Message();
+
     // System flags for data processing
     bool flag_eph_valid;
     bool flag_utc_model_valid;
@@ -119,7 +121,7 @@ public:
     double d_Toe_sf2;  //!< Ephemeris data reference time of week in subframe 2, D1 Message
     double d_Toe_sf3;  //!< Ephemeris data reference time of week in subframe 3, D1 Message
     double d_Toe;      //!< Ephemeris data reference time of week in subframe 1, D2 Message
-    double d_Toc;      //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200E) [s]
+    double d_Toc;      //!< clock data reference time [s]
     double d_Cic;      //!< Amplitude of the Cosine Harmonic Correction Term to the Angle of Inclination [rad]
     double d_OMEGA0;   //!< Longitude of Ascending Node of Orbit Plane at Weekly Epoch [semi-circles]
     double d_Cis;      //!< Amplitude of the Sine Harmonic Correction Term to the Angle of Inclination [rad]
@@ -218,8 +220,8 @@ public:
     double d_beta3;   //!< Coefficient 3 of a cubic equation representing the period of the model [s(semi-circle)^3]
 
     // UTC parameters
-    double d_A1UTC;       //!< 1st order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s/s]
-    double d_A0UTC;       //!< Constant of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s]
+    double d_A1UTC;       //!< 1st order term of a model that relates GPS and UTC time [s/s]
+    double d_A0UTC;       //!< Constant of a model that relates GPS and UTC time [s]
     double d_DeltaT_LS;   //!< delta time due to leap seconds [s]. Number of leap seconds since 6-Jan-1980 as transmitted by the GPS almanac.
     int32_t i_WN_LSF;     //!< Week number at the end of which the leap second becomes effective [weeks]
     int32_t i_DN;         //!< Day number (DN) at the end of which the leap second becomes effective [days]
@@ -249,25 +251,23 @@ public:
     double d_satvel_Y;  //!< Earth-fixed velocity coordinate y of the satellite [m]
     double d_satvel_Z;  //!< Earth-fixed velocity coordinate z of the satellite [m]
 
-
     // public functions
     void reset();
 
     /*!
-     * \brief Obtain a GPS SV Ephemeris class filled with current SV data
+     * \brief Obtain a BDS SV Ephemeris class filled with current SV data
      */
     Beidou_Dnav_Ephemeris get_ephemeris();
 
     /*!
-     * \brief Obtain a GPS ionospheric correction parameters class filled with current SV data
+     * \brief Obtain a BDS ionospheric correction parameters class filled with current SV data
      */
     Beidou_Dnav_Iono get_iono();
 
     /*!
-     * \brief Obtain a GPS UTC model parameters class filled with current SV data
+     * \brief Obtain a BDS UTC model parameters class filled with current SV data
      */
     Beidou_Dnav_Utc_Model get_utc_model();
-
 
     /*!
      * \brief Decodes the BDS D1 NAV message
@@ -281,20 +281,18 @@ public:
 
     /*!
      * \brief Computes the position of the satellite
-     *
-     * Implementation of Table 20-IV (IS-GPS-200E)
      */
     void satellitePosition(double transmitTime);
 
     /*!
      * \brief Sets (\a d_satClkCorr) according to the User Algorithm for SV Clock Correction
-     * and returns the corrected clock (IS-GPS-200E,  20.3.3.3.3.1)
+     * and returns the corrected clock
      */
     double sv_clock_correction(double transmitTime);
 
     /*!
      * \brief Computes the Coordinated Universal Time (UTC) and
-     * returns it in [s] (IS-GPS-200E, 20.3.3.5.2.4)
+     * returns it in [s]
      */
     double utc_time(const double beidoutime_corrected) const;
 
@@ -319,10 +317,6 @@ public:
      * \brief Returns true if new UTC model has arrived. The flag is set to false when the function is executed
      */
     bool have_new_almanac();
-    /*!
-     * Default constructor
-     */
-    Beidou_Dnav_Navigation_Message();
 };
 
 #endif

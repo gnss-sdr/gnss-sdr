@@ -184,6 +184,12 @@ find_package(Gnuplot)
 if(GNUPLOT_FOUND)
     add_definitions(-DGNUPLOT_EXECUTABLE="${GNUPLOT_EXECUTABLE}")
 endif()
+set_package_properties(Gnuplot PROPERTIES
+    URL "http://www.gnuplot.info"
+    DESCRIPTION "A portable command-line driven graphing utility"
+    PURPOSE "Used to generate plots in some tests."
+    TYPE OPTIONAL
+)
 
 if(ENABLE_UNIT_TESTING_MINIMAL)
     add_definitions(-DUNIT_TESTING_MINIMAL=1)
@@ -194,6 +200,15 @@ endif()
 # Optional generator
 ################################################################################
 option(ENABLE_GNSS_SIM_INSTALL "Enable the installation of gnss_sim on the fly" ON)
+add_feature_info(ENABLE_GNSS_SIM_INSTALL ENABLE_GNSS_SIM_INSTALL "Enables downloading and building of gnss-sim.")
+
+find_package(GPSTK)
+set_package_properties(GPSTK PROPERTIES
+    URL "http://www.gpstk.org"
+    DESCRIPTION "Library and suite of applications for satellite navigation"
+    PURPOSE "Used in some Extra Tests."
+    TYPE OPTIONAL
+)
 if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
     if(ENABLE_FPGA)
       set(CROSS_INSTALL_DIR "-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}")
@@ -239,7 +254,6 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
     ################################################################################
     # Local installation of GPSTk http://www.gpstk.org/
     ################################################################################
-    find_package(GPSTK)
     if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
       message(STATUS " GPSTk v${GNSSSDR_GPSTK_LOCAL_VERSION} will be automatically downloaded and built when doing 'make'.")
       if("${TOOLCHAIN_ARG}" STREQUAL "")
@@ -550,7 +564,7 @@ endif()
 set(CMAKE_CTEST_COMMAND ctest -V)
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
 
-if(NOT ENABLE_PACKAGING)
+if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     add_executable(flowgraph_test
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/control-plane/gnss_flowgraph_test.cc
@@ -589,7 +603,7 @@ endif()
 
 
 #########################################################
-if(NOT ENABLE_PACKAGING)
+if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     add_executable(gnss_block_test
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/sources/file_signal_source_test.cc
@@ -640,7 +654,7 @@ endif()
 
 
 #########################################################
-if(NOT ENABLE_PACKAGING)
+if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     add_executable(gnuradio_block_test
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/sources/unpack_2bit_samples_test.cc
@@ -696,7 +710,7 @@ set_property(TEST matio_test PROPERTY TIMEOUT 30)
 
 
 #########################################################
-if(NOT ENABLE_PACKAGING)
+if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     add_executable(acq_test
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_test.cc
@@ -734,7 +748,7 @@ endif()
 
 
 #########################################################
-if(NOT ENABLE_PACKAGING)
+if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     add_executable(trk_test
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/tracking/galileo_e1_dll_pll_veml_tracking_test.cc
@@ -773,7 +787,7 @@ endif()
 
 #########################################################
 
-if(NOT ENABLE_PACKAGING)
+if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     add_executable(control_thread_test
         ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/control-plane/control_message_factory_test.cc
@@ -807,6 +821,10 @@ endif()
 if(ENABLE_PACKAGING)
     add_dependencies(check matio_test)
 else()
-    add_dependencies(check control_thread_test flowgraph_test gnss_block_test
-        gnuradio_block_test acq_test trk_test matio_test)
+    if(ENABLE_FPGA)
+        add_dependencies(check matio_test)
+    else()
+        add_dependencies(check control_thread_test flowgraph_test gnss_block_test
+            gnuradio_block_test acq_test trk_test matio_test)
+    endif()
 endif()

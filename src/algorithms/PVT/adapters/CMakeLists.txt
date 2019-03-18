@@ -32,6 +32,7 @@ add_library(pvt_adapters ${PVT_ADAPTER_SOURCES} ${PVT_ADAPTER_HEADERS})
 target_link_libraries(pvt_adapters
     PUBLIC
         pvt_gr_blocks
+        algorithms_libs_rtklib
         core_system_parameters
     PRIVATE
         gnss_sdr_flags

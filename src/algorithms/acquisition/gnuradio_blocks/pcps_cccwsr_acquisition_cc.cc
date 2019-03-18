@@ -44,7 +44,6 @@
 #include <sstream>
 #include <utility>
 
-using google::LogMessage;
 
 pcps_cccwsr_acquisition_cc_sptr pcps_cccwsr_make_acquisition_cc(
     uint32_t sampled_ms,

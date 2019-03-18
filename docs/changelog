@@ -1,27 +1,56 @@
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
+### Improvements in Availability
+
+- Fixed bug that caused a random deadlock in the Observables block, preventing the computation of PVT fixes.
+- Fixed bug in Galileo INAV message decoding when PLL is locked at 180 degrees, which prevented from correct navigation message decoding in some situations.
+
+
 ### Improvements in Efficiency
 
-- Applied clang-tidy checks and fixes related to performance.
+- Improved preamble detection implementation in the decoding of navigation messages (acceleration by x1.6 on average).
+- Applied clang-tidy checks and fixes related to performance: performance-faster-string-find, performance-inefficient-algorithm, performance-move-const-arg, performance-type-promotion-in-math-fn, performance-unnecessary-copy-initialization, performance-unnecessary-value-param, readability-string-compare.
+
 
 ### Improvements in Interoperability:
 
 - Added the BeiDou B1I receiver chain.
 - Fix bug in GLONASS dual frequency receiver.
+- Added a custom UDP/IP output for PVT data streaming.
+- Improved Monitor block with UDP/IP output for internal receiver's data streaming.
+
 
 ### Improvements in Maintainability:
 
 - Usage of clang-tidy integrated into CMake scripts. New option -DENABLE_CLANG_TIDY=ON executes clang-tidy along with compilation. Requires clang compiler.
-- Applied clang-tidy checks and fixes related to readability.
+- Applied clang-tidy checks and fixes related to readability: readability-container-size-empty, readability-identifier-naming, readability-inconsistent-declaration-parameter-name, readability-named-parameter, readability-non-const-parameter, readability-string-compare.
+- Improved includes selection following suggestions by include-what-you-use (see https://include-what-you-use.org/), allowing faster compiles, fewer recompiles and making refactoring easier.
+
 
 ### Improvements in Portability:
 
+- Added interfaces for FPGA off-loading.
 - CMake scripts now follow a modern approach (targets and properties) but still work in 2.8.12
 
 
-## Improvements in Reliability
+### Improvements in Reliability
 
-- Applied clang-tidy checks and fixes related to High Integrity C++.
+- Applied clang-tidy checks and fixes related to High Integrity C++: performance-move-const-arg, modernize-use-auto, modernize-use-equals-default, modernize-use-equals-delete, modernize-use-noexcept, modernize-use-nullptr, cert-dcl21-cpp, misc-new-delete-overloads, cert-dcl58-cpp, cert-err52-cpp, cert-err60-cpp.
+
+
+### Improvements in Usability
+
+- The receiver now admits FPGA off-loading, allowing for real time operation at high sampling rates and higher number of signals and channels.
+- Fixed program termination (avoiding hangs and segfaults in some platforms/configurations).
+- CMake now generates a summary of enabled/disabled features. This info is also stored in a file called features.log in the building directory.
+- New parameter PVT.show_local_time_zone displays time in the local time zone. Subject to the proper system configuration of the machine running the software receiver.
+- Improved information provided to the user in case of failure.
+
+
+
+See the definitions of concepts and metrics at https://gnss-sdr.org/design-forces/
+
+
 
 
 ## [0.0.10](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.10)

@@ -57,7 +57,7 @@
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GlonassL1CaPcpsAcquisitionTest_msg_rx;
 
-typedef boost::shared_ptr<GlonassL1CaPcpsAcquisitionTest_msg_rx> GlonassL1CaPcpsAcquisitionTest_msg_rx_sptr;
+using GlonassL1CaPcpsAcquisitionTest_msg_rx_sptr = boost::shared_ptr<GlonassL1CaPcpsAcquisitionTest_msg_rx>;
 
 GlonassL1CaPcpsAcquisitionTest_msg_rx_sptr GlonassL1CaPcpsAcquisitionTest_msg_rx_make();
 

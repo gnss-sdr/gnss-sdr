@@ -31,10 +31,11 @@
  */
 
 #include "galileo_navigation_message.h"
-#include <boost/crc.hpp>  // for boost::crc_basic, boost::crc_optimal
-#include <boost/dynamic_bitset.hpp>
-#include <glog/logging.h>
-#include <iostream>
+#include <boost/crc.hpp>             // for boost::crc_basic, boost::crc_optimal
+#include <boost/dynamic_bitset.hpp>  // for boost::dynamic_bitset
+#include <glog/logging.h>            // for DLOG
+#include <algorithm>                 // for reverse
+#include <iostream>                  // for operator<<
 
 
 using CRC_Galileo_INAV_type = boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false>;
@@ -343,18 +344,11 @@ bool Galileo_Navigation_Message::read_navigation_bool(std::bitset<GALILEO_DATA_J
 
 void Galileo_Navigation_Message::split_page(std::string page_string, int32_t flag_even_word)
 {
-    // ToDo: Clean all the tests and create an independent google test code for the telemetry decoder.
-    //char correct_tail[7]="011110"; //the viterbi decoder output change the tail to this value (why?)
-    //char correct_tail[7]="000000";
-
     int32_t Page_type = 0;
-    // std::cout << "Start decoding Galileo I/NAV " << std::endl;
 
     if (page_string.at(0) == '1')  // if page is odd
         {
-            // std::cout<< "page_string.at(0) split page="<<page_string.at(0) << std::endl;
             const std::string& page_Odd = page_string;
-            // std::cout<<"Page odd string in split page"<< std::endl << page_Odd << std::endl;
 
             if (flag_even_word == 1)  // An odd page has been received but the previous even page is kept in memory and it is considered to join pages
                 {
@@ -363,10 +357,6 @@ void Galileo_Navigation_Message::split_page(std::string page_string, int32_t fla
                     std::string Even_bit = page_INAV.substr(0, 1);
                     std::string Page_type_even = page_INAV.substr(1, 1);
                     std::string nominal = "0";
-
-                    //if (Page_type_even.compare(nominal) != 0)
-                    //        std::cout << "Alert frame "<< std::endl;
-                    //else std::cout << "Nominal Page" << std::endl;
 
                     std::string Data_k = page_INAV.substr(2, 112);
                     std::string Odd_bit = page_INAV.substr(114, 1);
@@ -387,10 +377,6 @@ void Galileo_Navigation_Message::split_page(std::string page_string, int32_t fla
                     TLM_word_for_CRC = TLM_word_for_CRC_stream.str().substr(0, GALILEO_DATA_FRAME_BITS);
                     std::bitset<GALILEO_DATA_FRAME_BITS> TLM_word_for_CRC_bits(TLM_word_for_CRC);
                     std::bitset<24> checksum(CRC_data);
-
-                    //if (Tail_odd.compare(correct_tail) != 0)
-                    //        std::cout << "Tail odd is not correct!" << std::endl;
-                    //else std::cout<<"Tail odd is correct!"<<std::endl;
 
                     if (CRC_test(TLM_word_for_CRC_bits, checksum.to_ulong()) == true)
                         {
@@ -414,10 +400,6 @@ void Galileo_Navigation_Message::split_page(std::string page_string, int32_t fla
         {
             page_Even = page_string.substr(0, 114);
             std::string tail_Even = page_string.substr(114, 6);
-            //std::cout << "tail_even_string: " << tail_Even <<std::endl;
-            //if (tail_Even.compare(correct_tail) != 0)
-            //     std::cout << "Tail even is not correct!" << std::endl;
-            //else std::cout<<"Tail even is correct!"<< std::endl;
         }
 }
 
@@ -429,14 +411,14 @@ bool Galileo_Navigation_Message::have_new_ephemeris()  // Check if we have a new
             // if all ephemeris pages have the same IOD, then they belong to the same block
             if ((IOD_nav_1 == IOD_nav_2) and (IOD_nav_3 == IOD_nav_4) and (IOD_nav_1 == IOD_nav_3))
                 {
-                    std::cout << "Ephemeris (1, 2, 3, 4) have been received and belong to the same batch" << std::endl;
+                    DLOG(INFO) << "Ephemeris (1, 2, 3, 4) have been received and belong to the same batch";
                     flag_ephemeris_1 = false;  // clear the flag
                     flag_ephemeris_2 = false;  // clear the flag
                     flag_ephemeris_3 = false;  // clear the flag
                     flag_ephemeris_4 = false;  // clear the flag
                     flag_all_ephemeris = true;
                     IOD_ephemeris = IOD_nav_1;
-                    std::cout << "Batch number: " << IOD_ephemeris << std::endl;
+                    DLOG(INFO) << "Batch number: " << IOD_ephemeris;
                     return true;
                 }
         }
@@ -646,7 +628,7 @@ int32_t Galileo_Navigation_Message::page_jk_decoder(const char* data_jk)
     std::bitset<GALILEO_DATA_JK_BITS> data_jk_bits(data_jk_string);
 
     page_number = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, PAGE_TYPE_BIT));
-    LOG(INFO) << "Page number = " << page_number;
+    DLOG(INFO) << "Page number = " << page_number;
 
     switch (page_number)
         {

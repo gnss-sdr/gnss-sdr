@@ -1,9 +1,9 @@
 /*!
- * \file gps_l5_dll_pll_tracking.h
+ * \file gps_l5_dll_pll_tracking_fpga.h
  * \brief  Interface of an adapter of a DLL+PLL tracking loop block
- * for GPS L5 to a TrackingInterface
+ * for GPS L5 to a TrackingInterface for the FPGA
  * \author Marc Majoral, 2019. mmajoral(at)cttc.cat
- * \author Javier Arribas, 2017. jarribas(at)cttc.es
+ *         Javier Arribas, 2019. jarribas(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
@@ -40,8 +40,12 @@
 
 #include "dll_pll_veml_tracking_fpga.h"
 #include "tracking_interface.h"
+#include <gnuradio/runtime_types.h>
+#include <cstddef>
+#include <cstdint>
 #include <string>
 
+class Gnss_Synchro;
 class ConfigurationInterface;
 
 /*!
@@ -62,15 +66,15 @@ public:
         return role_;
     }
 
-    //! Returns "GPS_L5_DLL_PLL_Tracking"
+    //! Returns "GPS_L5_DLL_PLL_Tracking_Fpga"
     inline std::string implementation() override
     {
-        return "GPS_L5_DLL_PLL_Tracking";
+        return "GPS_L5_DLL_PLL_Tracking_Fpga";
     }
 
     inline size_t item_size() override
     {
-        return item_size_;
+        return sizeof(int);
     }
 
     void connect(gr::top_block_sptr top_block) override;
@@ -90,6 +94,7 @@ public:
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
     void start_tracking() override;
+
     /*!
      * \brief Stop running tracking
      */
@@ -97,7 +102,6 @@ public:
 
 private:
     dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
-    size_t item_size_;
     uint32_t channel_;
     std::string role_;
     uint32_t in_streams_;

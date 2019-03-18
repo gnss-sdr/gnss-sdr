@@ -29,6 +29,27 @@
  */
 
 #include "rinex_printer.h"
+#include "Beidou_B1I.h"
+#include "GLONASS_L1_L2_CA.h"
+#include "GPS_L1_CA.h"
+#include "Galileo_E1.h"
+#include "beidou_dnav_ephemeris.h"
+#include "beidou_dnav_iono.h"
+#include "beidou_dnav_utc_model.h"
+#include "galileo_ephemeris.h"
+#include "galileo_iono.h"
+#include "galileo_utc_model.h"
+#include "glonass_gnav_almanac.h"
+#include "glonass_gnav_ephemeris.h"
+#include "glonass_gnav_utc_model.h"
+#include "gnss_synchro.h"
+#include "gps_cnav_ephemeris.h"
+#include "gps_cnav_iono.h"
+#include "gps_cnav_utc_model.h"
+#include "gps_ephemeris.h"
+#include "gps_iono.h"
+#include "gps_navigation_message.h"
+#include "gps_utc_model.h"
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/local_time/local_time.hpp>
 #include <boost/date_time/time_zone_base.hpp>
@@ -38,17 +59,15 @@
 #include <glog/logging.h>
 #include <algorithm>  // for min and max
 #include <cmath>      // for floor
-#include <cstdlib>    // for getenv()
+#include <cstring>    // for memcpy
 #include <exception>
+#include <iostream>  // for cout
 #include <iterator>
 #include <ostream>
 #include <set>
 #include <unistd.h>  // for getlogin_r()
 #include <utility>
 #include <vector>
-
-
-using google::LogMessage;
 
 
 Rinex_Printer::Rinex_Printer(int32_t conf_version, const std::string& base_path)

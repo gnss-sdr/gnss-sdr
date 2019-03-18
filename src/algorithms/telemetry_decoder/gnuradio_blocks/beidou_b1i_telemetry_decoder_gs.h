@@ -1,11 +1,9 @@
 /*!
- * \file beidou_b1i_telemetry_decoder_cc.h
- * \brief Implementation of an adapter of a BEIDOU BI1 DNAV data decoder block
- * to a TelemetryDecoderInterface
- * \details Code added as part of GSoC 2018 program. However new modifications included to mimic
- * decoding of existing signals
+ * \file beidou_b1i_telemetry_decoder_gs.h
+ * \brief Implementation of a BEIDOU BI1 DNAV data decoder block
+ * \details Code added as part of GSoC 2018 program.
  * \author Damian Miralles, 2018. dmiralles2009(at)gmail.com
- * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.es
+ *  \author       Sergi Segura, 2018. sergi.segura.munoz(at)gmail.es
  *
  * -------------------------------------------------------------------------
  *
@@ -32,38 +30,36 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_CC_H
-#define GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_CC_H
+#ifndef GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_GS_H
+#define GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_GS_H
 
-#include "Beidou_B1I.h"
-#include "beidou_dnav_almanac.h"
-#include "beidou_dnav_ephemeris.h"
+
 #include "beidou_dnav_navigation_message.h"
-#include "beidou_dnav_utc_model.h"
 #include "gnss_satellite.h"
-#include "gnss_synchro.h"
-#include <gnuradio/block.h>
+#include <boost/circular_buffer.hpp>
+#include <boost/shared_ptr.hpp>  // for boost::shared_ptr
+#include <gnuradio/block.h>      // for block
+#include <gnuradio/types.h>      // for gr_vector_const_void_star
+#include <cstdint>
 #include <fstream>
 #include <string>
 
 
-class beidou_b1i_telemetry_decoder_cc;
+class beidou_b1i_telemetry_decoder_gs;
 
-using beidou_b1i_telemetry_decoder_cc_sptr = boost::shared_ptr<beidou_b1i_telemetry_decoder_cc>;
+using beidou_b1i_telemetry_decoder_gs_sptr = boost::shared_ptr<beidou_b1i_telemetry_decoder_gs>;
 
-beidou_b1i_telemetry_decoder_cc_sptr beidou_b1i_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
+beidou_b1i_telemetry_decoder_gs_sptr beidou_b1i_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
-//!!!! edit
+
 /*!
  * \brief This class implements a block that decodes the GNAV data defined in BEIDOU ICD v5.1
  * \note Code added as part of GSoC 2018 program
- * \see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf">GLONASS ICD</a>
- *
  */
-class beidou_b1i_telemetry_decoder_cc : public gr::block
+class beidou_b1i_telemetry_decoder_gs : public gr::block
 {
 public:
-    ~beidou_b1i_telemetry_decoder_cc();                   //!< Class destructor
+    ~beidou_b1i_telemetry_decoder_gs();                   //!< Class destructor
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
     void set_channel(int channel);                        //!< Set receiver's channel
 
@@ -74,9 +70,9 @@ public:
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
 private:
-    friend beidou_b1i_telemetry_decoder_cc_sptr
-    beidou_b1i_make_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
-    beidou_b1i_telemetry_decoder_cc(const Gnss_Satellite &satellite, bool dump);
+    friend beidou_b1i_telemetry_decoder_gs_sptr
+    beidou_b1i_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+    beidou_b1i_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
     void decode_subframe(double *symbols);
     void decode_word(int32_t word_counter, const double *enc_word_symbols, int32_t *dec_word_symbols);
@@ -94,7 +90,7 @@ private:
     uint32_t d_required_symbols;
 
     // Storage for incoming data
-    std::deque<float> d_symbol_history;
+    boost::circular_buffer<float> d_symbol_history;
 
     // Variables for internal functionality
     uint64_t d_sample_counter;    // Sample counter as an index (1,2,3,..etc) indicating number of samples processed

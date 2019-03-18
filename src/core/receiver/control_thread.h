@@ -35,20 +35,24 @@
 #ifndef GNSS_SDR_CONTROL_THREAD_H_
 #define GNSS_SDR_CONTROL_THREAD_H_
 
-#include "agnss_ref_location.h"
-#include "agnss_ref_time.h"
-#include "configuration_interface.h"
-#include "control_message_factory.h"
-#include "gnss_flowgraph.h"
-#include "gnss_satellite.h"
-#include "gnss_sdr_supl_client.h"
-#include "tcp_cmd_interface.h"
-#include <armadillo>
-#include <gnuradio/msg_queue.h>
-#include <memory>
-#include <thread>
-#include <vector>
+#include "agnss_ref_location.h"       // for Agnss_Ref_Location
+#include "agnss_ref_time.h"           // for Agnss_Ref_Time
+#include "control_message_factory.h"  // for ControlMessage
+#include "gnss_sdr_supl_client.h"     // for Gnss_Sdr_Supl_Client
+#include "tcp_cmd_interface.h"        // for TcpCmdInterface
+#include <armadillo>                  // for arma::vec
+#include <boost/thread.hpp>           // for boost::thread
+#include <gnuradio/msg_queue.h>       // for msg_queue, msg_queue::sptr
+#include <ctime>                      // for time_t
+#include <memory>                     // for shared_ptr
+#include <string>                     // for string
+#include <thread>                     // for std::thread
+#include <utility>                    // for pair
+#include <vector>                     // for vector
 
+class ConfigurationInterface;
+class GNSSFlowgraph;
+class Gnss_Satellite;
 
 /*!
  * \brief This class represents the main thread of the application, so the name is ControlThread.
@@ -94,7 +98,6 @@ public:
      * \param[in] boost::shared_ptr<gr::msg_queue> control_queue
      */
     void set_control_queue(const gr::msg_queue::sptr control_queue);  // NOLINT(performance-unnecessary-value-param)
-
 
     unsigned int processed_control_messages()
     {
@@ -168,16 +171,12 @@ private:
     bool delete_configuration_;
     unsigned int processed_control_messages_;
     unsigned int applied_actions_;
-    //<<<<<<< HEAD
-    //    boost::thread keyboard_thread_;
-    //    boost::thread sysv_queue_thread_;
-    //    boost::thread gps_acq_assist_data_collector_thread_;
+
     boost::thread fpga_helper_thread_;
-    //=======
+
     std::thread keyboard_thread_;
     std::thread sysv_queue_thread_;
     std::thread gps_acq_assist_data_collector_thread_;
-    //>>>>>>> 4fe976ba016fa9c1c64ece88b26a9a93d93a84f4
 
     void keyboard_listener();
     void sysv_queue_listener();

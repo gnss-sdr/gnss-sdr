@@ -3,7 +3,7 @@
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
  *  Galileo E5a data and pilot Signals for the FPGA
  * \author Marc Majoral, 2019. mmajoral(at)cttc.es
- * \author Antonio Ramos, 2018. antonio.ramos(at)cttc.es
+ *
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
@@ -34,12 +34,15 @@
 #include "configuration_interface.h"
 #include "galileo_e5_signal_processing.h"
 #include "gnss_sdr_flags.h"
-#include <boost/math/distributions/exponential.hpp>
+#include "gnss_synchro.h"
 #include <glog/logging.h>
-#include <volk_gnsssdr/volk_gnsssdr_complex.h>
-
-
-using google::LogMessage;
+#include <gnuradio/fft/fft.h>     // for fft_complex
+#include <gnuradio/gr_complex.h>  // for gr_complex
+#include <volk/volk.h>            // for volk_32fc_conjugate_32fc
+#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <cmath>    // for abs, pow, floor
+#include <complex>  // for complex
+#include <cstring>  // for strcpy, memcpy
 
 
 GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterface* configuration,
@@ -119,7 +122,6 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
                     strcpy(signal_, "5I");
                 }
 
-
             galileo_e5_a_code_gen_complex_sampled(code, signal_, PRN, fs_in, 0);
 
             for (uint32_t s = code_length; s < 2 * code_length; s++)
@@ -155,7 +157,6 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
                         static_cast<int32_t>(floor(fft_codes_padded[i].imag() * (pow(2, 9) - 1) / max)));
                 }
         }
-
 
     acq_parameters.all_fft_codes = d_all_fft_codes_;
 
@@ -251,20 +252,28 @@ void GalileoE5aPcpsAcquisitionFpga::reset()
     acquisition_fpga_->set_active(true);
 }
 
+
 void GalileoE5aPcpsAcquisitionFpga::set_state(int state)
 {
     acquisition_fpga_->set_state(state);
 }
 
+
 void GalileoE5aPcpsAcquisitionFpga::connect(gr::top_block_sptr top_block)
 {
-    // nothing to connect
+    if (top_block)
+        { /* top_block is not null */
+        };
+    // Nothing to connect
 }
 
 
 void GalileoE5aPcpsAcquisitionFpga::disconnect(gr::top_block_sptr top_block)
 {
-    // nothing to connect
+    if (top_block)
+        { /* top_block is not null */
+        };
+    // Nothing to disconnect
 }
 
 

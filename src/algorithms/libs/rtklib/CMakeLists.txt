@@ -66,9 +66,8 @@ source_group(Headers FILES ${RTKLIB_LIB_HEADERS})
 add_library(algorithms_libs_rtklib ${RTKLIB_LIB_SOURCES} ${RTKLIB_LIB_HEADERS})
 
 target_link_libraries(algorithms_libs_rtklib
-    PUBLIC
-        core_system_parameters
     PRIVATE
+        core_system_parameters
         Gflags::gflags
         Glog::glog
 )

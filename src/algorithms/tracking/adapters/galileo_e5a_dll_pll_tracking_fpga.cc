@@ -2,15 +2,7 @@
  * \file galileo_e5a_dll_pll_tracking_fpga.cc
  * \brief Adapts a code DLL + carrier PLL
  *  tracking block to a TrackingInterface for Galileo E5a signals for the FPGA
- * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
- *  Galileo E5a data and pilot Signals for the FPGA
- * \author Marc Sales, 2014. marcsales92(at)gmail.com
- * \based on work from:
- *          <ul>
- *          <li> Marc Majoral, 2019. mmajoral(at)cttc.cat
- *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
- *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
- *          </ul>
+ * \author Marc Majoral, 2019. mmajoral(at)cttc.cat
  *
  * -------------------------------------------------------------------------
  *
@@ -41,15 +33,18 @@
 #include "Galileo_E5a.h"
 #include "configuration_interface.h"
 #include "display.h"
+#include "dll_pll_conf_fpga.h"
 #include "galileo_e5_signal_processing.h"
 #include "gnss_sdr_flags.h"
+#include "gnss_synchro.h"
 #include <glog/logging.h>
+#include <gnuradio/gr_complex.h>  // for gr_complex
+#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <cmath>  // for round
+#include <complex>
+#include <cstring>  // for memcpy
+#include <iostream>
 
-using google::LogMessage;
-
-void GalileoE5aDllPllTrackingFpga::stop_tracking()
-{
-}
 
 GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     ConfigurationInterface *configuration, const std::string &role,
@@ -122,6 +117,7 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     double carrier_lock_th = configuration->property(role + ".carrier_lock_th", 0.85);
     if (FLAGS_carrier_lock_th != 0.85) carrier_lock_th = FLAGS_carrier_lock_th;
     trk_param_fpga.carrier_lock_th = carrier_lock_th;
+    d_data_codes = nullptr;
 
     // FPGA configuration parameters
     std::string default_device_name = "/dev/uio";
@@ -143,7 +139,6 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
         {
             d_data_codes = static_cast<int32_t *>(volk_gnsssdr_malloc((static_cast<uint32_t>(code_length_chips)) * code_samples_per_chip * GALILEO_E5A_NUMBER_OF_CODES * sizeof(int32_t), volk_gnsssdr_get_alignment()));
         }
-
 
     for (uint32_t PRN = 1; PRN <= GALILEO_E5A_NUMBER_OF_CODES; PRN++)
         {
@@ -191,6 +186,11 @@ GalileoE5aDllPllTrackingFpga::~GalileoE5aDllPllTrackingFpga()
 void GalileoE5aDllPllTrackingFpga::start_tracking()
 {
     tracking_fpga_sc->start_tracking();
+}
+
+
+void GalileoE5aDllPllTrackingFpga::stop_tracking()
+{
 }
 
 

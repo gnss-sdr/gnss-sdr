@@ -81,6 +81,7 @@ public:
     inline void set_channel(int channel) override { telemetry_decoder_->set_channel(channel); }
     inline void reset() override
     {
+        telemetry_decoder_->reset();
         return;
     }
 

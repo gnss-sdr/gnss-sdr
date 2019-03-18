@@ -64,6 +64,12 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
 {
     // Ephemeris data port out
     this->message_port_register_out(pmt::mp("telemetry"));
+    // Control messages to tracking block
+    this->message_port_register_out(pmt::mp("telemetry_to_trk"));
+    d_last_valid_preamble = 0;
+    d_sent_tlm_failed_msg = false;
+    d_max_symbols_without_valid_frame = GPS_SUBFRAME_BITS * GPS_CA_TELEMETRY_SYMBOLS_PER_BIT * 5;  //rise alarm if 5 consecutive subframes have no valid CRC
+
     // initialize internal vars
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
@@ -103,6 +109,7 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
     d_symbol_history.set_capacity(GPS_CA_PREAMBLE_LENGTH_SYMBOLS);
     d_crc_error_synchronization_counter = 0;
     d_current_subframe_symbol = 0;
+    d_sample_counter = 0;
 }
 
 
@@ -317,6 +324,12 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe()
     return subframe_synchro_confirmation;
 }
 
+void gps_l1_ca_telemetry_decoder_gs::reset()
+{
+    d_last_valid_preamble = d_sample_counter;
+    d_sent_tlm_failed_msg = false;
+    DLOG(INFO) << "Telemetry decoder reset for satellite " << d_satellite;
+}
 
 int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
@@ -341,6 +354,19 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
     consume_each(1);
 
     d_flag_preamble = false;
+
+    // check if there is a problem with the telemetry of the current satellite
+    d_sample_counter++;  // count for the processed symbols
+    if (d_sent_tlm_failed_msg == false)
+        {
+            if ((d_sample_counter - d_last_valid_preamble) > d_max_symbols_without_valid_frame)
+                {
+                    int message = 1;  //bad telemetry
+                    this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(message));
+                    d_sent_tlm_failed_msg = true;
+                }
+        }
+
 
     // ******* preamble correlation ********
     int32_t corr_value = 0;
@@ -442,6 +468,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
             d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_nav.d_TOW * 1000.0);
             flag_TOW_set = true;
             d_flag_new_tow_available = false;
+            d_last_valid_preamble = d_sample_counter;
         }
     else
         {

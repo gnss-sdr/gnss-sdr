@@ -41,8 +41,7 @@
 #include <fstream>
 #include <string>
 
-extern "C"
-{
+extern "C" {
 #include "cnav_msg.h"
 }
 
@@ -64,7 +63,7 @@ public:
     ~gps_l2c_telemetry_decoder_gs();
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
     void set_channel(int32_t channel);                    //!< Set receiver's channel
-
+    void reset();
     /*!
      * \brief This is where all signal processing takes place
      */
@@ -87,6 +86,10 @@ private:
 
     int32_t d_state;
     int32_t d_crc_error_count;
+    uint64_t d_sample_counter;
+    bool d_sent_tlm_failed_msg;
+    uint64_t d_last_valid_preamble;
+    uint32_t d_max_symbols_without_valid_frame;
 
     double d_TOW_at_current_symbol;
     double d_TOW_at_Preamble;

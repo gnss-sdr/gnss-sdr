@@ -830,7 +830,7 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
                     d_eccentricity_msb = static_cast<double>(read_navigation_unsigned(subframe_bits, D2_E_MSB));
                     d_eccentricity_msb_bits = (read_navigation_unsigned(subframe_bits, D2_E_MSB));
                     // Adjust for lsb in next page (shift number of lsb to the left)
-                    d_eccentricity_msb = static_cast<double>((static_cast<int>(d_eccentricity_msb) << 22));
+                    d_eccentricity_msb = static_cast<uint64_t>((static_cast<int>(d_eccentricity_msb) << 22));
                     d_eccentricity_msb_bits = d_eccentricity_msb_bits << 22;
 
                     // Set system flags for message reception
@@ -996,7 +996,7 @@ Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris()
             eph.i_SV_accuracy = i_SV_accuracy;
             eph.i_SV_health = i_SV_health;
             eph.i_BEIDOU_week = i_BEIDOU_week;
-			      eph.i_sig_type = i_signal_type;
+            eph.i_sig_type = i_signal_type;
             eph.i_nav_type = 2;
 
             eph.d_TOW = d_SOW;
@@ -1043,7 +1043,7 @@ Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris()
             eph.i_SV_accuracy = i_SV_accuracy;
             eph.i_SV_health = i_SV_health;
             eph.i_BEIDOU_week = i_BEIDOU_week;
-			      eph.i_sig_type = i_signal_type;
+            eph.i_sig_type = i_signal_type;
             eph.i_nav_type = 1;  // MEO/IGSO
 
             eph.d_TOW = d_SOW;

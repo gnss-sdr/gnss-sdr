@@ -136,7 +136,8 @@ beidou_b3i_telemetry_decoder_gs::beidou_b3i_telemetry_decoder_gs(
     d_stat = 0;
     d_preamble_index = 0;
     d_flag_frame_sync = false;
-    d_TOW_at_current_symbol_ms = 0;
+    d_TOW_at_current_symbol_ms = 0U;
+    d_TOW_at_Preamble_ms = 0U;
     Flag_valid_word = false;
     d_CRC_error_counter = 0;
     d_flag_preamble = false;

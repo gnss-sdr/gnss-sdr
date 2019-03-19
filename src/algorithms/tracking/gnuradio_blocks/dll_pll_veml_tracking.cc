@@ -74,45 +74,6 @@ dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_)
 }
 
 
-void dll_pll_veml_tracking::forecast(int noutput_items,
-    gr_vector_int &ninput_items_required)
-{
-    if (noutput_items != 0)
-        {
-            ninput_items_required[0] = static_cast<int32_t>(trk_parameters.vector_length) * 2;
-        }
-}
-
-void dll_pll_veml_tracking::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
-{
-    try
-        {
-            if (pmt::any_ref(msg).type() == typeid(int))
-                {
-                    int tlm_event;
-                    tlm_event = boost::any_cast<int>(pmt::any_ref(msg));
-
-                    switch (tlm_event)
-                        {
-                        case 1:  //tlm fault in current channel
-                            {
-                                DLOG(INFO) << "Telemetry fault received in ch " << this->d_channel;
-                                gr::thread::scoped_lock lock(d_setlock);
-                                d_carrier_lock_fail_counter = 10000;  //force loss-of-lock condition
-                                break;
-                            }
-                        default:
-                            {
-                                break;
-                            }
-                        }
-                }
-        }
-    catch (boost::bad_any_cast &e)
-        {
-            LOG(WARNING) << "msg_handler_telemetry_to_trk Bad any cast!";
-        }
-}
 dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::block("dll_pll_veml_tracking", gr::io_signature::make(1, 1, sizeof(gr_complex)),
                                                                               gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
@@ -468,6 +429,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     d_acq_sample_stamp = 0ULL;
 
     d_current_prn_length_samples = static_cast<int32_t>(trk_parameters.vector_length);
+    d_current_correlation_time_s = 0.0;
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
@@ -538,6 +500,48 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                     std::cerr << "GNSS-SDR cannot create dump files for the tracking block. Wrong permissions?" << std::endl;
                     d_dump = false;
                 }
+        }
+}
+
+
+void dll_pll_veml_tracking::forecast(int noutput_items,
+    gr_vector_int &ninput_items_required)
+{
+    if (noutput_items != 0)
+        {
+            ninput_items_required[0] = static_cast<int32_t>(trk_parameters.vector_length) * 2;
+        }
+}
+
+
+void dll_pll_veml_tracking::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
+{
+    try
+        {
+            if (pmt::any_ref(msg).type() == typeid(int))
+                {
+                    int tlm_event;
+                    tlm_event = boost::any_cast<int>(pmt::any_ref(msg));
+
+                    switch (tlm_event)
+                        {
+                        case 1:  //tlm fault in current channel
+                            {
+                                DLOG(INFO) << "Telemetry fault received in ch " << this->d_channel;
+                                gr::thread::scoped_lock lock(d_setlock);
+                                d_carrier_lock_fail_counter = 10000;  //force loss-of-lock condition
+                                break;
+                            }
+                        default:
+                            {
+                                break;
+                            }
+                        }
+                }
+        }
+    catch (boost::bad_any_cast &e)
+        {
+            LOG(WARNING) << "msg_handler_telemetry_to_trk Bad any cast!";
         }
 }
 

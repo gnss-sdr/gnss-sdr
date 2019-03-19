@@ -32,7 +32,26 @@
  */
 
 #include "tracking_FLL_PLL_filter.h"
-#include <iostream>
+
+
+Tracking_FLL_PLL_filter::Tracking_FLL_PLL_filter()
+{
+    d_order = 0;
+    d_pll_w = 0.0;
+    d_pll_w0p3 = 0.0;
+    d_pll_w0f2 = 0.0;
+    d_pll_x = 0.0;
+    d_pll_a2 = 0.0;
+    d_pll_w0f = 0.0;
+    d_pll_a3 = 0.0;
+    d_pll_w0p2 = 0.0;
+    d_pll_b3 = 0.0;
+    d_pll_w0p = 0.0;
+}
+
+
+Tracking_FLL_PLL_filter::~Tracking_FLL_PLL_filter() = default;
+
 
 void Tracking_FLL_PLL_filter::set_params(float fll_bw_hz, float pll_bw_hz, int order)
 {
@@ -89,7 +108,7 @@ float Tracking_FLL_PLL_filter::get_carrier_error(float FLL_discriminator, float 
     if (d_order == 3)
         {
             /*
-             *  3rd order PLL with 2nd order FLL assist
+             * 3rd order PLL with 2nd order FLL assist
              */
             d_pll_w = d_pll_w + correlation_time_s * (d_pll_w0p3 * PLL_discriminator + d_pll_w0f2 * FLL_discriminator);
             d_pll_x = d_pll_x + correlation_time_s * (0.5 * d_pll_w + d_pll_a2 * d_pll_w0f * FLL_discriminator + d_pll_a3 * d_pll_w0p2 * PLL_discriminator);
@@ -104,31 +123,11 @@ float Tracking_FLL_PLL_filter::get_carrier_error(float FLL_discriminator, float 
             pll_w_new = d_pll_w + PLL_discriminator * d_pll_w0p2 * correlation_time_s + FLL_discriminator * d_pll_w0f * correlation_time_s;
             carrier_error_hz = 0.5 * (pll_w_new + d_pll_w) + d_pll_a2 * d_pll_w0p * PLL_discriminator;
             d_pll_w = pll_w_new;
-            /*std::cout<<" d_pll_w = "<<carrier_error_hz<<
-               ", pll_w_new = "<<pll_w_new
-               <<", PLL_discriminator=" <<PLL_discriminator
-               <<" FLL_discriminator ="<<FLL_discriminator
-               <<" correlation_time_s = "<<correlation_time_s<<"\r\n";*/
+            /* std::cout << " d_pll_w = " << carrier_error_hz << ", pll_w_new = " << pll_w_new
+                      << ", PLL_discriminator=" << PLL_discriminator
+                      << " FLL_discriminator =" << FLL_discriminator
+                      << " correlation_time_s = " << correlation_time_s << "\r\n"; */
         }
 
     return carrier_error_hz;
 }
-
-
-Tracking_FLL_PLL_filter::Tracking_FLL_PLL_filter()
-{
-    d_order = 0;
-    d_pll_w = 0;
-    d_pll_w0p3 = 0;
-    d_pll_w0f2 = 0;
-    d_pll_x = 0;
-    d_pll_a2 = 0;
-    d_pll_w0f = 0;
-    d_pll_a3 = 0;
-    d_pll_w0p2 = 0;
-    d_pll_b3 = 0;
-    d_pll_w0p = 0;
-}
-
-
-Tracking_FLL_PLL_filter::~Tracking_FLL_PLL_filter() = default;

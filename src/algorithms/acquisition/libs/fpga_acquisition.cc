@@ -46,7 +46,6 @@
 
 // FPGA register parameters
 #define PAGE_SIZE 0x10000  // default page size for the multicorrelator memory map
-//#define MAX_PHASE_STEP_RAD 0.999999999534339  // 1 - pow(2,-31);
 #define RESET_ACQUISITION 2                  // command to reset the multicorrelator
 #define LAUNCH_ACQUISITION 1                 // command to launch the multicorrelator
 #define TEST_REG_SANITY_CHECK 0x55AA         // value to check the presence of the test register (to detect the hw)
@@ -54,10 +53,6 @@
 #define MEM_LOCAL_CODE_WR_ENABLE 0x0C000000  // command to enable the ENA and WR pins of the internal memory of the multicorrelator
 #define POW_2_2 4                            // 2^2 (used for the conversion of floating point numbers to integers)
 #define POW_2_29 536870912                   // 2^29 (used for the conversion of floating point numbers to integers)
-#define SELECT_LSB 0x00FF                    // value to select the least significant byte
-#define SELECT_MSB 0XFF00                    // value to select the most significant byte
-#define SELECT_16_BITS 0xFFFF                // value to select 16 bits
-#define SHL_8_BITS 256                       // value used to shift a value 8 bits to the left
 #define SELECT_LSBits 0x000003FF             // Select the 10 LSbits out of a 20-bit word
 #define SELECT_MSBbits 0x000FFC00            // Select the 10 MSbits out of a 20-bit word
 #define SELECT_ALL_CODE_BITS 0x000FFFFF      // Select a 20 bit word
@@ -291,33 +286,6 @@ void Fpga_Acquisition::configure_acquisition()
     d_map_base[12] = d_excludelimit;
 }
 
-
-//<<<<<<< HEAD
-//void fpga_acquisition::read_acquisition_results(uint32_t *max_index,
-//=======
-//void Fpga_Acquisition::set_phase_step(uint32_t doppler_index)
-//{
-//    float phase_step_rad_real;
-//    float phase_step_rad_int_temp;
-//    int32_t phase_step_rad_int;
-//    int32_t doppler = -static_cast<int32_t>(d_doppler_max) + d_doppler_step * doppler_index;
-//    float phase_step_rad = GPS_TWO_PI * (doppler) / static_cast<float>(d_fs_in);
-//    // The doppler step can never be outside the range -pi to +pi, otherwise there would be aliasing
-//    // The FPGA expects phase_step_rad between -1 (-pi) to +1 (+pi)
-//    // The FPGA also expects the phase to be negative since it produces cos(x) -j*sin(x)
-//    // while the gnss-sdr software (volk_gnsssdr_s32f_sincos_32fc) generates cos(x) + j*sin(x)
-//    phase_step_rad_real = phase_step_rad / (GPS_TWO_PI / 2);
-//    // avoid saturation of the fixed point representation in the fpga
-//    // (only the positive value can saturate due to the 2's complement representation)
-//    if (phase_step_rad_real >= 1.0)
-//        {
-//            phase_step_rad_real = MAX_PHASE_STEP_RAD;
-//        }
-//    phase_step_rad_int_temp = phase_step_rad_real * POW_2_2;                          // * 2^2
-//    phase_step_rad_int = static_cast<int32_t>(phase_step_rad_int_temp * (POW_2_29));  // * 2^29 (in total it makes x2^31 in two steps to avoid the warnings
-//    d_map_base[3] = phase_step_rad_int;
-//}
-//>>>>>>> b409f1c15efdd3c80fde680f4b5b966a1c18467b
 
 void Fpga_Acquisition::read_acquisition_results(uint32_t *max_index,
     float *firstpeak, float *secondpeak, uint64_t *initial_sample, float *power_sum, uint32_t *doppler_index, uint32_t *total_blk_exp)

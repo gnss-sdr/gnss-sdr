@@ -308,26 +308,7 @@ void pcps_acquisition_fpga::set_active(bool active)
         }
 
 
-    //    if (d_test_statistics > d_threshold)
-    //        {
-    //            //            if (!d_make_2_steps)
-    //            //                {
-    //            d_active = false;
-    //            send_positive_acquisition();
-    //            d_state = 0;  // Positive acquisition
-    //                          //                }
-    //                          //            else
-    //                          //                {
-    //                          //                    d_doppler_center_step_two = static_cast<float>(d_gnss_synchro->Acq_doppler_hz);
-    //                          //                    acquisition_core(d_num_doppler_bins_step2, d_doppler_step2, d_doppler_center_step_two - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0)) * d_doppler_step2);
-    //                          //                }
-    //        }
-    //    else
-    //        {
-    //            d_state = 0;
-    //            d_active = false;
-    //            send_negative_acquisition();
-    //        }
+
 }
 
 

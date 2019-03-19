@@ -6,7 +6,7 @@
  *          <li> Cillian O'Driscoll, 2017. cillian.odriscoll(at)gmail.com
  *          </ul>
  *
- * Class that implements a high optimized vector multiTAP correlator class for CPUs
+ * Class that implements a highly optimized vector multiTAP correlator class for CPUs
  *
  * -------------------------------------------------------------------------
  *

@@ -1,11 +1,11 @@
 /*!
  * \file cpu_multicorrelator_16sc.h
- * \brief High optimized CPU vector multiTAP correlator class for lv_16sc_t (short int complex)
+ * \brief Highly optimized CPU vector multiTAP correlator class for lv_16sc_t (short int complex)
  * \authors <ul>
  *          <li> Javier Arribas, 2016. jarribas(at)cttc.es
  *          </ul>
  *
- * Class that implements a high optimized vector multiTAP correlator class for CPUs
+ * Class that implements a highly optimized vector multiTAP correlator class for CPUs
  *
  * -------------------------------------------------------------------------
  *

@@ -125,7 +125,7 @@ void Cpu_Multicorrelator_Real_Codes::update_local_code(int correlator_length_sam
         }
 }
 
-// Overload Carrier_wipeoff_multicorrelator_resampler to ensure back compatibility
+
 bool Cpu_Multicorrelator_Real_Codes::Carrier_wipeoff_multicorrelator_resampler(
     float rem_carrier_phase_in_rad,
     float phase_step_rad,
@@ -150,7 +150,8 @@ bool Cpu_Multicorrelator_Real_Codes::Carrier_wipeoff_multicorrelator_resampler(
         }
     return true;
 }
-// Overload Carrier_wipeoff_multicorrelator_resampler to ensure back compatibility
+
+
 bool Cpu_Multicorrelator_Real_Codes::Carrier_wipeoff_multicorrelator_resampler(
     float rem_carrier_phase_in_rad,
     float phase_step_rad,

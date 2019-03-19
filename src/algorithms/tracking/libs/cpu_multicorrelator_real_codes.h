@@ -52,7 +52,6 @@ public:
     bool set_local_code_and_taps(int code_length_chips, const float *local_code_in, float *shifts_chips);
     bool set_input_output_vectors(std::complex<float> *corr_out, const std::complex<float> *sig_in);
     void update_local_code(int correlator_length_samples, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips = 0.0);
-    // Overload Carrier_wipeoff_multicorrelator_resampler to ensure back compatibility
     bool Carrier_wipeoff_multicorrelator_resampler(float rem_carrier_phase_in_rad, float phase_step_rad, float phase_rate_step_rad, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips, int signal_length_samples);
     bool Carrier_wipeoff_multicorrelator_resampler(float rem_carrier_phase_in_rad, float phase_step_rad, float rem_code_phase_chips, float code_phase_step_chips, float code_phase_rate_step_chips, int signal_length_samples);
     bool free();
@@ -70,4 +69,4 @@ private:
 };
 
 
-#endif /* CPU_MULTICORRELATOR_REAL_CODES_H_ */
+#endif /* GNSS_SDR_CPU_MULTICORRELATOR_REAL_CODES_H_ */

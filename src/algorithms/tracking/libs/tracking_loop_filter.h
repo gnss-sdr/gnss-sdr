@@ -4,7 +4,7 @@
  * \author Cillian O'Driscoll, 2015. cillian.odriscoll(at)gmail.com
  *
  * Class implementing a generic 1st, 2nd or 3rd order loop filter. Based
- * on the bilinear transform of the standard Weiner filter.
+ * on the bilinear transform of the standard Wiener filter.
  *
  * -------------------------------------------------------------------------
  *
@@ -33,8 +33,6 @@
 
 #ifndef GNSS_SDR_TRACKING_LOOP_FILTER_H_
 #define GNSS_SDR_TRACKING_LOOP_FILTER_H_
-#define MAX_LOOP_ORDER 3
-#define MAX_LOOP_HISTORY_LENGTH 4
 
 #include <vector>
 
@@ -73,7 +71,6 @@ private:
 
     // Compute the filter coefficients:
     void update_coefficients(void);
-
 
 public:
     float get_noise_bandwidth(void) const;

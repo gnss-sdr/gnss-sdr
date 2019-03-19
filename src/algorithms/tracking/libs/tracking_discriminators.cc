@@ -36,6 +36,7 @@
 #include <cmath>
 
 //  All the outputs are in RADIANS
+
 /*
  * FLL four quadrant arctan discriminator:
  * \f{equation}
@@ -45,7 +46,6 @@
  * \f$I_{PS1},Q_{PS1}\f$ are the inphase and quadrature prompt correlator outputs respectively at sample time \f$t_1\f$, and
  * \f$I_{PS2},Q_{PS2}\f$ are the inphase and quadrature prompt correlator outputs respectively at sample time \f$t_2\f$. The output is in [radians/second].
  */
-
 double fll_four_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2, double t1, double t2)
 {
     double cross, dot;
@@ -104,6 +104,7 @@ double dll_nc_e_minus_l_normalized(gr_complex early_s1, gr_complex late_s1)
         }
     return 0.5 * (P_early - P_late) / (P_early + P_late);
 }
+
 
 /*
  * DLL Noncoherent Very Early Minus Late Power (VEMLP) normalized discriminator, using the outputs

@@ -67,6 +67,8 @@ void channel_msg_receiver_cc::msg_handler_events(pmt::pmt_t msg)
             switch (message)
                 {
                 case 1:  // positive acquisition
+                         // Now the acquisition block can optionally trigger the event valid acquisition internally,
+                         // in order to reduce acquisition to tracking delay.
                     result = d_channel_fsm->Event_valid_acquisition();
                     break;
                 case 2:  // negative acquisition

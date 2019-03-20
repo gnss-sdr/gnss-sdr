@@ -39,6 +39,7 @@
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
 #include "channel.h"
+#include "channel_fsm.h"
 #include "channel_interface.h"
 #include "configuration_interface.h"
 #include "gnss_block_factory.h"
@@ -214,7 +215,7 @@ void GNSSFlowgraph::connect()
         }
 
     DLOG(INFO) << "blocks connected internally";
-    // Signal Source (i) >  Signal conditioner (i) >
+// Signal Source (i) >  Signal conditioner (i) >
 #ifndef ENABLE_FPGA
     int RF_Channels = 0;
     int signal_conditioner_ID = 0;

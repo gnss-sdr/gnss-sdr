@@ -32,7 +32,7 @@
 #ifndef GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_FPGA_H_
 #define GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_FPGA_H_
 
-#include "acquisition_interface.h"
+#include "channel_fsm.h"
 #include "complex_byte_to_float_x2.h"
 #include "pcps_acquisition_fpga.h"
 #include <gnuradio/blocks/float_to_complex.h>
@@ -93,8 +93,20 @@ public:
     /*!
      * \brief Set acquisition channel unique ID
      */
-    void set_channel(unsigned int channel) override;
+    inline void set_channel(unsigned int channel)
+    {
+        channel_ = channel;
+        acquisition_fpga_->set_channel(channel_);
+    }
 
+    /*!
+      * \brief Set channel fsm associated to this acquisition instance
+      */
+    inline void set_channel_fsm(std::shared_ptr<ChannelFsm> channel_fsm)
+    {
+        channel_fsm_ = channel_fsm;
+        acquisition_fpga_->set_channel_fsm(channel_fsm);
+    }
     /*!
      * \brief Set statistics threshold of PCPS algorithm
      */
@@ -150,6 +162,7 @@ private:
     complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
     bool acquire_pilot_;
     uint32_t channel_;
+    std::shared_ptr<ChannelFsm> channel_fsm_;
     uint32_t doppler_max_;
     uint32_t doppler_step_;
     std::string dump_filename_;

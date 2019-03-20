@@ -41,6 +41,7 @@
 #define GNSS_SDR_PCPS_ACQUISITION_FPGA_H_
 
 
+#include "channel_fsm.h"
 #include "fpga_acquisition.h"
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/block.h>     // for block
@@ -104,6 +105,7 @@ private:
     float d_test_statistics;
     int32_t d_state;
     uint32_t d_channel;
+    std::shared_ptr<ChannelFsm> d_channel_fsm;
     uint32_t d_doppler_step;
     uint32_t d_fft_size;
     uint32_t d_num_doppler_bins;
@@ -169,6 +171,15 @@ public:
     inline void set_channel(uint32_t channel)
     {
         d_channel = channel;
+    }
+
+
+    /*!
+      * \brief Set channel fsm associated to this acquisition instance
+      */
+    inline void set_channel_fsm(std::shared_ptr<ChannelFsm> channel_fsm)
+    {
+        d_channel_fsm = channel_fsm;
     }
 
     /*!

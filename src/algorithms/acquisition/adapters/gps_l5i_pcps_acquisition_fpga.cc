@@ -48,7 +48,7 @@
 #include <cstring>  // for memcpy
 
 #define NUM_PRNs 32
-#define QUANT_BITS_LOCAL_CODE 10
+#define QUANT_BITS_LOCAL_CODE 16
 
 
 GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(

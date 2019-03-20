@@ -53,15 +53,15 @@
 #define MEM_LOCAL_CODE_WR_ENABLE 0x0C000000  // command to enable the ENA and WR pins of the internal memory of the multicorrelator
 #define POW_2_2 4                            // 2^2 (used for the conversion of floating point numbers to integers)
 #define POW_2_29 536870912                   // 2^29 (used for the conversion of floating point numbers to integers)
-#define SELECT_LSBits 0x000003FF             // Select the 10 LSbits out of a 20-bit word
-#define SELECT_MSBbits 0x000FFC00            // Select the 10 MSbits out of a 20-bit word
-#define SELECT_ALL_CODE_BITS 0x000FFFFF      // Select a 20 bit word
-#define SHL_CODE_BITS 1024                   // shift left by 10 bits
+//#define SELECT_LSBits 0x000003FF             // Select the 10 LSbits out of a 20-bit word
+//#define SELECT_MSBbits 0x000FFC00            // Select the 10 MSbits out of a 20-bit word
+//#define SELECT_ALL_CODE_BITS 0x000FFFFF      // Select a 20 bit word
+//#define SHL_CODE_BITS 1024                   // shift left by 10 bits
 
-//#define SELECT_LSBits 0x0000FFFF         // Select the 10 LSbits out of a 20-bit word
-//#define SELECT_MSBbits 0xFFFF0000        // Select the 10 MSbits out of a 20-bit word
-//#define SELECT_ALL_CODE_BITS 0xFFFFFFFF  // Select a 20 bit word
-//#define SHL_CODE_BITS 65536              // shift left by 10 bits
+#define SELECT_LSBits 0x0000FFFF         // Select the 10 LSbits out of a 20-bit word
+#define SELECT_MSBbits 0xFFFF0000        // Select the 10 MSbits out of a 20-bit word
+#define SELECT_ALL_CODE_BITS 0xFFFFFFFF  // Select a 20 bit word
+#define SHL_CODE_BITS 65536              // shift left by 10 bits
 
 
 #ifndef TEMP_FAILURE_RETRY
@@ -188,9 +188,25 @@ void Fpga_Acquisition::fpga_acquisition_test_register()
 
 void Fpga_Acquisition::fpga_configure_acquisition_local_code(lv_16sc_t fft_local_code[])
 {
+    //    uint32_t local_code;
+    //    uint32_t k, tmp, tmp2;
+    //    uint32_t fft_data;
+    //
+    //    d_map_base[9] = LOCAL_CODE_CLEAR_MEM;
+    //    // write local code
+    //    for (k = 0; k < d_vector_length; k++)
+    //        {
+    //            tmp = fft_local_code[k].real();
+    //            tmp2 = fft_local_code[k].imag();
+    //
+    //            local_code = (tmp & SELECT_LSBits) | ((tmp2 * SHL_CODE_BITS) & SELECT_MSBbits);  // put together the real part and the imaginary part
+    //            fft_data = local_code & SELECT_ALL_CODE_BITS;
+    //            d_map_base[6] = fft_data;
+    //        }
+
     uint32_t local_code;
-    uint32_t k, tmp, tmp2;
-    uint32_t fft_data;
+    int32_t k, tmp, tmp2;
+    int32_t fft_data;
 
     d_map_base[9] = LOCAL_CODE_CLEAR_MEM;
     // write local code

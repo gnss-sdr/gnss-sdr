@@ -44,7 +44,7 @@
 #include <complex>  // for complex
 #include <cstring>  // for strcpy, memcpy
 
-#define QUANT_BITS_LOCAL_CODE 10
+#define QUANT_BITS_LOCAL_CODE 16
 
 GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterface* configuration,
     const std::string& role,

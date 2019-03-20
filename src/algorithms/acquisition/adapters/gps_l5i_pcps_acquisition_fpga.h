@@ -106,6 +106,7 @@ public:
       */
     inline void set_channel_fsm(std::shared_ptr<ChannelFsm> channel_fsm)
     {
+        channel_fsm = nullptr;
         channel_fsm_ = channel_fsm;
         acquisition_fpga_->set_channel_fsm(channel_fsm);
     }

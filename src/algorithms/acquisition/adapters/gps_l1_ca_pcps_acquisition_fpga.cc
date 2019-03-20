@@ -49,7 +49,7 @@
 
 
 #define NUM_PRNs 32
-#define QUANT_BITS_LOCAL_CODE 10
+#define QUANT_BITS_LOCAL_CODE 16
 
 
 GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(

@@ -45,7 +45,7 @@
 #include <cstring>  // for memcpy
 
 
-#define QUANT_BITS_LOCAL_CODE 10
+#define QUANT_BITS_LOCAL_CODE 16
 
 GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     ConfigurationInterface* configuration,

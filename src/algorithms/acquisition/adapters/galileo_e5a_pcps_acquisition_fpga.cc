@@ -61,7 +61,6 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 32000000);
     int64_t fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
 
-
     acq_parameters.repeat_satellite = configuration_->property(role + ".repeat_satellite", false);
     DLOG(INFO) << role << " satellite repeat = " << acq_parameters.repeat_satellite;
 

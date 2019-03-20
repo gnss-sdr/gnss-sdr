@@ -67,6 +67,9 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     int64_t fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
 
+    acq_parameters.repeat_satellite = configuration_->property(role + ".repeat_satellite", false);
+    DLOG(INFO) << role << " satellite repeat = " << acq_parameters.repeat_satellite;
+
     float downsampling_factor = configuration_->property(role + ".downsampling_factor", 1.0);
     acq_parameters.downsampling_factor = downsampling_factor;
 
@@ -146,7 +149,6 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     acq_parameters.total_block_exp = configuration_->property(role + ".total_block_exp", 14);
 
     acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters);
-    DLOG(INFO) << "acquisition(" << acquisition_fpga_->unique_id() << ")";
 
     channel_ = 0;
     doppler_step_ = 0;
@@ -258,5 +260,5 @@ gr::basic_block_sptr GpsL5iPcpsAcquisitionFpga::get_left_block()
 
 gr::basic_block_sptr GpsL5iPcpsAcquisitionFpga::get_right_block()
 {
-    return acquisition_fpga_;
+    return nullptr;
 }

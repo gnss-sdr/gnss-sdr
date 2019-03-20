@@ -144,6 +144,7 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
     threshold_ = 0.0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
+    channel_fsm_ = nullptr;
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
@@ -163,16 +164,6 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::~GalileoE1PcpsQuickSyncAmbiguousAcqu
 
 void GalileoE1PcpsQuickSyncAmbiguousAcquisition::stop_acquisition()
 {
-}
-
-
-void GalileoE1PcpsQuickSyncAmbiguousAcquisition::set_channel(unsigned int channel)
-{
-    channel_ = channel;
-    if (item_type_ == "gr_complex")
-        {
-            acquisition_cc_->set_channel(channel_);
-        }
 }
 
 

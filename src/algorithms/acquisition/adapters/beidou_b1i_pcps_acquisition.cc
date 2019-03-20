@@ -124,6 +124,7 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
     threshold_ = 0.0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
+    channel_fsm_ = nullptr;
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
@@ -143,12 +144,6 @@ BeidouB1iPcpsAcquisition::~BeidouB1iPcpsAcquisition()
 
 void BeidouB1iPcpsAcquisition::stop_acquisition()
 {
-}
-
-void BeidouB1iPcpsAcquisition::set_channel(uint32_t channel)
-{
-    channel_ = channel;
-    acquisition_->set_channel(channel_);
 }
 
 

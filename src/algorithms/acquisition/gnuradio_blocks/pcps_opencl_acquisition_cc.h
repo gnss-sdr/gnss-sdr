@@ -51,6 +51,7 @@
 #ifndef GNSS_SDR_PCPS_OPENCL_ACQUISITION_CC_H_
 #define GNSS_SDR_PCPS_OPENCL_ACQUISITION_CC_H_
 
+#include "channel_fsm.h"
 #include "gnss_synchro.h"
 #include "opencl/fft_internal.h"
 #include <gnuradio/block.h>
@@ -161,7 +162,7 @@ private:
     cl::CommandQueue* d_cl_queue;
     clFFT_Plan d_cl_fft_plan;
     cl_int d_cl_fft_batch_size;
-
+    std::shared_ptr<ChannelFsm> d_channel_fsm;
     int d_opencl;
 
 public:
@@ -225,6 +226,14 @@ public:
         d_channel = channel;
     }
 
+
+    /*!
+      * \brief Set channel fsm associated to this acquisition instance
+      */
+    inline void set_channel_fsm(std::shared_ptr<ChannelFsm> channel_fsm)
+    {
+        d_channel_fsm = channel_fsm;
+    }
     /*!
       * \brief Set statistics threshold of PCPS algorithm.
       * \param threshold - Threshold for signal detection (check \ref Navitec2012,

@@ -50,6 +50,7 @@
 #define GNSS_SDR_PCPS_ACQUISITION_FINE_DOPPLER_CC_H_
 
 #include "acq_conf.h"
+#include "channel_fsm.h"
 #include "gnss_synchro.h"
 #include <armadillo>
 #include <gnuradio/block.h>
@@ -121,10 +122,11 @@ private:
     int d_n_samples_in_buffer;
     bool d_dump;
     unsigned int d_channel;
+    std::shared_ptr<ChannelFsm> d_channel_fsm;
 
     std::string d_dump_filename;
 
-    arma ::fmat grid_;
+    arma::fmat grid_;
     int64_t d_dump_number;
     unsigned int d_dump_channel;
 
@@ -183,6 +185,14 @@ public:
         d_dump_channel = d_channel;
     }
 
+
+    /*!
+      * \brief Set channel fsm associated to this acquisition instance
+      */
+    inline void set_channel_fsm(std::shared_ptr<ChannelFsm> channel_fsm)
+    {
+        d_channel_fsm = channel_fsm;
+    }
     /*!
      * \brief Set statistics threshold of PCPS algorithm.
      * \param threshold - Threshold for signal detection (check \ref Navitec2012,

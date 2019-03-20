@@ -87,7 +87,20 @@ public:
     /*!
      * \brief Set acquisition channel unique ID
      */
-    void set_channel(unsigned int channel) override;
+    inline void set_channel(unsigned int channel) override
+    {
+        channel_ = channel;
+        acquisition_cc_->set_channel(channel_);
+    }
+
+    /*!
+      * \brief Set channel fsm associated to this acquisition instance
+      */
+    inline void set_channel_fsm(std::shared_ptr<ChannelFsm> channel_fsm) override
+    {
+        channel_fsm_ = channel_fsm;
+        acquisition_cc_->set_channel_fsm(channel_fsm);
+    }
 
     /*!
      * \brief Set statistics threshold of PCPS algorithm
@@ -143,6 +156,7 @@ private:
     unsigned int vector_length_;
     unsigned int code_length_;
     unsigned int channel_;
+    std::shared_ptr<ChannelFsm> channel_fsm_;
     float threshold_;
     unsigned int doppler_max_;
     unsigned int doppler_step_;

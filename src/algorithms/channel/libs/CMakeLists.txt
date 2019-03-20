@@ -24,7 +24,7 @@ set(CHANNEL_FSM_SOURCES
 set(CHANNEL_FSM_HEADERS
     channel_fsm.h
     channel_msg_receiver_cc.h
-)
+) 
 
 list(SORT CHANNEL_FSM_HEADERS)
 list(SORT CHANNEL_FSM_SOURCES)

@@ -38,6 +38,7 @@
 #ifndef GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_CC_H_
 #define GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_CC_H_
 
+#include "channel_fsm.h"
 #include "gnss_synchro.h"
 #include <gnuradio/block.h>
 #include <gnuradio/fft/fft.h>
@@ -99,6 +100,7 @@ private:
         int doppler_offset);
     float estimate_input_power(gr_complex* in);
 
+    std::shared_ptr<ChannelFsm> d_channel_fsm;
     int64_t d_fs_in;
     int d_samples_per_ms;
     int d_sampled_ms;
@@ -211,6 +213,13 @@ public:
         d_channel = channel;
     }
 
+    /*!
+      * \brief Set channel fsm associated to this acquisition instance
+      */
+    inline void set_channel_fsm(std::shared_ptr<ChannelFsm> channel_fsm)
+    {
+        d_channel_fsm = channel_fsm;
+    }
     /*!
       * \brief Set statistics threshold of PCPS algorithm.
       * \param threshold - Threshold for signal detection (check \ref Navitec2012,

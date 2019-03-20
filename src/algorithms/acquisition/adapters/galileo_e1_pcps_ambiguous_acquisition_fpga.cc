@@ -64,6 +64,9 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
     int64_t fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
 
+    acq_parameters.repeat_satellite = configuration_->property(role + ".repeat_satellite", false);
+    DLOG(INFO) << role << " satellite repeat = " << acq_parameters.repeat_satellite;
+
     float downsampling_factor = configuration_->property(role + ".downsampling_factor", 4.0);
     acq_parameters.downsampling_factor = downsampling_factor;
 
@@ -163,12 +166,11 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     acq_parameters.total_block_exp = configuration_->property(role + ".total_block_exp", 14);
 
     acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters);
-    DLOG(INFO) << "acquisition(" << acquisition_fpga_->unique_id() << ")";
 
     channel_ = 0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
-
+    channel_fsm_ = nullptr;
     // temporary buffers that we can delete
     delete[] code;
     delete fft_if;
@@ -186,13 +188,6 @@ void GalileoE1PcpsAmbiguousAcquisitionFpga::stop_acquisition()
 {
     // this command causes the SW to reset the HW.
     acquisition_fpga_->reset_acquisition();
-}
-
-
-void GalileoE1PcpsAmbiguousAcquisitionFpga::set_channel(unsigned int channel)
-{
-    channel_ = channel;
-    acquisition_fpga_->set_channel(channel_);
 }
 
 
@@ -281,5 +276,5 @@ gr::basic_block_sptr GalileoE1PcpsAmbiguousAcquisitionFpga::get_left_block()
 
 gr::basic_block_sptr GalileoE1PcpsAmbiguousAcquisitionFpga::get_right_block()
 {
-    return acquisition_fpga_;
+    return nullptr;
 }

@@ -33,7 +33,7 @@
 #define GNSS_SDR_BEIDOU_B3I_PCPS_ACQUISITION_H_
 
 #include "acq_conf.h"
-#include "acquisition_interface.h"
+#include "channel_fsm.h"
 #include "complex_byte_to_float_x2.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition.h"
@@ -92,7 +92,21 @@ public:
     /*!
      * \brief Set acquisition channel unique ID
      */
-    void set_channel(unsigned int channel) override;
+    inline void set_channel(unsigned int channel) override
+    {
+        channel_ = channel;
+        acquisition_->set_channel(channel_);
+    }
+
+    /*!
+      * \brief Set channel fsm associated to this acquisition instance
+      */
+    inline void set_channel_fsm(std::shared_ptr<ChannelFsm> channel_fsm) override
+    {
+        channel_fsm_ = channel_fsm;
+        acquisition_->set_channel_fsm(channel_fsm);
+    }
+
 
     /*!
      * \brief Set statistics threshold of PCPS algorithm
@@ -158,6 +172,7 @@ private:
     bool bit_transition_flag_;
     bool use_CFAR_algorithm_flag_;
     unsigned int channel_;
+    std::shared_ptr<ChannelFsm> channel_fsm_;
     float threshold_;
     unsigned int doppler_max_;
     unsigned int doppler_step_;

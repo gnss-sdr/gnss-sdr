@@ -35,7 +35,7 @@
 #ifndef GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FPGA_H_
 #define GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FPGA_H_
 
-#include "acquisition_interface.h"
+#include "channel_fsm.h"
 #include "pcps_acquisition_fpga.h"
 #include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
 #include <volk/volk_complex.h>       // for lv_16sc_t
@@ -93,7 +93,20 @@ public:
     /*!
      * \brief Set acquisition channel unique ID
      */
-    void set_channel(unsigned int channel) override;
+    inline void set_channel(unsigned int channel) override
+    {
+        channel_ = channel;
+        acquisition_fpga_->set_channel(channel_);
+    }
+
+    /*!
+      * \brief Set channel fsm associated to this acquisition instance
+      */
+    inline void set_channel_fsm(std::shared_ptr<ChannelFsm> channel_fsm) override
+    {
+        channel_fsm_ = channel_fsm;
+        acquisition_fpga_->set_channel_fsm(channel_fsm);
+    }
 
     /*!
      * \brief Set statistics threshold of PCPS algorithm
@@ -146,6 +159,7 @@ private:
     ConfigurationInterface* configuration_;
     pcps_acquisition_fpga_sptr acquisition_fpga_;
     uint32_t channel_;
+    std::shared_ptr<ChannelFsm> channel_fsm_;
     uint32_t doppler_max_;
     uint32_t doppler_step_;
     Gnss_Synchro* gnss_synchro_;

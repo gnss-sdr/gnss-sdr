@@ -51,6 +51,7 @@
 #ifndef GNSS_SDR_PCPS_TONG_ACQUISITION_CC_H_
 #define GNSS_SDR_PCPS_TONG_ACQUISITION_CC_H_
 
+#include "channel_fsm.h"
 #include "gnss_synchro.h"
 #include <gnuradio/block.h>
 #include <gnuradio/fft/fft.h>
@@ -133,6 +134,7 @@ private:
     int32_t d_state;
     bool d_dump;
     uint32_t d_channel;
+    std::shared_ptr<ChannelFsm> d_channel_fsm;
     std::string d_dump_filename;
 
 public:
@@ -196,6 +198,14 @@ public:
         d_channel = channel;
     }
 
+
+    /*!
+      * \brief Set channel fsm associated to this acquisition instance
+      */
+    inline void set_channel_fsm(std::shared_ptr<ChannelFsm> channel_fsm)
+    {
+        d_channel_fsm = channel_fsm;
+    }
     /*!
       * \brief Set statistics threshold of TONG algorithm.
       * \param threshold - Threshold for signal detection (check \ref Navitec2012,

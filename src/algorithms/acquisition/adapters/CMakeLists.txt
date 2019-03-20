@@ -35,6 +35,7 @@ set(ACQ_ADAPTER_SOURCES
     glonass_l1_ca_pcps_acquisition.cc
     glonass_l2_ca_pcps_acquisition.cc
     beidou_b1i_pcps_acquisition.cc
+    beidou_b3i_pcps_acquisition.cc
 )
 
 set(ACQ_ADAPTER_HEADERS
@@ -54,6 +55,8 @@ set(ACQ_ADAPTER_HEADERS
     galileo_e5a_pcps_acquisition.h
     glonass_l1_ca_pcps_acquisition.h
     glonass_l2_ca_pcps_acquisition.h
+    beidou_b1i_pcps_acquisition.h
+    beidou_b3i_pcps_acquisition.h
 )
 
 if(ENABLE_FPGA)
@@ -95,6 +98,7 @@ target_link_libraries(acquisition_adapters
         algorithms_libs
         gnss_sdr_flags
         acquisition_gr_blocks
+        channel_libs
         core_system_parameters
         Gnuradio::blocks
         Volk::volk

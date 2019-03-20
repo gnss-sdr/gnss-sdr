@@ -158,7 +158,17 @@ void pcps_acquisition_fpga::send_positive_acquisition()
                << ", magnitude " << d_mag
                << ", input signal power " << d_input_power;
 
-    this->message_port_pub(pmt::mp("events"), pmt::from_long(1));
+    if (d_channel_fsm)
+        {
+            printf("d_channel_fsm is set\n");
+            //the channel FSM is set, so, notify it directly the positive acquisition to minimize delays
+            d_channel_fsm->Event_valid_acquisition();
+        }
+    else
+        {
+            printf("d_channel_fsm is not set\n");
+            this->message_port_pub(pmt::mp("events"), pmt::from_long(1));
+        }
 }
 
 
@@ -212,7 +222,12 @@ void pcps_acquisition_fpga::acquisition_core(uint32_t num_doppler_bins, uint32_t
                 }
         }
 
-
+    //    // debug
+    if (d_test_statistics > d_threshold)
+        {
+            printf("firstpeak = %f, secondpeak = %f, test_statistics = %f reported block exp = %d PRN = %d inext = %d, initial_sample = %ld doppler = %d\n", firstpeak, secondpeak, d_test_statistics, (int)total_block_exp, (int)d_gnss_synchro->PRN, (int)indext, (long int)initial_sample, (int)doppler);
+            printf("doppler_min = %d doppler_step = %d num_doppler_bins = %d\n", (int)doppler_min, (int)doppler_step, (int)num_doppler_bins);
+        }
 
     d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
     d_sample_counter = initial_sample;
@@ -306,9 +321,6 @@ void pcps_acquisition_fpga::set_active(bool active)
                     send_negative_acquisition();
                 }
         }
-
-
-
 }
 
 

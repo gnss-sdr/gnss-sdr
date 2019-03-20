@@ -45,7 +45,7 @@
 
 
 // FPGA register parameters
-#define PAGE_SIZE 0x10000  // default page size for the multicorrelator memory map
+#define PAGE_SIZE 0x10000                    // default page size for the multicorrelator memory map
 #define RESET_ACQUISITION 2                  // command to reset the multicorrelator
 #define LAUNCH_ACQUISITION 1                 // command to launch the multicorrelator
 #define TEST_REG_SANITY_CHECK 0x55AA         // value to check the presence of the test register (to detect the hw)
@@ -57,6 +57,12 @@
 #define SELECT_MSBbits 0x000FFC00            // Select the 10 MSbits out of a 20-bit word
 #define SELECT_ALL_CODE_BITS 0x000FFFFF      // Select a 20 bit word
 #define SHL_CODE_BITS 1024                   // shift left by 10 bits
+
+//#define SELECT_LSBits 0x0000FFFF         // Select the 10 LSbits out of a 20-bit word
+//#define SELECT_MSBbits 0xFFFF0000        // Select the 10 MSbits out of a 20-bit word
+//#define SELECT_ALL_CODE_BITS 0xFFFFFFFF  // Select a 20 bit word
+//#define SHL_CODE_BITS 65536              // shift left by 10 bits
+
 
 #ifndef TEMP_FAILURE_RETRY
 #define TEMP_FAILURE_RETRY(exp)              \

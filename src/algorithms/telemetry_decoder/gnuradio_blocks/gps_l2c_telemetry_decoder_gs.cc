@@ -62,6 +62,13 @@ gps_l2c_telemetry_decoder_gs::gps_l2c_telemetry_decoder_gs(
 {
     // Ephemeris data port out
     this->message_port_register_out(pmt::mp("telemetry"));
+    // Control messages to tracking block
+    this->message_port_register_out(pmt::mp("telemetry_to_trk"));
+    d_last_valid_preamble = 0;
+    d_sent_tlm_failed_msg = false;
+    d_max_symbols_without_valid_frame = GPS_L2_CNAV_DATA_PAGE_BITS * GPS_L2_SYMBOLS_PER_BIT * 5;  //rise alarm if 5 consecutive subframes have no valid CRC
+
+
     // initialize internal vars
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
@@ -76,6 +83,8 @@ gps_l2c_telemetry_decoder_gs::gps_l2c_telemetry_decoder_gs(
 
     // initialize the CNAV frame decoder (libswiftcnav)
     cnav_msg_decoder_init(&d_cnav_decoder);
+
+    d_sample_counter = 0;
 }
 
 
@@ -130,6 +139,14 @@ void gps_l2c_telemetry_decoder_gs::set_channel(int channel)
 }
 
 
+void gps_l2c_telemetry_decoder_gs::reset()
+{
+    d_last_valid_preamble = d_sample_counter;
+    d_sent_tlm_failed_msg = false;
+    DLOG(INFO) << "Telemetry decoder reset for satellite " << d_satellite;
+}
+
+
 int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
@@ -146,6 +163,18 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
     flag_new_cnav_frame = cnav_msg_decoder_add_symbol(&d_cnav_decoder, symbol_clip, &msg, &delay);
 
     consume_each(1);  // one by one
+
+    // check if there is a problem with the telemetry of the current satellite
+    d_sample_counter++;  // count for the processed symbols
+    if (d_sent_tlm_failed_msg == false)
+        {
+            if ((d_sample_counter - d_last_valid_preamble) > d_max_symbols_without_valid_frame)
+                {
+                    int message = 1;  //bad telemetry
+                    this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(message));
+                    d_sent_tlm_failed_msg = true;
+                }
+        }
 
     // UPDATE GNSS SYNCHRO DATA
     Gnss_Synchro current_synchro_data{};  // structure to save the synchronization information and send the output object to the next block
@@ -190,6 +219,7 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
 
             // update TOW at the preamble instant
             d_TOW_at_Preamble = static_cast<double>(msg.tow);
+            d_last_valid_preamble = d_sample_counter;
             // The time of the last input symbol can be computed from the message ToW and
             // delay by the formulae:
             // \code

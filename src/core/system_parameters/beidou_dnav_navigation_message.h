@@ -35,6 +35,9 @@
 
 
 #include "Beidou_B1I.h"
+#include "Beidou_B3I.h"
+#include "Beidou_DNAV.h"
+#include "beidou_dnav_almanac.h"
 #include "beidou_dnav_ephemeris.h"
 #include "beidou_dnav_iono.h"
 #include "beidou_dnav_utc_model.h"
@@ -204,6 +207,7 @@ public:
 
     // satellite identification info
     int32_t i_channel_ID;
+    int32_t i_signal_type;     //!< BDS: data source (0:unknown,1:B1I,2:B1Q,3:B2I,4:B2Q,5:B3I,6:B3Q)
     uint32_t i_satellite_PRN;
 
     // time synchro

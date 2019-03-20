@@ -156,7 +156,7 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     channel_ = 0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
-
+    channel_fsm_ = nullptr;
     // temporary buffers that we can delete
     delete[] code;
     delete fft_if;
@@ -175,13 +175,6 @@ void GpsL5iPcpsAcquisitionFpga::stop_acquisition()
 {
     // this command causes the SW to reset the HW.
     acquisition_fpga_->reset_acquisition();
-}
-
-
-void GpsL5iPcpsAcquisitionFpga::set_channel(unsigned int channel)
-{
-    channel_ = channel;
-    acquisition_fpga_->set_channel(channel_);
 }
 
 

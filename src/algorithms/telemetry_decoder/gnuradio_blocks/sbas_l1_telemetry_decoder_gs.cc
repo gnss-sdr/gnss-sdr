@@ -60,6 +60,8 @@ sbas_l1_telemetry_decoder_gs::sbas_l1_telemetry_decoder_gs(
 {
     // Ephemeris data port out
     this->message_port_register_out(pmt::mp("telemetry"));
+    // Control messages to tracking block
+    this->message_port_register_out(pmt::mp("telemetry_to_trk"));
     // initialize internal vars
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());

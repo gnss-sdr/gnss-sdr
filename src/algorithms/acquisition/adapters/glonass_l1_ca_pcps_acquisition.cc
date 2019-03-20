@@ -125,6 +125,7 @@ GlonassL1CaPcpsAcquisition::GlonassL1CaPcpsAcquisition(
     threshold_ = 0.0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
+    channel_fsm_ = nullptr;
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
@@ -145,14 +146,6 @@ GlonassL1CaPcpsAcquisition::~GlonassL1CaPcpsAcquisition()
 void GlonassL1CaPcpsAcquisition::stop_acquisition()
 {
 }
-
-
-void GlonassL1CaPcpsAcquisition::set_channel(unsigned int channel)
-{
-    channel_ = channel;
-    acquisition_->set_channel(channel_);
-}
-
 
 void GlonassL1CaPcpsAcquisition::set_threshold(float threshold)
 {

@@ -33,8 +33,8 @@
 #ifndef GNSS_SDR_GLONASS_L2_CA_TELEMETRY_DECODER_H_
 #define GNSS_SDR_GLONASS_L2_CA_TELEMETRY_DECODER_H_
 
-#include "gnss_satellite.h"  // for Gnss_Satellite
 #include "glonass_l2_ca_telemetry_decoder_gs.h"
+#include "gnss_satellite.h"  // for Gnss_Satellite
 #include "telemetry_decoder_interface.h"
 #include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
 #include <cstddef>                   // for size_t
@@ -70,8 +70,9 @@ public:
     gr::basic_block_sptr get_right_block() override;
     void set_satellite(const Gnss_Satellite& satellite) override;
     void set_channel(int channel) override { telemetry_decoder_->set_channel(channel); }
-    void reset() override
+    inline void reset() override
     {
+        telemetry_decoder_->reset();
         return;
     }
     size_t item_size() override

@@ -57,6 +57,7 @@ Channel::Channel(ConfigurationInterface* configuration, uint32_t channel, std::s
 
     flag_enable_fpga = configuration->property("Channel.enable_FPGA", false);
     acq_->set_channel(channel_);
+    acq_->set_channel_fsm(channel_fsm_);
     trk_->set_channel(channel_);
     nav_->set_channel(channel_);
 
@@ -106,6 +107,7 @@ Channel::Channel(ConfigurationInterface* configuration, uint32_t channel, std::s
 
     channel_fsm_->set_acquisition(acq_);
     channel_fsm_->set_tracking(trk_);
+    channel_fsm_->set_telemetry(nav_);
     channel_fsm_->set_channel(channel_);
     channel_fsm_->set_queue(queue_);
 
@@ -129,6 +131,8 @@ void Channel::connect(gr::top_block_sptr top_block)
 
     //Synchronous ports
     top_block->connect(trk_->get_right_block(), 0, nav_->get_left_block(), 0);
+    // Message ports
+    top_block->msg_connect(nav_->get_left_block(), pmt::mp("telemetry_to_trk"), trk_->get_right_block(), pmt::mp("telemetry_to_trk"));
     DLOG(INFO) << "tracking -> telemetry_decoder";
 
     // Message ports
@@ -152,6 +156,9 @@ void Channel::disconnect(gr::top_block_sptr top_block)
     acq_->disconnect(top_block);
     trk_->disconnect(top_block);
     nav_->disconnect(top_block);
+    top_block->msg_disconnect(nav_->get_left_block(), pmt::mp("telemetry_to_trk"), trk_->get_right_block(), pmt::mp("telemetry_to_trk"));
+    top_block->msg_disconnect(acq_->get_right_block(), pmt::mp("events"), channel_msg_rx, pmt::mp("events"));
+    top_block->msg_disconnect(trk_->get_right_block(), pmt::mp("events"), channel_msg_rx, pmt::mp("events"));
     connected_ = false;
 }
 

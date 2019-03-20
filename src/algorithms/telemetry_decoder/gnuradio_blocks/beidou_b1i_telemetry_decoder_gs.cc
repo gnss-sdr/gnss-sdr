@@ -65,10 +65,12 @@ beidou_b1i_telemetry_decoder_gs::beidou_b1i_telemetry_decoder_gs(
 {
     // Ephemeris data port out
     this->message_port_register_out(pmt::mp("telemetry"));
+    // Control messages to tracking block
+    this->message_port_register_out(pmt::mp("telemetry_to_trk"));
     // initialize internal vars
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    LOG(INFO) << "Initializing BeiDou B1i Telemetry Decoding for satellite " << this->d_satellite;
+    LOG(INFO) << "Initializing BeiDou B1I Telemetry Decoding for satellite " << this->d_satellite;
 
     d_samples_per_symbol = (BEIDOU_B1I_CODE_RATE_HZ / BEIDOU_B1I_CODE_LENGTH_CHIPS) / BEIDOU_D1NAV_SYMBOL_RATE_SPS;
     d_symbols_per_preamble = BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS;
@@ -119,8 +121,8 @@ beidou_b1i_telemetry_decoder_gs::beidou_b1i_telemetry_decoder_gs(
 
     d_subframe_symbols = static_cast<double *>(volk_gnsssdr_malloc(BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS * sizeof(double), volk_gnsssdr_get_alignment()));
     d_required_symbols = BEIDOU_DNAV_SUBFRAME_SYMBOLS * d_samples_per_symbol + d_samples_per_preamble;
-
     d_symbol_history.set_capacity(d_required_symbols + 1);
+
     // Generic settings
     d_sample_counter = 0;
     d_stat = 0;
@@ -310,6 +312,7 @@ void beidou_b1i_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satell
     // Update satellite information for DNAV decoder
     sat_prn = d_satellite.get_PRN();
     d_nav.i_satellite_PRN = sat_prn;
+    d_nav.i_signal_type = 1; //!< BDS: data source (0:unknown,1:B1I,2:B1Q,3:B2I,4:B2Q,5:B3I,6:B3Q)
 
     // Update tel dec parameters for D2 NAV Messages
     if (sat_prn > 0 and sat_prn < 6)
@@ -350,6 +353,7 @@ void beidou_b1i_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satell
 
             d_subframe_symbols = static_cast<double *>(volk_gnsssdr_malloc(BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS * sizeof(double), volk_gnsssdr_get_alignment()));
             d_required_symbols = BEIDOU_DNAV_SUBFRAME_SYMBOLS * d_samples_per_symbol + d_samples_per_preamble;
+            d_symbol_history.set_capacity(d_required_symbols + 1);
         }
 }
 
@@ -569,12 +573,14 @@ int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
                 {
                     double tmp_double;
                     uint64_t tmp_ulong_int;
-                    tmp_double = d_TOW_at_current_symbol_ms;
+                    tmp_double = static_cast<double>(d_TOW_at_current_symbol_ms);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                     tmp_ulong_int = current_symbol.Tracking_sample_counter;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(uint64_t));
-                    tmp_double = 0;
+                    tmp_double = d_nav.d_SOW;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                    tmp_ulong_int = static_cast<uint64_t>(d_required_symbols);
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(uint64_t));
                 }
             catch (const std::ifstream::failure &e)
                 {

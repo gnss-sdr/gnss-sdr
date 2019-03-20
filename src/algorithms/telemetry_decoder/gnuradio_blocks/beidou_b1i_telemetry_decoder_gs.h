@@ -3,7 +3,7 @@
  * \brief Implementation of a BEIDOU BI1 DNAV data decoder block
  * \details Code added as part of GSoC 2018 program.
  * \author Damian Miralles, 2018. dmiralles2009(at)gmail.com
- *  \author       Sergi Segura, 2018. sergi.segura.munoz(at)gmail.es
+ * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.es
  *
  * -------------------------------------------------------------------------
  *
@@ -39,7 +39,7 @@
 #include <boost/circular_buffer.hpp>
 #include <boost/shared_ptr.hpp>  // for boost::shared_ptr
 #include <gnuradio/block.h>      // for block
-#include <gnuradio/types.h>      // for gr_vector_const_void_star
+#include <gnuradio/types.h>                  // for gr_vector_const_void_star
 #include <cstdint>
 #include <fstream>
 #include <string>
@@ -53,7 +53,7 @@ beidou_b1i_telemetry_decoder_gs_sptr beidou_b1i_make_telemetry_decoder_gs(const 
 
 
 /*!
- * \brief This class implements a block that decodes the GNAV data defined in BEIDOU ICD v5.1
+ * \brief This class implements a block that decodes the BeiDou DNAV data.
  * \note Code added as part of GSoC 2018 program
  */
 class beidou_b1i_telemetry_decoder_gs : public gr::block
@@ -62,7 +62,10 @@ public:
     ~beidou_b1i_telemetry_decoder_gs();                   //!< Class destructor
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
     void set_channel(int channel);                        //!< Set receiver's channel
-
+    inline void reset()
+    {
+        return;
+    }
     /*!
      * \brief This is where all signal processing takes place
      */

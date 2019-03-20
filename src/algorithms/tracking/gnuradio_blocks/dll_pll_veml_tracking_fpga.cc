@@ -78,6 +78,9 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
 
     // Telemetry bit synchronization message port input (mainly for GPS L1 CA)
     this->message_port_register_in(pmt::mp("preamble_samplestamp"));
+    // Telemetry message port input
+    this->message_port_register_in(pmt::mp("telemetry_to_trk"));
+    //todo: Implement the telemetry_to_trk handler in the same way the software version of tracking
 
     // initialize internal vars
     d_veml = false;

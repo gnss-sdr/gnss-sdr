@@ -174,7 +174,7 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     channel_ = 0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
-
+    channel_fsm_ = nullptr;
     // temporary buffers that we can delete
     delete[] code;
     delete fft_if;
@@ -192,13 +192,6 @@ void GalileoE5aPcpsAcquisitionFpga::stop_acquisition()
 {
     // this command causes the SW to reset the HW.
     acquisition_fpga_->reset_acquisition();
-}
-
-
-void GalileoE5aPcpsAcquisitionFpga::set_channel(unsigned int channel)
-{
-    channel_ = channel;
-    acquisition_fpga_->set_channel(channel_);
 }
 
 

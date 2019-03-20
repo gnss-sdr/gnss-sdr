@@ -23,9 +23,7 @@
 % -------------------------------------------------------------------------
 %
 
-% Read observables dump
-
-%clear all;
+%% Read Hibrid Observables Dump
 clearvars;
 close all;
 addpath('./libs');
@@ -35,38 +33,38 @@ path='/home/dmiralles/Documents/gnss-sdr/';
 observables_log_path=[path 'observables.dat'];
 GNSS_observables= read_hybrid_observables_dump(channels,observables_log_path);
 
-%%
-%optional:
-%search all channels having good satellite simultaneously
-min_idx=1;
+%% Plo data
+%--- optional: search all channels having good satellite simultaneously
+min_tow_idx=1;
+obs_idx=1;
 for n=1:1:channels
     idx=find(GNSS_observables.valid(n,:)>0,1,'first');
-    if min_idx<idx
-        min_idx=idx
+    if min_tow_idx<idx
+        min_tow_idx=idx;
+        obs_idx = n;
     end
 end
 
-min_idx=min_idx;
-%plot observables from that index
+%--- plot observables from that index
 figure;
-plot(GNSS_observables.RX_time(1,min_idx+1:end),GNSS_observables.Pseudorange_m(:,min_idx+1:end)');
-title('Pseudoranges [m]')
+plot(GNSS_observables.RX_time(obs_idx,min_tow_idx+1:end),GNSS_observables.Pseudorange_m(:,min_tow_idx+1:end)');
+grid on;
 xlabel('TOW [s]')
-ylabel('[m]');
+ylabel('Pseudorange [m]');
 
 figure;
-plot(GNSS_observables.RX_time(1,min_idx+1:end),GNSS_observables.Carrier_phase_hz(:,min_idx+1:end)');
-title('Accumulated carrier phase')
+plot(GNSS_observables.RX_time(obs_idx,min_tow_idx+1:end),GNSS_observables.Carrier_phase_hz(:,min_tow_idx+1:end)');
 xlabel('TOW [s]')
-ylabel('[cycles]');
+ylabel('Accumulated Carrier Phase [cycles]');
+grid on;
 
 figure;
-plot(GNSS_observables.RX_time(1,min_idx+1:end),GNSS_observables.Carrier_Doppler_hz(:,min_idx+1:end)');
-title('Doppler frequency')
-xlabel('TOW [s]')
-ylabel('[Hz]');
+plot(GNSS_observables.RX_time(obs_idx,min_tow_idx+1:end),GNSS_observables.Carrier_Doppler_hz(:,min_tow_idx+1:end)');
+xlabel('TOW [s]');
+ylabel('Doppler Frequency [Hz]');
+grid on;
 
-%
+%% Deprecated Code
 % %read true obs from simulator (optional)
 % GPS_STARTOFFSET_s = 68.802e-3;
 %

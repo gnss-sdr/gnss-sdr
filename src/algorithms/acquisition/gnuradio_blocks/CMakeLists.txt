@@ -71,6 +71,7 @@ target_link_libraries(acquisition_gr_blocks
         Gnuradio::runtime
         Gnuradio::fft
         Volk::volk
+        channel_libs
         acquisition_libs
         core_system_parameters
         ${OPT_LIBRARIES}

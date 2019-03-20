@@ -143,6 +143,7 @@ void Beidou_Dnav_Navigation_Message::reset()
     // info
     i_channel_ID = 0;
     i_satellite_PRN = 0;
+    i_signal_type = 0;
 
     // time synchro
     d_subframe_timestamp_ms = 0.0;
@@ -255,7 +256,7 @@ uint64_t Beidou_Dnav_Navigation_Message::read_navigation_unsigned(
         {
             for (int32_t j = 0; j < parameter[i].second; j++)
                 {
-                    value <<= 1;  // shift left
+                    value <<= 1;  //shift left
                     if (bits[BEIDOU_DNAV_SUBFRAME_DATA_BITS - parameter[i].first - j] == 1)
                         {
                             value += 1;  // insert the bit
@@ -279,7 +280,7 @@ int64_t Beidou_Dnav_Navigation_Message::read_navigation_signed(
             // read the MSB and perform the sign extension
             if (bits[BEIDOU_DNAV_SUBFRAME_DATA_BITS - parameter[0].first] == 1)
                 {
-                    value ^= 0xFFFFFFFFFFFFFFFF;  // 64 bits variable
+                    value ^= 0xFFFFFFFFFFFFFFFF;  //64 bits variable
                 }
             else
                 {
@@ -290,8 +291,8 @@ int64_t Beidou_Dnav_Navigation_Message::read_navigation_signed(
                 {
                     for (int32_t j = 0; j < parameter[i].second; j++)
                         {
-                            value <<= 1;                  // shift left
-                            value &= 0xFFFFFFFFFFFFFFFE;  // reset the corresponding bit (for the 64 bits variable)
+                            value <<= 1;                  //shift left
+                            value &= 0xFFFFFFFFFFFFFFFE;  //reset the corresponding bit (for the 64 bits variable)
                             if (bits[BEIDOU_DNAV_SUBFRAME_DATA_BITS - parameter[i].first - j] == 1)
                                 {
                                     value += 1;  // insert the bit
@@ -315,8 +316,8 @@ int64_t Beidou_Dnav_Navigation_Message::read_navigation_signed(
                 {
                     for (int32_t j = 0; j < parameter[i].second; j++)
                         {
-                            value <<= 1;          // shift left
-                            value &= 0xFFFFFFFE;  // reset the corresponding bit
+                            value <<= 1;          //shift left
+                            value &= 0xFFFFFFFE;  //reset the corresponding bit
                             if (bits[BEIDOU_DNAV_SUBFRAME_DATA_BITS - parameter[i].first - j] == 1)
                                 {
                                     value += 1;  // insert the bit
@@ -829,7 +830,7 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
                     d_eccentricity_msb = static_cast<double>(read_navigation_unsigned(subframe_bits, D2_E_MSB));
                     d_eccentricity_msb_bits = (read_navigation_unsigned(subframe_bits, D2_E_MSB));
                     // Adjust for lsb in next page (shift number of lsb to the left)
-                    d_eccentricity_msb = d_eccentricity_msb << 22;
+                    d_eccentricity_msb = static_cast<uint64_t>((static_cast<uint64_t>(d_eccentricity_msb) << 22));
                     d_eccentricity_msb_bits = d_eccentricity_msb_bits << 22;
 
                     // Set system flags for message reception
@@ -995,7 +996,7 @@ Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris()
             eph.i_SV_accuracy = i_SV_accuracy;
             eph.i_SV_health = i_SV_health;
             eph.i_BEIDOU_week = i_BEIDOU_week;
-            eph.i_sig_type = 1;
+            eph.i_sig_type = i_signal_type;
             eph.i_nav_type = 2;
 
             eph.d_TOW = d_SOW;
@@ -1042,7 +1043,7 @@ Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris()
             eph.i_SV_accuracy = i_SV_accuracy;
             eph.i_SV_health = i_SV_health;
             eph.i_BEIDOU_week = i_BEIDOU_week;
-            eph.i_sig_type = 1;
+            eph.i_sig_type = i_signal_type;
             eph.i_nav_type = 1;  // MEO/IGSO
 
             eph.d_TOW = d_SOW;
@@ -1095,7 +1096,6 @@ Beidou_Dnav_Iono Beidou_Dnav_Navigation_Message::get_iono()
     return iono;
 }
 
-
 Beidou_Dnav_Utc_Model Beidou_Dnav_Navigation_Message::get_utc_model()
 {
     Beidou_Dnav_Utc_Model utc_model;
@@ -1119,7 +1119,6 @@ Beidou_Dnav_Utc_Model Beidou_Dnav_Navigation_Message::get_utc_model()
     flag_utc_model_valid = false;
     return utc_model;
 }
-
 
 bool Beidou_Dnav_Navigation_Message::have_new_ephemeris()  // Check if we have a new ephemeris stored in the galileo navigation class
 {
@@ -1176,7 +1175,6 @@ bool Beidou_Dnav_Navigation_Message::have_new_ephemeris()  // Check if we have a
     return false;
 }
 
-
 bool Beidou_Dnav_Navigation_Message::have_new_iono()
 {
     // the condition on flag_utc_model is added to have a time stamp for iono
@@ -1187,7 +1185,6 @@ bool Beidou_Dnav_Navigation_Message::have_new_iono()
 
     return false;
 }
-
 
 bool Beidou_Dnav_Navigation_Message::have_new_utc_model()
 {
@@ -1203,7 +1200,6 @@ bool Beidou_Dnav_Navigation_Message::have_new_utc_model()
     return false;
 }
 
-
 bool Beidou_Dnav_Navigation_Message::have_new_almanac()
 {
     if ((flag_d1_sf4 == true) and (flag_d1_sf5 == true))
@@ -1217,7 +1213,6 @@ bool Beidou_Dnav_Navigation_Message::have_new_almanac()
 
     return false;
 }
-
 
 bool Beidou_Dnav_Navigation_Message::satellite_validation()
 {

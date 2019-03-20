@@ -140,6 +140,7 @@ target_link_libraries(core_receiver
         Boost::boost
         Boost::thread
         Gnuradio::runtime
+        channel_libs
         core_libs
         core_monitor
     PRIVATE

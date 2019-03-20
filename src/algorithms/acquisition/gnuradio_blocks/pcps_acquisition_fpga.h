@@ -44,8 +44,6 @@
 #include "channel_fsm.h"
 #include "fpga_acquisition.h"
 #include <boost/shared_ptr.hpp>
-#include <gnuradio/block.h>     // for block
-#include <gnuradio/types.h>     // for gr_vector_const_void_star
 #include <volk/volk_complex.h>  // for lv_16sc_t
 #include <cstdint>              // for uint32_t
 #include <memory>               // for shared_ptr

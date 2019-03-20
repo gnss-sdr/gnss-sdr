@@ -35,12 +35,9 @@
 #include "pcps_acquisition_fpga.h"
 #include "gnss_synchro.h"
 #include <glog/logging.h>
-#include <gnuradio/io_signature.h>
-#include <pmt/pmt.h>        // for from_long
-#include <pmt/pmt_sugar.h>  // for mp
-#include <cmath>            // for ceil
-#include <iostream>         // for operator<<
-#include <utility>          // for move
+#include <cmath>     // for ceil
+#include <iostream>  // for operator<<
+#include <utility>   // for move
 
 
 #define AQ_DOWNSAMPLING_DELAY 40  // delay due to the downsampling filter in the acquisition

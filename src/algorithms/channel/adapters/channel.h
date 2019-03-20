@@ -34,7 +34,7 @@
 
 #ifndef GNSS_SDR_CHANNEL_H_
 #define GNSS_SDR_CHANNEL_H_
-
+#include "channel_fsm.h"
 #include "channel_interface.h"
 #include "channel_msg_receiver_cc.h"
 #include "gnss_signal.h"
@@ -51,7 +51,7 @@ class ConfigurationInterface;
 class AcquisitionInterface;
 class TrackingInterface;
 class TelemetryDecoderInterface;
-class ChannelFsm;
+//class ChannelFsm;
 
 /*!
  * \brief This class represents a GNSS channel. It wraps an AcquisitionInterface,

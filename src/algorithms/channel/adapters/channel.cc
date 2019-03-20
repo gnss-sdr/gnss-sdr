@@ -57,6 +57,7 @@ Channel::Channel(ConfigurationInterface* configuration, uint32_t channel, std::s
 
     flag_enable_fpga = configuration->property("Channel.enable_FPGA", false);
     acq_->set_channel(channel_);
+    acq_->set_channel_fsm(channel_fsm_);
     trk_->set_channel(channel_);
     nav_->set_channel(channel_);
 

@@ -98,6 +98,7 @@ target_link_libraries(acquisition_adapters
         algorithms_libs
         gnss_sdr_flags
         acquisition_gr_blocks
+        channel_libs
         core_system_parameters
         Gnuradio::blocks
         Volk::volk

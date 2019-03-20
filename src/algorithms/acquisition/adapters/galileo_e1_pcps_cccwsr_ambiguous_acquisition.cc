@@ -111,6 +111,7 @@ GalileoE1PcpsCccwsrAmbiguousAcquisition::GalileoE1PcpsCccwsrAmbiguousAcquisition
     threshold_ = 0.0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
+    channel_fsm_ = nullptr;
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
@@ -134,31 +135,8 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisition::stop_acquisition()
 }
 
 
-void GalileoE1PcpsCccwsrAmbiguousAcquisition::set_channel(unsigned int channel)
-{
-    channel_ = channel;
-    if (item_type_ == "gr_complex")
-        {
-            acquisition_cc_->set_channel(channel_);
-        }
-}
-
-
 void GalileoE1PcpsCccwsrAmbiguousAcquisition::set_threshold(float threshold)
 {
-    //    float pfa = configuration_->property(role_+ std::to_string(channel_) + ".pfa", 0.0);
-
-    //    if(pfa==0.0) pfa = configuration_->property(role_+".pfa", 0.0);
-
-    //    if(pfa==0.0)
-    //        {
-    //            threshold_ = threshold;
-    //        }
-    //    else
-    //        {
-    //            threshold_ = calculate_threshold(pfa);
-    //        }
-
     threshold_ = threshold;
 
     DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold_;

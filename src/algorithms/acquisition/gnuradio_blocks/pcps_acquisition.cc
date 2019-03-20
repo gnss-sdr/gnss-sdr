@@ -429,7 +429,15 @@ void pcps_acquisition::send_positive_acquisition()
                << ", magnitude " << d_mag
                << ", input signal power " << d_input_power;
     d_positive_acq = 1;
-    this->message_port_pub(pmt::mp("events"), pmt::from_long(1));
+    if (d_channel_fsm)
+        {
+            //the channel FSM is set, so, notify it directly the positive acquisition to minimize delays
+            d_channel_fsm->Event_valid_acquisition();
+        }
+    else
+        {
+            this->message_port_pub(pmt::mp("events"), pmt::from_long(1));
+        }
 }
 
 

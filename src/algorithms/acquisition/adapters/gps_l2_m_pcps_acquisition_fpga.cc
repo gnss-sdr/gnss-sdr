@@ -144,7 +144,7 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     channel_ = 0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
-
+    channel_fsm_ = nullptr;
     DLOG(INFO) << "acquisition(" << acquisition_fpga_->unique_id() << ")";
 
     threshold_ = 0.0;
@@ -159,13 +159,6 @@ GpsL2MPcpsAcquisitionFpga::~GpsL2MPcpsAcquisitionFpga()
 
 void GpsL2MPcpsAcquisitionFpga::stop_acquisition()
 {
-}
-
-
-void GpsL2MPcpsAcquisitionFpga::set_channel(unsigned int channel)
-{
-    channel_ = channel;
-    acquisition_fpga_->set_channel(channel_);
 }
 
 

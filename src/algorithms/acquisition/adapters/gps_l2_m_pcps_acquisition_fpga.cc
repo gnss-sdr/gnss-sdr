@@ -70,6 +70,9 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in_;
 
+    acq_parameters.repeat_satellite = configuration_->property(role + ".repeat_satellite", false);
+    DLOG(INFO) << role << " satellite repeat = " << acq_parameters.repeat_satellite;
+
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
     if (FLAGS_doppler_max != 0) doppler_max_ = FLAGS_doppler_max;
     acq_parameters.doppler_max = doppler_max_;
@@ -139,13 +142,11 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     delete[] fft_codes_padded;
 
     acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters);
-    DLOG(INFO) << "acquisition(" << acquisition_fpga_->unique_id() << ")";
 
     channel_ = 0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
     channel_fsm_ = nullptr;
-    DLOG(INFO) << "acquisition(" << acquisition_fpga_->unique_id() << ")";
 
     threshold_ = 0.0;
 }
@@ -253,5 +254,5 @@ gr::basic_block_sptr GpsL2MPcpsAcquisitionFpga::get_left_block()
 
 gr::basic_block_sptr GpsL2MPcpsAcquisitionFpga::get_right_block()
 {
-    return acquisition_fpga_;
+    return nullptr;
 }

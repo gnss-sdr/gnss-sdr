@@ -68,6 +68,7 @@ typedef struct
     float downsampling_factor;
     uint32_t total_block_exp;
     uint32_t excludelimit;
+    bool repeat_satellite;
 } pcpsconf_fpga_t;
 
 class pcps_acquisition_fpga;
@@ -83,7 +84,7 @@ pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_);
  * Check \ref Navitec2012 "An Open Source Galileo E1 Software Receiver",
  * Algorithm 1, for a pseudocode description of this implementation.
  */
-class pcps_acquisition_fpga : public gr::block
+class pcps_acquisition_fpga
 {
 private:
     friend pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_);
@@ -221,13 +222,6 @@ public:
      * \brief This funciton is only used for the unit tests
      */
     void read_fpga_total_scale_factor(uint32_t* total_scale_factor, uint32_t* fw_scale_factor);
-
-    /*!
-     * \brief Parallel Code Phase Search Acquisition signal processing.
-     */
-    int general_work(int noutput_items, gr_vector_int& ninput_items,
-        gr_vector_const_void_star& input_items,
-        gr_vector_void_star& output_items);
 };
 
 #endif /* GNSS_SDR_PCPS_ACQUISITION_FPGA_H_*/

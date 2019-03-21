@@ -73,6 +73,49 @@ BeidouB1iDllPllTracking::BeidouB1iDllPllTracking(
             dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
         }
     trk_param.dll_bw_hz = dll_bw_hz;
+
+    int dll_filter_order = configuration->property(role + ".dll_filter_order", 2);
+    if (dll_filter_order < 1)
+        {
+            LOG(WARNING) << "dll_filter_order parameter must be 1, 2 or 3. Set to 1.";
+            dll_filter_order = 1;
+        }
+    if (dll_filter_order > 3)
+        {
+            LOG(WARNING) << "dll_filter_order parameter must be 1, 2 or 3. Set to 3.";
+            dll_filter_order = 3;
+        }
+    trk_param.dll_filter_order = dll_filter_order;
+
+    int pll_filter_order = configuration->property(role + ".pll_filter_order", 3);
+    if (pll_filter_order < 2)
+        {
+            LOG(WARNING) << "pll_filter_order parameter must be 2 or 3. Set to 2.";
+            pll_filter_order = 2;
+        }
+    if (pll_filter_order > 3)
+        {
+            LOG(WARNING) << "pll_filter_order parameter must be 2 or 3. Set to 3.";
+            pll_filter_order = 3;
+        }
+    trk_param.pll_filter_order = pll_filter_order;
+
+    if (pll_filter_order == 2)
+        {
+            trk_param.fll_filter_order = 1;
+        }
+    if (pll_filter_order == 3)
+        {
+            trk_param.fll_filter_order = 2;
+        }
+
+    bool enable_fll_pull_in = configuration->property(role + ".enable_fll_pull_in", false);
+    trk_param.enable_fll_pull_in = enable_fll_pull_in;
+    float fll_bw_hz = configuration->property(role + ".fll_bw_hz", 35.0);
+    trk_param.fll_bw_hz = fll_bw_hz;
+    float pull_in_time_s = configuration->property(role + ".pull_in_time_s", 2.0);
+    trk_param.pull_in_time_s = pull_in_time_s;
+
     float early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     trk_param.early_late_space_chips = early_late_space_chips;
     float early_late_space_narrow_chips = configuration->property(role + ".early_late_space_narrow_chips", 0.5);

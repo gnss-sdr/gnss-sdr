@@ -260,7 +260,7 @@ opensuse-leap15.0:
     - pwd
   script:
     - zypper -n up
-    - zypper -n install cmake git gcc-c++ boost-devel libboost_atomic-devel libboost_system-devel libboost_filesystem-devel libboost_date_time-devel libboost_thread-devel libboost_chrono-devel libboost_serialization-devel log4cpp-devel gtest gnuradio-devel pugixml-devel libpcap-devel armadillo-devel libtool automake hdf5-devel libopenssl-devel python3-Mako python3-six
+    - zypper -n install cmake git gcc-c++ boost-devel libboost_atomic-devel libboost_system-devel libboost_filesystem-devel libboost_date_time-devel libboost_thread-devel libboost_chrono-devel libboost_serialization-devel log4cpp-devel gtest gnuradio-devel pugixml-devel libpcap-devel armadillo-devel libtool automake hdf5-devel libopenssl-devel python-Mako python-six
     - cd build
     - cmake -DENABLE_PACKAGING=ON -DENABLE_RAW_UDP=ON ..
     - NPROC=$(grep -c ^processor /proc/cpuinfo)

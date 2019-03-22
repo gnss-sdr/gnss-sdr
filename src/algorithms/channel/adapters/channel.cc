@@ -56,6 +56,7 @@ Channel::Channel(ConfigurationInterface* configuration, uint32_t channel, std::s
     channel_fsm_ = std::make_shared<ChannelFsm>();
 
     flag_enable_fpga = configuration->property("GNSS-SDR.enable_FPGA", false);
+
     acq_->set_channel(channel_);
     acq_->set_channel_fsm(channel_fsm_);
     trk_->set_channel(channel_);
@@ -236,7 +237,15 @@ void Channel::start_acquisition()
 {
     std::lock_guard<std::mutex> lk(mx);
     bool result = false;
-    result = channel_fsm_->Event_start_acquisition();
+    if (!flag_enable_fpga)
+        {
+            result = channel_fsm_->Event_start_acquisition();
+        }
+    else
+        {
+            result = channel_fsm_->Event_start_acquisition_fpga();
+            channel_fsm_->start_acquisition();
+        }
     if (!result)
         {
             LOG(WARNING) << "Invalid channel event";

@@ -1335,6 +1335,9 @@ if(OS_IS_MACOSX)
     # Avoid using the implementation that comes with the Accelerate framework
     include(AvoidAccelerate)
 else()
+    if(NOT BLA_VENDOR)
+        set(BLA_VENDOR "Generic")
+    endif()
     find_package(BLAS)
     set_package_properties(BLAS PROPERTIES
         URL "http://www.netlib.org/blas/"

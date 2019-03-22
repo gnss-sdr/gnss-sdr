@@ -216,6 +216,11 @@ void Channel::set_signal(const Gnss_Signal& gnss_signal)
     gnss_synchro_.PRN = gnss_signal_.get_satellite().get_PRN();
     gnss_synchro_.System = gnss_signal_.get_satellite().get_system_short().c_str()[0];
     acq_->set_local_code();
+    if (flag_enable_fpga)
+        {
+            //set again the gnss_synchro pointer to trigger the preloading of the current PRN code to the FPGA fabric
+            trk_->set_gnss_synchro(&gnss_synchro_);
+        }
     nav_->set_satellite(gnss_signal_.get_satellite());
 }
 

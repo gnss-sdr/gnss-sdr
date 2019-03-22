@@ -545,6 +545,7 @@ $ sudo port selfupdate
 $ sudo port upgrade outdated
 $ sudo port install doxygen +docs
 $ sudo port install gnuradio
+$ sudo port install lapack
 $ sudo port install armadillo
 $ sudo port install gnutls
 $ sudo port install google-glog +gflags
@@ -586,7 +587,9 @@ Install the required dependencies:
 
 ~~~~~~
 $ brew install cmake
-$ brew install hdf5 arpack superlu armadillo
+$ brew install hdf5
+$ brew install lapack
+$ brew install arpack superlu armadillo
 $ brew install glog gflags
 $ brew install gnuradio
 $ brew install libmatio

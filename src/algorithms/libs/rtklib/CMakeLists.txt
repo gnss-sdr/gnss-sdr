@@ -70,13 +70,9 @@ target_link_libraries(algorithms_libs_rtklib
         core_system_parameters
         Gflags::gflags
         Glog::glog
+        ${LAPACK_LIBRARIES}
+        ${BLAS_LIBRARIES}
 )
-
-if(OS_IS_MACOSX)
-    target_link_libraries(algorithms_libs_rtklib PRIVATE "-framework Accelerate")
-else()
-    target_link_libraries(algorithms_libs_rtklib PRIVATE ${LAPACK} ${BLAS})
-endif()
 
 set_property(TARGET algorithms_libs_rtklib
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES

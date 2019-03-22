@@ -408,8 +408,8 @@ set(GNSSSDR_MATIO_MIN_VERSION "1.5.3")
 # Versions to download and build (but not installed) if not found
 ################################################################################
 set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.2")
-set(GNSSSDR_GLOG_LOCAL_VERSION "0.3.5")
-set(GNSSSDR_ARMADILLO_LOCAL_VERSION "9.200.x")
+set(GNSSSDR_GLOG_LOCAL_VERSION "0.4.0")
+set(GNSSSDR_ARMADILLO_LOCAL_VERSION "9.300.x")
 set(GNSSSDR_GTEST_LOCAL_VERSION "1.8.1")
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
 set(GNSSSDR_GPSTK_LOCAL_VERSION "2.10.6")
@@ -1331,14 +1331,30 @@ endif()
 # Check that BLAS (Basic Linear Algebra Subprograms) is found in the system
 # See http://www.netlib.org/blas/
 ################################################################################
-find_library(BLAS blas)
-if(NOT BLAS)
+if(OS_IS_MACOSX)
+    # Avoid using the implementation that comes with the Accelerate framework
+    include(AvoidAccelerate)
+else()
+    find_package(BLAS)
+    set_package_properties(BLAS PROPERTIES
+        URL "http://www.netlib.org/blas/"
+        DESCRIPTION "Basic Linear Algebra Subprograms"
+        PURPOSE "Used for matrix algebra computations."
+        TYPE REQUIRED
+    )
+endif()
+if(NOT BLAS_FOUND)
     message(" The BLAS library has not been found.")
     message(" You can try to install it by typing:")
-    if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-        message(" sudo yum install blas-devel")
+    if(OS_IS_MACOSX)
+        message(" 'sudo port install lapack' if you are using Macports, or")
+        message(" 'brew install lapack' if you are using Homebrew.")
     else()
-        message(" sudo apt-get install libblas-dev")
+        if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+            message(" sudo yum install blas-devel")
+        else()
+            message(" sudo apt-get install libblas-dev")
+        endif()
     endif()
     message(FATAL_ERROR "BLAS is required to build gnss-sdr")
 endif()
@@ -1349,8 +1365,16 @@ endif()
 # Check that LAPACK (Linear Algebra PACKage) is found in the system
 # See http://www.netlib.org/lapack/
 ################################################################################
-find_library(LAPACK lapack)
-if(NOT LAPACK)
+if(NOT OS_IS_MACOSX)
+    find_package(LAPACK)
+    set_package_properties(LAPACK PROPERTIES
+        URL "http://www.netlib.org/lapack/"
+        DESCRIPTION "Linear Algebra PACKage"
+        PURPOSE "Used for matrix algebra computations."
+        TYPE REQUIRED
+    )
+endif()
+if(NOT LAPACK_FOUND)
     message(" The LAPACK library has not been found.")
     message(" You can try to install it by typing:")
     if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
@@ -1457,7 +1481,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
     if(NOT GFORTRAN)
         set(GFORTRAN "")
     endif()
-    set(ARMADILLO_LIBRARIES ${BLAS} ${LAPACK} ${GFORTRAN} ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo${CMAKE_STATIC_LIBRARY_SUFFIX})
+    set(ARMADILLO_LIBRARIES ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} ${GFORTRAN} ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo${CMAKE_STATIC_LIBRARY_SUFFIX})
     set(LOCAL_ARMADILLO true CACHE STRING "Armadillo downloaded and built automatically" FORCE)
     set(ARMADILLO_VERSION_STRING ${armadillo_RELEASE})
     file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}/include)

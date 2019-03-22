@@ -436,74 +436,74 @@ void dll_pll_veml_tracking_fpga::start_tracking()
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
     d_carrier_phase_step_rad = PI_2 * d_carrier_doppler_hz / trk_parameters.fs_in;
     d_carrier_phase_rate_step_rad = 0.0;
-    d_carr_ph_history.clear();
-    d_code_ph_history.clear();
-    // DLL/PLL filter initialization
-    d_carrier_loop_filter.initialize();  // initialize the carrier filter
-    d_code_loop_filter.initialize();     // initialize the code filter
+    //    d_carr_ph_history.clear();
+    //    d_code_ph_history.clear();
+    //    // DLL/PLL filter initialization
+    //    d_carrier_loop_filter.initialize();  // initialize the carrier filter
+    //    d_code_loop_filter.initialize();     // initialize the code filter
+    //
+    //    if (systemName == "GPS" and signal_type == "L5")
+    //        {
+    //            if (trk_parameters.track_pilot)
+    //                {
+    //                    d_Prompt_Data[0] = gr_complex(0.0, 0.0);
+    //                }
+    //        }
+    //    else if (systemName == "Galileo" and signal_type == "1B")
+    //        {
+    //            if (trk_parameters.track_pilot)
+    //                {
+    //                    d_Prompt_Data[0] = gr_complex(0.0, 0.0);
+    //                }
+    //        }
+    //    else if (systemName == "Galileo" and signal_type == "5X")
+    //        {
+    //            if (trk_parameters.track_pilot)
+    //                {
+    //                    d_secondary_code_string = const_cast<std::string *>(&GALILEO_E5A_Q_SECONDARY_CODE[d_acquisition_gnss_synchro->PRN - 1]);
+    //                    d_Prompt_Data[0] = gr_complex(0.0, 0.0);
+    //                }
+    //        }
+    //
+    //    std::fill_n(d_correlator_outs, d_n_correlator_taps, gr_complex(0.0, 0.0));
+    //
+    //    d_carrier_lock_fail_counter = 0;
+    //    d_rem_code_phase_samples = 0.0;
+    //    d_rem_carr_phase_rad = 0.0;
+    //    d_rem_code_phase_chips = 0.0;
+    //    d_acc_carrier_phase_rad = 0.0;
+    //    d_cn0_estimation_counter = 0;
+    //    d_carrier_lock_test = 1.0;
+    //    d_CN0_SNV_dB_Hz = 0.0;
 
-    if (systemName == "GPS" and signal_type == "L5")
-        {
-            if (trk_parameters.track_pilot)
-                {
-                    d_Prompt_Data[0] = gr_complex(0.0, 0.0);
-                }
-        }
-    else if (systemName == "Galileo" and signal_type == "1B")
-        {
-            if (trk_parameters.track_pilot)
-                {
-                    d_Prompt_Data[0] = gr_complex(0.0, 0.0);
-                }
-        }
-    else if (systemName == "Galileo" and signal_type == "5X")
-        {
-            if (trk_parameters.track_pilot)
-                {
-                    d_secondary_code_string = const_cast<std::string *>(&GALILEO_E5A_Q_SECONDARY_CODE[d_acquisition_gnss_synchro->PRN - 1]);
-                    d_Prompt_Data[0] = gr_complex(0.0, 0.0);
-                }
-        }
+    //    if (d_veml)
+    //        {
+    //            d_local_code_shift_chips[0] = -trk_parameters.very_early_late_space_chips * static_cast<float>(d_code_samples_per_chip);
+    //            d_local_code_shift_chips[1] = -trk_parameters.early_late_space_chips * static_cast<float>(d_code_samples_per_chip);
+    //            d_local_code_shift_chips[3] = trk_parameters.early_late_space_chips * static_cast<float>(d_code_samples_per_chip);
+    //            d_local_code_shift_chips[4] = trk_parameters.very_early_late_space_chips * static_cast<float>(d_code_samples_per_chip);
+    //        }
+    //    else
+    //        {
+    //            d_local_code_shift_chips[0] = -trk_parameters.early_late_space_chips * static_cast<float>(d_code_samples_per_chip);
+    //            d_local_code_shift_chips[2] = trk_parameters.early_late_space_chips * static_cast<float>(d_code_samples_per_chip);
+    //        }
 
-    std::fill_n(d_correlator_outs, d_n_correlator_taps, gr_complex(0.0, 0.0));
-
-    d_carrier_lock_fail_counter = 0;
-    d_rem_code_phase_samples = 0.0;
-    d_rem_carr_phase_rad = 0.0;
-    d_rem_code_phase_chips = 0.0;
-    d_acc_carrier_phase_rad = 0.0;
-    d_cn0_estimation_counter = 0;
-    d_carrier_lock_test = 1.0;
-    d_CN0_SNV_dB_Hz = 0.0;
-
-    if (d_veml)
-        {
-            d_local_code_shift_chips[0] = -trk_parameters.very_early_late_space_chips * static_cast<float>(d_code_samples_per_chip);
-            d_local_code_shift_chips[1] = -trk_parameters.early_late_space_chips * static_cast<float>(d_code_samples_per_chip);
-            d_local_code_shift_chips[3] = trk_parameters.early_late_space_chips * static_cast<float>(d_code_samples_per_chip);
-            d_local_code_shift_chips[4] = trk_parameters.very_early_late_space_chips * static_cast<float>(d_code_samples_per_chip);
-        }
-    else
-        {
-            d_local_code_shift_chips[0] = -trk_parameters.early_late_space_chips * static_cast<float>(d_code_samples_per_chip);
-            d_local_code_shift_chips[2] = trk_parameters.early_late_space_chips * static_cast<float>(d_code_samples_per_chip);
-        }
-
-    d_code_loop_filter.set_DLL_BW(trk_parameters.dll_bw_hz);
-    d_carrier_loop_filter.set_PLL_BW(trk_parameters.pll_bw_hz);
-    d_carrier_loop_filter.set_pdi(static_cast<float>(d_code_period));
-    d_code_loop_filter.set_pdi(static_cast<float>(d_code_period));
-
+    //    d_code_loop_filter.set_DLL_BW(trk_parameters.dll_bw_hz);
+    //    d_carrier_loop_filter.set_PLL_BW(trk_parameters.pll_bw_hz);
+    //    d_carrier_loop_filter.set_pdi(static_cast<float>(d_code_period));
+    //    d_code_loop_filter.set_pdi(static_cast<float>(d_code_period));
+    //
     // DEBUG OUTPUT
     std::cout << "Tracking of " << systemName << " " << signal_pretty_name << " signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
     DLOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
-
-    multicorrelator_fpga->set_local_code_and_taps(d_local_code_shift_chips, d_prompt_data_shift, d_acquisition_gnss_synchro->PRN);
+    //
+    //    multicorrelator_fpga->set_local_code_and_taps(d_local_code_shift_chips, d_prompt_data_shift, d_acquisition_gnss_synchro->PRN);
     // enable tracking pull-in
     d_state = 1;
     d_cloop = true;
-    d_Prompt_buffer_deque.clear();
-    d_last_prompt = gr_complex(0.0, 0.0);
+    //    d_Prompt_buffer_deque.clear();
+    //    d_last_prompt = gr_complex(0.0, 0.0);
 }
 
 
@@ -1237,6 +1237,77 @@ void dll_pll_veml_tracking_fpga::set_channel(uint32_t channel)
 void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
 {
     d_acquisition_gnss_synchro = p_gnss_synchro;
+    if (p_gnss_synchro->PRN > 0)
+        {
+            //std::cout << "Acquisition is about to start " << std::endl;
+
+            d_carr_ph_history.clear();
+            d_code_ph_history.clear();
+            // DLL/PLL filter initialization
+            d_carrier_loop_filter.initialize();  // initialize the carrier filter
+            d_code_loop_filter.initialize();     // initialize the code filter
+
+            if (systemName == "GPS" and signal_type == "L5")
+                {
+                    if (trk_parameters.track_pilot)
+                        {
+                            d_Prompt_Data[0] = gr_complex(0.0, 0.0);
+                        }
+                }
+            else if (systemName == "Galileo" and signal_type == "1B")
+                {
+                    if (trk_parameters.track_pilot)
+                        {
+                            d_Prompt_Data[0] = gr_complex(0.0, 0.0);
+                        }
+                }
+            else if (systemName == "Galileo" and signal_type == "5X")
+                {
+                    if (trk_parameters.track_pilot)
+                        {
+                            d_secondary_code_string = const_cast<std::string *>(&GALILEO_E5A_Q_SECONDARY_CODE[d_acquisition_gnss_synchro->PRN - 1]);
+                            d_Prompt_Data[0] = gr_complex(0.0, 0.0);
+                        }
+                }
+
+            std::fill_n(d_correlator_outs, d_n_correlator_taps, gr_complex(0.0, 0.0));
+
+            d_carrier_lock_fail_counter = 0;
+            d_rem_code_phase_samples = 0.0;
+            d_rem_carr_phase_rad = 0.0;
+            d_rem_code_phase_chips = 0.0;
+            d_acc_carrier_phase_rad = 0.0;
+            d_cn0_estimation_counter = 0;
+            d_carrier_lock_test = 1.0;
+            d_CN0_SNV_dB_Hz = 0.0;
+
+            if (d_veml)
+                {
+                    d_local_code_shift_chips[0] = -trk_parameters.very_early_late_space_chips * static_cast<float>(d_code_samples_per_chip);
+                    d_local_code_shift_chips[1] = -trk_parameters.early_late_space_chips * static_cast<float>(d_code_samples_per_chip);
+                    d_local_code_shift_chips[3] = trk_parameters.early_late_space_chips * static_cast<float>(d_code_samples_per_chip);
+                    d_local_code_shift_chips[4] = trk_parameters.very_early_late_space_chips * static_cast<float>(d_code_samples_per_chip);
+                }
+            else
+                {
+                    d_local_code_shift_chips[0] = -trk_parameters.early_late_space_chips * static_cast<float>(d_code_samples_per_chip);
+                    d_local_code_shift_chips[2] = trk_parameters.early_late_space_chips * static_cast<float>(d_code_samples_per_chip);
+                }
+
+            d_code_loop_filter.set_DLL_BW(trk_parameters.dll_bw_hz);
+            d_carrier_loop_filter.set_PLL_BW(trk_parameters.pll_bw_hz);
+            d_carrier_loop_filter.set_pdi(static_cast<float>(d_code_period));
+            d_code_loop_filter.set_pdi(static_cast<float>(d_code_period));
+
+            //            // DEBUG OUTPUT
+            //            std::cout << "Tracking of " << systemName << " " << signal_pretty_name << " signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
+            //            DLOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
+
+            multicorrelator_fpga->set_local_code_and_taps(d_local_code_shift_chips, d_prompt_data_shift, d_acquisition_gnss_synchro->PRN);
+
+            d_Prompt_buffer_deque.clear();
+            d_last_prompt = gr_complex(0.0, 0.0);
+        }
 }
 
 
@@ -1266,7 +1337,9 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
         {
         case 0:  // Standby - Consume samples at full throttle, do nothing
             {
-                return 0;
+                *out[0] = *d_acquisition_gnss_synchro;
+                usleep(1000);
+                return 1;
                 break;
             }
         case 1:  // Pull-in

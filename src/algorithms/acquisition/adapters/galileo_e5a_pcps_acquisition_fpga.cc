@@ -62,7 +62,10 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 32000000);
     int64_t fs_in = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
 
-    float downsampling_factor = configuration_->property(role + ".downsampling_factor", 1.0);
+    acq_parameters.repeat_satellite = configuration_->property(role + ".repeat_satellite", false);
+    DLOG(INFO) << role << " satellite repeat = " << acq_parameters.repeat_satellite;
+
+    uint32_t downsampling_factor = configuration_->property(role + ".downsampling_factor", 1);
     acq_parameters.downsampling_factor = downsampling_factor;
     fs_in = fs_in / downsampling_factor;
 
@@ -169,7 +172,6 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     acq_parameters.make_2_steps = configuration_->property(role + ".make_two_steps", false);
 
     acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters);
-    DLOG(INFO) << "acquisition(" << acquisition_fpga_->unique_id() << ")";
 
     channel_ = 0;
     doppler_step_ = 0;
@@ -279,5 +281,5 @@ gr::basic_block_sptr GalileoE5aPcpsAcquisitionFpga::get_left_block()
 
 gr::basic_block_sptr GalileoE5aPcpsAcquisitionFpga::get_right_block()
 {
-    return acquisition_fpga_;
+    return nullptr;
 }

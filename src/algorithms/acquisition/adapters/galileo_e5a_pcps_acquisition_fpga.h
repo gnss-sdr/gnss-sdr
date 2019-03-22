@@ -35,7 +35,6 @@
 
 #include "channel_fsm.h"
 #include "pcps_acquisition_fpga.h"
-#include <gnuradio/blocks/stream_to_vector.h>
 #include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
 #include <volk/volk_complex.h>       // for lv_16sc_t
 #include <cstddef>                   // for size_t
@@ -92,7 +91,7 @@ public:
     /*!
      * \brief Set acquisition channel unique ID
      */
-    inline void set_channel(unsigned int channel)
+    inline void set_channel(unsigned int channel) override
     {
         channel_ = channel;
         acquisition_fpga_->set_channel(channel_);
@@ -101,9 +100,8 @@ public:
     /*!
       * \brief Set channel fsm associated to this acquisition instance
       */
-    inline void set_channel_fsm(std::shared_ptr<ChannelFsm> channel_fsm)
+    inline void set_channel_fsm(std::shared_ptr<ChannelFsm> channel_fsm) override
     {
-        channel_fsm = nullptr;
         channel_fsm_ = channel_fsm;
         acquisition_fpga_->set_channel_fsm(channel_fsm);
     }
@@ -167,7 +165,6 @@ public:
 private:
     ConfigurationInterface* configuration_;
     pcps_acquisition_fpga_sptr acquisition_fpga_;
-    gr::blocks::stream_to_vector::sptr stream_to_vector_;
 
     std::string item_type_;
     std::string dump_filename_;

@@ -35,7 +35,7 @@ This section describes how to set up the compilation environment in GNU/Linux or
 GNU/Linux
 ----------
 
- * Tested distributions: Ubuntu 14.04 LTS and above; Debian 8.0 "jessie" and above; Fedora 26 and above; CentOS 7; Arch Linux.
+ * Tested distributions: Ubuntu 14.04 LTS and above; Debian 8.0 "jessie" and above; Arch Linux; CentOS 7; Fedora 26 and above; OpenSUSE 42.3 and above.
  * Supported microprocessor architectures:
    * i386: Intel x86 instruction set (32-bit microprocessors).
    * amd64: also known as x86-64, the 64-bit version of the x86 instruction set, originally created by AMD and implemented by AMD, Intel, VIA and others.
@@ -79,20 +79,18 @@ Please note that the required files from `libgtest-dev` were moved to `googletes
 
 Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
 
+#### Arch Linux
 
-#### Fedora
-
-If you are using Fedora 26 or above, the required software dependencies can be installed by doing:
+If you are using Arch Linux:
 
 ~~~~~~
-$ sudo yum install make automake gcc gcc-c++ kernel-devel cmake git boost-devel \
-       boost-date-time boost-system boost-filesystem boost-thread boost-chrono \
-       boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel \
-       blas-devel lapack-devel matio-devel armadillo-devel gflags-devel \
-       glog-devel openssl-devel libpcap-devel python-mako python-six pugixml-devel
+$ pacman -S gcc make cmake git boost boost-libs log4cpp libvolk gnuradio \
+       gnuradio-osmosdr blas lapack gflags google-glog openssl pugixml \
+       python-mako python-six libmatio libpcap gtest
 ~~~~~~
 
 Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
+
 
 #### CentOS
 
@@ -111,17 +109,38 @@ $ sudo yum install make automake gcc gcc-c++ kernel-devel libtool \
 
 Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
 
-#### Arch Linux
 
-If you are using Arch Linux:
+#### Fedora
+
+If you are using Fedora 26 or above, the required software dependencies can be installed by doing:
 
 ~~~~~~
-$ pacman -S gcc make cmake git boost boost-libs log4cpp libvolk gnuradio \
-       gnuradio-osmosdr blas lapack gflags google-glog openssl pugixml \
-       python-mako python-six libmatio libpcap gtest
+$ sudo yum install make automake gcc gcc-c++ kernel-devel cmake git boost-devel \
+       boost-date-time boost-system boost-filesystem boost-thread boost-chrono \
+       boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel \
+       blas-devel lapack-devel matio-devel armadillo-devel gflags-devel \
+       glog-devel openssl-devel libpcap-devel python-mako python-six pugixml-devel
 ~~~~~~
 
 Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
+
+
+#### openSUSE
+
+If you are using openSUSE Leap:
+
+~~~~~~
+zypper install cmake git gcc-c++ boost-devel libboost_atomic-devel \
+       libboost_system-devel libboost_filesystem-devel libboost_date_time-devel \
+       libboost_thread-devel libboost_chrono-devel libboost_serialization-devel \
+       log4cpp-devel gtest gnuradio-devel pugixml-devel libpcap-devel \
+       armadillo-devel libtool automake hdf5-devel libopenssl-devel python-Mako \
+       python-six
+~~~~~~
+
+Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
+
+
 
 ### Alternative 2: Install dependencies using PyBOMBS
 
@@ -544,16 +563,16 @@ In a terminal, type:
 ~~~~~~
 $ sudo port selfupdate
 $ sudo port upgrade outdated
-$ sudo port install doxygen +docs
 $ sudo port install gnuradio
 $ sudo port install lapack
 $ sudo port install armadillo
 $ sudo port install gnutls
 $ sudo port install google-glog +gflags
-$ sudo port install py27-mako
-$ sudo port install py27-six
 $ sudo port install matio
 $ sudo port install pugixml
+$ sudo port install py27-mako
+$ sudo port install py27-six
+$ sudo port install doxygen +docs
 ~~~~~~
 
 You also might need to activate a Python installation. The list of installed versions can be retrieved with:
@@ -590,23 +609,18 @@ Install the required dependencies:
 $ brew install cmake
 $ brew install hdf5
 $ brew install lapack
-$ brew install arpack superlu armadillo
-$ brew install glog gflags
+$ brew install armadillo
+$ brew install gflags
+$ brew install glog
 $ brew install gnuradio
 $ brew install libmatio
 $ brew install log4cpp
+$ brew install openssl
 $ brew install pugixml
 $ pip install mako
 $ pip install six
-$ brew install openssl
 ~~~~~~
 
-In the last step, Homebrew installs OpenSSL but it does not link it to `/usr/local`. Thus, you must manually link it instead:
-
-~~~~~~
-$ ln -s /usr/local/opt/openssl/include/openssl /usr/local/include
-$ ln -s /usr/local/opt/openssl/lib/libssl.1.0.0.dylib /usr/local/lib/
-~~~~~~
 
 
 #### Build GNSS-SDR

@@ -120,11 +120,7 @@ if(ENABLE_OSMOSDR)
     ################################################################################
     # OsmoSDR - http://sdr.osmocom.org/trac/
     ################################################################################
-    if(NOT GROSMOSDR_FOUND)
-        if(ENABLE_PACKAGING)
-            list(REMOVE_ITEM SIGNAL_SOURCE_ADAPTER_HEADERS ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/adapters/osmosdr_signal_source.h)
-        endif()
-    else()
+    if(GROSMOSDR_FOUND)
         set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} osmosdr_signal_source.cc)
         set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} osmosdr_signal_source.h)
     endif()
@@ -162,10 +158,12 @@ set(SIGNAL_SOURCE_ADAPTER_HEADERS
 if(PC_GNURADIO_RUNTIME_VERSION VERSION_GREATER 3.7.3)
     set(SIGNAL_SOURCE_ADAPTER_SOURCES ${SIGNAL_SOURCE_ADAPTER_SOURCES}
         two_bit_cpx_file_signal_source.cc
-        two_bit_packed_file_signal_source.cc)
+        two_bit_packed_file_signal_source.cc
+    )
     set(SIGNAL_SOURCE_ADAPTER_HEADERS ${SIGNAL_SOURCE_ADAPTER_HEADERS}
         two_bit_cpx_file_signal_source.h
-        two_bit_packed_file_signal_source.h)
+        two_bit_packed_file_signal_source.h
+    )
 endif()
 
 list(SORT SIGNAL_SOURCE_ADAPTER_HEADERS)

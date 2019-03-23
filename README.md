@@ -563,16 +563,16 @@ In a terminal, type:
 ~~~~~~
 $ sudo port selfupdate
 $ sudo port upgrade outdated
-$ sudo port install doxygen +docs
 $ sudo port install gnuradio
 $ sudo port install lapack
 $ sudo port install armadillo
 $ sudo port install gnutls
 $ sudo port install google-glog +gflags
-$ sudo port install py27-mako
-$ sudo port install py27-six
 $ sudo port install matio
 $ sudo port install pugixml
+$ sudo port install py27-mako
+$ sudo port install py27-six
+$ sudo port install doxygen +docs
 ~~~~~~
 
 You also might need to activate a Python installation. The list of installed versions can be retrieved with:
@@ -609,23 +609,18 @@ Install the required dependencies:
 $ brew install cmake
 $ brew install hdf5
 $ brew install lapack
-$ brew install arpack superlu armadillo
-$ brew install glog gflags
+$ brew install armadillo
+$ brew install gflags
+$ brew install glog
 $ brew install gnuradio
 $ brew install libmatio
 $ brew install log4cpp
+$ brew install openssl
 $ brew install pugixml
 $ pip install mako
 $ pip install six
-$ brew install openssl
 ~~~~~~
 
-In the last step, Homebrew installs OpenSSL but it does not link it to `/usr/local`. Thus, you must manually link it instead:
-
-~~~~~~
-$ ln -s /usr/local/opt/openssl/include/openssl /usr/local/include
-$ ln -s /usr/local/opt/openssl/lib/libssl.1.0.0.dylib /usr/local/lib/
-~~~~~~
 
 
 #### Build GNSS-SDR

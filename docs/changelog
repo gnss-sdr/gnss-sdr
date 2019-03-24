@@ -8,8 +8,16 @@
 
 ### Improvements in Efficiency
 
-- Improved preamble detection implementation in the decoding of navigation messages (acceleration by x1.6 on average).
+- Improved preamble detection implementation in the decoding of navigation messages (acceleration by x1.6 on average per channel).
+- Shortened Acquisition to Tracking transition time.
 - Applied clang-tidy checks and fixes related to performance: performance-faster-string-find, performance-inefficient-algorithm, performance-move-const-arg, performance-type-promotion-in-math-fn, performance-unnecessary-copy-initialization, performance-unnecessary-value-param, readability-string-compare.
+
+
+### Improvements in Flexibility:
+
+- New Tracking parameters allow the configuration of PLL and DLL filters order.
+- Added parameter to enable FLL during pull-in time.
+- Configurable pull-in time in the Tracking loops.
 
 
 ### Improvements in Interoperability:
@@ -30,7 +38,8 @@
 ### Improvements in Portability:
 
 - Added interfaces for FPGA off-loading.
-- CMake scripts now follow a modern approach (targets and properties) but still work in 2.8.12
+- CMake scripts now follow a modern approach (targets and properties) but still work with 2.8.12.
+- Improvements for macOS users using Homebrew.
 
 
 ### Improvements in Reliability

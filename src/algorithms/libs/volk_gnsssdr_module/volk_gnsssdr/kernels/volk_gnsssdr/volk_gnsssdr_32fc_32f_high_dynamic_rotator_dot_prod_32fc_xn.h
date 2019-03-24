@@ -102,9 +102,9 @@ static inline void volk_gnsssdr_32fc_32f_high_dynamic_rotator_dot_prod_32fc_xn_g
 #endif
                 }
             tmp32_1 = *in_common++ * (*phase);
-
             phase_doppler *= phase_inc;
             phase_doppler_rate = cpowf(phase_inc_rate, lv_cmake(n * n, 0.0f));
+            phase_doppler_rate /= hypotf(lv_creal(phase_doppler_rate), lv_cimag(phase_doppler_rate));
             (*phase) = phase_doppler * phase_doppler_rate;
 
             for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
@@ -117,11 +117,13 @@ static inline void volk_gnsssdr_32fc_32f_high_dynamic_rotator_dot_prod_32fc_xn_g
 
 
 #ifdef LV_HAVE_GENERIC
-static inline void volk_gnsssdr_32fc_32f_high_dynamic_rotator_dot_prod_32fc_xn_generic_acc(lv_32fc_t* result, const lv_32fc_t* in_common, const lv_32fc_t phase_inc, const lv_32fc_t phase_inc_rate, lv_32fc_t* phase, const float** in_a, int num_a_vectors, unsigned int num_points)
+static inline void volk_gnsssdr_32fc_32f_high_dynamic_rotator_dot_prod_32fc_xn_generic_arg(lv_32fc_t* result, const lv_32fc_t* in_common, const lv_32fc_t phase_inc, const lv_32fc_t phase_inc_rate, lv_32fc_t* phase, const float** in_a, int num_a_vectors, unsigned int num_points)
 {
-    lv_32fc_t tmp32_1 = lv_cmake(0.0f, 0.0f);
-    lv_32fc_t phase_rate_acc = lv_cmake(1.0f, 0.0f);
+    lv_32fc_t tmp32_1;
+    lv_32fc_t phase_doppler_rate = lv_cmake(1.0f, 0.0f);
+    lv_32fc_t phase_doppler = (*phase);
     int n_vec;
+    const float arga = cargf(phase_inc_rate);
     unsigned int n;
     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
@@ -138,8 +140,12 @@ static inline void volk_gnsssdr_32fc_32f_high_dynamic_rotator_dot_prod_32fc_xn_g
                     (*phase) /= hypotf(lv_creal(*phase), lv_cimag(*phase));
 #endif
                 }
-            phase_rate_acc += phase_inc_rate;
-            (*phase) *= lv_cmake(cosf(phase_rate_acc), sinf(phase_rate_acc));
+            tmp32_1 = *in_common++ * (*phase);
+            phase_doppler *= phase_inc;
+            const float theta = (float)(n * n) * arga;
+            phase_doppler_rate = lv_cmake(cosf(theta), sinf(theta));
+            (*phase) = phase_doppler * phase_doppler_rate;
+
             for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {
                     result[n_vec] += (tmp32_1 * in_a[n_vec][n]);

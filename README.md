@@ -327,14 +327,14 @@ $ cd gnss-sdr/build
 Configure and build the application:
 
 ~~~~~~
-$ cmake ../
+$ cmake ..
 $ make
 ~~~~~~
 
 By default, CMake will build the Release version, meaning that the compiler will generate a fast, optimized executable. This is the recommended build type when using an RF front-end and you need to attain real time. If working with a file (and thus without real-time constraints), you may want to obtain more information about the internals of the receiver, as well as more fine-grained logging. This can be done by building the Debug version, by doing:
 
 ~~~~~~
-$ cmake -DCMAKE_BUILD_TYPE=Debug ../
+$ cmake -DCMAKE_BUILD_TYPE=Debug ..
 $ make
 ~~~~~~
 
@@ -392,7 +392,7 @@ Install the GNU Radio module:
 ~~~~~~   
 $ git clone https://github.com/gnss-sdr/gr-gn3s
 $ cd gr-gn3s/build
-$ cmake ../
+$ cmake ..
 $ make
 $ sudo make install
 $ sudo ldconfig
@@ -402,7 +402,7 @@ Then configure GNSS-SDR to build the `GN3S_Signal_Source` by:
 
 ~~~~~~
 $ cd gnss-sdr/build
-$ cmake -DENABLE_GN3S=ON ../
+$ cmake -DENABLE_GN3S=ON ..
 $ make
 $ sudo make install
 ~~~~~~
@@ -425,16 +425,16 @@ $ git clone git://git.osmocom.org/osmo-sdr.git
 $ cd osmo-sdr/software/libosmosdr
 $ mkdir build
 $ cd build/
-$ cmake ../
+$ cmake ..
 $ make
 $ sudo make install
 $ sudo ldconfig
-$ cd ../../
+$ cd ../..
 $ git clone git://git.osmocom.org/gr-osmosdr
 $ cd gr-osmosdr
 $ mkdir build
 $ cd build
-$ cmake ../ -Wno-dev
+$ cmake .. -Wno-dev
 $ make
 $ sudo make install
 $ sudo ldconfig
@@ -444,7 +444,7 @@ $ sudo ldconfig
 Then, configure GNSS-SDR to build the `Osmosdr_Signal_Source` by:
 
 ~~~~~~
-$ cmake -DENABLE_OSMOSDR=ON ../
+$ cmake -DENABLE_OSMOSDR=ON ..
 $ make
 $ sudo make install
 ~~~~~~
@@ -484,14 +484,14 @@ Then configure GNSS-SDR to build the `Fmcomms2_Signal_Source` implementation:
 
 ~~~~~~
 $ cd gnss-sdr/build
-$ cmake -DENABLE_FMCOMMS2=ON ../
+$ cmake -DENABLE_FMCOMMS2=ON ..
 $ make
 $ sudo make install
 ~~~~~~
 
 or configure it to build `Plutosdr_Signal_Source`:
 ~~~~~~
-$ cmake -DENABLE_PLUTOSDR=ON ../
+$ cmake -DENABLE_PLUTOSDR=ON ..
 $ make
 $ sudo make install
 ~~~~~~
@@ -503,7 +503,7 @@ With `Fmcomms2_Signal_Source` you can use any SDR hardware based on [FMCOMMS2](h
 In order to enable the building of blocks that use OpenCL, type:
 
 ~~~~~~
-$ cmake -DENABLE_OPENCL=ON ../
+$ cmake -DENABLE_OPENCL=ON ..
 $ make
 $ sudo make install
 ~~~~~~
@@ -514,7 +514,7 @@ $ sudo make install
 In order to enable the building of blocks that use CUDA, NVIDIA's parallel programming model that enables graphics processing unit (GPU) acceleration for data-parallel computations, first you need to install the CUDA Toolkit from [NVIDIA Developers Download page](https://developer.nvidia.com/cuda-downloads "CUDA Downloads"). Make sure that the SDK samples build well. Then, build GNSS-SDR by doing:
 
 ~~~~~~
-$ cmake -DENABLE_CUDA=ON ../
+$ cmake -DENABLE_CUDA=ON ..
 $ make
 $ sudo make install
 ~~~~~~
@@ -527,7 +527,7 @@ Of course, you will also need a GPU that [supports CUDA](https://developer.nvidi
 In order to build an executable that not depends on the specific SIMD instruction set that is present in the processor of the compiling machine, so other users can execute it in other machines without those particular sets, use:
 
 ~~~~~~
-$ cmake -DENABLE_GENERIC_ARCH=ON ../
+$ cmake -DENABLE_GENERIC_ARCH=ON ..
 $ make
 $ sudo make install
 ~~~~~~
@@ -630,7 +630,7 @@ Finally, you are ready to clone the GNSS-SDR repository, configure and build the
 ~~~~~~
 $ git clone https://github.com/gnss-sdr/gnss-sdr
 $ cd gnss-sdr/build
-$ cmake ../
+$ cmake ..
 $ make
 ~~~~~~
 
@@ -661,18 +661,18 @@ GNSS-SDR comes with a library which is a module of the Vector-Optimized Library 
 GNU Radio and other dependencies can also be installed using other package managers than Macports, such as [Fink](http://www.finkproject.org/ "Fink") or [Homebrew](https://brew.sh/ "Homebrew"). Since the version of Python that ships with OS X is great for learning but it is not good for development, you could have another Python executable in a non-standard location. If that is the case, you need to inform GNSS-SDR's configuration system by defining the `PYTHON_EXECUTABLE` variable as:
 
 ~~~~~~
-cmake -DPYTHON_EXECUTABLE=/path/to/bin/python ../
+cmake -DPYTHON_EXECUTABLE=/path/to/bin/python ..
 ~~~~~~
 
 In case you have installed Macports in a non-standard location, you can use:
 
 ~~~~~~
-$ cmake -DCMAKE_PREFIX_PATH=/opt/local -DUSE_MACPORTS_PYTHON=/opt/local/bin/python ../
+$ cmake -DCMAKE_PREFIX_PATH=/opt/local -DUSE_MACPORTS_PYTHON=/opt/local/bin/python ..
 ~~~~~~
 
 changing ```/opt/local``` by the base directory in which your software is installed.
 
-The CMake script will create Makefiles that download, build and link Armadillo, Gflags, Glog and Google Test on the fly at compile time if they are not detected in your machine.
+The CMake script will create Makefiles that download, build and link Armadillo, Gflags, Glog, Matio, PugiXML and Google Test on the fly at compile time if they are not detected in your machine.
 
 
 Other builds

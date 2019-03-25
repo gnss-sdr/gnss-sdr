@@ -122,7 +122,6 @@ private:
     uint32_t d_PRN;             // PRN
     // FPGA private functions
     void fpga_acquisition_test_register(void);
-    void fpga_configure_acquisition_local_code(lv_16sc_t fft_local_code[]);
     void read_result_valid(uint32_t *result_valid);
 };
 

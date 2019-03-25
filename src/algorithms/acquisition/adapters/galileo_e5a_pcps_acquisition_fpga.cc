@@ -159,6 +159,9 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
                 {
                     d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int32_t>(floor(fft_codes_padded[i].real() * (pow(2, QUANT_BITS_LOCAL_CODE - 1) - 1) / max)),
                         static_cast<int32_t>(floor(fft_codes_padded[i].imag() * (pow(2, QUANT_BITS_LOCAL_CODE - 1) - 1) / max)));
+
+                    //                    d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int32_t>(256 * floor(fft_codes_padded[i].real() * (pow(2, 7 - 1) - 1) / max)),
+                    //                        static_cast<int32_t>(256 * floor(fft_codes_padded[i].imag() * (pow(2, 7 - 1) - 1) / max)));
                 }
         }
 

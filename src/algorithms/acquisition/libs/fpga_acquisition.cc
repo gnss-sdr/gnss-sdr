@@ -53,6 +53,7 @@
 #define MEM_LOCAL_CODE_WR_ENABLE 0x0C000000  // command to enable the ENA and WR pins of the internal memory of the multicorrelator
 #define POW_2_2 4                            // 2^2 (used for the conversion of floating point numbers to integers)
 #define POW_2_29 536870912                   // 2^29 (used for the conversion of floating point numbers to integers)
+#define POW_2_31 2147483648                  // 2^31 (used for the conversion of floating point numbers to integers)
 //#define SELECT_LSBits 0x000003FF             // Select the 10 LSbits out of a 20-bit word
 //#define SELECT_MSBbits 0x000FFC00            // Select the 10 MSbits out of a 20-bit word
 //#define SELECT_ALL_CODE_BITS 0x000FFFFF      // Select a 20 bit word
@@ -103,12 +104,8 @@ Fpga_Acquisition::Fpga_Acquisition(std::string device_name,
     d_fd = 0;              // driver descriptor
     d_map_base = nullptr;  // driver memory map
     d_all_fft_codes = all_fft_codes;
-
     Fpga_Acquisition::reset_acquisition();
-    Fpga_Acquisition::open_device();
     Fpga_Acquisition::fpga_acquisition_test_register();
-    Fpga_Acquisition::close_device();
-
     d_PRN = 0;
     DLOG(INFO) << "Acquisition FPGA class created";
     //printf("d_excludelimit = %d\n", d_excludelimit);
@@ -134,8 +131,21 @@ bool Fpga_Acquisition::set_local_code(uint32_t PRN)
 
 void Fpga_Acquisition::write_local_code()
 {
-    Fpga_Acquisition::fpga_configure_acquisition_local_code(
-        &d_all_fft_codes[d_nsamples_total * (d_PRN - 1)]);
+    uint32_t local_code;
+    int32_t k, tmp, tmp2;
+    int32_t fft_data;
+
+    d_map_base[9] = LOCAL_CODE_CLEAR_MEM;
+    // write local code
+    for (k = 0; k < d_vector_length; k++)
+        {
+            tmp = d_all_fft_codes[d_nsamples_total * (d_PRN - 1) + k].real();
+            tmp2 = d_all_fft_codes[d_nsamples_total * (d_PRN - 1) + k].imag();
+
+            local_code = (tmp & SELECT_LSBits) | ((tmp2 * SHL_CODE_BITS) & SELECT_MSBbits);  // put together the real part and the imaginary part
+            fft_data = local_code & SELECT_ALL_CODE_BITS;
+            d_map_base[6] = fft_data;
+        }
 }
 
 
@@ -170,6 +180,8 @@ void Fpga_Acquisition::fpga_acquisition_test_register()
     uint32_t writeval = TEST_REG_SANITY_CHECK;
     uint32_t readval;
 
+    Fpga_Acquisition::open_device();
+
     // write value to test register
     d_map_base[15] = writeval;
     // read value from test register
@@ -183,42 +195,8 @@ void Fpga_Acquisition::fpga_acquisition_test_register()
         {
             LOG(INFO) << "Acquisition test register sanity check success!";
         }
-}
 
-
-void Fpga_Acquisition::fpga_configure_acquisition_local_code(lv_16sc_t fft_local_code[])
-{
-    //    uint32_t local_code;
-    //    uint32_t k, tmp, tmp2;
-    //    uint32_t fft_data;
-    //
-    //    d_map_base[9] = LOCAL_CODE_CLEAR_MEM;
-    //    // write local code
-    //    for (k = 0; k < d_vector_length; k++)
-    //        {
-    //            tmp = fft_local_code[k].real();
-    //            tmp2 = fft_local_code[k].imag();
-    //
-    //            local_code = (tmp & SELECT_LSBits) | ((tmp2 * SHL_CODE_BITS) & SELECT_MSBbits);  // put together the real part and the imaginary part
-    //            fft_data = local_code & SELECT_ALL_CODE_BITS;
-    //            d_map_base[6] = fft_data;
-    //        }
-
-    uint32_t local_code;
-    int32_t k, tmp, tmp2;
-    int32_t fft_data;
-
-    d_map_base[9] = LOCAL_CODE_CLEAR_MEM;
-    // write local code
-    for (k = 0; k < d_vector_length; k++)
-        {
-            tmp = fft_local_code[k].real();
-            tmp2 = fft_local_code[k].imag();
-
-            local_code = (tmp & SELECT_LSBits) | ((tmp2 * SHL_CODE_BITS) & SELECT_MSBbits);  // put together the real part and the imaginary part
-            fft_data = local_code & SELECT_ALL_CODE_BITS;
-            d_map_base[6] = fft_data;
-        }
+    Fpga_Acquisition::close_device();
 }
 
 
@@ -264,35 +242,22 @@ void Fpga_Acquisition::set_doppler_sweep(uint32_t num_sweeps, uint32_t doppler_s
     float phase_step_rad_real;
     float phase_step_rad_int_temp;
     int32_t phase_step_rad_int;
-    auto doppler = static_cast<int32_t>(doppler_min);
-    float phase_step_rad = GPS_TWO_PI * (doppler) / static_cast<float>(d_fs_in);
+
     // The doppler step can never be outside the range -pi to +pi, otherwise there would be aliasing
     // The FPGA expects phase_step_rad between -1 (-pi) to +1 (+pi)
     // The FPGA also expects the phase to be negative since it produces cos(x) -j*sin(x)
-    phase_step_rad_real = phase_step_rad / (GPS_TWO_PI / 2);
-
-    //    // avoid saturation of the fixed point representation in the fpga
-    //    // (only the positive value can saturate due to the 2's complement representation)
-    //    if (phase_step_rad_real >= 1.0)
-    //        {
-    //            phase_step_rad_real = MAX_PHASE_STEP_RAD;
-    //        }
+    phase_step_rad_real = 2.0 * (doppler_min) / static_cast<float>(d_fs_in);
     phase_step_rad_int_temp = phase_step_rad_real * POW_2_2;                          // * 2^2
     phase_step_rad_int = static_cast<int32_t>(phase_step_rad_int_temp * (POW_2_29));  // * 2^29 (in total it makes x2^31 in two steps to avoid the warnings
     d_map_base[3] = phase_step_rad_int;
 
     // repeat the calculation with the doppler step
-    //doppler = static_cast<int32_t>(d_doppler_step);
-    doppler = static_cast<int32_t>(doppler_step);
-    phase_step_rad = GPS_TWO_PI * (doppler) / static_cast<float>(d_fs_in);
-    phase_step_rad_real = phase_step_rad / (GPS_TWO_PI / 2);
-    //    if (phase_step_rad_real >= 1.0)
-    //        {
-    //            phase_step_rad_real = MAX_PHASE_STEP_RAD;
-    //        }
+    phase_step_rad_real = 2.0 * (doppler_step) / static_cast<float>(d_fs_in);
     phase_step_rad_int_temp = phase_step_rad_real * POW_2_2;                          // * 2^2
     phase_step_rad_int = static_cast<int32_t>(phase_step_rad_int_temp * (POW_2_29));  // * 2^29 (in total it makes x2^31 in two steps to avoid the warnings
     d_map_base[4] = phase_step_rad_int;
+
+    // write number of doppler sweeps
     d_map_base[5] = num_sweeps;
 }
 

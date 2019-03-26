@@ -86,7 +86,8 @@ Fpga_Acquisition::Fpga_Acquisition(std::string device_name,
     int64_t fs_in,
     uint32_t sampled_ms __attribute__((unused)),
     uint32_t select_queue,
-    lv_16sc_t *all_fft_codes,
+    //lv_16sc_t *all_fft_codes,
+    uint32_t *all_fft_codes,
     uint32_t excludelimit)
 {
     uint32_t vector_length = nsamples_total;
@@ -139,12 +140,13 @@ void Fpga_Acquisition::write_local_code()
     // write local code
     for (k = 0; k < d_vector_length; k++)
         {
-            tmp = d_all_fft_codes[d_nsamples_total * (d_PRN - 1) + k].real();
-            tmp2 = d_all_fft_codes[d_nsamples_total * (d_PRN - 1) + k].imag();
-
-            local_code = (tmp & SELECT_LSBits) | ((tmp2 * SHL_CODE_BITS) & SELECT_MSBbits);  // put together the real part and the imaginary part
-            fft_data = local_code & SELECT_ALL_CODE_BITS;
-            d_map_base[6] = fft_data;
+            //            tmp = d_all_fft_codes[d_nsamples_total * (d_PRN - 1) + k].real();
+            //            tmp2 = d_all_fft_codes[d_nsamples_total * (d_PRN - 1) + k].imag();
+            //
+            //            local_code = (tmp & SELECT_LSBits) | ((tmp2 * SHL_CODE_BITS) & SELECT_MSBbits);  // put together the real part and the imaginary part
+            //            fft_data = local_code & SELECT_ALL_CODE_BITS;
+            //            d_map_base[6] = fft_data;
+            d_map_base[6] = d_all_fft_codes[d_nsamples_total * (d_PRN - 1) + k];
         }
 }
 

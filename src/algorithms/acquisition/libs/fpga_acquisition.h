@@ -53,7 +53,8 @@ public:
         int64_t fs_in,
         uint32_t sampled_ms,
         uint32_t select_queue,
-        lv_16sc_t *all_fft_codes,
+        //lv_16sc_t *all_fft_codes,
+        uint32_t *all_fft_codes,
         uint32_t excludelimit);
 
     ~Fpga_Acquisition();
@@ -110,8 +111,9 @@ private:
     // data related to the hardware module and the driver
     int32_t d_fd;                   // driver descriptor
     volatile uint32_t *d_map_base;  // driver memory map
-    lv_16sc_t *d_all_fft_codes;     // memory that contains all the code ffts
-    uint32_t d_vector_length;       // number of samples incluing padding and number of ms
+    //lv_16sc_t *d_all_fft_codes;     // memory that contains all the code ffts
+    uint32_t *d_all_fft_codes;  // memory that contains all the code ffts
+    uint32_t d_vector_length;   // number of samples incluing padding and number of ms
     uint32_t d_excludelimit;
     uint32_t d_nsamples_total;  // number of samples including padding
     uint32_t d_nsamples;        // number of samples not including padding

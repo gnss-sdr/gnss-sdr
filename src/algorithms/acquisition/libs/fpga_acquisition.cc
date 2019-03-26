@@ -239,7 +239,6 @@ void Fpga_Acquisition::set_doppler_sweep(uint32_t num_sweeps, uint32_t doppler_s
 
     // The doppler step can never be outside the range -pi to +pi, otherwise there would be aliasing
     // The FPGA expects phase_step_rad between -1 (-pi) to +1 (+pi)
-    // The FPGA also expects the phase to be negative since it produces cos(x) -j*sin(x)
     phase_step_rad_real = 2.0 * (doppler_min) / static_cast<float>(d_fs_in);
     phase_step_rad_int = static_cast<int32_t>(phase_step_rad_real * (POW_2_31));
     d_map_base[3] = phase_step_rad_int;

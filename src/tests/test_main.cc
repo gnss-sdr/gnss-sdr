@@ -80,6 +80,8 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_test.cc"
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_quicksync_acquisition_gsoc2014_test.cc"
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_tong_acquisition_gsoc2013_test.cc"
+//#include "unit-tests/signal-processing-blocks/acquisition/beidou_b1i_pcps_acquisition_test.cc"
+//#include "unit-tests/signal-processing-blocks/acquisition/beidou_b3i_pcps_acquisition_test.cc"
 #include "unit-tests/signal-processing-blocks/adapter/adapter_test.cc"
 #include "unit-tests/signal-processing-blocks/adapter/pass_through_test.cc"
 #include "unit-tests/signal-processing-blocks/filter/fir_filter_test.cc"

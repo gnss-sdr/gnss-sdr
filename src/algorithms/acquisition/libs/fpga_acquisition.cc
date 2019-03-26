@@ -52,12 +52,7 @@
 #define LOCAL_CODE_CLEAR_MEM 0x10000000      // command to clear the internal memory of the multicorrelator
 #define MEM_LOCAL_CODE_WR_ENABLE 0x0C000000  // command to enable the ENA and WR pins of the internal memory of the multicorrelator
 #define POW_2_2 4                            // 2^2 (used for the conversion of floating point numbers to integers)
-#define POW_2_29 536870912                   // 2^29 (used for the conversion of floating point numbers to integers)
 #define POW_2_31 2147483648                  // 2^31 (used for the conversion of floating point numbers to integers)
-//#define SELECT_LSBits 0x000003FF             // Select the 10 LSbits out of a 20-bit word
-//#define SELECT_MSBbits 0x000FFC00            // Select the 10 MSbits out of a 20-bit word
-//#define SELECT_ALL_CODE_BITS 0x000FFFFF      // Select a 20 bit word
-//#define SHL_CODE_BITS 1024                   // shift left by 10 bits
 
 #define SELECT_LSBits 0x0000FFFF         // Select the 10 LSbits out of a 20-bit word
 #define SELECT_MSBbits 0xFFFF0000        // Select the 10 MSbits out of a 20-bit word
@@ -116,10 +111,10 @@ Fpga_Acquisition::Fpga_Acquisition(std::string device_name,
 Fpga_Acquisition::~Fpga_Acquisition() = default;
 
 
-bool Fpga_Acquisition::init()
-{
-    return true;
-}
+//bool Fpga_Acquisition::init()
+//{
+//    return true;
+//}
 
 
 bool Fpga_Acquisition::set_local_code(uint32_t PRN)
@@ -132,13 +127,9 @@ bool Fpga_Acquisition::set_local_code(uint32_t PRN)
 
 void Fpga_Acquisition::write_local_code()
 {
-    uint32_t local_code;
-    int32_t k, tmp, tmp2;
-    int32_t fft_data;
-
     d_map_base[9] = LOCAL_CODE_CLEAR_MEM;
     // write local code
-    for (k = 0; k < d_vector_length; k++)
+    for (uint32_t k = 0; k < d_vector_length; k++)
         {
             //            tmp = d_all_fft_codes[d_nsamples_total * (d_PRN - 1) + k].real();
             //            tmp2 = d_all_fft_codes[d_nsamples_total * (d_PRN - 1) + k].imag();
@@ -242,21 +233,18 @@ void Fpga_Acquisition::set_block_exp(uint32_t total_block_exp)
 void Fpga_Acquisition::set_doppler_sweep(uint32_t num_sweeps, uint32_t doppler_step, int32_t doppler_min)
 {
     float phase_step_rad_real;
-    float phase_step_rad_int_temp;
     int32_t phase_step_rad_int;
 
     // The doppler step can never be outside the range -pi to +pi, otherwise there would be aliasing
     // The FPGA expects phase_step_rad between -1 (-pi) to +1 (+pi)
     // The FPGA also expects the phase to be negative since it produces cos(x) -j*sin(x)
     phase_step_rad_real = 2.0 * (doppler_min) / static_cast<float>(d_fs_in);
-    phase_step_rad_int_temp = phase_step_rad_real * POW_2_2;                          // * 2^2
-    phase_step_rad_int = static_cast<int32_t>(phase_step_rad_int_temp * (POW_2_29));  // * 2^29 (in total it makes x2^31 in two steps to avoid the warnings
+    phase_step_rad_int = static_cast<int32_t>(phase_step_rad_real * (POW_2_31));
     d_map_base[3] = phase_step_rad_int;
 
     // repeat the calculation with the doppler step
     phase_step_rad_real = 2.0 * (doppler_step) / static_cast<float>(d_fs_in);
-    phase_step_rad_int_temp = phase_step_rad_real * POW_2_2;                          // * 2^2
-    phase_step_rad_int = static_cast<int32_t>(phase_step_rad_int_temp * (POW_2_29));  // * 2^29 (in total it makes x2^31 in two steps to avoid the warnings
+    phase_step_rad_int = static_cast<int32_t>(phase_step_rad_real * (POW_2_31));  // * 2^29 (in total it makes x2^31 in two steps to avoid the warnings
     d_map_base[4] = phase_step_rad_int;
 
     // write number of doppler sweeps

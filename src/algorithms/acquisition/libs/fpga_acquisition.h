@@ -58,7 +58,7 @@ public:
         uint32_t excludelimit);
 
     ~Fpga_Acquisition();
-    bool init();
+    //bool init();
     bool set_local_code(uint32_t PRN);
     bool free();
     void set_doppler_sweep(uint32_t num_sweeps, uint32_t doppler_step, int32_t doppler_min);

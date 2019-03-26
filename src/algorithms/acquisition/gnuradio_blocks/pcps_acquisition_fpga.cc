@@ -111,7 +111,7 @@ void pcps_acquisition_fpga::init()
 
     d_num_doppler_bins = static_cast<uint32_t>(std::ceil(static_cast<double>(static_cast<int32_t>(d_doppler_max) - static_cast<int32_t>(-d_doppler_max)) / static_cast<double>(d_doppler_step))) + 1;
 
-    acquisition_fpga->init();
+    //    acquisition_fpga->init();
 }
 
 

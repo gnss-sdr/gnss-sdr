@@ -100,8 +100,10 @@ Fpga_Acquisition::Fpga_Acquisition(std::string device_name,
     d_fd = 0;              // driver descriptor
     d_map_base = nullptr;  // driver memory map
     d_all_fft_codes = all_fft_codes;
+    Fpga_Acquisition::open_device();
     Fpga_Acquisition::reset_acquisition();
     Fpga_Acquisition::fpga_acquisition_test_register();
+    Fpga_Acquisition::close_device();
     d_PRN = 0;
     DLOG(INFO) << "Acquisition FPGA class created";
     //printf("d_excludelimit = %d\n", d_excludelimit);
@@ -173,7 +175,7 @@ void Fpga_Acquisition::fpga_acquisition_test_register()
     uint32_t writeval = TEST_REG_SANITY_CHECK;
     uint32_t readval;
 
-    Fpga_Acquisition::open_device();
+    //Fpga_Acquisition::open_device();
 
     // write value to test register
     d_map_base[15] = writeval;
@@ -189,7 +191,7 @@ void Fpga_Acquisition::fpga_acquisition_test_register()
             LOG(INFO) << "Acquisition test register sanity check success!";
         }
 
-    Fpga_Acquisition::close_device();
+    //Fpga_Acquisition::close_device();
 }
 
 
@@ -254,7 +256,7 @@ void Fpga_Acquisition::set_doppler_sweep(uint32_t num_sweeps, uint32_t doppler_s
 
 void Fpga_Acquisition::configure_acquisition()
 {
-    Fpga_Acquisition::open_device();
+    //Fpga_Acquisition::open_device();
 
     d_map_base[0] = d_select_queue;
     d_map_base[1] = d_vector_length;
@@ -300,7 +302,7 @@ void Fpga_Acquisition::read_acquisition_results(uint32_t *max_index,
 
     readval = d_map_base[15];  // read dummy
 
-    Fpga_Acquisition::close_device();
+    //Fpga_Acquisition::close_device();
 }
 
 
@@ -329,9 +331,9 @@ void Fpga_Acquisition::close_device()
 
 void Fpga_Acquisition::reset_acquisition(void)
 {
-    Fpga_Acquisition::open_device();
+    //Fpga_Acquisition::open_device();
     d_map_base[8] = RESET_ACQUISITION;  // writing a 2 to d_map_base[8] resets the multicorrelator
-    Fpga_Acquisition::close_device();
+    //Fpga_Acquisition::close_device();
 }
 
 

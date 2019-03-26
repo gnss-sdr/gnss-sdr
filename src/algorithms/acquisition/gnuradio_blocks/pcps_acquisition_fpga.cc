@@ -266,6 +266,7 @@ void pcps_acquisition_fpga::set_active(bool active)
                << ", use_CFAR_algorithm_flag: false";
 
 
+    acquisition_fpga->open_device();
     acquisition_fpga->configure_acquisition();
     acquisition_fpga->write_local_code();
     acquisition_fpga->set_block_exp(d_total_block_exp);
@@ -273,6 +274,7 @@ void pcps_acquisition_fpga::set_active(bool active)
     acquisition_core(d_num_doppler_bins, d_doppler_step, -d_doppler_max);
     if (!d_make_2_steps)
         {
+            acquisition_fpga->close_device();
             if (d_test_statistics > d_threshold)
                 {
                     d_active = false;
@@ -295,6 +297,8 @@ void pcps_acquisition_fpga::set_active(bool active)
                     //boost::chrono::high_resolution_clock::time_point start = boost::chrono::high_resolution_clock::now();
 
                     acquisition_core(d_num_doppler_bins_step2, d_doppler_step2, d_doppler_center_step_two - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0)) * d_doppler_step2);
+
+                    acquisition_fpga->close_device();
 
                     if (d_test_statistics > d_threshold)
                         {
@@ -325,7 +329,9 @@ void pcps_acquisition_fpga::set_active(bool active)
 void pcps_acquisition_fpga::reset_acquisition(void)
 {
     // this function triggers a HW reset of the FPGA PL.
+    acquisition_fpga->open_device();
     acquisition_fpga->reset_acquisition();
+    acquisition_fpga->close_device();
 }
 
 

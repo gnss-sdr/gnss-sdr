@@ -72,7 +72,11 @@ public:
         telemetry_decoder_->set_channel(channel);
     }
 
-    inline void reset() override { return; }
+    inline void reset() override
+    {
+        telemetry_decoder_->reset();
+        return;
+    }
 
     inline size_t item_size() override { return 0; }
 

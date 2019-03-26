@@ -948,7 +948,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                                   Channels_5X_count +
                                   Channels_L5_count +
                                   Channels_B1_count +
-								                  Channels_B3_count;
+								  Channels_B3_count;
 
     std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> channels(new std::vector<std::unique_ptr<GNSSBlockInterface>>(total_channels));
     try

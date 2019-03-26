@@ -26,7 +26,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ * along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
  *
  * -------------------------------------------------------------------------
  */
@@ -34,9 +34,9 @@
 #include "beidou_b1i_pcps_acquisition.h"
 #include "Beidou_B1I.h"
 #include "acq_conf.h"
-#include "beidou_b1i_signal_processing.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
+#include "beidou_b1i_signal_processing.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
 
@@ -57,7 +57,6 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
     DLOG(INFO) << "role " << role;
 
     item_type_ = configuration_->property(role + ".item_type", default_item_type);
-
     int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in_;

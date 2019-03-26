@@ -32,7 +32,7 @@ if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
         message(STATUS " * libiio from https://github.com/analogdevicesinc/libiio")
         message(STATUS " * libad9361-iio from https://github.com/analogdevicesinc/libad9361-iio")
         message(STATUS " * gnuradio-iio from https://github.com/analogdevicesinc/gr-iio")
-        message(FATAL_ERROR "gnuradio-iio is required for building gnss-sdr with this option enabled.")
+        message(FATAL_ERROR "gnuradio-iio is required for building gnss-sdr with -DENABLE_PLUTOSDR=ON or -DENABLE_FMCOMMS2=ON.")
     endif()
 endif()
 
@@ -44,7 +44,7 @@ if(ENABLE_AD9361)
         message(STATUS " * libiio from https://github.com/analogdevicesinc/libiio")
         message(STATUS " * libad9361-iio from https://github.com/analogdevicesinc/libad9361-iio")
         message(STATUS " * gnuradio-iio from https://github.com/analogdevicesinc/gr-iio")
-        message(FATAL_ERROR "libiio is required for building gnss-sdr with this option enabled.")
+        message(FATAL_ERROR "libiio is required for building gnss-sdr with -DENABLE_AD9361=ON.")
     endif()
 endif()
 
@@ -53,10 +53,8 @@ if(ENABLE_PLUTOSDR)
     ##############################################
     # ADALM-PLUTO (Analog Devices Inc.)
     ##############################################
-    if(GRIIO_FOUND)
-        set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} plutosdr_signal_source.cc)
-        set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} plutosdr_signal_source.h)
-    endif()
+    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} plutosdr_signal_source.cc)
+    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} plutosdr_signal_source.h)
 endif()
 
 
@@ -64,10 +62,8 @@ if(ENABLE_FMCOMMS2)
     ###############################################
     # FMCOMMS2 based SDR Hardware
     ###############################################
-    if(GRIIO_FOUND)
-        set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} fmcomms2_signal_source.cc)
-        set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} fmcomms2_signal_source.h)
-    endif()
+    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} fmcomms2_signal_source.cc)
+    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} fmcomms2_signal_source.h)
 endif()
 
 
@@ -75,10 +71,8 @@ if(ENABLE_AD9361)
     ###############################################
     # AD9361 DIRECT TO FPGA Hardware
     ###############################################
-    if(LIBIIO_FOUND)
-        set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} ad9361_fpga_signal_source.cc)
-        set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} ad9361_fpga_signal_source.h)
-    endif()
+    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} ad9361_fpga_signal_source.cc)
+    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} ad9361_fpga_signal_source.h)
 endif()
 
 
@@ -120,18 +114,14 @@ if(ENABLE_OSMOSDR)
     ################################################################################
     # OsmoSDR - http://sdr.osmocom.org/trac/
     ################################################################################
-    if(NOT GROSMOSDR_FOUND)
-        if(ENABLE_PACKAGING)
-            list(REMOVE_ITEM SIGNAL_SOURCE_ADAPTER_HEADERS ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/adapters/osmosdr_signal_source.h)
-        endif()
-    else()
+    if(GROSMOSDR_FOUND)
         set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} osmosdr_signal_source.cc)
         set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} osmosdr_signal_source.h)
     endif()
 endif()
 
 
-if(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
+if(ENABLE_UHD)
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} uhd_signal_source.cc)
     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} uhd_signal_source.h)
 endif()
@@ -162,10 +152,12 @@ set(SIGNAL_SOURCE_ADAPTER_HEADERS
 if(PC_GNURADIO_RUNTIME_VERSION VERSION_GREATER 3.7.3)
     set(SIGNAL_SOURCE_ADAPTER_SOURCES ${SIGNAL_SOURCE_ADAPTER_SOURCES}
         two_bit_cpx_file_signal_source.cc
-        two_bit_packed_file_signal_source.cc)
+        two_bit_packed_file_signal_source.cc
+    )
     set(SIGNAL_SOURCE_ADAPTER_HEADERS ${SIGNAL_SOURCE_ADAPTER_HEADERS}
         two_bit_cpx_file_signal_source.h
-        two_bit_packed_file_signal_source.h)
+        two_bit_packed_file_signal_source.h
+    )
 endif()
 
 list(SORT SIGNAL_SOURCE_ADAPTER_HEADERS)
@@ -205,7 +197,7 @@ if(ENABLE_RAW_UDP AND PCAP_FOUND)
     )
 endif()
 
-if(ENABLE_UHD AND GNURADIO_UHD_LIBRARIES_gnuradio-uhd)
+if(ENABLE_UHD)
     target_link_libraries(signal_source_adapters
         PUBLIC
             Gnuradio::uhd

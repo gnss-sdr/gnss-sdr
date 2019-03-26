@@ -48,7 +48,7 @@ class BeidouB3iTelemetryDecoder : public TelemetryDecoderInterface
 {
 public:
     BeidouB3iTelemetryDecoder(ConfigurationInterface *configuration,
-        const std::string& role, unsigned int in_streams,
+        const std::string &role, unsigned int in_streams,
         unsigned int out_streams);
 
     virtual ~BeidouB3iTelemetryDecoder();
@@ -72,7 +72,11 @@ public:
         telemetry_decoder_->set_channel(channel);
     }
 
-    inline void reset() override { return; }
+    inline void reset() override
+    {
+        telemetry_decoder_->reset();
+        return;
+    }
 
     inline size_t item_size() override { return 0; }
 

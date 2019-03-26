@@ -47,8 +47,8 @@
 
 obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs, const Gnss_Synchro& gnss_synchro, int week, int band)
 {
-	// Get signal type info to adjust code type based on constellation
-	std::string sig_= gnss_synchro.Signal;
+    // Get signal type info to adjust code type based on constellation
+    std::string sig_ = gnss_synchro.Signal;
 
     rtklib_obs.D[band] = gnss_synchro.Carrier_Doppler_hz;
     rtklib_obs.P[band] = gnss_synchro.Pseudorange_m;
@@ -92,12 +92,14 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs, const Gnss_Synchro& gnss_synchro
         case 'C':
             rtklib_obs.sat = gnss_synchro.PRN + NSATGPS + NSATGLO + NSATGAL + NSATQZS;
             // Update signal code
-            if (sig_ == "B1"){
-            	rtklib_obs.code[band] = static_cast<unsigned char>(CODE_L2I);
-            }
-            else if (sig_ == "B3"){
-            	rtklib_obs.code[band] = static_cast<unsigned char>(CODE_L6I);
-            }
+            if (sig_ == "B1")
+                {
+                    rtklib_obs.code[band] = static_cast<unsigned char>(CODE_L2I);
+                }
+            else if (sig_ == "B3")
+                {
+                    rtklib_obs.code[band] = static_cast<unsigned char>(CODE_L6I);
+                }
 
             break;
 

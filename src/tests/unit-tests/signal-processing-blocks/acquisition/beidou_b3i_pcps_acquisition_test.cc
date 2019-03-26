@@ -1,9 +1,9 @@
 /*!
- * \file beidou_b1i_pcps_acquisition_test.cc
+ * \file beidou_b3i_pcps_acquisition_test.cc
  * \brief  This class implements an acquisition test for
- * BeidouB1iPcpsAcquisition class based on some input parameters.
- * \author Sergi Segura, 2018. sergi.segura.munoz(at)gmail.com
- * \author Damian Miralles, 2019. dmiralles2009(at)gmail.com
+ * BeidouB3iPcpsAcquisition class based on some input parameters.
+  * \author Damian Miralles, 2019. dmiralles2009(at)gmail.com
+ *
  *
  * -------------------------------------------------------------------------
  *
@@ -31,14 +31,14 @@
  */
 
 
-#include "Beidou_B1I.h"
+#include "Beidou_B3I.h"
 #include "acquisition_dump_reader.h"
-#include "beidou_b1i_pcps_acquisition.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
 #include "gnuplot_i.h"
+#include "beidou_b3i_pcps_acquisition.h"
 #include "in_memory_configuration.h"
 #include "test_flags.h"
 #include <boost/filesystem.hpp>
@@ -60,32 +60,32 @@
 
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
-class BeidouB1iPcpsAcquisitionTest_msg_rx;
+class BeidouB3iPcpsAcquisitionTest_msg_rx;
 
-using BeidouB1iPcpsAcquisitionTest_msg_rx_sptr = boost::shared_ptr<BeidouB1iPcpsAcquisitionTest_msg_rx>;
+using BeidouB3iPcpsAcquisitionTest_msg_rx_sptr = boost::shared_ptr<BeidouB3iPcpsAcquisitionTest_msg_rx>;
 
-BeidouB1iPcpsAcquisitionTest_msg_rx_sptr BeidouB1iPcpsAcquisitionTest_msg_rx_make();
+BeidouB3iPcpsAcquisitionTest_msg_rx_sptr BeidouB3iPcpsAcquisitionTest_msg_rx_make();
 
-class BeidouB1iPcpsAcquisitionTest_msg_rx : public gr::block
+class BeidouB3iPcpsAcquisitionTest_msg_rx : public gr::block
 {
 private:
-    friend BeidouB1iPcpsAcquisitionTest_msg_rx_sptr BeidouB1iPcpsAcquisitionTest_msg_rx_make();
+    friend BeidouB3iPcpsAcquisitionTest_msg_rx_sptr BeidouB3iPcpsAcquisitionTest_msg_rx_make();
     void msg_handler_events(pmt::pmt_t msg);
-    BeidouB1iPcpsAcquisitionTest_msg_rx();
+    BeidouB3iPcpsAcquisitionTest_msg_rx();
 
 public:
     int rx_message;
-    ~BeidouB1iPcpsAcquisitionTest_msg_rx();  //!< Default destructor
+    ~BeidouB3iPcpsAcquisitionTest_msg_rx();  //!< Default destructor
 };
 
 
-BeidouB1iPcpsAcquisitionTest_msg_rx_sptr BeidouB1iPcpsAcquisitionTest_msg_rx_make()
+BeidouB3iPcpsAcquisitionTest_msg_rx_sptr BeidouB3iPcpsAcquisitionTest_msg_rx_make()
 {
-    return BeidouB1iPcpsAcquisitionTest_msg_rx_sptr(new BeidouB1iPcpsAcquisitionTest_msg_rx());
+    return BeidouB3iPcpsAcquisitionTest_msg_rx_sptr(new BeidouB3iPcpsAcquisitionTest_msg_rx());
 }
 
 
-void BeidouB1iPcpsAcquisitionTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
+void BeidouB3iPcpsAcquisitionTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try
         {
@@ -100,23 +100,23 @@ void BeidouB1iPcpsAcquisitionTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 }
 
 
-BeidouB1iPcpsAcquisitionTest_msg_rx::BeidouB1iPcpsAcquisitionTest_msg_rx() : gr::block("BeidouB1iPcpsAcquisitionTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
+BeidouB3iPcpsAcquisitionTest_msg_rx::BeidouB3iPcpsAcquisitionTest_msg_rx() : gr::block("BeidouB3iPcpsAcquisitionTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
 {
     this->message_port_register_in(pmt::mp("events"));
-    this->set_msg_handler(pmt::mp("events"), boost::bind(&BeidouB1iPcpsAcquisitionTest_msg_rx::msg_handler_events, this, _1));
+    this->set_msg_handler(pmt::mp("events"), boost::bind(&BeidouB3iPcpsAcquisitionTest_msg_rx::msg_handler_events, this, _1));
     rx_message = 0;
 }
 
 
-BeidouB1iPcpsAcquisitionTest_msg_rx::~BeidouB1iPcpsAcquisitionTest_msg_rx() = default;
+BeidouB3iPcpsAcquisitionTest_msg_rx::~BeidouB3iPcpsAcquisitionTest_msg_rx() = default;
 
 
 // ###########################################################
 
-class BeidouB1iPcpsAcquisitionTest : public ::testing::Test
+class BeidouB3iPcpsAcquisitionTest : public ::testing::Test
 {
 protected:
-    BeidouB1iPcpsAcquisitionTest()
+    BeidouB3iPcpsAcquisitionTest()
     {
         factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
@@ -126,7 +126,7 @@ protected:
         doppler_step = 100;
     }
 
-    ~BeidouB1iPcpsAcquisitionTest() = default;
+    ~BeidouB3iPcpsAcquisitionTest() = default;
 
     void init();
     void plot_grid();
@@ -141,42 +141,41 @@ protected:
 };
 
 
-void BeidouB1iPcpsAcquisitionTest::init()
+void BeidouB3iPcpsAcquisitionTest::init()
 {
     gnss_synchro.Channel_ID = 0;
     gnss_synchro.System = 'C';
-    std::string signal = "B1";
+    std::string signal = "B3";
     signal.copy(gnss_synchro.Signal, 2, 0);
     gnss_synchro.PRN = 1;
-    config->set_property("GNSS-SDR.internal_fs_sps", "25000000");
-    config->set_property("Acquisition_B1.implementation", "BEIDOU_B1I_PCPS_Acquisition");
-    config->set_property("Acquisition_B1.item_type", "gr_complex");
-    config->set_property("Acquisition_B1.coherent_integration_time_ms", "1");
+    config->set_property("GNSS-SDR.internal_fs_sps", "50000000");
+    config->set_property("Acquisition_B3.implementation", "BEIDOU_B3I_PCPS_Acquisition");
+    config->set_property("Acquisition_B3.item_type", "gr_complex");
+    config->set_property("Acquisition_B3.coherent_integration_time_ms", "1");
     if (FLAGS_plot_acq_grid == true)
         {
-            config->set_property("Acquisition_B1.dump", "true");
+            config->set_property("Acquisition_B3.dump", "true");
         }
     else
         {
-            config->set_property("Acquisition_B1.dump", "false");
+            config->set_property("Acquisition_B3.dump", "false");
         }
-    config->set_property("Acquisition_B1.dump_filename", "./tmp-acq-bds-b1i/acquisition");
-    config->set_property("Acquisition_B1.dump_channel", "1");
-    config->set_property("Acquisition_B1.threshold", "0.0038");
-    config->set_property("Acquisition_B1.doppler_max", std::to_string(doppler_max));
-    config->set_property("Acquisition_B1.doppler_step", std::to_string(doppler_step));
-    config->set_property("Acquisition_B1.repeat_satellite", "false");
-    //config->set_property("Acquisition_B1.pfa", "0.0");
+    config->set_property("Acquisition_B3.dump_filename", "./tmp-acq-bds-b3i/acquisition");
+    config->set_property("Acquisition_B3.dump_channel", "1");
+    config->set_property("Acquisition_B3.threshold", "0.00001");
+    config->set_property("Acquisition_B3.doppler_max", std::to_string(doppler_max));
+    config->set_property("Acquisition_B3.doppler_step", std::to_string(doppler_step));
+    config->set_property("Acquisition_B3.repeat_satellite", "false");
 }
 
 
-void BeidouB1iPcpsAcquisitionTest::plot_grid()
+void BeidouB3iPcpsAcquisitionTest::plot_grid()
 {
     //load the measured values
-    std::string basename = "./tmp-acq-bds-b1i/acquisition_C_B1";
+    std::string basename = "./tmp-acq-bds-b3i/acquisition_C_B3";
     auto sat = static_cast<unsigned int>(gnss_synchro.PRN);
 
-    auto samples_per_code = static_cast<unsigned int>(round(25000000 / (BEIDOU_B1I_CODE_RATE_HZ / BEIDOU_B1I_CODE_LENGTH_CHIPS)));  // !!
+    auto samples_per_code = static_cast<unsigned int>(round(50000000 / (BEIDOU_B3I_CODE_RATE_HZ / BEIDOU_B3I_CODE_LENGTH_CHIPS)));  // !!
     Acquisition_Dump_Reader acq_dump(basename, sat, doppler_max, doppler_step, samples_per_code, 1);
 
     if (!acq_dump.read_binary_acq())
@@ -214,21 +213,21 @@ void BeidouB1iPcpsAcquisitionTest::plot_grid()
                         {
                             g1.disablescreen();
                         }
-                    g1.set_title("BeiDou B1I signal acquisition for satellite PRN #" + std::to_string(gnss_synchro.PRN));
+                    g1.set_title("BeiDou B3I signal acquisition for satellite PRN #" + std::to_string(gnss_synchro.PRN));
                     g1.set_xlabel("Doppler [Hz]");
                     g1.set_ylabel("Sample");
                     //g1.cmd("set view 60, 105, 1, 1");
                     g1.plot_grid3d(*doppler, *samples, *mag);
 
-                    g1.savetops("BeiDou_B1I_acq_grid");
-                    g1.savetopdf("BeiDou_B1I_acq_grid");
+                    g1.savetops("BDS_B3I_acq_grid");
+                    g1.savetopdf("BDS_B3I_acq_grid");
                 }
             catch (const GnuplotException &ge)
                 {
                     std::cout << ge.what() << std::endl;
                 }
         }
-    std::string data_str = "./tmp-acq-bds-b1i";
+    std::string data_str = "./tmp-acq-bds-b3i";
     if (boost::filesystem::exists(data_str))
         {
             boost::filesystem::remove_all(data_str);
@@ -236,25 +235,25 @@ void BeidouB1iPcpsAcquisitionTest::plot_grid()
 }
 
 
-TEST_F(BeidouB1iPcpsAcquisitionTest, Instantiate)
+TEST_F(BeidouB3iPcpsAcquisitionTest, Instantiate)
 {
     init();
-    boost::shared_ptr<BeidouB1iPcpsAcquisition> acquisition = boost::make_shared<BeidouB1iPcpsAcquisition>(config.get(), "Acquisition_B1", 1, 0);
+    boost::shared_ptr<BeidouB3iPcpsAcquisition> acquisition = boost::make_shared<BeidouB3iPcpsAcquisition>(config.get(), "Acquisition_B3", 1, 0);
 }
 
 
-TEST_F(BeidouB1iPcpsAcquisitionTest, ConnectAndRun)
+TEST_F(BeidouB3iPcpsAcquisitionTest, ConnectAndRun)
 {
-    int fs_in = 25000000;
-    int nsamples = 25000;
+    int fs_in = 50000000;
+    int nsamples = 50000;
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
     gr::msg_queue::sptr queue = gr::msg_queue::make(0);
 
     top_block = gr::make_top_block("Acquisition test");
     init();
-    boost::shared_ptr<BeidouB1iPcpsAcquisition> acquisition = boost::make_shared<BeidouB1iPcpsAcquisition>(config.get(), "Acquisition_B1", 1, 0);
-    boost::shared_ptr<BeidouB1iPcpsAcquisitionTest_msg_rx> msg_rx = BeidouB1iPcpsAcquisitionTest_msg_rx_make();
+    boost::shared_ptr<BeidouB3iPcpsAcquisition> acquisition = boost::make_shared<BeidouB3iPcpsAcquisition>(config.get(), "Acquisition_B3", 1, 0);
+    boost::shared_ptr<BeidouB3iPcpsAcquisitionTest_msg_rx> msg_rx = BeidouB3iPcpsAcquisitionTest_msg_rx_make();
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);
@@ -276,20 +275,20 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ConnectAndRun)
 }
 
 
-TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
+TEST_F(BeidouB3iPcpsAcquisitionTest, ValidationOfResults)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0.0);
     top_block = gr::make_top_block("Acquisition test");
 
-    double expected_delay_samples = 22216;
-    double expected_doppler_hz = 125;
+    double expected_delay_samples = 3380;
+    double expected_doppler_hz = 700;
 
     init();
 
     if (FLAGS_plot_acq_grid == true)
         {
-            std::string data_str = "./tmp-acq-bds-b1i";
+            std::string data_str = "./tmp-acq-bds-b3i";
             if (boost::filesystem::exists(data_str))
                 {
                     boost::filesystem::remove_all(data_str);
@@ -297,8 +296,8 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
             boost::filesystem::create_directory(data_str);
         }
 
-    std::shared_ptr<BeidouB1iPcpsAcquisition> acquisition = std::make_shared<BeidouB1iPcpsAcquisition>(config.get(), "Acquisition_B1", 1, 0);
-    boost::shared_ptr<BeidouB1iPcpsAcquisitionTest_msg_rx> msg_rx = BeidouB1iPcpsAcquisitionTest_msg_rx_make();
+    std::shared_ptr<BeidouB3iPcpsAcquisition> acquisition = std::make_shared<BeidouB3iPcpsAcquisition>(config.get(), "Acquisition_B3", 1, 0);
+    boost::shared_ptr<BeidouB3iPcpsAcquisitionTest_msg_rx> msg_rx = BeidouB3iPcpsAcquisitionTest_msg_rx_make();
 
     ASSERT_NO_THROW({
         acquisition->set_channel(1);
@@ -309,7 +308,7 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure setting gnss_synchro.";
 
     ASSERT_NO_THROW({
-        acquisition->set_threshold(0.0038);
+        acquisition->set_threshold(0.0002);
     }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
@@ -326,7 +325,7 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
 
     ASSERT_NO_THROW({
         std::string path = std::string(TEST_PATH);
-        std::string file = path + "signal_samples/BdsB1IStr01_fs25e6_if0_4ms.dat";
+        std::string file = path + "signal_samples/BdsB3IStr01_fs50e6_if0_4ms.dat";
         const char *file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
         top_block->connect(file_source, 0, acquisition->get_left_block(), 0);
@@ -349,7 +348,7 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
     ASSERT_EQ(1, msg_rx->rx_message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 
     double delay_error_samples = std::abs(expected_delay_samples - gnss_synchro.Acq_delay_samples);
-    auto delay_error_chips = static_cast<float>(delay_error_samples * BEIDOU_B1I_CODE_LENGTH_CHIPS / 25000);
+    auto delay_error_chips = static_cast<float>(delay_error_samples * BEIDOU_B3I_CODE_LENGTH_CHIPS / 50000);
     double doppler_error_hz = std::abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
 
     EXPECT_LE(doppler_error_hz, 666) << "Doppler error exceeds the expected value: 666 Hz = 2/(3*integration period)";

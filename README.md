@@ -35,7 +35,7 @@ This section describes how to set up the compilation environment in GNU/Linux or
 GNU/Linux
 ----------
 
- * Tested distributions: Ubuntu 14.04 LTS and above; Debian 8.0 "jessie" and above; Fedora 26 and above; CentOS 7; Arch Linux.
+ * Tested distributions: Ubuntu 14.04 LTS and above; Debian 8.0 "jessie" and above; Arch Linux; CentOS 7; Fedora 26 and above; OpenSUSE 42.3 and above.
  * Supported microprocessor architectures:
    * i386: Intel x86 instruction set (32-bit microprocessors).
    * amd64: also known as x86-64, the 64-bit version of the x86 instruction set, originally created by AMD and implemented by AMD, Intel, VIA and others.
@@ -79,20 +79,18 @@ Please note that the required files from `libgtest-dev` were moved to `googletes
 
 Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
 
+#### Arch Linux
 
-#### Fedora
-
-If you are using Fedora 26 or above, the required software dependencies can be installed by doing:
+If you are using Arch Linux:
 
 ~~~~~~
-$ sudo yum install make automake gcc gcc-c++ kernel-devel cmake git boost-devel \
-       boost-date-time boost-system boost-filesystem boost-thread boost-chrono \
-       boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel \
-       blas-devel lapack-devel matio-devel armadillo-devel gflags-devel \
-       glog-devel openssl-devel libpcap-devel python-mako python-six pugixml-devel
+$ pacman -S gcc make cmake git boost boost-libs log4cpp libvolk gnuradio \
+       gnuradio-osmosdr blas lapack gflags google-glog openssl pugixml \
+       python-mako python-six libmatio libpcap gtest
 ~~~~~~
 
 Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
+
 
 #### CentOS
 
@@ -111,17 +109,38 @@ $ sudo yum install make automake gcc gcc-c++ kernel-devel libtool \
 
 Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
 
-#### Arch Linux
 
-If you are using Arch Linux:
+#### Fedora
+
+If you are using Fedora 26 or above, the required software dependencies can be installed by doing:
 
 ~~~~~~
-$ pacman -S gcc make cmake git boost boost-libs log4cpp libvolk gnuradio \
-       gnuradio-osmosdr blas lapack gflags google-glog openssl pugixml \
-       python-mako python-six libmatio libpcap gtest
+$ sudo yum install make automake gcc gcc-c++ kernel-devel cmake git boost-devel \
+       boost-date-time boost-system boost-filesystem boost-thread boost-chrono \
+       boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel \
+       blas-devel lapack-devel matio-devel armadillo-devel gflags-devel \
+       glog-devel openssl-devel libpcap-devel python-mako python-six pugixml-devel
 ~~~~~~
 
 Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
+
+
+#### openSUSE
+
+If you are using openSUSE Leap:
+
+~~~~~~
+zypper install cmake git gcc-c++ boost-devel libboost_atomic-devel \
+       libboost_system-devel libboost_filesystem-devel libboost_date_time-devel \
+       libboost_thread-devel libboost_chrono-devel libboost_serialization-devel \
+       log4cpp-devel gtest gnuradio-devel pugixml-devel libpcap-devel \
+       armadillo-devel libtool automake hdf5-devel libopenssl-devel python-Mako \
+       python-six
+~~~~~~
+
+Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
+
+
 
 ### Alternative 2: Install dependencies using PyBOMBS
 
@@ -308,14 +327,14 @@ $ cd gnss-sdr/build
 Configure and build the application:
 
 ~~~~~~
-$ cmake ../
+$ cmake ..
 $ make
 ~~~~~~
 
 By default, CMake will build the Release version, meaning that the compiler will generate a fast, optimized executable. This is the recommended build type when using an RF front-end and you need to attain real time. If working with a file (and thus without real-time constraints), you may want to obtain more information about the internals of the receiver, as well as more fine-grained logging. This can be done by building the Debug version, by doing:
 
 ~~~~~~
-$ cmake -DCMAKE_BUILD_TYPE=Debug ../
+$ cmake -DCMAKE_BUILD_TYPE=Debug ..
 $ make
 ~~~~~~
 
@@ -373,7 +392,7 @@ Install the GNU Radio module:
 ~~~~~~   
 $ git clone https://github.com/gnss-sdr/gr-gn3s
 $ cd gr-gn3s/build
-$ cmake ../
+$ cmake ..
 $ make
 $ sudo make install
 $ sudo ldconfig
@@ -383,7 +402,7 @@ Then configure GNSS-SDR to build the `GN3S_Signal_Source` by:
 
 ~~~~~~
 $ cd gnss-sdr/build
-$ cmake -DENABLE_GN3S=ON ../
+$ cmake -DENABLE_GN3S=ON ..
 $ make
 $ sudo make install
 ~~~~~~
@@ -406,16 +425,16 @@ $ git clone git://git.osmocom.org/osmo-sdr.git
 $ cd osmo-sdr/software/libosmosdr
 $ mkdir build
 $ cd build/
-$ cmake ../
+$ cmake ..
 $ make
 $ sudo make install
 $ sudo ldconfig
-$ cd ../../
+$ cd ../..
 $ git clone git://git.osmocom.org/gr-osmosdr
 $ cd gr-osmosdr
 $ mkdir build
 $ cd build
-$ cmake ../ -Wno-dev
+$ cmake .. -Wno-dev
 $ make
 $ sudo make install
 $ sudo ldconfig
@@ -425,7 +444,7 @@ $ sudo ldconfig
 Then, configure GNSS-SDR to build the `Osmosdr_Signal_Source` by:
 
 ~~~~~~
-$ cmake -DENABLE_OSMOSDR=ON ../
+$ cmake -DENABLE_OSMOSDR=ON ..
 $ make
 $ sudo make install
 ~~~~~~
@@ -465,14 +484,14 @@ Then configure GNSS-SDR to build the `Fmcomms2_Signal_Source` implementation:
 
 ~~~~~~
 $ cd gnss-sdr/build
-$ cmake -DENABLE_FMCOMMS2=ON ../
+$ cmake -DENABLE_FMCOMMS2=ON ..
 $ make
 $ sudo make install
 ~~~~~~
 
 or configure it to build `Plutosdr_Signal_Source`:
 ~~~~~~
-$ cmake -DENABLE_PLUTOSDR=ON ../
+$ cmake -DENABLE_PLUTOSDR=ON ..
 $ make
 $ sudo make install
 ~~~~~~
@@ -484,7 +503,7 @@ With `Fmcomms2_Signal_Source` you can use any SDR hardware based on [FMCOMMS2](h
 In order to enable the building of blocks that use OpenCL, type:
 
 ~~~~~~
-$ cmake -DENABLE_OPENCL=ON ../
+$ cmake -DENABLE_OPENCL=ON ..
 $ make
 $ sudo make install
 ~~~~~~
@@ -495,7 +514,7 @@ $ sudo make install
 In order to enable the building of blocks that use CUDA, NVIDIA's parallel programming model that enables graphics processing unit (GPU) acceleration for data-parallel computations, first you need to install the CUDA Toolkit from [NVIDIA Developers Download page](https://developer.nvidia.com/cuda-downloads "CUDA Downloads"). Make sure that the SDK samples build well. Then, build GNSS-SDR by doing:
 
 ~~~~~~
-$ cmake -DENABLE_CUDA=ON ../
+$ cmake -DENABLE_CUDA=ON ..
 $ make
 $ sudo make install
 ~~~~~~
@@ -508,7 +527,7 @@ Of course, you will also need a GPU that [supports CUDA](https://developer.nvidi
 In order to build an executable that not depends on the specific SIMD instruction set that is present in the processor of the compiling machine, so other users can execute it in other machines without those particular sets, use:
 
 ~~~~~~
-$ cmake -DENABLE_GENERIC_ARCH=ON ../
+$ cmake -DENABLE_GENERIC_ARCH=ON ..
 $ make
 $ sudo make install
 ~~~~~~
@@ -544,16 +563,16 @@ In a terminal, type:
 ~~~~~~
 $ sudo port selfupdate
 $ sudo port upgrade outdated
-$ sudo port install doxygen +docs
 $ sudo port install gnuradio
 $ sudo port install lapack
 $ sudo port install armadillo
 $ sudo port install gnutls
 $ sudo port install google-glog +gflags
-$ sudo port install py27-mako
-$ sudo port install py27-six
 $ sudo port install matio
 $ sudo port install pugixml
+$ sudo port install py27-mako
+$ sudo port install py27-six
+$ sudo port install doxygen +docs
 ~~~~~~
 
 You also might need to activate a Python installation. The list of installed versions can be retrieved with:
@@ -590,23 +609,18 @@ Install the required dependencies:
 $ brew install cmake
 $ brew install hdf5
 $ brew install lapack
-$ brew install arpack superlu armadillo
-$ brew install glog gflags
+$ brew install armadillo
+$ brew install gflags
+$ brew install glog
 $ brew install gnuradio
 $ brew install libmatio
 $ brew install log4cpp
+$ brew install openssl
 $ brew install pugixml
 $ pip install mako
 $ pip install six
-$ brew install openssl
 ~~~~~~
 
-In the last step, Homebrew installs OpenSSL but it does not link it to `/usr/local`. Thus, you must manually link it instead:
-
-~~~~~~
-$ ln -s /usr/local/opt/openssl/include/openssl /usr/local/include
-$ ln -s /usr/local/opt/openssl/lib/libssl.1.0.0.dylib /usr/local/lib/
-~~~~~~
 
 
 #### Build GNSS-SDR
@@ -616,7 +630,7 @@ Finally, you are ready to clone the GNSS-SDR repository, configure and build the
 ~~~~~~
 $ git clone https://github.com/gnss-sdr/gnss-sdr
 $ cd gnss-sdr/build
-$ cmake ../
+$ cmake ..
 $ make
 ~~~~~~
 
@@ -647,18 +661,18 @@ GNSS-SDR comes with a library which is a module of the Vector-Optimized Library 
 GNU Radio and other dependencies can also be installed using other package managers than Macports, such as [Fink](http://www.finkproject.org/ "Fink") or [Homebrew](https://brew.sh/ "Homebrew"). Since the version of Python that ships with OS X is great for learning but it is not good for development, you could have another Python executable in a non-standard location. If that is the case, you need to inform GNSS-SDR's configuration system by defining the `PYTHON_EXECUTABLE` variable as:
 
 ~~~~~~
-cmake -DPYTHON_EXECUTABLE=/path/to/bin/python ../
+cmake -DPYTHON_EXECUTABLE=/path/to/bin/python ..
 ~~~~~~
 
 In case you have installed Macports in a non-standard location, you can use:
 
 ~~~~~~
-$ cmake -DCMAKE_PREFIX_PATH=/opt/local -DUSE_MACPORTS_PYTHON=/opt/local/bin/python ../
+$ cmake -DCMAKE_PREFIX_PATH=/opt/local -DUSE_MACPORTS_PYTHON=/opt/local/bin/python ..
 ~~~~~~
 
 changing ```/opt/local``` by the base directory in which your software is installed.
 
-The CMake script will create Makefiles that download, build and link Armadillo, Gflags, Glog and Google Test on the fly at compile time if they are not detected in your machine.
+The CMake script will create Makefiles that download, build and link Armadillo, Gflags, Glog, Matio, PugiXML and Google Test on the fly at compile time if they are not detected in your machine.
 
 
 Other builds

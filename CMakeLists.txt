@@ -510,6 +510,7 @@ else()
 endif()
 
 
+
 ################################################################################
 # Check if the compiler defines the architecture as ARM
 ################################################################################
@@ -1335,6 +1336,9 @@ if(OS_IS_MACOSX)
     # Avoid using the implementation that comes with the Accelerate framework
     include(AvoidAccelerate)
 else()
+    if(NOT BLA_VENDOR)
+        set(BLA_VENDOR "Generic")
+    endif()
     find_package(BLAS)
     set_package_properties(BLAS PROPERTIES
         URL "http://www.netlib.org/blas/"
@@ -1542,7 +1546,13 @@ find_library(GNUTLS_OPENSSL_LIBRARY NAMES gnutls-openssl libgnutls-openssl.so.27
         /usr/lib/sh4-linux-gnu
 )
 if(NOT GNUTLS_OPENSSL_LIBRARY)
-    message(STATUS "Looking for OpenSSL instead...")
+    if(GnuTLS_FOUND)
+        message(STATUS " But it was not built with openssl compatibility.")
+    endif()
+    message(STATUS " Looking for OpenSSL instead...")
+    if(OS_IS_MACOSX)
+        set(OPENSSL_ROOT_DIR /usr/local/opt/openssl) # Trick for Homebrew
+    endif()
     find_package(OpenSSL)
     set_package_properties(OpenSSL PROPERTIES
         URL "https://www.openssl.org"
@@ -1564,11 +1574,12 @@ if(NOT GNUTLS_OPENSSL_LIBRARY)
             if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
                 message(" sudo yum install openssl-devel")
             else()
-                message(" sudo apt-get install libgnutls-openssl-dev")
+                message(" sudo apt-get install libgnutls28-dev")
             endif()
         endif()
         if(OS_IS_MACOSX)
-            message(" sudo port install gnutls")
+            message(" 'sudo port install gnutls', if you are using Macports, or")
+            message(" 'brew install openssl', if you are using Homebrew.")
         endif()
         message(FATAL_ERROR "GnuTLS libraries with openssl compatibility are required to build gnss-sdr")
     endif()
@@ -2223,10 +2234,12 @@ endif()
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake
-    @ONLY)
+    @ONLY
+)
 
 add_custom_target(uninstall
-    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake
+)
 
 
 

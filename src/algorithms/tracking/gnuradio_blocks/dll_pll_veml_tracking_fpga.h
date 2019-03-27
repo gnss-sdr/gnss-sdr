@@ -77,7 +77,7 @@ public:
 
 private:
     friend dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(const Dll_Pll_Conf_Fpga &conf_);
-
+    void msg_handler_telemetry_to_trk(const pmt::pmt_t &msg);
     dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &conf_);
     void msg_handler_preamble_index(pmt::pmt_t msg);
 
@@ -115,7 +115,7 @@ private:
     std::string *d_secondary_code_string;
     std::string signal_pretty_name;
 
-    int32_t *d_gps_l1ca_preambles_symbols;
+    int32_t *d_preambles_symbols;
     boost::circular_buffer<float> d_symbol_history;
 
     //tracking state machine

@@ -80,7 +80,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     this->message_port_register_in(pmt::mp("preamble_samplestamp"));
     // Telemetry message port input
     this->message_port_register_in(pmt::mp("telemetry_to_trk"));
-    //todo: Implement the telemetry_to_trk handler in the same way the software version of tracking
+    this->set_msg_handler(pmt::mp("telemetry_to_trk"), boost::bind(&dll_pll_veml_tracking_fpga::msg_handler_telemetry_to_trk, this, _1));
 
     // initialize internal vars
     d_veml = false;
@@ -88,7 +88,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     d_code_chip_rate = 0.0;
     d_secondary_code_length = 0U;
     d_secondary_code_string = nullptr;
-    d_gps_l1ca_preambles_symbols = nullptr;
+    d_preambles_symbols = nullptr;
     signal_type = std::string(trk_parameters.signal);
 
     std::map<std::string, std::string> map_signal_pretty_name;
@@ -124,7 +124,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                     uint16_t preambles_bits[GPS_CA_PREAMBLE_LENGTH_BITS] = GPS_PREAMBLE;
 
                     // preamble bits to sampled symbols
-                    d_gps_l1ca_preambles_symbols = static_cast<int32_t *>(volk_gnsssdr_malloc(GPS_CA_PREAMBLE_LENGTH_SYMBOLS * sizeof(int32_t), volk_gnsssdr_get_alignment()));
+                    d_preambles_symbols = static_cast<int32_t *>(volk_gnsssdr_malloc(GPS_CA_PREAMBLE_LENGTH_SYMBOLS * sizeof(int32_t), volk_gnsssdr_get_alignment()));
                     int32_t n = 0;
                     for (uint16_t preambles_bit : preambles_bits)
                         {
@@ -132,11 +132,11 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                                 {
                                     if (preambles_bit == 1)
                                         {
-                                            d_gps_l1ca_preambles_symbols[n] = 1;
+                                            d_preambles_symbols[n] = 1;
                                         }
                                     else
                                         {
-                                            d_gps_l1ca_preambles_symbols[n] = -1;
+                                            d_preambles_symbols[n] = -1;
                                         }
                                     n++;
                                 }
@@ -426,6 +426,37 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     d_sample_counter_next = 0ULL;
 }
 
+void dll_pll_veml_tracking_fpga::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
+{
+    try
+        {
+            if (pmt::any_ref(msg).type() == typeid(int))
+                {
+                    int tlm_event;
+                    tlm_event = boost::any_cast<int>(pmt::any_ref(msg));
+
+                    switch (tlm_event)
+                        {
+                        case 1:  //tlm fault in current channel
+                            {
+                                DLOG(INFO) << "Telemetry fault received in ch " << this->d_channel;
+                                gr::thread::scoped_lock lock(d_setlock);
+                                d_carrier_lock_fail_counter = 10000;  //force loss-of-lock condition
+                                break;
+                            }
+                        default:
+                            {
+                                break;
+                            }
+                        }
+                }
+        }
+    catch (boost::bad_any_cast &e)
+        {
+            LOG(WARNING) << "msg_handler_telemetry_to_trk Bad any cast!";
+        }
+}
+
 
 void dll_pll_veml_tracking_fpga::start_tracking()
 {
@@ -512,7 +543,7 @@ dll_pll_veml_tracking_fpga::~dll_pll_veml_tracking_fpga()
 {
     if (signal_type == "1C")
         {
-            volk_gnsssdr_free(d_gps_l1ca_preambles_symbols);
+            volk_gnsssdr_free(d_preambles_symbols);
         }
 
     if (d_dump_file.is_open())
@@ -1617,11 +1648,11 @@ void dll_pll_veml_tracking_fpga::run_state_2(Gnss_Synchro &current_synchro_data)
                                         {
                                             if (d_symbol_history.at(i) < 0)  // symbols clipping
                                                 {
-                                                    corr_value -= d_gps_l1ca_preambles_symbols[i];
+                                                    corr_value -= d_preambles_symbols[i];
                                                 }
                                             else
                                                 {
-                                                    corr_value += d_gps_l1ca_preambles_symbols[i];
+                                                    corr_value += d_preambles_symbols[i];
                                                 }
                                         }
                                 }

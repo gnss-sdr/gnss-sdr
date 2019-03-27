@@ -56,6 +56,7 @@ beidou_b3i_make_telemetry_decoder_gs(const Gnss_Satellite &satellite,
         new beidou_b3i_telemetry_decoder_gs(satellite, dump));
 }
 
+
 beidou_b3i_telemetry_decoder_gs::beidou_b3i_telemetry_decoder_gs(
     const Gnss_Satellite &satellite, bool dump)
     : gr::block("beidou_b3i_telemetry_decoder_gs",
@@ -64,6 +65,9 @@ beidou_b3i_telemetry_decoder_gs::beidou_b3i_telemetry_decoder_gs(
 {
     // Ephemeris data port out
     this->message_port_register_out(pmt::mp("telemetry"));
+    // Control messages to tracking block
+    this->message_port_register_out(pmt::mp("telemetry_to_trk"));
+
     // initialize internal vars
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
@@ -395,6 +399,7 @@ void beidou_b3i_telemetry_decoder_gs::set_satellite(
             d_symbol_history.set_capacity(d_required_symbols + 1);
         }
 }
+
 
 void beidou_b3i_telemetry_decoder_gs::set_channel(int32_t channel)
 {

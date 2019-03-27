@@ -220,11 +220,11 @@ void pcps_acquisition_fpga::acquisition_core(uint32_t num_doppler_bins, uint32_t
         }
 
     // debug
-    if (d_test_statistics > d_threshold)
-        {
-            printf("firstpeak = %f, secondpeak = %f, test_statistics = %f reported block exp = %d PRN = %d inext = %d, initial_sample = %ld doppler = %d\n", firstpeak, secondpeak, d_test_statistics, (int)total_block_exp, (int)d_gnss_synchro->PRN, (int)indext, (long int)initial_sample, (int)doppler);
-            printf("doppler_min = %d doppler_step = %d num_doppler_bins = %d\n", (int)doppler_min, (int)doppler_step, (int)num_doppler_bins);
-        }
+    //    if (d_test_statistics > d_threshold)
+    //        {
+    //            printf("firstpeak = %f, secondpeak = %f, test_statistics = %f reported block exp = %d PRN = %d inext = %d, initial_sample = %ld doppler = %d\n", firstpeak, secondpeak, d_test_statistics, (int)total_block_exp, (int)d_gnss_synchro->PRN, (int)indext, (long int)initial_sample, (int)doppler);
+    //            printf("doppler_min = %d doppler_step = %d num_doppler_bins = %d\n", (int)doppler_min, (int)doppler_step, (int)num_doppler_bins);
+    //        }
 
     d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
     d_sample_counter = initial_sample;

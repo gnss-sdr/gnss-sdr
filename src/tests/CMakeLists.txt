@@ -309,21 +309,41 @@ endif()
 
 if(ENABLE_UNIT_TESTING_EXTRA)
     add_definitions(-DEXTRA_TESTS)
+    message(STATUS "Downloading some data files for testing...")
     if(NOT EXISTS ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat)
-      message(STATUS "Downloading some data files for testing...")
+      message(STATUS "Downloading file: gps_l2c_m_prn7_5msps.dat")
       file(DOWNLOAD https://sourceforge.net/projects/gnss-sdr/files/data/gps_l2c_m_prn7_5msps.dat ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat
-            SHOW_PROGRESS
-            EXPECTED_HASH MD5=a6fcbefe155137945d3c33c5ef7bd0f9)
+        SHOW_PROGRESS
+        EXPECTED_HASH MD5=a6fcbefe155137945d3c33c5ef7bd0f9
+      )
     endif()
     if(NOT EXISTS ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples/Glonass_L1_CA_SIM_Fs_62Msps_4ms.dat)
-      message(STATUS "Downloading some data files for testing...")
+      message(STATUS "Downloading file: Glonass_L1_CA_SIM_Fs_62Msps_4ms.dat")
       file(DOWNLOAD https://sourceforge.net/projects/gnss-sdr/files/data/Glonass_L1_CA_SIM_Fs_62Msps_4ms.dat ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/signal_samples/Glonass_L1_CA_SIM_Fs_62Msps_4ms.dat
-            SHOW_PROGRESS
-            EXPECTED_HASH MD5=ffb72fc63c116be58d5e5ccb1daaed3a)
+        SHOW_PROGRESS
+        EXPECTED_HASH MD5=ffb72fc63c116be58d5e5ccb1daaed3a
+      )
     endif()
+    if(NOT EXISTS ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples/BdsB1IStr01_fs25e6_if0_4ms.dat)
+      message(STATUS "Downloading file: BdsB1IStr01_fs25e6_if0_4ms.dat")
+      file(DOWNLOAD https://sourceforge.net/projects/gnss-sdr/files/data/BdsB1IStr01_fs25e6_if0_4ms.dat ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/signal_samples/BdsB1IStr01_fs25e6_if0_4ms.dat
+        SHOW_PROGRESS
+        EXPECTED_HASH MD5=5a4336dad9d80f3313a16dec4fff9233
+      )
+    endif()
+    if(NOT EXISTS ${CMAKE_SOURCE_DIR}/thirdparty/signal_samples/BdsB3IStr01_fs50e6_if0_4ms.dat)
+      message(STATUS "Downloading file: BdsB3IStr01_fs50e6_if0_4ms.dat")
+      file(DOWNLOAD https://sourceforge.net/projects/gnss-sdr/files/data/BdsB3IStr01_fs50e6_if0_4ms.dat ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/signal_samples/BdsB3IStr01_fs50e6_if0_4ms.dat
+        SHOW_PROGRESS
+        EXPECTED_HASH MD5=066d0d8434a8bc81e161778b7c34cc07
+      )
+    endif()
+    message(STATUS "Done.")
     if(ENABLE_INSTALL_TESTS)
       install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat DESTINATION share/gnss-sdr/signal_samples)
       install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/signal_samples/Glonass_L1_CA_SIM_Fs_62Msps_4ms.dat DESTINATION share/gnss-sdr/signal_samples)
+      install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/signal_samples/BdsB1IStr01_fs25e6_if0_4ms.dat DESTINATION share/gnss-sdr/signal_samples)
+      install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/signal_samples/BdsB1IStr01_fs25e6_if0_4ms.dat DESTINATION share/gnss-sdr/signal_samples)
     endif()
 endif()
 

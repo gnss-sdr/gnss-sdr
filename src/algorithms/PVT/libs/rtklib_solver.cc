@@ -892,6 +892,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     if ((valid_obs + glo_valid_obs) > 3)
         {
             int result = 0;
+            int sat = 0;
             nav_t nav_data;
             nav_data.eph = eph_data;
             nav_data.geph = geph_data;
@@ -903,6 +904,15 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     i[0] = SPEED_OF_LIGHT / FREQ1;  // L1/E1
                     i[1] = SPEED_OF_LIGHT / FREQ2;  // L2
                     i[2] = SPEED_OF_LIGHT / FREQ5;  // L5/E5
+
+                    // Keep update on sat number
+                    sat++;
+                    if (sat > NSYSGPS + NSYSGLO + NSYSGAL + NSYSQZS and sat < NSYSGPS + NSYSGLO + NSYSGAL + NSYSQZS + NSYSBDS)
+                        {
+                            i[0] = SPEED_OF_LIGHT / FREQ1_BDS;  // B1I
+                            i[1] = SPEED_OF_LIGHT / FREQ3_BDS;  // B3I
+                            i[2] = SPEED_OF_LIGHT / FREQ5;      // L5/E5
+                        }
                 }
 
             result = rtkpos(&rtk_, obs_data, valid_obs + glo_valid_obs, &nav_data);

@@ -92,7 +92,6 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/sources/gnss_sdr_valve_test.cc"
 #include "unit-tests/signal-processing-blocks/sources/unpack_2bit_samples_test.cc"
 // #include "unit-tests/signal-processing-blocks/acquisition/glonass_l2_ca_pcps_acquisition_test.cc"
-// #include "unit-tests/signal-processing-blocks/acquisition/beidou_b1i_pcps_acquisition_test.cc"
 
 #if OPENCL_BLOCKS_TEST
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_opencl_acquisition_gsoc2013_test.cc"
@@ -127,6 +126,8 @@ DECLARE_string(log_dir);
 
 #if EXTRA_TESTS
 #include "unit-tests/signal-processing-blocks/acquisition/acq_performance_test.cc"
+//#include "unit-tests/signal-processing-blocks/acquisition/beidou_b1i_pcps_acquisition_test.cc"
+//#include "unit-tests/signal-processing-blocks/acquisition/beidou_b3i_pcps_acquisition_test.cc"
 #include "unit-tests/signal-processing-blocks/acquisition/glonass_l1_ca_pcps_acquisition_test.cc"
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l2_m_pcps_acquisition_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/rtklib_solver_test.cc"

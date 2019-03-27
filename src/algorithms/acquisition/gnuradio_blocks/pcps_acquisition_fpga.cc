@@ -293,7 +293,7 @@ void pcps_acquisition_fpga::set_active(bool active)
             if (d_test_statistics > d_threshold)
                 {
                     d_doppler_center_step_two = static_cast<float>(d_gnss_synchro->Acq_doppler_hz);
-                    acquisition_fpga->open_device();
+                    //acquisition_fpga->open_device();
                     //boost::chrono::high_resolution_clock::time_point start = boost::chrono::high_resolution_clock::now();
 
                     acquisition_core(d_num_doppler_bins_step2, d_doppler_step2, d_doppler_center_step_two - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0)) * d_doppler_step2);
@@ -318,6 +318,7 @@ void pcps_acquisition_fpga::set_active(bool active)
                 }
             else
                 {
+                    acquisition_fpga->close_device();
                     d_state = 0;
                     d_active = false;
                     send_negative_acquisition();

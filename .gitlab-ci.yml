@@ -90,6 +90,248 @@ crosscompile:
       - binaries/*
 
 
+<<<<<<< HEAD
+=======
+debian8:
+  image: debian:jessie-slim
+  stage: build
+  script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends build-essential libtool automake libhdf5-dev cmake git ca-certificates libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev liblapack-dev libgfortran-4.9-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libgtest-dev
+    - cd build
+    - cmake -DENABLE_OSMOSDR=ON -DENABLE_RAW_UDP=ON ..
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
+    - make check
+    - make install
+  allow_failure: true
+
+
+debian9:
+  image: debian:stretch-slim
+  stage: build
+  script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
+    - cd build
+    - cmake -DENABLE_OSMOSDR=ON -DENABLE_RAW_UDP=ON ..
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
+    - make check
+    - make install
+
+
+debian10:
+  image: debian:buster-slim
+  stage: build
+  script:
+    - apt-get update
+    - apt-get upgrade -y
+    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libiio-dev gr-iio libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev libgtest-dev
+    - cd build
+    - cmake -DENABLE_OSMOSDR=ON -DENABLE_RAW_UDP=ON -DENABLE_FMCOMMS2=ON -DENABLE_AD9361=ON ..
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
+    - make check
+    - make install
+  allow_failure: true
+
+
+fedora26:
+  image: fedora:26
+  stage: build
+  before_script:
+    - source ~/.bash_profile
+  script:
+    - yum install -y make automake gcc gcc-c++ kernel-devel cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel pugixml-devel libpcap-devel blas-devel lapack-devel armadillo-devel gflags-devel glog-devel openssl-devel python-mako python-six matio-devel
+    - cd build
+    - cmake -DENABLE_OSMOSDR=ON -DENABLE_RAW_UDP=ON ..
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
+    - make check
+    - make install
+  allow_failure: true
+
+
+fedora28:
+  image: fedora:28
+  stage: build
+  before_script:
+    - source ~/.bash_profile
+  script:
+    - yum install -y make automake gcc gcc-c++ kernel-devel cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel pugixml-devel libpcap-devel blas-devel lapack-devel armadillo-devel gflags-devel glog-devel openssl-devel python-mako python-six matio-devel
+    - cd build
+    - cmake -DENABLE_OSMOSDR=ON -DENABLE_RAW_UDP=ON ..
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
+    - make check
+    - make install
+
+
+fedora29:
+  image: fedora:29
+  stage: build
+  before_script:
+    - source ~/.bash_profile
+  script:
+    - yum install -y make gcc gcc-c++ kernel-devel cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel pugixml-devel libpcap-devel blas-devel lapack-devel armadillo-devel gflags-devel glog-devel openssl-devel python3-mako python3-six matio-devel
+    - cd build
+    - cmake -DENABLE_RAW_UDP=ON ..
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
+    - make check
+    - make install
+  allow_failure: true
+
+
+fedora-rawhide:
+  image: fedora:rawhide
+  stage: build
+  before_script:
+    - source ~/.bash_profile
+  script:
+    - dnf upgrade -y --nogpgcheck
+    - yum install -y automake gcc gcc-c++ kernel-devel make cmake git boost-devel boost-date-time boost-system boost-filesystem boost-thread boost-chrono boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel pugixml-devel libpcap-devel blas-devel lapack-devel armadillo-devel gflags-devel glog-devel openssl-devel python-mako python-six matio-devel
+    - cd build
+    - cmake -DENABLE_OSMOSDR=ON -DENABLE_RAW_UDP=ON ..
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
+    - make check
+    - make install
+  allow_failure: true
+
+
+opensuse42.3:
+  image: opensuse/leap:42.3
+  stage: build
+  before_script:
+    - pwd
+  script:
+    - zypper -n up
+    - zypper -n install cmake git gcc-c++ boost-devel log4cpp-devel gnuradio-devel pugixml-devel libpcap-devel armadillo-devel libtool automake hdf5-devel openssl-devel python-Mako python-six
+    - cd build
+    - cmake -DENABLE_PACKAGING=ON -DENABLE_RAW_UDP=ON ..
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
+    - make check
+    - make install
+  allow_failure: true
+
+
+opensuse-leap15.0:
+  image: opensuse/leap:15.0
+  stage: build
+  before_script:
+    - pwd
+  script:
+    - zypper -n up
+    - zypper -n install cmake git gcc-c++ boost-devel libboost_atomic-devel libboost_system-devel libboost_filesystem-devel libboost_date_time-devel libboost_thread-devel libboost_chrono-devel libboost_serialization-devel log4cpp-devel gtest gnuradio-devel pugixml-devel libpcap-devel armadillo-devel libtool automake hdf5-devel libopenssl-devel python-Mako python-six
+    - cd build
+    - cmake -DENABLE_PACKAGING=ON -DENABLE_RAW_UDP=ON ..
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
+    - make check
+    - make install
+  allow_failure: true
+
+
+opensuse-tumbleweed:
+  image: opensuse/tumbleweed
+  stage: build
+  before_script:
+    - pwd
+  script:
+    - zypper -n dup
+    - zypper -n install cmake git gcc-c++ boost-devel libboost_atomic-devel libboost_system-devel libboost_filesystem-devel libboost_date_time-devel libboost_thread-devel libboost_chrono-devel libboost_serialization-devel log4cpp-devel gtest gnuradio-devel pugixml-devel libpcap-devel armadillo-devel libtool automake hdf5-devel libopenssl-devel python3-Mako python3-six
+    - cd build
+    - cmake -DENABLE_RAW_UDP=ON ..
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
+    - make check
+    - make install
+  allow_failure: true
+
+
+ubuntu14.04:
+  image: ubuntu:trusty
+  stage: build
+  script:
+    - apt-get update
+    - apt-get install -y apt-file
+    - apt-file update
+    - apt-get install -y software-properties-common
+    - add-apt-repository -y ppa:myriadrf/gnuradio
+    - add-apt-repository -y ppa:myriadrf/drivers
+    - apt-get update
+    - apt-get install -y --no-install-recommends build-essential libtool automake libhdf5-dev cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev libpugixml-dev libpcap-dev libblas-dev liblapack-dev libgfortran-4.7-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libgtest-dev
+    - cd build
+    - cmake -DENABLE_RAW_UDP=ON ..
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
+    - make check
+    - make install
+  allow_failure: true
+
+
+ubuntu16.04:
+  image: ubuntu:xenial
+  stage: build
+  script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev libgtest-dev
+    - cd build
+    - cmake -DENABLE_OSMOSDR=ON -DENABLE_RAW_UDP=ON ..
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
+    - make check
+    - make install
+  allow_failure: true
+
+
+ubuntu18.04:
+  image: ubuntu:bionic
+  stage: build
+  script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev googletest
+    - cd build
+    - cmake -DENABLE_OSMOSDR=ON -DENABLE_RAW_UDP=ON ..
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
+    - make check
+    - make install
+
+
+ubuntu18.10:
+  image: ubuntu:cosmic
+  stage: build
+  script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python-mako python-six libmatio-dev libgtest-dev
+    - cd build
+    - cmake -DENABLE_OSMOSDR=ON -DENABLE_RAW_UDP=ON ..
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
+    - make check
+    - make install
+  allow_failure: true
+
+
+ubuntu19.04:
+  image: ubuntu:disco
+  stage: build
+  script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev python3-mako python3-six libmatio-dev libgtest-dev
+    - cd build
+    - cmake -DENABLE_OSMOSDR=ON -DENABLE_RAW_UDP=ON ..
+    - NPROC=$(grep -c ^processor /proc/cpuinfo)
+    - make -j$(($NPROC+1))
+    - make check
+    - make install
+  allow_failure: true
+
+>>>>>>> f04e63f4de169d363141d09d384f5f68c131cf86
 
 
 

@@ -313,7 +313,7 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_u_avx(lv_32fc_
     number = sixteenthPoints * 16;
     for (; number < num_points; number++)
         {
-            wo = (*aPtr++) * _phase;
+            wo = in_common[number] * _phase;
             _phase *= phase_inc;
 
             for (vec_ind = 0; vec_ind < num_a_vectors; ++vec_ind)
@@ -477,7 +477,7 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_a_avx(lv_32fc_
     number = sixteenthPoints * 16;
     for (; number < num_points; number++)
         {
-            wo = (*aPtr++) * _phase;
+            wo = in_common[number] * _phase;
             _phase *= phase_inc;
 
             for (vec_ind = 0; vec_ind < num_a_vectors; ++vec_ind)

@@ -89,7 +89,7 @@ public:
     /*!
      * \brief Set acquisition channel unique ID
      */
-    inline void set_channel(unsigned int channel)
+    inline void set_channel(unsigned int channel) override
     {
         channel_ = channel;
         acquisition_cc_->set_channel(channel_);
@@ -98,7 +98,7 @@ public:
     /*!
       * \brief Set channel fsm associated to this acquisition instance
       */
-    inline void set_channel_fsm(std::shared_ptr<ChannelFsm> channel_fsm)
+    inline void set_channel_fsm(std::shared_ptr<ChannelFsm> channel_fsm) override
     {
         channel_fsm_ = channel_fsm;
         acquisition_cc_->set_channel_fsm(channel_fsm);

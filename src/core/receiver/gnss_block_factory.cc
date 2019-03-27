@@ -39,6 +39,12 @@
 #include "acquisition_interface.h"  // for AcquisitionInterface
 #include "array_signal_conditioner.h"
 #include "beamformer_filter.h"
+#include "beidou_b1i_dll_pll_tracking.h"
+#include "beidou_b1i_pcps_acquisition.h"
+#include "beidou_b1i_telemetry_decoder.h"
+#include "beidou_b3i_dll_pll_tracking.h"
+#include "beidou_b3i_pcps_acquisition.h"
+#include "beidou_b3i_telemetry_decoder.h"
 #include "byte_to_short.h"
 #include "channel.h"
 #include "configuration_interface.h"
@@ -66,12 +72,6 @@
 #include "glonass_l2_ca_dll_pll_tracking.h"
 #include "glonass_l2_ca_pcps_acquisition.h"
 #include "glonass_l2_ca_telemetry_decoder.h"
-#include "beidou_b1i_pcps_acquisition.h"
-#include "beidou_b1i_dll_pll_tracking.h"
-#include "beidou_b1i_telemetry_decoder.h"
-#include "beidou_b3i_pcps_acquisition.h"
-#include "beidou_b3i_dll_pll_tracking.h"
-#include "beidou_b3i_telemetry_decoder.h"
 #include "gnss_block_interface.h"
 #include "gps_l1_ca_dll_pll_c_aid_tracking.h"
 #include "gps_l1_ca_dll_pll_tracking.h"
@@ -289,12 +289,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(const std::
         Galileo_channels +
             GPS_channels +
             Glonass_channels +
-			Beidou_channels +
+            Beidou_channels +
             extra_channels,
-            Galileo_channels +
+        Galileo_channels +
             GPS_channels +
             Glonass_channels +
-			Beidou_channels);
+            Beidou_channels);
 }
 
 
@@ -313,7 +313,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(const std::shared_p
     unsigned int Beidou_channels = configuration->property("Channels_B1.count", 0);
     Beidou_channels += configuration->property("Channels_B3.count", 0);
     return GetBlock(configuration, "PVT", implementation,
-    		Galileo_channels + GPS_channels + Glonass_channels + Beidou_channels, 0);
+        Galileo_channels + GPS_channels + Glonass_channels + Beidou_channels, 0);
 }
 
 
@@ -948,7 +948,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                                   Channels_5X_count +
                                   Channels_L5_count +
                                   Channels_B1_count +
-								                  Channels_B3_count;
+                                  Channels_B3_count;
 
     std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> channels(new std::vector<std::unique_ptr<GNSSBlockInterface>>(total_channels));
     try
@@ -1218,7 +1218,6 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                         queue);
                     channel_absolute_id++;
                 }
-
         }
     catch (const std::exception& e)
         {
@@ -1704,8 +1703,8 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
             block = std::move(block_);
         }
     else if (implementation == "BEIDOU_B3I_PCPS_Acquisition")
-		{
-			std::unique_ptr<AcquisitionInterface> block_(new BeidouB3iPcpsAcquisition(configuration.get(), role, in_streams,
+        {
+            std::unique_ptr<AcquisitionInterface> block_(new BeidouB3iPcpsAcquisition(configuration.get(), role, in_streams,
                 out_streams));
             block = std::move(block_);
         }
@@ -1720,7 +1719,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
     else if (implementation == "GPS_L1_CA_KF_Tracking")
         {
             std::unique_ptr<GNSSBlockInterface> block_(new GpsL1CaKfTracking(configuration.get(), role, in_streams,
-                    out_streams));
+                out_streams));
             block = std::move(block_);
         }
     else if (implementation == "GPS_L1_CA_DLL_PLL_C_Aid_Tracking")
@@ -1844,11 +1843,11 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
             block = std::move(block_);
         }
     else if (implementation == "BEIDOU_B3I_DLL_PLL_Tracking")
-		{
-			std::unique_ptr<GNSSBlockInterface> block_(new BeidouB3iDllPllTracking(configuration.get(), role, in_streams,
-				out_streams));
-			block = std::move(block_);
-		}
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new BeidouB3iDllPllTracking(configuration.get(), role, in_streams,
+                out_streams));
+            block = std::move(block_);
+        }
     // TELEMETRY DECODERS ----------------------------------------------------------
     else if (implementation == "GPS_L1_CA_Telemetry_Decoder")
         {
@@ -2138,7 +2137,7 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
     else if (implementation == "GPS_L1_CA_KF_Tracking")
         {
             std::unique_ptr<TrackingInterface> block_(new GpsL1CaKfTracking(configuration.get(), role, in_streams,
-                    out_streams));
+                out_streams));
             block = std::move(block_);
         }
     else if (implementation == "GPS_L1_CA_DLL_PLL_C_Aid_Tracking")

@@ -366,10 +366,10 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 
     // Display time in local time zone
     d_show_local_time_zone = conf_.show_local_time_zone;
-    time_t when = std::time(nullptr);
-    auto const tm = *std::localtime(&when);
     std::ostringstream os;
 #ifdef HAS_PUT_TIME
+    time_t when = std::time(nullptr);
+    auto const tm = *std::localtime(&when);
     os << std::put_time(&tm, "%z");
 #endif
     std::string utc_diff_str = os.str();  // in ISO 8601 format: "+HHMM" or "-HHMM"

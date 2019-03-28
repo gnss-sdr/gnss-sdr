@@ -56,8 +56,6 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     Dll_Pll_Conf_Fpga trk_param_fpga = Dll_Pll_Conf_Fpga();
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
-    std::string default_item_type = "gr_complex";
-    std::string item_type = configuration->property(role + ".item_type", default_item_type);
     int32_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     int32_t fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     trk_param_fpga.fs_in = fs_in;
@@ -68,16 +66,75 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     trk_param_fpga.dump_filename = dump_filename;
     bool dump_mat = configuration->property(role + ".dump_mat", true);
     trk_param_fpga.dump_mat = dump_mat;
+    if (configuration->property(role + ".smoother_length", 10) < 1)
+        {
+            trk_param_fpga.smoother_length = 1;
+            std::cout << TEXT_RED << "WARNING: Gal. E1. smoother_length must be bigger than 0. It has been set to 1" << TEXT_RESET << std::endl;
+        }
+    else
+        {
+            trk_param_fpga.smoother_length = configuration->property(role + ".smoother_length", 10);
+        }
+
     float pll_bw_hz = configuration->property(role + ".pll_bw_hz", 5.0);
-    if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
+    if (FLAGS_pll_bw_hz != 0.0)
+        {
+            pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
+        }
     trk_param_fpga.pll_bw_hz = pll_bw_hz;
     float dll_bw_hz = configuration->property(role + ".dll_bw_hz", 0.5);
-    if (FLAGS_dll_bw_hz != 0.0) dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
+     if (FLAGS_dll_bw_hz != 0.0)
+        {
+            dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
+        }
     trk_param_fpga.dll_bw_hz = dll_bw_hz;
     float pll_bw_narrow_hz = configuration->property(role + ".pll_bw_narrow_hz", 2.0);
     trk_param_fpga.pll_bw_narrow_hz = pll_bw_narrow_hz;
     float dll_bw_narrow_hz = configuration->property(role + ".dll_bw_narrow_hz", 0.25);
     trk_param_fpga.dll_bw_narrow_hz = dll_bw_narrow_hz;
+
+    int dll_filter_order = configuration->property(role + ".dll_filter_order", 2);
+    if (dll_filter_order < 1)
+        {
+            LOG(WARNING) << "dll_filter_order parameter must be 1, 2 or 3. Set to 1.";
+            dll_filter_order = 1;
+        }
+    if (dll_filter_order > 3)
+        {
+            LOG(WARNING) << "dll_filter_order parameter must be 1, 2 or 3. Set to 3.";
+            dll_filter_order = 3;
+        }
+    trk_param_fpga.dll_filter_order = dll_filter_order;
+
+    int pll_filter_order = configuration->property(role + ".pll_filter_order", 3);
+    if (pll_filter_order < 2)
+        {
+            LOG(WARNING) << "pll_filter_order parameter must be 2 or 3. Set to 2.";
+            pll_filter_order = 2;
+        }
+    if (pll_filter_order > 3)
+        {
+            LOG(WARNING) << "pll_filter_order parameter must be 2 or 3. Set to 3.";
+            pll_filter_order = 3;
+        }
+    trk_param_fpga.pll_filter_order = pll_filter_order;
+
+    if (pll_filter_order == 2)
+        {
+            trk_param_fpga.fll_filter_order = 1;
+        }
+    if (pll_filter_order == 3)
+        {
+            trk_param_fpga.fll_filter_order = 2;
+        }
+
+    bool enable_fll_pull_in = configuration->property(role + ".enable_fll_pull_in", false);
+    trk_param_fpga.enable_fll_pull_in = enable_fll_pull_in;
+    float fll_bw_hz = configuration->property(role + ".fll_bw_hz", 35.0);
+    trk_param_fpga.fll_bw_hz = fll_bw_hz;
+    float pull_in_time_s = configuration->property(role + ".pull_in_time_s", 2.0);
+    trk_param_fpga.pull_in_time_s = pull_in_time_s;
+
     int32_t extend_correlation_symbols = configuration->property(role + ".extend_correlation_symbols", 1);
     float early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.15);
     trk_param_fpga.early_late_space_chips = early_late_space_chips;
@@ -111,16 +168,29 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     char sig_[3] = "1B";
     std::memcpy(trk_param_fpga.signal, sig_, 3);
     int32_t cn0_samples = configuration->property(role + ".cn0_samples", 20);
-    if (FLAGS_cn0_samples != 20) cn0_samples = FLAGS_cn0_samples;
+    if (FLAGS_cn0_samples != 20)
+        {
+            cn0_samples = FLAGS_cn0_samples;
+        }
+
     trk_param_fpga.cn0_samples = cn0_samples;
     int32_t cn0_min = configuration->property(role + ".cn0_min", 25);
-    if (FLAGS_cn0_min != 25) cn0_min = FLAGS_cn0_min;
+    if (FLAGS_cn0_min != 25)
+        {
+            cn0_min = FLAGS_cn0_min;
+        }
     trk_param_fpga.cn0_min = cn0_min;
     int32_t max_lock_fail = configuration->property(role + ".max_lock_fail", 50);
-    if (FLAGS_max_lock_fail != 50) max_lock_fail = FLAGS_max_lock_fail;
+    if (FLAGS_max_lock_fail != 50)
+        {
+            max_lock_fail = FLAGS_max_lock_fail;
+        }
     trk_param_fpga.max_lock_fail = max_lock_fail;
     double carrier_lock_th = configuration->property(role + ".carrier_lock_th", 0.85);
-    if (FLAGS_carrier_lock_th != 0.85) carrier_lock_th = FLAGS_carrier_lock_th;
+    if (FLAGS_carrier_lock_th != 0.85)
+        {
+            carrier_lock_th = FLAGS_carrier_lock_th;
+        }
     trk_param_fpga.carrier_lock_th = carrier_lock_th;
 
     // FPGA configuration parameters

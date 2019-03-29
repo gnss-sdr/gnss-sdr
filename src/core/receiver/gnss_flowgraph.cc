@@ -363,6 +363,11 @@ void GNSSFlowgraph::connect()
 #endif
 
     // Signal conditioner (selected_signal_source) >> channels (i) (dependent of their associated SignalSource_ID)
+    std::vector<bool> signal_conditioner_connected;
+    for (size_t n = 0; n < sig_conditioner_.size(); n++)
+        {
+            signal_conditioner_connected.push_back(false);
+        }
     for (unsigned int i = 0; i < channels_count_; i++)
         {
 #ifndef ENABLE_FPGA
@@ -500,10 +505,12 @@ void GNSSFlowgraph::connect()
                             top_block_->disconnect_all();
                             return;
                         }
-
+                    signal_conditioner_connected.at(selected_signal_conditioner_ID) = true;  //notify that this signal conditioner is connected
                     DLOG(INFO) << "signal conditioner " << selected_signal_conditioner_ID << " connected to channel " << i;
                 }
 #endif
+
+
             // Signal Source > Signal conditioner >> Channels >> Observables
             try
                 {
@@ -519,6 +526,20 @@ void GNSSFlowgraph::connect()
                 }
         }
 
+    //check for unconnected signal conditioners and connect null_sinks in order to provide configuration flexibility to multiband files or signal sources
+    if (configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false) == false)
+        {
+            for (size_t n = 0; n < sig_conditioner_.size(); n++)
+                {
+                    if (signal_conditioner_connected.at(n) == false)
+                        {
+                            null_sinks_.push_back(gr::blocks::null_sink::make(sizeof(gr_complex)));
+                            top_block_->connect(sig_conditioner_.at(n)->get_right_block(), 0,
+                                null_sinks_.back(), 0);
+                            LOG(INFO) << "Null sink connected to signal conditioner " << n << " due to lack of connection to any channel" << std::endl;
+                        }
+                }
+        }
     // Put channels fixed to a given satellite at the beginning of the vector, then the rest
     std::vector<unsigned int> vector_of_channels;
     for (unsigned int i = 0; i < channels_count_; i++)

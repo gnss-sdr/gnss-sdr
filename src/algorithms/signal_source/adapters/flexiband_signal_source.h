@@ -38,6 +38,7 @@
 #include <gnuradio/blocks/char_to_float.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/float_to_complex.h>
+#include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/msg_queue.h>
 #include <string>
@@ -99,12 +100,14 @@ private:
     std::string signal_file;
     bool flag_read_file;
 
-    int RF_channels_;
+    int n_channels_;
+    int sel_ch_;
 
     gr::block_sptr flexiband_source_;
 
     std::vector<boost::shared_ptr<gr::block>> char_to_float;
     std::vector<boost::shared_ptr<gr::block>> float_to_complex_;
+    std::vector<gr::blocks::null_sink::sptr> null_sinks_;
 
     boost::shared_ptr<gr::msg_queue> queue_;
 };

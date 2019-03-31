@@ -40,16 +40,17 @@
 #include "gnss_sdr_sample_counter.h"
 #include "gnss_signal.h"
 #include "pvt_interface.h"
-#include <gnuradio/msg_queue.h>      // for msg_queue, msg_queue::sptr
-#include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
-#include <pmt/pmt.h>                 // for pmt_t
-#include <list>                      // for list
-#include <map>                       // for map
-#include <memory>                    // for for shared_ptr, dynamic_pointer_cast
-#include <mutex>                     // for mutex
-#include <string>                    // for string
-#include <utility>                   // for pair
-#include <vector>                    // for vector
+#include <gnuradio/blocks/null_sink.h>  //for null_sink
+#include <gnuradio/msg_queue.h>         // for msg_queue, msg_queue::sptr
+#include <gnuradio/runtime_types.h>     // for basic_block_sptr, top_block_sptr
+#include <pmt/pmt.h>                    // for pmt_t
+#include <list>                         // for list
+#include <map>                          // for map
+#include <memory>                       // for for shared_ptr, dynamic_pointer_cast
+#include <mutex>                        // for mutex
+#include <string>                       // for string
+#include <utility>                      // for pair
+#include <vector>                       // for vector
 #if ENABLE_FPGA
 #include "gnss_sdr_fpga_sample_counter.h"
 #endif
@@ -162,6 +163,7 @@ private:
 
     std::vector<std::shared_ptr<GNSSBlockInterface>> sig_source_;
     std::vector<std::shared_ptr<GNSSBlockInterface>> sig_conditioner_;
+    std::vector<gr::blocks::null_sink::sptr> null_sinks_;
 
     std::shared_ptr<GNSSBlockInterface> observables_;
     std::shared_ptr<GNSSBlockInterface> pvt_;

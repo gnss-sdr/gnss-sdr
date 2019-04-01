@@ -45,7 +45,7 @@ public:
     int fll_filter_order;
     bool enable_fll_pull_in;
     bool enable_fll_steady_state;
-    unsigned int pull_in_time_s;
+    unsigned int pull_in_time_s;  // signed integer, when pull in time is not yet reached it has to be compared against a negative number
     int pll_filter_order;
     int dll_filter_order;
 

@@ -83,7 +83,7 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
         }
     trk_param_fpga.pll_bw_hz = pll_bw_hz;
     float dll_bw_hz = configuration->property(role + ".dll_bw_hz", 0.5);
-     if (FLAGS_dll_bw_hz != 0.0)
+    if (FLAGS_dll_bw_hz != 0.0)
         {
             dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
         }
@@ -228,19 +228,36 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
                     galileo_e1_code_gen_sinboc11_float(ca_codes_f, pilot_signal, PRN);
                     galileo_e1_code_gen_sinboc11_float(data_codes_f, data_signal, PRN);
 
+                    // The code is generated as a series of 1s and -1s. In order to store the values using only one bit, a -1 is stored as a 0 in the FPGA
                     for (uint32_t s = 0; s < 2 * GALILEO_E1_B_CODE_LENGTH_CHIPS; s++)
                         {
-                            d_ca_codes[static_cast<int32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS) * 2 * (PRN - 1) + s] = static_cast<int32_t>(ca_codes_f[s]);
-                            d_data_codes[static_cast<int32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS) * 2 * (PRN - 1) + s] = static_cast<int32_t>(data_codes_f[s]);
+                            int32_t tmp_value = static_cast<int32_t>(ca_codes_f[s]);
+                            if (tmp_value < 0)
+                                {
+                                    tmp_value = 0;
+                                }
+                            d_ca_codes[static_cast<int32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS) * 2 * (PRN - 1) + s] = tmp_value;
+                            tmp_value = static_cast<int32_t>(data_codes_f[s]);
+                            if (tmp_value < 0)
+                                {
+                                    tmp_value = 0;
+                                }
+                            d_data_codes[static_cast<int32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS) * 2 * (PRN - 1) + s] = tmp_value;
                         }
                 }
             else
                 {
                     galileo_e1_code_gen_sinboc11_float(ca_codes_f, data_signal, PRN);
 
+                    // The code is generated as a series of 1s and -1s. In order to store the values using only one bit, a -1 is stored as a 0 in the FPGA
                     for (uint32_t s = 0; s < 2 * GALILEO_E1_B_CODE_LENGTH_CHIPS; s++)
                         {
-                            d_ca_codes[static_cast<int32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS) * 2 * (PRN - 1) + s] = static_cast<int32_t>(ca_codes_f[s]);
+                            uint32_t tmp_value = static_cast<int32_t>(ca_codes_f[s]);
+                            if (tmp_value < 0)
+                                {
+                                    tmp_value = 0;
+                                }
+                            d_ca_codes[static_cast<int32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS) * 2 * (PRN - 1) + s] = tmp_value;
                         }
                 }
         }

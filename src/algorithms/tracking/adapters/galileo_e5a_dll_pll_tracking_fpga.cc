@@ -212,19 +212,41 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     for (uint32_t PRN = 1; PRN <= GALILEO_E5A_NUMBER_OF_CODES; PRN++)
         {
             galileo_e5_a_code_gen_complex_primary(aux_code, PRN, const_cast<char *>(sig_));
+
             if (trk_param_fpga.track_pilot)
                 {
+                    // The code is generated as a series of 1s and -1s. In order to store the values using only one bit, a -1 is stored as a 0 in the FPGA
                     for (uint32_t s = 0; s < code_length_chips; s++)
                         {
-                            d_ca_codes[static_cast<int32_t>(code_length_chips) * (PRN - 1) + s] = static_cast<int32_t>(aux_code[s].imag());
-                            d_data_codes[static_cast<int32_t>(code_length_chips) * (PRN - 1) + s] = static_cast<int32_t>(aux_code[s].real());
+                            int32_t tmp_value = static_cast<int32_t>(aux_code[s].imag());
+                            if (tmp_value < 0)
+                                {
+                                    tmp_value = 0;
+                                }
+                            d_ca_codes[static_cast<int32_t>(code_length_chips) * (PRN - 1) + s] = tmp_value;
+
+                            tmp_value = static_cast<int32_t>(aux_code[s].real());
+                            if (tmp_value < 0)
+                                {
+                                    tmp_value = 0;
+                                }
+                            d_data_codes[static_cast<int32_t>(code_length_chips) * (PRN - 1) + s] = tmp_value;
+                            //d_ca_codes[static_cast<int32_t>(code_length_chips) * (PRN - 1) + s] = static_cast<int32_t>(aux_code[s].imag());
+                            //d_data_codes[static_cast<int32_t>(code_length_chips) * (PRN - 1) + s] = static_cast<int32_t>(aux_code[s].real());
                         }
                 }
             else
                 {
+                    // The code is generated as a series of 1s and -1s. In order to store the values using only one bit, a -1 is stored as a 0 in the FPGA
                     for (uint32_t s = 0; s < code_length_chips; s++)
                         {
-                            d_ca_codes[static_cast<int32_t>(code_length_chips) * (PRN - 1) + s] = static_cast<int32_t>(aux_code[s].real());
+                            int32_t tmp_value = static_cast<int32_t>(aux_code[s].real());
+                            if (tmp_value < 0)
+                                {
+                                    tmp_value = 0;
+                                }
+                            d_ca_codes[static_cast<int32_t>(code_length_chips) * (PRN - 1) + s] = tmp_value;
+                            //d_ca_codes[static_cast<int32_t>(code_length_chips) * (PRN - 1) + s] = static_cast<int32_t>(aux_code[s].real());
                         }
                 }
         }

@@ -300,8 +300,8 @@ uint32_t Fpga_Multicorrelator_8sc::fpga_acquisition_test_register(
 void Fpga_Multicorrelator_8sc::fpga_configure_tracking_gps_local_code(int32_t PRN)
 {
     uint32_t k;
-    uint32_t code_chip;
-    uint32_t select_pilot_corelator = LOCAL_CODE_FPGA_CORRELATOR_SELECT_COUNT;
+    //uint32_t code_chip;
+    //uint32_t select_pilot_corelator = LOCAL_CODE_FPGA_CORRELATOR_SELECT_COUNT;
 
     d_map_base[PROG_MEMS_ADDR] = LOCAL_CODE_FPGA_CLEAR_ADDRESS_COUNTER;
     for (k = 0; k < d_code_length_samples; k++)
@@ -314,9 +314,11 @@ void Fpga_Multicorrelator_8sc::fpga_configure_tracking_gps_local_code(int32_t PR
             //                {
             //                    code_chip = 0;
             //                }
-            code_chip = d_ca_codes[(d_code_length_samples * (PRN - 1)) + k];
+            //code_chip = d_ca_codes[(d_code_length_samples * (PRN - 1)) + k];
             // copy the local code to the FPGA memory one by one
-            d_map_base[PROG_MEMS_ADDR] = LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY | code_chip;  // | select_fpga_correlator;
+            //d_map_base[PROG_MEMS_ADDR] = LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY | code_chip;  // | select_fpga_correlator;
+            d_map_base[PROG_MEMS_ADDR] = d_ca_codes[(d_code_length_samples * (PRN - 1)) + k];
+            ;  // | select_fpga_correlator;
         }
     if (d_track_pilot)
         {
@@ -331,8 +333,9 @@ void Fpga_Multicorrelator_8sc::fpga_configure_tracking_gps_local_code(int32_t PR
                     //                        {
                     //                            code_chip = 0;
                     //                        }
-                    code_chip = d_data_codes[(d_code_length_samples * (PRN - 1)) + k];
-                    d_map_base[PROG_MEMS_ADDR] = LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY | code_chip | select_pilot_corelator;
+                    //code_chip = d_data_codes[(d_code_length_samples * (PRN - 1)) + k];
+                    //d_map_base[PROG_MEMS_ADDR] = LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY | code_chip | select_pilot_corelator;
+                    d_map_base[PROG_MEMS_ADDR] = d_data_codes[(d_code_length_samples * (PRN - 1)) + k];
                 }
         }
 

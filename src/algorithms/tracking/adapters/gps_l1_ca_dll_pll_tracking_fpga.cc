@@ -48,8 +48,10 @@
 #include <cstring>  // for memcpy
 #include <iostream>
 
-#define NUM_PRNs 32
+#define NUM_PRNs 32  // total number of PRNs
 
+// the following flag is FPGA-specific and they are using during the local code initialisation in the SW to save CPU cycles during tracking
+#define LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY 0x0C000000  // flag that enables WE (Write Enable) of the local code FPGA
 
 GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     ConfigurationInterface* configuration, const std::string& role,
@@ -214,10 +216,13 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
             // The code is generated as a series of 1s and -1s. In order to store the values using only one bit, a -1 is stored as a 0 in the FPGA
             for (uint32_t k = 0; k < GPS_L1_CA_CODE_LENGTH_CHIPS; k++)
                 {
-                    if (d_ca_codes[(int32_t(GPS_L1_CA_CODE_LENGTH_CHIPS)) * (PRN - 1) + k] < 0)
+                    int32_t tmp_value = d_ca_codes[(int32_t(GPS_L1_CA_CODE_LENGTH_CHIPS)) * (PRN - 1) + k];
+                    if (tmp_value < 0)
                         {
-                            d_ca_codes[(int32_t(GPS_L1_CA_CODE_LENGTH_CHIPS)) * (PRN - 1) + k] = 0;
+                            tmp_value = 0;
                         }
+                    tmp_value = tmp_value | LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY;
+                    d_ca_codes[(int32_t(GPS_L1_CA_CODE_LENGTH_CHIPS)) * (PRN - 1) + k] = tmp_value;
                 }
         }
     trk_param_fpga.ca_codes = d_ca_codes;

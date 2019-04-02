@@ -48,6 +48,10 @@
 #include <cstring>   // for memcpy
 #include <iostream>  // for operator<<,
 
+// the following flag is FPGA-specific and they are using during the local code initialisation in the SW to save CPU cycles during tracking
+#define LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY 0x0C000000      // flag that enables WE (Write Enable) of the local code FPGA
+#define LOCAL_CODE_FPGA_CORRELATOR_SELECT_COUNT 0x20000000  // flag that selects the writing of the pilot code in the FPGA (as opposed to the data code)
+
 
 GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     ConfigurationInterface* configuration, const std::string& role,
@@ -236,12 +240,14 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
                                 {
                                     tmp_value = 0;
                                 }
+                            tmp_value = tmp_value | LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY;
                             d_ca_codes[static_cast<int32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS) * 2 * (PRN - 1) + s] = tmp_value;
                             tmp_value = static_cast<int32_t>(data_codes_f[s]);
                             if (tmp_value < 0)
                                 {
                                     tmp_value = 0;
                                 }
+                            tmp_value = tmp_value | LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY | LOCAL_CODE_FPGA_CORRELATOR_SELECT_COUNT;
                             d_data_codes[static_cast<int32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS) * 2 * (PRN - 1) + s] = tmp_value;
                         }
                 }
@@ -257,6 +263,7 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
                                 {
                                     tmp_value = 0;
                                 }
+                            tmp_value = tmp_value | LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY;
                             d_ca_codes[static_cast<int32_t>(GALILEO_E1_B_CODE_LENGTH_CHIPS) * 2 * (PRN - 1) + s] = tmp_value;
                         }
                 }

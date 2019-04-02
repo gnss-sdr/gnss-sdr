@@ -20,12 +20,13 @@
 # Project setup
 ################################################################################
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
-    message(WARNING "In-tree build is bad practice. Try 'cd build && cmake ..'")
+    message(FATAL_ERROR "Prevented in-tree build, it is bad practice.\nTry 'cd build && cmake ..' instead.")
 endif()
 
 cmake_minimum_required(VERSION 2.8.12)
 project(gnss-sdr CXX C)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
+
 
 
 ################################################################################
@@ -436,7 +437,8 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     execute_process(COMMAND
         ${CMAKE_CXX_COMPILER} -v
         RESULT_VARIABLE _res ERROR_VARIABLE _err
-        ERROR_STRIP_TRAILING_WHITESPACE)
+        ERROR_STRIP_TRAILING_WHITESPACE
+    )
     if(${_res} STREQUAL "0")
         # output is in error stream
         string(REGEX MATCH "^Apple.*" IS_APPLE ${_err})
@@ -624,73 +626,66 @@ endif()
 if(CMAKE_VERSION VERSION_LESS 3.5)
     if(NOT TARGET Boost::boost)
         add_library(Boost::boost SHARED IMPORTED) # Trick for CMake 2.8.12
-        set_property(TARGET Boost::boost PROPERTY
-            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
-        set_property(TARGET Boost::boost PROPERTY
-            IMPORTED_LOCATION ${Boost_DATE_TIME_LIBRARIES})
+        set_target_properties(Boost::boost PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
+            IMPORTED_LOCATION ${Boost_DATE_TIME_LIBRARIES}
+        )
     endif()
     if(NOT TARGET Boost::date_time)
         add_library(Boost::date_time SHARED IMPORTED)
-        set_property(TARGET Boost::date_time PROPERTY
-            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
-        set_property(TARGET Boost::date_time PROPERTY
-            INTERFACE_LINK_LIBRARIES ${Boost_DATE_TIME_LIBRARIES})
-        set_property(TARGET Boost::date_time PROPERTY
-            IMPORTED_LOCATION ${Boost_DATE_TIME_LIBRARIES})
+        set_target_properties(Boost::date_time PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
+            INTERFACE_LINK_LIBRARIES ${Boost_DATE_TIME_LIBRARIES}
+            IMPORTED_LOCATION ${Boost_DATE_TIME_LIBRARIES}
+        )
     endif()
     if(NOT TARGET Boost::system)
         add_library(Boost::system SHARED IMPORTED)
-        set_property(TARGET Boost::system PROPERTY
-            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
-        set_property(TARGET Boost::system PROPERTY
-            INTERFACE_LINK_LIBRARIES ${Boost_SYSTEM_LIBRARIES})
-        set_property(TARGET Boost::system PROPERTY
-            IMPORTED_LOCATION ${Boost_SYSTEM_LIBRARIES})
+        set_target_properties(Boost::system PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
+            INTERFACE_LINK_LIBRARIES ${Boost_SYSTEM_LIBRARIES}
+            IMPORTED_LOCATION ${Boost_SYSTEM_LIBRARIES}
+        )
     endif()
     if(NOT TARGET Boost::filesystem)
         add_library(Boost::filesystem SHARED IMPORTED)
-        set_property(TARGET Boost::filesystem PROPERTY
-            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
-        set_property(TARGET Boost::filesystem PROPERTY
-            INTERFACE_LINK_LIBRARIES ${Boost_FILESYSTEM_LIBRARIES})
-        set_property(TARGET Boost::filesystem PROPERTY
-            IMPORTED_LOCATION ${Boost_FILESYSTEM_LIBRARIES})
+        set_target_properties(Boost::filesystem PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
+            INTERFACE_LINK_LIBRARIES ${Boost_FILESYSTEM_LIBRARIES}
+            IMPORTED_LOCATION ${Boost_FILESYSTEM_LIBRARIES}
+        )
     endif()
     if(NOT TARGET Boost::thread)
         add_library(Boost::thread SHARED IMPORTED)
-        set_property(TARGET Boost::thread PROPERTY
-            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
-        set_property(TARGET Boost::thread PROPERTY
-            INTERFACE_LINK_LIBRARIES ${Boost_THREAD_LIBRARIES})
-        set_property(TARGET Boost::thread PROPERTY
-            IMPORTED_LOCATION ${Boost_THREAD_LIBRARIES})
+        set_target_properties(Boost::thread PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
+            INTERFACE_LINK_LIBRARIES ${Boost_THREAD_LIBRARIES}
+            IMPORTED_LOCATION ${Boost_THREAD_LIBRARIES}
+        )
     endif()
     if(NOT TARGET Boost::serialization)
         add_library(Boost::serialization SHARED IMPORTED)
-        set_property(TARGET Boost::serialization PROPERTY
-            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
-        set_property(TARGET Boost::serialization PROPERTY
-            INTERFACE_LINK_LIBRARIES ${Boost_SERIALIZATION_LIBRARIES})
-        set_property(TARGET Boost::serialization PROPERTY
-            IMPORTED_LOCATION ${Boost_SERIALIZATION_LIBRARIES})
+        set_target_properties(Boost::serialization PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
+            INTERFACE_LINK_LIBRARIES ${Boost_SERIALIZATION_LIBRARIES}
+            IMPORTED_LOCATION ${Boost_SERIALIZATION_LIBRARIES}
+        )
     endif()
     if(NOT TARGET Boost::chrono)
         add_library(Boost::chrono SHARED IMPORTED)
-        set_property(TARGET Boost::chrono PROPERTY
-            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
-        set_property(TARGET Boost::chrono PROPERTY
-            INTERFACE_LINK_LIBRARIES ${Boost_CHRONO_LIBRARIES})
-        set_property(TARGET Boost::chrono PROPERTY
-            IMPORTED_LOCATION ${Boost_CHRONO_LIBRARIES})
+        set_target_properties(Boost::chrono PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
+            INTERFACE_LINK_LIBRARIES ${Boost_CHRONO_LIBRARIES}
+            IMPORTED_LOCATION ${Boost_CHRONO_LIBRARIES}
+        )
     endif()
     if(NOT TARGET Boost::atomic)
         add_library(Boost::atomic SHARED IMPORTED)
-        set_property(TARGET Boost::atomic PROPERTY
-            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
-        set_property(TARGET Boost::atomic PROPERTY
-            INTERFACE_LINK_LIBRARIES ${Boost_ATOMIC_LIBRARIES})
-        set_property(TARGET Boost::atomic PROPERTY
-            IMPORTED_LOCATION ${Boost_ATOMIC_LIBRARIES})
+        set_target_properties(Boost::atomic PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
+            INTERFACE_LINK_LIBRARIES ${Boost_ATOMIC_LIBRARIES}
+            IMPORTED_LOCATION ${Boost_ATOMIC_LIBRARIES}
+        )
     endif()
 endif()
 
@@ -749,10 +744,10 @@ else()
         list(GET GNURADIO_RUNTIME_LIBRARIES 0 FIRST_DIR)
         get_filename_component(GNURADIO_RUNTIME_DIR ${FIRST_DIR} ABSOLUTE)
         set_target_properties(Gnuradio::runtime PROPERTIES
-          IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-          IMPORTED_LOCATION "${GNURADIO_RUNTIME_DIR}"
-          INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_RUNTIME_INCLUDE_DIRS}"
-          INTERFACE_LINK_LIBRARIES "${GNURADIO_RUNTIME_LIBRARIES}"
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION "${GNURADIO_RUNTIME_DIR}"
+            INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_RUNTIME_INCLUDE_DIRS}"
+            INTERFACE_LINK_LIBRARIES "${GNURADIO_RUNTIME_LIBRARIES}"
         )
     endif()
 endif()
@@ -765,10 +760,10 @@ else()
         list(GET GNURADIO_ANALOG_LIBRARIES 0 FIRST_DIR)
         get_filename_component(GNURADIO_ANALOG_DIR ${FIRST_DIR} ABSOLUTE)
         set_target_properties(Gnuradio::analog PROPERTIES
-          IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-          IMPORTED_LOCATION "${GNURADIO_ANALOG_DIR}"
-          INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_ANALOG_INCLUDE_DIRS}"
-          INTERFACE_LINK_LIBRARIES "${GNURADIO_ANALOG_LIBRARIES}"
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION "${GNURADIO_ANALOG_DIR}"
+            INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_ANALOG_INCLUDE_DIRS}"
+            INTERFACE_LINK_LIBRARIES "${GNURADIO_ANALOG_LIBRARIES}"
         )
     endif()
 endif()
@@ -781,10 +776,10 @@ else()
         list(GET GNURADIO_BLOCKS_LIBRARIES 0 FIRST_DIR)
         get_filename_component(GNURADIO_BLOCKS_DIR ${FIRST_DIR} ABSOLUTE)
         set_target_properties(Gnuradio::blocks PROPERTIES
-          IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-          IMPORTED_LOCATION "${GNURADIO_BLOCKS_DIR}"
-          INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_BLOCKS_INCLUDE_DIRS}"
-          INTERFACE_LINK_LIBRARIES "${GNURADIO_BLOCKS_LIBRARIES}"
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION "${GNURADIO_BLOCKS_DIR}"
+            INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_BLOCKS_INCLUDE_DIRS}"
+            INTERFACE_LINK_LIBRARIES "${GNURADIO_BLOCKS_LIBRARIES}"
         )
     endif()
 endif()
@@ -797,10 +792,10 @@ else()
         list(GET GNURADIO_FILTER_LIBRARIES 0 FIRST_DIR)
         get_filename_component(GNURADIO_FILTER_DIR ${FIRST_DIR} ABSOLUTE)
         set_target_properties(Gnuradio::filter PROPERTIES
-          IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-          IMPORTED_LOCATION "${GNURADIO_FILTER_DIR}"
-          INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_FILTER_INCLUDE_DIRS}"
-          INTERFACE_LINK_LIBRARIES "${GNURADIO_FILTER_LIBRARIES}"
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION "${GNURADIO_FILTER_DIR}"
+            INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_FILTER_INCLUDE_DIRS}"
+            INTERFACE_LINK_LIBRARIES "${GNURADIO_FILTER_LIBRARIES}"
         )
     endif()
 endif()
@@ -813,10 +808,10 @@ else()
         list(GET GNURADIO_FFT_LIBRARIES 0 FIRST_DIR)
         get_filename_component(GNURADIO_FFT_DIR ${FIRST_DIR} ABSOLUTE)
         set_target_properties(Gnuradio::fft PROPERTIES
-          IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-          IMPORTED_LOCATION "${GNURADIO_FFT_DIR}"
-          INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_FFT_INCLUDE_DIRS}"
-          INTERFACE_LINK_LIBRARIES "${GNURADIO_FFT_LIBRARIES}"
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION "${GNURADIO_FFT_DIR}"
+            INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_FFT_INCLUDE_DIRS}"
+            INTERFACE_LINK_LIBRARIES "${GNURADIO_FFT_LIBRARIES}"
         )
     endif()
 endif()
@@ -829,10 +824,10 @@ else()
         list(GET GNURADIO_PMT_LIBRARIES 0 FIRST_DIR)
         get_filename_component(GNURADIO_PMT_DIR ${FIRST_DIR} ABSOLUTE)
         set_target_properties(Gnuradio::pmt PROPERTIES
-          IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-          IMPORTED_LOCATION "${GNURADIO_PMT_DIR}"
-          INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_PMT_INCLUDE_DIRS}"
-          INTERFACE_LINK_LIBRARIES "${GNURADIO_PMT_LIBRARIES}"
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION "${GNURADIO_PMT_DIR}"
+            INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_PMT_INCLUDE_DIRS}"
+            INTERFACE_LINK_LIBRARIES "${GNURADIO_PMT_LIBRARIES}"
         )
     endif()
 endif()
@@ -843,10 +838,10 @@ if(ENABLE_UHD AND UHD_FOUND AND GNURADIO_UHD_FOUND)
         list(GET GNURADIO_UHD_LIBRARIES 0 FIRST_DIR)
         get_filename_component(GNURADIO_UHD_DIR ${FIRST_DIR} ABSOLUTE)
         set_target_properties(Gnuradio::uhd PROPERTIES
-          IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-          IMPORTED_LOCATION "${GNURADIO_UHD_DIR}"
-          INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_UHD_INCLUDE_DIRS}"
-          INTERFACE_LINK_LIBRARIES "${GNURADIO_UHD_LIBRARIES}"
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION "${GNURADIO_UHD_DIR}"
+            INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_UHD_INCLUDE_DIRS}"
+            INTERFACE_LINK_LIBRARIES "${GNURADIO_UHD_LIBRARIES}"
         )
     endif()
 endif()
@@ -1023,7 +1018,7 @@ if(NOT VOLKGNSSSDR_FOUND)
             PATCH_COMMAND ""
             BUILD_COMMAND ${READ_ENVIRO} ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
             BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}
-              ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
+                ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
             INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install
         )
     endif()
@@ -1205,8 +1200,8 @@ aclocal
 automake --add-missing
 autoreconf -vfi
 cd ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
-${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure")
-
+${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure"
+        )
     else()
         file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/tmp/configure_with_gflags
 "#!/bin/sh
@@ -1218,13 +1213,15 @@ aclocal
 automake --add-missing
 autoreconf -vfi
 cd ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
-${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure")
+${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure"
+        )
     endif()
 
     file(COPY ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/tmp/configure_with_gflags
         DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
         FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
-            GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+            GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+    )
 
     set(GLOG_CONFIGURE ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure_with_gflags)
 
@@ -1410,10 +1407,10 @@ if(ARMADILLO_FOUND)
     else()
         add_library(Armadillo::armadillo SHARED IMPORTED)
         set_target_properties(Armadillo::armadillo PROPERTIES
-          IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-          IMPORTED_LOCATION "${ARMADILLO_LIBRARIES}"
-          INTERFACE_INCLUDE_DIRECTORIES "${ARMADILLO_INCLUDE_DIRS}"
-          INTERFACE_LINK_LIBRARIES "${ARMADILLO_LIBRARIES}"
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION "${ARMADILLO_LIBRARIES}"
+            INTERFACE_INCLUDE_DIRECTORIES "${ARMADILLO_INCLUDE_DIRS}"
+            INTERFACE_LINK_LIBRARIES "${ARMADILLO_LIBRARIES}"
         )
     endif()
 endif()
@@ -1492,10 +1489,10 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
     add_library(Armadillo::armadillo STATIC IMPORTED)
     add_dependencies(Armadillo::armadillo armadillo-${armadillo_RELEASE})
     set_target_properties(Armadillo::armadillo PROPERTIES
-      IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-      IMPORTED_LOCATION "${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo${CMAKE_STATIC_LIBRARY_SUFFIX}"
-      INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}/include"
-      INTERFACE_LINK_LIBRARIES "${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo${CMAKE_STATIC_LIBRARY_SUFFIX}"
+        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+        IMPORTED_LOCATION "${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo${CMAKE_STATIC_LIBRARY_SUFFIX}"
+        INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}/include"
+        INTERFACE_LINK_LIBRARIES "${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo${CMAKE_STATIC_LIBRARY_SUFFIX}"
     )
     set_package_properties(Armadillo PROPERTIES
         PURPOSE "Armadillo ${GNSSSDR_ARMADILLO_LOCAL_VERSION} will be downloaded and built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
@@ -2267,14 +2264,16 @@ else()
         REQUIRED_PACKAGES_NOT_FOUND
         OPTIONAL_PACKAGES_FOUND
         OPTIONAL_PACKAGES_NOT_FOUND
-        ENABLED_FEATURES DISABLED_FEATURES
+        ENABLED_FEATURES
+        DISABLED_FEATURES
     )
     feature_summary(FILENAME ${CMAKE_CURRENT_BINARY_DIR}/features.log WHAT
         REQUIRED_PACKAGES_FOUND
         REQUIRED_PACKAGES_NOT_FOUND
         OPTIONAL_PACKAGES_FOUND
         OPTIONAL_PACKAGES_NOT_FOUND
-        ENABLED_FEATURES DISABLED_FEATURES
+        ENABLED_FEATURES
+        DISABLED_FEATURES
     )
 endif()
 message(STATUS "GNSS-SDR v${VERSION} is ready to be built.")

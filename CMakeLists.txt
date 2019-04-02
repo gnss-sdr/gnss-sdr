@@ -571,9 +571,11 @@ set_package_properties(Threads PROPERTIES
 ################################################################################
 enable_testing()
 if(ENABLE_UNIT_TESTING OR ENABLE_SYSTEM_TESTING)
-    if(EXISTS $ENV{GTEST_DIR})
-        set(GTEST_DIR $ENV{GTEST_DIR})
-        message(STATUS "Googletest root folder set at ${GTEST_DIR}")
+    if(NOT GTEST_DIR)
+        if(DEFINED ENV{GTEST_DIR})
+            set(GTEST_DIR $ENV{GTEST_DIR})
+            message(STATUS "Googletest root folder set at ${GTEST_DIR}")
+        endif()
     endif()
 endif()
 
@@ -588,9 +590,6 @@ if(NOT GOOGLETEST_FOUND)
     set_package_properties(GOOGLETEST PROPERTIES
         PURPOSE "Googletest v${GNSSSDR_GTEST_LOCAL_VERSION} will be downloaded and built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
     )
-    if(GTEST_DIR)
-        message(FATAL_ERROR " Googletest source code has not been found at ${GTEST_DIR}.")
-    endif()
 endif()
 
 
@@ -989,7 +988,7 @@ if(NOT VOLKGNSSSDR_FOUND)
         ${STRIP_VOLK_GNSSSDR_PROFILE}
         ${USE_THIS_PYTHON}
     )
-    if(EXISTS $ENV{OECORE_TARGET_SYSROOT})
+    if(DEFINED ENV{OECORE_TARGET_SYSROOT})
         set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
             -DCMAKE_TOOLCHAIN_FILE=${CMAKE_CURRENT_SOURCE_DIR}/cmake/Toolchains/oe-sdk_cross.cmake
             -DCROSSCOMPILE_MULTILIB=TRUE
@@ -1735,7 +1734,7 @@ if(NOT PUGIXML_FOUND)
     message(STATUS " PugiXML v${GNSSSDR_PUGIXML_LOCAL_VERSION} will be downloaded and built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'.")
     set(PUGIXML_COMPILER -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER})
     set(TOOLCHAIN_ARG "")
-    if(EXISTS $ENV{OECORE_TARGET_SYSROOT})
+    if(DEFINED ENV{OECORE_TARGET_SYSROOT})
         set(PUGIXML_COMPILER "")
         set(TOOLCHAIN_ARG "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_CURRENT_SOURCE_DIR}/cmake/Toolchains/oe-sdk_cross.cmake")
     endif()
@@ -1873,7 +1872,7 @@ set_package_properties(OPENCL PROPERTIES
 )
 if(ENABLE_OPENCL)
     find_package(OPENCL)
-    if($ENV{DISABLE_OPENCL})
+    if(DEFINED ENV{DISABLE_OPENCL})
         set(DISABLE_OPENCL TRUE)
     endif()
     if(DISABLE_OPENCL)
@@ -1900,7 +1899,7 @@ endif()
 ################################################################################
 # CUDA (OPTIONAL)
 ################################################################################
-if($ENV{CUDA_GPU_ACCEL})
+if(DEFINED ENV{CUDA_GPU_ACCEL})
     message(STATUS "CUDA_GPU_ACCEL environment variable found.")
     set(ENABLE_CUDA ON)
 endif()
@@ -1963,7 +1962,7 @@ endif()
 # gr-osmosdr - OPTIONAL
 # https://github.com/osmocom/gr-osmosdr
 ##########################################
-if($ENV{RTLSDR_DRIVER})
+if(DEFINED ENV{RTLSDR_DRIVER})
     message(STATUS "RTLSDR_DRIVER environment variable found.")
     set(ENABLE_OSMOSDR ON)
 endif()
@@ -2023,7 +2022,7 @@ set_package_properties(LIBIIO PROPERTIES
 ##############################################
 # TELEORBIT FLEXIBAND FRONTEND - OPTIONAL
 ##############################################
-if($ENV{FLEXIBAND_DRIVER})
+if(DEFINED ENV{FLEXIBAND_DRIVER})
     message(STATUS "FLEXIBAND_DRIVER environment variable found.")
     set(ENABLE_FLEXIBAND ON)
 endif()
@@ -2055,7 +2054,7 @@ endif()
 ######################
 # GN3S - OPTIONAL
 ######################
-if($ENV{GN3S_DRIVER})
+if(DEFINED ENV{GN3S_DRIVER})
     message(STATUS "GN3S_DRIVER environment variable found.")
     set(ENABLE_GN3S ON)
 endif()
@@ -2081,7 +2080,7 @@ endif()
 #######################################################
 # CTTC's digital array beamformer prototype - OPTIONAL
 #######################################################
-if($ENV{RAW_ARRAY_DRIVER})
+if(DEFINED ENV{RAW_ARRAY_DRIVER})
     message(STATUS "RAW_ARRAY_DRIVER environment variable found.")
     set(ENABLE_ARRAY ON)
 endif()

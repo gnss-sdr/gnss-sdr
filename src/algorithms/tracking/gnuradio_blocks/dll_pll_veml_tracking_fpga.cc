@@ -433,7 +433,6 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     multicorrelator_fpga->set_output_vectors(d_correlator_outs, d_Prompt_Data);
     //multicorrelator_fpga->fpga_compute_signal_parameters_in_fpga();
     d_sample_counter_next = 0ULL;
-
 }
 
 void dll_pll_veml_tracking_fpga::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
@@ -477,21 +476,21 @@ void dll_pll_veml_tracking_fpga::start_tracking()
 
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
     d_carrier_phase_step_rad = PI_2 * d_carrier_doppler_hz / trk_parameters.fs_in;
-    d_carrier_phase_rate_step_rad = 0.0;
+
 
     // filter initialization
     //printf("d_carrier_loop_filter init d_acq_carrier_doppler_hz = %lf\n", d_acq_carrier_doppler_hz);
     d_carrier_loop_filter.initialize(static_cast<float>(d_acq_carrier_doppler_hz));  // initialize the carrier filter
 
-    // DEBUG OUTPUT
-    std::cout << "Tracking of " << systemName << " " << signal_pretty_name << " signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
-    DLOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
+    //    // DEBUG OUTPUT
+    //    std::cout << "Tracking of " << systemName << " " << signal_pretty_name << " signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
+    //    DLOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
     // enable tracking pull-in
     d_state = 1;
-    d_cloop = true;
-    d_pull_in_transitory = true;
-    d_Prompt_circular_buffer.clear();
+
+    //d_pull_in_transitory = true;
+
     //    d_Prompt_buffer_deque.clear();
     //    d_last_prompt = gr_complex(0.0, 0.0);
 }
@@ -1284,12 +1283,15 @@ void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
     d_acquisition_gnss_synchro = p_gnss_synchro;
     if (p_gnss_synchro->PRN > 0)
         {
+            //std::cout << "Acquisition is about to start " << std::endl;
+
             // When using the FPGA the SW only reads the sample counter during active tracking.
             // For the temporary pull-in conditions to work the sample_counter in the SW must be
             // cleared before reading the actual sample counter from the FPGA the first time
             d_sample_counter = 0;
             d_sample_counter_next = 0;
-            //std::cout << "Acquisition is about to start " << std::endl;
+
+            d_carrier_phase_rate_step_rad = 0.0;
 
             d_code_ph_history.clear();
             // DLL/PLL filter initialization
@@ -1364,8 +1366,14 @@ void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
 
             multicorrelator_fpga->set_local_code_and_taps(d_local_code_shift_chips, d_prompt_data_shift, d_acquisition_gnss_synchro->PRN);
 
+            d_pull_in_transitory = true;
+
             //d_Prompt_buffer_deque.clear();
             d_last_prompt = gr_complex(0.0, 0.0);
+
+            d_cloop = true;
+
+            d_Prompt_circular_buffer.clear();
         }
 }
 
@@ -1468,6 +1476,10 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                 int32_t samples_offset = round(d_acq_code_phase_samples);
                 d_acc_carrier_phase_rad -= d_carrier_phase_step_rad * static_cast<double>(samples_offset);
                 d_state = 2;
+
+                // DEBUG OUTPUT
+                std::cout << "Tracking of " << systemName << " " << signal_pretty_name << " signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
+                DLOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
                 DLOG(INFO) << "Number of samples between Acquisition and Tracking = " << acq_trk_diff_samples << " ( " << acq_trk_diff_seconds << " s)";
                 std::cout << "Number of samples between Acquisition and Tracking = " << acq_trk_diff_samples << " ( " << acq_trk_diff_seconds << " s)" << std::endl;
@@ -1772,7 +1784,7 @@ void dll_pll_veml_tracking_fpga::run_state_2(Gnss_Synchro &current_synchro_data)
                             // UPDATE INTEGRATION TIME
                             d_extend_correlation_symbols_count = 0;
                             d_current_correlation_time_s = static_cast<float>(trk_parameters.extend_correlation_symbols) * static_cast<float>(d_code_period);
-                            float new_correlation_time = static_cast<float>(trk_parameters.extend_correlation_symbols) * static_cast<float>(d_code_period);
+                            //float new_correlation_time = static_cast<float>(trk_parameters.extend_correlation_symbols) * static_cast<float>(d_code_period);
                             //d_carrier_loop_filter_old.set_pdi(new_correlation_time);
                             //d_code_loop_filter_old.set_pdi(new_correlation_time);
                             d_state = 3;  // next state is the extended correlator integrator

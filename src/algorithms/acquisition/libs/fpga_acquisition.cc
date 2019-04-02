@@ -133,12 +133,6 @@ void Fpga_Acquisition::write_local_code()
     // write local code
     for (uint32_t k = 0; k < d_vector_length; k++)
         {
-            //            tmp = d_all_fft_codes[d_nsamples_total * (d_PRN - 1) + k].real();
-            //            tmp2 = d_all_fft_codes[d_nsamples_total * (d_PRN - 1) + k].imag();
-            //
-            //            local_code = (tmp & SELECT_LSBits) | ((tmp2 * SHL_CODE_BITS) & SELECT_MSBbits);  // put together the real part and the imaginary part
-            //            fft_data = local_code & SELECT_ALL_CODE_BITS;
-            //            d_map_base[6] = fft_data;
             d_map_base[6] = d_all_fft_codes[d_nsamples_total * (d_PRN - 1) + k];
         }
 }

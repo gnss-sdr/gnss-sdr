@@ -275,9 +275,9 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     printf("trk_parameters.fll_bw_hz = %f trk_parameters.pll_bw_hz = %f trk_parameters.pll_filter_order = %d\n", trk_parameters.fll_bw_hz, trk_parameters.pll_bw_hz, trk_parameters.pll_filter_order);
     d_carrier_loop_filter.set_params(trk_parameters.fll_bw_hz, trk_parameters.pll_bw_hz, trk_parameters.pll_filter_order);
     //d_code_loop_filter_old.set_DLL_BW(trk_parameters.dll_bw_hz);
-    d_carrier_loop_filter_old.set_PLL_BW(trk_parameters.pll_bw_hz);
+    //d_carrier_loop_filter_old.set_PLL_BW(trk_parameters.pll_bw_hz);
     //d_code_loop_filter_old = Tracking_2nd_DLL_filter(static_cast<float>(d_code_period));
-    d_carrier_loop_filter_old = Tracking_2nd_PLL_filter(static_cast<float>(d_code_period));
+    //d_carrier_loop_filter_old = Tracking_2nd_PLL_filter(static_cast<float>(d_code_period));
 
     if (d_veml)
         {
@@ -1300,7 +1300,7 @@ void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
 
             d_carr_ph_history.clear();
             // DLL/PLL filter initialization
-            d_carrier_loop_filter_old.initialize();  // initialize the carrier filter
+            //d_carrier_loop_filter_old.initialize();  // initialize the carrier filter
             //d_code_loop_filter_old.initialize();     // initialize the code filter
 
             if (systemName == "GPS" and signal_type == "L5")
@@ -1355,8 +1355,8 @@ void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
             d_current_correlation_time_s = d_code_period;
 
             //d_code_loop_filter_old.set_DLL_BW(trk_parameters.dll_bw_hz);
-            d_carrier_loop_filter_old.set_PLL_BW(trk_parameters.pll_bw_hz);
-            d_carrier_loop_filter_old.set_pdi(static_cast<float>(d_code_period));
+            //d_carrier_loop_filter_old.set_PLL_BW(trk_parameters.pll_bw_hz);
+            //d_carrier_loop_filter_old.set_pdi(static_cast<float>(d_code_period));
             //d_code_loop_filter_old.set_pdi(static_cast<float>(d_code_period));
 
             d_code_loop_filter.set_noise_bandwidth(trk_parameters.dll_bw_hz);
@@ -1773,7 +1773,7 @@ void dll_pll_veml_tracking_fpga::run_state_2(Gnss_Synchro &current_synchro_data)
                             d_extend_correlation_symbols_count = 0;
                             d_current_correlation_time_s = static_cast<float>(trk_parameters.extend_correlation_symbols) * static_cast<float>(d_code_period);
                             float new_correlation_time = static_cast<float>(trk_parameters.extend_correlation_symbols) * static_cast<float>(d_code_period);
-                            d_carrier_loop_filter_old.set_pdi(new_correlation_time);
+                            //d_carrier_loop_filter_old.set_pdi(new_correlation_time);
                             //d_code_loop_filter_old.set_pdi(new_correlation_time);
                             d_state = 3;  // next state is the extended correlator integrator
                             LOG(INFO) << "Enabled " << trk_parameters.extend_correlation_symbols * static_cast<int32_t>(d_code_period * 1000.0) << " ms extended correlator in channel "
@@ -1784,7 +1784,7 @@ void dll_pll_veml_tracking_fpga::run_state_2(Gnss_Synchro &current_synchro_data)
                                       << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
                             // Set narrow taps delay values [chips]
                             //d_code_loop_filter_old.set_DLL_BW(trk_parameters.dll_bw_narrow_hz);
-                            d_carrier_loop_filter_old.set_PLL_BW(trk_parameters.pll_bw_narrow_hz);
+                            //d_carrier_loop_filter_old.set_PLL_BW(trk_parameters.pll_bw_narrow_hz);
                             d_code_loop_filter.set_update_interval(d_current_correlation_time_s);
                             d_code_loop_filter.set_noise_bandwidth(trk_parameters.dll_bw_narrow_hz);
                             d_carrier_loop_filter.set_params(trk_parameters.fll_bw_hz, trk_parameters.pll_bw_narrow_hz, trk_parameters.pll_filter_order);

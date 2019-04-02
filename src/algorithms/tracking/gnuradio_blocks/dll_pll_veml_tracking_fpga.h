@@ -33,8 +33,8 @@
 #define GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H
 
 #include "dll_pll_conf_fpga.h"
-#include "tracking_2nd_DLL_filter.h"
-#include "tracking_2nd_PLL_filter.h"
+//#include "tracking_2nd_DLL_filter.h"
+//#include "tracking_2nd_PLL_filter.h"
 #include "tracking_FLL_PLL_filter.h"  // for PLL/FLL filter
 #include "tracking_loop_filter.h"     // for DLL filter
 #include <boost/circular_buffer.hpp>
@@ -172,7 +172,7 @@ private:
 
     // PLL and DLL filter library
     //Tracking_2nd_DLL_filter d_code_loop_filter_old;
-    Tracking_2nd_PLL_filter d_carrier_loop_filter_old;
+    //Tracking_2nd_PLL_filter d_carrier_loop_filter_old;
 
     // acquisition
     double d_acq_code_phase_samples;

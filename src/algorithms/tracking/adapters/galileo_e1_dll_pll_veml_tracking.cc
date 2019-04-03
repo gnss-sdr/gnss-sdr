@@ -134,11 +134,11 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     int extend_correlation_symbols = configuration->property(role + ".extend_correlation_symbols", 1);
     float early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.15);
     trk_param.early_late_space_chips = early_late_space_chips;
-    float very_early_late_space_chips = configuration->property(role + ".very_early_late_space_chips", 0.6);
+    float very_early_late_space_chips = configuration->property(role + ".very_early_late_space_chips", 0.5);
     trk_param.very_early_late_space_chips = very_early_late_space_chips;
     float early_late_space_narrow_chips = configuration->property(role + ".early_late_space_narrow_chips", 0.15);
     trk_param.early_late_space_narrow_chips = early_late_space_narrow_chips;
-    float very_early_late_space_narrow_chips = configuration->property(role + ".very_early_late_space_narrow_chips", 0.6);
+    float very_early_late_space_narrow_chips = configuration->property(role + ".very_early_late_space_narrow_chips", 0.5);
     trk_param.very_early_late_space_narrow_chips = very_early_late_space_narrow_chips;
     bool track_pilot = configuration->property(role + ".track_pilot", false);
     if (extend_correlation_symbols < 1)

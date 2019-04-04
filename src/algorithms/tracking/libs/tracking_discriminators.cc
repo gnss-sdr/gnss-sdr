@@ -95,14 +95,14 @@ double pll_cloop_two_quadrant_atan(gr_complex prompt_s1)
  */
 double dll_nc_e_minus_l_normalized(gr_complex early_s1, gr_complex late_s1)
 {
-    double P_early, P_late;
-    P_early = std::abs(early_s1);
-    P_late = std::abs(late_s1);
-    if (P_early + P_late == 0.0)
+    double P_early = std::abs(early_s1);
+    double P_late = std::abs(late_s1);
+    double E_plus_L = P_early + P_late;
+    if (E_plus_L == 0.0)
         {
             return 0.0;
         }
-    return 0.5 * (P_early - P_late) / (P_early + P_late);
+    return 0.5 * (P_early - P_late) / E_plus_L;
 }
 
 
@@ -117,12 +117,13 @@ double dll_nc_e_minus_l_normalized(gr_complex early_s1, gr_complex late_s1)
  */
 double dll_nc_vemlp_normalized(gr_complex very_early_s1, gr_complex early_s1, gr_complex late_s1, gr_complex very_late_s1)
 {
-    double P_early, P_late;
-    P_early = std::sqrt(std::norm(very_early_s1) + std::norm(early_s1));
-    P_late = std::sqrt(std::norm(very_late_s1) + std::norm(late_s1));
-    if (P_early + P_late == 0.0)
+    double Early = std::sqrt(very_early_s1.real() * very_early_s1.real() + very_early_s1.imag() * very_early_s1.imag() + early_s1.real() * early_s1.real() + early_s1.imag() * early_s1.imag());
+    double Late = std::sqrt(late_s1.real() * late_s1.real() + late_s1.imag() * late_s1.imag() + very_late_s1.real() * very_late_s1.real() + very_late_s1.imag() * very_late_s1.imag());
+
+    double E_plus_L = Early + Late;
+    if (E_plus_L == 0.0)
         {
             return 0.0;
         }
-    return (P_early - P_late) / (P_early + P_late);
+    return (Early - Late) / E_plus_L;
 }

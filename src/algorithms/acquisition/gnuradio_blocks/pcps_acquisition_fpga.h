@@ -72,6 +72,7 @@ typedef struct
     uint32_t num_doppler_bins_step2;
     float doppler_step2;
     bool repeat_satellite;
+    uint32_t max_num_acqs;
 } pcpsconf_fpga_t;
 
 class pcps_acquisition_fpga;
@@ -130,6 +131,7 @@ private:
     uint32_t d_num_doppler_bins_step2;
     float d_doppler_step2;
     float d_doppler_center_step_two;
+    uint32_t d_max_num_acqs;
 
 public:
     ~pcps_acquisition_fpga();

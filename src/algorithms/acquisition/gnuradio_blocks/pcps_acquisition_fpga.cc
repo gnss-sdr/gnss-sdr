@@ -43,7 +43,6 @@
 
 #define AQ_DOWNSAMPLING_DELAY 40  // delay due to the downsampling filter in the acquisition
 
-
 pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_)
 {
     return pcps_acquisition_fpga_sptr(new pcps_acquisition_fpga(std::move(conf_)));
@@ -78,6 +77,8 @@ pcps_acquisition_fpga::pcps_acquisition_fpga(pcpsconf_fpga_t conf_)
     d_doppler_center_step_two = 0.0;
 
     d_doppler_max = acq_parameters.doppler_max;
+
+    d_max_num_acqs = acq_parameters.max_num_acqs;
 
     acquisition_fpga = std::make_shared<Fpga_Acquisition>(acq_parameters.device_name, acq_parameters.code_length, acq_parameters.doppler_max, d_fft_size,
 
@@ -293,28 +294,27 @@ void pcps_acquisition_fpga::set_active(bool active)
             if (d_test_statistics > d_threshold)
                 {
                     d_doppler_center_step_two = static_cast<float>(d_gnss_synchro->Acq_doppler_hz);
-                    //acquisition_fpga->open_device();
-                    //boost::chrono::high_resolution_clock::time_point start = boost::chrono::high_resolution_clock::now();
 
-                    acquisition_core(d_num_doppler_bins_step2, d_doppler_step2, d_doppler_center_step_two - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0)) * d_doppler_step2);
+                    uint32_t num_second_acq = 1;
 
-                    acquisition_fpga->close_device();
-
-                    if (d_test_statistics > d_threshold)
+                    while (num_second_acq < d_max_num_acqs)
                         {
-                            d_active = false;
-                            send_positive_acquisition();
-                            d_state = 0;  // Positive acquisition
+                            acquisition_core(d_num_doppler_bins_step2, d_doppler_step2, d_doppler_center_step_two - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0)) * d_doppler_step2);
+                            if (d_test_statistics > d_threshold)
+                                {
+                                    d_active = false;
+                                    send_positive_acquisition();
+                                    d_state = 0;  // Positive acquisition
+                                    break;
+                                }
+                            num_second_acq = num_second_acq + 1;
                         }
-                    else
+                    if (d_test_statistics <= d_threshold)
                         {
                             d_state = 0;
                             d_active = false;
                             send_negative_acquisition();
                         }
-                    //boost::chrono::nanoseconds ns = boost::chrono::high_resolution_clock::now() - start;
-                    //auto val = ns.count();
-                    //std::cout << "Count ns: " << val << std::endl;
                 }
             else
                 {
@@ -323,6 +323,41 @@ void pcps_acquisition_fpga::set_active(bool active)
                     d_active = false;
                     send_negative_acquisition();
                 }
+
+
+            //            if (d_test_statistics > d_threshold)
+            //                {
+            //                    d_doppler_center_step_two = static_cast<float>(d_gnss_synchro->Acq_doppler_hz);
+            //                    //acquisition_fpga->open_device();
+            //                    //boost::chrono::high_resolution_clock::time_point start = boost::chrono::high_resolution_clock::now();
+            //
+            //                    acquisition_core(d_num_doppler_bins_step2, d_doppler_step2, d_doppler_center_step_two - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0)) * d_doppler_step2);
+            //
+            //                    acquisition_fpga->close_device();
+            //
+            //                    if (d_test_statistics > d_threshold)
+            //                        {
+            //                            d_active = false;
+            //                            send_positive_acquisition();
+            //                            d_state = 0;  // Positive acquisition
+            //                        }
+            //                    else
+            //                        {
+            //                            d_state = 0;
+            //                            d_active = false;
+            //                            send_negative_acquisition();
+            //                        }
+            //                    //boost::chrono::nanoseconds ns = boost::chrono::high_resolution_clock::now() - start;
+            //                    //auto val = ns.count();
+            //                    //std::cout << "Count ns: " << val << std::endl;
+            //                }
+            //            else
+            //                {
+            //                    acquisition_fpga->close_device();
+            //                    d_state = 0;
+            //                    d_active = false;
+            //                    send_negative_acquisition();
+            //                }
         }
 }
 

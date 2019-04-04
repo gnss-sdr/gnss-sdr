@@ -70,6 +70,7 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     trk_param_fpga.dump_filename = dump_filename;
     bool dump_mat = configuration->property(role + ".dump_mat", true);
     trk_param_fpga.dump_mat = dump_mat;
+    trk_param_fpga.high_dyn = configuration->property(role + ".high_dyn", false);
     if (configuration->property(role + ".smoother_length", 10) < 1)
         {
             trk_param_fpga.smoother_length = 1;

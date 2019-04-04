@@ -64,7 +64,7 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     int32_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     int32_t fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     trk_param_fpga.fs_in = fs_in;
-
+    trk_param_fpga.high_dyn = configuration->property(role + ".high_dyn", false);
     if (configuration->property(role + ".smoother_length", 10) < 1)
         {
             trk_param_fpga.smoother_length = 1;

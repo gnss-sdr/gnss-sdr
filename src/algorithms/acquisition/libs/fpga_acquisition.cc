@@ -106,17 +106,10 @@ Fpga_Acquisition::Fpga_Acquisition(std::string device_name,
     Fpga_Acquisition::close_device();
     d_PRN = 0;
     DLOG(INFO) << "Acquisition FPGA class created";
-    //printf("d_excludelimit = %d\n", d_excludelimit);
 }
 
 
 Fpga_Acquisition::~Fpga_Acquisition() = default;
-
-
-//bool Fpga_Acquisition::init()
-//{
-//    return true;
-//}
 
 
 bool Fpga_Acquisition::set_local_code(uint32_t PRN)
@@ -169,8 +162,6 @@ void Fpga_Acquisition::fpga_acquisition_test_register()
     uint32_t writeval = TEST_REG_SANITY_CHECK;
     uint32_t readval;
 
-    //Fpga_Acquisition::open_device();
-
     // write value to test register
     d_map_base[15] = writeval;
     // read value from test register
@@ -184,8 +175,6 @@ void Fpga_Acquisition::fpga_acquisition_test_register()
         {
             LOG(INFO) << "Acquisition test register sanity check success!";
         }
-
-    //Fpga_Acquisition::close_device();
 }
 
 
@@ -293,9 +282,7 @@ void Fpga_Acquisition::read_acquisition_results(uint32_t *max_index,
     readval = d_map_base[7];  // read doppler index -- this read releases the interrupt line
     *doppler_index = readval;
 
-    readval = d_map_base[15];  // read dummy
-
-    //Fpga_Acquisition::close_device();
+    readval = d_map_base[15];  // read dummy (to be removed)
 }
 
 
@@ -324,9 +311,7 @@ void Fpga_Acquisition::close_device()
 
 void Fpga_Acquisition::reset_acquisition(void)
 {
-    //Fpga_Acquisition::open_device();
     d_map_base[8] = RESET_ACQUISITION;  // writing a 2 to d_map_base[8] resets the multicorrelator
-    //Fpga_Acquisition::close_device();
 }
 
 
@@ -336,8 +321,7 @@ void Fpga_Acquisition::read_fpga_total_scale_factor(uint32_t *total_scale_factor
     uint32_t readval = 0;
     readval = d_map_base[8];
     *total_scale_factor = readval;
-
-    //readval = d_map_base[8];
+    // only the total scale factor is used for the tests (fw scale factor to be removed)
     *fw_scale_factor = 0;
 }
 

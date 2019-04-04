@@ -99,7 +99,6 @@ private:
     std::string role_;
     uint32_t in_streams_;
     uint32_t out_streams_;
-
     int32_t* d_ca_codes;
     int32_t* d_data_codes;
     bool d_track_pilot;

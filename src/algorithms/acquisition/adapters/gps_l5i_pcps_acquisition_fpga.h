@@ -167,7 +167,6 @@ private:
     unsigned int in_streams_;
     unsigned int out_streams_;
 
-    //lv_16sc_t* d_all_fft_codes_;  // memory that contains all the code ffts
     uint32_t* d_all_fft_codes_;  // memory that contains all the code ffts
 
     float calculate_threshold(float pfa);

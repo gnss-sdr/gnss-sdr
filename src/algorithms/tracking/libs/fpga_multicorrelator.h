@@ -75,7 +75,6 @@ public:
         uint32_t device_base, int32_t *ca_codes, int32_t *data_codes, uint32_t code_length_chips, bool track_pilot, uint32_t multicorr_type, uint32_t code_samples_per_chip);
     ~Fpga_Multicorrelator_8sc();
     void set_output_vectors(gr_complex *corr_out, gr_complex *Prompt_Data);
-    //void fpga_compute_signal_parameters_in_fpga(void);
     void set_local_code_and_taps(
         float *shifts_chips, float *prompt_data_shift, int32_t PRN);
     void update_local_code();

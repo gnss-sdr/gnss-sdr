@@ -50,7 +50,8 @@
 
 #define NUM_PRNs 32  // total number of PRNs
 
-// the following flag is FPGA-specific and they are using during the local code initialisation in the SW to save CPU cycles during tracking
+// the following flag is FPGA-specific and they are using arrange the values of the local code in the way the FPGA
+// expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.
 #define LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY 0x0C000000  // flag that enables WE (Write Enable) of the local code FPGA
 
 GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(

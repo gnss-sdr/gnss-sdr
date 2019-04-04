@@ -274,10 +274,6 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     d_code_loop_filter = Tracking_loop_filter(d_code_period, trk_parameters.dll_bw_hz, trk_parameters.dll_filter_order, false);
     printf("trk_parameters.fll_bw_hz = %f trk_parameters.pll_bw_hz = %f trk_parameters.pll_filter_order = %d\n", trk_parameters.fll_bw_hz, trk_parameters.pll_bw_hz, trk_parameters.pll_filter_order);
     d_carrier_loop_filter.set_params(trk_parameters.fll_bw_hz, trk_parameters.pll_bw_hz, trk_parameters.pll_filter_order);
-    //d_code_loop_filter_old.set_DLL_BW(trk_parameters.dll_bw_hz);
-    //d_carrier_loop_filter_old.set_PLL_BW(trk_parameters.pll_bw_hz);
-    //d_code_loop_filter_old = Tracking_2nd_DLL_filter(static_cast<float>(d_code_period));
-    //d_carrier_loop_filter_old = Tracking_2nd_PLL_filter(static_cast<float>(d_code_period));
 
     if (d_veml)
         {
@@ -431,7 +427,6 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     uint32_t multicorr_type = trk_parameters.multicorr_type;
     multicorrelator_fpga = std::make_shared<Fpga_Multicorrelator_8sc>(d_n_correlator_taps, device_name, device_base, ca_codes, data_codes, d_code_length_chips, trk_parameters.track_pilot, multicorr_type, d_code_samples_per_chip);
     multicorrelator_fpga->set_output_vectors(d_correlator_outs, d_Prompt_Data);
-    //multicorrelator_fpga->fpga_compute_signal_parameters_in_fpga();
     d_sample_counter_next = 0ULL;
 }
 
@@ -469,6 +464,11 @@ void dll_pll_veml_tracking_fpga::msg_handler_telemetry_to_trk(const pmt::pmt_t &
 
 void dll_pll_veml_tracking_fpga::start_tracking()
 {
+    // all the calculations that do not require the data from the acquisition module are moved to the
+    // set_gnss_synchro command, which is received with a valid PRN before the acquisition module starts the
+    // acquisition process. This is done to minimize the time between the end of the acquisition process and
+    // the beginning of the tracking process.
+
     //  correct the code phase according to the delay between acq and trk
     d_acq_code_phase_samples = d_acquisition_gnss_synchro->Acq_delay_samples;
     d_acq_carrier_doppler_hz = d_acquisition_gnss_synchro->Acq_doppler_hz;
@@ -479,20 +479,10 @@ void dll_pll_veml_tracking_fpga::start_tracking()
 
 
     // filter initialization
-    //printf("d_carrier_loop_filter init d_acq_carrier_doppler_hz = %lf\n", d_acq_carrier_doppler_hz);
     d_carrier_loop_filter.initialize(static_cast<float>(d_acq_carrier_doppler_hz));  // initialize the carrier filter
-
-    //    // DEBUG OUTPUT
-    //    std::cout << "Tracking of " << systemName << " " << signal_pretty_name << " signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
-    //    DLOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
     // enable tracking pull-in
     d_state = 1;
-
-    //d_pull_in_transitory = true;
-
-    //    d_Prompt_buffer_deque.clear();
-    //    d_last_prompt = gr_complex(0.0, 0.0);
 }
 
 
@@ -672,7 +662,6 @@ void dll_pll_veml_tracking_fpga::run_dll_pll()
             // FLL discriminator
             d_carr_freq_error_hz = fll_four_quadrant_atan(d_P_accu_old, d_P_accu, 0, d_current_correlation_time_s) / GPS_TWO_PI;
             d_P_accu_old = d_P_accu;
-            //std::cout << "d_carr_freq_error_hz: " << d_carr_freq_error_hz << std::endl;
             // Carrier discriminator filter
             if ((d_pull_in_transitory == true and trk_parameters.enable_fll_pull_in == true))
                 {
@@ -691,10 +680,7 @@ void dll_pll_veml_tracking_fpga::run_dll_pll()
             d_carr_error_filt_hz = d_carrier_loop_filter.get_carrier_error(0, d_carr_phase_error_hz, d_current_correlation_time_s);
         }
 
-    //// Carrier discriminator filter
-    //d_carr_error_filt_hz = d_carrier_loop_filter_old.get_carrier_nco(d_carr_error_hz);
     // New carrier Doppler frequency estimation
-    //d_carrier_doppler_hz = d_acq_carrier_doppler_hz + d_carr_error_filt_hz;
     d_carrier_doppler_hz = d_carr_error_filt_hz;
 
     //    std::cout << "d_carrier_doppler_hz: " << d_carrier_doppler_hz << std::endl;
@@ -711,7 +697,6 @@ void dll_pll_veml_tracking_fpga::run_dll_pll()
         }
     // Code discriminator filter
     d_code_error_filt_chips = d_code_loop_filter.apply(d_code_error_chips);  // [chips/second]
-    //d_code_error_filt_chips = d_code_loop_filter_old.get_code_nco(d_code_error_chips);  // [chips/second]
 
     // New code Doppler frequency estimation
     d_code_freq_chips = (1.0 + (d_carrier_doppler_hz / d_signal_carrier_freq)) * d_code_chip_rate - d_code_error_filt_chips;
@@ -870,7 +855,6 @@ void dll_pll_veml_tracking_fpga::save_correlation_results()
         {
             d_cloop = true;
         }
-    //printf("d_cloop = %d\n", d_cloop);
 }
 
 
@@ -1285,25 +1269,18 @@ void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
         {
             //std::cout << "Acquisition is about to start " << std::endl;
 
-            // When using the FPGA the SW only reads the sample counter during active tracking.
-            // For the temporary pull-in conditions to work the sample_counter in the SW must be
-            // cleared before reading the actual sample counter from the FPGA the first time
+            // When using the FPGA the SW only reads the sample counter during active tracking in order to spare CPU clock cycles.
             d_sample_counter = 0;
             d_sample_counter_next = 0;
 
             d_carrier_phase_rate_step_rad = 0.0;
 
             d_code_ph_history.clear();
+
             // DLL/PLL filter initialization
-            // the carrier loop filter uses a variable not available until the start_tracking function is called
-            //d_carrier_loop_filter.initialize(static_cast<float>(d_acq_carrier_doppler_hz));  // initialize the carrier filter
             d_code_loop_filter.initialize();  // initialize the code filter
 
-
             d_carr_ph_history.clear();
-            // DLL/PLL filter initialization
-            //d_carrier_loop_filter_old.initialize();  // initialize the carrier filter
-            //d_code_loop_filter_old.initialize();     // initialize the code filter
 
             if (systemName == "GPS" and signal_type == "L5")
                 {
@@ -1328,8 +1305,6 @@ void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
                         }
                 }
 
-            // call this but in FPGA ???
-            //multicorrelator_cpu.set_local_code_and_taps(d_code_samples_per_chip * d_code_length_chips, d_tracking_code, d_local_code_shift_chips);
             std::fill_n(d_correlator_outs, d_n_correlator_taps, gr_complex(0.0, 0.0));
 
             d_carrier_lock_fail_counter = 0;
@@ -1355,11 +1330,6 @@ void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
                 }
 
             d_current_correlation_time_s = d_code_period;
-
-            //d_code_loop_filter_old.set_DLL_BW(trk_parameters.dll_bw_hz);
-            //d_carrier_loop_filter_old.set_PLL_BW(trk_parameters.pll_bw_hz);
-            //d_carrier_loop_filter_old.set_pdi(static_cast<float>(d_code_period));
-            //d_code_loop_filter_old.set_pdi(static_cast<float>(d_code_period));
 
             d_code_loop_filter.set_noise_bandwidth(trk_parameters.dll_bw_hz);
             d_code_loop_filter.set_update_interval(d_code_period);
@@ -1784,9 +1754,7 @@ void dll_pll_veml_tracking_fpga::run_state_2(Gnss_Synchro &current_synchro_data)
                             // UPDATE INTEGRATION TIME
                             d_extend_correlation_symbols_count = 0;
                             d_current_correlation_time_s = static_cast<float>(trk_parameters.extend_correlation_symbols) * static_cast<float>(d_code_period);
-                            //float new_correlation_time = static_cast<float>(trk_parameters.extend_correlation_symbols) * static_cast<float>(d_code_period);
-                            //d_carrier_loop_filter_old.set_pdi(new_correlation_time);
-                            //d_code_loop_filter_old.set_pdi(new_correlation_time);
+
                             d_state = 3;  // next state is the extended correlator integrator
                             LOG(INFO) << "Enabled " << trk_parameters.extend_correlation_symbols * static_cast<int32_t>(d_code_period * 1000.0) << " ms extended correlator in channel "
                                       << d_channel
@@ -1795,8 +1763,6 @@ void dll_pll_veml_tracking_fpga::run_state_2(Gnss_Synchro &current_synchro_data)
                                       << d_channel
                                       << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;
                             // Set narrow taps delay values [chips]
-                            //d_code_loop_filter_old.set_DLL_BW(trk_parameters.dll_bw_narrow_hz);
-                            //d_carrier_loop_filter_old.set_PLL_BW(trk_parameters.pll_bw_narrow_hz);
                             d_code_loop_filter.set_update_interval(d_current_correlation_time_s);
                             d_code_loop_filter.set_noise_bandwidth(trk_parameters.dll_bw_narrow_hz);
                             d_carrier_loop_filter.set_params(trk_parameters.fll_bw_hz, trk_parameters.pll_bw_narrow_hz, trk_parameters.pll_filter_order);

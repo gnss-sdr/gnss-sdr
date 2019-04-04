@@ -48,7 +48,8 @@
 #include <cstring>   // for memcpy
 #include <iostream>  // for operator<<,
 
-// the following flag is FPGA-specific and they are using during the local code initialisation in the SW to save CPU cycles during tracking
+// the following flags are FPGA-specific and they are using arrange the values of the local code in the way the FPGA
+// expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.
 #define LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY 0x0C000000      // flag that enables WE (Write Enable) of the local code FPGA
 #define LOCAL_CODE_FPGA_CORRELATOR_SELECT_COUNT 0x20000000  // flag that selects the writing of the pilot code in the FPGA (as opposed to the data code)
 

@@ -44,6 +44,8 @@
 #include <complex>  // for complex
 #include <cstring>  // for strcpy, memcpy
 
+// the following flags are FPGA-specific and they are using arrange the values of the fft of the local code in the way the FPGA
+// expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.
 #define QUANT_BITS_LOCAL_CODE 16
 #define SELECT_LSBits 0x0000FFFF         // Select the 10 LSbits out of a 20-bit word
 #define SELECT_MSBbits 0xFFFF0000        // Select the 10 MSbits out of a 20-bit word
@@ -110,7 +112,6 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     auto* fft_if = new gr::fft::fft_complex(nsamples_total, true);  // Direct FFT
     auto* code = new std::complex<float>[nsamples_total];           // buffer for the local code
     auto* fft_codes_padded = static_cast<gr_complex*>(volk_gnsssdr_malloc(nsamples_total * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-    //d_all_fft_codes_ = new lv_16sc_t[nsamples_total * GALILEO_E5A_NUMBER_OF_CODES];  // memory containing all the possible fft codes for PRN 0 to 32
     d_all_fft_codes_ = new uint32_t[(nsamples_total * GALILEO_E5A_NUMBER_OF_CODES)];  // memory containing all the possible fft codes for PRN 0 to 32
 
     float max;  // temporary maxima search
@@ -171,9 +172,6 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
                     local_code = (tmp & SELECT_LSBits) | ((tmp2 * SHL_CODE_BITS) & SELECT_MSBbits);  // put together the real part and the imaginary part
                     fft_data = local_code & SELECT_ALL_CODE_BITS;
                     d_all_fft_codes_[i + (nsamples_total * (PRN - 1))] = fft_data;
-
-                    //                    d_all_fft_codes_[i + nsamples_total * (PRN - 1)] = lv_16sc_t(static_cast<int32_t>(floor(fft_codes_padded[i].real() * (pow(2, QUANT_BITS_LOCAL_CODE - 1) - 1) / max)),
-                    //                        static_cast<int32_t>(floor(fft_codes_padded[i].imag() * (pow(2, QUANT_BITS_LOCAL_CODE - 1) - 1) / max)));
                 }
         }
 

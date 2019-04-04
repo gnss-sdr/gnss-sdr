@@ -33,8 +33,6 @@
 #define GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H
 
 #include "dll_pll_conf_fpga.h"
-//#include "tracking_2nd_DLL_filter.h"
-//#include "tracking_2nd_PLL_filter.h"
 #include "tracking_FLL_PLL_filter.h"  // for PLL/FLL filter
 #include "tracking_loop_filter.h"     // for DLL filter
 #include <boost/circular_buffer.hpp>
@@ -131,11 +129,6 @@ private:
     float *d_local_code_shift_chips;
     float *d_prompt_data_shift;
     std::shared_ptr<Fpga_Multicorrelator_8sc> multicorrelator_fpga;
-    /*  TODO: currently the multicorrelator does not support adding extra correlator
-        with different local code, thus we need extra multicorrelator instance.
-        Implement this functionality inside multicorrelator class
-        as an enhancement to increase the performance
-     */
     gr_complex *d_correlator_outs;
     gr_complex *d_Very_Early;
     gr_complex *d_Early;
@@ -167,12 +160,9 @@ private:
     double d_rem_code_phase_samples;
     float d_rem_carr_phase_rad;
 
+    // PLL and DLL filter library
     Tracking_loop_filter d_code_loop_filter;
     Tracking_FLL_PLL_filter d_carrier_loop_filter;
-
-    // PLL and DLL filter library
-    //Tracking_2nd_DLL_filter d_code_loop_filter_old;
-    //Tracking_2nd_PLL_filter d_carrier_loop_filter_old;
 
     // acquisition
     double d_acq_code_phase_samples;

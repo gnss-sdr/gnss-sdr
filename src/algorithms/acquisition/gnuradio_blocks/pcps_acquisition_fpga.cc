@@ -52,7 +52,7 @@ pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_)
 pcps_acquisition_fpga::pcps_acquisition_fpga(pcpsconf_fpga_t conf_)
 {
     acq_parameters = std::move(conf_);
-    d_sample_counter = 0ULL;  // SAMPLE COUNTER
+    d_sample_counter = 0ULL;  // Sample Counter
     d_active = false;
     d_state = 0;
     d_fft_size = acq_parameters.samples_per_code;
@@ -111,8 +111,6 @@ void pcps_acquisition_fpga::init()
     d_input_power = 0.0;
 
     d_num_doppler_bins = static_cast<uint32_t>(std::ceil(static_cast<double>(static_cast<int32_t>(d_doppler_max) - static_cast<int32_t>(-d_doppler_max)) / static_cast<double>(d_doppler_step))) + 1;
-
-    //    acquisition_fpga->init();
 }
 
 
@@ -323,41 +321,6 @@ void pcps_acquisition_fpga::set_active(bool active)
                     d_active = false;
                     send_negative_acquisition();
                 }
-
-
-            //            if (d_test_statistics > d_threshold)
-            //                {
-            //                    d_doppler_center_step_two = static_cast<float>(d_gnss_synchro->Acq_doppler_hz);
-            //                    //acquisition_fpga->open_device();
-            //                    //boost::chrono::high_resolution_clock::time_point start = boost::chrono::high_resolution_clock::now();
-            //
-            //                    acquisition_core(d_num_doppler_bins_step2, d_doppler_step2, d_doppler_center_step_two - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0)) * d_doppler_step2);
-            //
-            //                    acquisition_fpga->close_device();
-            //
-            //                    if (d_test_statistics > d_threshold)
-            //                        {
-            //                            d_active = false;
-            //                            send_positive_acquisition();
-            //                            d_state = 0;  // Positive acquisition
-            //                        }
-            //                    else
-            //                        {
-            //                            d_state = 0;
-            //                            d_active = false;
-            //                            send_negative_acquisition();
-            //                        }
-            //                    //boost::chrono::nanoseconds ns = boost::chrono::high_resolution_clock::now() - start;
-            //                    //auto val = ns.count();
-            //                    //std::cout << "Count ns: " << val << std::endl;
-            //                }
-            //            else
-            //                {
-            //                    acquisition_fpga->close_device();
-            //                    d_state = 0;
-            //                    d_active = false;
-            //                    send_negative_acquisition();
-            //                }
         }
 }
 
@@ -369,9 +332,3 @@ void pcps_acquisition_fpga::reset_acquisition(void)
     acquisition_fpga->reset_acquisition();
     acquisition_fpga->close_device();
 }
-
-
-//void pcps_acquisition_fpga::read_fpga_total_scale_factor(uint32_t* total_scale_factor, uint32_t* fw_scale_factor)
-//{
-//    acquisition_fpga->read_fpga_total_scale_factor(total_scale_factor, fw_scale_factor);
-//}

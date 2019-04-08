@@ -77,7 +77,7 @@ public:
     void set_output_vectors(gr_complex *corr_out, gr_complex *Prompt_Data);
     void set_local_code_and_taps(
         float *shifts_chips, float *prompt_data_shift, int32_t PRN);
-    void update_local_code(float rem_code_phase_chips);
+    void update_local_code();
     void Carrier_wipeoff_multicorrelator_resampler(
         float rem_carrier_phase_in_rad, float phase_step_rad,
         float carrier_phase_rate_step_rad,
@@ -96,15 +96,16 @@ private:
     gr_complex *d_Prompt_Data;
     float *d_shifts_chips;
     float *d_prompt_data_shift;
-    int32_t d_code_length_chips;
-    int32_t d_n_correlators; // number of correlators
+    uint32_t d_code_length_chips;
+    uint32_t d_code_length_samples;
+    uint32_t d_n_correlators;  // number of correlators
 
     // data related to the hardware module and the driver
     int32_t d_device_descriptor;    // driver descriptor
     volatile uint32_t *d_map_base;  // driver memory map
 
     // configuration data received from the interface
-    uint32_t d_channel;       // channel number
+    uint32_t d_channel;  // channel number
     uint32_t d_correlator_length_samples;
     float d_rem_code_phase_chips;
     float d_code_phase_step_chips;

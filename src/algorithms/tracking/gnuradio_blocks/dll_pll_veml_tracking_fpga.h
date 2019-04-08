@@ -33,20 +33,20 @@
 #define GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H
 
 #include "dll_pll_conf_fpga.h"
-#include "tracking_2nd_DLL_filter.h"
-#include "tracking_2nd_PLL_filter.h"
+#include "tracking_FLL_PLL_filter.h"  // for PLL/FLL filter
+#include "tracking_loop_filter.h"     // for DLL filter
 #include <boost/circular_buffer.hpp>
-#include <boost/shared_ptr.hpp>
-#include <gnuradio/block.h>
+#include <boost/shared_ptr.hpp>   // for boost::shared_ptr
+#include <gnuradio/block.h>       // for block
 #include <gnuradio/gr_complex.h>  // for gr_complex
-#include <gnuradio/types.h>       // for gr_vector_const_void_star
+#include <gnuradio/types.h>       // for gr_vector_int, gr_vector...
 #include <pmt/pmt.h>              // for pmt_t
-#include <cstdint>
-#include <deque>    // for deque
-#include <fstream>  // for ofstream
-#include <memory>   // for shared_ptr
+#include <cstdint>                // for int32_t
+#include <deque>                  // for deque
+#include <fstream>                // for string, ofstream
+#include <memory>                 // for shared_ptr
 #include <string>
-#include <utility>
+#include <utility>  // for pair
 
 class Fpga_Multicorrelator_8sc;
 class Gnss_Synchro;
@@ -77,7 +77,7 @@ public:
 
 private:
     friend dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(const Dll_Pll_Conf_Fpga &conf_);
-
+    void msg_handler_telemetry_to_trk(const pmt::pmt_t &msg);
     dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &conf_);
     void msg_handler_preamble_index(pmt::pmt_t msg);
 
@@ -115,23 +115,20 @@ private:
     std::string *d_secondary_code_string;
     std::string signal_pretty_name;
 
-    int32_t *d_gps_l1ca_preambles_symbols;
+    int32_t *d_preambles_symbols;
+    int32_t d_preamble_length_symbols;
     boost::circular_buffer<float> d_symbol_history;
 
-    //tracking state machine
+    // tracking state machine
     int32_t d_state;
-    //Integration period in samples
+
+    // Integration period in samples
     int32_t d_correlation_length_ms;
     int32_t d_n_correlator_taps;
 
     float *d_local_code_shift_chips;
     float *d_prompt_data_shift;
     std::shared_ptr<Fpga_Multicorrelator_8sc> multicorrelator_fpga;
-    /*  TODO: currently the multicorrelator does not support adding extra correlator
-        with different local code, thus we need extra multicorrelator instance.
-        Implement this functionality inside multicorrelator class
-        as an enhancement to increase the performance
-     */
     gr_complex *d_correlator_outs;
     gr_complex *d_Very_Early;
     gr_complex *d_Early;
@@ -146,6 +143,7 @@ private:
     gr_complex d_VE_accu;
     gr_complex d_E_accu;
     gr_complex d_P_accu;
+    gr_complex d_P_accu_old;
     gr_complex d_L_accu;
     gr_complex d_VL_accu;
     gr_complex d_last_prompt;
@@ -163,14 +161,18 @@ private:
     float d_rem_carr_phase_rad;
 
     // PLL and DLL filter library
-    Tracking_2nd_DLL_filter d_code_loop_filter;
-    Tracking_2nd_PLL_filter d_carrier_loop_filter;
+    Tracking_loop_filter d_code_loop_filter;
+    Tracking_FLL_PLL_filter d_carrier_loop_filter;
 
     // acquisition
     double d_acq_code_phase_samples;
     double d_acq_carrier_doppler_hz;
 
     // tracking vars
+    bool d_pull_in_transitory;
+    double d_current_correlation_time_s;
+    double d_carr_phase_error_hz;
+    double d_carr_freq_error_hz;
     double d_carr_error_hz;
     double d_carr_error_filt_hz;
     double d_code_error_chips;
@@ -194,11 +196,12 @@ private:
     // CN0 estimation and lock detector
     int32_t d_cn0_estimation_counter;
     int32_t d_carrier_lock_fail_counter;
-    std::deque<float> d_carrier_lock_detector_queue;
+    //std::deque<float> d_carrier_lock_detector_queue;
     double d_carrier_lock_test;
     double d_CN0_SNV_dB_Hz;
     double d_carrier_lock_threshold;
-    std::deque<gr_complex> d_Prompt_buffer_deque;
+    boost::circular_buffer<gr_complex> d_Prompt_circular_buffer;
+    //std::deque<gr_complex> d_Prompt_buffer_deque;
     gr_complex *d_Prompt_buffer;
 
     // file dump

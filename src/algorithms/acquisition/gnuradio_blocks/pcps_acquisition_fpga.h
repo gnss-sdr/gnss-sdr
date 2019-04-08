@@ -62,8 +62,7 @@ typedef struct
     int32_t code_length;
     uint32_t select_queue_Fpga;
     std::string device_name;
-    //lv_16sc_t* all_fft_codes;  // memory that contains all the code ffts
-    uint32_t* all_fft_codes;
+    uint32_t* all_fft_codes; // pointer to memory that contains all the code ffts
     //float downsampling_factor;
     uint32_t downsampling_factor;
     uint32_t total_block_exp;
@@ -188,10 +187,9 @@ public:
         d_channel = channel;
     }
 
-
     /*!
-      * \brief Set channel fsm associated to this acquisition instance
-      */
+     * \brief Set channel fsm associated to this acquisition instance
+     */
     inline void set_channel_fsm(std::shared_ptr<ChannelFsm> channel_fsm)
     {
         d_channel_fsm = channel_fsm;

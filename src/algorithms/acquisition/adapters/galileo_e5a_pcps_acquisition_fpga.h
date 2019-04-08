@@ -88,6 +88,7 @@ public:
      * tracking blocks
      */
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
+
     /*!
      * \brief Set acquisition channel unique ID
      */
@@ -105,6 +106,7 @@ public:
         channel_fsm_ = channel_fsm;
         acquisition_fpga_->set_channel_fsm(channel_fsm);
     }
+
     /*!
      * \brief Set statistics threshold of PCPS algorithm
      */

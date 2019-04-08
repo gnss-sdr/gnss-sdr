@@ -81,7 +81,6 @@ pcps_acquisition_fpga::pcps_acquisition_fpga(pcpsconf_fpga_t conf_)
     d_max_num_acqs = acq_parameters.max_num_acqs;
 
     acquisition_fpga = std::make_shared<Fpga_Acquisition>(acq_parameters.device_name, acq_parameters.code_length, acq_parameters.doppler_max, d_fft_size,
-
         acq_parameters.fs_in, acq_parameters.sampled_ms, acq_parameters.select_queue_Fpga, acq_parameters.all_fft_codes, acq_parameters.excludelimit);
 }
 
@@ -248,6 +247,7 @@ void pcps_acquisition_fpga::acquisition_core(uint32_t num_doppler_bins, uint32_t
         }
 }
 
+
 void pcps_acquisition_fpga::set_active(bool active)
 {
     d_active = active;
@@ -263,7 +263,6 @@ void pcps_acquisition_fpga::set_active(bool active)
                << ", doppler_step: " << d_doppler_step
                // no CFAR algorithm in the FPGA
                << ", use_CFAR_algorithm_flag: false";
-
 
     acquisition_fpga->open_device();
     acquisition_fpga->configure_acquisition();

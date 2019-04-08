@@ -63,7 +63,13 @@ for channelNr = channelList
     
     %% Plot all figures =======================================================
     
-    timeAxisInSeconds = (1:4:settings.msToProcess)/1000;
+    if isfield(trackResults(channelNr), 'prn_start_time_s')
+        timeAxis=trackResults(channelNr).prn_start_time_s;
+        time_label='RX Time (s)';
+    else
+        timeAxis = (1:length(trackResults(channelNr).PRN));
+        time_label='Epoch';
+    end
     
     %----- Discrete-Time Scatter Plot ---------------------------------
     plot(handles(1, 1), trackResults(channelNr).data_I,...
@@ -77,29 +83,26 @@ for channelNr = channelList
     ylabel(handles(1, 1), 'Q prompt');
     
     %----- Nav bits ---------------------------------------------------
-    t = (1:length(trackResults(channelNr).data_I));
-    plot  (handles(1, 2), t, ...
+    plot  (handles(1, 2), timeAxis, ...
         trackResults(channelNr).data_I);
     
     grid  (handles(1, 2));
     title (handles(1, 2), 'Bits of the navigation message');
-    xlabel(handles(1, 2), 'Time (s)');
+    xlabel(handles(1, 2), time_label);
     axis  (handles(1, 2), 'tight');
     
     %----- PLL discriminator unfiltered--------------------------------
-    t = (1:length(trackResults(channelNr).pllDiscr));
-    plot  (handles(2, 1), t, ...
+    plot  (handles(2, 1), timeAxis, ...
         trackResults(channelNr).pllDiscr, 'r');
     
     grid  (handles(2, 1));
     axis  (handles(2, 1), 'tight');
-    xlabel(handles(2, 1), 'Time (s)');
+    xlabel(handles(2, 1), time_label);
     ylabel(handles(2, 1), 'Amplitude');
     title (handles(2, 1), 'Raw PLL discriminator');
     
     %----- Correlation ------------------------------------------------
-    t = (1:length(trackResults(channelNr).I_VE));
-    plot(handles(2, 2), t, ...
+    plot(handles(2, 2), timeAxis, ...
         [sqrt(trackResults(channelNr).I_VE.^2 + ...
         trackResults(channelNr).Q_VE.^2)', ...
         sqrt(trackResults(channelNr).I_E.^2 + ...
@@ -114,7 +117,7 @@ for channelNr = channelList
     
     grid  (handles(2, 2));
     title (handles(2, 2), 'Correlation results');
-    xlabel(handles(2, 2), 'Time (s)');
+    xlabel(handles(2, 2), time_label);
     axis  (handles(2, 2), 'tight');
     
     hLegend = legend(handles(2, 2), '$\sqrt{I_{VE}^2 + Q_{VE}^2}$', ...
@@ -127,35 +130,32 @@ for channelNr = channelList
     set(hLegend, 'Interpreter', 'Latex');
     
     %----- PLL discriminator filtered----------------------------------
-    t = (1:length(trackResults(channelNr).pllDiscrFilt));
-    plot  (handles(3, 1), t, ...
+    plot  (handles(3, 1), timeAxis, ...
         trackResults(channelNr).pllDiscrFilt, 'b');
     
     grid  (handles(3, 1));
     axis  (handles(3, 1), 'tight');
-    xlabel(handles(3, 1), 'Time (s)');
+    xlabel(handles(3, 1), time_label);
     ylabel(handles(3, 1), 'Amplitude');
     title (handles(3, 1), 'Filtered PLL discriminator');
     
     %----- DLL discriminator unfiltered--------------------------------
-    t = (1:length(trackResults(channelNr).dllDiscr));
-    plot  (handles(3, 2), t, ...
+    plot  (handles(3, 2), timeAxis, ...
         trackResults(channelNr).dllDiscr, 'r');
     
     grid  (handles(3, 2));
     axis  (handles(3, 2), 'tight');
-    xlabel(handles(3, 2), 'Time (s)');
+    xlabel(handles(3, 2), time_label);
     ylabel(handles(3, 2), 'Amplitude');
     title (handles(3, 2), 'Raw DLL discriminator');
     
     %----- DLL discriminator filtered----------------------------------
-    t = (1:length(trackResults(channelNr).dllDiscrFilt));
-    plot  (handles(3, 3), t, ...
+    plot  (handles(3, 3), timeAxis, ...
         trackResults(channelNr).dllDiscrFilt, 'b');
     
     grid  (handles(3, 3));
     axis  (handles(3, 3), 'tight');
-    xlabel(handles(3, 3), 'Time (s)');
+    xlabel(handles(3, 3), time_label);
     ylabel(handles(3, 3), 'Amplitude');
     title (handles(3, 3), 'Filtered DLL discriminator');
     

@@ -35,6 +35,7 @@
 #ifndef GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FPGA_H_
 #define GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FPGA_H_
 
+
 #include "channel_fsm.h"
 #include "pcps_acquisition_fpga.h"
 #include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
@@ -100,8 +101,8 @@ public:
     }
 
     /*!
-      * \brief Set channel fsm associated to this acquisition instance
-      */
+     * \brief Set channel fsm associated to this acquisition instance
+     */
     inline void set_channel_fsm(std::shared_ptr<ChannelFsm> channel_fsm) override
     {
         channel_fsm_ = channel_fsm;
@@ -166,7 +167,7 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    lv_16sc_t* d_all_fft_codes_;  // memory that contains all the code ffts
+    uint32_t* d_all_fft_codes_;  // memory that contains all the code ffts
 };
 
 #endif /* GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FPGA_H_ */

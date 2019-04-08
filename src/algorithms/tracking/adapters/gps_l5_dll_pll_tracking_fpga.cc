@@ -50,7 +50,12 @@
 #include <cstring>  // for memcpy
 #include <iostream>
 
-#define NUM_PRNs 32
+#define NUM_PRNs 32  // number of PRNS
+
+// the following flags are FPGA-specific and they are using arrange the values of the local code in the way the FPGA
+// expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.
+#define LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY 0x0C000000      // flag that enables WE (Write Enable) of the local code FPGA
+#define LOCAL_CODE_FPGA_CORRELATOR_SELECT_COUNT 0x20000000  // flag that selects the writing of the pilot code in the FPGA (as opposed to the data code)
 
 
 GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
@@ -70,11 +75,27 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
     trk_param_fpga.dump_filename = dump_filename;
     bool dump_mat = configuration->property(role + ".dump_mat", true);
     trk_param_fpga.dump_mat = dump_mat;
+    trk_param_fpga.high_dyn = configuration->property(role + ".high_dyn", false);
+    if (configuration->property(role + ".smoother_length", 10) < 1)
+        {
+            trk_param_fpga.smoother_length = 1;
+            std::cout << TEXT_RED << "WARNING: GPS L5. smoother_length must be bigger than 0. It has been set to 1" << TEXT_RESET << std::endl;
+        }
+    else
+        {
+            trk_param_fpga.smoother_length = configuration->property(role + ".smoother_length", 10);
+        }
     float pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
-    if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
+    if (FLAGS_pll_bw_hz != 0.0)
+        {
+            pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
+        }
     trk_param_fpga.pll_bw_hz = pll_bw_hz;
     float dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
-    if (FLAGS_dll_bw_hz != 0.0) dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
+    if (FLAGS_dll_bw_hz != 0.0)
+        {
+            dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
+        }
     trk_param_fpga.dll_bw_hz = dll_bw_hz;
     float pll_bw_narrow_hz = configuration->property(role + ".pll_bw_narrow_hz", 2.0);
     trk_param_fpga.pll_bw_narrow_hz = pll_bw_narrow_hz;
@@ -82,6 +103,49 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
     trk_param_fpga.dll_bw_narrow_hz = dll_bw_narrow_hz;
     float early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     trk_param_fpga.early_late_space_chips = early_late_space_chips;
+
+    int dll_filter_order = configuration->property(role + ".dll_filter_order", 2);
+    if (dll_filter_order < 1)
+        {
+            LOG(WARNING) << "dll_filter_order parameter must be 1, 2 or 3. Set to 1.";
+            dll_filter_order = 1;
+        }
+    if (dll_filter_order > 3)
+        {
+            LOG(WARNING) << "dll_filter_order parameter must be 1, 2 or 3. Set to 3.";
+            dll_filter_order = 3;
+        }
+    trk_param_fpga.dll_filter_order = dll_filter_order;
+
+    int pll_filter_order = configuration->property(role + ".pll_filter_order", 3);
+    if (pll_filter_order < 2)
+        {
+            LOG(WARNING) << "pll_filter_order parameter must be 2 or 3. Set to 2.";
+            pll_filter_order = 2;
+        }
+    if (pll_filter_order > 3)
+        {
+            LOG(WARNING) << "pll_filter_order parameter must be 2 or 3. Set to 3.";
+            pll_filter_order = 3;
+        }
+    trk_param_fpga.pll_filter_order = pll_filter_order;
+
+    if (pll_filter_order == 2)
+        {
+            trk_param_fpga.fll_filter_order = 1;
+        }
+    if (pll_filter_order == 3)
+        {
+            trk_param_fpga.fll_filter_order = 2;
+        }
+
+    bool enable_fll_pull_in = configuration->property(role + ".enable_fll_pull_in", false);
+    trk_param_fpga.enable_fll_pull_in = enable_fll_pull_in;
+    float fll_bw_hz = configuration->property(role + ".fll_bw_hz", 35.0);
+    trk_param_fpga.fll_bw_hz = fll_bw_hz;
+    float pull_in_time_s = configuration->property(role + ".pull_in_time_s", 2.0);
+    trk_param_fpga.pull_in_time_s = pull_in_time_s;
+
     int32_t vector_length = std::round(static_cast<double>(fs_in) / (static_cast<double>(GPS_L5I_CODE_RATE_HZ) / static_cast<double>(GPS_L5I_CODE_LENGTH_CHIPS)));
     trk_param_fpga.vector_length = vector_length;
     int32_t extend_correlation_symbols = configuration->property(role + ".extend_correlation_symbols", 1);
@@ -111,16 +175,28 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
     char sig_[3] = "L5";
     std::memcpy(trk_param_fpga.signal, sig_, 3);
     int32_t cn0_samples = configuration->property(role + ".cn0_samples", 20);
-    if (FLAGS_cn0_samples != 20) cn0_samples = FLAGS_cn0_samples;
+    if (FLAGS_cn0_samples != 20)
+        {
+            cn0_samples = FLAGS_cn0_samples;
+        }
     trk_param_fpga.cn0_samples = cn0_samples;
     int32_t cn0_min = configuration->property(role + ".cn0_min", 25);
-    if (FLAGS_cn0_min != 25) cn0_min = FLAGS_cn0_min;
+    if (FLAGS_cn0_min != 25)
+        {
+            cn0_min = FLAGS_cn0_min;
+        }
     trk_param_fpga.cn0_min = cn0_min;
     int32_t max_lock_fail = configuration->property(role + ".max_lock_fail", 50);
-    if (FLAGS_max_lock_fail != 50) max_lock_fail = FLAGS_max_lock_fail;
+    if (FLAGS_max_lock_fail != 50)
+        {
+            max_lock_fail = FLAGS_max_lock_fail;
+        }
     trk_param_fpga.max_lock_fail = max_lock_fail;
     double carrier_lock_th = configuration->property(role + ".carrier_lock_th", 0.75);
-    if (FLAGS_carrier_lock_th != 0.85) carrier_lock_th = FLAGS_carrier_lock_th;
+    if (FLAGS_carrier_lock_th != 0.85)
+        {
+            carrier_lock_th = FLAGS_carrier_lock_th;
+        }
     trk_param_fpga.carrier_lock_th = carrier_lock_th;
 
     // FPGA configuration parameters
@@ -163,18 +239,40 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
                     gps_l5q_code_gen_float(tracking_code, PRN);
                     gps_l5i_code_gen_float(data_code, PRN);
 
+                    // The code is generated as a series of 1s and -1s. In order to store the values using only one bit, a -1 is stored as a 0 in the FPGA
                     for (uint32_t s = 0; s < code_length_chips; s++)
                         {
-                            d_ca_codes[static_cast<int32_t>(code_length_chips) * (PRN - 1) + s] = static_cast<int32_t>(tracking_code[s]);
-                            d_data_codes[static_cast<int32_t>(code_length_chips) * (PRN - 1) + s] = static_cast<int32_t>(data_code[s]);
+                            int32_t tmp_value = static_cast<int32_t>(tracking_code[s]);
+                            if (tmp_value < 0)
+                                {
+                                    tmp_value = 0;
+                                }
+                            tmp_value = tmp_value | LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY;
+                            d_ca_codes[static_cast<int32_t>(code_length_chips) * (PRN - 1) + s] = tmp_value;
+
+                            tmp_value = static_cast<int32_t>(data_code[s]);
+                            if (tmp_value < 0)
+                                {
+                                    tmp_value = 0;
+                                }
+                            tmp_value = tmp_value | LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY | LOCAL_CODE_FPGA_CORRELATOR_SELECT_COUNT;
+                            d_data_codes[static_cast<int32_t>(code_length_chips) * (PRN - 1) + s] = tmp_value;
                         }
                 }
             else
                 {
                     gps_l5i_code_gen_float(tracking_code, PRN);
+
+                    // The code is generated as a series of 1s and -1s. In order to store the values using only one bit, a -1 is stored as a 0 in the FPGA
                     for (uint32_t s = 0; s < code_length_chips; s++)
                         {
-                            d_ca_codes[static_cast<int32_t>(code_length_chips) * (PRN - 1) + s] = static_cast<int32_t>(tracking_code[s]);
+                            int32_t tmp_value = static_cast<int32_t>(tracking_code[s]);
+                            if (tmp_value < 0)
+                                {
+                                    tmp_value = 0;
+                                }
+                            tmp_value = tmp_value | LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY;
+                            d_ca_codes[static_cast<int32_t>(code_length_chips) * (PRN - 1) + s] = tmp_value;
                         }
                 }
         }

@@ -151,7 +151,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     threshold_ = 0.0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
-    channel_fsm_ = nullptr;
+    
     num_codes_ = acq_parameters_.sampled_ms / acq_parameters_.ms_per_code;
     if (in_streams_ > 1)
         {

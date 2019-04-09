@@ -560,9 +560,6 @@ void dll_pll_veml_tracking::start_tracking()
     d_carrier_phase_rate_step_rad = 0.0;
     d_carr_ph_history.clear();
     d_code_ph_history.clear();
-    // DLL/PLL filter initialization
-    d_carrier_loop_filter.initialize(static_cast<float>(d_acq_carrier_doppler_hz));  // initialize the carrier filter
-    d_code_loop_filter.initialize();                                                 // initialize the code filter
 
     if (systemName == "GPS" and signal_type == "1C")
         {
@@ -732,8 +729,14 @@ void dll_pll_veml_tracking::start_tracking()
 
     d_current_correlation_time_s = d_code_period;
 
+
+    // Initialize tracking  ==========================================
+    d_carrier_loop_filter.set_params(trk_parameters.fll_bw_hz, trk_parameters.pll_bw_hz, trk_parameters.pll_filter_order);
     d_code_loop_filter.set_noise_bandwidth(trk_parameters.dll_bw_hz);
     d_code_loop_filter.set_update_interval(d_code_period);
+    // DLL/PLL filter initialization
+    d_carrier_loop_filter.initialize(static_cast<float>(d_acq_carrier_doppler_hz));  // initialize the carrier filter
+    d_code_loop_filter.initialize();                                                 // initialize the code filter
 
     // DEBUG OUTPUT
     std::cout << "Tracking of " << systemName << " " << signal_pretty_name << " signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;

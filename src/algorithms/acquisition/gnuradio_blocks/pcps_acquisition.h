@@ -124,7 +124,7 @@ private:
     int64_t d_old_freq;
     int32_t d_state;
     uint32_t d_channel;
-    std::shared_ptr<ChannelFsm> d_channel_fsm;
+    std::weak_ptr<ChannelFsm> d_channel_fsm;
     uint32_t d_doppler_step;
     float d_doppler_center_step_two;
     uint32_t d_num_noncoherent_integrations_counter;
@@ -213,7 +213,7 @@ public:
     /*!
       * \brief Set channel fsm associated to this acquisition instance
       */
-    inline void set_channel_fsm(std::shared_ptr<ChannelFsm> channel_fsm)
+    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm)
     {
         d_channel_fsm = channel_fsm;
     }

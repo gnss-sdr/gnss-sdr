@@ -91,13 +91,6 @@ GNSSFlowgraph::~GNSSFlowgraph()
         {
             GNSSFlowgraph::disconnect();
         }
-    //debug
-    std::cout << "Called flowgraph destructor\n";
-    // Activate acquisition in enabled channels
-    for (unsigned int i = 0; i < channels_count_; i++)
-        {
-            std::cout << " ch " << i << " trk sptr use count: " << channels_.at(i)->get_left_block_trk().use_count() << "\n";
-        }
 }
 
 

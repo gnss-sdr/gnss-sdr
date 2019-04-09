@@ -83,7 +83,7 @@ private:
     //rx time follow GPST
     bool T_rx_TOW_set;
     uint32_t T_rx_TOW_ms;
-    uint32_t T_rx_TOW_offset_ms;
+    uint32_t T_rx_step_ms;
     bool d_dump;
     bool d_dump_mat;
     uint32_t d_nchannels_in;

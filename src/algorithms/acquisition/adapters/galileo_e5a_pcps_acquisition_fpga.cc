@@ -189,7 +189,7 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(ConfigurationInterf
     channel_ = 0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
-    channel_fsm_ = nullptr;
+    
     // temporary buffers that we can delete
     delete[] code;
     delete fft_if;

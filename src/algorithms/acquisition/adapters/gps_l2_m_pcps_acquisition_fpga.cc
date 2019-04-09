@@ -161,7 +161,7 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     channel_ = 0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
-    channel_fsm_ = nullptr;
+    
 
     threshold_ = 0.0;
 }

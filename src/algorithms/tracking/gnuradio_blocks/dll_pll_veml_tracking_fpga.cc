@@ -369,7 +369,6 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     d_carrier_phase_step_rad = 0.0;
     d_carrier_phase_rate_step_rad = 0.0;
     d_rem_code_phase_chips = 0.0;
-    d_last_prompt = gr_complex(0.0, 0.0);
     d_state = 0;  // initial state: standby
     clear_tracking_vars();
 
@@ -648,13 +647,11 @@ void dll_pll_veml_tracking_fpga::run_dll_pll()
         {
             // Costas loop discriminator, insensitive to 180 deg phase transitions
             d_carr_phase_error_hz = pll_cloop_two_quadrant_atan(d_P_accu) / PI_2;
-            d_carr_error_hz = pll_cloop_two_quadrant_atan(d_P_accu) / PI_2;
         }
     else
         {
             // Secondary code acquired. No symbols transition should be present in the signal
             d_carr_phase_error_hz = pll_four_quadrant_atan(d_P_accu) / PI_2;
-            d_carr_error_hz = pll_four_quadrant_atan(d_P_accu) / PI_2;
         }
 
     if ((d_pull_in_transitory == true and trk_parameters.enable_fll_pull_in == true) or trk_parameters.enable_fll_steady_state)
@@ -713,14 +710,12 @@ void dll_pll_veml_tracking_fpga::clear_tracking_vars()
     d_P_accu_old = gr_complex(0.0, 0.0);
     d_carr_phase_error_hz = 0.0;
     d_carr_freq_error_hz = 0.0;
-    d_carr_error_hz = 0.0;
     d_carr_error_filt_hz = 0.0;
     d_code_error_chips = 0.0;
     d_code_error_filt_chips = 0.0;
     d_current_symbol = 0;
     d_Prompt_circular_buffer.clear();
     //d_Prompt_buffer_deque.clear();
-    d_last_prompt = gr_complex(0.0, 0.0);
     d_carrier_phase_rate_step_rad = 0.0;
     d_code_phase_rate_step_chips = 0.0;
     d_carr_ph_history.clear();
@@ -740,6 +735,8 @@ void dll_pll_veml_tracking_fpga::update_tracking_vars()
     K_blk_samples = T_prn_samples + d_rem_code_phase_samples;
     //d_next_prn_length_samples = static_cast<int32_t>(std::floor(K_blk_samples));  // round to a discrete number of samples
     d_next_prn_length_samples = static_cast<int32_t>(std::floor(K_blk_samples));  // round to a discrete number of samples
+    //int32_t actual_prn_length_samples = static_cast<int32_t>(std::floor(K_blk_samples));
+    //d_next_prn_length_samples = actual_prn_length_samples + (actual_prn_length_samples - d_current_prn_length_samples);
 
     //################### PLL COMMANDS #################################################
     // carrier phase step (NCO phase increment per sample) [rads/sample]
@@ -1338,9 +1335,6 @@ void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
 
             d_pull_in_transitory = true;
 
-            //d_Prompt_buffer_deque.clear();
-            d_last_prompt = gr_complex(0.0, 0.0);
-
             d_cloop = true;
 
             d_Prompt_circular_buffer.clear();
@@ -1440,7 +1434,8 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
 
                 d_acq_code_phase_samples = absolute_samples_offset;
 
-                d_current_prn_length_samples = round(T_prn_mod_samples);
+                //d_current_prn_length_samples = round(T_prn_mod_samples);
+                d_current_prn_length_samples = trk_parameters.vector_length;
 
                 d_next_prn_length_samples = d_current_prn_length_samples;
                 int32_t samples_offset = round(d_acq_code_phase_samples);
@@ -1746,7 +1741,6 @@ void dll_pll_veml_tracking_fpga::run_state_2(Gnss_Synchro &current_synchro_data)
                     d_VL_accu = gr_complex(0.0, 0.0);
                     d_Prompt_circular_buffer.clear();
                     d_current_symbol = 0;
-                    d_last_prompt = gr_complex(0.0, 0.0);
                     //d_Prompt_buffer_deque.clear();
 
                     if (d_enable_extended_integration)

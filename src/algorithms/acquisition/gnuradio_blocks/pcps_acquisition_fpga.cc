@@ -151,7 +151,7 @@ void pcps_acquisition_fpga::send_positive_acquisition()
                << ", input signal power " << d_input_power;
 
     //the channel FSM is set, so, notify it directly the positive acquisition to minimize delays
-    d_channel_fsm->Event_valid_acquisition();
+    d_channel_fsm.lock()->Event_valid_acquisition();
 }
 
 
@@ -170,11 +170,11 @@ void pcps_acquisition_fpga::send_negative_acquisition()
 
     if (acq_parameters.repeat_satellite == true)
         {
-            d_channel_fsm->Event_failed_acquisition_repeat();
+            d_channel_fsm.lock()->Event_failed_acquisition_repeat();
         }
     else
         {
-            d_channel_fsm->Event_failed_acquisition_no_repeat();
+            d_channel_fsm.lock()->Event_failed_acquisition_no_repeat();
         }
 }
 

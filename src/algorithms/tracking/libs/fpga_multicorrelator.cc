@@ -37,6 +37,7 @@
 #include "fpga_multicorrelator.h"
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+//#include <chrono>
 #include <cmath>
 #include <cstdio>
 #include <fcntl.h>  // for O_RDWR, O_RSYNC
@@ -200,12 +201,16 @@ void Fpga_Multicorrelator_8sc::Carrier_wipeoff_multicorrelator_resampler(
     Fpga_Multicorrelator_8sc::fpga_launch_multicorrelator_fpga();
     int32_t irq_count;
     ssize_t nb;
+    //auto start = std::chrono::system_clock::now();
     nb = read(d_device_descriptor, &irq_count, sizeof(irq_count));
     if (nb != sizeof(irq_count))
         {
             std::cout << "Tracking_module Read failed to retrieve 4 bytes!" << std::endl;
             std::cout << "Tracking_module Interrupt number " << irq_count << std::endl;
         }
+    //auto end = std::chrono::system_clock::now();
+    //std::chrono::duration<double> elapsed_seconds = end - start;
+    //std::cout << "sleeping time : " << elapsed_seconds.count() << "s\n";
     Fpga_Multicorrelator_8sc::read_tracking_gps_results();
 }
 
@@ -280,6 +285,14 @@ void Fpga_Multicorrelator_8sc::set_channel(uint32_t channel)
     else
         {
             LOG(INFO) << "Test register sanity check success !";
+        }
+
+    // enable interrupts
+    int32_t reenable = 1;
+    ssize_t nbytes = TEMP_FAILURE_RETRY(write(d_device_descriptor, reinterpret_cast<void *>(&reenable), sizeof(int32_t)));
+    if (nbytes != sizeof(int32_t))
+        {
+            std::cerr << "Error launching the FPGA multicorrelator" << std::endl;
         }
 }
 
@@ -416,13 +429,13 @@ void Fpga_Multicorrelator_8sc::fpga_configure_signal_parameters_in_fpga(void)
 
 void Fpga_Multicorrelator_8sc::fpga_launch_multicorrelator_fpga(void)
 {
-    // enable interrupts
-    int32_t reenable = 1;
-    ssize_t nbytes = TEMP_FAILURE_RETRY(write(d_device_descriptor, reinterpret_cast<void *>(&reenable), sizeof(int32_t)));
-    if (nbytes != sizeof(int32_t))
-        {
-            std::cerr << "Error launching the FPGA multicorrelator" << std::endl;
-        }
+    //    // enable interrupts
+    //    int32_t reenable = 1;
+    //    ssize_t nbytes = TEMP_FAILURE_RETRY(write(d_device_descriptor, reinterpret_cast<void *>(&reenable), sizeof(int32_t)));
+    //    if (nbytes != sizeof(int32_t))
+    //        {
+    //            std::cerr << "Error launching the FPGA multicorrelator" << std::endl;
+    //        }
     // writing 1 to reg 14 launches the tracking
     d_map_base[START_FLAG_ADDR] = 1;
 }

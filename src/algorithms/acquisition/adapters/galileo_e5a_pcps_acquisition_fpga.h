@@ -88,6 +88,7 @@ public:
      * tracking blocks
      */
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
+
     /*!
      * \brief Set acquisition channel unique ID
      */
@@ -100,11 +101,12 @@ public:
     /*!
       * \brief Set channel fsm associated to this acquisition instance
       */
-    inline void set_channel_fsm(std::shared_ptr<ChannelFsm> channel_fsm) override
+    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
     {
         channel_fsm_ = channel_fsm;
         acquisition_fpga_->set_channel_fsm(channel_fsm);
     }
+
     /*!
      * \brief Set statistics threshold of PCPS algorithm
      */
@@ -174,7 +176,7 @@ private:
     bool acq_iq_;
 
     uint32_t channel_;
-    std::shared_ptr<ChannelFsm> channel_fsm_;
+    std::weak_ptr<ChannelFsm> channel_fsm_;
     uint32_t doppler_max_;
     uint32_t doppler_step_;
     unsigned int in_streams_;

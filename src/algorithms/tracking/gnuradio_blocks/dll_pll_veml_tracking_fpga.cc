@@ -1594,7 +1594,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                                         //                                        start = std::chrono::system_clock::now();
 
                                         int32_t corr_value = 0;
-                                        if ((d_symbol_history.size() == d_preamble_length_symbols))  // and (d_make_correlation or !d_flag_frame_sync))
+                                        if ((static_cast<int32_t>(d_symbol_history.size()) == d_preamble_length_symbols))  // and (d_make_correlation or !d_flag_frame_sync))
                                             {
                                                 int i = 0;
                                                 for (const auto &iter : d_symbol_history)

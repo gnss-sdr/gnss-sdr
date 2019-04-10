@@ -1617,7 +1617,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
 
                                         //                                        start = std::chrono::system_clock::now();
 
-                                        if (corr_value == GPS_CA_PREAMBLE_LENGTH_SYMBOLS)
+                                        if (corr_value == d_preamble_length_symbols)
                                             {
                                                 LOG(INFO) << systemName << " " << signal_pretty_name << " tracking preamble detected in channel " << d_channel
                                                           << " for satellite " << Gnss_Satellite(systemName, d_acquisition_gnss_synchro->PRN) << std::endl;

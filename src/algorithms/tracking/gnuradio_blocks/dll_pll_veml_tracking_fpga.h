@@ -91,7 +91,7 @@ private:
     void log_data(bool integrating);
     int32_t save_matfile();
 
-    void run_state_2(Gnss_Synchro &current_synchro_data);
+    //void run_state_2(Gnss_Synchro &current_synchro_data);
 
     // tracking configuration vars
     Dll_Pll_Conf_Fpga trk_parameters;

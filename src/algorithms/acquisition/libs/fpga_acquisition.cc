@@ -53,6 +53,9 @@
 #define MEM_LOCAL_CODE_WR_ENABLE 0x0C000000  // command to enable the ENA and WR pins of the internal memory of the multicorrelator
 #define POW_2_2 4                            // 2^2 (used for the conversion of floating point numbers to integers)
 #define POW_2_31 2147483648                  // 2^31 (used for the conversion of floating point numbers to integers)
+#define ENABLE_INT_ON_RESET 2                // flag that causes the acquisition to trigger an interrupt when it is reset. It is used          \
+                                             // to avoid a potential deadlock caused by the SW waiting for an interrupt from the FPGA when the \
+                                             // HW is reset
 
 #define SELECT_LSBits 0x0000FFFF         // Select the 10 LSbits out of a 20-bit word
 #define SELECT_MSBbits 0xFFFF0000        // Select the 10 MSbits out of a 20-bit word
@@ -311,7 +314,9 @@ void Fpga_Acquisition::close_device()
 
 void Fpga_Acquisition::reset_acquisition(void)
 {
-    d_map_base[8] = RESET_ACQUISITION;  // writing a 2 to d_map_base[8] resets the multicorrelator
+    d_map_base[8] = RESET_ACQUISITION;     // writing a 2 to d_map_base[8] resets the acquisition. This causes a reset of all
+                                           // the FPGA HW modules including the multicorrelators
+    d_map_base[14] = ENABLE_INT_ON_RESET;  // enable int on reset
 }
 
 

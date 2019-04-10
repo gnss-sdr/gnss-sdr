@@ -54,7 +54,10 @@
 #define DROP_SAMPLES_REG_ADDR 18
 #define INITIAL_COUNTER_VALUE_REG_ADDR_LSW 19
 #define INITIAL_COUNTER_VALUE_REG_ADDR_MSW 20
+#define CODE_PHASE_STEP_CHIPS_RATE 21
+#define PHASE_STEP_RATE_REG_ADDR 22
 #define STOP_TRACKING_REG_ADDR 23
+#define INT_ON_RST_REG_ADDR 24  // cause interrupt on reset to prevent deadlock
 #define START_FLAG_ADDR 30
 // read-write addresses
 #define TEST_REG_ADDR 31
@@ -109,15 +112,19 @@ private:
     uint32_t d_correlator_length_samples;
     float d_rem_code_phase_chips;
     float d_code_phase_step_chips;
+    float d_code_phase_rate_step_chips;
     float d_rem_carrier_phase_in_rad;
     float d_phase_step_rad;
+    float d_carrier_phase_rate_step_rad;
 
     // configuration data computed in the format that the FPGA expects
     uint32_t *d_initial_index;
     uint32_t *d_initial_interp_counter;
     uint32_t d_code_phase_step_chips_num;
+    uint32_t d_code_phase_rate_step_chips_num;
     int32_t d_rem_carr_phase_rad_int;
     int32_t d_phase_step_rad_int;
+    int32_t d_carrier_phase_rate_step_rad_int;
     uint64_t d_initial_sample_counter;
 
     // driver

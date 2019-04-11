@@ -477,6 +477,7 @@ void dll_pll_veml_tracking_fpga::start_tracking()
 
 
     // filter initialization
+
     d_carrier_loop_filter.initialize(static_cast<float>(d_acq_carrier_doppler_hz));  // initialize the carrier filter
 
     // enable tracking pull-in
@@ -1273,8 +1274,6 @@ void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
 
             d_code_ph_history.clear();
 
-            // DLL/PLL filter initialization
-            d_code_loop_filter.initialize();  // initialize the code filter
 
             d_carr_ph_history.clear();
 
@@ -1327,8 +1326,11 @@ void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
 
             d_current_correlation_time_s = d_code_period;
 
+            // DLL/PLL filter initialization
+            d_carrier_loop_filter.set_params(trk_parameters.fll_bw_hz, trk_parameters.pll_bw_hz, trk_parameters.pll_filter_order);
             d_code_loop_filter.set_noise_bandwidth(trk_parameters.dll_bw_hz);
             d_code_loop_filter.set_update_interval(d_code_period);
+            d_code_loop_filter.initialize();  // initialize the code filter
 
             multicorrelator_fpga->set_local_code_and_taps(d_local_code_shift_chips, d_prompt_data_shift, d_acquisition_gnss_synchro->PRN);
 

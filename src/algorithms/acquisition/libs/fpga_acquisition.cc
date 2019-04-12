@@ -279,13 +279,11 @@ void Fpga_Acquisition::read_acquisition_results(uint32_t *max_index,
 
     *power_sum = 0;
 
-    readval = d_map_base[8];
-    *total_blk_exp = readval;
-
     readval = d_map_base[7];  // read doppler index -- this read releases the interrupt line
     *doppler_index = readval;
 
-    readval = d_map_base[15];  // read dummy (to be removed)
+    readval = d_map_base[8];
+    *total_blk_exp = readval;
 }
 
 

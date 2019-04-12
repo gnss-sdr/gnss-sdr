@@ -53,9 +53,7 @@
 #define MEM_LOCAL_CODE_WR_ENABLE 0x0C000000  // command to enable the ENA and WR pins of the internal memory of the multicorrelator
 #define POW_2_2 4                            // 2^2 (used for the conversion of floating point numbers to integers)
 #define POW_2_31 2147483648                  // 2^31 (used for the conversion of floating point numbers to integers)
-#define ENABLE_INT_ON_RESET 2                // flag that causes the acquisition to trigger an interrupt when it is reset. It is used          \
-                                             // to avoid a potential deadlock caused by the SW waiting for an interrupt from the FPGA when the \
-                                             // HW is reset
+#define ENABLE_INT_ON_RESET 2                // flag that causes the acquisition to trigger an interrupt when it is reset.
 
 #define SELECT_LSBits 0x0000FFFF         // Select the 10 LSbits out of a 20-bit word
 #define SELECT_MSBbits 0xFFFF0000        // Select the 10 MSbits out of a 20-bit word
@@ -259,30 +257,30 @@ void Fpga_Acquisition::read_acquisition_results(uint32_t *max_index,
     uint64_t readval_long = 0;
     uint64_t readval_long_shifted = 0;
 
-    readval = d_map_base[1];
+    readval = d_map_base[1];  // read sample counter (LSW)
     initial_sample_tmp = readval;
 
-    readval_long = d_map_base[2];
+    readval_long = d_map_base[2];               // read sample counter (MSW)
     readval_long_shifted = readval_long << 32;  // 2^32
 
     initial_sample_tmp = initial_sample_tmp + readval_long_shifted;  // 2^32
     *initial_sample = initial_sample_tmp;
 
-    readval = d_map_base[3];
+    readval = d_map_base[3];  // read first peak value
     *firstpeak = static_cast<float>(readval);
 
-    readval = d_map_base[4];
+    readval = d_map_base[4];  // read second peak value
     *secondpeak = static_cast<float>(readval);
 
-    readval = d_map_base[5];
+    readval = d_map_base[5];  // read max index position
     *max_index = readval;
 
-    *power_sum = 0;
+    *power_sum = 0;  // power sum is not used
 
     readval = d_map_base[7];  // read doppler index -- this read releases the interrupt line
     *doppler_index = readval;
 
-    readval = d_map_base[8];
+    readval = d_map_base[8];  // read FFT block exponent
     *total_blk_exp = readval;
 }
 

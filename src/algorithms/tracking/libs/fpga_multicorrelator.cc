@@ -37,7 +37,6 @@
 #include "fpga_multicorrelator.h"
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
-//#include <chrono>
 #include <cmath>
 #include <cstdio>
 #include <fcntl.h>  // for O_RDWR, O_RSYNC
@@ -176,7 +175,6 @@ void Fpga_Multicorrelator_8sc::set_output_vectors(gr_complex *corr_out, gr_compl
 
 void Fpga_Multicorrelator_8sc::update_local_code()
 {
-    //d_rem_code_phase_chips = rem_code_phase_chips;
     Fpga_Multicorrelator_8sc::fpga_compute_code_shift_parameters();
     Fpga_Multicorrelator_8sc::fpga_configure_code_parameters_in_fpga();
 }
@@ -204,16 +202,12 @@ void Fpga_Multicorrelator_8sc::Carrier_wipeoff_multicorrelator_resampler(
     Fpga_Multicorrelator_8sc::fpga_launch_multicorrelator_fpga();
     int32_t irq_count;
     ssize_t nb;
-    //auto start = std::chrono::system_clock::now();
     nb = read(d_device_descriptor, &irq_count, sizeof(irq_count));
     if (nb != sizeof(irq_count))
         {
             std::cout << "Tracking_module Read failed to retrieve 4 bytes!" << std::endl;
             std::cout << "Tracking_module Interrupt number " << irq_count << std::endl;
         }
-    //auto end = std::chrono::system_clock::now();
-    //std::chrono::duration<double> elapsed_seconds = end - start;
-    //std::cout << "sleeping time : " << elapsed_seconds.count() << "s\n";
     Fpga_Multicorrelator_8sc::read_tracking_gps_results();
 }
 

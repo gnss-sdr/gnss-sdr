@@ -151,12 +151,6 @@ void Fpga_Acquisition::open_device()
 }
 
 
-bool Fpga_Acquisition::free()
-{
-    return true;
-}
-
-
 void Fpga_Acquisition::fpga_acquisition_test_register()
 {
     // sanity check : check test register

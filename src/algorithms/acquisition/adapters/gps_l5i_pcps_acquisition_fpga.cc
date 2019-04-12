@@ -161,7 +161,7 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     acq_parameters.all_fft_codes = d_all_fft_codes_;
 
     // reference for the FPGA FFT-IFFT attenuation factor
-    acq_parameters.total_block_exp = configuration_->property(role + ".total_block_exp", 12);
+    acq_parameters.total_block_exp = configuration_->property(role + ".total_block_exp", 13);
 
     acq_parameters.num_doppler_bins_step2 = configuration_->property(role + ".second_nbins", 4);
     acq_parameters.doppler_step2 = configuration_->property(role + ".second_doppler_step", 125.0);
@@ -172,7 +172,7 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     channel_ = 0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
-    
+
     // temporary buffers that we can delete
     delete[] code;
     delete fft_if;

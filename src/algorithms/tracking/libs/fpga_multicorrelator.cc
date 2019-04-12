@@ -58,7 +58,8 @@
 #define LOCAL_CODE_FPGA_CLEAR_ADDRESS_COUNTER 0x10000000
 #define LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY 0x0C000000
 #define TEST_REGISTER_TRACK_WRITEVAL 0x55AA
-
+#define ENABLE_TRK_INT_ON_RESET 1 /* flag that causes the tracking HW accelerator to trigger an interrupt when it is reset. It is used \
+                          to avoid a potential deadlock caused by the SW waiting for an interrupt from the FPGA when the HW is reset */
 #ifndef TEMP_FAILURE_RETRY
 #define TEMP_FAILURE_RETRY(exp)              \
     ({                                       \
@@ -174,26 +175,27 @@ void Fpga_Multicorrelator_8sc::set_output_vectors(gr_complex *corr_out, gr_compl
 
 void Fpga_Multicorrelator_8sc::update_local_code()
 {
-    //d_rem_code_phase_chips = rem_code_phase_chips;
     Fpga_Multicorrelator_8sc::fpga_compute_code_shift_parameters();
     Fpga_Multicorrelator_8sc::fpga_configure_code_parameters_in_fpga();
 }
 
 
 void Fpga_Multicorrelator_8sc::Carrier_wipeoff_multicorrelator_resampler(
-    float rem_carrier_phase_in_rad,
-    float phase_step_rad,
-    float carrier_phase_rate_step_rad __attribute__((unused)),
-    float rem_code_phase_chips,
-    float code_phase_step_chips __attribute__((unused)),
-    float code_phase_rate_step_chips __attribute__((unused)),
-    int32_t signal_length_samples)
+    float rem_carrier_phase_in_rad,                             // nco phase initial position
+    float phase_step_rad,                                       // nco phase step
+    float carrier_phase_rate_step_rad __attribute__((unused)),  // nco phase step rate change
+    float rem_code_phase_chips,                                 // code resampler initial position
+    float code_phase_step_chips __attribute__((unused)),        // code resampler step
+    float code_phase_rate_step_chips __attribute__((unused)),   // code resampler step rate
+    int32_t signal_length_samples)                              // number of samples
 {
-    d_rem_code_phase_chips = rem_code_phase_chips;
-    d_rem_carrier_phase_in_rad = rem_carrier_phase_in_rad;
-    d_code_phase_step_chips = code_phase_step_chips;
-    d_phase_step_rad = phase_step_rad;
-    d_correlator_length_samples = signal_length_samples;
+    d_rem_carrier_phase_in_rad = rem_carrier_phase_in_rad;        // nco phase initial position
+    d_phase_step_rad = phase_step_rad;                            // nco phase step
+    d_carrier_phase_rate_step_rad = carrier_phase_rate_step_rad;  // nco phase step rate
+    d_rem_code_phase_chips = rem_code_phase_chips;                // code resampler initial position
+    d_code_phase_step_chips = code_phase_step_chips;              // code resampler step
+    d_code_phase_rate_step_chips = code_phase_rate_step_chips;    // code resampler step rate
+    d_correlator_length_samples = signal_length_samples;          // number of samples
     Fpga_Multicorrelator_8sc::update_local_code();
     Fpga_Multicorrelator_8sc::fpga_compute_signal_parameters_in_fpga();
     Fpga_Multicorrelator_8sc::fpga_configure_signal_parameters_in_fpga();
@@ -280,6 +282,16 @@ void Fpga_Multicorrelator_8sc::set_channel(uint32_t channel)
     else
         {
             LOG(INFO) << "Test register sanity check success !";
+        }
+
+    d_map_base[INT_ON_RST_REG_ADDR] = ENABLE_TRK_INT_ON_RESET;  // enable interrupts on reset to prevent deadlock
+
+    // enable interrupts
+    int32_t reenable = 1;
+    ssize_t nbytes = TEMP_FAILURE_RETRY(write(d_device_descriptor, reinterpret_cast<void *>(&reenable), sizeof(int32_t)));
+    if (nbytes != sizeof(int32_t))
+        {
+            std::cerr << "Error launching the FPGA multicorrelator" << std::endl;
         }
 }
 
@@ -383,6 +395,7 @@ void Fpga_Multicorrelator_8sc::fpga_compute_signal_parameters_in_fpga(void)
     float d_rem_carrier_phase_in_rad_temp;
 
     d_code_phase_step_chips_num = static_cast<uint32_t>(roundf(MAX_CODE_RESAMPLER_COUNTER * d_code_phase_step_chips));
+    d_code_phase_rate_step_chips_num = static_cast<uint32_t>(roundf(MAX_CODE_RESAMPLER_COUNTER * d_code_phase_rate_step_chips));
 
     if (d_rem_carrier_phase_in_rad > M_PI)
         {
@@ -399,30 +412,35 @@ void Fpga_Multicorrelator_8sc::fpga_compute_signal_parameters_in_fpga(void)
 
     d_rem_carr_phase_rad_int = static_cast<int32_t>(roundf((d_rem_carrier_phase_in_rad_temp)*PHASE_CARR_MAX_div_PI));
     d_phase_step_rad_int = static_cast<int32_t>(roundf((d_phase_step_rad)*PHASE_CARR_MAX_div_PI));  // the FPGA accepts a range for the phase step between -pi and +pi
+    d_carrier_phase_rate_step_rad_int = static_cast<int32_t>(roundf((d_carrier_phase_rate_step_rad)*PHASE_CARR_MAX_div_PI));
 }
 
 
 void Fpga_Multicorrelator_8sc::fpga_configure_signal_parameters_in_fpga(void)
 {
-    d_map_base[CODE_PHASE_STEP_CHIPS_NUM_REG_ADDR] = d_code_phase_step_chips_num;
+    d_map_base[CODE_PHASE_STEP_CHIPS_NUM_REG_ADDR] = d_code_phase_step_chips_num;  // code phase step
 
-    d_map_base[NSAMPLES_MINUS_1_REG_ADDR] = d_correlator_length_samples - 1;
+    d_map_base[CODE_PHASE_STEP_CHIPS_RATE] = d_code_phase_rate_step_chips_num;  // code phase step rate
 
-    d_map_base[REM_CARR_PHASE_RAD_REG_ADDR] = d_rem_carr_phase_rad_int;
+    d_map_base[NSAMPLES_MINUS_1_REG_ADDR] = d_correlator_length_samples - 1;  // number of samples
 
-    d_map_base[PHASE_STEP_RAD_REG_ADDR] = d_phase_step_rad_int;
+    d_map_base[REM_CARR_PHASE_RAD_REG_ADDR] = d_rem_carr_phase_rad_int;  // initial nco phase
+
+    d_map_base[PHASE_STEP_RAD_REG_ADDR] = d_phase_step_rad_int;  // nco phase step
+
+    d_map_base[PHASE_STEP_RATE_REG_ADDR] = d_carrier_phase_rate_step_rad_int;  // nco phase step rate
 }
 
 
 void Fpga_Multicorrelator_8sc::fpga_launch_multicorrelator_fpga(void)
 {
-    // enable interrupts
-    int32_t reenable = 1;
-    ssize_t nbytes = TEMP_FAILURE_RETRY(write(d_device_descriptor, reinterpret_cast<void *>(&reenable), sizeof(int32_t)));
-    if (nbytes != sizeof(int32_t))
-        {
-            std::cerr << "Error launching the FPGA multicorrelator" << std::endl;
-        }
+    //    // enable interrupts
+    //    int32_t reenable = 1;
+    //    ssize_t nbytes = TEMP_FAILURE_RETRY(write(d_device_descriptor, reinterpret_cast<void *>(&reenable), sizeof(int32_t)));
+    //    if (nbytes != sizeof(int32_t))
+    //        {
+    //            std::cerr << "Error launching the FPGA multicorrelator" << std::endl;
+    //        }
     // writing 1 to reg 14 launches the tracking
     d_map_base[START_FLAG_ADDR] = 1;
 }

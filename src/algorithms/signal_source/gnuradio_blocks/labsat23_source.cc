@@ -30,30 +30,25 @@
 
 
 #include "labsat23_source.h"
+#include "control_message_factory.h"
 #include <gnuradio/io_signature.h>
 #include <exception>
 #include <iostream>
 #include <sstream>
 
 
-labsat23_source_sptr labsat23_make_source(const char *signal_file_basename, int channel_selector)
+labsat23_source_sptr labsat23_make_source_sptr(const char *signal_file_basename, int channel_selector, gr::msg_queue::sptr queue)
 {
-    return labsat23_source_sptr(new labsat23_source(signal_file_basename, channel_selector));
-}
-
-
-std::string labsat23_source::generate_filename()
-{
-    std::ostringstream ss;
-    ss << std::setw(4) << std::setfill('0') << d_current_file_number;
-    return d_signal_file_basename + "_" + ss.str() + ".LS3";
+    return labsat23_source_sptr(new labsat23_source(signal_file_basename, channel_selector, queue));
 }
 
 
 labsat23_source::labsat23_source(const char *signal_file_basename,
-    int channel_selector) : gr::block("labsat23_source",
-                                gr::io_signature::make(0, 0, 0),
-                                gr::io_signature::make(1, 1, sizeof(gr_complex)))
+    int channel_selector,
+    gr::msg_queue::sptr queue) : gr::block("labsat23_source",
+                                     gr::io_signature::make(0, 0, 0),
+                                     gr::io_signature::make(1, 1, sizeof(gr_complex))),
+                                 d_queue(queue)
 {
     if (channel_selector < 1 or channel_selector > 2)
         {
@@ -108,6 +103,25 @@ labsat23_source::~labsat23_source()
 }
 
 
+std::string labsat23_source::generate_filename()
+{
+    if (d_signal_file_basename.substr(d_signal_file_basename.length() - 4, 4) == ".ls2" or d_signal_file_basename.substr(d_signal_file_basename.length() - 4, 4) == ".LS2")
+        {
+            if (d_current_file_number == 0)
+                {
+                    return d_signal_file_basename;
+                }
+            else
+                {
+                    return std::string("donotexist");  // just to stop processing
+                }
+        }
+    std::ostringstream ss;
+    ss << std::setw(4) << std::setfill('0') << d_current_file_number;
+    return d_signal_file_basename + "_" + ss.str() + ".LS3";
+}
+
+
 int labsat23_source::getBit(uint8_t byte, int position)
 {
     return (byte >> position) & 0x01;
@@ -120,7 +134,7 @@ void labsat23_source::decode_samples_one_channel(int16_t input_short, gr_complex
     switch (type)
         {
         case 2:
-            //two bits per sample, 8 samples per int16
+            // two bits per sample, 8 samples per int16
             for (int i = 0; i < 8; i++)
                 {
                     out[i] = gr_complex(static_cast<float>(bs[15 - (2 * i)]),
@@ -129,45 +143,45 @@ void labsat23_source::decode_samples_one_channel(int16_t input_short, gr_complex
                 }
             break;
         case 4:
-            //four bits per sample, 4 samples per int16
+            //  bits per sample, 4 samples per int16
             for (int i = 0; i < 4; i++)
                 {
                     out[i] = gr_complex(0.0, 0.0);
-                    //In-Phase
+                    // In-Phase
                     if (bs[15 - 4 * i])
                         {
-                            if (bs[13 - 4 * i])  //11
+                            if (bs[13 - 4 * i])  // 11
                                 {
                                     out[i] += gr_complex(-1, 0);
                                 }
-                            else  //10
+                            else  // 10
                                 {
                                     out[i] += gr_complex(-2, 0);
                                 }
                         }
                     else
                         {
-                            if (bs[13 - 4 * i])  //01
+                            if (bs[13 - 4 * i])  // 01
                                 {
                                     out[i] += gr_complex(1, 0);
                                 }
                         }
 
-                    //Quadrature
+                    // Quadrature
                     if (bs[14 - 4 * i])
                         {
-                            if (bs[12 - 4 * i])  //11
+                            if (bs[12 - 4 * i])  // 11
                                 {
                                     out[i] += gr_complex(0, -1);
                                 }
-                            else  //10
+                            else  // 10
                                 {
                                     out[i] += gr_complex(0, -2);
                                 }
                         }
                     else
                         {
-                            if (bs[12 - 4 * i])  //01
+                            if (bs[12 - 4 * i])  // 01
                                 {
                                     out[i] += gr_complex(0, 1);
                                 }
@@ -192,8 +206,8 @@ int labsat23_source::general_work(int noutput_items,
                 {
                     char memblock[1024];
                     binary_input_file->read(memblock, 1024);
-                    //parse Labsat header
-                    //check preamble
+                    // parse Labsat header
+                    // check preamble
                     int byte_counter = 0;
                     bool preamble_ok = true;
                     for (int i = 0; i < 8; i++)
@@ -388,7 +402,6 @@ int labsat23_source::general_work(int noutput_items,
             return -1;
         }
 
-
     // ready to start reading samples
     switch (d_bits_per_sample)
         {
@@ -419,8 +432,10 @@ int labsat23_source::general_work(int noutput_items,
                                     }
 
                                 // trigger the read of the next file in the sequence
-                                std::cout << "End of current file, reading the next Labsat file in sequence: " << generate_filename() << std::endl;
-
+                                if (d_labsat_version == 3)
+                                    {
+                                        std::cout << "End of current file, reading the next Labsat file in sequence: " << generate_filename() << std::endl;
+                                    }
                                 d_current_file_number++;
                                 binary_input_file->close();
                                 binary_input_file->open(generate_filename().c_str(), std::ios::in | std::ios::binary);
@@ -430,7 +445,17 @@ int labsat23_source::general_work(int noutput_items,
                                     }
                                 else
                                     {
-                                        std::cout << "Last file reached, LabSat source stop" << std::endl;
+                                        if (d_labsat_version == 3)
+                                            {
+                                                std::cout << "Last file reached, LabSat source stop" << std::endl;
+                                            }
+                                        else
+                                            {
+                                                std::cout << "End of file reached, LabSat source stop" << std::endl;
+                                            }
+                                        auto *cmf = new ControlMessageFactory();
+                                        d_queue->handle(cmf->GetQueueMessage(200, 0));
+                                        delete cmf;
                                         return -1;
                                     }
                             }
@@ -468,8 +493,10 @@ int labsat23_source::general_work(int noutput_items,
                                     }
 
                                 // trigger the read of the next file in the sequence
-                                std::cout << "End of current file, reading the next Labsat file in sequence: " << generate_filename() << std::endl;
-
+                                if (d_labsat_version == 3)
+                                    {
+                                        std::cout << "End of current file, reading the next Labsat file in sequence: " << generate_filename() << std::endl;
+                                    }
                                 d_current_file_number++;
                                 binary_input_file->close();
                                 binary_input_file->open(generate_filename().c_str(), std::ios::in | std::ios::binary);
@@ -479,7 +506,17 @@ int labsat23_source::general_work(int noutput_items,
                                     }
                                 else
                                     {
-                                        std::cout << "Last file reached, LabSat source stop" << std::endl;
+                                        if (d_labsat_version == 3)
+                                            {
+                                                std::cout << "Last file reached, LabSat source stop" << std::endl;
+                                            }
+                                        else
+                                            {
+                                                std::cout << "End of file reached, LabSat source stop" << std::endl;
+                                            }
+                                        auto *cmf = new ControlMessageFactory();
+                                        d_queue->handle(cmf->GetQueueMessage(200, 0));
+                                        delete cmf;
                                         return -1;
                                     }
                             }

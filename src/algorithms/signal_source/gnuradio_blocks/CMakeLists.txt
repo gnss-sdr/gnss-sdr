@@ -64,6 +64,7 @@ target_link_libraries(signal_source_gr_blocks
         Gnuradio::runtime
         signal_source_libs
     PRIVATE
+        core_receiver
         Gflags::gflags
         Glog::glog
 )

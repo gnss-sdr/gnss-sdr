@@ -177,7 +177,7 @@ void Fpga_Acquisition::run_acquisition(void)
 {
     // enable interrupts
     int32_t reenable = 1;
-    int32_t disable_int = 0;
+    //int32_t disable_int = 0;
     ssize_t nbytes = TEMP_FAILURE_RETRY(write(d_fd, reinterpret_cast<void *>(&reenable), sizeof(int32_t)));
     if (nbytes != sizeof(int32_t))
         {
@@ -197,11 +197,11 @@ void Fpga_Acquisition::run_acquisition(void)
             std::cout << "acquisition module Interrupt number " << irq_count << std::endl;
         }
 
-    nbytes = TEMP_FAILURE_RETRY(write(d_fd, reinterpret_cast<void *>(&disable_int), sizeof(int32_t)));
-    if (nbytes != sizeof(int32_t))
-        {
-            std::cerr << "Error disabling interruptions in the FPGA." << std::endl;
-        }
+    //    nbytes = TEMP_FAILURE_RETRY(write(d_fd, reinterpret_cast<void *>(&disable_int), sizeof(int32_t)));
+    //    if (nbytes != sizeof(int32_t))
+    //        {
+    //            std::cerr << "Error disabling interruptions in the FPGA." << std::endl;
+    //        }
 }
 
 

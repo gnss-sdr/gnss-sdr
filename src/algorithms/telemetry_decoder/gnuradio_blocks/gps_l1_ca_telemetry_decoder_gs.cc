@@ -351,9 +351,6 @@ void gps_l1_ca_telemetry_decoder_gs::reset()
 int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
-    int32_t corr_value = 0;
-    int32_t preamble_diff = 0;
-
     auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);            // Get the output buffer pointer
     const auto **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);  // Get the input buffer pointer
 
@@ -381,6 +378,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
         case 0:  // no preamble information
             {
                 //correlate with preamble
+                int32_t corr_value = 0;
                 if (d_symbol_history.size() >= GPS_CA_PREAMBLE_LENGTH_SYMBOLS)
                     {
                         // ******* preamble correlation ********
@@ -407,6 +405,8 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
         case 1:  // possible preamble lock
             {
                 //correlate with preamble
+                int32_t corr_value = 0;
+                int32_t preamble_diff = 0;
                 if (d_symbol_history.size() >= GPS_CA_PREAMBLE_LENGTH_SYMBOLS)
                     {
                         // ******* preamble correlation ********

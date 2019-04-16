@@ -102,6 +102,7 @@ private:
     bool d_sent_tlm_failed_msg;
     uint32_t d_stat;
     bool d_flag_frame_sync;
+    bool flag_PLL_180_deg_phase_locked;
 
     bool d_flag_parity;
     bool d_flag_preamble;

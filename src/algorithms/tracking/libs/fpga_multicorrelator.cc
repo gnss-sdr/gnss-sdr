@@ -58,8 +58,8 @@
 #define LOCAL_CODE_FPGA_CLEAR_ADDRESS_COUNTER 0x10000000
 #define LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY 0x0C000000
 #define TEST_REGISTER_TRACK_WRITEVAL 0x55AA
-#define ENABLE_TRK_INT_ON_RESET 1 /* flag that causes the tracking HW accelerator to trigger an interrupt when it is reset. It is used \
-                          to avoid a potential deadlock caused by the SW waiting for an interrupt from the FPGA when the HW is reset */
+//#define ENABLE_TRK_INT_ON_RESET 1 /* flag that causes the tracking HW accelerator to trigger an interrupt when it is reset. It is used \
+//                          to avoid a potential deadlock caused by the SW waiting for an interrupt from the FPGA when the HW is reset */
 #ifndef TEMP_FAILURE_RETRY
 #define TEMP_FAILURE_RETRY(exp)              \
     ({                                       \
@@ -284,7 +284,7 @@ void Fpga_Multicorrelator_8sc::set_channel(uint32_t channel)
             LOG(INFO) << "Test register sanity check success !";
         }
 
-    d_map_base[INT_ON_RST_REG_ADDR] = ENABLE_TRK_INT_ON_RESET;  // enable interrupts on reset to prevent deadlock
+    //d_map_base[INT_ON_RST_REG_ADDR] = ENABLE_TRK_INT_ON_RESET;  // enable interrupts on reset to prevent deadlock
 
     // enable interrupts
     int32_t reenable = 1;

@@ -83,6 +83,7 @@ const int32_t GPS_L1_CA_HISTORY_DEEP = 100;
     {                          \
         1, 0, 0, 0, 1, 0, 1, 1 \
     }
+const std::string GPS_CA_PREAMBLE = {"10001011"};
 const int32_t GPS_CA_PREAMBLE_LENGTH_BITS = 8;
 const int32_t GPS_CA_PREAMBLE_LENGTH_SYMBOLS = 160;
 const double GPS_CA_PREAMBLE_DURATION_S = 0.160;

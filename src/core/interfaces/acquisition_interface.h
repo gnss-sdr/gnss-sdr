@@ -58,7 +58,7 @@ class AcquisitionInterface : public GNSSBlockInterface
 public:
     virtual void set_gnss_synchro(Gnss_Synchro* gnss_synchro) = 0;
     virtual void set_channel(unsigned int channel_id) = 0;
-    virtual void set_channel_fsm(std::shared_ptr<ChannelFsm> channel_fsm) = 0;
+    virtual void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) = 0;
     virtual void set_threshold(float threshold) = 0;
     virtual void set_doppler_max(unsigned int doppler_max) = 0;
     virtual void set_doppler_step(unsigned int doppler_step) = 0;

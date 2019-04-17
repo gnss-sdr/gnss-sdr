@@ -53,10 +53,10 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(ConfigurationInterface* configura
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/signal_source.dat";
     freq_ = configuration->property(role + ".freq", GPS_L1_FREQ_HZ);
-    sample_rate_ = configuration->property(role + ".sampling_frequency", 2600000);
-    bandwidth_ = configuration->property(role + ".bandwidth", 2000000);
+    sample_rate_ = configuration->property(role + ".sampling_frequency", 12500000);
+    bandwidth_ = configuration->property(role + ".bandwidth", 12500000);
     rx1_en_ = configuration->property(role + ".rx1_enable", true);
-    rx2_en_ = configuration->property(role + ".rx2_enable", false);
+    rx2_en_ = configuration->property(role + ".rx2_enable", true);
     buffer_size_ = configuration->property(role + ".buffer_size", 0xA0000);
     quadrature_ = configuration->property(role + ".quadrature", true);
     rf_dc_ = configuration->property(role + ".rf_dc", true);

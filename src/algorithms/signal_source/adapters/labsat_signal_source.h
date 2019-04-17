@@ -81,7 +81,6 @@ private:
     unsigned int out_stream_;
     std::string item_type_;
     size_t item_size_;
-    uint64_t samples_;
     std::string filename_;
     bool dump_;
     std::string dump_filename_;

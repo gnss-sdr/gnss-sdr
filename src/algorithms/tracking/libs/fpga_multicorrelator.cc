@@ -51,14 +51,15 @@
 #define CODE_PHASE_STEP_CHIPS_NUM_NBITS CODE_RESAMPLER_NUM_BITS_PRECISION
 #define pwrtwo(x) (1 << (x))
 #define MAX_CODE_RESAMPLER_COUNTER pwrtwo(CODE_PHASE_STEP_CHIPS_NUM_NBITS)  // 2^CODE_PHASE_STEP_CHIPS_NUM_NBITS
-#define PHASE_CARR_NBITS 32
-#define PHASE_CARR_NBITS_INT 1
-#define PHASE_CARR_NBITS_FRAC PHASE_CARR_NBITS - PHASE_CARR_NBITS_INT
+#define PHASE_CARR_MAX 2147483648                                           // 2^(31) The phase is represented as a 32-bit vector in 1.31 format
+#define PHASE_CARR_MAX_div_PI 683565275.5764316                             // 2^(31)/pi
+#define TWO_PI 6.283185307179586
 #define LOCAL_CODE_FPGA_CORRELATOR_SELECT_COUNT 0x20000000
 #define LOCAL_CODE_FPGA_CLEAR_ADDRESS_COUNTER 0x10000000
 #define LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY 0x0C000000
 #define TEST_REGISTER_TRACK_WRITEVAL 0x55AA
-
+#define ENABLE_TRK_INT_ON_RESET 1 /* flag that causes the tracking HW accelerator to trigger an interrupt when it is reset. It is used \
+                          to avoid a potential deadlock caused by the SW waiting for an interrupt from the FPGA when the HW is reset */
 #ifndef TEMP_FAILURE_RETRY
 #define TEMP_FAILURE_RETRY(exp)              \
     ({                                       \
@@ -118,6 +119,7 @@ Fpga_Multicorrelator_8sc::Fpga_Multicorrelator_8sc(int32_t n_correlators,
     d_data_codes = data_codes;
     d_multicorr_type = multicorr_type;
     d_code_samples_per_chip = code_samples_per_chip;
+    d_code_length_samples = d_code_length_chips * d_code_samples_per_chip;
 
     DLOG(INFO) << "TRACKING FPGA CLASS CREATED";
 }
@@ -171,28 +173,30 @@ void Fpga_Multicorrelator_8sc::set_output_vectors(gr_complex *corr_out, gr_compl
 }
 
 
-void Fpga_Multicorrelator_8sc::update_local_code(float rem_code_phase_chips)
+void Fpga_Multicorrelator_8sc::update_local_code()
 {
-    d_rem_code_phase_chips = rem_code_phase_chips;
     Fpga_Multicorrelator_8sc::fpga_compute_code_shift_parameters();
     Fpga_Multicorrelator_8sc::fpga_configure_code_parameters_in_fpga();
 }
 
 
 void Fpga_Multicorrelator_8sc::Carrier_wipeoff_multicorrelator_resampler(
-    float rem_carrier_phase_in_rad,
-    float phase_step_rad,
-    float carrier_phase_rate_step_rad __attribute__((unused)),
-    float rem_code_phase_chips,
-    float code_phase_step_chips __attribute__((unused)),
-    float code_phase_rate_step_chips __attribute__((unused)),
-    int32_t signal_length_samples)
+    float rem_carrier_phase_in_rad,                             // nco phase initial position
+    float phase_step_rad,                                       // nco phase step
+    float carrier_phase_rate_step_rad __attribute__((unused)),  // nco phase step rate change
+    float rem_code_phase_chips,                                 // code resampler initial position
+    float code_phase_step_chips __attribute__((unused)),        // code resampler step
+    float code_phase_rate_step_chips __attribute__((unused)),   // code resampler step rate
+    int32_t signal_length_samples)                              // number of samples
 {
-    update_local_code(rem_code_phase_chips);
-    d_rem_carrier_phase_in_rad = rem_carrier_phase_in_rad;
-    d_code_phase_step_chips = code_phase_step_chips;
-    d_phase_step_rad = phase_step_rad;
-    d_correlator_length_samples = signal_length_samples;
+    d_rem_carrier_phase_in_rad = rem_carrier_phase_in_rad;        // nco phase initial position
+    d_phase_step_rad = phase_step_rad;                            // nco phase step
+    d_carrier_phase_rate_step_rad = carrier_phase_rate_step_rad;  // nco phase step rate
+    d_rem_code_phase_chips = rem_code_phase_chips;                // code resampler initial position
+    d_code_phase_step_chips = code_phase_step_chips;              // code resampler step
+    d_code_phase_rate_step_chips = code_phase_rate_step_chips;    // code resampler step rate
+    d_correlator_length_samples = signal_length_samples;          // number of samples
+    Fpga_Multicorrelator_8sc::update_local_code();
     Fpga_Multicorrelator_8sc::fpga_compute_signal_parameters_in_fpga();
     Fpga_Multicorrelator_8sc::fpga_configure_signal_parameters_in_fpga();
     Fpga_Multicorrelator_8sc::fpga_launch_multicorrelator_fpga();
@@ -279,6 +283,16 @@ void Fpga_Multicorrelator_8sc::set_channel(uint32_t channel)
         {
             LOG(INFO) << "Test register sanity check success !";
         }
+
+    d_map_base[INT_ON_RST_REG_ADDR] = ENABLE_TRK_INT_ON_RESET;  // enable interrupts on reset to prevent deadlock
+
+    // enable interrupts
+    int32_t reenable = 1;
+    ssize_t nbytes = TEMP_FAILURE_RETRY(write(d_device_descriptor, reinterpret_cast<void *>(&reenable), sizeof(int32_t)));
+    if (nbytes != sizeof(int32_t))
+        {
+            std::cerr << "Error launching the FPGA multicorrelator" << std::endl;
+        }
 }
 
 
@@ -298,88 +312,72 @@ uint32_t Fpga_Multicorrelator_8sc::fpga_acquisition_test_register(
 void Fpga_Multicorrelator_8sc::fpga_configure_tracking_gps_local_code(int32_t PRN)
 {
     uint32_t k;
-    uint32_t code_chip;
-    uint32_t select_pilot_corelator = LOCAL_CODE_FPGA_CORRELATOR_SELECT_COUNT;
 
     d_map_base[PROG_MEMS_ADDR] = LOCAL_CODE_FPGA_CLEAR_ADDRESS_COUNTER;
-    for (k = 0; k < d_code_length_chips * d_code_samples_per_chip; k++)
+    for (k = 0; k < d_code_length_samples; k++)
         {
-            if (d_ca_codes[((int32_t(d_code_length_chips)) * d_code_samples_per_chip * (PRN - 1)) + k] == 1)
-                {
-                    code_chip = 1;
-                }
-            else
-                {
-                    code_chip = 0;
-                }
-
-            // copy the local code to the FPGA memory one by one
-            d_map_base[PROG_MEMS_ADDR] = LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY | code_chip;  // | select_fpga_correlator;
+            d_map_base[PROG_MEMS_ADDR] = d_ca_codes[(d_code_length_samples * (PRN - 1)) + k];
         }
     if (d_track_pilot)
         {
             d_map_base[PROG_MEMS_ADDR] = LOCAL_CODE_FPGA_CLEAR_ADDRESS_COUNTER;
-            for (k = 0; k < d_code_length_chips * d_code_samples_per_chip; k++)
+            for (k = 0; k < d_code_length_samples; k++)
                 {
-                    if (d_data_codes[((int32_t(d_code_length_chips)) * d_code_samples_per_chip * (PRN - 1)) + k] == 1)
-                        {
-                            code_chip = 1;
-                        }
-                    else
-                        {
-                            code_chip = 0;
-                        }
-                    d_map_base[PROG_MEMS_ADDR] = LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY | code_chip | select_pilot_corelator;
+                    d_map_base[PROG_MEMS_ADDR] = d_data_codes[(d_code_length_samples * (PRN - 1)) + k];
                 }
         }
+
+    d_map_base[CODE_LENGTH_MINUS_1_REG_ADDR] = (d_code_length_samples)-1;  // number of samples - 1
 }
 
 
 void Fpga_Multicorrelator_8sc::fpga_compute_code_shift_parameters(void)
 {
-    float temp_calculation;
-    int32_t i;
+    float frac_part;   // decimal part
+    int32_t dec_part;  // fractional part
 
-    for (i = 0; i < d_n_correlators; i++)
+    for (uint32_t i = 0; i < d_n_correlators; i++)
         {
-            temp_calculation = floor(d_shifts_chips[i] - d_rem_code_phase_chips);
+            dec_part = floor(d_shifts_chips[i] - d_rem_code_phase_chips);
 
-            if (temp_calculation < 0)
+            if (dec_part < 0)
                 {
-                    temp_calculation = temp_calculation + (d_code_length_chips * d_code_samples_per_chip);  // % operator does not work as in Matlab with negative numbers
+                    dec_part = dec_part + d_code_length_samples;  // % operator does not work as in Matlab with negative numbers
                 }
-            d_initial_index[i] = static_cast<uint32_t>((static_cast<int32_t>(temp_calculation)) % (d_code_length_chips * d_code_samples_per_chip));
-            temp_calculation = fmod(d_shifts_chips[i] - d_rem_code_phase_chips, 1.0);
-            if (temp_calculation < 0)
+            d_initial_index[i] = dec_part;
+
+
+            frac_part = fmod(d_shifts_chips[i] - d_rem_code_phase_chips, 1.0);
+            if (frac_part < 0)
                 {
-                    temp_calculation = temp_calculation + 1.0;  // fmod operator does not work as in Matlab with negative numbers
+                    frac_part = frac_part + 1.0;  // fmod operator does not work as in Matlab with negative numbers
                 }
 
-            d_initial_interp_counter[i] = static_cast<uint32_t>(floor(MAX_CODE_RESAMPLER_COUNTER * temp_calculation));
+            d_initial_interp_counter[i] = static_cast<uint32_t>(floor(MAX_CODE_RESAMPLER_COUNTER * frac_part));
         }
     if (d_track_pilot)
         {
-            temp_calculation = floor(d_prompt_data_shift[0] - d_rem_code_phase_chips);
+            dec_part = floor(d_prompt_data_shift[0] - d_rem_code_phase_chips);
 
-            if (temp_calculation < 0)
+            if (dec_part < 0)
                 {
-                    temp_calculation = temp_calculation + (d_code_length_chips * d_code_samples_per_chip);  // % operator does not work as in Matlab with negative numbers
+                    dec_part = dec_part + d_code_length_samples;  // % operator does not work as in Matlab with negative numbers
                 }
-            d_initial_index[d_n_correlators] = static_cast<uint32_t>((static_cast<int32_t>(temp_calculation)) % (d_code_length_chips * d_code_samples_per_chip));
-            temp_calculation = fmod(d_prompt_data_shift[0] - d_rem_code_phase_chips, 1.0);
-            if (temp_calculation < 0)
+            d_initial_index[d_n_correlators] = dec_part;
+
+            frac_part = fmod(d_prompt_data_shift[0] - d_rem_code_phase_chips, 1.0);
+            if (frac_part < 0)
                 {
-                    temp_calculation = temp_calculation + 1.0;  // fmod operator does not work as in Matlab with negative numbers
+                    frac_part = frac_part + 1.0;  // fmod operator does not work as in Matlab with negative numbers
                 }
-            d_initial_interp_counter[d_n_correlators] = static_cast<uint32_t>(floor(MAX_CODE_RESAMPLER_COUNTER * temp_calculation));
+            d_initial_interp_counter[d_n_correlators] = static_cast<uint32_t>(floor(MAX_CODE_RESAMPLER_COUNTER * frac_part));
         }
 }
 
 
 void Fpga_Multicorrelator_8sc::fpga_configure_code_parameters_in_fpga(void)
 {
-    int32_t i;
-    for (i = 0; i < d_n_correlators; i++)
+    for (uint32_t i = 0; i < d_n_correlators; i++)
         {
             d_map_base[INITIAL_INDEX_REG_BASE_ADDR + i] = d_initial_index[i];
             d_map_base[INITIAL_INTERP_COUNTER_REG_BASE_ADDR + i] = d_initial_interp_counter[i];
@@ -389,8 +387,6 @@ void Fpga_Multicorrelator_8sc::fpga_configure_code_parameters_in_fpga(void)
             d_map_base[INITIAL_INDEX_REG_BASE_ADDR + d_n_correlators] = d_initial_index[d_n_correlators];
             d_map_base[INITIAL_INTERP_COUNTER_REG_BASE_ADDR + d_n_correlators] = d_initial_interp_counter[d_n_correlators];
         }
-
-    d_map_base[CODE_LENGTH_MINUS_1_REG_ADDR] = (d_code_length_chips * d_code_samples_per_chip) - 1;  // number of samples - 1
 }
 
 
@@ -399,58 +395,52 @@ void Fpga_Multicorrelator_8sc::fpga_compute_signal_parameters_in_fpga(void)
     float d_rem_carrier_phase_in_rad_temp;
 
     d_code_phase_step_chips_num = static_cast<uint32_t>(roundf(MAX_CODE_RESAMPLER_COUNTER * d_code_phase_step_chips));
-    if (d_code_phase_step_chips > 1.0)
-        {
-            std::cout << "Warning : d_code_phase_step_chips = " << d_code_phase_step_chips << " cannot be bigger than one" << std::endl;
-        }
+    d_code_phase_rate_step_chips_num = static_cast<uint32_t>(roundf(MAX_CODE_RESAMPLER_COUNTER * d_code_phase_rate_step_chips));
 
     if (d_rem_carrier_phase_in_rad > M_PI)
         {
-            d_rem_carrier_phase_in_rad_temp = -2 * M_PI + d_rem_carrier_phase_in_rad;
+            d_rem_carrier_phase_in_rad_temp = -TWO_PI + d_rem_carrier_phase_in_rad;
         }
     else if (d_rem_carrier_phase_in_rad < -M_PI)
         {
-            d_rem_carrier_phase_in_rad_temp = 2 * M_PI + d_rem_carrier_phase_in_rad;
+            d_rem_carrier_phase_in_rad_temp = TWO_PI + d_rem_carrier_phase_in_rad;
         }
     else
         {
             d_rem_carrier_phase_in_rad_temp = d_rem_carrier_phase_in_rad;
         }
-    d_rem_carr_phase_rad_int = static_cast<int32_t>(roundf((fabs(d_rem_carrier_phase_in_rad_temp) / M_PI) * pow(2, PHASE_CARR_NBITS_FRAC)));
-    if (d_rem_carrier_phase_in_rad_temp < 0)
-        {
-            d_rem_carr_phase_rad_int = -d_rem_carr_phase_rad_int;
-        }
-    d_phase_step_rad_int = static_cast<int32_t>(roundf((fabs(d_phase_step_rad) / M_PI) * pow(2, PHASE_CARR_NBITS_FRAC)));  // the FPGA accepts a range for the phase step between -pi and +pi
 
-    if (d_phase_step_rad < 0)
-        {
-            d_phase_step_rad_int = -d_phase_step_rad_int;
-        }
+    d_rem_carr_phase_rad_int = static_cast<int32_t>(roundf((d_rem_carrier_phase_in_rad_temp)*PHASE_CARR_MAX_div_PI));
+    d_phase_step_rad_int = static_cast<int32_t>(roundf((d_phase_step_rad)*PHASE_CARR_MAX_div_PI));  // the FPGA accepts a range for the phase step between -pi and +pi
+    d_carrier_phase_rate_step_rad_int = static_cast<int32_t>(roundf((d_carrier_phase_rate_step_rad)*PHASE_CARR_MAX_div_PI));
 }
 
 
 void Fpga_Multicorrelator_8sc::fpga_configure_signal_parameters_in_fpga(void)
 {
-    d_map_base[CODE_PHASE_STEP_CHIPS_NUM_REG_ADDR] = d_code_phase_step_chips_num;
+    d_map_base[CODE_PHASE_STEP_CHIPS_NUM_REG_ADDR] = d_code_phase_step_chips_num;  // code phase step
 
-    d_map_base[NSAMPLES_MINUS_1_REG_ADDR] = d_correlator_length_samples - 1;
+    d_map_base[CODE_PHASE_STEP_CHIPS_RATE] = d_code_phase_rate_step_chips_num;  // code phase step rate
 
-    d_map_base[REM_CARR_PHASE_RAD_REG_ADDR] = d_rem_carr_phase_rad_int;
+    d_map_base[NSAMPLES_MINUS_1_REG_ADDR] = d_correlator_length_samples - 1;  // number of samples
 
-    d_map_base[PHASE_STEP_RAD_REG_ADDR] = d_phase_step_rad_int;
+    d_map_base[REM_CARR_PHASE_RAD_REG_ADDR] = d_rem_carr_phase_rad_int;  // initial nco phase
+
+    d_map_base[PHASE_STEP_RAD_REG_ADDR] = d_phase_step_rad_int;  // nco phase step
+
+    d_map_base[PHASE_STEP_RATE_REG_ADDR] = d_carrier_phase_rate_step_rad_int;  // nco phase step rate
 }
 
 
 void Fpga_Multicorrelator_8sc::fpga_launch_multicorrelator_fpga(void)
 {
-    // enable interrupts
-    int32_t reenable = 1;
-    ssize_t nbytes = TEMP_FAILURE_RETRY(write(d_device_descriptor, reinterpret_cast<void *>(&reenable), sizeof(int32_t)));
-    if (nbytes != sizeof(int32_t))
-        {
-            std::cerr << "Error launching the FPGA multicorrelator" << std::endl;
-        }
+    //    // enable interrupts
+    //    int32_t reenable = 1;
+    //    ssize_t nbytes = TEMP_FAILURE_RETRY(write(d_device_descriptor, reinterpret_cast<void *>(&reenable), sizeof(int32_t)));
+    //    if (nbytes != sizeof(int32_t))
+    //        {
+    //            std::cerr << "Error launching the FPGA multicorrelator" << std::endl;
+    //        }
     // writing 1 to reg 14 launches the tracking
     d_map_base[START_FLAG_ADDR] = 1;
 }
@@ -460,9 +450,8 @@ void Fpga_Multicorrelator_8sc::read_tracking_gps_results(void)
 {
     int32_t readval_real;
     int32_t readval_imag;
-    int32_t k;
 
-    for (k = 0; k < d_n_correlators; k++)
+    for (uint32_t k = 0; k < d_n_correlators; k++)
         {
             readval_real = d_map_base[RESULT_REG_REAL_BASE_ADDR + k];
             readval_imag = d_map_base[RESULT_REG_IMAG_BASE_ADDR + k];

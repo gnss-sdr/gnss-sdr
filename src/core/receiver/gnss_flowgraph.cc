@@ -246,8 +246,8 @@ void GNSSFlowgraph::connect()
                                 {
                                     // Connect the multichannel signal source to multiple signal conditioners
                                     // GNURADIO max_streams=-1 means infinite ports!
-                                    LOG(INFO) << "sig_source_.at(i)->get_right_block()->output_signature()->max_streams()=" << sig_source_.at(i)->get_right_block()->output_signature()->max_streams();
-                                    LOG(INFO) << "sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()=" << sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()->max_streams();
+                                    DLOG(INFO) << "sig_source_.at(i)->get_right_block()->output_signature()->max_streams()=" << sig_source_.at(i)->get_right_block()->output_signature()->max_streams();
+                                    DLOG(INFO) << "sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()=" << sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()->max_streams();
 
                                     if (sig_source_.at(i)->get_right_block()->output_signature()->max_streams() > 1)
                                         {
@@ -443,10 +443,26 @@ void GNSSFlowgraph::connect()
                                                 {
                                                     // create a FIR low pass filter
                                                     std::vector<float> taps;
+
+                                                    //                                                    float beta = 7.0;
+                                                    //                                                    float halfband = 0.5;
+                                                    //                                                    float fractional_bw = 0.4;
+                                                    //                                                    float rate = 1.0 / static_cast<float>(decimation);
+                                                    //
+                                                    //                                                    float trans_width = rate * (halfband - fractional_bw);
+                                                    //                                                    float mid_transition_band = rate * halfband - trans_width / 2.0;
+                                                    //
+                                                    //                                                    taps = gr::filter::firdes::low_pass(1.0,
+                                                    //                                                        1.0,
+                                                    //                                                        mid_transition_band,
+                                                    //                                                        trans_width,
+                                                    //                                                        gr::filter::firdes::win_type::WIN_KAISER,
+                                                    //                                                        beta);
+
                                                     taps = gr::filter::firdes::low_pass(1.0,
                                                         fs,
                                                         acq_fs / 2.1,
-                                                        acq_fs / 10,
+                                                        acq_fs / 2,
                                                         gr::filter::firdes::win_type::WIN_HAMMING);
 
                                                     gr::basic_block_sptr fir_filter_ccf_ = gr::filter::fir_filter_ccf::make(decimation, taps);

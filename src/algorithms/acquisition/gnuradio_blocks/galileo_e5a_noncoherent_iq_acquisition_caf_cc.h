@@ -100,7 +100,7 @@ private:
         int doppler_offset);
     float estimate_input_power(gr_complex* in);
 
-    std::shared_ptr<ChannelFsm> d_channel_fsm;
+    std::weak_ptr<ChannelFsm> d_channel_fsm;
     int64_t d_fs_in;
     int d_samples_per_ms;
     int d_sampled_ms;
@@ -216,7 +216,7 @@ public:
     /*!
       * \brief Set channel fsm associated to this acquisition instance
       */
-    inline void set_channel_fsm(std::shared_ptr<ChannelFsm> channel_fsm)
+    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm)
     {
         d_channel_fsm = channel_fsm;
     }

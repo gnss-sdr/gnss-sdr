@@ -162,7 +162,7 @@ private:
     cl::CommandQueue* d_cl_queue;
     clFFT_Plan d_cl_fft_plan;
     cl_int d_cl_fft_batch_size;
-    std::shared_ptr<ChannelFsm> d_channel_fsm;
+    std::weak_ptr<ChannelFsm> d_channel_fsm;
     int d_opencl;
 
 public:
@@ -230,7 +230,7 @@ public:
     /*!
       * \brief Set channel fsm associated to this acquisition instance
       */
-    inline void set_channel_fsm(std::shared_ptr<ChannelFsm> channel_fsm)
+    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm)
     {
         d_channel_fsm = channel_fsm;
     }

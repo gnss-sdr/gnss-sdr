@@ -53,16 +53,14 @@ public:
         int64_t fs_in,
         uint32_t sampled_ms,
         uint32_t select_queue,
-        lv_16sc_t *all_fft_codes,
+        uint32_t *all_fft_codes,
         uint32_t excludelimit);
 
     ~Fpga_Acquisition();
-    bool init();
     bool set_local_code(uint32_t PRN);
-    bool free();
-    void set_doppler_sweep(uint32_t num_sweeps);
+    void set_doppler_sweep(uint32_t num_sweeps, uint32_t doppler_step, int32_t doppler_min);
     void run_acquisition(void);
-    void set_phase_step(uint32_t doppler_index);
+
     void read_acquisition_results(uint32_t *max_index, float *firstpeak, float *secondpeak, uint64_t *initial_sample, float *power_sum, uint32_t *doppler_index, uint32_t *total_blk_exp);
 
     void block_samples();
@@ -110,7 +108,7 @@ private:
     // data related to the hardware module and the driver
     int32_t d_fd;                   // driver descriptor
     volatile uint32_t *d_map_base;  // driver memory map
-    lv_16sc_t *d_all_fft_codes;     // memory that contains all the code ffts
+    uint32_t *d_all_fft_codes;      // memory that contains all the code ffts
     uint32_t d_vector_length;       // number of samples incluing padding and number of ms
     uint32_t d_excludelimit;
     uint32_t d_nsamples_total;  // number of samples including padding
@@ -122,7 +120,6 @@ private:
     uint32_t d_PRN;             // PRN
     // FPGA private functions
     void fpga_acquisition_test_register(void);
-    void fpga_configure_acquisition_local_code(lv_16sc_t fft_local_code[]);
     void read_result_valid(uint32_t *result_valid);
 };
 

@@ -147,7 +147,7 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     threshold_ = 0.0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
-    channel_fsm_ = nullptr;
+    
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";

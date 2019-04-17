@@ -101,7 +101,7 @@ public:
     /*!
       * \brief Set channel fsm associated to this acquisition instance
       */
-    inline void set_channel_fsm(std::shared_ptr<ChannelFsm> channel_fsm) override
+    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
     {
         channel_fsm_ = channel_fsm;
         acquisition_fpga_->set_channel_fsm(channel_fsm);
@@ -176,7 +176,7 @@ private:
     bool acq_iq_;
 
     uint32_t channel_;
-    std::shared_ptr<ChannelFsm> channel_fsm_;
+    std::weak_ptr<ChannelFsm> channel_fsm_;
     uint32_t doppler_max_;
     uint32_t doppler_step_;
     unsigned int in_streams_;
@@ -184,7 +184,7 @@ private:
 
     Gnss_Synchro* gnss_synchro_;
 
-    lv_16sc_t* d_all_fft_codes_;  // memory that contains all the code ffts
+    uint32_t* d_all_fft_codes_;  // memory that contains all the code ffts
 };
 
 #endif /* GNSS_SDR_GALILEO_E5A_PCPS_ACQUISITION_FPGA_H_ */

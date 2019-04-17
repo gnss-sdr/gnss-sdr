@@ -62,11 +62,16 @@ typedef struct
     int32_t code_length;
     uint32_t select_queue_Fpga;
     std::string device_name;
-    lv_16sc_t* all_fft_codes;  // memory that contains all the code ffts
-    float downsampling_factor;
+    uint32_t* all_fft_codes; // pointer to memory that contains all the code ffts
+    //float downsampling_factor;
+    uint32_t downsampling_factor;
     uint32_t total_block_exp;
     uint32_t excludelimit;
+    bool make_2_steps;
+    uint32_t num_doppler_bins_step2;
+    float doppler_step2;
     bool repeat_satellite;
+    uint32_t max_num_acqs;
 } pcpsconf_fpga_t;
 
 class pcps_acquisition_fpga;
@@ -95,6 +100,8 @@ private:
 
     float first_vs_second_peak_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
 
+    void acquisition_core(uint32_t num_doppler_bins, uint32_t doppler_step, int32_t doppler_max);
+
     pcpsconf_fpga_t acq_parameters;
     bool d_active;
     float d_threshold;
@@ -104,18 +111,26 @@ private:
     float d_test_statistics;
     int32_t d_state;
     uint32_t d_channel;
-    std::shared_ptr<ChannelFsm> d_channel_fsm;
+    std::weak_ptr<ChannelFsm> d_channel_fsm;
     uint32_t d_doppler_step;
+    uint32_t d_doppler_max;
     uint32_t d_fft_size;
     uint32_t d_num_doppler_bins;
     uint64_t d_sample_counter;
     Gnss_Synchro* d_gnss_synchro;
     std::shared_ptr<Fpga_Acquisition> acquisition_fpga;
 
-    float d_downsampling_factor;
+    //float d_downsampling_factor;
+    uint32_t d_downsampling_factor;
     uint32_t d_select_queue_Fpga;
 
     uint32_t d_total_block_exp;
+
+    bool d_make_2_steps;
+    uint32_t d_num_doppler_bins_step2;
+    float d_doppler_step2;
+    float d_doppler_center_step_two;
+    uint32_t d_max_num_acqs;
 
 public:
     ~pcps_acquisition_fpga();
@@ -172,11 +187,10 @@ public:
         d_channel = channel;
     }
 
-
     /*!
-      * \brief Set channel fsm associated to this acquisition instance
-      */
-    inline void set_channel_fsm(std::shared_ptr<ChannelFsm> channel_fsm)
+     * \brief Set channel fsm associated to this acquisition instance
+     */
+    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm)
     {
         d_channel_fsm = channel_fsm;
     }
@@ -197,7 +211,7 @@ public:
      */
     inline void set_doppler_max(uint32_t doppler_max)
     {
-        acq_parameters.doppler_max = doppler_max;
+        d_doppler_max = doppler_max;
         acquisition_fpga->set_doppler_max(doppler_max);
     }
 
@@ -215,11 +229,6 @@ public:
      * \brief This funciton triggers a HW reset of the FPGA PL.
      */
     void reset_acquisition(void);
-
-    /*!
-     * \brief This funciton is only used for the unit tests
-     */
-    void read_fpga_total_scale_factor(uint32_t* total_scale_factor, uint32_t* fw_scale_factor);
 };
 
 #endif /* GNSS_SDR_PCPS_ACQUISITION_FPGA_H_*/

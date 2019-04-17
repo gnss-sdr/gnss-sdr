@@ -114,7 +114,7 @@ hybrid_observables_gs::hybrid_observables_gs(uint32_t nchannels_in,
                 }
         }
     T_rx_TOW_ms = 0U;
-    T_rx_TOW_offset_ms = 0U;
+    T_rx_step_ms = 20;  //read from config at the adapter GNSS-SDR.observable_interval_ms!!
     T_rx_TOW_set = false;
 
     // rework
@@ -443,38 +443,39 @@ void hybrid_observables_gs::update_TOW(const std::vector<Gnss_Synchro> &data)
     //2. If the TOW is set, it must be incremented by the desired receiver time step.
     //   the time step must match the observables timer block (connected to the las input channel)
     std::vector<Gnss_Synchro>::const_iterator it;
-    //    if (!T_rx_TOW_set)
-    //        {
-    //uint32_t TOW_ref = std::numeric_limits<uint32_t>::max();
-    uint32_t TOW_ref = 0U;
-    for (it = data.cbegin(); it != data.cend(); it++)
+    if (!T_rx_TOW_set)
         {
-            if (it->Flag_valid_word)
+            //uint32_t TOW_ref = std::numeric_limits<uint32_t>::max();
+            uint32_t TOW_ref = 0U;
+            for (it = data.cbegin(); it != data.cend(); it++)
                 {
-                    if (it->TOW_at_current_symbol_ms > TOW_ref)
+                    if (it->Flag_valid_word)
                         {
-                            TOW_ref = it->TOW_at_current_symbol_ms;
-                            T_rx_TOW_set = true;
+                            if (it->TOW_at_current_symbol_ms > TOW_ref)
+                                {
+                                    TOW_ref = it->TOW_at_current_symbol_ms;
+                                    T_rx_TOW_set = true;
+                                }
                         }
                 }
+            T_rx_TOW_ms = TOW_ref - (TOW_ref % 20);
         }
-    T_rx_TOW_ms = TOW_ref;
-    //}
-    //    else
-    //        {
-    //            T_rx_TOW_ms += T_rx_step_ms;
-    //            //todo: check what happens during the week rollover
-    //            if (T_rx_TOW_ms >= 604800000)
-    //                {
-    //                    T_rx_TOW_ms = T_rx_TOW_ms % 604800000;
-    //                }
-    //        }
-    //    std::cout << "T_rx_TOW_ms: " << T_rx_TOW_ms << std::endl;
+    else
+        {
+            T_rx_TOW_ms += T_rx_step_ms;  //the tow time step increment must match the ref time channel step
+            //todo: check what happens during the week rollover
+            if (T_rx_TOW_ms >= 604800000)
+                {
+                    T_rx_TOW_ms = T_rx_TOW_ms % 604800000;
+                }
+        }
 }
 
 
 void hybrid_observables_gs::compute_pranges(std::vector<Gnss_Synchro> &data)
 {
+    //    std::cout.precision(17);
+    //    std::cout << " T_rx_TOW_ms: " << static_cast<double>(T_rx_TOW_ms) << std::endl;
     std::vector<Gnss_Synchro>::iterator it;
     for (it = data.begin(); it != data.end(); it++)
         {
@@ -486,13 +487,21 @@ void hybrid_observables_gs::compute_pranges(std::vector<Gnss_Synchro> &data)
                     it->Pseudorange_m = traveltime_s * SPEED_OF_LIGHT;
                     it->Flag_valid_pseudorange = true;
                     // debug code
-                    // std::cout.precision(17);
-                    // std::cout << "[" << it->Channel_ID << "] interp_TOW_ms: " << it->interp_TOW_ms << std::endl;
-                    // std::cout << "[" << it->Channel_ID << "] Diff T_rx_TOW_ms - interp_TOW_ms: " << static_cast<double>(T_rx_TOW_ms) - it->interp_TOW_ms << std::endl;
-                    // std::cout << "[" << it->Channel_ID << "] Pseudorange_m: " << it->Pseudorange_m << std::endl;
+                    //
+                    //                    std::cout << "[" << it->Channel_ID << "] interp_TOW_ms: " << it->interp_TOW_ms << std::endl;
+                    //                    std::cout << "[" << it->Channel_ID << "] Diff T_rx_TOW_ms - interp_TOW_ms: " << static_cast<double>(T_rx_TOW_ms) - it->interp_TOW_ms << std::endl;
                 }
         }
-    // usleep(1000);
+
+    //    for (it = data.begin(); it != data.end(); it++)
+    //        {
+    //            if (it->Flag_valid_word)
+    //                {
+    //                    std::cout << "[" << it->Channel_ID << "] Pseudorange_m: " << it->Pseudorange_m << std::endl;
+    //                }
+    //        }
+    //    std::cout << std::endl;
+    //    usleep(1000);
 }
 
 
@@ -548,7 +557,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
             for (uint32_t n = 0; n < d_nchannels_out; n++)
                 {
                     Gnss_Synchro interpolated_gnss_synchro{};
-                    if (!interp_trk_obs(interpolated_gnss_synchro, n, d_Rx_clock_buffer.front() + T_rx_TOW_offset_ms * T_rx_clock_step_samples))
+                    if (!interp_trk_obs(interpolated_gnss_synchro, n, d_Rx_clock_buffer.front()))
                         {
                             // Produce an empty observation
                             interpolated_gnss_synchro = Gnss_Synchro();
@@ -564,49 +573,10 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                         }
                     epoch_data.push_back(interpolated_gnss_synchro);
                 }
-            if (n_valid > 0)
-                {
-                    update_TOW(epoch_data);
-                    int tow_inc_loop_count = 0;
-                    while (T_rx_TOW_ms % 20 != 0 and tow_inc_loop_count < 20)
-                        {
-                            tow_inc_loop_count++;
-                            T_rx_TOW_offset_ms++;
-                            T_rx_TOW_offset_ms = T_rx_TOW_offset_ms % 20;
-                            //check if effectively the receiver TOW is now multiple of 20 ms
-                            n_valid = 0;
-                            epoch_data.clear();
-                            for (uint32_t n = 0; n < d_nchannels_out; n++)
-                                {
-                                    Gnss_Synchro interpolated_gnss_synchro{};
-                                    if (!interp_trk_obs(interpolated_gnss_synchro, n, d_Rx_clock_buffer.front() + T_rx_TOW_offset_ms * T_rx_clock_step_samples))
-                                        {
-                                            // Produce an empty observation
-                                            interpolated_gnss_synchro = Gnss_Synchro();
-                                            interpolated_gnss_synchro.Flag_valid_pseudorange = false;
-                                            interpolated_gnss_synchro.Flag_valid_word = false;
-                                            interpolated_gnss_synchro.Flag_valid_acquisition = false;
-                                            interpolated_gnss_synchro.fs = 0;
-                                            interpolated_gnss_synchro.Channel_ID = n;
-                                        }
-                                    else
-                                        {
-                                            n_valid++;
-                                        }
-                                    epoch_data.push_back(interpolated_gnss_synchro);
-                                }
-                            update_TOW(epoch_data);
-                            // debug code:
-                            // if (T_rx_TOW_ms % 20 != 0)
-                            //     {
-                            //         std::cout << "Warning: RX TOW is not multiple of 20 ms\n";
-                            //     }
-                            // std::cout << "T_rx_TOW_ms=" << T_rx_TOW_ms << " T_rx_TOW_offset_ms=" << T_rx_TOW_offset_ms << " ->" << T_rx_TOW_ms % 20 << std::endl;
-                        }
-                }
 
             if (n_valid > 0)
                 {
+                    update_TOW(epoch_data);
                     compute_pranges(epoch_data);
                 }
 

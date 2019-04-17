@@ -100,7 +100,7 @@ public:
     /*!
       * \brief Set channel fsm associated to this acquisition instance
       */
-    inline void set_channel_fsm(std::shared_ptr<ChannelFsm> channel_fsm) override
+    inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
     {
         channel_fsm_ = channel_fsm;
         acquisition_fpga_->set_channel_fsm(channel_fsm);
@@ -158,7 +158,7 @@ private:
     pcps_acquisition_fpga_sptr acquisition_fpga_;
     std::string item_type_;
     unsigned int channel_;
-    std::shared_ptr<ChannelFsm> channel_fsm_;
+    std::weak_ptr<ChannelFsm> channel_fsm_;
     float threshold_;
     unsigned int doppler_max_;
     unsigned int doppler_step_;
@@ -169,7 +169,7 @@ private:
     unsigned int in_streams_;
     unsigned int out_streams_;
 
-    lv_16sc_t* d_all_fft_codes_;  // memory that contains all the code ffts
+    uint32_t* d_all_fft_codes_;  // memory that contains all the code ffts
 
     //float calculate_threshold(float pfa);
 };

@@ -393,7 +393,6 @@ if(ENABLE_UNIT_TESTING)
             system_testing_lib
             core_receiver
             core_system_parameters
-            core_protobuf
     )
     if(ENABLE_UNIT_TESTING_EXTRA)
         target_link_libraries(run_tests PUBLIC Gpstk::gpstk)

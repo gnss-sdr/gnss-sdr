@@ -16,15 +16,19 @@
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${CMAKE_SOURCE_DIR}/docs/protobuf/gnss_synchro.proto)
 
 set(CORE_MONITOR_LIBS_SOURCES
     gnss_synchro_monitor.cc
     gnss_synchro_udp_sink.cc
+    ${PROTO_SRCS}
 )
 
 set(CORE_MONITOR_LIBS_HEADERS
     gnss_synchro_monitor.h
     gnss_synchro_udp_sink.h
+    serdes_gnss_synchro.h
+    ${PROTO_HDRS}
 )
 
 list(SORT CORE_MONITOR_LIBS_HEADERS)
@@ -42,10 +46,17 @@ target_link_libraries(core_monitor
         Boost::serialization
         Boost::system
         Gnuradio::runtime
+        protobuf::libprotobuf
         core_system_parameters
-        core_protobuf
     PRIVATE
         Gnuradio::pmt
+)
+
+get_filename_component(PROTO_INCLUDE_HEADERS ${PROTO_HDRS} DIRECTORY)
+
+target_include_directories(core_monitor
+    PUBLIC
+        ${PROTO_INCLUDE_HEADERS}
 )
 
 if(OS_IS_MACOSX)
@@ -66,7 +77,10 @@ if(ENABLE_CLANG_TIDY)
     endif()
 endif()
 
+
+
 set_property(TARGET core_monitor
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${PROTO_INCLUDE_HEADERS}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

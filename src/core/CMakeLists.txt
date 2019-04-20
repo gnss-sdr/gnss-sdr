@@ -16,7 +16,6 @@
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
-add_subdirectory(protobuf)
 add_subdirectory(system_parameters)
 add_subdirectory(libs)
 add_subdirectory(receiver)

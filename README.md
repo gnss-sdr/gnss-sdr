@@ -68,7 +68,7 @@ $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time
        libboost-serialization-dev liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr \
        libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev \
        libgnutls-openssl-dev libpcap-dev python-mako python-six libmatio-dev libpugixml-dev \
-       libgtest-dev
+       libgtest-dev libprotobuf-dev protobuf-compiler
 ~~~~~~
 
 Please note that the required files from `libgtest-dev` were moved to `googletest` in Debian 9 "stretch" and Ubuntu 18.04 "bionic", and moved back again to `libgtest-dev` in Debian 10 "buster" and Ubuntu 18.10 "cosmic".
@@ -86,7 +86,7 @@ If you are using Arch Linux:
 ~~~~~~
 $ pacman -S gcc make cmake git boost boost-libs log4cpp libvolk gnuradio \
        gnuradio-osmosdr blas lapack gflags google-glog openssl pugixml \
-       python-mako python-six libmatio libpcap gtest
+       python-mako python-six libmatio libpcap gtest protobuf
 ~~~~~~
 
 Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
@@ -119,7 +119,8 @@ $ sudo yum install make automake gcc gcc-c++ kernel-devel cmake git boost-devel 
        boost-date-time boost-system boost-filesystem boost-thread boost-chrono \
        boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel \
        blas-devel lapack-devel matio-devel armadillo-devel gflags-devel \
-       glog-devel openssl-devel libpcap-devel python-mako python-six pugixml-devel
+       glog-devel openssl-devel libpcap-devel python-mako python-six \
+       pugixml-devel protobuf-devel
 ~~~~~~
 
 Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
@@ -135,7 +136,7 @@ zypper install cmake git gcc-c++ boost-devel libboost_atomic-devel \
        libboost_thread-devel libboost_chrono-devel libboost_serialization-devel \
        log4cpp-devel gtest gnuradio-devel pugixml-devel libpcap-devel \
        armadillo-devel libtool automake hdf5-devel libopenssl-devel python-Mako \
-       python-six
+       python-six protobuf-devel
 ~~~~~~
 
 Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
@@ -280,6 +281,20 @@ $ sudo pacman -S openssl                        # For Arch Linux
 ~~~~~~
 
 In case the GnuTLS library with openssl extensions package is not available in your GNU/Linux distribution, GNSS-SDR can also work well with OpenSSL.
+
+
+
+#### Install [Protocol Buffers](https://developers.google.com/protocol-buffers/ "Protocol Buffers' Homepage"), a portable mechanism for serialization of structured data:
+
+~~~~~~
+$ wget https://github.com/protocolbuffers/protobuf/releases/download/v3.7.1/protobuf-cpp-3.7.1.tar.gz
+$ tar xvfz protobuf-cpp-3.7.1.tar.gz
+$ cd protobuf-3.7.1
+$ ./autogen.sh
+$ ./configure
+$ make
+$ sudo make install
+~~~~~~
 
 
 
@@ -570,6 +585,7 @@ $ sudo port install gnutls
 $ sudo port install google-glog +gflags
 $ sudo port install matio
 $ sudo port install pugixml
+$ sudo port install protobuf3-cpp
 $ sudo port install py27-mako
 $ sudo port install py27-six
 $ sudo port install doxygen +docs
@@ -617,6 +633,7 @@ $ brew install libmatio
 $ brew install log4cpp
 $ brew install openssl
 $ brew install pugixml
+$ brew install protobuf
 $ pip install mako
 $ pip install six
 ~~~~~~

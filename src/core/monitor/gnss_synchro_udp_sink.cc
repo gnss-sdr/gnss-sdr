@@ -37,6 +37,7 @@
 
 Gnss_Synchro_Udp_Sink::Gnss_Synchro_Udp_Sink(std::vector<std::string> addresses, const uint16_t& port) : socket{io_service}
 {
+    serdes = Serdes_Gnss_Synchro();
     for (const auto& address : addresses)
         {
             boost::asio::ip::udp::endpoint endpoint(boost::asio::ip::address::from_string(address, error), port);
@@ -45,13 +46,20 @@ Gnss_Synchro_Udp_Sink::Gnss_Synchro_Udp_Sink(std::vector<std::string> addresses,
 }
 
 
-bool Gnss_Synchro_Udp_Sink::write_gnss_synchro(const std::vector<Gnss_Synchro>& stocks)
+bool Gnss_Synchro_Udp_Sink::write_gnss_synchro(const std::vector<Gnss_Synchro>& stocks, bool protocolbuffers)
 {
-    std::ostringstream archive_stream;
-    boost::archive::binary_oarchive oa{archive_stream};
-    oa << stocks;
-    std::string outbound_data = archive_stream.str();
-
+    std::string outbound_data;
+    if (protocolbuffers == false)
+        {
+            std::ostringstream archive_stream;
+            boost::archive::binary_oarchive oa{archive_stream};
+            oa << stocks;
+            outbound_data = archive_stream.str();
+        }
+    else
+        {
+            outbound_data = serdes.createProtobuffer(stocks);
+        }
     for (const auto& endpoint : endpoints)
         {
             socket.open(endpoint.protocol(), error);

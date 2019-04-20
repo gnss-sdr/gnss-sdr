@@ -33,6 +33,7 @@
 #define GNSS_SDR_GNSS_SYNCHRO_UDP_SINK_H_
 
 #include "gnss_synchro.h"
+#include "serdes_gnss_synchro.h"
 #include <boost/asio.hpp>
 #include <boost/system/error_code.hpp>
 #include <cstdint>
@@ -48,7 +49,7 @@ class Gnss_Synchro_Udp_Sink
 {
 public:
     Gnss_Synchro_Udp_Sink(std::vector<std::string> addresses, const uint16_t& port);
-    bool write_gnss_synchro(const std::vector<Gnss_Synchro>& stocks);
+    bool write_gnss_synchro(const std::vector<Gnss_Synchro>& stocks, bool protocolbuffers = false);
 
 private:
     boost::asio::io_service io_service;
@@ -56,6 +57,7 @@ private:
     boost::system::error_code error;
     std::vector<boost::asio::ip::udp::endpoint> endpoints;
     std::vector<Gnss_Synchro> stocks;
+    Serdes_Gnss_Synchro serdes;
 };
 
 

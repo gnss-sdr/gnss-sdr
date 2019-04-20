@@ -66,6 +66,7 @@ DECLARE_string(log_dir);
 #include "unit-tests/control-plane/gnss_block_factory_test.cc"
 #include "unit-tests/control-plane/gnss_flowgraph_test.cc"
 #include "unit-tests/control-plane/in_memory_configuration_test.cc"
+#include "unit-tests/control-plane/protobuf_test.cc"
 #include "unit-tests/control-plane/string_converter_test.cc"
 #include "unit-tests/signal-processing-blocks/acquisition/galileo_e1_pcps_8ms_ambiguous_acquisition_gsoc2013_test.cc"
 #include "unit-tests/signal-processing-blocks/acquisition/galileo_e1_pcps_ambiguous_acquisition_gsoc2013_test.cc"

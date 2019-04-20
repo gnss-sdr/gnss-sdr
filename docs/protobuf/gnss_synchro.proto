@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package gnss_sdr;
+
+message GnssSynchro {
+   string system = 1;
+   string signal = 2;
+
+   uint32 prn = 3;
+   int32 channel_id = 4;
+
+   double acq_delay_samples = 5;
+   double acq_doppler_hz = 6;
+   uint64 acq_samplestamp_samples = 7;
+   uint32 acq_doppler_step = 8;
+   bool flag_valid_acquisition = 9;
+
+   int64 fs = 10;
+   double prompt_i = 11;
+   double prompt_q = 12;
+   double cn0_db_hz = 13;
+   double carrier_doppler_hz = 14;
+   double carrier_phase_rads = 15;
+   double code_phase_samples = 16;
+   uint64 tracking_sample_counter = 17;
+   bool flag_valid_symbol_output = 18;
+   int32 correlation_length_ms = 19;
+
+   bool flag_valid_word = 20;
+   uint32 tow_at_current_symbol_ms = 21;
+
+   double pseudorange_m = 22;
+   double rx_time = 23;
+   bool flag_valid_pseudorange = 24;
+   double interp_tow_ms = 25;
+}
+
+message Observables {
+  repeated GnssSynchro observable = 1;
+}

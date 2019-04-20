@@ -43,6 +43,7 @@ target_link_libraries(core_monitor
         Boost::system
         Gnuradio::runtime
         core_system_parameters
+        core_protobuf
     PRIVATE
         Gnuradio::pmt
 )

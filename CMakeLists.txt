@@ -402,6 +402,7 @@ set(GNSSSDR_PYTHON3_MIN_VERSION "3.4")
 set(GNSSSDR_MAKO_MIN_VERSION "0.4.2")
 set(GNSSSDR_ARMADILLO_MIN_VERSION "5.300.0")
 set(GNSSSDR_MATIO_MIN_VERSION "1.5.3")
+set(GNSSSDR_PROTOBUF_MIN_VERSION "3.0.0")
 
 
 
@@ -1797,7 +1798,15 @@ if(ENABLE_PROTOBUF)
         PURPOSE "Used to serialize output data."
         TYPE OPTIONAL
     )
-    if(NOT Protobuf_FOUND)
+    if((NOT Protobuf_FOUND) OR (NOT ${Protobuf_PROTOC_EXECUTABLE}) OR (${Protobuf_VERSION} VERSION_LESS ${GNSSSDR_PROTOBUF_MIN_VERSION}))
+        if(CMAKE_CROSSCOMPILING)
+            set(PROTOBUF_CROSSCOMPILE "--host=$ENV{OECORE_TARGET_ARCH} --with-protoc=/usr/local/bin/protoc")
+        endif()
+        if(${Protobuf_VERSION} VERSION_LESS ${GNSSSDR_PROTOBUF_MIN_VERSION})
+            unset(protobuf::libprotobuf)
+            unset(protobuf::protoc)
+        endif()
+
         if(CMAKE_VERSION VERSION_LESS 3.2)
             ExternalProject_Add(protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
                 PREFIX ${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
@@ -1806,7 +1815,7 @@ if(ENABLE_PROTOBUF)
                 SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
                 BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
                 UPDATE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/autogen.sh
-                CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/configure --prefix=<INSTALL_DIR>
+                CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/configure --prefix=<INSTALL_DIR> ${PROTOBUF_CROSSCOMPILE}
                 BUILD_COMMAND ${CMAKE_MAKE_PROGRAM}
                 INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
             )
@@ -1818,7 +1827,7 @@ if(ENABLE_PROTOBUF)
                 SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
                 BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
                 UPDATE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/autogen.sh
-                CONFIGURE_COMMAND CXXFLAGS=-fvisibility=hidden ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/configure --prefix=<INSTALL_DIR>
+                CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/configure --prefix=<INSTALL_DIR> ${PROTOBUF_CROSSCOMPILE}
                 BUILD_COMMAND ${CMAKE_MAKE_PROGRAM}
                 INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
                 BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}protobuf${CMAKE_STATIC_LIBRARY_SUFFIX}
@@ -1847,7 +1856,11 @@ if(ENABLE_PROTOBUF)
                 INTERFACE_LINK_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}protoc${CMAKE_STATIC_LIBRARY_SUFFIX}"
             )
         endif()
-
+        if(${Protobuf_VERSION} VERSION_LESS ${GNSSSDR_PROTOBUF_MIN_VERSION})
+            set_package_properties(Protobuf PROPERTIES
+                PURPOSE "Protocol Buffers found (v${Protobuf_VERSION}) is too old (> v${GNSSSDR_PROTOBUF_MIN_VERSION} needed)."
+            )
+        endif()
         set_package_properties(Protobuf PROPERTIES
             PURPOSE "Protocol Buffers v${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION} will be downloaded and built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
         )

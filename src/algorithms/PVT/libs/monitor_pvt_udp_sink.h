@@ -33,13 +33,14 @@
 #define GNSS_SDR_MONITOR_PVT_UDP_SINK_H_
 
 #include "monitor_pvt.h"
+#include "serdes_monitor_pvt.h"
 #include <boost/asio.hpp>
 
 class Monitor_Pvt_Udp_Sink
 {
 public:
     Monitor_Pvt_Udp_Sink(std::vector<std::string> addresses, const uint16_t &port);
-    bool write_monitor_pvt(const Monitor_Pvt &monitor_pvt);
+    bool write_monitor_pvt(const Monitor_Pvt &monitor_pvt, bool protobuf = false);
 
 private:
     boost::asio::io_service io_service;
@@ -47,6 +48,7 @@ private:
     boost::system::error_code error;
     std::vector<boost::asio::ip::udp::endpoint> endpoints;
     Monitor_Pvt monitor_pvt;
+    Serdes_Monitor_Pvt serdes;
 };
 
 

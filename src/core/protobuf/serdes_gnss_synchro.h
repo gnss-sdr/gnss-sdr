@@ -50,6 +50,7 @@ public:
         // Verify that the version of the library that we linked against is
         // compatible with the version of the headers we compiled against.
         GOOGLE_PROTOBUF_VERIFY_VERSION;
+        observables.New();
     }
     ~Serdes_Gnss_Synchro()
     {
@@ -58,10 +59,10 @@ public:
 
     inline std::string createProtobuffer(const std::vector<Gnss_Synchro>& vgs)  //!< Serialization into a string
     {
-        gnss_sdr::Observables observables;
+        observables.Clear();
 
         std::string data;
-        for (int i = 0; i < vgs.size(); ++i)
+        for (uint32_t i = 0; i < vgs.size(); ++i)
             {
                 gnss_sdr::GnssSynchro* obs = observables.add_observable();
                 Gnss_Synchro gs = vgs[i];
@@ -115,7 +116,7 @@ public:
         std::vector<Gnss_Synchro> vgs;
         vgs.reserve(obs.observable_size());
 
-        for (int i = 0; i < obs.observable_size(); ++i)
+        for (uint32_t i = 0; i < obs.observable_size(); ++i)
             {
                 const gnss_sdr::GnssSynchro& gs_read = obs.observable(i);
                 Gnss_Synchro gs = Gnss_Synchro();
@@ -153,6 +154,8 @@ public:
             }
         return vgs;
     }
+private:
+    gnss_sdr::Observables observables;
 };
 
 #endif  // GNSS_SDR_SERDES_GNSS_SYNCHRO_H_

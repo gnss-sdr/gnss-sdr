@@ -70,15 +70,25 @@ Monitor_Pvt_Udp_Sink::Monitor_Pvt_Udp_Sink(std::vector<std::string> addresses, c
     monitor_pvt.pdop = 0.0;
     monitor_pvt.hdop = 0.0;
     monitor_pvt.vdop = 0.0;
+
+    serdes = Serdes_Monitor_Pvt();
 }
 
 
-bool Monitor_Pvt_Udp_Sink::write_monitor_pvt(const Monitor_Pvt& monitor_pvt)
+bool Monitor_Pvt_Udp_Sink::write_monitor_pvt(const Monitor_Pvt& monitor_pvt, bool protobuf)
 {
-    std::ostringstream archive_stream;
-    boost::archive::binary_oarchive oa{archive_stream};
-    oa << monitor_pvt;
-    std::string outbound_data = archive_stream.str();
+    std::string outbound_data;
+    if (protobuf == false)
+        {
+            std::ostringstream archive_stream;
+            boost::archive::binary_oarchive oa{archive_stream};
+            oa << monitor_pvt;
+            outbound_data = archive_stream.str();
+        }
+    else
+        {
+            outbound_data = serdes.createProtobuffer(monitor_pvt);
+        }
 
     for (const auto& endpoint : endpoints)
         {

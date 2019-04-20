@@ -1791,6 +1791,7 @@ endif()
 ################################################################################
 option(ENABLE_PROTOBUF "Enable Protocol Buffers" ON)
 if(ENABLE_PROTOBUF)
+    set(Protobuf_VERSION "0.0.0")
     find_package(Protobuf)
     set_package_properties(Protobuf PROPERTIES
         URL "https://developers.google.com/protocol-buffers/"
@@ -1813,6 +1814,7 @@ if(ENABLE_PROTOBUF)
         endif()
     endif()
     if((NOT Protobuf_FOUND) OR (NOT Protobuf_PROTOC_EXECUTABLE) OR (${Protobuf_VERSION} VERSION_LESS ${GNSSSDR_PROTOBUF_MIN_VERSION}))
+        unset(Protobuf_PROTOC_EXECUTABLE)
         if(CMAKE_CROSSCOMPILING)
             set(PROTOBUF_CROSSCOMPILE "--host=$ENV{OECORE_TARGET_ARCH} --with-protoc=/usr/local/bin/protoc")
             ExternalProject_Add(protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
@@ -1861,11 +1863,13 @@ if(ENABLE_PROTOBUF)
                 add_executable(protobuf::protoc IMPORTED)
                 add_dependencies(protobuf::protoc protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION})
             endif()
+            unset(Protobuf_PROTOC_EXECUTABLE)
+            set(PROTOBUF_PROTOC_EXECUTABLE "${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/bin/protoc")
             set_target_properties(protobuf::protoc PROPERTIES
                 IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
                 IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/bin/protoc"
                 INTERFACE_LINK_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}protoc${CMAKE_STATIC_LIBRARY_SUFFIX}"
-            )    
+            )
         endif()
         if(NOT TARGET protobuf::libprotobuf)
             file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/include)

@@ -116,7 +116,7 @@ public:
         std::vector<Gnss_Synchro> vgs;
         vgs.reserve(obs.observable_size());
 
-        for (uint32_t i = 0; i < obs.observable_size(); ++i)
+        for (int i = 0; i < obs.observable_size(); ++i)
             {
                 const gnss_sdr::GnssSynchro& gs_read = obs.observable(i);
                 Gnss_Synchro gs = Gnss_Synchro();

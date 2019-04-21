@@ -110,7 +110,7 @@ crosscompile:
     - ./configure
     - make
     - make install
-    - cd
+    - cd ../..
     - curl -k https://sites.cttc.es/gnss_files/SDK/Thud/oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh --output oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh
     - echo "4f74d9ab0f076e59215be2d1cb674a52  oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh" > sdk.md5
     - md5sum -c sdk.md5

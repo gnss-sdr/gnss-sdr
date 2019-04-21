@@ -215,7 +215,7 @@ void GNSSFlowgraph::connect()
         }
 
     DLOG(INFO) << "blocks connected internally";
-// Signal Source (i) >  Signal conditioner (i) >
+    // Signal Source (i) >  Signal conditioner (i) >
 #ifndef ENABLE_FPGA
     int RF_Channels = 0;
     int signal_conditioner_ID = 0;
@@ -444,20 +444,20 @@ void GNSSFlowgraph::connect()
                                                     // create a FIR low pass filter
                                                     std::vector<float> taps;
 
-                                                    //                                                    float beta = 7.0;
-                                                    //                                                    float halfband = 0.5;
-                                                    //                                                    float fractional_bw = 0.4;
-                                                    //                                                    float rate = 1.0 / static_cast<float>(decimation);
+                                                    // float beta = 7.0;
+                                                    // float halfband = 0.5;
+                                                    // float fractional_bw = 0.4;
+                                                    // float rate = 1.0 / static_cast<float>(decimation);
                                                     //
-                                                    //                                                    float trans_width = rate * (halfband - fractional_bw);
-                                                    //                                                    float mid_transition_band = rate * halfband - trans_width / 2.0;
+                                                    // float trans_width = rate * (halfband - fractional_bw);
+                                                    // float mid_transition_band = rate * halfband - trans_width / 2.0;
                                                     //
-                                                    //                                                    taps = gr::filter::firdes::low_pass(1.0,
-                                                    //                                                        1.0,
-                                                    //                                                        mid_transition_band,
-                                                    //                                                        trans_width,
-                                                    //                                                        gr::filter::firdes::win_type::WIN_KAISER,
-                                                    //                                                        beta);
+                                                    // taps = gr::filter::firdes::low_pass(1.0,
+                                                    //    1.0,
+                                                    //    mid_transition_band,
+                                                    //    trans_width,
+                                                    //    gr::filter::firdes::win_type::WIN_KAISER,
+                                                    //    beta);
 
                                                     taps = gr::filter::firdes::low_pass(1.0,
                                                         fs,
@@ -526,7 +526,6 @@ void GNSSFlowgraph::connect()
                 }
 #endif
 
-
             // Signal Source > Signal conditioner >> Channels >> Observables
             try
                 {
@@ -556,6 +555,7 @@ void GNSSFlowgraph::connect()
                         }
                 }
         }
+
     // Put channels fixed to a given satellite at the beginning of the vector, then the rest
     std::vector<unsigned int> vector_of_channels;
     for (unsigned int i = 0; i < channels_count_; i++)
@@ -1169,7 +1169,6 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                                 }
                             acq_channels_count_++;
                             DLOG(INFO) << "Channel " << ch_index << " Starting acquisition " << channels_[ch_index]->get_signal().get_satellite() << ", Signal " << channels_[ch_index]->get_signal().get_signal_str();
-
 #ifndef ENABLE_FPGA
                             channels_[ch_index]->start_acquisition();
 #else
@@ -1704,7 +1703,11 @@ void GNSSFlowgraph::init()
 	 * Instantiate the receiver monitor block, if required
 	 */
     enable_monitor_ = configuration_->property("Monitor.enable_monitor", false);
-
+    bool enable_protobuf = configuration_->property("Monitor.enable_protobuf", true);
+    if (configuration_->property("PVT.enable_protobuf", false) == true)
+        {
+            enable_protobuf = true;
+        }
     std::string address_string = configuration_->property("Monitor.client_addresses", std::string("127.0.0.1"));
     std::vector<std::string> udp_addr_vec = split_string(address_string, '_');
     std::sort(udp_addr_vec.begin(), udp_addr_vec.end());
@@ -1715,7 +1718,7 @@ void GNSSFlowgraph::init()
             GnssSynchroMonitor_ = gnss_synchro_make_monitor(channels_count_,
                 configuration_->property("Monitor.decimation_factor", 1),
                 configuration_->property("Monitor.udp_port", 1234),
-                udp_addr_vec);
+                udp_addr_vec, enable_protobuf);
         }
 }
 

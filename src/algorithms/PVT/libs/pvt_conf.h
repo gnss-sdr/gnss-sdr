@@ -80,6 +80,7 @@ public:
     std::string rtcm_output_file_path;
 
     bool monitor_enabled;
+    bool protobuf_enabled;
     std::string udp_addresses;
     int udp_port;
 

@@ -39,8 +39,8 @@
 class Monitor_Pvt_Udp_Sink
 {
 public:
-    Monitor_Pvt_Udp_Sink(std::vector<std::string> addresses, const uint16_t &port);
-    bool write_monitor_pvt(const Monitor_Pvt &monitor_pvt, bool protobuf = false);
+    Monitor_Pvt_Udp_Sink(std::vector<std::string> addresses, const uint16_t &port, bool protobuf_enabled);
+    bool write_monitor_pvt(const Monitor_Pvt &monitor_pvt);
 
 private:
     boost::asio::io_service io_service;
@@ -49,6 +49,7 @@ private:
     std::vector<boost::asio::ip::udp::endpoint> endpoints;
     Monitor_Pvt monitor_pvt;
     Serdes_Monitor_Pvt serdes;
+    bool use_protobuf;
 };
 
 

@@ -62,10 +62,9 @@ public:
         observables.Clear();
 
         std::string data;
-        for (uint32_t i = 0; i < vgs.size(); ++i)
+        for (auto gs : vgs)
             {
                 gnss_sdr::GnssSynchro* obs = observables.add_observable();
-                Gnss_Synchro gs = vgs[i];
                 char c[2];
                 c[0] = gs.System;
                 c[1] = '\0';
@@ -120,9 +119,9 @@ public:
             {
                 const gnss_sdr::GnssSynchro& gs_read = obs.observable(i);
                 Gnss_Synchro gs = Gnss_Synchro();
-                std::string sys = gs_read.system();
+                const std::string& sys = gs_read.system();
                 gs.System = *sys.c_str();
-                std::string sig = gs_read.signal();
+                const std::string& sig = gs_read.signal();
                 std::memcpy(static_cast<void*>(gs.Signal), sig.c_str(), 3);
                 gs.PRN = gs_read.prn();
                 gs.Channel_ID = gs_read.channel_id();

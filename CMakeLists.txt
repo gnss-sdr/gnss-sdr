@@ -1799,6 +1799,21 @@ if(ENABLE_PROTOBUF)
         PURPOSE "Used to serialize output data in a way that can be read by other applications."
         TYPE REQUIRED
     )
+    if(Protobuf_FOUND AND CMAKE_VERSION VERSION_LESS 3.9)
+        add_library(protobuf::libprotobuf SHARED IMPORTED)
+        set_target_properties(protobuf::libprotobuf PROPERTIES
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION "${Protobuf_LIBRARY}"
+            INTERFACE_INCLUDE_DIRECTORIES "${Protobuf_INCLUDE_DIR}"
+            INTERFACE_LINK_LIBRARIES "${Protobuf_LIBRARY}"
+        )
+        add_executable(protobuf::protoc IMPORTED)
+        set_target_properties(protobuf::protoc PROPERTIES
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION "${Protobuf_PROTOC_EXECUTABLE}"
+            INTERFACE_LINK_LIBRARIES "${Protobuf_PROTOC_LIBRARY}"
+        )
+    endif()
     if(Protobuf_FOUND AND CMAKE_CROSSCOMPILING)
         find_program(PROTOC_EXECUTABLE protoc
             HINTS

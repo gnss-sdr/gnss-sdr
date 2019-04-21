@@ -286,7 +286,7 @@ In case the GnuTLS library with openssl extensions package is not available in y
 
 #### Install [Protocol Buffers](https://developers.google.com/protocol-buffers/ "Protocol Buffers' Homepage"), a portable mechanism for serialization of structured data:
 
-GNSS-SDR requires Protocol Buffers v3.0.0 or later. If the packages that come with your distribution are older, you will need to install it manually. First, install the dependencies:
+GNSS-SDR requires Protocol Buffers v3.0.0 or later. If the packages that come with your distribution are older than that (_e.g._, Ubuntu 16.04 Xenial and Debian 8 Jessie came with older versions), then you will need to install it manually. First, install the dependencies:
 
 ~~~~~~
 $ sudo apt-get install autoconf automake libtool curl make g++ unzip

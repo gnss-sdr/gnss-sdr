@@ -286,6 +286,14 @@ In case the GnuTLS library with openssl extensions package is not available in y
 
 #### Install [Protocol Buffers](https://developers.google.com/protocol-buffers/ "Protocol Buffers' Homepage"), a portable mechanism for serialization of structured data:
 
+GNSS-SDR requires Protocol Buffers v3.0.0 or later. If the packages that come with your distribution are older, you will need to install it manually. First, install the dependencies:
+
+~~~~~~
+$ sudo apt-get install autoconf automake libtool curl make g++ unzip
+~~~~~~
+
+and then:
+
 ~~~~~~
 $ wget https://github.com/protocolbuffers/protobuf/releases/download/v3.7.1/protobuf-cpp-3.7.1.tar.gz
 $ tar xvfz protobuf-cpp-3.7.1.tar.gz
@@ -294,6 +302,7 @@ $ ./autogen.sh
 $ ./configure
 $ make
 $ sudo make install
+$ sudo ldconfig
 ~~~~~~
 
 

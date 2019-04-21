@@ -35,7 +35,7 @@
 #include <sstream>
 
 
-Monitor_Pvt_Udp_Sink::Monitor_Pvt_Udp_Sink(std::vector<std::string> addresses, const uint16_t& port) : socket{io_service}
+Monitor_Pvt_Udp_Sink::Monitor_Pvt_Udp_Sink(std::vector<std::string> addresses, const uint16_t& port, bool protobuf_enabled) : socket{io_service}
 {
     for (const auto& address : addresses)
         {
@@ -71,14 +71,18 @@ Monitor_Pvt_Udp_Sink::Monitor_Pvt_Udp_Sink(std::vector<std::string> addresses, c
     monitor_pvt.hdop = 0.0;
     monitor_pvt.vdop = 0.0;
 
-    serdes = Serdes_Monitor_Pvt();
+    use_protobuf = protobuf_enabled;
+    if (use_protobuf)
+        {
+            serdes = Serdes_Monitor_Pvt();
+        }
 }
 
 
-bool Monitor_Pvt_Udp_Sink::write_monitor_pvt(const Monitor_Pvt& monitor_pvt, bool protobuf)
+bool Monitor_Pvt_Udp_Sink::write_monitor_pvt(const Monitor_Pvt& monitor_pvt)
 {
     std::string outbound_data;
-    if (protobuf == false)
+    if (use_protobuf == false)
         {
             std::ostringstream archive_stream;
             boost::archive::binary_oarchive oa{archive_stream};

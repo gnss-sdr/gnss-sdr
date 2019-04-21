@@ -50,7 +50,8 @@ using gnss_synchro_monitor_sptr = boost::shared_ptr<gnss_synchro_monitor>;
 gnss_synchro_monitor_sptr gnss_synchro_make_monitor(unsigned int n_channels,
     int decimation_factor,
     int udp_port,
-    const std::vector<std::string>& udp_addresses);
+    const std::vector<std::string>& udp_addresses,
+    bool enable_protobuf);
 
 /*!
  * \brief This class implements a monitoring block which allows sending
@@ -63,12 +64,14 @@ private:
     friend gnss_synchro_monitor_sptr gnss_synchro_make_monitor(unsigned int n_channels,
         int decimation_factor,
         int udp_port,
-        const std::vector<std::string>& udp_addresses);
+        const std::vector<std::string>& udp_addresses,
+        bool enable_protobuf);
 
     gnss_synchro_monitor(unsigned int n_channels,
         int decimation_factor,
         int udp_port,
-        const std::vector<std::string>& udp_addresses);
+        const std::vector<std::string>& udp_addresses,
+        bool enable_protobuf);
 
     unsigned int d_nchannels;
     int d_decimation_factor;

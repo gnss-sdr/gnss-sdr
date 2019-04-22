@@ -180,14 +180,14 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     acq_parameters.make_2_steps = configuration_->property(role + ".make_two_steps", false);
     acq_parameters.max_num_acqs = configuration_->property(role + ".max_num_acqs", 2);
     // reference for the FPGA FFT-IFFT attenuation factor
-    acq_parameters.total_block_exp = configuration_->property(role + ".total_block_exp", 12);
+    acq_parameters.total_block_exp = configuration_->property(role + ".total_block_exp", 13);
 
     acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters);
 
     channel_ = 0;
     doppler_step_ = 0;
     gnss_synchro_ = nullptr;
-    
+
     // temporary buffers that we can delete
     delete[] code;
     delete fft_if;

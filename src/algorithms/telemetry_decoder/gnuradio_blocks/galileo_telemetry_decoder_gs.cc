@@ -215,7 +215,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     d_flag_preamble = false;
     d_channel = 0;
     flag_TOW_set = false;
-
+    flag_PLL_180_deg_phase_locked = false;
     d_symbol_history.set_capacity(d_required_symbols + 1);
 
     // vars for Viterbi decoder
@@ -488,9 +488,6 @@ void galileo_telemetry_decoder_gs::set_channel(int32_t channel)
 int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
-    int32_t corr_value = 0;
-    int32_t preamble_diff = 0;
-
     auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);            // Get the output buffer pointer
     const auto **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);  // Get the input buffer pointer
 
@@ -513,27 +510,29 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                     d_sent_tlm_failed_msg = true;
                 }
         }
-    if (d_symbol_history.size() > d_required_symbols)
-        {
-            // ******* preamble correlation ********
-            for (int32_t i = 0; i < d_samples_per_preamble; i++)
-                {
-                    if (d_symbol_history[i] < 0.0)  // symbols clipping
-                        {
-                            corr_value -= d_preamble_samples[i];
-                        }
-                    else
-                        {
-                            corr_value += d_preamble_samples[i];
-                        }
-                }
-        }
 
     // ******* frame sync ******************
     switch (d_stat)
         {
         case 0:  // no preamble information
             {
+                //correlate with preamble
+                int32_t corr_value = 0;
+                if (d_symbol_history.size() > d_required_symbols)
+                    {
+                        // ******* preamble correlation ********
+                        for (int32_t i = 0; i < d_samples_per_preamble; i++)
+                            {
+                                if (d_symbol_history[i] < 0.0)  // symbols clipping
+                                    {
+                                        corr_value -= d_preamble_samples[i];
+                                    }
+                                else
+                                    {
+                                        corr_value += d_preamble_samples[i];
+                                    }
+                            }
+                    }
                 if (abs(corr_value) >= d_samples_per_preamble)
                     {
                         d_preamble_index = d_sample_counter;  // record the preamble sample stamp
@@ -544,6 +543,24 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             }
         case 1:  // possible preamble lock
             {
+                //correlate with preamble
+                int32_t corr_value = 0;
+                int32_t preamble_diff = 0;
+                if (d_symbol_history.size() > d_required_symbols)
+                    {
+                        // ******* preamble correlation ********
+                        for (int32_t i = 0; i < d_samples_per_preamble; i++)
+                            {
+                                if (d_symbol_history[i] < 0.0)  // symbols clipping
+                                    {
+                                        corr_value -= d_preamble_samples[i];
+                                    }
+                                else
+                                    {
+                                        corr_value += d_preamble_samples[i];
+                                    }
+                            }
+                    }
                 if (abs(corr_value) >= d_samples_per_preamble)
                     {
                         // check preamble separation
@@ -554,6 +571,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                 DLOG(INFO) << "Starting page decoder for Galileo satellite " << this->d_satellite;
                                 d_preamble_index = d_sample_counter;  // record the preamble sample stamp
                                 d_CRC_error_counter = 0;
+                                if (corr_value < 0) flag_PLL_180_deg_phase_locked = true;
                                 d_stat = 2;
                             }
                         else
@@ -576,7 +594,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                             case 1:  // INAV
                                      // NEW Galileo page part is received
                                 // 0. fetch the symbols into an array
-                                if (corr_value > 0)  // normal PLL lock
+                                if (flag_PLL_180_deg_phase_locked == false)  // normal PLL lock
                                     {
                                         for (uint32_t i = 0; i < d_frame_length_symbols; i++)
                                             {
@@ -595,7 +613,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                             case 2:  // FNAV
                                      // NEW Galileo page part is received
                                 // 0. fetch the symbols into an array
-                                if (corr_value > 0)  // normal PLL lock
+                                if (flag_PLL_180_deg_phase_locked == false)  // normal PLL lock
                                     {
                                         int k = 0;
                                         for (uint32_t i = 0; i < d_frame_length_symbols; i++)

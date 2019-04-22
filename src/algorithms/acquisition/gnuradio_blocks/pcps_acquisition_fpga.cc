@@ -302,6 +302,7 @@ void pcps_acquisition_fpga::set_active(bool active)
                                 }
                             num_second_acq = num_second_acq + 1;
                         }
+                    acquisition_fpga->close_device();
                     if (d_test_statistics <= d_threshold)
                         {
                             d_state = 0;

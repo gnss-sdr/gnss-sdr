@@ -26,6 +26,7 @@
 - Fix bug in GLONASS dual frequency receiver.
 - Added a custom UDP/IP output for PVT data streaming.
 - Improved Monitor block with UDP/IP output for internal receiver's data streaming.
+- Custom output formats described with .proto files, making easier to other applications reading them in a forward and backward-compatible fashion upon future format changes.
 
 
 ### Improvements in Maintainability:
@@ -51,6 +52,7 @@
 
 - The receiver now admits FPGA off-loading, allowing for real time operation at high sampling rates and higher number of signals and channels.
 - Fixed program termination (avoiding hangs and segfaults in some platforms/configurations).
+- The Labsat_Signal_Source now terminates the receiver's execution when the end of file(s) is reached. It now accepts LabSat 2 filenames and series of LabSat 3 files.
 - CMake now generates a summary of enabled/disabled features. This info is also stored in a file called features.log in the building directory.
 - New parameter PVT.show_local_time_zone displays time in the local time zone. Subject to the proper system configuration of the machine running the software receiver.
 - Improved information provided to the user in case of failure.

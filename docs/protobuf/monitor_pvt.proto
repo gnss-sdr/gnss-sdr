@@ -5,7 +5,6 @@ package gnss_sdr;
 /* MonitorPvt represents a search query, with pagination options to
  * indicate which results to include in the response. */
 message MonitorPvt {
-
 uint32 tow_at_current_symbol_ms = 1;  // Time of week of the current symbol, in ms
 uint32 week = 2;  // PVT GPS week
 double rx_time = 3;  // PVT GPS time

@@ -69,6 +69,7 @@ Pvt_Conf::Pvt_Conf()
     rtcm_output_file_path = std::string(".");
 
     monitor_enabled = false;
+    protobuf_enabled = true;
     udp_port = 0;
 
     show_local_time_zone = false;

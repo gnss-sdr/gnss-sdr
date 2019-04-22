@@ -1,12 +1,11 @@
 /*!
- * \file monitor_pvt_udp_sink.h
- * \brief Interface of a class that sends serialized Monitor_Pvt objects
- * over udp to one or multiple endpoints
- * \author Álvaro Cebrián Juan, 2019. acebrianjuan(at)gmail.com
+ * \file serdes_monitor_pvt_test.cc
+ * \brief Implements Unit Test for the serdes_monitor_pvt class.
+ * \author Carles Fernandez_prades, 2019. cfernandez(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2018  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -29,28 +28,20 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_MONITOR_PVT_UDP_SINK_H_
-#define GNSS_SDR_MONITOR_PVT_UDP_SINK_H_
-
-#include "monitor_pvt.h"
 #include "serdes_monitor_pvt.h"
-#include <boost/asio.hpp>
 
-class Monitor_Pvt_Udp_Sink
+TEST(Serdes_Monitor_Pvt_Test, Simpletest)
 {
-public:
-    Monitor_Pvt_Udp_Sink(std::vector<std::string> addresses, const uint16_t &port, bool protobuf_enabled);
-    bool write_monitor_pvt(const Monitor_Pvt &monitor_pvt);
+    Monitor_Pvt monitor = Monitor_Pvt();
+    double true_latitude = 23.4;
+    monitor.latitude = true_latitude;
 
-private:
-    boost::asio::io_service io_service;
-    boost::asio::ip::udp::socket socket;
-    boost::system::error_code error;
-    std::vector<boost::asio::ip::udp::endpoint> endpoints;
-    Monitor_Pvt monitor_pvt;
-    Serdes_Monitor_Pvt serdes;
-    bool use_protobuf;
-};
+    Serdes_Monitor_Pvt serdes = Serdes_Monitor_Pvt();
+    std::string serialized_data = serdes.createProtobuffer(monitor);
 
+    gnss_sdr::MonitorPvt mon;
+    mon.ParseFromString(serialized_data);
 
-#endif /* GNSS_SDR_MONITOR_PVT_UDP_SINK_H_ */
+    double read_latitude = mon.latitude();
+    EXPECT_NEAR(true_latitude, read_latitude, 0.000001);
+}

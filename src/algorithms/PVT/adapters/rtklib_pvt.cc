@@ -741,6 +741,11 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
     pvt_output_parameters.monitor_enabled = configuration->property(role + ".enable_monitor", false);
     pvt_output_parameters.udp_addresses = configuration->property(role + ".monitor_client_addresses", std::string("127.0.0.1"));
     pvt_output_parameters.udp_port = configuration->property(role + ".monitor_udp_port", 1234);
+    pvt_output_parameters.protobuf_enabled = configuration->property(role + ".enable_protobuf", true);
+    if (configuration->property("Monitor.enable_protobuf", false) == true)
+        {
+            pvt_output_parameters.protobuf_enabled = true;
+        }
 
     // Show time in local zone
     pvt_output_parameters.show_local_time_zone = configuration->property(role + ".show_local_time_zone", false);

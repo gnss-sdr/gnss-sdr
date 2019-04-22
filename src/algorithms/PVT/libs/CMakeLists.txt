@@ -16,6 +16,7 @@
 # along with GNSS-SDR. If not, see <https://www.gnu.org/licenses/>.
 #
 
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${CMAKE_SOURCE_DIR}/docs/protobuf/monitor_pvt.proto)
 
 set(PVT_LIB_SOURCES
     pvt_solution.cc
@@ -31,6 +32,7 @@ set(PVT_LIB_SOURCES
     rtklib_solver.cc
     pvt_conf.cc
     monitor_pvt_udp_sink.cc
+    ${PROTO_SRCS}
 )
 
 set(PVT_LIB_HEADERS
@@ -48,6 +50,8 @@ set(PVT_LIB_HEADERS
     pvt_conf.h
     monitor_pvt_udp_sink.h
     monitor_pvt.h
+    serdes_monitor_pvt.h
+    ${PROTO_HDRS}
 )
 
 list(SORT PVT_LIB_HEADERS)
@@ -61,6 +65,7 @@ target_link_libraries(pvt_libs
     PUBLIC
         Armadillo::armadillo
         Boost::date_time
+        protobuf::libprotobuf
         algorithms_libs_rtklib
         core_system_parameters
     PRIVATE
@@ -72,9 +77,12 @@ target_link_libraries(pvt_libs
         Matio::matio
 )
 
+get_filename_component(PROTO_INCLUDE_HEADERS ${PROTO_HDRS} DIRECTORY)
+
 target_include_directories(pvt_libs
     PUBLIC
         ${CMAKE_SOURCE_DIR}/src/core/receiver
+        ${PROTO_INCLUDE_HEADERS}
 )
 
 target_compile_definitions(pvt_libs PRIVATE -DGNSS_SDR_VERSION="${VERSION}")

@@ -347,7 +347,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
             std::sort(udp_addr_vec.begin(), udp_addr_vec.end());
             udp_addr_vec.erase(std::unique(udp_addr_vec.begin(), udp_addr_vec.end()), udp_addr_vec.end());
 
-            udp_sink_ptr = std::unique_ptr<Monitor_Pvt_Udp_Sink>(new Monitor_Pvt_Udp_Sink(udp_addr_vec, conf_.udp_port));
+            udp_sink_ptr = std::unique_ptr<Monitor_Pvt_Udp_Sink>(new Monitor_Pvt_Udp_Sink(udp_addr_vec, conf_.udp_port, conf_.protobuf_enabled));
         }
     else
         {

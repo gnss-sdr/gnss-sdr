@@ -329,6 +329,10 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe()
                     return false;
                 }
         }
+    else
+        {
+            return false;
+        }
 }
 
 

@@ -52,6 +52,7 @@ public:
     uint32_t vector_length;
     bool dump;
     bool dump_mat;
+    bool aid_code_with_carrier;
     std::string dump_filename;
     float pll_pull_in_bw_hz;
     float dll_pull_in_bw_hz;
@@ -77,6 +78,9 @@ public:
     int32_t max_code_lock_fail;
     int32_t max_carrier_lock_fail;
     uint32_t smoother_length;
+    int pll_order;
+    int dll_initial_order;
+    int dll_final_order;
     double carrier_lock_th;
     bool track_pilot;
     bool enable_doppler_correction;

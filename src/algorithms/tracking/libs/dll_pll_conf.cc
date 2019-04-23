@@ -45,6 +45,7 @@ Dll_Pll_Conf::Dll_Pll_Conf()
     vector_length = 0U;
     dump = false;
     dump_mat = true;
+    aid_code_with_carrier = false;
     dump_filename = std::string("./dll_pll_dump.dat");
     enable_fll_pull_in = false;
     enable_fll_steady_state = false;
@@ -53,6 +54,7 @@ Dll_Pll_Conf::Dll_Pll_Conf()
     fll_filter_order = 1;
     pll_filter_order = 3;
     dll_filter_order = 2;
+    aided_dll_filter_order = 2;
     fll_bw_hz = 35.0;
     pll_pull_in_bw_hz = 50.0;
     dll_pull_in_bw_hz = 3.0;
@@ -108,11 +110,13 @@ void Dll_Pll_Conf::SetFromConfiguration( ConfigurationInterface *configuration,
     dump = configuration->property(role + ".dump", dump);
     dump_filename = configuration->property(role + ".dump_filename", dump_filename);
     dump_mat = configuration->property(role + ".dump_mat", dump_mat);
+    aid_code_with_carrier = configuration->property(role + ".aid_code_with_carrier", aid_code_with_carrier);
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", pll_bw_hz);
     pll_bw_narrow_hz = configuration->property(role + ".pll_bw_narrow_hz", pll_bw_narrow_hz);
     dll_bw_narrow_hz = configuration->property(role + ".dll_bw_narrow_hz", dll_bw_narrow_hz);
     dll_bw_hz = configuration->property(role + ".dll_bw_hz", dll_bw_hz);
     dll_filter_order = configuration->property(role + ".dll_filter_order", dll_filter_order);
+    dll_filter_order = configuration->property(role + ".aided_dll_filter_order", aided_dll_filter_order);
     pll_filter_order = configuration->property(role + ".pll_filter_order", pll_filter_order);
     if (dll_filter_order < 1)
         {
@@ -123,6 +127,16 @@ void Dll_Pll_Conf::SetFromConfiguration( ConfigurationInterface *configuration,
         {
             LOG(WARNING) << "dll_filter_order parameter must be 1, 2 or 3. Set to 3.";
             dll_filter_order = 3;
+        }
+    if (aided_dll_filter_order < 1)
+        {
+            LOG(WARNING) << "aided_dll_filter_order parameter must be 1, 2 or 3. Set to 1.";
+            aided_dll_filter_order = 1;
+        }
+    if (aided_dll_filter_order > 3)
+        {
+            LOG(WARNING) << "aided_dll_filter_order parameter must be 1, 2 or 3. Set to 3.";
+            aided_dll_filter_order = 3;
         }
     if (pll_filter_order < 2)
         {

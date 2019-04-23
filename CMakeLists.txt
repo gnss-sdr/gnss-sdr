@@ -1940,13 +1940,7 @@ if((NOT Protobuf_FOUND) OR (NOT Protobuf_PROTOC_EXECUTABLE) OR (${Protobuf_VERSI
                 message(FATAL_ERROR "aclocal is required to build Protocol Buffers from source")
             endif()
         endif()
-        find_package(CURL REQUIRED)
-        set_package_properties(CURL PROPERTIES
-            URL "https://curl.haxx.se/"
-            DESCRIPTION "Command line tool and library for transferring data with URLs"
-            PURPOSE "Required to build Protocol Buffers."
-            TYPE REQUIRED
-        )
+
         set(PROTOBUF_MAKE_PROGRAM ${CMAKE_MAKE_PROGRAM})
         if(PROTOBUF_MAKE_PROGRAM MATCHES "ninja")
             find_program(MAKE_EXECUTABLE make

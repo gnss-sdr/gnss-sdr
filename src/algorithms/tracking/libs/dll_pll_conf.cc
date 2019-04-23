@@ -49,16 +49,16 @@ Dll_Pll_Conf::Dll_Pll_Conf()
     dump_filename = std::string("./dll_pll_dump.dat");
     enable_fll_pull_in = false;
     enable_fll_steady_state = false;
-    pull_in_time_s = 10;
+    pull_in_time_s = 1;
     bit_synchronization_time_limit_s = pull_in_time_s + 60;
     fll_filter_order = 1;
     pll_filter_order = 3;
     dll_filter_order = 2;
-    aided_dll_filter_order = 2;
-    fll_bw_hz = 35.0;
-    pll_pull_in_bw_hz = 50.0;
+    aided_dll_filter_order = 1;
+    fll_bw_hz = 15.0;
+    pll_pull_in_bw_hz = 20.0;
     dll_pull_in_bw_hz = 3.0;
-    pll_bw_hz = 35.0;
+    pll_bw_hz = 15.0;
     dll_bw_hz = 2.0;
     pll_bw_narrow_hz = 5.0;
     dll_bw_narrow_hz = 0.75;
@@ -66,7 +66,7 @@ Dll_Pll_Conf::Dll_Pll_Conf()
     very_early_late_space_chips = 0.5;
     early_late_space_narrow_chips = 0.1;
     very_early_late_space_narrow_chips = 0.1;
-    extend_correlation_symbols = 5;
+    extend_correlation_symbols = 1;
     cn0_samples = FLAGS_cn0_samples;
     cn0_smoother_samples = 200;
     cn0_smoother_alpha = 0.002;
@@ -116,7 +116,7 @@ void Dll_Pll_Conf::SetFromConfiguration( ConfigurationInterface *configuration,
     dll_bw_narrow_hz = configuration->property(role + ".dll_bw_narrow_hz", dll_bw_narrow_hz);
     dll_bw_hz = configuration->property(role + ".dll_bw_hz", dll_bw_hz);
     dll_filter_order = configuration->property(role + ".dll_filter_order", dll_filter_order);
-    dll_filter_order = configuration->property(role + ".aided_dll_filter_order", aided_dll_filter_order);
+    aided_dll_filter_order = configuration->property(role + ".aided_dll_filter_order", aided_dll_filter_order);
     pll_filter_order = configuration->property(role + ".pll_filter_order", pll_filter_order);
     if (dll_filter_order < 1)
         {

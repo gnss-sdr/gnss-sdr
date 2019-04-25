@@ -43,6 +43,7 @@ set(TRACKING_LIB_SOURCES
     tracking_loop_filter.cc
     dll_pll_conf.cc
     bayesian_estimation.cc
+    exponential_smoother.cc
 )
 
 set(TRACKING_LIB_HEADERS
@@ -59,6 +60,7 @@ set(TRACKING_LIB_HEADERS
     tracking_loop_filter.h
     dll_pll_conf.h
     bayesian_estimation.h
+    exponential_smoother.h
 )
 
 if(ENABLE_FPGA)

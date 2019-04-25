@@ -33,6 +33,7 @@
 #define GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H
 
 #include "dll_pll_conf_fpga.h"
+#include "exponential_smoother.h"
 #include "tracking_FLL_PLL_filter.h"  // for PLL/FLL filter
 #include "tracking_loop_filter.h"     // for DLL filter
 #include <boost/circular_buffer.hpp>
@@ -201,6 +202,7 @@ private:
     boost::circular_buffer<gr_complex> d_Prompt_circular_buffer;
     //std::deque<gr_complex> d_Prompt_buffer_deque;
     gr_complex *d_Prompt_buffer;
+    Exponential_Smoother d_cn0_smoother;
 
     // file dump
     std::ofstream d_dump_file;

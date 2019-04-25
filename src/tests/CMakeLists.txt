@@ -141,7 +141,7 @@ endif()
 # Definitions
 ################################################################################
 
-if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13.4")
+if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.20")
     add_definitions(-DGR_GREATER_38=1)
 endif()
 

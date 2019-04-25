@@ -725,7 +725,7 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
     pvt_output_parameters.kml_output_enabled = configuration->property(role + ".kml_output_enabled", default_output_enabled);
     pvt_output_parameters.xml_output_enabled = configuration->property(role + ".xml_output_enabled", default_output_enabled);
     pvt_output_parameters.nmea_output_file_enabled = configuration->property(role + ".nmea_output_file_enabled", default_output_enabled);
-    pvt_output_parameters.rtcm_output_file_enabled = configuration->property(role + ".rtcm_output_file_enabled", default_output_enabled);
+    pvt_output_parameters.rtcm_output_file_enabled = configuration->property(role + ".rtcm_output_file_enabled", false);
 
     std::string default_output_path = configuration->property(role + ".output_path", std::string("."));
     pvt_output_parameters.output_path = default_output_path;

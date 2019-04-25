@@ -62,7 +62,7 @@ target_include_directories(input_filter_adapters
         ${CMAKE_SOURCE_DIR}/src/core/interfaces
 )
 
-if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13.4")
+if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.20")
     target_compile_definitions(input_filter_adapters PUBLIC -DGR_GREATER_38=1)
 endif()
 

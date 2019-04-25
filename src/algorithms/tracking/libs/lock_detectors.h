@@ -72,7 +72,7 @@
  * IEEE 10th International Symposium on Spread Spectrum Techniques and
  * Applications, pp.28-30, August 2008.
  */
-float cn0_svn_estimator(const gr_complex* Prompt_buffer, int length, double coh_integration_time_s);
+float cn0_svn_estimator(const gr_complex* Prompt_buffer, int length, float coh_integration_time_s);
 
 
 /*! \brief A carrier lock detector

@@ -97,8 +97,8 @@ public:
                 obs->set_flag_valid_symbol_output(gs.Flag_valid_symbol_output);
                 obs->set_correlation_length_ms(gs.correlation_length_ms);
 
-                obs->set_fs(gs.Flag_valid_word);
-                obs->set_fs(gs.TOW_at_current_symbol_ms);
+                obs->set_flag_valid_word(gs.Flag_valid_word);
+                obs->set_tow_at_current_symbol_ms(gs.TOW_at_current_symbol_ms);
 
                 obs->set_pseudorange_m(gs.Pseudorange_m);
                 obs->set_rx_time(gs.RX_time);

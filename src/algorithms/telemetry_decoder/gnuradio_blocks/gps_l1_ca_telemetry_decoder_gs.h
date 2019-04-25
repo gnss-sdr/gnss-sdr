@@ -73,46 +73,45 @@ private:
     gps_l1_ca_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
 
     gps_l1_ca_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
-
     bool gps_word_parityCheck(uint32_t gpsword);
-
     bool decode_subframe();
-    bool new_decoder();
-    int d_crc_error_synchronization_counter;
+
+    // new
+    int32_t d_bits_per_preamble;
+    int32_t d_samples_per_preamble;
+    int32_t d_preamble_period_symbols;
+    int32_t *d_preamble_samples;
+    uint32_t d_required_symbols;
+    uint32_t d_frame_length_symbols;
+    double *d_page_part_symbols;
+    bool flag_PLL_180_deg_phase_locked;
+    // navigation message vars
+    Gps_Navigation_Message d_nav;
+    uint32_t d_prev_GPS_frame_4bytes;
+
+    boost::circular_buffer<float> d_symbol_history;
+
     uint64_t d_sample_counter;
-    bool d_sent_tlm_failed_msg;
+    uint64_t d_preamble_index;
     uint64_t d_last_valid_preamble;
     uint32_t d_max_symbols_without_valid_frame;
 
-    int *d_preambles_symbols;
+    bool d_sent_tlm_failed_msg;
     uint32_t d_stat;
     bool d_flag_frame_sync;
-
-    // symbols
-    boost::circular_buffer<Gnss_Synchro> d_symbol_history;
-    float d_subframe_symbols[GPS_SUBFRAME_MS]{};  // symbols per subframe
-    int d_current_subframe_symbol;
-
-    // bits and frame
-    uint32_t d_prev_GPS_frame_4bytes;
+    bool d_flag_parity;
     bool d_flag_preamble;
-    bool d_flag_new_tow_available;
+    int32_t d_CRC_error_counter;
 
-    // navigation message vars
-    Gps_Navigation_Message d_nav;
 
-    bool d_dump;
     Gnss_Satellite d_satellite;
-    int d_channel;
-
-    uint64_t d_preamble_time_samples;
+    int32_t d_channel;
 
     uint32_t d_TOW_at_Preamble_ms;
     uint32_t d_TOW_at_current_symbol_ms;
 
     bool flag_TOW_set;
-    bool flag_PLL_180_deg_phase_locked;
-
+    bool d_dump;
     std::string d_dump_filename;
     std::ofstream d_dump_file;
 };

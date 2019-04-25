@@ -31,7 +31,6 @@
  */
 
 #include "exponential_smoother.h"
-#include <iostream>  ///////////////
 #include <iterator>
 #include <numeric>
 
@@ -40,11 +39,11 @@ Exponential_Smoother::Exponential_Smoother()
     alpha_ = 0.001;
     old_value_ = 0.0;
     one_minus_alpha_ = 1.0 - alpha_;
-    samples_for_initialization_ = 500;
+    samples_for_initialization_ = 200;
     initializing_ = true;
     init_counter_ = 0;
-    min_value_ = 25;
-    offset_ = 9.0;
+    min_value_ = 25.0;
+    offset_ = 12.0;
     init_buffer_.reserve(samples_for_initialization_);
 }
 
@@ -117,7 +116,7 @@ float Exponential_Smoother::smooth(float raw)
             init_buffer_.push_back(smoothed_value);
             if (init_counter_ == samples_for_initialization_)
                 {
-                    old_value_ = std::accumulate(std::begin(init_buffer_), std::end(init_buffer_), 0.0) / static_cast<float>(init_buffer_.size());
+                    old_value_ = std::accumulate(std::begin(init_buffer_), std::end(init_buffer_), 0.0f) / static_cast<float>(init_buffer_.size());
                     if (old_value_ < (min_value_ + offset_))
                         {
                             // flush buffer and start again

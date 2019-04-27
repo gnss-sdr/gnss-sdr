@@ -116,7 +116,7 @@ float Exponential_Smoother::smooth(float raw)
             init_buffer_.push_back(smoothed_value);
             if (init_counter_ == samples_for_initialization_)
                 {
-                    old_value_ = std::accumulate(std::cbegin(init_buffer_), std::cend(init_buffer_), 0.0F) / static_cast<float>(init_buffer_.size());
+                    old_value_ = std::accumulate(std::begin(init_buffer_), std::end(init_buffer_), 0.0F) / static_cast<float>(init_buffer_.size());
                     if (old_value_ < (min_value_ + offset_))
                         {
                             // flush buffer and start again

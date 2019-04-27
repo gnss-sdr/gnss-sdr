@@ -695,7 +695,7 @@ endif()
 ################################################################################
 # GNU Radio - https://gnuradio.org
 ################################################################################
-set(GR_REQUIRED_COMPONENTS RUNTIME ANALOG BLOCKS FFT FILTER PMT)
+set(GR_REQUIRED_COMPONENTS RUNTIME PMT BLOCKS FFT FILTER ANALOG)
 
 find_package(UHD)
 set_package_properties(UHD PROPERTIES
@@ -719,10 +719,10 @@ set_package_properties(GNURADIO PROPERTIES
     PURPOSE "Implements flowgraph scheduler, provides some processing blocks and classes to create new ones."
     TYPE REQUIRED
 )
-if(PC_GNURADIO_RUNTIME_VERSION)
-    if(PC_GNURADIO_RUNTIME_VERSION VERSION_LESS ${GNSSSDR_GNURADIO_MIN_VERSION})
+if(GNURADIO_VERSION)
+    if(GNURADIO_VERSION VERSION_LESS ${GNSSSDR_GNURADIO_MIN_VERSION})
         unset(GNURADIO_RUNTIME_FOUND)
-        message(STATUS "The GNU Radio version installed in your system is too old.")
+        message(STATUS "The GNU Radio version installed in your system (v${GNURADIO_VERSION}) is too old.")
     endif()
 endif()
 if(NOT GNURADIO_RUNTIME_FOUND)
@@ -730,15 +730,14 @@ if(NOT GNURADIO_RUNTIME_FOUND)
     if(OS_IS_LINUX)
         message("Go to https://github.com/gnuradio/pybombs")
         message("and follow the instructions to install GNU Radio in your system.")
-        message(FATAL_ERROR "GNU Radio ${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr")
     endif()
     if(OS_IS_MACOSX)
         message("You can install it easily via Macports:")
         message("  sudo port install gnuradio ")
         message("Alternatively, you can use homebrew:")
         message("  brew install gnuradio")
-        message(FATAL_ERROR "GNU Radio ${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr")
     endif()
+    message(FATAL_ERROR "GNU Radio v${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr.")
 else()
     if(NOT TARGET Gnuradio::runtime)
         add_library(Gnuradio::runtime SHARED IMPORTED)

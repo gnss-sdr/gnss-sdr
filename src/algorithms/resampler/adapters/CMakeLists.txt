@@ -52,7 +52,7 @@ target_include_directories(resampler_adapters
         ${CMAKE_SOURCE_DIR}/src/core/interfaces
 )
 
-if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.20")
+if(NOT (GNURADIO_VERSION VERSION_LESS "3.8"))
     target_compile_definitions(resampler_adapters PUBLIC -DGR_GREATER_38=1)
 endif()
 

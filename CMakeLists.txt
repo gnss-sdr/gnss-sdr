@@ -1818,7 +1818,7 @@ endif()
 find_package(Protobuf)
 set_package_properties(Protobuf PROPERTIES
     URL "https://developers.google.com/protocol-buffers/"
-    DESCRIPTION "A language-neutral, platform-neutral extensible mechanism for serializing structured data"
+    DESCRIPTION "Structured data serialization mechanism"
     PURPOSE "Used to serialize output data in a way that can be read by other applications."
     TYPE REQUIRED
 )

@@ -80,11 +80,7 @@ if(ENABLE_RAW_UDP)
     target_compile_definitions(core_receiver PRIVATE -DRAW_UDP=1)
 endif()
 
-if(PC_GNURADIO_RUNTIME_VERSION VERSION_GREATER 3.7.3)
-    target_compile_definitions(core_receiver PRIVATE -DMODERN_GNURADIO=1)
-endif()
-
-if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.20")
+if(NOT (GNURADIO_VERSION VERSION_LESS "3.8"))
     target_compile_definitions(core_receiver PRIVATE -DGR_GREATER_38=1)
 endif()
 

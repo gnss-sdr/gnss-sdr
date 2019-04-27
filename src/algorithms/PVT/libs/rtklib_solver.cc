@@ -148,7 +148,6 @@ bool Rtklib_Solver::save_matfile()
                                sizeof(uint8_t) * number_of_uint8_vars +
                                sizeof(float) * number_of_float_vars;
     std::ifstream dump_file;
-    std::cout << "Generating .mat file for " << dump_filename << std::endl;
     dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try
         {
@@ -163,6 +162,7 @@ bool Rtklib_Solver::save_matfile()
     int64_t num_epoch = 0LL;
     if (dump_file.is_open())
         {
+            std::cout << "Generating .mat file for " << dump_filename << std::endl;
             size = dump_file.tellg();
             num_epoch = static_cast<int64_t>(size) / static_cast<int64_t>(epoch_size_bytes);
             dump_file.seekg(0, std::ios::beg);

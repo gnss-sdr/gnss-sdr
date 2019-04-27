@@ -24,7 +24,7 @@ include(FindPackageHandleStandardArgs)
 
 # if GR_REQUIRED_COMPONENTS is not defined, it will be set to the following list
 if(NOT GR_REQUIRED_COMPONENTS)
-  set(GR_REQUIRED_COMPONENTS RUNTIME ANALOG BLOCKS DIGITAL FFT FILTER PMT FEC TRELLIS UHD)
+  set(GR_REQUIRED_COMPONENTS RUNTIME PMT BLOCKS FFT FILTER ANALOG)
 endif()
 
 # Allows us to use all .cmake files in this directory
@@ -42,9 +42,6 @@ macro(LIST_CONTAINS var value)
     endif()
   endforeach()
 endmacro()
-
-# Trick for feature_summary
-set(GNURADIO_FOUND TRUE)
 
 function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
     list_contains(REQUIRED_MODULE ${EXTVAR} ${GR_REQUIRED_COMPONENTS})
@@ -150,24 +147,21 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
 endfunction()
 
 gr_module(RUNTIME gnuradio-runtime gnuradio/top_block.h gnuradio-runtime)
-gr_module(ANALOG gnuradio-analog gnuradio/analog/api.h gnuradio-analog)
-gr_module(AUDIO gnuradio-audio gnuradio/audio/api.h gnuradio-audio)
+gr_module(PMT gnuradio-runtime pmt/pmt.h gnuradio-pmt)
 gr_module(BLOCKS gnuradio-blocks gnuradio/blocks/api.h gnuradio-blocks)
-gr_module(CHANNELS gnuradio-channels gnuradio/channels/api.h gnuradio-channels)
-gr_module(DIGITAL gnuradio-digital gnuradio/digital/api.h gnuradio-digital)
-gr_module(FCD gnuradio-fcd gnuradio/fcd_api.h gnuradio-fcd)
 gr_module(FEC gnuradio-fec gnuradio/fec/api.h gnuradio-fec)
 gr_module(FFT gnuradio-fft gnuradio/fft/api.h gnuradio-fft)
 gr_module(FILTER gnuradio-filter gnuradio/filter/api.h gnuradio-filter)
-gr_module(NOAA gnuradio-noaa gnuradio/noaa/api.h gnuradio-noaa)
-gr_module(PAGER gnuradio-pager gnuradio/pager/api.h gnuradio-pager)
+gr_module(ANALOG gnuradio-analog gnuradio/analog/api.h gnuradio-analog)
+gr_module(DIGITAL gnuradio-digital gnuradio/digital/api.h gnuradio-digital)
+gr_module(AUDIO gnuradio-audio gnuradio/audio/api.h gnuradio-audio)
+gr_module(CHANNELS gnuradio-channels gnuradio/channels/api.h gnuradio-channels)
 gr_module(QTGUI gnuradio-qtgui gnuradio/qtgui/api.h gnuradio-qtgui)
 gr_module(TRELLIS gnuradio-trellis gnuradio/trellis/api.h gnuradio-trellis)
 gr_module(UHD gnuradio-uhd gnuradio/uhd/api.h gnuradio-uhd)
 gr_module(VOCODER gnuradio-vocoder gnuradio/vocoder/api.h gnuradio-vocoder)
 gr_module(WAVELET gnuradio-wavelet gnuradio/wavelet/api.h gnuradio-wavelet)
-gr_module(WXGUI gnuradio-wxgui gnuradio/wxgui/api.h gnuradio-wxgui)
-gr_module(PMT gnuradio-runtime pmt/pmt.h gnuradio-pmt)
+
 
 list(REMOVE_DUPLICATES GNURADIO_ALL_INCLUDE_DIRS)
 list(REMOVE_DUPLICATES GNURADIO_ALL_LIBRARIES)
@@ -206,4 +200,7 @@ if(NOT PC_GNURADIO_RUNTIME_VERSION)
 endif()
 
 # Trick for feature_summary
-set(GNURADIO_FOUND TRUE)
+if(NOT DEFINED GNURADIO_FOUND)
+    set(GNURADIO_FOUND TRUE)
+endif()
+set(GNURADIO_VERSION ${PC_GNURADIO_RUNTIME_VERSION})

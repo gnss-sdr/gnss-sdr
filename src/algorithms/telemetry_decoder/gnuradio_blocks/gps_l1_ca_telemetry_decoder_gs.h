@@ -62,6 +62,7 @@ public:
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
     void set_channel(int channel);                        //!< Set receiver's channel
     void reset();
+
     /*!
      * \brief This is where all signal processing takes place
      */
@@ -76,15 +77,14 @@ private:
     bool gps_word_parityCheck(uint32_t gpsword);
     bool decode_subframe();
 
-    // new
     int32_t d_bits_per_preamble;
     int32_t d_samples_per_preamble;
     int32_t d_preamble_period_symbols;
     int32_t *d_preamble_samples;
     uint32_t d_required_symbols;
     uint32_t d_frame_length_symbols;
-    double *d_page_part_symbols;
     bool flag_PLL_180_deg_phase_locked;
+
     // navigation message vars
     Gps_Navigation_Message d_nav;
     uint32_t d_prev_GPS_frame_4bytes;
@@ -102,7 +102,6 @@ private:
     bool d_flag_parity;
     bool d_flag_preamble;
     int32_t d_CRC_error_counter;
-
 
     Gnss_Satellite d_satellite;
     int32_t d_channel;

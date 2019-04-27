@@ -35,11 +35,12 @@
 #include <exception>
 #include <iostream>
 #include <sstream>
+#include <utility>
 
 
 labsat23_source_sptr labsat23_make_source_sptr(const char *signal_file_basename, int channel_selector, gr::msg_queue::sptr queue)
 {
-    return labsat23_source_sptr(new labsat23_source(signal_file_basename, channel_selector, queue));
+    return labsat23_source_sptr(new labsat23_source(signal_file_basename, channel_selector, std::move(queue)));
 }
 
 
@@ -48,7 +49,7 @@ labsat23_source::labsat23_source(const char *signal_file_basename,
     gr::msg_queue::sptr queue) : gr::block("labsat23_source",
                                      gr::io_signature::make(0, 0, 0),
                                      gr::io_signature::make(1, 1, sizeof(gr_complex))),
-                                 d_queue(queue)
+                                 d_queue(std::move(queue))
 {
     if (channel_selector < 1 or channel_selector > 2)
         {

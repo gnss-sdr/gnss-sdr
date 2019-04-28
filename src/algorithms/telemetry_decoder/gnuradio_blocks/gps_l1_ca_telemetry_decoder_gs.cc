@@ -83,8 +83,7 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
     // preamble bits to sampled symbols
     d_preamble_samples = static_cast<int32_t *>(volk_gnsssdr_malloc(d_samples_per_preamble * sizeof(int32_t), volk_gnsssdr_get_alignment()));
     d_frame_length_symbols = GPS_SUBFRAME_BITS * GPS_CA_TELEMETRY_SYMBOLS_PER_BIT;
-    d_max_symbols_without_valid_frame = d_required_symbols * 10;  //rise alarm 1 minute without valid tlm
-    d_page_part_symbols = static_cast<double *>(volk_gnsssdr_malloc(d_frame_length_symbols * sizeof(double), volk_gnsssdr_get_alignment()));
+    d_max_symbols_without_valid_frame = d_required_symbols * 10;  // rise alarm 1 minute without valid tlm
     int32_t n = 0;
     for (int32_t i = 0; i < d_bits_per_preamble; i++)
         {
@@ -127,7 +126,6 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
 gps_l1_ca_telemetry_decoder_gs::~gps_l1_ca_telemetry_decoder_gs()
 {
     volk_gnsssdr_free(d_preamble_samples);
-    volk_gnsssdr_free(d_page_part_symbols);
     if (d_dump_file.is_open() == true)
         {
             try
@@ -285,7 +283,7 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe()
     // NEW GPS SUBFRAME HAS ARRIVED!
     if (subframe_synchro_confirmation)
         {
-            int32_t subframe_ID = d_nav.subframe_decoder(subframe);  //decode the subframe
+            int32_t subframe_ID = d_nav.subframe_decoder(subframe);  // decode the subframe
             if (subframe_ID > 0 and subframe_ID < 6)
                 {
                     std::cout << "New GPS NAV message received in channel " << this->d_channel << ": "
@@ -377,7 +375,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
         {
         case 0:  // no preamble information
             {
-                //correlate with preamble
+                // correlate with preamble
                 int32_t corr_value = 0;
                 if (d_symbol_history.size() >= GPS_CA_PREAMBLE_LENGTH_SYMBOLS)
                     {
@@ -405,7 +403,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
             }
         case 1:  // possible preamble lock
             {
-                //correlate with preamble
+                // correlate with preamble
                 int32_t corr_value = 0;
                 int32_t preamble_diff = 0;
                 if (d_symbol_history.size() >= GPS_CA_PREAMBLE_LENGTH_SYMBOLS)

@@ -100,8 +100,8 @@ void Exponential_Smoother::set_min_value(float value)
 
 double Exponential_Smoother::smooth(double raw)
 {
-    float raw_f = static_cast<float>(raw);
-    double smooth_d = static_cast<double>((this)->smooth(raw_f));
+    auto raw_f = static_cast<float>(raw);
+    auto smooth_d = static_cast<double>((this)->smooth(raw_f));
     return smooth_d;
 }
 
@@ -116,7 +116,7 @@ float Exponential_Smoother::smooth(float raw)
             init_buffer_.push_back(smoothed_value);
             if (init_counter_ == samples_for_initialization_)
                 {
-                    old_value_ = std::accumulate(std::begin(init_buffer_), std::end(init_buffer_), 0.0f) / static_cast<float>(init_buffer_.size());
+                    old_value_ = std::accumulate(std::begin(init_buffer_), std::end(init_buffer_), 0.0F) / static_cast<float>(init_buffer_.size());
                     if (old_value_ < (min_value_ + offset_))
                         {
                             // flush buffer and start again

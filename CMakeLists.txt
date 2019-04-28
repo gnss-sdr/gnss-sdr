@@ -715,7 +715,7 @@ endif()
 find_package(GNURADIO)
 set_package_properties(GNURADIO PROPERTIES
     URL "https://www.gnuradio.org/"
-    DESCRIPTION "The free and open software radio ecosystem"
+    DESCRIPTION "The free and open software radio ecosystem (found: v${GNURADIO_VERSION})"
     PURPOSE "Implements flowgraph scheduler, provides some processing blocks and classes to create new ones."
     TYPE REQUIRED
 )

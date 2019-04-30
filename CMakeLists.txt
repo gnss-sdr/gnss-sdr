@@ -1871,19 +1871,22 @@ if(Protobuf_FOUND AND CMAKE_VERSION VERSION_LESS 3.9)
     endif()
 endif()
 if(Protobuf_FOUND AND CMAKE_CROSSCOMPILING)
-    find_program(PROTOC_EXECUTABLE protoc
-        HINTS
-            /usr/local/bin/
-            /usr/bin/
-        NO_SYSTEM_ENVIRONMENT_PATH
-    )
+    find_program(PROTOC_EXECUTABLE protoc)
+    if(NOT PROTOC_EXECUTABLE)
+        find_program(PROTOC_EXECUTABLE protoc
+            HINTS
+                /usr/bin/
+                /usr/local/bin/
+        )
+    endif()
     if(PROTOC_EXECUTABLE)
         set_target_properties(protobuf::protoc PROPERTIES
             IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
             IMPORTED_LOCATION ${PROTOC_EXECUTABLE}
         )
+        set(Protobuf_PROTOC_EXECUTABLE ${PROTOC_EXECUTABLE})
     else()
-        message(FATAL ERROR "Please install the Protocol Buffers compiter v${Protobuf_VERSION} in the host machine")
+        message(FATAL_ERROR "Please install the Protocol Buffers compiler v${Protobuf_VERSION} in the host machine")
     endif()
 endif()
 if((NOT Protobuf_FOUND) OR (NOT Protobuf_PROTOC_EXECUTABLE) OR (${Protobuf_VERSION} VERSION_LESS ${GNSSSDR_PROTOBUF_MIN_VERSION}))

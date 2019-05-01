@@ -147,7 +147,6 @@ zypper install cmake git gcc-c++ boost-devel libboost_atomic-devel \
        log4cpp-devel gtest gnuradio-devel pugixml-devel libpcap-devel \
        armadillo-devel libtool automake hdf5-devel libopenssl-devel \
        python3-Mako python3-six protobuf-devel
-
 ~~~~~~
 
 Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).

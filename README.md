@@ -71,7 +71,7 @@ $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time
        libgtest-dev libprotobuf-dev protobuf-compiler
 ~~~~~~
 
-Please note that the required files from `libgtest-dev` were moved to `googletest` in Debian 9 "stretch" and Ubuntu 18.04 "bionic", and moved back again to `libgtest-dev` in Debian 10 "buster" and Ubuntu 18.10 "cosmic".
+Please note that the required files from `libgtest-dev` were moved to `googletest` in Debian 9 "stretch" and Ubuntu 18.04 "bionic", and moved back again to `libgtest-dev` in Debian 10 "buster" and Ubuntu 18.10 "cosmic" (and above).
 
 **Note for Ubuntu 14.04 LTS "trusty" users:** you will need to build from source and install GNU Radio manually, as explained below, since GNSS-SDR requires `gnuradio-dev` >= 3.7.3, and Ubuntu 14.04 came with 3.7.2. Install all the packages above BUT EXCEPT `libuhd-dev`, `gnuradio-dev` and `gr-osmosdr` (and remove them if they are already installed in your machine), and install those dependencies using PyBOMBS. The same applies to `libmatio-dev`: Ubuntu 14.04 came with 1.5.2 and the minimum required version is 1.5.3. Please do not install the `libmatio-dev` package and install `libtool`, `automake` and `libhdf5-dev` instead. A recent version of the library will be downloaded and built automatically if CMake does not find it installed.
 
@@ -120,7 +120,7 @@ $ sudo yum install make automake gcc gcc-c++ kernel-devel cmake git boost-devel 
        boost-serialization log4cpp-devel gnuradio-devel gr-osmosdr-devel \
        blas-devel lapack-devel matio-devel armadillo-devel gflags-devel \
        glog-devel openssl-devel libpcap-devel python-mako python-six \
-       pugixml-devel protobuf-devel
+       pugixml-devel protobuf-devel protobuf-compiler
 ~~~~~~
 
 Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).
@@ -132,11 +132,22 @@ If you are using openSUSE Leap:
 
 ~~~~~~
 zypper install cmake git gcc-c++ boost-devel libboost_atomic-devel \
+       libboost_system-devel libboost_filesystem-devel libboost_chrono-devel \
+       libboost_thread-devel libboost_serialization-devel log4cpp-devel \
+       gnuradio-devel pugixml-devel libpcap-devel armadillo-devel libtool \
+       automake hdf5-devel openssl-devel python-Mako python-six protobuf-devel
+~~~~~~
+
+If you are using openSUSE Tumbleweed:
+
+~~~~~~
+zypper install cmake git gcc-c++ boost-devel libboost_atomic-devel \
        libboost_system-devel libboost_filesystem-devel libboost_date_time-devel \
        libboost_thread-devel libboost_chrono-devel libboost_serialization-devel \
        log4cpp-devel gtest gnuradio-devel pugixml-devel libpcap-devel \
-       armadillo-devel libtool automake hdf5-devel libopenssl-devel python-Mako \
-       python-six protobuf-devel
+       armadillo-devel libtool automake hdf5-devel libopenssl-devel \
+       python3-Mako python3-six protobuf-devel
+
 ~~~~~~
 
 Once you have installed these packages, you can jump directly to [download the source code and build GNSS-SDR](#download-and-build-linux).

@@ -677,6 +677,7 @@ void GNSSFlowgraph::connect()
                     top_block_->connect(observables_->get_right_block(), i, pvt_->get_left_block(), i);
                     top_block_->msg_connect(channels_.at(i)->get_right_block(), pmt::mp("telemetry"), pvt_->get_left_block(), pmt::mp("telemetry"));
                 }
+            top_block_->msg_connect(pvt_->get_left_block(), pmt::mp("pvt_to_observables"), observables_->get_right_block(), pmt::mp("pvt_to_observables"));
         }
     catch (const std::exception& e)
         {
@@ -948,6 +949,7 @@ void GNSSFlowgraph::disconnect()
                         }
                     top_block_->msg_disconnect(channels_.at(i)->get_right_block(), pmt::mp("telemetry"), pvt_->get_left_block(), pmt::mp("telemetry"));
                 }
+            top_block_->msg_disconnect(pvt_->get_left_block(), pmt::mp("pvt_to_observables"), observables_->get_right_block(), pmt::mp("pvt_to_observables"));
         }
     catch (const std::exception& e)
         {

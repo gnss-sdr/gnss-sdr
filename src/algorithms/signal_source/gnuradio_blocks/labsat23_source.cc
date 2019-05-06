@@ -147,24 +147,28 @@ void labsat23_source::decode_samples_one_channel(int16_t input_short, gr_complex
             //  bits per sample, 4 samples per int16
             for (int i = 0; i < 4; i++)
                 {
-                    out[i] = gr_complex(0.0, 0.0);
+                    //out[i] = gr_complex(0.0, 0.0);
                     // In-Phase
                     if (bs[15 - 4 * i])
                         {
                             if (bs[13 - 4 * i])  // 11
                                 {
-                                    out[i] += gr_complex(-1, 0);
+                                    out[i] = gr_complex(-1, 0);
                                 }
                             else  // 10
                                 {
-                                    out[i] += gr_complex(-2, 0);
+                                    out[i] = gr_complex(-2, 0);
                                 }
                         }
                     else
                         {
                             if (bs[13 - 4 * i])  // 01
                                 {
-                                    out[i] += gr_complex(1, 0);
+                                    out[i] = gr_complex(2, 0);
+                                }
+                            else
+                                {
+                                    out[i] = gr_complex(1, 0);
                                 }
                         }
 
@@ -184,10 +188,14 @@ void labsat23_source::decode_samples_one_channel(int16_t input_short, gr_complex
                         {
                             if (bs[12 - 4 * i])  // 01
                                 {
+                                    out[i] += gr_complex(0, 2);
+                                }
+                            else
+                                {
                                     out[i] += gr_complex(0, 1);
                                 }
                         }
-                    out[i] += gr_complex(0.5, 0.5);
+                    //out[i] += gr_complex(0.5, 0.5);
                 }
             break;
         }
@@ -412,6 +420,7 @@ int labsat23_source::general_work(int noutput_items,
                     {
                     case 0:
                         // dual channel 2 bits per complex sample
+                        //todo: implement dual channel reader
                         break;
                     default:
                         // single channel 2 bits per complex sample (1 bit I + 1 bit Q, 8 samples per int16)
@@ -473,6 +482,7 @@ int labsat23_source::general_work(int noutput_items,
                     {
                     case 0:
                         // dual channel
+                        //todo: implement dual channel reader
                         break;
                     default:
                         // single channel 4 bits per complex sample (2 bit I + 2 bit Q, 4 samples per int16)

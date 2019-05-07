@@ -38,7 +38,6 @@ Pvt_Conf::Pvt_Conf()
 
     rinex_version = 0;
     rinexobs_rate_ms = 0;
-    rinexnav_rate_ms = 0;
 
     dump = false;
     dump_mat = true;

@@ -1453,10 +1453,10 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             //end debug
                                             if (d_display_rate_ms != 0)
                                                 {
-                                                    //                                                    if (current_RX_time_ms % d_display_rate_ms == 0)
-                                                    //                                                        {
-                                                    flag_display_pvt = true;
-                                                    //                                                        }
+                                                    if (current_RX_time_ms % d_display_rate_ms == 0)
+                                                        {
+                                                            flag_display_pvt = true;
+                                                        }
                                                 }
                                             if (d_rtcm_MT1019_rate_ms != 0)  // allows deactivating messages by setting rate = 0
                                                 {

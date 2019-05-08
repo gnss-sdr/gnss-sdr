@@ -95,7 +95,6 @@ private:
     bool b_rinex_header_updated;
     double d_rinex_version;
     int32_t d_rinexobs_rate_ms;
-    int32_t d_rinexnav_rate_ms;
 
     bool b_rtcm_writing_started;
     bool b_rtcm_enabled;

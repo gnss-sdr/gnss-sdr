@@ -92,6 +92,7 @@ target_include_directories(tracking_libs
     PUBLIC
         ${OPT_TRACKING_INCLUDES}
 )
+
 if(Boost_VERSION VERSION_GREATER "106500")
     target_compile_definitions(tracking_libs
         PUBLIC

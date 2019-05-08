@@ -85,6 +85,13 @@ if(OS_IS_MACOSX)
     endif()
 endif()
 
+if(Boost_VERSION VERSION_GREATER "106500")
+    target_compile_definitions(signal_source_gr_blocks
+        PUBLIC
+            -DBOOST_GREATER_1_65
+    )
+endif()
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(signal_source_gr_blocks

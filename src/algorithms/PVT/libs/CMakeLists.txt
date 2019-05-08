@@ -87,6 +87,13 @@ target_include_directories(pvt_libs
 
 target_compile_definitions(pvt_libs PRIVATE -DGNSS_SDR_VERSION="${VERSION}")
 
+if(Boost_VERSION VERSION_GREATER "106500")
+    target_compile_definitions(pvt_libs
+        PUBLIC
+            -DBOOST_GREATER_1_65
+    )
+endif()
+
 if(OS_IS_MACOSX)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")  # not AppleClang
         target_compile_definitions(pvt_libs

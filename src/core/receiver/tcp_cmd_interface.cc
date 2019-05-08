@@ -39,6 +39,11 @@
 #include <sstream>    // for stringstream
 #include <utility>    // for move
 
+#if BOOST_GREATER_1_65
+using b_io_context = boost::asio::io_context;
+#else
+using b_io_context = boost::asio::io_service;
+#endif
 
 TcpCmdInterface::TcpCmdInterface()
 {
@@ -175,9 +180,11 @@ std::string TcpCmdInterface::hotstart(const std::vector<std::string> &commandLin
     std::string response;
     if (commandLine.size() > 5)
         {
+            std::string tmp_str;
             // Read commandline time parameter
             struct tm tm = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, nullptr};
-            if (strptime(commandLine.at(1).c_str(), "%d/%m/%Y %H:%M:%S", &tm) == nullptr)
+            tmp_str = commandLine.at(1) + commandLine.at(2);
+            if (strptime(tmp_str.c_str(), "%d/%m/%Y %H:%M:%S", &tm) == nullptr)
                 {
                     response = "ERROR: time parameter malformed\n";
                     return response;
@@ -224,7 +231,7 @@ std::string TcpCmdInterface::warmstart(const std::vector<std::string> &commandLi
             // Read commandline time parameter
             struct tm tm = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, nullptr};
             tmp_str = commandLine.at(1) + commandLine.at(2);
-            if (strptime(commandLine.at(1).c_str(), "%d/%m/%Y %H:%M:%S", &tm) == nullptr)
+            if (strptime(tmp_str.c_str(), "%d/%m/%Y %H:%M:%S", &tm) == nullptr)
                 {
                     response = "ERROR: time parameter malformed\n";
                     return response;
@@ -235,6 +242,7 @@ std::string TcpCmdInterface::warmstart(const std::vector<std::string> &commandLi
             rx_latitude_ = std::stod(commandLine.at(3).c_str());
             rx_longitude_ = std::stod(commandLine.at(4).c_str());
             rx_altitude_ = std::stod(commandLine.at(5).c_str());
+
             if (std::isnan(rx_latitude_) || std::isnan(rx_longitude_) || std::isnan(rx_altitude_))
                 {
                     response = "ERROR: position malformed\n";
@@ -302,10 +310,10 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
     boost::system::error_code not_throw;
 
     // Socket and acceptor
-    boost::asio::io_service service;
+    b_io_context context;
     try
         {
-            boost::asio::ip::tcp::acceptor acceptor(service, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port));
+            boost::asio::ip::tcp::acceptor acceptor(context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port));
 
             while (keep_running_)
                 {
@@ -313,7 +321,7 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
                         {
                             std::cout << "TcpCmdInterface: Telecommand TCP interface listening on port " << tcp_port << std::endl;
 
-                            boost::asio::ip::tcp::socket socket(service);
+                            boost::asio::ip::tcp::socket socket(context);
                             acceptor.accept(socket, not_throw);
                             if (not_throw)
                                 {

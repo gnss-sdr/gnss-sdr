@@ -35,7 +35,7 @@
 #include <string>
 
 
-Tcp_Communication::Tcp_Communication() : tcp_socket_(io_service_) {}  // NOLINT
+Tcp_Communication::Tcp_Communication() : tcp_socket_(io_context_) {}  // NOLINT
 
 
 Tcp_Communication::~Tcp_Communication() = default;
@@ -47,7 +47,7 @@ int Tcp_Communication::listen_tcp_connection(size_t d_port_, size_t d_port_ch0_)
         {
             // Specify IP type and port
             boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), d_port_);
-            boost::asio::ip::tcp::acceptor acceptor(io_service_, endpoint);
+            boost::asio::ip::tcp::acceptor acceptor(io_context_, endpoint);
 
             if (d_port_ == d_port_ch0_)
                 {

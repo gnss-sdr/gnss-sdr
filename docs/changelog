@@ -4,6 +4,7 @@
 
 - Fixed bug that caused a random deadlock in the Observables block, preventing the computation of PVT fixes.
 - Fixed bug in Galileo INAV message decoding when PLL is locked at 180 degrees, which prevented from correct navigation message decoding in some situations.
+- Fixed PVT computation continuity through the TOW rollover.
 
 
 ### Improvements in Efficiency
@@ -27,6 +28,8 @@
 - Added a custom UDP/IP output for PVT data streaming.
 - Improved Monitor block with UDP/IP output for internal receiver's data streaming.
 - Custom output formats described with .proto files, making easier to other applications reading them in a forward and backward-compatible fashion upon future format changes.
+- Fixes in RINEX generation: week rollover, annotations are not repeated anymore in navigation files. Parameter rinexnav_rate_ms has been removed, annotations are made as new ephemeris arrive.
+- Fixes in RTCM messages generation: week rollover.
 
 
 ### Improvements in Maintainability:

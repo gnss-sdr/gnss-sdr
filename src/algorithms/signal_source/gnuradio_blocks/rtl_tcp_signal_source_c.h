@@ -91,7 +91,7 @@ private:
     Rtl_Tcp_Dongle_Info info_;
 
     // IO members
-    boost::asio::io_service io_service_;
+    boost::asio::io_context io_context_;
     boost::asio::ip::tcp::socket socket_;
     std::vector<unsigned char> data_;
     bool flip_iq_;
@@ -117,7 +117,7 @@ private:
 
     inline bool not_empty() const
     {
-        return unread_ > 0 || io_service_.stopped();
+        return unread_ > 0 || io_context_.stopped();
     }
 };
 

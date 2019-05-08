@@ -35,7 +35,7 @@
 #include <iostream>
 #include <sstream>
 
-Gnss_Synchro_Udp_Sink::Gnss_Synchro_Udp_Sink(std::vector<std::string> addresses, const uint16_t& port, bool enable_protobuf) : socket{io_service}
+Gnss_Synchro_Udp_Sink::Gnss_Synchro_Udp_Sink(std::vector<std::string> addresses, const uint16_t& port, bool enable_protobuf) : socket{io_context}
 {
     use_protobuf = enable_protobuf;
     if (enable_protobuf)

@@ -757,7 +757,7 @@ private:
         : public std::enable_shared_from_this<Tcp_Internal_Client>
     {
     public:
-        Tcp_Internal_Client(boost::asio::io_service& io_context,
+        Tcp_Internal_Client(boost::asio::io_context& io_context,
             boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
             : io_context_(io_context), socket_(io_context)
         {
@@ -835,7 +835,7 @@ private:
                 });
         }
 
-        boost::asio::io_service& io_context_;
+        boost::asio::io_context& io_context_;
         boost::asio::ip::tcp::socket socket_;
         Rtcm_Message read_msg_;
         std::deque<Rtcm_Message> write_msgs_;
@@ -845,7 +845,7 @@ private:
     class Queue_Reader
     {
     public:
-        Queue_Reader(boost::asio::io_service& io_context, std::shared_ptr<Concurrent_Queue<std::string> >& queue, int32_t port) : queue_(queue)
+        Queue_Reader(boost::asio::io_context& io_context, std::shared_ptr<Concurrent_Queue<std::string> >& queue, int32_t port) : queue_(queue)
         {
             boost::asio::ip::tcp::resolver resolver(io_context);
             std::string host("localhost");
@@ -883,7 +883,7 @@ private:
     class Tcp_Server
     {
     public:
-        Tcp_Server(boost::asio::io_service& io_context, const boost::asio::ip::tcp::endpoint& endpoint)
+        Tcp_Server(boost::asio::io_context& io_context, const boost::asio::ip::tcp::endpoint& endpoint)
             : acceptor_(io_context), socket_(io_context)
         {
             acceptor_.open(endpoint.protocol());
@@ -950,7 +950,7 @@ private:
         bool start_session = true;
     };
 
-    boost::asio::io_service io_context;
+    boost::asio::io_context io_context;
     std::shared_ptr<Concurrent_Queue<std::string> > rtcm_message_queue;
     std::thread t;
     std::thread tq;

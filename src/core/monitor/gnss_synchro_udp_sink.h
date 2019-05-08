@@ -52,7 +52,7 @@ public:
     bool write_gnss_synchro(const std::vector<Gnss_Synchro>& stocks);
 
 private:
-    boost::asio::io_service io_service;
+    boost::asio::io_context io_context;
     boost::asio::ip::udp::socket socket;
     boost::system::error_code error;
     std::vector<boost::asio::ip::udp::endpoint> endpoints;

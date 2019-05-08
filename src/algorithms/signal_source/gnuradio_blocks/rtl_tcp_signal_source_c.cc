@@ -65,7 +65,7 @@ rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
     : gr::sync_block("rtl_tcp_signal_source_c",
           gr::io_signature::make(0, 0, 0),
           gr::io_signature::make(1, 1, sizeof(gr_complex))),
-      socket_(io_service_),
+      socket_(io_context_),
       data_(RTL_TCP_PAYLOAD_SIZE),
       flip_iq_(flip_iq),
       buffer_(RTL_TCP_BUFFER_SIZE),
@@ -147,14 +147,14 @@ rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
     boost::asio::async_read(socket_, boost::asio::buffer(data_),
         boost::bind(&rtl_tcp_signal_source_c::handle_read,
             this, _1, _2));
-    boost::thread(boost::bind(&boost::asio::io_service::run, &io_service_));
+    boost::thread(boost::bind(&boost::asio::io_context::run, &io_context_));
 }
 
 
 rtl_tcp_signal_source_c::~rtl_tcp_signal_source_c()  // NOLINT(modernize-use-equals-default)
 {
     mutex_.unlock();
-    io_service_.stop();
+    io_context_.stop();
     not_empty_.notify_one();
     not_full_.notify_one();
 }
@@ -289,7 +289,7 @@ void rtl_tcp_signal_source_c::handle_read(const boost::system::error_code &ec,
             std::cout << "Error during read: " << ec << std::endl;
             LOG(WARNING) << "Error during read: " << ec;
             boost::mutex::scoped_lock lock(mutex_);
-            io_service_.stop();
+            io_context_.stop();
             not_empty_.notify_one();
         }
     else
@@ -334,7 +334,7 @@ int rtl_tcp_signal_source_c::work(int noutput_items,
 {
     auto *out = reinterpret_cast<gr_complex *>(output_items[0]);
     int i = 0;
-    if (io_service_.stopped())
+    if (io_context_.stopped())
         {
             return -1;
         }

@@ -43,7 +43,7 @@ public:
     bool write_monitor_pvt(const Monitor_Pvt &monitor_pvt);
 
 private:
-    boost::asio::io_service io_service;
+    boost::asio::io_context io_context;
     boost::asio::ip::udp::socket socket;
     boost::system::error_code error;
     std::vector<boost::asio::ip::udp::endpoint> endpoints;

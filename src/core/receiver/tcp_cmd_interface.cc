@@ -305,10 +305,10 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
     boost::system::error_code not_throw;
 
     // Socket and acceptor
-    boost::asio::io_service service;
+    boost::asio::io_context context;
     try
         {
-            boost::asio::ip::tcp::acceptor acceptor(service, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port));
+            boost::asio::ip::tcp::acceptor acceptor(context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port));
 
             while (keep_running_)
                 {
@@ -316,7 +316,7 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
                         {
                             std::cout << "TcpCmdInterface: Telecommand TCP interface listening on port " << tcp_port << std::endl;
 
-                            boost::asio::ip::tcp::socket socket(service);
+                            boost::asio::ip::tcp::socket socket(context);
                             acceptor.accept(socket, not_throw);
                             if (not_throw)
                                 {

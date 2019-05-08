@@ -55,7 +55,7 @@ public:
     void close_tcp_connection(size_t d_port_);
 
 private:
-    boost::asio::io_service io_service_;
+    boost::asio::io_context io_context_;
     boost::asio::ip::tcp::socket tcp_socket_;
 };
 

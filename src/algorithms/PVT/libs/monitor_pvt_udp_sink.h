@@ -36,6 +36,12 @@
 #include "serdes_monitor_pvt.h"
 #include <boost/asio.hpp>
 
+#if BOOST_GREATER_1_65
+using b_io_context = boost::asio::io_context;
+#else
+using b_io_context = boost::asio::io_service;
+#endif
+
 class Monitor_Pvt_Udp_Sink
 {
 public:
@@ -43,7 +49,7 @@ public:
     bool write_monitor_pvt(const Monitor_Pvt &monitor_pvt);
 
 private:
-    boost::asio::io_context io_context;
+    b_io_context io_context;
     boost::asio::ip::udp::socket socket;
     boost::system::error_code error;
     std::vector<boost::asio::ip::udp::endpoint> endpoints;

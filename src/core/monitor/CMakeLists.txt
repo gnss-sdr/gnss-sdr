@@ -59,6 +59,15 @@ target_include_directories(core_monitor
         ${PROTO_INCLUDE_HEADERS}
 )
 
+
+if(Boost_VERSION VERSION_GREATER "1.65")
+    target_compile_definitions(core_monitor
+        PUBLIC
+            -DBOOST_GREATER_1_65
+    )
+endif()
+
+
 if(OS_IS_MACOSX)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")  # not AppleClang
         target_compile_definitions(core_monitor

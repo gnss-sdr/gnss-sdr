@@ -147,7 +147,7 @@ rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
     boost::asio::async_read(socket_, boost::asio::buffer(data_),
         boost::bind(&rtl_tcp_signal_source_c::handle_read,
             this, _1, _2));
-    boost::thread(boost::bind(&boost::asio::io_context::run, &io_context_));
+    boost::thread(boost::bind(&b_io_context::run, &io_context_));
 }
 
 

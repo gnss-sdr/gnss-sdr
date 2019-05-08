@@ -40,6 +40,11 @@
 #include <string>
 #include <vector>
 
+#if BOOST_GREATER_1_65
+using b_io_context = boost::asio::io_context;
+#else
+using b_io_context = boost::asio::io_service;
+#endif
 
 /*!
  * \brief This class sends serialized Gnss_Synchro objects
@@ -52,7 +57,7 @@ public:
     bool write_gnss_synchro(const std::vector<Gnss_Synchro>& stocks);
 
 private:
-    boost::asio::io_context io_context;
+    b_io_context io_context;
     boost::asio::ip::udp::socket socket;
     boost::system::error_code error;
     std::vector<boost::asio::ip::udp::endpoint> endpoints;

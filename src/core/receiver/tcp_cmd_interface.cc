@@ -175,9 +175,11 @@ std::string TcpCmdInterface::hotstart(const std::vector<std::string> &commandLin
     std::string response;
     if (commandLine.size() > 5)
         {
+            std::string tmp_str;
             // Read commandline time parameter
             struct tm tm = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, nullptr};
-            if (strptime(commandLine.at(1).c_str(), "%d/%m/%Y %H:%M:%S", &tm) == nullptr)
+            tmp_str = commandLine.at(1) + commandLine.at(2);
+            if (strptime(tmp_str.c_str(), "%d/%m/%Y %H:%M:%S", &tm) == nullptr)
                 {
                     response = "ERROR: time parameter malformed\n";
                     return response;
@@ -224,7 +226,7 @@ std::string TcpCmdInterface::warmstart(const std::vector<std::string> &commandLi
             // Read commandline time parameter
             struct tm tm = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, nullptr};
             tmp_str = commandLine.at(1) + commandLine.at(2);
-            if (strptime(commandLine.at(1).c_str(), "%d/%m/%Y %H:%M:%S", &tm) == nullptr)
+            if (strptime(tmp_str.c_str(), "%d/%m/%Y %H:%M:%S", &tm) == nullptr)
                 {
                     response = "ERROR: time parameter malformed\n";
                     return response;
@@ -235,6 +237,7 @@ std::string TcpCmdInterface::warmstart(const std::vector<std::string> &commandLi
             rx_latitude_ = std::stod(commandLine.at(3).c_str());
             rx_longitude_ = std::stod(commandLine.at(4).c_str());
             rx_altitude_ = std::stod(commandLine.at(5).c_str());
+
             if (std::isnan(rx_latitude_) || std::isnan(rx_longitude_) || std::isnan(rx_altitude_))
                 {
                     response = "ERROR: position malformed\n";

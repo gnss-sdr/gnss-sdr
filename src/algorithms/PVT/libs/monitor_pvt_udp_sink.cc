@@ -35,7 +35,7 @@
 #include <sstream>
 
 
-Monitor_Pvt_Udp_Sink::Monitor_Pvt_Udp_Sink(std::vector<std::string> addresses, const uint16_t& port, bool protobuf_enabled) : socket{io_service}
+Monitor_Pvt_Udp_Sink::Monitor_Pvt_Udp_Sink(std::vector<std::string> addresses, const uint16_t& port, bool protobuf_enabled) : socket{io_context}
 {
     for (const auto& address : addresses)
         {

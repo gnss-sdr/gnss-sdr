@@ -93,6 +93,13 @@ target_include_directories(tracking_libs
         ${OPT_TRACKING_INCLUDES}
 )
 
+if(Boost_VERSION VERSION_GREATER "106500")
+    target_compile_definitions(tracking_libs
+        PUBLIC
+            -DBOOST_GREATER_1_65
+    )
+endif()
+
 if(OS_IS_MACOSX)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")  # not AppleClang
         target_compile_definitions(tracking_libs

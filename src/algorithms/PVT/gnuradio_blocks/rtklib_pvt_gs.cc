@@ -1193,6 +1193,8 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                         case 33:  // L1+E1+E5a
                                             rp->log_rinex_nav(rp->navMixFile, new_eph, new_gal_eph);
                                             break;
+                                        default:
+                                            break;
                                         }
                                 }
                         }

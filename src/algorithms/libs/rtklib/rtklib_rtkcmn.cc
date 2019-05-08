@@ -223,12 +223,11 @@ const unsigned int TBL_CR_C24_Q[] = {
     0x42FA2F, 0xC4B6D4, 0xC82F22, 0x4E63D9, 0xD11CCE, 0x575035, 0x5BC9C3, 0xDD8538};
 
 
-extern "C"
-{
-    void dgemm_(char *, char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
-    extern void dgetrf_(int *, int *, double *, int *, int *, int *);
-    extern void dgetri_(int *, double *, int *, int *, double *, int *, int *);
-    extern void dgetrs_(char *, int *, int *, double *, int *, int *, double *, int *, int *);
+extern "C" {
+void dgemm_(char *, char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
+extern void dgetrf_(int *, int *, double *, int *, int *, int *);
+extern void dgetri_(int *, double *, int *, int *, double *, int *, int *);
+extern void dgetrs_(char *, int *, int *, double *, int *, int *, double *, int *, int *);
 }
 
 
@@ -1690,7 +1689,28 @@ double timediff(gtime_t t1, gtime_t t2)
     return difftime(t1.time, t2.time) + t1.sec - t2.sec;
 }
 
+/* time difference accounting with week crossovers -------------------------------------------------------------
+ * difference between gtime_t structs
+ * args   : gtime_t t1,t2    I   gtime_t structs
+ * return : time difference (t1-t2) (s)
+ *-----------------------------------------------------------------------------*/
+double timediffweekcrossover(gtime_t t1, gtime_t t2)
+{
+    //as stated in IS-GPS-200J table 20-IV footnote among other parts of the ICD,
 
+    //if tk=(t - toe) > 302400s then tk = tk - s
+    //if tk=(t - toe) < -302400s then tk = tk + 604800s
+    double tk = difftime(t1.time, t2.time) + t1.sec - t2.sec;
+    if (tk > 302400.0)
+        {
+            tk -= 604800.0;
+        }
+    else if (tk < -302400.0)
+        {
+            tk += 604800.0;
+        }
+    return tk;
+}
 /* get current time in utc -----------------------------------------------------
  * get current time in utc
  * args   : none

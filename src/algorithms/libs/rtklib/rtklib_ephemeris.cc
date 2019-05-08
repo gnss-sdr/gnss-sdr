@@ -128,7 +128,7 @@ void alm2pos(gtime_t time, const alm_t *alm, double *rs, double *dts)
 
     trace(4, "alm2pos : time=%s sat=%2d\n", time_str(time, 3), alm->sat);
 
-    tk = timediff(time, alm->toa);
+    tk = timediffweekcrossover(time, alm->toa);
 
     if (alm->A <= 0.0)
         {
@@ -181,7 +181,7 @@ double eph2clk(gtime_t time, const eph_t *eph)
 
     trace(4, "eph2clk : time=%s sat=%2d\n", time_str(time, 3), eph->sat);
 
-    t = timediff(time, eph->toc);
+    t = timediffweekcrossover(time, eph->toc);
 
     for (i = 0; i < 2; i++)
         {
@@ -218,7 +218,7 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
             rs[0] = rs[1] = rs[2] = *dts = *var = 0.0;
             return;
         }
-    tk = timediff(time, eph->toe);
+    tk = timediffweekcrossover(time, eph->toe);
 
     switch ((sys = satsys(eph->sat, &prn)))
         {
@@ -288,7 +288,7 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
             rs[1] = x * sinO + y * cosi * cosO;
             rs[2] = y * sin(i);
         }
-    tk = timediff(time, eph->toc);
+    tk = timediffweekcrossover(time, eph->toc);
     *dts = eph->f0 + eph->f1 * tk + eph->f2 * tk * tk;
 
     /* relativity correction */
@@ -433,7 +433,7 @@ double seph2clk(gtime_t time, const seph_t *seph)
 
     trace(4, "seph2clk: time=%s sat=%2d\n", time_str(time, 3), seph->sat);
 
-    t = timediff(time, seph->t0);
+    t = timediffweekcrossover(time, seph->t0);
 
     for (i = 0; i < 2; i++)
         {
@@ -461,7 +461,7 @@ void seph2pos(gtime_t time, const seph_t *seph, double *rs, double *dts,
 
     trace(4, "seph2pos: time=%s sat=%2d\n", time_str(time, 3), seph->sat);
 
-    t = timediff(time, seph->t0);
+    t = timediffweekcrossover(time, seph->t0);
 
     for (i = 0; i < 3; i++)
         {
@@ -508,7 +508,7 @@ eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav)
                 {
                     continue;
                 }
-            if ((t = fabs(timediff(nav->eph[i].toe, time))) > tmax)
+            if ((t = fabs(timediffweekcrossover(nav->eph[i].toe, time))) > tmax)
                 {
                     continue;
                 }
@@ -588,7 +588,7 @@ seph_t *selseph(gtime_t time, int sat, const nav_t *nav)
                 {
                     continue;
                 }
-            if ((t = fabs(timediff(nav->seph[i].t0, time))) > tmax)
+            if ((t = fabs(timediffweekcrossover(nav->seph[i].t0, time))) > tmax)
                 {
                     continue;
                 }
@@ -792,9 +792,9 @@ int satpos_ssr(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
             *svh = -1;
             return 0;
         }
-    t1 = timediff(time, ssr->t0[0]);
-    t2 = timediff(time, ssr->t0[1]);
-    t3 = timediff(time, ssr->t0[2]);
+    t1 = timediffweekcrossover(time, ssr->t0[0]);
+    t2 = timediffweekcrossover(time, ssr->t0[1]);
+    t3 = timediffweekcrossover(time, ssr->t0[2]);
 
     /* ssr orbit and clock correction (ref [4]) */
     if (fabs(t1) > MAXAGESSR || fabs(t2) > MAXAGESSR)
@@ -847,7 +847,7 @@ int satpos_ssr(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
                 }
 
             /* satellite clock by clock parameters */
-            tk = timediff(time, eph->toc);
+            tk = timediffweekcrossover(time, eph->toc);
             dts[0] = eph->f0 + eph->f1 * tk + eph->f2 * tk * tk;
             dts[1] = eph->f1 + 2.0 * eph->f2 * tk;
 

@@ -441,8 +441,16 @@ bool hybrid_observables_gs::interp_trk_obs(Gnss_Synchro &interpolated_obs, const
                             // CARRIER DOPPLER INTERPOLATION
                             interpolated_obs.Carrier_Doppler_hz = d_gnss_synchro_history->at(ch, t1_idx).Carrier_Doppler_hz + (d_gnss_synchro_history->at(ch, t2_idx).Carrier_Doppler_hz - d_gnss_synchro_history->at(ch, t1_idx).Carrier_Doppler_hz) * time_factor;
                             // TOW INTERPOLATION
-                            interpolated_obs.interp_TOW_ms = static_cast<double>(d_gnss_synchro_history->at(ch, t1_idx).TOW_at_current_symbol_ms) + (static_cast<double>(d_gnss_synchro_history->at(ch, t2_idx).TOW_at_current_symbol_ms) - static_cast<double>(d_gnss_synchro_history->at(ch, t1_idx).TOW_at_current_symbol_ms)) * time_factor;
-
+                            // check TOW rollover
+                            if ((d_gnss_synchro_history->at(ch, t2_idx).TOW_at_current_symbol_ms - d_gnss_synchro_history->at(ch, t1_idx).TOW_at_current_symbol_ms) > 0)
+                                {
+                                    interpolated_obs.interp_TOW_ms = static_cast<double>(d_gnss_synchro_history->at(ch, t1_idx).TOW_at_current_symbol_ms) + (static_cast<double>(d_gnss_synchro_history->at(ch, t2_idx).TOW_at_current_symbol_ms) - static_cast<double>(d_gnss_synchro_history->at(ch, t1_idx).TOW_at_current_symbol_ms)) * time_factor;
+                                }
+                            else
+                                {
+                                    //TOW rollover situation
+                                    interpolated_obs.interp_TOW_ms = static_cast<double>(d_gnss_synchro_history->at(ch, t1_idx).TOW_at_current_symbol_ms) + (static_cast<double>(d_gnss_synchro_history->at(ch, t2_idx).TOW_at_current_symbol_ms + 604800000) - static_cast<double>(d_gnss_synchro_history->at(ch, t1_idx).TOW_at_current_symbol_ms)) * time_factor;
+                                }
 
                             //                            LOG(INFO) << "Channel " << ch << " int idx: " << t1_idx << " TOW Int: " << interpolated_obs.interp_TOW_ms
                             //                                      << " TOW p1 : " << d_gnss_synchro_history->at(ch, t1_idx).TOW_at_current_symbol_ms
@@ -507,9 +515,9 @@ void hybrid_observables_gs::update_TOW(const std::vector<Gnss_Synchro> &data)
     else
         {
             T_rx_TOW_ms += T_rx_step_ms;  //the tow time step increment must match the ref time channel step
-            //todo: check what happens during the week rollover
             if (T_rx_TOW_ms >= 604800000)
                 {
+                    DLOG(INFO) << "TOW RX TIME rollover!";
                     T_rx_TOW_ms = T_rx_TOW_ms % 604800000;
                 }
         }
@@ -521,15 +529,19 @@ void hybrid_observables_gs::compute_pranges(std::vector<Gnss_Synchro> &data)
     //    std::cout.precision(17);
     //    std::cout << " T_rx_TOW_ms: " << static_cast<double>(T_rx_TOW_ms) << std::endl;
     std::vector<Gnss_Synchro>::iterator it;
-    double current_T_rx_TOW_s = (static_cast<double>(T_rx_TOW_ms - T_rx_remnant_to_20ms) + GPS_STARTOFFSET_MS) / 1000.0;
+    double current_T_rx_TOW_ms = (static_cast<double>(T_rx_TOW_ms - T_rx_remnant_to_20ms));
+    double current_T_rx_TOW_s = current_T_rx_TOW_ms / 1000.0;
     for (it = data.begin(); it != data.end(); it++)
         {
             if (it->Flag_valid_word)
                 {
-                    double traveltime_s = current_T_rx_TOW_s - it->interp_TOW_ms / 1000.0;
-                    //todo: check what happens during the week rollover (TOW rollover at 604800000ms)
+                    double traveltime_ms = current_T_rx_TOW_ms - it->interp_TOW_ms;
+                    if (fabs(traveltime_ms) > 302400)  //check TOW roll over
+                        {
+                            traveltime_ms = 604800000.0 + current_T_rx_TOW_ms - it->interp_TOW_ms;
+                        }
                     it->RX_time = current_T_rx_TOW_s;
-                    it->Pseudorange_m = traveltime_s * SPEED_OF_LIGHT;
+                    it->Pseudorange_m = traveltime_ms * SPEED_OF_LIGHT_MS;
                     it->Flag_valid_pseudorange = true;
                     // debug code
                     //

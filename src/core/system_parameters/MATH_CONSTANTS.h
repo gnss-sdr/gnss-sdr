@@ -115,6 +115,7 @@ const double AS2R = (D2R / 3600.0);     //!<  arc sec to radian
 
 const double DEFAULT_OMEGA_EARTH_DOT = 7.2921151467e-5;  //!<  Default Earth rotation rate, [rad/s]
 const double SPEED_OF_LIGHT = 299792458.0;               //!<  [m/s]
+const double SPEED_OF_LIGHT_MS = 299792.4580;            //!<  [m/ms]
 const double AU = 149597870691.0;                        //!<  1 Astronomical Unit AU (m) distance from Earth to the Sun.
 
 #endif /* GNSS_SDR_MATH_CONSTANTS_H_ */

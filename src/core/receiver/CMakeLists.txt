@@ -129,7 +129,7 @@ if(ENABLE_CUDA)
     target_compile_definitions(core_receiver PRIVATE -DCUDA_GPU_ACCEL=1)
 endif()
 
-if(Boost_VERSION VERSION_GREATER "1.65")
+if(Boost_VERSION VERSION_GREATER "106500")
     target_compile_definitions(core_receiver
         PRIVATE
             -DBOOST_GREATER_1_65

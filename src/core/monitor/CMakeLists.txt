@@ -60,7 +60,7 @@ target_include_directories(core_monitor
 )
 
 
-if(Boost_VERSION VERSION_GREATER "106500")
+if(Boost_VERSION VERSION_GREATER "106599")
     target_compile_definitions(core_monitor
         PUBLIC
             -DBOOST_GREATER_1_65

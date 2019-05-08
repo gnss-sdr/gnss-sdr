@@ -85,7 +85,7 @@ if(OS_IS_MACOSX)
     endif()
 endif()
 
-if(Boost_VERSION VERSION_GREATER "106500")
+if(Boost_VERSION VERSION_GREATER "106599")
     target_compile_definitions(signal_source_gr_blocks
         PUBLIC
             -DBOOST_GREATER_1_65

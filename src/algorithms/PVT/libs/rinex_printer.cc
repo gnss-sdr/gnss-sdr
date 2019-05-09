@@ -11116,6 +11116,10 @@ boost::posix_time::ptime Rinex_Printer::compute_GPS_time(const Gps_Ephemeris& ep
     // --??? No time correction here, since it will be done in the RINEX processor
     const double gps_t = obs_time;
     boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((gps_t + 604800 * static_cast<double>(eph.i_GPS_week % 1024)) * 1000));
+    if (obs_time < 18)
+        {
+            t += boost::posix_time::seconds(604800);
+        }
     if (eph.i_GPS_week < 512)
         {
             boost::posix_time::ptime p_time(boost::gregorian::date(2019, 4, 7), t);

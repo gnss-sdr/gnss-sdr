@@ -1831,6 +1831,17 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                              *    30   |  Galileo E1B + GLONASS L2 C/A
                                              *    31   |  GPS L2C + GLONASS L2 C/A
                                              *    32   |  GPS L1 C/A + Galileo E1B + GPS L5 + Galileo E5a
+                                             *    50   |  Beidou B1I
+                                             *    51   |  Beidou B1I + GPS L1 C/A
+                                             *    52   |  Beidou B1I + Galileo E1B
+                                             *    53   |  Beidou B1I + GLONASS L1 C/A
+                                             *    54   |  Beidou B1I + GPS L1 C/A + Galileo E1B
+                                             *    55   |  Beidou B1I + GPS L1 C/A + GLONASS L1 C/A + Galileo E1B
+                                             *    56   |  Beidou B1I + Beidou B3I
+                                             *    60   |  Beidou B3I
+                                             *    61   |  Beidou B3I + GPS L2C
+                                             *    62   |  Beidou B3I + GLONASS L2 C/A
+                                             *    63   |  Beidou B3I + GPS L2C + GLONASS L2 C/A
                                              */
 
                                             // ####################### RINEX FILES #################

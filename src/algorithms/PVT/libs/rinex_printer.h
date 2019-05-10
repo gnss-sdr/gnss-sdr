@@ -107,7 +107,7 @@ public:
     /*!
      *  \brief Generates the GPS L1 C/A Navigation Data header
      */
-    void rinex_nav_header(std::fstream& out, const Gps_Iono& iono, const Gps_Utc_Model& utc_model);
+    void rinex_nav_header(std::fstream& out, const Gps_Iono& iono, const Gps_Utc_Model& utc_model, const Gps_Ephemeris& eph);
 
     /*!
      *  \brief Generates the GPS L2C(M) Navigation Data header
@@ -382,7 +382,7 @@ public:
      */
     //void log_rinex_sbs(std::fstream & out, const Sbas_Raw_Msg & sbs_message);
 
-    void update_nav_header(std::fstream& out, const Gps_Utc_Model& utc_model, const Gps_Iono& gps_iono);
+    void update_nav_header(std::fstream& out, const Gps_Utc_Model& utc_model, const Gps_Iono& gps_iono, const Gps_Ephemeris& eph);
 
     void update_nav_header(std::fstream& out, const Gps_CNAV_Utc_Model& utc_model, const Gps_CNAV_Iono& iono);
 

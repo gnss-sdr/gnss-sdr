@@ -981,7 +981,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                 }
                             else
                                 {
-                                    if (d_pvt_solver->gps_ephemeris_map[gps_eph->i_satellite_PRN].d_Toc != gps_eph->d_Toc)
+                                    if (d_pvt_solver->gps_ephemeris_map[gps_eph->i_satellite_PRN].d_Toe != gps_eph->d_Toe)
                                         {
                                             new_annotation = true;
                                         }
@@ -1068,7 +1068,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                 }
                             else
                                 {
-                                    if (d_pvt_solver->gps_cnav_ephemeris_map[gps_cnav_ephemeris->i_satellite_PRN].d_Toc != gps_cnav_ephemeris->d_Toc)
+                                    if (d_pvt_solver->gps_cnav_ephemeris_map[gps_cnav_ephemeris->i_satellite_PRN].d_Toe1 != gps_cnav_ephemeris->d_Toe1)
                                         {
                                             new_annotation = true;
                                         }
@@ -1810,30 +1810,28 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                              *     7   |  GPS L1 C/A + GPS L2C
                                              *     8   |  GPS L1 C/A + GPS L5
                                              *     9   |  GPS L1 C/A + Galileo E1B
-                                     *    10   |  GPS L1 C/A + Galileo E5a
-                                     *    11   |  GPS L1 C/A + Galileo E5b
-                                     *    12   |  Galileo E1B + GPS L2C
-                                     *    13   |  Galileo E1B + GPS L5
-                                     *    14   |  Galileo E1B + Galileo E5a
-                                     *    15   |  Galileo E1B + Galileo E5b
-                                     *    16   |  GPS L2C + GPS L5
-                                     *    17   |  GPS L2C + Galileo E5a
-                                     *    18   |  GPS L2C + Galileo E5b
-                                     *    19   |  GPS L5 + Galileo E5a
-                                     *    20   |  GPS L5 + Galileo E5b
-                                     *    21   |  GPS L1 C/A + Galileo E1B + GPS L2C
-                                     *    22   |  GPS L1 C/A + Galileo E1B + GPS L5
-                                     *    23   |  GLONASS L1 C/A
-                                     *    24   |  GLONASS L2 C/A
-                                     *    25   |  GLONASS L1 C/A + GLONASS L2 C/A
-                                     *    26   |  GPS L1 C/A + GLONASS L1 C/A
-                                     *    27   |  Galileo E1B + GLONASS L1 C/A
-                                     *    28   |  GPS L2C + GLONASS L1 C/A
-                                     *    29   |  GPS L1 C/A + GLONASS L2 C/A
-                                     *    30   |  Galileo E1B + GLONASS L2 C/A
-                                     *    31   |  GPS L2C + GLONASS L2 C/A
-                                     *    32   |  GPS L1 C/A + Galileo E1B + GPS L5 + Galileo E5a
-                                     */
+                                             *    10   |  GPS L1 C/A + Galileo E5a
+                                             *    11   |  GPS L1 C/A + Galileo E5b
+                                             *    12   |  Galileo E1B + GPS L2C
+                                             *    13   |  Galileo E5a + GPS L5
+                                             *    14   |  Galileo E1B + Galileo E5a
+                                             *    15   |  Galileo E1B + Galileo E5b
+                                             *    16   |  GPS L2C + GPS L5
+                                             *    17   |  GPS L2C + Galileo E5a
+                                             *    18   |  GPS L2C + Galileo E5b
+                                             *    21   |  GPS L1 C/A + Galileo E1B + GPS L2C
+                                             *    22   |  GPS L1 C/A + Galileo E1B + GPS L5
+                                             *    23   |  GLONASS L1 C/A
+                                             *    24   |  GLONASS L2 C/A
+                                             *    25   |  GLONASS L1 C/A + GLONASS L2 C/A
+                                             *    26   |  GPS L1 C/A + GLONASS L1 C/A
+                                             *    27   |  Galileo E1B + GLONASS L1 C/A
+                                             *    28   |  GPS L2C + GLONASS L1 C/A
+                                             *    29   |  GPS L1 C/A + GLONASS L2 C/A
+                                             *    30   |  Galileo E1B + GLONASS L2 C/A
+                                             *    31   |  GPS L2C + GLONASS L2 C/A
+                                             *    32   |  GPS L1 C/A + Galileo E1B + GPS L5 + Galileo E5a
+                                             */
 
                                             // ####################### RINEX FILES #################
                                             if (b_rinex_output_enabled)
@@ -1856,7 +1854,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     if (gps_ephemeris_iter != d_pvt_solver->gps_ephemeris_map.cend())
                                                                         {
                                                                             rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, d_rx_time);
-                                                                            rp->rinex_nav_header(rp->navFile, d_pvt_solver->gps_iono, d_pvt_solver->gps_utc_model);
+                                                                            rp->rinex_nav_header(rp->navFile, d_pvt_solver->gps_iono, d_pvt_solver->gps_utc_model, gps_ephemeris_iter->second);
                                                                             rp->log_rinex_nav(rp->navFile, d_pvt_solver->gps_ephemeris_map);
                                                                             b_rinex_header_written = true;  // do not write header anymore
                                                                         }
@@ -1913,7 +1911,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                         {
                                                                             std::string signal("1C 2S");
                                                                             rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, d_rx_time, signal);
-                                                                            rp->rinex_nav_header(rp->navFile, d_pvt_solver->gps_iono, d_pvt_solver->gps_utc_model);
+                                                                            rp->rinex_nav_header(rp->navFile, d_pvt_solver->gps_iono, d_pvt_solver->gps_utc_model, gps_ephemeris_iter->second);
                                                                             rp->log_rinex_nav(rp->navFile, d_pvt_solver->gps_cnav_ephemeris_map);
                                                                             b_rinex_header_written = true;  // do not write header anymore
                                                                         }
@@ -1923,7 +1921,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                         {
                                                                             std::string signal("1C L5");
                                                                             rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, d_rx_time, signal);
-                                                                            rp->rinex_nav_header(rp->navFile, d_pvt_solver->gps_iono, d_pvt_solver->gps_utc_model);
+                                                                            rp->rinex_nav_header(rp->navFile, d_pvt_solver->gps_iono, d_pvt_solver->gps_utc_model, gps_ephemeris_iter->second);
                                                                             rp->log_rinex_nav(rp->navFile, d_pvt_solver->gps_ephemeris_map);
                                                                             b_rinex_header_written = true;  // do not write header anymore
                                                                         }
@@ -2026,7 +2024,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                                 }
                                                                             if (d_rinex_version == 2)
                                                                                 {
-                                                                                    rp->rinex_nav_header(rp->navFile, d_pvt_solver->gps_iono, d_pvt_solver->gps_utc_model);
+                                                                                    rp->rinex_nav_header(rp->navFile, d_pvt_solver->gps_iono, d_pvt_solver->gps_utc_model, gps_ephemeris_iter->second);
                                                                                     rp->rinex_nav_header(rp->navGloFile, d_pvt_solver->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second);
                                                                                     rp->log_rinex_nav(rp->navFile, d_pvt_solver->gps_ephemeris_map);
                                                                                     rp->log_rinex_nav(rp->navGloFile, d_pvt_solver->glonass_gnav_ephemeris_map);
@@ -2067,7 +2065,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                                 }
                                                                             if (d_rinex_version == 2)
                                                                                 {
-                                                                                    rp->rinex_nav_header(rp->navFile, d_pvt_solver->gps_iono, d_pvt_solver->gps_utc_model);
+                                                                                    rp->rinex_nav_header(rp->navFile, d_pvt_solver->gps_iono, d_pvt_solver->gps_utc_model, gps_ephemeris_iter->second);
                                                                                     rp->rinex_nav_header(rp->navGloFile, d_pvt_solver->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second);
                                                                                     rp->log_rinex_nav(rp->navFile, d_pvt_solver->gps_ephemeris_map);
                                                                                     rp->log_rinex_nav(rp->navGloFile, d_pvt_solver->glonass_gnav_ephemeris_map);
@@ -2160,12 +2158,12 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                             if (gps_ephemeris_iter != d_pvt_solver->gps_ephemeris_map.cend())
                                                                                 {
                                                                                     rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, d_rx_time, gnss_observables_map);
-                                                                                }
-                                                                            if (!b_rinex_header_updated and (d_pvt_solver->gps_utc_model.d_A0 != 0))
-                                                                                {
-                                                                                    rp->update_obs_header(rp->obsFile, d_pvt_solver->gps_utc_model);
-                                                                                    rp->update_nav_header(rp->navFile, d_pvt_solver->gps_utc_model, d_pvt_solver->gps_iono);
-                                                                                    b_rinex_header_updated = true;
+                                                                                    if (!b_rinex_header_updated and (d_pvt_solver->gps_utc_model.d_A0 != 0))
+                                                                                        {
+                                                                                            rp->update_obs_header(rp->obsFile, d_pvt_solver->gps_utc_model);
+                                                                                            rp->update_nav_header(rp->navFile, d_pvt_solver->gps_utc_model, d_pvt_solver->gps_iono, gps_ephemeris_iter->second);
+                                                                                            b_rinex_header_updated = true;
+                                                                                        }
                                                                                 }
                                                                             break;
                                                                         case 2:  // GPS L2C only
@@ -2232,32 +2230,32 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                             if ((gps_ephemeris_iter != d_pvt_solver->gps_ephemeris_map.cend()) and (gps_cnav_ephemeris_iter != d_pvt_solver->gps_cnav_ephemeris_map.cend()))
                                                                                 {
                                                                                     rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, d_rx_time, gnss_observables_map);
-                                                                                }
-                                                                            if (!b_rinex_header_updated and (d_pvt_solver->gps_utc_model.d_A0 != 0))
-                                                                                {
-                                                                                    rp->update_obs_header(rp->obsFile, d_pvt_solver->gps_utc_model);
-                                                                                    rp->update_nav_header(rp->navFile, d_pvt_solver->gps_utc_model, d_pvt_solver->gps_iono);
-                                                                                    b_rinex_header_updated = true;
+                                                                                    if (!b_rinex_header_updated and (d_pvt_solver->gps_utc_model.d_A0 != 0))
+                                                                                        {
+                                                                                            rp->update_obs_header(rp->obsFile, d_pvt_solver->gps_utc_model);
+                                                                                            rp->update_nav_header(rp->navFile, d_pvt_solver->gps_utc_model, d_pvt_solver->gps_iono, gps_ephemeris_iter->second);
+                                                                                            b_rinex_header_updated = true;
+                                                                                        }
                                                                                 }
                                                                             break;
                                                                         case 8:  // L1+L5
                                                                             if ((gps_ephemeris_iter != d_pvt_solver->gps_ephemeris_map.cend()) and (gps_cnav_ephemeris_iter != d_pvt_solver->gps_cnav_ephemeris_map.cend()))
                                                                                 {
                                                                                     rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, d_rx_time, gnss_observables_map);
-                                                                                }
-                                                                            if (!b_rinex_header_updated and ((d_pvt_solver->gps_cnav_utc_model.d_A0 != 0) or (d_pvt_solver->gps_utc_model.d_A0 != 0)))
-                                                                                {
-                                                                                    if (d_pvt_solver->gps_cnav_utc_model.d_A0 != 0)
+                                                                                    if (!b_rinex_header_updated and ((d_pvt_solver->gps_cnav_utc_model.d_A0 != 0) or (d_pvt_solver->gps_utc_model.d_A0 != 0)))
                                                                                         {
-                                                                                            rp->update_obs_header(rp->obsFile, d_pvt_solver->gps_cnav_utc_model);
-                                                                                            rp->update_nav_header(rp->navFile, d_pvt_solver->gps_cnav_utc_model, d_pvt_solver->gps_cnav_iono);
+                                                                                            if (d_pvt_solver->gps_cnav_utc_model.d_A0 != 0)
+                                                                                                {
+                                                                                                    rp->update_obs_header(rp->obsFile, d_pvt_solver->gps_cnav_utc_model);
+                                                                                                    rp->update_nav_header(rp->navFile, d_pvt_solver->gps_cnav_utc_model, d_pvt_solver->gps_cnav_iono);
+                                                                                                }
+                                                                                            else
+                                                                                                {
+                                                                                                    rp->update_obs_header(rp->obsFile, d_pvt_solver->gps_utc_model);
+                                                                                                    rp->update_nav_header(rp->navFile, d_pvt_solver->gps_utc_model, d_pvt_solver->gps_iono, gps_ephemeris_iter->second);
+                                                                                                }
+                                                                                            b_rinex_header_updated = true;
                                                                                         }
-                                                                                    else
-                                                                                        {
-                                                                                            rp->update_obs_header(rp->obsFile, d_pvt_solver->gps_utc_model);
-                                                                                            rp->update_nav_header(rp->navFile, d_pvt_solver->gps_utc_model, d_pvt_solver->gps_iono);
-                                                                                        }
-                                                                                    b_rinex_header_updated = true;
                                                                                 }
                                                                             break;
                                                                         case 9:  // GPS L1 C/A + Galileo E1B

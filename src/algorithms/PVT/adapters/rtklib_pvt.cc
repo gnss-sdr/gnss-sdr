@@ -154,13 +154,11 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
      *    10   |  GPS L1 C/A + Galileo E5a
      *    11   |  GPS L1 C/A + Galileo E5b
      *    12   |  Galileo E1B + GPS L2C
-     *    13   |  Galileo E1B + GPS L5
+     *    13   |  Galileo E5a + GPS L5
      *    14   |  Galileo E1B + Galileo E5a
      *    15   |  Galileo E1B + Galileo E5b
      *    16   |  GPS L2C + GPS L5
      *    17   |  GPS L2C + Galileo E5a
-     *    18   |  GPS L2C + Galileo E5b
-     *    19   |  GPS L5 + Galileo E5a
      *    20   |  GPS L5 + Galileo E5b
      *    21   |  GPS L1 C/A + Galileo E1B + GPS L2C
      *    22   |  GPS L1 C/A + Galileo E1B + GPS L5
@@ -170,6 +168,10 @@ Rtklib_Pvt::Rtklib_Pvt(ConfigurationInterface* configuration,
      *    26   |  GPS L1 C/A + GLONASS L1 C/A
      *    27   |  Galileo E1B + GLONASS L1 C/A
      *    28   |  GPS L2C + GLONASS L1 C/A
+     *    29   |  GPS L1 C/A + GLONASS L2 C/A
+     *    30   |  Galileo E1B + GLONASS L2 C/A
+     *    31   |  GPS L2C + GLONASS L2 C/A
+     *    32   |  GPS L1 C/A + Galileo E1B + GPS L5 + Galileo E5a
      *
      *
      *    Skipped previous values to avoid overlapping

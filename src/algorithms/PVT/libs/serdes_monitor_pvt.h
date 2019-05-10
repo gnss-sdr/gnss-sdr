@@ -76,7 +76,7 @@ public:
         monitor_.set_cov_zz(monitor.cov_zz);
         monitor_.set_cov_xy(monitor.cov_xy);
         monitor_.set_cov_yz(monitor.cov_yz);
-        monitor_.set_cov_yz(monitor.cov_yz);
+        monitor_.set_cov_zx(monitor.cov_zx);
         monitor_.set_latitude(monitor.latitude);
         monitor_.set_longitude(monitor.longitude);
         monitor_.set_height(monitor.height);

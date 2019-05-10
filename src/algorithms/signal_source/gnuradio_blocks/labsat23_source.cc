@@ -442,16 +442,17 @@ int labsat23_source::general_work(int noutput_items,
                                     }
 
                                 // trigger the read of the next file in the sequence
+                                d_current_file_number++;
                                 if (d_labsat_version == 3)
                                     {
                                         std::cout << "End of current file, reading the next Labsat file in sequence: " << generate_filename() << std::endl;
                                     }
-                                d_current_file_number++;
                                 binary_input_file->close();
                                 binary_input_file->open(generate_filename().c_str(), std::ios::in | std::ios::binary);
                                 if (binary_input_file->is_open())
                                     {
                                         std::cout << "Labsat file source is reading samples from " << generate_filename() << std::endl;
+                                        return 0;
                                     }
                                 else
                                     {
@@ -504,16 +505,17 @@ int labsat23_source::general_work(int noutput_items,
                                     }
 
                                 // trigger the read of the next file in the sequence
+                                d_current_file_number++;
                                 if (d_labsat_version == 3)
                                     {
                                         std::cout << "End of current file, reading the next Labsat file in sequence: " << generate_filename() << std::endl;
                                     }
-                                d_current_file_number++;
                                 binary_input_file->close();
                                 binary_input_file->open(generate_filename().c_str(), std::ios::in | std::ios::binary);
                                 if (binary_input_file->is_open())
                                     {
                                         std::cout << "Labsat file source is reading samples from " << generate_filename() << std::endl;
+                                        return 0;
                                     }
                                 else
                                     {

@@ -355,6 +355,8 @@ int labsat23_source::general_work(int noutput_items,
                             auto quantization = static_cast<uint8_t>(memblock[byte_counter]);
                             switch (quantization)
                                 {
+                                case 0:
+                                    break;
                                 case 1:
                                     std::cout << "1 bit per sample" << std::endl;
                                     break;
@@ -392,6 +394,9 @@ int labsat23_source::general_work(int noutput_items,
                                     break;
                                 case 2:
                                     std::cout << "Labsat Channel B is BDS" << std::endl;
+                                    break;
+                                case 255:
+                                    // No channel B
                                     break;
                                 default:
                                     std::cout << "Unknown channel B constellation ID " << static_cast<int>(channel_b_constellation) << std::endl;

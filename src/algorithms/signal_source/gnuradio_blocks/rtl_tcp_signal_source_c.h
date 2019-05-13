@@ -52,6 +52,12 @@ class rtl_tcp_signal_source_c;
 
 using rtl_tcp_signal_source_c_sptr = boost::shared_ptr<rtl_tcp_signal_source_c>;
 
+#if BOOST_GREATER_1_65
+using b_io_context = boost::asio::io_context;
+#else
+using b_io_context = boost::asio::io_service;
+#endif
+
 rtl_tcp_signal_source_c_sptr
 rtl_tcp_make_signal_source_c(const std::string &address,
     int16_t port,
@@ -91,7 +97,7 @@ private:
     Rtl_Tcp_Dongle_Info info_;
 
     // IO members
-    boost::asio::io_service io_service_;
+    b_io_context io_context_;
     boost::asio::ip::tcp::socket socket_;
     std::vector<unsigned char> data_;
     bool flip_iq_;
@@ -117,7 +123,7 @@ private:
 
     inline bool not_empty() const
     {
-        return unread_ > 0 || io_service_.stopped();
+        return unread_ > 0 || io_context_.stopped();
     }
 };
 

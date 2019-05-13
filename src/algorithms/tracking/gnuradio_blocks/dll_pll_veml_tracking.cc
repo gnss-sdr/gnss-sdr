@@ -439,7 +439,11 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     d_carrier_lock_fail_counter = 0;
     d_carrier_lock_threshold = trk_parameters.carrier_lock_th;
     d_Prompt_Data = static_cast<gr_complex *>(volk_gnsssdr_malloc(sizeof(gr_complex), volk_gnsssdr_get_alignment()));
-
+    d_cn0_smoother = Exponential_Smoother();
+    if (d_code_period > 0.0)
+        {
+            d_cn0_smoother.set_samples_for_initialization(200 / static_cast<int>(d_code_period * 1000.0));
+        }
     d_acquisition_gnss_synchro = nullptr;
     d_channel = 0;
     d_acq_code_phase_samples = 0.0;
@@ -848,9 +852,12 @@ bool dll_pll_veml_tracking::cn0_and_tracking_lock_status(double coh_integration_
             d_cn0_estimation_counter++;
             return true;
         }
-    d_cn0_estimation_counter = 0;
+
+    d_Prompt_buffer[d_cn0_estimation_counter % trk_parameters.cn0_samples] = d_P_accu;
+    d_cn0_estimation_counter++;
     // Code lock indicator
-    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, trk_parameters.cn0_samples, coh_integration_time_s);
+    float d_CN0_SNV_dB_Hz_raw = cn0_svn_estimator(d_Prompt_buffer, trk_parameters.cn0_samples, static_cast<float>(coh_integration_time_s));
+    d_CN0_SNV_dB_Hz = d_cn0_smoother.smooth(d_CN0_SNV_dB_Hz_raw);
     // Carrier lock indicator
     d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, trk_parameters.cn0_samples);
     // Loss of lock detection
@@ -1589,6 +1596,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                 d_acc_carrier_phase_rad -= d_carrier_phase_step_rad * static_cast<double>(samples_offset);
                 d_state = 2;
                 d_sample_counter += samples_offset;  // count for the processed samples
+                d_cn0_smoother.reset();
 
                 DLOG(INFO) << "Number of samples between Acquisition and Tracking = " << acq_trk_diff_samples << " ( " << acq_trk_diff_seconds << " s)";
                 DLOG(INFO) << "PULL-IN Doppler [Hz] = " << d_carrier_doppler_hz

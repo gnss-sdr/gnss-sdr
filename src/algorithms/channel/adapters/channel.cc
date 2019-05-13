@@ -38,10 +38,9 @@
 #include "tracking_interface.h"
 #include <glog/logging.h>
 #include <cstring>  // for memcpy
-#include <utility>
+#include <utility>  // for std::move
 
 
-// Constructor
 Channel::Channel(ConfigurationInterface* configuration, uint32_t channel, std::shared_ptr<AcquisitionInterface> acq,
     std::shared_ptr<TrackingInterface> trk, std::shared_ptr<TelemetryDecoderInterface> nav,
     std::string role, std::string implementation, gr::msg_queue::sptr queue)
@@ -120,7 +119,6 @@ Channel::Channel(ConfigurationInterface* configuration, uint32_t channel, std::s
 }
 
 
-// Destructor
 Channel::~Channel() = default;
 
 
@@ -133,8 +131,9 @@ void Channel::connect(gr::top_block_sptr top_block)
     trk_->connect(top_block);
     nav_->connect(top_block);
 
-    //Synchronous ports
+    // Synchronous ports
     top_block->connect(trk_->get_right_block(), 0, nav_->get_left_block(), 0);
+
     // Message ports
     top_block->msg_connect(nav_->get_left_block(), pmt::mp("telemetry_to_trk"), trk_->get_right_block(), pmt::mp("telemetry_to_trk"));
     DLOG(INFO) << "tracking -> telemetry_decoder";

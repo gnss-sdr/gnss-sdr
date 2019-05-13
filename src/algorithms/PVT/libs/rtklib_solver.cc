@@ -148,7 +148,6 @@ bool Rtklib_Solver::save_matfile()
                                sizeof(uint8_t) * number_of_uint8_vars +
                                sizeof(float) * number_of_float_vars;
     std::ifstream dump_file;
-    std::cout << "Generating .mat file for " << dump_filename << std::endl;
     dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try
         {
@@ -163,6 +162,7 @@ bool Rtklib_Solver::save_matfile()
     int64_t num_epoch = 0LL;
     if (dump_file.is_open())
         {
+            std::cout << "Generating .mat file for " << dump_filename << std::endl;
             size = dump_file.tellg();
             num_epoch = static_cast<int64_t>(size) / static_cast<int64_t>(epoch_size_bytes);
             dump_file.seekg(0, std::ios::beg);
@@ -991,9 +991,6 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             this->set_course_over_ground(new_cog);
                         }
 
-                    //observable fix:
-                    //double offset_s = this->get_time_offset_s();
-                    //this->set_time_offset_s(offset_s + (rx_position_and_time(3) / GPS_C_m_s));  // accumulate the rx time error for the next iteration [meters]->[seconds]
                     this->set_time_offset_s(rx_position_and_time(3));
 
                     DLOG(INFO) << "RTKLIB Position at RX TOW = " << gnss_observables_map.begin()->second.RX_time
@@ -1002,10 +999,11 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     boost::posix_time::ptime p_time;
                     // gtime_t rtklib_utc_time = gpst2utc(pvt_sol.time); //Corrected RX Time (Non integer multiply of 1 ms of granularity)
                     // Uncorrected RX Time (integer multiply of 1 ms and the same observables time reported in RTCM and RINEX)
-                    gtime_t rtklib_time = gpst2time(adjgpsweek(nav_data.eph[0].week), gnss_observables_map.begin()->second.RX_time);
+                    gtime_t rtklib_time = timeadd(pvt_sol.time, rx_position_and_time(3));  //uncorrected rx time
                     gtime_t rtklib_utc_time = gpst2utc(rtklib_time);
                     p_time = boost::posix_time::from_time_t(rtklib_utc_time.time);
                     p_time += boost::posix_time::microseconds(static_cast<long>(round(rtklib_utc_time.sec * 1e6)));  // NOLINT(google-runtime-int)
+
                     this->set_position_UTC_time(p_time);
                     cart2geo(static_cast<double>(rx_position_and_time(0)), static_cast<double>(rx_position_and_time(1)), static_cast<double>(rx_position_and_time(2)), 4);
 
@@ -1013,6 +1011,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                << " is Lat = " << this->get_latitude() << " [deg], Long = " << this->get_longitude()
                                << " [deg], Height= " << this->get_height() << " [m]"
                                << " RX time offset= " << this->get_time_offset_s() << " [s]";
+
 
                     // PVT MONITOR
 

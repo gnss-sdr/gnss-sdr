@@ -83,8 +83,7 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
     // preamble bits to sampled symbols
     d_preamble_samples = static_cast<int32_t *>(volk_gnsssdr_malloc(d_samples_per_preamble * sizeof(int32_t), volk_gnsssdr_get_alignment()));
     d_frame_length_symbols = GPS_SUBFRAME_BITS * GPS_CA_TELEMETRY_SYMBOLS_PER_BIT;
-    d_max_symbols_without_valid_frame = d_required_symbols * 10;  //rise alarm 1 minute without valid tlm
-    d_page_part_symbols = static_cast<double *>(volk_gnsssdr_malloc(d_frame_length_symbols * sizeof(double), volk_gnsssdr_get_alignment()));
+    d_max_symbols_without_valid_frame = d_required_symbols * 10;  // rise alarm 1 minute without valid tlm
     int32_t n = 0;
     for (int32_t i = 0; i < d_bits_per_preamble; i++)
         {
@@ -127,7 +126,6 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
 gps_l1_ca_telemetry_decoder_gs::~gps_l1_ca_telemetry_decoder_gs()
 {
     volk_gnsssdr_free(d_preamble_samples);
-    volk_gnsssdr_free(d_page_part_symbols);
     if (d_dump_file.is_open() == true)
         {
             try
@@ -218,8 +216,6 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe()
     uint32_t GPS_frame_4bytes = 0;
     float symbol_accumulator = 0;
     bool subframe_synchro_confirmation = false;
-    bool CRC_ok = true;
-
     for (float subframe_symbol : d_symbol_history)
         {
             // ******* SYMBOL TO BIT *******
@@ -269,11 +265,6 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe()
                                 {
                                     subframe_synchro_confirmation = true;
                                 }
-                            else
-                                {
-                                    // std::cout << "word invalid sat " << this->d_satellite << std::endl;
-                                    CRC_ok = false;
-                                }
                             // add word to subframe
                             // insert the word in the correct position of the subframe
                             std::memcpy(&subframe[word_index * GPS_WORD_LENGTH], &GPS_frame_4bytes, sizeof(uint32_t));
@@ -290,9 +281,9 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe()
 
     // decode subframe
     // NEW GPS SUBFRAME HAS ARRIVED!
-    if (CRC_ok)
+    if (subframe_synchro_confirmation)
         {
-            int32_t subframe_ID = d_nav.subframe_decoder(subframe);  //decode the subframe
+            int32_t subframe_ID = d_nav.subframe_decoder(subframe);  // decode the subframe
             if (subframe_ID > 0 and subframe_ID < 6)
                 {
                     std::cout << "New GPS NAV message received in channel " << this->d_channel << ": "
@@ -329,21 +320,28 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe()
                         default:
                             break;
                         }
+                    return true;
                 }
             else
                 {
                     return false;
                 }
         }
-
-    return subframe_synchro_confirmation;
+    else
+        {
+            return false;
+        }
 }
 
 
 void gps_l1_ca_telemetry_decoder_gs::reset()
 {
+    gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
     d_last_valid_preamble = d_sample_counter;
     d_sent_tlm_failed_msg = false;
+    flag_TOW_set = false;
+    d_symbol_history.clear();
+    d_stat = 0;
     DLOG(INFO) << "Telemetry decoder reset for satellite " << d_satellite;
 }
 
@@ -377,7 +375,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
         {
         case 0:  // no preamble information
             {
-                //correlate with preamble
+                // correlate with preamble
                 int32_t corr_value = 0;
                 if (d_symbol_history.size() >= GPS_CA_PREAMBLE_LENGTH_SYMBOLS)
                     {
@@ -400,11 +398,12 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                         DLOG(INFO) << "Preamble detection for GPS L1 satellite " << this->d_satellite;
                         d_stat = 1;  // enter into frame pre-detection status
                     }
+                flag_TOW_set = false;
                 break;
             }
         case 1:  // possible preamble lock
             {
-                //correlate with preamble
+                // correlate with preamble
                 int32_t corr_value = 0;
                 int32_t preamble_diff = 0;
                 if (d_symbol_history.size() >= GPS_CA_PREAMBLE_LENGTH_SYMBOLS)
@@ -438,6 +437,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                                 if (preamble_diff > d_preamble_period_symbols)
                                     {
                                         d_stat = 0;  // start again
+                                        flag_TOW_set = false;
                                     }
                             }
                     }
@@ -486,9 +486,16 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
     // 2. Add the telemetry decoder information
     if (d_flag_preamble == true)
         {
-            d_TOW_at_current_symbol_ms = static_cast<uint32_t>(d_nav.d_TOW * 1000.0);
-            d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_nav.d_TOW * 1000.0);
-            flag_TOW_set = true;
+            if (!(d_nav.d_TOW == 0))
+                {
+                    d_TOW_at_current_symbol_ms = static_cast<uint32_t>(d_nav.d_TOW * 1000.0);
+                    d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_nav.d_TOW * 1000.0);
+                    flag_TOW_set = true;
+                }
+            else
+                {
+                    DLOG(INFO) << "Received GPS L1 TOW equal to zero at sat " << d_nav.i_satellite_PRN;
+                }
         }
     else
         {

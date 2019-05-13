@@ -34,6 +34,7 @@
 
 #ifndef GNSS_SDR_CHANNEL_H_
 #define GNSS_SDR_CHANNEL_H_
+
 #include "channel_fsm.h"
 #include "channel_interface.h"
 #include "channel_msg_receiver_cc.h"
@@ -51,7 +52,7 @@ class ConfigurationInterface;
 class AcquisitionInterface;
 class TrackingInterface;
 class TelemetryDecoderInterface;
-//class ChannelFsm;
+
 
 /*!
  * \brief This class represents a GNSS channel. It wraps an AcquisitionInterface,
@@ -66,8 +67,8 @@ public:
     Channel(ConfigurationInterface* configuration, uint32_t channel, std::shared_ptr<AcquisitionInterface> acq,
         std::shared_ptr<TrackingInterface> trk, std::shared_ptr<TelemetryDecoderInterface> nav,
         std::string role, std::string implementation, gr::msg_queue::sptr queue);
-    //! Virtual destructor
-    virtual ~Channel();
+
+    virtual ~Channel();  //!< Virtual destructor
 
     void connect(gr::top_block_sptr top_block) override;  //!< connects the tracking block to the top_block and to the telemetry
     void disconnect(gr::top_block_sptr top_block) override;
@@ -108,4 +109,4 @@ private:
     std::mutex mx;
 };
 
-#endif /*GNSS_SDR_CHANNEL_H_*/
+#endif  // GNSS_SDR_CHANNEL_H_

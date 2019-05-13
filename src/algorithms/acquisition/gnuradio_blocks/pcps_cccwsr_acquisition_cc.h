@@ -44,6 +44,7 @@
 #include <gnuradio/gr_complex.h>
 #include <fstream>
 #include <string>
+#include <utility>
 
 
 class pcps_cccwsr_acquisition_cc;
@@ -137,90 +138,90 @@ public:
     }
 
     /*!
-      * \brief Returns the maximum peak of grid search.
-      */
+     * \brief Returns the maximum peak of grid search.
+     */
     inline uint32_t mag() const
     {
         return d_mag;
     }
 
     /*!
-      * \brief Initializes acquisition algorithm.
-      */
+     * \brief Initializes acquisition algorithm.
+     */
     void init();
 
     /*!
-      * \brief Sets local code for CCCWSR acquisition algorithm.
-      * \param data_code - Pointer to the data PRN code.
-      * \param pilot_code - Pointer to the pilot PRN code.
-      */
+     * \brief Sets local code for CCCWSR acquisition algorithm.
+     * \param data_code - Pointer to the data PRN code.
+     * \param pilot_code - Pointer to the pilot PRN code.
+     */
     void set_local_code(std::complex<float>* code_data, std::complex<float>* code_pilot);
 
     /*!
-      * \brief Starts acquisition algorithm, turning from standby mode to
-      * active mode
-      * \param active - bool that activates/deactivates the block.
-      */
+     * \brief Starts acquisition algorithm, turning from standby mode to
+     * active mode
+     * \param active - bool that activates/deactivates the block.
+     */
     inline void set_active(bool active)
     {
         d_active = active;
     }
 
     /*!
-      * \brief If set to 1, ensures that acquisition starts at the
-      * first available sample.
-      * \param state - int=1 forces start of acquisition
-      */
+     * \brief If set to 1, ensures that acquisition starts at the
+     * first available sample.
+     * \param state - int=1 forces start of acquisition
+     */
     void set_state(int32_t state);
 
     /*!
-      * \brief Set acquisition channel unique ID
-      * \param channel - receiver channel.
-      */
+     * \brief Set acquisition channel unique ID
+     * \param channel - receiver channel.
+     */
     inline void set_channel(uint32_t channel)
     {
         d_channel = channel;
     }
 
-
     /*!
-      * \brief Set channel fsm associated to this acquisition instance
-      */
+     * \brief Set channel fsm associated to this acquisition instance
+     */
     inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm)
     {
-        d_channel_fsm = channel_fsm;
+        d_channel_fsm = std::move(channel_fsm);
     }
+
     /*!
-      * \brief Set statistics threshold of CCCWSR algorithm.
-      * \param threshold - Threshold for signal detection (check \ref Navitec2012,
-      * Algorithm 1, for a definition of this threshold).
-      */
+     * \brief Set statistics threshold of CCCWSR algorithm.
+     * \param threshold - Threshold for signal detection (check \ref Navitec2012,
+     * Algorithm 1, for a definition of this threshold).
+     */
     inline void set_threshold(float threshold)
     {
         d_threshold = threshold;
     }
 
     /*!
-      * \brief Set maximum Doppler grid search
-      * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
-      */
+     * \brief Set maximum Doppler grid search
+     * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
+     */
     inline void set_doppler_max(uint32_t doppler_max)
     {
         d_doppler_max = doppler_max;
     }
 
     /*!
-      * \brief Set Doppler steps for the grid search
-      * \param doppler_step - Frequency bin of the search grid [Hz].
-      */
+     * \brief Set Doppler steps for the grid search
+     * \param doppler_step - Frequency bin of the search grid [Hz].
+     */
     inline void set_doppler_step(uint32_t doppler_step)
     {
         d_doppler_step = doppler_step;
     }
 
     /*!
-      * \brief Coherent Channel Combining With Sign Recovery Acquisition signal processing.
-      */
+     * \brief Coherent Channel Combining With Sign Recovery Acquisition signal processing.
+     */
     int general_work(int noutput_items, gr_vector_int& ninput_items,
         gr_vector_const_void_star& input_items,
         gr_vector_void_star& output_items);

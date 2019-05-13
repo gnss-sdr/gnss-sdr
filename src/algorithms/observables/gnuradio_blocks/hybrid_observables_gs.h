@@ -68,6 +68,7 @@ private:
     friend hybrid_observables_gs_sptr
     hybrid_observables_gs_make(uint32_t nchannels_in, uint32_t nchannels_out, bool dump, bool dump_mat, std::string dump_filename);
     hybrid_observables_gs(uint32_t nchannels_in, uint32_t nchannels_out, bool dump, bool dump_mat, std::string dump_filename);
+    void msg_handler_pvt_to_observables(const pmt::pmt_t& msg);
     bool interpolate_data(Gnss_Synchro& out, const uint32_t& ch, const double& ti);
     bool interp_trk_obs(Gnss_Synchro& interpolated_obs, const uint32_t& ch, const uint64_t& rx_clock);
     double compute_T_rx_s(const Gnss_Synchro& a);
@@ -79,11 +80,12 @@ private:
     boost::circular_buffer<uint64_t> d_Rx_clock_buffer;
     //Tracking observable history
     Gnss_circular_deque<Gnss_Synchro>* d_gnss_synchro_history;
-    uint32_t T_rx_clock_step_samples;
     //rx time follow GPST
     bool T_rx_TOW_set;
     uint32_t T_rx_TOW_ms;
+    uint32_t T_rx_remnant_to_20ms;
     uint32_t T_rx_step_ms;
+    double T_rx_offset_ms;
     bool d_dump;
     bool d_dump_mat;
     uint32_t d_nchannels_in;

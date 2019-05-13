@@ -80,11 +80,7 @@ if(ENABLE_RAW_UDP)
     target_compile_definitions(core_receiver PRIVATE -DRAW_UDP=1)
 endif()
 
-if(PC_GNURADIO_RUNTIME_VERSION VERSION_GREATER 3.7.3)
-    target_compile_definitions(core_receiver PRIVATE -DMODERN_GNURADIO=1)
-endif()
-
-if(${PC_GNURADIO_RUNTIME_VERSION} VERSION_GREATER "3.7.13.4")
+if(NOT (GNURADIO_VERSION VERSION_LESS "3.8"))
     target_compile_definitions(core_receiver PRIVATE -DGR_GREATER_38=1)
 endif()
 
@@ -133,6 +129,12 @@ if(ENABLE_CUDA)
     target_compile_definitions(core_receiver PRIVATE -DCUDA_GPU_ACCEL=1)
 endif()
 
+if(Boost_VERSION VERSION_GREATER "106599")
+    target_compile_definitions(core_receiver
+        PRIVATE
+            -DBOOST_GREATER_1_65
+    )
+endif()
 
 target_link_libraries(core_receiver
     PUBLIC

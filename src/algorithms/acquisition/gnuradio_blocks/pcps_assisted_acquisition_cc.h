@@ -55,6 +55,7 @@
 #include <gnuradio/gr_complex.h>
 #include <fstream>
 #include <string>
+#include <utility>
 
 class pcps_assisted_acquisition_cc;
 
@@ -195,13 +196,12 @@ public:
         d_channel = channel;
     }
 
-
     /*!
-      * \brief Set channel fsm associated to this acquisition instance
-      */
+     * \brief Set channel fsm associated to this acquisition instance
+     */
     inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm)
     {
-        d_channel_fsm = channel_fsm;
+        d_channel_fsm = std::move(channel_fsm);
     }
 
     /*!

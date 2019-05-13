@@ -39,6 +39,7 @@
 #include <gnuradio/gr_complex.h>
 #include <fstream>
 #include <string>
+#include <utility>
 
 class galileo_pcps_8ms_acquisition_cc;
 
@@ -182,14 +183,14 @@ public:
         d_channel = channel;
     }
 
-
     /*!
-      * \brief Set channel fsm associated to this acquisition instance
-      */
+     * \brief Set channel fsm associated to this acquisition instance
+     */
     inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm)
     {
-        d_channel_fsm = channel_fsm;
+        d_channel_fsm = std::move(channel_fsm);
     }
+
     /*!
      * \brief Set statistics threshold of PCPS algorithm.
      * \param threshold - Threshold for signal detection (check \ref Navitec2012,

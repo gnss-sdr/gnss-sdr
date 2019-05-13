@@ -173,6 +173,7 @@ gtime_t bdt2time(int week, double sec);
 double time2bdt(gtime_t t, int *week);
 gtime_t timeadd(gtime_t t, double sec);
 double timediff(gtime_t t1, gtime_t t2);
+double timediffweekcrossover(gtime_t t1, gtime_t t2);
 gtime_t timeget(void);
 void timeset(gtime_t t);
 int read_leaps_text(FILE *fp);

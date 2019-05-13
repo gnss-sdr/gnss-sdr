@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package gnss_sdr;
+
+/* GnssSynchro represents the processing measurements at a given time taken by a given processing channel */
+message GnssSynchro {
+   string system = 1;  // GNSS constellation: "G" for GPS, "R" for Glonass, "S" for SBAS, "E" for Galileo and "C" for Beidou.
+   string signal = 2;  // GNSS signal: "1C" for GPS L1 C/A, "1B" for Galileo E1b/c, "1G" for Glonass L1 C/A, "2S" for GPS L2 L2C(M), "2G" for Glonass L2 C/A, "L5" for GPS L5 and "5X" for Galileo E5a
+
+   uint32 prn = 3;  // PRN number
+   int32 channel_id = 4;  // Channel number
+
+   double acq_delay_samples = 5;  // Coarse code delay estimation, in samples
+   double acq_doppler_hz = 6;  // Coarse Doppler estimation in each channel, in Hz
+   uint64 acq_samplestamp_samples = 7;  // Number of samples at signal SampleStamp
+   uint32 acq_doppler_step = 8;  // Step of the frequency bin in the search grid, in Hz
+   bool flag_valid_acquisition = 9;  // Acquisition status
+
+   int64 fs = 10;  // Sampling frequency, in samples per second
+   double prompt_i = 11;  // In-phase (real) component of the prompt correlator output
+   double prompt_q = 12;  // Quadrature (imaginary) component of the prompt correlator output
+   double cn0_db_hz = 13;  // Carrier-to-Noise density ratio, in dB-Hz
+   double carrier_doppler_hz = 14;  // Doppler estimation, in [Hz].
+   double carrier_phase_rads = 15;  // Carrier phase estimation, in rad
+   double code_phase_samples = 16;  // Code phase in samples
+   uint64 tracking_sample_counter = 17;  // Sample counter indicating the number of processed samples
+   bool flag_valid_symbol_output = 18;  // Indicates the validity of signal tracking
+   int32 correlation_length_ms = 19;  // Time duration of coherent correlation integration, in ms
+
+   bool flag_valid_word = 20;  // Indicates the validity of the decoded navigation message word
+   uint32 tow_at_current_symbol_ms = 21;  // Time of week of the current symbol, in ms
+
+   double pseudorange_m = 22;  // Pseudorange computation, in m
+   double rx_time = 23;  // Receiving time after the start of the week, in s
+   bool flag_valid_pseudorange = 24;  // Pseudorange computation status
+   double interp_tow_ms = 25;  // Interpolated time of week, in ms
+}
+
+/* Observables represents a collection of GnssSynchro annotations */
+message Observables {
+  repeated GnssSynchro observable = 1;
+}

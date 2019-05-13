@@ -44,7 +44,6 @@ public:
 
     int32_t rinex_version;
     int32_t rinexobs_rate_ms;
-    int32_t rinexnav_rate_ms;
     std::map<int, int> rtcm_msg_rate_ms;
 
     bool dump;
@@ -80,6 +79,7 @@ public:
     std::string rtcm_output_file_path;
 
     bool monitor_enabled;
+    bool protobuf_enabled;
     std::string udp_addresses;
     int udp_port;
 

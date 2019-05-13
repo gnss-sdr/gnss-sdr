@@ -402,6 +402,7 @@ set(GNSSSDR_PYTHON3_MIN_VERSION "3.4")
 set(GNSSSDR_MAKO_MIN_VERSION "0.4.2")
 set(GNSSSDR_ARMADILLO_MIN_VERSION "5.300.0")
 set(GNSSSDR_MATIO_MIN_VERSION "1.5.3")
+set(GNSSSDR_PROTOBUF_MIN_VERSION "3.0.0")
 
 
 
@@ -416,6 +417,7 @@ set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
 set(GNSSSDR_GPSTK_LOCAL_VERSION "2.10.6")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.14")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.9")
+set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.7.1")
 
 if(CMAKE_VERSION VERSION_LESS "3.0.2") # Fix for CentOS 7
     set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.1")
@@ -693,7 +695,7 @@ endif()
 ################################################################################
 # GNU Radio - https://gnuradio.org
 ################################################################################
-set(GR_REQUIRED_COMPONENTS RUNTIME ANALOG BLOCKS FFT FILTER PMT)
+set(GR_REQUIRED_COMPONENTS RUNTIME PMT BLOCKS FFT FILTER ANALOG)
 
 find_package(UHD)
 set_package_properties(UHD PROPERTIES
@@ -713,14 +715,14 @@ endif()
 find_package(GNURADIO)
 set_package_properties(GNURADIO PROPERTIES
     URL "https://www.gnuradio.org/"
-    DESCRIPTION "The free and open software radio ecosystem"
+    DESCRIPTION "The free and open software radio ecosystem (found: v${GNURADIO_VERSION})"
     PURPOSE "Implements flowgraph scheduler, provides some processing blocks and classes to create new ones."
     TYPE REQUIRED
 )
-if(PC_GNURADIO_RUNTIME_VERSION)
-    if(PC_GNURADIO_RUNTIME_VERSION VERSION_LESS ${GNSSSDR_GNURADIO_MIN_VERSION})
+if(GNURADIO_VERSION)
+    if(GNURADIO_VERSION VERSION_LESS ${GNSSSDR_GNURADIO_MIN_VERSION})
         unset(GNURADIO_RUNTIME_FOUND)
-        message(STATUS "The GNU Radio version installed in your system is too old.")
+        message(STATUS "The GNU Radio version installed in your system (v${GNURADIO_VERSION}) is too old.")
     endif()
 endif()
 if(NOT GNURADIO_RUNTIME_FOUND)
@@ -728,15 +730,14 @@ if(NOT GNURADIO_RUNTIME_FOUND)
     if(OS_IS_LINUX)
         message("Go to https://github.com/gnuradio/pybombs")
         message("and follow the instructions to install GNU Radio in your system.")
-        message(FATAL_ERROR "GNU Radio ${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr")
     endif()
     if(OS_IS_MACOSX)
         message("You can install it easily via Macports:")
         message("  sudo port install gnuradio ")
         message("Alternatively, you can use homebrew:")
         message("  brew install gnuradio")
-        message(FATAL_ERROR "GNU Radio ${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr")
     endif()
+    message(FATAL_ERROR "GNU Radio v${GNSSSDR_GNURADIO_MIN_VERSION} or later is required to build gnss-sdr.")
 else()
     if(NOT TARGET Gnuradio::runtime)
         add_library(Gnuradio::runtime SHARED IMPORTED)
@@ -1255,6 +1256,19 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
         endif()
     endif()
 
+    set(GLOG_MAKE_PROGRAM ${CMAKE_MAKE_PROGRAM})
+    if(GLOG_MAKE_PROGRAM MATCHES "ninja")
+        find_program(GLOG_MAKE_EXECUTABLE make
+            HINTS
+                /usr/bin/
+                /usr/local/bin/
+        )
+        if(NOT GLOG_MAKE_EXECUTABLE)
+            message(FATAL_ERROR "make is required to build Glog from source.")
+        endif()
+        set(GLOG_MAKE_PROGRAM ${GLOG_MAKE_EXECUTABLE})
+    endif()
+
     if(CMAKE_VERSION VERSION_LESS 3.2)
         ExternalProject_Add(glog-${GNSSSDR_GLOG_LOCAL_VERSION}
             DEPENDS ${TARGET_GFLAGS}
@@ -1264,7 +1278,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
             CONFIGURE_COMMAND ${GLOG_CONFIGURE} --prefix=<INSTALL_DIR>
-            BUILD_COMMAND "${CMAKE_MAKE_PROGRAM}"
+            BUILD_COMMAND "${GLOG_MAKE_PROGRAM}"
             UPDATE_COMMAND ""
             PATCH_COMMAND ""
             INSTALL_COMMAND ""
@@ -1278,7 +1292,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/c
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
             BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
             CONFIGURE_COMMAND ${GLOG_CONFIGURE} --prefix=<INSTALL_DIR>
-            BUILD_COMMAND "${CMAKE_MAKE_PROGRAM}"
+            BUILD_COMMAND "${GLOG_MAKE_PROGRAM}"
             BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
             UPDATE_COMMAND ""
             PATCH_COMMAND ""
@@ -1662,6 +1676,19 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
                 endif()
             endif()
 
+            set(MATIO_MAKE_PROGRAM ${CMAKE_MAKE_PROGRAM})
+            if(MATIO_MAKE_PROGRAM MATCHES "ninja")
+                find_program(MATIO_MAKE_EXECUTABLE make
+                    HINTS
+                        /usr/bin/
+                        /usr/local/bin/
+                )
+                if(NOT MATIO_MAKE_EXECUTABLE)
+                    message(FATAL_ERROR "make is required to build Matio from source.")
+                endif()
+                set(MATIO_MAKE_PROGRAM ${MATIO_MAKE_EXECUTABLE})
+            endif()
+
             if(CMAKE_VERSION VERSION_LESS 3.2)
                 ExternalProject_Add(matio-${GNSSSDR_MATIO_LOCAL_VERSION}
                     PREFIX ${CMAKE_CURRENT_BINARY_DIR}/matio
@@ -1670,7 +1697,7 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
                     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}
                     UPDATE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/autogen.sh
                     CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/configure --with-hdf5=${HDF5_BASE_DIR} --with-zlib=${ZLIB_BASE_DIR} --with-default-file-ver=7.3 --enable-mat73=yes --prefix=<INSTALL_DIR>
-                    BUILD_COMMAND ${CMAKE_MAKE_PROGRAM}
+                    BUILD_COMMAND ${MATIO_MAKE_PROGRAM}
                 )
             else()
                 ExternalProject_Add(matio-${GNSSSDR_MATIO_LOCAL_VERSION}
@@ -1680,8 +1707,8 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
                     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}
                     UPDATE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/autogen.sh
                     CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/configure --with-hdf5=${HDF5_BASE_DIR} --with-zlib=${ZLIB_BASE_DIR} --with-default-file-ver=7.3 --enable-mat73=yes --prefix=<INSTALL_DIR>
-                    BUILD_COMMAND $(MAKE)
-                    BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    BUILD_COMMAND ${MATIO_MAKE_PROGRAM}
+                    BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_SHARED_LIBRARY_SUFFIX}
                 )
             endif()
             set(MATIO_LOCAL true)
@@ -1693,8 +1720,8 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
                 set_target_properties(Matio::matio PROPERTIES
                     IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
                     IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_SHARED_LIBRARY_SUFFIX}"
-                    INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_BINARY_DIR}/matio/include"
-                    INTERFACE_LINK_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_SHARED_LIBRARY_SUFFIX}"
+                    INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_BINARY_DIR}/matio/include
+                    INTERFACE_LINK_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_SHARED_LIBRARY_SUFFIX}
                 )
             endif()
         else()
@@ -1780,6 +1807,219 @@ if(NOT PUGIXML_FOUND)
     set_package_properties(PUGIXML PROPERTIES
         PURPOSE "PugiXML v${GNSSSDR_PUGIXML_LOCAL_VERSION} will be downloaded and built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
     )
+endif()
+
+
+
+################################################################################
+# Protocol Buffers https://github.com/protocolbuffers/protobuf
+################################################################################
+find_package(Protobuf)
+set_package_properties(Protobuf PROPERTIES
+    URL "https://developers.google.com/protocol-buffers/"
+    DESCRIPTION "Structured data serialization mechanism"
+    PURPOSE "Used to serialize output data in a way that can be read by other applications."
+    TYPE REQUIRED
+)
+if(NOT Protobuf_VERSION)
+    set(Protobuf_VERSION "0.0.0")
+endif()
+if(CMAKE_VERSION VERSION_LESS 3.6)
+    if(PROTOBUF_FOUND)
+        set(Protobuf_FOUND ${PROTOBUF_FOUND})
+    endif()
+endif()
+if(Protobuf_FOUND AND CMAKE_VERSION VERSION_LESS 3.9)
+    if(PROTOBUF_INCLUDE_DIR)
+        set(Protobuf_INCLUDE_DIR ${PROTOBUF_INCLUDE_DIR})
+    endif()
+    if(PROTOBUF_LIBRARY)
+        set(Protobuf_LIBRARY ${PROTOBUF_LIBRARY})
+    endif()
+    if(PROTOBUF_PROTOC_EXECUTABLE)
+        set(Protobuf_PROTOC_EXECUTABLE ${PROTOBUF_PROTOC_EXECUTABLE})
+    endif()
+    if(PROTOBUF_PROTOC_LIBRARY)
+        set(Protobuf_PROTOC_LIBRARY ${PROTOBUF_PROTOC_EXECUTABLE})
+    endif()
+    add_library(protobuf::libprotobuf SHARED IMPORTED)
+    set_target_properties(protobuf::libprotobuf PROPERTIES
+        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+        IMPORTED_LOCATION "${Protobuf_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${Protobuf_INCLUDE_DIR}"
+        INTERFACE_LINK_LIBRARIES "${Protobuf_LIBRARY}"
+    )
+    add_executable(protobuf::protoc IMPORTED)
+    set_target_properties(protobuf::protoc PROPERTIES
+        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+        IMPORTED_LOCATION "${Protobuf_PROTOC_EXECUTABLE}"
+        INTERFACE_LINK_LIBRARIES "${Protobuf_PROTOC_LIBRARY}"
+    )
+    if(${Protobuf_VERSION} VERSION_EQUAL "0.0.0")
+        set(_PROTOBUF_COMMON_HEADER ${Protobuf_INCLUDE_DIR}/google/protobuf/stubs/common.h)
+        set(Protobuf_VERSION "")
+        set(Protobuf_LIB_VERSION "")
+        file(STRINGS ${_PROTOBUF_COMMON_HEADER} _PROTOBUF_COMMON_H_CONTENTS REGEX "#define[ \t]+GOOGLE_PROTOBUF_VERSION[ \t]+")
+        if(_PROTOBUF_COMMON_H_CONTENTS MATCHES "#define[ \t]+GOOGLE_PROTOBUF_VERSION[ \t]+([0-9]+)")
+            set(Protobuf_LIB_VERSION "${CMAKE_MATCH_1}")
+        endif()
+        unset(_PROTOBUF_COMMON_H_CONTENTS)
+        math(EXPR _PROTOBUF_MAJOR_VERSION "${Protobuf_LIB_VERSION} / 1000000")
+        math(EXPR _PROTOBUF_MINOR_VERSION "${Protobuf_LIB_VERSION} / 1000 % 1000")
+        math(EXPR _PROTOBUF_SUBMINOR_VERSION "${Protobuf_LIB_VERSION} % 1000")
+        set(Protobuf_VERSION "${_PROTOBUF_MAJOR_VERSION}.${_PROTOBUF_MINOR_VERSION}.${_PROTOBUF_SUBMINOR_VERSION}")
+    endif()
+endif()
+if(Protobuf_FOUND AND CMAKE_CROSSCOMPILING)
+    find_program(PROTOC_EXECUTABLE protoc)
+    if(NOT PROTOC_EXECUTABLE)
+        find_program(PROTOC_EXECUTABLE protoc
+            HINTS
+                /usr/bin/
+                /usr/local/bin/
+        )
+    endif()
+    if(PROTOC_EXECUTABLE)
+        set_target_properties(protobuf::protoc PROPERTIES
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION ${PROTOC_EXECUTABLE}
+        )
+        set(Protobuf_PROTOC_EXECUTABLE ${PROTOC_EXECUTABLE})
+    else()
+        message(FATAL_ERROR "Please install the Protocol Buffers compiler v${Protobuf_VERSION} in the host machine")
+    endif()
+endif()
+if((NOT Protobuf_FOUND) OR (NOT Protobuf_PROTOC_EXECUTABLE) OR (${Protobuf_VERSION} VERSION_LESS ${GNSSSDR_PROTOBUF_MIN_VERSION}))
+    unset(Protobuf_PROTOC_EXECUTABLE)
+    if(CMAKE_CROSSCOMPILING)
+        if(NOT Protobuf_FOUND)
+            ExternalProject_Add(protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                PREFIX ${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                GIT_REPOSITORY https://github.com/protocolbuffers/protobuf
+                GIT_TAG v${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                UPDATE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/autogen.sh
+                CONFIGURE_COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION} --host=$ENV{OECORE_TARGET_ARCH} --with-protoc=${PROTOC_EXECUTABLE}"
+                BUILD_COMMAND ${CMAKE_MAKE_PROGRAM}
+                INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
+                BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}protobuf${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    ${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/bin/protoc
+            )
+        endif()
+    else()
+        if(OS_IS_LINUX)
+            if(NOT EXISTS "/usr/bin/libtoolize")
+                message(" libtool has not been found.")
+                message(" You can try to install it by typing:")
+                if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                    message(" sudo yum groupinstall 'Development Tools'")
+                elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+                    message(" sudo zypper install libtoool")
+                else()
+                    message(" sudo apt-get install libtool")
+                endif()
+                message(FATAL_ERROR "libtool is required to build Protocol Buffers from source")
+            endif()
+            if(EXISTS "/usr/bin/aclocal" OR
+                EXISTS "/usr/bin/aclocal-1.16" OR
+                EXISTS "/usr/bin/aclocal-1.15" OR
+                EXISTS "/usr/bin/aclocal-1.14" OR
+                EXISTS "/usr/bin/aclocal-1.13" OR
+                EXISTS "/usr/bin/aclocal-1.11" OR
+                EXISTS "/usr/bin/aclocal-1.10")
+                message(STATUS "Automake found.")
+            else()
+                message(" aclocal has not been found.")
+                message(" You can try to install it by typing:")
+                if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                    message(" sudo yum groupinstall 'Development Tools'")
+                elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+                    message(" sudo zypper install automake")
+                else()
+                    message(" sudo apt-get install automake")
+                endif()
+                message(FATAL_ERROR "aclocal is required to build Protocol Buffers from source")
+            endif()
+        endif()
+
+        set(PROTOBUF_MAKE_PROGRAM ${CMAKE_MAKE_PROGRAM})
+        if(PROTOBUF_MAKE_PROGRAM MATCHES "ninja")
+            find_program(MAKE_EXECUTABLE make
+                HINTS
+                    /usr/bin/
+                    /usr/local/bin/
+            )
+            if(NOT MAKE_EXECUTABLE)
+                message(FATAL_ERROR "make is required to build Protocol Buffers from source.")
+            endif()
+            set(PROTOBUF_MAKE_PROGRAM ${MAKE_EXECUTABLE})
+        endif()
+        if(CMAKE_VERSION VERSION_LESS 3.2)
+            ExternalProject_Add(protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                PREFIX ${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                GIT_REPOSITORY https://github.com/protocolbuffers/protobuf
+                GIT_TAG v${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                UPDATE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/autogen.sh
+                CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                BUILD_COMMAND ${PROTOBUF_MAKE_PROGRAM}
+                INSTALL_COMMAND ${PROTOBUF_MAKE_PROGRAM} install
+            )
+        else()
+            ExternalProject_Add(protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                PREFIX ${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                GIT_REPOSITORY https://github.com/protocolbuffers/protobuf
+                GIT_TAG v${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                UPDATE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/autogen.sh
+                CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                BUILD_COMMAND ${PROTOBUF_MAKE_PROGRAM}
+                INSTALL_COMMAND ${PROTOBUF_MAKE_PROGRAM} install
+                BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}protobuf${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    ${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/bin/protoc
+            )
+        endif()
+
+        if(NOT TARGET protobuf::protoc)
+            add_executable(protobuf::protoc IMPORTED)
+            add_dependencies(protobuf::protoc protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION})
+        endif()
+        unset(Protobuf_PROTOC_EXECUTABLE)
+        set(PROTOBUF_PROTOC_EXECUTABLE "${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/bin/protoc")
+        set_target_properties(protobuf::protoc PROPERTIES
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/bin/protoc"
+            INTERFACE_LINK_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}protoc${CMAKE_STATIC_LIBRARY_SUFFIX}"
+        )
+    endif()
+    file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/include)
+    if(NOT TARGET protobuf::libprotobuf)
+        add_library(protobuf::libprotobuf STATIC IMPORTED)
+        add_dependencies(protobuf::libprotobuf protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION})
+    endif()
+    set_target_properties(protobuf::libprotobuf PROPERTIES
+        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+        IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}protobuf${CMAKE_STATIC_LIBRARY_SUFFIX}"
+        INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/include"
+        INTERFACE_LINK_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}protobuf${CMAKE_STATIC_LIBRARY_SUFFIX}"
+    )
+
+    if(${Protobuf_VERSION} VERSION_LESS ${GNSSSDR_PROTOBUF_MIN_VERSION})
+        if(NOT (${Protobuf_VERSION} EQUAL "0.0.0"))
+            set_package_properties(Protobuf PROPERTIES
+                PURPOSE "Protocol Buffers found (v${Protobuf_VERSION}) is too old (> v${GNSSSDR_PROTOBUF_MIN_VERSION} needed)."
+            )
+        endif()
+    endif()
+    set_package_properties(Protobuf PROPERTIES
+        PURPOSE "Protocol Buffers v${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION} will be downloaded and built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
+    )
+endif()
+if(${Protobuf_VERSION} VERSION_EQUAL "0.0.0")
+    unset(Protobuf_VERSION)
 endif()
 
 

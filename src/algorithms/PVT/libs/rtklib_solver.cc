@@ -1000,12 +1000,6 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     // gtime_t rtklib_utc_time = gpst2utc(pvt_sol.time); //Corrected RX Time (Non integer multiply of 1 ms of granularity)
                     // Uncorrected RX Time (integer multiply of 1 ms and the same observables time reported in RTCM and RINEX)
                     gtime_t rtklib_time = timeadd(pvt_sol.time, rx_position_and_time(3));  //uncorrected rx time
-                    if (gnss_observables_map.begin()->second.RX_time < 18000.0)
-                        {
-                            //p_time += boost::posix_time::seconds(604800);
-                            rtklib_time = timeadd(rtklib_time, 604800);
-                        }
-
                     gtime_t rtklib_utc_time = gpst2utc(rtklib_time);
                     p_time = boost::posix_time::from_time_t(rtklib_utc_time.time);
                     p_time += boost::posix_time::microseconds(static_cast<long>(round(rtklib_utc_time.sec * 1e6)));  // NOLINT(google-runtime-int)

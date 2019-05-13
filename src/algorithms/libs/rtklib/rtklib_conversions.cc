@@ -119,6 +119,13 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs, const Gnss_Synchro& gnss_synchro
     //    	}
     //
     rtklib_obs.time = gpst2time(adjgpsweek(week), gnss_synchro.RX_time);
+    //account for the TOW crossover transitory in the first 18 seconds where the week is not yet updated!
+    if (gnss_synchro.RX_time < 18.0)
+        {
+            //p_time += boost::posix_time::seconds(604800);
+            rtklib_obs.time = timeadd(rtklib_obs.time, 604800);
+        }
+
     rtklib_obs.rcv = 1;
     return rtklib_obs;
 }

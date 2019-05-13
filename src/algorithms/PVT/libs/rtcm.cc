@@ -3401,7 +3401,7 @@ std::map<std::string, int> Rtcm::galileo_signal_map = [] {
 boost::posix_time::ptime Rtcm::compute_GPS_time(const Gps_Ephemeris& eph, double obs_time) const
 {
     const double gps_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>((gps_t + 604800 * static_cast<double>(eph.i_GPS_week % 1024)) * 1000));  // NOLINT(google-runtime-int)
+    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>((gps_t + 604800 * static_cast<double>(eph.i_GPS_week)) * 1000));  // NOLINT(google-runtime-int)
 
     if (eph.i_GPS_week < 512)
         {
@@ -3417,14 +3417,7 @@ boost::posix_time::ptime Rtcm::compute_GPS_time(const Gps_Ephemeris& eph, double
 boost::posix_time::ptime Rtcm::compute_GPS_time(const Gps_CNAV_Ephemeris& eph, double obs_time) const
 {
     const double gps_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>((gps_t + 604800 * static_cast<double>(eph.i_GPS_week % 1024)) * 1000));  // NOLINT(google-runtime-int)
-
-    if (eph.i_GPS_week < 512)
-        {
-            boost::posix_time::ptime p_time(boost::gregorian::date(2019, 4, 7), t);
-            return p_time;
-        }
-
+    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<long>((gps_t + 604800 * static_cast<double>(eph.i_GPS_week)) * 1000));  // NOLINT(google-runtime-int)
     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
     return p_time;
 }
@@ -4226,9 +4219,18 @@ int32_t Rtcm::set_DF050(const Gnss_Synchro& gnss_synchro)
 int32_t Rtcm::set_DF051(const Gps_Ephemeris& gps_eph, double obs_time)
 {
     const double gps_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((gps_t + 604800 * static_cast<double>(gps_eph.i_GPS_week % 1024)) * 1000));
-    boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
-    std::string now_ptime = to_iso_string(p_time);
+    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((gps_t + 604800 * static_cast<double>(gps_eph.i_GPS_week)) * 1000));
+    std::string now_ptime;
+    if (gps_eph.i_GPS_week < 512)
+        {
+            boost::posix_time::ptime p_time(boost::gregorian::date(2019, 4, 7), t);
+            now_ptime = to_iso_string(p_time);
+        }
+    else
+        {
+            boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
+            now_ptime = to_iso_string(p_time);
+        }
     std::string today_ptime = now_ptime.substr(0, 8);
     boost::gregorian::date d(boost::gregorian::from_undelimited_string(today_ptime));
     uint32_t mjd = d.modjulian_day();
@@ -4240,9 +4242,18 @@ int32_t Rtcm::set_DF051(const Gps_Ephemeris& gps_eph, double obs_time)
 int32_t Rtcm::set_DF052(const Gps_Ephemeris& gps_eph, double obs_time)
 {
     const double gps_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((gps_t + 604800 * static_cast<double>(gps_eph.i_GPS_week % 1024)) * 1000));
-    boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
-    std::string now_ptime = to_iso_string(p_time);
+    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((gps_t + 604800 * static_cast<double>(gps_eph.i_GPS_week)) * 1000));
+    std::string now_ptime;
+    if (gps_eph.i_GPS_week < 512)
+        {
+            boost::posix_time::ptime p_time(boost::gregorian::date(2019, 4, 7), t);
+            now_ptime = to_iso_string(p_time);
+        }
+    else
+        {
+            boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
+            now_ptime = to_iso_string(p_time);
+        }
     std::string hours = now_ptime.substr(9, 2);
     std::string minutes = now_ptime.substr(11, 2);
     std::string seconds = now_ptime.substr(13, 8);

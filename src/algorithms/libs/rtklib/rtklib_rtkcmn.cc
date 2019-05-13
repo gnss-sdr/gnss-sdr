@@ -2044,6 +2044,17 @@ double time2doy(gtime_t t)
  *-----------------------------------------------------------------------------*/
 int adjgpsweek(int week)
 {
+    //    int w;
+    //    if (week < 512)
+    //        {
+    //            //assume receiver date > 7 april 2019
+    //            w = week + 2048;  //add weeks from 6-january-1980 to week rollover in 7 april 2019
+    //        }
+    //    else
+    //        {
+    //            //assume receiver date < 7 april 2019
+    //            w = week + 1024;  //add weeks from 6-january-1980 to week rollover in 22 august 2019
+    //        }
     int w;
     (void)time2gpst(utc2gpst(timeget()), &w);
     if (w < 1560)
@@ -2051,6 +2062,7 @@ int adjgpsweek(int week)
             w = 1560; /* use 2009/12/1 if time is earlier than 2009/12/1 */
         }
     return week + (w - week + 512) / 1024 * 1024;
+    //    return w;
 }
 
 

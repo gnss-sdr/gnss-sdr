@@ -102,18 +102,8 @@ crosscompile:
   script:
     - apt-get update
     - apt-get install -y build-essential xz-utils curl gawk wget git-core diffstat unzip texinfo gcc-multilib chrpath socat cpio python python3 python3-pip python3-pexpect debianutils iputils-ping autoconf automake libtool make g++
-    - mkdir protobuf && cd protobuf
-    - wget https://github.com/protocolbuffers/protobuf/releases/download/v3.6.1/protobuf-cpp-3.6.1.tar.gz
-    - tar xvfz protobuf-cpp-3.6.1.tar.gz
-    - cd protobuf-3.6.1
-    - ./autogen.sh
-    - ./configure
-    - make
-    - make install
-    - ldconfig
-    - cd ../..
     - curl -k https://sites.cttc.es/gnss_files/SDK/Thud/oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh --output oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh
-    - echo "4f74d9ab0f076e59215be2d1cb674a52  oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh" > sdk.md5
+    - echo "9190d351cd8bad1535aeb9a6ff220ce3  oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh" > sdk.md5
     - md5sum -c sdk.md5
     - chmod +x ./oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh
     - sh ./oecore-x86_64-armv7ahf-neon-toolchain-nodistro.0.sh -y

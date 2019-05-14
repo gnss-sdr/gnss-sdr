@@ -3561,7 +3561,6 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
                     GPS_week_continuous_number += 1.0;
                 }
             line += Rinex_Printer::doub2for(GPS_week_continuous_number, 18, 2);
-            line += Rinex_Printer::doub2for(GPS_week_continuous_number, 18, 2);
             line += std::string(1, ' ');
             line += Rinex_Printer::doub2for(my_zero, 18, 2);
             Rinex_Printer::lengthCheck(line);

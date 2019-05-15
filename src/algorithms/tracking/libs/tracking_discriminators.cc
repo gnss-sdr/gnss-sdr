@@ -33,10 +33,26 @@
  */
 
 #include "tracking_discriminators.h"
+#include "MATH_CONSTANTS.h"
 #include <cmath>
 
 //  All the outputs are in RADIANS
 
+double phase_unwrap(double phase_rad)
+{
+    if (phase_rad >= HALF_PI)
+        {
+            return phase_rad - PI;
+        }
+    else if (phase_rad <= -HALF_PI)
+        {
+            return phase_rad + PI;
+        }
+    else
+        {
+            return phase_rad;
+        }
+}
 /*
  * FLL four quadrant arctan discriminator:
  * \f{equation}
@@ -54,6 +70,22 @@ double fll_four_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2, double
     return atan2(cross, dot) / (t2 - t1);
 }
 
+/*
+ * FLL differential arctan discriminator:
+ * \f{equation}
+ *     e_{atan}(k)=\frac{1}{t_1-t_2}\text{phase_unwrap}(\tan^-1(\frac{Q(k)}{I(k)})-\tan^-1(\frac{Q(k-1)}{I(k-1)}))
+ * \f}
+ * The output is in [radians/second].
+ */
+double fll_diff_atan(gr_complex prompt_s1, gr_complex prompt_s2, double t1, double t2)
+{
+    double diff_atan = atan(prompt_s2.imag() / prompt_s2.real()) - atan(prompt_s1.imag() / prompt_s1.real());
+    if (std::isnan(diff_atan))
+        {
+            diff_atan = 0;
+        }
+    return phase_unwrap(diff_atan) / (t2 - t1);
+}
 
 /*
  * PLL four quadrant arctan discriminator:

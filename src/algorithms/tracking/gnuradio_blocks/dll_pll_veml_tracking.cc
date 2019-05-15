@@ -938,7 +938,9 @@ void dll_pll_veml_tracking::run_dll_pll()
     if ((d_pull_in_transitory == true and trk_parameters.enable_fll_pull_in == true) or trk_parameters.enable_fll_steady_state)
         {
             // FLL discriminator
-            d_carr_freq_error_hz = fll_four_quadrant_atan(d_P_accu_old, d_P_accu, 0, d_current_correlation_time_s) / GPS_TWO_PI;
+            //d_carr_freq_error_hz = fll_four_quadrant_atan(d_P_accu_old, d_P_accu, 0, d_current_correlation_time_s) / GPS_TWO_PI;
+            d_carr_freq_error_hz = fll_diff_atan(d_P_accu_old, d_P_accu, 0, d_current_correlation_time_s) / GPS_TWO_PI;
+
             d_P_accu_old = d_P_accu;
             //std::cout << "d_carr_freq_error_hz: " << d_carr_freq_error_hz << std::endl;
             // Carrier discriminator filter

@@ -160,10 +160,10 @@ bool gps_l1_ca_telemetry_decoder_gs::gps_word_parityCheck(uint32_t gpsword)
     parity = parity & 0x3F;
     if (parity == (gpsword & 0x3F))
         {
-            return (true);
+            return true;
         }
 
-    return (false);
+    return false;
 }
 
 
@@ -215,7 +215,7 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe()
     int32_t word_index = 0;
     uint32_t GPS_frame_4bytes = 0;
     float symbol_accumulator = 0;
-    bool subframe_synchro_confirmation = false;
+    bool subframe_synchro_confirmation = true;
     for (float subframe_symbol : d_symbol_history)
         {
             // ******* SYMBOL TO BIT *******
@@ -261,9 +261,10 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe()
                                 {
                                     GPS_frame_4bytes ^= 0x3FFFFFC0;  // invert the data bits (using XOR)
                                 }
-                            if (gps_l1_ca_telemetry_decoder_gs::gps_word_parityCheck(GPS_frame_4bytes))
+                            //check parity. If ANY word inside the subframe fails the parity, set subframe_synchro_confirmation = false
+                            if (not gps_l1_ca_telemetry_decoder_gs::gps_word_parityCheck(GPS_frame_4bytes))
                                 {
-                                    subframe_synchro_confirmation = true;
+                                    subframe_synchro_confirmation = false;
                                 }
                             // add word to subframe
                             // insert the word in the correct position of the subframe

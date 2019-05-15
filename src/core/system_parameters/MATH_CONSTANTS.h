@@ -43,8 +43,9 @@
         ONE_PI_TWO_PX = (1/Pi)*2^X
 */
 
-const double PI = 3.1415926535897932;  //!<  pi
-const double PI_2 = 2.0 * PI;          //!<  2 * pi
+const double HALF_PI = 1.570796326794897;  //!< pi/2
+const double PI = 3.1415926535897932;      //!<  pi
+const double PI_2 = 2.0 * PI;              //!<  2 * pi
 
 const double TWO_P3 = (8);                        //!< 2^3
 const double TWO_P4 = (16);                       //!< 2^4
